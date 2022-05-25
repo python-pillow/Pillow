@@ -143,6 +143,8 @@ class ImageFont:
 
         :return: (width, height)
         """
+        if not kwargs.get("__internal__"):
+            deprecate("getsize", 10, "getbbox or getlength")
         return self.font.getsize(text)
 
     def getmask(self, text, mode="", *args, **kwargs):
@@ -386,7 +388,13 @@ class FreeTypeFont:
         return left, top, left + width, top + height
 
     def getsize(
-        self, text, direction=None, features=None, language=None, stroke_width=0
+        self,
+        text,
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
+        __internal__=False,
     ):
         """
         Returns width and height (in pixels) of given text if rendered in font with
@@ -438,6 +446,8 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        if not __internal__:
+            deprecate("getsize", 10, "getbbox or getlength")
         # vertical offset is added for historical reasons
         # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
         size, offset = self.font.getsize(text, "L", direction, features, language)
@@ -495,12 +505,15 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        deprecate("getsize_multiline", 10)
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
+        line_spacing = (
+            self.getsize("A", stroke_width=stroke_width, __internal__=True)[1] + spacing
+        )
         for line in lines:
             line_width, line_height = self.getsize(
-                line, direction, features, language, stroke_width
+                line, direction, features, language, stroke_width, __internal__=True
             )
             max_width = max(max_width, line_width)
 
@@ -516,6 +529,7 @@ class FreeTypeFont:
 
         :return: A tuple of the x and y offset
         """
+        deprecate("getoffset", 10, "getbbox")
         return self.font.getsize(text)[1]
 
     def getmask(
@@ -796,7 +810,12 @@ class TransposedFont:
         self.orientation = orientation  # any 'transpose' argument, or None
 
     def getsize(self, text, *args, **kwargs):
-        w, h = self.font.getsize(text)
+        if not kwargs.get("__internal__"):
+            deprecate("getsize", 10, "getbbox or getlength")
+        try:
+            w, h = self.font.getsize(text, __internal__=True)
+        except TypeError:
+            w, h = self.font.getsize(text)
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             return h, w
         return w, h
