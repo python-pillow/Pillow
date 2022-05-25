@@ -167,6 +167,33 @@ class ImageFont:
         """
         return self.font.getmask(text, mode)
 
+    def getbbox(self, text, *args, **kwargs):
+        """
+        Returns bounding box (in pixels) of given text.
+
+        .. versionadded:: 9.2.0
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+        :return: ``(left, top, right, bottom)`` bounding box
+        """
+        width, height = self.font.getsize(text)
+        return 0, 0, width, height
+
+    def getlength(self, text, *args, **kwargs):
+        """
+        Returns length (in pixels) of given text.
+        This is the amount by which following text should be offset.
+
+        .. versionadded:: 9.2.0
+        """
+        width, height = self.font.getsize(text)
+        return width
+
 
 ##
 # Wrapper for FreeType fonts.  Application code should use the

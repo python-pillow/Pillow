@@ -720,8 +720,11 @@ class TestImageFont:
         im = Image.new("RGB", (200, 200))
         d = ImageDraw.Draw(im)
         default_font = ImageFont.load_default()
-        with pytest.raises(ValueError):
-            d.textbbox((0, 0), "test", font=default_font)
+        with pytest.warns(DeprecationWarning) as log:
+            width, height = d.textsize("test", font=default_font)
+        assert len(log) == 1
+        assert d.textlength("test", font=default_font) == width
+        assert d.textbbox((0, 0), "test", font=default_font) == (0, 0, width, height)
 
     @pytest.mark.parametrize(
         "anchor, left, top",
