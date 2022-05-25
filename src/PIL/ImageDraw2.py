@@ -25,6 +25,7 @@
 
 
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
+from ._deprecate import deprecate
 
 
 class Pen:
@@ -176,4 +177,27 @@ class Draw:
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.textsize`
         """
-        return self.draw.textsize(text, font=font.font)
+        deprecate("textsize", 10, "textbbox or textlength")
+        return self.draw.textsize(text, font=font.font, __internal__=True)
+
+    def textbbox(self, xy, text, font):
+        """
+        Returns bounding box (in pixels) of given text.
+
+        :return: ``(left, top, right, bottom)`` bounding box
+
+        .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.textbbox`
+        """
+        if self.transform:
+            xy = ImagePath.Path(xy)
+            xy.transform(self.transform)
+        return self.draw.textbbox(xy, text, font=font.font)
+
+    def textlength(self, text, font):
+        """
+        Returns length (in pixels) of given text.
+        This is the amount by which following text should be offset.
+
+        .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.textlength`
+        """
+        return self.draw.textlength(text, font=font.font)

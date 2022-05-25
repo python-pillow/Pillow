@@ -1239,7 +1239,7 @@ def test_textsize_empty_string():
 
 
 @skip_unless_feature("freetype2")
-def test_textsize_stroke():
+def test_textbbox_stroke():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
