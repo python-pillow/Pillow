@@ -68,12 +68,16 @@ def test_textsize(request, tmp_path):
     tempname = save_font(request, tmp_path)
     font = ImageFont.load(tempname)
     for i in range(255):
-        (dx, dy) = font.getsize(chr(i))
+        (ox, oy, dx, dy) = font.getbbox(chr(i))
+        assert ox == 0
+        assert oy == 0
         assert dy == 20
         assert dx in (0, 10)
+        assert font.getlength(chr(i)) == dx
     for i in range(len(message)):
         msg = message[: i + 1]
-        assert font.getsize(msg) == (len(msg) * 10, 20)
+        assert font.getlength(msg) == len(msg) * 10
+        assert font.getbbox(msg) == (0, 0, len(msg) * 10, 20)
 
 
 def _test_high_characters(request, tmp_path, message):
