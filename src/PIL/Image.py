@@ -1383,6 +1383,10 @@ class Image:
     def getexif(self):
         if self._exif is None:
             self._exif = Exif()
+            self._exif._loaded = False
+        elif self._exif._loaded:
+            return self._exif
+        self._exif._loaded = True
 
         exif_info = self.info.get("exif")
         if exif_info is None:
@@ -1406,6 +1410,12 @@ class Image:
                     self._exif[0x0112] = int(match[1])
 
         return self._exif
+
+    def _reload_exif(self):
+        if self._exif is None or not self._exif._loaded:
+            return
+        self._exif._loaded = False
+        self.getexif()
 
     def getim(self):
         """
