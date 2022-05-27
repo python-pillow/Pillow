@@ -222,6 +222,20 @@ def test_p_la():
     assert_image_similar(alpha, comparable, 5)
 
 
+def test_p_pa():
+    with Image.open("Tests/images/tiny.png") as im:
+        assert im.mode == "P"
+
+        im_pa = im.convert("PA")
+        assert im_pa.mode == "PA"
+
+        assert (
+            im_pa.tobytes() == b"\x00\x00\x00\x00\x08\xff\x04\xff\x00\x00\x00\x00"
+            b"\x06\xff\x07\xff\x00\x00\x00\x00\x02\xff\x03\xff\x00"
+            b"\x00\x00\x00\x01\xff\x05\xff"
+        )
+
+
 def test_matrix_illegal_conversion():
     # Arrange
     im = hopper("CMYK")
