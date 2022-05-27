@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Improve transparency handling when saving GIF images #6176
+  [radarhere]
+
+- Do not update GIF frame position until local image is found #6219
+  [radarhere]
+
+- Netscape GIF extension belongs after the global color table #6211
+  [radarhere]
+
 - Only write GIF comments at the beginning of the file #6300
   [raygard, radarhere]
 

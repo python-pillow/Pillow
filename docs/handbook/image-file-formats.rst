@@ -156,7 +156,8 @@ The :py:meth:`~PIL.Image.open` method sets the following
     it will loop forever.
 
 **comment**
-    May not be present. A comment about the image.
+    May not be present. A comment about the image. This is the last comment found
+    before the current frame's image.
 
 **extension**
     May not be present. Contains application specific information.

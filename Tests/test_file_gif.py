@@ -354,16 +354,23 @@ def test_seek_rewind():
             assert_image_equal(im, expected)
 
 
-def test_n_frames():
-    for path, n_frames in [[TEST_GIF, 1], ["Tests/images/iss634.gif", 42]]:
-        # Test is_animated before n_frames
-        with Image.open(path) as im:
-            assert im.is_animated == (n_frames != 1)
+@pytest.mark.parametrize(
+    "path, n_frames",
+    (
+        (TEST_GIF, 1),
+        ("Tests/images/comment_after_last_frame.gif", 2),
+        ("Tests/images/iss634.gif", 42),
+    ),
+)
+def test_n_frames(path, n_frames):
+    # Test is_animated before n_frames
+    with Image.open(path) as im:
+        assert im.is_animated == (n_frames != 1)
 
-        # Test is_animated after n_frames
-        with Image.open(path) as im:
-            assert im.n_frames == n_frames
-            assert im.is_animated == (n_frames != 1)
+    # Test is_animated after n_frames
+    with Image.open(path) as im:
+        assert im.n_frames == n_frames
+        assert im.is_animated == (n_frames != 1)
 
 
 def test_no_change():
@@ -632,7 +639,8 @@ def test_dispose2_background(tmp_path):
         assert im.getpixel((0, 0)) == (255, 0, 0)
 
 
-def test_transparency_in_second_frame():
+def test_transparency_in_second_frame(tmp_path):
+    out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/different_transparency.gif") as im:
         assert im.info["transparency"] == 0
 
@@ -641,6 +649,14 @@ def test_transparency_in_second_frame():
         assert "transparency" not in im.info
 
         assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.png")
+
+        im.save(out, save_all=True)
+
+    with Image.open(out) as reread:
+        reread.seek(reread.tell() + 1)
+        assert_image_equal_tofile(
+            reread, "Tests/images/different_transparency_merged.png"
+        )
 
 
 def test_no_transparency_in_second_frame():
@@ -651,6 +667,22 @@ def test_no_transparency_in_second_frame():
 
         # All transparent pixels should be replaced with the color from the first frame
         assert img.histogram()[255] == 0
+
+
+def test_remapped_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("P", (1, 2))
+    im2 = im.copy()
+
+    # Add transparency at a higher index
+    # so that it will be optimized to a lower index
+    im.putpixel((0, 1), 5)
+    im.info["transparency"] = 5
+    im.save(out, save_all=True, append_images=[im2])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.info["transparency"] == reloaded.getpixel((0, 1))
 
 
 def test_duration(tmp_path):
@@ -772,8 +804,15 @@ def test_number_of_loops(tmp_path):
     im = Image.new("L", (100, 100), "#000")
     im.save(out, loop=number_of_loops)
     with Image.open(out) as reread:
-
         assert reread.info["loop"] == number_of_loops
+
+    # Check that even if a subsequent GIF frame has the number of loops specified,
+    # only the value from the first frame is used
+    with Image.open("Tests/images/duplicate_number_of_loops.gif") as im:
+        assert im.info["loop"] == 2
+
+        im.seek(1)
+        assert im.info["loop"] == 2
 
 
 def test_background(tmp_path):

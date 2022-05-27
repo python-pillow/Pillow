@@ -1909,6 +1909,13 @@ class Image:
         m_im.putpalette(new_palette_bytes)
         m_im.palette = ImagePalette.ImagePalette("RGB", palette=palette_bytes)
 
+        if "transparency" in self.info:
+            try:
+                m_im.info["transparency"] = dest_map.index(self.info["transparency"])
+            except ValueError:
+                if "transparency" in m_im.info:
+                    del m_im.info["transparency"]
+
         return m_im
 
     def _get_safe_box(self, size, resample, box):
