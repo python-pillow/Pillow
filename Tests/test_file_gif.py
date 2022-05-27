@@ -772,8 +772,15 @@ def test_number_of_loops(tmp_path):
     im = Image.new("L", (100, 100), "#000")
     im.save(out, loop=number_of_loops)
     with Image.open(out) as reread:
-
         assert reread.info["loop"] == number_of_loops
+
+    # Check that even if a subsequent GIF frame has the number of loops specified,
+    # only the value from the first frame is used
+    with Image.open("Tests/images/duplicate_number_of_loops.gif") as im:
+        assert im.info["loop"] == 2
+
+        im.seek(1)
+        assert im.info["loop"] == 2
 
 
 def test_background(tmp_path):
