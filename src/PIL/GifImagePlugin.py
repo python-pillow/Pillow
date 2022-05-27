@@ -185,8 +185,6 @@ class GifImageFile(ImageFile.ImageFile):
         if not s or s == b";":
             raise EOFError
 
-        self.__frame = frame
-
         self.tile = []
 
         palette = None
@@ -291,6 +289,8 @@ class GifImageFile(ImageFile.ImageFile):
         if interlace is None:
             # self._fp = None
             raise EOFError
+
+        self.__frame = frame
         if not update_image:
             return
 
