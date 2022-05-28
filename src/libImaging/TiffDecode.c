@@ -815,11 +815,11 @@ ImagingLibTiffMergeFieldInfo(
 
     // custom fields added with ImagingLibTiffMergeFieldInfo are only used for
     // decoding, ignore readcount;
-    int readcount = 1;
+    int readcount = is_var_length ? TIFF_VARIABLE : 1;
     // we support writing a single value, or a variable number of values
-    int writecount = 1;
+    int writecount = is_var_length ? TIFF_VARIABLE : 1;
     // whether the first value should encode the number of values.
-    int passcount = 0;
+    int passcount = (is_var_length && field_type != TIFF_ASCII) ? 1 : 0;
 
     TIFFFieldInfo info[] = {
         {key,
@@ -830,14 +830,6 @@ ImagingLibTiffMergeFieldInfo(
          1,
          passcount,
          "CustomField"}};
-
-    if (is_var_length) {
-        info[0].field_writecount = -1;
-    }
-
-    if (is_var_length && field_type != TIFF_ASCII) {
-        info[0].field_passcount = 1;
-    }
 
     n = sizeof(info) / sizeof(info[0]);
 
