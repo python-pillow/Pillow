@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Only try to connect discontiguous corners at the end of edges #6303
+  [radarhere]
+
 - Improve transparency handling when saving GIF images #6176
   [radarhere]
 
