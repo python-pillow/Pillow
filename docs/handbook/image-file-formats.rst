@@ -1233,6 +1233,11 @@ PSD
 Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
 
+SUN
+^^^
+
+Pillow identifies and reads Sun raster files.
+
 WAL
 ^^^
 
@@ -1247,13 +1252,13 @@ this format.
 By default, a Quake2 standard palette is attached to the texture. To override
 the palette, use the putpalette method.
 
-WMF
-^^^
+WMF, EMF
+^^^^^^^^
 
-Pillow can identify WMF files.
+Pillow can identify WMF and EMF files.
 
-On Windows, it can read WMF files. By default, it will load the image at 72
-dpi. To load it at another resolution:
+On Windows, it can read WMF and EMF files. By default, it will load the image
+at 72 dpi. To load it at another resolution:
 
 .. code-block:: python
 
@@ -1263,7 +1268,8 @@ dpi. To load it at another resolution:
         im.load(dpi=144)
 
 To add other read or write support, use
-:py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF handler.
+:py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
+handler.
 
 .. code-block:: python
 
