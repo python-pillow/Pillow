@@ -42,5 +42,10 @@ repos:
       - id: check-merge-conflict
       - id: check-yaml
 
+  - repo: https://github.com/sphinx-contrib/sphinx-lint
+    rev: v0.6
+    hooks:
+      - id: sphinx-lint
+
 ci:
-  autoupdate_schedule: quarterly
+  autoupdate_schedule: monthly
