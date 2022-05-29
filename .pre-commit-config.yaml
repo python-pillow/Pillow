@@ -43,4 +43,4 @@ repos:
       - id: check-yaml
 
 ci:
-  autoupdate_schedule: quarterly
+  autoupdate_schedule: monthly
