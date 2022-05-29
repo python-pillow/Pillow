@@ -44,7 +44,6 @@ behaviour of ``build_prepare.py``:
   ``EXECUTABLE`` defaults to ``python.exe``.
 * ``ARCHITECTURE`` is used to select a ``x86``, ``x64`` or ``ARM64`` build.
   By default, uses same architecture as the version of Python used to run ``build_prepare.py``.
-  is used.
 * ``PILLOW_BUILD`` can be used to override the ``winbuild\build`` directory
   path, used to store generated build scripts and compiled libraries.
   **Warning:** This directory is wiped when ``build_prepare.py`` is run.
