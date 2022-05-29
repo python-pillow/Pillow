@@ -42,7 +42,7 @@ behaviour of ``build_prepare.py``:
   If ``PYTHON`` is unset, the version of Python used to run
   ``build_prepare.py`` will be used. If only ``PYTHON`` is set,
   ``EXECUTABLE`` defaults to ``python.exe``.
-* ``ARCHITECTURE`` is used to select a ``x86``, ``x64`` or ``ARM64``build.
+* ``ARCHITECTURE`` is used to select a ``x86``, ``x64`` or ``ARM64`` build.
   By default, uses same architecture as the version of Python used to run ``build_prepare.py``.
   is used.
 * ``PILLOW_BUILD`` can be used to override the ``winbuild\build`` directory
