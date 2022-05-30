@@ -33,7 +33,7 @@
 import math
 import numbers
 
-from . import Image, ImageColor, ImageFont
+from . import Image, ImageColor
 
 """
 A simple 2D drawing interface for PIL images.
@@ -667,6 +667,8 @@ class ImageDraw:
 
         if font is None:
             font = self.getfont()
+        from . import ImageFont
+
         if not isinstance(font, ImageFont.FreeTypeFont):
             raise ValueError("Only supported for TrueType fonts")
         mode = "RGBA" if embedded_color else self.fontmode
