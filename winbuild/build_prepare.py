@@ -89,7 +89,7 @@ def cmd_msbuild(
     )
 
 
-SF_MIRROR = "https://iweb.dl.sourceforge.net"
+SF_PROJECTS = "https://sourceforge.net/projects"
 
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
@@ -107,7 +107,7 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.3/libjpeg-turbo-2.1.3.tar.gz",
+        "url": SF_PROJECTS + "/libjpeg-turbo/files/2.1.3/libjpeg-turbo-2.1.3.tar.gz/download",
         "filename": "libjpeg-turbo-2.1.3.tar.gz",
         "dir": "libjpeg-turbo-2.1.3",
         "build": [
@@ -172,7 +172,7 @@ deps = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libpng": {
-        "url": SF_MIRROR + "/project/libpng/libpng16/1.6.37/lpng1637.zip",
+        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.37/lpng1637.zip/download",
         "filename": "lpng1637.zip",
         "dir": "lpng1637",
         "build": [
@@ -221,7 +221,7 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.13/lcms2-2.13.1.tar.gz",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.13/lcms2-2.13.1.tar.gz/download",
         "filename": "lcms2-2.13.1.tar.gz",
         "dir": "lcms2-2.13.1",
         "patch": {
