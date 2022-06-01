@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Pad COLORMAP to 768 items when saving TIFF #6232
+  [radarhere]
+
+- Fix P -> PA conversion #6337
+  [RedShy, radarhere]
+
+- Once exif data is parsed, do not reload unless it changes #6335
+  [radarhere]
+
 - Only try to connect discontiguous corners at the end of edges #6303
   [radarhere]
 
