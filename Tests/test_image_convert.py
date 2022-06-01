@@ -222,6 +222,20 @@ def test_p_la():
     assert_image_similar(alpha, comparable, 5)
 
 
+def test_p2pa_alpha():
+    with Image.open("Tests/images/tiny.png") as im:
+        assert im.mode == "P"
+
+        im_pa = im.convert("PA")
+    assert im_pa.mode == "PA"
+
+    im_a = im_pa.getchannel("A")
+    for x in range(4):
+        alpha = 255 if x > 1 else 0
+        for y in range(4):
+            assert im_a.getpixel((x, y)) == alpha
+
+
 def test_matrix_illegal_conversion():
     # Arrange
     im = hopper("CMYK")
