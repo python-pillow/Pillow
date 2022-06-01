@@ -107,7 +107,8 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_PROJECTS + "/libjpeg-turbo/files/2.1.3/libjpeg-turbo-2.1.3.tar.gz/download",
+        "url": SF_PROJECTS
+        + "/libjpeg-turbo/files/2.1.3/libjpeg-turbo-2.1.3.tar.gz/download",
         "filename": "libjpeg-turbo-2.1.3.tar.gz",
         "dir": "libjpeg-turbo-2.1.3",
         "build": [
