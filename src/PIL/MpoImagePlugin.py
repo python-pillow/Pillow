@@ -82,6 +82,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2
             self.info["exif"] = ImageFile._safe_read(self.fp, n)
+            self._reload_exif()
 
             mptype = self.mpinfo[0xB002][frame]["Attribute"]["MPType"]
             if mptype.startswith("Large Thumbnail"):
@@ -90,6 +91,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
                     self._size = (exif[40962], exif[40963])
         elif "exif" in self.info:
             del self.info["exif"]
+            self._reload_exif()
 
         self.tile = [("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))]
         self.__frame = frame

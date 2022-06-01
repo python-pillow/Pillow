@@ -124,6 +124,15 @@ def test_parallax():
         assert exif.get_ifd(0x927C)[0xB211] == -3.125
 
 
+def test_reload_exif_after_seek():
+    with Image.open("Tests/images/sugarshack.mpo") as im:
+        exif = im.getexif()
+        del exif[296]
+
+        im.seek(1)
+        assert 296 in exif
+
+
 def test_mp():
     for test_file in test_files:
         with Image.open(test_file) as im:
