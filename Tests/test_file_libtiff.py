@@ -498,8 +498,8 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, compression="tiff_adobe_deflate")
         assert_image_equal_tofile(im, out)
 
-    def test_palette_save(self, tmp_path):
-        im = hopper("P")
+    @pytest.mark.parametrize("im", (hopper("P"), Image.new("P", (1, 1), "#000")))
+    def test_palette_save(self, im, tmp_path):
         out = str(tmp_path / "temp.tif")
 
         TiffImagePlugin.WRITE_LIBTIFF = True

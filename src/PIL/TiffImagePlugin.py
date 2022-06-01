@@ -1674,7 +1674,12 @@ def _save(im, fp, filename):
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB", "RGB;L")
-        ifd[COLORMAP] = tuple(v * 256 for v in lut)
+        colormap = []
+        colors = len(lut) // 3
+        for i in range(3):
+            colormap += [v * 256 for v in lut[colors * i : colors * (i + 1)]]
+            colormap += [0] * (256 - colors)
+        ifd[COLORMAP] = colormap
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     # aim for given strip size (64 KB by default) when using libtiff writer
