@@ -655,6 +655,20 @@ def test_polygon_1px_high():
     assert_image_equal_tofile(im, expected)
 
 
+def test_polygon_1px_high_translucent():
+    # Test drawing a translucent 1px high polygon
+    # Arrange
+    im = Image.new("RGB", (4, 3))
+    draw = ImageDraw.Draw(im, "RGBA")
+    expected = "Tests/images/imagedraw_polygon_1px_high_translucent.png"
+
+    # Act
+    draw.polygon([(1, 1), (1, 1), (3, 1), (3, 1)], (255, 0, 0, 127))
+
+    # Assert
+    assert_image_equal_tofile(im, expected)
+
+
 def test_polygon_translucent():
     # Arrange
     im = Image.new("RGB", (W, H))
