@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Fixed drawing translucent 1px high polygons #6278
+  [radarhere]
+
 - Pad COLORMAP to 768 items when saving TIFF #6232
   [radarhere]
 
