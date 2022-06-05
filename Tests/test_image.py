@@ -604,6 +604,15 @@ class TestImage:
         with Image.open("Tests/images/hopper.gif") as im:
             assert_image_equal(im, im.remap_palette(list(range(256))))
 
+        # Test identity transform with an RGBA palette
+        im = Image.new("P", (256, 1))
+        for x in range(256):
+            im.putpixel((x, 0), x)
+        im.putpalette(list(range(256)) * 4, "RGBA")
+        im_remapped = im.remap_palette(list(range(256)))
+        assert_image_equal(im, im_remapped)
+        assert im.palette.palette == im_remapped.palette.palette
+
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
