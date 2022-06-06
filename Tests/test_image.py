@@ -840,6 +840,35 @@ class TestImage:
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
 
+    def test_apply_transparency(self):
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 0, 0, 1, 1, 1))
+        assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
+
+        # Test that no transformation is applied without transparency
+        im.apply_transparency()
+        assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
+
+        # Test that a transparency index is applied
+        im.info["transparency"] = 0
+        im.apply_transparency()
+        assert "transparency" not in im.info
+        assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 255): 1}
+
+        # Test that existing transparency is kept
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 0, 0, 255, 1, 1, 1, 128), "RGBA")
+        im.info["transparency"] = 0
+        im.apply_transparency()
+        assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 128): 1}
+
+        # Test that transparency bytes are applied
+        with Image.open("Tests/images/pil123p.png") as im:
+            assert isinstance(im.info["transparency"], bytes)
+            assert im.palette.colors[(27, 35, 6)] == 24
+            im.apply_transparency()
+            assert im.palette.colors[(27, 35, 6, 214)] == 24
+
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):
             assert hopper().category == 0
