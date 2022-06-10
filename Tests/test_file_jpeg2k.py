@@ -298,6 +298,11 @@ def test_16bit_jp2_roundtrips():
         assert_image_equal(im, jp2)
 
 
+def test_issue_6194():
+    with Image.open("Tests/images/issue_6194.j2k") as im:
+        assert im.getpixel((5, 5)) == 31
+
+
 def test_unbound_local():
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
     with pytest.raises(OSError):
