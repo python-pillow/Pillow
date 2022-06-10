@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Fixed behaviour change from endian fix #6197
+  [radarhere]
+
+- Allow remapping P images with RGBA palettes #6350
+  [radarhere]
+
 - Fixed drawing translucent 1px high polygons #6278
   [radarhere]
 
