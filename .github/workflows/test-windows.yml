@@ -41,10 +41,10 @@ jobs:
         cache-dependency-path: ".github/workflows/test-windows.yml"
 
     - name: Print build system information
-      run: python .github/workflows/system-info.py
+      run: python3 .github/workflows/system-info.py
 
-    - name: python -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
-      run: python -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
+    - name: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
+      run: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
 
     - name: Install dependencies
       id: install
