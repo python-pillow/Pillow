@@ -1449,6 +1449,28 @@ class Image:
             rawmode = mode
         return list(self.im.getpalette(mode, rawmode))
 
+    def apply_transparency(self):
+        """
+        If a P mode image has a "transparency" key in the info dictionary,
+        remove the key and apply the transparency to the palette instead.
+        """
+        if self.mode != "P" or "transparency" not in self.info:
+            return
+
+        from . import ImagePalette
+
+        palette = self.getpalette("RGBA")
+        transparency = self.info["transparency"]
+        if isinstance(transparency, bytes):
+            for i, alpha in enumerate(transparency):
+                palette[i * 4 + 3] = alpha
+        else:
+            palette[transparency * 4 + 3] = 0
+        self.palette = ImagePalette.ImagePalette("RGBA", bytes(palette))
+        self.palette.dirty = 1
+
+        del self.info["transparency"]
+
     def getpixel(self, xy):
         """
         Returns the pixel value at a given position.
