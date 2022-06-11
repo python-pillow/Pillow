@@ -123,6 +123,7 @@ methods. Unless otherwise stated, all methods return a new instance of the
 
 
 .. automethod:: PIL.Image.Image.alpha_composite
+.. automethod:: PIL.Image.Image.apply_transparency
 .. automethod:: PIL.Image.Image.convert
 
 The following example converts an RGB image (linearly calibrated according to

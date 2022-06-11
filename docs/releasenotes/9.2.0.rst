@@ -57,10 +57,13 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+Image.apply_transparency
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Added :py:meth:`~PIL.Image.Image.apply_transparency`, a method to take a P mode image
+with "transparency" in ``im.info``, and apply the transparency to the palette instead.
+The image's palette mode will become "RGBA", and "transparency" will be removed from
+``im.info``.
 
 Security
 ========
