@@ -68,6 +68,13 @@ class TestFileJpeg:
             assert im.format == "JPEG"
             assert im.get_format_mimetype() == "image/jpeg"
 
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero(self, size, tmp_path):
+        f = str(tmp_path / "temp.jpg")
+        im = Image.new("RGB", size)
+        with pytest.raises(ValueError):
+            im.save(f)
+
     def test_app(self):
         # Test APP/COM reader (@PIL135)
         with Image.open(TEST_FILE) as im:
@@ -736,7 +743,7 @@ class TestFileJpeg:
 
             # Act / Assert
             # "When the image resolution is unknown, 72 [dpi] is designated."
-            # http://www.exiv2.org/tags.html
+            # https://exiv2.org/tags.html
             assert im.info.get("dpi") == (72, 72)
 
     def test_invalid_exif(self):

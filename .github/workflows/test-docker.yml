@@ -11,9 +11,9 @@ jobs:
       matrix:
         docker: [
           # Run slower jobs first to give them a headstart and reduce waiting time
-          ubuntu-20.04-focal-arm64v8,
-          ubuntu-20.04-focal-ppc64le,
-          ubuntu-20.04-focal-s390x,
+          ubuntu-22.04-jammy-arm64v8,
+          ubuntu-22.04-jammy-ppc64le,
+          ubuntu-22.04-jammy-s390x,
           # Then run the remainder
           alpine,
           amazon-2-amd64,
@@ -23,19 +23,20 @@ jobs:
           centos-stream-9-amd64,
           debian-10-buster-x86,
           debian-11-bullseye-x86,
-          fedora-34-amd64,
           fedora-35-amd64,
+          fedora-36-amd64,
           gentoo,
           ubuntu-18.04-bionic-amd64,
           ubuntu-20.04-focal-amd64,
+          ubuntu-22.04-jammy-amd64,
         ]
         dockerTag: [main]
         include:
-          - docker: "ubuntu-20.04-focal-arm64v8"
+          - docker: "ubuntu-22.04-jammy-arm64v8"
             qemu-arch: "aarch64"
-          - docker: "ubuntu-20.04-focal-ppc64le"
+          - docker: "ubuntu-22.04-jammy-ppc64le"
             qemu-arch: "ppc64le"
-          - docker: "ubuntu-20.04-focal-s390x"
+          - docker: "ubuntu-22.04-jammy-s390x"
             qemu-arch: "s390x"
 
     name: ${{ matrix.docker }}

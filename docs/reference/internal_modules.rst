@@ -9,6 +9,14 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
+:mod:`~PIL._deprecate` Module
+-----------------------------
+
+.. automodule:: PIL._deprecate
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`~PIL._tkinter_finder` Module
 ----------------------------------
 

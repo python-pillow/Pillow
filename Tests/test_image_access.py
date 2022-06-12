@@ -1,4 +1,3 @@
-import ctypes
 import os
 import subprocess
 import sys
@@ -154,14 +153,17 @@ class TestImageGetPixel(AccessTest):
 
         # Check 0
         im = Image.new(mode, (0, 0), None)
-        with pytest.raises(IndexError):
+        assert im.load() is not None
+
+        error = ValueError if self._need_cffi_access else IndexError
+        with pytest.raises(error):
             im.putpixel((0, 0), c)
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.getpixel((0, 0))
         # Check 0 negative index
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.putpixel((-1, -1), c)
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.getpixel((-1, -1))
 
         # check initial color
@@ -176,10 +178,10 @@ class TestImageGetPixel(AccessTest):
 
         # Check 0
         im = Image.new(mode, (0, 0), c)
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.getpixel((0, 0))
         # Check 0 negative index
-        with pytest.raises(IndexError):
+        with pytest.raises(error):
             im.getpixel((-1, -1))
 
     def test_basic(self):
@@ -401,6 +403,8 @@ class TestEmbeddable:
         "not from shell",
     )
     def test_embeddable(self):
+        import ctypes
+
         with open("embed_pil.c", "w") as fh:
             fh.write(
                 """

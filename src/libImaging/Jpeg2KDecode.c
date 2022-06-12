@@ -180,11 +180,13 @@ j2ku_gray_i(
         case 2:
             for (y = 0; y < h; ++y) {
                 const UINT16 *data = (const UINT16 *)&tiledata[2 * y * w];
-                UINT8 *row = (UINT8 *)im->image[y0 + y] + x0;
+                UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
                 for (x = 0; x < w; ++x) {
                     UINT16 pixel = j2ku_shift(offset + *data++, shift);
+                    #ifdef WORDS_BIGENDIAN
+                        pixel = (pixel >> 8) | (pixel << 8);
+                    #endif
                     *row++ = pixel;
-                    *row++ = pixel >> 8;
                 }
             }
             break;

@@ -175,6 +175,7 @@ OPEN_INFO = {
     (II, 1, (1,), 1, (12,), ()): ("I;16", "I;12"),
     (II, 1, (1,), 1, (16,), ()): ("I;16", "I;16"),
     (MM, 1, (1,), 1, (16,), ()): ("I;16B", "I;16B"),
+    (II, 1, (1,), 2, (16,), ()): ("I;16", "I;16R"),
     (II, 1, (2,), 1, (16,), ()): ("I", "I;16S"),
     (MM, 1, (2,), 1, (16,), ()): ("I", "I;16BS"),
     (II, 0, (3,), 1, (32,), ()): ("F", "F;32F"),
@@ -260,6 +261,8 @@ PREFIXES = [
     b"II\x2A\x00",  # Valid TIFF header with little-endian byte order
     b"MM\x2A\x00",  # Invalid TIFF header, assume big-endian
     b"II\x00\x2A",  # Invalid TIFF header, assume little-endian
+    b"MM\x00\x2B",  # BigTIFF with big-endian byte order
+    b"II\x2B\x00",  # BigTIFF with little-endian byte order
 ]
 
 
@@ -335,12 +338,12 @@ class IFDRational(Rational):
             self._val = Fraction(value, denominator)
 
     @property
-    def numerator(a):
-        return a._numerator
+    def numerator(self):
+        return self._numerator
 
     @property
-    def denominator(a):
-        return a._denominator
+    def denominator(self):
+        return self._denominator
 
     def limit_rational(self, max_denominator):
         """
@@ -350,10 +353,10 @@ class IFDRational(Rational):
         """
 
         if self.denominator == 0:
-            return (self.numerator, self.denominator)
+            return self.numerator, self.denominator
 
         f = self._val.limit_denominator(max_denominator)
-        return (f.numerator, f.denominator)
+        return f.numerator, f.denominator
 
     def __repr__(self):
         return str(float(self._val))
@@ -502,11 +505,14 @@ class ImageFileDirectory_v2(MutableMapping):
             self._endian = "<"
         else:
             raise SyntaxError("not a TIFF IFD")
+        self._bigtiff = ifh[2] == 43
         self.group = group
         self.tagtype = {}
         """ Dictionary of tag types """
         self.reset()
-        (self.next,) = self._unpack("L", ifh[4:])
+        (self.next,) = (
+            self._unpack("Q", ifh[8:]) if self._bigtiff else self._unpack("L", ifh[4:])
+        )
         self._legacy_api = False
 
     prefix = property(lambda self: self._prefix)
@@ -699,6 +705,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 (TiffTags.FLOAT, "f", "float"),
                 (TiffTags.DOUBLE, "d", "double"),
                 (TiffTags.IFD, "L", "long"),
+                (TiffTags.LONG8, "Q", "long8"),
             ],
         )
     )
@@ -776,8 +783,17 @@ class ImageFileDirectory_v2(MutableMapping):
         self._offset = fp.tell()
 
         try:
-            for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
-                tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
+            tag_count = (
+                self._unpack("Q", self._ensure_read(fp, 8))
+                if self._bigtiff
+                else self._unpack("H", self._ensure_read(fp, 2))
+            )[0]
+            for i in range(tag_count):
+                tag, typ, count, data = (
+                    self._unpack("HHQ8s", self._ensure_read(fp, 20))
+                    if self._bigtiff
+                    else self._unpack("HHL4s", self._ensure_read(fp, 12))
+                )
 
                 tagname = TiffTags.lookup(tag, self.group).name
                 typname = TYPES.get(typ, "unknown")
@@ -789,9 +805,9 @@ class ImageFileDirectory_v2(MutableMapping):
                     logger.debug(msg + f" - unsupported type {typ}")
                     continue  # ignore unsupported type
                 size = count * unit_size
-                if size > 4:
+                if size > (8 if self._bigtiff else 4):
                     here = fp.tell()
-                    (offset,) = self._unpack("L", data)
+                    (offset,) = self._unpack("Q" if self._bigtiff else "L", data)
                     msg += f" Tag Location: {here} - Data Location: {offset}"
                     fp.seek(offset)
                     data = ImageFile._safe_read(fp, size)
@@ -820,7 +836,11 @@ class ImageFileDirectory_v2(MutableMapping):
                 )
                 logger.debug(msg)
 
-            (self.next,) = self._unpack("L", self._ensure_read(fp, 4))
+            (self.next,) = (
+                self._unpack("Q", self._ensure_read(fp, 8))
+                if self._bigtiff
+                else self._unpack("L", self._ensure_read(fp, 4))
+            )
         except OSError as msg:
             warnings.warn(str(msg))
             return
@@ -1042,6 +1062,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
         # Header
         ifh = self.fp.read(8)
+        if ifh[2] == 43:
+            ifh += self.fp.read(8)
 
         self.tag_v2 = ImageFileDirectory_v2(ifh)
 
@@ -1051,7 +1073,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next
         self.__frame = -1
-        self.__fp = self.fp
+        self._fp = self.fp
         self._frame_pos = []
         self._n_frames = None
 
@@ -1084,7 +1106,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.im = Image.core.new(self.mode, self.size)
 
     def _seek(self, frame):
-        self.fp = self.__fp
+        self.fp = self._fp
 
         # reset buffered io handle in case fp
         # was passed to libtiff, invalidating the buffer
@@ -1114,6 +1136,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
+        self._reload_exif()
         # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
         self.__frame = frame
@@ -1314,14 +1337,14 @@ class TiffImageFile(ImageFile.ImageFile):
 
         logger.debug(f"- size: {self.size}")
 
-        sampleFormat = self.tag_v2.get(SAMPLEFORMAT, (1,))
-        if len(sampleFormat) > 1 and max(sampleFormat) == min(sampleFormat) == 1:
+        sample_format = self.tag_v2.get(SAMPLEFORMAT, (1,))
+        if len(sample_format) > 1 and max(sample_format) == min(sample_format) == 1:
             # SAMPLEFORMAT is properly per band, so an RGB image will
             # be (1,1,1).  But, we don't support per band pixel types,
             # and anything more than one band is a uint8. So, just
             # take the first element. Revisit this if adding support
             # for more exotic images.
-            sampleFormat = (1,)
+            sample_format = (1,)
 
         bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
         extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
@@ -1333,27 +1356,27 @@ class TiffImageFile(ImageFile.ImageFile):
             bps_count = 1
         bps_count += len(extra_tuple)
         bps_actual_count = len(bps_tuple)
-        if bps_count < bps_actual_count:
-            # If a file has more values in bps_tuple than expected,
-            # remove the excess.
-            bps_tuple = bps_tuple[:bps_count]
-        elif bps_count > bps_actual_count and bps_actual_count == 1:
-            # If a file has only one value in bps_tuple, when it should have more,
-            # presume it is the same number of bits for all of the samples.
-            bps_tuple = bps_tuple * bps_count
-
-        samplesPerPixel = self.tag_v2.get(
+        samples_per_pixel = self.tag_v2.get(
             SAMPLESPERPIXEL,
             3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
         )
-        if len(bps_tuple) != samplesPerPixel:
+        if samples_per_pixel < bps_actual_count:
+            # If a file has more values in bps_tuple than expected,
+            # remove the excess.
+            bps_tuple = bps_tuple[:samples_per_pixel]
+        elif samples_per_pixel > bps_actual_count and bps_actual_count == 1:
+            # If a file has only one value in bps_tuple, when it should have more,
+            # presume it is the same number of bits for all of the samples.
+            bps_tuple = bps_tuple * samples_per_pixel
+
+        if len(bps_tuple) != samples_per_pixel:
             raise SyntaxError("unknown data organization")
 
         # mode: check photometric interpretation and bits per pixel
         key = (
             self.tag_v2.prefix,
             photo,
-            sampleFormat,
+            sample_format,
             fillorder,
             bps_tuple,
             extra_tuple,
@@ -1493,15 +1516,6 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self._tile_orientation = self.tag_v2.get(0x0112)
 
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
-
 
 #
 # --------------------------------------------------------------------
@@ -1546,7 +1560,13 @@ def _save(im, fp, filename):
 
     encoderinfo = im.encoderinfo
     encoderconfig = im.encoderconfig
-    compression = encoderinfo.get("compression", im.info.get("compression"))
+    try:
+        compression = encoderinfo["compression"]
+    except KeyError:
+        compression = im.info.get("compression")
+        if isinstance(compression, int):
+            # compression value may be from BMP. Ignore it
+            compression = None
     if compression is None:
         compression = "raw"
     elif compression == "tiff_jpeg":
@@ -1558,7 +1578,7 @@ def _save(im, fp, filename):
     libtiff = WRITE_LIBTIFF or compression != "raw"
 
     # required for color libtiff images
-    ifd[PLANAR_CONFIGURATION] = getattr(im, "_planar_configuration", 1)
+    ifd[PLANAR_CONFIGURATION] = 1
 
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
@@ -1654,7 +1674,12 @@ def _save(im, fp, filename):
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB", "RGB;L")
-        ifd[COLORMAP] = tuple(v * 256 for v in lut)
+        colormap = []
+        colors = len(lut) // 3
+        for i in range(3):
+            colormap += [v * 256 for v in lut[colors * i : colors * (i + 1)]]
+            colormap += [0] * (256 - colors)
+        ifd[COLORMAP] = colormap
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     # aim for given strip size (64 KB by default) when using libtiff writer
@@ -1726,9 +1751,8 @@ def _save(im, fp, filename):
             SUBIFD,
         ]
 
-        atts = {}
         # bits per sample is a single short in the tiff directory, not a list.
-        atts[BITSPERSAMPLE] = bits[0]
+        atts = {BITSPERSAMPLE: bits[0]}
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
@@ -1858,16 +1882,16 @@ class AppendingTiffWriter:
         self.whereToWriteNewIFDOffset = None
         self.offsetOfNewPage = 0
 
-        self.IIMM = IIMM = self.f.read(4)
-        if not IIMM:
+        self.IIMM = iimm = self.f.read(4)
+        if not iimm:
             # empty file - first page
             self.isFirst = True
             return
 
         self.isFirst = False
-        if IIMM == b"II\x2a\x00":
+        if iimm == b"II\x2a\x00":
             self.setEndian("<")
-        elif IIMM == b"MM\x00\x2a":
+        elif iimm == b"MM\x00\x2a":
             self.setEndian(">")
         else:
             raise RuntimeError("Invalid TIFF file header")
@@ -1882,20 +1906,20 @@ class AppendingTiffWriter:
         # fix offsets
         self.f.seek(self.offsetOfNewPage)
 
-        IIMM = self.f.read(4)
-        if not IIMM:
+        iimm = self.f.read(4)
+        if not iimm:
             # raise RuntimeError("nothing written into new page")
             # Make it easy to finish a frame without committing to a new one.
             return
 
-        if IIMM != self.IIMM:
+        if iimm != self.IIMM:
             raise RuntimeError("IIMM of new page doesn't match IIMM of first page")
 
-        IFDoffset = self.readLong()
-        IFDoffset += self.offsetOfNewPage
+        ifd_offset = self.readLong()
+        ifd_offset += self.offsetOfNewPage
         self.f.seek(self.whereToWriteNewIFDOffset)
-        self.writeLong(IFDoffset)
-        self.f.seek(IFDoffset)
+        self.writeLong(ifd_offset)
+        self.f.seek(ifd_offset)
         self.fixIFD()
 
     def newFrame(self):
@@ -1926,9 +1950,9 @@ class AppendingTiffWriter:
         pos = self.f.tell()
 
         # pad to 16 byte boundary
-        padBytes = 16 - pos % 16
-        if 0 < padBytes < 16:
-            self.f.write(bytes(padBytes))
+        pad_bytes = 16 - pos % 16
+        if 0 < pad_bytes < 16:
+            self.f.write(bytes(pad_bytes))
         self.offsetOfNewPage = self.f.tell()
 
     def setEndian(self, endian):
@@ -1939,14 +1963,14 @@ class AppendingTiffWriter:
 
     def skipIFDs(self):
         while True:
-            IFDoffset = self.readLong()
-            if IFDoffset == 0:
+            ifd_offset = self.readLong()
+            if ifd_offset == 0:
                 self.whereToWriteNewIFDOffset = self.f.tell() - 4
                 break
 
-            self.f.seek(IFDoffset)
-            numTags = self.readShort()
-            self.f.seek(numTags * 12, os.SEEK_CUR)
+            self.f.seek(ifd_offset)
+            num_tags = self.readShort()
+            self.f.seek(num_tags * 12, os.SEEK_CUR)
 
     def write(self, data):
         return self.f.write(data)
@@ -1961,68 +1985,68 @@ class AppendingTiffWriter:
 
     def rewriteLastShortToLong(self, value):
         self.f.seek(-2, os.SEEK_CUR)
-        bytesWritten = self.f.write(struct.pack(self.longFmt, value))
-        if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
+        bytes_written = self.f.write(struct.pack(self.longFmt, value))
+        if bytes_written is not None and bytes_written != 4:
+            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
 
     def rewriteLastShort(self, value):
         self.f.seek(-2, os.SEEK_CUR)
-        bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
-        if bytesWritten is not None and bytesWritten != 2:
-            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 2")
+        bytes_written = self.f.write(struct.pack(self.shortFmt, value))
+        if bytes_written is not None and bytes_written != 2:
+            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 2")
 
     def rewriteLastLong(self, value):
         self.f.seek(-4, os.SEEK_CUR)
-        bytesWritten = self.f.write(struct.pack(self.longFmt, value))
-        if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
+        bytes_written = self.f.write(struct.pack(self.longFmt, value))
+        if bytes_written is not None and bytes_written != 4:
+            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
 
     def writeShort(self, value):
-        bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
-        if bytesWritten is not None and bytesWritten != 2:
-            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 2")
+        bytes_written = self.f.write(struct.pack(self.shortFmt, value))
+        if bytes_written is not None and bytes_written != 2:
+            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 2")
 
     def writeLong(self, value):
-        bytesWritten = self.f.write(struct.pack(self.longFmt, value))
-        if bytesWritten is not None and bytesWritten != 4:
-            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
+        bytes_written = self.f.write(struct.pack(self.longFmt, value))
+        if bytes_written is not None and bytes_written != 4:
+            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
 
     def close(self):
         self.finalize()
         self.f.close()
 
     def fixIFD(self):
-        numTags = self.readShort()
+        num_tags = self.readShort()
 
-        for i in range(numTags):
-            tag, fieldType, count = struct.unpack(self.tagFormat, self.f.read(8))
+        for i in range(num_tags):
+            tag, field_type, count = struct.unpack(self.tagFormat, self.f.read(8))
 
-            fieldSize = self.fieldSizes[fieldType]
-            totalSize = fieldSize * count
-            isLocal = totalSize <= 4
-            if not isLocal:
+            field_size = self.fieldSizes[field_type]
+            total_size = field_size * count
+            is_local = total_size <= 4
+            if not is_local:
                 offset = self.readLong()
                 offset += self.offsetOfNewPage
                 self.rewriteLastLong(offset)
 
             if tag in self.Tags:
-                curPos = self.f.tell()
+                cur_pos = self.f.tell()
 
-                if isLocal:
+                if is_local:
                     self.fixOffsets(
-                        count, isShort=(fieldSize == 2), isLong=(fieldSize == 4)
+                        count, isShort=(field_size == 2), isLong=(field_size == 4)
                     )
-                    self.f.seek(curPos + 4)
+                    self.f.seek(cur_pos + 4)
                 else:
                     self.f.seek(offset)
                     self.fixOffsets(
-                        count, isShort=(fieldSize == 2), isLong=(fieldSize == 4)
+                        count, isShort=(field_size == 2), isLong=(field_size == 4)
                     )
-                    self.f.seek(curPos)
+                    self.f.seek(cur_pos)
 
-                offset = curPos = None
+                offset = cur_pos = None
 
-            elif isLocal:
+            elif is_local:
                 # skip the locally stored value that is not an offset
                 self.f.seek(4, os.SEEK_CUR)
 

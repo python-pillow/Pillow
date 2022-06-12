@@ -33,7 +33,7 @@ import struct
 import sys
 
 from . import Image
-from ._util import isPath
+from ._util import is_path
 
 MAXBLOCK = 65536
 
@@ -99,7 +99,7 @@ class ImageFile(Image.Image):
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
 
-        if isPath(fp):
+        if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp
@@ -123,7 +123,7 @@ class ImageFile(Image.Image):
             ) as v:
                 raise SyntaxError(v) from v
 
-            if not self.mode or self.size[0] <= 0:
+            if not self.mode or self.size[0] <= 0 or self.size[1] <= 0:
                 raise SyntaxError("not identified by this driver")
         except BaseException:
             # close the file only if we have opened it this constructor
@@ -223,15 +223,15 @@ class ImageFile(Image.Image):
                 )
             ]
             for decoder_name, extents, offset, args in self.tile:
+                seek(offset)
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
                 )
                 try:
-                    seek(offset)
                     decoder.setimage(self.im, extents)
                     if decoder.pulls_fd:
                         decoder.setfd(self.fp)
-                        status, err_code = decoder.decode(b"")
+                        err_code = decoder.decode(b"")[1]
                     else:
                         b = prefix
                         while True:
@@ -499,40 +499,33 @@ def _save(im, fp, tile, bufsize=0):
     try:
         fh = fp.fileno()
         fp.flush()
-    except (AttributeError, io.UnsupportedOperation) as exc:
-        # compress to Python file-compatible object
-        for e, b, o, a in tile:
-            e = Image._getencoder(im.mode, e, a, im.encoderconfig)
-            if o > 0:
-                fp.seek(o)
-            e.setimage(im.im, b)
-            if e.pushes_fd:
-                e.setfd(fp)
-                l, s = e.encode_to_pyfd()
+        exc = None
+    except (AttributeError, io.UnsupportedOperation) as e:
+        exc = e
+    for e, b, o, a in tile:
+        if o > 0:
+            fp.seek(o)
+        encoder = Image._getencoder(im.mode, e, a, im.encoderconfig)
+        try:
+            encoder.setimage(im.im, b)
+            if encoder.pushes_fd:
+                encoder.setfd(fp)
+                l, s = encoder.encode_to_pyfd()
             else:
-                while True:
-                    l, s, d = e.encode(bufsize)
-                    fp.write(d)
-                    if s:
-                        break
+                if exc:
+                    # compress to Python file-compatible object
+                    while True:
+                        l, s, d = encoder.encode(bufsize)
+                        fp.write(d)
+                        if s:
+                            break
+                else:
+                    # slight speedup: compress to real file object
+                    s = encoder.encode_to_file(fh, bufsize)
             if s < 0:
                 raise OSError(f"encoder error {s} when writing image file") from exc
-            e.cleanup()
-    else:
-        # slight speedup: compress to real file object
-        for e, b, o, a in tile:
-            e = Image._getencoder(im.mode, e, a, im.encoderconfig)
-            if o > 0:
-                fp.seek(o)
-            e.setimage(im.im, b)
-            if e.pushes_fd:
-                e.setfd(fp)
-                l, s = e.encode_to_pyfd()
-            else:
-                s = e.encode_to_file(fh, bufsize)
-            if s < 0:
-                raise OSError(f"encoder error {s} when writing image file")
-            e.cleanup()
+        finally:
+            encoder.cleanup()
     if hasattr(fp, "flush"):
         fp.flush()
 
@@ -578,7 +571,7 @@ class PyCodecState:
         self.yoff = 0
 
     def extents(self):
-        return (self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize)
+        return self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize
 
 
 class PyCodec:
@@ -671,7 +664,7 @@ class PyDecoder(PyCodec):
 
         :param buffer: A bytes object with the data to be decoded.
         :returns: A tuple of ``(bytes consumed, errcode)``.
-            If finished with decoding return 0 for the bytes consumed.
+            If finished with decoding return -1 for the bytes consumed.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """
         raise NotImplementedError()
@@ -688,7 +681,7 @@ class PyDecoder(PyCodec):
 
         if not rawmode:
             rawmode = self.mode
-        d = Image._getdecoder(self.mode, "raw", (rawmode))
+        d = Image._getdecoder(self.mode, "raw", rawmode)
         d.setimage(self.im, self.state.extents())
         s = d.decode(data)
 
@@ -725,6 +718,9 @@ class PyEncoder(PyCodec):
 
     def encode_to_pyfd(self):
         """
+        If ``pushes_fd`` is ``True``, then this method will be used,
+        and ``encode()`` will only be called once.
+
         :returns: A tuple of ``(bytes consumed, errcode)``.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """

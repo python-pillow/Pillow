@@ -16,6 +16,9 @@
 
 
 from . import Image, ImageFile
+from ._binary import i16be as i16
+from ._binary import o8
+from ._binary import o32le as o32
 
 #
 # --------------------------------------------------------------------
@@ -83,7 +86,7 @@ class PpmImageFile(ImageFile.ImageFile):
             # Token was not even 1 byte
             raise ValueError("Reached EOF while reading header")
         elif len(token) > 10:
-            raise ValueError(f"Token too long in file header: {token}")
+            raise ValueError(f"Token too long in file header: {token.decode()}")
         return token
 
     def _open(self):
@@ -101,6 +104,7 @@ class PpmImageFile(ImageFile.ImageFile):
             self.custom_mimetype = "image/x-portable-pixmap"
 
         maxval = None
+        decoder_name = "raw"
         for ix in range(3):
             token = int(self._read_token())
             if ix == 0:  # token is the x size
@@ -115,17 +119,19 @@ class PpmImageFile(ImageFile.ImageFile):
                     self.mode = rawmode = mode
             elif ix == 2:  # token is maxval
                 maxval = token
-                if maxval > 255:
-                    if not mode == "L":
-                        raise ValueError(f"Too many colors for band: {maxval}")
-                    if maxval < 2**16:
-                        self.mode = "I"
-                        rawmode = "I;16B"
-                    else:
-                        self.mode = "I"
-                        rawmode = "I;32B"
+                if not 0 < maxval < 65536:
+                    raise ValueError(
+                        "maxval must be greater than 0 and less than 65536"
+                    )
+                if maxval > 255 and mode == "L":
+                    self.mode = "I"
 
-        decoder_name = "raw"
+                # If maxval matches a bit depth, use the raw decoder directly
+                if maxval == 65535 and mode == "L":
+                    rawmode = "I;16B"
+                elif maxval != 255:
+                    decoder_name = "ppm"
+
         if magic_number in (b"P1", b"P2", b"P3"):
             decoder_name = "ppm_plain"
         args = (rawmode, 0, 1) if decoder_name == "raw" else (rawmode, maxval)
@@ -273,6 +279,32 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         return -1, 0
 
 
+class PpmDecoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer):
+        data = bytearray()
+        maxval = min(self.args[-1], 65535)
+        in_byte_count = 1 if maxval < 256 else 2
+        out_byte_count = 4 if self.mode == "I" else 1
+        out_max = 65535 if self.mode == "I" else 255
+        bands = Image.getmodebands(self.mode)
+        while len(data) < self.state.xsize * self.state.ysize * bands * out_byte_count:
+            pixels = self.fd.read(in_byte_count * bands)
+            if len(pixels) < in_byte_count * bands:
+                # eof
+                break
+            for b in range(bands):
+                value = (
+                    pixels[b] if in_byte_count == 1 else i16(pixels, b * in_byte_count)
+                )
+                value = min(out_max, round(value / maxval * out_max))
+                data += o32(value) if self.mode == "I" else o8(value)
+        rawmode = "I;32" if self.mode == "I" else self.mode
+        self.set_as_raw(bytes(data), (rawmode, 0, 1))
+        return -1, 0
+
+
 #
 # --------------------------------------------------------------------
 
@@ -283,26 +315,19 @@ def _save(im, fp, filename):
     elif im.mode == "L":
         rawmode, head = "L", b"P5"
     elif im.mode == "I":
-        if im.getextrema()[1] < 2**16:
-            rawmode, head = "I;16B", b"P5"
-        else:
-            rawmode, head = "I;32B", b"P5"
-    elif im.mode == "RGB":
-        rawmode, head = "RGB", b"P6"
-    elif im.mode == "RGBA":
+        rawmode, head = "I;16B", b"P5"
+    elif im.mode in ("RGB", "RGBA"):
         rawmode, head = "RGB", b"P6"
     else:
         raise OSError(f"cannot write mode {im.mode} as PPM")
-    fp.write(head + ("\n%d %d\n" % im.size).encode("ascii"))
+    fp.write(head + b"\n%d %d\n" % im.size)
     if head == b"P6":
         fp.write(b"255\n")
-    if head == b"P5":
+    elif head == b"P5":
         if rawmode == "L":
             fp.write(b"255\n")
-        elif rawmode == "I;16B":
+        else:
             fp.write(b"65535\n")
-        elif rawmode == "I;32B":
-            fp.write(b"2147483648\n")
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
     # ALTERNATIVE: save via builtin debug function
@@ -315,6 +340,8 @@ def _save(im, fp, filename):
 Image.register_decoder("ppm_plain", PpmPlainDecoder)
 Image.register_open(PpmImageFile.format, PpmImageFile, _accept)
 Image.register_save(PpmImageFile.format, _save)
+
+Image.register_decoder("ppm", PpmDecoder)
 
 Image.register_extensions(PpmImageFile.format, [".pbm", ".pgm", ".ppm", ".pnm"])
 

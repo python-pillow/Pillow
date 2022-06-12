@@ -7,8 +7,12 @@
 The :py:mod:`~PIL.PyAccess` module provides a CFFI/Python implementation of the :ref:`PixelAccess`. This implementation is far faster on PyPy than the PixelAccess version.
 
 .. note:: Accessing individual pixels is fairly slow. If you are
-           looping over all of the pixels in an image, there is likely
-           a faster way using other parts of the Pillow API.
+          looping over all of the pixels in an image, there is likely
+          a faster way using other parts of the Pillow API.
+
+          :mod:`~PIL.Image`, :mod:`~PIL.ImageChops` and :mod:`~PIL.ImageOps`
+          have methods for many standard operations. If you wish to perform
+          a custom mapping, check out :py:meth:`~PIL.Image.Image.point`.
 
 Example
 -------

@@ -2,7 +2,15 @@ from io import BytesIO
 
 import pytest
 
-from PIL import BmpImagePlugin, EpsImagePlugin, Image, ImageFile, _binary, features
+from PIL import (
+    BmpImagePlugin,
+    EpsImagePlugin,
+    Image,
+    ImageFile,
+    UnidentifiedImageError,
+    _binary,
+    features,
+)
 
 from .helper import (
     assert_image,
@@ -35,9 +43,9 @@ class TestImageFile:
 
             parser = ImageFile.Parser()
             parser.feed(data)
-            imOut = parser.close()
+            im_out = parser.close()
 
-            return im, imOut
+            return im, im_out
 
         assert_image_equal(*roundtrip("BMP"))
         im1, im2 = roundtrip("GIF")
@@ -200,6 +208,9 @@ class MockPyEncoder(ImageFile.PyEncoder):
     def encode(self, buffer):
         return 1, 1, b""
 
+    def cleanup(self):
+        self.cleanup_called = True
+
 
 xoff, yoff, xsize, ysize = 10, 20, 100, 100
 
@@ -327,10 +338,12 @@ class TestPyEncoder(CodecsTest):
         im = MockImageFile(buf)
 
         fp = BytesIO()
+        self.encoder.cleanup_called = False
         with pytest.raises(ValueError):
             ImageFile._save(
                 im, fp, [("MOCK", (xoff, yoff, -10, yoff + ysize), 0, "RGB")]
             )
+        assert self.encoder.cleanup_called
 
         with pytest.raises(ValueError):
             ImageFile._save(
@@ -372,3 +385,7 @@ class TestPyEncoder(CodecsTest):
 
         with pytest.raises(NotImplementedError):
             encoder.encode_to_file(None, None)
+
+    def test_zero_height(self):
+        with pytest.raises(UnidentifiedImageError):
+            Image.open("Tests/images/zero_height.j2k")

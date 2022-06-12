@@ -69,7 +69,7 @@ In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
 Constants
 ~~~~~~~~~
 
-.. deprecated:: 9.2.0
+.. deprecated:: 9.1.0
 
 A number of constants have been deprecated and will be removed in Pillow 10.0.0
 (2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
@@ -97,8 +97,8 @@ Deprecated                                             Use instead
 ``Image.TRANSPOSE``                                    ``Image.Transpose.TRANSPOSE``
 ``Image.TRANSVERSE``                                   ``Image.Transpose.TRANSVERSE``
 ``Image.BOX``                                          ``Image.Resampling.BOX``
-``Image.BILINEAR``                                     ``Image.Resampling.BILNEAR``
-``Image.LINEAR``                                       ``Image.Resampling.BILNEAR``
+``Image.BILINEAR``                                     ``Image.Resampling.BILINEAR``
+``Image.LINEAR``                                       ``Image.Resampling.BILINEAR``
 ``Image.HAMMING``                                      ``Image.Resampling.HAMMING``
 ``Image.BICUBIC``                                      ``Image.Resampling.BICUBIC``
 ``Image.CUBIC``                                        ``Image.Resampling.BICUBIC``
@@ -141,6 +141,42 @@ FitsStubImagePlugin
 The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be removed in
 Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
 :mod:`~PIL.FitsImagePlugin` instead.
+
+FreeTypeFont.getmask2 fill parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has been
+deprecated and will be removed in Pillow 10 (2023-07-01).
+
+PhotoImage.paste box parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+The ``box`` parameter is unused. It will be removed in Pillow 10.0.0 (2023-07-01).
+
+PyQt5 and PySide2
+~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+`Qt 5 reached end-of-life <https://www.qt.io/blog/qt-5.15-released>`_ on 2020-12-08 for
+open-source users (and will reach EOL on 2023-12-08 for commercial licence holders).
+
+Support for PyQt5 and PySide2 has been deprecated from ``ImageQt`` and will be removed
+in Pillow 10 (2023-07-01). Upgrade to
+`PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
+`PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
+
+Image.coerce_e
+~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+This undocumented method has been deprecated and will be removed in Pillow 10
+(2023-07-01).
 
 Removed features
 ----------------

@@ -4,9 +4,11 @@ on:
     - cron: "30 2 * * *"  # daily at 02:30 UTC
   push:
     paths:
+      - "Pipfile*"
       - ".github/workflows/tidelift.yml"
   pull_request:
     paths:
+      - "Pipfile*"
       - ".github/workflows/tidelift.yml"
   workflow_dispatch:
 

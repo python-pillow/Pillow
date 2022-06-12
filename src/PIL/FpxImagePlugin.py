@@ -22,7 +22,7 @@ from ._binary import i32le as i32
 # we map from colour field tuples to (mode, rawmode) descriptors
 MODES = {
     # opacity
-    (0x00007FFE): ("A", "L"),
+    (0x00007FFE,): ("A", "L"),
     # monochrome
     (0x00010000,): ("L", "L"),
     (0x00018000, 0x00017FFE): ("RGBA", "LA"),
@@ -162,7 +162,7 @@ class FpxImageFile(ImageFile.ImageFile):
                         "raw",
                         (x, y, x + xtile, y + ytile),
                         i32(s, i) + 28,
-                        (self.rawmode),
+                        (self.rawmode,),
                     )
                 )
 

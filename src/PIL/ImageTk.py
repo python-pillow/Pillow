@@ -29,6 +29,7 @@ import tkinter
 from io import BytesIO
 
 from . import Image
+from ._deprecate import deprecate
 
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
@@ -56,6 +57,33 @@ def _get_image_from_kw(kw):
         source = BytesIO(kw.pop("data"))
     if source:
         return Image.open(source)
+
+
+def _pyimagingtkcall(command, photo, id):
+    tk = photo.tk
+    try:
+        tk.call(command, photo, id)
+    except tkinter.TclError:
+        # activate Tkinter hook
+        # may raise an error if it cannot attach to Tkinter
+        from . import _imagingtk
+
+        try:
+            if hasattr(tk, "interp"):
+                # Required for PyPy, which always has CFFI installed
+                from cffi import FFI
+
+                ffi = FFI()
+
+                # PyPy is using an FFI CDATA element
+                # (Pdb) self.tk.interp
+                #  <cdata 'Tcl_Interp *' 0x3061b50>
+                _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)), 1)
+            else:
+                _imagingtk.tkinit(tk.interpaddr(), 1)
+        except AttributeError:
+            _imagingtk.tkinit(id(tk), 0)
+        tk.call(command, photo, id)
 
 
 # --------------------------------------------------------------------
@@ -156,10 +184,12 @@ class PhotoImage:
         :param im: A PIL image. The size must match the target region.  If the
                    mode does not match, the image is converted to the mode of
                    the bitmap image.
-        :param box: A 4-tuple defining the left, upper, right, and lower pixel
-                    coordinate. See :ref:`coordinate-system`. If None is given
-                    instead of a tuple, all of the image is assumed.
+        :param box: Deprecated. This parameter will be removed in Pillow 10
+                    (2023-07-01).
         """
+
+        if box is not None:
+            deprecate("The box parameter", 10, None)
 
         # convert to blittable
         im.load()
@@ -170,33 +200,7 @@ class PhotoImage:
             block = image.new_block(self.__mode, im.size)
             image.convert2(block, image)  # convert directly between buffers
 
-        tk = self.__photo.tk
-
-        try:
-            tk.call("PyImagingPhoto", self.__photo, block.id)
-        except tkinter.TclError:
-            # activate Tkinter hook
-            try:
-                from . import _imagingtk
-
-                try:
-                    if hasattr(tk, "interp"):
-                        # Required for PyPy, which always has CFFI installed
-                        from cffi import FFI
-
-                        ffi = FFI()
-
-                        # PyPy is using an FFI CDATA element
-                        # (Pdb) self.tk.interp
-                        #  <cdata 'Tcl_Interp *' 0x3061b50>
-                        _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)), 1)
-                    else:
-                        _imagingtk.tkinit(tk.interpaddr(), 1)
-                except AttributeError:
-                    _imagingtk.tkinit(id(tk), 0)
-                tk.call("PyImagingPhoto", self.__photo, block.id)
-            except (ImportError, AttributeError, tkinter.TclError):
-                raise  # configuration problem; cannot attach to Tkinter
+        _pyimagingtkcall("PyImagingPhoto", self.__photo, block.id)
 
 
 # --------------------------------------------------------------------
@@ -276,7 +280,7 @@ def getimage(photo):
     im = Image.new("RGBA", (photo.width(), photo.height()))
     block = im.im
 
-    photo.tk.call("PyImagingPhotoGet", photo, block.id)
+    _pyimagingtkcall("PyImagingPhotoGet", photo, block.id)
 
     return im
 

@@ -87,21 +87,21 @@ def _save(im, fp, filename, save_all=False):
         for append_im in append_images:
             append_im.encoderinfo = im.encoderinfo.copy()
             ims.append(append_im)
-    numberOfPages = 0
+    number_of_pages = 0
     image_refs = []
     page_refs = []
     contents_refs = []
     for im in ims:
-        im_numberOfPages = 1
+        im_number_of_pages = 1
         if save_all:
             try:
-                im_numberOfPages = im.n_frames
+                im_number_of_pages = im.n_frames
             except AttributeError:
                 # Image format does not have n_frames.
                 # It is a single frame image
                 pass
-        numberOfPages += im_numberOfPages
-        for i in range(im_numberOfPages):
+        number_of_pages += im_number_of_pages
+        for i in range(im_number_of_pages):
             image_refs.append(existing_pdf.next_object_id(0))
             page_refs.append(existing_pdf.next_object_id(0))
             contents_refs.append(existing_pdf.next_object_id(0))
@@ -111,9 +111,9 @@ def _save(im, fp, filename, save_all=False):
     # catalog and list of pages
     existing_pdf.write_catalog()
 
-    pageNumber = 0
-    for imSequence in ims:
-        im_pages = ImageSequence.Iterator(imSequence) if save_all else [imSequence]
+    page_number = 0
+    for im_sequence in ims:
+        im_pages = ImageSequence.Iterator(im_sequence) if save_all else [im_sequence]
         for im in im_pages:
             # FIXME: Should replace ASCIIHexDecode with RunLengthDecode
             # (packbits) or LZWDecode (tiff/lzw compression).  Note that
@@ -127,7 +127,6 @@ def _save(im, fp, filename, save_all=False):
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
-                bits = 1
             elif im.mode == "L":
                 filter = "DCTDecode"
                 # params = f"<< /Predictor 15 /Columns {width-2} >>"
@@ -177,7 +176,7 @@ def _save(im, fp, filename, save_all=False):
             width, height = im.size
 
             existing_pdf.write_obj(
-                image_refs[pageNumber],
+                image_refs[page_number],
                 stream=op.getvalue(),
                 Type=PdfParser.PdfName("XObject"),
                 Subtype=PdfParser.PdfName("Image"),
@@ -194,10 +193,10 @@ def _save(im, fp, filename, save_all=False):
             # page
 
             existing_pdf.write_page(
-                page_refs[pageNumber],
+                page_refs[page_number],
                 Resources=PdfParser.PdfDict(
                     ProcSet=[PdfParser.PdfName("PDF"), PdfParser.PdfName(procset)],
-                    XObject=PdfParser.PdfDict(image=image_refs[pageNumber]),
+                    XObject=PdfParser.PdfDict(image=image_refs[page_number]),
                 ),
                 MediaBox=[
                     0,
@@ -205,7 +204,7 @@ def _save(im, fp, filename, save_all=False):
                     width * 72.0 / resolution,
                     height * 72.0 / resolution,
                 ],
-                Contents=contents_refs[pageNumber],
+                Contents=contents_refs[page_number],
             )
 
             #
@@ -216,9 +215,9 @@ def _save(im, fp, filename, save_all=False):
                 height * 72.0 / resolution,
             )
 
-            existing_pdf.write_obj(contents_refs[pageNumber], stream=page_contents)
+            existing_pdf.write_obj(contents_refs[page_number], stream=page_contents)
 
-            pageNumber += 1
+            page_number += 1
 
     #
     # trailer

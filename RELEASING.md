@@ -24,13 +24,12 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  twine check dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
   ```bash
-  twine check dist/*
-  twine upload dist/Pillow-5.2.0*
+  python3 -m twine check --strict dist/*
+  python3 -m twine upload dist/Pillow-5.2.0*
   ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 * [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), increment and append `.dev0` to version identifier in `src/PIL/_version.py`
@@ -61,13 +60,12 @@ Released as needed for security, installation or critical bug fixes.
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  twine check dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
   ```bash
-  twine check dist/*
-  twine upload dist/Pillow-5.2.1*
+  python3 -m twine check --strict dist/*
+  python3 -m twine upload dist/Pillow-5.2.1*
   ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 
@@ -91,7 +89,6 @@ Released as needed privately to individual vendors for critical security-related
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  twine check dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)

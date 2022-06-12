@@ -24,6 +24,8 @@
 #
 
 
+import os
+
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import i32le as i32
@@ -74,10 +76,8 @@ class BmpImageFile(ImageFile.ImageFile):
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
-        file_info = {}
         # read bmp header size @offset 14 (this is part of the header size)
-        file_info["header_size"] = i32(read(4))
-        file_info["direction"] = -1
+        file_info = {"header_size": i32(read(4)), "direction": -1}
 
         # -------------------- If requested, read header at a specific position
         # read the rest of the bmp header, without its size
@@ -167,6 +167,7 @@ class BmpImageFile(ImageFile.ImageFile):
             raise OSError(f"Unsupported BMP pixel depth ({file_info['bits']})")
 
         # ---------------- Process BMP with Bitfields compression (not palette)
+        decoder_name = "raw"
         if file_info["compression"] == self.BITFIELDS:
             SUPPORTED = {
                 32: [
@@ -208,6 +209,8 @@ class BmpImageFile(ImageFile.ImageFile):
         elif file_info["compression"] == self.RAW:
             if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
                 raw_mode, self.mode = "BGRA", "RGBA"
+        elif file_info["compression"] == self.RLE8:
+            decoder_name = "bmp_rle"
         else:
             raise OSError(f"Unsupported BMP compression ({file_info['compression']})")
 
@@ -247,7 +250,7 @@ class BmpImageFile(ImageFile.ImageFile):
         self.info["compression"] = file_info["compression"]
         self.tile = [
             (
-                "raw",
+                decoder_name,
                 (0, 0, file_info["width"], file_info["height"]),
                 offset or self.fp.tell(),
                 (
@@ -269,6 +272,57 @@ class BmpImageFile(ImageFile.ImageFile):
         offset = i32(head_data, 10)
         # load bitmap information (offset=raster info)
         self._bitmap(offset=offset)
+
+
+class BmpRleDecoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer):
+        data = bytearray()
+        x = 0
+        while len(data) < self.state.xsize * self.state.ysize:
+            pixels = self.fd.read(1)
+            byte = self.fd.read(1)
+            if not pixels or not byte:
+                break
+            num_pixels = pixels[0]
+            if num_pixels:
+                # encoded mode
+                if x + num_pixels > self.state.xsize:
+                    # Too much data for row
+                    num_pixels = max(0, self.state.xsize - x)
+                data += byte * num_pixels
+                x += num_pixels
+            else:
+                if byte[0] == 0:
+                    # end of line
+                    while len(data) % self.state.xsize != 0:
+                        data += b"\x00"
+                    x = 0
+                elif byte[0] == 1:
+                    # end of bitmap
+                    break
+                elif byte[0] == 2:
+                    # delta
+                    bytes_read = self.fd.read(2)
+                    if len(bytes_read) < 2:
+                        break
+                    right, up = self.fd.read(2)
+                    data += b"\x00" * (right + up * self.state.xsize)
+                    x = len(data) % self.state.xsize
+                else:
+                    # absolute mode
+                    bytes_read = self.fd.read(byte[0])
+                    data += bytes_read
+                    if len(bytes_read) < byte[0]:
+                        break
+                    x += byte[0]
+
+                    # align to 16-bit word boundary
+                    if self.fd.tell() % 2 != 0:
+                        self.fd.seek(1, os.SEEK_CUR)
+        self.set_as_raw(bytes(data), ("P", 0, self.args[-1]))
+        return -1, 0
 
 
 # =============================================================================
@@ -371,6 +425,8 @@ Image.register_save(BmpImageFile.format, _save)
 Image.register_extension(BmpImageFile.format, ".bmp")
 
 Image.register_mime(BmpImageFile.format, "image/bmp")
+
+Image.register_decoder("bmp_rle", BmpRleDecoder)
 
 Image.register_open(DibImageFile.format, DibImageFile, _dib_accept)
 Image.register_save(DibImageFile.format, _dib_save)

@@ -295,7 +295,7 @@ ImagingPaste(
         paste_mask_L(imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
         ImagingSectionLeave(&cookie);
 
-    } else if (strcmp(imMask->mode, "RGBA") == 0) {
+    } else if (strcmp(imMask->mode, "LA") == 0 || strcmp(imMask->mode, "RGBA") == 0) {
         ImagingSectionEnter(&cookie);
         paste_mask_RGBA(
             imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);

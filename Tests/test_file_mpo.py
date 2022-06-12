@@ -48,6 +48,14 @@ def test_closed_file():
         im.close()
 
 
+def test_seek_after_close():
+    im = Image.open(test_files[0])
+    im.close()
+
+    with pytest.raises(ValueError):
+        im.seek(1)
+
+
 def test_context_manager():
     with warnings.catch_warnings():
         with Image.open(test_files[0]) as im:
@@ -116,6 +124,15 @@ def test_parallax():
         assert exif.get_ifd(0x927C)[0xB211] == -3.125
 
 
+def test_reload_exif_after_seek():
+    with Image.open("Tests/images/sugarshack.mpo") as im:
+        exif = im.getexif()
+        del exif[296]
+
+        im.seek(1)
+        assert 296 in exif
+
+
 def test_mp():
     for test_file in test_files:
         with Image.open(test_file) as im:
@@ -145,10 +162,10 @@ def test_mp_attribute():
     for test_file in test_files:
         with Image.open(test_file) as im:
             mpinfo = im._getmp()
-        frameNumber = 0
+        frame_number = 0
         for mpentry in mpinfo[0xB002]:
             mpattr = mpentry["Attribute"]
-            if frameNumber:
+            if frame_number:
                 assert not mpattr["RepresentativeImageFlag"]
             else:
                 assert mpattr["RepresentativeImageFlag"]
@@ -157,7 +174,7 @@ def test_mp_attribute():
             assert mpattr["ImageDataFormat"] == "JPEG"
             assert mpattr["MPType"] == "Multi-Frame Image: (Disparity)"
             assert mpattr["Reserved"] == 0
-            frameNumber += 1
+            frame_number += 1
 
 
 def test_seek():

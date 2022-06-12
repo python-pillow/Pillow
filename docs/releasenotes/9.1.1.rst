@@ -1,0 +1,16 @@
+9.1.1
+-----
+
+Security
+========
+
+This release addresses several security problems.
+
+:cve:`CVE-2022-30595`: When reading a TGA file with RLE packets that cross scan lines,
+Pillow reads the information past the end of the first line without deducting that
+from the length of the remaining file data. This vulnerability was introduced in Pillow
+9.1.0, and can cause a heap buffer overflow.
+
+Opening an image with a zero or negative height has been found to bypass a
+decompression bomb check. This will now raise a :py:exc:`SyntaxError` instead, in turn
+raising a ``PIL.UnidentifiedImageError``.

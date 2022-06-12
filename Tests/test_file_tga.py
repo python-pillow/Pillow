@@ -101,6 +101,10 @@ def test_cross_scan_line():
     with Image.open("Tests/images/cross_scan_line.tga") as im:
         assert_image_equal_tofile(im, "Tests/images/cross_scan_line.png")
 
+    with Image.open("Tests/images/cross_scan_line_truncated.tga") as im:
+        with pytest.raises(OSError):
+            im.load()
+
 
 def test_save(tmp_path):
     test_file = "Tests/images/tga_id_field.tga"

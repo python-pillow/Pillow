@@ -20,7 +20,6 @@ int
 ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
     int n, depth;
     UINT8 *ptr;
-    UINT8 extra_data = 0;
     int extra_bytes = 0;
 
     ptr = buf;
@@ -77,7 +76,6 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
                 extra_bytes = n; /* full value */
                 n = state->bytes - state->x;
                 extra_bytes -= n;
-                extra_data = ptr[1];
             }
 
             memcpy(state->buffer + state->x, ptr + 1, n);
@@ -122,6 +120,7 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
             }
             memcpy(state->buffer + state->x, ptr, n);
             ptr += n;
+            bytes -= n;
             extra_bytes -= n;
         }
     }

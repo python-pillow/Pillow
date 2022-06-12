@@ -15,6 +15,7 @@ jobs:
         python-version: [
           "pypy-3.8",
           "pypy-3.7",
+          "3.11-dev",
           "3.10",
           "3.9",
           "3.8",
@@ -59,6 +60,8 @@ jobs:
       if: startsWith(matrix.os, 'macOS')
       run: |
         .github/workflows/macos-install.sh
+      env:
+        GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Build
       run: |
@@ -93,7 +96,7 @@ jobs:
     - name: Docs
       if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.10
       run: |
-        python3 -m pip install sphinx-copybutton sphinx-issues sphinx-removed-in sphinx-rtd-theme sphinxext-opengraph
+        python3 -m pip install furo sphinx-copybutton sphinx-issues sphinx-removed-in sphinxext-opengraph
         make doccheck
 
     - name: After success

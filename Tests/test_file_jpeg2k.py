@@ -209,6 +209,49 @@ def test_layers():
         assert_image_similar(im, test_card, 0.4)
 
 
+@pytest.mark.parametrize(
+    "name, args, offset, data",
+    (
+        ("foo.j2k", {}, 0, b"\xff\x4f"),
+        ("foo.jp2", {}, 4, b"jP"),
+        (None, {"no_jp2": True}, 0, b"\xff\x4f"),
+        ("foo.j2k", {"no_jp2": True}, 0, b"\xff\x4f"),
+        ("foo.jp2", {"no_jp2": True}, 0, b"\xff\x4f"),
+        ("foo.j2k", {"no_jp2": False}, 0, b"\xff\x4f"),
+        ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
+        ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
+    ),
+)
+def test_no_jp2(name, args, offset, data):
+    out = BytesIO()
+    if name:
+        out.name = name
+    test_card.save(out, "JPEG2000", **args)
+    out.seek(offset)
+    assert out.read(2) == data
+
+
+def test_mct():
+    # Three component
+    for val in (0, 1):
+        out = BytesIO()
+        test_card.save(out, "JPEG2000", mct=val, no_jp2=True)
+
+        assert out.getvalue()[59] == val
+        with Image.open(out) as im:
+            assert_image_similar(im, test_card, 1.0e-3)
+
+    # Single component should have MCT disabled
+    for val in (0, 1):
+        out = BytesIO()
+        with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
+            jp2.save(out, "JPEG2000", mct=val, no_jp2=True)
+
+        assert out.getvalue()[53] == 0
+        with Image.open(out) as im:
+            assert_image_similar(im, jp2, 1.0e-3)
+
+
 def test_rgba():
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
@@ -253,6 +296,11 @@ def test_16bit_jp2_roundtrips():
     with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
         im = roundtrip(jp2)
         assert_image_equal(im, jp2)
+
+
+def test_issue_6194():
+    with Image.open("Tests/images/issue_6194.j2k") as im:
+        assert im.getpixel((5, 5)) == 31
 
 
 def test_unbound_local():

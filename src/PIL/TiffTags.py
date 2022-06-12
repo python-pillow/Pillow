@@ -36,8 +36,12 @@ class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
 def lookup(tag, group=None):
     """
     :param tag: Integer tag number
-    :returns: Taginfo namedtuple, From the TAGS_V2 info if possible,
-        otherwise just populating the value and name from TAGS.
+    :param group: Which :py:data:`~PIL.TiffTags.TAGS_V2_GROUPS` to look in
+
+    .. versionadded:: 8.3.0
+
+    :returns: Taginfo namedtuple, From the ``TAGS_V2`` info if possible,
+        otherwise just populating the value and name from ``TAGS``.
         If the tag is not recognized, "unknown" is returned for the name
 
     """
@@ -74,6 +78,7 @@ SIGNED_RATIONAL = 10
 FLOAT = 11
 DOUBLE = 12
 IFD = 13
+LONG8 = 16
 
 TAGS_V2 = {
     254: ("NewSubfileType", LONG, 1),

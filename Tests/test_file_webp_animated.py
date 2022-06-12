@@ -1,6 +1,7 @@
 import pytest
+from packaging.version import parse as parse_version
 
-from PIL import Image
+from PIL import Image, features
 
 from .helper import (
     assert_image_equal,
@@ -27,7 +28,6 @@ def test_n_frames():
         assert im.is_animated
 
 
-@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_write_animation_L(tmp_path):
     """
     Convert an animated GIF to animated WebP, then compare the frame count, and first
@@ -46,6 +46,11 @@ def test_write_animation_L(tmp_path):
             orig.load()
             im.load()
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
+
+            if is_big_endian():
+                webp = parse_version(features.version_module("webp"))
+                if webp < parse_version("1.2.2"):
+                    pytest.skip("Fails with libwebp earlier than 1.2.2")
             orig.seek(orig.n_frames - 1)
             im.seek(im.n_frames - 1)
             orig.load()
@@ -53,7 +58,6 @@ def test_write_animation_L(tmp_path):
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
 
-@pytest.mark.xfail(is_big_endian(), reason="Fails on big-endian")
 def test_write_animation_RGB(tmp_path):
     """
     Write an animated WebP from RGB frames, and ensure the frames
@@ -69,6 +73,10 @@ def test_write_animation_RGB(tmp_path):
             assert_image_equal(im, frame1.convert("RGBA"))
 
             # Compare second frame to original
+            if is_big_endian():
+                webp = parse_version(features.version_module("webp"))
+                if webp < parse_version("1.2.2"):
+                    pytest.skip("Fails with libwebp earlier than 1.2.2")
             im.seek(1)
             im.load()
             assert_image_equal(im, frame2.convert("RGBA"))
@@ -82,14 +90,14 @@ def test_write_animation_RGB(tmp_path):
             check(temp_file1)
 
             # Tests appending using a generator
-            def imGenerator(ims):
+            def im_generator(ims):
                 yield from ims
 
             temp_file2 = str(tmp_path / "temp_generator.webp")
             frame1.copy().save(
                 temp_file2,
                 save_all=True,
-                append_images=imGenerator([frame2]),
+                append_images=im_generator([frame2]),
                 lossless=True,
             )
             check(temp_file2)

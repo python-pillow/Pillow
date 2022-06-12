@@ -89,7 +89,7 @@ def cmd_msbuild(
     )
 
 
-SF_MIRROR = "http://iweb.dl.sourceforge.net"
+SF_PROJECTS = "https://sourceforge.net/projects"
 
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
@@ -107,7 +107,8 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.3/libjpeg-turbo-2.1.3.tar.gz",
+        "url": SF_PROJECTS
+        + "/libjpeg-turbo/files/2.1.3/libjpeg-turbo-2.1.3.tar.gz/download",
         "filename": "libjpeg-turbo-2.1.3.tar.gz",
         "dir": "libjpeg-turbo-2.1.3",
         "build": [
@@ -131,9 +132,9 @@ deps = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "http://zlib.net/zlib1211.zip",
-        "filename": "zlib1211.zip",
-        "dir": "zlib-1.2.11",
+        "url": "https://zlib.net/zlib1212.zip",
+        "filename": "zlib1212.zip",
+        "dir": "zlib-1.2.12",
         "build": [
             cmd_nmake(r"win32\Makefile.msc", "clean"),
             cmd_nmake(r"win32\Makefile.msc", "zlib.lib"),
@@ -143,9 +144,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.3.0.tar.gz",
-        "filename": "tiff-4.3.0.tar.gz",
-        "dir": "tiff-4.3.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.4.0.tar.gz",
+        "filename": "tiff-4.4.0.tar.gz",
+        "dir": "tiff-4.4.0",
         "build": [
             cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_nmake(target="clean"),
@@ -172,7 +173,7 @@ deps = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libpng": {
-        "url": SF_MIRROR + "/project/libpng/libpng16/1.6.37/lpng1637.zip",
+        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.37/lpng1637.zip/download",
         "filename": "lpng1637.zip",
         "dir": "lpng1637",
         "build": [
@@ -186,9 +187,9 @@ deps = {
         "libs": [r"libpng16.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.11.1.tar.gz",  # noqa: E501
-        "filename": "freetype-2.11.1.tar.gz",
-        "dir": "freetype-2.11.1",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.gz",  # noqa: E501
+        "filename": "freetype-2.12.1.tar.gz",
+        "dir": "freetype-2.12.1",
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
@@ -221,7 +222,7 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.13/lcms2-2.13.1.tar.gz",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.13/lcms2-2.13.1.tar.gz/download",
         "filename": "lcms2-2.13.1.tar.gz",
         "dir": "lcms2-2.13.1",
         "patch": {
@@ -246,15 +247,15 @@ deps = {
         "libs": [r"Lib\MS\*.lib"],
     },
     "openjpeg": {
-        "url": "https://github.com/uclouvain/openjpeg/archive/v2.4.0.tar.gz",
-        "filename": "openjpeg-2.4.0.tar.gz",
-        "dir": "openjpeg-2.4.0",
+        "url": "https://github.com/uclouvain/openjpeg/archive/v2.5.0.tar.gz",
+        "filename": "openjpeg-2.5.0.tar.gz",
+        "dir": "openjpeg-2.5.0",
         "build": [
             cmd_cmake(("-DBUILD_THIRDPARTY:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
             cmd_nmake(target="openjp2"),
-            cmd_mkdir(r"{inc_dir}\openjpeg-2.4.0"),
-            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.4.0"),
+            cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
+            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.0"),
         ],
         "libs": [r"bin\*.lib"],
     },
@@ -280,9 +281,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.0.0.zip",
-        "filename": "harfbuzz-4.0.0.zip",
-        "dir": "harfbuzz-4.0.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.3.0.zip",
+        "filename": "harfbuzz-4.3.0.zip",
+        "dir": "harfbuzz-4.3.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -292,9 +293,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.11.zip",
-        "filename": "fribidi-1.0.11.zip",
-        "dir": "fribidi-1.0.11",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.12.zip",
+        "filename": "fribidi-1.0.12.zip",
+        "dir": "fribidi-1.0.12",
         "build": [
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
