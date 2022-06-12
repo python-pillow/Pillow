@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Added apply_transparency() #6352
+  [radarhere]
+
 - Fixed behaviour change from endian fix #6197
   [radarhere]
 
