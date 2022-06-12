@@ -61,7 +61,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
-        elif not Image.core.HAVE_XCB and shutil.which("gnome-screenshot"):
+        elif shutil.which("gnome-screenshot"):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             subprocess.call(["gnome-screenshot", "-f", filepath])
