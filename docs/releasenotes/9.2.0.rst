@@ -76,7 +76,9 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Using gnome-screenshot on Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+In :py:meth:`~PIL.ImageGrab.grab` on Linux, if ``xdisplay`` is ``None`` then
+``gnome-screenshot`` will be used to capture the display if it is installed. To capture
+the default X11 display instead, pass ``xdisplay=""``.
