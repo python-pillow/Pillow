@@ -105,6 +105,8 @@ class PpmImageFile(ImageFile.ImageFile):
 
         maxval = None
         decoder_name = "raw"
+        if magic_number in (b"P1", b"P2", b"P3"):
+            decoder_name = "ppm_plain"
         for ix in range(3):
             token = int(self._read_token())
             if ix == 0:  # token is the x size
@@ -126,14 +128,13 @@ class PpmImageFile(ImageFile.ImageFile):
                 if maxval > 255 and mode == "L":
                     self.mode = "I"
 
-                # If maxval matches a bit depth, use the raw decoder directly
-                if maxval == 65535 and mode == "L":
-                    rawmode = "I;16B"
-                elif maxval != 255:
-                    decoder_name = "ppm"
+                if decoder_name != "ppm_plain":
+                    # If maxval matches a bit depth, use the raw decoder directly
+                    if maxval == 65535 and mode == "L":
+                        rawmode = "I;16B"
+                    elif maxval != 255:
+                        decoder_name = "ppm"
 
-        if magic_number in (b"P1", b"P2", b"P3"):
-            decoder_name = "ppm_plain"
         args = (rawmode, 0, 1) if decoder_name == "raw" else (rawmode, maxval)
         self._size = xsize, ysize
         self.tile = [(decoder_name, (0, 0, xsize, ysize), self.fp.tell(), args)]
@@ -156,7 +157,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
     def _ignore_comments(self, block):
         """
-        Deletes comments from block.
+        Delete comments from block.
         If comment does not end in this block, raises a flag.
         """
         comment_spans = False
@@ -176,14 +177,14 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
     def _decode_bitonal(self):
         """
-        This is a separate method because the plain PBM format all data tokens
-        are exactly one byte, and so the inter-token whitespace is optional.
+        This is a separate method because in the plain PBM format, all data tokens are
+        exactly one byte, so the inter-token whitespace is optional.
         """
-        decoded_data = bytearray()
+        data = bytearray()
         total_bytes = self.state.xsize * self.state.ysize
 
         comment_spans = False
-        while len(decoded_data) != total_bytes:
+        while len(data) != total_bytes:
             block = self._read_block()  # read next block
             if not block:
                 # eof
@@ -193,7 +194,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                 comment_end = self._find_comment_end(block)
                 if comment_end != -1:  # comment ends in this block
                     block = block[comment_end + 1 :]  # delete tail of previous comment
-                    comment_spans = False
+                    break
                 else:  # comment spans whole block
                     block = self._read_block()
 
@@ -203,19 +204,21 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
             for token in tokens:
                 if token not in (48, 49):
                     raise ValueError(f"Invalid token for this mode: {bytes([token])}")
-            decoded_data = (decoded_data + tokens)[:total_bytes]
+            data = (data + tokens)[:total_bytes]
         invert = bytes.maketrans(b"01", b"\xFF\x00")
-        return decoded_data.translate(invert)
+        return data.translate(invert)
 
-    def _decode_blocks(self, channels, depth, maxval):
-        decoded_data = bytearray()
+    def _decode_blocks(self, maxval):
+        data = bytearray()
         max_len = 10
-        bytes_per_sample = depth // 8
-        total_bytes = self.state.xsize * self.state.ysize * channels * bytes_per_sample
+        out_byte_count = 4 if self.mode == "I" else 1
+        out_max = 65535 if self.mode == "I" else 255
+        bands = Image.getmodebands(self.mode)
+        total_bytes = self.state.xsize * self.state.ysize * bands * out_byte_count
 
         comment_spans = False
         half_token = False
-        while len(decoded_data) != total_bytes:
+        while len(data) != total_bytes:
             block = self._read_block()  # read next block
             if not block:
                 if half_token:
@@ -251,31 +254,24 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                     raise ValueError(
                         f"Token too long found in data: {token[:max_len + 1]}"
                     )
-                token = int(token)
-                if token > maxval:
-                    raise ValueError(f"Channel value too large for this mode: {token}")
-                decoded_data += token.to_bytes(bytes_per_sample, "big")
-                if len(decoded_data) == total_bytes:  # finished!
+                value = int(token)
+                if value > maxval:
+                    raise ValueError(f"Channel value too large for this mode: {value}")
+                value = round(value / maxval * out_max)
+                data += o32(value) if self.mode == "I" else o8(value)
+                if len(data) == total_bytes:  # finished!
                     break
-        return decoded_data
+        return data
 
     def decode(self, buffer):
-        rawmode, maxval = self.args
-
         if self.mode == "1":
-            decoded_data = self._decode_bitonal()
+            data = self._decode_bitonal()
             rawmode = "1;8"
-        elif self.mode == "L":
-            decoded_data = self._decode_blocks(1, 8, maxval)
-        elif self.mode == "I":
-            if rawmode == "I;16B":
-                decoded_data = self._decode_blocks(1, 16, maxval)
-            elif rawmode == "I;32B":
-                decoded_data = self._decode_blocks(1, 32, maxval)
-        elif self.mode == "RGB":
-            decoded_data = self._decode_blocks(3, 8, maxval)
-
-        self.set_as_raw(bytes(decoded_data), rawmode)
+        else:
+            maxval = self.args[-1]
+            data = self._decode_blocks(maxval)
+            rawmode = "I;32" if self.mode == "I" else self.mode
+        self.set_as_raw(bytes(data), rawmode)
         return -1, 0
 
 
@@ -284,7 +280,7 @@ class PpmDecoder(ImageFile.PyDecoder):
 
     def decode(self, buffer):
         data = bytearray()
-        maxval = min(self.args[-1], 65535)
+        maxval = self.args[-1]
         in_byte_count = 1 if maxval < 256 else 2
         out_byte_count = 4 if self.mode == "I" else 1
         out_max = 65535 if self.mode == "I" else 255
@@ -301,7 +297,7 @@ class PpmDecoder(ImageFile.PyDecoder):
                 value = min(out_max, round(value / maxval * out_max))
                 data += o32(value) if self.mode == "I" else o8(value)
         rawmode = "I;32" if self.mode == "I" else self.mode
-        self.set_as_raw(bytes(data), (rawmode, 0, 1))
+        self.set_as_raw(bytes(data), rawmode)
         return -1, 0
 
 
@@ -337,11 +333,12 @@ def _save(im, fp, filename):
 #
 # --------------------------------------------------------------------
 
-Image.register_decoder("ppm_plain", PpmPlainDecoder)
+
 Image.register_open(PpmImageFile.format, PpmImageFile, _accept)
 Image.register_save(PpmImageFile.format, _save)
 
 Image.register_decoder("ppm", PpmDecoder)
+Image.register_decoder("ppm_plain", PpmPlainDecoder)
 
 Image.register_extensions(PpmImageFile.format, [".pbm", ".pgm", ".ppm", ".pnm"])
 

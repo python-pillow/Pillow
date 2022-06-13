@@ -22,6 +22,21 @@ def test_sanity():
 @pytest.mark.parametrize(
     "data, mode, pixels",
     (
+        (b"P2 3 1 4 0 2 4", "L", (0, 128, 255)),
+        (b"P2 3 1 257 0 128 257", "I", (0, 32640, 65535)),
+        # P3 with maxval < 255
+        (
+            b"P3 3 1 17 0 1 2 8 9 10 15 16 17",
+            "RGB",
+            ((0, 15, 30), (120, 135, 150), (225, 240, 255)),
+        ),
+        # P3 with maxval > 255
+        # Scale down to 255, since there is no RGB mode with more than 8-bit
+        (
+            b"P3 3 1 257 0 1 2 128 129 130 256 257 257",
+            "RGB",
+            ((0, 1, 2), (127, 128, 129), (254, 255, 255)),
+        ),
         (b"P5 3 1 4 \x00\x02\x04", "L", (0, 128, 255)),
         (b"P5 3 1 257 \x00\x00\x00\x80\x01\x01", "I", (0, 32640, 65535)),
         # P6 with maxval < 255
@@ -35,7 +50,6 @@ def test_sanity():
             ),
         ),
         # P6 with maxval > 255
-        # Scale down to 255, since there is no RGB mode with more than 8-bit
         (
             b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
             b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xFF\xFF",
