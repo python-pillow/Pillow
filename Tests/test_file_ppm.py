@@ -133,13 +133,17 @@ def test_16bit_plain_pgm():
 
 
 @pytest.mark.parametrize(
-    "header, data",
-    ((b"P1\n2 2", b"1010"), (b"P3\n2 2\n255", b"0 0 0 001 1 1 2 2 2 255 255 255")),
+    "header, data, comment_count",
+    (
+        (b"P1\n2 2", b"1010", 10**6),
+        (b"P2\n3 1\n4", b"0 2 4", 1),
+        (b"P3\n2 2\n255", b"0 0 0 001 1 1 2 2 2 255 255 255", 10**6),
+    ),
 )
-def test_plain_data_with_comments(tmp_path, header, data):
+def test_plain_data_with_comment(tmp_path, header, data, comment_count):
     path1 = str(tmp_path / "temp1.ppm")
     path2 = str(tmp_path / "temp2.ppm")
-    comment = b"# veeery long comment" * 10**6
+    comment = b"# comment" * comment_count
     with open(path1, "wb") as f1, open(path2, "wb") as f2:
         f1.write(header + b"\n\n" + data)
         f2.write(header + b"\n" + comment + b"\n" + data + comment)
