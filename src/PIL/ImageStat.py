@@ -78,10 +78,10 @@ class Stat:
 
         v = []
         for i in range(0, len(self.h), 256):
-            layerSum = 0.0
+            layer_sum = 0.0
             for j in range(256):
-                layerSum += j * self.h[i + j]
-            v.append(layerSum)
+                layer_sum += j * self.h[i + j]
+            v.append(layer_sum)
         return v
 
     def _getsum2(self):

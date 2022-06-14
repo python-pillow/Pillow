@@ -39,9 +39,9 @@ try:
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
-    from ._util import deferred_error
+    from ._util import DeferredError
 
-    FFI = ffi = deferred_error(ex)
+    FFI = ffi = DeferredError(ex)
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +135,7 @@ class _PyAccess32_2(PyAccess):
 
     def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
-        return (pixel.r, pixel.a)
+        return pixel.r, pixel.a
 
     def set_pixel(self, x, y, color):
         pixel = self.pixels[y][x]
@@ -152,7 +152,7 @@ class _PyAccess32_3(PyAccess):
 
     def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
-        return (pixel.r, pixel.g, pixel.b)
+        return pixel.r, pixel.g, pixel.b
 
     def set_pixel(self, x, y, color):
         pixel = self.pixels[y][x]
@@ -171,7 +171,7 @@ class _PyAccess32_4(PyAccess):
 
     def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
-        return (pixel.r, pixel.g, pixel.b, pixel.a)
+        return pixel.r, pixel.g, pixel.b, pixel.a
 
     def set_pixel(self, x, y, color):
         pixel = self.pixels[y][x]

@@ -33,7 +33,7 @@ import struct
 import sys
 
 from . import Image
-from ._util import isPath
+from ._util import is_path
 
 MAXBLOCK = 65536
 
@@ -99,7 +99,7 @@ class ImageFile(Image.Image):
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
 
-        if isPath(fp):
+        if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp
@@ -123,7 +123,7 @@ class ImageFile(Image.Image):
             ) as v:
                 raise SyntaxError(v) from v
 
-            if not self.mode or self.size[0] <= 0:
+            if not self.mode or self.size[0] <= 0 or self.size[1] <= 0:
                 raise SyntaxError("not identified by this driver")
         except BaseException:
             # close the file only if we have opened it this constructor
@@ -571,7 +571,7 @@ class PyCodecState:
         self.yoff = 0
 
     def extents(self):
-        return (self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize)
+        return self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize
 
 
 class PyCodec:
@@ -681,7 +681,7 @@ class PyDecoder(PyCodec):
 
         if not rawmode:
             rawmode = self.mode
-        d = Image._getdecoder(self.mode, "raw", (rawmode))
+        d = Image._getdecoder(self.mode, "raw", rawmode)
         d.setimage(self.im, self.state.extents())
         s = d.decode(data)
 

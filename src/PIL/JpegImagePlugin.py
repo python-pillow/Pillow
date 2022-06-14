@@ -45,6 +45,7 @@ from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 #
@@ -330,7 +331,7 @@ MARKER = {
 
 def _accept(prefix):
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
-    return prefix[0:3] == b"\xFF\xD8\xFF"
+    return prefix[:3] == b"\xFF\xD8\xFF"
 
 
 ##
@@ -444,7 +445,7 @@ class JpegImageFile(ImageFile.ImageFile):
         self.decoderconfig = (scale, 0)
 
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
-        return (self.mode, box)
+        return self.mode, box
 
     def load_djpeg(self):
 
@@ -603,11 +604,7 @@ samplings = {
 
 
 def convert_dict_qtables(qtables):
-    warnings.warn(
-        "convert_dict_qtables is deprecated and will be removed in Pillow 10"
-        "(2023-07-01). Conversion is no longer needed.",
-        DeprecationWarning,
-    )
+    deprecate("convert_dict_qtables", 10, action="Conversion is no longer needed")
     return qtables
 
 

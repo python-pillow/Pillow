@@ -26,6 +26,8 @@ def setup_module():
         # setup tk
         tk.Frame()
         # root = tk.Tk()
+    except RuntimeError as v:
+        pytest.skip(f"RuntimeError: {v}")
     except tk.TclError as v:
         pytest.skip(f"TCL Error: {v}")
 

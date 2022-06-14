@@ -31,11 +31,11 @@ BLP files come in many different flavours:
 
 import os
 import struct
-import warnings
 from enum import IntEnum
 from io import BytesIO
 
 from . import Image, ImageFile
+from ._deprecate import deprecate
 
 
 class Format(IntEnum):
@@ -55,7 +55,6 @@ class AlphaEncoding(IntEnum):
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {
         Format: "BLP_FORMAT_",
         Encoding: "BLP_ENCODING_",
@@ -64,25 +63,13 @@ def __getattr__(name):
         if name.startswith(prefix):
             name = name[len(prefix) :]
             if name in enum.__members__:
-                warnings.warn(
-                    prefix
-                    + name
-                    + " is "
-                    + deprecated
-                    + "Use "
-                    + enum.__name__
-                    + "."
-                    + name
-                    + " instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def unpack_565(i):
-    return (((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3)
+    return ((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3
 
 
 def decode_dxt1(data, alpha=False):

@@ -65,21 +65,21 @@ def test_libtiff():
 
 def test_consecutive():
     with Image.open("Tests/images/multipage.tiff") as im:
-        firstFrame = None
+        first_frame = None
         for frame in ImageSequence.Iterator(im):
-            if firstFrame is None:
-                firstFrame = frame.copy()
+            if first_frame is None:
+                first_frame = frame.copy()
         for frame in ImageSequence.Iterator(im):
-            assert_image_equal(frame, firstFrame)
+            assert_image_equal(frame, first_frame)
             break
 
 
 def test_palette_mmap():
     # Using mmap in ImageFile can require to reload the palette.
     with Image.open("Tests/images/multipage-mmap.tiff") as im:
-        color1 = im.getpalette()[0:3]
+        color1 = im.getpalette()[:3]
         im.seek(0)
-        color2 = im.getpalette()[0:3]
+        color2 = im.getpalette()[:3]
         assert color1 == color2
 
 

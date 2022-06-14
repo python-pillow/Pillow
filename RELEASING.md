@@ -24,7 +24,6 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  python3 -m twine check --strict dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
@@ -61,7 +60,6 @@ Released as needed for security, installation or critical bug fixes.
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  python3 -m twine check --strict dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
@@ -91,7 +89,6 @@ Released as needed privately to individual vendors for critical security-related
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  python3 -m twine check --strict dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)

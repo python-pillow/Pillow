@@ -52,11 +52,11 @@ Note: All data is stored in little-Endian (Intel) byte order.
 """
 
 import struct
-import warnings
 from enum import IntEnum
 from io import BytesIO
 
 from . import Image, ImageFile
+from ._deprecate import deprecate
 
 MAGIC = b"FTEX"
 
@@ -67,24 +67,11 @@ class Format(IntEnum):
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Format: "FORMAT_"}.items():
         if name.startswith(prefix):
             name = name[len(prefix) :]
             if name in enum.__members__:
-                warnings.warn(
-                    prefix
-                    + name
-                    + " is "
-                    + deprecated
-                    + "Use "
-                    + enum.__name__
-                    + "."
-                    + name
-                    + " instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
@@ -114,7 +101,7 @@ class FtexImageFile(ImageFile.ImageFile):
 
         if format == Format.DXT1:
             self.mode = "RGBA"
-            self.tile = [("bcn", (0, 0) + self.size, 0, (1))]
+            self.tile = [("bcn", (0, 0) + self.size, 0, 1)]
         elif format == Format.UNCOMPRESSED:
             self.tile = [("raw", (0, 0) + self.size, 0, ("RGB", 0, 1))]
         else:

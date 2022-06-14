@@ -222,11 +222,10 @@ def _save_all(im, fp, filename):
     if (
         not isinstance(background, (list, tuple))
         or len(background) != 4
-        or not all(v >= 0 and v < 256 for v in background)
+        or not all(0 <= v < 256 for v in background)
     ):
         raise OSError(
-            "Background color is not an RGBA tuple clamped to (0-255): %s"
-            % str(background)
+            f"Background color is not an RGBA tuple clamped to (0-255): {background}"
         )
 
     # Convert to packed uint

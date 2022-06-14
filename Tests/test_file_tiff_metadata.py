@@ -28,26 +28,26 @@ def test_rt_metadata(tmp_path):
     # For text items, we still have to decode('ascii','replace') because
     # the tiff file format can't take 8 bit bytes in that field.
 
-    basetextdata = "This is some arbitrary metadata for a text field"
-    bindata = basetextdata.encode("ascii") + b" \xff"
-    textdata = basetextdata + " " + chr(255)
-    reloaded_textdata = basetextdata + " ?"
-    floatdata = 12.345
-    doubledata = 67.89
+    base_text_data = "This is some arbitrary metadata for a text field"
+    bin_data = base_text_data.encode("ascii") + b" \xff"
+    text_data = base_text_data + " " + chr(255)
+    reloaded_text_data = base_text_data + " ?"
+    float_data = 12.345
+    double_data = 67.89
     info = TiffImagePlugin.ImageFileDirectory()
 
     ImageJMetaData = TAG_IDS["ImageJMetaData"]
     ImageJMetaDataByteCounts = TAG_IDS["ImageJMetaDataByteCounts"]
     ImageDescription = TAG_IDS["ImageDescription"]
 
-    info[ImageJMetaDataByteCounts] = len(bindata)
-    info[ImageJMetaData] = bindata
-    info[TAG_IDS["RollAngle"]] = floatdata
+    info[ImageJMetaDataByteCounts] = len(bin_data)
+    info[ImageJMetaData] = bin_data
+    info[TAG_IDS["RollAngle"]] = float_data
     info.tagtype[TAG_IDS["RollAngle"]] = 11
-    info[TAG_IDS["YawAngle"]] = doubledata
+    info[TAG_IDS["YawAngle"]] = double_data
     info.tagtype[TAG_IDS["YawAngle"]] = 12
 
-    info[ImageDescription] = textdata
+    info[ImageDescription] = text_data
 
     f = str(tmp_path / "temp.tif")
 
@@ -55,28 +55,28 @@ def test_rt_metadata(tmp_path):
 
     with Image.open(f) as loaded:
 
-        assert loaded.tag[ImageJMetaDataByteCounts] == (len(bindata),)
-        assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bindata),)
+        assert loaded.tag[ImageJMetaDataByteCounts] == (len(bin_data),)
+        assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bin_data),)
 
-        assert loaded.tag[ImageJMetaData] == bindata
-        assert loaded.tag_v2[ImageJMetaData] == bindata
+        assert loaded.tag[ImageJMetaData] == bin_data
+        assert loaded.tag_v2[ImageJMetaData] == bin_data
 
-        assert loaded.tag[ImageDescription] == (reloaded_textdata,)
-        assert loaded.tag_v2[ImageDescription] == reloaded_textdata
+        assert loaded.tag[ImageDescription] == (reloaded_text_data,)
+        assert loaded.tag_v2[ImageDescription] == reloaded_text_data
 
         loaded_float = loaded.tag[TAG_IDS["RollAngle"]][0]
-        assert round(abs(loaded_float - floatdata), 5) == 0
+        assert round(abs(loaded_float - float_data), 5) == 0
         loaded_double = loaded.tag[TAG_IDS["YawAngle"]][0]
-        assert round(abs(loaded_double - doubledata), 7) == 0
+        assert round(abs(loaded_double - double_data), 7) == 0
 
     # check with 2 element ImageJMetaDataByteCounts, issue #2006
 
-    info[ImageJMetaDataByteCounts] = (8, len(bindata) - 8)
+    info[ImageJMetaDataByteCounts] = (8, len(bin_data) - 8)
     img.save(f, tiffinfo=info)
     with Image.open(f) as loaded:
 
-        assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bindata) - 8)
-        assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bindata) - 8)
+        assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
+        assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
 
 
 def test_read_metadata():
@@ -356,7 +356,7 @@ def test_empty_values():
     assert 33432 in info
 
 
-def test_PhotoshopInfo(tmp_path):
+def test_photoshop_info(tmp_path):
     with Image.open("Tests/images/issue_2278.tif") as im:
         assert len(im.tag_v2[34377]) == 70
         assert isinstance(im.tag_v2[34377], bytes)

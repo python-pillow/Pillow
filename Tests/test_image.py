@@ -7,7 +7,7 @@ import warnings
 
 import pytest
 
-from PIL import Image, ImageDraw, ImagePalette, TiffImagePlugin, UnidentifiedImageError
+from PIL import Image, ImageDraw, ImagePalette, TiffImagePlugin, UnidentifiedImageError, features
 
 from .helper import (
     assert_image_equal,
@@ -159,6 +159,8 @@ class TestImage:
             assert im.size == (128, 128)
 
             for ext in (".jpg", ".jp2"):
+                if ext == ".jp2" and not features.check_codec("jpg_2000"):
+                    pytest.skip("jpg_2000 not available")
                 temp_file = str(tmp_path / ("temp." + ext))
                 if os.path.exists(temp_file):
                     os.remove(temp_file)
@@ -168,7 +170,7 @@ class TestImage:
         temp_file = str(tmp_path / "temp.jpg")
 
         class FP:
-            def write(a, b):
+            def write(self, b):
                 pass
 
         fp = FP()
@@ -661,10 +663,33 @@ class TestImage:
         with Image.open("Tests/images/hopper.gif") as im:
             assert_image_equal(im, im.remap_palette(list(range(256))))
 
+        # Test identity transform with an RGBA palette
+        im = Image.new("P", (256, 1))
+        for x in range(256):
+            im.putpixel((x, 0), x)
+        im.putpalette(list(range(256)) * 4, "RGBA")
+        im_remapped = im.remap_palette(list(range(256)))
+        assert_image_equal(im, im_remapped)
+        assert im.palette.palette == im_remapped.palette.palette
+
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
                 im.remap_palette(None)
+
+    def test_remap_palette_transparency(self):
+        im = Image.new("P", (1, 2))
+        im.putpixel((0, 1), 1)
+        im.info["transparency"] = 0
+
+        im_remapped = im.remap_palette([1, 0])
+        assert im_remapped.info["transparency"] == 1
+
+        # Test unused transparency
+        im.info["transparency"] = 2
+
+        im_remapped = im.remap_palette([1, 0])
+        assert "transparency" not in im_remapped.info
 
     def test__new(self):
         im = hopper("RGB")
@@ -882,6 +907,35 @@ class TestImage:
     def test_zero_tobytes(self, size):
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
+
+    def test_apply_transparency(self):
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 0, 0, 1, 1, 1))
+        assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
+
+        # Test that no transformation is applied without transparency
+        im.apply_transparency()
+        assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
+
+        # Test that a transparency index is applied
+        im.info["transparency"] = 0
+        im.apply_transparency()
+        assert "transparency" not in im.info
+        assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 255): 1}
+
+        # Test that existing transparency is kept
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 0, 0, 255, 1, 1, 1, 128), "RGBA")
+        im.info["transparency"] = 0
+        im.apply_transparency()
+        assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 128): 1}
+
+        # Test that transparency bytes are applied
+        with Image.open("Tests/images/pil123p.png") as im:
+            assert isinstance(im.info["transparency"], bytes)
+            assert im.palette.colors[(27, 35, 6)] == 24
+            im.apply_transparency()
+            assert im.palette.colors[(27, 35, 6, 214)] == 24
 
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):

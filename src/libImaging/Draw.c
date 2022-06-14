@@ -419,7 +419,7 @@ draw_horizontal_lines(
         if (e[i].ymin == y && e[i].ymin == e[i].ymax) {
             int xmax;
             int xmin = e[i].xmin;
-            if (*x_pos < xmin) {
+            if (*x_pos != -1 && *x_pos < xmin) {
                 // Line would be after the current position
                 continue;
             }
@@ -513,7 +513,9 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
                             continue;
                         }
                         // Check if the two edges join to make a corner
-                        if (xx[j-1] == (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
+                        if (((ymin == current->ymin && ymin == other_edge->ymin) ||
+                             (ymin == current->ymax && ymin == other_edge->ymax)) &&
+                            xx[j-1] == (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
                             // Determine points from the edges on the next row
                             // Or if this is the last row, check the previous row
                             int offset = ymin == ymax ? -1 : 1;
@@ -540,7 +542,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
         }
         qsort(xx, j, sizeof(float), x_cmp);
         if (hasAlpha == 1) {
-            int x_pos = 0;
+            int x_pos = j == 0 ? -1 : 0;
             for (i = 1; i < j; i += 2) {
                 int x_end = ROUND_DOWN(xx[i]);
                 if (x_end < x_pos) {

@@ -51,7 +51,6 @@ class TestDecompressionBomb:
             with Image.open(TEST_FILE):
                 pass
 
-    @pytest.mark.xfail(reason="different exception")
     def test_exception_ico(self):
         with pytest.raises(Image.DecompressionBombError):
             with Image.open("Tests/images/decompression_bomb.ico"):
@@ -70,15 +69,15 @@ class TestDecompressionBomb:
 
 class TestDecompressionCrop:
     @classmethod
-    def setup_class(self):
+    def setup_class(cls):
         width, height = 128, 128
         Image.MAX_IMAGE_PIXELS = height * width * 4 - 1
 
     @classmethod
-    def teardown_class(self):
+    def teardown_class(cls):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
-    def testEnlargeCrop(self):
+    def test_enlarge_crop(self):
         # Crops can extend the extents, therefore we should have the
         # same decompression bomb warnings on them.
         with hopper() as src:

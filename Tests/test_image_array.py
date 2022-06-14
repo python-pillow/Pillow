@@ -80,3 +80,15 @@ def test_fromarray():
     with pytest.raises(TypeError):
         wrapped = Wrapper(test("L"), {"shape": (100, 128)})
         Image.fromarray(wrapped)
+
+
+def test_fromarray_palette():
+    # Arrange
+    i = im.convert("L")
+    a = numpy.array(i)
+
+    # Act
+    out = Image.fromarray(a, "P")
+
+    # Assert that the Python and C palettes match
+    assert len(out.palette.colors) == len(out.im.getpalette()) / 3

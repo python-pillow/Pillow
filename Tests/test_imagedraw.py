@@ -655,6 +655,20 @@ def test_polygon_1px_high():
     assert_image_equal_tofile(im, expected)
 
 
+def test_polygon_1px_high_translucent():
+    # Test drawing a translucent 1px high polygon
+    # Arrange
+    im = Image.new("RGB", (4, 3))
+    draw = ImageDraw.Draw(im, "RGBA")
+    expected = "Tests/images/imagedraw_polygon_1px_high_translucent.png"
+
+    # Act
+    draw.polygon([(1, 1), (1, 1), (3, 1), (3, 1)], (255, 0, 0, 127))
+
+    # Assert
+    assert_image_equal_tofile(im, expected)
+
+
 def test_polygon_translucent():
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -1452,3 +1466,11 @@ def test_discontiguous_corners_polygon():
     )
     expected = os.path.join(IMAGES_PATH, "discontiguous_corners_polygon.png")
     assert_image_similar_tofile(img, expected, 1)
+
+
+def test_polygon():
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+    draw.polygon([(18, 30), (19, 31), (18, 30), (85, 30), (60, 72)], "red")
+    expected = "Tests/images/imagedraw_outline_polygon_RGB.png"
+    assert_image_similar_tofile(im, expected, 1)

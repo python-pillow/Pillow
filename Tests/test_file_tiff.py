@@ -70,6 +70,15 @@ class TestFileTiff:
             im.load()
             im.close()
 
+    def test_seek_after_close(self):
+        im = Image.open("Tests/images/multipage.tiff")
+        im.close()
+
+        with pytest.raises(ValueError):
+            im.n_frames
+        with pytest.raises(ValueError):
+            im.seek(1)
+
     def test_context_manager(self):
         with warnings.catch_warnings():
             with Image.open("Tests/images/multipage.tiff") as im:
@@ -92,17 +101,33 @@ class TestFileTiff:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
     @pytest.mark.parametrize(
-        "file_name,mode,size,offset",
+        "file_name,mode,size,tile",
         [
-            ("tiff_wrong_bits_per_sample.tiff", "RGBA", (52, 53), 160),
-            ("tiff_wrong_bits_per_sample_2.tiff", "RGB", (16, 16), 8),
+            (
+                "tiff_wrong_bits_per_sample.tiff",
+                "RGBA",
+                (52, 53),
+                [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))],
+            ),
+            (
+                "tiff_wrong_bits_per_sample_2.tiff",
+                "RGB",
+                (16, 16),
+                [("raw", (0, 0, 16, 16), 8, ("RGB", 0, 1))],
+            ),
+            (
+                "tiff_wrong_bits_per_sample_3.tiff",
+                "RGBA",
+                (512, 256),
+                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", "tiff_lzw", False, 48782))],
+            ),
         ],
     )
-    def test_wrong_bits_per_sample(self, file_name, mode, size, offset):
+    def test_wrong_bits_per_sample(self, file_name, mode, size, tile):
         with Image.open("Tests/images/" + file_name) as im:
             assert im.mode == mode
             assert im.size == size
-            assert im.tile == [("raw", (0, 0) + size, offset, (mode, 0, 1))]
+            assert im.tile == tile
             im.load()
 
     def test_set_legacy_api(self):
@@ -151,14 +176,14 @@ class TestFileTiff:
             assert im.info["dpi"] == (71.0, 71.0)
 
     @pytest.mark.parametrize(
-        "resolutionUnit, dpi",
+        "resolution_unit, dpi",
         [(None, 72.8), (2, 72.8), (3, 184.912)],
     )
-    def test_load_float_dpi(self, resolutionUnit, dpi):
+    def test_load_float_dpi(self, resolution_unit, dpi):
         with Image.open(
-            "Tests/images/hopper_float_dpi_" + str(resolutionUnit) + ".tif"
+            "Tests/images/hopper_float_dpi_" + str(resolution_unit) + ".tif"
         ) as im:
-            assert im.tag_v2.get(RESOLUTION_UNIT) == resolutionUnit
+            assert im.tag_v2.get(RESOLUTION_UNIT) == resolution_unit
             assert im.info["dpi"] == (dpi, dpi)
 
     def test_save_float_dpi(self, tmp_path):
@@ -472,6 +497,26 @@ class TestFileTiff:
             exif = im.getexif()
             check_exif(exif)
 
+    def test_modify_exif(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            exif = im.getexif()
+            exif[256] = 100
+
+            im.save(outfile, exif=exif)
+
+        with Image.open(outfile) as im:
+            exif = im.getexif()
+            assert exif[256] == 100
+
+    def test_reload_exif_after_seek(self):
+        with Image.open("Tests/images/multipage.tiff") as im:
+            exif = im.getexif()
+            del exif[256]
+            im.seek(1)
+
+            assert 256 in exif
+
     def test_exif_frames(self):
         # Test that EXIF data can change across frames
         with Image.open("Tests/images/g4-multi.tiff") as im:
@@ -655,11 +700,11 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def imGenerator(ims):
+        def im_generator(ims):
             yield from ims
 
         mp = BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
+        im.save(mp, format="TIFF", save_all=True, append_images=im_generator(ims))
 
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
@@ -689,6 +734,13 @@ class TestFileTiff:
 
         with Image.open(outfile) as reloaded:
             assert reloaded.info["icc_profile"] == icc_profile
+
+    def test_save_bmp_compression(self, tmp_path):
+        with Image.open("Tests/images/hopper.bmp") as im:
+            assert im.info["compression"] == 0
+
+            outfile = str(tmp_path / "temp.tif")
+            im.save(outfile)
 
     def test_discard_icc_profile(self, tmp_path):
         outfile = str(tmp_path / "temp.tif")

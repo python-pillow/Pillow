@@ -191,6 +191,17 @@ class TestFileWebp:
             Image.open(blob).load()
             Image.open(blob).load()
 
+    @pytest.mark.parametrize(
+        "background",
+        (0, (0,), (-1, 0, 1, 2), (253, 254, 255, 256)),
+    )
+    @skip_unless_feature("webp_anim")
+    def test_invalid_background(self, background, tmp_path):
+        temp_file = str(tmp_path / "temp.webp")
+        im = hopper()
+        with pytest.raises(OSError):
+            im.save(temp_file, save_all=True, append_images=[im], background=background)
+
     @skip_unless_feature("webp_anim")
     def test_background_from_gif(self, tmp_path):
         # Save L mode GIF with background

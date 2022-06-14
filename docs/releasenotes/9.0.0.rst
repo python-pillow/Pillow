@@ -149,6 +149,9 @@ Switched to libjpeg-turbo in macOS and Linux wheels
 The Pillow wheels from PyPI for macOS and Linux have switched from libjpeg to
 libjpeg-turbo. It is a fork of libjpeg, popular for its speed.
 
+Because different JPEG decoders load images differently, JPEG pixels may be
+altered slightly with this change.
+
 Added support for pickling TrueType fonts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -45,6 +45,7 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._deprecate import deprecate
 
 logger = logging.getLogger(__name__)
 
@@ -131,24 +132,11 @@ class Blend(IntEnum):
 
 
 def __getattr__(name):
-    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Disposal: "APNG_DISPOSE_", Blend: "APNG_BLEND_"}.items():
         if name.startswith(prefix):
             name = name[len(prefix) :]
             if name in enum.__members__:
-                warnings.warn(
-                    prefix
-                    + name
-                    + " is "
-                    + deprecated
-                    + "Use "
-                    + enum.__name__
-                    + "."
-                    + name
-                    + " instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
@@ -436,6 +424,10 @@ class PngStream(ChunkStream):
 
         # image header
         s = ImageFile._safe_read(self.fp, length)
+        if length < 13:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            raise ValueError("Truncated IHDR chunk")
         self.im_size = i32(s, 0), i32(s, 4)
         try:
             self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
@@ -524,6 +516,10 @@ class PngStream(ChunkStream):
 
         # pixels per unit
         s = ImageFile._safe_read(self.fp, length)
+        if length < 9:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            raise ValueError("Truncated pHYs chunk")
         px, py = i32(s, 0), i32(s, 4)
         unit = s[8]
         if unit == 1:  # meter
@@ -636,6 +632,10 @@ class PngStream(ChunkStream):
     # APNG chunks
     def chunk_acTL(self, pos, length):
         s = ImageFile._safe_read(self.fp, length)
+        if length < 8:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            raise ValueError("APNG contains truncated acTL chunk")
         if self.im_n_frames is not None:
             self.im_n_frames = None
             warnings.warn("Invalid APNG, will use default PNG image if possible")
@@ -651,6 +651,10 @@ class PngStream(ChunkStream):
 
     def chunk_fcTL(self, pos, length):
         s = ImageFile._safe_read(self.fp, length)
+        if length < 26:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                return s
+            raise ValueError("APNG contains truncated fcTL chunk")
         seq = i32(s)
         if (self._seq_num is None and seq != 0) or (
             self._seq_num is not None and self._seq_num != seq - 1
@@ -672,6 +676,11 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_fdAT(self, pos, length):
+        if length < 4:
+            if ImageFile.LOAD_TRUNCATED_IMAGES:
+                s = ImageFile._safe_read(self.fp, length)
+                return s
+            raise ValueError("APNG contains truncated fDAT chunk")
         s = ImageFile._safe_read(self.fp, 4)
         seq = i32(s)
         if self._seq_num != seq - 1:
@@ -701,7 +710,7 @@ class PngImageFile(ImageFile.ImageFile):
 
         if not _accept(self.fp.read(8)):
             raise SyntaxError("not a PNG file")
-        self.__fp = self.fp
+        self._fp = self.fp
         self.__frame = 0
 
         #
@@ -758,7 +767,7 @@ class PngImageFile(ImageFile.ImageFile):
             self._close_exclusive_fp_after_loading = False
             self.png.save_rewind()
             self.__rewind_idat = self.__prepare_idat
-            self.__rewind = self.__fp.tell()
+            self.__rewind = self._fp.tell()
             if self.default_image:
                 # IDAT chunk contains default image and not first animation frame
                 self.n_frames += 1
@@ -813,7 +822,7 @@ class PngImageFile(ImageFile.ImageFile):
     def _seek(self, frame, rewind=False):
         if frame == 0:
             if rewind:
-                self.__fp.seek(self.__rewind)
+                self._fp.seek(self.__rewind)
                 self.png.rewind()
                 self.__prepare_idat = self.__rewind_idat
                 self.im = None
@@ -821,7 +830,7 @@ class PngImageFile(ImageFile.ImageFile):
                     self.pyaccess = None
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
-                self.fp = self.__fp
+                self.fp = self._fp
             self._prev_im = None
             self.dispose = None
             self.default_image = self.info.get("default_image", False)
@@ -840,7 +849,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self.im.paste(self.dispose, self.dispose_extent)
             self._prev_im = self.im.copy()
 
-            self.fp = self.__fp
+            self.fp = self._fp
 
             # advance to the next frame
             if self.__prepare_idat:
@@ -1017,15 +1026,6 @@ class PngImageFile(ImageFile.ImageFile):
             if "XML:com.adobe.xmp" in self.info
             else {}
         )
-
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
 
 
 # --------------------------------------------------------------------

@@ -27,15 +27,15 @@ def test_sanity():
         "HSV",
     )
 
-    for mode in modes:
-        im = hopper(mode)
-        for mode in modes:
-            convert(im, mode)
+    for input_mode in modes:
+        im = hopper(input_mode)
+        for output_mode in modes:
+            convert(im, output_mode)
 
         # Check 0
-        im = Image.new(mode, (0, 0))
-        for mode in modes:
-            convert(im, mode)
+        im = Image.new(input_mode, (0, 0))
+        for output_mode in modes:
+            convert(im, output_mode)
 
 
 def test_default():
@@ -220,6 +220,20 @@ def test_p_la():
     comparable = im.convert("P").convert("LA").getchannel("A")
 
     assert_image_similar(alpha, comparable, 5)
+
+
+def test_p2pa_alpha():
+    with Image.open("Tests/images/tiny.png") as im:
+        assert im.mode == "P"
+
+        im_pa = im.convert("PA")
+    assert im_pa.mode == "PA"
+
+    im_a = im_pa.getchannel("A")
+    for x in range(4):
+        alpha = 255 if x > 1 else 0
+        for y in range(4):
+            assert im_a.getpixel((x, y)) == alpha
 
 
 def test_matrix_illegal_conversion():

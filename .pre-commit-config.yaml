@@ -19,7 +19,7 @@ repos:
       - id: yesqa
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.1.13
+    rev: v1.2.0
     hooks:
       - id: remove-tabs
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.opt$)
@@ -37,10 +37,15 @@ repos:
       - id: rst-backticks
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.2.0
     hooks:
       - id: check-merge-conflict
       - id: check-yaml
 
+  - repo: https://github.com/sphinx-contrib/sphinx-lint
+    rev: v0.6
+    hooks:
+      - id: sphinx-lint
+
 ci:
-  autoupdate_schedule: quarterly
+  autoupdate_schedule: monthly

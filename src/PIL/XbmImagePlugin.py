@@ -31,7 +31,7 @@ xbm_head = re.compile(
     b"#define[ \t]+[^_]*_x_hot[ \t]+(?P<xhot>[0-9]+)[\r\n]+"
     b"#define[ \t]+[^_]*_y_hot[ \t]+(?P<yhot>[0-9]+)[\r\n]+"
     b")?"
-    b"[\\000-\\377]*_bits\\[\\]"
+    rb"[\000-\377]*_bits\[]"
 )
 
 
