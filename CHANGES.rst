@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Added support for decoding plain PPM formats #5242
+  [Piolie, radarhere]
+
 - Added apply_transparency() #6352
   [radarhere]
 
