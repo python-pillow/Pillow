@@ -156,24 +156,38 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         return min(a, b) if a * b > 0 else max(a, b)  # lowest nonnegative index (or -1)
 
     def _ignore_comments(self, block):
-        """
-        Delete comments from block.
-        If comment does not end in this block, raises a flag.
-        """
-        comment_spans = False
+        if self._comment_spans:
+            # Finish current comment
+            while block:
+                comment_end = self._find_comment_end(block)
+                if comment_end != -1:
+                    # Comment ends in this block
+                    # Delete tail of comment
+                    block = block[comment_end + 1 :]
+                    break
+                else:
+                    # Comment spans whole block
+                    # So read the next block, looking for the end
+                    block = self._read_block()
+
+        # Search for any further comments
+        self._comment_spans = False
         while True:
-            comment_start = block.find(b"#")  # look for next comment
-            if comment_start == -1:  # no comment found
+            comment_start = block.find(b"#")
+            if comment_start == -1:
+                # No comment found
                 break
             comment_end = self._find_comment_end(block, comment_start)
-            if comment_end != -1:  # comment ends in this block
-                # delete comment
+            if comment_end != -1:
+                # Comment ends in this block
+                # Delete comment
                 block = block[:comment_start] + block[comment_end + 1 :]
-            else:  # last comment continues to next block(s)
+            else:
+                # Comment continues to next block(s)
                 block = block[:comment_start]
-                comment_spans = True
+                self._comment_spans = True
                 break
-        return block, comment_spans
+        return block
 
     def _decode_bitonal(self):
         """
@@ -183,22 +197,13 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         data = bytearray()
         total_bytes = self.state.xsize * self.state.ysize
 
-        comment_spans = False
         while len(data) != total_bytes:
             block = self._read_block()  # read next block
             if not block:
                 # eof
                 break
 
-            while block and comment_spans:
-                comment_end = self._find_comment_end(block)
-                if comment_end != -1:  # comment ends in this block
-                    block = block[comment_end + 1 :]  # delete tail of previous comment
-                    break
-                else:  # comment spans whole block
-                    block = self._read_block()
-
-            block, comment_spans = self._ignore_comments(block)
+            block = self._ignore_comments(block)
 
             tokens = b"".join(block.split())
             for token in tokens:
@@ -216,7 +221,6 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         bands = Image.getmodebands(self.mode)
         total_bytes = self.state.xsize * self.state.ysize * bands * out_byte_count
 
-        comment_spans = False
         half_token = False
         while len(data) != total_bytes:
             block = self._read_block()  # read next block
@@ -227,15 +231,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                     # eof
                     break
 
-            while block and comment_spans:
-                comment_end = self._find_comment_end(block)
-                if comment_end != -1:  # comment ends in this block
-                    block = block[comment_end + 1 :]  # delete tail of previous comment
-                    break
-                else:  # comment spans whole block
-                    block = self._read_block()
-
-            block, comment_spans = self._ignore_comments(block)
+            block = self._ignore_comments(block)
 
             if half_token:
                 block = half_token + block  # stitch half_token to new block
@@ -264,6 +260,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         return data
 
     def decode(self, buffer):
+        self._comment_spans = False
         if self.mode == "1":
             data = self._decode_bitonal()
             rawmode = "1;8"
