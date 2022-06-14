@@ -99,28 +99,29 @@ def test_pnm(tmp_path):
         assert_image_equal_tofile(im, f)
 
 
-def test_plain_pbm(tmp_path):
-    # P1
-    with Image.open("Tests/images/hopper_1bit_plain.pbm") as im:
-        # P4
-        assert_image_equal_tofile(im, "Tests/images/hopper_1bit.pbm")
+@pytest.mark.parametrize(
+    "plain_path, raw_path",
+    (
+        (
+            "Tests/images/hopper_1bit_plain.pbm",  # P1
+            "Tests/images/hopper_1bit.pbm",  # P4
+        ),
+        (
+            "Tests/images/hopper_8bit_plain.pgm",  # P2
+            "Tests/images/hopper_8bit.pgm",  # P5
+        ),
+        (
+            "Tests/images/hopper_8bit_plain.ppm",  # P3
+            "Tests/images/hopper_8bit.ppm",  # P6
+        ),
+    ),
+)
+def test_plain(plain_path, raw_path):
+    with Image.open(plain_path) as im:
+        assert_image_equal_tofile(im, raw_path)
 
 
-def test_8bit_plain_pgm(tmp_path):
-    # P2
-    with Image.open("Tests/images/hopper_8bit_plain.pgm") as im:
-        # P5
-        assert_image_equal_tofile(im, "Tests/images/hopper_8bit.pgm")
-
-
-def test_8bit_plain_ppm(tmp_path):
-    # P3
-    with Image.open("Tests/images/hopper_8bit_plain.ppm") as im:
-        # P6
-        assert_image_equal_tofile(im, "Tests/images/hopper_8bit.ppm")
-
-
-def test_16bit_plain_pgm(tmp_path):
+def test_16bit_plain_pgm():
     # P2 with maxval 2 ** 16 - 1
     with Image.open("Tests/images/hopper_16bit_plain.pgm") as im:
         assert im.mode == "I"
@@ -131,86 +132,55 @@ def test_16bit_plain_pgm(tmp_path):
         assert_image_equal_tofile(im, "Tests/images/hopper_16bit.pgm")
 
 
-def test_plain_pbm_data_with_comments(tmp_path):
+@pytest.mark.parametrize(
+    "header, data",
+    ((b"P1\n2 2", b"1010"), (b"P3\n2 2\n255", b"0 0 0 001 1 1 2 2 2 255 255 255")),
+)
+def test_plain_data_with_comments(tmp_path, header, data):
     path1 = str(tmp_path / "temp1.ppm")
     path2 = str(tmp_path / "temp2.ppm")
     comment = b"# veeery long comment" * 10**6
     with open(path1, "wb") as f1, open(path2, "wb") as f2:
-        f1.write(b"P1\n2 2\n\n1010")
-        f2.write(b"P1\n2 2\n" + comment + b"\n1010" + comment)
+        f1.write(header + b"\n\n" + data)
+        f2.write(header + b"\n" + comment + b"\n" + data + comment)
 
     with Image.open(path1) as im:
         assert_image_equal_tofile(im, path2)
 
 
-def test_plain_pbm_truncated_data(tmp_path):
+@pytest.mark.parametrize("data", (b"P1\n128 128\n", b"P3\n128 128\n255\n"))
+def test_plain_truncated_data(tmp_path, data):
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
-        f.write(b"P1\n128 128\n")
+        f.write(data)
 
     with Image.open(path) as im:
         with pytest.raises(ValueError):
             im.load()
 
 
-def test_plain_pbm_invalid_data(tmp_path):
+@pytest.mark.parametrize("data", (b"P1\n128 128\n1009", b"P3\n128 128\n255\n100A"))
+def test_plain_invalid_data(tmp_path, data):
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
-        f.write(b"P1\n128 128\n1009")
+        f.write(data)
 
     with Image.open(path) as im:
         with pytest.raises(ValueError):
             im.load()
 
 
-def test_plain_ppm_data_with_comments(tmp_path):
-    path1 = str(tmp_path / "temp1.ppm")
-    path2 = str(tmp_path / "temp2.ppm")
-    comment = b"# veeery long comment" * 10**6
-    with open(path1, "wb") as f1, open(path2, "wb") as f2:
-        f1.write(b"P3\n2 2\n255\n0 0 0 001 1 1 2 2 2 255 255 255")
-        f2.write(
-            b"P3\n2 2\n255\n" + comment + b"\n0 0 0 001 1 1 2 2 2 255 255 255" + comment
-        )
-
-    with Image.open(path1) as im:
-        assert_image_equal_tofile(im, path2)
-
-
-def test_plain_ppm_truncated_data(tmp_path):
+@pytest.mark.parametrize(
+    "data",
+    (
+        b"P3\n128 128\n255\n012345678910",  # half token too long
+        b"P3\n128 128\n255\n012345678910 0",  # token too long
+    ),
+)
+def test_plain_ppm_token_too_long(tmp_path, data):
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
-        f.write(b"P3\n128 128\n255\n")
-
-    with Image.open(path) as im:
-        with pytest.raises(ValueError):
-            im.load()
-
-
-def test_plain_ppm_invalid_data(tmp_path):
-    path = str(tmp_path / "temp.ppm")
-    with open(path, "wb") as f:
-        f.write(b"P3\n128 128\n255\n100A")
-
-    with Image.open(path) as im:
-        with pytest.raises(ValueError):
-            im.load()
-
-
-def test_plain_ppm_half_token_too_long(tmp_path):
-    path = str(tmp_path / "temp.ppm")
-    with open(path, "wb") as f:
-        f.write(b"P3\n128 128\n255\n012345678910")
-
-    with Image.open(path) as im:
-        with pytest.raises(ValueError):
-            im.load()
-
-
-def test_plain_ppm_token_too_long(tmp_path):
-    path = str(tmp_path / "temp.ppm")
-    with open(path, "wb") as f:
-        f.write(b"P3\n128 128\n255\n012345678910 0")
+        f.write(data)
 
     with Image.open(path) as im:
         with pytest.raises(ValueError):
@@ -227,7 +197,7 @@ def test_plain_ppm_value_too_large(tmp_path):
             im.load()
 
 
-def test_magic(tmp_path):
+def test_magic():
     with pytest.raises(SyntaxError):
         PpmImagePlugin.PpmImageFile(fp=BytesIO(b"PyInvalid"))
 
@@ -263,7 +233,7 @@ def test_header_token_too_long(tmp_path):
     assert str(e.value) == "Token too long in file header: 01234567890"
 
 
-def test_truncated_header(tmp_path):
+def test_truncated_file(tmp_path):
     # Test EOF in header
     path = str(tmp_path / "temp.pgm")
     with open(path, "w") as f:
