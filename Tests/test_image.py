@@ -7,7 +7,14 @@ import warnings
 
 import pytest
 
-from PIL import Image, ImageDraw, ImagePalette, TiffImagePlugin, UnidentifiedImageError, features
+from PIL import (
+    Image,
+    ImageDraw,
+    ImagePalette,
+    TiffImagePlugin,
+    UnidentifiedImageError,
+    features,
+)
 
 from .helper import (
     assert_image_equal,
