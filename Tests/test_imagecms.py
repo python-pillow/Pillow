@@ -210,6 +210,15 @@ def test_invalid_color_temperature():
         ImageCms.createProfile("LAB", "invalid")
 
 
+@pytest.mark.parametrize("flag", ("my string", -1))
+def test_invalid_flag(flag):
+    with hopper() as im:
+        with pytest.raises(
+            ImageCms.PyCMSError, match="flags must be an integer between 0 and "
+        ):
+            ImageCms.profileToProfile(im, "foo", "bar", flags=flag)
+
+
 def test_simple_lab():
     i = Image.new("RGB", (10, 10), (128, 128, 128))
 
