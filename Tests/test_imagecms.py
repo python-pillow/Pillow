@@ -189,10 +189,9 @@ def test_exceptions():
         ImageCms.getProfileName(None)
     skip_missing()
 
-    with pytest.raises(
-        ImageCms.PyCMSError,
-        match="'NoneType' object cannot be interpreted as an integer",
-    ):
+    # macOS/Ubuntu: "'NoneType' object cannot be interpreted as an integer"
+    # Windows: "an integer is required (got type NoneType)"
+    with pytest.raises(ImageCms.PyCMSError, match="integer"):
         ImageCms.isIntentSupported(SRGB, None, None)
 
 
