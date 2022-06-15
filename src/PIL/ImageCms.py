@@ -377,7 +377,7 @@ def profileToProfile(
         raise PyCMSError("renderingIntent must be an integer between 0 and 3")
 
     if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
-        raise PyCMSError("flags must be an integer between 0 and %s" + _MAX_FLAG)
+        raise PyCMSError("flags must be an integer between 0 and %s" % _MAX_FLAG)
 
     try:
         if not isinstance(inputProfile, ImageCmsProfile):
