@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Limit FPX tile size to avoid extending outside image #6368
+  [radarhere]
+
 - Added support for decoding plain PPM formats #5242
   [Piolie, radarhere]
 
