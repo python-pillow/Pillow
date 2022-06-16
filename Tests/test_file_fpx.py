@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal_tofile
+from .helper import assert_image_equal, assert_image_equal_tofile
 
 FpxImagePlugin = pytest.importorskip(
     "PIL.FpxImagePlugin", reason="olefile not installed"
@@ -16,6 +16,20 @@ def test_sanity():
         assert im.format == "FPX"
 
         assert_image_equal_tofile(im, "Tests/images/input_bw_one_band.png")
+
+
+def test_fill():
+    with Image.open("Tests/images/input_bw_fill.fpx") as im:
+        # The first tile has been hexedited to fill with white
+        compression, (x, y, x1, y1) = im.tile[0][:2]
+        assert compression == "fpx_fill"
+        assert (x, y, x1, y1) == (0, 0, 64, 46)
+
+        with Image.open("Tests/images/input_bw_one_band.png") as im2:
+            for x in range(x1):
+                for y in range(y1):
+                    im2.putpixel((x, y), 255)
+            assert_image_equal(im, im2)
 
 
 def test_invalid_file():

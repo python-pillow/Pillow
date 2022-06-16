@@ -171,10 +171,9 @@ class FpxImageFile(ImageFile.ImageFile):
 
             elif compression == 1:
 
-                # FIXME: the fill decoder is not implemented
                 self.tile.append(
                     (
-                        "fill",
+                        "fpx_fill",
                         (x, y, x1, y1),
                         i32(s, i) + 28,
                         (self.rawmode, s[12:16]),
@@ -236,10 +235,23 @@ class FpxImageFile(ImageFile.ImageFile):
         return ImageFile.ImageFile.load(self)
 
 
+class FpxFillDecoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer):
+        rawmode, color = self.args
+        bands = Image.getmodebands(rawmode)
+        data = color[:bands] * self.state.xsize * self.state.ysize
+        self.set_as_raw(data, rawmode)
+        return -1, 0
+
+
 #
 # --------------------------------------------------------------------
 
 
 Image.register_open(FpxImageFile.format, FpxImageFile, _accept)
+
+Image.register_decoder("fpx_fill", FpxFillDecoder)
 
 Image.register_extension(FpxImageFile.format, ".fpx")
