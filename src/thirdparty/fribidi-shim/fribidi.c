@@ -33,6 +33,7 @@ static void fribidi_get_bracket_types_compat(
 
 int load_fribidi(void) {
     int error = 0;
+    const char **p_fribidi_version_info = 0;
 
     p_fribidi = 0;
 
@@ -87,20 +88,21 @@ int load_fribidi(void) {
     LOAD_FUNCTION(fribidi_get_par_embedding_levels);
 
 #ifndef _WIN32
-    fribidi_version_info = *(const char**)dlsym(p_fribidi, "fribidi_version_info");
-    if (error || (fribidi_version_info == 0)) {
+    p_fribidi_version_info = (const char**)dlsym(p_fribidi, "fribidi_version_info");
+    if (error || (p_fribidi_version_info == 0) || (*p_fribidi_version_info == 0)) {
         dlclose(p_fribidi);
         p_fribidi = 0;
         return 2;
     }
 #else
-    fribidi_version_info = *(const char**)GetProcAddress(p_fribidi, "fribidi_version_info");
-    if (error || (fribidi_version_info == 0)) {
+    p_fribidi_version_info = (const char**)GetProcAddress(p_fribidi, "fribidi_version_info");
+    if (error || (p_fribidi_version_info == 0) || (*p_fribidi_version_info == 0)) {
         FreeLibrary(p_fribidi);
         p_fribidi = 0;
         return 2;
     }
 #endif
+    fribidi_version_info = *p_fribidi_version_info;
 
     return 0;
 }
