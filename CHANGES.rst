@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Fixed incorrect operator in ImageCms error #6370
+  [LostBenjamin, hugovk, radarhere]
+
 - Limit FPX tile size to avoid extending outside image #6368
   [radarhere]
 
