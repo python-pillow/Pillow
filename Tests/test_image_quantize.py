@@ -65,6 +65,22 @@ def test_quantize_no_dither():
     assert converted.palette.palette == palette.palette.palette
 
 
+def test_quantize_no_dither2():
+    im = Image.new("RGB", (9, 1))
+    im.putdata(list((p,) * 3 for p in range(0, 36, 4)))
+
+    palette = Image.new("P", (1, 1))
+    data = (0, 0, 0, 32, 32, 32)
+    palette.putpalette(data)
+    quantized = im.quantize(dither=Image.Dither.NONE, palette=palette)
+
+    assert tuple(quantized.palette.palette) == data
+
+    px = quantized.load()
+    for x in range(9):
+        assert px[x, 0] == (0 if x < 5 else 1)
+
+
 def test_quantize_dither_diff():
     image = hopper()
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
