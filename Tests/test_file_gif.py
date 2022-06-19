@@ -180,6 +180,21 @@ def test_optimize_full_l():
     assert im.mode == "L"
 
 
+def test_optimize_if_palette_can_be_reduced_by_half():
+    with Image.open("Tests/images/test.colors.gif") as im:
+        # Reduce because original is too big for _get_optimize()
+        im = im.resize((591, 443))
+        imrgb = im.convert("RGB")
+        out = BytesIO()
+        imrgb.save(out, "GIF", optimize=False)
+        with Image.open(out) as reloaded:
+            assert len(reloaded.palette.palette) // 3 == 256
+        out = BytesIO()
+        imrgb.save(out, "GIF", optimize=True)
+        with Image.open(out) as reloaded:
+            assert len(reloaded.palette.palette) // 3 == 8
+
+
 def test_roundtrip(tmp_path):
     out = str(tmp_path / "temp.gif")
     im = hopper()
