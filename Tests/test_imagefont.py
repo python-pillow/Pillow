@@ -315,15 +315,30 @@ class TestImageFont:
 
         # Original font
         draw.font = font
-        box_size_a = draw.textsize(word)
+        with pytest.warns(DeprecationWarning) as log:
+            box_size_a = draw.textsize(word)
+        assert len(log) == 1
+        bbox_a = draw.textbbox((10, 10), word)
 
         # Rotated font
         draw.font = transposed_font
-        box_size_b = draw.textsize(word)
+        with pytest.warns(DeprecationWarning) as log:
+            box_size_b = draw.textsize(word)
+        assert len(log) == 1
+        bbox_b = draw.textbbox((20, 20), word)
 
         # Check (w,h) of box a is (h,w) of box b
         assert box_size_a[0] == box_size_b[1]
         assert box_size_a[1] == box_size_b[0]
+
+        # Check bbox b is (20, 20, 20 + h, 20 + w)
+        assert bbox_b[0] == 20
+        assert bbox_b[1] == 20
+        assert bbox_b[2] == 20 + bbox_a[3] - bbox_a[1]
+        assert bbox_b[3] == 20 + bbox_a[2] - bbox_a[0]
+
+        # text length is undefined for vertical text
+        pytest.raises(ValueError, draw.textlength, word)
 
     def test_unrotated_transposed_font(self):
         img_grey = Image.new("L", (100, 100))
@@ -336,14 +351,30 @@ class TestImageFont:
 
         # Original font
         draw.font = font
-        box_size_a = draw.textsize(word)
+        with pytest.warns(DeprecationWarning) as log:
+            box_size_a = draw.textsize(word)
+        assert len(log) == 1
+        bbox_a = draw.textbbox((10, 10), word)
+        length_a = draw.textlength(word)
 
         # Rotated font
         draw.font = transposed_font
-        box_size_b = draw.textsize(word)
+        with pytest.warns(DeprecationWarning) as log:
+            box_size_b = draw.textsize(word)
+        assert len(log) == 1
+        bbox_b = draw.textbbox((20, 20), word)
+        length_b = draw.textlength(word)
 
         # Check boxes a and b are same size
         assert box_size_a == box_size_b
+
+        # Check bbox b is (20, 20, 20 + w, 20 + h)
+        assert bbox_b[0] == 20
+        assert bbox_b[1] == 20
+        assert bbox_b[2] == 20 + bbox_a[2] - bbox_a[0]
+        assert bbox_b[3] == 20 + bbox_a[3] - bbox_a[1]
+
+        assert length_a == length_b
 
     def test_rotated_transposed_font_get_mask(self):
         # Arrange

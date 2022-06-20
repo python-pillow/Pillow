@@ -853,6 +853,21 @@ class TransposedFont:
             return im.transpose(self.orientation)
         return im
 
+    def getbbox(self, text, *args, **kwargs):
+        # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
+        # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont
+        left, top, right, bottom = self.font.getbbox(text, *args, **kwargs)
+        width = right - left
+        height = bottom - top
+        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+            return 0, 0, height, width
+        return 0, 0, width, height
+
+    def getlength(self, text, *args, **kwargs):
+        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+            raise ValueError("text length is undefined for rotated text")
+        return self.font.getlength(text, *args, **kwargs)
+
 
 def load(filename):
     """
