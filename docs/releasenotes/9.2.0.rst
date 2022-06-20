@@ -76,9 +76,7 @@ TODO
 Other Changes
 =============
 
-Fixed bug with rounding pixels to palette
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TODO
+^^^^
 
-Fixed a bug when rounding image pixels to palette colors. This affects the results of
-``Image.quantize`` and of ``Image.convert`` when converting from mode "RGB" to "P",
-"L", or "1", regardless of whether dithering is enabled.
+TODO
