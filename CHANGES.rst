@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Use gnome-screenshot on Linux if available #6361
+  [radarhere, nulano]
+
+- Fixed loading L mode BMP RLE8 images #6384
+  [radarhere]
+
 - Fixed incorrect operator in ImageCms error #6370
   [LostBenjamin, hugovk, radarhere]
 
