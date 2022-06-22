@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Fixed bug with rounding pixels to palette colors #6377
+  [btrekkie, radarhere]
+
 - Use gnome-screenshot on Linux if available #6361
   [radarhere, nulano]
 
