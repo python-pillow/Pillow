@@ -20,6 +20,11 @@ def test_sanity(tmp_path):
     for mode in ("1", "L", "P", "RGB"):
         _roundtrip(tmp_path, hopper(mode))
 
+    # Test a palette with less than 256 colors
+    im = Image.new("P", (1, 1))
+    im.putpalette((255, 0, 0))
+    _roundtrip(tmp_path, im)
+
     # Test an unsupported mode
     f = str(tmp_path / "temp.pcx")
     im = hopper("RGBA")
