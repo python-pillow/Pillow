@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Pad PCX palette to 768 bytes when saving #6391
+  [radarhere]
+
 - Fixed bug with rounding pixels to palette colors #6377
   [btrekkie, radarhere]
 
