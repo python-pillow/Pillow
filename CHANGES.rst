@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Reverted to __array_interface__ with the release of NumPy 1.23 #6394
+  [radarhere]
+
 - Pad PCX palette to 768 bytes when saving #6391
   [radarhere]
 
