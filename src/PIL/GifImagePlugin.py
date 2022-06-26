@@ -824,17 +824,18 @@ def _get_optimize(im, info):
                 if count:
                     used_palette_colors.append(i)
 
-            num_palette_colors = (
-                len(im.palette.palette) // 4
-                if im.palette.mode == "RGBA"
-                else len(im.palette.palette) // 3
+            if optimise or max(used_palette_colors) >= len(used_palette_colors):
+                return used_palette_colors
+
+            num_palette_colors = len(im.palette.palette) // Image.getmodebands(
+                im.palette.mode
             )
-            # Round up to power of 2 but at least 4
-            num_palette_colors = max(4, 1 << (num_palette_colors - 1).bit_length())
-            if optimise or (
-                len(used_palette_colors) <= 128
-                and max(used_palette_colors) >= len(used_palette_colors)
-                or len(used_palette_colors) <= num_palette_colors // 2
+            current_palette_size = 1 << (num_palette_colors - 1).bit_length()
+            if (
+                # check that the palette would become smaller when saved
+                len(used_palette_colors) <= current_palette_size // 2
+                # check that the palette is not already the smallest possible size
+                and current_palette_size > 2
             ):
                 return used_palette_colors
 
