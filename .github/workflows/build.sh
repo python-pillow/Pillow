@@ -19,6 +19,8 @@ if [[ "$MB_PYTHON_VERSION" == pypy3* ]]; then
   if [[ "$PLAT" == "i686" ]]; then
     DOCKER_TEST_IMAGE="multibuild/xenial_$PLAT"
   fi
+elif [[ "$MB_PYTHON_VERSION" == "3.11" ]] && [[ "$PLAT" == "i686" ]]; then
+  DOCKER_TEST_IMAGE="radarhere/bionic-$PLAT"
 fi
 
 echo "::group::Install a virtualenv"

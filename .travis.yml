@@ -59,6 +59,18 @@ jobs:
       env:
         - MB_ML_VER="_2_28"
         - MB_PYTHON_VERSION=3.10
+    - name: "3.11 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.11
+    - name: "3.11 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_2_28"
+        - MB_PYTHON_VERSION=3.11
 
 before_install:
     - source multibuild/common_utils.sh
