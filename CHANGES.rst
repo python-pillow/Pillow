@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Improved GIF optimize condition #6378
+  [raygard, radarhere]
+
 - Reverted to __array_interface__ with the release of NumPy 1.23 #6394
   [radarhere]
 
