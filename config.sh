@@ -143,6 +143,8 @@ function pip_wheel_cmd {
     local abs_wheelhouse=$1
     if [ -z "$IS_MACOS" ]; then
         CFLAGS="$CFLAGS --std=c99"  # for Raqm
+    elif [[ "$MB_PYTHON_VERSION" == "3.11" ]]; then
+        unset _PYTHON_HOST_PLATFORM
     fi
     pip wheel $(pip_opts) \
         --global-option build_ext --global-option --enable-raqm \
@@ -173,8 +175,10 @@ function run_tests {
         apt-get install libfribidi0
     fi
     if [[ $(uname -m) == "i686" ]]; then
-        python3 -m pip install numpy==1.21
-    elif [ -z "$IS_ALPINE" ]; then
+        if [[ "$MB_PYTHON_VERSION" != 3.11 ]]; then
+            python3 -m pip install numpy==1.21
+        fi
+    elif [ -z "$IS_ALPINE" ] && !([ -n "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" == 3.11 ]]); then
         python3 -m pip install numpy
     fi
 
