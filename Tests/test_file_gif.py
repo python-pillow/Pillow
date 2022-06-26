@@ -158,6 +158,9 @@ def test_optimize_correctness():
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     # These do optimize the palette
+    check(256, 511, 256)
+    check(255, 511, 255)
+    check(129, 511, 129)
     check(128, 511, 128)
     check(64, 511, 64)
     check(4, 511, 4)
@@ -167,17 +170,25 @@ def test_optimize_correctness():
     check(64, 513, 256)
     check(4, 513, 256)
 
-    # Other limits that don't optimize the palette
-    check(129, 511, 256)
-    check(255, 511, 256)
-    check(256, 511, 256)
-
 
 def test_optimize_full_l():
     im = Image.frombytes("L", (16, 16), bytes(range(256)))
     test_file = BytesIO()
     im.save(test_file, "GIF", optimize=True)
     assert im.mode == "L"
+
+
+def test_optimize_if_palette_can_be_reduced_by_half():
+    with Image.open("Tests/images/test.colors.gif") as im:
+        # Reduce dimensions because original is too big for _get_optimize()
+        im = im.resize((591, 443))
+    im_rgb = im.convert("RGB")
+
+    for (optimize, colors) in ((False, 256), (True, 8)):
+        out = BytesIO()
+        im_rgb.save(out, "GIF", optimize=optimize)
+        with Image.open(out) as reloaded:
+            assert len(reloaded.palette.palette) // 3 == colors
 
 
 def test_roundtrip(tmp_path):
@@ -982,8 +993,8 @@ def test_append_images(tmp_path):
 def test_transparent_optimize(tmp_path):
     # From issue #2195, if the transparent color is incorrectly optimized out, GIF loses
     # transparency.
-    # Need a palette that isn't using the 0 color, and one that's > 128 items where the
-    # transparent color is actually the top palette entry to trigger the bug.
+    # Need a palette that isn't using the 0 color,
+    # where the transparent color is actually the top palette entry to trigger the bug.
 
     data = bytes(range(1, 254))
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
@@ -993,10 +1004,10 @@ def test_transparent_optimize(tmp_path):
     im.putpalette(palette)
 
     out = str(tmp_path / "temp.gif")
-    im.save(out, transparency=253)
-    with Image.open(out) as reloaded:
+    im.save(out, transparency=im.getpixel((252, 0)))
 
-        assert reloaded.info["transparency"] == 253
+    with Image.open(out) as reloaded:
+        assert reloaded.info["transparency"] == reloaded.getpixel((252, 0))
 
 
 def test_rgb_transparency(tmp_path):

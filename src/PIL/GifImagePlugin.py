@@ -824,9 +824,18 @@ def _get_optimize(im, info):
                 if count:
                     used_palette_colors.append(i)
 
-            if optimise or (
-                len(used_palette_colors) <= 128
-                and max(used_palette_colors) > len(used_palette_colors)
+            if optimise or max(used_palette_colors) >= len(used_palette_colors):
+                return used_palette_colors
+
+            num_palette_colors = len(im.palette.palette) // Image.getmodebands(
+                im.palette.mode
+            )
+            current_palette_size = 1 << (num_palette_colors - 1).bit_length()
+            if (
+                # check that the palette would become smaller when saved
+                len(used_palette_colors) <= current_palette_size // 2
+                # check that the palette is not already the smallest possible size
+                and current_palette_size > 2
             ):
                 return used_palette_colors
 
