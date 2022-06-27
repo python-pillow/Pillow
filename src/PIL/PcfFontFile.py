@@ -84,8 +84,7 @@ class PcfFontFile(FontFile.FontFile):
         #
         # create glyph structure
 
-        for ch in range(256):
-            ix = encoding[ch]
+        for ch, ix in enumerate(encoding):
             if ix is not None:
                 x, y, l, r, w, a, d, f = metrics[ix]
                 glyph = (w, 0), (l, d - y, x + l, d), (0, 0, x, y), bitmaps[ix]
@@ -219,10 +218,6 @@ class PcfFontFile(FontFile.FontFile):
         return bitmaps
 
     def _load_encoding(self):
-
-        # map character code to bitmap index
-        encoding = [None] * 256
-
         fp, format, i16, i32 = self._getformat(PCF_BDF_ENCODINGS)
 
         first_col, last_col = i16(fp.read(2)), i16(fp.read(2))
@@ -231,6 +226,9 @@ class PcfFontFile(FontFile.FontFile):
         i16(fp.read(2))  # default
 
         nencoding = (last_col - first_col + 1) * (last_row - first_row + 1)
+
+        # map character code to bitmap index
+        encoding = [None] * min(256, nencoding)
 
         encoding_offsets = [i16(fp.read(2)) for _ in range(nencoding)]
 
