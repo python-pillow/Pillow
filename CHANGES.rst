@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Handle PCF fonts files with less than 256 characters #6386
+  [dawidcrivelli, radarhere]
+
 - Improved GIF optimize condition #6378
   [raygard, radarhere]
 
