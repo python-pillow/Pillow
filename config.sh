@@ -10,7 +10,7 @@ LIBPNG_VERSION=1.6.37
 JPEGTURBO_VERSION=2.1.3
 OPENJPEG_VERSION=2.5.0
 XZ_VERSION=5.2.5
-TIFF_VERSION=4.3.0
+TIFF_VERSION=4.4.0
 LCMS2_VERSION=2.13.1
 if [[ -n "$IS_MACOS" ]]; then
     GIFLIB_VERSION=5.1.4
@@ -98,8 +98,6 @@ function pre_build {
     build_libjpeg_turbo
     if [[ -n "$IS_MACOS" ]]; then
         rm /usr/local/lib/libjpeg.dylib
-
-        TIFF_VERSION=4.2.0
     fi
     build_tiff
     if [ -n "$IS_MACOS" ]; then
