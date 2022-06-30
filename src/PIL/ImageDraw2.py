@@ -173,6 +173,8 @@ class Draw:
 
     def textsize(self, text, font):
         """
+        .. deprecated:: 9.2.0
+
         Return the size of the given string, in pixels.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.textsize`

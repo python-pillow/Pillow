@@ -436,6 +436,8 @@ Methods
 
 .. py:method:: ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
+    .. deprecated:: 9.2.0
+
     Return the size of the given string, in pixels.
 
     Use :py:meth:`textlength()` to measure the offset of following text with
@@ -483,6 +485,8 @@ Methods
                      .. versionadded:: 6.2.0
 
 .. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
+
+    .. deprecated:: 9.2.0
 
     Return the size of the given string, in pixels.
 

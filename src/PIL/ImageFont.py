@@ -137,6 +137,8 @@ class ImageFont:
 
     def getsize(self, text, *args, **kwargs):
         """
+        .. deprecated:: 9.2.0
+
         Returns width and height (in pixels) of given text.
 
         :param text: Text to measure.
@@ -424,6 +426,8 @@ class FreeTypeFont:
         __internal__=False,
     ):
         """
+        .. deprecated:: 9.2.0
+
         Returns width and height (in pixels) of given text if rendered in font with
         provided direction, features, and language.
 
@@ -493,6 +497,8 @@ class FreeTypeFont:
         stroke_width=0,
     ):
         """
+        .. deprecated:: 9.2.0
+
         Returns width and height (in pixels) of given text if rendered in font
         with provided direction, features, and language, while respecting
         newline characters.
@@ -548,6 +554,8 @@ class FreeTypeFont:
 
     def getoffset(self, text):
         """
+        .. deprecated:: 9.2.0
+
         Returns the offset of given text. This is the gap between the
         starting coordinate and the first marking. Note that this gap is
         included in the result of :py:func:`~PIL.ImageFont.FreeTypeFont.getsize`.
@@ -837,6 +845,9 @@ class TransposedFont:
         self.orientation = orientation  # any 'transpose' argument, or None
 
     def getsize(self, text, *args, **kwargs):
+        """
+        .. deprecated:: 9.2.0
+        """
         if not kwargs.get("__internal__"):
             deprecate("getsize", 10, "getbbox or getlength")
         try:
