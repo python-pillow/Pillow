@@ -437,12 +437,11 @@ Methods
 .. py:method:: ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     .. deprecated:: 9.2.0
+        Use :py:meth:`textlength()` to measure the offset of following text with
+        1/64 pixel precision.
+        Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
 
     Return the size of the given string, in pixels.
-
-    Use :py:meth:`textlength()` to measure the offset of following text with
-    1/64 pixel precision.
-    Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
 
     .. note:: For historical reasons this function measures text height from
         the ascender line instead of the top, see :ref:`text-anchors`.
@@ -487,6 +486,7 @@ Methods
 .. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     .. deprecated:: 9.2.0
+        Use :py:meth:`.multiline_textbbox` instead.
 
     Return the size of the given string, in pixels.
 
