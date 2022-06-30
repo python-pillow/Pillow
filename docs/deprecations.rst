@@ -179,7 +179,7 @@ This undocumented method has been deprecated and will be removed in Pillow 10
 (2023-07-01).
 
 Font size and offset methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 9.2.0
 
