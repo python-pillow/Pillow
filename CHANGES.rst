@@ -5,6 +5,36 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Fixed null check for fribidi_version_info in FriBiDi shim #6376
+  [nulano]
+
+- Added GIF decompression bomb check #6402
+  [radarhere]
+
+- Handle PCF fonts files with less than 256 characters #6386
+  [dawidcrivelli, radarhere]
+
+- Improved GIF optimize condition #6378
+  [raygard, radarhere]
+
+- Reverted to __array_interface__ with the release of NumPy 1.23 #6394
+  [radarhere]
+
+- Pad PCX palette to 768 bytes when saving #6391
+  [radarhere]
+
+- Fixed bug with rounding pixels to palette colors #6377
+  [btrekkie, radarhere]
+
+- Use gnome-screenshot on Linux if available #6361
+  [radarhere, nulano]
+
+- Fixed loading L mode BMP RLE8 images #6384
+  [radarhere]
+
+- Fixed incorrect operator in ImageCms error #6370
+  [LostBenjamin, hugovk, radarhere]
+
 - Limit FPX tile size to avoid extending outside image #6368
   [radarhere]
 

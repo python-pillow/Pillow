@@ -1,12 +1,6 @@
 9.2.0
 -----
 
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
-
 Deprecations
 ============
 
@@ -46,14 +40,6 @@ Image.coerce_e
 This undocumented method has been deprecated and will be removed in Pillow 10
 (2023-07-01).
 
-API Changes
-===========
-
-TODO
-^^^^
-
-TODO
-
 API Additions
 =============
 
@@ -68,15 +54,14 @@ The image's palette mode will become "RGBA", and "transparency" will be removed 
 Security
 ========
 
-TODO
-^^^^
-
-TODO
+An additional decompression bomb check has been added for the GIF format.
 
 Other Changes
 =============
 
-TODO
-^^^^
+Using gnome-screenshot on Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+In :py:meth:`~PIL.ImageGrab.grab` on Linux, if ``xdisplay`` is ``None`` then
+``gnome-screenshot`` will be used to capture the display if it is installed. To capture
+the default X11 display instead, pass ``xdisplay=""``.

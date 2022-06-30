@@ -49,6 +49,14 @@ def test_sanity(request, tmp_path):
     save_font(request, tmp_path)
 
 
+def test_less_than_256_characters():
+    with open("Tests/fonts/10x20-ISO8859-1-fewer-characters.pcf", "rb") as test_file:
+        font = PcfFontFile.PcfFontFile(test_file)
+    assert isinstance(font, FontFile.FontFile)
+    # check the number of characters in the font
+    assert len([_f for _f in font.glyph if _f]) == 127
+
+
 def test_invalid_file():
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
