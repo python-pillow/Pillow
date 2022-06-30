@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Fixed null check for fribidi_version_info in FriBiDi shim #6376
+  [nulano]
+
 - Added GIF decompression bomb check #6402
   [radarhere]
 
