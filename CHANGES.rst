@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.2.0 (unreleased)
 ------------------
 
+- Added GIF decompression bomb check #6402
+  [radarhere]
+
 - Handle PCF fonts files with less than 256 characters #6386
   [dawidcrivelli, radarhere]
 
