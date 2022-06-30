@@ -532,7 +532,7 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
-        deprecate("getsize_multiline", 10)
+        deprecate("getsize_multiline", 10, "ImageDraw.multiline_textbbox")
         max_width = 0
         lines = self._multiline_split(text)
         line_spacing = (
