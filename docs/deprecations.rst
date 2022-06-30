@@ -178,6 +178,22 @@ Image.coerce_e
 This undocumented method has been deprecated and will be removed in Pillow 10
 (2023-07-01).
 
+Font size and offset methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 9.2.0
+
+=========================================================================== =============================================================================================================
+Deprecated                                                                  Use instead
+=========================================================================== =============================================================================================================
+:py:meth:`.FreeTypeFont.getsize` and :py:meth:`.FreeTypeFont.getoffset`     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
+:py:meth:`.FreeTypeFont.getsize_multiline`                                  :py:meth:`.ImageDraw.multiline_textbbox`
+:py:meth:`.ImageFont.getsize`                                               :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
+:py:meth:`.TransposedFont.getsize`                                          :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
+:py:meth:`.ImageDraw.textsize` and :py:meth:`.ImageDraw.multiline_textsize` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
+``ImageDraw2.Draw().textsize``                                              ``ImageDraw2.Draw().textbbox`` and ``ImageDraw2.Draw().textlength``
+=========================================================================== =============================================================================================================
+
 Removed features
 ----------------
 
