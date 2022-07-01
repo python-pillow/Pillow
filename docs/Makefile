@@ -43,6 +43,7 @@ clean:
 
 install-sphinx:
 	python3 -c "import sphinx" > /dev/null 2>&1 || python3 -m pip install sphinx
+	python3 -c "import furo" > /dev/null 2>&1 || python3 -m pip install furo
 
 html:
 	$(MAKE) install-sphinx
