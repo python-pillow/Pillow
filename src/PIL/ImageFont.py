@@ -138,7 +138,8 @@ class ImageFont:
     def getsize(self, text, *args, **kwargs):
         """
         .. deprecated:: 9.2.0
-            Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+
+        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
 
         Returns width and height (in pixels) of given text.
 
@@ -428,9 +429,10 @@ class FreeTypeFont:
     ):
         """
         .. deprecated:: 9.2.0
-            Use :py:meth:`getlength()` to measure the offset of following text with
-            1/64 pixel precision.
-            Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
+
+        Use :py:meth:`getlength()` to measure the offset of following text with
+        1/64 pixel precision.
+        Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
 
         Returns width and height (in pixels) of given text if rendered in font with
         provided direction, features, and language.
@@ -498,7 +500,8 @@ class FreeTypeFont:
     ):
         """
         .. deprecated:: 9.2.0
-            Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
+
+        Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
 
         Returns width and height (in pixels) of given text if rendered in font
         with provided direction, features, and language, while respecting
@@ -556,7 +559,8 @@ class FreeTypeFont:
     def getoffset(self, text):
         """
         .. deprecated:: 9.2.0
-            Use :py:meth:`.getbbox` instead.
+
+        Use :py:meth:`.getbbox` instead.
 
         Returns the offset of given text. This is the gap between the
         starting coordinate and the first marking. Note that this gap is
@@ -849,7 +853,8 @@ class TransposedFont:
     def getsize(self, text, *args, **kwargs):
         """
         .. deprecated:: 9.2.0
-            Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+
+        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
         """
         if not kwargs.get("__internal__"):
             deprecate("getsize", 10, "getbbox or getlength")
