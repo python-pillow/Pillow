@@ -317,14 +317,16 @@ class TestImageFont:
         draw.font = font
         with pytest.warns(DeprecationWarning) as log:
             box_size_a = draw.textsize(word)
-        assert len(log) == 1
+            assert box_size_a == font.getsize(word)
+        assert len(log) == 2
         bbox_a = draw.textbbox((10, 10), word)
 
         # Rotated font
         draw.font = transposed_font
         with pytest.warns(DeprecationWarning) as log:
             box_size_b = draw.textsize(word)
-        assert len(log) == 1
+            assert box_size_b == transposed_font.getsize(word)
+        assert len(log) == 2
         bbox_b = draw.textbbox((20, 20), word)
 
         # Check (w,h) of box a is (h,w) of box b
