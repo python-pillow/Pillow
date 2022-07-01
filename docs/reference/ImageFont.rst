@@ -56,6 +56,7 @@ Methods
 
 .. autoclass:: PIL.ImageFont.TransposedFont
     :members:
+    :undoc-members:
 
 Constants
 ---------

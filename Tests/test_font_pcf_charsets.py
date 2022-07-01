@@ -101,13 +101,17 @@ def _test_textsize(request, tmp_path, encoding):
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     for i in range(255):
-        (dx, dy) = font.getsize(bytearray([i]))
+        (ox, oy, dx, dy) = font.getbbox(bytearray([i]))
+        assert ox == 0
+        assert oy == 0
         assert dy == 20
         assert dx in (0, 10)
+        assert font.getlength(bytearray([i])) == dx
     message = charsets[encoding]["message"].encode(encoding)
     for i in range(len(message)):
         msg = message[: i + 1]
-        assert font.getsize(msg) == (len(msg) * 10, 20)
+        assert font.getlength(msg) == len(msg) * 10
+        assert font.getbbox(msg) == (0, 0, len(msg) * 10, 20)
 
 
 def test_textsize_iso8859_1(request, tmp_path):
