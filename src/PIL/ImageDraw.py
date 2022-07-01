@@ -32,6 +32,7 @@
 
 import math
 import numbers
+import warnings
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
@@ -375,15 +376,16 @@ class ImageDraw:
 
     def _multiline_spacing(self, font, spacing, stroke_width):
         # this can be replaced with self.textbbox(...)[3] when textsize is removed
-        return (
-            self.textsize(
-                "A",
-                font=font,
-                stroke_width=stroke_width,
-                __internal__=True,
-            )[1]
-            + spacing
-        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return (
+                self.textsize(
+                    "A",
+                    font=font,
+                    stroke_width=stroke_width,
+                )[1]
+                + spacing
+            )
 
     def text(
         self,
@@ -582,33 +584,33 @@ class ImageDraw:
         features=None,
         language=None,
         stroke_width=0,
-        __internal__=False,
     ):
         """Get the size of a given string, in pixels."""
-        if not __internal__:
-            deprecate("textsize", 10, "textbbox or textlength")
+        deprecate("textsize", 10, "textbbox or textlength")
         if self._multiline_check(text):
-            return self.multiline_textsize(
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+                return self.multiline_textsize(
+                    text,
+                    font,
+                    spacing,
+                    direction,
+                    features,
+                    language,
+                    stroke_width,
+                )
+
+        if font is None:
+            font = self.getfont()
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return font.getsize(
                 text,
-                font,
-                spacing,
                 direction,
                 features,
                 language,
                 stroke_width,
-                __internal__=True,
             )
-
-        if font is None:
-            font = self.getfont()
-        return font.getsize(
-            text,
-            direction,
-            features,
-            language,
-            stroke_width,
-            __internal__=True,
-        )
 
     def multiline_textsize(
         self,
@@ -619,25 +621,24 @@ class ImageDraw:
         features=None,
         language=None,
         stroke_width=0,
-        __internal__=False,
     ):
-        if not __internal__:
-            deprecate("multiline_textsize", 10, "multiline_textbbox")
+        deprecate("multiline_textsize", 10, "multiline_textbbox")
         max_width = 0
         lines = self._multiline_split(text)
         line_spacing = self._multiline_spacing(font, spacing, stroke_width)
-        for line in lines:
-            line_width, line_height = self.textsize(
-                line,
-                font,
-                spacing,
-                direction,
-                features,
-                language,
-                stroke_width,
-                __internal__=True,
-            )
-            max_width = max(max_width, line_width)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            for line in lines:
+                line_width, line_height = self.textsize(
+                    line,
+                    font,
+                    spacing,
+                    direction,
+                    features,
+                    language,
+                    stroke_width,
+                )
+                max_width = max(max_width, line_width)
         return max_width, len(lines) * line_spacing - spacing
 
     def textlength(
@@ -662,14 +663,15 @@ class ImageDraw:
             return font.getlength(text, mode, direction, features, language)
         except AttributeError:
             deprecate("textlength support for fonts without getlength", 10)
-            size = self.textsize(
-                text,
-                font,
-                direction=direction,
-                features=features,
-                language=language,
-                __internal__=True,
-            )
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+                size = self.textsize(
+                    text,
+                    font,
+                    direction=direction,
+                    features=features,
+                    language=language,
+                )
             if direction == "ttb":
                 return size[1]
             return size[0]

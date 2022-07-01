@@ -24,6 +24,8 @@
 """
 
 
+import warnings
+
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
 from ._deprecate import deprecate
 
@@ -180,7 +182,9 @@ class Draw:
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.textsize`
         """
         deprecate("textsize", 10, "textbbox or textlength")
-        return self.draw.textsize(text, font=font.font, __internal__=True)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return self.draw.textsize(text, font=font.font)
 
     def textbbox(self, xy, text, font):
         """

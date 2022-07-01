@@ -147,8 +147,7 @@ class ImageFont:
 
         :return: (width, height)
         """
-        if not kwargs.get("__internal__"):
-            deprecate("getsize", 10, "getbbox or getlength")
+        deprecate("getsize", 10, "getbbox or getlength")
         return self.font.getsize(text)
 
     def getmask(self, text, mode="", *args, **kwargs):
@@ -425,7 +424,6 @@ class FreeTypeFont:
         features=None,
         language=None,
         stroke_width=0,
-        __internal__=False,
     ):
         """
         .. deprecated:: 9.2.0
@@ -479,8 +477,7 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
-        if not __internal__:
-            deprecate("getsize", 10, "getbbox or getlength")
+        deprecate("getsize", 10, "getbbox or getlength")
         # vertical offset is added for historical reasons
         # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
         size, offset = self.font.getsize(text, "L", direction, features, language)
@@ -545,14 +542,14 @@ class FreeTypeFont:
         deprecate("getsize_multiline", 10, "ImageDraw.multiline_textbbox")
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = (
-            self.getsize("A", stroke_width=stroke_width, __internal__=True)[1] + spacing
-        )
-        for line in lines:
-            line_width, line_height = self.getsize(
-                line, direction, features, language, stroke_width, __internal__=True
-            )
-            max_width = max(max_width, line_width)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
+            for line in lines:
+                line_width, line_height = self.getsize(
+                    line, direction, features, language, stroke_width
+                )
+                max_width = max(max_width, line_width)
 
         return max_width, len(lines) * line_spacing - spacing
 
@@ -856,11 +853,9 @@ class TransposedFont:
 
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
         """
-        if not kwargs.get("__internal__"):
-            deprecate("getsize", 10, "getbbox or getlength")
-        try:
-            w, h = self.font.getsize(text, __internal__=True)
-        except TypeError:
+        deprecate("getsize", 10, "getbbox or getlength")
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
             w, h = self.font.getsize(text)
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             return h, w
