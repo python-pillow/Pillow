@@ -715,6 +715,11 @@ class Image:
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
+
+                             A list of C encoders can be seen under
+                             codecs section of the function array in
+                             :file:`_imaging.c`. Python encoders are
+                             registered within the relevant plugins.
         :param args: Extra arguments to the encoder.
         :returns: A :py:class:`bytes` object.
         """
