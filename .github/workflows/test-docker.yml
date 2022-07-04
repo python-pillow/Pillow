@@ -2,6 +2,9 @@ name: Test Docker
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
@@ -82,6 +85,8 @@ jobs:
         name: ${{ matrix.docker }}
 
   success:
+    permissions:
+      contents: none
     needs: build
     runs-on: ubuntu-latest
     name: Docker Test Successful

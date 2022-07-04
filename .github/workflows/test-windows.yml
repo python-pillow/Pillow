@@ -2,6 +2,9 @@ name: Test Windows
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: windows-latest
@@ -189,6 +192,8 @@ jobs:
         path: dist\*.whl
 
   success:
+    permissions:
+      contents: none
     needs: build
     runs-on: ubuntu-latest
     name: Windows Test Successful
