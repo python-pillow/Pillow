@@ -178,7 +178,7 @@ class MacViewer(Viewer):
             else:
                 raise TypeError("Missing required argument: 'path'")
         subprocess.call(["open", "-a", "Preview.app", path])
-        exectable = sys.executable or shutil.which("python3")
+        executable = sys.executable or shutil.which("python3")
         if executable:
             subprocess.Popen(
                 [
