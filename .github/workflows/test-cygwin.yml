@@ -99,6 +99,8 @@ jobs:
           name: Cygwin Python 3.${{ matrix.python-minor-version }}
 
   success:
+    permissions:
+      contents: none
     needs: build
     runs-on: ubuntu-latest
     name: Cygwin Test Successful

@@ -12,6 +12,9 @@ on:
       - ".github/workflows/tidelift.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     if: github.repository_owner == 'python-pillow'

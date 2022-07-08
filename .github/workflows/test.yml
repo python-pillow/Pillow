@@ -2,6 +2,9 @@ name: Test
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
@@ -109,6 +112,8 @@ jobs:
         CODECOV_NAME: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
   success:
+    permissions:
+      contents: none
     needs: build
     runs-on: ubuntu-latest
     name: Test Successful

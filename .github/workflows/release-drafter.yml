@@ -7,8 +7,14 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   update_release_draft:
+    permissions:
+      contents: write  # for release-drafter/release-drafter to create a github release
+      pull-requests: write  # for release-drafter/release-drafter to add label to PR
     if: github.repository == 'python-pillow/Pillow'
     runs-on: ubuntu-latest
     steps:
