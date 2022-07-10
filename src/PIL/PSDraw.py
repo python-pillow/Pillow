@@ -93,9 +93,9 @@ class PSDraw:
 
                     .. code-block:: python
 
-                        %d %d M %d %d 0 Vr\n
+                        %d %d M 0 %d %d Vr\n
         """
-        self.fp.write(b"%d %d M %d %d 0 Vr\n" % box)
+        self.fp.write(b"%d %d M 0 %d %d Vr\n" % box)
 
     def text(self, xy, text):
         """
