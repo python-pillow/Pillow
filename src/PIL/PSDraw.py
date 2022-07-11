@@ -86,14 +86,8 @@ class PSDraw:
         """
         Draws a rectangle.
 
-        :param box: A 4-tuple of integers whose order and function is currently
-                    undocumented.
-
-                    Hint: the tuple is passed into this format string:
-
-                    .. code-block:: python
-
-                        %d %d M 0 %d %d Vr\n
+        :param box: A tuple of four integers, specifying left, bottom, width and
+           height.
         """
         self.fp.write(b"%d %d M 0 %d %d Vr\n" % box)
 
@@ -188,9 +182,9 @@ VDI_PS = b"""\
 /Vl { moveto lineto stroke } bind def
 /Vc { newpath 0 360 arc closepath } bind def
 /Vr {   exch dup 0 rlineto
-        exch dup neg 0 exch rlineto
+        exch dup 0 exch rlineto
         exch neg 0 rlineto
-        0 exch rlineto
+        0 exch neg rlineto
         100 div setgray fill 0 setgray } bind def
 /Tm matrix def
 /Ve {   Tm currentmatrix pop
