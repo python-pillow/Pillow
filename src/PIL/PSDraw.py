@@ -185,7 +185,7 @@ VDI_PS = b"""\
         exch dup 0 exch rlineto
         exch neg 0 rlineto
         0 exch neg rlineto
-        100 div setgray fill 0 setgray } bind def
+        setgray fill } bind def
 /Tm matrix def
 /Ve {   Tm currentmatrix pop
         translate scale newpath 0 0 .5 0 360 arc closepath
