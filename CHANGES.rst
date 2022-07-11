@@ -2,11 +2,14 @@
 Changelog (Pillow)
 ==================
 
-9.2.0 (2022-07-01)
+9.3.0 (unreleased)
 ------------------
 
 - Handle missing Python executable in ImageShow on macOS #6416
   [bryant1410, radarhere]
+
+9.2.0 (2022-07-01)
+------------------
 
 - Deprecate ImageFont.getsize and related functions #6381
   [nulano, radarhere]
