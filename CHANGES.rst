@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Raise ValueError if PNG sRGB chunk is truncated #6431
+  [radarhere]
+
 - Handle missing Python executable in ImageShow on macOS #6416
   [bryant1410, radarhere]
 
