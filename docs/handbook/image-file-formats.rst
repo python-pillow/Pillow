@@ -827,11 +827,8 @@ the output format must be specified explicitly::
 
     im.save('newimage.spi', format='SPIDER')
 
-For more information about the SPIDER image processing package, see the
-`SPIDER homepage`_ at `Wadsworth Center`_.
-
-.. _SPIDER homepage: https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
-.. _Wadsworth Center: https://www.wadsworth.org/
+For more information about the SPIDER image processing package, see
+https://github.com/spider-em/SPIDER
 
 TGA
 ^^^
