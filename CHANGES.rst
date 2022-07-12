@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Fixed PSDraw rectangle #6429
+  [radarhere]
+
 - Raise ValueError if PNG sRGB chunk is truncated #6431
   [radarhere]
 
