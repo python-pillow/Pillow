@@ -9,7 +9,7 @@ this class store bitmap fonts, and are used with the
 :py:meth:`PIL.ImageDraw.ImageDraw.text` method.
 
 PIL uses its own font file format to store bitmap fonts, limited to 256 characters. You can use
-`pilfont.py <https://github.com/python-pillow/pillow-scripts/blob/master/Scripts/pilfont.py>`_
+`pilfont.py <https://github.com/python-pillow/pillow-scripts/blob/main/Scripts/pilfont.py>`_
 from `pillow-scripts <https://pypi.org/project/pillow-scripts/>`_ to convert BDF and
 PCF font descriptors (X window font formats) to this format.
 
@@ -56,16 +56,17 @@ Methods
 
 .. autoclass:: PIL.ImageFont.TransposedFont
     :members:
+    :undoc-members:
 
 Constants
 ---------
 
-.. data:: PIL.ImageFont.LAYOUT_BASIC
+.. data:: PIL.ImageFont.Layout.BASIC
 
     Use basic text layout for TrueType font.
     Advanced features such as text direction are not supported.
 
-.. data:: PIL.ImageFont.LAYOUT_RAQM
+.. data:: PIL.ImageFont.Layout.RAQM
 
     Use Raqm text layout for TrueType font.
     Advanced features are supported.

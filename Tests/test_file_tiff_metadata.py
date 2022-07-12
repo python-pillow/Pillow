@@ -28,26 +28,26 @@ def test_rt_metadata(tmp_path):
     # For text items, we still have to decode('ascii','replace') because
     # the tiff file format can't take 8 bit bytes in that field.
 
-    basetextdata = "This is some arbitrary metadata for a text field"
-    bindata = basetextdata.encode("ascii") + b" \xff"
-    textdata = basetextdata + " " + chr(255)
-    reloaded_textdata = basetextdata + " ?"
-    floatdata = 12.345
-    doubledata = 67.89
+    base_text_data = "This is some arbitrary metadata for a text field"
+    bin_data = base_text_data.encode("ascii") + b" \xff"
+    text_data = base_text_data + " " + chr(255)
+    reloaded_text_data = base_text_data + " ?"
+    float_data = 12.345
+    double_data = 67.89
     info = TiffImagePlugin.ImageFileDirectory()
 
     ImageJMetaData = TAG_IDS["ImageJMetaData"]
     ImageJMetaDataByteCounts = TAG_IDS["ImageJMetaDataByteCounts"]
     ImageDescription = TAG_IDS["ImageDescription"]
 
-    info[ImageJMetaDataByteCounts] = len(bindata)
-    info[ImageJMetaData] = bindata
-    info[TAG_IDS["RollAngle"]] = floatdata
+    info[ImageJMetaDataByteCounts] = len(bin_data)
+    info[ImageJMetaData] = bin_data
+    info[TAG_IDS["RollAngle"]] = float_data
     info.tagtype[TAG_IDS["RollAngle"]] = 11
-    info[TAG_IDS["YawAngle"]] = doubledata
+    info[TAG_IDS["YawAngle"]] = double_data
     info.tagtype[TAG_IDS["YawAngle"]] = 12
 
-    info[ImageDescription] = textdata
+    info[ImageDescription] = text_data
 
     f = str(tmp_path / "temp.tif")
 
@@ -55,28 +55,28 @@ def test_rt_metadata(tmp_path):
 
     with Image.open(f) as loaded:
 
-        assert loaded.tag[ImageJMetaDataByteCounts] == (len(bindata),)
-        assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bindata),)
+        assert loaded.tag[ImageJMetaDataByteCounts] == (len(bin_data),)
+        assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bin_data),)
 
-        assert loaded.tag[ImageJMetaData] == bindata
-        assert loaded.tag_v2[ImageJMetaData] == bindata
+        assert loaded.tag[ImageJMetaData] == bin_data
+        assert loaded.tag_v2[ImageJMetaData] == bin_data
 
-        assert loaded.tag[ImageDescription] == (reloaded_textdata,)
-        assert loaded.tag_v2[ImageDescription] == reloaded_textdata
+        assert loaded.tag[ImageDescription] == (reloaded_text_data,)
+        assert loaded.tag_v2[ImageDescription] == reloaded_text_data
 
         loaded_float = loaded.tag[TAG_IDS["RollAngle"]][0]
-        assert round(abs(loaded_float - floatdata), 5) == 0
+        assert round(abs(loaded_float - float_data), 5) == 0
         loaded_double = loaded.tag[TAG_IDS["YawAngle"]][0]
-        assert round(abs(loaded_double - doubledata), 7) == 0
+        assert round(abs(loaded_double - double_data), 7) == 0
 
     # check with 2 element ImageJMetaDataByteCounts, issue #2006
 
-    info[ImageJMetaDataByteCounts] = (8, len(bindata) - 8)
+    info[ImageJMetaDataByteCounts] = (8, len(bin_data) - 8)
     img.save(f, tiffinfo=info)
     with Image.open(f) as loaded:
 
-        assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bindata) - 8)
-        assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bindata) - 8)
+        assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
+        assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
 
 
 def test_read_metadata():
@@ -122,7 +122,7 @@ def test_read_metadata():
 
 
 def test_write_metadata(tmp_path):
-    """ Test metadata writing through the python code """
+    """Test metadata writing through the python code"""
     with Image.open("Tests/images/hopper.tif") as img:
         f = str(tmp_path / "temp.tiff")
         img.save(f, tiffinfo=img.tag)
@@ -177,6 +177,27 @@ def test_change_stripbytecounts_tag_type(tmp_path):
 def test_no_duplicate_50741_tag():
     assert TAG_IDS["MakerNoteSafety"] == 50741
     assert TAG_IDS["BestQualityScale"] == 50780
+
+
+def test_iptc(tmp_path):
+    out = str(tmp_path / "temp.tiff")
+    with Image.open("Tests/images/hopper.Lab.tif") as im:
+        im.save(out)
+
+
+def test_undefined_zero(tmp_path):
+    # Check that the tag has not been changed since this test was created
+    tag = TiffTags.TAGS_V2[45059]
+    assert tag.type == TiffTags.UNDEFINED
+    assert tag.length == 0
+
+    info = TiffImagePlugin.ImageFileDirectory(b"II*\x00\x08\x00\x00\x00")
+    info[45059] = b"test"
+
+    # Assert that the tag value does not change by setting it to itself
+    original = info[45059]
+    info[45059] = info[45059]
+    assert info[45059] == original
 
 
 def test_empty_metadata():
@@ -237,7 +258,7 @@ def test_ifd_unsigned_rational(tmp_path):
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
-    max_long = 2 ** 32 - 1
+    max_long = 2**32 - 1
 
     # 4 bytes unsigned long
     numerator = max_long
@@ -269,8 +290,8 @@ def test_ifd_signed_rational(tmp_path):
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     # pair of 4 byte signed longs
-    numerator = 2 ** 31 - 1
-    denominator = -(2 ** 31)
+    numerator = 2**31 - 1
+    denominator = -(2**31)
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
@@ -281,8 +302,8 @@ def test_ifd_signed_rational(tmp_path):
         assert numerator == reloaded.tag_v2[37380].numerator
         assert denominator == reloaded.tag_v2[37380].denominator
 
-    numerator = -(2 ** 31)
-    denominator = 2 ** 31 - 1
+    numerator = -(2**31)
+    denominator = 2**31 - 1
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
 
@@ -294,7 +315,7 @@ def test_ifd_signed_rational(tmp_path):
         assert denominator == reloaded.tag_v2[37380].denominator
 
     # out of bounds of 4 byte signed long
-    numerator = -(2 ** 31) - 1
+    numerator = -(2**31) - 1
     denominator = 1
 
     info[37380] = TiffImagePlugin.IFDRational(numerator, denominator)
@@ -303,7 +324,7 @@ def test_ifd_signed_rational(tmp_path):
     im.save(out, tiffinfo=info, compression="raw")
 
     with Image.open(out) as reloaded:
-        assert 2 ** 31 - 1 == reloaded.tag_v2[37380].numerator
+        assert 2**31 - 1 == reloaded.tag_v2[37380].numerator
         assert -1 == reloaded.tag_v2[37380].denominator
 
 
@@ -335,7 +356,7 @@ def test_empty_values():
     assert 33432 in info
 
 
-def test_PhotoshopInfo(tmp_path):
+def test_photoshop_info(tmp_path):
     with Image.open("Tests/images/issue_2278.tif") as im:
         assert len(im.tag_v2[34377]) == 70
         assert isinstance(im.tag_v2[34377], bytes)
@@ -355,3 +376,30 @@ def test_too_many_entries():
 
     # Should not raise ValueError.
     pytest.warns(UserWarning, lambda: ifd[277])
+
+
+def test_tag_group_data():
+    base_ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    interop_ifd = TiffImagePlugin.ImageFileDirectory_v2(group=40965)
+    for ifd in (base_ifd, interop_ifd):
+        ifd[2] = "test"
+        ifd[256] = 10
+
+    assert base_ifd.tagtype[256] == 4
+    assert interop_ifd.tagtype[256] != base_ifd.tagtype[256]
+
+    assert interop_ifd.tagtype[2] == 7
+    assert base_ifd.tagtype[2] != interop_ifd.tagtype[256]
+
+
+def test_empty_subifd(tmp_path):
+    out = str(tmp_path / "temp.jpg")
+
+    im = hopper()
+    exif = im.getexif()
+    exif[TiffImagePlugin.EXIFIFD] = {}
+    im.save(out, exif=exif)
+
+    with Image.open(out) as reloaded:
+        exif = reloaded.getexif()
+        assert exif.get_ifd(TiffImagePlugin.EXIFIFD) == {}

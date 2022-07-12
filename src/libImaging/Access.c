@@ -11,7 +11,7 @@
 
 #include "Imaging.h"
 
-/* use Tests/make_hash.py to calculate these values */
+/* use make_hash.py from the pillow-scripts repository to calculate these values */
 #define ACCESS_TABLE_SIZE 27
 #define ACCESS_TABLE_HASH 3078
 

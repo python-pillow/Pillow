@@ -10,8 +10,7 @@ ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
 
 
 class TestDecompressionBomb:
-    @classmethod
-    def teardown_class(cls):
+    def teardown_method(self, method):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
     def test_no_warning_small_file(self):
@@ -62,6 +61,11 @@ class TestDecompressionBomb:
             with Image.open("Tests/images/decompression_bomb.gif"):
                 pass
 
+    def test_exception_gif_extents(self):
+        with Image.open("Tests/images/decompression_bomb_extents.gif") as im:
+            with pytest.raises(Image.DecompressionBombError):
+                im.seek(1)
+
     def test_exception_bmp(self):
         with pytest.raises(Image.DecompressionBombError):
             with Image.open("Tests/images/bmp/b/reallybig.bmp"):
@@ -70,15 +74,15 @@ class TestDecompressionBomb:
 
 class TestDecompressionCrop:
     @classmethod
-    def setup_class(self):
+    def setup_class(cls):
         width, height = 128, 128
         Image.MAX_IMAGE_PIXELS = height * width * 4 - 1
 
     @classmethod
-    def teardown_class(self):
+    def teardown_class(cls):
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
-    def testEnlargeCrop(self):
+    def test_enlarge_crop(self):
         # Crops can extend the extents, therefore we should have the
         # same decompression bomb warnings on them.
         with hopper() as src:
@@ -86,21 +90,12 @@ class TestDecompressionCrop:
             pytest.warns(Image.DecompressionBombWarning, src.crop, box)
 
     def test_crop_decompression_checks(self):
-
         im = Image.new("RGB", (100, 100))
 
-        good_values = ((-9999, -9999, -9990, -9990), (-999, -999, -990, -990))
-
-        warning_values = ((-160, -160, 99, 99), (160, 160, -99, -99))
-
-        error_values = ((-99909, -99990, 99999, 99999), (99909, 99990, -99999, -99999))
-
-        for value in good_values:
+        for value in ((-9999, -9999, -9990, -9990), (-999, -999, -990, -990)):
             assert im.crop(value).size == (9, 9)
 
-        for value in warning_values:
-            pytest.warns(Image.DecompressionBombWarning, im.crop, value)
+        pytest.warns(Image.DecompressionBombWarning, im.crop, (-160, -160, 99, 99))
 
-        for value in error_values:
-            with pytest.raises(Image.DecompressionBombError):
-                im.crop(value)
+        with pytest.raises(Image.DecompressionBombError):
+            im.crop((-99909, -99990, 99999, 99999))

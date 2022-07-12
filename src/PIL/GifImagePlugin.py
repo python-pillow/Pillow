@@ -28,11 +28,24 @@ import itertools
 import math
 import os
 import subprocess
+from enum import IntEnum
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
+
+
+class LoadingStrategy(IntEnum):
+    """.. versionadded:: 9.1.0"""
+
+    RGB_AFTER_FIRST = 0
+    RGB_AFTER_DIFFERENT_PALETTE_ONLY = 1
+    RGB_ALWAYS = 2
+
+
+#: .. versionadded:: 9.1.0
+LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 
 # --------------------------------------------------------------------
 # Identify/read GIF files
@@ -61,6 +74,12 @@ class GifImageFile(ImageFile.ImageFile):
             return self.fp.read(s[0])
         return None
 
+    def _is_palette_needed(self, p):
+        for i in range(0, len(p), 3):
+            if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
+                return True
+        return False
+
     def _open(self):
 
         # Screen
@@ -79,13 +98,11 @@ class GifImageFile(ImageFile.ImageFile):
             self.info["background"] = s[11]
             # check if palette contains colour indices
             p = self.fp.read(3 << bits)
-            for i in range(0, len(p), 3):
-                if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
-                    p = ImagePalette.raw("RGB", p)
-                    self.global_palette = self.palette = p
-                    break
+            if self._is_palette_needed(p):
+                p = ImagePalette.raw("RGB", p)
+                self.global_palette = self.palette = p
 
-        self.__fp = self.fp  # FIXME: hack
+        self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
         self._n_frames = None
         self._is_animated = None
@@ -97,7 +114,7 @@ class GifImageFile(ImageFile.ImageFile):
             current = self.tell()
             try:
                 while True:
-                    self.seek(self.tell() + 1)
+                    self._seek(self.tell() + 1, False)
             except EOFError:
                 self._n_frames = self.tell() + 1
             self.seek(current)
@@ -110,22 +127,23 @@ class GifImageFile(ImageFile.ImageFile):
                 self._is_animated = self._n_frames != 1
             else:
                 current = self.tell()
-
-                try:
-                    self.seek(1)
+                if current:
                     self._is_animated = True
-                except EOFError:
-                    self._is_animated = False
+                else:
+                    try:
+                        self._seek(1, False)
+                        self._is_animated = True
+                    except EOFError:
+                        self._is_animated = False
 
-                self.seek(current)
+                    self.seek(current)
         return self._is_animated
 
     def seek(self, frame):
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
-            if frame != 0:
-                self.im = None
+            self.im = None
             self._seek(0)
 
         last_frame = self.__frame
@@ -136,29 +154,26 @@ class GifImageFile(ImageFile.ImageFile):
                 self.seek(last_frame)
                 raise EOFError("no more images in GIF file") from e
 
-    def _seek(self, frame):
+    def _seek(self, frame, update_image=True):
 
         if frame == 0:
             # rewind
             self.__offset = 0
             self.dispose = None
-            self.dispose_extent = [0, 0, 0, 0]  # x0, y0, x1, y1
             self.__frame = -1
-            self.__fp.seek(self.__rewind)
-            self._prev_im = None
+            self._fp.seek(self.__rewind)
             self.disposal_method = 0
+            if "comment" in self.info:
+                del self.info["comment"]
         else:
             # ensure that the previous frame was loaded
-            if not self.im:
+            if self.tile and update_image:
                 self.load()
 
         if frame != self.__frame + 1:
             raise ValueError(f"cannot seek to frame {frame}")
-        self.__frame = frame
 
-        self.tile = []
-
-        self.fp = self.__fp
+        self.fp = self._fp
         if self.__offset:
             # backup to last frame
             self.fp.seek(self.__offset)
@@ -166,17 +181,22 @@ class GifImageFile(ImageFile.ImageFile):
                 pass
             self.__offset = 0
 
-        if self.dispose:
-            self.im.paste(self.dispose, self.dispose_extent)
+        s = self.fp.read(1)
+        if not s or s == b";":
+            raise EOFError
 
-        from copy import copy
+        self.tile = []
 
-        self.palette = copy(self.global_palette)
+        palette = None
 
         info = {}
+        frame_transparency = None
+        interlace = None
+        frame_dispose_extent = None
         while True:
 
-            s = self.fp.read(1)
+            if not s:
+                s = self.fp.read(1)
             if not s or s == b";":
                 break
 
@@ -192,7 +212,7 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     flags = block[0]
                     if flags & 1:
-                        info["transparency"] = block[3]
+                        frame_transparency = block[3]
                     info["duration"] = i16(block, 1) * 10
 
                     # disposal method - find the value of bits 4 - 6
@@ -208,14 +228,21 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     # comment extension
                     #
+                    comment = b""
+
+                    # Read this comment block
                     while block:
-                        if "comment" in info:
-                            info["comment"] += block
-                        else:
-                            info["comment"] = block
+                        comment += block
                         block = self.data()
+
+                    if "comment" in info:
+                        # If multiple comment blocks in frame, separate with \n
+                        info["comment"] += b"\n" + comment
+                    else:
+                        info["comment"] = comment
+                    s = None
                     continue
-                elif s[0] == 255:
+                elif s[0] == 255 and frame == 0:
                     #
                     # application extension
                     #
@@ -223,7 +250,7 @@ class GifImageFile(ImageFile.ImageFile):
                     if block[:11] == b"NETSCAPE2.0":
                         block = self.data()
                         if len(block) >= 3 and block[0] == 1:
-                            info["loop"] = i16(block, 1)
+                            self.info["loop"] = i16(block, 1)
                 while self.data():
                     pass
 
@@ -236,29 +263,80 @@ class GifImageFile(ImageFile.ImageFile):
                 # extent
                 x0, y0 = i16(s, 0), i16(s, 2)
                 x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
-                if x1 > self.size[0] or y1 > self.size[1]:
+                if (x1 > self.size[0] or y1 > self.size[1]) and update_image:
                     self._size = max(x1, self.size[0]), max(y1, self.size[1])
-                self.dispose_extent = x0, y0, x1, y1
+                    Image._decompression_bomb_check(self._size)
+                frame_dispose_extent = x0, y0, x1, y1
                 flags = s[8]
 
                 interlace = (flags & 64) != 0
 
                 if flags & 128:
                     bits = (flags & 7) + 1
-                    self.palette = ImagePalette.raw("RGB", self.fp.read(3 << bits))
+                    p = self.fp.read(3 << bits)
+                    if self._is_palette_needed(p):
+                        palette = ImagePalette.raw("RGB", p)
 
                 # image data
                 bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
-                self.tile = [
-                    ("gif", (x0, y0, x1, y1), self.__offset, (bits, interlace))
-                ]
                 break
 
             else:
                 pass
                 # raise OSError, "illegal GIF tag `%x`" % s[0]
+            s = None
 
+        if interlace is None:
+            # self._fp = None
+            raise EOFError
+
+        self.__frame = frame
+        if not update_image:
+            return
+
+        if self.dispose:
+            self.im.paste(self.dispose, self.dispose_extent)
+
+        self._frame_palette = palette or self.global_palette
+        if frame == 0:
+            if self._frame_palette:
+                self.mode = (
+                    "RGB" if LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS else "P"
+                )
+            else:
+                self.mode = "L"
+
+            if not palette and self.global_palette:
+                from copy import copy
+
+                palette = copy(self.global_palette)
+            self.palette = palette
+        else:
+            self._frame_transparency = frame_transparency
+            if self.mode == "P":
+                if (
+                    LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+                    or palette
+                ):
+                    self.pyaccess = None
+                    if "transparency" in self.info:
+                        self.im.putpalettealpha(self.info["transparency"], 0)
+                        self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
+                        self.mode = "RGBA"
+                        del self.info["transparency"]
+                    else:
+                        self.mode = "RGB"
+                        self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+
+        def _rgb(color):
+            if self._frame_palette:
+                color = tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
+            else:
+                color = (color, color, color)
+            return color
+
+        self.dispose_extent = frame_dispose_extent
         try:
             if self.disposal_method < 2:
                 # do not dispose or none specified
@@ -271,56 +349,110 @@ class GifImageFile(ImageFile.ImageFile):
                 dispose_size = (x1 - x0, y1 - y0)
 
                 Image._decompression_bomb_check(dispose_size)
-                self.dispose = Image.core.fill(
-                    "P", dispose_size, self.info["background"]
-                )
+
+                # by convention, attempt to use transparency first
+                dispose_mode = "P"
+                color = self.info.get("transparency", frame_transparency)
+                if color is not None:
+                    if self.mode in ("RGB", "RGBA"):
+                        dispose_mode = "RGBA"
+                        color = _rgb(color) + (0,)
+                else:
+                    color = self.info.get("background", 0)
+                    if self.mode in ("RGB", "RGBA"):
+                        dispose_mode = "RGB"
+                        color = _rgb(color)
+                self.dispose = Image.core.fill(dispose_mode, dispose_size, color)
             else:
                 # replace with previous contents
-                if self.im:
+                if self.im is not None:
                     # only dispose the extent in this frame
                     self.dispose = self._crop(self.im, self.dispose_extent)
-        except (AttributeError, KeyError):
+                elif frame_transparency is not None:
+                    x0, y0, x1, y1 = self.dispose_extent
+                    dispose_size = (x1 - x0, y1 - y0)
+
+                    Image._decompression_bomb_check(dispose_size)
+                    dispose_mode = "P"
+                    color = frame_transparency
+                    if self.mode in ("RGB", "RGBA"):
+                        dispose_mode = "RGBA"
+                        color = _rgb(frame_transparency) + (0,)
+                    self.dispose = Image.core.fill(dispose_mode, dispose_size, color)
+        except AttributeError:
             pass
 
-        if not self.tile:
-            # self.__fp = None
-            raise EOFError
+        if interlace is not None:
+            transparency = -1
+            if frame_transparency is not None:
+                if frame == 0:
+                    self.info["transparency"] = frame_transparency
+                elif self.mode not in ("RGB", "RGBA"):
+                    transparency = frame_transparency
+            self.tile = [
+                (
+                    "gif",
+                    (x0, y0, x1, y1),
+                    self.__offset,
+                    (bits, interlace, transparency),
+                )
+            ]
 
-        for k in ["transparency", "duration", "comment", "extension", "loop"]:
+        if info.get("comment"):
+            self.info["comment"] = info["comment"]
+        for k in ["duration", "extension"]:
             if k in info:
                 self.info[k] = info[k]
             elif k in self.info:
                 del self.info[k]
 
-        self.mode = "L"
-        if self.palette:
-            self.mode = "P"
+    def load_prepare(self):
+        temp_mode = "P" if self._frame_palette else "L"
+        self._prev_im = None
+        if self.__frame == 0:
+            if "transparency" in self.info:
+                self.im = Image.core.fill(
+                    temp_mode, self.size, self.info["transparency"]
+                )
+        elif self.mode in ("RGB", "RGBA"):
+            self._prev_im = self.im
+            if self._frame_palette:
+                self.im = Image.core.fill("P", self.size, self._frame_transparency or 0)
+                self.im.putpalette(*self._frame_palette.getdata())
+            else:
+                self.im = None
+        self.mode = temp_mode
+        self._frame_palette = None
+
+        super().load_prepare()
+
+    def load_end(self):
+        if self.__frame == 0:
+            if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
+                self.mode = "RGB"
+                self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+            return
+        if self.mode == "P" and self._prev_im:
+            if self._frame_transparency is not None:
+                self.im.putpalettealpha(self._frame_transparency, 0)
+                frame_im = self.im.convert("RGBA")
+            else:
+                frame_im = self.im.convert("RGB")
+        else:
+            if not self._prev_im:
+                return
+            frame_im = self.im
+        frame_im = self._crop(frame_im, self.dispose_extent)
+
+        self.im = self._prev_im
+        self.mode = self.im.mode
+        if frame_im.mode == "RGBA":
+            self.im.paste(frame_im, self.dispose_extent, frame_im)
+        else:
+            self.im.paste(frame_im, self.dispose_extent)
 
     def tell(self):
         return self.__frame
-
-    def load_end(self):
-        ImageFile.ImageFile.load_end(self)
-
-        # if the disposal method is 'do not dispose', transparent
-        # pixels should show the content of the previous frame
-        if self._prev_im and self._prev_disposal_method == 1:
-            # we do this by pasting the updated area onto the previous
-            # frame which we then use as the current image content
-            updated = self._crop(self.im, self.dispose_extent)
-            self._prev_im.paste(updated, self.dispose_extent, updated.convert("RGBA"))
-            self.im = self._prev_im
-        self._prev_im = self.im.copy()
-        self._prev_disposal_method = self.disposal_method
-
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
 
 
 # --------------------------------------------------------------------
@@ -330,7 +462,7 @@ class GifImageFile(ImageFile.ImageFile):
 RAWMODE = {"1": "L", "L": "L", "P": "P"}
 
 
-def _normalize_mode(im, initial_call=False):
+def _normalize_mode(im):
     """
     Takes an image (or frame), returns an image in a mode that is appropriate
     for saving in a Gif.
@@ -338,25 +470,20 @@ def _normalize_mode(im, initial_call=False):
     It may return the original image, or it may return an image converted to
     palette or 'L' mode.
 
-    UNDONE: What is the point of mucking with the initial call palette, for
-    an image that shouldn't have a palette, or it would be a mode 'P' and
-    get returned in the RAWMODE clause.
-
     :param im: Image object
-    :param initial_call: Default false, set to true for a single frame.
     :returns: Image object
     """
     if im.mode in RAWMODE:
         im.load()
         return im
     if Image.getmodebase(im.mode) == "RGB":
-        if initial_call:
-            palette_size = 256
-            if im.palette:
-                palette_size = len(im.palette.getdata()[1]) // 3
-            return im.convert("P", palette=Image.ADAPTIVE, colors=palette_size)
-        else:
-            return im.convert("P")
+        im = im.convert("P", palette=Image.Palette.ADAPTIVE)
+        if im.palette.mode == "RGBA":
+            for rgba in im.palette.colors.keys():
+                if rgba[3] == 0:
+                    im.info["transparency"] = im.palette.colors[rgba]
+                    break
+        return im
     return im.convert("L")
 
 
@@ -378,15 +505,7 @@ def _normalize_palette(im, palette, info):
         if isinstance(palette, (bytes, bytearray, list)):
             source_palette = bytearray(palette[:768])
         if isinstance(palette, ImagePalette.ImagePalette):
-            source_palette = bytearray(
-                itertools.chain.from_iterable(
-                    zip(
-                        palette.palette[:256],
-                        palette.palette[256:512],
-                        palette.palette[512:768],
-                    )
-                )
-            )
+            source_palette = bytearray(palette.palette)
 
     if im.mode == "P":
         if not source_palette:
@@ -396,16 +515,33 @@ def _normalize_palette(im, palette, info):
             source_palette = bytearray(i // 3 for i in range(768))
         im.palette = ImagePalette.ImagePalette("RGB", palette=source_palette)
 
-    used_palette_colors = _get_optimize(im, info)
-    if used_palette_colors is not None:
-        return im.remap_palette(used_palette_colors, source_palette)
+    if palette:
+        used_palette_colors = []
+        for i in range(0, len(source_palette), 3):
+            source_color = tuple(source_palette[i : i + 3])
+            try:
+                index = im.palette.colors[source_color]
+            except KeyError:
+                index = None
+            used_palette_colors.append(index)
+        for i, index in enumerate(used_palette_colors):
+            if index is None:
+                for j in range(len(used_palette_colors)):
+                    if j not in used_palette_colors:
+                        used_palette_colors[i] = j
+                        break
+        im = im.remap_palette(used_palette_colors)
+    else:
+        used_palette_colors = _get_optimize(im, info)
+        if used_palette_colors is not None:
+            return im.remap_palette(used_palette_colors, source_palette)
 
     im.palette.palette = source_palette
     return im
 
 
 def _write_single_frame(im, fp, palette):
-    im_out = _normalize_mode(im, True)
+    im_out = _normalize_mode(im)
     for k, v in im_out.info.items():
         im.encoderinfo.setdefault(k, v)
     im_out = _normalize_palette(im_out, palette, im.encoderinfo)
@@ -427,7 +563,7 @@ def _write_single_frame(im, fp, palette):
 
 def _write_multiple_frames(im, fp, palette):
 
-    duration = im.encoderinfo.get("duration", im.info.get("duration"))
+    duration = im.encoderinfo.get("duration")
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
     im_frames = []
@@ -439,12 +575,18 @@ def _write_multiple_frames(im, fp, palette):
             im_frame = _normalize_mode(im_frame.copy())
             if frame_count == 0:
                 for k, v in im_frame.info.items():
+                    if k == "transparency":
+                        continue
                     im.encoderinfo.setdefault(k, v)
-            im_frame = _normalize_palette(im_frame, palette, im.encoderinfo)
 
             encoderinfo = im.encoderinfo.copy()
+            im_frame = _normalize_palette(im_frame, palette, encoderinfo)
+            if "transparency" in im_frame.info:
+                encoderinfo.setdefault("transparency", im_frame.info["transparency"])
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
+            elif duration is None and "duration" in im_frame.info:
+                encoderinfo["duration"] = im_frame.info["duration"]
             if isinstance(disposal, (list, tuple)):
                 encoderinfo["disposal"] = disposal[frame_count]
             frame_count += 1
@@ -454,10 +596,10 @@ def _write_multiple_frames(im, fp, palette):
                 previous = im_frames[-1]
                 if encoderinfo.get("disposal") == 2:
                     if background_im is None:
-                        background = _get_background(
-                            im,
-                            im.encoderinfo.get("background", im.info.get("background")),
+                        color = im.encoderinfo.get(
+                            "transparency", im.info.get("transparency", (0, 0, 0))
                         )
+                        background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
                         background_im.putpalette(im_frames[0]["im"].palette)
                     base_im = background_im
@@ -489,7 +631,8 @@ def _write_multiple_frames(im, fp, palette):
                 offset = (0, 0)
             else:
                 # compress difference
-                frame_data["encoderinfo"]["include_color_table"] = True
+                if not palette:
+                    frame_data["encoderinfo"]["include_color_table"] = True
 
                 im_frame = im_frame.crop(frame_data["bbox"])
                 offset = frame_data["bbox"][:2]
@@ -536,11 +679,14 @@ def get_interlace(im):
 def _write_local_header(fp, im, offset, flags):
     transparent_color_exists = False
     try:
-        transparency = im.encoderinfo["transparency"]
-    except KeyError:
+        if "transparency" in im.encoderinfo:
+            transparency = im.encoderinfo["transparency"]
+        else:
+            transparency = im.info["transparency"]
+        transparency = int(transparency)
+    except (KeyError, ValueError):
         pass
     else:
-        transparency = int(transparency)
         # optimize the block away if transparent color is not used
         transparent_color_exists = True
 
@@ -575,27 +721,6 @@ def _write_local_header(fp, im, offset, flags):
             + o8(0)
         )
 
-    if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]):
-        fp.write(b"!" + o8(254))  # extension intro
-        comment = im.encoderinfo["comment"]
-        if isinstance(comment, str):
-            comment = comment.encode()
-        for i in range(0, len(comment), 255):
-            subblock = comment[i : i + 255]
-            fp.write(o8(len(subblock)) + subblock)
-        fp.write(o8(0))
-    if "loop" in im.encoderinfo:
-        number_of_loops = im.encoderinfo["loop"]
-        fp.write(
-            b"!"
-            + o8(255)  # extension intro
-            + o8(11)
-            + b"NETSCAPE2.0"
-            + o8(3)
-            + o8(1)
-            + o16(number_of_loops)  # number of loops
-            + o8(0)
-        )
     include_color_table = im.encoderinfo.get("include_color_table")
     if include_color_table:
         palette_bytes = _get_palette_bytes(im)
@@ -700,9 +825,18 @@ def _get_optimize(im, info):
                 if count:
                     used_palette_colors.append(i)
 
-            if optimise or (
-                len(used_palette_colors) <= 128
-                and max(used_palette_colors) > len(used_palette_colors)
+            if optimise or max(used_palette_colors) >= len(used_palette_colors):
+                return used_palette_colors
+
+            num_palette_colors = len(im.palette.palette) // Image.getmodebands(
+                im.palette.mode
+            )
+            current_palette_size = 1 << (num_palette_colors - 1).bit_length()
+            if (
+                # check that the palette would become smaller when saved
+                len(used_palette_colors) <= current_palette_size // 2
+                # check that the palette is not already the smallest possible size
+                and current_palette_size > 2
             ):
                 return used_palette_colors
 
@@ -745,15 +879,23 @@ def _get_palette_bytes(im):
     return im.palette.palette
 
 
-def _get_background(im, infoBackground):
+def _get_background(im, info_background):
     background = 0
-    if infoBackground:
-        background = infoBackground
+    if info_background:
+        background = info_background
         if isinstance(background, tuple):
             # WebPImagePlugin stores an RGBA value in info["background"]
             # So it must be converted to the same format as GifImagePlugin's
             # info["background"] - a global color table index
-            background = im.palette.getcolor(background)
+            try:
+                background = im.palette.getcolor(background, im)
+            except ValueError as e:
+                if str(e) == "cannot allocate more than 256 colors":
+                    # If all 256 colors are in use,
+                    # then there is no need for the background color
+                    return 0
+                else:
+                    raise
     return background
 
 
@@ -761,27 +903,26 @@ def _get_global_header(im, info):
     """Return a list of strings representing a GIF header"""
 
     # Header Block
-    # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+    # https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
     version = b"87a"
-    for extensionKey in ["transparency", "duration", "loop", "comment"]:
-        if info and extensionKey in info:
-            if (extensionKey == "duration" and info[extensionKey] == 0) or (
-                extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255)
-            ):
-                continue
-            version = b"89a"
-            break
-    else:
-        if im.info.get("version") == b"89a":
-            version = b"89a"
+    if im.info.get("version") == b"89a" or (
+        info
+        and (
+            "transparency" in info
+            or "loop" in info
+            or info.get("duration")
+            or info.get("comment")
+        )
+    ):
+        version = b"89a"
 
     background = _get_background(im, info.get("background"))
 
     palette_bytes = _get_palette_bytes(im)
     color_table_size = _get_color_table_size(palette_bytes)
 
-    return [
+    header = [
         b"GIF"  # signature
         + version  # version
         + o16(im.size[0])  # canvas width
@@ -794,6 +935,30 @@ def _get_global_header(im, info):
         # Global Color Table
         _get_header_palette(palette_bytes),
     ]
+    if "loop" in info:
+        header.append(
+            b"!"
+            + o8(255)  # extension intro
+            + o8(11)
+            + b"NETSCAPE2.0"
+            + o8(3)
+            + o8(1)
+            + o16(info["loop"])  # number of loops
+            + o8(0)
+        )
+    if info.get("comment"):
+        comment_block = b"!" + o8(254)  # extension intro
+
+        comment = info["comment"]
+        if isinstance(comment, str):
+            comment = comment.encode()
+        for i in range(0, len(comment), 255):
+            subblock = comment[i : i + 255]
+            comment_block += o8(len(subblock)) + subblock
+
+        comment_block += o8(0)
+        header.append(comment_block)
+    return header
 
 
 def _write_frame_data(fp, im_frame, offset, params):
@@ -844,8 +1009,6 @@ def getheader(im, palette=None, info=None):
     return header, used_palette_colors
 
 
-# To specify duration, add the time in milliseconds to getdata(),
-# e.g. getdata(im_frame, duration=1000)
 def getdata(im, offset=(0, 0), **params):
     """
     Legacy Method
@@ -854,10 +1017,13 @@ def getdata(im, offset=(0, 0), **params):
     The first string is a local image header, the rest contains
     encoded image data.
 
+    To specify duration, add the time in milliseconds,
+    e.g. ``getdata(im_frame, duration=1000)``
+
     :param im: Image object
-    :param offset: Tuple of (x, y) pixels. Defaults to (0,0)
-    :param \\**params: E.g. duration or other encoder info parameters
-    :returns: List of Bytes containing gif encoded frame data
+    :param offset: Tuple of (x, y) pixels. Defaults to (0, 0)
+    :param \\**params: e.g. duration or other encoder info parameters
+    :returns: List of bytes containing GIF encoded frame data
 
     """
 

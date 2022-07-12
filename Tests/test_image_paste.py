@@ -1,6 +1,6 @@
 from PIL import Image
 
-from .helper import assert_image_equal, cached_property
+from .helper import CachedProperty, assert_image_equal
 
 
 class TestImagingPaste:
@@ -34,7 +34,7 @@ class TestImagingPaste:
         im.paste(im2, mask)
         self.assert_9points_image(im, expected)
 
-    @cached_property
+    @CachedProperty
     def mask_1(self):
         mask = Image.new("1", (self.size, self.size))
         px = mask.load()
@@ -43,11 +43,11 @@ class TestImagingPaste:
                 px[y, x] = (x + y) % 2
         return mask
 
-    @cached_property
+    @CachedProperty
     def mask_L(self):
-        return self.gradient_L.transpose(Image.ROTATE_270)
+        return self.gradient_L.transpose(Image.Transpose.ROTATE_270)
 
-    @cached_property
+    @CachedProperty
     def gradient_L(self):
         gradient = Image.new("L", (self.size, self.size))
         px = gradient.load()
@@ -56,38 +56,48 @@ class TestImagingPaste:
                 px[y, x] = (x + y) % 255
         return gradient
 
-    @cached_property
+    @CachedProperty
     def gradient_RGB(self):
         return Image.merge(
             "RGB",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.ROTATE_90),
-                self.gradient_L.transpose(Image.ROTATE_180),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
             ],
         )
 
-    @cached_property
+    @CachedProperty
+    def gradient_LA(self):
+        return Image.merge(
+            "LA",
+            [
+                self.gradient_L,
+                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+            ],
+        )
+
+    @CachedProperty
     def gradient_RGBA(self):
         return Image.merge(
             "RGBA",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.ROTATE_90),
-                self.gradient_L.transpose(Image.ROTATE_180),
-                self.gradient_L.transpose(Image.ROTATE_270),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_270),
             ],
         )
 
-    @cached_property
+    @CachedProperty
     def gradient_RGBa(self):
         return Image.merge(
             "RGBa",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.ROTATE_90),
-                self.gradient_L.transpose(Image.ROTATE_180),
-                self.gradient_L.transpose(Image.ROTATE_270),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
+                self.gradient_L.transpose(Image.Transpose.ROTATE_270),
             ],
         )
 
@@ -141,6 +151,28 @@ class TestImagingPaste:
                     (239, 239, 207, 207),
                     (128, 1, 128, 254),
                     (207, 113, 112, 207),
+                    (255, 191, 128, 191),
+                ],
+            )
+
+    def test_image_mask_LA(self):
+        for mode in ("RGBA", "RGB", "L"):
+            im = Image.new(mode, (200, 200), "white")
+            im2 = getattr(self, "gradient_" + mode)
+
+            self.assert_9points_paste(
+                im,
+                im2,
+                self.gradient_LA,
+                [
+                    (128, 191, 255, 191),
+                    (112, 207, 206, 111),
+                    (128, 254, 128, 1),
+                    (208, 208, 239, 239),
+                    (192, 191, 191, 191),
+                    (207, 207, 112, 113),
+                    (255, 255, 255, 255),
+                    (239, 207, 207, 239),
                     (255, 191, 128, 191),
                 ],
             )
@@ -236,7 +268,7 @@ class TestImagingPaste:
                 [
                     (127, 191, 254, 191),
                     (111, 207, 206, 110),
-                    (255, 255, 255, 0) if mode == "RGBA" else (127, 254, 127, 0),
+                    (127, 254, 127, 0),
                     (207, 207, 239, 239),
                     (191, 191, 190, 191),
                     (207, 206, 111, 112),

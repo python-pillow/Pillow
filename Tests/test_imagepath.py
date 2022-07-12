@@ -70,8 +70,10 @@ def test_invalid_coords():
     coords = ["a", "b"]
 
     # Act / Assert
-    with pytest.raises(SystemError):
+    with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
+
+    assert str(e.value) == "incorrect coordinate type"
 
 
 def test_path_odd_number_of_coordinates():
@@ -90,6 +92,8 @@ def test_path_odd_number_of_coordinates():
     [
         ([0, 1, 2, 3], (0.0, 1.0, 2.0, 3.0)),
         ([3, 2, 1, 0], (1.0, 0.0, 3.0, 2.0)),
+        (0, (0.0, 0.0, 0.0, 0.0)),
+        (1, (0.0, 0.0, 0.0, 0.0)),
     ],
 )
 def test_getbbox(coords, expected):
@@ -170,7 +174,7 @@ def test_overflow_segfault():
     # through to the sequence. Seeing this on 32-bit Windows.
     with pytest.raises((TypeError, MemoryError)):
         # post patch, this fails with a memory error
-        x = evil()
+        x = Evil()
 
         # This fails due to the invalid malloc above,
         # and segfaults
@@ -178,7 +182,7 @@ def test_overflow_segfault():
             x[i] = b"0" * 16
 
 
-class evil:
+class Evil:
     def __init__(self):
         self.corrupt = Image.core.path(0x4000000000000000)
 

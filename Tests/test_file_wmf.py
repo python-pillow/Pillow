@@ -24,6 +24,12 @@ def test_load_raw():
             assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref.png", 2.0)
 
 
+def test_load():
+    with Image.open("Tests/images/drawing.emf") as im:
+        if hasattr(Image.core, "drawwmf"):
+            assert im.load()[0, 0] == (255, 255, 255)
+
+
 def test_register_handler(tmp_path):
     class TestHandler:
         methodCalled = False
@@ -44,14 +50,9 @@ def test_register_handler(tmp_path):
     WmfImagePlugin.register_handler(original_handler)
 
 
-def test_load_dpi_rounding():
-    # Round up
+def test_load_float_dpi():
     with Image.open("Tests/images/drawing.emf") as im:
-        assert im.info["dpi"] == 1424
-
-    # Round down
-    with Image.open("Tests/images/drawing_roundDown.emf") as im:
-        assert im.info["dpi"] == 1426
+        assert im.info["dpi"] == 1423.7668161434979
 
 
 def test_load_set_dpi():

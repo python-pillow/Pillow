@@ -144,6 +144,7 @@ struct ImagingPaletteInstance {
     char mode[IMAGING_MODE_LENGTH]; /* Band names */
 
     /* Data */
+    int size;
     UINT8 palette[1024]; /* Palette data (same format as image data) */
 
     INT16 *cache;   /* Palette cache (used for predefined palettes) */
@@ -371,7 +372,7 @@ ImagingTransform(
     int y0,
     int x1,
     int y1,
-    double *a,
+    double a[8],
     int filter,
     int fill);
 extern Imaging
@@ -488,7 +489,7 @@ ImagingDrawPieslice(
 extern int
 ImagingDrawPoint(Imaging im, int x, int y, const void *ink, int op);
 extern int
-ImagingDrawPolygon(Imaging im, int points, int *xy, const void *ink, int fill, int op);
+ImagingDrawPolygon(Imaging im, int points, int *xy, const void *ink, int fill, int width, int op);
 extern int
 ImagingDrawRectangle(
     Imaging im,

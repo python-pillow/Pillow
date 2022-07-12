@@ -32,8 +32,10 @@
 
 import math
 import numbers
+import warnings
 
 from . import Image, ImageColor
+from ._deprecate import deprecate
 
 """
 A simple 2D drawing interface for PIL images.
@@ -70,6 +72,7 @@ class ImageDraw:
             self.palette = im.palette
         else:
             self.palette = None
+        self._image = im
         self.im = im.im
         self.draw = Image.core.draw(self.im, blend)
         self.mode = mode
@@ -108,13 +111,13 @@ class ImageDraw:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
                 if self.palette and not isinstance(ink, numbers.Number):
-                    ink = self.palette.getcolor(ink)
+                    ink = self.palette.getcolor(ink, self._image)
                 ink = self.draw.draw_ink(ink)
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
                 if self.palette and not isinstance(fill, numbers.Number):
-                    fill = self.palette.getcolor(fill)
+                    fill = self.palette.getcolor(fill, self._image)
                 fill = self.draw.draw_ink(fill)
         return ink, fill
 
@@ -173,13 +176,11 @@ class ImageDraw:
                         angle -= 90
                         distance = width / 2 - 1
                         return tuple(
-                            [
-                                p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
-                                for p, p_d in (
-                                    (x, distance * math.cos(math.radians(angle))),
-                                    (y, distance * math.sin(math.radians(angle))),
-                                )
-                            ]
+                            p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
+                            for p, p_d in (
+                                (x, distance * math.cos(math.radians(angle))),
+                                (y, distance * math.sin(math.radians(angle))),
+                            )
                         )
 
                     flipped = (
@@ -198,18 +199,18 @@ class ImageDraw:
                     if width > 8:
                         # Cover potential gaps between the line and the joint
                         if flipped:
-                            gapCoords = [
+                            gap_coords = [
                                 coord_at_angle(point, angles[0] + 90),
                                 point,
                                 coord_at_angle(point, angles[1] + 90),
                             ]
                         else:
-                            gapCoords = [
+                            gap_coords = [
                                 coord_at_angle(point, angles[0] - 90),
                                 point,
                                 coord_at_angle(point, angles[1] - 90),
                             ]
-                        self.line(gapCoords, fill, width=3)
+                        self.line(gap_coords, fill, width=3)
 
     def shape(self, shape, fill=None, outline=None):
         """(Experimental) Draw a shape."""
@@ -234,13 +235,35 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_points(xy, ink)
 
-    def polygon(self, xy, fill=None, outline=None):
+    def polygon(self, xy, fill=None, outline=None, width=1):
         """Draw a polygon."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_polygon(xy, fill, 1)
-        if ink is not None and ink != fill:
-            self.draw.draw_polygon(xy, ink, 0)
+        if ink is not None and ink != fill and width != 0:
+            if width == 1:
+                self.draw.draw_polygon(xy, ink, 0, width)
+            else:
+                # To avoid expanding the polygon outwards,
+                # use the fill as a mask
+                mask = Image.new("1", self.im.size)
+                mask_ink = self._getink(1)[0]
+
+                fill_im = mask.copy()
+                draw = Draw(fill_im)
+                draw.draw.draw_polygon(xy, mask_ink, 1)
+
+                ink_im = mask.copy()
+                draw = Draw(ink_im)
+                width = width * 2 - 1
+                draw.draw.draw_polygon(xy, mask_ink, 0, width)
+
+                mask.paste(ink_im, mask=fill_im)
+
+                im = Image.new(self.mode, self.im.size)
+                draw = Draw(im)
+                draw.draw.draw_polygon(xy, ink, 0, width)
+                self.im.paste(im.im, (0, 0) + im.size, mask.im)
 
     def regular_polygon(
         self, bounding_circle, n_sides, rotation=0, fill=None, outline=None
@@ -282,6 +305,7 @@ class ImageDraw:
             # If the corners have no curve, that is a rectangle
             return self.rectangle(xy, fill, outline, width)
 
+        r = d // 2
         ink, fill = self._getink(outline, fill)
 
         def draw_corners(pieslice):
@@ -315,36 +339,28 @@ class ImageDraw:
             draw_corners(True)
 
             if full_x:
-                self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), fill, 1
-                )
+                self.draw.draw_rectangle((x0, y0 + r + 1, x1, y1 - r - 1), fill, 1)
             else:
-                self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y0, x1 - d / 2 - 1, y1), fill, 1
-                )
+                self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill, 1)
             if not full_x and not full_y:
-                self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x0 + d / 2, y1 - d / 2 - 1), fill, 1
-                )
-                self.draw.draw_rectangle(
-                    (x1 - d / 2, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), fill, 1
-                )
+                self.draw.draw_rectangle((x0, y0 + r + 1, x0 + r, y1 - r - 1), fill, 1)
+                self.draw.draw_rectangle((x1 - r, y0 + r + 1, x1, y1 - r - 1), fill, 1)
         if ink is not None and ink != fill and width != 0:
             draw_corners(False)
 
             if not full_x:
                 self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y0, x1 - d / 2 - 1, y0 + width - 1), ink, 1
+                    (x0 + r + 1, y0, x1 - r - 1, y0 + width - 1), ink, 1
                 )
                 self.draw.draw_rectangle(
-                    (x0 + d / 2 + 1, y1 - width + 1, x1 - d / 2 - 1, y1), ink, 1
+                    (x0 + r + 1, y1 - width + 1, x1 - r - 1, y1), ink, 1
                 )
             if not full_y:
                 self.draw.draw_rectangle(
-                    (x0, y0 + d / 2 + 1, x0 + width - 1, y1 - d / 2 - 1), ink, 1
+                    (x0, y0 + r + 1, x0 + width - 1, y1 - r - 1), ink, 1
                 )
                 self.draw.draw_rectangle(
-                    (x1 - width + 1, y0 + d / 2 + 1, x1, y1 - d / 2 - 1), ink, 1
+                    (x1 - width + 1, y0 + r + 1, x1, y1 - r - 1), ink, 1
                 )
 
     def _multiline_check(self, text):
@@ -357,6 +373,19 @@ class ImageDraw:
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return text.split(split_character)
+
+    def _multiline_spacing(self, font, spacing, stroke_width):
+        # this can be replaced with self.textbbox(...)[3] when textsize is removed
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return (
+                self.textsize(
+                    "A",
+                    font=font,
+                    stroke_width=stroke_width,
+                )[1]
+                + spacing
+            )
 
     def text(
         self,
@@ -497,9 +526,7 @@ class ImageDraw:
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = (
-            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
-        )
+        line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:
             line_width = self.textlength(
                 line, font, direction=direction, features=features, language=language
@@ -559,14 +586,31 @@ class ImageDraw:
         stroke_width=0,
     ):
         """Get the size of a given string, in pixels."""
+        deprecate("textsize", 10, "textbbox or textlength")
         if self._multiline_check(text):
-            return self.multiline_textsize(
-                text, font, spacing, direction, features, language, stroke_width
-            )
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+                return self.multiline_textsize(
+                    text,
+                    font,
+                    spacing,
+                    direction,
+                    features,
+                    language,
+                    stroke_width,
+                )
 
         if font is None:
             font = self.getfont()
-        return font.getsize(text, direction, features, language, stroke_width)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return font.getsize(
+                text,
+                direction,
+                features,
+                language,
+                stroke_width,
+            )
 
     def multiline_textsize(
         self,
@@ -578,16 +622,23 @@ class ImageDraw:
         language=None,
         stroke_width=0,
     ):
+        deprecate("multiline_textsize", 10, "multiline_textbbox")
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = (
-            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
-        )
-        for line in lines:
-            line_width, line_height = self.textsize(
-                line, font, spacing, direction, features, language, stroke_width
-            )
-            max_width = max(max_width, line_width)
+        line_spacing = self._multiline_spacing(font, spacing, stroke_width)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            for line in lines:
+                line_width, line_height = self.textsize(
+                    line,
+                    font,
+                    spacing,
+                    direction,
+                    features,
+                    language,
+                    stroke_width,
+                )
+                max_width = max(max_width, line_width)
         return max_width, len(lines) * line_spacing - spacing
 
     def textlength(
@@ -611,9 +662,16 @@ class ImageDraw:
         try:
             return font.getlength(text, mode, direction, features, language)
         except AttributeError:
-            size = self.textsize(
-                text, font, direction=direction, features=features, language=language
-            )
+            deprecate("textlength support for fonts without getlength", 10)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+                size = self.textsize(
+                    text,
+                    font,
+                    direction=direction,
+                    features=features,
+                    language=language,
+                )
             if direction == "ttb":
                 return size[1]
             return size[0]
@@ -686,9 +744,7 @@ class ImageDraw:
         widths = []
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = (
-            self.textsize("A", font=font, stroke_width=stroke_width)[1] + spacing
-        )
+        line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:
             line_width = self.textlength(
                 line,
@@ -983,6 +1039,6 @@ def _color_diff(color1, color2):
     Uses 1-norm distance to calculate difference between two values.
     """
     if isinstance(color2, tuple):
-        return sum([abs(color1[i] - color2[i]) for i in range(0, len(color2))])
+        return sum(abs(color1[i] - color2[i]) for i in range(0, len(color2)))
     else:
         return abs(color1 - color2)

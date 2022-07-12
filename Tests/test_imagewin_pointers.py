@@ -1,4 +1,3 @@
-import ctypes
 from io import BytesIO
 
 from PIL import Image, ImageWin
@@ -8,6 +7,7 @@ from .helper import hopper, is_win32
 # see https://github.com/python-pillow/Pillow/pull/1431#issuecomment-144692652
 
 if is_win32():
+    import ctypes
     import ctypes.wintypes
 
     class BITMAPFILEHEADER(ctypes.Structure):

@@ -3,11 +3,11 @@ import os
 import shutil
 import sys
 import tempfile
+import warnings
 
 import pytest
 
-import PIL
-from PIL import Image, ImageDraw, ImagePalette, ImageShow, UnidentifiedImageError
+from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError, features
 
 from .helper import (
     assert_image_equal,
@@ -16,6 +16,7 @@ from .helper import (
     assert_not_all_same,
     hopper,
     is_win32,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -89,6 +90,17 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    def test_repr_pretty(self):
+        class Pretty:
+            def text(self, text):
+                self.pretty_output = text
+
+        im = Image.new("L", (100, 100))
+
+        p = Pretty()
+        im._repr_pretty_(p, None)
+        assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
+
     def test_open_formats(self):
         PNGFILE = "Tests/images/hopper.png"
         JPGFILE = "Tests/images/hopper.jpg"
@@ -148,16 +160,19 @@ class TestImage:
             assert im.mode == "RGB"
             assert im.size == (128, 128)
 
-            temp_file = str(tmp_path / "temp.jpg")
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
-            im.save(Path(temp_file))
+            for ext in (".jpg", ".jp2"):
+                if ext == ".jp2" and not features.check_codec("jpg_2000"):
+                    pytest.skip("jpg_2000 not available")
+                temp_file = str(tmp_path / ("temp." + ext))
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+                im.save(Path(temp_file))
 
     def test_fp_name(self, tmp_path):
         temp_file = str(tmp_path / "temp.jpg")
 
         class FP:
-            def write(a, b):
+            def write(self, b):
                 pass
 
         fp = FP()
@@ -192,6 +207,10 @@ class TestImage:
         assert not im.readonly
 
     @pytest.mark.skipif(is_win32(), reason="Test requires opening tempfile twice")
+    @pytest.mark.skipif(
+        sys.platform == "cygwin",
+        reason="Test requires opening an mmaped file for writing",
+    )
     def test_readonly_save(self, tmp_path):
         temp_file = str(tmp_path / "temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
@@ -581,10 +600,37 @@ class TestImage:
         assert ext_individual == ext_multiple
 
     def test_remap_palette(self):
+        # Test identity transform
+        with Image.open("Tests/images/hopper.gif") as im:
+            assert_image_equal(im, im.remap_palette(list(range(256))))
+
+        # Test identity transform with an RGBA palette
+        im = Image.new("P", (256, 1))
+        for x in range(256):
+            im.putpixel((x, 0), x)
+        im.putpalette(list(range(256)) * 4, "RGBA")
+        im_remapped = im.remap_palette(list(range(256)))
+        assert_image_equal(im, im_remapped)
+        assert im.palette.palette == im_remapped.palette.palette
+
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
                 im.remap_palette(None)
+
+    def test_remap_palette_transparency(self):
+        im = Image.new("P", (1, 2))
+        im.putpixel((0, 1), 1)
+        im.info["transparency"] = 0
+
+        im_remapped = im.remap_palette([1, 0])
+        assert im_remapped.info["transparency"] == 1
+
+        # Test unused transparency
+        im.info["transparency"] = 2
+
+        im_remapped = im.remap_palette([1, 0])
+        assert "transparency" not in im_remapped.info
 
     def test__new(self):
         im = hopper("RGB")
@@ -605,7 +651,7 @@ class TestImage:
             else:
                 assert new_im.palette is None
 
-        _make_new(im, im_p, im_p.palette)
+        _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
         _make_new(im_p, im, None)
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
@@ -620,22 +666,6 @@ class TestImage:
             expected = Image.new(mode, (100, 100), color)
             assert_image_equal(im.convert(mode), expected)
 
-    def test_showxv_deprecation(self):
-        class TestViewer(ImageShow.Viewer):
-            def show_image(self, image, **options):
-                return True
-
-        viewer = TestViewer()
-        ImageShow.register(viewer, -1)
-
-        im = Image.new("RGB", (50, 50), "white")
-
-        with pytest.warns(DeprecationWarning):
-            Image._showxv(im)
-
-        # Restore original state
-        ImageShow._viewers.pop(0)
-
     def test_no_resource_warning_on_save(self, tmp_path):
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
@@ -644,9 +674,17 @@ class TestImage:
 
         # Act/Assert
         with Image.open(test_file) as im:
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
                 im.save(temp_file)
-            assert not record
+
+    def test_no_new_file_on_error(self, tmp_path):
+        temp_file = str(tmp_path / "temp.jpg")
+
+        im = Image.new("RGB", (0, 0))
+        with pytest.raises(ValueError):
+            im.save(temp_file)
+
+        assert not os.path.exists(temp_file)
 
     def test_load_on_nonexclusive_multiframe(self):
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
@@ -662,7 +700,22 @@ class TestImage:
 
             assert not fp.closed
 
-    @pytest.mark.valgrind_known_error(reason="Known Failing")
+    def test_empty_exif(self):
+        with Image.open("Tests/images/exif.png") as im:
+            exif = im.getexif()
+        assert dict(exif) != {}
+
+        # Test that exif data is cleared after another load
+        exif.load(None)
+        assert dict(exif) == {}
+
+        # Test loading just the EXIF header
+        exif.load(b"Exif\x00\x00")
+        assert dict(exif) == {}
+
+    @mark_if_feature_version(
+        pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+    )
     def test_exif_jpeg(self, tmp_path):
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
@@ -770,9 +823,61 @@ class TestImage:
         reloaded_exif.load(exif.tobytes())
         assert reloaded_exif.get_ifd(0x8769) == exif.get_ifd(0x8769)
 
-    @pytest.mark.skipif(
-        sys.version_info < (3, 7), reason="Python 3.7 or greater required"
-    )
+    def test_exif_load_from_fp(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            data = im.info["exif"]
+            if data.startswith(b"Exif\x00\x00"):
+                data = data[6:]
+            fp = io.BytesIO(data)
+
+            exif = Image.Exif()
+            exif.load_from_fp(fp)
+            assert exif == {
+                271: "Canon",
+                272: "Canon PowerShot S40",
+                274: 1,
+                282: 180.0,
+                283: 180.0,
+                296: 2,
+                306: "2003:12:14 12:01:44",
+                531: 1,
+                34665: 196,
+            }
+
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero_tobytes(self, size):
+        im = Image.new("RGB", size)
+        assert im.tobytes() == b""
+
+    def test_apply_transparency(self):
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 0, 0, 1, 1, 1))
+        assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
+
+        # Test that no transformation is applied without transparency
+        im.apply_transparency()
+        assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
+
+        # Test that a transparency index is applied
+        im.info["transparency"] = 0
+        im.apply_transparency()
+        assert "transparency" not in im.info
+        assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 255): 1}
+
+        # Test that existing transparency is kept
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 0, 0, 255, 1, 1, 1, 128), "RGBA")
+        im.info["transparency"] = 0
+        im.apply_transparency()
+        assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 128): 1}
+
+        # Test that transparency bytes are applied
+        with Image.open("Tests/images/pil123p.png") as im:
+            assert isinstance(im.info["transparency"], bytes)
+            assert im.palette.colors[(27, 35, 6)] == 24
+            im.apply_transparency()
+            assert im.palette.colors[(27, 35, 6, 214)] == 24
+
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):
             assert hopper().category == 0
@@ -784,34 +889,30 @@ class TestImage:
         with pytest.warns(DeprecationWarning):
             assert Image.CONTAINER == 2
 
-    @pytest.mark.parametrize(
-        "test_module",
-        [PIL, Image],
-    )
-    def test_pillow_version(self, test_module):
+    def test_constants_deprecation(self):
         with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION == PIL.__version__
+            assert Image.NEAREST == 0
+        with pytest.warns(DeprecationWarning):
+            assert Image.NONE == 0
 
         with pytest.warns(DeprecationWarning):
-            str(test_module.PILLOW_VERSION)
-
+            assert Image.LINEAR == Image.Resampling.BILINEAR
         with pytest.warns(DeprecationWarning):
-            assert int(test_module.PILLOW_VERSION[0]) >= 7
-
+            assert Image.CUBIC == Image.Resampling.BICUBIC
         with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION < "9.9.0"
+            assert Image.ANTIALIAS == Image.Resampling.LANCZOS
 
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION <= "9.9.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION != "7.0.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION >= "7.0.0"
-
-        with pytest.warns(DeprecationWarning):
-            assert test_module.PILLOW_VERSION > "7.0.0"
+        for enum in (
+            Image.Transpose,
+            Image.Transform,
+            Image.Resampling,
+            Image.Dither,
+            Image.Palette,
+            Image.Quantize,
+        ):
+            for name in enum.__members__:
+                with pytest.warns(DeprecationWarning):
+                    assert getattr(Image, name) == enum[name]
 
     @pytest.mark.parametrize(
         "path",
@@ -847,18 +948,6 @@ class TestImage:
                 assert False
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
-
-    def test_show_deprecation(self, monkeypatch):
-        monkeypatch.setattr(Image, "_show", lambda *args, **kwargs: None)
-
-        im = Image.new("RGB", (50, 50), "white")
-
-        with pytest.warns(None) as raised:
-            im.show()
-        assert not raised
-
-        with pytest.warns(DeprecationWarning):
-            im.show(command="mock")
 
 
 class MockEncoder:

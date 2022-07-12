@@ -21,7 +21,7 @@
 # Figure 205. Windows Paint Version 1: "DanM" Format
 # Figure 206. Windows Paint Version 2: "LinS" Format. Used in Windows V2.03
 #
-# See also: http://www.fileformat.info/format/mspaint/egff.htm
+# See also: https://www.fileformat.info/format/mspaint/egff.htm
 
 import io
 import struct
@@ -73,7 +73,7 @@ class MspImageFile(ImageFile.ImageFile):
 
 class MspDecoder(ImageFile.PyDecoder):
     # The algo for the MSP decoder is from
-    # http://www.fileformat.info/format/mspaint/egff.htm
+    # https://www.fileformat.info/format/mspaint/egff.htm
     # cc-by-attribution -- That page references is taken from the
     # Encyclopedia of Graphics File Formats and is licensed by
     # O'Reilly under the Creative Common/Attribution license
@@ -148,7 +148,7 @@ class MspDecoder(ImageFile.PyDecoder):
 
         self.set_as_raw(img.getvalue(), ("1", 0, 1))
 
-        return 0, 0
+        return -1, 0
 
 
 Image.register_decoder("MSP", MspDecoder)

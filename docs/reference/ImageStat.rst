@@ -14,6 +14,16 @@ for a region of an image.
     statistics. You can also pass in a previously calculated histogram.
 
     :param image: A PIL image, or a precalculated histogram.
+
+        .. note::
+
+            For a PIL image, calculations rely on the
+            :py:meth:`~PIL.Image.Image.histogram` method. The pixel counts are
+            grouped into 256 bins, even if the image has more than 8 bits per
+            channel. So ``I`` and ``F`` mode images have a maximum ``mean``,
+            ``median`` and ``rms`` of 255, and cannot have an ``extrema`` maximum
+            of more than 255.
+
     :param mask: An optional mask.
 
     .. py:attribute:: extrema

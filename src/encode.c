@@ -149,14 +149,13 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_encode_to_pyfd(ImagingEncoderObject *encoder, PyObject *args) {
+_encode_to_pyfd(ImagingEncoderObject *encoder) {
     PyObject *result;
     int status;
 
     if (!encoder->pushes_fd) {
         // UNDONE, appropriate errcode???
         result = Py_BuildValue("ii", 0, IMAGING_CODEC_CONFIG);
-        ;
         return result;
     }
 
@@ -264,7 +263,7 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
         }
         state->bytes = (state->bits * state->xsize + 7) / 8;
         /* malloc check ok, overflow checked above */
-        state->buffer = (UINT8 *)malloc(state->bytes);
+        state->buffer = (UINT8 *)calloc(1, state->bytes);
         if (!state->buffer) {
             return ImagingError_MemoryError();
         }
@@ -299,17 +298,17 @@ _setfd(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_get_pushes_fd(ImagingEncoderObject *encoder) {
+_get_pushes_fd(ImagingEncoderObject *encoder, void *closure) {
     return PyBool_FromLong(encoder->pushes_fd);
 }
 
 static struct PyMethodDef methods[] = {
-    {"encode", (PyCFunction)_encode, 1},
-    {"cleanup", (PyCFunction)_encode_cleanup, 1},
-    {"encode_to_file", (PyCFunction)_encode_to_file, 1},
-    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, 1},
-    {"setimage", (PyCFunction)_setimage, 1},
-    {"setfd", (PyCFunction)_setfd, 1},
+    {"encode", (PyCFunction)_encode, METH_VARARGS},
+    {"cleanup", (PyCFunction)_encode_cleanup, METH_VARARGS},
+    {"encode_to_file", (PyCFunction)_encode_to_file, METH_VARARGS},
+    {"encode_to_pyfd", (PyCFunction)_encode_to_pyfd, METH_NOARGS},
+    {"setimage", (PyCFunction)_setimage, METH_VARARGS},
+    {"setfd", (PyCFunction)_setfd, METH_VARARGS},
     {NULL, NULL} /* sentinel */
 };
 
@@ -644,10 +643,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     int key_int, status, is_core_tag, is_var_length, num_core_tags, i;
     TIFFDataType type = TIFF_NOTYPE;
     // This list also exists in TiffTags.py
-    const int core_tags[] = {256,   257, 258,   259, 262, 263, 266,  269,   274,
-                             277,   278, 280,   281, 340, 341, 282,  283,   284,
-                             286,   287, 296,   297, 320, 321, 338,  32995, 32998,
-                             32996, 339, 32997, 330, 531, 530, 65537};
+    const int core_tags[] = {256,   257, 258,   259, 262, 263, 266,   269,   274,
+                             277,   278, 280,   281, 340, 341, 282,   283,   284,
+                             286,   287, 296,   297, 320, 321, 338,   32995, 32998,
+                             32996, 339, 32997, 330, 531, 530, 65537, 301,   532};
 
     Py_ssize_t tags_size;
     PyObject *item;
@@ -790,7 +789,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 int stride = 256;
                 if (len != 768) {
                     PyErr_SetString(
-                        PyExc_ValueError, "Requiring 768 items for for Colormap");
+                        PyExc_ValueError, "Requiring 768 items for Colormap");
                     return NULL;
                 }
                 UINT16 *av;
@@ -808,6 +807,12 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                         av + stride * 2);
                     free(av);
                 }
+            } else if (key_int == TIFFTAG_YCBCRSUBSAMPLING) {
+                status = ImagingLibTiffSetField(
+                    &encoder->state,
+                    (ttag_t)key_int,
+                    (UINT16)PyLong_AsLong(PyTuple_GetItem(value, 0)),
+                    (UINT16)PyLong_AsLong(PyTuple_GetItem(value, 1)));
             } else if (type == TIFF_SHORT) {
                 UINT16 *av;
                 /* malloc check ok, calloc checks for overflow */
@@ -1182,11 +1187,12 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     OPJ_PROG_ORDER prog_order;
     char *cinema_mode = "no";
     OPJ_CINEMA_MODE cine_mode;
+    char mct = 0;
     Py_ssize_t fd = -1;
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssn",
+            "ss|OOOsOnOOOssbn",
             &mode,
             &format,
             &offset,
@@ -1200,6 +1206,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             &irreversible,
             &progression,
             &cinema_mode,
+            &mct,
             &fd)) {
         return NULL;
     }
@@ -1297,6 +1304,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     context->irreversible = PyObject_IsTrue(irreversible);
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
+    context->mct = mct;
 
     return (PyObject *)encoder;
 }

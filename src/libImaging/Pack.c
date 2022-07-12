@@ -574,6 +574,7 @@ static struct {
     /* true colour */
     {"RGB", "RGB", 24, ImagingPackRGB},
     {"RGB", "RGBX", 32, copy4},
+    {"RGB", "RGBA", 32, copy4},
     {"RGB", "XRGB", 32, ImagingPackXRGB},
     {"RGB", "BGR", 24, ImagingPackBGR},
     {"RGB", "BGRX", 32, ImagingPackBGRX},
@@ -656,7 +657,11 @@ static struct {
 
     /* storage modes */
     {"I;16", "I;16", 16, copy2},
+#ifdef WORDS_BIGENDIAN
+    {"I;16", "I;16B", 16, packI16N_I16},
+#else
     {"I;16", "I;16B", 16, packI16N_I16B},
+#endif
     {"I;16B", "I;16B", 16, copy2},
     {"I;16L", "I;16L", 16, copy2},
     {"I;16", "I;16N", 16, packI16N_I16},  // LibTiff native->image endian.

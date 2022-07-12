@@ -1,0 +1,41 @@
+8.3.2
+-----
+
+Security
+========
+
+* :cve:`CVE-2021-23437`: Avoid a potential ReDoS (regular expression denial of service)
+  in :py:class:`~PIL.ImageColor`'s :py:meth:`~PIL.ImageColor.getrgb` by raising
+  :py:exc:`ValueError` if the color specifier is too long. Present since Pillow 5.2.0.
+
+* Fix 6-byte out-of-bounds (OOB) read. The previous bounds check in ``FliDecode.c``
+  incorrectly calculated the required read buffer size when copying a chunk, potentially
+  reading six extra bytes off the end of the allocated buffer from the heap. Present
+  since Pillow 7.1.0. This bug was found by Google's `OSS-Fuzz`_ `CIFuzz`_ runs.
+
+Other Changes
+=============
+
+Python 3.10 wheels
+^^^^^^^^^^^^^^^^^^
+
+Pillow now includes binary wheels for Python 3.10.
+
+The Python 3.10 release candidate was released on 2021-08-03 with the final release due
+2021-10-04 (:pep:`619`). The CPython core team strongly encourages maintainers of
+third-party Python projects to prepare for 3.10 compatibility. And as there are `no ABI
+changes`_ planned we are releasing wheels to help others prepare for 3.10, and ensure
+Pillow can be used immediately on release day of 3.10.0 final.
+
+Fixed regressions
+^^^^^^^^^^^^^^^^^
+
+* Ensure TIFF ``RowsPerStrip`` is multiple of 8 for JPEG compression (:pr:`5588`).
+
+* Updates for :py:class:`~PIL.ImagePalette` channel order (:pr:`5599`).
+
+* Hide FriBiDi shim symbols to avoid conflict with real FriBiDi library (:pr:`5651`).
+
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz
+.. _CIFuzz: https://google.github.io/oss-fuzz/getting-started/continuous-integration/
+.. _no ABI changes: https://www.python.org/downloads/release/python-3100rc1/

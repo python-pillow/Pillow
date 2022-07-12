@@ -1,8 +1,13 @@
+import warnings
+
 import pytest
 
-from PIL import ImageQt
+from .helper import assert_image_similar, hopper
 
-from .helper import hopper
+with warnings.catch_warnings() as w:
+    warnings.simplefilter("ignore", category=DeprecationWarning)
+    from PIL import ImageQt
+
 
 pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
@@ -30,10 +35,10 @@ def test_rgb():
 
     def checkrgb(r, g, b):
         val = ImageQt.rgb(r, g, b)
-        val = val % 2 ** 24  # drop the alpha
+        val = val % 2**24  # drop the alpha
         assert val >> 16 == r
-        assert ((val >> 8) % 2 ** 8) == g
-        assert val % 2 ** 8 == b
+        assert ((val >> 8) % 2**8) == g
+        assert val % 2**8 == b
 
     checkrgb(0, 0, 0)
     checkrgb(255, 0, 0)
@@ -42,12 +47,19 @@ def test_rgb():
 
 
 def test_image():
-    for mode in ("1", "RGB", "RGBA", "L", "P"):
-        ImageQt.ImageQt(hopper(mode))
+    modes = ["1", "RGB", "RGBA", "L", "P"]
+    qt_format = ImageQt.QImage.Format if ImageQt.qt_version == "6" else ImageQt.QImage
+    if hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
+        modes.append("I;16")
+
+    for mode in modes:
+        im = hopper(mode)
+        roundtripped_im = ImageQt.fromqimage(ImageQt.ImageQt(im))
+        if mode not in ("RGB", "RGBA"):
+            im = im.convert("RGB")
+        assert_image_similar(roundtripped_im, im, 1)
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         ImageQt.ImageQt("Tests/images/hopper.gif")
-
-    assert not record

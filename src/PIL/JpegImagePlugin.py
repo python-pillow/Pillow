@@ -33,6 +33,7 @@
 #
 import array
 import io
+import math
 import os
 import struct
 import subprocess
@@ -44,6 +45,7 @@ from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 #
@@ -139,8 +141,8 @@ def APP(self, marker):
         self.info["adobe"] = i16(s, 5)
         # extract Adobe custom properties
         try:
-            adobe_transform = s[1]
-        except Exception:
+            adobe_transform = s[11]
+        except IndexError:
             pass
         else:
             self.info["adobe_transform"] = adobe_transform
@@ -161,15 +163,17 @@ def APP(self, marker):
                 dpi = float(x_resolution[0]) / x_resolution[1]
             except TypeError:
                 dpi = x_resolution
+            if math.isnan(dpi):
+                raise ValueError
             if resolution_unit == 3:  # cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
-            self.info["dpi"] = int(dpi + 0.5), int(dpi + 0.5)
-        except (KeyError, SyntaxError, ValueError, ZeroDivisionError):
+            self.info["dpi"] = dpi, dpi
+        except (TypeError, KeyError, SyntaxError, ValueError, ZeroDivisionError):
             # SyntaxError for invalid/unreadable EXIF
             # KeyError for dpi not included
             # ZeroDivisionError for invalid dpi rational value
-            # ValueError for x_resolution[0] being an invalid float
+            # ValueError or TypeError for dpi being an invalid float
             self.info["dpi"] = 72, 72
 
 
@@ -251,7 +255,7 @@ def DQT(self, marker):
         data = array.array("B" if precision == 1 else "H", s[1:qt_length])
         if sys.byteorder == "little" and precision > 1:
             data.byteswap()  # the values are always big-endian
-        self.quantization[v & 15] = data
+        self.quantization[v & 15] = [data[i] for i in zigzag_index]
         s = s[qt_length:]
 
 
@@ -327,7 +331,7 @@ MARKER = {
 
 def _accept(prefix):
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
-    return prefix[0:3] == b"\xFF\xD8\xFF"
+    return prefix[:3] == b"\xFF\xD8\xFF"
 
 
 ##
@@ -398,9 +402,10 @@ class JpegImageFile(ImageFile.ImageFile):
         """
         s = self.fp.read(read_bytes)
 
-        if not s and ImageFile.LOAD_TRUNCATED_IMAGES:
+        if not s and ImageFile.LOAD_TRUNCATED_IMAGES and not hasattr(self, "_ended"):
             # Premature EOF.
             # Pretend file is finished adding EOI marker
+            self._ended = True
             return b"\xFF\xD9"
 
         return s
@@ -440,7 +445,7 @@ class JpegImageFile(ImageFile.ImageFile):
         self.decoderconfig = (scale, 0)
 
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
-        return (self.mode, box)
+        return self.mode, box
 
     def load_djpeg(self):
 
@@ -473,6 +478,21 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def _getmp(self):
         return _getmp(self)
+
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+
+        :returns: XMP tags in a dictionary.
+        """
+
+        for segment, content in self.applist:
+            if segment == "APP1":
+                marker, xmp_tags = content.rsplit(b"\x00", 1)
+                if marker == b"http://ns.adobe.com/xap/1.0/":
+                    return self._getxmp(xmp_tags)
+        return {}
 
 
 def _getexif(self):
@@ -584,9 +604,7 @@ samplings = {
 
 
 def convert_dict_qtables(qtables):
-    qtables = [qtables[key] for key in range(len(qtables)) if key in qtables]
-    for idx, table in enumerate(qtables):
-        qtables[idx] = [table[i] for i in zigzag_index]
+    deprecate("convert_dict_qtables", 10, action="Conversion is no longer needed")
     return qtables
 
 
@@ -605,6 +623,8 @@ def get_sampling(im):
 
 
 def _save(im, fp, filename):
+    if im.width == 0 or im.height == 0:
+        raise ValueError("cannot write empty image as JPEG")
 
     try:
         rawmode = RAWMODE[im.mode]
@@ -667,7 +687,9 @@ def _save(im, fp, filename):
                 qtables = [lines[s : s + 64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
             if isinstance(qtables, dict):
-                qtables = convert_dict_qtables(qtables)
+                qtables = [
+                    qtables[key] for key in range(len(qtables)) if key in qtables
+                ]
             elif isinstance(qtables, tuple):
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):

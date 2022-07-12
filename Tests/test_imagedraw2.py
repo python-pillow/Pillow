@@ -1,5 +1,7 @@
 import os.path
 
+import pytest
+
 from PIL import Image, ImageDraw, ImageDraw2
 
 from .helper import (
@@ -205,7 +207,9 @@ def test_textsize():
     font = ImageDraw2.Font("white", FONT_PATH)
 
     # Act
-    size = draw.textsize("ImageDraw2", font)
+    with pytest.warns(DeprecationWarning) as log:
+        size = draw.textsize("ImageDraw2", font)
+    assert len(log) == 1
 
     # Assert
     assert size[1] == 12
@@ -221,9 +225,10 @@ def test_textsize_empty_string():
     # Act
     # Should not cause 'SystemError: <built-in method getsize of
     # ImagingFont object at 0x...> returned NULL without setting an error'
-    draw.textsize("", font)
-    draw.textsize("\n", font)
-    draw.textsize("test\n", font)
+    draw.textbbox((0, 0), "", font)
+    draw.textbbox((0, 0), "\n", font)
+    draw.textbbox((0, 0), "test\n", font)
+    draw.textlength("", font)
 
 
 @skip_unless_feature("freetype2")

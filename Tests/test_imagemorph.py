@@ -48,12 +48,8 @@ def img_string_normalize(im):
     return img_to_string(string_to_img(im))
 
 
-def assert_img_equal(A, B):
-    assert img_to_string(A) == img_to_string(B)
-
-
-def assert_img_equal_img_string(A, Bstring):
-    assert img_to_string(A) == img_string_normalize(Bstring)
+def assert_img_equal_img_string(a, b_string):
+    assert img_to_string(a) == img_string_normalize(b_string)
 
 
 def test_str_to_img():
@@ -235,19 +231,19 @@ def test_negate():
     )
 
 
-def test_non_binary_images():
+def test_incorrect_mode():
     im = hopper("RGB")
     mop = ImageMorph.MorphOp(op_name="erosion8")
 
-    with pytest.raises(Exception) as e:
+    with pytest.raises(ValueError) as e:
         mop.apply(im)
-    assert str(e.value) == "Image must be binary, meaning it must use mode L"
-    with pytest.raises(Exception) as e:
+    assert str(e.value) == "Image mode must be L"
+    with pytest.raises(ValueError) as e:
         mop.match(im)
-    assert str(e.value) == "Image must be binary, meaning it must use mode L"
-    with pytest.raises(Exception) as e:
+    assert str(e.value) == "Image mode must be L"
+    with pytest.raises(ValueError) as e:
         mop.get_on_pixels(im)
-    assert str(e.value) == "Image must be binary, meaning it must use mode L"
+    assert str(e.value) == "Image mode must be L"
 
 
 def test_add_patterns():

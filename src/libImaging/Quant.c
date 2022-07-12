@@ -753,11 +753,19 @@ annotate_hash_table(BoxNode *n, HashTable *h, uint32_t *box) {
     return 1;
 }
 
+typedef struct {
+    uint32_t *distance;
+    uint32_t index;
+} DistanceWithIndex;
+
 static int
-_sort_ulong_ptr_keys(const void *a, const void *b) {
-    uint32_t A = **(uint32_t **)a;
-    uint32_t B = **(uint32_t **)b;
-    return (A == B) ? 0 : ((A < B) ? -1 : +1);
+_distance_index_cmp(const void *a, const void *b) {
+    DistanceWithIndex *A = (DistanceWithIndex *)a;
+    DistanceWithIndex *B = (DistanceWithIndex *)b;
+    if (*A->distance == *B->distance) {
+        return A->index < B->index ? -1 : +1;
+    }
+    return *A->distance < *B->distance ? -1 : +1;
 }
 
 static int
@@ -789,10 +797,11 @@ resort_distance_tables(
     return 1;
 }
 
-static void
+static int
 build_distance_tables(
     uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries) {
     uint32_t i, j;
+    DistanceWithIndex *dwi;
 
     for (i = 0; i < nEntries; i++) {
         avgDist[i * nEntries + i] = 0;
@@ -804,13 +813,29 @@ build_distance_tables(
             avgDistSortKey[i * nEntries + j] = &(avgDist[i * nEntries + j]);
         }
     }
-    for (i = 0; i < nEntries; i++) {
-        qsort(
-            avgDistSortKey + i * nEntries,
-            nEntries,
-            sizeof(uint32_t *),
-            _sort_ulong_ptr_keys);
+
+    dwi = calloc(nEntries, sizeof(DistanceWithIndex));
+    if (!dwi) {
+        return 0;
     }
+    for (i = 0; i < nEntries; i++) {
+        for (j = 0; j < nEntries; j++) {
+            dwi[j] = (DistanceWithIndex){
+                &(avgDist[i * nEntries + j]),
+                j
+            };
+        }
+        qsort(
+            dwi,
+            nEntries,
+            sizeof(DistanceWithIndex),
+            _distance_index_cmp);
+        for (j = 0; j < nEntries; j++) {
+            avgDistSortKey[i * nEntries + j] = dwi[j].distance;
+        }
+    }
+    free(dwi);
+    return 1;
 }
 
 static int
@@ -1175,8 +1200,10 @@ k_means(
         if (!built) {
             compute_palette_from_quantized_pixels(
                 pixelData, nPixels, paletteData, nPaletteEntries, avg, count, qp);
-            build_distance_tables(
-                avgDist, avgDistSortKey, paletteData, nPaletteEntries);
+            if (!build_distance_tables(
+                avgDist, avgDistSortKey, paletteData, nPaletteEntries)) {
+                goto error_3;
+            }
             built = 1;
         } else {
             recompute_palette_from_averages(paletteData, nPaletteEntries, avg, count);
@@ -1243,7 +1270,7 @@ error_1:
     return 0;
 }
 
-int
+static int
 quantize(
     Pixel *pixelData,
     uint32_t nPixels,
@@ -1372,7 +1399,9 @@ quantize(
         goto error_6;
     }
 
-    build_distance_tables(avgDist, avgDistSortKey, p, nPaletteEntries);
+    if (!build_distance_tables(avgDist, avgDistSortKey, p, nPaletteEntries)) {
+        goto error_7;
+    }
 
     if (!map_image_pixels_from_median_box(
             pixelData, nPixels, p, nPaletteEntries, h, avgDist, avgDistSortKey, qp)) {
@@ -1490,7 +1519,7 @@ error_0:
 
 typedef struct {
     Pixel new;
-    Pixel furthest;
+    uint32_t furthestV;
     uint32_t furthestDistance;
     int secondPixel;
 } DistanceData;
@@ -1507,11 +1536,11 @@ compute_distances(const HashTable *h, const Pixel pixel, uint32_t *dist, void *u
     }
     if (oldDist > data->furthestDistance) {
         data->furthestDistance = oldDist;
-        data->furthest.v = pixel.v;
+        data->furthestV = pixel.v;
     }
 }
 
-int
+static int
 quantize2(
     Pixel *pixelData,
     uint32_t nPixels,
@@ -1548,10 +1577,11 @@ quantize2(
     data.new.c.b = (int)(.5 + (double)mean[2] / (double)nPixels);
     for (i = 0; i < nQuantPixels; i++) {
         data.furthestDistance = 0;
+        data.furthestV = pixelData[0].v;
         data.secondPixel = (i == 1) ? 1 : 0;
         hashtable_foreach_update(h, compute_distances, &data);
-        p[i].v = data.furthest.v;
-        data.new.v = data.furthest.v;
+        p[i].v = data.furthestV;
+        data.new.v = data.furthestV;
     }
     hashtable_free(h);
 
@@ -1577,7 +1607,9 @@ quantize2(
         goto error_3;
     }
 
-    build_distance_tables(avgDist, avgDistSortKey, p, nQuantPixels);
+    if (!build_distance_tables(avgDist, avgDistSortKey, p, nQuantPixels)) {
+        goto error_4;
+    }
 
     if (!map_image_pixels(
             pixelData, nPixels, p, nQuantPixels, avgDist, avgDistSortKey, qp)) {
@@ -1683,9 +1715,26 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
         /* true colour */
 
+        withAlpha = !strcmp(im->mode, "RGBA");
+        int transparency = 0;
+        unsigned char r, g, b;
         for (i = y = 0; y < im->ysize; y++) {
             for (x = 0; x < im->xsize; x++, i++) {
                 p[i].v = im->image32[y][x];
+                if (withAlpha && p[i].c.a == 0) {
+                    if (transparency == 0) {
+                        transparency = 1;
+                        r = p[i].c.r;
+                        g = p[i].c.g;
+                        b = p[i].c.b;
+                    } else {
+                        /* Set all subsequent transparent pixels
+                        to the same colour as the first */
+                        p[i].c.r = r;
+                        p[i].c.g = g;
+                        p[i].c.b = b;
+                    }
+                }
             }
         }
 
@@ -1720,9 +1769,6 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 kmeans);
             break;
         case 2:
-            if (!strcmp(im->mode, "RGBA")) {
-                withAlpha = 1;
-            }
             result = quantize_octree(
                 p,
                 im->xsize * im->ysize,
@@ -1734,9 +1780,6 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
             break;
         case 3:
 #ifdef HAVE_LIBIMAGEQUANT
-            if (!strcmp(im->mode, "RGBA")) {
-                withAlpha = 1;
-            }
             result = quantize_pngquant(
                 p,
                 im->xsize,

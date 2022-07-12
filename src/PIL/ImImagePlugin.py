@@ -100,7 +100,7 @@ for i in range(2, 33):
 # --------------------------------------------------------------------
 # Read IM directory
 
-split = re.compile(br"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
+split = re.compile(rb"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 
 def number(s):
@@ -210,7 +210,7 @@ class ImImageFile(ImageFile.ImageFile):
         self.mode = self.info[MODE]
 
         # Skip forward to start of image data
-        while s and s[0:1] != b"\x1A":
+        while s and s[:1] != b"\x1A":
             s = self.fp.read(1)
         if not s:
             raise SyntaxError("File truncated")
@@ -245,7 +245,7 @@ class ImImageFile(ImageFile.ImageFile):
 
         self.__offset = offs = self.fp.tell()
 
-        self.__fp = self.fp  # FIXME: hack
+        self._fp = self.fp  # FIXME: hack
 
         if self.rawmode[:2] == "F;":
 
@@ -294,21 +294,12 @@ class ImImageFile(ImageFile.ImageFile):
         size = ((self.size[0] * bits + 7) // 8) * self.size[1]
         offs = self.__offset + frame * size
 
-        self.fp = self.__fp
+        self.fp = self._fp
 
         self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
 
     def tell(self):
         return self.frame
-
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
 
 
 #

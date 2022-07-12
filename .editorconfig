@@ -16,7 +16,6 @@ trim_trailing_whitespace = true
 [*.yml]
 # Two-space indentation
 indent_size = 2
-indent_style = space
 
 # Tab indentation (no size specified)
 [Makefile]

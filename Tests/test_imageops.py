@@ -29,12 +29,16 @@ def test_sanity():
     ImageOps.autocontrast(hopper("L"), cutoff=(2, 10))
     ImageOps.autocontrast(hopper("L"), ignore=[0, 255])
     ImageOps.autocontrast(hopper("L"), mask=hopper("L"))
+    ImageOps.autocontrast(hopper("L"), preserve_tone=True)
 
     ImageOps.colorize(hopper("L"), (0, 0, 0), (255, 255, 255))
     ImageOps.colorize(hopper("L"), "black", "white")
 
     ImageOps.pad(hopper("L"), (128, 128))
     ImageOps.pad(hopper("RGB"), (128, 128))
+
+    ImageOps.contain(hopper("L"), (128, 128))
+    ImageOps.contain(hopper("RGB"), (128, 128))
 
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
@@ -59,6 +63,7 @@ def test_sanity():
     ImageOps.grayscale(hopper("L"))
     ImageOps.grayscale(hopper("RGB"))
 
+    ImageOps.invert(hopper("1"))
     ImageOps.invert(hopper("L"))
     ImageOps.invert(hopper("RGB"))
 
@@ -96,6 +101,13 @@ def test_fit_same_ratio():
     with Image.new("RGB", (1000, 755)) as im:
         new_im = ImageOps.fit(im, (1000, 755))
         assert new_im.size == (1000, 755)
+
+
+@pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
+def test_contain(new_size):
+    im = hopper()
+    new_im = ImageOps.contain(im, new_size)
+    assert new_im.size == (256, 256)
 
 
 def test_pad():
@@ -143,6 +155,33 @@ def test_scale():
 
     newimg = ImageOps.scale(i, 0.5)
     assert newimg.size == (25, 25)
+
+
+@pytest.mark.parametrize("border", (10, (1, 2, 3, 4)))
+def test_expand_palette(border):
+    with Image.open("Tests/images/p_16.tga") as im:
+        im_expanded = ImageOps.expand(im, border, (255, 0, 0))
+
+        if isinstance(border, int):
+            left = top = right = bottom = border
+        else:
+            left, top, right, bottom = border
+        px = im_expanded.convert("RGB").load()
+        for x in range(im_expanded.width):
+            for b in range(top):
+                assert px[x, b] == (255, 0, 0)
+            for b in range(bottom):
+                assert px[x, im_expanded.height - 1 - b] == (255, 0, 0)
+        for y in range(im_expanded.height):
+            for b in range(left):
+                assert px[b, y] == (255, 0, 0)
+            for b in range(right):
+                assert px[im_expanded.width - 1 - b, y] == (255, 0, 0)
+
+        im_cropped = im_expanded.crop(
+            (left, top, im_expanded.width - right, im_expanded.height - bottom)
+        )
+        assert_image_equal(im_cropped, im)
 
 
 def test_colorize_2color():
@@ -291,6 +330,7 @@ def test_exif_transpose():
                     else:
                         assert transposed_im.info["exif"] != original_exif
 
+                        assert 0x0112 in im.getexif()
                         assert 0x0112 not in transposed_im.getexif()
 
                     # Repeat the operation to test that it does not keep transposing
@@ -303,6 +343,28 @@ def test_exif_transpose():
                     "Tests/images/hopper_orientation_" + str(i) + ext
                 ) as orientation_im:
                     check(orientation_im)
+
+    # Orientation from "XML:com.adobe.xmp" info key
+    with Image.open("Tests/images/xmp_tags_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
+
+        transposed_im = ImageOps.exif_transpose(im)
+        assert 0x0112 not in transposed_im.getexif()
+
+    # Orientation from "Raw profile type exif" info key
+    # This test image has been manually hexedited from exif_imagemagick.png
+    # to have a different orientation
+    with Image.open("Tests/images/exif_imagemagick_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
+
+        transposed_im = ImageOps.exif_transpose(im)
+        assert 0x0112 not in transposed_im.getexif()
+
+    # Orientation set directly on Image.Exif
+    im = hopper()
+    im.getexif()[0x0112] = 3
+    transposed_im = ImageOps.exif_transpose(im)
+    assert 0x0112 not in transposed_im.getexif()
 
 
 def test_autocontrast_cutoff():
@@ -336,7 +398,7 @@ def test_autocontrast_mask_toy_input():
         assert ImageStat.Stat(result_nomask).median == [128]
 
 
-def test_auto_contrast_mask_real_input():
+def test_autocontrast_mask_real_input():
     # Test the autocontrast with a rectangular mask
     with Image.open("Tests/images/iptc.jpg") as img:
 
@@ -362,3 +424,52 @@ def test_auto_contrast_mask_real_input():
             threshold=2,
             msg="autocontrast without mask pixel incorrect",
         )
+
+
+def test_autocontrast_preserve_tone():
+    def autocontrast(mode, preserve_tone):
+        im = hopper(mode)
+        return ImageOps.autocontrast(im, preserve_tone=preserve_tone).histogram()
+
+    assert autocontrast("RGB", True) != autocontrast("RGB", False)
+    assert autocontrast("L", True) == autocontrast("L", False)
+
+
+def test_autocontrast_preserve_gradient():
+    gradient = Image.linear_gradient("L")
+
+    # test with a grayscale gradient that extends to 0,255.
+    # Should be a noop.
+    out = ImageOps.autocontrast(gradient, cutoff=0, preserve_tone=True)
+
+    assert_image_equal(gradient, out)
+
+    # cutoff the top and bottom
+    # autocontrast should make the first and last histogram entries equal
+    # and, with rounding, should be 10% of the image pixels
+    out = ImageOps.autocontrast(gradient, cutoff=10, preserve_tone=True)
+    hist = out.histogram()
+    assert hist[0] == hist[-1]
+    assert hist[-1] == 256 * round(256 * 0.10)
+
+    # in rgb
+    img = gradient.convert("RGB")
+    out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
+    assert_image_equal(img, out)
+
+
+@pytest.mark.parametrize(
+    "color", ((255, 255, 255), (127, 255, 0), (127, 127, 127), (0, 0, 0))
+)
+def test_autocontrast_preserve_one_color(color):
+    img = Image.new("RGB", (10, 10), color)
+
+    # single color images shouldn't change
+    out = ImageOps.autocontrast(img, cutoff=0, preserve_tone=True)
+    assert_image_equal(img, out)  # single color, no cutoff
+
+    # even if there is a cutoff
+    out = ImageOps.autocontrast(
+        img, cutoff=10, preserve_tone=True
+    )  # single color 10 cutoff
+    assert_image_equal(img, out)

@@ -40,6 +40,7 @@ ImagingPaletteNew(const char *mode) {
     palette->mode[IMAGING_MODE_LENGTH - 1] = 0;
 
     /* Initialize to ramp */
+    palette->size = 256;
     for (i = 0; i < 256; i++) {
         palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
             palette->palette[i * 4 + 2] = (UINT8)i;
@@ -193,21 +194,21 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
 
     dmax = (unsigned int)~0;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < palette->size; i++) {
         int r, g, b;
         unsigned int tmin, tmax;
 
         /* Find min and max distances to any point in the box */
         r = palette->palette[i * 4 + 0];
-        tmin = (r < r0) ? RDIST(r, r1) : (r > r1) ? RDIST(r, r0) : 0;
+        tmin = (r < r0) ? RDIST(r, r0) : (r > r1) ? RDIST(r, r1) : 0;
         tmax = (r <= rc) ? RDIST(r, r1) : RDIST(r, r0);
 
         g = palette->palette[i * 4 + 1];
-        tmin += (g < g0) ? GDIST(g, g1) : (g > g1) ? GDIST(g, g0) : 0;
+        tmin += (g < g0) ? GDIST(g, g0) : (g > g1) ? GDIST(g, g1) : 0;
         tmax += (g <= gc) ? GDIST(g, g1) : GDIST(g, g0);
 
         b = palette->palette[i * 4 + 2];
-        tmin += (b < b0) ? BDIST(b, b1) : (b > b1) ? BDIST(b, b0) : 0;
+        tmin += (b < b0) ? BDIST(b, b0) : (b > b1) ? BDIST(b, b1) : 0;
         tmax += (b <= bc) ? BDIST(b, b1) : BDIST(b, b0);
 
         dmin[i] = tmin;
@@ -226,7 +227,7 @@ ImagingPaletteCacheUpdate(ImagingPalette palette, int r, int g, int b) {
         d[i] = (unsigned int)~0;
     }
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < palette->size; i++) {
         if (dmin[i] <= dmax) {
             int rd, gd, bd;
             int ri, gi, bi;

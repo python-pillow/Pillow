@@ -37,7 +37,7 @@ You can get the subsampling of a JPEG with the
 :func:`.JpegImagePlugin.get_sampling` function.
 
 In JPEG compressed data a JPEG marker is used instead of an EXIF tag.
-(ref.: https://www.exiv2.org/tags.html)
+(ref.: https://exiv2.org/tags.html)
 
 
 Quantization tables
@@ -52,19 +52,11 @@ You can get the quantization tables of a JPEG with::
 
   im.quantization
 
-This will return a dict with a number of arrays. You can pass this dict
+This will return a dict with a number of lists. You can pass this dict
 directly as the qtables argument when saving a JPEG.
 
-The tables format between im.quantization and quantization in presets differ in
-3 ways:
-
-1. The base container of the preset is a list with sublists instead of dict.
-   dict[0] -> list[0], dict[1] -> list[1], ...
-2. Each table in a preset is a list instead of an array.
-3. The zigzag order is remove in the preset (needed by libjpeg >= 6a).
-
-You can convert the dict format to the preset format with the
-:func:`.JpegImagePlugin.convert_dict_qtables()` function.
+The quantization table format in presets is a list with sublists. These formats
+are interchangeable.
 
 Libjpeg ref.:
 https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/libjpeg-3.html

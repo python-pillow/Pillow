@@ -61,7 +61,7 @@ def has_ghostscript():
     return False
 
 
-def Ghostscript(tile, size, fp, scale=1):
+def Ghostscript(tile, size, fp, scale=1, transparency=False):
     """Render an image using Ghostscript"""
 
     # Unpack decoder tile
@@ -108,6 +108,8 @@ def Ghostscript(tile, size, fp, scale=1):
                 lengthfile -= len(s)
                 f.write(s)
 
+    device = "pngalpha" if transparency else "ppmraw"
+
     # Build Ghostscript command
     command = [
         "gs",
@@ -117,7 +119,7 @@ def Ghostscript(tile, size, fp, scale=1):
         "-dBATCH",  # exit after processing
         "-dNOPAUSE",  # don't pause between pages
         "-dSAFER",  # safe mode
-        "-sDEVICE=ppmraw",  # ppm driver
+        f"-sDEVICE={device}",
         f"-sOutputFile={outfile}",  # output file
         # adjust for image origin
         "-c",
@@ -170,12 +172,12 @@ class PSFile:
         self.fp.seek(offset, whence)
 
     def readline(self):
-        s = self.char or b""
+        s = [self.char or b""]
         self.char = None
 
         c = self.fp.read(1)
-        while c not in b"\r\n":
-            s = s + c
+        while (c not in b"\r\n") and len(c):
+            s.append(c)
             c = self.fp.read(1)
 
         self.char = self.fp.read(1)
@@ -183,7 +185,7 @@ class PSFile:
         if self.char in b"\r\n":
             self.char = None
 
-        return s.decode("latin-1")
+        return b"".join(s).decode("latin-1")
 
 
 def _accept(prefix):
@@ -323,16 +325,16 @@ class EpsImageFile(ImageFile.ImageFile):
         else:
             raise SyntaxError("not an EPS file")
 
-        return (length, offset)
+        return length, offset
 
-    def load(self, scale=1):
+    def load(self, scale=1, transparency=False):
         # Load EPS via Ghostscript
-        if not self.tile:
-            return
-        self.im = Ghostscript(self.tile, self.size, self.fp, scale)
-        self.mode = self.im.mode
-        self._size = self.im.size
-        self.tile = []
+        if self.tile:
+            self.im = Ghostscript(self.tile, self.size, self.fp, scale, transparency)
+            self.mode = self.im.mode
+            self._size = self.im.size
+            self.tile = []
+        return Image.Image.load(self)
 
     def load_seek(self, *args, **kwargs):
         # we can't incrementally load, so force ImageFile.parser to
@@ -354,56 +356,46 @@ def _save(im, fp, filename, eps=1):
     #
     # determine PostScript image mode
     if im.mode == "L":
-        operator = (8, 1, "image")
+        operator = (8, 1, b"image")
     elif im.mode == "RGB":
-        operator = (8, 3, "false 3 colorimage")
+        operator = (8, 3, b"false 3 colorimage")
     elif im.mode == "CMYK":
-        operator = (8, 4, "false 4 colorimage")
+        operator = (8, 4, b"false 4 colorimage")
     else:
         raise ValueError("image mode is not supported")
 
-    base_fp = fp
-    wrapped_fp = False
-    if fp != sys.stdout:
-        fp = io.TextIOWrapper(fp, encoding="latin-1")
-        wrapped_fp = True
-
-    try:
-        if eps:
-            #
-            # write EPS header
-            fp.write("%!PS-Adobe-3.0 EPSF-3.0\n")
-            fp.write("%%Creator: PIL 0.1 EpsEncode\n")
-            # fp.write("%%CreationDate: %s"...)
-            fp.write("%%%%BoundingBox: 0 0 %d %d\n" % im.size)
-            fp.write("%%Pages: 1\n")
-            fp.write("%%EndComments\n")
-            fp.write("%%Page: 1 1\n")
-            fp.write("%%ImageData: %d %d " % im.size)
-            fp.write('%d %d 0 1 1 "%s"\n' % operator)
-
+    if eps:
         #
-        # image header
-        fp.write("gsave\n")
-        fp.write("10 dict begin\n")
-        fp.write(f"/buf {im.size[0] * operator[1]} string def\n")
-        fp.write("%d %d scale\n" % im.size)
-        fp.write("%d %d 8\n" % im.size)  # <= bits
-        fp.write(f"[{im.size[0]} 0 0 -{im.size[1]} 0 {im.size[1]}]\n")
-        fp.write("{ currentfile buf readhexstring pop } bind\n")
-        fp.write(operator[2] + "\n")
-        if hasattr(fp, "flush"):
-            fp.flush()
+        # write EPS header
+        fp.write(b"%!PS-Adobe-3.0 EPSF-3.0\n")
+        fp.write(b"%%Creator: PIL 0.1 EpsEncode\n")
+        # fp.write("%%CreationDate: %s"...)
+        fp.write(b"%%%%BoundingBox: 0 0 %d %d\n" % im.size)
+        fp.write(b"%%Pages: 1\n")
+        fp.write(b"%%EndComments\n")
+        fp.write(b"%%Page: 1 1\n")
+        fp.write(b"%%ImageData: %d %d " % im.size)
+        fp.write(b'%d %d 0 1 1 "%s"\n' % operator)
 
-        ImageFile._save(im, base_fp, [("eps", (0, 0) + im.size, 0, None)])
+    #
+    # image header
+    fp.write(b"gsave\n")
+    fp.write(b"10 dict begin\n")
+    fp.write(b"/buf %d string def\n" % (im.size[0] * operator[1]))
+    fp.write(b"%d %d scale\n" % im.size)
+    fp.write(b"%d %d 8\n" % im.size)  # <= bits
+    fp.write(b"[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
+    fp.write(b"{ currentfile buf readhexstring pop } bind\n")
+    fp.write(operator[2] + b"\n")
+    if hasattr(fp, "flush"):
+        fp.flush()
 
-        fp.write("\n%%%%EndBinary\n")
-        fp.write("grestore end\n")
-        if hasattr(fp, "flush"):
-            fp.flush()
-    finally:
-        if wrapped_fp:
-            fp.detach()
+    ImageFile._save(im, fp, [("eps", (0, 0) + im.size, 0, None)])
+
+    fp.write(b"\n%%%%EndBinary\n")
+    fp.write(b"grestore end\n")
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 
 #

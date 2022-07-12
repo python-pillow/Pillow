@@ -73,6 +73,13 @@ def test_write(tmp_path):
         img.save(out, format="sgi")
         assert_image_equal_tofile(img, out)
 
+        out = str(tmp_path / "fp.sgi")
+        with open(out, "wb") as fp:
+            img.save(fp)
+            assert_image_equal_tofile(img, out)
+
+            assert not fp.closed
+
     for mode in ("L", "RGB", "RGBA"):
         roundtrip(hopper(mode))
 

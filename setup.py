@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # > pyroma .
 # ------------------------------
 # Checking .
@@ -26,7 +26,6 @@ def get_version():
     return locals()["__version__"]
 
 
-NAME = "Pillow"
 PILLOW_VERSION = get_version()
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
@@ -39,7 +38,7 @@ TIFF_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 10):
+if sys.platform == "win32" and sys.version_info >= (3, 11):
     import atexit
 
     atexit.register(
@@ -168,7 +167,7 @@ def _find_library_dirs_ldconfig():
         # Assuming GLIBC's ldconfig (with option -p)
         # Alpine Linux uses musl that can't print cache
         args = ["/sbin/ldconfig", "-p"]
-        expr = fr".*\({abi_type}.*\) => (.*)"
+        expr = rf".*\({abi_type}.*\) => (.*)"
         env = dict(os.environ)
         env["LC_ALL"] = "C"
         env["LANG"] = "C"
@@ -186,7 +185,7 @@ def _find_library_dirs_ldconfig():
         return []
     [data, _] = p.communicate()
     if isinstance(data, bytes):
-        data = data.decode()
+        data = data.decode("latin1")
 
     dirs = []
     for dll in re.findall(expr, data):
@@ -251,28 +250,34 @@ def _cmd_exists(cmd):
 
 
 def _pkg_config(name):
-    try:
-        command = os.environ.get("PKG_CONFIG", "pkg-config")
-        command_libs = [command, "--libs-only-L", name]
-        command_cflags = [command, "--cflags-only-I", name]
-        if not DEBUG:
-            command_libs.append("--silence-errors")
-            command_cflags.append("--silence-errors")
-        libs = (
-            subprocess.check_output(command_libs)
-            .decode("utf8")
-            .strip()
-            .replace("-L", "")
-        )
-        cflags = (
-            subprocess.check_output(command_cflags)
-            .decode("utf8")
-            .strip()
-            .replace("-I", "")
-        )
-        return (libs, cflags)
-    except Exception:
-        pass
+    command = os.environ.get("PKG_CONFIG", "pkg-config")
+    for keep_system in (True, False):
+        try:
+            command_libs = [command, "--libs-only-L", name]
+            command_cflags = [command, "--cflags-only-I", name]
+            stderr = None
+            if keep_system:
+                command_libs.append("--keep-system-libs")
+                command_cflags.append("--keep-system-cflags")
+                stderr = subprocess.DEVNULL
+            if not DEBUG:
+                command_libs.append("--silence-errors")
+                command_cflags.append("--silence-errors")
+            libs = (
+                subprocess.check_output(command_libs, stderr=stderr)
+                .decode("utf8")
+                .strip()
+                .replace("-L", "")
+            )
+            cflags = (
+                subprocess.check_output(command_cflags)
+                .decode("utf8")
+                .strip()
+                .replace("-I", "")
+            )
+            return libs, cflags
+        except Exception:
+            pass
 
 
 class pil_build_ext(build_ext):
@@ -405,6 +410,27 @@ class pil_build_ext(build_ext):
                 self.extensions.remove(extension)
                 break
 
+    def get_macos_sdk_path(self):
+        try:
+            sdk_path = (
+                subprocess.check_output(["xcrun", "--show-sdk-path"])
+                .strip()
+                .decode("latin1")
+            )
+        except Exception:
+            sdk_path = None
+        if (
+            not sdk_path
+            or sdk_path == "/Applications/Xcode.app/Contents/Developer"
+            "/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+        ):
+            commandlinetools_sdk_path = (
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+            )
+            if os.path.exists(commandlinetools_sdk_path):
+                sdk_path = commandlinetools_sdk_path
+        return sdk_path
+
     def build_extensions(self):
 
         library_dirs = []
@@ -532,15 +558,7 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
-            # SDK install path
-            try:
-                sdk_path = (
-                    subprocess.check_output(["xcrun", "--show-sdk-path"])
-                    .strip()
-                    .decode("latin1")
-                )
-            except Exception:
-                sdk_path = None
+            sdk_path = self.get_macos_sdk_path()
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
                 _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
@@ -559,7 +577,11 @@ class pil_build_ext(build_ext):
                 # headers are at $PREFIX/include
                 # user libs are at $PREFIX/lib
                 _add_directory(
-                    library_dirs, os.path.join(os.environ["ANDROID_ROOT"], "lib")
+                    library_dirs,
+                    os.path.join(
+                        os.environ["ANDROID_ROOT"],
+                        "lib" if struct.calcsize("l") == 4 else "lib64",
+                    ),
                 )
 
         elif sys.platform.startswith("netbsd"):
@@ -810,9 +832,11 @@ class pil_build_ext(build_ext):
         if feature.tiff:
             libs.append(feature.tiff)
             defs.append(("HAVE_LIBTIFF", None))
-            # FIXME the following define should be detected automatically
-            #       based on system libtiff, see #4237
-            if PLATFORM_MINGW:
+            if sys.platform == "win32":
+                # This define needs to be defined if-and-only-if it was defined
+                # when compiling LibTIFF. LibTIFF doesn't expose it in `tiffconf.h`,
+                # so we have to guess; by default it is defined in all Windows builds.
+                # See #4237, #5243, #5359 for more information.
                 defs.append(("USE_WIN32_FILEIO", None))
         if feature.xcb:
             libs.append(feature.xcb)
@@ -880,7 +904,7 @@ class pil_build_ext(build_ext):
         else:
             self._remove_extension("PIL._webp")
 
-        tk_libs = ["psapi"] if sys.platform == "win32" else []
+        tk_libs = ["psapi"] if sys.platform in ("win32", "cygwin") else []
         self._update_extension("PIL._imagingtk", tk_libs)
 
         build_ext.build_extensions(self)
@@ -967,54 +991,14 @@ ext_modules = [
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
-with open("README.md") as f:
-    long_description = f.read()
-
 try:
     setup(
-        name=NAME,
         version=PILLOW_VERSION,
-        description="Python Imaging Library (Fork)",
-        long_description=long_description,
-        long_description_content_type="text/markdown",
-        license="HPND",
-        author="Alex Clark (PIL Fork Author)",
-        author_email="aclark@python-pillow.org",
-        url="https://python-pillow.org",
-        project_urls={
-            "Documentation": "https://pillow.readthedocs.io",
-            "Source": "https://github.com/python-pillow/Pillow",
-            "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow?"
-            "utm_source=pypi-pillow&utm_medium=pypi",
-            "Release notes": "https://pillow.readthedocs.io/en/stable/releasenotes/"
-            "index.html",
-            "Changelog": "https://github.com/python-pillow/Pillow/blob/master/"
-            "CHANGES.rst",
-        },
-        classifiers=[
-            "Development Status :: 6 - Mature",
-            "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",  # noqa: E501
-            "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.6",
-            "Programming Language :: Python :: 3.7",
-            "Programming Language :: Python :: 3.8",
-            "Programming Language :: Python :: 3.9",
-            "Programming Language :: Python :: 3 :: Only",
-            "Programming Language :: Python :: Implementation :: CPython",
-            "Programming Language :: Python :: Implementation :: PyPy",
-            "Topic :: Multimedia :: Graphics",
-            "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
-            "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
-            "Topic :: Multimedia :: Graphics :: Graphics Conversion",
-            "Topic :: Multimedia :: Graphics :: Viewers",
-        ],
-        python_requires=">=3.6",
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
         include_package_data=True,
         packages=["PIL"],
         package_dir={"": "src"},
-        keywords=["Imaging"],
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:

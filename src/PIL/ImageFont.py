@@ -29,16 +29,30 @@ import base64
 import os
 import sys
 import warnings
+from enum import IntEnum
 from io import BytesIO
 
-from . import Image, features
-from ._util import isDirectory, isPath
-
-LAYOUT_BASIC = 0
-LAYOUT_RAQM = 1
+from . import Image
+from ._deprecate import deprecate
+from ._util import is_directory, is_path
 
 
-class _imagingft_not_installed:
+class Layout(IntEnum):
+    BASIC = 0
+    RAQM = 1
+
+
+def __getattr__(name):
+    for enum, prefix in {Layout: "LAYOUT_"}.items():
+        if name.startswith(prefix):
+            name = name[len(prefix) :]
+            if name in enum.__members__:
+                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
+                return enum[name]
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+class _ImagingFtNotInstalled:
     # module placeholder
     def __getattr__(self, id):
         raise ImportError("The _imagingft C module is not installed")
@@ -47,7 +61,10 @@ class _imagingft_not_installed:
 try:
     from . import _imagingft as core
 except ImportError:
-    core = _imagingft_not_installed()
+    core = _ImagingFtNotInstalled()
+
+
+_UNSPECIFIED = object()
 
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
@@ -67,7 +84,7 @@ except ImportError:
 
 
 class ImageFont:
-    "PIL font wrapper"
+    """PIL font wrapper"""
 
     def _load_pilfont(self, filename):
 
@@ -120,12 +137,17 @@ class ImageFont:
 
     def getsize(self, text, *args, **kwargs):
         """
+        .. deprecated:: 9.2.0
+
+        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+
         Returns width and height (in pixels) of given text.
 
         :param text: Text to measure.
 
         :return: (width, height)
         """
+        deprecate("getsize", 10, "getbbox or getlength")
         return self.font.getsize(text)
 
     def getmask(self, text, mode="", *args, **kwargs):
@@ -148,6 +170,33 @@ class ImageFont:
         """
         return self.font.getmask(text, mode)
 
+    def getbbox(self, text, *args, **kwargs):
+        """
+        Returns bounding box (in pixels) of given text.
+
+        .. versionadded:: 9.2.0
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+        :return: ``(left, top, right, bottom)`` bounding box
+        """
+        width, height = self.font.getsize(text)
+        return 0, 0, width, height
+
+    def getlength(self, text, *args, **kwargs):
+        """
+        Returns length (in pixels) of given text.
+        This is the amount by which following text should be offset.
+
+        .. versionadded:: 9.2.0
+        """
+        width, height = self.font.getsize(text)
+        return width
+
 
 ##
 # Wrapper for FreeType fonts.  Application code should use the
@@ -155,7 +204,7 @@ class ImageFont:
 
 
 class FreeTypeFont:
-    "FreeType font wrapper (requires _imagingft service)"
+    """FreeType font wrapper (requires _imagingft service)"""
 
     def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
         # FIXME: use service provider instead
@@ -165,27 +214,16 @@ class FreeTypeFont:
         self.index = index
         self.encoding = encoding
 
-        try:
-            from packaging.version import parse as parse_version
-        except ImportError:
-            pass
-        else:
-            freetype_version = parse_version(features.version_module("freetype2"))
-            if freetype_version < parse_version("2.8"):
-                warnings.warn(
-                    "Support for FreeType 2.7 is deprecated and will be removed"
-                    " in Pillow 9 (2022-01-02). Please upgrade to FreeType 2.8 "
-                    "or newer, preferably FreeType 2.10.4 which fixes "
-                    "CVE-2020-15999.",
-                    DeprecationWarning,
-                )
-
-        if layout_engine not in (LAYOUT_BASIC, LAYOUT_RAQM):
-            layout_engine = LAYOUT_BASIC
+        if layout_engine not in (Layout.BASIC, Layout.RAQM):
+            layout_engine = Layout.BASIC
             if core.HAVE_RAQM:
-                layout_engine = LAYOUT_RAQM
-        elif layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
-            layout_engine = LAYOUT_BASIC
+                layout_engine = Layout.RAQM
+        elif layout_engine == Layout.RAQM and not core.HAVE_RAQM:
+            warnings.warn(
+                "Raqm layout was requested, but Raqm is not available. "
+                "Falling back to basic layout."
+            )
+            layout_engine = Layout.BASIC
 
         self.layout_engine = layout_engine
 
@@ -195,7 +233,7 @@ class FreeTypeFont:
                 "", size, index, encoding, self.font_bytes, layout_engine
             )
 
-        if isPath(font):
+        if is_path(font):
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -211,6 +249,13 @@ class FreeTypeFont:
             )
         else:
             load_from_bytes(font)
+
+    def __getstate__(self):
+        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
+
+    def __setstate__(self, state):
+        path, size, index, encoding, layout_engine = state
+        self.__init__(path, size, index, encoding, layout_engine)
 
     def _multiline_split(self, text):
         split_character = "\n" if isinstance(text, str) else b"\n"
@@ -373,15 +418,22 @@ class FreeTypeFont:
         return left, top, left + width, top + height
 
     def getsize(
-        self, text, direction=None, features=None, language=None, stroke_width=0
+        self,
+        text,
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
     ):
         """
-        Returns width and height (in pixels) of given text if rendered in font with
-        provided direction, features, and language.
+        .. deprecated:: 9.2.0
 
         Use :py:meth:`getlength()` to measure the offset of following text with
         1/64 pixel precision.
         Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
+
+        Returns width and height (in pixels) of given text if rendered in font with
+        provided direction, features, and language.
 
         .. note:: For historical reasons this function measures text height from
             the ascender line instead of the top, see :ref:`text-anchors`.
@@ -425,6 +477,7 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        deprecate("getsize", 10, "getbbox or getlength")
         # vertical offset is added for historical reasons
         # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
         size, offset = self.font.getsize(text, "L", direction, features, language)
@@ -443,6 +496,10 @@ class FreeTypeFont:
         stroke_width=0,
     ):
         """
+        .. deprecated:: 9.2.0
+
+        Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
+
         Returns width and height (in pixels) of given text if rendered in font
         with provided direction, features, and language, while respecting
         newline characters.
@@ -482,19 +539,26 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        deprecate("getsize_multiline", 10, "ImageDraw.multiline_textbbox")
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
-        for line in lines:
-            line_width, line_height = self.getsize(
-                line, direction, features, language, stroke_width
-            )
-            max_width = max(max_width, line_width)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
+            for line in lines:
+                line_width, line_height = self.getsize(
+                    line, direction, features, language, stroke_width
+                )
+                max_width = max(max_width, line_width)
 
         return max_width, len(lines) * line_spacing - spacing
 
     def getoffset(self, text):
         """
+        .. deprecated:: 9.2.0
+
+        Use :py:meth:`.getbbox` instead.
+
         Returns the offset of given text. This is the gap between the
         starting coordinate and the first marking. Note that this gap is
         included in the result of :py:func:`~PIL.ImageFont.FreeTypeFont.getsize`.
@@ -503,6 +567,7 @@ class FreeTypeFont:
 
         :return: A tuple of the x and y offset
         """
+        deprecate("getoffset", 10, "getbbox")
         return self.font.getsize(text)[1]
 
     def getmask(
@@ -592,7 +657,7 @@ class FreeTypeFont:
         self,
         text,
         mode="",
-        fill=Image.core.fill,
+        fill=_UNSPECIFIED,
         direction=None,
         features=None,
         language=None,
@@ -616,6 +681,12 @@ class FreeTypeFont:
                      C-level implementations.
 
                      .. versionadded:: 1.1.5
+
+        :param fill: Optional fill function. By default, an internal Pillow function
+                     will be used.
+
+                     Deprecated. This parameter will be removed in Pillow 10
+                     (2023-07-01).
 
         :param direction: Direction of the text. It can be 'rtl' (right to
                           left), 'ltr' (left to right) or 'ttb' (top to bottom).
@@ -664,11 +735,16 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
+        if fill is _UNSPECIFIED:
+            fill = Image.core.fill
+        else:
+            deprecate("fill", 10)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
         size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
         offset = offset[0] - stroke_width, offset[1] - stroke_width
+        Image._decompression_bomb_check(size)
         im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
         self.font.render(
             text, im.id, mode, direction, features, language, stroke_width, ink
@@ -687,8 +763,13 @@ class FreeTypeFont:
 
         :return: A FreeTypeFont object.
         """
+        if font is None:
+            try:
+                font = BytesIO(self.font_bytes)
+            except AttributeError:
+                font = self.path
         return FreeTypeFont(
-            font=self.path if font is None else font,
+            font=font,
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
@@ -750,7 +831,7 @@ class FreeTypeFont:
 
 
 class TransposedFont:
-    "Wrapper for writing rotated or mirrored text"
+    """Wrapper for writing rotated or mirrored text"""
 
     def __init__(self, font, orientation=None):
         """
@@ -759,15 +840,24 @@ class TransposedFont:
 
         :param font: A font object.
         :param orientation: An optional orientation.  If given, this should
-            be one of Image.FLIP_LEFT_RIGHT, Image.FLIP_TOP_BOTTOM,
-            Image.ROTATE_90, Image.ROTATE_180, or Image.ROTATE_270.
+            be one of Image.Transpose.FLIP_LEFT_RIGHT, Image.Transpose.FLIP_TOP_BOTTOM,
+            Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_180, or
+            Image.Transpose.ROTATE_270.
         """
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
 
     def getsize(self, text, *args, **kwargs):
-        w, h = self.font.getsize(text)
-        if self.orientation in (Image.ROTATE_90, Image.ROTATE_270):
+        """
+        .. deprecated:: 9.2.0
+
+        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+        """
+        deprecate("getsize", 10, "getbbox or getlength")
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            w, h = self.font.getsize(text)
+        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             return h, w
         return w, h
 
@@ -776,6 +866,23 @@ class TransposedFont:
         if self.orientation is not None:
             return im.transpose(self.orientation)
         return im
+
+    def getbbox(self, text, *args, **kwargs):
+        # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
+        # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont
+        left, top, right, bottom = self.font.getbbox(text, *args, **kwargs)
+        width = right - left
+        height = bottom - top
+        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+            return 0, 0, height, width
+        return 0, 0, width, height
+
+    def getlength(self, text, *args, **kwargs):
+        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+            raise ValueError(
+                "text length is undefined for text rotated by 90 or 270 degrees"
+            )
+        return self.font.getlength(text, *args, **kwargs)
 
 
 def load(filename):
@@ -813,7 +920,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                  :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
                  macOS.
 
-    :param size: The requested size, in points.
+    :param size: The requested size, in pixels.
     :param index: Which font face to load (default is first available face).
     :param encoding: Which font encoding to use (default is Unicode). Possible
                      encodings include (see the FreeType documentation for more
@@ -835,7 +942,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      This specifies the character set to use. It does not alter the
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
-                     :data:`.ImageFont.LAYOUT_BASIC` or :data:`.ImageFont.LAYOUT_RAQM`.
+                     :data:`.ImageFont.Layout.BASIC` or :data:`.ImageFont.Layout.RAQM`.
 
                      You can check support for Raqm layout using
                      :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
@@ -851,7 +958,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     try:
         return freetype(font)
     except OSError:
-        if not isPath(font):
+        if not is_path(font):
             raise
         ttf_filename = os.path.basename(font)
 
@@ -905,7 +1012,7 @@ def load_path(filename):
     :exception OSError: If the file could not be read.
     """
     for directory in sys.path:
-        if isDirectory(directory):
+        if is_directory(directory):
             if not isinstance(filename, str):
                 filename = filename.decode("utf-8")
             try:

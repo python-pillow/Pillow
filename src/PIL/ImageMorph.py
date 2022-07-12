@@ -119,13 +119,13 @@ class LutBuilder:
         # mirror
         if "M" in options:
             n = len(patterns)
-            for pattern, res in patterns[0:n]:
+            for pattern, res in patterns[:n]:
                 patterns.append((self._string_permute(pattern, MIRROR_MATRIX), res))
 
         # negate
         if "N" in options:
             n = len(patterns)
-            for pattern, res in patterns[0:n]:
+            for pattern, res in patterns[:n]:
                 # Swap 0 and 1
                 pattern = pattern.replace("0", "Z").replace("1", "0").replace("Z", "1")
                 res = 1 - int(res)
@@ -196,7 +196,7 @@ class MorphOp:
             raise Exception("No operator loaded")
 
         if image.mode != "L":
-            raise Exception("Image must be binary, meaning it must use mode L")
+            raise ValueError("Image mode must be L")
         outimage = Image.new(image.mode, image.size, None)
         count = _imagingmorph.apply(bytes(self.lut), image.im.id, outimage.im.id)
         return count, outimage
@@ -211,7 +211,7 @@ class MorphOp:
             raise Exception("No operator loaded")
 
         if image.mode != "L":
-            raise Exception("Image must be binary, meaning it must use mode L")
+            raise ValueError("Image mode must be L")
         return _imagingmorph.match(bytes(self.lut), image.im.id)
 
     def get_on_pixels(self, image):
@@ -221,7 +221,7 @@ class MorphOp:
         of all matching pixels. See :ref:`coordinate-system`."""
 
         if image.mode != "L":
-            raise Exception("Image must be binary, meaning it must use mode L")
+            raise ValueError("Image mode must be L")
         return _imagingmorph.get_on_pixels(image.im.id)
 
     def load_lut(self, filename):

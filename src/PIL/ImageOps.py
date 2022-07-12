@@ -19,6 +19,7 @@
 
 import functools
 import operator
+import re
 
 from . import Image
 
@@ -61,7 +62,7 @@ def _lut(image, lut):
 # actions
 
 
-def autocontrast(image, cutoff=0, ignore=None, mask=None):
+def autocontrast(image, cutoff=0, ignore=None, mask=None, preserve_tone=False):
     """
     Maximize (normalize) image contrast. This function calculates a
     histogram of the input image (or mask region), removes ``cutoff`` percent of the
@@ -77,9 +78,17 @@ def autocontrast(image, cutoff=0, ignore=None, mask=None):
     :param mask: Histogram used in contrast operation is computed using pixels
                  within the mask. If no mask is given the entire image is used
                  for histogram computation.
+    :param preserve_tone: Preserve image tone in Photoshop-like style autocontrast.
+
+                          .. versionadded:: 8.2.0
+
     :return: An image.
     """
-    histogram = image.histogram(mask)
+    if preserve_tone:
+        histogram = image.convert("L").histogram(mask)
+    else:
+        histogram = image.histogram(mask)
+
     lut = []
     for layer in range(0, len(histogram), 256):
         h = histogram[layer : layer + 256]
@@ -228,15 +237,43 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
     return _lut(image, red + green + blue)
 
 
-def pad(image, size, method=Image.BICUBIC, color=None, centering=(0.5, 0.5)):
+def contain(image, size, method=Image.Resampling.BICUBIC):
     """
-    Returns a sized and padded version of the image, expanded to fill the
-    requested aspect ratio and size.
+    Returns a resized version of the image, set to the maximum width and height
+    within the requested size, while maintaining the original aspect ratio.
 
-    :param image: The image to size and crop.
+    :param image: The image to resize and crop.
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
-    :param method: What resampling method to use. Default is
+    :param method: Resampling method to use. Default is
+                   :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
+    :return: An image.
+    """
+
+    im_ratio = image.width / image.height
+    dest_ratio = size[0] / size[1]
+
+    if im_ratio != dest_ratio:
+        if im_ratio > dest_ratio:
+            new_height = int(image.height / image.width * size[0])
+            if new_height != size[1]:
+                size = (size[0], new_height)
+        else:
+            new_width = int(image.width / image.height * size[1])
+            if new_width != size[0]:
+                size = (new_width, size[1])
+    return image.resize(size, resample=method)
+
+
+def pad(image, size, method=Image.Resampling.BICUBIC, color=None, centering=(0.5, 0.5)):
+    """
+    Returns a resized and padded version of the image, expanded to fill the
+    requested aspect ratio and size.
+
+    :param image: The image to resize and crop.
+    :param size: The requested output size in pixels, given as a
+                 (width, height) tuple.
+    :param method: Resampling method to use. Default is
                    :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :param color: The background color of the padded image.
     :param centering: Control the position of the original image within the
@@ -249,27 +286,17 @@ def pad(image, size, method=Image.BICUBIC, color=None, centering=(0.5, 0.5)):
     :return: An image.
     """
 
-    im_ratio = image.width / image.height
-    dest_ratio = size[0] / size[1]
-
-    if im_ratio == dest_ratio:
-        out = image.resize(size, resample=method)
+    resized = contain(image, size, method)
+    if resized.size == size:
+        out = resized
     else:
         out = Image.new(image.mode, size, color)
-        if im_ratio > dest_ratio:
-            new_height = int(image.height / image.width * size[0])
-            if new_height != size[1]:
-                image = image.resize((size[0], new_height), resample=method)
-
-            y = int((size[1] - new_height) * max(0, min(centering[1], 1)))
-            out.paste(image, (0, y))
+        if resized.width != size[0]:
+            x = int((size[0] - resized.width) * max(0, min(centering[0], 1)))
+            out.paste(resized, (x, 0))
         else:
-            new_width = int(image.width / image.height * size[1])
-            if new_width != size[0]:
-                image = image.resize((new_width, size[1]), resample=method)
-
-            x = int((size[0] - new_width) * max(0, min(centering[0], 1)))
-            out.paste(image, (x, 0))
+            y = int((size[1] - resized.height) * max(0, min(centering[1], 1)))
+            out.paste(resized, (0, y))
     return out
 
 
@@ -288,7 +315,7 @@ def crop(image, border=0):
     return image.crop((left, top, image.size[0] - right, image.size[1] - bottom))
 
 
-def scale(image, factor, resample=Image.BICUBIC):
+def scale(image, factor, resample=Image.Resampling.BICUBIC):
     """
     Returns a rescaled image by a specific factor given in parameter.
     A factor greater than 1 expands the image, between 0 and 1 contracts the
@@ -296,7 +323,7 @@ def scale(image, factor, resample=Image.BICUBIC):
 
     :param image: The image to rescale.
     :param factor: The expansion factor, as a float.
-    :param resample: What resampling method to use. Default is
+    :param resample: Resampling method to use. Default is
                      :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
@@ -309,7 +336,7 @@ def scale(image, factor, resample=Image.BICUBIC):
         return image.resize(size, resample)
 
 
-def deform(image, deformer, resample=Image.BILINEAR):
+def deform(image, deformer, resample=Image.Resampling.BILINEAR):
     """
     Deform the image.
 
@@ -320,7 +347,9 @@ def deform(image, deformer, resample=Image.BILINEAR):
        in the PIL.Image.transform function.
     :return: An image.
     """
-    return image.transform(image.size, Image.MESH, deformer.getmesh(image), resample)
+    return image.transform(
+        image.size, Image.Transform.MESH, deformer.getmesh(image), resample
+    )
 
 
 def equalize(image, mask=None):
@@ -366,22 +395,32 @@ def expand(image, border=0, fill=0):
     left, top, right, bottom = _border(border)
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom
-    out = Image.new(image.mode, (width, height), _color(fill, image.mode))
+    color = _color(fill, image.mode)
+    if image.mode == "P" and image.palette:
+        image.load()
+        palette = image.palette.copy()
+        if isinstance(color, tuple):
+            color = palette.getcolor(color)
+    else:
+        palette = None
+    out = Image.new(image.mode, (width, height), color)
+    if palette:
+        out.putpalette(palette.palette)
     out.paste(image, (left, top))
     return out
 
 
-def fit(image, size, method=Image.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
+def fit(image, size, method=Image.Resampling.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
     """
-    Returns a sized and cropped version of the image, cropped to the
+    Returns a resized and cropped version of the image, cropped to the
     requested aspect ratio and size.
 
     This function was contributed by Kevin Cazabon.
 
-    :param image: The image to size and crop.
+    :param image: The image to resize and crop.
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
-    :param method: What resampling method to use. Default is
+    :param method: Resampling method to use. Default is
                    :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
     :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
@@ -402,7 +441,7 @@ def fit(image, size, method=Image.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
 
     # by Kevin Cazabon, Feb 17/2000
     # kevin@cazabon.com
-    # http://www.cazabon.com
+    # https://www.cazabon.com
 
     # ensure centering is mutable
     centering = list(centering)
@@ -463,7 +502,7 @@ def flip(image):
     :param image: The image to flip.
     :return: An image.
     """
-    return image.transpose(Image.FLIP_TOP_BOTTOM)
+    return image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
 
 
 def grayscale(image):
@@ -486,7 +525,7 @@ def invert(image):
     lut = []
     for i in range(256):
         lut.append(255 - i)
-    return _lut(image, lut)
+    return image.point(lut) if image.mode == "1" else _lut(image, lut)
 
 
 def mirror(image):
@@ -496,7 +535,7 @@ def mirror(image):
     :param image: The image to mirror.
     :return: An image.
     """
-    return image.transpose(Image.FLIP_LEFT_RIGHT)
+    return image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
 def posterize(image, bits):
@@ -542,17 +581,30 @@ def exif_transpose(image):
     exif = image.getexif()
     orientation = exif.get(0x0112)
     method = {
-        2: Image.FLIP_LEFT_RIGHT,
-        3: Image.ROTATE_180,
-        4: Image.FLIP_TOP_BOTTOM,
-        5: Image.TRANSPOSE,
-        6: Image.ROTATE_270,
-        7: Image.TRANSVERSE,
-        8: Image.ROTATE_90,
+        2: Image.Transpose.FLIP_LEFT_RIGHT,
+        3: Image.Transpose.ROTATE_180,
+        4: Image.Transpose.FLIP_TOP_BOTTOM,
+        5: Image.Transpose.TRANSPOSE,
+        6: Image.Transpose.ROTATE_270,
+        7: Image.Transpose.TRANSVERSE,
+        8: Image.Transpose.ROTATE_90,
     }.get(orientation)
     if method is not None:
         transposed_image = image.transpose(method)
-        del exif[0x0112]
-        transposed_image.info["exif"] = exif.tobytes()
+        transposed_exif = transposed_image.getexif()
+        if 0x0112 in transposed_exif:
+            del transposed_exif[0x0112]
+            if "exif" in transposed_image.info:
+                transposed_image.info["exif"] = transposed_exif.tobytes()
+            elif "Raw profile type exif" in transposed_image.info:
+                transposed_image.info[
+                    "Raw profile type exif"
+                ] = transposed_exif.tobytes().hex()
+            elif "XML:com.adobe.xmp" in transposed_image.info:
+                transposed_image.info["XML:com.adobe.xmp"] = re.sub(
+                    r'tiff:Orientation="([0-9])"',
+                    "",
+                    transposed_image.info["XML:com.adobe.xmp"],
+                )
         return transposed_image
     return image.copy()

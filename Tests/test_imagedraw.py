@@ -183,7 +183,7 @@ def test_bitmap():
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     with Image.open("Tests/images/pil123rgba.png") as small:
-        small = small.resize((50, 50), Image.NEAREST)
+        small = small.resize((50, 50), Image.Resampling.NEAREST)
 
         # Act
         draw.bitmap((10, 10), small)
@@ -319,7 +319,7 @@ def test_ellipse_symmetric():
         im = Image.new("RGB", (width, 100))
         draw = ImageDraw.Draw(im)
         draw.ellipse(bbox, fill="green", outline="blue")
-        assert_image_equal(im, im.transpose(Image.FLIP_LEFT_RIGHT))
+        assert_image_equal(im, im.transpose(Image.Transpose.FLIP_LEFT_RIGHT))
 
 
 def test_ellipse_width():
@@ -467,6 +467,23 @@ def test_shape2():
     assert_image_equal_tofile(im, "Tests/images/imagedraw_shape2.png")
 
 
+def test_transform():
+    # Arrange
+    im = Image.new("RGB", (100, 100), "white")
+    expected = im.copy()
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    s = ImageDraw.Outline()
+    s.line(0, 0)
+    s.transform((0, 0, 0, 0, 0, 0))
+
+    draw.shape(s, fill=1)
+
+    # Assert
+    assert_image_equal(im, expected)
+
+
 def helper_pieslice(bbox, start, end):
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -538,6 +555,36 @@ def test_pieslice_wide():
     assert_image_equal_tofile(im, "Tests/images/imagedraw_pieslice_wide.png")
 
 
+def test_pieslice_no_spikes():
+    im = Image.new("RGB", (161, 161), "white")
+    draw = ImageDraw.Draw(im)
+    cxs = (
+        [140] * 3
+        + list(range(140, 19, -20))
+        + [20] * 5
+        + list(range(20, 141, 20))
+        + [140] * 2
+    )
+    cys = (
+        list(range(80, 141, 20))
+        + [140] * 5
+        + list(range(140, 19, -20))
+        + [20] * 5
+        + list(range(20, 80, 20))
+    )
+
+    for cx, cy, angle in zip(cxs, cys, range(0, 360, 15)):
+        draw.pieslice(
+            [cx - 100, cy - 100, cx + 100, cy + 100], angle, angle + 1, fill="black"
+        )
+        draw.point([cx, cy], fill="red")
+
+    im_pre_erase = im.copy()
+    draw.rectangle([21, 21, 139, 139], fill="white")
+
+    assert_image_equal(im, im_pre_erase)
+
+
 def helper_point(points):
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -605,6 +652,33 @@ def test_polygon_1px_high():
     draw.polygon([(0, 1), (0, 1), (2, 1), (2, 1)], "#f00")
 
     # Assert
+    assert_image_equal_tofile(im, expected)
+
+
+def test_polygon_1px_high_translucent():
+    # Test drawing a translucent 1px high polygon
+    # Arrange
+    im = Image.new("RGB", (4, 3))
+    draw = ImageDraw.Draw(im, "RGBA")
+    expected = "Tests/images/imagedraw_polygon_1px_high_translucent.png"
+
+    # Act
+    draw.polygon([(1, 1), (1, 1), (3, 1), (3, 1)], (255, 0, 0, 127))
+
+    # Assert
+    assert_image_equal_tofile(im, expected)
+
+
+def test_polygon_translucent():
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.polygon([(20, 80), (80, 80), (80, 20)], fill=(0, 255, 0, 127))
+
+    # Assert
+    expected = "Tests/images/imagedraw_polygon_translucent.png"
     assert_image_equal_tofile(im, expected)
 
 
@@ -720,6 +794,29 @@ def test_rounded_rectangle(xy):
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle.png")
+
+
+@pytest.mark.parametrize(
+    "xy, radius, type",
+    [
+        ((10, 20, 190, 180), 30.5, "given"),
+        ((10, 10, 181, 190), 90, "width"),
+        ((10, 20, 190, 181), 85, "height"),
+    ],
+)
+def test_rounded_rectangle_non_integer_radius(xy, radius, type):
+    # Arrange
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rounded_rectangle(xy, radius, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(
+        im,
+        "Tests/images/imagedraw_rounded_rectangle_non_integer_radius_" + type + ".png",
+    )
 
 
 def test_rounded_rectangle_zero_radius():
@@ -876,6 +973,18 @@ def test_triangle_right():
     draw.polygon([(3, 5), (17, 5), (10, 12)], BLACK)
     assert_image_equal_tofile(
         img, os.path.join(IMAGES_PATH, "triangle_right.png"), "triangle right failed"
+    )
+
+
+@pytest.mark.parametrize(
+    "fill, suffix",
+    ((BLACK, "width"), (None, "width_no_fill")),
+)
+def test_triangle_right_width(fill, suffix):
+    img, draw = create_base_image_draw((100, 100))
+    draw.polygon([(15, 25), (85, 25), (50, 60)], fill, WHITE, width=5)
+    assert_image_equal_tofile(
+        img, os.path.join(IMAGES_PATH, "triangle_right_" + suffix + ".png")
     )
 
 
@@ -1123,21 +1232,39 @@ def test_textsize_empty_string():
     # Act
     # Should not cause 'SystemError: <built-in method getsize of
     # ImagingFont object at 0x...> returned NULL without setting an error'
-    draw.textsize("")
-    draw.textsize("\n")
-    draw.textsize("test\n")
+    draw.textbbox((0, 0), "")
+    draw.textbbox((0, 0), "\n")
+    draw.textbbox((0, 0), "test\n")
+    draw.textlength("")
 
 
 @skip_unless_feature("freetype2")
-def test_textsize_stroke():
+def test_textbbox_stroke():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 20)
 
     # Act / Assert
-    assert draw.textsize("A", font, stroke_width=2) == (16, 20)
-    assert draw.multiline_textsize("ABC\nAaaa", font, stroke_width=2) == (52, 44)
+    assert draw.textbbox((2, 2), "A", font, stroke_width=2) == (0, 4, 16, 20)
+    assert draw.textbbox((2, 2), "A", font, stroke_width=4) == (-2, 2, 18, 22)
+    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=2) == (0, 4, 52, 44)
+    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=4) == (-2, 2, 54, 50)
+
+
+def test_textsize_deprecation():
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    with pytest.warns(DeprecationWarning) as log:
+        draw.textsize("Hello")
+    assert len(log) == 1
+    with pytest.warns(DeprecationWarning) as log:
+        draw.textsize("Hello\nWorld")
+    assert len(log) == 1
+    with pytest.warns(DeprecationWarning) as log:
+        draw.multiline_textsize("Hello\nWorld")
+    assert len(log) == 1
 
 
 @skip_unless_feature("freetype2")
@@ -1326,3 +1453,42 @@ def test_compute_regular_polygon_vertices_input_error_handling(
     with pytest.raises(expected_error) as e:
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
     assert str(e.value) == error_message
+
+
+def test_continuous_horizontal_edges_polygon():
+    xy = [
+        (2, 6),
+        (6, 6),
+        (12, 6),
+        (12, 12),
+        (8, 12),
+        (8, 8),
+        (4, 8),
+        (2, 8),
+    ]
+    img, draw = create_base_image_draw((16, 16))
+    draw.polygon(xy, BLACK)
+    expected = os.path.join(IMAGES_PATH, "continuous_horizontal_edges_polygon.png")
+    assert_image_equal_tofile(
+        img, expected, "continuous horizontal edges polygon failed"
+    )
+
+
+def test_discontiguous_corners_polygon():
+    img, draw = create_base_image_draw((84, 68))
+    draw.polygon(((1, 21), (34, 4), (71, 1), (38, 18)), BLACK)
+    draw.polygon(((71, 44), (38, 27), (1, 24)), BLACK)
+    draw.polygon(
+        ((38, 66), (5, 49), (77, 49), (47, 66), (82, 63), (82, 47), (1, 47), (1, 63)),
+        BLACK,
+    )
+    expected = os.path.join(IMAGES_PATH, "discontiguous_corners_polygon.png")
+    assert_image_similar_tofile(img, expected, 1)
+
+
+def test_polygon():
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+    draw.polygon([(18, 30), (19, 31), (18, 30), (85, 30), (60, 72)], "red")
+    expected = "Tests/images/imagedraw_outline_polygon_RGB.png"
+    assert_image_similar_tofile(im, expected, 1)

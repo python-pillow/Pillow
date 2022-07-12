@@ -26,51 +26,51 @@ def test_basic(tmp_path):
 
     def basic(mode):
 
-        imIn = original.convert(mode)
-        verify(imIn)
+        im_in = original.convert(mode)
+        verify(im_in)
 
-        w, h = imIn.size
+        w, h = im_in.size
 
-        imOut = imIn.copy()
-        verify(imOut)  # copy
+        im_out = im_in.copy()
+        verify(im_out)  # copy
 
-        imOut = imIn.transform((w, h), Image.EXTENT, (0, 0, w, h))
-        verify(imOut)  # transform
+        im_out = im_in.transform((w, h), Image.Transform.EXTENT, (0, 0, w, h))
+        verify(im_out)  # transform
 
         filename = str(tmp_path / "temp.im")
-        imIn.save(filename)
+        im_in.save(filename)
 
-        with Image.open(filename) as imOut:
+        with Image.open(filename) as im_out:
 
-            verify(imIn)
-            verify(imOut)
+            verify(im_in)
+            verify(im_out)
 
-        imOut = imIn.crop((0, 0, w, h))
-        verify(imOut)
+        im_out = im_in.crop((0, 0, w, h))
+        verify(im_out)
 
-        imOut = Image.new(mode, (w, h), None)
-        imOut.paste(imIn.crop((0, 0, w // 2, h)), (0, 0))
-        imOut.paste(imIn.crop((w // 2, 0, w, h)), (w // 2, 0))
+        im_out = Image.new(mode, (w, h), None)
+        im_out.paste(im_in.crop((0, 0, w // 2, h)), (0, 0))
+        im_out.paste(im_in.crop((w // 2, 0, w, h)), (w // 2, 0))
 
-        verify(imIn)
-        verify(imOut)
+        verify(im_in)
+        verify(im_out)
 
-        imIn = Image.new(mode, (1, 1), 1)
-        assert imIn.getpixel((0, 0)) == 1
+        im_in = Image.new(mode, (1, 1), 1)
+        assert im_in.getpixel((0, 0)) == 1
 
-        imIn.putpixel((0, 0), 2)
-        assert imIn.getpixel((0, 0)) == 2
+        im_in.putpixel((0, 0), 2)
+        assert im_in.getpixel((0, 0)) == 2
 
         if mode == "L":
             maximum = 255
         else:
             maximum = 32767
 
-        imIn = Image.new(mode, (1, 1), 256)
-        assert imIn.getpixel((0, 0)) == min(256, maximum)
+        im_in = Image.new(mode, (1, 1), 256)
+        assert im_in.getpixel((0, 0)) == min(256, maximum)
 
-        imIn.putpixel((0, 0), 512)
-        assert imIn.getpixel((0, 0)) == min(512, maximum)
+        im_in.putpixel((0, 0), 512)
+        assert im_in.getpixel((0, 0)) == min(512, maximum)
 
     basic("L")
 

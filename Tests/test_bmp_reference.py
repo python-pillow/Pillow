@@ -1,6 +1,5 @@
 import os
-
-import pytest
+import warnings
 
 from PIL import Image
 
@@ -20,15 +19,13 @@ def test_bad():
     either"""
     for f in get_files("b"):
 
-        with pytest.warns(None) as record:
+        # Assert that there is no unclosed file warning
+        with warnings.catch_warnings():
             try:
                 with Image.open(f) as im:
                     im.load()
             except Exception:  # as msg:
                 pass
-
-        # Assert that there is no unclosed file warning
-        assert not record
 
 
 def test_questionable():
@@ -43,6 +40,7 @@ def test_questionable():
         "rgb32fakealpha.bmp",
         "rgb24largepal.bmp",
         "pal8os2sp.bmp",
+        "pal8rletrns.bmp",
         "rgb32bf-xbgr.bmp",
     ]
     for f in get_files("q"):

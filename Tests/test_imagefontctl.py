@@ -1,13 +1,8 @@
 import pytest
-from packaging.version import parse as parse_version
 
-from PIL import Image, ImageDraw, ImageFont, features
+from PIL import Image, ImageDraw, ImageFont
 
-from .helper import (
-    assert_image_similar_tofile,
-    skip_unless_feature,
-    skip_unless_feature_version,
-)
+from .helper import assert_image_similar_tofile, skip_unless_feature
 
 FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
@@ -145,8 +140,8 @@ def test_ligature_features():
     target = "Tests/images/test_ligature_features.png"
     assert_image_similar_tofile(im, target, 0.5)
 
-    liga_size = ttf.getsize("fi", features=["-liga"])
-    assert liga_size == (13, 19)
+    liga_bbox = ttf.getbbox("fi", features=["-liga"])
+    assert liga_bbox == (0, 4, 13, 19)
 
 
 def test_kerning_features():
@@ -252,11 +247,6 @@ def test_getlength_combine(mode, direction, text):
             pytest.skip("libraqm 0.7 or greater not available")
 
 
-# FreeType 2.5.1 README: Miscellaneous Changes:
-# Improved computation of emulated vertical metrics for TrueType fonts.
-@skip_unless_feature_version(
-    "freetype2", "2.5.1", "FreeType <2.5.1 has incompatible ttb metrics"
-)
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
 def test_anchor_ttb(anchor):
     text = "f"
@@ -315,14 +305,6 @@ combine_tests = (
     "name, text, anchor, dir, epsilon", combine_tests, ids=[r[0] for r in combine_tests]
 )
 def test_combine(name, text, dir, anchor, epsilon):
-    if (
-        parse_version(features.version_module("freetype2")) < parse_version("2.5.1")
-        and dir == "ttb"
-    ):
-        # FreeType 2.5.1 README: Miscellaneous Changes:
-        # Improved computation of emulated vertical metrics for TrueType fonts.
-        pytest.skip("FreeType <2.5.1 has incompatible ttb metrics")
-
     path = f"Tests/images/test_combine_{name}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
 

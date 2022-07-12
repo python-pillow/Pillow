@@ -115,6 +115,6 @@ def test_pdf_repr():
     assert pdf_repr(True) == b"true"
     assert pdf_repr(False) == b"false"
     assert pdf_repr(None) == b"null"
-    assert pdf_repr(b"a)/b\\(c") == br"(a\)/b\\\(c)"
+    assert pdf_repr(b"a)/b\\(c") == rb"(a\)/b\\\(c)"
     assert pdf_repr([123, True, {"a": PdfName(b"b")}]) == b"[ 123 true <<\n/a /b\n>> ]"
     assert pdf_repr(PdfBinary(b"\x90\x1F\xA0")) == b"<901FA0>"

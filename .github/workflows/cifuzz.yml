@@ -1,4 +1,5 @@
 name: CIFuzz
+
 on:
   push:
     paths:
@@ -8,6 +9,7 @@ on:
     paths:
       - "**.c"
       - "**.h"
+  workflow_dispatch:
 
 jobs:
   Fuzzing:
@@ -29,13 +31,13 @@ jobs:
         language: python
         dry-run: false
     - name: Upload New Crash
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure() && steps.build.outcome == 'success'
       with:
         name: artifacts
         path: ./out/artifacts
     - name: Upload Legacy Crash
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: steps.run.outcome == 'success'
       with:
         name: crash

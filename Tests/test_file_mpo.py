@@ -1,3 +1,4 @@
+import warnings
 from io import BytesIO
 
 import pytest
@@ -41,20 +42,24 @@ def test_unclosed_file():
 
 
 def test_closed_file():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         im = Image.open(test_files[0])
         im.load()
         im.close()
 
-    assert not record
+
+def test_seek_after_close():
+    im = Image.open(test_files[0])
+    im.close()
+
+    with pytest.raises(ValueError):
+        im.seek(1)
 
 
 def test_context_manager():
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
         with Image.open(test_files[0]) as im:
             im.load()
-
-    assert not record
 
 
 def test_app():
@@ -88,6 +93,9 @@ def test_frame_size():
         im.seek(1)
         assert im.size == (680, 480)
 
+        im.seek(0)
+        assert im.size == (640, 480)
+
 
 def test_ignore_frame_size():
     # Ignore the different size of the second frame
@@ -114,6 +122,15 @@ def test_parallax():
         im.seek(1)
         exif = im.getexif()
         assert exif.get_ifd(0x927C)[0xB211] == -3.125
+
+
+def test_reload_exif_after_seek():
+    with Image.open("Tests/images/sugarshack.mpo") as im:
+        exif = im.getexif()
+        del exif[296]
+
+        im.seek(1)
+        assert 296 in exif
 
 
 def test_mp():
@@ -145,10 +162,10 @@ def test_mp_attribute():
     for test_file in test_files:
         with Image.open(test_file) as im:
             mpinfo = im._getmp()
-        frameNumber = 0
+        frame_number = 0
         for mpentry in mpinfo[0xB002]:
             mpattr = mpentry["Attribute"]
-            if frameNumber:
+            if frame_number:
                 assert not mpattr["RepresentativeImageFlag"]
             else:
                 assert mpattr["RepresentativeImageFlag"]
@@ -157,7 +174,7 @@ def test_mp_attribute():
             assert mpattr["ImageDataFormat"] == "JPEG"
             assert mpattr["MPType"] == "Multi-Frame Image: (Disparity)"
             assert mpattr["Reserved"] == 0
-            frameNumber += 1
+            frame_number += 1
 
 
 def test_seek():

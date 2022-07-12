@@ -19,7 +19,7 @@ YDIM = 32769
 XDIM = 48000
 
 
-pytestmark = pytest.mark.skipif(sys.maxsize <= 2 ** 32, reason="requires 64-bit system")
+pytestmark = pytest.mark.skipif(sys.maxsize <= 2**32, reason="requires 64-bit system")
 
 
 def _write_png(tmp_path, xdim, ydim):
@@ -31,7 +31,7 @@ def _write_png(tmp_path, xdim, ydim):
 
 
 def test_large(tmp_path):
-    """ succeeded prepatch"""
+    """succeeded prepatch"""
     _write_png(tmp_path, XDIM, YDIM)
 
 

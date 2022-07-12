@@ -123,6 +123,7 @@ methods. Unless otherwise stated, all methods return a new instance of the
 
 
 .. automethod:: PIL.Image.Image.alpha_composite
+.. automethod:: PIL.Image.Image.apply_transparency
 .. automethod:: PIL.Image.Image.convert
 
 The following example converts an RGB image (linearly calibrated according to
@@ -254,7 +255,8 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
 
-This flips the input image by using the :data:`FLIP_LEFT_RIGHT` method.
+This flips the input image by using the :data:`PIL.Image.Transpose.FLIP_LEFT_RIGHT`
+method.
 
 .. code-block:: python
 
@@ -263,9 +265,9 @@ This flips the input image by using the :data:`FLIP_LEFT_RIGHT` method.
     with Image.open("hopper.jpg") as im:
 
         # Flip the image from left to right
-        im_flipped = im.transpose(method=Image.FLIP_LEFT_RIGHT)
+        im_flipped = im.transpose(method=Image.Transpose.FLIP_LEFT_RIGHT)
         # To flip the image from top to bottom,
-        # use the method "Image.FLIP_TOP_BOTTOM"
+        # use the method "Image.Transpose.FLIP_TOP_BOTTOM"
 
 
 .. automethod:: PIL.Image.Image.verify
@@ -389,68 +391,57 @@ Transpose methods
 
 Used to specify the :meth:`Image.transpose` method to use.
 
-.. data:: FLIP_LEFT_RIGHT
-.. data:: FLIP_TOP_BOTTOM
-.. data:: ROTATE_90
-.. data:: ROTATE_180
-.. data:: ROTATE_270
-.. data:: TRANSPOSE
-.. data:: TRANSVERSE
+.. autoclass:: Transpose
+    :members:
+    :undoc-members:
 
 Transform methods
 ^^^^^^^^^^^^^^^^^
 
 Used to specify the :meth:`Image.transform` method to use.
 
-.. data:: AFFINE
+.. py:class:: Transform
 
-    Affine transform
+    .. py:attribute:: AFFINE
 
-.. data:: EXTENT
+        Affine transform
 
-    Cut out a rectangular subregion
+    .. py:attribute:: EXTENT
 
-.. data:: PERSPECTIVE
+        Cut out a rectangular subregion
 
-    Perspective transform
+    .. py:attribute:: PERSPECTIVE
 
-.. data:: QUAD
+        Perspective transform
 
-    Map a quadrilateral to a rectangle
+    .. py:attribute:: QUAD
 
-.. data:: MESH
+        Map a quadrilateral to a rectangle
 
-    Map a number of source quadrilaterals in one operation
+    .. py:attribute:: MESH
+
+        Map a number of source quadrilaterals in one operation
 
 Resampling filters
 ^^^^^^^^^^^^^^^^^^
 
 See :ref:`concept-filters` for details.
 
-.. data:: NEAREST
-    :noindex:
-.. data:: BOX
-    :noindex:
-.. data:: BILINEAR
-    :noindex:
-.. data:: HAMMING
-    :noindex:
-.. data:: BICUBIC
-    :noindex:
-.. data:: LANCZOS
-    :noindex:
+.. autoclass:: Resampling
+    :members:
+    :undoc-members:
 
-Some filters are also available under the following names for backwards compatibility:
+Some deprecated filters are also available under the following names:
 
 .. data:: NONE
     :noindex:
-    :value: NEAREST
+    :value: Resampling.NEAREST
 .. data:: LINEAR
-    :value: BILINEAR
+    :value: Resampling.BILINEAR
 .. data:: CUBIC
-    :value: BICUBIC
+    :value: Resampling.BICUBIC
 .. data:: ANTIALIAS
-    :value: LANCZOS
+    :value: Resampling.LANCZOS
 
 Dither modes
 ^^^^^^^^^^^^
@@ -458,48 +449,56 @@ Dither modes
 Used to specify the dithering method to use for the
 :meth:`~Image.convert` and :meth:`~Image.quantize` methods.
 
-.. data:: NONE
-    :noindex:
+.. py:class:: Dither
 
-    No dither
+    .. py:attribute:: NONE
 
-.. comment: (not implemented)
-    .. data:: ORDERED
-    .. data:: RASTERIZE
+      No dither
 
-.. data:: FLOYDSTEINBERG
+    .. py:attribute:: ORDERED
 
-    Floyd-Steinberg dither
+      Not implemented
+
+    .. py:attribute:: RASTERIZE
+
+      Not implemented
+
+    .. py:attribute:: FLOYDSTEINBERG
+
+      Floyd-Steinberg dither
 
 Palettes
 ^^^^^^^^
 
 Used to specify the pallete to use for the :meth:`~Image.convert` method.
 
-.. data:: WEB
-.. data:: ADAPTIVE
+.. autoclass:: Palette
+    :members:
+    :undoc-members:
 
 Quantization methods
 ^^^^^^^^^^^^^^^^^^^^
 
 Used to specify the quantization method to use for the :meth:`~Image.quantize` method.
 
-.. data:: MEDIANCUT
+.. py:class:: Quantize
 
-    Median cut. Default method, except for RGBA images. This method does not support
-    RGBA images.
+    .. py:attribute:: MEDIANCUT
 
-.. data:: MAXCOVERAGE
+      Median cut. Default method, except for RGBA images. This method does not support
+      RGBA images.
 
-    Maximum coverage. This method does not support RGBA images.
+    .. py:attribute:: MAXCOVERAGE
 
-.. data:: FASTOCTREE
+      Maximum coverage. This method does not support RGBA images.
 
-    Fast octree. Default method for RGBA images.
+    .. py:attribute:: FASTOCTREE
 
-.. data:: LIBIMAGEQUANT
+      Fast octree. Default method for RGBA images.
 
-    libimagequant
+    .. py:attribute:: LIBIMAGEQUANT
 
-    Check support using :py:func:`PIL.features.check_feature`
-    with ``feature="libimagequant"``.
+      libimagequant
+
+      Check support using :py:func:`PIL.features.check_feature` with
+      ``feature="libimagequant"``.

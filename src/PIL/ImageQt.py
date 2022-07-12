@@ -20,7 +20,8 @@ import sys
 from io import BytesIO
 
 from . import Image
-from ._util import isPath
+from ._deprecate import deprecate
+from ._util import is_path
 
 qt_versions = [
     ["6", "PyQt6"],
@@ -42,9 +43,13 @@ for qt_version, qt_module in qt_versions:
         elif qt_module == "PyQt5":
             from PyQt5.QtCore import QBuffer, QIODevice
             from PyQt5.QtGui import QImage, QPixmap, qRgba
+
+            deprecate("Support for PyQt5", 10, "PyQt6 or PySide6")
         elif qt_module == "PySide2":
             from PySide2.QtCore import QBuffer, QIODevice
             from PySide2.QtGui import QImage, QPixmap, qRgba
+
+            deprecate("Support for PySide2", 10, "PyQt6 or PySide6")
     except (ImportError, RuntimeError):
         continue
     qt_is_installed = True
@@ -66,7 +71,13 @@ def fromqimage(im):
     :param im: QImage or PIL ImageQt object
     """
     buffer = QBuffer()
-    qt_openmode = QIODevice.OpenMode if qt_version == "6" else QIODevice
+    if qt_version == "6":
+        try:
+            qt_openmode = QIODevice.OpenModeFlag
+        except AttributeError:
+            qt_openmode = QIODevice.OpenMode
+    else:
+        qt_openmode = QIODevice
     buffer.open(qt_openmode.ReadWrite)
     # preserve alpha channel with png
     # otherwise ppm is more friendly with Image.open
@@ -102,7 +113,7 @@ def align8to32(bytes, width, mode):
     converts each scanline of data from 8 bit to 32 bit aligned
     """
 
-    bits_per_pixel = {"1": 1, "L": 8, "P": 8}[mode]
+    bits_per_pixel = {"1": 1, "L": 8, "P": 8, "I;16": 16}[mode]
 
     # calculate bytes per line and the extra padding if needed
     bits_per_line = bits_per_pixel * width
@@ -134,7 +145,7 @@ def _toqclass_helper(im):
     if hasattr(im, "toUtf8"):
         # FIXME - is this really the best way to do this?
         im = str(im.toUtf8(), "utf-8")
-    if isPath(im):
+    if is_path(im):
         im = Image.open(im)
         exclusive_fp = True
 
@@ -161,6 +172,10 @@ def _toqclass_helper(im):
     elif im.mode == "RGBA":
         data = im.tobytes("raw", "BGRA")
         format = qt_format.Format_ARGB32
+    elif im.mode == "I;16" and hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
+        im = im.point(lambda i: i * 256)
+
+        format = qt_format.Format_Grayscale16
     else:
         if exclusive_fp:
             im.close()

@@ -1,15 +1,25 @@
 from PIL import WalImageFile
 
+from .helper import assert_image_equal_tofile
+
+TEST_FILE = "Tests/images/hopper.wal"
+
 
 def test_open():
-    # Arrange
-    TEST_FILE = "Tests/images/hopper.wal"
+    with WalImageFile.open(TEST_FILE) as im:
+        assert im.format == "WAL"
+        assert im.format_description == "Quake2 Texture"
+        assert im.mode == "P"
+        assert im.size == (128, 128)
 
-    # Act
-    im = WalImageFile.open(TEST_FILE)
+        assert isinstance(im, WalImageFile.WalImageFile)
 
-    # Assert
-    assert im.format == "WAL"
-    assert im.format_description == "Quake2 Texture"
-    assert im.mode == "P"
-    assert im.size == (128, 128)
+        assert_image_equal_tofile(im, "Tests/images/hopper_wal.png")
+
+
+def test_load():
+    with WalImageFile.open(TEST_FILE) as im:
+        assert im.load()[0, 0] == 122
+
+        # Test again now that it has already been loaded once
+        assert im.load()[0, 0] == 122

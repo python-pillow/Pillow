@@ -64,7 +64,7 @@ class XpmImageFile(ImageFile.ImageFile):
 
         palette = [b"\0\0\0"] * 256
 
-        for i in range(pal):
+        for _ in range(pal):
 
             s = self.fp.readline()
             if s[-2:] == b"\r\n":
@@ -83,7 +83,7 @@ class XpmImageFile(ImageFile.ImageFile):
                     rgb = s[i + 1]
                     if rgb == b"None":
                         self.info["transparency"] = c
-                    elif rgb[0:1] == b"#":
+                    elif rgb[:1] == b"#":
                         # FIXME: handle colour names (see ImagePalette.py)
                         rgb = int(rgb[1:], 16)
                         palette[c] = (

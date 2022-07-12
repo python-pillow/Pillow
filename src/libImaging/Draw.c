@@ -419,7 +419,7 @@ draw_horizontal_lines(
         if (e[i].ymin == y && e[i].ymin == e[i].ymax) {
             int xmax;
             int xmin = e[i].xmin;
-            if (*x_pos < xmin) {
+            if (*x_pos != -1 && *x_pos < xmin) {
                 // Line would be after the current position
                 continue;
             }
@@ -444,13 +444,14 @@ draw_horizontal_lines(
  * Filled polygon draw function using scan line algorithm.
  */
 static inline int
-polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline) {
+polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, int hasAlpha) {
     Edge **edge_table;
     float *xx;
     int edge_count = 0;
     int ymin = im->ysize - 1;
     int ymax = 0;
-    int i;
+    int i, j, k;
+    float adjacent_line_x, adjacent_line_x_other_edge;
 
     if (n <= 0) {
         return 0;
@@ -471,6 +472,9 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
             ymax = e[i].ymax;
         }
         if (e[i].ymin == e[i].ymax) {
+            if (hasAlpha != 1) {
+                (*hline)(im, e[i].xmin, e[i].ymin, e[i].xmax, ink);
+            }
             continue;
         }
         edge_table[edge_count++] = (e + i);
@@ -490,45 +494,85 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
         return -1;
     }
     for (; ymin <= ymax; ymin++) {
-        int j = 0;
-        int x_pos = 0;
+        j = 0;
         for (i = 0; i < edge_count; i++) {
             Edge *current = edge_table[i];
             if (ymin >= current->ymin && ymin <= current->ymax) {
                 xx[j++] = (ymin - current->y0) * current->dx + current->x0;
-            }
-            /* Needed to draw consistent polygons */
-            if (ymin == current->ymax && ymin < ymax) {
-                xx[j] = xx[j - 1];
-                j++;
+
+                if (ymin == current->ymax && ymin < ymax) {
+                    // Needed to draw consistent polygons
+                    xx[j] = xx[j - 1];
+                    j++;
+                } else if (current->dx != 0 && roundf(xx[j-1]) == xx[j-1]) {
+                    // Connect discontiguous corners
+                    for (k = 0; k < i; k++) {
+                        Edge *other_edge = edge_table[k];
+                        if ((current->dx > 0 && other_edge->dx <= 0) ||
+                            (current->dx < 0 && other_edge->dx >= 0)) {
+                            continue;
+                        }
+                        // Check if the two edges join to make a corner
+                        if (((ymin == current->ymin && ymin == other_edge->ymin) ||
+                             (ymin == current->ymax && ymin == other_edge->ymax)) &&
+                            xx[j-1] == (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
+                            // Determine points from the edges on the next row
+                            // Or if this is the last row, check the previous row
+                            int offset = ymin == ymax ? -1 : 1;
+                            adjacent_line_x = (ymin + offset - current->y0) * current->dx + current->x0;
+                            adjacent_line_x_other_edge = (ymin + offset - other_edge->y0) * other_edge->dx + other_edge->x0;
+                            if (ymin == current->ymax) {
+                                if (current->dx > 0) {
+                                    xx[k] = fmax(adjacent_line_x, adjacent_line_x_other_edge) + 1;
+                                } else {
+                                    xx[k] = fmin(adjacent_line_x, adjacent_line_x_other_edge) - 1;
+                                }
+                            } else {
+                                if (current->dx > 0) {
+                                    xx[k] = fmin(adjacent_line_x, adjacent_line_x_other_edge);
+                                } else {
+                                    xx[k] = fmax(adjacent_line_x, adjacent_line_x_other_edge) + 1;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         }
         qsort(xx, j, sizeof(float), x_cmp);
-        for (i = 1; i < j; i += 2) {
-            int x_end = ROUND_DOWN(xx[i]);
-            if (x_end < x_pos) {
-                // Line would be before the current position
-                continue;
-            }
-            draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
-            if (x_end < x_pos) {
-                // Line would be before the current position
-                continue;
-            }
-
-            int x_start = ROUND_UP(xx[i - 1]);
-            if (x_pos > x_start) {
-                // Line would be partway through x_pos, so increase the starting point
-                x_start = x_pos;
-                if (x_end < x_start) {
-                    // Line would now end before it started
+        if (hasAlpha == 1) {
+            int x_pos = j == 0 ? -1 : 0;
+            for (i = 1; i < j; i += 2) {
+                int x_end = ROUND_DOWN(xx[i]);
+                if (x_end < x_pos) {
+                    // Line would be before the current position
                     continue;
                 }
+                draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
+                if (x_end < x_pos) {
+                    // Line would be before the current position
+                    continue;
+                }
+
+                int x_start = ROUND_UP(xx[i - 1]);
+                if (x_pos > x_start) {
+                    // Line would be partway through x_pos, so increase the starting point
+                    x_start = x_pos;
+                    if (x_end < x_start) {
+                        // Line would now end before it started
+                        continue;
+                    }
+                }
+                (*hline)(im, x_start, ymin, x_end, ink);
+                x_pos = x_end + 1;
             }
-            (*hline)(im, x_start, ymin, x_end, ink);
-            x_pos = x_end + 1;
+            draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
+        } else {
+            for (i = 1; i < j; i += 2) {
+                (*hline)(im, ROUND_UP(xx[i - 1]), ymin, ROUND_DOWN(xx[i]), ink);
+            }
         }
-        draw_horizontal_lines(im, n, e, ink, &x_pos, ymin, hline);
     }
 
     free(xx);
@@ -538,17 +582,17 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
 
 static inline int
 polygon8(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline8);
+    return polygon_generic(im, n, e, ink, eofill, hline8, 0);
 }
 
 static inline int
 polygon32(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32);
+    return polygon_generic(im, n, e, ink, eofill, hline32, 0);
 }
 
 static inline int
 polygon32rgba(Imaging im, int n, Edge *e, int ink, int eofill) {
-    return polygon_generic(im, n, e, ink, eofill, hline32rgba);
+    return polygon_generic(im, n, e, ink, eofill, hline32rgba, 1);
 }
 
 static inline void
@@ -733,8 +777,8 @@ ImagingDrawRectangle(
 }
 
 int
-ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, int op) {
-    int i, n;
+ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, int width, int op) {
+    int i, n, x0, y0, x1, y1;
     DRAW *draw;
     INT32 ink;
 
@@ -753,20 +797,45 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
             return -1;
         }
         for (i = n = 0; i < count - 1; i++) {
-            add_edge(&e[n++], xy[i + i], xy[i + i + 1], xy[i + i + 2], xy[i + i + 3]);
+            x0 = xy[i * 2];
+            y0 = xy[i * 2 + 1];
+            x1 = xy[i * 2 + 2];
+            y1 = xy[i * 2 + 3];
+            if (y0 == y1 && i != 0 && y0 == xy[i * 2 - 1]) {
+                // This is a horizontal line,
+                // that immediately follows another horizontal line
+                Edge *last_e = &e[n-1];
+                if (x1 > x0 && x0 > xy[i * 2 - 2]) {
+                    // They are both increasing in x
+                    last_e->xmax = x1;
+                    continue;
+                } else if (x1 < x0 && x0 < xy[i * 2 - 2]) {
+                    // They are both decreasing in x
+                    last_e->xmin = x1;
+                    continue;
+                }
+            }
+            add_edge(&e[n++], x0, y0, x1, y1);
         }
-        if (xy[i + i] != xy[0] || xy[i + i + 1] != xy[1]) {
-            add_edge(&e[n++], xy[i + i], xy[i + i + 1], xy[0], xy[1]);
+        if (xy[i * 2] != xy[0] || xy[i * 2 + 1] != xy[1]) {
+            add_edge(&e[n++], xy[i * 2], xy[i * 2 + 1], xy[0], xy[1]);
         }
         draw->polygon(im, n, e, ink, 0);
         free(e);
 
     } else {
         /* Outline */
-        for (i = 0; i < count - 1; i++) {
-            draw->line(im, xy[i + i], xy[i + i + 1], xy[i + i + 2], xy[i + i + 3], ink);
+        if (width == 1) {
+            for (i = 0; i < count - 1; i++) {
+                draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink);
+            }
+            draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
+        } else {
+            for (i = 0; i < count - 1; i++) {
+                ImagingDrawWideLine(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink_, width, op);
+            }
+            ImagingDrawWideLine(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink_, width, op);
         }
-        draw->line(im, xy[i + i], xy[i + i + 1], xy[0], xy[1], ink);
     }
 
     return 0;
@@ -1347,6 +1416,22 @@ pie_init(clip_ellipse_state *s, int32_t a, int32_t b, int32_t w, float al, float
     s->root->l = lc;
     s->root->r = rc;
     s->root->type = ar - al < 180 ? CT_AND : CT_OR;
+
+    // add one more semiplane to avoid spikes
+    if (ar - al < 90) {
+        clip_node *old_root = s->root;
+        clip_node *spike_clipper = s->nodes + s->node_count++;
+        s->root = s->nodes + s->node_count++;
+        s->root->l = old_root;
+        s->root->r = spike_clipper;
+        s->root->type = CT_AND;
+
+        spike_clipper->l = spike_clipper->r = NULL;
+        spike_clipper->type = CT_CLIP;
+        spike_clipper->a = (xl + xr) / 2.0;
+        spike_clipper->b = (yl + yr) / 2.0;
+        spike_clipper->c = 0;
+    }
 }
 
 void
@@ -1804,14 +1889,8 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6]) {
     eIn = outline->edges;
     n = outline->count;
 
-    /* FIXME: ugly! */
-    outline->edges = NULL;
-    outline->count = outline->size = 0;
-
     eOut = allocate(outline, n);
     if (!eOut) {
-        outline->edges = eIn;
-        outline->count = outline->size = n;
         ImagingError_MemoryError();
         return -1;
     }
@@ -1847,7 +1926,11 @@ ImagingOutlineTransform(ImagingOutline outline, double a[6]) {
         eOut++;
     }
 
-    free(eIn);
+    free(outline->edges);
+
+    /* FIXME: ugly! */
+    outline->edges = NULL;
+    outline->count = outline->size = 0;
 
     return 0;
 }

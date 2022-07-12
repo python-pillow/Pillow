@@ -11,6 +11,10 @@ on:
     paths:
       - "**.c"
       - "**.h"
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -22,12 +26,12 @@ jobs:
         docker: [
           ubuntu-20.04-focal-amd64-valgrind,
         ]
-        dockerTag: [master]
+        dockerTag: [main]
 
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
@@ -42,11 +46,3 @@ jobs:
         sudo chown -R 1000 $GITHUB_WORKSPACE
         docker run --name pillow_container  -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
         sudo chown -R runner $GITHUB_WORKSPACE
-
-  success:
-    needs: build
-    runs-on: ubuntu-latest
-    name: Valgrind Test Successful
-    steps:
-      - name: Success
-        run: echo Valgrind Test Successful

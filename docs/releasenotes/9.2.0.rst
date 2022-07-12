@@ -1,0 +1,86 @@
+9.2.0
+-----
+
+Deprecations
+============
+
+PyQt5 and PySide2
+^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 9.2.0
+
+`Qt 5 reached end-of-life <https://www.qt.io/blog/qt-5.15-released>`_ on 2020-12-08 for
+open-source users (and will reach EOL on 2023-12-08 for commercial licence holders).
+
+Support for PyQt5 and PySide2 has been deprecated from ``ImageQt`` and will be removed
+in Pillow 10 (2023-07-01). Upgrade to
+`PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
+`PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
+
+FreeTypeFont.getmask2 fill parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 9.2.0
+
+The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2`
+has been deprecated and will be removed in Pillow 10 (2023-07-01).
+
+PhotoImage.paste box parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 9.2.0
+
+The ``box`` parameter is unused. It will be removed in Pillow 10.0.0 (2023-07-01).
+
+Image.coerce_e
+^^^^^^^^^^^^^^
+
+.. deprecated:: 9.2.0
+
+This undocumented method has been deprecated and will be removed in Pillow 10
+(2023-07-01).
+
+Font size and offset methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 9.2.0
+
+Several functions for computing the size and offset of rendered text
+have been deprecated and will be removed in Pillow 10 (2023-07-01):
+
+=========================================================================== =============================================================================================================
+Deprecated                                                                  Use instead
+=========================================================================== =============================================================================================================
+:py:meth:`.FreeTypeFont.getsize` and :py:meth:`.FreeTypeFont.getoffset`     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
+:py:meth:`.FreeTypeFont.getsize_multiline`                                  :py:meth:`.ImageDraw.multiline_textbbox`
+:py:meth:`.ImageFont.getsize`                                               :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
+:py:meth:`.TransposedFont.getsize`                                          :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
+:py:meth:`.ImageDraw.textsize` and :py:meth:`.ImageDraw.multiline_textsize` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
+:py:meth:`.ImageDraw2.Draw.textsize`                                        :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
+=========================================================================== =============================================================================================================
+
+API Additions
+=============
+
+Image.apply_transparency
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added :py:meth:`~PIL.Image.Image.apply_transparency`, a method to take a P mode image
+with "transparency" in ``im.info``, and apply the transparency to the palette instead.
+The image's palette mode will become "RGBA", and "transparency" will be removed from
+``im.info``.
+
+Security
+========
+
+An additional decompression bomb check has been added for the GIF format.
+
+Other Changes
+=============
+
+Using gnome-screenshot on Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In :py:meth:`~PIL.ImageGrab.grab` on Linux, if ``xdisplay`` is ``None`` then
+``gnome-screenshot`` will be used to capture the display if it is installed. To capture
+the default X11 display instead, pass ``xdisplay=""``.

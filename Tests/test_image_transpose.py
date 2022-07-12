@@ -1,12 +1,4 @@
-from PIL.Image import (
-    FLIP_LEFT_RIGHT,
-    FLIP_TOP_BOTTOM,
-    ROTATE_90,
-    ROTATE_180,
-    ROTATE_270,
-    TRANSPOSE,
-    TRANSVERSE,
-)
+from PIL.Image import Transpose
 
 from . import helper
 from .helper import assert_image_equal
@@ -20,7 +12,7 @@ HOPPER = {
 def test_flip_left_right():
     def transpose(mode):
         im = HOPPER[mode]
-        out = im.transpose(FLIP_LEFT_RIGHT)
+        out = im.transpose(Transpose.FLIP_LEFT_RIGHT)
         assert out.mode == mode
         assert out.size == im.size
 
@@ -37,7 +29,7 @@ def test_flip_left_right():
 def test_flip_top_bottom():
     def transpose(mode):
         im = HOPPER[mode]
-        out = im.transpose(FLIP_TOP_BOTTOM)
+        out = im.transpose(Transpose.FLIP_TOP_BOTTOM)
         assert out.mode == mode
         assert out.size == im.size
 
@@ -54,7 +46,7 @@ def test_flip_top_bottom():
 def test_rotate_90():
     def transpose(mode):
         im = HOPPER[mode]
-        out = im.transpose(ROTATE_90)
+        out = im.transpose(Transpose.ROTATE_90)
         assert out.mode == mode
         assert out.size == im.size[::-1]
 
@@ -71,7 +63,7 @@ def test_rotate_90():
 def test_rotate_180():
     def transpose(mode):
         im = HOPPER[mode]
-        out = im.transpose(ROTATE_180)
+        out = im.transpose(Transpose.ROTATE_180)
         assert out.mode == mode
         assert out.size == im.size
 
@@ -88,7 +80,7 @@ def test_rotate_180():
 def test_rotate_270():
     def transpose(mode):
         im = HOPPER[mode]
-        out = im.transpose(ROTATE_270)
+        out = im.transpose(Transpose.ROTATE_270)
         assert out.mode == mode
         assert out.size == im.size[::-1]
 
@@ -105,7 +97,7 @@ def test_rotate_270():
 def test_transpose():
     def transpose(mode):
         im = HOPPER[mode]
-        out = im.transpose(TRANSPOSE)
+        out = im.transpose(Transpose.TRANSPOSE)
         assert out.mode == mode
         assert out.size == im.size[::-1]
 
@@ -122,7 +114,7 @@ def test_transpose():
 def test_tranverse():
     def transpose(mode):
         im = HOPPER[mode]
-        out = im.transpose(TRANSVERSE)
+        out = im.transpose(Transpose.TRANSVERSE)
         assert out.mode == mode
         assert out.size == im.size[::-1]
 
@@ -143,20 +135,31 @@ def test_roundtrip():
         def transpose(first, second):
             return im.transpose(first).transpose(second)
 
-        assert_image_equal(im, transpose(FLIP_LEFT_RIGHT, FLIP_LEFT_RIGHT))
-        assert_image_equal(im, transpose(FLIP_TOP_BOTTOM, FLIP_TOP_BOTTOM))
-        assert_image_equal(im, transpose(ROTATE_90, ROTATE_270))
-        assert_image_equal(im, transpose(ROTATE_180, ROTATE_180))
         assert_image_equal(
-            im.transpose(TRANSPOSE), transpose(ROTATE_90, FLIP_TOP_BOTTOM)
+            im, transpose(Transpose.FLIP_LEFT_RIGHT, Transpose.FLIP_LEFT_RIGHT)
         )
         assert_image_equal(
-            im.transpose(TRANSPOSE), transpose(ROTATE_270, FLIP_LEFT_RIGHT)
+            im, transpose(Transpose.FLIP_TOP_BOTTOM, Transpose.FLIP_TOP_BOTTOM)
+        )
+        assert_image_equal(im, transpose(Transpose.ROTATE_90, Transpose.ROTATE_270))
+        assert_image_equal(im, transpose(Transpose.ROTATE_180, Transpose.ROTATE_180))
+        assert_image_equal(
+            im.transpose(Transpose.TRANSPOSE),
+            transpose(Transpose.ROTATE_90, Transpose.FLIP_TOP_BOTTOM),
         )
         assert_image_equal(
-            im.transpose(TRANSVERSE), transpose(ROTATE_90, FLIP_LEFT_RIGHT)
+            im.transpose(Transpose.TRANSPOSE),
+            transpose(Transpose.ROTATE_270, Transpose.FLIP_LEFT_RIGHT),
         )
         assert_image_equal(
-            im.transpose(TRANSVERSE), transpose(ROTATE_270, FLIP_TOP_BOTTOM)
+            im.transpose(Transpose.TRANSVERSE),
+            transpose(Transpose.ROTATE_90, Transpose.FLIP_LEFT_RIGHT),
         )
-        assert_image_equal(im.transpose(TRANSVERSE), transpose(ROTATE_180, TRANSPOSE))
+        assert_image_equal(
+            im.transpose(Transpose.TRANSVERSE),
+            transpose(Transpose.ROTATE_270, Transpose.FLIP_TOP_BOTTOM),
+        )
+        assert_image_equal(
+            im.transpose(Transpose.TRANSVERSE),
+            transpose(Transpose.ROTATE_180, Transpose.TRANSPOSE),
+        )

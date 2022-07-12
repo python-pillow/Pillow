@@ -118,8 +118,8 @@ can be easily displayed in a chromaticity diagram, for example).
         another profile (usually overridden at run-time, but provided here
         for DeviceLink and embedded source profiles, see 7.2.15 of ICC.1:2010).
 
-        One of ``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``, ``ImageCms.INTENT_PERCEPTUAL``,
-        ``ImageCms.INTENT_RELATIVE_COLORIMETRIC`` and ``ImageCms.INTENT_SATURATION``.
+        One of ``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``, ``ImageCms.Intent.PERCEPTUAL``,
+        ``ImageCms.Intent.RELATIVE_COLORIMETRIC`` and ``ImageCms.Intent.SATURATION``.
 
     .. py:attribute:: profile_id
         :type: bytes
@@ -313,14 +313,14 @@ can be easily displayed in a chromaticity diagram, for example).
         the CLUT model.
 
         The dictionary is indexed by intents
-        (``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``,
-        ``ImageCms.INTENT_PERCEPTUAL``,
-        ``ImageCms.INTENT_RELATIVE_COLORIMETRIC`` and
-        ``ImageCms.INTENT_SATURATION``).
+        (``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``,
+        ``ImageCms.Intent.PERCEPTUAL``,
+        ``ImageCms.Intent.RELATIVE_COLORIMETRIC`` and
+        ``ImageCms.Intent.SATURATION``).
 
         The values are 3-tuples indexed by directions
-        (``ImageCms.DIRECTION_INPUT``, ``ImageCms.DIRECTION_OUTPUT``,
-        ``ImageCms.DIRECTION_PROOF``).
+        (``ImageCms.Direction.INPUT``, ``ImageCms.Direction.OUTPUT``,
+        ``ImageCms.Direction.PROOF``).
 
         The elements of the tuple are booleans.  If the value is ``True``,
         that intent is supported for that direction.
@@ -331,14 +331,14 @@ can be easily displayed in a chromaticity diagram, for example).
         Returns a dictionary of all supported intents and directions.
 
         The dictionary is indexed by intents
-        (``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``,
-        ``ImageCms.INTENT_PERCEPTUAL``,
-        ``ImageCms.INTENT_RELATIVE_COLORIMETRIC`` and
-        ``ImageCms.INTENT_SATURATION``).
+        (``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``,
+        ``ImageCms.Intent.PERCEPTUAL``,
+        ``ImageCms.Intent.RELATIVE_COLORIMETRIC`` and
+        ``ImageCms.Intent.SATURATION``).
 
         The values are 3-tuples indexed by directions
-        (``ImageCms.DIRECTION_INPUT``, ``ImageCms.DIRECTION_OUTPUT``,
-        ``ImageCms.DIRECTION_PROOF``).
+        (``ImageCms.Direction.INPUT``, ``ImageCms.Direction.OUTPUT``,
+        ``ImageCms.Direction.PROOF``).
 
         The elements of the tuple are booleans.  If the value is ``True``,
         that intent is supported for that direction.
@@ -352,11 +352,11 @@ can be easily displayed in a chromaticity diagram, for example).
         Note that you can also get this information for all intents and directions
         with :py:attr:`.intent_supported`.
 
-        :param intent: One of ``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``,
-               ``ImageCms.INTENT_PERCEPTUAL``,
-               ``ImageCms.INTENT_RELATIVE_COLORIMETRIC``
-               and ``ImageCms.INTENT_SATURATION``.
-        :param direction: One of ``ImageCms.DIRECTION_INPUT``,
-                  ``ImageCms.DIRECTION_OUTPUT``
-                  and ``ImageCms.DIRECTION_PROOF``
+        :param intent: One of ``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``,
+               ``ImageCms.Intent.PERCEPTUAL``,
+               ``ImageCms.Intent.RELATIVE_COLORIMETRIC``
+               and ``ImageCms.Intent.SATURATION``.
+        :param direction: One of ``ImageCms.Direction.INPUT``,
+                  ``ImageCms.Direction.OUTPUT``
+                  and ``ImageCms.Direction.PROOF``
         :return: Boolean if the intent and direction is supported.

@@ -14,17 +14,17 @@ The following are all equivalent::
     import io
     import pathlib
 
-    with Image.open('test.jpg') as im:
+    with Image.open("test.jpg") as im:
         ...
 
-    with Image.open(pathlib.Path('test.jpg')) as im2:
+    with Image.open(pathlib.Path("test.jpg")) as im2:
         ...
 
-    with open('test.jpg', 'rb') as f:
+    with open("test.jpg", "rb") as f:
         im3 = Image.open(f)
         ...
 
-    with open('test.jpg', 'rb') as f:
+    with open("test.jpg", "rb") as f:
         im4 = Image.open(io.BytesIO(f.read()))
         ...
 
@@ -47,6 +47,10 @@ Image Lifecycle
   memory. The image can now be used independently of the underlying
   image file.
 
+  Any Pillow method that creates a new image instance based on another will
+  internally call ``load()`` on the original image and then read the data.
+  The new image instance will not be associated with the original image file.
+
   If a filename or a ``Path`` object was passed to ``Image.open()``, then the
   file object was opened by Pillow and is considered to be used exclusively by
   Pillow. So if the image is a single-frame image, the file will be closed in
@@ -55,10 +59,16 @@ Image Lifecycle
   ``Image.Image.seek()`` can load the appropriate frame.
 
 * ``Image.Image.close()`` Closes the file and destroys the core image object.
-  This is used in the Pillow context manager support. e.g.::
 
-      with Image.open('test.jpg') as img:
-         ...  # image operations here.
+  The Pillow context manager will also close the file, but will not destroy
+  the core image object. e.g.:
+
+.. code-block:: python
+
+    with Image.open("test.jpg") as img:
+        img.load()
+    assert img.fp is None
+    img.save("test.png")
 
 
 The lifecycle of a single-frame image is relatively simple. The file must
@@ -80,13 +90,13 @@ Complications
 
 * After a file has been closed, operations that require file access will fail::
 
-    with open('test.jpg', 'rb') as f:
+    with open("test.jpg", "rb") as f:
         im5 = Image.open(f)
-    im5.load() # FAILS, closed file
+    im5.load()  # FAILS, closed file
 
-    with Image.open('test.jpg') as im6:
+    with Image.open("test.jpg") as im6:
         pass
-    im6.load() # FAILS, closed file
+    im6.load()  # FAILS, closed file
 
 
 Proposed File Handling

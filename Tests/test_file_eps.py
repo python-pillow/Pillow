@@ -8,6 +8,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    mark_if_feature_version,
     skip_unless_feature,
 )
 
@@ -57,6 +58,15 @@ def test_sanity():
         assert image2_scale2.format == "EPS"
 
 
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+def test_load():
+    with Image.open(FILE1) as im:
+        assert im.load()[0, 0] == (255, 255, 255)
+
+        # Test again now that it has already been loaded once
+        assert im.load()[0, 0] == (255, 255, 255)
+
+
 def test_invalid_file():
     invalid_file = "Tests/images/flower.jpg"
 
@@ -64,7 +74,9 @@ def test_invalid_file():
         EpsImagePlugin.EpsImageFile(invalid_file)
 
 
-@pytest.mark.valgrind_known_error(reason="Known Failing")
+@mark_if_feature_version(
+    pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
+)
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk():
     with Image.open("Tests/images/pil_sample_cmyk.eps") as cmyk_image:
@@ -89,6 +101,17 @@ def test_showpage():
         with Image.open("Tests/images/reqd_showpage.png") as target:
             # should not crash/hang
             plot_image.load()
+            #  fonts could be slightly different
+            assert_image_similar(plot_image, target, 6)
+
+
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+def test_transparency():
+    with Image.open("Tests/images/reqd_showpage.eps") as plot_image:
+        plot_image.load(transparency=True)
+        assert plot_image.mode == "RGBA"
+
+        with Image.open("Tests/images/reqd_showpage_transparency.png") as target:
             #  fonts could be slightly different
             assert_image_similar(plot_image, target, 6)
 
@@ -264,3 +287,15 @@ def test_emptyline():
     assert image.mode == "RGB"
     assert image.size == (460, 352)
     assert image.format == "EPS"
+
+
+@pytest.mark.timeout(timeout=5)
+@pytest.mark.parametrize(
+    "test_file",
+    ["Tests/images/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],
+)
+def test_timeout(test_file):
+    with open(test_file, "rb") as f:
+        with pytest.raises(Image.UnidentifiedImageError):
+            with Image.open(f):
+                pass

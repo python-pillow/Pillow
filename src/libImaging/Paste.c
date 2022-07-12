@@ -295,7 +295,7 @@ ImagingPaste(
         paste_mask_L(imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
         ImagingSectionLeave(&cookie);
 
-    } else if (strcmp(imMask->mode, "RGBA") == 0) {
+    } else if (strcmp(imMask->mode, "LA") == 0 || strcmp(imMask->mode, "RGBA") == 0) {
         ImagingSectionEnter(&cookie);
         paste_mask_RGBA(
             imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
@@ -417,9 +417,16 @@ fill_mask_L(
     if (imOut->image8) {
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
+            if (strncmp(imOut->mode, "I;16", 4) == 0) {
+                out += dx;
+            }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 *out = BLEND(*mask, *out, ink[0], tmp1);
+                if (strncmp(imOut->mode, "I;16", 4) == 0) {
+                    out++;
+                    *out = BLEND(*mask, *out, ink[0], tmp1);
+                }
                 out++, mask++;
             }
         }
@@ -436,7 +443,7 @@ fill_mask_L(
                          strcmp(imOut->mode, "La") == 0 ||
                          strcmp(imOut->mode, "LA") == 0 ||
                          strcmp(imOut->mode, "PA") == 0) &&
-                        i != 3) {
+                        i != 3 && channel_mask != 0) {
                         channel_mask =
                             255 - (255 - channel_mask) * (1 - (255 - out[3]) / 255);
                     }
