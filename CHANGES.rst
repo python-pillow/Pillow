@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Added ABGR BMP mask mode #6436
+  [radarhere]
+
 - Fixed PSDraw rectangle #6429
   [radarhere]
 
