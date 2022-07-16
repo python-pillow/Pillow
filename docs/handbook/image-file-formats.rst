@@ -1209,6 +1209,17 @@ image when first opened. The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL
 methods may be used to read other pictures from the file. The pictures are
 zero-indexed and random access is supported.
 
+When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+option will also be available.
+
+**append_images**
+    A list of images to append as additional pictures. Each of the
+    images in the list can be single or multiframe images.
+
+    .. versionadded:: 9.3.0
+
 PCD
 ^^^
 

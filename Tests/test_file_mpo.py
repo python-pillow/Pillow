@@ -5,15 +5,19 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_similar, is_pypy, skip_unless_feature
+from .helper import (
+    assert_image_equal,
+    assert_image_similar,
+    is_pypy,
+    skip_unless_feature,
+)
 
 test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 
 pytestmark = skip_unless_feature("jpg")
 
 
-def frame_roundtrip(im, **options):
-    # Note that for now, there is no MPO saving functionality
+def roundtrip(im, **options):
     out = BytesIO()
     im.save(out, "MPO", **options)
     test_bytes = out.tell()
@@ -237,13 +241,38 @@ def test_image_grab():
 
 
 def test_save():
-    # Note that only individual frames can be saved at present
     for test_file in test_files:
         with Image.open(test_file) as im:
             assert im.tell() == 0
-            jpg0 = frame_roundtrip(im)
+            jpg0 = roundtrip(im)
             assert_image_similar(im, jpg0, 30)
             im.seek(1)
             assert im.tell() == 1
-            jpg1 = frame_roundtrip(im)
+            jpg1 = roundtrip(im)
             assert_image_similar(im, jpg1, 30)
+
+
+def test_save_all():
+    for test_file in test_files:
+        with Image.open(test_file) as im:
+            im_reloaded = roundtrip(im, save_all=True)
+
+            im.seek(0)
+            assert_image_similar(im, im_reloaded, 30)
+
+            im.seek(1)
+            im_reloaded.seek(1)
+            assert_image_similar(im, im_reloaded, 30)
+
+    im = Image.new("RGB", (1, 1))
+    im2 = Image.new("RGB", (1, 1), "#f00")
+    im_reloaded = roundtrip(im, save_all=True, append_images=[im2])
+
+    assert_image_equal(im, im_reloaded)
+
+    im_reloaded.seek(1)
+    assert_image_similar(im2, im_reloaded, 1)
+
+    # Test that a single frame image will not be saved as an MPO
+    jpg = roundtrip(im, save_all=True)
+    assert "mp" not in jpg.info
