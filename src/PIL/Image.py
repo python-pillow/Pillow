@@ -646,7 +646,7 @@ class Image:
     def _repr_pretty_(self, p, cycle):
         """IPython plain text display support"""
 
-        # Same as __repr__ but without unpredicatable id(self),
+        # Same as __repr__ but without unpredictable id(self),
         # to keep Jupyter notebook `text/plain` output stable.
         p.text(
             "<%s.%s image mode=%s size=%dx%d>"
