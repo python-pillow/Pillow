@@ -157,9 +157,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.2.tar.gz",
-        "filename": "libwebp-1.2.2.tar.gz",
-        "dir": "libwebp-1.2.2",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.3.tar.gz",
+        "filename": "libwebp-1.2.3.tar.gz",
+        "dir": "libwebp-1.2.3",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
