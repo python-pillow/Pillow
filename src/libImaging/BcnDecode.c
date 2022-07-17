@@ -750,8 +750,10 @@ decode_bc6_block(rgb32f *col, const UINT8 *src, int sign) {
         }
     }
     if (info->tr) { /* apply deltas */
-        for (i = 3; i < numep; i++) {
+        for (i = 3; i < numep; i += 3) {
             endpoints[i] = (endpoints[i] + endpoints[0]) & mask;
+            endpoints[i + 1] = (endpoints[i + 1] + endpoints[1]) & mask;
+            endpoints[i + 2] = (endpoints[i + 2] + endpoints[2]) & mask;
         }
         if (sign) {
             for (i = 3; i < numep; i += 3) {
