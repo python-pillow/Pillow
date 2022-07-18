@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Do not double quote Pillow version for setuptools >= 60 #6450
+  [radarhere]
+
 - Added ABGR BMP mask mode #6436
   [radarhere]
 
