@@ -166,6 +166,12 @@ def test_dx10_r8g8b8a8_unorm_srgb():
         )
 
 
+def test_unimplemented_dxgi_format():
+    with pytest.raises(NotImplementedError):
+        with Image.open("Tests/images/unimplemented_dxgi_format.dds"):
+            pass
+
+
 def test_uncompressed_rgb():
     """Check uncompressed RGB images can be opened"""
 
