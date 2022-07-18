@@ -379,8 +379,7 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
             actual = "RGB";
             break;
         case 6: /* BC6: 3-channel 16-bit float */
-            /* TODO: support 4-channel floating point images */
-            actual = "RGBAF";
+            actual = "RGB";
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "block compression type unknown");
