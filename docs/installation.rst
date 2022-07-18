@@ -18,12 +18,10 @@ Pillow supports these Python versions.
 .. csv-table:: Newer versions
    :file: newer-versions.csv
    :header-rows: 1
-   :widths: auto
 
 .. csv-table:: Older versions
    :file: older-versions.csv
    :header-rows: 1
-   :widths: auto
 
 Basic Installation
 ------------------
