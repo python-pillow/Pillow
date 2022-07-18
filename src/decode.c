@@ -376,8 +376,6 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
             actual = "L";
             break;
         case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
-            actual = "RGB";
-            break;
         case 6: /* BC6: 3-channel 16-bit float */
             actual = "RGB";
             break;
