@@ -14,6 +14,8 @@ TEST_FILE_DX10_BC5_TYPELESS = "Tests/images/bc5_typeless.dds"
 TEST_FILE_DX10_BC5_UNORM = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC5_SNORM = "Tests/images/bc5_snorm.dds"
 TEST_FILE_BC5S = "Tests/images/bc5s.dds"
+TEST_FILE_BC6 = "Tests/images/bc6h.dds"
+TEST_FILE_BC6S = "Tests/images/bc6h_sf.dds"
 TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
 TEST_FILE_DX10_BC7_UNORM_SRGB = "Tests/images/DXGI_FORMAT_BC7_UNORM_SRGB.dds"
 TEST_FILE_DX10_R8G8B8A8 = "Tests/images/argb-32bpp_MipMaps-1.dds"
@@ -86,6 +88,26 @@ def test_dx10_bc5(image_path, expected_path):
         assert_image_equal_tofile(im, expected_path.replace(".dds", ".png"))
 
 
+@pytest.mark.parametrize(
+    ("image_path", "expected_path"),
+    (
+        (TEST_FILE_BC6, TEST_FILE_BC6),
+        (TEST_FILE_BC6S, TEST_FILE_BC6S),
+    ),
+)
+def test_dx10_bc6(image_path, expected_path):
+    """Check DX10 BC6/BC6S images can be opened"""
+
+    with Image.open(image_path) as im:
+        im.load()
+
+        assert im.format == "DDS"
+        assert im.mode == "RGB"
+        assert im.size == (256, 256)
+
+        assert_image_equal_tofile(im, expected_path.replace(".dds", ".png"))
+
+
 def test_dx10_bc7():
     """Check DX10 images can be opened"""
 
@@ -142,12 +164,6 @@ def test_dx10_r8g8b8a8_unorm_srgb():
         assert_image_equal_tofile(
             im, TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB.replace(".dds", ".png")
         )
-
-
-def test_unimplemented_dxgi_format():
-    with pytest.raises(NotImplementedError):
-        with Image.open("Tests/images/unimplemented_dxgi_format.dds"):
-            pass
 
 
 def test_uncompressed_rgb():
