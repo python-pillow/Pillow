@@ -755,13 +755,6 @@ decode_bc6_block(rgb32f *col, const UINT8 *src, int sign) {
             endpoints[i + 1] = (endpoints[i + 1] + endpoints[1]) & mask;
             endpoints[i + 2] = (endpoints[i + 2] + endpoints[2]) & mask;
         }
-        if (sign) {
-            for (i = 3; i < numep; i += 3) {
-                bc6_sign_extend(&endpoints[i + 0], info->rb);
-                bc6_sign_extend(&endpoints[i + 1], info->gb);
-                bc6_sign_extend(&endpoints[i + 2], info->bb);
-            }
-        }
     }
     for (i = 0; i < numep; i++) {
         ueps[i] = bc6_unquantize(endpoints[i], info->epb, sign);
