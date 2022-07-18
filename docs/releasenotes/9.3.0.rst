@@ -1,0 +1,59 @@
+9.3.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Saving multiple MPO frames
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Multiple MPO frames can now be saved. Using the ``save_all`` argument, all of
+an image's frames will be saved to file::
+
+    from PIL import Image
+    im = Image.open("frozenpond.mpo")
+    im.save(out, save_all=True)
+
+Additional images can also be appended when saving, by combining the
+``save_all`` argument with the ``append_images`` argument::
+
+    im.save(out, save_all=True, append_images=[im1, im2, ...])
+
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO
