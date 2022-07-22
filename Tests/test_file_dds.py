@@ -76,6 +76,7 @@ def test_sanity_ati1():
 
         assert_image_equal_tofile(im, TEST_FILE_ATI1.replace(".dds", ".png"))
 
+
 def test_sanity_ati2():
     """Check ATI2 images can be opened"""
 
