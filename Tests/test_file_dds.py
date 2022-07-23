@@ -88,14 +88,8 @@ def test_dx10_bc5(image_path, expected_path):
         assert_image_equal_tofile(im, expected_path.replace(".dds", ".png"))
 
 
-@pytest.mark.parametrize(
-    ("image_path", "expected_path"),
-    (
-        (TEST_FILE_BC6H, TEST_FILE_BC6H),
-        (TEST_FILE_BC6HS, TEST_FILE_BC6HS),
-    ),
-)
-def test_dx10_bc6h(image_path, expected_path):
+@pytest.mark.parametrize("image_path", (TEST_FILE_BC6H, TEST_FILE_BC6HS))
+def test_dx10_bc6h(image_path):
     """Check DX10 BC6H/BC6HS images can be opened"""
 
     with Image.open(image_path) as im:
@@ -105,7 +99,7 @@ def test_dx10_bc6h(image_path, expected_path):
         assert im.mode == "RGB"
         assert im.size == (256, 256)
 
-        assert_image_equal_tofile(im, expected_path.replace(".dds", ".png"))
+        assert_image_equal_tofile(im, image_path.replace(".dds", ".png"))
 
 
 def test_dx10_bc7():
