@@ -72,7 +72,7 @@ def test_sanity_ati1():
 
         assert im.format == "DDS"
         assert im.mode == "L"
-        assert im.size == (128, 128)
+        assert im.size == (64, 64)
 
         assert_image_equal_tofile(im, TEST_FILE_ATI1.replace(".dds", ".png"))
 
@@ -85,9 +85,9 @@ def test_sanity_ati2():
 
         assert im.format == "DDS"
         assert im.mode == "RGB"
-        assert im.size == (128, 128)
+        assert im.size == (256, 256)
 
-        assert_image_equal_tofile(im, TEST_FILE_ATI2.replace(".dds", ".png"))
+        assert_image_equal_tofile(im, TEST_FILE_DX10_BC5_UNORM.replace(".dds", ".png"))
 
 
 @pytest.mark.parametrize(
