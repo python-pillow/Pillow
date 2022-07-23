@@ -176,11 +176,11 @@ class DdsImageFile(ImageFile.ImageFile):
                     n = 5
                     self.mode = "RGB"
                 elif dxgi_format == DXGI_FORMAT_BC6H_UF16:
-                    self.pixel_format = "BC6"
+                    self.pixel_format = "BC6H"
                     n = 6
                     self.mode = "RGB"
                 elif dxgi_format == DXGI_FORMAT_BC6H_SF16:
-                    self.pixel_format = "BC6S"
+                    self.pixel_format = "BC6HS"
                     n = 6
                     self.mode = "RGB"
                 elif dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):
