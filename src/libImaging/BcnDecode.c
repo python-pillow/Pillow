@@ -870,7 +870,7 @@ decode_bcn(
         case 6:
             while (bytes >= 16) {
                 rgba col[16];
-                decode_bc6_block(col, ptr, strcmp(pixel_format, "BC6S") == 0 ? 1 : 0);
+                decode_bc6_block(col, ptr, strcmp(pixel_format, "BC6HS") == 0 ? 1 : 0);
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;
                 bytes -= 16;
