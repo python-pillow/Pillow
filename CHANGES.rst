@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Support saving multiple MPO frames #6444
+  [radarhere]
+
 - Do not double quote Pillow version for setuptools >= 60 #6450
   [radarhere]
 
