@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Do not clear GIF tile when checking number of frames #6455
+  [radarhere]
+
 - Support saving multiple MPO frames #6444
   [radarhere]
 
