@@ -185,8 +185,6 @@ class GifImageFile(ImageFile.ImageFile):
         if not s or s == b";":
             raise EOFError
 
-        self.tile = []
-
         palette = None
 
         info = {}
@@ -294,6 +292,8 @@ class GifImageFile(ImageFile.ImageFile):
         self.__frame = frame
         if not update_image:
             return
+
+        self.tile = []
 
         if self.dispose:
             self.im.paste(self.dispose, self.dispose_extent)

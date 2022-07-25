@@ -399,6 +399,11 @@ def test_no_change():
         assert im.is_animated
         assert_image_equal(im, expected)
 
+    with Image.open("Tests/images/comment_after_only_frame.gif") as im:
+        expected = Image.new("P", (1, 1))
+        assert not im.is_animated
+        assert_image_equal(im, expected)
+
 
 def test_eoferror():
     with Image.open(TEST_GIF) as im:
