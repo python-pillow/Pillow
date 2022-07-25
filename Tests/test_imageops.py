@@ -352,7 +352,7 @@ def test_exif_transpose():
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation from "XML:com.adobe.xmp" info key (from exiftool)
-    with Image.open("Tests/images/xmp_orientation_exiftool.png") as im:
+    with Image.open("Tests/images/xmp_tags_orientation_exiftool.png") as im:
         assert im.getexif()[0x0112] == 8
 
         transposed_im = ImageOps.exif_transpose(im)
