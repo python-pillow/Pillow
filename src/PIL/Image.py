@@ -1407,6 +1407,12 @@ class Image:
                 match = re.search(r'tiff:Orientation="([0-9])"', xmp_tags)
                 if match:
                     self._exif[0x0112] = int(match[1])
+                else:
+                    match = re.search(
+                        r"<tiff:Orientation>([0-9])</tiff:Orientation>", xmp_tags
+                    )
+                    if match:
+                        self._exif[0x0112] = int(match[1])
 
         return self._exif
 

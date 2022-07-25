@@ -606,5 +606,10 @@ def exif_transpose(image):
                     "",
                     transposed_image.info["XML:com.adobe.xmp"],
                 )
+                transposed_image.info["XML:com.adobe.xmp"] = re.sub(
+                    r"<tiff:Orientation>([0-9])</tiff:Orientation>",
+                    "",
+                    transposed_image.info["XML:com.adobe.xmp"],
+                )
         return transposed_image
     return image.copy()
