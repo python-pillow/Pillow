@@ -352,6 +352,9 @@ def test_exif_transpose():
             transposed_im = ImageOps.exif_transpose(im)
             assert 0x0112 not in transposed_im.getexif()
 
+            transposed_im._reload_exif()
+            assert 0x0112 not in transposed_im.getexif()
+
     # Orientation from "Raw profile type exif" info key
     # This test image has been manually hexedited from exif_imagemagick.png
     # to have a different orientation
