@@ -345,18 +345,12 @@ def test_exif_transpose():
                     check(orientation_im)
 
     # Orientation from "XML:com.adobe.xmp" info key
-    with Image.open("Tests/images/xmp_tags_orientation.png") as im:
-        assert im.getexif()[0x0112] == 3
+    for suffix in ("", "_exiftool"):
+        with Image.open("Tests/images/xmp_tags_orientation" + suffix + ".png") as im:
+            assert im.getexif()[0x0112] == 3
 
-        transposed_im = ImageOps.exif_transpose(im)
-        assert 0x0112 not in transposed_im.getexif()
-
-    # Orientation from "XML:com.adobe.xmp" info key (from exiftool)
-    with Image.open("Tests/images/xmp_tags_orientation_exiftool.png") as im:
-        assert im.getexif()[0x0112] == 8
-
-        transposed_im = ImageOps.exif_transpose(im)
-        assert 0x0112 not in transposed_im.getexif()
+            transposed_im = ImageOps.exif_transpose(im)
+            assert 0x0112 not in transposed_im.getexif()
 
     # Orientation from "Raw profile type exif" info key
     # This test image has been manually hexedited from exif_imagemagick.png
