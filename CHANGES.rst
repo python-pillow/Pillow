@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Added support for reading ATI1/ATI2 (BC4/BC5) DDS images #6457
+  [REDxEYE, radarhere]
+
 - Do not clear GIF tile when checking number of frames #6455
   [radarhere]
 
