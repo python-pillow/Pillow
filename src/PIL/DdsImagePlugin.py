@@ -82,6 +82,7 @@ DDS_CUBEMAP_NEGATIVEY = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEY
 DDS_CUBEMAP_POSITIVEZ = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEZ
 DDS_CUBEMAP_NEGATIVEZ = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEZ
 
+
 # DXT1
 DXT1_FOURCC = 0x31545844
 
@@ -155,6 +156,14 @@ class DdsImageFile(ImageFile.ImageFile):
             elif fourcc == b"DXT5":
                 self.pixel_format = "DXT5"
                 n = 3
+            elif fourcc == b"ATI1":
+                self.pixel_format = "BC4"
+                n = 4
+                self.mode = "L"
+            elif fourcc == b"ATI2":
+                self.pixel_format = "BC5"
+                n = 5
+                self.mode = "RGB"
             elif fourcc == b"BC5S":
                 self.pixel_format = "BC5S"
                 n = 5
@@ -192,14 +201,6 @@ class DdsImageFile(ImageFile.ImageFile):
                     raise NotImplementedError(
                         f"Unimplemented DXGI format {dxgi_format}"
                     )
-            elif fourcc == b"ATI1":
-                self.pixel_format = "BC4"
-                n = 4
-                self.mode = "L"
-            elif fourcc == b"ATI2":
-                self.pixel_format = "BC5"
-                n = 5
-                self.mode = "RGB"
             else:
                 raise NotImplementedError(f"Unimplemented pixel format {repr(fourcc)}")
 
