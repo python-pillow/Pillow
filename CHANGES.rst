@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Parse orientation from XMP tag contents #6463
+  [bigcat88, radarhere]
+
 - Added support for reading ATI1/ATI2 (BC4/BC5) DDS images #6457
   [REDxEYE, radarhere]
 
