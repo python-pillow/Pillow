@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         docker: [
-          ubuntu-20.04-focal-amd64-valgrind,
+          ubuntu-22.04-jammy-amd64-valgrind,
         ]
         dockerTag: [main]
 
