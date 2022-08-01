@@ -25,7 +25,7 @@ import math
 import os
 import time
 
-from . import Image, ImageFile, ImageSequence, PdfParser, TiffImagePlugin, __version__
+from . import Image, ImageFile, ImageSequence, PdfParser, __version__
 
 #
 # --------------------------------------------------------------------
@@ -181,10 +181,13 @@ def _save(im, fp, filename, save_all=False):
             if filter == "ASCIIHexDecode":
                 ImageFile._save(im, op, [("hex", (0, 0) + im.size, 0, im.mode)])
             elif filter == "CCITTFaxDecode":
-                original_strip_size = TiffImagePlugin.STRIP_SIZE
-                TiffImagePlugin.STRIP_SIZE = math.ceil(im.width / 8) * im.height
-                im.save(op, "TIFF", compression="group4")
-                TiffImagePlugin.STRIP_SIZE = original_strip_size
+                im.save(
+                    op,
+                    "TIFF",
+                    compression="group4",
+                    # use a single strip
+                    strip_size=math.ceil(im.width / 8) * im.height,
+                )
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
             elif filter == "FlateDecode":
