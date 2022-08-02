@@ -15,35 +15,13 @@ Python Support
 
 Pillow supports these Python versions.
 
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-|        Python        |3.10 | 3.9 | 3.8 | 3.7 | 3.6 | 3.5 | 3.4 | 2.7 |
-+======================+=====+=====+=====+=====+=====+=====+=====+=====+
-| Pillow >= 9.0        | Yes | Yes | Yes | Yes |     |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 8.3.2 - 8.4   | Yes | Yes | Yes | Yes | Yes |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 8.0 - 8.3.1   |     | Yes | Yes | Yes | Yes |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 7.0 - 7.2     |     |     | Yes | Yes | Yes | Yes |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 6.2.1 - 6.2.2 |     |     | Yes | Yes | Yes | Yes |     | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 6.0 - 6.2.0   |     |     |     | Yes | Yes | Yes |     | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 5.2 - 5.4     |     |     |     | Yes | Yes | Yes | Yes | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+.. csv-table:: Newer versions
+   :file: newer-versions.csv
+   :header-rows: 1
 
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-|      Python      | 3.6 | 3.5 | 3.4 | 3.3 | 3.2 | 2.7 | 2.6 | 2.5 | 2.4 |
-+==================+=====+=====+=====+=====+=====+=====+=====+=====+=====+
-| Pillow 5.0 - 5.1 | Yes | Yes | Yes |     |     | Yes |     |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 4         | Yes | Yes | Yes | Yes |     | Yes |     |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 2 - 3     |     | Yes | Yes | Yes | Yes | Yes | Yes |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow < 2       |     |     |     |     |     | Yes | Yes | Yes | Yes |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+.. csv-table:: Older versions
+   :file: older-versions.csv
+   :header-rows: 1
 
 Basic Installation
 ------------------
@@ -188,7 +166,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.0**
+  * Pillow has been tested with libimagequant **2.6-4.0.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.

@@ -5,6 +5,21 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Parse orientation from XMP tag contents #6463
+  [bigcat88, radarhere]
+
+- Added support for reading ATI1/ATI2 (BC4/BC5) DDS images #6457
+  [REDxEYE, radarhere]
+
+- Do not clear GIF tile when checking number of frames #6455
+  [radarhere]
+
+- Support saving multiple MPO frames #6444
+  [radarhere]
+
+- Do not double quote Pillow version for setuptools >= 60 #6450
+  [radarhere]
+
 - Added ABGR BMP mask mode #6436
   [radarhere]
 

@@ -601,10 +601,12 @@ def exif_transpose(image):
                     "Raw profile type exif"
                 ] = transposed_exif.tobytes().hex()
             elif "XML:com.adobe.xmp" in transposed_image.info:
-                transposed_image.info["XML:com.adobe.xmp"] = re.sub(
+                for pattern in (
                     r'tiff:Orientation="([0-9])"',
-                    "",
-                    transposed_image.info["XML:com.adobe.xmp"],
-                )
+                    r"<tiff:Orientation>([0-9])</tiff:Orientation>",
+                ):
+                    transposed_image.info["XML:com.adobe.xmp"] = re.sub(
+                        pattern, "", transposed_image.info["XML:com.adobe.xmp"]
+                    )
         return transposed_image
     return image.copy()

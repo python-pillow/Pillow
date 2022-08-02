@@ -18,16 +18,66 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image, ImageFile, JpegImagePlugin
+import itertools
+import os
+import struct
+
+from . import Image, ImageFile, ImageSequence, JpegImagePlugin, TiffImagePlugin
 from ._binary import i16be as i16
+from ._binary import o32le
 
 # def _accept(prefix):
 #     return JpegImagePlugin._accept(prefix)
 
 
 def _save(im, fp, filename):
-    # Note that we can only save the current frame at present
-    return JpegImagePlugin._save(im, fp, filename)
+    JpegImagePlugin._save(im, fp, filename)
+
+
+def _save_all(im, fp, filename):
+    append_images = im.encoderinfo.get("append_images", [])
+    if not append_images:
+        try:
+            animated = im.is_animated
+        except AttributeError:
+            animated = False
+        if not animated:
+            _save(im, fp, filename)
+            return
+
+    offsets = []
+    for imSequence in itertools.chain([im], append_images):
+        for im_frame in ImageSequence.Iterator(imSequence):
+            if not offsets:
+                # APP2 marker
+                im.encoderinfo["extra"] = (
+                    b"\xFF\xE2" + struct.pack(">H", 6 + 70) + b"MPF\0" + b" " * 70
+                )
+                JpegImagePlugin._save(im_frame, fp, filename)
+                offsets.append(fp.tell())
+            else:
+                im_frame.save(fp, "JPEG")
+                offsets.append(fp.tell() - offsets[-1])
+
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[0xB001] = len(offsets)
+
+    mpentries = b""
+    data_offset = 0
+    for i, size in enumerate(offsets):
+        if i == 0:
+            mptype = 0x030000  # Baseline MP Primary Image
+        else:
+            mptype = 0x000000  # Undefined
+        mpentries += struct.pack("<LLLHH", mptype, size, data_offset, 0, 0)
+        if i == 0:
+            data_offset -= 28
+        data_offset += size
+    ifd[0xB002] = mpentries
+
+    fp.seek(28)
+    fp.write(b"II\x2A\x00" + o32le(8) + ifd.tobytes(8))
+    fp.seek(0, os.SEEK_END)
 
 
 ##
@@ -124,6 +174,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 # Image.register_open(MpoImageFile.format,
 #                     JpegImagePlugin.jpeg_factory, _accept)
 Image.register_save(MpoImageFile.format, _save)
+Image.register_save_all(MpoImageFile.format, _save_all)
 
 Image.register_extension(MpoImageFile.format, ".mpo")
 
