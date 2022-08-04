@@ -856,7 +856,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
-            assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
+            assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.2)
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -864,7 +864,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
-            assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
+            assert_image_similar_tofile(im, "Tests/images/flower2.jpg", 0.01)
 
     def test_tiled_cmyk_jpeg(self):
         infile = "Tests/images/tiff_tiled_cmyk_jpeg.tif"
@@ -877,7 +877,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
-            assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
+            assert_image_similar_tofile(im, "Tests/images/flower2.jpg", 0.01)
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -885,7 +885,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
-            assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
+            assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.5)
 
     def test_strip_planar_rgb(self):
         # gdal_translate -co TILED=no -co INTERLEAVE=BAND -co COMPRESS=LZW \
