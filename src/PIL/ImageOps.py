@@ -572,9 +572,9 @@ def solarize(image, threshold=128):
 
 def exif_transpose(image):
     """
-    If an image has an EXIF Orientation tag return a new image that is
-    transposed accordingly. The new image will have the orientation data
-    removed.
+    If an image has an EXIF Orientation tag, other than 1, return a new image
+    that is transposed accordingly. The new image will have the orientation
+    data removed.
 
     Otherwise, return a copy of the image.
 
