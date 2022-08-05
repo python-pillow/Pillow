@@ -75,6 +75,9 @@ class PsdImageFile(ImageFile.ImageFile):
 
         if channels > psd_channels:
             raise OSError("not enough channels")
+        if mode == "RGB" and psd_channels == 4:
+            mode = "RGBA"
+            channels = 4
 
         self.mode = mode
         self._size = i32(s, 18), i32(s, 14)
