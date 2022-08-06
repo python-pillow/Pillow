@@ -321,12 +321,18 @@ class DdsImageFile(ImageFile.ImageFile):
         elif pfflags & DDPF.RGB:
             # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
-            rawmode = ""
-            if bitcount == 32:
-                rawmode += masks[0xFF000000]
-            else:
+            if bitcount == 8:
+                self.mode = "L"
+                rawmode = "L"
+            elif bitcount == 24:
                 self.mode = "RGB"
-            rawmode += masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
+                rawmode = masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
+            elif bitcount == 32:
+                self.mode = "RGBA"
+                rawmode = masks[0xFF000000] + masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
+            else:
+                raise OSError(f'Unsupported bitcount {bitcount} for DDS texture')
+
 
             self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
         elif pfflags & DDPF.FOURCC:
@@ -404,6 +410,8 @@ class DdsImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, filename):
+    if im.mode not in ("RGB", "RGBA", "L"):
+        raise OSError(f"cannot write mode {im.mode} as DDS")
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)
