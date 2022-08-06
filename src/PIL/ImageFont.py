@@ -911,6 +911,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     limits the number of files that can be open in C at once to 512, so if many
     fonts are opened simultaneously and that limit is approached, an
     ``OSError`` may be thrown, reporting that FreeType "cannot open resource".
+    A workaround would be to copy the file(s) into memory, and open that instead.
 
     This function requires the _imagingft service.
 
