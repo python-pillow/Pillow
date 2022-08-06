@@ -94,3 +94,10 @@ def test_fromarray_palette():
 
     # Assert that the Python and C palettes match
     assert len(out.palette.colors) == len(out.im.getpalette()) / 3
+
+
+def test_array():
+    i = im.convert("L")
+    a = numpy.array(i)
+
+    assert (a == i.__array__()).all()
