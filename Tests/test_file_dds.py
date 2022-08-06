@@ -309,7 +309,7 @@ def test_save_unsupported_mode(tmp_path):
         ("LA", "Tests/images/uncompressed_la.png"),
         ("RGB", "Tests/images/hopper.png"),
         ("RGBA", "Tests/images/pil123rgba.png"),
-        ("L", "Tests/images/ATI1.dds"),
+        ("L", "Tests/images/ati1.dds"),
     ],
 )
 def test_save(mode, test_file, tmp_path):
