@@ -61,16 +61,6 @@ class DDPF(IntFlag):
     LUMINANCE = 0x20000
 
 
-# DXT1
-DXT1_FOURCC = 0x31545844
-
-# DXT3
-DXT3_FOURCC = 0x33545844
-
-# DXT5
-DXT5_FOURCC = 0x35545844
-
-
 # dxgiformat.h
 class DXGI_FORMAT(IntEnum):
     UNKNOWN = 0,
