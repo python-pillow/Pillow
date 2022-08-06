@@ -46,6 +46,8 @@ directly.
 
 
 class ImageDraw:
+    font = None
+
     def __init__(self, im, mode=None):
         """
         Create a drawing instance.
@@ -86,7 +88,6 @@ class ImageDraw:
         else:
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = 0
-        self.font = None
 
     def getfont(self):
         """
