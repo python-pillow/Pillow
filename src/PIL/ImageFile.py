@@ -31,6 +31,7 @@ import io
 import itertools
 import struct
 import sys
+from typing import List
 
 from . import Image
 from ._util import is_path
@@ -521,13 +522,13 @@ def _save(im, fp, tile, bufsize=0):
         fp.flush()
 
 
-def _encode_tile(im, fp, tile, bufsize, fh, exc=None):
-    for e, b, o, a in tile:
-        if o > 0:
-            fp.seek(o)
-        encoder = Image._getencoder(im.mode, e, a, im.encoderconfig)
+def _encode_tile(im, fp, tile: List[Image.Tile], bufsize, fh, exc=None):
+    for encoder_name, extents, offset, tile_args in tile:
+        if offset > 0:
+            fp.seek(offset)
+        encoder = Image._getencoder(im.mode, encoder_name, tile_args, im.encoderconfig)
         try:
-            encoder.setimage(im.im, b)
+            encoder.setimage(im.im, extents)
             if encoder.pushes_fd:
                 encoder.setfd(fp)
                 errcode = encoder.encode_to_pyfd()[1]
