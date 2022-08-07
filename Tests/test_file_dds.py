@@ -320,3 +320,19 @@ def test_save(mode, test_file, tmp_path):
 
         with Image.open(out) as reloaded:
             assert_image_equal(im, reloaded)
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected_file", "input_file"),
+    [
+        ("L", "Tests/images/l.png", "Tests/images/l.dds"),
+        ("LA", "Tests/images/la.png", "Tests/images/la.dds"),
+        ("RGB", "Tests/images/rgb.png", "Tests/images/rgb.DDS"),
+        ("RGBA", "Tests/images/rgba.png", "Tests/images/rgba.DDS"),
+    ],
+)
+def test_open(mode, expected_file, input_file):
+    with Image.open(input_file) as im:
+        assert im.mode == mode
+        with Image.open(expected_file) as im2:
+            assert_image_equal(im, im2)
