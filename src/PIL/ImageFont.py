@@ -906,10 +906,12 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     This function loads a font object from the given file or file-like
     object, and creates a font object for a font of the given size.
 
-    Pillow uses FreeType to open font files. If you are opening many fonts
-    simultaneously on Windows, be aware that Windows limits the number of files
-    that can be open in C at once to 512. If you approach that limit, an
+    Pillow uses FreeType to open font files. On Windows, be aware that FreeType
+    will keep the file open as long as the FreeTypeFont object exists. Windows
+    limits the number of files that can be open in C at once to 512, so if many
+    fonts are opened simultaneously and that limit is approached, an
     ``OSError`` may be thrown, reporting that FreeType "cannot open resource".
+    A workaround would be to copy the file(s) into memory, and open that instead.
 
     This function requires the _imagingft service.
 
