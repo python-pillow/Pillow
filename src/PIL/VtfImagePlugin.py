@@ -116,7 +116,7 @@ VTFHeader = NamedTuple(
         ("bumpmap_scale", float),
         ("pixel_format", int),
         ("mipmap_count", int),
-        ("lowres_format", int),
+        ("lowres_pixel_format", int),
         ("lowres_width", int),
         ("lowres_height", int),
         # V 7.2+
@@ -148,17 +148,11 @@ LA_FORMATS = (
 SUPPORTED_FORMATS = RGBA_FORMATS + RGB_FORMATS + LA_FORMATS + L_FORMATS
 
 
+# fmt: off
 def _get_texture_size(pixel_format: VtfPF, width, height):
     if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
         return width * height // 2
-    elif (
-        pixel_format
-        in (
-            VtfPF.DXT3,
-            VtfPF.DXT5,
-        )
-        + L_FORMATS
-    ):
+    elif pixel_format in (VtfPF.DXT3, VtfPF.DXT5,) + L_FORMATS:
         return width * height
     elif pixel_format in LA_FORMATS:
         return width * height * 2
@@ -169,32 +163,32 @@ def _get_texture_size(pixel_format: VtfPF, width, height):
     raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
 
 
+# fmt: on
+
+
 class VtfImageFile(ImageFile.ImageFile):
     format = "VTF"
     format_description = "Valve Texture Format"
 
+    # fmt: off
     def _open(self):
         if not _accept(self.fp.read(12)):
             raise SyntaxError("not a VTF file")
         self.fp.seek(4)
         version = struct.unpack("<2I", self.fp.read(8))
         if version <= (7, 2):
-            header = VTFHeader(
-                *struct.unpack("<I2HI2HI3fIfIbI2b", self.fp.read(51)), 0, 0, 0, 0, 0
-            )
+            header = VTFHeader(*struct.unpack("<I2HI2HI3fIfIbI2b", self.fp.read(51)), 0, 0, 0, 0, 0)
         elif (7, 2) <= version < (7, 3):
-            header = VTFHeader(
-                *struct.unpack("<I2HI2HI3fIfIbI2bH", self.fp.read(53)), 0, 0, 0, 0
-            )
+            header = VTFHeader(*struct.unpack("<I2HI2HI3fIfIbI2bH", self.fp.read(53)), 0, 0, 0, 0)
         elif (7, 3) <= version < (7, 5):
-            header = VTFHeader(
-                *struct.unpack("<I2HI2HI3fIfIbI2bHHBIQ", self.fp.read(68))
-            )
+            header = VTFHeader(*struct.unpack("<I2HI2HI3fIfIbI2bHHBIQ", self.fp.read(68)))
             self.fp.seek(header.resource_count * 8, 1)
         else:
             raise VTFException(f"Unsupported VTF version: {version}")
         flags = CompiledVtfFlags(header.flags)
         pixel_format = VtfPF(header.pixel_format)
+        lowres_format = VtfPF(header.lowres_pixel_format)
+
         if pixel_format in RGB_FORMATS:
             self.mode = "RGB"
         elif pixel_format in RGBA_FORMATS:
@@ -216,20 +210,14 @@ class VtfImageFile(ImageFile.ImageFile):
         self._size = (header.width, header.height)
 
         data_start = self.fp.tell()
-        data_start += _get_texture_size(
-            header.lowres_format, header.lowres_width, header.lowres_height
-        )
-        min_res = (
-            4
-            if pixel_format
-            in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5)
-            else 1
-        )
+        data_start += _get_texture_size(lowres_format, header.lowres_width, header.lowres_height)
+        min_res = (4 if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5) else 1)
         for mip_id in range(header.mipmap_count - 1, 0, -1):
             mip_width = max(header.width >> mip_id, min_res)
             mip_height = max(header.height >> mip_id, min_res)
 
             data_start += _get_texture_size(pixel_format, mip_width, mip_height)
+
         if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
             tile = ("bcn", (0, 0) + self.size, data_start, (1, "DXT1"))
         elif pixel_format == VtfPF.DXT3:
@@ -247,6 +235,7 @@ class VtfImageFile(ImageFile.ImageFile):
         else:
             raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
         self.tile = [tile]
+        # fmt: on
 
 
 def _save(im, fp, filename):
