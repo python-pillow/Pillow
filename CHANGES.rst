@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Save 1 mode PDF using CCITTFaxDecode filter #6470
+  [radarhere]
+
+- Added support for RGBA PSD images #6481
+  [radarhere]
+
 - Parse orientation from XMP tag contents #6463
   [bigcat88, radarhere]
 
