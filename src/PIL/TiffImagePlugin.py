@@ -1684,7 +1684,8 @@ def _save(im, fp, filename):
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     # aim for given strip size (64 KB by default) when using libtiff writer
     if libtiff:
-        rows_per_strip = 1 if stride == 0 else min(STRIP_SIZE // stride, im.size[1])
+        im_strip_size = encoderinfo.get("strip_size", STRIP_SIZE)
+        rows_per_strip = 1 if stride == 0 else min(im_strip_size // stride, im.size[1])
         # JPEG encoder expects multiple of 8 rows
         if compression == "jpeg":
             rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, im.size[1])

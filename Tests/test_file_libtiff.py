@@ -1011,14 +1011,18 @@ class TestFileLibTiff(LibTiffTestCase):
             # Assert that there are multiple strips
             assert len(im.tag_v2[STRIPOFFSETS]) > 1
 
-    def test_save_single_strip(self, tmp_path):
+    @pytest.mark.parametrize("argument", (True, False))
+    def test_save_single_strip(self, argument, tmp_path):
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
 
-        TiffImagePlugin.STRIP_SIZE = 2**18
+        if not argument:
+            TiffImagePlugin.STRIP_SIZE = 2**18
         try:
-
-            im.save(out, compression="tiff_adobe_deflate")
+            arguments = {"compression": "tiff_adobe_deflate"}
+            if argument:
+                arguments["strip_size"] = 2**18
+            im.save(out, **arguments)
 
             with Image.open(out) as im:
                 assert len(im.tag_v2[STRIPOFFSETS]) == 1
