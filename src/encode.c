@@ -375,6 +375,35 @@ get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode)
 }
 
 /* -------------------------------------------------------------------- */
+/* BNC                                                                  */
+/* -------------------------------------------------------------------- */
+
+PyObject *
+PyImaging_BcnEncoderNew(PyObject *self, PyObject *args) {
+    ImagingEncoderObject *encoder;
+
+    char *mode;
+    char *actual;
+    int n = 0;
+    char *pixel_format = "";
+    if (!PyArg_ParseTuple(args, "si|s", &mode, &n, &pixel_format)) {
+        return NULL;
+    }
+    printf("Mode: %s, n: %i, pixel_format: %s", mode, n, pixel_format);
+
+    encoder = PyImaging_EncoderNew(0);
+    if (encoder == NULL) {
+        return NULL;
+    }
+
+    encoder->encode = ImagingBcnEncode;
+    encoder->state.ystep = 4;
+    encoder->cleanup = NULL;
+
+    return (PyObject *)encoder;
+}
+
+/* -------------------------------------------------------------------- */
 /* EPS                                                                  */
 /* -------------------------------------------------------------------- */
 

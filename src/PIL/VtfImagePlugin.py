@@ -163,6 +163,21 @@ def _get_texture_size(pixel_format: VtfPF, width, height):
     raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
 
 
+def _get_mipmap_count(pixel_format: VtfPF, width: int, height: int):
+    if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5):
+        min_size = 4
+    else:
+        min_size = 1
+    mip_count = 0
+    for i in range(8):
+        mip_width = width << i
+        mip_height = height << i
+        if mip_width < min_size or mip_height < min_size:
+            break
+        mip_count += 1
+    return mip_count
+
+
 # fmt: on
 
 
@@ -239,8 +254,34 @@ class VtfImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, filename):
+    im:Image.Image
     if im.mode not in ("RGB", "RGBA"):
         raise OSError(f"cannot write mode {im.mode} as VTF")
+    arguments = im.encoderinfo
+    pixel_format = VtfPF(arguments.get('pixel_format', VtfPF.RGBA8888))
+    flags = CompiledVtfFlags(0)
+    if 'A' in im.mode:
+        if pixel_format == VtfPF.DXT1_ONEBITALPHA:
+            flags |= CompiledVtfFlags.ONEBITALPHA
+        else:
+            flags |= CompiledVtfFlags.EIGHTBITALPHA
+
+    width, height = im.size
+
+    lowres_width = min(16, width)
+    lowres_height = min(16, height)
+    mipmap_count = _get_mipmap_count(pixel_format, width, height)
+    thumb = im.convert('RGB')
+    thumb.thumbnail((lowres_width,lowres_height))
+    ImageFile._save(thumb, fp, [("bcn", (0, 0, lowres_width, lowres_height), 96, (1, 'DXT1'))])
+
+    header = VTFHeader(96, width, height, flags, 1, 1, 0, 1.0, 1.0, 1.0, 0, 1.0, pixel_format, mipmap_count,
+                       VtfPF.DXT1, lowres_width, lowres_height, 0, 0, 0, 0, 0)
+    fp.write(
+        b"VTF\x00"
+        + struct.pack('<2I', 7, 2)
+        + struct.pack('<I2HI2HI3fIfIbI2b', *header[:17])
+    )
 
 
 def _accept(prefix):
