@@ -327,8 +327,8 @@ def test_save(mode, test_file, tmp_path):
     [
         ("L", "Tests/images/l.png", "Tests/images/l.dds"),
         ("LA", "Tests/images/la.png", "Tests/images/la.dds"),
-        ("RGB", "Tests/images/rgb.png", "Tests/images/rgb.DDS"),
-        ("RGBA", "Tests/images/rgba.png", "Tests/images/rgba.DDS"),
+        ("RGB", "Tests/images/rgb.png", "Tests/images/rgb.dds"),
+        ("RGBA", "Tests/images/rgba.png", "Tests/images/rgba.dds"),
     ],
 )
 def test_open(mode, expected_file, input_file):
