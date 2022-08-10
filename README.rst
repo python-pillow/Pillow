@@ -49,4 +49,4 @@ Download wheels from the
 `latest release <https://github.com/python-pillow/pillow-wheels/releases>`_ and upload
 to PyPI::
 
-    twine upload Pillow-<VERSION>-*
+    python3 -m twine upload Pillow-<VERSION>-*
