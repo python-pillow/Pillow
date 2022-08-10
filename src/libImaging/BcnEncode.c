@@ -2,7 +2,7 @@
  * The Python Imaging Library.
  * $Id$
  *
- * decoder for packed bitfields (converts to floating point)
+ * encoder for packed bitfields (ST3C/DXT)
  *
  * history:
  * 22-08-11 Initial implementation
