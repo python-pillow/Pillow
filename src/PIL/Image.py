@@ -892,12 +892,12 @@ class Image:
            should be 4- or 12-tuple containing floating point values.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
+           Available methods are :data:`PIL.Image.Dither.NONE` or :data:`PIL.Image.Dither.FLOYDSTEINBERG`
            (default). Note that this is not used when ``matrix`` is supplied.
         :param palette: Palette to use when converting from mode "RGB"
-           to "P".  Available palettes are :data:`Palette.WEB` or
-           :data:`Palette.ADAPTIVE`.
-        :param colors: Number of colors to use for the :data:`Palette.ADAPTIVE`
+           to "P".  Available palettes are :data:`PIL.Image.Palette.WEB` or
+           :data:`PIL.Image.Palette.ADAPTIVE`.
+        :param colors: Number of colors to use for the :data:`PIL.Image.Palette.ADAPTIVE`
            palette. Defaults to 256.
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
@@ -1078,24 +1078,24 @@ class Image:
         of colors.
 
         :param colors: The desired number of colors, <= 256
-        :param method: :data:`Quantize.MEDIANCUT` (median cut),
-                       :data:`Quantize.MAXCOVERAGE` (maximum coverage),
-                       :data:`Quantize.FASTOCTREE` (fast octree),
-                       :data:`Quantize.LIBIMAGEQUANT` (libimagequant; check support
+        :param method: :data:`PIL.Image.Quantize.MEDIANCUT` (median cut),
+                       :data:`PIL.Image.Quantize.MAXCOVERAGE` (maximum coverage),
+                       :data:`PIL.Image.Quantize.FASTOCTREE` (fast octree),
+                       :data:`PIL.Image.Quantize.LIBIMAGEQUANT` (libimagequant; check support
                        using :py:func:`PIL.features.check_feature` with
                        ``feature="libimagequant"``).
 
-                       By default, :data:`Quantize.MEDIANCUT` will be used.
+                       By default, :data:`PIL.Image.Quantize.MEDIANCUT` will be used.
 
-                       The exception to this is RGBA images. :data:`Quantize.MEDIANCUT`
-                       and :data:`Quantize.MAXCOVERAGE` do not support RGBA images, so
-                       :data:`Quantize.FASTOCTREE` is used by default instead.
+                       The exception to this is RGBA images. :data:`PIL.Image.Quantize.MEDIANCUT`
+                       and :data:`PIL.Image.Quantize.MAXCOVERAGE` do not support RGBA images, so
+                       :data:`PIL.Image.Quantize.FASTOCTREE` is used by default instead.
         :param kmeans: Integer
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
         :param dither: Dithering method, used when converting from
            mode "RGB" to "P" or from "RGB" or "L" to "1".
-           Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
+           Available methods are :data:`PIL.Image.Dither.NONE` or :data:`PIL.Image.Dither.FLOYDSTEINBERG`
            (default).
         :returns: A new image
 
