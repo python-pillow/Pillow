@@ -93,6 +93,11 @@ class ImageDraw:
         """
         Get the current default font.
 
+        To set the default font for all future ImageDraw instances::
+
+            from PIL import ImageDraw, ImageFont
+            ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
         :returns: An image font."""
         if not self.font:
             # FIXME: should add a font repository
