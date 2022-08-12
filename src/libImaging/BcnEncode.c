@@ -72,12 +72,12 @@ typedef struct {
 } Color;
 
 static void
-selection_sort(Color arr[], uint32_t n) {
-    uint32_t min_idx;
+selection_sort(Color arr[], UINT32 n) {
+    UINT32 min_idx, i, j;
 
-    for (uint32_t i = 0; i < n - 1; i++) {
+    for (i = 0; i < n - 1; i++) {
         min_idx = i;
-        for (uint32_t j = i + 1; j < n; j++)
+        for (j = i + 1; j < n; j++)
             if (arr[j].frequency < arr[min_idx].frequency)
                 min_idx = j;
         SWAP(Color, arr[min_idx], arr[i]);
@@ -91,9 +91,10 @@ pick_2_major_colors(
     UINT16 color_count,
     UINT16 *color0,
     UINT16 *color1) {
+    UINT32 i;
     Color colors[16];
     memset(colors, 0, sizeof(colors));
-    for (int i = 0; i < color_count; ++i) {
+    for (i = 0; i < color_count; ++i) {
         colors[i].value = unique_colors[i];
         colors[i].frequency = color_freq[i];
     }
@@ -110,8 +111,9 @@ static UINT8
 get_closest_color_index(const UINT16 *colors, UINT16 color) {
     UINT16 color_error = 0xFFF8;
     UINT16 lowest_id = 0;
+    UINT32 color_id;
 
-    for (int color_id = 0; color_id < 4; color_id++) {
+    for (color_id = 0; color_id < 4; color_id++) {
         UINT8 error = rgb565_diff(colors[color_id], color);
         if (error == 0) {
             return color_id;
@@ -128,6 +130,7 @@ int
 encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     bc1_color *blocks = (bc1_color *)buf;
     UINT8 no_alpha = 0;
+    INT32 block_index;
     if (strchr(im->mode, 'A') == NULL)
         no_alpha = 1;
     UINT32 block_count = (im->xsize * im->ysize) / 16;
@@ -137,7 +140,7 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     }
 
     memset(buf, 0, block_count * sizeof(bc1_color));
-    for (int block_index = 0; block_index < block_count; block_index++) {
+    for (block_index = 0; block_index < block_count; block_index++) {
         state->x = (block_index % (im->xsize / 4));
         state->y = (block_index / (im->xsize / 4));
         UINT16 unique_count = 0;
@@ -150,11 +153,11 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         memset(unique_colors, 0, sizeof(unique_colors));
         memset(color_frequency, 0, sizeof(color_frequency));
         memset(opaque, 0, sizeof(opaque));
-
-        for (int by = 0; by < 4; ++by) {
-            for (int bx = 0; bx < 4; ++bx) {
-                int x = (state->x * 4) + bx;
-                int y = (state->y * 4) + by;
+        UINT32 by, bx, x, y;
+        for (by = 0; by < 4; ++by) {
+            for (bx = 0; bx < 4; ++bx) {
+                x = (state->x * 4) + bx;
+                y = (state->y * 4) + by;
                 UINT8 r = im->image[y][x * im->pixelsize + 2];
                 UINT8 g = im->image[y][x * im->pixelsize + 1];
                 UINT8 b = im->image[y][x * im->pixelsize + 0];
@@ -163,8 +166,9 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 opaque[bx + by * 4] = a >= 127;
                 all_colors[bx + by * 4] = color;
 
-                int new_color = 1;
-                for (UINT16 color_id = 0; color_id < unique_count; color_id++) {
+                UINT8 new_color = 1;
+                UINT16 color_id = 1;
+                for (color_id = 0; color_id < unique_count; color_id++) {
                     if (unique_colors[color_id] == color) {
                         color_frequency[color_id]++;
                         new_color = 0;
@@ -196,7 +200,8 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
         block->c0 = c0;
         block->c1 = c1;
-        for (UINT32 color_id = 0; color_id < 16; ++color_id) {
+        UINT32 color_id;
+        for (color_id = 0; color_id < 16; ++color_id) {
             UINT8 bc_color_id;
             if (opaque[color_id] || no_alpha)
                 bc_color_id = get_closest_color_index(palette, all_colors[color_id]);
