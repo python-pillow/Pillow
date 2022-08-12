@@ -28,3 +28,15 @@ typedef struct {
     INT8 a0, a1;
     UINT8 lut[6];
 } bc5s_alpha;
+
+#define BIT_MASK(bit_count) ((1 << (bit_count)) - 1)
+#define SET_BITS(target, bit_offset, bit_count, value) \
+    target |= (((value)&BIT_MASK(bit_count)) << (bit_offset))
+#define GET_BITS(source, bit_offset, bit_count) \
+    ((source) & (BIT_MASK(bit_count) << (bit_offset))) >> (bit_offset)
+#define SWAP(TYPE, A, B) \
+    do {                 \
+        TYPE TMP = A;    \
+        (A) = B;           \
+        (B) = TMP;         \
+    } while (0)

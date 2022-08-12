@@ -16,54 +16,44 @@
 #include "Bcn.h"
 #include "math.h"
 
-#define BIT_MASK(bit_count) ((1 << (bit_count)) - 1)
-#define SET_BITS(target, bit_offset, bit_count, value) \
-    target |= (((value)&BIT_MASK(bit_count)) << (bit_offset))
-#define SWAP(TYPE, A, B) \
-    do {                 \
-        TYPE TMP = A;    \
-        A = B;           \
-        B = TMP;         \
-    } while (0)
+#define PACK_SHORT_565(r, g, b) \
+    ((((b) << 8) & 0xF800) | (((g) << 3) & 0x7E0) | ((r) >> 3))
 
-typedef union {
-    struct {
-        UINT16 r : 5;
-        UINT16 g : 6;
-        UINT16 b : 5;
-    } color;
-    UINT16 value;
-} rgb565;
+#define UNPACK_SHORT_565(source, r, g, b) \
+    (r) = GET_BITS((source), 0, 5);       \
+    (g) = GET_BITS((source), 5, 6);       \
+    (b) = GET_BITS((source), 11, 5);
 
-static UINT16
-pack_565(UINT8 r, UINT8 g, UINT8 b) {
-    rgb565 color;
-    color.color.r = r / (255 / 31);
-    color.color.g = g / (255 / 63);
-    color.color.b = b / (255 / 31);
-    return color.value;
-}
+#define WRITE_SHORT(buf, value) \
+    *(buf++) = value & 0xFF;    \
+    *(buf++) = value >> 8;
 
-static UINT16
-rgb565_diff(UINT16 a, UINT16 b) {
-    rgb565 c0;
-    c0.value = a;
-    rgb565 c1;
-    c1.value = b;
-    return ((UINT16)abs(c0.color.r - c1.color.r)) + abs(c0.color.g - c1.color.g) +
-           abs(c0.color.b - c1.color.b);
+#define WRITE_INT(buf, value)        \
+    WRITE_SHORT(buf, value & 0xFFFF) \
+    WRITE_SHORT(buf, value >> 16)
+
+#define WRITE_BC1_BLOCK(buf, block) \
+    WRITE_SHORT(buf, block.c0)      \
+    WRITE_SHORT(buf, block.c1)      \
+    WRITE_INT(buf, block.lut)
+
+static inline UINT16
+rgb565_diff(UINT16 c0, UINT16 c1) {
+    UINT8 r0, g0, b0, r1, g1, b1;
+    UNPACK_SHORT_565(c0, r0, g0, b0)
+    UNPACK_SHORT_565(c1, r1, g1, b1)
+    return ((UINT16)abs(r0 - r1)) + abs(g0 - g1) + abs(b0 - b1);
 }
 
 static inline UINT16
-rgb565_lerp(UINT16 a, UINT16 b, UINT8 a_fac, UINT8 b_fac) {
-    rgb565 c0;
-    c0.value = a;
-    rgb565 c1;
-    c1.value = b;
-    return pack_565(
-        (c0.color.r * a_fac + c1.color.r * b_fac) / (a_fac + b_fac),
-        (c0.color.g * a_fac + c1.color.g * b_fac) / (a_fac + b_fac),
-        (c0.color.b * a_fac + c1.color.b * b_fac) / (a_fac + b_fac));
+rgb565_lerp(UINT16 c0, UINT16 c1, UINT8 a_fac, UINT8 b_fac) {
+    UINT8 r0, g0, b0, r1, g1, b1;
+    UNPACK_SHORT_565(c0, r0, g0, b0)
+    UNPACK_SHORT_565(c1, r1, g1, b1)
+    return PACK_SHORT_565(
+        (r0 * a_fac + r1 * b_fac) / (a_fac + b_fac),
+        (g0 * a_fac + g1 * b_fac) / (a_fac + b_fac),
+        (b0 * a_fac + b1 * b_fac) / (a_fac + b_fac));
 }
 
 typedef struct {
@@ -131,13 +121,13 @@ get_closest_color_index(const UINT16 *colors, UINT16 color) {
 
 int
 encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
-    bc1_color *blocks = (bc1_color *)buf;
+    UINT8* dst = buf;
     UINT8 no_alpha = 0;
     INT32 block_index;
     if (strchr(im->mode, 'A') == NULL) {
         no_alpha = 1;
     }
-    UINT32 block_count = (im->xsize * im->ysize) / 16;
+    INT32 block_count = (im->xsize * im->ysize) / 16;
     if (block_count * sizeof(bc1_color) > bytes) {
         state->errcode = IMAGING_CODEC_MEMORY;
         return 0;
@@ -166,7 +156,7 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 UINT8 g = im->image[y][x * im->pixelsize + 1];
                 UINT8 b = im->image[y][x * im->pixelsize + 0];
                 UINT8 a = im->image[y][x * im->pixelsize + 3];
-                UINT16 color = pack_565(r, g, b);
+                UINT16 color = PACK_SHORT_565(r, g, b);
                 opaque[bx + by * 4] = a >= 127;
                 all_colors[bx + by * 4] = color;
 
@@ -201,10 +191,9 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             palette[2] = rgb565_lerp(c0, c1, 1, 1);
             palette[3] = 0;
         }
-        bc1_color *block = &blocks[block_index];
-
-        block->c0 = c0;
-        block->c1 = c1;
+        bc1_color block = {0};
+        block.c0 = c0;
+        block.c1 = c1;
         UINT32 color_id;
         for (color_id = 0; color_id < 16; ++color_id) {
             UINT8 bc_color_id;
@@ -213,11 +202,12 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             } else {
                 bc_color_id = 3;
             }
-            SET_BITS(block->lut, color_id * 2, 2, bc_color_id);
+            SET_BITS(block.lut, color_id * 2, 2, bc_color_id);
         }
+        WRITE_BC1_BLOCK(dst, block)
     }
     state->errcode = IMAGING_CODEC_END;
-    return block_count * sizeof(bc1_color);
+    return dst - buf;
 }
 
 int
