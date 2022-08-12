@@ -13,7 +13,7 @@ Full text of the CC0 license:
 import struct
 from enum import IntEnum, IntFlag
 from io import BytesIO
-from math import log, ceil
+from math import ceil, log
 from typing import NamedTuple
 
 from . import Image, ImageFile
