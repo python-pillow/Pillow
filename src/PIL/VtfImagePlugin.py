@@ -116,9 +116,9 @@ VTFHeader = NamedTuple(
         ("bumpmap_scale", float),
         ("pixel_format", int),
         ("mipmap_count", int),
-        ("lowres_pixel_format", int),
-        ("lowres_width", int),
-        ("lowres_height", int),
+        ("low_pixel_format", int),
+        ("low_width", int),
+        ("low_height", int),
         # V 7.2+
         ("depth", int),
         # V 7.3+
@@ -142,10 +142,15 @@ LA_FORMATS = (
     VtfPF.UV88,
 )
 
+BLOCK_COMPRESSED = (
+    VtfPF.DXT1,
+    VtfPF.DXT1_ONEBITALPHA,
+    VtfPF.DXT3,
+    VtfPF.DXT5)
 SUPPORTED_FORMATS = RGBA_FORMATS + RGB_FORMATS + LA_FORMATS + L_FORMATS
-HEADER_V70_STRUCT = '<I2HI2H4x3f4xfIbI2b'
-HEADER_V72_STRUCT = '<I2HI2H4x3f4xfIbI2bH'
-HEADER_V73_STRUCT = '<I2HI2H4x3f4xfIbI2bH3xI8x'
+HEADER_V70 = '<I2HI2H4x3f4xfIbI2b'
+HEADER_V72 = '<I2HI2H4x3f4xfIbI2bH'
+HEADER_V73 = '<I2HI2H4x3f4xfIbI2bH3xI8x'
 
 
 # fmt: off
@@ -193,21 +198,24 @@ class VtfImageFile(ImageFile.ImageFile):
         self.fp.seek(4)
         version = struct.unpack("<2I", self.fp.read(8))
         if version <= (7, 2):
-            header = VTFHeader(*struct.unpack(HEADER_V70_STRUCT, self.fp.read(struct.calcsize(HEADER_V70_STRUCT))), 0,
-                               0, 0, 0, 0)
+            header = VTFHeader(
+                *struct.unpack(HEADER_V70, self.fp.read(struct.calcsize(HEADER_V70))),
+                0, 0, 0, 0, 0)
             self.fp.seek(header.header_size)
         elif (7, 2) <= version < (7, 3):
-            header = VTFHeader(*struct.unpack(HEADER_V72_STRUCT, self.fp.read(struct.calcsize(HEADER_V72_STRUCT))), 0,
-                               0, 0, 0)
+            header = VTFHeader(
+                *struct.unpack(HEADER_V72, self.fp.read(struct.calcsize(HEADER_V72))),
+                0, 0, 0, 0)
             self.fp.seek(header.header_size)
         elif (7, 3) <= version < (7, 5):
-            header = VTFHeader(*struct.unpack(HEADER_V73_STRUCT, self.fp.read(struct.calcsize(HEADER_V73_STRUCT))))
+            header = VTFHeader(
+                *struct.unpack(HEADER_V73, self.fp.read(struct.calcsize(HEADER_V73))))
             self.fp.seek(header.header_size)
         else:
             raise VTFException(f"Unsupported VTF version: {version}")
-        flags = CompiledVtfFlags(header.flags)
+        # flags = CompiledVtfFlags(header.flags)
         pixel_format = VtfPF(header.pixel_format)
-        lowres_format = VtfPF(header.lowres_pixel_format)
+        low_format = VtfPF(header.low_pixel_format)
 
         if pixel_format in RGB_FORMATS:
             self.mode = "RGB"
@@ -220,18 +228,11 @@ class VtfImageFile(ImageFile.ImageFile):
         else:
             raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
 
-        # if flags & CompiledVtfFlags.EIGHTBITALPHA or flags & CompiledVtfFlags.ONEBITALPHA:
-        #     if 'A' not in self.mode:
-        #         raise SyntaxError('Expected an "RGBA" mode when EIGHTBITALPHA or ONEBITALPHA flags are set ')
-        # else:
-        #     if 'A' in self.mode:
-        #         raise SyntaxError('Expected an "RGB" mode when EIGHTBITALPHA or ONEBITALPHA flags are not set ')
-
         self._size = (header.width, header.height)
 
         data_start = self.fp.tell()
-        data_start += _get_texture_size(lowres_format, header.lowres_width, header.lowres_height)
-        min_res = (4 if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5) else 1)
+        data_start += _get_texture_size(low_format, header.low_width, header.low_height)
+        min_res = (4 if pixel_format in BLOCK_COMPRESSED else 1)
         for mip_id in range(header.mipmap_count - 1, 0, -1):
             mip_width = max(header.width >> mip_id, min_res)
             mip_height = max(header.height >> mip_id, min_res)
@@ -285,25 +286,28 @@ def _save(im, fp, filename):
     thumb = thumb.resize((closest_power(thumb.width), closest_power(thumb.height)))
     ImageFile._save(thumb, thumb_buffer, [("bcn", (0, 0) + thumb.size, 0, (1, 'DXT1'))])
 
-    header = VTFHeader(0, width, height, flags, 1, 0, 1.0, 1.0, 1.0, 1.0, pixel_format, mipmap_count,
-                       VtfPF.DXT1, thumb.width, thumb.height, 1, 2)
+    header = VTFHeader(0, width, height, flags,
+                       1, 0, 1.0, 1.0, 1.0,
+                       1.0, pixel_format, mipmap_count, VtfPF.DXT1,
+                       thumb.width, thumb.height,
+                       1, 2)
 
     fp.write(
         b"VTF\x00"
         + struct.pack('<2I', *version)
     )
     if version < (7, 2):
-        size = struct.calcsize(HEADER_V70_STRUCT) + 12
+        size = struct.calcsize(HEADER_V70) + 12
         header = header._replace(header_size=size + (16 - size % 16))
-        fp.write(struct.pack(HEADER_V70_STRUCT, *header[:15]))
+        fp.write(struct.pack(HEADER_V70, *header[:15]))
     elif version == (7, 2):
-        size = struct.calcsize(HEADER_V72_STRUCT) + 12
+        size = struct.calcsize(HEADER_V72) + 12
         header = header._replace(header_size=size + (16 - size % 16))
-        fp.write(struct.pack(HEADER_V72_STRUCT, *header[:16]))
+        fp.write(struct.pack(HEADER_V72, *header[:16]))
     elif version > (7, 2):
-        size = struct.calcsize(HEADER_V73_STRUCT) + 12
+        size = struct.calcsize(HEADER_V73) + 12
         header = header._replace(header_size=size + (16 - size % 16))
-        fp.write(struct.pack(HEADER_V73_STRUCT, *header))
+        fp.write(struct.pack(HEADER_V73, *header))
     else:
         raise VTFException(f'Unsupported version {version}')
 
@@ -314,16 +318,19 @@ def _save(im, fp, filename):
         fp.write(struct.pack('<I', header.header_size + len(thumb_buffer.getbuffer())))
     else:
         fp.write(b'\x00' * (16 - fp.tell() % 16))
-
     fp.write(thumb_buffer.getbuffer())
-    assert fp.tell() == header.header_size + len(thumb_buffer.getbuffer())
 
     for mip_id in range(mipmap_count - 1, 0, -1):
         mip_width = max(4, width >> mip_id)
         mip_height = max(4, height >> mip_id)
         mip = im.resize((mip_width, mip_height))
-        ImageFile._save(mip, fp, [("bcn", (0, 0) + mip.size, (fp.tell()), (1, 'DXT1'))], mip_width * mip_height // 2)
-    ImageFile._save(im, fp, [("bcn", (0, 0) + im.size, (fp.tell()), (1, 'DXT1'))], im.width * im.height // 2)
+        buffer_size = mip_width * mip_height // 2
+        extents = (0, 0) + mip.size
+        ImageFile._save(mip, fp,
+                        [("bcn", extents, fp.tell(), (1, 'DXT1'))], buffer_size)
+    buffer_size = im.width * im.height // 2
+    ImageFile._save(im, fp,
+                    [("bcn", (0, 0) + im.size, fp.tell(), (1, 'DXT1'))], buffer_size)
 
 
 def _accept(prefix):
