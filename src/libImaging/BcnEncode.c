@@ -163,7 +163,7 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 opaque[bx + by * 4] = a >= 127;
                 all_colors[bx + by * 4] = color;
 
-                BOOL new_color = 1;
+                int new_color = 1;
                 for (UINT16 color_id = 0; color_id < unique_count; color_id++) {
                     if (unique_colors[color_id] == color) {
                         color_frequency[color_id]++;
