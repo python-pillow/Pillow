@@ -27,6 +27,7 @@
 
 #include "libImaging/Imaging.h"
 #include "libImaging/Gif.h"
+#include "libImaging/Bcn.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h> /* write */
@@ -389,16 +390,15 @@ PyImaging_BcnEncoderNew(PyObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "si|s", &mode, &n, &pixel_format)) {
         return NULL;
     }
-    printf("Mode: %s, n: %i, pixel_format: %s", mode, n, pixel_format);
 
-    encoder = PyImaging_EncoderNew(0);
+    encoder = PyImaging_EncoderNew(sizeof(char *));
     if (encoder == NULL) {
         return NULL;
     }
 
     encoder->encode = ImagingBcnEncode;
-    encoder->state.ystep = 4;
-    encoder->cleanup = NULL;
+    encoder->state.state = n;
+    ((BCNSTATE *)encoder->state.context)->pixel_format = pixel_format;
 
     return (PyObject *)encoder;
 }

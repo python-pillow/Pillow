@@ -16,8 +16,6 @@
 #include "Bcn.h"
 #include "math.h"
 
-#define PACK_SHORT_565(r, g, b) \
-    ((((r) << 8) & 0xF800) | (((g) << 3) & 0x7E0) | ((b) >> 3))
 #define BIT_MASK(bit_count) ((1 << (bit_count)) - 1)
 #define SET_BITS(target, bit_offset, bit_count, value) \
     target |= (((value)&BIT_MASK(bit_count)) << (bit_offset))
@@ -28,40 +26,44 @@
         B = TMP;         \
     } while (0)
 
+typedef union {
+    struct {
+        UINT16 r : 5;
+        UINT16 g : 6;
+        UINT16 b : 5;
+    } color;
+    UINT16 value;
+} rgb565;
+
+static UINT16
+pack_565(UINT8 r, UINT8 g, UINT8 b) {
+    rgb565 color;
+    color.color.r = r / (255 / 31);
+    color.color.g = g / (255 / 63);
+    color.color.b = b / (255 / 31);
+    return color.value;
+}
+
 static UINT16
 rgb565_diff(UINT16 a, UINT16 b) {
-    UINT8 r0, g0, b0, r1, g1, b1;
-    r0 = a & 31;
-    a >>= 5;
-    g0 = a & 63;
-    a >>= 6;
-    b0 = a & 31;
-    r1 = b & 31;
-    b >>= 5;
-    g1 = a & 63;
-    b >>= 6;
-    b1 = b & 31;
-
-    return abs(r0 - r1) + abs(g0 - g1) + abs(b0 - b1);
+    rgb565 c0;
+    c0.value = a;
+    rgb565 c1;
+    c1.value = b;
+    return ((UINT16)abs(c0.color.r - c1.color.r)) + abs(c0.color.g - c1.color.g) +
+           abs(c0.color.b - c1.color.b);
 }
 
 static inline UINT16
 rgb565_lerp(UINT16 a, UINT16 b, UINT8 a_fac, UINT8 b_fac) {
-    UINT8 r0, g0, b0, r1, g1, b1;
-    r0 = a & 31;
-    a >>= 5;
-    g0 = a & 63;
-    a >>= 6;
-    b0 = a & 31;
-    r1 = b & 31;
-    b >>= 5;
-    g1 = b & 63;
-    b >>= 6;
-    b1 = b & 31;
-    return PACK_SHORT_565(
-        (r0 * a_fac + r1 * b_fac) / (a_fac + b_fac),
-        (g0 * a_fac + g1 * b_fac) / (a_fac + b_fac),
-        (b0 * a_fac + b1 * b_fac) / (a_fac + b_fac));
+    rgb565 c0;
+    c0.value = a;
+    rgb565 c1;
+    c1.value = b;
+    return pack_565(
+        (c0.color.r * a_fac + c1.color.r * b_fac) / (a_fac + b_fac),
+        (c0.color.g * a_fac + c1.color.g * b_fac) / (a_fac + b_fac),
+        (c0.color.b * a_fac + c1.color.b * b_fac) / (a_fac + b_fac));
 }
 
 typedef struct {
@@ -89,24 +91,8 @@ pick_2_major_colors(
     UINT16 color_count,
     UINT16 *color0,
     UINT16 *color1) {
-    Color colors[16] = {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    };
+    Color colors[16];
+    memset(colors, 0, sizeof(colors));
     for (int i = 0; i < color_count; ++i) {
         colors[i].value = unique_colors[i];
         colors[i].frequency = color_freq[i];
@@ -121,8 +107,8 @@ pick_2_major_colors(
 }
 
 static UINT8
-get_closest_color_index(const UINT16 colors[4], UINT16 color) {
-    UINT16 color_error = 65535;
+get_closest_color_index(const UINT16 *colors, UINT16 color) {
+    UINT16 color_error = 0xFFF8;
     UINT16 lowest_id = 0;
 
     for (int color_id = 0; color_id < 4; color_id++) {
@@ -139,26 +125,44 @@ get_closest_color_index(const UINT16 colors[4], UINT16 color) {
 }
 
 int
-ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
-    UINT8 *output = buf;
-    BOOL has_alpha = 1;
+encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+    bc1_color *blocks = (bc1_color *)buf;
+    UINT8 no_alpha = 0;
     if (strchr(im->mode, 'A') == NULL)
-        has_alpha = 0;
-    UINT32 row_block_count = im->xsize / 4;
+        no_alpha = 1;
+    UINT32 block_count = (im->xsize * im->ysize) / 16;
+    if (block_count * sizeof(bc1_color) > bytes) {
+        state->errcode = IMAGING_CODEC_MEMORY;
+        return 0;
+    }
 
-    UINT16 unique_count = 0;
-    UINT16 all_colors[16] = {0};
-    UINT16 unique_colors[16] = {0};
-    UINT8 color_frequency[16] = {0};
+    memset(buf, 0, block_count * sizeof(bc1_color));
+    for (int block_index = 0; block_index < block_count; block_index++) {
+        state->x = (block_index % (im->xsize / 4));
+        state->y = (block_index / (im->xsize / 4));
+        UINT16 unique_count = 0;
 
-    for (int block_x = 0; block_x < row_block_count; ++block_x) {
+        UINT16 all_colors[16];
+        UINT16 unique_colors[16];
+        UINT8 color_frequency[16];
+        UINT8 opaque[16];
+        memset(all_colors, 0, sizeof(all_colors));
+        memset(unique_colors, 0, sizeof(unique_colors));
+        memset(color_frequency, 0, sizeof(color_frequency));
+        memset(opaque, 0, sizeof(opaque));
+
         for (int by = 0; by < 4; ++by) {
-            for (int bx = 0; bx < 16; bx += 4) {
-                UINT8 r = (im->image[state->y + by][bx]);
-                UINT8 g = (im->image[state->y + by][bx + 1]);
-                UINT8 b = (im->image[state->y + by][bx] + 2);
-                UINT16 color = PACK_SHORT_565(r, g, b);
+            for (int bx = 0; bx < 4; ++bx) {
+                int x = (state->x * 4) + bx;
+                int y = (state->y * 4) + by;
+                UINT8 r = im->image[y][x * im->pixelsize + 2];
+                UINT8 g = im->image[y][x * im->pixelsize + 1];
+                UINT8 b = im->image[y][x * im->pixelsize + 0];
+                UINT8 a = im->image[y][x * im->pixelsize + 3];
+                UINT16 color = pack_565(r, g, b);
+                opaque[bx + by * 4] = a >= 127;
                 all_colors[bx + by * 4] = color;
+
                 BOOL new_color = 1;
                 for (UINT16 color_id = 0; color_id < unique_count; color_id++) {
                     if (unique_colors[color_id] == color) {
@@ -175,32 +179,45 @@ ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
         }
 
-        UINT16 color0 = 0, color1 = 0;
-        pick_2_major_colors(
-            unique_colors, color_frequency, unique_count, &color0, &color1);
-        if (color0 < color1)
-            SWAP(UINT16, color0, color1);
+        UINT16 c0 = 0, c1 = 0;
+        pick_2_major_colors(unique_colors, color_frequency, unique_count, &c0, &c1);
+        if (c0 < c1 && no_alpha)
+            SWAP(UINT16, c0, c1);
 
-        UINT16 output_colors[4] = {color0, color1, 0, 0};
-        if (has_alpha) {
-            output_colors[2] = rgb565_lerp(color0, color1, 1, 1);
-            output_colors[3] = 0;
+        UINT16 palette[4] = {c0, c1, 0, 0};
+        if (no_alpha) {
+            palette[2] = rgb565_lerp(c0, c1, 2, 1);
+            palette[3] = rgb565_lerp(c0, c1, 1, 2);
         } else {
-            output_colors[2] = rgb565_lerp(color0, color1, 2, 1);
-            output_colors[3] = rgb565_lerp(color0, color1, 1, 2);
+            palette[2] = rgb565_lerp(c0, c1, 1, 1);
+            palette[3] = 0;
         }
-        bc1_color *block = &((bc1_color *)output)[block_x];
+        bc1_color *block = &blocks[block_index];
 
-        block->c0 = color0;
-        block->c1 = color1;
+        block->c0 = c0;
+        block->c1 = c1;
         for (UINT32 color_id = 0; color_id < 16; ++color_id) {
-            UINT8 bc_color_id =
-                get_closest_color_index(output_colors, all_colors[color_id]);
+            UINT8 bc_color_id;
+            if (opaque[color_id] || no_alpha)
+                bc_color_id = get_closest_color_index(palette, all_colors[color_id]);
+            else
+                bc_color_id = 3;
             SET_BITS(block->lut, color_id * 2, 2, bc_color_id);
         }
-
-        output += sizeof(bc1_color);
     }
+    state->errcode = IMAGING_CODEC_END;
+    return block_count * sizeof(bc1_color);
+}
 
-    return output - buf;
+int
+ImagingBcnEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+    switch (state->state) {
+        case 1: {
+            return encode_bc1(im, state, buf, bytes);
+        }
+        default: {
+            state->errcode = IMAGING_CODEC_CONFIG;
+            return 0;
+        }
+    }
 }
