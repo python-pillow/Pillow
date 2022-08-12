@@ -28,5 +28,3 @@ typedef struct {
     INT8 a0, a1;
     UINT8 lut[6];
 } bc5s_alpha;
-
-rgba decode_565(UINT16 x);

@@ -28,7 +28,7 @@ bc1_color_load(bc1_color *dst, const UINT8 *src) {
     dst->lut = LOAD32(src + 4);
 }
 
-rgba
+static rgba
 decode_565(UINT16 x) {
     rgba c;
     int r, g, b;
