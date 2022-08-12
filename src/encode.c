@@ -376,7 +376,7 @@ get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode)
 }
 
 /* -------------------------------------------------------------------- */
-/* BNC                                                                  */
+/* BCN                                                                  */
 /* -------------------------------------------------------------------- */
 
 PyObject *

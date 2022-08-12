@@ -77,9 +77,11 @@ selection_sort(Color arr[], UINT32 n) {
 
     for (i = 0; i < n - 1; i++) {
         min_idx = i;
-        for (j = i + 1; j < n; j++)
-            if (arr[j].frequency < arr[min_idx].frequency)
+        for (j = i + 1; j < n; j++) {
+            if (arr[j].frequency < arr[min_idx].frequency) {
                 min_idx = j;
+            }
+        }
         SWAP(Color, arr[min_idx], arr[i]);
     }
 }
@@ -103,8 +105,9 @@ pick_2_major_colors(
 
     if (color_count == 1) {
         *color1 = colors[color_count - 1].value;
-    } else
+    } else {
         *color1 = colors[color_count - 2].value;
+    }
 }
 
 static UINT8
@@ -131,8 +134,9 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     bc1_color *blocks = (bc1_color *)buf;
     UINT8 no_alpha = 0;
     INT32 block_index;
-    if (strchr(im->mode, 'A') == NULL)
+    if (strchr(im->mode, 'A') == NULL) {
         no_alpha = 1;
+    }
     UINT32 block_count = (im->xsize * im->ysize) / 16;
     if (block_count * sizeof(bc1_color) > bytes) {
         state->errcode = IMAGING_CODEC_MEMORY;
@@ -185,8 +189,9 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
         UINT16 c0 = 0, c1 = 0;
         pick_2_major_colors(unique_colors, color_frequency, unique_count, &c0, &c1);
-        if (c0 < c1 && no_alpha)
+        if (c0 < c1 && no_alpha) {
             SWAP(UINT16, c0, c1);
+        }
 
         UINT16 palette[4] = {c0, c1, 0, 0};
         if (no_alpha) {
@@ -203,10 +208,11 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         UINT32 color_id;
         for (color_id = 0; color_id < 16; ++color_id) {
             UINT8 bc_color_id;
-            if (opaque[color_id] || no_alpha)
+            if (opaque[color_id] || no_alpha) {
                 bc_color_id = get_closest_color_index(palette, all_colors[color_id]);
-            else
+            } else {
                 bc_color_id = 3;
+            }
             SET_BITS(block->lut, color_id * 2, 2, bc_color_id);
         }
     }

@@ -163,9 +163,9 @@ def _get_texture_size(pixel_format: VtfPF, width, height):
         return width * height
     elif pixel_format in LA_FORMATS:
         return width * height * 2
-    elif pixel_format in (VtfPF.RGB888,):
+    elif pixel_format == VtfPF.RGB888:
         return width * height * 3
-    elif pixel_format in (VtfPF.RGBA8888,):
+    elif pixel_format == VtfPF.RGBA8888:
         return width * height * 4
     raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
 
@@ -205,7 +205,7 @@ class VtfImageFile(ImageFile.ImageFile):
                 0,
             )
             self.fp.seek(header.header_size)
-        elif (7, 2) <= version < (7, 3):
+        elif version < (7, 3):
             header = VTFHeader(
                 *struct.unpack(HEADER_V72, self.fp.read(struct.calcsize(HEADER_V72))),
                 0,
@@ -214,7 +214,7 @@ class VtfImageFile(ImageFile.ImageFile):
                 0,
             )
             self.fp.seek(header.header_size)
-        elif (7, 3) <= version < (7, 5):
+        elif version < (7, 5):
             header = VTFHeader(
                 *struct.unpack(HEADER_V73, self.fp.read(struct.calcsize(HEADER_V73)))
             )
@@ -270,9 +270,9 @@ def _save(im, fp, filename):
     im: Image.Image
     if im.mode not in ("RGB", "RGBA"):
         raise OSError(f"cannot write mode {im.mode} as VTF")
-    arguments = im.encoderinfo
-    pixel_format = VtfPF(arguments.get("pixel_format", VtfPF.RGBA8888))
-    version = arguments.get("version", (7, 4))
+    encoderinfo = im.encoderinfo
+    pixel_format = VtfPF(encoderinfo.get("pixel_format", VtfPF.RGBA8888))
+    version = encoderinfo.get("version", (7, 4))
     flags = CompiledVtfFlags(0)
     if "A" in im.mode:
         if pixel_format == VtfPF.DXT1_ONEBITALPHA:
