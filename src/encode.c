@@ -384,7 +384,6 @@ PyImaging_BcnEncoderNew(PyObject *self, PyObject *args) {
     ImagingEncoderObject *encoder;
 
     char *mode;
-    char *actual;
     int n = 0;
     char *pixel_format = "";
     if (!PyArg_ParseTuple(args, "si|s", &mode, &n, &pixel_format)) {

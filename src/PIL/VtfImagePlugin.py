@@ -125,13 +125,11 @@ VTFHeader = NamedTuple(
         ("resource_count", int),
     ],
 )
-RGB_FORMATS = (
-    VtfPF.RGB888,
-    VtfPF.BGR888,
-    VtfPF.UV88,
-)
+RGB_FORMATS = (VtfPF.DXT1,
+               VtfPF.RGB888,
+               VtfPF.BGR888,
+               VtfPF.UV88,)
 RGBA_FORMATS = (
-    VtfPF.DXT1,
     VtfPF.DXT1_ONEBITALPHA,
     VtfPF.DXT3,
     VtfPF.DXT5,
@@ -230,8 +228,13 @@ def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
         im = im.convert("LA")
     elif pixel_format == VtfPF.UV88:
         encoder = "raw"
-        r, g, *_ = im.split()
-        im = Image.merge("LA", (r, g))
+        if im.mode == "RGB" or im.mode == "RGBA":
+            r, g, *_ = im.split()
+            im = Image.merge('LA', (r, g))
+        elif im.mode == "LA":
+            pass
+        else:
+            raise VTFException(f'Cannot encode {im.mode} as {pixel_format}')
         encoder_args = ("LA", 0, 0)
     else:
         raise VTFException(f"Unsupported pixel format: {pixel_format!r}")
@@ -283,8 +286,9 @@ class VtfImageFile(ImageFile.ImageFile):
         # flags = CompiledVtfFlags(header.flags)
         pixel_format = VtfPF(header.pixel_format)
         low_format = VtfPF(header.low_pixel_format)
-
-        if pixel_format in RGB_FORMATS:
+        if pixel_format == VtfPF.DXT1:  # Special case for DXT1
+            self.mode = "RGBA"
+        elif pixel_format in RGB_FORMATS:
             self.mode = "RGB"
         elif pixel_format in RGBA_FORMATS:
             self.mode = "RGBA"
@@ -316,6 +320,12 @@ class VtfImageFile(ImageFile.ImageFile):
             tile = ("raw", (0, 0) + self.size, data_start, ("RGBA", 0, 1))
         elif pixel_format in (VtfPF.RGB888,):
             tile = ("raw", (0, 0) + self.size, data_start, ("RGB", 0, 1))
+        elif pixel_format in (VtfPF.BGR888,):
+            tile = ("raw", (0, 0) + self.size, data_start, ("BGR", 0, 1))
+        elif pixel_format in (VtfPF.BGRA8888,):
+            tile = ("raw", (0, 0) + self.size, data_start, ("BGRA", 0, 1))
+        elif pixel_format in (VtfPF.UV88,):
+            tile = ("raw", (0, 0) + self.size, data_start, ("LA", 0, 1))
         elif pixel_format in L_FORMATS:
             tile = ("raw", (0, 0) + self.size, data_start, ("L", 0, 1))
         elif pixel_format in LA_FORMATS:
