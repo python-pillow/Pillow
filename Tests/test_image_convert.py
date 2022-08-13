@@ -236,6 +236,12 @@ def test_p2pa_alpha():
             assert im_a.getpixel((x, y)) == alpha
 
 
+def test_p2pa_palette():
+    with Image.open("Tests/images/tiny.png") as im:
+        im_pa = im.convert("PA")
+    assert im_pa.getpalette() == im.getpalette()
+
+
 def test_matrix_illegal_conversion():
     # Arrange
     im = hopper("CMYK")
