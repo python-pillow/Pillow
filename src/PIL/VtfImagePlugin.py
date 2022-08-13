@@ -178,10 +178,9 @@ def _get_mipmap_count(width: int, height: int):
     while True:
         mip_width = width >> mip_count
         mip_height = height >> mip_count
-        if mip_width < 1 or mip_height < 1:
-            break
+        if mip_width == 0 and mip_height == 0:
+            return mip_count
         mip_count += 1
-    return mip_count
 
 
 def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
