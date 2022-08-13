@@ -123,6 +123,18 @@ def test_save(tmp_path):
         assert test_im.size == (100, 100)
 
 
+def test_small_palette(tmp_path):
+    im = Image.new("P", (1, 1))
+    colors = [0, 0, 0]
+    im.putpalette(colors)
+
+    out = str(tmp_path / "temp.tga")
+    im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.getpalette() == colors
+
+
 def test_save_wrong_mode(tmp_path):
     im = hopper("PA")
     out = str(tmp_path / "temp.tga")
