@@ -12,7 +12,7 @@ Full text of the CC0 license:
 
 import struct
 from enum import IntEnum, IntFlag
-from io import BytesIO, BufferedIOBase
+from io import BufferedIOBase, BytesIO
 from math import ceil, log
 from typing import NamedTuple
 
@@ -125,7 +125,11 @@ VTFHeader = NamedTuple(
         ("resource_count", int),
     ],
 )
-RGB_FORMATS = (VtfPF.RGB888, VtfPF.BGR888, VtfPF.UV88,)
+RGB_FORMATS = (
+    VtfPF.RGB888,
+    VtfPF.BGR888,
+    VtfPF.UV88,
+)
 RGBA_FORMATS = (
     VtfPF.DXT1,
     VtfPF.DXT1_ONEBITALPHA,
@@ -137,9 +141,7 @@ L_FORMATS = (
     VtfPF.A8,
     VtfPF.I8,
 )
-LA_FORMATS = (
-    VtfPF.IA88,
-)
+LA_FORMATS = (VtfPF.IA88,)
 
 BLOCK_COMPRESSED = (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5)
 SUPPORTED_FORMATS = RGBA_FORMATS + RGB_FORMATS + LA_FORMATS + L_FORMATS
@@ -152,12 +154,12 @@ def _get_texture_size(pixel_format: VtfPF, width, height):
     if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
         return width * height // 2
     elif (
-            pixel_format
-            in (
-                    VtfPF.DXT3,
-                    VtfPF.DXT5,
-            )
-            + L_FORMATS
+        pixel_format
+        in (
+            VtfPF.DXT3,
+            VtfPF.DXT5,
+        )
+        + L_FORMATS
     ):
         return width * height
     elif pixel_format == VtfPF.UV88:
@@ -186,50 +188,50 @@ def _get_mipmap_count(width: int, height: int):
 def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
     extents = (0, 0) + im.size
     if pixel_format == VtfPF.DXT1:
-        encoder = 'bcn'
+        encoder = "bcn"
         encoder_args = (1, "DXT1")
-        im = im.convert('RGB')
+        im = im.convert("RGB")
     elif pixel_format == VtfPF.DXT1_ONEBITALPHA:
-        encoder = 'bcn'
+        encoder = "bcn"
         encoder_args = (1, "DXT1A")
-        im = im.convert('RGBA')
+        im = im.convert("RGBA")
     elif pixel_format == VtfPF.DXT3:
-        encoder = 'bcn'
+        encoder = "bcn"
         encoder_args = (3, "DXT3")
-        im = im.convert('RGBA')
+        im = im.convert("RGBA")
     elif pixel_format == VtfPF.DXT5:
-        encoder = 'bcn'
+        encoder = "bcn"
         encoder_args = (5, "DXT5")
-        im = im.convert('RGBA')
+        im = im.convert("RGBA")
     elif pixel_format == VtfPF.RGB888:
-        encoder = 'raw'
+        encoder = "raw"
         encoder_args = ("RGB", 0, 0)
-        im = im.convert('RGB')
+        im = im.convert("RGB")
     elif pixel_format == VtfPF.BGR888:
-        encoder = 'raw'
+        encoder = "raw"
         encoder_args = ("BGR", 0, 0)
-        im = im.convert('RGB')
+        im = im.convert("RGB")
     elif pixel_format == VtfPF.RGBA8888:
-        encoder = 'raw'
+        encoder = "raw"
         encoder_args = ("RGBA", 0, 0)
-        im = im.convert('RGBA')
+        im = im.convert("RGBA")
     elif pixel_format == VtfPF.A8:
-        encoder = 'raw'
+        encoder = "raw"
         encoder_args = ("L", 0, 0)
         *_, a = im.split()
-        im = Image.merge('L', (a,))
+        im = Image.merge("L", (a,))
     elif pixel_format == VtfPF.I8:
-        encoder = 'raw'
+        encoder = "raw"
         encoder_args = ("L", 0, 0)
-        im = im.convert('L')
+        im = im.convert("L")
     elif pixel_format == VtfPF.IA88:
-        encoder = 'raw'
+        encoder = "raw"
         encoder_args = ("LA", 0, 0)
-        im = im.convert('LA')
+        im = im.convert("LA")
     elif pixel_format == VtfPF.UV88:
-        encoder = 'raw'
+        encoder = "raw"
         r, g, *_ = im.split()
-        im = Image.merge('LA', (r, g))
+        im = Image.merge("LA", (r, g))
         encoder_args = ("LA", 0, 0)
     else:
         raise VTFException(f"Unsupported pixel format: {pixel_format!r}")
@@ -240,7 +242,7 @@ def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
 
 def _closest_power(x):
     possible_results = round(log(x, 2)), ceil(log(x, 2))
-    return 2 ** min(possible_results, key=lambda z: abs(x - 2 ** z))
+    return 2 ** min(possible_results, key=lambda z: abs(x - 2**z))
 
 
 class VtfImageFile(ImageFile.ImageFile):
@@ -325,12 +327,12 @@ class VtfImageFile(ImageFile.ImageFile):
 
 def _save(im, fp, filename):
     im: Image.Image
-    if im.mode not in ("RGB", "RGBA", 'L', 'LA'):
+    if im.mode not in ("RGB", "RGBA", "L", "LA"):
         raise OSError(f"cannot write mode {im.mode} as VTF")
     encoderinfo = im.encoderinfo
     pixel_format = VtfPF(encoderinfo.get("pixel_format", VtfPF.RGBA8888))
     version = encoderinfo.get("version", (7, 4))
-    generate_mips = encoderinfo.get('generate_mips', True)
+    generate_mips = encoderinfo.get("generate_mips", True)
 
     flags = CompiledVtfFlags(0)
 
@@ -343,7 +345,7 @@ def _save(im, fp, filename):
     elif pixel_format in RGB_FORMATS + L_FORMATS:
         pass
     else:
-        raise VTFException('Unhandled case')
+        raise VTFException("Unhandled case")
 
     im = im.resize((_closest_power(im.width), _closest_power(im.height)))
     width, height = im.size
