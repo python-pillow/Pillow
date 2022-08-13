@@ -194,9 +194,9 @@ def _save(im, fp, filename):
 
     if colormaptype:
         palette = im.im.getpalette("RGB", "BGR")
-        colormapfirst, colormaplength, colormapentry = 0, len(palette) // 3, 24
+        colormaplength, colormapentry = len(palette) // 3, 24
     else:
-        colormapfirst, colormaplength, colormapentry = 0, 0, 0
+        colormaplength, colormapentry = 0, 0
 
     if im.mode in ("LA", "RGBA"):
         flags = 8
@@ -211,7 +211,7 @@ def _save(im, fp, filename):
         o8(id_len)
         + o8(colormaptype)
         + o8(imagetype)
-        + o16(colormapfirst)
+        + o16(0)  # colormapfirst
         + o16(colormaplength)
         + o8(colormapentry)
         + o16(0)
