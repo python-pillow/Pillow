@@ -121,10 +121,10 @@ get_closest_color_index(const UINT16 *colors, UINT16 color) {
 
 int
 encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
-    UINT8* dst = buf;
+    UINT8 *dst = buf;
     UINT8 no_alpha = 0;
     INT32 block_index;
-    if (strchr(im->mode, 'A') == NULL) {
+    if (strcmp(((BCNSTATE *)state->context)->pixel_format, "DXT1A") != 0) {
         no_alpha = 1;
     }
     INT32 block_count = (im->xsize * im->ysize) / 16;
