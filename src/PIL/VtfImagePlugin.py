@@ -125,10 +125,12 @@ VTFHeader = NamedTuple(
         ("resource_count", int),
     ],
 )
-RGB_FORMATS = (VtfPF.DXT1,
-               VtfPF.RGB888,
-               VtfPF.BGR888,
-               VtfPF.UV88,)
+RGB_FORMATS = (
+    VtfPF.DXT1,
+    VtfPF.RGB888,
+    VtfPF.BGR888,
+    VtfPF.UV88,
+)
 RGBA_FORMATS = (
     VtfPF.DXT1_ONEBITALPHA,
     VtfPF.DXT3,
@@ -230,11 +232,11 @@ def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
         encoder = "raw"
         if im.mode == "RGB" or im.mode == "RGBA":
             r, g, *_ = im.split()
-            im = Image.merge('LA', (r, g))
+            im = Image.merge("LA", (r, g))
         elif im.mode == "LA":
             pass
         else:
-            raise VTFException(f'Cannot encode {im.mode} as {pixel_format}')
+            raise VTFException(f"Cannot encode {im.mode} as {pixel_format}")
         encoder_args = ("LA", 0, 0)
     else:
         raise VTFException(f"Unsupported pixel format: {pixel_format!r}")
