@@ -108,9 +108,9 @@ header = [
 deps = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/2.1.3/libjpeg-turbo-2.1.3.tar.gz/download",
-        "filename": "libjpeg-turbo-2.1.3.tar.gz",
-        "dir": "libjpeg-turbo-2.1.3",
+        + "/libjpeg-turbo/files/2.1.4/libjpeg-turbo-2.1.4.tar.gz/download",
+        "filename": "libjpeg-turbo-2.1.4.tar.gz",
+        "dir": "libjpeg-turbo-2.1.4",
         "build": [
             cmd_cmake(
                 [
