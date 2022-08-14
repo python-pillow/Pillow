@@ -137,7 +137,10 @@ def _get_texture_size(pixel_format: VtfPF, width, height):
         return width * height // 2
     elif pixel_format in (VtfPF.DXT3, VtfPF.DXT5):
         return width * height
-    elif pixel_format in (VtfPF.A8, VtfPF.I8,):
+    elif pixel_format in (
+        VtfPF.A8,
+        VtfPF.I8,
+    ):
         return width * height
     elif pixel_format in (VtfPF.UV88, VtfPF.IA88):
         return width * height * 2
@@ -205,7 +208,7 @@ def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
 
 def _closest_power(x):
     possible_results = round(log(x, 2)), ceil(log(x, 2))
-    return 2 ** min(possible_results, key=lambda z: abs(x - 2 ** z))
+    return 2 ** min(possible_results, key=lambda z: abs(x - 2**z))
 
 
 class VtfImageFile(ImageFile.ImageFile):
@@ -246,8 +249,15 @@ class VtfImageFile(ImageFile.ImageFile):
         # flags = CompiledVtfFlags(header.flags)
         pixel_format = VtfPF(header.pixel_format)
         low_format = VtfPF(header.low_pixel_format)
-        if pixel_format in (VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT1, VtfPF.DXT3, VtfPF.DXT5,
-                            VtfPF.RGBA8888, VtfPF.BGRA8888,VtfPF.A8):
+        if pixel_format in (
+            VtfPF.DXT1_ONEBITALPHA,
+            VtfPF.DXT1,
+            VtfPF.DXT3,
+            VtfPF.DXT5,
+            VtfPF.RGBA8888,
+            VtfPF.BGRA8888,
+            VtfPF.A8,
+        ):
             self.mode = "RGBA"
         elif pixel_format in (VtfPF.RGB888, VtfPF.BGR888, VtfPF.UV88):
             self.mode = "RGB"
@@ -309,9 +319,14 @@ def _save(im, fp, filename):
 
     if pixel_format == VtfPF.DXT1_ONEBITALPHA:
         flags |= CompiledVtfFlags.ONEBITALPHA
-    elif pixel_format in (VtfPF.DXT3, VtfPF.DXT5,
-                          VtfPF.RGBA8888, VtfPF.BGRA8888,
-                          VtfPF.A8, VtfPF.IA88):
+    elif pixel_format in (
+        VtfPF.DXT3,
+        VtfPF.DXT5,
+        VtfPF.RGBA8888,
+        VtfPF.BGRA8888,
+        VtfPF.A8,
+        VtfPF.IA88,
+    ):
         flags |= CompiledVtfFlags.EIGHTBITALPHA
     else:
         pass

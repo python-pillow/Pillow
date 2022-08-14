@@ -63,7 +63,7 @@ def test_get_mipmap_count(size: Tuple[int, int], expected_count: int):
     ],
 )
 def test_get_texture_size(
-        pixel_format: VtfPF, size: Tuple[int, int], expected_size: int
+    pixel_format: VtfPF, size: Tuple[int, int], expected_size: int
 ):
     assert _get_texture_size(pixel_format, *size) == expected_size
 
@@ -82,9 +82,7 @@ def test_get_texture_size(
         ("Tests/images/vtf_rgba8888.png", "Tests/images/vtf_rgba8888.vtf", "RGBA", 0),
     ],
 )
-def test_vtf_read(
-        etalon_path: str, file_path: str, expected_mode: str, epsilon: float
-):
+def test_vtf_read(etalon_path: str, file_path: str, expected_mode: str, epsilon: float):
     e = Image.open(etalon_path)
     f = Image.open(file_path)
     assert f.mode == expected_mode
@@ -109,8 +107,9 @@ def test_vtf_read(
         (VtfPF.RGBA8888, "Tests/images/vtf_rgba8888.png", "RGBA", 0),
     ],
 )
-def test_vtf_save(pixel_format: VtfPF, file_path: str,
-                  expected_mode: str, epsilon: float, tmp_path):
+def test_vtf_save(
+    pixel_format: VtfPF, file_path: str, expected_mode: str, epsilon: float, tmp_path
+):
     f: Image.Image = Image.open(file_path)
     out = (tmp_path / "tmp.vtf").as_posix()
     f.save(out, pixel_format=pixel_format)
