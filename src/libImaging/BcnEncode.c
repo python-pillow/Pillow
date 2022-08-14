@@ -111,7 +111,7 @@ get_closest_color_index(const UINT16 *colors, UINT16 color) {
         if (error == 0) {
             return color_id;
         }
-        if (error < color_error) {
+        if (error <= color_error) {
             color_error = error;
             lowest_id = color_id;
         }
@@ -122,10 +122,10 @@ get_closest_color_index(const UINT16 *colors, UINT16 color) {
 int
 encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
     UINT8 *dst = buf;
-    UINT8 no_alpha = 0;
+    UINT8 alpha = 0;
     INT32 block_index;
-    if (strcmp(((BCNSTATE *)state->context)->pixel_format, "DXT1A") != 0) {
-        no_alpha = 1;
+    if (strcmp(((BCNSTATE *)state->context)->pixel_format, "DXT1A") == 0) {
+        alpha = 1;
     }
     INT32 block_count = (im->xsize * im->ysize) / 16;
     if (block_count * sizeof(bc1_color) > bytes) {
@@ -143,6 +143,7 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         UINT16 unique_colors[16];
         UINT8 color_frequency[16];
         UINT8 opaque[16];
+        UINT8 local_alpha = 0;
         memset(all_colors, 0, sizeof(all_colors));
         memset(unique_colors, 0, sizeof(unique_colors));
         memset(color_frequency, 0, sizeof(color_frequency));
@@ -157,7 +158,8 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 UINT8 b = im->image[y][x * im->pixelsize + 0];
                 UINT8 a = im->image[y][x * im->pixelsize + 3];
                 UINT16 color = PACK_SHORT_565(r, g, b);
-                opaque[bx + by * 4] = a >= 127;
+                opaque[bx + by * 4] = a >= 128;
+                local_alpha |= a <= 128;
                 all_colors[bx + by * 4] = color;
 
                 UINT8 new_color = 1;
@@ -179,17 +181,23 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
         UINT16 c0 = 0, c1 = 0;
         pick_2_major_colors(unique_colors, color_frequency, unique_count, &c0, &c1);
-        if (c0 < c1 && no_alpha) {
-            SWAP(UINT16, c0, c1);
+        if (alpha && local_alpha) {
+            if (c0 > c1) {
+                SWAP(UINT16, c0, c1);
+            }
+        } else {
+            if (c0 < c1) {
+                SWAP(UINT16, c0, c1);
+            }
         }
 
         UINT16 palette[4] = {c0, c1, 0, 0};
-        if (no_alpha) {
-            palette[2] = rgb565_lerp(c0, c1, 2, 1);
-            palette[3] = rgb565_lerp(c0, c1, 1, 2);
-        } else {
+        if (alpha && local_alpha) {
             palette[2] = rgb565_lerp(c0, c1, 1, 1);
             palette[3] = 0;
+        } else {
+            palette[2] = rgb565_lerp(c0, c1, 2, 1);
+            palette[3] = rgb565_lerp(c0, c1, 1, 2);
         }
         bc1_color block = {0};
         block.c0 = c0;
@@ -197,10 +205,10 @@ encode_bc1(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         UINT32 color_id;
         for (color_id = 0; color_id < 16; ++color_id) {
             UINT8 bc_color_id;
-            if (opaque[color_id] || no_alpha) {
-                bc_color_id = get_closest_color_index(palette, all_colors[color_id]);
-            } else {
+            if ((alpha && local_alpha) && !opaque[color_id]) {
                 bc_color_id = 3;
+            } else {
+                bc_color_id = get_closest_color_index(palette, all_colors[color_id]);
             }
             SET_BITS(block.lut, color_id * 2, 2, bc_color_id);
         }

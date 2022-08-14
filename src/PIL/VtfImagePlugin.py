@@ -76,29 +76,29 @@ class VtfPF(IntEnum):
     ABGR8888 = 1
     RGB888 = 2
     BGR888 = 3
-    RGB565 = 4
+    # RGB565 = 4
     I8 = 5
     IA88 = 6
-    P8 = 7
+    # P8 = 7
     A8 = 8
-    RGB888_BLUESCREEN = 9
-    BGR888_BLUESCREEN = 10
+    # RGB888_BLUESCREEN = 9
+    # BGR888_BLUESCREEN = 10
     ARGB8888 = 11
     BGRA8888 = 12
     DXT1 = 13
     DXT3 = 14
     DXT5 = 15
     BGRX8888 = 16
-    BGR565 = 17
-    BGRX5551 = 18
-    BGRA4444 = 19
+    # BGR565 = 17
+    # BGRX5551 = 18
+    # BGRA4444 = 19
     DXT1_ONEBITALPHA = 20
-    BGRA5551 = 21
+    # BGRA5551 = 21
     UV88 = 22
-    UVWQ8888 = 23
-    RGBA16161616F = 24
-    RGBA16161616 = 25
-    UVLX8888 = 26
+    # UVWQ8888 = 23
+    # RGBA16161616F = 24
+    # RGBA16161616 = 25
+    # UVLX8888 = 26
 
 
 VTFHeader = NamedTuple(
@@ -125,26 +125,8 @@ VTFHeader = NamedTuple(
         ("resource_count", int),
     ],
 )
-RGB_FORMATS = (
-    VtfPF.DXT1,
-    VtfPF.RGB888,
-    VtfPF.BGR888,
-    VtfPF.UV88,
-)
-RGBA_FORMATS = (
-    VtfPF.DXT1_ONEBITALPHA,
-    VtfPF.DXT3,
-    VtfPF.DXT5,
-    VtfPF.RGBA8888,
-)
-L_FORMATS = (
-    VtfPF.A8,
-    VtfPF.I8,
-)
-LA_FORMATS = (VtfPF.IA88,)
 
 BLOCK_COMPRESSED = (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5)
-SUPPORTED_FORMATS = RGBA_FORMATS + RGB_FORMATS + LA_FORMATS + L_FORMATS
 HEADER_V70 = "<I2HI2H4x3f4xfIbI2b"
 HEADER_V72 = "<I2HI2H4x3f4xfIbI2bH"
 HEADER_V73 = "<I2HI2H4x3f4xfIbI2bH3xI8x"
@@ -153,22 +135,13 @@ HEADER_V73 = "<I2HI2H4x3f4xfIbI2bH3xI8x"
 def _get_texture_size(pixel_format: VtfPF, width, height):
     if pixel_format in (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA):
         return width * height // 2
-    elif (
-        pixel_format
-        in (
-            VtfPF.DXT3,
-            VtfPF.DXT5,
-        )
-        + L_FORMATS
-    ):
+    elif pixel_format in (VtfPF.DXT3, VtfPF.DXT5):
         return width * height
-    elif pixel_format == VtfPF.UV88:
+    elif pixel_format in (VtfPF.A8, VtfPF.I8,):
+        return width * height
+    elif pixel_format in (VtfPF.UV88, VtfPF.IA88):
         return width * height * 2
-    elif pixel_format in LA_FORMATS:
-        return width * height * 2
-    elif pixel_format == VtfPF.RGB888:
-        return width * height * 3
-    elif pixel_format == VtfPF.BGR888:
+    elif pixel_format in (VtfPF.RGB888, VtfPF.BGR888):
         return width * height * 3
     elif pixel_format == VtfPF.RGBA8888:
         return width * height * 4
@@ -190,36 +163,28 @@ def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
     if pixel_format == VtfPF.DXT1:
         encoder = "bcn"
         encoder_args = (1, "DXT1")
-        im = im.convert("RGB")
+        im = im.convert("RGBA")
     elif pixel_format == VtfPF.DXT1_ONEBITALPHA:
         encoder = "bcn"
         encoder_args = (1, "DXT1A")
-        im = im.convert("RGBA")
     elif pixel_format == VtfPF.DXT3:
         encoder = "bcn"
         encoder_args = (3, "DXT3")
-        im = im.convert("RGBA")
     elif pixel_format == VtfPF.DXT5:
         encoder = "bcn"
         encoder_args = (5, "DXT5")
-        im = im.convert("RGBA")
     elif pixel_format == VtfPF.RGB888:
         encoder = "raw"
         encoder_args = ("RGB", 0, 0)
-        im = im.convert("RGB")
     elif pixel_format == VtfPF.BGR888:
         encoder = "raw"
         encoder_args = ("BGR", 0, 0)
-        im = im.convert("RGB")
     elif pixel_format == VtfPF.RGBA8888:
         encoder = "raw"
         encoder_args = ("RGBA", 0, 0)
-        im = im.convert("RGBA")
     elif pixel_format == VtfPF.A8:
         encoder = "raw"
-        encoder_args = ("L", 0, 0)
-        *_, a = im.split()
-        im = Image.merge("L", (a,))
+        encoder_args = ("A", 0, 0)
     elif pixel_format == VtfPF.I8:
         encoder = "raw"
         encoder_args = ("L", 0, 0)
@@ -240,7 +205,7 @@ def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
 
 def _closest_power(x):
     possible_results = round(log(x, 2)), ceil(log(x, 2))
-    return 2 ** min(possible_results, key=lambda z: abs(x - 2**z))
+    return 2 ** min(possible_results, key=lambda z: abs(x - 2 ** z))
 
 
 class VtfImageFile(ImageFile.ImageFile):
@@ -281,15 +246,14 @@ class VtfImageFile(ImageFile.ImageFile):
         # flags = CompiledVtfFlags(header.flags)
         pixel_format = VtfPF(header.pixel_format)
         low_format = VtfPF(header.low_pixel_format)
-        if pixel_format == VtfPF.DXT1:  # Special case for DXT1
+        if pixel_format in (VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT1, VtfPF.DXT3, VtfPF.DXT5,
+                            VtfPF.RGBA8888, VtfPF.BGRA8888,VtfPF.A8):
             self.mode = "RGBA"
-        elif pixel_format in RGB_FORMATS:
+        elif pixel_format in (VtfPF.RGB888, VtfPF.BGR888, VtfPF.UV88):
             self.mode = "RGB"
-        elif pixel_format in RGBA_FORMATS:
-            self.mode = "RGBA"
-        elif pixel_format in L_FORMATS:
+        elif pixel_format == VtfPF.I8:
             self.mode = "L"
-        elif pixel_format in LA_FORMATS:
+        elif pixel_format == VtfPF.IA88:
             self.mode = "LA"
         else:
             raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
@@ -311,19 +275,21 @@ class VtfImageFile(ImageFile.ImageFile):
             tile = ("bcn", (0, 0) + self.size, data_start, (2, "DXT3"))
         elif pixel_format == VtfPF.DXT5:
             tile = ("bcn", (0, 0) + self.size, data_start, (3, "DXT5"))
-        elif pixel_format in (VtfPF.RGBA8888,):
+        elif pixel_format == VtfPF.RGBA8888:
             tile = ("raw", (0, 0) + self.size, data_start, ("RGBA", 0, 1))
-        elif pixel_format in (VtfPF.RGB888,):
+        elif pixel_format == VtfPF.RGB888:
             tile = ("raw", (0, 0) + self.size, data_start, ("RGB", 0, 1))
-        elif pixel_format in (VtfPF.BGR888,):
+        elif pixel_format == VtfPF.BGR888:
             tile = ("raw", (0, 0) + self.size, data_start, ("BGR", 0, 1))
-        elif pixel_format in (VtfPF.BGRA8888,):
+        elif pixel_format == VtfPF.BGRA8888:
             tile = ("raw", (0, 0) + self.size, data_start, ("BGRA", 0, 1))
-        elif pixel_format in (VtfPF.UV88,):
+        elif pixel_format == VtfPF.UV88:
             tile = ("raw", (0, 0) + self.size, data_start, ("RG", 0, 1))
-        elif pixel_format in L_FORMATS:
+        elif pixel_format == VtfPF.I8:
             tile = ("raw", (0, 0) + self.size, data_start, ("L", 0, 1))
-        elif pixel_format in LA_FORMATS:
+        elif pixel_format == VtfPF.A8:
+            tile = ("raw", (0, 0) + self.size, data_start, ("A", 0, 1))
+        elif pixel_format == VtfPF.IA88:
             tile = ("raw", (0, 0) + self.size, data_start, ("LA", 0, 1))
         else:
             raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
@@ -343,15 +309,12 @@ def _save(im, fp, filename):
 
     if pixel_format == VtfPF.DXT1_ONEBITALPHA:
         flags |= CompiledVtfFlags.ONEBITALPHA
-    elif pixel_format == VtfPF.A8:
+    elif pixel_format in (VtfPF.DXT3, VtfPF.DXT5,
+                          VtfPF.RGBA8888, VtfPF.BGRA8888,
+                          VtfPF.A8, VtfPF.IA88):
         flags |= CompiledVtfFlags.EIGHTBITALPHA
-    elif pixel_format in RGBA_FORMATS + LA_FORMATS:
-        flags |= CompiledVtfFlags.EIGHTBITALPHA
-    elif pixel_format in RGB_FORMATS + L_FORMATS:
-        pass
     else:
-        raise VTFException("Unhandled case")
-
+        pass
     im = im.resize((_closest_power(im.width), _closest_power(im.height)))
     width, height = im.size
 
