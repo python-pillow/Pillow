@@ -230,14 +230,7 @@ def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
         im = im.convert("LA")
     elif pixel_format == VtfPF.UV88:
         encoder = "raw"
-        if im.mode == "RGB" or im.mode == "RGBA":
-            r, g, *_ = im.split()
-            im = Image.merge("LA", (r, g))
-        elif im.mode == "LA":
-            pass
-        else:
-            raise VTFException(f"Cannot encode {im.mode} as {pixel_format}")
-        encoder_args = ("LA", 0, 0)
+        encoder_args = ("RG", 0, 0)
     else:
         raise VTFException(f"Unsupported pixel format: {pixel_format!r}")
 
@@ -327,7 +320,7 @@ class VtfImageFile(ImageFile.ImageFile):
         elif pixel_format in (VtfPF.BGRA8888,):
             tile = ("raw", (0, 0) + self.size, data_start, ("BGRA", 0, 1))
         elif pixel_format in (VtfPF.UV88,):
-            tile = ("raw", (0, 0) + self.size, data_start, ("LA", 0, 1))
+            tile = ("raw", (0, 0) + self.size, data_start, ("RG", 0, 1))
         elif pixel_format in L_FORMATS:
             tile = ("raw", (0, 0) + self.size, data_start, ("L", 0, 1))
         elif pixel_format in LA_FORMATS:
