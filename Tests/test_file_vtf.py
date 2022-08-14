@@ -74,10 +74,7 @@ def test_get_texture_size(
         ("Tests/images/vtf_i8.png", "Tests/images/vtf_i8.vtf", "L", 0.0),
         ("Tests/images/vtf_a8.png", "Tests/images/vtf_a8.vtf", "L", 0.0),
         ("Tests/images/vtf_ia88.png", "Tests/images/vtf_ia88.vtf", "LA", 0.0),
-        (
-                "Tests/images/vtf_uv88.png",
-                "Tests/images/vtf_uv88.vtf", "RGB",
-                0.0),
+        ("Tests/images/vtf_uv88.png", "Tests/images/vtf_uv88.vtf", "RGB", 0.0),
         ("Tests/images/vtf_rgb888.png", "Tests/images/vtf_rgb888.vtf", "RGB", 0.0),
         ("Tests/images/vtf_bgr888.png", "Tests/images/vtf_bgr888.vtf", "RGB", 0.0),
         ("Tests/images/vtf_dxt1.png", "Tests/images/vtf_dxt1.vtf", "RGBA", 3.0),
