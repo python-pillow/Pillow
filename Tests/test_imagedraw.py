@@ -1314,6 +1314,23 @@ def test_stroke_multiline():
     assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_multiline.png", 3.3)
 
 
+def test_setting_default_font():
+    # Arrange
+    im = Image.new("RGB", (100, 250))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    ImageDraw.ImageDraw.font = font
+
+    # Assert
+    try:
+        assert draw.getfont() == font
+    finally:
+        ImageDraw.ImageDraw.font = None
+        assert isinstance(draw.getfont(), ImageFont.ImageFont)
+
+
 def test_same_color_outline():
     # Prepare shape
     x0, y0 = 5, 5
