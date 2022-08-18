@@ -232,25 +232,13 @@ packL16B(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-packLA(UINT8 *out, const UINT8 *in, int pixels) {
-    int i;
-    /* LA, pixel interleaved */
-    for (i = 0; i < pixels; i++) {
-        out[0] = in[R];
-        out[1] = in[A];
-        out += 2;
-        in += 4;
-    }
-}
-
-static void
 packLAL(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* LA, line interleaved */
     for (i = 0; i < pixels; i++) {
-        out[i] = in[R];
-        out[i + pixels] = in[A];
-        in += 4;
+        out[i] = in[0];
+        out[i + pixels] = in[1];
+        in += 2;
     }
 }
 
@@ -435,6 +423,7 @@ packI16N_I16B(UINT8 *out, const UINT8 *in, int pixels) {
         tmp += 2;
     }
 }
+
 static void
 packI16N_I16(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
@@ -555,11 +544,11 @@ static struct {
     {"L", "L;16B", 16, packL16B},
 
     /* greyscale w. alpha */
-    {"LA", "LA", 16, packLA},
+    {"LA", "LA", 16, copy2},
     {"LA", "LA;L", 16, packLAL},
 
     /* greyscale w. alpha premultiplied */
-    {"La", "La", 16, packLA},
+    {"La", "La", 16, copy2},
 
     /* palette */
     {"P", "P;1", 1, pack1},
@@ -568,7 +557,7 @@ static struct {
     {"P", "P", 8, copy1},
 
     /* palette w. alpha */
-    {"PA", "PA", 16, packLA},
+    {"PA", "PA", 16, copy2},
     {"PA", "PA;L", 16, packLAL},
 
     /* true colour */

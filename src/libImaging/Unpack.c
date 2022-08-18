@@ -413,24 +413,13 @@ unpackL4IR(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackLA(UINT8 *_out, const UINT8 *in, int pixels) {
-    int i;
-    /* LA, pixel interleaved */
-    for (i = 0; i < pixels; i++) {
-        UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[1]);
-        memcpy(_out, &iv, sizeof(iv));
-        in += 2;
-        _out += 4;
-    }
-}
-
-static void
-unpackLAL(UINT8 *_out, const UINT8 *in, int pixels) {
-    int i;
+unpackLAL(UINT8 *out, const UINT8 *in, int pixels) {
+    UINT8 *in1 = in;
+    UINT8 *in2 = in + pixels;
     /* LA, line interleaved */
-    for (i = 0; i < pixels; i++, _out += 4) {
-        UINT32 iv = MAKE_UINT32(in[i], in[i], in[i], in[i + pixels]);
-        memcpy(_out, &iv, sizeof(iv));
+    for (int i = 0; i < pixels; ++i) {
+        *out++ = *in1++;
+        *out++ = *in2++;
     }
 }
 
@@ -1528,11 +1517,11 @@ static struct {
     {"L", "L;16B", 16, unpackL16B},
 
     /* greyscale w. alpha */
-    {"LA", "LA", 16, unpackLA},
+    {"LA", "LA", 16, copy2},
     {"LA", "LA;L", 16, unpackLAL},
 
     /* greyscale w. alpha premultiplied */
-    {"La", "La", 16, unpackLA},
+    {"La", "La", 16, copy2},
 
     /* palette */
     {"P", "P;1", 1, unpackP1},
@@ -1544,7 +1533,7 @@ static struct {
     {"P", "P;R", 8, unpackLR},
 
     /* palette w. alpha */
-    {"PA", "PA", 16, unpackLA},
+    {"PA", "PA", 16, copy2},
     {"PA", "PA;L", 16, unpackLAL},
 
     /* true colour */

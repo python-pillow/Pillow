@@ -26,7 +26,11 @@ import sys
 try:
     from cffi import FFI
 
+    # Pixel_XA uses "r" instead of "x" for backwards compatibility.
     defs = """
+    struct Pixel_XA {
+        unsigned char r,a;
+    };
     struct Pixel_RGBA {
         unsigned char r,g,b,a;
     };
@@ -127,11 +131,11 @@ class PyAccess:
         return xy
 
 
-class _PyAccess32_2(PyAccess):
-    """PA, LA, stored in first and last bytes of a 32 bit word"""
+class _PyAccess16(PyAccess):
+    """La, LA, and PA stored in first and last bytes of a 16 bit word"""
 
     def _post_init(self, *args, **kwargs):
-        self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
+        self.pixels = ffi.cast("struct Pixel_XA **", self.image)
 
     def get_pixel(self, x, y):
         pixel = self.pixels[y][x]
@@ -314,9 +318,9 @@ mode_map = {
     "1": _PyAccess8,
     "L": _PyAccess8,
     "P": _PyAccess8,
-    "LA": _PyAccess32_2,
-    "La": _PyAccess32_2,
-    "PA": _PyAccess32_2,
+    "LA": _PyAccess16,
+    "La": _PyAccess16,
+    "PA": _PyAccess16,
     "RGB": _PyAccess32_3,
     "LAB": _PyAccess32_3,
     "HSV": _PyAccess32_3,

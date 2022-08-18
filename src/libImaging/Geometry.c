@@ -442,35 +442,13 @@ quad_transform(double *xout, double *yout, int x, int y, void *data) {
 /* transform filters (ImagingTransformFilter) */
 
 static int
-nearest_filter8(void *out, Imaging im, double xin, double yin) {
+nearest_filter(void *out, Imaging im, double xin, double yin) {
     int x = COORD(xin);
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
         return 0;
     }
-    ((UINT8 *)out)[0] = im->image8[y][x];
-    return 1;
-}
-
-static int
-nearest_filter16(void *out, Imaging im, double xin, double yin) {
-    int x = COORD(xin);
-    int y = COORD(yin);
-    if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
-        return 0;
-    }
-    memcpy(out, im->image8[y] + x * sizeof(INT16), sizeof(INT16));
-    return 1;
-}
-
-static int
-nearest_filter32(void *out, Imaging im, double xin, double yin) {
-    int x = COORD(xin);
-    int y = COORD(yin);
-    if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
-        return 0;
-    }
-    memcpy(out, &im->image32[y][x], sizeof(INT32));
+    memcpy(out, (UINT8 *)im->image[y] + x * im->pixelsize, im->pixelsize);
     return 1;
 }
 
@@ -512,9 +490,12 @@ nearest_filter32(void *out, Imaging im, double xin, double yin) {
 
 static int
 bilinear_filter8(void *out, Imaging im, double xin, double yin) {
+    int b, pixelsize = im->pixelsize;
     BILINEAR_HEAD(UINT8);
-    BILINEAR_BODY(UINT8, im->image8, 1, 0);
-    ((UINT8 *)out)[0] = (UINT8)v1;
+    for (b = 0; b < im->bands; b++) {
+        BILINEAR_BODY(UINT8, im->image, pixelsize, b);
+        ((UINT8 *)out)[b] = (UINT8)v1;
+    }
     return 1;
 }
 
@@ -535,29 +516,6 @@ bilinear_filter32F(void *out, Imaging im, double xin, double yin) {
     BILINEAR_BODY(FLOAT32, im->image32, 1, 0);
     k = v1;
     memcpy(out, &k, sizeof(k));
-    return 1;
-}
-
-static int
-bilinear_filter32LA(void *out, Imaging im, double xin, double yin) {
-    BILINEAR_HEAD(UINT8);
-    BILINEAR_BODY(UINT8, im->image, 4, 0);
-    ((UINT8 *)out)[0] = (UINT8)v1;
-    ((UINT8 *)out)[1] = (UINT8)v1;
-    ((UINT8 *)out)[2] = (UINT8)v1;
-    BILINEAR_BODY(UINT8, im->image, 4, 3);
-    ((UINT8 *)out)[3] = (UINT8)v1;
-    return 1;
-}
-
-static int
-bilinear_filter32RGB(void *out, Imaging im, double xin, double yin) {
-    int b;
-    BILINEAR_HEAD(UINT8);
-    for (b = 0; b < im->bands; b++) {
-        BILINEAR_BODY(UINT8, im->image, 4, b);
-        ((UINT8 *)out)[b] = (UINT8)v1;
-    }
     return 1;
 }
 
@@ -624,14 +582,17 @@ bilinear_filter32RGB(void *out, Imaging im, double xin, double yin) {
 
 static int
 bicubic_filter8(void *out, Imaging im, double xin, double yin) {
+    int b, pixelsize = im->pixelsize;
     BICUBIC_HEAD(UINT8);
-    BICUBIC_BODY(UINT8, im->image8, 1, 0);
-    if (v1 <= 0.0) {
-        ((UINT8 *)out)[0] = 0;
-    } else if (v1 >= 255.0) {
-        ((UINT8 *)out)[0] = 255;
-    } else {
-        ((UINT8 *)out)[0] = (UINT8)v1;
+    for (b = 0; b < im->bands; b++) {
+        BICUBIC_BODY(UINT8, im->image, pixelsize, b);
+        if (v1 <= 0.0) {
+            ((UINT8 *)out)[b] = 0;
+        } else if (v1 >= 255.0) {
+            ((UINT8 *)out)[b] = 255;
+        } else {
+            ((UINT8 *)out)[b] = (UINT8)v1;
+        }
     }
     return 1;
 }
@@ -656,51 +617,6 @@ bicubic_filter32F(void *out, Imaging im, double xin, double yin) {
     return 1;
 }
 
-static int
-bicubic_filter32LA(void *out, Imaging im, double xin, double yin) {
-    BICUBIC_HEAD(UINT8);
-    BICUBIC_BODY(UINT8, im->image, 4, 0);
-    if (v1 <= 0.0) {
-        ((UINT8 *)out)[0] = 0;
-        ((UINT8 *)out)[1] = 0;
-        ((UINT8 *)out)[2] = 0;
-    } else if (v1 >= 255.0) {
-        ((UINT8 *)out)[0] = 255;
-        ((UINT8 *)out)[1] = 255;
-        ((UINT8 *)out)[2] = 255;
-    } else {
-        ((UINT8 *)out)[0] = (UINT8)v1;
-        ((UINT8 *)out)[1] = (UINT8)v1;
-        ((UINT8 *)out)[2] = (UINT8)v1;
-    }
-    BICUBIC_BODY(UINT8, im->image, 4, 3);
-    if (v1 <= 0.0) {
-        ((UINT8 *)out)[3] = 0;
-    } else if (v1 >= 255.0) {
-        ((UINT8 *)out)[3] = 255;
-    } else {
-        ((UINT8 *)out)[3] = (UINT8)v1;
-    }
-    return 1;
-}
-
-static int
-bicubic_filter32RGB(void *out, Imaging im, double xin, double yin) {
-    int b;
-    BICUBIC_HEAD(UINT8);
-    for (b = 0; b < im->bands; b++) {
-        BICUBIC_BODY(UINT8, im->image, 4, b);
-        if (v1 <= 0.0) {
-            ((UINT8 *)out)[b] = 0;
-        } else if (v1 >= 255.0) {
-            ((UINT8 *)out)[b] = 255;
-        } else {
-            ((UINT8 *)out)[b] = (UINT8)v1;
-        }
-    }
-    return 1;
-}
-
 #undef BICUBIC
 #undef BICUBIC_HEAD
 #undef BICUBIC_BODY
@@ -709,58 +625,25 @@ static ImagingTransformFilter
 getfilter(Imaging im, int filterid) {
     switch (filterid) {
         case IMAGING_TRANSFORM_NEAREST:
-            if (im->image8) {
-                switch (im->type) {
-                    case IMAGING_TYPE_UINT8:
-                        return nearest_filter8;
-                    case IMAGING_TYPE_SPECIAL:
-                        switch (im->pixelsize) {
-                            case 1:
-                                return nearest_filter8;
-                            case 2:
-                                return nearest_filter16;
-                            case 4:
-                                return nearest_filter32;
-                        }
-                }
-            } else {
-                return nearest_filter32;
-            }
-            break;
+            return nearest_filter;
         case IMAGING_TRANSFORM_BILINEAR:
-            if (im->image8) {
-                return bilinear_filter8;
-            } else if (im->image32) {
-                switch (im->type) {
-                    case IMAGING_TYPE_UINT8:
-                        if (im->bands == 2) {
-                            return bilinear_filter32LA;
-                        } else {
-                            return bilinear_filter32RGB;
-                        }
-                    case IMAGING_TYPE_INT32:
-                        return bilinear_filter32I;
-                    case IMAGING_TYPE_FLOAT32:
-                        return bilinear_filter32F;
-                }
+            switch (im->type) {
+                case IMAGING_TYPE_UINT8:
+                    return bilinear_filter8;
+                case IMAGING_TYPE_INT32:
+                    return bilinear_filter32I;
+                case IMAGING_TYPE_FLOAT32:
+                    return bilinear_filter32F;
             }
             break;
         case IMAGING_TRANSFORM_BICUBIC:
-            if (im->image8) {
-                return bicubic_filter8;
-            } else if (im->image32) {
-                switch (im->type) {
-                    case IMAGING_TYPE_UINT8:
-                        if (im->bands == 2) {
-                            return bicubic_filter32LA;
-                        } else {
-                            return bicubic_filter32RGB;
-                        }
-                    case IMAGING_TYPE_INT32:
-                        return bicubic_filter32I;
-                    case IMAGING_TYPE_FLOAT32:
-                        return bicubic_filter32F;
-                }
+            switch (im->type) {
+                case IMAGING_TYPE_UINT8:
+                    return bicubic_filter8;
+                case IMAGING_TYPE_INT32:
+                    return bicubic_filter32I;
+                case IMAGING_TYPE_FLOAT32:
+                    return bicubic_filter32F;
             }
             break;
     }
@@ -786,7 +669,7 @@ ImagingGenericTransform(
        ImagingScaleAffine where possible. */
 
     ImagingSectionCookie cookie;
-    int x, y;
+    int x, y, pixelsize;
     char *out;
     double xx, yy;
 
@@ -816,16 +699,17 @@ ImagingGenericTransform(
         y1 = imOut->ysize;
     }
 
+    pixelsize = imOut->pixelsize;
     for (y = y0; y < y1; y++) {
-        out = imOut->image[y] + x0 * imOut->pixelsize;
+        out = imOut->image[y] + x0 * pixelsize;
         for (x = x0; x < x1; x++) {
             if (!transform(&xx, &yy, x - x0, y - y0, transform_data) ||
                 !filter(out, imIn, xx, yy)) {
                 if (fill) {
-                    memset(out, 0, imOut->pixelsize);
+                    memset(out, 0, pixelsize);
                 }
             }
-            out += imOut->pixelsize;
+            out += pixelsize;
         }
     }
 

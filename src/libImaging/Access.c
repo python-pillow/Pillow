@@ -46,6 +46,11 @@ add_item(const char *mode) {
 /* fetch pointer to pixel line */
 
 static void *
+line(Imaging im, int x, int y) {
+    return &im->image[y][x * im->pixelsize];
+}
+
+static void *
 line_8(Imaging im, int x, int y) {
     return &im->image8[y][x];
 }
@@ -64,21 +69,8 @@ line_32(Imaging im, int x, int y) {
 
 static void
 get_pixel(Imaging im, int x, int y, void *color) {
-    char *out = color;
-
-    /* generic pixel access*/
-
-    if (im->image8) {
-        out[0] = im->image8[y][x];
-    } else {
-        UINT8 *p = (UINT8 *)&im->image32[y][x];
-        if (im->type == IMAGING_TYPE_UINT8 && im->bands == 2) {
-            out[0] = p[0];
-            out[1] = p[3];
-            return;
-        }
-        memcpy(out, p, im->pixelsize);
-    }
+    int pixelsize = im->pixelsize;
+    memcpy(color, &im->image[y][x * pixelsize], pixelsize);
 }
 
 static void
@@ -140,11 +132,8 @@ get_pixel_32B(Imaging im, int x, int y, void *color) {
 
 static void
 put_pixel(Imaging im, int x, int y, const void *color) {
-    if (im->image8) {
-        im->image8[y][x] = *((UINT8 *)color);
-    } else {
-        memcpy(&im->image32[y][x], color, sizeof(INT32));
-    }
+    int pixelsize = im->pixelsize;
+    memcpy(&im->image[y][x * pixelsize], color, pixelsize);
 }
 
 static void
@@ -198,8 +187,8 @@ ImagingAccessInit() {
     /* populate access table */
     ADD("1", line_8, get_pixel_8, put_pixel_8);
     ADD("L", line_8, get_pixel_8, put_pixel_8);
-    ADD("LA", line_32, get_pixel, put_pixel);
-    ADD("La", line_32, get_pixel, put_pixel);
+    ADD("LA", line, get_pixel, put_pixel);
+    ADD("La", line, get_pixel, put_pixel);
     ADD("I", line_32, get_pixel_32, put_pixel_32);
     ADD("I;16", line_16, get_pixel_16L, put_pixel_16L);
     ADD("I;16L", line_16, get_pixel_16L, put_pixel_16L);
@@ -208,7 +197,7 @@ ImagingAccessInit() {
     ADD("I;32B", line_32, get_pixel_32B, put_pixel_32B);
     ADD("F", line_32, get_pixel_32, put_pixel_32);
     ADD("P", line_8, get_pixel_8, put_pixel_8);
-    ADD("PA", line_32, get_pixel, put_pixel);
+    ADD("PA", line, get_pixel, put_pixel);
     ADD("RGB", line_32, get_pixel_32, put_pixel_32);
     ADD("RGBA", line_32, get_pixel_32, put_pixel_32);
     ADD("RGBa", line_32, get_pixel_32, put_pixel_32);

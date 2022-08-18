@@ -39,8 +39,8 @@ extern "C" {
  * Lab      4           L, a, b, -
  *
  * experimental modes (incomplete):
- * LA       4           L, -, -, A
- * PA       4           P, -, -, A
+ * LA       2           L, A
+ * PA       2           P, A
  * I;16     2           I (16-bit integer, native byte order)
  *
  * "P" is an 8-bit palette mode, which should be mapped through the
@@ -69,6 +69,7 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 #define IMAGING_TYPE_FLOAT32 2
 #define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
 
+/* array size required to store any image mode string */
 #define IMAGING_MODE_LENGTH \
     6 + 1 /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
 
@@ -108,9 +109,9 @@ struct ImagingMemoryInstance {
 
 #define IMAGING_PIXEL_1(im, x, y) ((im)->image8[(y)][(x)])
 #define IMAGING_PIXEL_L(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_LA(im, x, y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_LA(im, x, y) ((im)->image[(y)][(x)*2])
 #define IMAGING_PIXEL_P(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_PA(im, x, y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_PA(im, x, y) ((im)->image[(y)][(x)*2])
 #define IMAGING_PIXEL_I(im, x, y) ((im)->image32[(y)][(x)])
 #define IMAGING_PIXEL_F(im, x, y) (((FLOAT32 *)(im)->image32[y])[x])
 #define IMAGING_PIXEL_RGB(im, x, y) ((im)->image[(y)][(x)*4])

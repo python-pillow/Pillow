@@ -129,11 +129,11 @@ j2k_pack_la(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsign
     UINT8 *ptra = buf + w * h;
     unsigned x, y;
     for (y = 0; y < h; ++y) {
-        UINT8 *data = (UINT8 *)(im->image[y + y0] + 4 * x0);
+        UINT8 *data = (UINT8 *)(im->image[y + y0] + 2 * x0);
         for (x = 0; x < w; ++x) {
             *ptr++ = data[0];
-            *ptra++ = data[3];
-            data += 4;
+            *ptra++ = data[1];
+            data += 2;
         }
     }
 }

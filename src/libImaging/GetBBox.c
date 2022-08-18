@@ -30,45 +30,57 @@ ImagingGetBBox(Imaging im, int bbox[4]) {
     bbox[1] = -1;
     bbox[2] = bbox[3] = 0;
 
-#define GETBBOX(image, mask)              \
-    for (y = 0; y < im->ysize; y++) {     \
-        has_data = 0;                     \
-        for (x = 0; x < im->xsize; x++) { \
-            if (im->image[y][x] & mask) { \
-                has_data = 1;             \
-                if (x < bbox[0]) {        \
-                    bbox[0] = x;          \
-                }                         \
-                if (x >= bbox[2]) {       \
-                    bbox[2] = x + 1;      \
-                }                         \
-            }                             \
-        }                                 \
-        if (has_data) {                   \
-            if (bbox[1] < 0) {            \
-                bbox[1] = y;              \
-            }                             \
-            bbox[3] = y + 1;              \
-        }                                 \
+#define GETBBOX(type)                               \
+    for (y = 0; y < im->ysize; y++) {               \
+        has_data = 0;                               \
+        for (x = 0; x < im->xsize; x++) {           \
+            if (((type *)im->image[y])[x] & mask) { \
+                has_data = 1;                       \
+                if (x < bbox[0]) {                  \
+                    bbox[0] = x;                    \
+                }                                   \
+                if (x >= bbox[2]) {                 \
+                    bbox[2] = x + 1;                \
+                }                                   \
+            }                                       \
+        }                                           \
+        if (has_data) {                             \
+            if (bbox[1] < 0) {                      \
+                bbox[1] = y;                        \
+            }                                       \
+            bbox[3] = y + 1;                        \
+        }                                           \
     }
 
-    if (im->image8) {
-        GETBBOX(image8, 0xff);
-    } else {
-        INT32 mask = 0xffffffff;
-        if (im->bands == 3) {
-            ((UINT8 *)&mask)[3] = 0;
-        } else if (
-            strcmp(im->mode, "RGBa") == 0 || strcmp(im->mode, "RGBA") == 0 ||
-            strcmp(im->mode, "La") == 0 || strcmp(im->mode, "LA") == 0 ||
-            strcmp(im->mode, "PA") == 0) {
-#ifdef WORDS_BIGENDIAN
-            mask = 0x000000ff;
-#else
-            mask = 0xff000000;
-#endif
+    switch (im->pixelsize) {
+        case 1: {
+            UINT8 mask = 0xff;
+            GETBBOX(UINT8);
+            break;
         }
-        GETBBOX(image32, mask);
+        case 2: {
+            UINT16 mask = 0xffff;
+            if (strcmp(im->mode, "La") == 0 ||
+                strcmp(im->mode, "LA") == 0 ||
+                strcmp(im->mode, "PA") == 0) {
+                ((UINT8 *)&mask)[0] = 0;
+            }
+            GETBBOX(UINT16);
+            break;
+        }
+        case 4: {
+            UINT32 mask = 0xffffffff;
+            if (im->bands == 3) {
+                ((UINT8 *)&mask)[3] = 0;
+            } else if (
+                strcmp(im->mode, "RGBa") == 0 ||
+                strcmp(im->mode, "RGBA") == 0) {
+                mask = 0;
+                ((UINT8 *)&mask)[3] = 0xff;
+            }
+            GETBBOX(UINT32);
+            break;
+        }
     }
 
     /* Check that we got a box */
@@ -90,28 +102,39 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
     memset(xproj, 0, im->xsize);
     memset(yproj, 0, im->ysize);
 
-#define GETPROJ(image, mask)              \
-    for (y = 0; y < im->ysize; y++) {     \
-        has_data = 0;                     \
-        for (x = 0; x < im->xsize; x++) { \
-            if (im->image[y][x] & mask) { \
-                has_data = 1;             \
-                xproj[x] = 1;             \
-            }                             \
-        }                                 \
-        if (has_data) {                   \
-            yproj[y] = 1;                 \
-        }                                 \
+#define GETPROJ(type)                               \
+    for (y = 0; y < im->ysize; y++) {               \
+        has_data = 0;                               \
+        for (x = 0; x < im->xsize; x++) {           \
+            if (((type *)im->image[y])[x] & mask) { \
+                has_data = 1;                       \
+                xproj[x] = 1;                       \
+            }                                       \
+        }                                           \
+        if (has_data) {                             \
+            yproj[y] = 1;                           \
+        }                                           \
     }
 
-    if (im->image8) {
-        GETPROJ(image8, 0xff);
-    } else {
-        INT32 mask = 0xffffffff;
-        if (im->bands == 3) {
-            ((UINT8 *)&mask)[3] = 0;
+    switch (im->pixelsize) {
+        case 1: {
+            UINT8 mask = 0xff;
+            GETPROJ(UINT8);
+            break;
         }
-        GETPROJ(image32, mask);
+        case 2: {
+            UINT16 mask = 0xffff;
+            GETPROJ(UINT16);
+            break;
+        }
+        case 4: {
+            UINT32 mask = 0xffffffff;
+            if (im->bands == 3) {
+                ((UINT8 *)&mask)[3] = 0;
+            }
+            GETPROJ(UINT32);
+            break;
+        }
     }
 
     return 1; /* ok */
