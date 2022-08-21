@@ -1706,7 +1706,7 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    int rgbIn = strcmp(imIn->mode, "rgb") == 0;
+    int rgbIn = strcmp(imIn->mode, "RGB") == 0;
     int bitIn = strcmp(imIn->mode, "1") == 0;
     int iIn = strcmp(imIn->mode, "I") == 0;
     int lIn = strcmp(imIn->mode, "L") == 0;
