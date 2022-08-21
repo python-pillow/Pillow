@@ -926,10 +926,12 @@ static struct {
 
     {"L", "1", l2bit},
     {"L", "LA", l2la},
+    {"L", "La", l2la},
     {"L", "I", l2i},
     {"L", "F", l2f},
     {"L", "RGB", l2rgb},
     {"L", "RGBA", l2rgb},
+    {"L", "RGBa", l2rgb},
     {"L", "RGBX", l2rgb},
     {"L", "CMYK", l2cmyk},
     {"L", "YCbCr", l2ycbcr},

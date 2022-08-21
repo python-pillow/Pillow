@@ -531,57 +531,103 @@ class TestImage:
             px = im.load()
             assert px[0, 0] == 5
 
-    def test_linear_gradient_wrong_mode(self):
-        # Arrange
-        wrong_mode = "RGB"
-
-        # Act / Assert
+    @pytest.mark.parametrize("wrong_mode", [
+        "bad",
+        "I;16N",
+        # "LAB",
+        "BGR;15",
+        "BGR;16",
+        "BGR;24",
+        "BGR;32",
+    ])
+    def test_linear_gradient_wrong_mode(self, wrong_mode):
         with pytest.raises(ValueError):
             Image.linear_gradient(wrong_mode)
 
-    def test_linear_gradient(self):
-
+    @pytest.mark.parametrize("mode,pixel_a,pixel_b", [
+        ("1", 0, 255),
+        ("P", 0, 255),
+        ("PA", (0, 255), (255, 255)),
+        ("L", 0, 255),
+        ("LA", (0, 255), (255, 255)),
+        ("La", (0, 255), (255, 255)),
+        ("F", 0, 255),
+        ("I", 0, 255),
+        ("I;16", 0, 255),
+        ("I;16L", 0, 255),
+        ("I;16B", 0, 255),
+        ("RGB", (0, 0, 0), (255, 255, 255)),
+        ("RGBX", (0, 0, 0, 255), (255, 255, 255, 255)),
+        ("RGBA", (0, 0, 0, 255), (255, 255, 255, 255)),
+        ("RGBa", (0, 0, 0, 255), (255, 255, 255, 255)),
+        ("CMYK", (0, 0, 0, 255), (0, 0, 0, 0)),
+        ("YCbCr", (0, 128, 128), (255, 128, 128)),
+        ("HSV", (0, 0, 0), (0, 0, 255)),
+    ])
+    def test_linear_gradient(self, mode, pixel_a, pixel_b):
         # Arrange
         target_file = "Tests/images/linear_gradient.png"
-        for mode in ["L", "P", "I", "F"]:
 
-            # Act
-            im = Image.linear_gradient(mode)
+        # Act
+        im = Image.linear_gradient(mode)
 
-            # Assert
-            assert im.size == (256, 256)
-            assert im.mode == mode
-            assert im.getpixel((0, 0)) == 0
-            assert im.getpixel((255, 255)) == 255
-            with Image.open(target_file) as target:
-                target = target.convert(mode)
-            assert_image_equal(im, target)
+        # Assert
+        assert im.size == (256, 256)
+        assert im.mode == mode
+        assert im.getpixel((0, 0)) == pixel_a
+        assert im.getpixel((255, 255)) == pixel_b
+        with Image.open(target_file) as target:
+            target = target.convert(mode, dither=0)
+        assert_image_equal(im, target)
 
-    def test_radial_gradient_wrong_mode(self):
-        # Arrange
-        wrong_mode = "RGB"
-
-        # Act / Assert
+    @pytest.mark.parametrize("wrong_mode", [
+        "bad",
+        "I;16N",
+        # "LAB",
+        "BGR;15",
+        "BGR;16",
+        "BGR;24",
+        "BGR;32",
+    ])
+    def test_radial_gradient_wrong_mode(self, wrong_mode):
         with pytest.raises(ValueError):
             Image.radial_gradient(wrong_mode)
 
-    def test_radial_gradient(self):
-
+    @pytest.mark.parametrize("mode,pixel_a,pixel_b", [
+        ("1", 255, 0),
+        ("P", 255, 0),
+        ("PA", (255, 255), (0, 255)),
+        ("L", 255, 0),
+        ("LA", (255, 255), (0, 255)),
+        ("La", (255, 255), (0, 255)),
+        ("F", 255, 0),
+        ("I", 255, 0),
+        ("I;16", 255, 0),
+        ("I;16L", 255, 0),
+        ("I;16B", 255, 0),
+        ("RGB", (255, 255, 255), (0, 0, 0)),
+        ("RGBX", (255, 255, 255, 255), (0, 0, 0, 255)),
+        ("RGBA", (255, 255, 255, 255), (0, 0, 0, 255)),
+        ("RGBa", (255, 255, 255, 255), (0, 0, 0, 255)),
+        ("CMYK", (0, 0, 0, 0), (0, 0, 0, 255)),
+        ("YCbCr", (255, 128, 128), (0, 128, 128)),
+        ("HSV", (0, 0, 255), (0, 0, 0)),
+    ])
+    def test_radial_gradient(self, mode, pixel_a, pixel_b):
         # Arrange
         target_file = "Tests/images/radial_gradient.png"
-        for mode in ["L", "P", "I", "F"]:
 
-            # Act
-            im = Image.radial_gradient(mode)
+        # Act
+        im = Image.radial_gradient(mode)
 
-            # Assert
-            assert im.size == (256, 256)
-            assert im.mode == mode
-            assert im.getpixel((0, 0)) == 255
-            assert im.getpixel((128, 128)) == 0
-            with Image.open(target_file) as target:
-                target = target.convert(mode)
-            assert_image_equal(im, target)
+        # Assert
+        assert im.size == (256, 256)
+        assert im.mode == mode
+        assert im.getpixel((0, 0)) == pixel_a
+        assert im.getpixel((128, 128)) == pixel_b
+        with Image.open(target_file) as target:
+            target = target.convert(mode, dither=0)
+        assert_image_equal(im, target)
 
     def test_register_extensions(self):
         test_format = "a"
