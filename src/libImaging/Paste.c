@@ -94,27 +94,14 @@ paste_mask_1(
     int pixelsize) {
     /* paste with mode "1" mask */
 
-    int x, y;
+    int x, y, b;
 
-    if (imOut->image8) {
-        for (y = 0; y < ysize; y++) {
-            UINT8 *out = imOut->image8[y + dy] + dx;
-            UINT8 *in = imIn->image8[y + sy] + sx;
-            UINT8 *mask = imMask->image8[y + sy] + sx;
-            for (x = 0; x < xsize; x++) {
-                if (*mask++) {
-                    *out = *in;
-                }
-                out++, in++;
-            }
-        }
-
-    } else {
-        for (y = 0; y < ysize; y++) {
-            INT32 *out = imOut->image32[y + dy] + dx;
-            INT32 *in = imIn->image32[y + sy] + sx;
-            UINT8 *mask = imMask->image8[y + sy] + sx;
-            for (x = 0; x < xsize; x++) {
+    for (y = 0; y < ysize; y++) {
+        UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx * pixelsize;
+        UINT8 *in = (UINT8 *)imIn->image[y + sy] + sx * pixelsize;
+        UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx;
+        for (x = 0; x < xsize; x++) {
+            for (b = 0; b < pixelsize; b++) {
                 if (*mask++) {
                     *out = *in;
                 }
@@ -138,35 +125,19 @@ paste_mask_RGBa(
     int pixelsize) {
     /* paste with mode "RGBa" matte */
 
-    int x, y;
+    int x, y, b;
     unsigned int tmp1;
 
-    if (imOut->image8) {
-        for (y = 0; y < ysize; y++) {
-            UINT8 *out = imOut->image8[y + dy] + dx;
-            UINT8 *in = imIn->image8[y + sy] + sx;
-            UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx * 4 + 3;
-            for (x = 0; x < xsize; x++) {
+    for (y = 0; y < ysize; y++) {
+        UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx * pixelsize;
+        UINT8 *in = (UINT8 *)imIn->image[y + sy] + sx * pixelsize;
+        UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx * 4 + 3;
+        for (x = 0; x < xsize; x++) {
+            for (b = 0; b < pixelsize; b++) {
                 *out = PREBLEND(*mask, *out, *in, tmp1);
-                out++, in++, mask += 4;
+                out++, in++;
             }
-        }
-
-    } else {
-        for (y = 0; y < ysize; y++) {
-            UINT8 *out = (UINT8 *)(imOut->image32[y + dy] + dx);
-            UINT8 *in = (UINT8 *)(imIn->image32[y + sy] + sx);
-            UINT8 *mask = (UINT8 *)(imMask->image32[y + sy] + sx);
-            for (x = 0; x < xsize; x++) {
-                UINT8 a = mask[3];
-                out[0] = PREBLEND(a, out[0], in[0], tmp1);
-                out[1] = PREBLEND(a, out[1], in[1], tmp1);
-                out[2] = PREBLEND(a, out[2], in[2], tmp1);
-                out[3] = PREBLEND(a, out[3], in[3], tmp1);
-                out += 4;
-                in += 4;
-                mask += 4;
-            }
+            mask += 4;
         }
     }
 }
