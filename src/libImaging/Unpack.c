@@ -414,10 +414,11 @@ unpackL4IR(UINT8 *out, const UINT8 *in, int pixels) {
 
 static void
 unpackLAL(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
     UINT8 *in1 = in;
     UINT8 *in2 = in + pixels;
     /* LA, line interleaved */
-    for (int i = 0; i < pixels; ++i) {
+    for (i = 0; i < pixels; ++i) {
         *out++ = *in1++;
         *out++ = *in2++;
     }
