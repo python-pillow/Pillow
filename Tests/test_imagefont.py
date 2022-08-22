@@ -960,6 +960,21 @@ class TestImageFont:
 
         assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 6.2)
 
+    def test_multiline_centered_embedded_color(self):
+        txt = "Hello\nWorld!"
+        ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=self.LAYOUT_ENGINE)
+        ttf.getbbox(txt)
+
+        im = Image.new("RGB", (160, 96), "white")
+        d = ImageDraw.Draw(im)
+        d.multiline_text(
+            (10, 10), txt, font=ttf, fill="#fa6", align="center", embedded_color=True
+        )
+
+        assert_image_similar_tofile(
+            im, "Tests/images/standard_embedded_multiline_centered.png", 6.2
+        )
+
     def test_cbdt(self):
         try:
             font = ImageFont.truetype(

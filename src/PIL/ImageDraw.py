@@ -482,6 +482,7 @@ class ImageDraw:
                 # extract mask and set text alpha
                 color, mask = mask, mask.getband(3)
                 color.fillband(3, (ink >> 24) & 0xFF)
+                coord = tuple(int(c) for c in coord)
                 coord2 = coord[0] + mask.size[0], coord[1] + mask.size[1]
                 self.im.paste(color, coord + coord2, mask)
             else:
