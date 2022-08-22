@@ -255,11 +255,11 @@ def contain(image, size, method=Image.Resampling.BICUBIC):
 
     if im_ratio != dest_ratio:
         if im_ratio > dest_ratio:
-            new_height = int(image.height / image.width * size[0])
+            new_height = round(image.height / image.width * size[0])
             if new_height != size[1]:
                 size = (size[0], new_height)
         else:
-            new_width = int(image.width / image.height * size[1])
+            new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
     return image.resize(size, resample=method)
