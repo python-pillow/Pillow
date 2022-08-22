@@ -346,7 +346,7 @@ fill_mask_L(
         UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx;
         for (x = 0; x < xsize; x++) {
             for (i = 0; i < pixelsize; i++) {
-                UINT8 channel_mask = *mask;
+                UINT8 channel_mask = mask[x];
                 if (alphaChannel >= 0 && i != alphaChannel && channel_mask != 0) {
                     channel_mask = 255 - (255 - channel_mask) *
                         (1 - (255 - out[alphaChannel]) / 255);
@@ -357,7 +357,6 @@ fill_mask_L(
                 out[i] = BLEND(channel_mask, out[i], isI16 ? ink[0] : ink[i], tmp1);
             }
             out += pixelsize;
-            mask++;
         }
     }
 }
@@ -463,15 +462,13 @@ ImagingFill2(
     int dy1) {
     ImagingSectionCookie cookie;
     int xsize, ysize;
-    int pixelsize;
     int sx0, sy0;
+    int pixelsize;
 
     if (!imOut || !ink) {
         (void)ImagingError_ModeError();
         return -1;
     }
-
-    pixelsize = imOut->pixelsize;
 
     xsize = dx1 - dx0;
     ysize = dy1 - dy0;
@@ -500,6 +497,7 @@ ImagingFill2(
         return 0;
     }
 
+    pixelsize = imOut->pixelsize;
     if (!imMask) {
         ImagingSectionEnter(&cookie);
         fill(imOut, ink, dx0, dy0, xsize, ysize, pixelsize);
