@@ -25,7 +25,7 @@ import math
 import os
 import time
 
-from . import Image, ImageFile, ImageSequence, PdfParser, __version__
+from . import Image, ImageFile, ImageSequence, PdfParser, __version__, features
 
 #
 # --------------------------------------------------------------------
@@ -130,20 +130,23 @@ def _save(im, fp, filename, save_all=False):
             width, height = im.size
 
             if im.mode == "1":
-                filter = "CCITTFaxDecode"
-                bits = 1
-                params = PdfParser.PdfArray(
-                    [
-                        PdfParser.PdfDict(
-                            {
-                                "K": -1,
-                                "BlackIs1": True,
-                                "Columns": width,
-                                "Rows": height,
-                            }
-                        )
-                    ]
-                )
+                if features.check("libtiff"):
+                    filter = "CCITTFaxDecode"
+                    bits = 1
+                    params = PdfParser.PdfArray(
+                        [
+                            PdfParser.PdfDict(
+                                {
+                                    "K": -1,
+                                    "BlackIs1": True,
+                                    "Columns": width,
+                                    "Rows": height,
+                                }
+                            )
+                        ]
+                    )
+                else:
+                    filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "L":
