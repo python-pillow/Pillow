@@ -102,7 +102,7 @@ paste_mask_1(
         UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx;
         for (x = 0; x < xsize; x++) {
             for (b = 0; b < pixelsize; b++) {
-                if (*mask++) {
+                if (mask[x]) {
                     *out = *in;
                 }
                 out++, in++;
