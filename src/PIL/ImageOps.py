@@ -18,9 +18,10 @@
 #
 
 import functools
+import math
 import operator
 import re
-import math
+
 from . import Image
 
 #
