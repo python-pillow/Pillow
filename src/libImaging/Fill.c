@@ -103,16 +103,20 @@ ImagingFillLinearGradient(const char *mode) {
                 for (y = 0; y < size; ++y) {
                     UINT8 *out = (UINT8 *)im->image[y];
                     for (x = 0; x < size; ++x) {
-                        memset(out + x * 4, y, 3);
-                        out[x * 4 + 3] = 255;
+                        *out++ = y;
+                        *out++ = y;
+                        *out++ = y;
+                        *out++ = 255;
                     }
                 }
             } else if (strcmp(mode, "CMYK") == 0) {
                 for (y = 0; y < size; ++y) {
                     UINT8 *out = (UINT8 *)im->image[y];
                     for (x = 0; x < size; ++x) {
-                        memset(out + x * 4, 0, 3);
-                        out[x * 4 + 3] = ~(UINT8)y;
+                        *out++ = 0;
+                        *out++ = 0;
+                        *out++ = 0;
+                        *out++ = ~(UINT8)y;
                     }
                 }
             } else if (strcmp(mode, "YCbCr") == 0) {
@@ -220,8 +224,10 @@ ImagingFillRadialGradient(const char *mode) {
                     UINT8 *out = (UINT8 *)im->image[y];
                     for (x = 0; x < size; ++x) {
                         CALC_RADIAL_COLOUR(c, x, y)
-                        memset(out + x * 4, c, 3);
-                        out[x * 4 + 3] = 255;
+                        *out++ = c;
+                        *out++ = c;
+                        *out++ = c;
+                        *out++ = 255;
                     }
                 }
             } else if (strcmp(mode, "CMYK") == 0) {
@@ -229,8 +235,10 @@ ImagingFillRadialGradient(const char *mode) {
                     UINT8 *out = (UINT8 *)im->image[y];
                     for (x = 0; x < size; ++x) {
                         CALC_RADIAL_COLOUR(c, x, y)
-                        memset(out + x * 4, 0, 3);
-                        out[x * 4 + 3] = ~(UINT8)c;
+                        *out++ = 0;
+                        *out++ = 0;
+                        *out++ = 0;
+                        *out++ = ~(UINT8)c;
                     }
                 }
             } else if (strcmp(mode, "YCbCr") == 0) {
