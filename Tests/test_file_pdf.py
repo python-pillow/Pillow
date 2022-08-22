@@ -37,6 +37,7 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
     return outfile
 
 
+@pytest.mark.valgrind_known_error(reason="Temporary skip")
 def test_monochrome(tmp_path):
     # Arrange
     mode = "1"
