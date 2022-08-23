@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Allow default ImageDraw font to be set #6484
+  [radarhere, hugovk]
+
 - Save 1 mode PDF using CCITTFaxDecode filter #6470
   [radarhere]
 

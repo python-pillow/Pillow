@@ -968,7 +968,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     methods are: :data:`None`, ``"group3"``, ``"group4"``, ``"jpeg"``, ``"lzma"``,
     ``"packbits"``, ``"tiff_adobe_deflate"``, ``"tiff_ccitt"``, ``"tiff_lzw"``,
     ``"tiff_raw_16"``, ``"tiff_sgilog"``, ``"tiff_sgilog24"``, ``"tiff_thunderscan"``,
-    ``"webp"`, ``"zstd"``
+    ``"webp"``, ``"zstd"``
 
 **quality**
     The image quality for JPEG compression, on a scale from 0 (worst) to 100

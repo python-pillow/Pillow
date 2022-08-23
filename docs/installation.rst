@@ -166,7 +166,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.0.1**
+  * Pillow has been tested with libimagequant **2.6-4.0.2**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -367,7 +367,7 @@ In Alpine, the command is::
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
+Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
 
     sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
         libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
