@@ -625,20 +625,20 @@ def test_polygon2():
     helper_polygon(POINTS2)
 
 
-def test_polygon_kite():
+@pytest.mark.parametrize("mode", ("RGB", "L"))
+def test_polygon_kite(mode):
     # Test drawing lines of different gradients (dx>dy, dy>dx) and
     # vertical (dx==0) and horizontal (dy==0) lines
-    for mode in ["RGB", "L"]:
-        # Arrange
-        im = Image.new(mode, (W, H))
-        draw = ImageDraw.Draw(im)
-        expected = f"Tests/images/imagedraw_polygon_kite_{mode}.png"
+    # Arrange
+    im = Image.new(mode, (W, H))
+    draw = ImageDraw.Draw(im)
+    expected = f"Tests/images/imagedraw_polygon_kite_{mode}.png"
 
-        # Act
-        draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
+    # Act
+    draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
 
-        # Assert
-        assert_image_equal_tofile(im, expected)
+    # Assert
+    assert_image_equal_tofile(im, expected)
 
 
 def test_polygon_1px_high():

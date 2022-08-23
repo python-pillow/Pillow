@@ -22,24 +22,15 @@ class TestImagingCoreResize:
         im.load()
         return im._new(im.im.resize(size, f))
 
-    def test_nearest_mode(self):
-        for mode in [
-            "1",
-            "P",
-            "L",
-            "I",
-            "F",
-            "RGB",
-            "RGBA",
-            "CMYK",
-            "YCbCr",
-            "I;16",
-        ]:  # exotic mode
-            im = hopper(mode)
-            r = self.resize(im, (15, 12), Image.Resampling.NEAREST)
-            assert r.mode == mode
-            assert r.size == (15, 12)
-            assert r.im.bands == im.im.bands
+    @pytest.mark.parametrize(
+        "mode", ("1", "P", "L", "I", "F", "RGB", "RGBA", "CMYK", "YCbCr", "I;16")
+    )
+    def test_nearest_mode(self, mode):
+        im = hopper(mode)
+        r = self.resize(im, (15, 12), Image.Resampling.NEAREST)
+        assert r.mode == mode
+        assert r.size == (15, 12)
+        assert r.im.bands == im.im.bands
 
     def test_convolution_modes(self):
         with pytest.raises(ValueError):
