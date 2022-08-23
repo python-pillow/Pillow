@@ -731,11 +731,12 @@ ImagingScaleAffine(
     /* scale, nearest neighbour resampling */
 
     ImagingSectionCookie cookie;
-    int x, y;
+    int x, y, b;
     int xin;
     double xo, yo;
     int xmin, xmax;
     int *xintab;
+    int pixelsize;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
         return (Imaging)ImagingError_ModeError();
@@ -782,34 +783,27 @@ ImagingScaleAffine(
         xo += a[0];
     }
 
-#define AFFINE_SCALE(pixel, image)                          \
-    for (y = y0; y < y1; y++) {                             \
-        int yi = COORD(yo);                                 \
-        pixel *in, *out;                                    \
-        out = imOut->image[y];                              \
-        if (fill && x1 > x0) {                              \
-            memset(out + x0, 0, (x1 - x0) * sizeof(pixel)); \
-        }                                                   \
-        if (yi >= 0 && yi < imIn->ysize) {                  \
-            in = imIn->image[yi];                           \
-            for (x = xmin; x < xmax; x++) {                 \
-                out[x] = in[xintab[x]];                     \
-            }                                               \
-        }                                                   \
-        yo += a[4];                                         \
-    }
+    pixelsize = imOut->pixelsize;
 
     ImagingSectionEnter(&cookie);
-
-    if (imIn->image8) {
-        AFFINE_SCALE(UINT8, image8);
-    } else {
-        AFFINE_SCALE(INT32, image32);
+    for (y = y0; y < y1; y++) {
+        int yi = COORD(yo);
+        UINT8 *in, *out;
+        out = (UINT8 *)imOut->image[y];
+        if (fill && x1 > x0) {
+            memset(out + x0 * pixelsize, 0, (x1 - x0) * pixelsize);
+        }
+        if (yi >= 0 && yi < imIn->ysize) {
+            in = (UINT8 *)imIn->image[yi];
+            for (x = xmin; x < xmax; x++) {
+                for (b = 0; b < pixelsize; b++) {
+                    out[x * pixelsize + b] = in[xintab[x] * pixelsize + b];
+                }
+            }
+        }
+        yo += a[4];
     }
-
     ImagingSectionLeave(&cookie);
-
-#undef AFFINE_SCALE
 
     free(xintab);
 
