@@ -32,7 +32,7 @@ def test_sanity(mode, tmp_path):
         assert_image_equal(rt, src)
 
     if mode == "1":
-        # BW appears to not save correctly on QT4 and QT5
+        # BW appears to not save correctly on QT5
         # kicks out errors on console:
         #     libpng warning: Invalid color type/bit depth combination
         #                     in IHDR
