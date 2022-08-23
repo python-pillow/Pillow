@@ -909,11 +909,12 @@ ImagingTransformAffine(
        arithmetics*/
 
     ImagingSectionCookie cookie;
-    int x, y;
+    int x, y, b;
     int xin, yin;
     int xsize, ysize;
     double xx, yy;
     double xo, yo;
+    int pixelsize;
 
     if (filterid || imIn->type == IMAGING_TYPE_SPECIAL) {
         return ImagingGenericTransform(
@@ -962,41 +963,34 @@ ImagingTransformAffine(
     xo = a[2] + a[1] * 0.5 + a[0] * 0.5;
     yo = a[5] + a[4] * 0.5 + a[3] * 0.5;
 
-#define AFFINE_TRANSFORM(pixel, image)                      \
-    for (y = y0; y < y1; y++) {                             \
-        pixel *out;                                         \
-        xx = xo;                                            \
-        yy = yo;                                            \
-        out = imOut->image[y];                              \
-        if (fill && x1 > x0) {                              \
-            memset(out + x0, 0, (x1 - x0) * sizeof(pixel)); \
-        }                                                   \
-        for (x = x0; x < x1; x++, out++) {                  \
-            xin = COORD(xx);                                \
-            if (xin >= 0 && xin < xsize) {                  \
-                yin = COORD(yy);                            \
-                if (yin >= 0 && yin < ysize) {              \
-                    *out = imIn->image[yin][xin];           \
-                }                                           \
-            }                                               \
-            xx += a[0];                                     \
-            yy += a[3];                                     \
-        }                                                   \
-        xo += a[1];                                         \
-        yo += a[4];                                         \
-    }
+    pixelsize = imOut->pixelsize;
 
     ImagingSectionEnter(&cookie);
-
-    if (imIn->image8) {
-        AFFINE_TRANSFORM(UINT8, image8)
-    } else {
-        AFFINE_TRANSFORM(INT32, image32)
+    for (y = y0; y < y1; y++) {
+        UINT8 *out;
+        xx = xo;
+        yy = yo;
+        out = (UINT8 *)imOut->image[y];
+        if (fill && x1 > x0) {
+            memset(out + x0 * pixelsize, 0, (x1 - x0) * pixelsize);
+        }
+        for (x = x0; x < x1; x++) {
+            xin = COORD(xx);
+            if (xin >= 0 && xin < xsize) {
+                yin = COORD(yy);
+                if (yin >= 0 && yin < ysize) {
+                    for (b = 0; b < pixelsize; b++) {
+                        out[x * pixelsize + b] = (UINT8 *)imIn->image[yin][xin * pixelsize + b];
+                    }
+                }
+            }
+            xx += a[0];
+            yy += a[3];
+        }
+        xo += a[1];
+        yo += a[4];
     }
-
     ImagingSectionLeave(&cookie);
-
-#undef AFFINE_TRANSFORM
 
     return imOut;
 }
