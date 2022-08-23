@@ -286,88 +286,30 @@ void
 ImagingResampleHorizontal_8bpc(
     Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *prekk) {
     ImagingSectionCookie cookie;
-    int ss0, ss1, ss2, ss3;
-    int xx, yy, x, xmin, xmax;
-    INT32 *k, *kk;
+    int xx, yy, b, x, xmin, xmax, ss;
+    UINT8 *out, *in;
+    INT32 *k;
 
     // use the same buffer for normalized coefficients
-    kk = (INT32 *)prekk;
+    const INT32 *kk = (INT32 *)prekk;
     normalize_coeffs_8bpc(imOut->xsize, ksize, prekk);
 
+    const int pixelsize = imIn->pixelsize;
+
     ImagingSectionEnter(&cookie);
-    if (imIn->image8) {
-        for (yy = 0; yy < imOut->ysize; yy++) {
-            for (xx = 0; xx < imOut->xsize; xx++) {
-                xmin = bounds[xx * 2 + 0];
-                xmax = bounds[xx * 2 + 1];
-                k = &kk[xx * ksize];
-                ss0 = 1 << (PRECISION_BITS - 1);
+    for (yy = 0; yy < imOut->ysize; yy++) {
+        out = (UINT8 *)imOut->image[yy];
+        in = (UINT8 *)imIn->image[yy + offset];
+        for (xx = 0; xx < imOut->xsize; xx++) {
+            xmin = bounds[xx * 2 + 0];
+            xmax = bounds[xx * 2 + 1];
+            k = &kk[xx * ksize];
+            for (b = 0; b < pixelsize; b++) {
+                ss = 1 << (PRECISION_BITS - 1);
                 for (x = 0; x < xmax; x++) {
-                    ss0 += ((UINT8)imIn->image8[yy + offset][x + xmin]) * k[x];
+                    ss += in[(x + xmin) * pixelsize + b] * k[x];
                 }
-                imOut->image8[yy][xx] = clip8(ss0);
-            }
-        }
-    } else if (imIn->type == IMAGING_TYPE_UINT8) {
-        if (imIn->bands == 2) {
-            for (yy = 0; yy < imOut->ysize; yy++) {
-                for (xx = 0; xx < imOut->xsize; xx++) {
-                    UINT32 v;
-                    xmin = bounds[xx * 2 + 0];
-                    xmax = bounds[xx * 2 + 1];
-                    k = &kk[xx * ksize];
-                    ss0 = ss3 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 0]) *
-                               k[x];
-                        ss3 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 3]) *
-                               k[x];
-                    }
-                    v = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
-                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
-                }
-            }
-        } else if (imIn->bands == 3) {
-            for (yy = 0; yy < imOut->ysize; yy++) {
-                for (xx = 0; xx < imOut->xsize; xx++) {
-                    UINT32 v;
-                    xmin = bounds[xx * 2 + 0];
-                    xmax = bounds[xx * 2 + 1];
-                    k = &kk[xx * ksize];
-                    ss0 = ss1 = ss2 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 0]) *
-                               k[x];
-                        ss1 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 1]) *
-                               k[x];
-                        ss2 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 2]) *
-                               k[x];
-                    }
-                    v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), 0);
-                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
-                }
-            }
-        } else {
-            for (yy = 0; yy < imOut->ysize; yy++) {
-                for (xx = 0; xx < imOut->xsize; xx++) {
-                    UINT32 v;
-                    xmin = bounds[xx * 2 + 0];
-                    xmax = bounds[xx * 2 + 1];
-                    k = &kk[xx * ksize];
-                    ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS - 1);
-                    for (x = 0; x < xmax; x++) {
-                        ss0 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 0]) *
-                               k[x];
-                        ss1 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 1]) *
-                               k[x];
-                        ss2 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 2]) *
-                               k[x];
-                        ss3 += ((UINT8)imIn->image[yy + offset][(x + xmin) * 4 + 3]) *
-                               k[x];
-                    }
-                    v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
-                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
-                }
+                out[xx * pixelsize + b] = clip8(ss);
             }
         }
     }
@@ -379,78 +321,30 @@ ImagingResampleVertical_8bpc(
     Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *prekk) {
     ImagingSectionCookie cookie;
     int ss0, ss1, ss2, ss3;
-    int xx, yy, y, ymin, ymax;
-    INT32 *k, *kk;
+    int xx, yy, b, y, ymin, ymax, ss;
+    UINT8 *out, *in;
+    INT32 *k;
 
     // use the same buffer for normalized coefficients
-    kk = (INT32 *)prekk;
+    const INT32 *kk = (INT32 *)prekk;
     normalize_coeffs_8bpc(imOut->ysize, ksize, prekk);
 
+    const int pixelsize = imIn->pixelsize;
+
     ImagingSectionEnter(&cookie);
-    if (imIn->image8) {
-        for (yy = 0; yy < imOut->ysize; yy++) {
-            k = &kk[yy * ksize];
-            ymin = bounds[yy * 2 + 0];
-            ymax = bounds[yy * 2 + 1];
-            for (xx = 0; xx < imOut->xsize; xx++) {
-                ss0 = 1 << (PRECISION_BITS - 1);
+    for (yy = 0; yy < imOut->ysize; yy++) {
+        out = (UINT8 *)imOut->image[yy];
+        k = &kk[yy * ksize];
+        ymin = bounds[yy * 2 + 0];
+        ymax = bounds[yy * 2 + 1];
+        for (xx = 0; xx < imOut->xsize; xx++) {
+            for (b = 0; b < pixelsize; b++) {
+                ss = 1 << (PRECISION_BITS - 1);
                 for (y = 0; y < ymax; y++) {
-                    ss0 += ((UINT8)imIn->image8[y + ymin][xx]) * k[y];
+                    in = (UINT8 *)imIn->image[y + ymin];
+                    ss += in[xx * pixelsize + b] * k[y];
                 }
-                imOut->image8[yy][xx] = clip8(ss0);
-            }
-        }
-    } else if (imIn->type == IMAGING_TYPE_UINT8) {
-        if (imIn->bands == 2) {
-            for (yy = 0; yy < imOut->ysize; yy++) {
-                k = &kk[yy * ksize];
-                ymin = bounds[yy * 2 + 0];
-                ymax = bounds[yy * 2 + 1];
-                for (xx = 0; xx < imOut->xsize; xx++) {
-                    UINT32 v;
-                    ss0 = ss3 = 1 << (PRECISION_BITS - 1);
-                    for (y = 0; y < ymax; y++) {
-                        ss0 += ((UINT8)imIn->image[y + ymin][xx * 4 + 0]) * k[y];
-                        ss3 += ((UINT8)imIn->image[y + ymin][xx * 4 + 3]) * k[y];
-                    }
-                    v = MAKE_UINT32(clip8(ss0), 0, 0, clip8(ss3));
-                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
-                }
-            }
-        } else if (imIn->bands == 3) {
-            for (yy = 0; yy < imOut->ysize; yy++) {
-                k = &kk[yy * ksize];
-                ymin = bounds[yy * 2 + 0];
-                ymax = bounds[yy * 2 + 1];
-                for (xx = 0; xx < imOut->xsize; xx++) {
-                    UINT32 v;
-                    ss0 = ss1 = ss2 = 1 << (PRECISION_BITS - 1);
-                    for (y = 0; y < ymax; y++) {
-                        ss0 += ((UINT8)imIn->image[y + ymin][xx * 4 + 0]) * k[y];
-                        ss1 += ((UINT8)imIn->image[y + ymin][xx * 4 + 1]) * k[y];
-                        ss2 += ((UINT8)imIn->image[y + ymin][xx * 4 + 2]) * k[y];
-                    }
-                    v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), 0);
-                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
-                }
-            }
-        } else {
-            for (yy = 0; yy < imOut->ysize; yy++) {
-                k = &kk[yy * ksize];
-                ymin = bounds[yy * 2 + 0];
-                ymax = bounds[yy * 2 + 1];
-                for (xx = 0; xx < imOut->xsize; xx++) {
-                    UINT32 v;
-                    ss0 = ss1 = ss2 = ss3 = 1 << (PRECISION_BITS - 1);
-                    for (y = 0; y < ymax; y++) {
-                        ss0 += ((UINT8)imIn->image[y + ymin][xx * 4 + 0]) * k[y];
-                        ss1 += ((UINT8)imIn->image[y + ymin][xx * 4 + 1]) * k[y];
-                        ss2 += ((UINT8)imIn->image[y + ymin][xx * 4 + 2]) * k[y];
-                        ss3 += ((UINT8)imIn->image[y + ymin][xx * 4 + 3]) * k[y];
-                    }
-                    v = MAKE_UINT32(clip8(ss0), clip8(ss1), clip8(ss2), clip8(ss3));
-                    memcpy(imOut->image[yy] + xx * sizeof(v), &v, sizeof(v));
-                }
+                out[xx * pixelsize + b] = clip8(ss);
             }
         }
     }
