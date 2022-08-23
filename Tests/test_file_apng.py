@@ -326,7 +326,7 @@ def test_apng_syntax_errors():
 
 
 @pytest.mark.parametrize(
-    "f",
+    "test_file",
     (
         "sequence_start.png",
         "sequence_gap.png",
@@ -337,9 +337,9 @@ def test_apng_syntax_errors():
         "sequence_fdat_fctl.png",
     ),
 )
-def test_apng_sequence_errors(f):
+def test_apng_sequence_errors(test_file):
     with pytest.raises(SyntaxError):
-        with Image.open(f"Tests/images/apng/{f}") as im:
+        with Image.open(f"Tests/images/apng/{test_file}") as im:
             im.seek(im.n_frames - 1)
             im.load()
 
