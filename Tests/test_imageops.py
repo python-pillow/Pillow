@@ -140,6 +140,15 @@ def test_pad():
             )
 
 
+def test_pad_round():
+    im = Image.new("1", (1, 1), 1)
+    new_im = ImageOps.pad(im, (4, 1))
+    assert new_im.load()[2, 0] == 1
+
+    new_im = ImageOps.pad(im, (1, 4))
+    assert new_im.load()[0, 2] == 1
+
+
 def test_pil163():
     # Division by zero in equalize if < 255 pixels in image (@PIL163)
 
