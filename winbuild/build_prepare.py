@@ -226,21 +226,21 @@ deps = {
         "filename": "lcms2-2.13.1.tar.gz",
         "dir": "lcms2-2.13.1",
         "patch": {
-            r"Projects\VC2019\lcms2_static\lcms2_static.vcxproj": {
+            r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
                 "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
+                "<PlatformToolset>v143</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
                 # retarget to latest (selected by vcvarsall.bat)
                 "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
             }
         },
         "build": [
             cmd_rmdir("Lib"),
-            cmd_rmdir(r"Projects\VC2019\Release"),
-            cmd_msbuild(r"Projects\VC2019\lcms2.sln", "Release", "Clean"),
+            cmd_rmdir(r"Projects\VC2022\Release"),
+            cmd_msbuild(r"Projects\VC2022\lcms2.sln", "Release", "Clean"),
             cmd_msbuild(
-                r"Projects\VC2019\lcms2.sln", "Release", "lcms2_static:Rebuild"
+                r"Projects\VC2022\lcms2.sln", "Release", "lcms2_static:Rebuild"
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
