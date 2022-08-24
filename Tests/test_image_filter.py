@@ -96,7 +96,9 @@ def test_rankfilter(mode, expected):
     assert (minimum, med, maximum) == expected
 
 
-@pytest.mark.parametrize("filter", (ImageFilter.MinFilter, ImageFilter.MedianFilter, ImageFilter.MaxFilter))
+@pytest.mark.parametrize(
+    "filter", (ImageFilter.MinFilter, ImageFilter.MedianFilter, ImageFilter.MaxFilter)
+)
 def test_rankfilter_error(filter):
     with pytest.raises(ValueError):
         im = Image.new("P", (3, 3), None)
