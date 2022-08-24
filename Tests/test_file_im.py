@@ -78,15 +78,12 @@ def test_eoferror():
         im.seek(n_frames - 1)
 
 
-def test_roundtrip(tmp_path):
-    def roundtrip(mode):
-        out = str(tmp_path / "temp.im")
-        im = hopper(mode)
-        im.save(out)
-        assert_image_equal_tofile(im, out)
-
-    for mode in ["RGB", "P", "PA"]:
-        roundtrip(mode)
+@pytest.mark.parametrize("mode", ("RGB", "P", "PA"))
+def test_roundtrip(mode, tmp_path):
+    out = str(tmp_path / "temp.im")
+    im = hopper(mode)
+    im.save(out)
+    assert_image_equal_tofile(im, out)
 
 
 def test_save_unsupported_mode(tmp_path):

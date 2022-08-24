@@ -184,8 +184,9 @@ class TestImageGetPixel(AccessTest):
         with pytest.raises(error):
             im.getpixel((-1, -1))
 
-    def test_basic(self):
-        for mode in (
+    @pytest.mark.parametrize(
+        "mode",
+        (
             "1",
             "L",
             "LA",
@@ -200,23 +201,25 @@ class TestImageGetPixel(AccessTest):
             "RGBX",
             "CMYK",
             "YCbCr",
-        ):
-            self.check(mode)
+        ),
+    )
+    def test_basic(self, mode):
+        self.check(mode)
 
-    def test_signedness(self):
+    @pytest.mark.parametrize("mode", ("I;16", "I;16B"))
+    def test_signedness(self, mode):
         # see https://github.com/python-pillow/Pillow/issues/452
         # pixelaccess is using signed int* instead of uint*
-        for mode in ("I;16", "I;16B"):
-            self.check(mode, 2**15 - 1)
-            self.check(mode, 2**15)
-            self.check(mode, 2**15 + 1)
-            self.check(mode, 2**16 - 1)
+        self.check(mode, 2**15 - 1)
+        self.check(mode, 2**15)
+        self.check(mode, 2**15 + 1)
+        self.check(mode, 2**16 - 1)
 
-    def test_p_putpixel_rgb_rgba(self):
-        for color in [(255, 0, 0), (255, 0, 0, 255)]:
-            im = Image.new("P", (1, 1), 0)
-            im.putpixel((0, 0), color)
-            assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
+    @pytest.mark.parametrize("color", ((255, 0, 0), (255, 0, 0, 255)))
+    def test_p_putpixel_rgb_rgba(self, color):
+        im = Image.new("P", (1, 1), 0)
+        im.putpixel((0, 0), color)
+        assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
 
 
 @pytest.mark.skipif(cffi is None, reason="No CFFI")

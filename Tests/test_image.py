@@ -22,8 +22,9 @@ from .helper import (
 
 
 class TestImage:
-    def test_image_modes_success(self):
-        for mode in [
+    @pytest.mark.parametrize(
+        "mode",
+        (
             "1",
             "P",
             "PA",
@@ -44,22 +45,18 @@ class TestImage:
             "YCbCr",
             "LAB",
             "HSV",
-        ]:
-            Image.new(mode, (1, 1))
+        ),
+    )
+    def test_image_modes_success(self, mode):
+        Image.new(mode, (1, 1))
 
-    def test_image_modes_fail(self):
-        for mode in [
-            "",
-            "bad",
-            "very very long",
-            "BGR;15",
-            "BGR;16",
-            "BGR;24",
-            "BGR;32",
-        ]:
-            with pytest.raises(ValueError) as e:
-                Image.new(mode, (1, 1))
-            assert str(e.value) == "unrecognized image mode"
+    @pytest.mark.parametrize(
+        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24", "BGR;32")
+    )
+    def test_image_modes_fail(self, mode):
+        with pytest.raises(ValueError) as e:
+            Image.new(mode, (1, 1))
+        assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self):
         assert issubclass(UnidentifiedImageError, OSError)
@@ -539,23 +536,22 @@ class TestImage:
         with pytest.raises(ValueError):
             Image.linear_gradient(wrong_mode)
 
-    def test_linear_gradient(self):
-
+    @pytest.mark.parametrize("mode", ("L", "P", "I", "F"))
+    def test_linear_gradient(self, mode):
         # Arrange
         target_file = "Tests/images/linear_gradient.png"
-        for mode in ["L", "P", "I", "F"]:
 
-            # Act
-            im = Image.linear_gradient(mode)
+        # Act
+        im = Image.linear_gradient(mode)
 
-            # Assert
-            assert im.size == (256, 256)
-            assert im.mode == mode
-            assert im.getpixel((0, 0)) == 0
-            assert im.getpixel((255, 255)) == 255
-            with Image.open(target_file) as target:
-                target = target.convert(mode)
-            assert_image_equal(im, target)
+        # Assert
+        assert im.size == (256, 256)
+        assert im.mode == mode
+        assert im.getpixel((0, 0)) == 0
+        assert im.getpixel((255, 255)) == 255
+        with Image.open(target_file) as target:
+            target = target.convert(mode)
+        assert_image_equal(im, target)
 
     def test_radial_gradient_wrong_mode(self):
         # Arrange
@@ -565,23 +561,22 @@ class TestImage:
         with pytest.raises(ValueError):
             Image.radial_gradient(wrong_mode)
 
-    def test_radial_gradient(self):
-
+    @pytest.mark.parametrize("mode", ("L", "P", "I", "F"))
+    def test_radial_gradient(self, mode):
         # Arrange
         target_file = "Tests/images/radial_gradient.png"
-        for mode in ["L", "P", "I", "F"]:
 
-            # Act
-            im = Image.radial_gradient(mode)
+        # Act
+        im = Image.radial_gradient(mode)
 
-            # Assert
-            assert im.size == (256, 256)
-            assert im.mode == mode
-            assert im.getpixel((0, 0)) == 255
-            assert im.getpixel((128, 128)) == 0
-            with Image.open(target_file) as target:
-                target = target.convert(mode)
-            assert_image_equal(im, target)
+        # Assert
+        assert im.size == (256, 256)
+        assert im.mode == mode
+        assert im.getpixel((0, 0)) == 255
+        assert im.getpixel((128, 128)) == 0
+        with Image.open(target_file) as target:
+            target = target.convert(mode)
+        assert_image_equal(im, target)
 
     def test_register_extensions(self):
         test_format = "a"
