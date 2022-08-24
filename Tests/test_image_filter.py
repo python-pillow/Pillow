@@ -42,8 +42,6 @@ def test_sanity_error(mode):
     with pytest.raises(TypeError):
         im = hopper(mode)
         out = im.filter("hello")
-        assert out.mode == im.mode
-        assert out.size == im.size
 
 
 # crashes on small images
