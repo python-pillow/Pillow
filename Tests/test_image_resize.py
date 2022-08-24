@@ -46,33 +46,58 @@ class TestImagingCoreResize:
             assert r.size == (15, 12)
             assert r.im.bands == im.im.bands
 
-    def test_reduce_filters(self):
-        for f in [
+    @pytest.mark.parametrize(
+        "resample",
+        (
             Image.Resampling.NEAREST,
             Image.Resampling.BOX,
             Image.Resampling.BILINEAR,
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
-        ]:
-            r = self.resize(hopper("RGB"), (15, 12), f)
-            assert r.mode == "RGB"
-            assert r.size == (15, 12)
+        ),
+    )
+    def test_reduce_filters(self, resample):
+        r = self.resize(hopper("RGB"), (15, 12), resample)
+        assert r.mode == "RGB"
+        assert r.size == (15, 12)
 
-    def test_enlarge_filters(self):
-        for f in [
+    @pytest.mark.parametrize(
+        "resample",
+        (
             Image.Resampling.NEAREST,
             Image.Resampling.BOX,
             Image.Resampling.BILINEAR,
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
-        ]:
-            r = self.resize(hopper("RGB"), (212, 195), f)
-            assert r.mode == "RGB"
-            assert r.size == (212, 195)
+        ),
+    )
+    def test_enlarge_filters(self, resample):
+        r = self.resize(hopper("RGB"), (212, 195), resample)
+        assert r.mode == "RGB"
+        assert r.size == (212, 195)
 
-    def test_endianness(self):
+    @pytest.mark.parametrize(
+        "resample",
+        (
+            Image.Resampling.NEAREST,
+            Image.Resampling.BOX,
+            Image.Resampling.BILINEAR,
+            Image.Resampling.HAMMING,
+            Image.Resampling.BICUBIC,
+            Image.Resampling.LANCZOS,
+        ),
+    )
+    @pytest.mark.parametrize(
+        "mode, channels_set",
+        (
+            ("RGB", ("blank", "filled", "dirty")),
+            ("RGBA", ("blank", "blank", "filled", "dirty")),
+            ("LA", ("filled", "dirty")),
+        ),
+    )
+    def test_endianness(self, resample, mode, channels_set):
         # Make an image with one colored pixel, in one channel.
         # When resized, that channel should be the same as a GS image.
         # Other channels should be unaffected.
@@ -86,47 +111,37 @@ class TestImagingCoreResize:
         }
         samples["dirty"].putpixel((1, 1), 128)
 
-        for f in [
+        # samples resized with current filter
+        references = {
+            name: self.resize(ch, (4, 4), resample) for name, ch in samples.items()
+        }
+
+        for channels in set(permutations(channels_set)):
+            # compile image from different channels permutations
+            im = Image.merge(mode, [samples[ch] for ch in channels])
+            resized = self.resize(im, (4, 4), resample)
+
+            for i, ch in enumerate(resized.split()):
+                # check what resized channel in image is the same
+                # as separately resized channel
+                assert_image_equal(ch, references[channels[i]])
+
+    @pytest.mark.parametrize(
+        "resample",
+        (
             Image.Resampling.NEAREST,
             Image.Resampling.BOX,
             Image.Resampling.BILINEAR,
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
-        ]:
-            # samples resized with current filter
-            references = {
-                name: self.resize(ch, (4, 4), f) for name, ch in samples.items()
-            }
-
-            for mode, channels_set in [
-                ("RGB", ("blank", "filled", "dirty")),
-                ("RGBA", ("blank", "blank", "filled", "dirty")),
-                ("LA", ("filled", "dirty")),
-            ]:
-                for channels in set(permutations(channels_set)):
-                    # compile image from different channels permutations
-                    im = Image.merge(mode, [samples[ch] for ch in channels])
-                    resized = self.resize(im, (4, 4), f)
-
-                    for i, ch in enumerate(resized.split()):
-                        # check what resized channel in image is the same
-                        # as separately resized channel
-                        assert_image_equal(ch, references[channels[i]])
-
-    def test_enlarge_zero(self):
-        for f in [
-            Image.Resampling.NEAREST,
-            Image.Resampling.BOX,
-            Image.Resampling.BILINEAR,
-            Image.Resampling.HAMMING,
-            Image.Resampling.BICUBIC,
-            Image.Resampling.LANCZOS,
-        ]:
-            r = self.resize(Image.new("RGB", (0, 0), "white"), (212, 195), f)
-            assert r.mode == "RGB"
-            assert r.size == (212, 195)
-            assert r.getdata()[0] == (0, 0, 0)
+        ),
+    )
+    def test_enlarge_zero(self, resample):
+        r = self.resize(Image.new("RGB", (0, 0), "white"), (212, 195), resample)
+        assert r.mode == "RGB"
+        assert r.size == (212, 195)
+        assert r.getdata()[0] == (0, 0, 0)
 
     def test_unknown_filter(self):
         with pytest.raises(ValueError):
@@ -170,74 +185,71 @@ class TestReducingGapResize:
                 (52, 34), Image.Resampling.BICUBIC, reducing_gap=0.99
             )
 
-    def test_reducing_gap_1(self, gradients_image):
-        for box, epsilon in [
-            (None, 4),
-            ((1.1, 2.2, 510.8, 510.9), 4),
-            ((3, 10, 410, 256), 10),
-        ]:
-            ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
-            im = gradients_image.resize(
-                (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=1.0
-            )
+    @pytest.mark.parametrize(
+        "box, epsilon",
+        ((None, 4), ((1.1, 2.2, 510.8, 510.9), 4), ((3, 10, 410, 256), 10)),
+    )
+    def test_reducing_gap_1(self, gradients_image, box, epsilon):
+        ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
+        im = gradients_image.resize(
+            (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=1.0
+        )
 
-            with pytest.raises(AssertionError):
-                assert_image_equal(ref, im)
-
-            assert_image_similar(ref, im, epsilon)
-
-    def test_reducing_gap_2(self, gradients_image):
-        for box, epsilon in [
-            (None, 1.5),
-            ((1.1, 2.2, 510.8, 510.9), 1.5),
-            ((3, 10, 410, 256), 1),
-        ]:
-            ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
-            im = gradients_image.resize(
-                (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=2.0
-            )
-
-            with pytest.raises(AssertionError):
-                assert_image_equal(ref, im)
-
-            assert_image_similar(ref, im, epsilon)
-
-    def test_reducing_gap_3(self, gradients_image):
-        for box, epsilon in [
-            (None, 1),
-            ((1.1, 2.2, 510.8, 510.9), 1),
-            ((3, 10, 410, 256), 0.5),
-        ]:
-            ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
-            im = gradients_image.resize(
-                (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=3.0
-            )
-
-            with pytest.raises(AssertionError):
-                assert_image_equal(ref, im)
-
-            assert_image_similar(ref, im, epsilon)
-
-    def test_reducing_gap_8(self, gradients_image):
-        for box in [None, (1.1, 2.2, 510.8, 510.9), (3, 10, 410, 256)]:
-            ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
-            im = gradients_image.resize(
-                (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=8.0
-            )
-
+        with pytest.raises(AssertionError):
             assert_image_equal(ref, im)
 
-    def test_box_filter(self, gradients_image):
-        for box, epsilon in [
-            ((0, 0, 512, 512), 5.5),
-            ((0.9, 1.7, 128, 128), 9.5),
-        ]:
-            ref = gradients_image.resize((52, 34), Image.Resampling.BOX, box=box)
-            im = gradients_image.resize(
-                (52, 34), Image.Resampling.BOX, box=box, reducing_gap=1.0
-            )
+        assert_image_similar(ref, im, epsilon)
 
-            assert_image_similar(ref, im, epsilon)
+    @pytest.mark.parametrize(
+        "box, epsilon",
+        ((None, 1.5), ((1.1, 2.2, 510.8, 510.9), 1.5), ((3, 10, 410, 256), 1)),
+    )
+    def test_reducing_gap_2(self, gradients_image, box, epsilon):
+        ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
+        im = gradients_image.resize(
+            (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=2.0
+        )
+
+        with pytest.raises(AssertionError):
+            assert_image_equal(ref, im)
+
+        assert_image_similar(ref, im, epsilon)
+
+    @pytest.mark.parametrize(
+        "box, epsilon",
+        ((None, 1), ((1.1, 2.2, 510.8, 510.9), 1), ((3, 10, 410, 256), 0.5)),
+    )
+    def test_reducing_gap_3(self, gradients_image, box, epsilon):
+        ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
+        im = gradients_image.resize(
+            (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=3.0
+        )
+
+        with pytest.raises(AssertionError):
+            assert_image_equal(ref, im)
+
+        assert_image_similar(ref, im, epsilon)
+
+    @pytest.mark.parametrize("box", (None, (1.1, 2.2, 510.8, 510.9), (3, 10, 410, 256)))
+    def test_reducing_gap_8(self, gradients_image, box):
+        ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
+        im = gradients_image.resize(
+            (52, 34), Image.Resampling.BICUBIC, box=box, reducing_gap=8.0
+        )
+
+        assert_image_equal(ref, im)
+
+    @pytest.mark.parametrize(
+        "box, epsilon",
+        (((0, 0, 512, 512), 5.5), ((0.9, 1.7, 128, 128), 9.5)),
+    )
+    def test_box_filter(self, gradients_image, box, epsilon):
+        ref = gradients_image.resize((52, 34), Image.Resampling.BOX, box=box)
+        im = gradients_image.resize(
+            (52, 34), Image.Resampling.BOX, box=box, reducing_gap=1.0
+        )
+
+        assert_image_similar(ref, im, epsilon)
 
 
 class TestImageResize:
@@ -264,15 +276,14 @@ class TestImageResize:
             im = im.resize((64, 64))
             assert im.size == (64, 64)
 
-    def test_default_filter(self):
-        for mode in "L", "RGB", "I", "F":
-            im = hopper(mode)
-            assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
+    @pytest.mark.parametrize("mode", ("L", "RGB", "I", "F"))
+    def test_default_filter_bicubic(self, mode):
+        im = hopper(mode)
+        assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-        for mode in "1", "P":
-            im = hopper(mode)
-            assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))
-
-        for mode in "I;16", "I;16L", "I;16B", "BGR;15", "BGR;16":
-            im = hopper(mode)
-            assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))
+    @pytest.mark.parametrize(
+        "mode", ("1", "P", "I;16", "I;16L", "I;16B", "BGR;15", "BGR;16")
+    )
+    def test_default_filter_nearest(self, mode):
+        im = hopper(mode)
+        assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))

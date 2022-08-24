@@ -514,13 +514,15 @@ class TestCoreResampleBox:
             assert_image_similar(reference, without_box, 5)
 
     @pytest.mark.parametrize("mode", ("RGB", "L", "RGBA", "LA", "I", ""))
-    def test_formats(self, mode):
-        for resample in [Image.Resampling.NEAREST, Image.Resampling.BILINEAR]:
-            im = hopper(mode)
-            box = (20, 20, im.size[0] - 20, im.size[1] - 20)
-            with_box = im.resize((32, 32), resample, box)
-            cropped = im.crop(box).resize((32, 32), resample)
-            assert_image_similar(cropped, with_box, 0.4)
+    @pytest.mark.parametrize(
+        "resample", (Image.Resampling.NEAREST, Image.Resampling.BILINEAR)
+    )
+    def test_formats(self, mode, resample):
+        im = hopper(mode)
+        box = (20, 20, im.size[0] - 20, im.size[1] - 20)
+        with_box = im.resize((32, 32), resample, box)
+        cropped = im.crop(box).resize((32, 32), resample)
+        assert_image_similar(cropped, with_box, 0.4)
 
     def test_passthrough(self):
         # When no resize is required
