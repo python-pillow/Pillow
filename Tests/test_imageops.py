@@ -110,6 +110,16 @@ def test_contain(new_size):
     assert new_im.size == (256, 256)
 
 
+def test_contain_round():
+    im = Image.new("1", (43, 63), 1)
+    new_im = ImageOps.contain(im, (5, 7))
+    assert new_im.width == 5
+
+    im = Image.new("1", (63, 43), 1)
+    new_im = ImageOps.contain(im, (7, 5))
+    assert new_im.height == 5
+
+
 def test_pad():
     # Same ratio
     im = hopper()
