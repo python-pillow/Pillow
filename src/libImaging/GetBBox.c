@@ -240,22 +240,12 @@ ImagingGetExtrema(Imaging im, void *extrema) {
     return 1; /* ok */
 }
 
-/* static ImagingColorItem* getcolors8(Imaging im, int maxcolors, int* size);*/
-static ImagingColorItem *
-getcolors32(Imaging im, int maxcolors, int *size);
-
 ImagingColorItem *
 ImagingGetColors(Imaging im, int maxcolors, int *size) {
-    /* FIXME: add support for 8-bit images */
-    return getcolors32(im, maxcolors, size);
-}
-
-static ImagingColorItem *
-getcolors32(Imaging im, int maxcolors, int *size) {
     unsigned int h;
     unsigned int i, incr;
     int colors;
-    INT32 pixel_mask;
+    INT32 pixel;
     int x, y;
     ImagingColorItem *table;
     ImagingColorItem *v;
@@ -287,15 +277,8 @@ getcolors32(Imaging im, int maxcolors, int *size) {
         }
     }
 
-    /* printf("code_size=%d\n", code_size); */
-    /* printf("code_poly=%d\n", code_poly); */
-
     if (!code_size) {
         return ImagingError_MemoryError(); /* just give up */
-    }
-
-    if (!im->image32) {
-        return ImagingError_ModeError();
     }
 
     table = calloc(code_size + 1, sizeof(ImagingColorItem));
@@ -303,20 +286,18 @@ getcolors32(Imaging im, int maxcolors, int *size) {
         return ImagingError_MemoryError();
     }
 
-    pixel_mask = 0xffffffff;
-    if (im->bands == 3) {
-        ((UINT8 *)&pixel_mask)[3] = 0;
-    }
-
     colors = 0;
 
     for (y = 0; y < im->ysize; y++) {
-        INT32 *p = im->image32[y];
-        for (x = 0; x < im->xsize; x++) {
-            INT32 pixel = p[x] & pixel_mask;
+        UINT8 *in = (UINT8 *)im->image[y];
+        for (x = 0; x < im->xsize; x++, in += im->pixelsize) {
+            pixel = 0;
+            memcpy(&pixel, in, im->pixelsize);
+
             h = (pixel); /* null hashing */
             i = (~h) & code_mask;
             v = &table[i];
+
             if (!v->count) {
                 /* add to table */
                 if (colors++ == maxcolors) {
@@ -363,13 +344,14 @@ getcolors32(Imaging im, int maxcolors, int *size) {
 overflow:
 
     /* pack the table */
-    for (x = y = 0; x < (int)code_size; x++)
+    for (x = y = 0; x < (int)code_size; x++) {
         if (table[x].count) {
             if (x != y) {
                 table[y] = table[x];
             }
             y++;
         }
+    }
     table[y].count = 0; /* mark end of table */
 
     *size = colors;
