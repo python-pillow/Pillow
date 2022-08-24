@@ -75,23 +75,25 @@ class TestImageTransform:
 
         assert_image_equal(transformed, scaled)
 
-    def test_fill(self):
-        for mode, pixel in [
-            ["RGB", (255, 0, 0)],
-            ["RGBA", (255, 0, 0, 255)],
-            ["LA", (76, 0)],
-        ]:
-            im = hopper(mode)
-            (w, h) = im.size
-            transformed = im.transform(
-                im.size,
-                Image.Transform.EXTENT,
-                (0, 0, w * 2, h * 2),
-                Image.Resampling.BILINEAR,
-                fillcolor="red",
-            )
-
-            assert transformed.getpixel((w - 1, h - 1)) == pixel
+    @pytest.mark.parametrize(
+        "mode,pixel",
+        (
+            ("RGB", (255, 0, 0)),
+            ("RGBA", (255, 0, 0, 255)),
+            ("LA", (76, 0)),
+        ),
+    )
+    def test_fill(self, mode, pixel):
+        im = hopper(mode)
+        (w, h) = im.size
+        transformed = im.transform(
+            im.size,
+            Image.Transform.EXTENT,
+            (0, 0, w * 2, h * 2),
+            Image.Resampling.BILINEAR,
+            fillcolor="red",
+        )
+        assert transformed.getpixel((w - 1, h - 1)) == pixel
 
     def test_mesh(self):
         # this should be a checkerboard of halfsized hoppers in ul, lr
@@ -222,14 +224,12 @@ class TestImageTransform:
             with pytest.raises(ValueError):
                 im.transform((100, 100), None)
 
-    def test_unknown_resampling_filter(self):
+    @pytest.mark.parametrize("resample", (Image.Resampling.BOX, "unknown"))
+    def test_unknown_resampling_filter(self, resample):
         with hopper() as im:
             (w, h) = im.size
-            for resample in (Image.Resampling.BOX, "unknown"):
-                with pytest.raises(ValueError):
-                    im.transform(
-                        (100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample
-                    )
+            with pytest.raises(ValueError):
+                im.transform((100, 100), Image.Transform.EXTENT, (0, 0, w, h), resample)
 
 
 class TestImageTransformAffine:
@@ -239,7 +239,16 @@ class TestImageTransformAffine:
         im = hopper("RGB")
         return im.crop((10, 20, im.width - 10, im.height - 20))
 
-    def _test_rotate(self, deg, transpose):
+    @pytest.mark.parametrize(
+        "deg,transpose",
+        (
+            (0, None),
+            (90, Image.Transpose.ROTATE_90),
+            (180, Image.Transpose.ROTATE_180),
+            (270, Image.Transpose.ROTATE_270),
+        ),
+    )
+    def test_rotate(self, deg, transpose):
         im = self._test_image()
 
         angle = -math.radians(deg)
@@ -271,77 +280,65 @@ class TestImageTransformAffine:
             )
             assert_image_equal(transposed, transformed)
 
-    def test_rotate_0_deg(self):
-        self._test_rotate(0, None)
-
-    def test_rotate_90_deg(self):
-        self._test_rotate(90, Image.Transpose.ROTATE_90)
-
-    def test_rotate_180_deg(self):
-        self._test_rotate(180, Image.Transpose.ROTATE_180)
-
-    def test_rotate_270_deg(self):
-        self._test_rotate(270, Image.Transpose.ROTATE_270)
-
-    def _test_resize(self, scale, epsilonscale):
+    @pytest.mark.parametrize(
+        "scale,epsilonscale",
+        (
+            (1.1, 6.9),
+            (1.5, 5.5),
+            (2.0, 5.5),
+            (2.3, 3.7),
+            (2.5, 3.7),
+        ),
+    )
+    @pytest.mark.parametrize(
+        "resample,epsilon",
+        (
+            (Image.Resampling.NEAREST, 0),
+            (Image.Resampling.BILINEAR, 2),
+            (Image.Resampling.BICUBIC, 1),
+        ),
+    )
+    def test_resize(self, scale, epsilonscale, resample, epsilon):
         im = self._test_image()
 
         size_up = int(round(im.width * scale)), int(round(im.height * scale))
         matrix_up = [1 / scale, 0, 0, 0, 1 / scale, 0, 0, 0]
         matrix_down = [scale, 0, 0, 0, scale, 0, 0, 0]
 
-        for resample, epsilon in [
+        transformed = im.transform(size_up, self.transform, matrix_up, resample)
+        transformed = transformed.transform(
+            im.size, self.transform, matrix_down, resample
+        )
+        assert_image_similar(transformed, im, epsilon * epsilonscale)
+
+    @pytest.mark.parametrize(
+        "x,y,epsilonscale",
+        (
+            (0.1, 0, 3.7),
+            (0.6, 0, 9.1),
+            (50, 50, 0),
+        ),
+    )
+    @pytest.mark.parametrize(
+        "resample,epsilon",
+        (
             (Image.Resampling.NEAREST, 0),
-            (Image.Resampling.BILINEAR, 2),
+            (Image.Resampling.BILINEAR, 1.5),
             (Image.Resampling.BICUBIC, 1),
-        ]:
-            transformed = im.transform(size_up, self.transform, matrix_up, resample)
-            transformed = transformed.transform(
-                im.size, self.transform, matrix_down, resample
-            )
-            assert_image_similar(transformed, im, epsilon * epsilonscale)
-
-    def test_resize_1_1x(self):
-        self._test_resize(1.1, 6.9)
-
-    def test_resize_1_5x(self):
-        self._test_resize(1.5, 5.5)
-
-    def test_resize_2_0x(self):
-        self._test_resize(2.0, 5.5)
-
-    def test_resize_2_3x(self):
-        self._test_resize(2.3, 3.7)
-
-    def test_resize_2_5x(self):
-        self._test_resize(2.5, 3.7)
-
-    def _test_translate(self, x, y, epsilonscale):
+        ),
+    )
+    def test_translate(self, x, y, epsilonscale, resample, epsilon):
         im = self._test_image()
 
         size_up = int(round(im.width + x)), int(round(im.height + y))
         matrix_up = [1, 0, -x, 0, 1, -y, 0, 0]
         matrix_down = [1, 0, x, 0, 1, y, 0, 0]
 
-        for resample, epsilon in [
-            (Image.Resampling.NEAREST, 0),
-            (Image.Resampling.BILINEAR, 1.5),
-            (Image.Resampling.BICUBIC, 1),
-        ]:
-            transformed = im.transform(size_up, self.transform, matrix_up, resample)
-            transformed = transformed.transform(
-                im.size, self.transform, matrix_down, resample
-            )
-            assert_image_similar(transformed, im, epsilon * epsilonscale)
-
-    def test_translate_0_1(self):
-        self._test_translate(0.1, 0, 3.7)
-
-    def test_translate_0_6(self):
-        self._test_translate(0.6, 0, 9.1)
-
-    def test_translate_50(self):
-        self._test_translate(50, 50, 0)
+        transformed = im.transform(size_up, self.transform, matrix_up, resample)
+        transformed = transformed.transform(
+            im.size, self.transform, matrix_down, resample
+        )
+        assert_image_similar(transformed, im, epsilon * epsilonscale)
 
 
 class TestImageTransformPerspective(TestImageTransformAffine):
