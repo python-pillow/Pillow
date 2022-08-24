@@ -38,55 +38,61 @@ gradients_image = Image.open("Tests/images/radial_gradients.png")
 gradients_image.load()
 
 
-def test_args_factor():
+@pytest.mark.parametrize(
+    "size,expected",
+    (
+        (3, (4, 4)),
+        ((3, 1), (4, 10)),
+        ((1, 3), (10, 4)),
+    ),
+)
+def test_args_factor(size, expected):
     im = Image.new("L", (10, 10))
-
-    assert (4, 4) == im.reduce(3).size
-    assert (4, 10) == im.reduce((3, 1)).size
-    assert (10, 4) == im.reduce((1, 3)).size
-
-    with pytest.raises(ValueError):
-        im.reduce(0)
-    with pytest.raises(TypeError):
-        im.reduce(2.0)
-    with pytest.raises(ValueError):
-        im.reduce((0, 10))
+    assert expected == im.reduce(size).size
 
 
-def test_args_box():
+@pytest.mark.parametrize(
+    "size,error", ((0, ValueError), (2.0, TypeError), ((0, 10), ValueError))
+)
+def test_args_factor_error(size, error):
     im = Image.new("L", (10, 10))
-
-    assert (5, 5) == im.reduce(2, (0, 0, 10, 10)).size
-    assert (1, 1) == im.reduce(2, (5, 5, 6, 6)).size
-
-    with pytest.raises(TypeError):
-        im.reduce(2, "stri")
-    with pytest.raises(TypeError):
-        im.reduce(2, 2)
-    with pytest.raises(ValueError):
-        im.reduce(2, (0, 0, 11, 10))
-    with pytest.raises(ValueError):
-        im.reduce(2, (0, 0, 10, 11))
-    with pytest.raises(ValueError):
-        im.reduce(2, (-1, 0, 10, 10))
-    with pytest.raises(ValueError):
-        im.reduce(2, (0, -1, 10, 10))
-    with pytest.raises(ValueError):
-        im.reduce(2, (0, 5, 10, 5))
-    with pytest.raises(ValueError):
-        im.reduce(2, (5, 0, 5, 10))
+    with pytest.raises(error):
+        im.reduce(size)
 
 
-def test_unsupported_modes():
+@pytest.mark.parametrize(
+    "size,expected",
+    (
+        ((0, 0, 10, 10), (5, 5)),
+        ((5, 5, 6, 6), (1, 1)),
+    ),
+)
+def test_args_box(size, expected):
+    im = Image.new("L", (10, 10))
+    assert expected == im.reduce(2, size).size
+
+
+@pytest.mark.parametrize(
+    "size,error",
+    (
+        ("stri", TypeError),
+        ((0, 0, 11, 10), ValueError),
+        ((0, 0, 10, 11), ValueError),
+        ((-1, 0, 10, 10), ValueError),
+        ((0, -1, 10, 10), ValueError),
+        ((0, 5, 10, 5), ValueError),
+        ((5, 0, 5, 10), ValueError),
+    ),
+)
+def test_args_box_error(size, error):
+    im = Image.new("L", (10, 10))
+    with pytest.raises(error):
+        im.reduce(2, size).size
+
+
+@pytest.mark.parametrize("mode", ("P", "1", "I;16"))
+def test_unsupported_modes(mode):
     im = Image.new("P", (10, 10))
-    with pytest.raises(ValueError):
-        im.reduce(3)
-
-    im = Image.new("1", (10, 10))
-    with pytest.raises(ValueError):
-        im.reduce(3)
-
-    im = Image.new("I;16", (10, 10))
     with pytest.raises(ValueError):
         im.reduce(3)
 
@@ -197,63 +203,69 @@ def test_mode_L():
         compare_reduce_with_box(im, factor)
 
 
-def test_mode_LA():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_LA(factor):
     im = get_image("LA")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor, 0.8, 5)
+    compare_reduce_with_reference(im, factor, 0.8, 5)
 
+
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_LA_opaque(factor):
+    im = get_image("LA")
     # With opaque alpha, an error should be way smaller.
     im.putalpha(Image.new("L", im.size, 255))
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_La():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_La(factor):
     im = get_image("La")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_RGB():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_RGB(factor):
     im = get_image("RGB")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_RGBA():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_RGBA(factor):
     im = get_image("RGBA")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor, 0.8, 5)
+    compare_reduce_with_reference(im, factor, 0.8, 5)
 
+
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_RGBA_opaque(factor):
+    im = get_image("RGBA")
     # With opaque alpha, an error should be way smaller.
     im.putalpha(Image.new("L", im.size, 255))
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_RGBa():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_RGBa(factor):
     im = get_image("RGBa")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_I():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_I(factor):
     im = get_image("I")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_F():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_F(factor):
     im = get_image("F")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor, 0, 0)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor, 0, 0)
+    compare_reduce_with_box(im, factor)
 
 
 @skip_unless_feature("jpg_2000")
