@@ -308,17 +308,9 @@ class DdsImageFile(ImageFile.ImageFile):
             (caps1_, caps2_, caps3, caps4, _,) = struct.unpack("<5I", header.read(20))
         else:
             (caps1_, caps2_, caps3, caps4, _,) = (0, 0, 0, 0, 0,)
-        caps1 = DDSCAPS(caps1_)
-        caps2 = DDSCAPS2(caps2_)
-        if pfflags & DDPF.LUMINANCE:
-            # Texture contains uncompressed L or LA data
-            if pfflags & DDPF.ALPHAPIXELS:
-                self.mode = "LA"
-            else:
-                self.mode = "L"
-
-            self.tile = [("raw", (0, 0) + self.size, 0, (self.mode, 0, 1))]
-        elif pfflags & DDPF.RGB:
+        _ = DDSCAPS(caps1_)
+        _ = DDSCAPS2(caps2_)
+        if pfflags & DDPF.RGB:
             # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             if bitcount == 24:
@@ -327,7 +319,10 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
             elif bitcount == 32 and pfflags & DDPF.ALPHAPIXELS:
                 self.mode = "RGBA"
-                rawmode = (masks[0xFF000000] + masks[0x00FF0000] + masks[0x0000FF00] + masks[0x000000FF])
+                rawmode = (masks[0xFF000000] +
+                           masks[0x00FF0000] +
+                           masks[0x0000FF00] +
+                           masks[0x000000FF])
                 self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
             else:
                 raise OSError(f"Unsupported bitcount {bitcount} for {pfflags} DDS texture")
@@ -449,12 +444,14 @@ def _save(im, fp, filename):
 
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PITCH | DDSD.PIXELFORMAT
 
+    stride = (im.width * bit_count + 7) // 8
     fp.write(
         o32(DDS_MAGIC)
         # header size, flags, height, width, pith, depth, mipmaps
-        + struct.pack("<IIIIIII", 124, flags, im.height, im.width, (im.width * bit_count + 7) // 8, 0, 0, )
+        + struct.pack("<IIIIIII", 124, flags, im.height, im.width, stride, 0, 0, )
         + struct.pack("11I", *((0,) * 11))  # reserved
-        + struct.pack("<IIII", 32, pixel_flags, 0, bit_count)  # pfsize, pfflags, fourcc, bitcount
+        # pfsize, pfflags, fourcc, bitcount
+        + struct.pack("<IIII", 32, pixel_flags, 0, bit_count)
         + rgba_mask  # dwRGBABitMask
         + struct.pack("<IIIII", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
