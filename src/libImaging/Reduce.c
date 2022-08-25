@@ -16,18 +16,18 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
     /* The most general implementation for any xscale and yscale
      */
     int x, y, xx, yy;
-    UINT32 multiplier = division_UINT32(yscale * xscale, 8);
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 multiplier = division_UINT32(yscale * xscale, 8);
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy_from = box[1] + y * yscale;
+            const int yy_from = box[1] + y * yscale;
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx_from = box[0] + x * xscale;
+                const int xx_from = box[0] + x * xscale;
                 UINT32 ss = amend;
                 for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                    UINT8 *line0 = (UINT8 *)imIn->image8[yy];
-                    UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
+                    const UINT8 *line0 = (UINT8 *)imIn->image[yy];
+                    const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
                     for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                         ss += line0[xx + 0] + line0[xx + 1] + line1[xx + 0] +
                               line1[xx + 1];
@@ -37,7 +37,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                     }
                 }
                 if (yscale & 0x01) {
-                    UINT8 *line = (UINT8 *)imIn->image8[yy];
+                    const UINT8 *line = (UINT8 *)imIn->image[yy];
                     for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                         ss += line[xx + 0] + line[xx + 1];
                     }
@@ -45,20 +45,19 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                         ss += line[xx + 0];
                     }
                 }
-                imOut->image8[y][x] = (ss * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = (ss * multiplier) >> 24;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy_from = box[1] + y * yscale;
+            const int yy_from = box[1] + y * yscale;
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx_from = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss3 = amend;
                     for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                        UINT8 *line0 = (UINT8 *)imIn->image[yy];
-                        UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+                        const UINT8 *line0 = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss0 += line0[xx * 4 + 0] + line0[xx * 4 + 4] +
                                    line1[xx * 4 + 0] + line1[xx * 4 + 4];
@@ -71,7 +70,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                         }
                     }
                     if (yscale & 0x01) {
-                        UINT8 *line = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line = (UINT8 *)imIn->image[yy];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss0 += line[xx * 4 + 0] + line[xx * 4 + 4];
                             ss3 += line[xx * 4 + 3] + line[xx * 4 + 7];
@@ -81,18 +80,17 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                             ss3 += line[xx * 4 + 3];
                         }
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx_from = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend;
                     for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                        UINT8 *line0 = (UINT8 *)imIn->image[yy];
-                        UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+                        const UINT8 *line0 = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss0 += line0[xx * 4 + 0] + line0[xx * 4 + 4] +
                                    line1[xx * 4 + 0] + line1[xx * 4 + 4];
@@ -108,7 +106,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                         }
                     }
                     if (yscale & 0x01) {
-                        UINT8 *line = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line = (UINT8 *)imIn->image[yy];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss0 += line[xx * 4 + 0] + line[xx * 4 + 4];
                             ss1 += line[xx * 4 + 1] + line[xx * 4 + 5];
@@ -120,7 +118,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                             ss2 += line[xx * 4 + 2];
                         }
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
@@ -129,12 +127,11 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx_from = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
                     for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                        UINT8 *line0 = (UINT8 *)imIn->image[yy];
-                        UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+                        const UINT8 *line0 = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss0 += line0[xx * 4 + 0] + line0[xx * 4 + 4] +
                                    line1[xx * 4 + 0] + line1[xx * 4 + 4];
@@ -153,7 +150,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                         }
                     }
                     if (yscale & 0x01) {
-                        UINT8 *line = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line = (UINT8 *)imIn->image[yy];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss0 += line[xx * 4 + 0] + line[xx * 4 + 4];
                             ss1 += line[xx * 4 + 1] + line[xx * 4 + 5];
@@ -167,7 +164,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                             ss3 += line[xx * 4 + 3];
                         }
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
@@ -185,69 +182,67 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale) {
      */
     int x, y, yy;
     int xscale = 1;
-    UINT32 multiplier = division_UINT32(yscale * xscale, 8);
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 multiplier = division_UINT32(yscale * xscale, 8);
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy_from = box[1] + y * yscale;
+            const int yy_from = box[1] + y * yscale;
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 UINT32 ss = amend;
                 for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                    UINT8 *line0 = (UINT8 *)imIn->image8[yy];
-                    UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
+                    const UINT8 *line0 = (UINT8 *)imIn->image[yy];
+                    const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
                     ss += line0[xx + 0] + line1[xx + 0];
                 }
                 if (yscale & 0x01) {
-                    UINT8 *line = (UINT8 *)imIn->image8[yy];
+                    const UINT8 *line = (UINT8 *)imIn->image[yy];
                     ss += line[xx + 0];
                 }
-                imOut->image8[y][x] = (ss * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = (ss * multiplier) >> 24;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy_from = box[1] + y * yscale;
+            const int yy_from = box[1] + y * yscale;
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss3 = amend;
                     for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                        UINT8 *line0 = (UINT8 *)imIn->image[yy];
-                        UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+                        const UINT8 *line0 = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
                         ss0 += line0[xx * 4 + 0] + line1[xx * 4 + 0];
                         ss3 += line0[xx * 4 + 3] + line1[xx * 4 + 3];
                     }
                     if (yscale & 0x01) {
-                        UINT8 *line = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line = (UINT8 *)imIn->image[yy];
                         ss0 += line[xx * 4 + 0];
                         ss3 += line[xx * 4 + 3];
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend;
                     for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                        UINT8 *line0 = (UINT8 *)imIn->image[yy];
-                        UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+                        const UINT8 *line0 = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
                         ss0 += line0[xx * 4 + 0] + line1[xx * 4 + 0];
                         ss1 += line0[xx * 4 + 1] + line1[xx * 4 + 1];
                         ss2 += line0[xx * 4 + 2] + line1[xx * 4 + 2];
                     }
                     if (yscale & 0x01) {
-                        UINT8 *line = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line = (UINT8 *)imIn->image[yy];
                         ss0 += line[xx * 4 + 0];
                         ss1 += line[xx * 4 + 1];
                         ss2 += line[xx * 4 + 2];
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
@@ -256,25 +251,24 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale) {
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
                     for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                        UINT8 *line0 = (UINT8 *)imIn->image[yy];
-                        UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+                        const UINT8 *line0 = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
                         ss0 += line0[xx * 4 + 0] + line1[xx * 4 + 0];
                         ss1 += line0[xx * 4 + 1] + line1[xx * 4 + 1];
                         ss2 += line0[xx * 4 + 2] + line1[xx * 4 + 2];
                         ss3 += line0[xx * 4 + 3] + line1[xx * 4 + 3];
                     }
                     if (yscale & 0x01) {
-                        UINT8 *line = (UINT8 *)imIn->image[yy];
+                        const UINT8 *line = (UINT8 *)imIn->image[yy];
                         ss0 += line[xx * 4 + 0];
                         ss1 += line[xx * 4 + 1];
                         ss2 += line[xx * 4 + 2];
                         ss3 += line[xx * 4 + 3];
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
@@ -292,15 +286,15 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
      */
     int x, y, xx;
     int yscale = 1;
-    UINT32 multiplier = division_UINT32(yscale * xscale, 8);
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 multiplier = division_UINT32(yscale * xscale, 8);
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line = (UINT8 *)imIn->image8[yy];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line = (UINT8 *)imIn->image[yy];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx_from = box[0] + x * xscale;
+                const int xx_from = box[0] + x * xscale;
                 UINT32 ss = amend;
                 for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                     ss += line[xx + 0] + line[xx + 1];
@@ -308,17 +302,16 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                 if (xscale & 0x01) {
                     ss += line[xx + 0];
                 }
-                imOut->image8[y][x] = (ss * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = (ss * multiplier) >> 24;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line = (UINT8 *)imIn->image[yy];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line = (UINT8 *)imIn->image[yy];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx_from = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss3 = amend;
                     for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                         ss0 += line[xx * 4 + 0] + line[xx * 4 + 4];
@@ -328,14 +321,13 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                         ss0 += line[xx * 4 + 0];
                         ss3 += line[xx * 4 + 3];
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx_from = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend;
                     for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                         ss0 += line[xx * 4 + 0] + line[xx * 4 + 4];
@@ -347,7 +339,7 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                         ss1 += line[xx * 4 + 1];
                         ss2 += line[xx * 4 + 2];
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
@@ -356,8 +348,7 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx_from = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
                     for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                         ss0 += line[xx * 4 + 0] + line[xx * 4 + 4];
@@ -371,7 +362,7 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                         ss2 += line[xx * 4 + 2];
                         ss3 += line[xx * 4 + 3];
                     }
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
@@ -390,53 +381,50 @@ ImagingReduce1x2(Imaging imOut, Imaging imIn, int box[4]) {
     int xscale = 1, yscale = 2;
     int x, y;
     UINT32 ss0, ss1, ss2, ss3;
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image8[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 ss0 = line0[xx + 0] + line1[xx + 0];
-                imOut->image8[y][x] = (ss0 + amend) >> 1;
+                ((UINT8 *)imOut->image[y])[x] = (ss0 + amend) >> 1;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line1[xx * 4 + 0];
                     ss3 = line0[xx * 4 + 3] + line1[xx * 4 + 3];
-                    v = MAKE_UINT32((ss0 + amend) >> 1, 0, 0, (ss3 + amend) >> 1);
+                    const UINT32 v = MAKE_UINT32((ss0 + amend) >> 1, 0, 0, (ss3 + amend) >> 1);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line1[xx * 4 + 0];
                     ss1 = line0[xx * 4 + 1] + line1[xx * 4 + 1];
                     ss2 = line0[xx * 4 + 2] + line1[xx * 4 + 2];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 + amend) >> 1, (ss1 + amend) >> 1, (ss2 + amend) >> 1, 0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line1[xx * 4 + 0];
                     ss1 = line0[xx * 4 + 1] + line1[xx * 4 + 1];
                     ss2 = line0[xx * 4 + 2] + line1[xx * 4 + 2];
                     ss3 = line0[xx * 4 + 3] + line1[xx * 4 + 3];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 + amend) >> 1,
                         (ss1 + amend) >> 1,
                         (ss2 + amend) >> 1,
@@ -455,51 +443,48 @@ ImagingReduce2x1(Imaging imOut, Imaging imIn, int box[4]) {
     int xscale = 2, yscale = 1;
     int x, y;
     UINT32 ss0, ss1, ss2, ss3;
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image8[yy + 0];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 ss0 = line0[xx + 0] + line0[xx + 1];
-                imOut->image8[y][x] = (ss0 + amend) >> 1;
+                ((UINT8 *)imOut->image[y])[x] = (ss0 + amend) >> 1;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4];
                     ss3 = line0[xx * 4 + 3] + line0[xx * 4 + 7];
-                    v = MAKE_UINT32((ss0 + amend) >> 1, 0, 0, (ss3 + amend) >> 1);
+                    const UINT32 v = MAKE_UINT32((ss0 + amend) >> 1, 0, 0, (ss3 + amend) >> 1);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4];
                     ss1 = line0[xx * 4 + 1] + line0[xx * 4 + 5];
                     ss2 = line0[xx * 4 + 2] + line0[xx * 4 + 6];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 + amend) >> 1, (ss1 + amend) >> 1, (ss2 + amend) >> 1, 0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4];
                     ss1 = line0[xx * 4 + 1] + line0[xx * 4 + 5];
                     ss2 = line0[xx * 4 + 2] + line0[xx * 4 + 6];
                     ss3 = line0[xx * 4 + 3] + line0[xx * 4 + 7];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 + amend) >> 1,
                         (ss1 + amend) >> 1,
                         (ss2 + amend) >> 1,
@@ -518,53 +503,50 @@ ImagingReduce2x2(Imaging imOut, Imaging imIn, int box[4]) {
     int xscale = 2, yscale = 2;
     int x, y;
     UINT32 ss0, ss1, ss2, ss3;
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image8[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 ss0 = line0[xx + 0] + line0[xx + 1] + line1[xx + 0] + line1[xx + 1];
-                imOut->image8[y][x] = (ss0 + amend) >> 2;
+                ((UINT8 *)imOut->image[y])[x] = (ss0 + amend) >> 2;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line1[xx * 4 + 0] +
                           line1[xx * 4 + 4];
                     ss3 = line0[xx * 4 + 3] + line0[xx * 4 + 7] + line1[xx * 4 + 3] +
                           line1[xx * 4 + 7];
-                    v = MAKE_UINT32((ss0 + amend) >> 2, 0, 0, (ss3 + amend) >> 2);
+                    const UINT32 v = MAKE_UINT32((ss0 + amend) >> 2, 0, 0, (ss3 + amend) >> 2);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line1[xx * 4 + 0] +
                           line1[xx * 4 + 4];
                     ss1 = line0[xx * 4 + 1] + line0[xx * 4 + 5] + line1[xx * 4 + 1] +
                           line1[xx * 4 + 5];
                     ss2 = line0[xx * 4 + 2] + line0[xx * 4 + 6] + line1[xx * 4 + 2] +
                           line1[xx * 4 + 6];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 + amend) >> 2, (ss1 + amend) >> 2, (ss2 + amend) >> 2, 0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line1[xx * 4 + 0] +
                           line1[xx * 4 + 4];
                     ss1 = line0[xx * 4 + 1] + line0[xx * 4 + 5] + line1[xx * 4 + 1] +
@@ -573,7 +555,7 @@ ImagingReduce2x2(Imaging imOut, Imaging imIn, int box[4]) {
                           line1[xx * 4 + 6];
                     ss3 = line0[xx * 4 + 3] + line0[xx * 4 + 7] + line1[xx * 4 + 3] +
                           line1[xx * 4 + 7];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 + amend) >> 2,
                         (ss1 + amend) >> 2,
                         (ss2 + amend) >> 2,
@@ -592,34 +574,33 @@ ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
     int xscale = 1, yscale = 3;
     int x, y;
     UINT32 ss0, ss1, ss2, ss3;
-    UINT32 multiplier = division_UINT32(yscale * xscale, 8);
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 multiplier = division_UINT32(yscale * xscale, 8);
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image8[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
-            UINT8 *line2 = (UINT8 *)imIn->image8[yy + 2];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 ss0 = line0[xx + 0] + line1[xx + 0] + line2[xx + 0];
-                imOut->image8[y][x] = ((ss0 + amend) * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = ((ss0 + amend) * multiplier) >> 24;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
-            UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line1[xx * 4 + 0] + line2[xx * 4 + 0];
                     ss3 = line0[xx * 4 + 3] + line1[xx * 4 + 3] + line2[xx * 4 + 3];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         0,
                         0,
@@ -628,12 +609,11 @@ ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line1[xx * 4 + 0] + line2[xx * 4 + 0];
                     ss1 = line0[xx * 4 + 1] + line1[xx * 4 + 1] + line2[xx * 4 + 1];
                     ss2 = line0[xx * 4 + 2] + line1[xx * 4 + 2] + line2[xx * 4 + 2];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
@@ -642,13 +622,12 @@ ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line1[xx * 4 + 0] + line2[xx * 4 + 0];
                     ss1 = line0[xx * 4 + 1] + line1[xx * 4 + 1] + line2[xx * 4 + 1];
                     ss2 = line0[xx * 4 + 2] + line1[xx * 4 + 2] + line2[xx * 4 + 2];
                     ss3 = line0[xx * 4 + 3] + line1[xx * 4 + 3] + line2[xx * 4 + 3];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
@@ -667,30 +646,29 @@ ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
     int xscale = 3, yscale = 1;
     int x, y;
     UINT32 ss0, ss1, ss2, ss3;
-    UINT32 multiplier = division_UINT32(yscale * xscale, 8);
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 multiplier = division_UINT32(yscale * xscale, 8);
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image8[yy + 0];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 ss0 = line0[xx + 0] + line0[xx + 1] + line0[xx + 2];
-                imOut->image8[y][x] = ((ss0 + amend) * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = ((ss0 + amend) * multiplier) >> 24;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8];
                     ss3 = line0[xx * 4 + 3] + line0[xx * 4 + 7] + line0[xx * 4 + 11];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         0,
                         0,
@@ -699,12 +677,11 @@ ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8];
                     ss1 = line0[xx * 4 + 1] + line0[xx * 4 + 5] + line0[xx * 4 + 9];
                     ss2 = line0[xx * 4 + 2] + line0[xx * 4 + 6] + line0[xx * 4 + 10];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
@@ -713,13 +690,12 @@ ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8];
                     ss1 = line0[xx * 4 + 1] + line0[xx * 4 + 5] + line0[xx * 4 + 9];
                     ss2 = line0[xx * 4 + 2] + line0[xx * 4 + 6] + line0[xx * 4 + 10];
                     ss3 = line0[xx * 4 + 3] + line0[xx * 4 + 7] + line0[xx * 4 + 11];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
@@ -738,40 +714,39 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
     int xscale = 3, yscale = 3;
     int x, y;
     UINT32 ss0, ss1, ss2, ss3;
-    UINT32 multiplier = division_UINT32(yscale * xscale, 8);
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 multiplier = division_UINT32(yscale * xscale, 8);
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image8[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
-            UINT8 *line2 = (UINT8 *)imIn->image8[yy + 2];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 ss0 = line0[xx + 0] + line0[xx + 1] + line0[xx + 2] + line1[xx + 0] +
                       line1[xx + 1] + line1[xx + 2] + line2[xx + 0] + line2[xx + 1] +
                       line2[xx + 2];
-                imOut->image8[y][x] = ((ss0 + amend) * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = ((ss0 + amend) * multiplier) >> 24;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
-            UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line1[xx * 4 + 0] + line1[xx * 4 + 4] + line1[xx * 4 + 8] +
                           line2[xx * 4 + 0] + line2[xx * 4 + 4] + line2[xx * 4 + 8];
                     ss3 = line0[xx * 4 + 3] + line0[xx * 4 + 7] + line0[xx * 4 + 11] +
                           line1[xx * 4 + 3] + line1[xx * 4 + 7] + line1[xx * 4 + 11] +
                           line2[xx * 4 + 3] + line2[xx * 4 + 7] + line2[xx * 4 + 11];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         0,
                         0,
@@ -780,8 +755,7 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line1[xx * 4 + 0] + line1[xx * 4 + 4] + line1[xx * 4 + 8] +
                           line2[xx * 4 + 0] + line2[xx * 4 + 4] + line2[xx * 4 + 8];
@@ -791,7 +765,7 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
                     ss2 = line0[xx * 4 + 2] + line0[xx * 4 + 6] + line0[xx * 4 + 10] +
                           line1[xx * 4 + 2] + line1[xx * 4 + 6] + line1[xx * 4 + 10] +
                           line2[xx * 4 + 2] + line2[xx * 4 + 6] + line2[xx * 4 + 10];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
@@ -800,8 +774,7 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line1[xx * 4 + 0] + line1[xx * 4 + 4] + line1[xx * 4 + 8] +
                           line2[xx * 4 + 0] + line2[xx * 4 + 4] + line2[xx * 4 + 8];
@@ -814,7 +787,7 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
                     ss3 = line0[xx * 4 + 3] + line0[xx * 4 + 7] + line0[xx * 4 + 11] +
                           line1[xx * 4 + 3] + line1[xx * 4 + 7] + line1[xx * 4 + 11] +
                           line2[xx * 4 + 3] + line2[xx * 4 + 7] + line2[xx * 4 + 11];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
@@ -833,35 +806,34 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
     int xscale = 4, yscale = 4;
     int x, y;
     UINT32 ss0, ss1, ss2, ss3;
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image8[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
-            UINT8 *line2 = (UINT8 *)imIn->image8[yy + 2];
-            UINT8 *line3 = (UINT8 *)imIn->image8[yy + 3];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
+            const UINT8 *line3 = (UINT8 *)imIn->image[yy + 3];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 ss0 = line0[xx + 0] + line0[xx + 1] + line0[xx + 2] + line0[xx + 3] +
                       line1[xx + 0] + line1[xx + 1] + line1[xx + 2] + line1[xx + 3] +
                       line2[xx + 0] + line2[xx + 1] + line2[xx + 2] + line2[xx + 3] +
                       line3[xx + 0] + line3[xx + 1] + line3[xx + 2] + line3[xx + 3];
-                imOut->image8[y][x] = (ss0 + amend) >> 4;
+                ((UINT8 *)imOut->image[y])[x] = (ss0 + amend) >> 4;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
-            UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
-            UINT8 *line3 = (UINT8 *)imIn->image[yy + 3];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
+            const UINT8 *line3 = (UINT8 *)imIn->image[yy + 3];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line0[xx * 4 + 12] + line1[xx * 4 + 0] + line1[xx * 4 + 4] +
                           line1[xx * 4 + 8] + line1[xx * 4 + 12] + line2[xx * 4 + 0] +
@@ -874,13 +846,12 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
                           line2[xx * 4 + 7] + line2[xx * 4 + 11] + line2[xx * 4 + 15] +
                           line3[xx * 4 + 3] + line3[xx * 4 + 7] + line3[xx * 4 + 11] +
                           line3[xx * 4 + 15];
-                    v = MAKE_UINT32((ss0 + amend) >> 4, 0, 0, (ss3 + amend) >> 4);
+                    const UINT32 v = MAKE_UINT32((ss0 + amend) >> 4, 0, 0, (ss3 + amend) >> 4);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line0[xx * 4 + 12] + line1[xx * 4 + 0] + line1[xx * 4 + 4] +
                           line1[xx * 4 + 8] + line1[xx * 4 + 12] + line2[xx * 4 + 0] +
@@ -899,14 +870,13 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
                           line2[xx * 4 + 6] + line2[xx * 4 + 10] + line2[xx * 4 + 14] +
                           line3[xx * 4 + 2] + line3[xx * 4 + 6] + line3[xx * 4 + 10] +
                           line3[xx * 4 + 14];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 + amend) >> 4, (ss1 + amend) >> 4, (ss2 + amend) >> 4, 0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line0[xx * 4 + 12] + line1[xx * 4 + 0] + line1[xx * 4 + 4] +
                           line1[xx * 4 + 8] + line1[xx * 4 + 12] + line2[xx * 4 + 0] +
@@ -931,7 +901,7 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
                           line2[xx * 4 + 7] + line2[xx * 4 + 11] + line2[xx * 4 + 15] +
                           line3[xx * 4 + 3] + line3[xx * 4 + 7] + line3[xx * 4 + 11] +
                           line3[xx * 4 + 15];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         (ss0 + amend) >> 4,
                         (ss1 + amend) >> 4,
                         (ss2 + amend) >> 4,
@@ -950,19 +920,19 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
     int xscale = 5, yscale = 5;
     int x, y;
     UINT32 ss0, ss1, ss2, ss3;
-    UINT32 multiplier = division_UINT32(yscale * xscale, 8);
-    UINT32 amend = yscale * xscale / 2;
+    const UINT32 multiplier = division_UINT32(yscale * xscale, 8);
+    const UINT32 amend = yscale * xscale / 2;
 
     if (imIn->image8) {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image8[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image8[yy + 1];
-            UINT8 *line2 = (UINT8 *)imIn->image8[yy + 2];
-            UINT8 *line3 = (UINT8 *)imIn->image8[yy + 3];
-            UINT8 *line4 = (UINT8 *)imIn->image8[yy + 4];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
+            const UINT8 *line3 = (UINT8 *)imIn->image[yy + 3];
+            const UINT8 *line4 = (UINT8 *)imIn->image[yy + 4];
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx = box[0] + x * xscale;
+                const int xx = box[0] + x * xscale;
                 ss0 = line0[xx + 0] + line0[xx + 1] + line0[xx + 2] + line0[xx + 3] +
                       line0[xx + 4] + line1[xx + 0] + line1[xx + 1] + line1[xx + 2] +
                       line1[xx + 3] + line1[xx + 4] + line2[xx + 0] + line2[xx + 1] +
@@ -970,21 +940,20 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                       line3[xx + 1] + line3[xx + 2] + line3[xx + 3] + line3[xx + 4] +
                       line4[xx + 0] + line4[xx + 1] + line4[xx + 2] + line4[xx + 3] +
                       line4[xx + 4];
-                imOut->image8[y][x] = ((ss0 + amend) * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = ((ss0 + amend) * multiplier) >> 24;
             }
         }
     } else {
         for (y = 0; y < box[3] / yscale; y++) {
-            int yy = box[1] + y * yscale;
-            UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
-            UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
-            UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
-            UINT8 *line3 = (UINT8 *)imIn->image[yy + 3];
-            UINT8 *line4 = (UINT8 *)imIn->image[yy + 4];
+            const int yy = box[1] + y * yscale;
+            const UINT8 *line0 = (UINT8 *)imIn->image[yy + 0];
+            const UINT8 *line1 = (UINT8 *)imIn->image[yy + 1];
+            const UINT8 *line2 = (UINT8 *)imIn->image[yy + 2];
+            const UINT8 *line3 = (UINT8 *)imIn->image[yy + 3];
+            const UINT8 *line4 = (UINT8 *)imIn->image[yy + 4];
             if (imIn->bands == 2) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line0[xx * 4 + 12] + line0[xx * 4 + 16] + line1[xx * 4 + 0] +
                           line1[xx * 4 + 4] + line1[xx * 4 + 8] + line1[xx * 4 + 12] +
@@ -1003,7 +972,7 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                           line3[xx * 4 + 15] + line3[xx * 4 + 19] + line4[xx * 4 + 3] +
                           line4[xx * 4 + 7] + line4[xx * 4 + 11] + line4[xx * 4 + 15] +
                           line4[xx * 4 + 19];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         0,
                         0,
@@ -1012,8 +981,7 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                 }
             } else if (imIn->bands == 3) {
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line0[xx * 4 + 12] + line0[xx * 4 + 16] + line1[xx * 4 + 0] +
                           line1[xx * 4 + 4] + line1[xx * 4 + 8] + line1[xx * 4 + 12] +
@@ -1041,7 +1009,7 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                           line3[xx * 4 + 14] + line3[xx * 4 + 18] + line4[xx * 4 + 2] +
                           line4[xx * 4 + 6] + line4[xx * 4 + 10] + line4[xx * 4 + 14] +
                           line4[xx * 4 + 18];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
@@ -1050,8 +1018,7 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                 }
             } else {  // bands == 4
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx = box[0] + x * xscale;
-                    UINT32 v;
+                    const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
                           line0[xx * 4 + 12] + line0[xx * 4 + 16] + line1[xx * 4 + 0] +
                           line1[xx * 4 + 4] + line1[xx * 4 + 8] + line1[xx * 4 + 12] +
@@ -1088,7 +1055,7 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                           line3[xx * 4 + 15] + line3[xx * 4 + 19] + line4[xx * 4 + 3] +
                           line4[xx * 4 + 7] + line4[xx * 4 + 11] + line4[xx * 4 + 15] +
                           line4[xx * 4 + 19];
-                    v = MAKE_UINT32(
+                    const UINT32 v = MAKE_UINT32(
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
@@ -1109,67 +1076,66 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
     if (imIn->image8) {
         if (box[2] % xscale) {
             int scale = (box[2] % xscale) * yscale;
-            UINT32 multiplier = division_UINT32(scale, 8);
-            UINT32 amend = scale / 2;
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
             for (y = 0; y < box[3] / yscale; y++) {
-                int yy_from = box[1] + y * yscale;
+                const int yy_from = box[1] + y * yscale;
                 UINT32 ss = amend;
                 x = box[2] / xscale;
 
                 for (yy = yy_from; yy < yy_from + yscale; yy++) {
-                    UINT8 *line = (UINT8 *)imIn->image8[yy];
+                    const UINT8 *line = (UINT8 *)imIn->image[yy];
                     for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
                         ss += line[xx + 0];
                     }
                 }
-                imOut->image8[y][x] = (ss * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = (ss * multiplier) >> 24;
             }
         }
         if (box[3] % yscale) {
             int scale = xscale * (box[3] % yscale);
-            UINT32 multiplier = division_UINT32(scale, 8);
-            UINT32 amend = scale / 2;
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
             y = box[3] / yscale;
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx_from = box[0] + x * xscale;
+                const int xx_from = box[0] + x * xscale;
                 UINT32 ss = amend;
                 for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
-                    UINT8 *line = (UINT8 *)imIn->image8[yy];
+                    const UINT8 *line = (UINT8 *)imIn->image[yy];
                     for (xx = xx_from; xx < xx_from + xscale; xx++) {
                         ss += line[xx + 0];
                     }
                 }
-                imOut->image8[y][x] = (ss * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x] = (ss * multiplier) >> 24;
             }
         }
         if (box[2] % xscale && box[3] % yscale) {
             int scale = (box[2] % xscale) * (box[3] % yscale);
-            UINT32 multiplier = division_UINT32(scale, 8);
-            UINT32 amend = scale / 2;
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
             UINT32 ss = amend;
             x = box[2] / xscale;
             y = box[3] / yscale;
             for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
-                UINT8 *line = (UINT8 *)imIn->image8[yy];
+                const UINT8 *line = (UINT8 *)imIn->image[yy];
                 for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
                     ss += line[xx + 0];
                 }
             }
-            imOut->image8[y][x] = (ss * multiplier) >> 24;
+            ((UINT8 *)imOut->image[y])[x] = (ss * multiplier) >> 24;
         }
     } else {
         if (box[2] % xscale) {
             int scale = (box[2] % xscale) * yscale;
-            UINT32 multiplier = division_UINT32(scale, 8);
-            UINT32 amend = scale / 2;
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
             for (y = 0; y < box[3] / yscale; y++) {
-                int yy_from = box[1] + y * yscale;
-                UINT32 v;
+                const int yy_from = box[1] + y * yscale;
                 UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
                 x = box[2] / xscale;
 
                 for (yy = yy_from; yy < yy_from + yscale; yy++) {
-                    UINT8 *line = (UINT8 *)imIn->image[yy];
+                    const UINT8 *line = (UINT8 *)imIn->image[yy];
                     for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
                         ss0 += line[xx * 4 + 0];
                         ss1 += line[xx * 4 + 1];
@@ -1177,7 +1143,7 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
                         ss3 += line[xx * 4 + 3];
                     }
                 }
-                v = MAKE_UINT32(
+                const UINT32 v = MAKE_UINT32(
                     (ss0 * multiplier) >> 24,
                     (ss1 * multiplier) >> 24,
                     (ss2 * multiplier) >> 24,
@@ -1187,15 +1153,14 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
         }
         if (box[3] % yscale) {
             int scale = xscale * (box[3] % yscale);
-            UINT32 multiplier = division_UINT32(scale, 8);
-            UINT32 amend = scale / 2;
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
             y = box[3] / yscale;
             for (x = 0; x < box[2] / xscale; x++) {
-                int xx_from = box[0] + x * xscale;
-                UINT32 v;
+                const int xx_from = box[0] + x * xscale;
                 UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
                 for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
-                    UINT8 *line = (UINT8 *)imIn->image[yy];
+                    const UINT8 *line = (UINT8 *)imIn->image[yy];
                     for (xx = xx_from; xx < xx_from + xscale; xx++) {
                         ss0 += line[xx * 4 + 0];
                         ss1 += line[xx * 4 + 1];
@@ -1203,7 +1168,7 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
                         ss3 += line[xx * 4 + 3];
                     }
                 }
-                v = MAKE_UINT32(
+                const UINT32 v = MAKE_UINT32(
                     (ss0 * multiplier) >> 24,
                     (ss1 * multiplier) >> 24,
                     (ss2 * multiplier) >> 24,
@@ -1213,14 +1178,13 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
         }
         if (box[2] % xscale && box[3] % yscale) {
             int scale = (box[2] % xscale) * (box[3] % yscale);
-            UINT32 multiplier = division_UINT32(scale, 8);
-            UINT32 amend = scale / 2;
-            UINT32 v;
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
             UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
             x = box[2] / xscale;
             y = box[3] / yscale;
             for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
-                UINT8 *line = (UINT8 *)imIn->image[yy];
+                const UINT8 *line = (UINT8 *)imIn->image[yy];
                 for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
                     ss0 += line[xx * 4 + 0];
                     ss1 += line[xx * 4 + 1];
@@ -1228,7 +1192,7 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
                     ss3 += line[xx * 4 + 3];
                 }
             }
-            v = MAKE_UINT32(
+            const UINT32 v = MAKE_UINT32(
                 (ss0 * multiplier) >> 24,
                 (ss1 * multiplier) >> 24,
                 (ss2 * multiplier) >> 24,
@@ -1249,13 +1213,13 @@ ImagingReduceNxN_32bpc(
     switch (imIn->type) {
         case IMAGING_TYPE_INT32:
             for (y = 0; y < box[3] / yscale; y++) {
-                int yy_from = box[1] + y * yscale;
+                const int yy_from = box[1] + y * yscale;
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
+                    const int xx_from = box[0] + x * xscale;
                     double ss = 0;
                     for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                        INT32 *line0 = (INT32 *)imIn->image32[yy];
-                        INT32 *line1 = (INT32 *)imIn->image32[yy + 1];
+                        INT32 *line0 = (INT32 *)imIn->image[yy];
+                        INT32 *line1 = (INT32 *)imIn->image[yy + 1];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss += line0[xx + 0] + line0[xx + 1] + line1[xx + 0] +
                                   line1[xx + 1];
@@ -1265,7 +1229,7 @@ ImagingReduceNxN_32bpc(
                         }
                     }
                     if (yscale & 0x01) {
-                        INT32 *line = (INT32 *)imIn->image32[yy];
+                        INT32 *line = (INT32 *)imIn->image[yy];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss += line[xx + 0] + line[xx + 1];
                         }
@@ -1280,13 +1244,13 @@ ImagingReduceNxN_32bpc(
 
         case IMAGING_TYPE_FLOAT32:
             for (y = 0; y < box[3] / yscale; y++) {
-                int yy_from = box[1] + y * yscale;
+                const int yy_from = box[1] + y * yscale;
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
+                    const int xx_from = box[0] + x * xscale;
                     double ss = 0;
                     for (yy = yy_from; yy < yy_from + yscale - 1; yy += 2) {
-                        FLOAT32 *line0 = (FLOAT32 *)imIn->image32[yy];
-                        FLOAT32 *line1 = (FLOAT32 *)imIn->image32[yy + 1];
+                        FLOAT32 *line0 = (FLOAT32 *)imIn->image[yy];
+                        FLOAT32 *line1 = (FLOAT32 *)imIn->image[yy + 1];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss += line0[xx + 0] + line0[xx + 1] + line1[xx + 0] +
                                   line1[xx + 1];
@@ -1296,7 +1260,7 @@ ImagingReduceNxN_32bpc(
                         }
                     }
                     if (yscale & 0x01) {
-                        FLOAT32 *line = (FLOAT32 *)imIn->image32[yy];
+                        FLOAT32 *line = (FLOAT32 *)imIn->image[yy];
                         for (xx = xx_from; xx < xx_from + xscale - 1; xx += 2) {
                             ss += line[xx + 0] + line[xx + 1];
                         }
@@ -1323,11 +1287,11 @@ ImagingReduceCorners_32bpc(
             if (box[2] % xscale) {
                 double multiplier = 1.0 / ((box[2] % xscale) * yscale);
                 for (y = 0; y < box[3] / yscale; y++) {
-                    int yy_from = box[1] + y * yscale;
+                    const int yy_from = box[1] + y * yscale;
                     double ss = 0;
                     x = box[2] / xscale;
                     for (yy = yy_from; yy < yy_from + yscale; yy++) {
-                        INT32 *line = (INT32 *)imIn->image32[yy];
+                        INT32 *line = (INT32 *)imIn->image[yy];
                         for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
                             ss += line[xx + 0];
                         }
@@ -1339,10 +1303,10 @@ ImagingReduceCorners_32bpc(
                 double multiplier = 1.0 / (xscale * (box[3] % yscale));
                 y = box[3] / yscale;
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
+                    const int xx_from = box[0] + x * xscale;
                     double ss = 0;
                     for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
-                        INT32 *line = (INT32 *)imIn->image32[yy];
+                        INT32 *line = (INT32 *)imIn->image[yy];
                         for (xx = xx_from; xx < xx_from + xscale; xx++) {
                             ss += line[xx + 0];
                         }
@@ -1356,7 +1320,7 @@ ImagingReduceCorners_32bpc(
                 x = box[2] / xscale;
                 y = box[3] / yscale;
                 for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
-                    INT32 *line = (INT32 *)imIn->image32[yy];
+                    INT32 *line = (INT32 *)imIn->image[yy];
                     for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
                         ss += line[xx + 0];
                     }
@@ -1369,11 +1333,11 @@ ImagingReduceCorners_32bpc(
             if (box[2] % xscale) {
                 double multiplier = 1.0 / ((box[2] % xscale) * yscale);
                 for (y = 0; y < box[3] / yscale; y++) {
-                    int yy_from = box[1] + y * yscale;
+                    const int yy_from = box[1] + y * yscale;
                     double ss = 0;
                     x = box[2] / xscale;
                     for (yy = yy_from; yy < yy_from + yscale; yy++) {
-                        FLOAT32 *line = (FLOAT32 *)imIn->image32[yy];
+                        FLOAT32 *line = (FLOAT32 *)imIn->image[yy];
                         for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
                             ss += line[xx + 0];
                         }
@@ -1385,10 +1349,10 @@ ImagingReduceCorners_32bpc(
                 double multiplier = 1.0 / (xscale * (box[3] % yscale));
                 y = box[3] / yscale;
                 for (x = 0; x < box[2] / xscale; x++) {
-                    int xx_from = box[0] + x * xscale;
+                    const int xx_from = box[0] + x * xscale;
                     double ss = 0;
                     for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
-                        FLOAT32 *line = (FLOAT32 *)imIn->image32[yy];
+                        FLOAT32 *line = (FLOAT32 *)imIn->image[yy];
                         for (xx = xx_from; xx < xx_from + xscale; xx++) {
                             ss += line[xx + 0];
                         }
@@ -1402,7 +1366,7 @@ ImagingReduceCorners_32bpc(
                 x = box[2] / xscale;
                 y = box[3] / yscale;
                 for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
-                    FLOAT32 *line = (FLOAT32 *)imIn->image32[yy];
+                    FLOAT32 *line = (FLOAT32 *)imIn->image[yy];
                     for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
                         ss += line[xx + 0];
                     }
