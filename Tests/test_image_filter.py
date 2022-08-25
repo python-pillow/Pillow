@@ -41,7 +41,7 @@ def test_sanity(filter_to_apply, mode):
 def test_sanity_error(mode):
     with pytest.raises(TypeError):
         im = hopper(mode)
-        out = im.filter("hello")
+        im.filter("hello")
 
 
 # crashes on small images
