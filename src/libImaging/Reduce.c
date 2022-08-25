@@ -125,7 +125,7 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                         0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx_from = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
@@ -249,7 +249,7 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale) {
                         0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
@@ -346,7 +346,7 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                         0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx_from = box[0] + x * xscale;
                     UINT32 ss0 = amend, ss1 = amend, ss2 = amend, ss3 = amend;
@@ -417,7 +417,7 @@ ImagingReduce1x2(Imaging imOut, Imaging imIn, int box[4]) {
                         (ss0 + amend) >> 1, (ss1 + amend) >> 1, (ss2 + amend) >> 1, 0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line1[xx * 4 + 0];
@@ -477,7 +477,7 @@ ImagingReduce2x1(Imaging imOut, Imaging imIn, int box[4]) {
                         (ss0 + amend) >> 1, (ss1 + amend) >> 1, (ss2 + amend) >> 1, 0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4];
@@ -544,7 +544,7 @@ ImagingReduce2x2(Imaging imOut, Imaging imIn, int box[4]) {
                         (ss0 + amend) >> 2, (ss1 + amend) >> 2, (ss2 + amend) >> 2, 0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line1[xx * 4 + 0] +
@@ -620,7 +620,7 @@ ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
                         0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line1[xx * 4 + 0] + line2[xx * 4 + 0];
@@ -688,7 +688,7 @@ ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
                         0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8];
@@ -772,7 +772,7 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
                         0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
@@ -874,7 +874,7 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
                         (ss0 + amend) >> 4, (ss1 + amend) >> 4, (ss2 + amend) >> 4, 0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
@@ -1016,7 +1016,7 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                         0);
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
-            } else {  // bands == 4
+            } else if (imIn->bands == 4) {
                 for (x = 0; x < box[2] / xscale; x++) {
                     const int xx = box[0] + x * xscale;
                     ss0 = line0[xx * 4 + 0] + line0[xx * 4 + 4] + line0[xx * 4 + 8] +
