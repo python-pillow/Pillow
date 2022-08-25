@@ -958,22 +958,29 @@ class TestImageFont:
         d = ImageDraw.Draw(im)
         d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
 
-        assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 6.2)
+        assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 3.1)
 
-    def test_multiline_centered_embedded_color(self):
-        txt = "Hello\nWorld!"
+    @pytest.mark.parametrize("fontmode", ("1", "L", "RGBA"))
+    def test_float_coord(self, fontmode):
+        txt = "Hello World!"
         ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=self.LAYOUT_ENGINE)
-        ttf.getbbox(txt)
 
-        im = Image.new("RGB", (160, 96), "white")
+        im = Image.new("RGB", (300, 64), "white")
         d = ImageDraw.Draw(im)
-        d.multiline_text(
-            (10, 10), txt, font=ttf, fill="#fa6", align="center", embedded_color=True
-        )
+        if fontmode == "1":
+            d.fontmode = "1"
 
-        assert_image_similar_tofile(
-            im, "Tests/images/standard_embedded_multiline_centered.png", 6.2
-        )
+        embedded_color = fontmode == "RGBA"
+        d.text((9.5, 9.5), txt, font=ttf, fill="#fa6", embedded_color=embedded_color)
+        try:
+            assert_image_similar_tofile(im, "Tests/images/text_float_coord.png", 3.9)
+        except AssertionError:
+            if fontmode == "1" and self.LAYOUT_ENGINE == ImageFont.Layout.BASIC:
+                assert_image_similar_tofile(
+                    im, "Tests/images/text_float_coord_1_alt.png", 1
+                )
+            else:
+                raise
 
     def test_cbdt(self):
         try:
