@@ -320,7 +320,6 @@ void
 ImagingResampleVertical_8bpc(
     Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *prekk) {
     ImagingSectionCookie cookie;
-    int ss0, ss1, ss2, ss3;
     int xx, yy, b, y, ymin, ymax, ss;
     UINT8 *out, *in;
     INT32 *k;
