@@ -9,14 +9,14 @@ import sys
 import sysconfig
 import tempfile
 from io import BytesIO
+from typing import List
 
 import pytest
 from packaging.version import parse as parse_version
 
-from PIL import Image, ImageMath, features
+from PIL import Image, ImageMath, features, ImageChops
 
 logger = logging.getLogger(__name__)
-
 
 HAS_UPLOADER = False
 
@@ -24,14 +24,17 @@ if os.environ.get("SHOW_ERRORS"):
     # local img.show for errors.
     HAS_UPLOADER = True
 
+
     class test_image_results:
         @staticmethod
         def upload(a, b):
-            a.show()
-            b.show()
+            diff = ImageChops.difference(a.convert("RGB"), b.convert("RGB"))
+            c = concat_h([a, b, diff])
+            c.show()
 
 elif "GITHUB_ACTIONS" in os.environ:
     HAS_UPLOADER = True
+
 
     class test_image_results:
         @staticmethod
@@ -50,6 +53,19 @@ else:
         HAS_UPLOADER = True
     except ImportError:
         pass
+
+
+def concat_h(images: List[Image.Image]):
+    new_size = images[0].size
+    for image in images[1:]:
+        assert image.height == new_size[1]
+        new_size = (new_size[0] + image.width, new_size[1])
+    dst = Image.new('RGBA', new_size)
+    x_offset = 0
+    for image in images:
+        dst.paste(image, (x_offset, 0))
+        x_offset += image.width
+    return dst
 
 
 def convert_to_comparable(a, b):
@@ -75,12 +91,12 @@ def assert_deep_equal(a, b, msg=None):
 def assert_image(im, mode, size, msg=None):
     if mode is not None:
         assert im.mode == mode, (
-            msg or f"got mode {repr(im.mode)}, expected {repr(mode)}"
+                msg or f"got mode {repr(im.mode)}, expected {repr(mode)}"
         )
 
     if size is not None:
         assert im.size == size, (
-            msg or f"got size {repr(im.size)}, expected {repr(size)}"
+                msg or f"got size {repr(im.size)}, expected {repr(size)}"
         )
 
 
@@ -119,8 +135,8 @@ def assert_image_similar(a, b, epsilon, msg=None):
     ave_diff = diff / (a.size[0] * a.size[1])
     try:
         assert epsilon >= ave_diff, (
-            (msg or "")
-            + f" average pixel value difference {ave_diff:.4f} > epsilon {epsilon:.4f}"
+                (msg or "")
+                + f" average pixel value difference {ave_diff:.4f} > epsilon {epsilon:.4f}"
         )
     except Exception as e:
         if HAS_UPLOADER:
@@ -179,8 +195,8 @@ def mark_if_feature_version(mark, feature, version_blacklist, reason=None):
     version_required = parse_version(version_blacklist)
     version_available = parse_version(features.version(feature))
     if (
-        version_available.major == version_required.major
-        and version_available.minor == version_required.minor
+            version_available.major == version_required.major
+            and version_available.minor == version_required.minor
     ):
         return mark(reason=reason)
     return pytest.mark.pil_noop_mark()
