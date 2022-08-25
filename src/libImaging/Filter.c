@@ -106,9 +106,9 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
         // Add one time for rounding
         offset += 0.5;
         for (y = 1; y < im->ysize - 1; y++) {
-            UINT8 *in_1 = (UINT8 *)im->image[y - 1];
-            UINT8 *in0 = (UINT8 *)im->image[y];
-            UINT8 *in1 = (UINT8 *)im->image[y + 1];
+            const UINT8 *in_1 = (UINT8 *)im->image[y - 1];
+            const UINT8 *in0 = (UINT8 *)im->image[y];
+            const UINT8 *in1 = (UINT8 *)im->image[y + 1];
             UINT8 *out = (UINT8 *)imOut->image[y];
 
             out[0] = in0[0];
@@ -125,9 +125,9 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
         // Add one time for rounding
         offset += 0.5;
         for (y = 1; y < im->ysize - 1; y++) {
-            UINT8 *in_1 = (UINT8 *)im->image[y - 1];
-            UINT8 *in0 = (UINT8 *)im->image[y];
-            UINT8 *in1 = (UINT8 *)im->image[y + 1];
+            const UINT8 *in_1 = (UINT8 *)im->image[y - 1];
+            const UINT8 *in0 = (UINT8 *)im->image[y];
+            const UINT8 *in1 = (UINT8 *)im->image[y + 1];
             UINT8 *out = (UINT8 *)imOut->image[y];
 
             memcpy(out, in0, sizeof(UINT32));
@@ -208,11 +208,11 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
         // Add one time for rounding
         offset += 0.5;
         for (y = 2; y < im->ysize - 2; y++) {
-            UINT8 *in_2 = (UINT8 *)im->image[y - 2];
-            UINT8 *in_1 = (UINT8 *)im->image[y - 1];
-            UINT8 *in0 = (UINT8 *)im->image[y];
-            UINT8 *in1 = (UINT8 *)im->image[y + 1];
-            UINT8 *in2 = (UINT8 *)im->image[y + 2];
+            const UINT8 *in_2 = (UINT8 *)im->image[y - 2];
+            const UINT8 *in_1 = (UINT8 *)im->image[y - 1];
+            const UINT8 *in0 = (UINT8 *)im->image[y];
+            const UINT8 *in1 = (UINT8 *)im->image[y + 1];
+            const UINT8 *in2 = (UINT8 *)im->image[y + 2];
             UINT8 *out = (UINT8 *)imOut->image[y];
 
             out[0] = in0[0];
@@ -233,11 +233,11 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
         // Add one time for rounding
         offset += 0.5;
         for (y = 2; y < im->ysize - 2; y++) {
-            UINT8 *in_2 = (UINT8 *)im->image[y - 2];
-            UINT8 *in_1 = (UINT8 *)im->image[y - 1];
-            UINT8 *in0 = (UINT8 *)im->image[y];
-            UINT8 *in1 = (UINT8 *)im->image[y + 1];
-            UINT8 *in2 = (UINT8 *)im->image[y + 2];
+            const UINT8 *in_2 = (UINT8 *)im->image[y - 2];
+            const UINT8 *in_1 = (UINT8 *)im->image[y - 1];
+            const UINT8 *in0 = (UINT8 *)im->image[y];
+            const UINT8 *in1 = (UINT8 *)im->image[y + 1];
+            const UINT8 *in2 = (UINT8 *)im->image[y + 2];
             UINT8 *out = (UINT8 *)imOut->image[y];
 
             memcpy(out, in0, sizeof(UINT32) * 2);
