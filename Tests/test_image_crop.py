@@ -5,17 +5,14 @@ from PIL import Image
 from .helper import assert_image_equal, hopper
 
 
-def test_crop():
-    def crop(mode):
-        im = hopper(mode)
-        assert_image_equal(im.crop(), im)
+@pytest.mark.parametrize("mode", ("1", "P", "L", "RGB", "I", "F"))
+def test_crop(mode):
+    im = hopper(mode)
+    assert_image_equal(im.crop(), im)
 
-        cropped = im.crop((50, 50, 100, 100))
-        assert cropped.mode == mode
-        assert cropped.size == (50, 50)
-
-    for mode in "1", "P", "L", "RGB", "I", "F":
-        crop(mode)
+    cropped = im.crop((50, 50, 100, 100))
+    assert cropped.mode == mode
+    assert cropped.size == (50, 50)
 
 
 def test_wide_crop():
