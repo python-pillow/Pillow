@@ -1073,7 +1073,7 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
      */
     int x, y, xx, yy;
 
-    if (imIn->image8) {
+    if (imIn->pixelsize == 1) {
         if (box[2] % xscale) {
             int scale = (box[2] % xscale) * yscale;
             const UINT32 multiplier = division_UINT32(scale, 8);
@@ -1124,7 +1124,64 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
             }
             ((UINT8 *)imOut->image[y])[x] = (ss * multiplier) >> 24;
         }
-    } else {
+    } else if (imIn->pixelsize == 2) {
+        if (box[2] % xscale) {
+            int scale = (box[2] % xscale) * yscale;
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
+            for (y = 0; y < box[3] / yscale; y++) {
+                const int yy_from = box[1] + y * yscale;
+                UINT32 ss0 = amend, ss1 = amend;
+                x = box[2] / xscale;
+
+                for (yy = yy_from; yy < yy_from + yscale; yy++) {
+                    const UINT8 *line = (UINT8 *)imIn->image[yy];
+                    for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
+                        ss0 += line[xx * 2 + 0];
+                        ss1 += line[xx * 2 + 1];
+                    }
+                }
+                ((UINT8 *)imOut->image[y])[x + 0] = (ss0 * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x + 1] = (ss1 * multiplier) >> 24;
+            }
+        }
+        if (box[3] % yscale) {
+            int scale = xscale * (box[3] % yscale);
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
+            y = box[3] / yscale;
+            for (x = 0; x < box[2] / xscale; x++) {
+                const int xx_from = box[0] + x * xscale;
+                UINT32 ss0 = amend, ss1 = amend;
+                for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
+                    const UINT8 *line = (UINT8 *)imIn->image[yy];
+                    for (xx = xx_from; xx < xx_from + xscale; xx++) {
+                        ss0 += line[xx * 2 + 0];
+                        ss1 += line[xx * 2 + 1];
+                    }
+                }
+                ((UINT8 *)imOut->image[y])[x + 0] = (ss0 * multiplier) >> 24;
+                ((UINT8 *)imOut->image[y])[x + 1] = (ss1 * multiplier) >> 24;
+            }
+        }
+        if (box[2] % xscale && box[3] % yscale) {
+            int scale = (box[2] % xscale) * (box[3] % yscale);
+            const UINT32 multiplier = division_UINT32(scale, 8);
+            const UINT32 amend = scale / 2;
+            UINT32 ss0 = amend, ss1 = amend;
+            x = box[2] / xscale;
+            y = box[3] / yscale;
+            for (yy = box[1] + y * yscale; yy < box[1] + box[3]; yy++) {
+                const UINT8 *line = (UINT8 *)imIn->image[yy];
+                for (xx = box[0] + x * xscale; xx < box[0] + box[2]; xx++) {
+                    ss0 += line[xx * 2 + 0];
+                    ss1 += line[xx * 2 + 1];
+                }
+            }
+            ((UINT8 *)imOut->image[y])[x + 0] = (ss0 * multiplier) >> 24;
+            ((UINT8 *)imOut->image[y])[x + 1] = (ss1 * multiplier) >> 24;
+        }
+    } else if (imIn->pixelsize == 4) {
         if (box[2] % xscale) {
             int scale = (box[2] % xscale) * yscale;
             const UINT32 multiplier = division_UINT32(scale, 8);
