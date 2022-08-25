@@ -9,14 +9,14 @@ import sys
 import sysconfig
 import tempfile
 from io import BytesIO
-from typing import List
 
 import pytest
 from packaging.version import parse as parse_version
 
-from PIL import Image, ImageChops, ImageMath, features
+from PIL import Image, ImageMath, features
 
 logger = logging.getLogger(__name__)
+
 
 HAS_UPLOADER = False
 
@@ -27,9 +27,8 @@ if os.environ.get("SHOW_ERRORS"):
     class test_image_results:
         @staticmethod
         def upload(a, b):
-            diff = ImageChops.difference(a.convert("RGB"), b.convert("RGB"))
-            c = concat_h([a, b, diff])
-            c.show()
+            a.show()
+            b.show()
 
 elif "GITHUB_ACTIONS" in os.environ:
     HAS_UPLOADER = True
@@ -51,19 +50,6 @@ else:
         HAS_UPLOADER = True
     except ImportError:
         pass
-
-
-def concat_h(images: List[Image.Image]):
-    new_size = images[0].size
-    for image in images[1:]:
-        assert image.height == new_size[1]
-        new_size = (new_size[0] + image.width, new_size[1])
-    dst = Image.new("RGBA", new_size)
-    x_offset = 0
-    for image in images:
-        dst.paste(image, (x_offset, 0))
-        x_offset += image.width
-    return dst
 
 
 def convert_to_comparable(a, b):
