@@ -48,21 +48,20 @@ class TestImage:
         ),
     )
     def test_image_modes_success(self, mode):
-            Image.new(mode, (1, 1))
+        Image.new(mode, (1, 1))
 
     @pytest.mark.parametrize(
         "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24", "BGR;32")
     )
     def test_image_modes_fail(self, mode):
-            with pytest.raises(ValueError) as e:
-                Image.new(mode, (1, 1))
-            assert str(e.value) == "unrecognized image mode"
+        with pytest.raises(ValueError) as e:
+            Image.new(mode, (1, 1))
+        assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self):
         assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
-
         im = Image.new("L", (100, 100))
         assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
         assert im.mode == "L"
