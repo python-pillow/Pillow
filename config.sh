@@ -157,7 +157,7 @@ function run_tests {
         if [[ "$MB_PYTHON_VERSION" != 3.11 ]]; then
             python3 -m pip install numpy==1.21
         fi
-    elif [ -z "$IS_ALPINE" ] && !([ -n "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" == 3.11 ]]); then
+    elif [ -z "$IS_ALPINE" ]; then
         python3 -m pip install numpy
     fi
 
