@@ -26,6 +26,16 @@ TODO
 API Additions
 =============
 
+Allow default ImageDraw font to be set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rather than specifying a font when calling text-related ImageDraw methods, or
+setting a font on each ImageDraw instance, the default font can now be set for
+all future ImageDraw operations::
+
+    from PIL import ImageDraw, ImageFont
+    ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
 Saving multiple MPO frames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

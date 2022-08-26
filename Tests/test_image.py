@@ -22,8 +22,9 @@ from .helper import (
 
 
 class TestImage:
-    def test_image_modes_success(self):
-        for mode in [
+    @pytest.mark.parametrize(
+        "mode",
+        (
             "1",
             "P",
             "PA",
@@ -44,19 +45,15 @@ class TestImage:
             "YCbCr",
             "LAB",
             "HSV",
-        ]:
+        ),
+    )
+    def test_image_modes_success(self, mode):
             Image.new(mode, (1, 1))
 
-    def test_image_modes_fail(self):
-        for mode in [
-            "",
-            "bad",
-            "very very long",
-            "BGR;15",
-            "BGR;16",
-            "BGR;24",
-            "BGR;32",
-        ]:
+    @pytest.mark.parametrize(
+        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24", "BGR;32")
+    )
+    def test_image_modes_fail(self, mode):
             with pytest.raises(ValueError) as e:
                 Image.new(mode, (1, 1))
             assert str(e.value) == "unrecognized image mode"

@@ -1310,6 +1310,10 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
     if (!imOut) {
         return NULL;
     }
+    if (strcmp(mode, "P") == 0) {
+        ImagingPaletteDelete(imOut->palette);
+        imOut->palette = ImagingPaletteDuplicate(imIn->palette);
+    }
 
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++) {
