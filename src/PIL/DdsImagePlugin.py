@@ -452,10 +452,8 @@ def _save(im, fp, filename):
         + rgba_mask  # dwRGBABitMask
         + struct.pack("<IIIII", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    if im.mode == 'LA':
-        ImageFile._save(im, fp, [Image.Tile("raw", (0, 0) + im.size, 0, ('LA', 0, 1))])
-    else:
-        ImageFile._save(im, fp, [Image.Tile("raw", (0, 0) + im.size, 0, (im.mode[::-1], 0, 1))])
+    mode = "LA" if im.mode == "LA" else im.mode[::-1]
+    ImageFile._save(im, fp, [Image.Tile("raw", (0, 0) + im.size, 0, (mode, 0, 1))])
 
 
 # fmt: on
