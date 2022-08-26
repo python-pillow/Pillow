@@ -530,7 +530,7 @@ class TestImage:
 
     @pytest.mark.parametrize(
         "wrong_mode",
-        [
+        (
             "bad",
             "I;16N",
             # "LAB",
@@ -538,7 +538,7 @@ class TestImage:
             "BGR;16",
             "BGR;24",
             "BGR;32",
-        ],
+        ),
     )
     def test_linear_gradient_wrong_mode(self, wrong_mode):
         with pytest.raises(ValueError):
@@ -546,7 +546,7 @@ class TestImage:
 
     @pytest.mark.parametrize(
         "mode,pixel_a,pixel_b",
-        [
+        (
             ("1", 0, 255),
             ("P", 0, 255),
             ("PA", (0, 255), (255, 255)),
@@ -565,7 +565,7 @@ class TestImage:
             ("CMYK", (0, 0, 0, 255), (0, 0, 0, 0)),
             ("YCbCr", (0, 128, 128), (255, 128, 128)),
             ("HSV", (0, 0, 0), (0, 0, 255)),
-        ],
+        ),
     )
     def test_linear_gradient(self, mode, pixel_a, pixel_b):
         # Arrange
@@ -585,7 +585,7 @@ class TestImage:
 
     @pytest.mark.parametrize(
         "wrong_mode",
-        [
+        (
             "bad",
             "I;16N",
             # "LAB",
@@ -593,7 +593,7 @@ class TestImage:
             "BGR;16",
             "BGR;24",
             "BGR;32",
-        ],
+        ),
     )
     def test_radial_gradient_wrong_mode(self, wrong_mode):
         with pytest.raises(ValueError):
@@ -601,7 +601,7 @@ class TestImage:
 
     @pytest.mark.parametrize(
         "mode,pixel_a,pixel_b",
-        [
+        (
             ("1", 255, 0),
             ("P", 255, 0),
             ("PA", (255, 255), (0, 255)),
@@ -620,7 +620,7 @@ class TestImage:
             ("CMYK", (0, 0, 0, 0), (0, 0, 0, 255)),
             ("YCbCr", (255, 128, 128), (0, 128, 128)),
             ("HSV", (0, 0, 255), (0, 0, 0)),
-        ],
+        ),
     )
     def test_radial_gradient(self, mode, pixel_a, pixel_b):
         # Arrange
@@ -971,7 +971,7 @@ class TestImage:
 
     @pytest.mark.parametrize(
         "path",
-        [
+        (
             "fli_overrun.bin",
             "sgi_overrun.bin",
             "sgi_overrun_expandrow.bin",
@@ -980,7 +980,7 @@ class TestImage:
             "pcx_overrun2.bin",
             "ossfuzz-4836216264589312.pcx",
             "01r_00.pcx",
-        ],
+        ),
     )
     def test_overrun(self, path):
         """For overrun completeness, test as:
