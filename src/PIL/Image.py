@@ -2473,29 +2473,41 @@ class Image:
         :returns: None
         """
 
-        self.load()
-        x, y = map(math.floor, size)
-        if x >= self.width and y >= self.height:
-            return
+        provided_size = tuple(map(math.floor, size))
 
-        def round_aspect(number, key):
-            return max(min(math.floor(number), math.ceil(number), key=key), 1)
+        def preserve_aspect_ratio():
+            def round_aspect(number, key):
+                return max(min(math.floor(number), math.ceil(number), key=key), 1)
 
-        # preserve aspect ratio
-        aspect = self.width / self.height
-        if x / y >= aspect:
-            x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
-        else:
-            y = round_aspect(
-                x / aspect, key=lambda n: 0 if n == 0 else abs(aspect - x / n)
-            )
-        size = (x, y)
+            x, y = provided_size
+            if x >= self.width and y >= self.height:
+                return
+
+            aspect = self.width / self.height
+            if x / y >= aspect:
+                x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
+            else:
+                y = round_aspect(
+                    x / aspect, key=lambda n: 0 if n == 0 else abs(aspect - x / n)
+                )
+            return x, y
 
         box = None
         if reducing_gap is not None:
+            size = preserve_aspect_ratio()
+            if size is None:
+                return
+
             res = self.draft(None, (size[0] * reducing_gap, size[1] * reducing_gap))
             if res is not None:
                 box = res[1]
+        if box is None:
+            self.load()
+
+            # load() may have changed the size of the image
+            size = preserve_aspect_ratio()
+            if size is None:
+                return
 
         if self.size != size:
             im = self.resize(size, resample, box=box, reducing_gap=reducing_gap)
