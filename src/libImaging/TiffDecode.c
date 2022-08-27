@@ -916,7 +916,7 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     dump_state(clientstate);
 
     if (state->state == 0) {
-        TRACE(("Encoding line bt line"));
+        TRACE(("Encoding line by line"));
         while (state->y < state->ysize) {
             state->shuffle(
                 state->buffer,
