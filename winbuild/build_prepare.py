@@ -89,7 +89,7 @@ def cmd_msbuild(
     )
 
 
-SF_MIRROR = "https://iweb.dl.sourceforge.net"
+SF_PROJECTS = "https://sourceforge.net/projects"
 
 architectures = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
@@ -107,9 +107,10 @@ header = [
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
-        "url": SF_MIRROR + "/project/libjpeg-turbo/2.1.3/libjpeg-turbo-2.1.3.tar.gz",
-        "filename": "libjpeg-turbo-2.1.3.tar.gz",
-        "dir": "libjpeg-turbo-2.1.3",
+        "url": SF_PROJECTS
+        + "/libjpeg-turbo/files/2.1.4/libjpeg-turbo-2.1.4.tar.gz/download",
+        "filename": "libjpeg-turbo-2.1.4.tar.gz",
+        "dir": "libjpeg-turbo-2.1.4",
         "build": [
             cmd_cmake(
                 [
@@ -143,9 +144,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.3.0.tar.gz",
-        "filename": "tiff-4.3.0.tar.gz",
-        "dir": "tiff-4.3.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.4.0.tar.gz",
+        "filename": "tiff-4.4.0.tar.gz",
+        "dir": "tiff-4.4.0",
         "build": [
             cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_nmake(target="clean"),
@@ -156,9 +157,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.2.tar.gz",
-        "filename": "libwebp-1.2.2.tar.gz",
-        "dir": "libwebp-1.2.2",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
+        "filename": "libwebp-1.2.4.tar.gz",
+        "dir": "libwebp-1.2.4",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -172,7 +173,7 @@ deps = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libpng": {
-        "url": SF_MIRROR + "/project/libpng/libpng16/1.6.37/lpng1637.zip",
+        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.37/lpng1637.zip/download",
         "filename": "lpng1637.zip",
         "dir": "lpng1637",
         "build": [
@@ -221,40 +222,40 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_MIRROR + "/project/lcms/lcms/2.13/lcms2-2.13.1.tar.gz",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.13/lcms2-2.13.1.tar.gz/download",
         "filename": "lcms2-2.13.1.tar.gz",
         "dir": "lcms2-2.13.1",
         "patch": {
-            r"Projects\VC2019\lcms2_static\lcms2_static.vcxproj": {
+            r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
                 "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
+                "<PlatformToolset>v143</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
                 # retarget to latest (selected by vcvarsall.bat)
                 "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
             }
         },
         "build": [
             cmd_rmdir("Lib"),
-            cmd_rmdir(r"Projects\VC2019\Release"),
-            cmd_msbuild(r"Projects\VC2019\lcms2.sln", "Release", "Clean"),
+            cmd_rmdir(r"Projects\VC2022\Release"),
+            cmd_msbuild(r"Projects\VC2022\lcms2.sln", "Release", "Clean"),
             cmd_msbuild(
-                r"Projects\VC2019\lcms2.sln", "Release", "lcms2_static:Rebuild"
+                r"Projects\VC2022\lcms2.sln", "Release", "lcms2_static:Rebuild"
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"Lib\MS\*.lib"],
     },
     "openjpeg": {
-        "url": "https://github.com/uclouvain/openjpeg/archive/v2.4.0.tar.gz",
-        "filename": "openjpeg-2.4.0.tar.gz",
-        "dir": "openjpeg-2.4.0",
+        "url": "https://github.com/uclouvain/openjpeg/archive/v2.5.0.tar.gz",
+        "filename": "openjpeg-2.5.0.tar.gz",
+        "dir": "openjpeg-2.5.0",
         "build": [
             cmd_cmake(("-DBUILD_THIRDPARTY:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
             cmd_nmake(target="openjp2"),
-            cmd_mkdir(r"{inc_dir}\openjpeg-2.4.0"),
-            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.4.0"),
+            cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
+            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.0"),
         ],
         "libs": [r"bin\*.lib"],
     },
@@ -280,9 +281,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.2.1.zip",
-        "filename": "harfbuzz-4.2.1.zip",
-        "dir": "harfbuzz-4.2.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/5.1.0.zip",
+        "filename": "harfbuzz-5.1.0.zip",
+        "dir": "harfbuzz-5.1.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),

@@ -2,8 +2,143 @@
 Changelog (Pillow)
 ==================
 
-9.2.0 (unreleased)
+9.3.0 (unreleased)
 ------------------
+
+- Allow default ImageDraw font to be set #6484
+  [radarhere, hugovk]
+
+- Save 1 mode PDF using CCITTFaxDecode filter #6470
+  [radarhere]
+
+- Added support for RGBA PSD images #6481
+  [radarhere]
+
+- Parse orientation from XMP tag contents #6463
+  [bigcat88, radarhere]
+
+- Added support for reading ATI1/ATI2 (BC4/BC5) DDS images #6457
+  [REDxEYE, radarhere]
+
+- Do not clear GIF tile when checking number of frames #6455
+  [radarhere]
+
+- Support saving multiple MPO frames #6444
+  [radarhere]
+
+- Do not double quote Pillow version for setuptools >= 60 #6450
+  [radarhere]
+
+- Added ABGR BMP mask mode #6436
+  [radarhere]
+
+- Fixed PSDraw rectangle #6429
+  [radarhere]
+
+- Raise ValueError if PNG sRGB chunk is truncated #6431
+  [radarhere]
+
+- Handle missing Python executable in ImageShow on macOS #6416
+  [bryant1410, radarhere]
+
+9.2.0 (2022-07-01)
+------------------
+
+- Deprecate ImageFont.getsize and related functions #6381
+  [nulano, radarhere]
+
+- Fixed null check for fribidi_version_info in FriBiDi shim #6376
+  [nulano]
+
+- Added GIF decompression bomb check #6402
+  [radarhere]
+
+- Handle PCF fonts files with less than 256 characters #6386
+  [dawidcrivelli, radarhere]
+
+- Improved GIF optimize condition #6378
+  [raygard, radarhere]
+
+- Reverted to __array_interface__ with the release of NumPy 1.23 #6394
+  [radarhere]
+
+- Pad PCX palette to 768 bytes when saving #6391
+  [radarhere]
+
+- Fixed bug with rounding pixels to palette colors #6377
+  [btrekkie, radarhere]
+
+- Use gnome-screenshot on Linux if available #6361
+  [radarhere, nulano]
+
+- Fixed loading L mode BMP RLE8 images #6384
+  [radarhere]
+
+- Fixed incorrect operator in ImageCms error #6370
+  [LostBenjamin, hugovk, radarhere]
+
+- Limit FPX tile size to avoid extending outside image #6368
+  [radarhere]
+
+- Added support for decoding plain PPM formats #5242
+  [Piolie, radarhere]
+
+- Added apply_transparency() #6352
+  [radarhere]
+
+- Fixed behaviour change from endian fix #6197
+  [radarhere]
+
+- Allow remapping P images with RGBA palettes #6350
+  [radarhere]
+
+- Fixed drawing translucent 1px high polygons #6278
+  [radarhere]
+
+- Pad COLORMAP to 768 items when saving TIFF #6232
+  [radarhere]
+
+- Fix P -> PA conversion #6337
+  [RedShy, radarhere]
+
+- Once exif data is parsed, do not reload unless it changes #6335
+  [radarhere]
+
+- Only try to connect discontiguous corners at the end of edges #6303
+  [radarhere]
+
+- Improve transparency handling when saving GIF images #6176
+  [radarhere]
+
+- Do not update GIF frame position until local image is found #6219
+  [radarhere]
+
+- Netscape GIF extension belongs after the global color table #6211
+  [radarhere]
+
+- Only write GIF comments at the beginning of the file #6300
+  [raygard, radarhere]
+
+- Separate multiple GIF comment blocks with newlines #6294
+  [raygard, radarhere]
+
+- Always use GIF89a for comments #6292
+  [raygard, radarhere]
+
+- Ignore compression value from BMP info dictionary when saving as TIFF #6231
+  [radarhere]
+
+- If font is file-like object, do not re-read from object to get variant #6234
+  [radarhere]
+
+- Raise ValueError when trying to access internal fp after close #6213
+  [radarhere]
+
+- Support more affine expression forms in im.point() #6254
+  [benrg, radarhere]
+
+- Populate Python palette in fromarray() #6283
+  [radarhere]
 
 - Raise ValueError if PNG chunks are truncated #6253
   [radarhere]
@@ -12,9 +147,6 @@ Changelog (Pillow)
   [radarhere]
 
 - Adjust BITSPERSAMPLE to match SAMPLESPERPIXEL when opening TIFFs #6270
-  [radarhere]
-
-- Do not open images with zero or negative height #6269
   [radarhere]
 
 - Search pkgconf system libs/cflags #6138
@@ -45,6 +177,15 @@ Changelog (Pillow)
   [radarhere]
 
 - Deprecated PhotoImage.paste() box parameter #6178
+  [radarhere]
+
+9.1.1 (2022-05-17)
+------------------
+
+- When reading past the end of a TGA scan line, reduce bytes left. CVE-2022-30595
+  [radarhere]
+
+- Do not open images with zero or negative height #6269
   [radarhere]
 
 9.1.0 (2022-04-01)

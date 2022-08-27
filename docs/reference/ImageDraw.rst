@@ -64,7 +64,7 @@ Fonts
 
 PIL can use bitmap fonts or OpenType/TrueType fonts.
 
-Bitmap fonts are stored in PIL’s own format, where each font typically consists
+Bitmap fonts are stored in PIL's own format, where each font typically consists
 of two files, one named .pil and the other usually named .pbm. The former
 contains font metrics, the latter raster data.
 
@@ -145,6 +145,11 @@ Methods
 .. py:method:: ImageDraw.getfont()
 
     Get the current default font.
+
+    To set the default font for all future ImageDraw instances::
+
+        from PIL import ImageDraw, ImageFont
+        ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
 
     :returns: An image font.
 
@@ -436,11 +441,13 @@ Methods
 
 .. py:method:: ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
-    Return the size of the given string, in pixels.
+    .. deprecated:: 9.2.0
 
     Use :py:meth:`textlength()` to measure the offset of following text with
     1/64 pixel precision.
     Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
+
+    Return the size of the given string, in pixels.
 
     .. note:: For historical reasons this function measures text height from
         the ascender line instead of the top, see :ref:`text-anchors`.
@@ -483,6 +490,10 @@ Methods
                      .. versionadded:: 6.2.0
 
 .. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
+
+    .. deprecated:: 9.2.0
+
+    Use :py:meth:`.multiline_textbbox` instead.
 
     Return the size of the given string, in pixels.
 

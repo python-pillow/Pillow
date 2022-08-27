@@ -46,6 +46,19 @@ def test_closed_file():
         im.close()
 
 
+def test_seek_after_close():
+    im = Image.open("Tests/images/iss634.gif")
+    im.load()
+    im.close()
+
+    with pytest.raises(ValueError):
+        im.is_animated
+    with pytest.raises(ValueError):
+        im.n_frames
+    with pytest.raises(ValueError):
+        im.seek(1)
+
+
 def test_context_manager():
     with warnings.catch_warnings():
         with Image.open(TEST_GIF) as im:
@@ -145,6 +158,9 @@ def test_optimize_correctness():
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     # These do optimize the palette
+    check(256, 511, 256)
+    check(255, 511, 255)
+    check(129, 511, 129)
     check(128, 511, 128)
     check(64, 511, 64)
     check(4, 511, 4)
@@ -154,17 +170,25 @@ def test_optimize_correctness():
     check(64, 513, 256)
     check(4, 513, 256)
 
-    # Other limits that don't optimize the palette
-    check(129, 511, 256)
-    check(255, 511, 256)
-    check(256, 511, 256)
-
 
 def test_optimize_full_l():
     im = Image.frombytes("L", (16, 16), bytes(range(256)))
     test_file = BytesIO()
     im.save(test_file, "GIF", optimize=True)
     assert im.mode == "L"
+
+
+def test_optimize_if_palette_can_be_reduced_by_half():
+    with Image.open("Tests/images/test.colors.gif") as im:
+        # Reduce dimensions because original is too big for _get_optimize()
+        im = im.resize((591, 443))
+    im_rgb = im.convert("RGB")
+
+    for (optimize, colors) in ((False, 256), (True, 8)):
+        out = BytesIO()
+        im_rgb.save(out, "GIF", optimize=optimize)
+        with Image.open(out) as reloaded:
+            assert len(reloaded.palette.palette) // 3 == colors
 
 
 def test_roundtrip(tmp_path):
@@ -341,16 +365,23 @@ def test_seek_rewind():
             assert_image_equal(im, expected)
 
 
-def test_n_frames():
-    for path, n_frames in [[TEST_GIF, 1], ["Tests/images/iss634.gif", 42]]:
-        # Test is_animated before n_frames
-        with Image.open(path) as im:
-            assert im.is_animated == (n_frames != 1)
+@pytest.mark.parametrize(
+    "path, n_frames",
+    (
+        (TEST_GIF, 1),
+        ("Tests/images/comment_after_last_frame.gif", 2),
+        ("Tests/images/iss634.gif", 42),
+    ),
+)
+def test_n_frames(path, n_frames):
+    # Test is_animated before n_frames
+    with Image.open(path) as im:
+        assert im.is_animated == (n_frames != 1)
 
-        # Test is_animated after n_frames
-        with Image.open(path) as im:
-            assert im.n_frames == n_frames
-            assert im.is_animated == (n_frames != 1)
+    # Test is_animated after n_frames
+    with Image.open(path) as im:
+        assert im.n_frames == n_frames
+        assert im.is_animated == (n_frames != 1)
 
 
 def test_no_change():
@@ -366,6 +397,11 @@ def test_no_change():
         im.seek(3)
         expected = im.copy()
         assert im.is_animated
+        assert_image_equal(im, expected)
+
+    with Image.open("Tests/images/comment_after_only_frame.gif") as im:
+        expected = Image.new("P", (1, 1))
+        assert not im.is_animated
         assert_image_equal(im, expected)
 
 
@@ -619,7 +655,8 @@ def test_dispose2_background(tmp_path):
         assert im.getpixel((0, 0)) == (255, 0, 0)
 
 
-def test_transparency_in_second_frame():
+def test_transparency_in_second_frame(tmp_path):
+    out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/different_transparency.gif") as im:
         assert im.info["transparency"] == 0
 
@@ -628,6 +665,14 @@ def test_transparency_in_second_frame():
         assert "transparency" not in im.info
 
         assert_image_equal_tofile(im, "Tests/images/different_transparency_merged.png")
+
+        im.save(out, save_all=True)
+
+    with Image.open(out) as reread:
+        reread.seek(reread.tell() + 1)
+        assert_image_equal_tofile(
+            reread, "Tests/images/different_transparency_merged.png"
+        )
 
 
 def test_no_transparency_in_second_frame():
@@ -638,6 +683,22 @@ def test_no_transparency_in_second_frame():
 
         # All transparent pixels should be replaced with the color from the first frame
         assert img.histogram()[255] == 0
+
+
+def test_remapped_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("P", (1, 2))
+    im2 = im.copy()
+
+    # Add transparency at a higher index
+    # so that it will be optimized to a lower index
+    im.putpixel((0, 1), 5)
+    im.info["transparency"] = 5
+    im.save(out, save_all=True, append_images=[im2])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.info["transparency"] == reloaded.getpixel((0, 1))
 
 
 def test_duration(tmp_path):
@@ -759,8 +820,15 @@ def test_number_of_loops(tmp_path):
     im = Image.new("L", (100, 100), "#000")
     im.save(out, loop=number_of_loops)
     with Image.open(out) as reread:
-
         assert reread.info["loop"] == number_of_loops
+
+    # Check that even if a subsequent GIF frame has the number of loops specified,
+    # only the value from the first frame is used
+    with Image.open("Tests/images/duplicate_number_of_loops.gif") as im:
+        assert im.info["loop"] == 2
+
+        im.seek(1)
+        assert im.info["loop"] == 2
 
 
 def test_background(tmp_path):
@@ -794,6 +862,9 @@ def test_comment(tmp_path):
     with Image.open(out) as reread:
         assert reread.info["comment"] == im.info["comment"].encode()
 
+        # Test that GIF89a is used for comments
+        assert reread.info["version"] == b"GIF89a"
+
 
 def test_comment_over_255(tmp_path):
     out = str(tmp_path / "temp.gif")
@@ -804,13 +875,65 @@ def test_comment_over_255(tmp_path):
     im.info["comment"] = comment
     im.save(out)
     with Image.open(out) as reread:
-
         assert reread.info["comment"] == comment
+
+        # Test that GIF89a is used for comments
+        assert reread.info["version"] == b"GIF89a"
 
 
 def test_zero_comment_subblocks():
     with Image.open("Tests/images/hopper_zero_comment_subblocks.gif") as im:
         assert_image_equal_tofile(im, TEST_GIF)
+
+
+def test_read_multiple_comment_blocks():
+    with Image.open("Tests/images/multiple_comments.gif") as im:
+        # Multiple comment blocks in a frame are separated not concatenated
+        assert im.info["comment"] == b"Test comment 1\nTest comment 2"
+
+
+def test_empty_string_comment(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/chi.gif") as im:
+        assert "comment" in im.info
+
+        # Empty string comment should suppress existing comment
+        im.save(out, save_all=True, comment="")
+
+    with Image.open(out) as reread:
+        for frame in ImageSequence.Iterator(reread):
+            assert "comment" not in frame.info
+
+
+def test_retain_comment_in_subsequent_frames(tmp_path):
+    # Test that a comment block at the beginning is kept
+    with Image.open("Tests/images/chi.gif") as im:
+        for frame in ImageSequence.Iterator(im):
+            assert frame.info["comment"] == b"Created with GIMP"
+
+    with Image.open("Tests/images/second_frame_comment.gif") as im:
+        assert "comment" not in im.info
+
+        # Test that a comment in the middle is read
+        im.seek(1)
+        assert im.info["comment"] == b"Comment in the second frame"
+
+        # Test that it is still present in a later frame
+        im.seek(2)
+        assert im.info["comment"] == b"Comment in the second frame"
+
+        # Test that rewinding removes the comment
+        im.seek(0)
+        assert "comment" not in im.info
+
+    # Test that a saved image keeps the comment
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/dispose_prev.gif") as im:
+        im.save(out, save_all=True, comment="Test")
+
+    with Image.open(out) as reread:
+        for frame in ImageSequence.Iterator(reread):
+            assert frame.info["comment"] == b"Test"
 
 
 def test_version(tmp_path):
@@ -875,8 +998,8 @@ def test_append_images(tmp_path):
 def test_transparent_optimize(tmp_path):
     # From issue #2195, if the transparent color is incorrectly optimized out, GIF loses
     # transparency.
-    # Need a palette that isn't using the 0 color, and one that's > 128 items where the
-    # transparent color is actually the top palette entry to trigger the bug.
+    # Need a palette that isn't using the 0 color,
+    # where the transparent color is actually the top palette entry to trigger the bug.
 
     data = bytes(range(1, 254))
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
@@ -886,10 +1009,10 @@ def test_transparent_optimize(tmp_path):
     im.putpalette(palette)
 
     out = str(tmp_path / "temp.gif")
-    im.save(out, transparency=253)
-    with Image.open(out) as reloaded:
+    im.save(out, transparency=im.getpixel((252, 0)))
 
-        assert reloaded.info["transparency"] == 253
+    with Image.open(out) as reloaded:
+        assert reloaded.info["transparency"] == reloaded.getpixel((252, 0))
 
 
 def test_rgb_transparency(tmp_path):

@@ -29,7 +29,6 @@ import builtins
 import io
 import logging
 import math
-import numbers
 import os
 import re
 import struct
@@ -432,44 +431,50 @@ def _getencoder(mode, encoder_name, args, extra=()):
 
 
 def coerce_e(value):
-    return value if isinstance(value, _E) else _E(value)
+    deprecate("coerce_e", 10)
+    return value if isinstance(value, _E) else _E(1, value)
 
 
+# _E(scale, offset) represents the affine transformation scale * x + offset.
+# The "data" field is named for compatibility with the old implementation,
+# and should be renamed once coerce_e is removed.
 class _E:
-    def __init__(self, data):
+    def __init__(self, scale, data):
+        self.scale = scale
         self.data = data
 
+    def __neg__(self):
+        return _E(-self.scale, -self.data)
+
     def __add__(self, other):
-        return _E((self.data, "__add__", coerce_e(other).data))
+        if isinstance(other, _E):
+            return _E(self.scale + other.scale, self.data + other.data)
+        return _E(self.scale, self.data + other)
+
+    __radd__ = __add__
+
+    def __sub__(self, other):
+        return self + -other
+
+    def __rsub__(self, other):
+        return other + -self
 
     def __mul__(self, other):
-        return _E((self.data, "__mul__", coerce_e(other).data))
+        if isinstance(other, _E):
+            return NotImplemented
+        return _E(self.scale * other, self.data * other)
+
+    __rmul__ = __mul__
+
+    def __truediv__(self, other):
+        if isinstance(other, _E):
+            return NotImplemented
+        return _E(self.scale / other, self.data / other)
 
 
 def _getscaleoffset(expr):
-    stub = ["stub"]
-    data = expr(_E(stub)).data
-    try:
-        (a, b, c) = data  # simplified syntax
-        if a is stub and b == "__mul__" and isinstance(c, numbers.Number):
-            return c, 0.0
-        if a is stub and b == "__add__" and isinstance(c, numbers.Number):
-            return 1.0, c
-    except TypeError:
-        pass
-    try:
-        ((a, b, c), d, e) = data  # full syntax
-        if (
-            a is stub
-            and b == "__mul__"
-            and isinstance(c, numbers.Number)
-            and d == "__add__"
-            and isinstance(e, numbers.Number)
-        ):
-            return c, e
-    except TypeError:
-        pass
-    raise ValueError("illegal expression")
+    a = expr(_E(1, 0))
+    return (a.scale, a.data) if isinstance(a, _E) else (0, a)
 
 
 # --------------------------------------------------------------------
@@ -544,8 +549,10 @@ class Image:
 
     def __exit__(self, *args):
         if hasattr(self, "fp") and getattr(self, "_exclusive_fp", False):
-            if hasattr(self, "_close__fp"):
-                self._close__fp()
+            if getattr(self, "_fp", False):
+                if self._fp != self.fp:
+                    self._fp.close()
+                self._fp = DeferredError(ValueError("Operation on closed image"))
             if self.fp:
                 self.fp.close()
         self.fp = None
@@ -563,8 +570,10 @@ class Image:
         more information.
         """
         try:
-            if hasattr(self, "_close__fp"):
-                self._close__fp()
+            if getattr(self, "_fp", False):
+                if self._fp != self.fp:
+                    self._fp.close()
+                self._fp = DeferredError(ValueError("Operation on closed image"))
             if self.fp:
                 self.fp.close()
             self.fp = None
@@ -637,7 +646,7 @@ class Image:
     def _repr_pretty_(self, p, cycle):
         """IPython plain text display support"""
 
-        # Same as __repr__ but without unpredicatable id(self),
+        # Same as __repr__ but without unpredictable id(self),
         # to keep Jupyter notebook `text/plain` output stable.
         p.text(
             "<%s.%s image mode=%s size=%dx%d>"
@@ -662,14 +671,9 @@ class Image:
             raise ValueError("Could not save to PNG for display") from e
         return b.getvalue()
 
-    class _ArrayData:
-        def __init__(self, new):
-            self.__array_interface__ = new
-
-    def __array__(self, dtype=None):
+    @property
+    def __array_interface__(self):
         # numpy array interface support
-        import numpy as np
-
         new = {}
         shape, typestr = _conv_type_shape(self)
         new["shape"] = shape
@@ -681,8 +685,7 @@ class Image:
             new["data"] = self.tobytes("raw", "L")
         else:
             new["data"] = self.tobytes()
-
-        return np.array(self._ArrayData(new), dtype)
+        return new
 
     def __getstate__(self):
         return [self.info, self.mode, self.size, self.getpalette(), self.tobytes()]
@@ -712,6 +715,11 @@ class Image:
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
+
+                             A list of C encoders can be seen under
+                             codecs section of the function array in
+                             :file:`_imaging.c`. Python encoders are
+                             registered within the relevant plugins.
         :param args: Extra arguments to the encoder.
         :returns: A :py:class:`bytes` object.
         """
@@ -1324,7 +1332,7 @@ class Image:
 
     def getextrema(self):
         """
-        Gets the the minimum and maximum pixel values for each band in
+        Gets the minimum and maximum pixel values for each band in
         the image.
 
         :returns: For a single-band image, a 2-tuple containing the
@@ -1374,6 +1382,10 @@ class Image:
     def getexif(self):
         if self._exif is None:
             self._exif = Exif()
+            self._exif._loaded = False
+        elif self._exif._loaded:
+            return self._exif
+        self._exif._loaded = True
 
         exif_info = self.info.get("exif")
         if exif_info is None:
@@ -1392,11 +1404,17 @@ class Image:
         if 0x0112 not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
             if xmp_tags:
-                match = re.search(r'tiff:Orientation="([0-9])"', xmp_tags)
+                match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_tags)
                 if match:
-                    self._exif[0x0112] = int(match[1])
+                    self._exif[0x0112] = int(match[2])
 
         return self._exif
+
+    def _reload_exif(self):
+        if self._exif is None or not self._exif._loaded:
+            return
+        self._exif._loaded = False
+        self.getexif()
 
     def getim(self):
         """
@@ -1429,6 +1447,28 @@ class Image:
         if rawmode is None:
             rawmode = mode
         return list(self.im.getpalette(mode, rawmode))
+
+    def apply_transparency(self):
+        """
+        If a P mode image has a "transparency" key in the info dictionary,
+        remove the key and apply the transparency to the palette instead.
+        """
+        if self.mode != "P" or "transparency" not in self.info:
+            return
+
+        from . import ImagePalette
+
+        palette = self.getpalette("RGBA")
+        transparency = self.info["transparency"]
+        if isinstance(transparency, bytes):
+            for i, alpha in enumerate(transparency):
+                palette[i * 4 + 3] = alpha
+        else:
+            palette[transparency * 4 + 3] = 0
+        self.palette = ImagePalette.ImagePalette("RGBA", bytes(palette))
+        self.palette.dirty = 1
+
+        del self.info["transparency"]
 
     def getpixel(self, xy):
         """
@@ -1848,10 +1888,15 @@ class Image:
         if self.mode not in ("L", "P"):
             raise ValueError("illegal image mode")
 
+        bands = 3
+        palette_mode = "RGB"
         if source_palette is None:
             if self.mode == "P":
                 self.load()
-                source_palette = self.im.getpalette("RGB")[:768]
+                palette_mode = self.im.getpalettemode()
+                if palette_mode == "RGBA":
+                    bands = 4
+                source_palette = self.im.getpalette(palette_mode, palette_mode)
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
 
@@ -1860,7 +1905,9 @@ class Image:
 
         # pick only the used colors from the palette
         for i, oldPosition in enumerate(dest_map):
-            palette_bytes += source_palette[oldPosition * 3 : oldPosition * 3 + 3]
+            palette_bytes += source_palette[
+                oldPosition * bands : oldPosition * bands + bands
+            ]
             new_positions[oldPosition] = i
 
         # replace the palette color id of all pixel with the new id
@@ -1886,19 +1933,30 @@ class Image:
         m_im = self.copy()
         m_im.mode = "P"
 
-        m_im.palette = ImagePalette.ImagePalette("RGB", palette=mapping_palette * 3)
+        m_im.palette = ImagePalette.ImagePalette(
+            palette_mode, palette=mapping_palette * bands
+        )
         # possibly set palette dirty, then
         # m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
         # or just force it.
         # UNDONE -- this is part of the general issue with palettes
-        m_im.im.putpalette("RGB;L", m_im.palette.tobytes())
+        m_im.im.putpalette(palette_mode + ";L", m_im.palette.tobytes())
 
         m_im = m_im.convert("L")
 
-        # Internally, we require 768 bytes for a palette.
-        new_palette_bytes = palette_bytes + (768 - len(palette_bytes)) * b"\x00"
-        m_im.putpalette(new_palette_bytes)
-        m_im.palette = ImagePalette.ImagePalette("RGB", palette=palette_bytes)
+        # Internally, we require 256 palette entries.
+        new_palette_bytes = (
+            palette_bytes + ((256 * bands) - len(palette_bytes)) * b"\x00"
+        )
+        m_im.putpalette(new_palette_bytes, palette_mode)
+        m_im.palette = ImagePalette.ImagePalette(palette_mode, palette=palette_bytes)
+
+        if "transparency" in self.info:
+            try:
+                m_im.info["transparency"] = dest_map.index(self.info["transparency"])
+            except ValueError:
+                if "transparency" in m_im.info:
+                    del m_im.info["transparency"]
 
         return m_im
 
@@ -2838,6 +2896,10 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
         if args[0] in _MAPMODES:
             im = new(mode, (1, 1))
             im = im._new(core.map_buffer(data, size, decoder_name, 0, args))
+            if mode == "P":
+                from . import ImagePalette
+
+                im.palette = ImagePalette.ImagePalette("RGB", im.im.getpalette("RGB"))
             im.readonly = 1
             return im
 

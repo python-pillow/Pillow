@@ -10,7 +10,7 @@ def test_histogram():
     assert histogram("L") == (256, 0, 662)
     assert histogram("I") == (256, 0, 662)
     assert histogram("F") == (256, 0, 662)
-    assert histogram("P") == (256, 0, 1871)
+    assert histogram("P") == (256, 0, 1551)
     assert histogram("RGB") == (768, 4, 675)
     assert histogram("RGBA") == (1024, 0, 16384)
     assert histogram("CMYK") == (1024, 0, 16384)

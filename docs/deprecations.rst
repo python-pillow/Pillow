@@ -170,6 +170,33 @@ in Pillow 10 (2023-07-01). Upgrade to
 `PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
 `PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
 
+Image.coerce_e
+~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+This undocumented method has been deprecated and will be removed in Pillow 10
+(2023-07-01).
+
+Font size and offset methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+
+Several functions for computing the size and offset of rendered text
+have been deprecated and will be removed in Pillow 10 (2023-07-01):
+
+=========================================================================== =============================================================================================================
+Deprecated                                                                  Use instead
+=========================================================================== =============================================================================================================
+:py:meth:`.FreeTypeFont.getsize` and :py:meth:`.FreeTypeFont.getoffset`     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
+:py:meth:`.FreeTypeFont.getsize_multiline`                                  :py:meth:`.ImageDraw.multiline_textbbox`
+:py:meth:`.ImageFont.getsize`                                               :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
+:py:meth:`.TransposedFont.getsize`                                          :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
+:py:meth:`.ImageDraw.textsize` and :py:meth:`.ImageDraw.multiline_textsize` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
+:py:meth:`.ImageDraw2.Draw.textsize`                                        :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
+=========================================================================== =============================================================================================================
+
 Removed features
 ----------------
 

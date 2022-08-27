@@ -137,12 +137,17 @@ class ImageFont:
 
     def getsize(self, text, *args, **kwargs):
         """
+        .. deprecated:: 9.2.0
+
+        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+
         Returns width and height (in pixels) of given text.
 
         :param text: Text to measure.
 
         :return: (width, height)
         """
+        deprecate("getsize", 10, "getbbox or getlength")
         return self.font.getsize(text)
 
     def getmask(self, text, mode="", *args, **kwargs):
@@ -164,6 +169,33 @@ class ImageFont:
                  :py:mod:`PIL.Image.core` interface module.
         """
         return self.font.getmask(text, mode)
+
+    def getbbox(self, text, *args, **kwargs):
+        """
+        Returns bounding box (in pixels) of given text.
+
+        .. versionadded:: 9.2.0
+
+        :param text: Text to render.
+        :param mode: Used by some graphics drivers to indicate what mode the
+                     driver prefers; if empty, the renderer may return either
+                     mode. Note that the mode is always a string, to simplify
+                     C-level implementations.
+
+        :return: ``(left, top, right, bottom)`` bounding box
+        """
+        width, height = self.font.getsize(text)
+        return 0, 0, width, height
+
+    def getlength(self, text, *args, **kwargs):
+        """
+        Returns length (in pixels) of given text.
+        This is the amount by which following text should be offset.
+
+        .. versionadded:: 9.2.0
+        """
+        width, height = self.font.getsize(text)
+        return width
 
 
 ##
@@ -386,15 +418,22 @@ class FreeTypeFont:
         return left, top, left + width, top + height
 
     def getsize(
-        self, text, direction=None, features=None, language=None, stroke_width=0
+        self,
+        text,
+        direction=None,
+        features=None,
+        language=None,
+        stroke_width=0,
     ):
         """
-        Returns width and height (in pixels) of given text if rendered in font with
-        provided direction, features, and language.
+        .. deprecated:: 9.2.0
 
         Use :py:meth:`getlength()` to measure the offset of following text with
         1/64 pixel precision.
         Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
+
+        Returns width and height (in pixels) of given text if rendered in font with
+        provided direction, features, and language.
 
         .. note:: For historical reasons this function measures text height from
             the ascender line instead of the top, see :ref:`text-anchors`.
@@ -438,6 +477,7 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        deprecate("getsize", 10, "getbbox or getlength")
         # vertical offset is added for historical reasons
         # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
         size, offset = self.font.getsize(text, "L", direction, features, language)
@@ -456,6 +496,10 @@ class FreeTypeFont:
         stroke_width=0,
     ):
         """
+        .. deprecated:: 9.2.0
+
+        Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
+
         Returns width and height (in pixels) of given text if rendered in font
         with provided direction, features, and language, while respecting
         newline characters.
@@ -495,19 +539,26 @@ class FreeTypeFont:
 
         :return: (width, height)
         """
+        deprecate("getsize_multiline", 10, "ImageDraw.multiline_textbbox")
         max_width = 0
         lines = self._multiline_split(text)
-        line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
-        for line in lines:
-            line_width, line_height = self.getsize(
-                line, direction, features, language, stroke_width
-            )
-            max_width = max(max_width, line_width)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
+            for line in lines:
+                line_width, line_height = self.getsize(
+                    line, direction, features, language, stroke_width
+                )
+                max_width = max(max_width, line_width)
 
         return max_width, len(lines) * line_spacing - spacing
 
     def getoffset(self, text):
         """
+        .. deprecated:: 9.2.0
+
+        Use :py:meth:`.getbbox` instead.
+
         Returns the offset of given text. This is the gap between the
         starting coordinate and the first marking. Note that this gap is
         included in the result of :py:func:`~PIL.ImageFont.FreeTypeFont.getsize`.
@@ -516,6 +567,7 @@ class FreeTypeFont:
 
         :return: A tuple of the x and y offset
         """
+        deprecate("getoffset", 10, "getbbox")
         return self.font.getsize(text)[1]
 
     def getmask(
@@ -711,8 +763,13 @@ class FreeTypeFont:
 
         :return: A FreeTypeFont object.
         """
+        if font is None:
+            try:
+                font = BytesIO(self.font_bytes)
+            except AttributeError:
+                font = self.path
         return FreeTypeFont(
-            font=self.path if font is None else font,
+            font=font,
             size=self.size if size is None else size,
             index=self.index if index is None else index,
             encoding=self.encoding if encoding is None else encoding,
@@ -791,7 +848,15 @@ class TransposedFont:
         self.orientation = orientation  # any 'transpose' argument, or None
 
     def getsize(self, text, *args, **kwargs):
-        w, h = self.font.getsize(text)
+        """
+        .. deprecated:: 9.2.0
+
+        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+        """
+        deprecate("getsize", 10, "getbbox or getlength")
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            w, h = self.font.getsize(text)
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             return h, w
         return w, h
@@ -801,6 +866,23 @@ class TransposedFont:
         if self.orientation is not None:
             return im.transpose(self.orientation)
         return im
+
+    def getbbox(self, text, *args, **kwargs):
+        # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
+        # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont
+        left, top, right, bottom = self.font.getbbox(text, *args, **kwargs)
+        width = right - left
+        height = bottom - top
+        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+            return 0, 0, height, width
+        return 0, 0, width, height
+
+    def getlength(self, text, *args, **kwargs):
+        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+            raise ValueError(
+                "text length is undefined for text rotated by 90 or 270 degrees"
+            )
+        return self.font.getlength(text, *args, **kwargs)
 
 
 def load(filename):
@@ -824,10 +906,12 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     This function loads a font object from the given file or file-like
     object, and creates a font object for a font of the given size.
 
-    Pillow uses FreeType to open font files. If you are opening many fonts
-    simultaneously on Windows, be aware that Windows limits the number of files
-    that can be open in C at once to 512. If you approach that limit, an
+    Pillow uses FreeType to open font files. On Windows, be aware that FreeType
+    will keep the file open as long as the FreeTypeFont object exists. Windows
+    limits the number of files that can be open in C at once to 512, so if many
+    fonts are opened simultaneously and that limit is approached, an
     ``OSError`` may be thrown, reporting that FreeType "cannot open resource".
+    A workaround would be to copy the file(s) into memory, and open that instead.
 
     This function requires the _imagingft service.
 

@@ -154,13 +154,16 @@ class FpxImageFile(ImageFile.ImageFile):
 
         for i in range(0, len(s), length):
 
+            x1 = min(xsize, x + xtile)
+            y1 = min(ysize, y + ytile)
+
             compression = i32(s, i + 8)
 
             if compression == 0:
                 self.tile.append(
                     (
                         "raw",
-                        (x, y, x + xtile, y + ytile),
+                        (x, y, x1, y1),
                         i32(s, i) + 28,
                         (self.rawmode,),
                     )
@@ -172,7 +175,7 @@ class FpxImageFile(ImageFile.ImageFile):
                 self.tile.append(
                     (
                         "fill",
-                        (x, y, x + xtile, y + ytile),
+                        (x, y, x1, y1),
                         i32(s, i) + 28,
                         (self.rawmode, s[12:16]),
                     )
@@ -201,7 +204,7 @@ class FpxImageFile(ImageFile.ImageFile):
                 self.tile.append(
                     (
                         "jpeg",
-                        (x, y, x + xtile, y + ytile),
+                        (x, y, x1, y1),
                         i32(s, i) + 28,
                         (rawmode, jpegmode),
                     )

@@ -16,7 +16,7 @@ def test_getcolors():
     assert getcolors("L") == 255
     assert getcolors("I") == 255
     assert getcolors("F") == 255
-    assert getcolors("P") == 90  # fixed palette
+    assert getcolors("P") == 96  # fixed palette
     assert getcolors("RGB") is None
     assert getcolors("RGBA") is None
     assert getcolors("CMYK") is None

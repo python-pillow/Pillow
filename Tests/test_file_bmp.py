@@ -129,10 +129,20 @@ def test_rgba_bitfields():
 
     assert_image_equal_tofile(im, "Tests/images/bmp/q/rgb32bf-xbgr.bmp")
 
+    # This test image has been manually hexedited
+    # to change the bitfield compression in the header from XBGR to ABGR
+    with Image.open("Tests/images/rgb32bf-abgr.bmp") as im:
+        assert_image_equal_tofile(
+            im.convert("RGB"), "Tests/images/bmp/q/rgb32bf-xbgr.bmp"
+        )
+
 
 def test_rle8():
     with Image.open("Tests/images/hopper_rle8.bmp") as im:
         assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.bmp", 12)
+
+    with Image.open("Tests/images/hopper_rle8_greyscale.bmp") as im:
+        assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
     # This test image has been manually hexedited
     # to have rows with too much data

@@ -15,35 +15,13 @@ Python Support
 
 Pillow supports these Python versions.
 
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-|        Python        |3.10 | 3.9 | 3.8 | 3.7 | 3.6 | 3.5 | 3.4 | 2.7 |
-+======================+=====+=====+=====+=====+=====+=====+=====+=====+
-| Pillow >= 9.0        | Yes | Yes | Yes | Yes |     |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 8.3.2 - 8.4   | Yes | Yes | Yes | Yes | Yes |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 8.0 - 8.3.1   |     | Yes | Yes | Yes | Yes |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 7.0 - 7.2     |     |     | Yes | Yes | Yes | Yes |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 6.2.1 - 6.2.2 |     |     | Yes | Yes | Yes | Yes |     | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 6.0 - 6.2.0   |     |     |     | Yes | Yes | Yes |     | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 5.2 - 5.4     |     |     |     | Yes | Yes | Yes | Yes | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+.. csv-table:: Newer versions
+   :file: newer-versions.csv
+   :header-rows: 1
 
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-|      Python      | 3.6 | 3.5 | 3.4 | 3.3 | 3.2 | 2.7 | 2.6 | 2.5 | 2.4 |
-+==================+=====+=====+=====+=====+=====+=====+=====+=====+=====+
-| Pillow 5.0 - 5.1 | Yes | Yes | Yes |     |     | Yes |     |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 4         | Yes | Yes | Yes | Yes |     | Yes |     |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 2 - 3     |     | Yes | Yes | Yes | Yes | Yes | Yes |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow < 2       |     |     |     |     |     | Yes | Yes | Yes | Yes |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+.. csv-table:: Older versions
+   :file: older-versions.csv
+   :header-rows: 1
 
 Basic Installation
 ------------------
@@ -162,7 +140,7 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.3**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.4**
 
 * **libfreetype** provides type related services
 
@@ -181,13 +159,14 @@ Many of Pillow's features require external libraries:
 
 * **openjpeg** provides JPEG 2000 functionality.
 
-  * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1** and **2.4.0**.
+  * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
+    **2.4.0** and **2.5.0**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.0**
+  * Pillow has been tested with libimagequant **2.6-4.0.4**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -388,7 +367,7 @@ In Alpine, the command is::
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
+Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
 
     sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
         libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
@@ -463,6 +442,8 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | Fedora 35                        | 3.10                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
+| Fedora 36                        | 3.10                       | x86-64              |
++----------------------------------+----------------------------+---------------------+
 | Gentoo                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
@@ -472,18 +453,18 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | Ubuntu Linux 20.04 LTS (Focal)   | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
 |                                  | PyPy3                      |                     |
-|                                  +----------------------------+---------------------+
-|                                  | 3.8                        | arm64v8, ppc64le,   |
-|                                  |                            | s390x               |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 22.04 LTS (Jammy)   | 3.10                       | x86-64              |
+| Ubuntu Linux 22.04 LTS (Jammy)   | 3.10                       | arm64v8, ppc64le,   |
+|                                  |                            | s390x, x86-64       |
 +----------------------------------+----------------------------+---------------------+
 | Windows Server 2016              | 3.7                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Windows Server 2022              | 3.7, 3.8, 3.9, 3.10, 3.11, | x86, x86-64         |
 |                                  | PyPy3                      |                     |
 |                                  +----------------------------+---------------------+
-|                                  | 3.9/MinGW                  | x86, x86-64         |
+|                                  | 3.9 (MinGW)                | x86, x86-64         |
+|                                  +----------------------------+---------------------+
+|                                  | 3.7, 3.8, 3.9 (Cygwin)     | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 
 
@@ -501,13 +482,13 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
 |                                  | | versions                | | Pillow version | | processors |
 +==================================+===========================+==================+==============+
-| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 9.0.1            |arm           |
+| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 9.2.0            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
 |                                  +---------------------------+------------------+--------------+
-|                                  | 3.7, 3.8, 3.9, 3.10       | 9.0.1            |x86-64        |
-|                                  +---------------------------+------------------+--------------+
-|                                  | 3.6                       | 8.4.0            |x86-64        |
+|                                  | 3.7, 3.8, 3.9, 3.10       | 9.2.0            |x86-64        |
+|                                  +---------------------------+------------------+              |
+|                                  | 3.6                       | 8.4.0            |              |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9        | 8.3.2            |x86-64        |
 |                                  +---------------------------+------------------+              |
@@ -567,6 +548,8 @@ These platforms have been reported to work at the versions mentioned.
 | FreeBSD 10.2                     | 2.7, 3.4                  | 3.1.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+
 | Windows 10                       | 3.7                       | 7.1.0            |x86-64        |
++----------------------------------+---------------------------+------------------+--------------+
+| Windows 10/Cygwin 3.3            | 3.6, 3.7, 3.8, 3.9        | 8.4.0            |x86-64        |
 +----------------------------------+---------------------------+------------------+--------------+
 | Windows 8.1 Pro                  | 2.6, 2.7, 3.2, 3.3, 3.4   | 2.4.0            |x86,x86-64    |
 +----------------------------------+---------------------------+------------------+--------------+

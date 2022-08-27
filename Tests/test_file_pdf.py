@@ -37,13 +37,14 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
     return outfile
 
 
+@pytest.mark.valgrind_known_error(reason="Temporary skip")
 def test_monochrome(tmp_path):
     # Arrange
     mode = "1"
 
     # Act / Assert
     outfile = helper_save_as_pdf(tmp_path, mode)
-    assert os.path.getsize(outfile) < 15000
+    assert os.path.getsize(outfile) < 5000
 
 
 def test_greyscale(tmp_path):

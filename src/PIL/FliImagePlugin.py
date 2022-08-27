@@ -91,7 +91,7 @@ class FliImageFile(ImageFile.ImageFile):
 
         # set things up to decode first frame
         self.__frame = -1
-        self.__fp = self.fp
+        self._fp = self.fp
         self.__rewind = self.fp.tell()
         self.seek(0)
 
@@ -125,7 +125,7 @@ class FliImageFile(ImageFile.ImageFile):
     def _seek(self, frame):
         if frame == 0:
             self.__frame = -1
-            self.__fp.seek(self.__rewind)
+            self._fp.seek(self.__rewind)
             self.__offset = 128
         else:
             # ensure that the previous frame was loaded
@@ -136,7 +136,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.__frame = frame
 
         # move to next frame
-        self.fp = self.__fp
+        self.fp = self._fp
         self.fp.seek(self.__offset)
 
         s = self.fp.read(4)
@@ -152,15 +152,6 @@ class FliImageFile(ImageFile.ImageFile):
 
     def tell(self):
         return self.__frame
-
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
 
 
 #

@@ -2,6 +2,9 @@ name: Test Windows
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: windows-latest
@@ -41,10 +44,10 @@ jobs:
         cache-dependency-path: ".github/workflows/test-windows.yml"
 
     - name: Print build system information
-      run: python .github/workflows/system-info.py
+      run: python3 .github/workflows/system-info.py
 
-    - name: python -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
-      run: python -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
+    - name: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
+      run: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
 
     - name: Install dependencies
       id: install
@@ -189,6 +192,8 @@ jobs:
         path: dist\*.whl
 
   success:
+    permissions:
+      contents: none
     needs: build
     runs-on: ubuntu-latest
     name: Windows Test Successful

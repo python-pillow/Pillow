@@ -17,9 +17,9 @@ When an image is opened from a file, only that instance of the image is consider
 have the format. Copies of the image will contain data loaded from the file, but not
 the file itself, meaning that it can no longer be considered to be in the original
 format. So if :py:meth:`~PIL.Image.Image.copy` is called on an image, or another method
-internally creates a copy of the image, the ``fp`` (file pointer), along with any
-methods and attributes specific to a format. The :py:attr:`~PIL.Image.Image.format`
-attribute will be ``None``.
+internally creates a copy of the image, then any methods or attributes specific to the
+format will no longer be present. The ``fp`` (file pointer) attribute will no longer be
+present, and the :py:attr:`~PIL.Image.Image.format` attribute will be ``None``.
 
 Fully supported formats
 -----------------------
@@ -101,8 +101,8 @@ GIF
 ^^^
 
 Pillow reads GIF87a and GIF89a versions of the GIF file format. The library
-writes LZW encoded files in GIF87a by default, unless GIF89a features
-are used or GIF89a is already in use.
+writes files in GIF87a by default, unless GIF89a features are used or GIF89a is
+already in use. Files are written with LZW encoding.
 
 GIF files are initially read as grayscale (``L``) or palette mode (``P``)
 images. Seeking to later frames in a ``P`` image will change the image to
@@ -156,7 +156,8 @@ The :py:meth:`~PIL.Image.open` method sets the following
     it will loop forever.
 
 **comment**
-    May not be present. A comment about the image.
+    May not be present. A comment about the image. This is the last comment found
+    before the current frame's image.
 
 **extension**
     May not be present. Contains application specific information.
@@ -245,17 +246,14 @@ Reading local images
 
 The GIF loader creates an image memory the same size as the GIF file’s *logical
 screen size*, and pastes the actual pixel data (the *local image*) into this
-image. If you only want the actual pixel rectangle, you can manipulate the
-:py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.ImageFile.ImageFile.tile`
-attributes before loading the file::
+image. If you only want the actual pixel rectangle, you can crop the image::
 
     im = Image.open(...)
 
     if im.tile[0][0] == "gif":
         # only read the first "local image" from this GIF file
-        tag, (x0, y0, x1, y1), offset, extra = im.tile[0]
-        im.size = (x1 - x0, y1 - y0)
-        im.tile = [(tag, (0, 0) + im.size, offset, extra)]
+        box = im.tile[0][1]
+        im = im.crop(box)
 
 ICNS
 ^^^^
@@ -829,11 +827,8 @@ the output format must be specified explicitly::
 
     im.save('newimage.spi', format='SPIDER')
 
-For more information about the SPIDER image processing package, see the
-`SPIDER homepage`_ at `Wadsworth Center`_.
-
-.. _SPIDER homepage: https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
-.. _Wadsworth Center: https://www.wadsworth.org/
+For more information about the SPIDER image processing package, see
+https://github.com/spider-em/SPIDER
 
 TGA
 ^^^
@@ -973,7 +968,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     methods are: :data:`None`, ``"group3"``, ``"group4"``, ``"jpeg"``, ``"lzma"``,
     ``"packbits"``, ``"tiff_adobe_deflate"``, ``"tiff_ccitt"``, ``"tiff_lzw"``,
     ``"tiff_raw_16"``, ``"tiff_sgilog"``, ``"tiff_sgilog24"``, ``"tiff_thunderscan"``,
-    ``"webp"`, ``"zstd"``
+    ``"webp"``, ``"zstd"``
 
 **quality**
     The image quality for JPEG compression, on a scale from 0 (worst) to 100
@@ -1214,6 +1209,17 @@ image when first opened. The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL
 methods may be used to read other pictures from the file. The pictures are
 zero-indexed and random access is supported.
 
+When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+option will also be available.
+
+**append_images**
+    A list of images to append as additional pictures. Each of the
+    images in the list can be single or multiframe images.
+
+    .. versionadded:: 9.3.0
+
 PCD
 ^^^
 
@@ -1235,6 +1241,11 @@ PSD
 Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
 
+SUN
+^^^
+
+Pillow identifies and reads Sun raster files.
+
 WAL
 ^^^
 
@@ -1249,13 +1260,13 @@ this format.
 By default, a Quake2 standard palette is attached to the texture. To override
 the palette, use the putpalette method.
 
-WMF
-^^^
+WMF, EMF
+^^^^^^^^
 
-Pillow can identify WMF files.
+Pillow can identify WMF and EMF files.
 
-On Windows, it can read WMF files. By default, it will load the image at 72
-dpi. To load it at another resolution:
+On Windows, it can read WMF and EMF files. By default, it will load the image
+at 72 dpi. To load it at another resolution:
 
 .. code-block:: python
 
@@ -1265,7 +1276,8 @@ dpi. To load it at another resolution:
         im.load(dpi=144)
 
 To add other read or write support, use
-:py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF handler.
+:py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
+handler.
 
 .. code-block:: python
 

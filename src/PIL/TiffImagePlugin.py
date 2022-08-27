@@ -1073,7 +1073,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next
         self.__frame = -1
-        self.__fp = self.fp
+        self._fp = self.fp
         self._frame_pos = []
         self._n_frames = None
 
@@ -1106,7 +1106,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.im = Image.core.new(self.mode, self.size)
 
     def _seek(self, frame):
-        self.fp = self.__fp
+        self.fp = self._fp
 
         # reset buffered io handle in case fp
         # was passed to libtiff, invalidating the buffer
@@ -1136,6 +1136,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
+        self._reload_exif()
         # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
         self.__frame = frame
@@ -1515,15 +1516,6 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self._tile_orientation = self.tag_v2.get(0x0112)
 
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
-
 
 #
 # --------------------------------------------------------------------
@@ -1568,7 +1560,13 @@ def _save(im, fp, filename):
 
     encoderinfo = im.encoderinfo
     encoderconfig = im.encoderconfig
-    compression = encoderinfo.get("compression", im.info.get("compression"))
+    try:
+        compression = encoderinfo["compression"]
+    except KeyError:
+        compression = im.info.get("compression")
+        if isinstance(compression, int):
+            # compression value may be from BMP. Ignore it
+            compression = None
     if compression is None:
         compression = "raw"
     elif compression == "tiff_jpeg":
@@ -1676,12 +1674,18 @@ def _save(im, fp, filename):
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB", "RGB;L")
-        ifd[COLORMAP] = tuple(v * 256 for v in lut)
+        colormap = []
+        colors = len(lut) // 3
+        for i in range(3):
+            colormap += [v * 256 for v in lut[colors * i : colors * (i + 1)]]
+            colormap += [0] * (256 - colors)
+        ifd[COLORMAP] = colormap
     # data orientation
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     # aim for given strip size (64 KB by default) when using libtiff writer
     if libtiff:
-        rows_per_strip = 1 if stride == 0 else min(STRIP_SIZE // stride, im.size[1])
+        im_strip_size = encoderinfo.get("strip_size", STRIP_SIZE)
+        rows_per_strip = 1 if stride == 0 else min(im_strip_size // stride, im.size[1])
         # JPEG encoder expects multiple of 8 rows
         if compression == "jpeg":
             rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, im.size[1])

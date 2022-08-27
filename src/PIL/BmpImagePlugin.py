@@ -172,10 +172,11 @@ class BmpImageFile(ImageFile.ImageFile):
             SUPPORTED = {
                 32: [
                     (0xFF0000, 0xFF00, 0xFF, 0x0),
-                    (0xFF0000, 0xFF00, 0xFF, 0xFF000000),
-                    (0xFF, 0xFF00, 0xFF0000, 0xFF000000),
-                    (0x0, 0x0, 0x0, 0x0),
                     (0xFF000000, 0xFF0000, 0xFF00, 0x0),
+                    (0xFF000000, 0xFF0000, 0xFF00, 0xFF),
+                    (0xFF, 0xFF00, 0xFF0000, 0xFF000000),
+                    (0xFF0000, 0xFF00, 0xFF, 0xFF000000),
+                    (0x0, 0x0, 0x0, 0x0),
                 ],
                 24: [(0xFF0000, 0xFF00, 0xFF)],
                 16: [(0xF800, 0x7E0, 0x1F), (0x7C00, 0x3E0, 0x1F)],
@@ -183,6 +184,7 @@ class BmpImageFile(ImageFile.ImageFile):
             MASK_MODES = {
                 (32, (0xFF0000, 0xFF00, 0xFF, 0x0)): "BGRX",
                 (32, (0xFF000000, 0xFF0000, 0xFF00, 0x0)): "XBGR",
+                (32, (0xFF000000, 0xFF0000, 0xFF00, 0xFF)): "ABGR",
                 (32, (0xFF, 0xFF00, 0xFF0000, 0xFF000000)): "RGBA",
                 (32, (0xFF0000, 0xFF00, 0xFF, 0xFF000000)): "BGRA",
                 (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
@@ -321,7 +323,8 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     # align to 16-bit word boundary
                     if self.fd.tell() % 2 != 0:
                         self.fd.seek(1, os.SEEK_CUR)
-        self.set_as_raw(bytes(data), ("P", 0, self.args[-1]))
+        rawmode = "L" if self.mode == "L" else "P"
+        self.set_as_raw(bytes(data), (rawmode, 0, self.args[-1]))
         return -1, 0
 
 

@@ -102,7 +102,7 @@ class GifImageFile(ImageFile.ImageFile):
                 p = ImagePalette.raw("RGB", p)
                 self.global_palette = self.palette = p
 
-        self.__fp = self.fp  # FIXME: hack
+        self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
         self._n_frames = None
         self._is_animated = None
@@ -161,8 +161,10 @@ class GifImageFile(ImageFile.ImageFile):
             self.__offset = 0
             self.dispose = None
             self.__frame = -1
-            self.__fp.seek(self.__rewind)
+            self._fp.seek(self.__rewind)
             self.disposal_method = 0
+            if "comment" in self.info:
+                del self.info["comment"]
         else:
             # ensure that the previous frame was loaded
             if self.tile and update_image:
@@ -171,7 +173,7 @@ class GifImageFile(ImageFile.ImageFile):
         if frame != self.__frame + 1:
             raise ValueError(f"cannot seek to frame {frame}")
 
-        self.fp = self.__fp
+        self.fp = self._fp
         if self.__offset:
             # backup to last frame
             self.fp.seek(self.__offset)
@@ -182,10 +184,6 @@ class GifImageFile(ImageFile.ImageFile):
         s = self.fp.read(1)
         if not s or s == b";":
             raise EOFError
-
-        self.__frame = frame
-
-        self.tile = []
 
         palette = None
 
@@ -228,15 +226,21 @@ class GifImageFile(ImageFile.ImageFile):
                     #
                     # comment extension
                     #
+                    comment = b""
+
+                    # Read this comment block
                     while block:
-                        if "comment" in info:
-                            info["comment"] += block
-                        else:
-                            info["comment"] = block
+                        comment += block
                         block = self.data()
+
+                    if "comment" in info:
+                        # If multiple comment blocks in frame, separate with \n
+                        info["comment"] += b"\n" + comment
+                    else:
+                        info["comment"] = comment
                     s = None
                     continue
-                elif s[0] == 255:
+                elif s[0] == 255 and frame == 0:
                     #
                     # application extension
                     #
@@ -244,7 +248,7 @@ class GifImageFile(ImageFile.ImageFile):
                     if block[:11] == b"NETSCAPE2.0":
                         block = self.data()
                         if len(block) >= 3 and block[0] == 1:
-                            info["loop"] = i16(block, 1)
+                            self.info["loop"] = i16(block, 1)
                 while self.data():
                     pass
 
@@ -259,6 +263,7 @@ class GifImageFile(ImageFile.ImageFile):
                 x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
                 if (x1 > self.size[0] or y1 > self.size[1]) and update_image:
                     self._size = max(x1, self.size[0]), max(y1, self.size[1])
+                    Image._decompression_bomb_check(self._size)
                 frame_dispose_extent = x0, y0, x1, y1
                 flags = s[8]
 
@@ -281,10 +286,14 @@ class GifImageFile(ImageFile.ImageFile):
             s = None
 
         if interlace is None:
-            # self.__fp = None
+            # self._fp = None
             raise EOFError
+
+        self.__frame = frame
         if not update_image:
             return
+
+        self.tile = []
 
         if self.dispose:
             self.im.paste(self.dispose, self.dispose_extent)
@@ -389,7 +398,9 @@ class GifImageFile(ImageFile.ImageFile):
                 )
             ]
 
-        for k in ["duration", "comment", "extension", "loop"]:
+        if info.get("comment"):
+            self.info["comment"] = info["comment"]
+        for k in ["duration", "extension"]:
             if k in info:
                 self.info[k] = info[k]
             elif k in self.info:
@@ -442,15 +453,6 @@ class GifImageFile(ImageFile.ImageFile):
 
     def tell(self):
         return self.__frame
-
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
 
 
 # --------------------------------------------------------------------
@@ -573,10 +575,14 @@ def _write_multiple_frames(im, fp, palette):
             im_frame = _normalize_mode(im_frame.copy())
             if frame_count == 0:
                 for k, v in im_frame.info.items():
+                    if k == "transparency":
+                        continue
                     im.encoderinfo.setdefault(k, v)
-            im_frame = _normalize_palette(im_frame, palette, im.encoderinfo)
 
             encoderinfo = im.encoderinfo.copy()
+            im_frame = _normalize_palette(im_frame, palette, encoderinfo)
+            if "transparency" in im_frame.info:
+                encoderinfo.setdefault("transparency", im_frame.info["transparency"])
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
             elif duration is None and "duration" in im_frame.info:
@@ -715,27 +721,6 @@ def _write_local_header(fp, im, offset, flags):
             + o8(0)
         )
 
-    if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]):
-        fp.write(b"!" + o8(254))  # extension intro
-        comment = im.encoderinfo["comment"]
-        if isinstance(comment, str):
-            comment = comment.encode()
-        for i in range(0, len(comment), 255):
-            subblock = comment[i : i + 255]
-            fp.write(o8(len(subblock)) + subblock)
-        fp.write(o8(0))
-    if "loop" in im.encoderinfo:
-        number_of_loops = im.encoderinfo["loop"]
-        fp.write(
-            b"!"
-            + o8(255)  # extension intro
-            + o8(11)
-            + b"NETSCAPE2.0"
-            + o8(3)
-            + o8(1)
-            + o16(number_of_loops)  # number of loops
-            + o8(0)
-        )
     include_color_table = im.encoderinfo.get("include_color_table")
     if include_color_table:
         palette_bytes = _get_palette_bytes(im)
@@ -840,9 +825,18 @@ def _get_optimize(im, info):
                 if count:
                     used_palette_colors.append(i)
 
-            if optimise or (
-                len(used_palette_colors) <= 128
-                and max(used_palette_colors) > len(used_palette_colors)
+            if optimise or max(used_palette_colors) >= len(used_palette_colors):
+                return used_palette_colors
+
+            num_palette_colors = len(im.palette.palette) // Image.getmodebands(
+                im.palette.mode
+            )
+            current_palette_size = 1 << (num_palette_colors - 1).bit_length()
+            if (
+                # check that the palette would become smaller when saved
+                len(used_palette_colors) <= current_palette_size // 2
+                # check that the palette is not already the smallest possible size
+                and current_palette_size > 2
             ):
                 return used_palette_colors
 
@@ -912,24 +906,23 @@ def _get_global_header(im, info):
     # https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
     version = b"87a"
-    for extensionKey in ["transparency", "duration", "loop", "comment"]:
-        if info and extensionKey in info:
-            if (extensionKey == "duration" and info[extensionKey] == 0) or (
-                extensionKey == "comment" and not (1 <= len(info[extensionKey]) <= 255)
-            ):
-                continue
-            version = b"89a"
-            break
-    else:
-        if im.info.get("version") == b"89a":
-            version = b"89a"
+    if im.info.get("version") == b"89a" or (
+        info
+        and (
+            "transparency" in info
+            or "loop" in info
+            or info.get("duration")
+            or info.get("comment")
+        )
+    ):
+        version = b"89a"
 
     background = _get_background(im, info.get("background"))
 
     palette_bytes = _get_palette_bytes(im)
     color_table_size = _get_color_table_size(palette_bytes)
 
-    return [
+    header = [
         b"GIF"  # signature
         + version  # version
         + o16(im.size[0])  # canvas width
@@ -942,6 +935,30 @@ def _get_global_header(im, info):
         # Global Color Table
         _get_header_palette(palette_bytes),
     ]
+    if "loop" in info:
+        header.append(
+            b"!"
+            + o8(255)  # extension intro
+            + o8(11)
+            + b"NETSCAPE2.0"
+            + o8(3)
+            + o8(1)
+            + o16(info["loop"])  # number of loops
+            + o8(0)
+        )
+    if info.get("comment"):
+        comment_block = b"!" + o8(254)  # extension intro
+
+        comment = info["comment"]
+        if isinstance(comment, str):
+            comment = comment.encode()
+        for i in range(0, len(comment), 255):
+            subblock = comment[i : i + 255]
+            comment_block += o8(len(subblock)) + subblock
+
+        comment_block += o8(0)
+        header.append(comment_block)
+    return header
 
 
 def _write_frame_data(fp, im_frame, offset, params):

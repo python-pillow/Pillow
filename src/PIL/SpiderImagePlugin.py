@@ -15,7 +15,7 @@
 #
 
 ##
-# Image plugin for the Spider image format.  This format is is used
+# Image plugin for the Spider image format. This format is used
 # by the SPIDER software, in processing image data from electron
 # microscopy and tomography.
 ##
@@ -149,7 +149,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         self.mode = "F"
 
         self.tile = [("raw", (0, 0) + self.size, offset, (self.rawmode, 0, 1))]
-        self.__fp = self.fp  # FIXME: hack
+        self._fp = self.fp  # FIXME: hack
 
     @property
     def n_frames(self):
@@ -172,7 +172,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
-        self.fp = self.__fp
+        self.fp = self._fp
         self.fp.seek(self.stkoffset)
         self._open()
 
@@ -190,15 +190,6 @@ class SpiderImageFile(ImageFile.ImageFile):
         from PIL import ImageTk
 
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
-
-    def _close__fp(self):
-        try:
-            if self.__fp != self.fp:
-                self.__fp.close()
-        except AttributeError:
-            pass
-        finally:
-            self.__fp = None
 
 
 # --------------------------------------------------------------------

@@ -70,6 +70,15 @@ class TestFileTiff:
             im.load()
             im.close()
 
+    def test_seek_after_close(self):
+        im = Image.open("Tests/images/multipage.tiff")
+        im.close()
+
+        with pytest.raises(ValueError):
+            im.n_frames
+        with pytest.raises(ValueError):
+            im.seek(1)
+
     def test_context_manager(self):
         with warnings.catch_warnings():
             with Image.open("Tests/images/multipage.tiff") as im:
@@ -488,6 +497,26 @@ class TestFileTiff:
             exif = im.getexif()
             check_exif(exif)
 
+    def test_modify_exif(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/ifd_tag_type.tiff") as im:
+            exif = im.getexif()
+            exif[256] = 100
+
+            im.save(outfile, exif=exif)
+
+        with Image.open(outfile) as im:
+            exif = im.getexif()
+            assert exif[256] == 100
+
+    def test_reload_exif_after_seek(self):
+        with Image.open("Tests/images/multipage.tiff") as im:
+            exif = im.getexif()
+            del exif[256]
+            im.seek(1)
+
+            assert 256 in exif
+
     def test_exif_frames(self):
         # Test that EXIF data can change across frames
         with Image.open("Tests/images/g4-multi.tiff") as im:
@@ -705,6 +734,13 @@ class TestFileTiff:
 
         with Image.open(outfile) as reloaded:
             assert reloaded.info["icc_profile"] == icc_profile
+
+    def test_save_bmp_compression(self, tmp_path):
+        with Image.open("Tests/images/hopper.bmp") as im:
+            assert im.info["compression"] == 0
+
+            outfile = str(tmp_path / "temp.tif")
+            im.save(outfile)
 
     def test_discard_icc_profile(self, tmp_path):
         outfile = str(tmp_path / "temp.tif")

@@ -625,20 +625,20 @@ def test_polygon2():
     helper_polygon(POINTS2)
 
 
-def test_polygon_kite():
+@pytest.mark.parametrize("mode", ("RGB", "L"))
+def test_polygon_kite(mode):
     # Test drawing lines of different gradients (dx>dy, dy>dx) and
     # vertical (dx==0) and horizontal (dy==0) lines
-    for mode in ["RGB", "L"]:
-        # Arrange
-        im = Image.new(mode, (W, H))
-        draw = ImageDraw.Draw(im)
-        expected = f"Tests/images/imagedraw_polygon_kite_{mode}.png"
+    # Arrange
+    im = Image.new(mode, (W, H))
+    draw = ImageDraw.Draw(im)
+    expected = f"Tests/images/imagedraw_polygon_kite_{mode}.png"
 
-        # Act
-        draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
+    # Act
+    draw.polygon(KITE_POINTS, fill="blue", outline="yellow")
 
-        # Assert
-        assert_image_equal_tofile(im, expected)
+    # Assert
+    assert_image_equal_tofile(im, expected)
 
 
 def test_polygon_1px_high():
@@ -650,6 +650,20 @@ def test_polygon_1px_high():
 
     # Act
     draw.polygon([(0, 1), (0, 1), (2, 1), (2, 1)], "#f00")
+
+    # Assert
+    assert_image_equal_tofile(im, expected)
+
+
+def test_polygon_1px_high_translucent():
+    # Test drawing a translucent 1px high polygon
+    # Arrange
+    im = Image.new("RGB", (4, 3))
+    draw = ImageDraw.Draw(im, "RGBA")
+    expected = "Tests/images/imagedraw_polygon_1px_high_translucent.png"
+
+    # Act
+    draw.polygon([(1, 1), (1, 1), (3, 1), (3, 1)], (255, 0, 0, 127))
 
     # Assert
     assert_image_equal_tofile(im, expected)
@@ -1218,21 +1232,39 @@ def test_textsize_empty_string():
     # Act
     # Should not cause 'SystemError: <built-in method getsize of
     # ImagingFont object at 0x...> returned NULL without setting an error'
-    draw.textsize("")
-    draw.textsize("\n")
-    draw.textsize("test\n")
+    draw.textbbox((0, 0), "")
+    draw.textbbox((0, 0), "\n")
+    draw.textbbox((0, 0), "test\n")
+    draw.textlength("")
 
 
 @skip_unless_feature("freetype2")
-def test_textsize_stroke():
+def test_textbbox_stroke():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 20)
 
     # Act / Assert
-    assert draw.textsize("A", font, stroke_width=2) == (16, 20)
-    assert draw.multiline_textsize("ABC\nAaaa", font, stroke_width=2) == (52, 44)
+    assert draw.textbbox((2, 2), "A", font, stroke_width=2) == (0, 4, 16, 20)
+    assert draw.textbbox((2, 2), "A", font, stroke_width=4) == (-2, 2, 18, 22)
+    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=2) == (0, 4, 52, 44)
+    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=4) == (-2, 2, 54, 50)
+
+
+def test_textsize_deprecation():
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    with pytest.warns(DeprecationWarning) as log:
+        draw.textsize("Hello")
+    assert len(log) == 1
+    with pytest.warns(DeprecationWarning) as log:
+        draw.textsize("Hello\nWorld")
+    assert len(log) == 1
+    with pytest.warns(DeprecationWarning) as log:
+        draw.multiline_textsize("Hello\nWorld")
+    assert len(log) == 1
 
 
 @skip_unless_feature("freetype2")
@@ -1280,6 +1312,23 @@ def test_stroke_multiline():
 
     # Assert
     assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_multiline.png", 3.3)
+
+
+def test_setting_default_font():
+    # Arrange
+    im = Image.new("RGB", (100, 250))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    ImageDraw.ImageDraw.font = font
+
+    # Assert
+    try:
+        assert draw.getfont() == font
+    finally:
+        ImageDraw.ImageDraw.font = None
+        assert isinstance(draw.getfont(), ImageFont.ImageFont)
 
 
 def test_same_color_outline():
@@ -1452,3 +1501,11 @@ def test_discontiguous_corners_polygon():
     )
     expected = os.path.join(IMAGES_PATH, "discontiguous_corners_polygon.png")
     assert_image_similar_tofile(img, expected, 1)
+
+
+def test_polygon():
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+    draw.polygon([(18, 30), (19, 31), (18, 30), (85, 30), (60, 72)], "red")
+    expected = "Tests/images/imagedraw_outline_polygon_RGB.png"
+    assert_image_similar_tofile(im, expected, 1)

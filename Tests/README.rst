@@ -8,7 +8,7 @@ Dependencies
 
 Install::
 
-    python3 -m pip install pytest pytest-cov
+    python3 -m pip install pytest pytest-cov pytest-timeout
 
 Execution
 ---------

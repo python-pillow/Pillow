@@ -135,50 +135,50 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
-    def test_write_metadata(self, tmp_path):
+    @pytest.mark.parametrize("legacy_api", (False, True))
+    def test_write_metadata(self, legacy_api, tmp_path):
         """Test metadata writing through libtiff"""
-        for legacy_api in [False, True]:
-            f = str(tmp_path / "temp.tiff")
-            with Image.open("Tests/images/hopper_g4.tif") as img:
-                img.save(f, tiffinfo=img.tag)
+        f = str(tmp_path / "temp.tiff")
+        with Image.open("Tests/images/hopper_g4.tif") as img:
+            img.save(f, tiffinfo=img.tag)
 
-                if legacy_api:
-                    original = img.tag.named()
-                else:
-                    original = img.tag_v2.named()
+            if legacy_api:
+                original = img.tag.named()
+            else:
+                original = img.tag_v2.named()
 
-            # PhotometricInterpretation is set from SAVE_INFO,
-            # not the original image.
-            ignored = [
-                "StripByteCounts",
-                "RowsPerStrip",
-                "PageNumber",
-                "PhotometricInterpretation",
-            ]
+        # PhotometricInterpretation is set from SAVE_INFO,
+        # not the original image.
+        ignored = [
+            "StripByteCounts",
+            "RowsPerStrip",
+            "PageNumber",
+            "PhotometricInterpretation",
+        ]
 
-            with Image.open(f) as loaded:
-                if legacy_api:
-                    reloaded = loaded.tag.named()
-                else:
-                    reloaded = loaded.tag_v2.named()
+        with Image.open(f) as loaded:
+            if legacy_api:
+                reloaded = loaded.tag.named()
+            else:
+                reloaded = loaded.tag_v2.named()
 
-            for tag, value in itertools.chain(reloaded.items(), original.items()):
-                if tag not in ignored:
-                    val = original[tag]
-                    if tag.endswith("Resolution"):
-                        if legacy_api:
-                            assert val[0][0] / val[0][1] == (
-                                4294967295 / 113653537
-                            ), f"{tag} didn't roundtrip"
-                        else:
-                            assert val == 37.79000115940079, f"{tag} didn't roundtrip"
+        for tag, value in itertools.chain(reloaded.items(), original.items()):
+            if tag not in ignored:
+                val = original[tag]
+                if tag.endswith("Resolution"):
+                    if legacy_api:
+                        assert val[0][0] / val[0][1] == (
+                            4294967295 / 113653537
+                        ), f"{tag} didn't roundtrip"
                     else:
-                        assert val == value, f"{tag} didn't roundtrip"
+                        assert val == 37.79000115940079, f"{tag} didn't roundtrip"
+                else:
+                    assert val == value, f"{tag} didn't roundtrip"
 
-            # https://github.com/python-pillow/Pillow/issues/1561
-            requested_fields = ["StripByteCounts", "RowsPerStrip", "StripOffsets"]
-            for field in requested_fields:
-                assert field in reloaded, f"{field} not in metadata"
+        # https://github.com/python-pillow/Pillow/issues/1561
+        requested_fields = ["StripByteCounts", "RowsPerStrip", "StripOffsets"]
+        for field in requested_fields:
+            assert field in reloaded, f"{field} not in metadata"
 
     @pytest.mark.valgrind_known_error(reason="Known invalid metadata")
     def test_additional_metadata(self, tmp_path):
@@ -497,8 +497,8 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, compression="tiff_adobe_deflate")
         assert_image_equal_tofile(im, out)
 
-    def test_palette_save(self, tmp_path):
-        im = hopper("P")
+    @pytest.mark.parametrize("im", (hopper("P"), Image.new("P", (1, 1), "#000")))
+    def test_palette_save(self, im, tmp_path):
         out = str(tmp_path / "temp.tif")
 
         TiffImagePlugin.WRITE_LIBTIFF = True
@@ -856,7 +856,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_strip_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
-            assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
+            assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.2)
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -864,7 +864,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_strip_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_strip_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
-            assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
+            assert_image_similar_tofile(im, "Tests/images/flower2.jpg", 0.01)
 
     def test_tiled_cmyk_jpeg(self):
         infile = "Tests/images/tiff_tiled_cmyk_jpeg.tif"
@@ -877,7 +877,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_tiled_ycbcr_jpeg_1x1_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_1x1_sampling.tif"
         with Image.open(infile) as im:
-            assert_image_equal_tofile(im, "Tests/images/flower2.jpg")
+            assert_image_similar_tofile(im, "Tests/images/flower2.jpg", 0.01)
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -885,7 +885,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_tiled_ycbcr_jpeg_2x2_sampling(self):
         infile = "Tests/images/tiff_tiled_ycbcr_jpeg_2x2_sampling.tif"
         with Image.open(infile) as im:
-            assert_image_similar_tofile(im, "Tests/images/flower.jpg", 0.5)
+            assert_image_similar_tofile(im, "Tests/images/flower.jpg", 1.5)
 
     def test_strip_planar_rgb(self):
         # gdal_translate -co TILED=no -co INTERLEAVE=BAND -co COMPRESS=LZW \
@@ -1011,14 +1011,18 @@ class TestFileLibTiff(LibTiffTestCase):
             # Assert that there are multiple strips
             assert len(im.tag_v2[STRIPOFFSETS]) > 1
 
-    def test_save_single_strip(self, tmp_path):
+    @pytest.mark.parametrize("argument", (True, False))
+    def test_save_single_strip(self, argument, tmp_path):
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
 
-        TiffImagePlugin.STRIP_SIZE = 2**18
+        if not argument:
+            TiffImagePlugin.STRIP_SIZE = 2**18
         try:
-
-            im.save(out, compression="tiff_adobe_deflate")
+            arguments = {"compression": "tiff_adobe_deflate"}
+            if argument:
+                arguments["strip_size"] = 2**18
+            im.save(out, **arguments)
 
             with Image.open(out) as im:
                 assert len(im.tag_v2[STRIPOFFSETS]) == 1

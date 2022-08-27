@@ -24,7 +24,6 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  python3 -m twine check --strict dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
@@ -61,7 +60,6 @@ Released as needed for security, installation or critical bug fixes.
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  python3 -m twine check --strict dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Check and upload all binaries and source distributions e.g.:
@@ -91,7 +89,6 @@ Released as needed privately to individual vendors for critical security-related
 * [ ] Create and check source distribution:
   ```bash
   make sdist
-  python3 -m twine check --strict dist/*
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
@@ -99,8 +96,8 @@ Released as needed privately to individual vendors for critical security-related
 ## Binary Distributions
 
 ### Windows
-* [ ] Contact `@cgohlke` for Windows binaries via release ticket e.g. https://github.com/python-pillow/Pillow/issues/1174.
-* [ ] Download and extract tarball from `@cgohlke` and copy into `dist/`
+* [ ] Download the artifacts from the [GitHub Actions "Test Windows" workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml)
+  and copy into `dist/`
 
 ### Mac and Linux
 * [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):

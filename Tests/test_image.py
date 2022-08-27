@@ -22,8 +22,9 @@ from .helper import (
 
 
 class TestImage:
-    def test_image_modes_success(self):
-        for mode in [
+    @pytest.mark.parametrize(
+        "mode",
+        (
             "1",
             "P",
             "PA",
@@ -44,22 +45,18 @@ class TestImage:
             "YCbCr",
             "LAB",
             "HSV",
-        ]:
-            Image.new(mode, (1, 1))
+        ),
+    )
+    def test_image_modes_success(self, mode):
+        Image.new(mode, (1, 1))
 
-    def test_image_modes_fail(self):
-        for mode in [
-            "",
-            "bad",
-            "very very long",
-            "BGR;15",
-            "BGR;16",
-            "BGR;24",
-            "BGR;32",
-        ]:
-            with pytest.raises(ValueError) as e:
-                Image.new(mode, (1, 1))
-            assert str(e.value) == "unrecognized image mode"
+    @pytest.mark.parametrize(
+        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24", "BGR;32")
+    )
+    def test_image_modes_fail(self, mode):
+        with pytest.raises(ValueError) as e:
+            Image.new(mode, (1, 1))
+        assert str(e.value) == "unrecognized image mode"
 
     def test_exception_inheritance(self):
         assert issubclass(UnidentifiedImageError, OSError)
@@ -539,23 +536,22 @@ class TestImage:
         with pytest.raises(ValueError):
             Image.linear_gradient(wrong_mode)
 
-    def test_linear_gradient(self):
-
+    @pytest.mark.parametrize("mode", ("L", "P", "I", "F"))
+    def test_linear_gradient(self, mode):
         # Arrange
         target_file = "Tests/images/linear_gradient.png"
-        for mode in ["L", "P", "I", "F"]:
 
-            # Act
-            im = Image.linear_gradient(mode)
+        # Act
+        im = Image.linear_gradient(mode)
 
-            # Assert
-            assert im.size == (256, 256)
-            assert im.mode == mode
-            assert im.getpixel((0, 0)) == 0
-            assert im.getpixel((255, 255)) == 255
-            with Image.open(target_file) as target:
-                target = target.convert(mode)
-            assert_image_equal(im, target)
+        # Assert
+        assert im.size == (256, 256)
+        assert im.mode == mode
+        assert im.getpixel((0, 0)) == 0
+        assert im.getpixel((255, 255)) == 255
+        with Image.open(target_file) as target:
+            target = target.convert(mode)
+        assert_image_equal(im, target)
 
     def test_radial_gradient_wrong_mode(self):
         # Arrange
@@ -565,23 +561,22 @@ class TestImage:
         with pytest.raises(ValueError):
             Image.radial_gradient(wrong_mode)
 
-    def test_radial_gradient(self):
-
+    @pytest.mark.parametrize("mode", ("L", "P", "I", "F"))
+    def test_radial_gradient(self, mode):
         # Arrange
         target_file = "Tests/images/radial_gradient.png"
-        for mode in ["L", "P", "I", "F"]:
 
-            # Act
-            im = Image.radial_gradient(mode)
+        # Act
+        im = Image.radial_gradient(mode)
 
-            # Assert
-            assert im.size == (256, 256)
-            assert im.mode == mode
-            assert im.getpixel((0, 0)) == 255
-            assert im.getpixel((128, 128)) == 0
-            with Image.open(target_file) as target:
-                target = target.convert(mode)
-            assert_image_equal(im, target)
+        # Assert
+        assert im.size == (256, 256)
+        assert im.mode == mode
+        assert im.getpixel((0, 0)) == 255
+        assert im.getpixel((128, 128)) == 0
+        with Image.open(target_file) as target:
+            target = target.convert(mode)
+        assert_image_equal(im, target)
 
     def test_register_extensions(self):
         test_format = "a"
@@ -604,10 +599,33 @@ class TestImage:
         with Image.open("Tests/images/hopper.gif") as im:
             assert_image_equal(im, im.remap_palette(list(range(256))))
 
+        # Test identity transform with an RGBA palette
+        im = Image.new("P", (256, 1))
+        for x in range(256):
+            im.putpixel((x, 0), x)
+        im.putpalette(list(range(256)) * 4, "RGBA")
+        im_remapped = im.remap_palette(list(range(256)))
+        assert_image_equal(im, im_remapped)
+        assert im.palette.palette == im_remapped.palette.palette
+
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
                 im.remap_palette(None)
+
+    def test_remap_palette_transparency(self):
+        im = Image.new("P", (1, 2))
+        im.putpixel((0, 1), 1)
+        im.info["transparency"] = 0
+
+        im_remapped = im.remap_palette([1, 0])
+        assert im_remapped.info["transparency"] == 1
+
+        # Test unused transparency
+        im.info["transparency"] = 2
+
+        im_remapped = im.remap_palette([1, 0])
+        assert "transparency" not in im_remapped.info
 
     def test__new(self):
         im = hopper("RGB")
@@ -825,6 +843,35 @@ class TestImage:
     def test_zero_tobytes(self, size):
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
+
+    def test_apply_transparency(self):
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 0, 0, 1, 1, 1))
+        assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
+
+        # Test that no transformation is applied without transparency
+        im.apply_transparency()
+        assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
+
+        # Test that a transparency index is applied
+        im.info["transparency"] = 0
+        im.apply_transparency()
+        assert "transparency" not in im.info
+        assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 255): 1}
+
+        # Test that existing transparency is kept
+        im = Image.new("P", (1, 1))
+        im.putpalette((0, 0, 0, 255, 1, 1, 1, 128), "RGBA")
+        im.info["transparency"] = 0
+        im.apply_transparency()
+        assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 128): 1}
+
+        # Test that transparency bytes are applied
+        with Image.open("Tests/images/pil123p.png") as im:
+            assert isinstance(im.info["transparency"], bytes)
+            assert im.palette.colors[(27, 35, 6)] == 24
+            im.apply_transparency()
+            assert im.palette.colors[(27, 35, 6, 214)] == 24
 
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):

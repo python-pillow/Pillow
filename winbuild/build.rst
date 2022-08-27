@@ -42,9 +42,8 @@ behaviour of ``build_prepare.py``:
   If ``PYTHON`` is unset, the version of Python used to run
   ``build_prepare.py`` will be used. If only ``PYTHON`` is set,
   ``EXECUTABLE`` defaults to ``python.exe``.
-* ``ARCHITECTURE`` is used to select a ``x86``, ``x64`` or ``ARM64``build.
+* ``ARCHITECTURE`` is used to select a ``x86``, ``x64`` or ``ARM64`` build.
   By default, uses same architecture as the version of Python used to run ``build_prepare.py``.
-  is used.
 * ``PILLOW_BUILD`` can be used to override the ``winbuild\build`` directory
   path, used to store generated build scripts and compiled libraries.
   **Warning:** This directory is wiped when ``build_prepare.py`` is run.
@@ -91,8 +90,8 @@ Some binary dependencies (e.g. ``fribidi.dll``) will be stored in the
 ``winbuild\build\bin`` directory; this directory should be added to ``PATH``
 before running tests.
 
-Build and install Pillow, then run ``python -m pytest Tests``
-from the root Pillow directory.
+Build and install Pillow, then run ``python3 -m pytest`` from the root Pillow
+directory.
 
 Example
 -------

@@ -1,12 +1,6 @@
 9.2.0
 -----
 
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
-
 Deprecations
 ============
 
@@ -31,34 +25,62 @@ FreeTypeFont.getmask2 fill parameter
 The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2`
 has been deprecated and will be removed in Pillow 10 (2023-07-01).
 
-API Changes
-===========
+PhotoImage.paste box parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-^^^^
+.. deprecated:: 9.2.0
 
-TODO
+The ``box`` parameter is unused. It will be removed in Pillow 10.0.0 (2023-07-01).
+
+Image.coerce_e
+^^^^^^^^^^^^^^
+
+.. deprecated:: 9.2.0
+
+This undocumented method has been deprecated and will be removed in Pillow 10
+(2023-07-01).
+
+Font size and offset methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 9.2.0
+
+Several functions for computing the size and offset of rendered text
+have been deprecated and will be removed in Pillow 10 (2023-07-01):
+
+=========================================================================== =============================================================================================================
+Deprecated                                                                  Use instead
+=========================================================================== =============================================================================================================
+:py:meth:`.FreeTypeFont.getsize` and :py:meth:`.FreeTypeFont.getoffset`     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
+:py:meth:`.FreeTypeFont.getsize_multiline`                                  :py:meth:`.ImageDraw.multiline_textbbox`
+:py:meth:`.ImageFont.getsize`                                               :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
+:py:meth:`.TransposedFont.getsize`                                          :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
+:py:meth:`.ImageDraw.textsize` and :py:meth:`.ImageDraw.multiline_textsize` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
+:py:meth:`.ImageDraw2.Draw.textsize`                                        :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
+=========================================================================== =============================================================================================================
 
 API Additions
 =============
 
-TODO
-^^^^
+Image.apply_transparency
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Added :py:meth:`~PIL.Image.Image.apply_transparency`, a method to take a P mode image
+with "transparency" in ``im.info``, and apply the transparency to the palette instead.
+The image's palette mode will become "RGBA", and "transparency" will be removed from
+``im.info``.
 
 Security
 ========
 
-TODO
-^^^^
-
-TODO
+An additional decompression bomb check has been added for the GIF format.
 
 Other Changes
 =============
 
-TODO
-^^^^
+Using gnome-screenshot on Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+In :py:meth:`~PIL.ImageGrab.grab` on Linux, if ``xdisplay`` is ``None`` then
+``gnome-screenshot`` will be used to capture the display if it is installed. To capture
+the default X11 display instead, pass ``xdisplay=""``.
