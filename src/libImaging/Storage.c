@@ -381,7 +381,7 @@ ImagingDestroyArray(Imaging im) {
 
 Imaging
 ImagingAllocateArray(Imaging im, int dirty, int block_size) {
-    int y, line_in_block, current_block;
+    int y, x, line_in_block, current_block;
     ImagingMemoryArena arena = &ImagingDefaultArena;
     ImagingMemoryBlock block = {NULL, 0};
     int aligned_linesize, lines_per_block, blocks_count;
@@ -441,6 +441,18 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size) {
     }
 
     im->destroy = ImagingDestroyArray;
+
+    /* Zero-out the unused bytes for image modes that
+    only use 3 of 4 bytes to prevent Valgrind errors */
+    if (dirty && im->bands == 3 && im->pixelsize == 4) {
+        for (y = 0; y < im->ysize; y++) {
+            char *line = im->image[y] + 3;
+            for (x = 0; x < im->xsize; x++) {
+                *line = 0;
+                line += 4;
+            }
+        }
+    }
 
     return im;
 }
