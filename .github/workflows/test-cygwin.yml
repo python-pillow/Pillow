@@ -2,6 +2,9 @@ name: Test Cygwin
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: windows-latest
