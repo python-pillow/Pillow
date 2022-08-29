@@ -35,7 +35,7 @@ def test_sanity():
 @pytest.fixture(
     scope="module",
     params=[
-        ImageFont.Layout.BASIC,
+        pytest.param(ImageFont.Layout.BASIC),
         pytest.param(ImageFont.Layout.RAQM, marks=skip_unless_feature("raqm")),
     ],
 )
