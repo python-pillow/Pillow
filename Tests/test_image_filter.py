@@ -52,7 +52,7 @@ def test_crash(size):
 
 
 @pytest.mark.parametrize(
-    "mode,expected",
+    "mode, expected",
     (
         ("1", (4, 0)),
         ("L", (4, 0)),
