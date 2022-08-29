@@ -74,7 +74,7 @@ def test_modefilter(mode, expected):
 
 
 @pytest.mark.parametrize(
-    "mode,expected",
+    "mode, expected",
     (
         ("1", (0, 4, 8)),
         ("L", (0, 4, 8)),

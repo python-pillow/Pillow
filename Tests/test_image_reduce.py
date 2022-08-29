@@ -39,7 +39,7 @@ gradients_image.load()
 
 
 @pytest.mark.parametrize(
-    "size,expected",
+    "size, expected",
     (
         (3, (4, 4)),
         ((3, 1), (4, 10)),
@@ -52,16 +52,16 @@ def test_args_factor(size, expected):
 
 
 @pytest.mark.parametrize(
-    "size,error", ((0, ValueError), (2.0, TypeError), ((0, 10), ValueError))
+    "size, expected_error", ((0, ValueError), (2.0, TypeError), ((0, 10), ValueError))
 )
-def test_args_factor_error(size, error):
+def test_args_factor_error(size, expected_error):
     im = Image.new("L", (10, 10))
-    with pytest.raises(error):
+    with pytest.raises(expected_error):
         im.reduce(size)
 
 
 @pytest.mark.parametrize(
-    "size,expected",
+    "size, expected",
     (
         ((0, 0, 10, 10), (5, 5)),
         ((5, 5, 6, 6), (1, 1)),
@@ -73,7 +73,7 @@ def test_args_box(size, expected):
 
 
 @pytest.mark.parametrize(
-    "size,error",
+    "size, expected_error",
     (
         ("stri", TypeError),
         ((0, 0, 11, 10), ValueError),
@@ -84,9 +84,9 @@ def test_args_box(size, expected):
         ((5, 0, 5, 10), ValueError),
     ),
 )
-def test_args_box_error(size, error):
+def test_args_box_error(size, expected_error):
     im = Image.new("L", (10, 10))
-    with pytest.raises(error):
+    with pytest.raises(expected_error):
         im.reduce(2, size).size
 
 
