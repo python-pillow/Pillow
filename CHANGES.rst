@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Removed support for tkinter before Python 1.5.2 #6549
+  [radarhere]
+
 - Allow default ImageDraw font to be set #6484
   [radarhere, hugovk]
 
