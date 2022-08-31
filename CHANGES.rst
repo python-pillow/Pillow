@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Do not use CCITTFaxDecode filter if libtiff is not available #6518
+  [radarhere]
+
+- Fallback to not using mmap if buffer is not large enough #6510
+  [radarhere]
+
+- Fixed writing bytes as ASCII tag #6493
+  [radarhere]
+
 - Open 1 bit EPS in mode 1 #6499
   [radarhere]
 
