@@ -68,18 +68,7 @@ def _pyimagingtkcall(command, photo, id):
         # may raise an error if it cannot attach to Tkinter
         from . import _imagingtk
 
-        if hasattr(tk, "interp"):
-            # Required for PyPy, which always has CFFI installed
-            from cffi import FFI
-
-            ffi = FFI()
-
-            # PyPy is using an FFI CDATA element
-            # (Pdb) self.tk.interp
-            #  <cdata 'Tcl_Interp *' 0x3061b50>
-            _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)))
-        else:
-            _imagingtk.tkinit(tk.interpaddr())
+        _imagingtk.tkinit(tk.interpaddr())
         tk.call(command, photo, id)
 
 
