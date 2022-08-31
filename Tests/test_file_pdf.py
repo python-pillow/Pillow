@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from PIL import Image, PdfParser
+from PIL import Image, PdfParser, features
 
 from .helper import hopper, mark_if_feature_version
 
@@ -44,7 +44,7 @@ def test_monochrome(tmp_path):
 
     # Act / Assert
     outfile = helper_save_as_pdf(tmp_path, mode)
-    assert os.path.getsize(outfile) < 5000
+    assert os.path.getsize(outfile) < (5000 if features.check("libtiff") else 15000)
 
 
 def test_greyscale(tmp_path):
