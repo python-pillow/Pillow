@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Open 1 bit EPS in mode 1 #6499
+  [radarhere]
+
+- Removed support for tkinter before Python 1.5.2 #6549
+  [radarhere]
+
+- Allow default ImageDraw font to be set #6484
+  [radarhere, hugovk]
+
 - Save 1 mode PDF using CCITTFaxDecode filter #6470
   [radarhere]
 

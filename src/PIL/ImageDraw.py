@@ -46,6 +46,8 @@ directly.
 
 
 class ImageDraw:
+    font = None
+
     def __init__(self, im, mode=None):
         """
         Create a drawing instance.
@@ -86,11 +88,15 @@ class ImageDraw:
         else:
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = 0
-        self.font = None
 
     def getfont(self):
         """
         Get the current default font.
+
+        To set the default font for all future ImageDraw instances::
+
+            from PIL import ImageDraw, ImageFont
+            ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
 
         :returns: An image font."""
         if not self.font:

@@ -23,33 +23,16 @@ TkImaging_Init(Tcl_Interp *interp);
 extern int
 load_tkinter_funcs(void);
 
-/* copied from _tkinter.c (this isn't as bad as it may seem: for new
-   versions, we use _tkinter's interpaddr hook instead, and all older
-   versions use this structure layout) */
-
-typedef struct {
-    PyObject_HEAD Tcl_Interp *interp;
-} TkappObject;
-
 static PyObject *
 _tkinit(PyObject *self, PyObject *args) {
     Tcl_Interp *interp;
 
     PyObject *arg;
-    int is_interp;
-    if (!PyArg_ParseTuple(args, "Oi", &arg, &is_interp)) {
+    if (!PyArg_ParseTuple(args, "O", &arg)) {
         return NULL;
     }
 
-    if (is_interp) {
-        interp = (Tcl_Interp *)PyLong_AsVoidPtr(arg);
-    } else {
-        TkappObject *app;
-        /* Do it the hard way.  This will break if the TkappObject
-        layout changes */
-        app = (TkappObject *)PyLong_AsVoidPtr(arg);
-        interp = app->interp;
-    }
+    interp = (Tcl_Interp *)PyLong_AsVoidPtr(arg);
 
     /* This will bomb if interp is invalid... */
     TkImaging_Init(interp);

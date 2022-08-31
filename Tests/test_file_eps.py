@@ -146,6 +146,11 @@ def test_bytesio_object():
         assert_image_similar(img, image1_scale1_compare, 5)
 
 
+def test_1_mode():
+    with Image.open("Tests/images/1.eps") as im:
+        assert im.mode == "1"
+
+
 def test_image_mode_not_supported(tmp_path):
     im = hopper("RGBA")
     tmpfile = str(tmp_path / "temp.eps")

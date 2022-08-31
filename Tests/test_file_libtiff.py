@@ -135,50 +135,50 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
-    def test_write_metadata(self, tmp_path):
+    @pytest.mark.parametrize("legacy_api", (False, True))
+    def test_write_metadata(self, legacy_api, tmp_path):
         """Test metadata writing through libtiff"""
-        for legacy_api in [False, True]:
-            f = str(tmp_path / "temp.tiff")
-            with Image.open("Tests/images/hopper_g4.tif") as img:
-                img.save(f, tiffinfo=img.tag)
+        f = str(tmp_path / "temp.tiff")
+        with Image.open("Tests/images/hopper_g4.tif") as img:
+            img.save(f, tiffinfo=img.tag)
 
-                if legacy_api:
-                    original = img.tag.named()
-                else:
-                    original = img.tag_v2.named()
+            if legacy_api:
+                original = img.tag.named()
+            else:
+                original = img.tag_v2.named()
 
-            # PhotometricInterpretation is set from SAVE_INFO,
-            # not the original image.
-            ignored = [
-                "StripByteCounts",
-                "RowsPerStrip",
-                "PageNumber",
-                "PhotometricInterpretation",
-            ]
+        # PhotometricInterpretation is set from SAVE_INFO,
+        # not the original image.
+        ignored = [
+            "StripByteCounts",
+            "RowsPerStrip",
+            "PageNumber",
+            "PhotometricInterpretation",
+        ]
 
-            with Image.open(f) as loaded:
-                if legacy_api:
-                    reloaded = loaded.tag.named()
-                else:
-                    reloaded = loaded.tag_v2.named()
+        with Image.open(f) as loaded:
+            if legacy_api:
+                reloaded = loaded.tag.named()
+            else:
+                reloaded = loaded.tag_v2.named()
 
-            for tag, value in itertools.chain(reloaded.items(), original.items()):
-                if tag not in ignored:
-                    val = original[tag]
-                    if tag.endswith("Resolution"):
-                        if legacy_api:
-                            assert val[0][0] / val[0][1] == (
-                                4294967295 / 113653537
-                            ), f"{tag} didn't roundtrip"
-                        else:
-                            assert val == 37.79000115940079, f"{tag} didn't roundtrip"
+        for tag, value in itertools.chain(reloaded.items(), original.items()):
+            if tag not in ignored:
+                val = original[tag]
+                if tag.endswith("Resolution"):
+                    if legacy_api:
+                        assert val[0][0] / val[0][1] == (
+                            4294967295 / 113653537
+                        ), f"{tag} didn't roundtrip"
                     else:
-                        assert val == value, f"{tag} didn't roundtrip"
+                        assert val == 37.79000115940079, f"{tag} didn't roundtrip"
+                else:
+                    assert val == value, f"{tag} didn't roundtrip"
 
-            # https://github.com/python-pillow/Pillow/issues/1561
-            requested_fields = ["StripByteCounts", "RowsPerStrip", "StripOffsets"]
-            for field in requested_fields:
-                assert field in reloaded, f"{field} not in metadata"
+        # https://github.com/python-pillow/Pillow/issues/1561
+        requested_fields = ["StripByteCounts", "RowsPerStrip", "StripOffsets"]
+        for field in requested_fields:
+            assert field in reloaded, f"{field} not in metadata"
 
     @pytest.mark.valgrind_known_error(reason="Known invalid metadata")
     def test_additional_metadata(self, tmp_path):

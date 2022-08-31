@@ -27,13 +27,13 @@ def roundtrip(im, **options):
     return im
 
 
-def test_sanity():
-    for test_file in test_files:
-        with Image.open(test_file) as im:
-            im.load()
-            assert im.mode == "RGB"
-            assert im.size == (640, 480)
-            assert im.format == "MPO"
+@pytest.mark.parametrize("test_file", test_files)
+def test_sanity(test_file):
+    with Image.open(test_file) as im:
+        im.load()
+        assert im.mode == "RGB"
+        assert im.size == (640, 480)
+        assert im.format == "MPO"
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
@@ -66,26 +66,25 @@ def test_context_manager():
             im.load()
 
 
-def test_app():
-    for test_file in test_files:
-        # Test APP/COM reader (@PIL135)
-        with Image.open(test_file) as im:
-            assert im.applist[0][0] == "APP1"
-            assert im.applist[1][0] == "APP2"
-            assert (
-                im.applist[1][1][:16]
-                == b"MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00"
-            )
-            assert len(im.applist) == 2
+@pytest.mark.parametrize("test_file", test_files)
+def test_app(test_file):
+    # Test APP/COM reader (@PIL135)
+    with Image.open(test_file) as im:
+        assert im.applist[0][0] == "APP1"
+        assert im.applist[1][0] == "APP2"
+        assert (
+            im.applist[1][1][:16] == b"MPF\x00MM\x00*\x00\x00\x00\x08\x00\x03\xb0\x00"
+        )
+        assert len(im.applist) == 2
 
 
-def test_exif():
-    for test_file in test_files:
-        with Image.open(test_file) as im:
-            info = im._getexif()
-            assert info[272] == "Nintendo 3DS"
-            assert info[296] == 2
-            assert info[34665] == 188
+@pytest.mark.parametrize("test_file", test_files)
+def test_exif(test_file):
+    with Image.open(test_file) as im:
+        info = im._getexif()
+        assert info[272] == "Nintendo 3DS"
+        assert info[296] == 2
+        assert info[34665] == 188
 
 
 def test_frame_size():
@@ -137,12 +136,12 @@ def test_reload_exif_after_seek():
         assert 296 in exif
 
 
-def test_mp():
-    for test_file in test_files:
-        with Image.open(test_file) as im:
-            mpinfo = im._getmp()
-            assert mpinfo[45056] == b"0100"
-            assert mpinfo[45057] == 2
+@pytest.mark.parametrize("test_file", test_files)
+def test_mp(test_file):
+    with Image.open(test_file) as im:
+        mpinfo = im._getmp()
+        assert mpinfo[45056] == b"0100"
+        assert mpinfo[45057] == 2
 
 
 def test_mp_offset():
@@ -162,48 +161,48 @@ def test_mp_no_data():
             im.seek(1)
 
 
-def test_mp_attribute():
-    for test_file in test_files:
-        with Image.open(test_file) as im:
-            mpinfo = im._getmp()
-        frame_number = 0
-        for mpentry in mpinfo[0xB002]:
-            mpattr = mpentry["Attribute"]
-            if frame_number:
-                assert not mpattr["RepresentativeImageFlag"]
-            else:
-                assert mpattr["RepresentativeImageFlag"]
-            assert not mpattr["DependentParentImageFlag"]
-            assert not mpattr["DependentChildImageFlag"]
-            assert mpattr["ImageDataFormat"] == "JPEG"
-            assert mpattr["MPType"] == "Multi-Frame Image: (Disparity)"
-            assert mpattr["Reserved"] == 0
-            frame_number += 1
+@pytest.mark.parametrize("test_file", test_files)
+def test_mp_attribute(test_file):
+    with Image.open(test_file) as im:
+        mpinfo = im._getmp()
+    frame_number = 0
+    for mpentry in mpinfo[0xB002]:
+        mpattr = mpentry["Attribute"]
+        if frame_number:
+            assert not mpattr["RepresentativeImageFlag"]
+        else:
+            assert mpattr["RepresentativeImageFlag"]
+        assert not mpattr["DependentParentImageFlag"]
+        assert not mpattr["DependentChildImageFlag"]
+        assert mpattr["ImageDataFormat"] == "JPEG"
+        assert mpattr["MPType"] == "Multi-Frame Image: (Disparity)"
+        assert mpattr["Reserved"] == 0
+        frame_number += 1
 
 
-def test_seek():
-    for test_file in test_files:
-        with Image.open(test_file) as im:
-            assert im.tell() == 0
-            # prior to first image raises an error, both blatant and borderline
-            with pytest.raises(EOFError):
-                im.seek(-1)
-            with pytest.raises(EOFError):
-                im.seek(-523)
-            # after the final image raises an error,
-            # both blatant and borderline
-            with pytest.raises(EOFError):
-                im.seek(2)
-            with pytest.raises(EOFError):
-                im.seek(523)
-            # bad calls shouldn't change the frame
-            assert im.tell() == 0
-            # this one will work
-            im.seek(1)
-            assert im.tell() == 1
-            # and this one, too
-            im.seek(0)
-            assert im.tell() == 0
+@pytest.mark.parametrize("test_file", test_files)
+def test_seek(test_file):
+    with Image.open(test_file) as im:
+        assert im.tell() == 0
+        # prior to first image raises an error, both blatant and borderline
+        with pytest.raises(EOFError):
+            im.seek(-1)
+        with pytest.raises(EOFError):
+            im.seek(-523)
+        # after the final image raises an error,
+        # both blatant and borderline
+        with pytest.raises(EOFError):
+            im.seek(2)
+        with pytest.raises(EOFError):
+            im.seek(523)
+        # bad calls shouldn't change the frame
+        assert im.tell() == 0
+        # this one will work
+        im.seek(1)
+        assert im.tell() == 1
+        # and this one, too
+        im.seek(0)
+        assert im.tell() == 0
 
 
 def test_n_frames():
@@ -225,31 +224,31 @@ def test_eoferror():
         im.seek(n_frames - 1)
 
 
-def test_image_grab():
-    for test_file in test_files:
-        with Image.open(test_file) as im:
-            assert im.tell() == 0
-            im0 = im.tobytes()
-            im.seek(1)
-            assert im.tell() == 1
-            im1 = im.tobytes()
-            im.seek(0)
-            assert im.tell() == 0
-            im02 = im.tobytes()
-            assert im0 == im02
-            assert im0 != im1
+@pytest.mark.parametrize("test_file", test_files)
+def test_image_grab(test_file):
+    with Image.open(test_file) as im:
+        assert im.tell() == 0
+        im0 = im.tobytes()
+        im.seek(1)
+        assert im.tell() == 1
+        im1 = im.tobytes()
+        im.seek(0)
+        assert im.tell() == 0
+        im02 = im.tobytes()
+        assert im0 == im02
+        assert im0 != im1
 
 
-def test_save():
-    for test_file in test_files:
-        with Image.open(test_file) as im:
-            assert im.tell() == 0
-            jpg0 = roundtrip(im)
-            assert_image_similar(im, jpg0, 30)
-            im.seek(1)
-            assert im.tell() == 1
-            jpg1 = roundtrip(im)
-            assert_image_similar(im, jpg1, 30)
+@pytest.mark.parametrize("test_file", test_files)
+def test_save(test_file):
+    with Image.open(test_file) as im:
+        assert im.tell() == 0
+        jpg0 = roundtrip(im)
+        assert_image_similar(im, jpg0, 30)
+        im.seek(1)
+        assert im.tell() == 1
+        jpg1 = roundtrip(im)
+        assert_image_similar(im, jpg1, 30)
 
 
 def test_save_all():
