@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Removed support for tkinter in PyPy before Python 3.6 #6551
+  [nulano]
+
 - Do not use CCITTFaxDecode filter if libtiff is not available #6518
   [radarhere]
 
