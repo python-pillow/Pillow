@@ -727,7 +727,9 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(2)
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
-        return b"" + value.encode("ascii", "replace") + b"\0"
+        if not isinstance(value, bytes):
+            value = value.encode("ascii", "replace")
+        return value + b"\0"
 
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
