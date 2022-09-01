@@ -26,6 +26,7 @@ fi
 echo "::group::Install a virtualenv"
   source multibuild/common_utils.sh
   source multibuild/travis_steps.sh
+  export LATEST_3p11="3.11.0rc1"
   python3 -m pip install virtualenv
   before_install
 echo "::endgroup::"
