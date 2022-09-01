@@ -489,6 +489,8 @@ Methods
 
                      .. versionadded:: 6.2.0
 
+    :returns: A ``(width, height)`` tuple.
+
 .. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     .. deprecated:: 9.2.0
@@ -540,6 +542,8 @@ Methods
     :param stroke_width: The width of the text stroke.
 
                      .. versionadded:: 6.2.0
+
+    :returns: A ``(width, height)`` tuple.
 
 .. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None, embedded_color=False)
 
@@ -608,6 +612,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :returns: A single float, the length of the text.
 
 .. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -657,6 +662,8 @@ Methods
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :returns: An ``(x0, y0, x1, y1)`` tuple, describing the top left and lower right
+              corners of the text.
 
 .. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -700,6 +707,8 @@ Methods
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :returns: An ``(x0, y0, x1, y1)`` tuple, describing the top left and lower right
+              corners of the text.
 
 .. py:method:: getdraw(im=None, hints=None)
 
