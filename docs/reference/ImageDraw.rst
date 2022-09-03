@@ -443,6 +443,9 @@ Methods
 
     .. deprecated:: 9.2.0
 
+    See https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#font-size-and-offset-methods
+    for more information.
+
     Use :py:meth:`textlength()` to measure the offset of following text with
     1/64 pixel precision.
     Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
@@ -494,6 +497,9 @@ Methods
 .. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     .. deprecated:: 9.2.0
+
+    See https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#font-size-and-offset-methods
+    for more information.
 
     Use :py:meth:`.multiline_textbbox` instead.
 

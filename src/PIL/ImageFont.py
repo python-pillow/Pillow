@@ -139,6 +139,9 @@ class ImageFont:
         """
         .. deprecated:: 9.2.0
 
+        For more information, see
+        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
+
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
 
         Returns width and height (in pixels) of given text.
@@ -428,6 +431,9 @@ class FreeTypeFont:
         """
         .. deprecated:: 9.2.0
 
+        For more information, see
+        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
+
         Use :py:meth:`getlength()` to measure the offset of following text with
         1/64 pixel precision.
         Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
@@ -498,6 +504,9 @@ class FreeTypeFont:
         """
         .. deprecated:: 9.2.0
 
+        For more information, see
+        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
+
         Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
 
         Returns width and height (in pixels) of given text if rendered in font
@@ -556,6 +565,9 @@ class FreeTypeFont:
     def getoffset(self, text):
         """
         .. deprecated:: 9.2.0
+
+        For more information, see
+        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
 
         Use :py:meth:`.getbbox` instead.
 
@@ -850,6 +862,9 @@ class TransposedFont:
     def getsize(self, text, *args, **kwargs):
         """
         .. deprecated:: 9.2.0
+
+        For more information, see
+        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
 
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
         """
