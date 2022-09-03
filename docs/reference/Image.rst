@@ -53,9 +53,9 @@ Functions
         To protect against potential DOS attacks caused by "`decompression bombs`_" (i.e. malicious files
         which decompress into a huge amount of data and are designed to crash or cause disruption by using up
         a lot of memory), Pillow will issue a ``DecompressionBombWarning`` if the number of pixels in an
-        image is over a certain limit, :py:data:`PIL.Image.MAX_IMAGE_PIXELS`.
+        image is over a certain limit, :py:data:`MAX_IMAGE_PIXELS`.
 
-        This threshold can be changed by setting :py:data:`PIL.Image.MAX_IMAGE_PIXELS`. It can be disabled
+        This threshold can be changed by setting :py:data:`MAX_IMAGE_PIXELS`. It can be disabled
         by setting ``Image.MAX_IMAGE_PIXELS = None``.
 
         If desired, the warning can be turned into an error with
@@ -63,7 +63,7 @@ Functions
         ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also
         `the logging documentation`_ to have warnings output to the logging facility instead of stderr.
 
-        If the number of pixels is greater than twice :py:data:`PIL.Image.MAX_IMAGE_PIXELS`, then a
+        If the number of pixels is greater than twice :py:data:`MAX_IMAGE_PIXELS`, then a
         ``DecompressionBombError`` will be raised instead.
 
     .. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
@@ -255,7 +255,7 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
 
-This flips the input image by using the :data:`PIL.Image.Transpose.FLIP_LEFT_RIGHT`
+This flips the input image by using the :data:`Transpose.FLIP_LEFT_RIGHT`
 method.
 
 .. code-block:: python
