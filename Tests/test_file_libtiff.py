@@ -3,6 +3,7 @@ import io
 import itertools
 import os
 import re
+import sys
 from collections import namedtuple
 
 import pytest
@@ -844,6 +845,8 @@ class TestFileLibTiff(LibTiffTestCase):
             captured = capfd.readouterr()
             if "LZMA compression support is not configured" in captured.err:
                 pytest.skip("LZMA compression support is not configured")
+            sys.stdout.write(captured.out)
+            sys.stderr.write(captured.err)
             raise
 
     def test_webp(self, capfd):
@@ -857,6 +860,15 @@ class TestFileLibTiff(LibTiffTestCase):
             captured = capfd.readouterr()
             if "WEBP compression support is not configured" in captured.err:
                 pytest.skip("WEBP compression support is not configured")
+            if (
+                "Compression scheme 50001 strip decoding is not implemented"
+                in captured.err
+            ):
+                pytest.skip(
+                    "Compression scheme 50001 strip decoding is not implemented"
+                )
+            sys.stdout.write(captured.out)
+            sys.stderr.write(captured.err)
             raise
 
     def test_lzw(self):
