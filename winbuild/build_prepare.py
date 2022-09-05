@@ -176,6 +176,28 @@ deps = {
         "headers": [r"src\liblzma\api\lzma.h"],
         "libs": [r"windows\vs2019\Release\{msbuild_arch}\liblzma\liblzma.lib"],
     },
+    "libwebp": {
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
+        "filename": "libwebp-1.2.4.tar.gz",
+        "dir": "libwebp-1.2.4",
+        "license": "COPYING",
+        "build": [
+            cmd_rmdir(r"output\release-static"),  # clean
+            cmd_nmake(
+                "Makefile.vc",
+                "all",
+                [
+                    "CFG=release-static",
+                    "OBJDIR=output",
+                    "ARCH={architecture}",
+                    "LIBWEBP_BASENAME=webp",
+                ],
+            ),
+            cmd_mkdir(r"{inc_dir}\webp"),
+            cmd_copy(r"src\webp\*.h", r"{inc_dir}\webp"),
+        ],
+        "libs": [r"output\release-static\{architecture}\lib\*.lib"],
+    },
     "libtiff": {
         "url": "https://download.osgeo.org/libtiff/tiff-4.4.0.tar.gz",
         "filename": "tiff-4.4.0.tar.gz",
@@ -190,6 +212,10 @@ deps = {
                 # link against liblzma.lib
                 "#ifdef LZMA_SUPPORT": '#ifdef LZMA_SUPPORT\n#pragma comment(lib, "liblzma.lib")',  # noqa: E501
             },
+            r"libtiff\tif_webp.c": {
+                # link against webp.lib
+                "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "webp.lib")',  # noqa: E501
+            },
         },
         "build": [
             cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -199,23 +225,6 @@ deps = {
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
         # "bins": [r"libtiff\*.dll"],
-    },
-    "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
-        "filename": "libwebp-1.2.4.tar.gz",
-        "dir": "libwebp-1.2.4",
-        "license": "COPYING",
-        "build": [
-            cmd_rmdir(r"output\release-static"),  # clean
-            cmd_nmake(
-                "Makefile.vc",
-                "all",
-                ["CFG=release-static", "OBJDIR=output", "ARCH={architecture}"],
-            ),
-            cmd_mkdir(r"{inc_dir}\webp"),
-            cmd_copy(r"src\webp\*.h", r"{inc_dir}\webp"),
-        ],
-        "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libpng": {
         "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.37/lpng1637.zip/download",
