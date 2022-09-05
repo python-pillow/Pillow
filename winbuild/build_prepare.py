@@ -151,11 +151,46 @@ deps = {
         "headers": [r"z*.h"],
         "libs": [r"*.lib"],
     },
+    "xz": {
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.2.6.tar.gz/download",
+        "filename": "xz-5.2.6.tar.gz",
+        "dir": "xz-5.2.6",
+        "license": "COPYING",
+        "patch": {
+            r"src\liblzma\api\lzma.h": {
+                "#ifndef LZMA_API_IMPORT": "#ifndef LZMA_API_IMPORT\n#define LZMA_API_STATIC",  # noqa: E501
+            },
+            r"windows\vs2019\liblzma.vcxproj": {
+                # retarget to default toolset (selected by vcvarsall.bat)
+                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
+                # retarget to latest (selected by vcvarsall.bat)
+                "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
+            },
+        },
+        "build": [
+            cmd_msbuild(r"windows\vs2019\liblzma.vcxproj", "Release", "Clean"),
+            cmd_msbuild(r"windows\vs2019\liblzma.vcxproj", "Release", "Build"),
+            cmd_mkdir(r"{inc_dir}\lzma"),
+            cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
+        ],
+        "headers": [r"src\liblzma\api\lzma.h"],
+        "libs": [r"windows\vs2019\Release\{msbuild_arch}\liblzma\liblzma.lib"],
+    },
     "libtiff": {
         "url": "https://download.osgeo.org/libtiff/tiff-4.4.0.tar.gz",
         "filename": "tiff-4.4.0.tar.gz",
         "dir": "tiff-4.4.0",
         "license": "COPYRIGHT",
+        "patch": {
+            r"cmake\LZMACodec.cmake": {
+                # fix typo
+                "${{LZMA_FOUND}}": "${{LIBLZMA_FOUND}}",
+            },
+            r"libtiff\tif_lzma.c": {
+                # link against liblzma.lib
+                "#ifdef LZMA_SUPPORT": '#ifdef LZMA_SUPPORT\n#pragma comment(lib, "liblzma.lib")',  # noqa: E501
+            },
+        },
         "build": [
             cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_nmake(target="clean"),
@@ -216,7 +251,7 @@ deps = {
                 "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib</UserDependencies>",  # noqa: E501
             },
             r"src/autofit/afshaper.c": {
-                # link against harfbuzz.lib once it becomes available
+                # link against harfbuzz.lib
                 "#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ": '#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ\n#pragma comment(lib, "harfbuzz.lib")',  # noqa: E501
             },
         },
@@ -423,8 +458,8 @@ def write_script(name, lines):
     name = os.path.join(build_dir, name)
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
-    with open(name, "w") as f:
-        f.write("\n\r".join(lines))
+    with open(name, "w", newline="") as f:
+        f.write(os.linesep.join(lines))
     if verbose:
         for line in lines:
             print("    " + line)
