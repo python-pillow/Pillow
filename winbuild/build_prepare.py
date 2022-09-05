@@ -1,5 +1,6 @@
 import os
 import platform
+import re
 import shutil
 import struct
 import subprocess
@@ -111,6 +112,11 @@ deps = {
         + "/libjpeg-turbo/files/2.1.4/libjpeg-turbo-2.1.4.tar.gz/download",
         "filename": "libjpeg-turbo-2.1.4.tar.gz",
         "dir": "libjpeg-turbo-2.1.4",
+        "license": ["README.ijg", "LICENSE.md"],
+        "license_pattern": (
+            "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
+            ".+(libjpeg-turbo Licenses\n======================\n\n.+)$"
+        ),
         "build": [
             cmd_cmake(
                 [
@@ -135,6 +141,8 @@ deps = {
         "url": "https://zlib.net/zlib1212.zip",
         "filename": "zlib1212.zip",
         "dir": "zlib-1.2.12",
+        "license": "README",
+        "license_pattern": "Copyright notice:\n\n(.+)$",
         "build": [
             cmd_nmake(r"win32\Makefile.msc", "clean"),
             cmd_nmake(r"win32\Makefile.msc", "zlib.lib"),
@@ -147,6 +155,7 @@ deps = {
         "url": "https://download.osgeo.org/libtiff/tiff-4.4.0.tar.gz",
         "filename": "tiff-4.4.0.tar.gz",
         "dir": "tiff-4.4.0",
+        "license": "COPYRIGHT",
         "build": [
             cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_nmake(target="clean"),
@@ -160,6 +169,7 @@ deps = {
         "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
         "filename": "libwebp-1.2.4.tar.gz",
         "dir": "libwebp-1.2.4",
+        "license": "COPYING",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -176,6 +186,7 @@ deps = {
         "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.37/lpng1637.zip/download",
         "filename": "lpng1637.zip",
         "dir": "lpng1637",
+        "license": "LICENSE",
         "build": [
             # lint: do not inline
             cmd_cmake(("-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF")),
@@ -190,6 +201,7 @@ deps = {
         "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.gz",  # noqa: E501
         "filename": "freetype-2.12.1.tar.gz",
         "dir": "freetype-2.12.1",
+        "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
                 # freetype setting is /MD for .dll and /MT for .lib, we need /MD
@@ -225,6 +237,7 @@ deps = {
         "url": SF_PROJECTS + "/lcms/files/lcms/2.13/lcms2-2.13.1.tar.gz/download",
         "filename": "lcms2-2.13.1.tar.gz",
         "dir": "lcms2-2.13.1",
+        "license": "COPYING",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
@@ -250,6 +263,7 @@ deps = {
         "url": "https://github.com/uclouvain/openjpeg/archive/v2.5.0.tar.gz",
         "filename": "openjpeg-2.5.0.tar.gz",
         "dir": "openjpeg-2.5.0",
+        "license": "LICENSE",
         "build": [
             cmd_cmake(("-DBUILD_THIRDPARTY:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
@@ -264,6 +278,7 @@ deps = {
         "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
         "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
+        "license": "COPYRIGHT",
         "patch": {
             "CMakeLists.txt": {
                 "if(OPENMP_FOUND)": "if(false)",
@@ -284,6 +299,7 @@ deps = {
         "url": "https://github.com/harfbuzz/harfbuzz/archive/5.1.0.zip",
         "filename": "harfbuzz-5.1.0.zip",
         "dir": "harfbuzz-5.1.0",
+        "license": "COPYING",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
@@ -296,6 +312,7 @@ deps = {
         "url": "https://github.com/fribidi/fribidi/archive/v1.0.12.zip",
         "filename": "fribidi-1.0.12.zip",
         "dir": "fribidi-1.0.12",
+        "license": "COPYING",
         "build": [
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
@@ -431,6 +448,21 @@ def build_dep(name):
 
     extract_dep(dep["url"], dep["filename"])
 
+    licenses = dep["license"]
+    if isinstance(licenses, str):
+        licenses = [licenses]
+    license_text = ""
+    for license_file in licenses:
+        with open(os.path.join(sources_dir, dir, license_file)) as f:
+            license_text += f.read()
+    if "license_pattern" in dep:
+        match = re.search(dep["license_pattern"], license_text, re.DOTALL)
+        license_text = "\n".join(match.groups())
+    assert len(license_text) > 50
+    with open(os.path.join(license_dir, f"{dir}.txt"), "w") as f:
+        print(f"Writing license {dir}.txt")
+        f.write(license_text)
+
     for patch_file, patch_list in dep.get("patch", {}).items():
         patch_file = os.path.join(sources_dir, dir, patch_file.format(**prefs))
         with open(patch_file) as f:
@@ -551,10 +583,12 @@ if __name__ == "__main__":
     bin_dir = os.path.join(build_dir, "bin")
     # directory for storing project files
     sources_dir = build_dir + sources_dir
+    # copy dependency licenses to this directory
+    license_dir = os.path.join(build_dir, "license")
 
     shutil.rmtree(build_dir, ignore_errors=True)
     os.makedirs(build_dir, exist_ok=False)
-    for path in [inc_dir, lib_dir, bin_dir, sources_dir]:
+    for path in [inc_dir, lib_dir, bin_dir, sources_dir, license_dir]:
         os.makedirs(path, exist_ok=True)
 
     prefs = {
@@ -572,6 +606,7 @@ if __name__ == "__main__":
         "lib_dir": lib_dir,
         "bin_dir": bin_dir,
         "src_dir": sources_dir,
+        "license_dir": license_dir,
         # Compilers / Tools
         **msvs,
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
