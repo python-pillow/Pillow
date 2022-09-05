@@ -846,6 +846,19 @@ class TestFileLibTiff(LibTiffTestCase):
                 pytest.skip("LZMA compression support is not configured")
             raise
 
+    def test_webp(self, capfd):
+        try:
+            with Image.open("Tests/images/hopper_webp.tif") as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
+                assert im.format == "TIFF"
+                assert_image_similar_tofile(im, "Tests/images/hopper_webp.png", 1)
+        except OSError:
+            captured = capfd.readouterr()
+            if "WEBP compression support is not configured" in captured.err:
+                pytest.skip("WEBP compression support is not configured")
+            raise
+
     def test_lzw(self):
         with Image.open("Tests/images/hopper_lzw.tif") as im:
             assert im.mode == "RGB"
