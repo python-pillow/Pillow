@@ -300,7 +300,7 @@ deps = {
         "dir": "openjpeg-2.5.0",
         "license": "LICENSE",
         "build": [
-            cmd_cmake(("-DBUILD_THIRDPARTY:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
+            cmd_cmake(("-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
             cmd_nmake(target="openjp2"),
             cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
