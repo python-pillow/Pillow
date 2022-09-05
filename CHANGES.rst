@@ -5,6 +5,30 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Copy palette when converting from P to PA #6497
+  [radarhere]
+
+- Allow RGB and RGBA values for PA image putpixel #6504
+  [radarhere]
+
+- Removed support for tkinter in PyPy before Python 3.6 #6551
+  [nulano]
+
+- Do not use CCITTFaxDecode filter if libtiff is not available #6518
+  [radarhere]
+
+- Fallback to not using mmap if buffer is not large enough #6510
+  [radarhere]
+
+- Fixed writing bytes as ASCII tag #6493
+  [radarhere]
+
+- Open 1 bit EPS in mode 1 #6499
+  [radarhere]
+
+- Removed support for tkinter before Python 1.5.2 #6549
+  [radarhere]
+
 - Allow default ImageDraw font to be set #6484
   [radarhere, hugovk]
 

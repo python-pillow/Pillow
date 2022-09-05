@@ -39,6 +39,13 @@ def test_invalid_file():
             BmpImagePlugin.BmpImageFile(fp)
 
 
+def test_fallback_if_mmap_errors():
+    # This image has been truncated,
+    # so that the buffer is not large enough when using mmap
+    with Image.open("Tests/images/mmap_error.bmp") as im:
+        assert_image_equal_tofile(im, "Tests/images/pal8_offset.bmp")
+
+
 def test_save_to_bytes():
     output = io.BytesIO()
     im = hopper()
