@@ -832,6 +832,20 @@ class TestFileLibTiff(LibTiffTestCase):
             assert reloaded.mode == "F"
             assert reloaded.getexif()[SAMPLEFORMAT] == 3
 
+    def test_lzma(self, capfd):
+        try:
+            with Image.open("Tests/images/hopper_lzma.tif") as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
+                assert im.format == "TIFF"
+                im2 = hopper()
+                assert_image_similar(im, im2, 5)
+        except OSError:
+            captured = capfd.readouterr()
+            if "LZMA compression support is not configured" in captured.err:
+                pytest.skip("LZMA compression support is not configured")
+            raise
+
     def test_lzw(self):
         with Image.open("Tests/images/hopper_lzw.tif") as im:
             assert im.mode == "RGB"
