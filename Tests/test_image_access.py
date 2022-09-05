@@ -215,11 +215,14 @@ class TestImageGetPixel(AccessTest):
         self.check(mode, 2**15 + 1)
         self.check(mode, 2**16 - 1)
 
+    @pytest.mark.parametrize("mode", ("P", "PA"))
     @pytest.mark.parametrize("color", ((255, 0, 0), (255, 0, 0, 255)))
-    def test_p_putpixel_rgb_rgba(self, color):
-        im = Image.new("P", (1, 1), 0)
+    def test_p_putpixel_rgb_rgba(self, mode, color):
+        im = Image.new(mode, (1, 1))
         im.putpixel((0, 0), color)
-        assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
+
+        alpha = color[3] if len(color) == 4 and mode == "PA" else 255
+        assert im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, alpha)
 
 
 @pytest.mark.skipif(cffi is None, reason="No CFFI")
@@ -340,12 +343,15 @@ class TestCffi(AccessTest):
                 # pixels can contain garbage if image is released
                 assert px[i, 0] == 0
 
-    def test_p_putpixel_rgb_rgba(self):
-        for color in [(255, 0, 0), (255, 0, 0, 255)]:
-            im = Image.new("P", (1, 1), 0)
+    @pytest.mark.parametrize("mode", ("P", "PA"))
+    def test_p_putpixel_rgb_rgba(self, mode):
+        for color in [(255, 0, 0), (255, 0, 0, 127)]:
+            im = Image.new(mode, (1, 1))
             access = PyAccess.new(im, False)
             access.putpixel((0, 0), color)
-            assert im.convert("RGB").getpixel((0, 0)) == (255, 0, 0)
+
+            alpha = color[3] if len(color) == 4 and mode == "PA" else 255
+            assert im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, alpha)
 
 
 class TestImagePutPixelError(AccessTest):

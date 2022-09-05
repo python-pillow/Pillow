@@ -837,6 +837,24 @@ Pillow reads and writes TGA images containing ``L``, ``LA``, ``P``,
 ``RGB``, and ``RGBA`` data. Pillow can read and write both uncompressed and
 run-length encoded TGAs.
 
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**compression**
+    If set to "tga_rle", the file will be run-length encoded.
+
+    .. versionadded:: 5.3.0
+
+**id_section**
+    The identification field.
+
+    .. versionadded:: 5.3.0
+
+**orientation**
+    If present and a positive number, the first pixel is for the top left corner,
+    rather than the bottom left corner.
+
+    .. versionadded:: 5.3.0
+
 TIFF
 ^^^^
 
