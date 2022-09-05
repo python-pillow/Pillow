@@ -178,6 +178,8 @@ Image.coerce_e
 This undocumented method has been deprecated and will be removed in Pillow 10
 (2023-07-01).
 
+.. _Font size and offset methods:
+
 Font size and offset methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

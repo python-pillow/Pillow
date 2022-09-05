@@ -443,8 +443,7 @@ Methods
 
     .. deprecated:: 9.2.0
 
-    See https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#font-size-and-offset-methods
-    for more information.
+    See :ref:`deprecations <Font size and offset methods>` for more information.
 
     Use :py:meth:`textlength()` to measure the offset of following text with
     1/64 pixel precision.
@@ -498,8 +497,7 @@ Methods
 
     .. deprecated:: 9.2.0
 
-    See https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#font-size-and-offset-methods
-    for more information.
+    See :ref:`deprecations <Font size and offset methods>` for more information.
 
     Use :py:meth:`.multiline_textbbox` instead.
 

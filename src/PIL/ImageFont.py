@@ -139,8 +139,7 @@ class ImageFont:
         """
         .. deprecated:: 9.2.0
 
-        For more information, see
-        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
 
@@ -431,8 +430,7 @@ class FreeTypeFont:
         """
         .. deprecated:: 9.2.0
 
-        For more information, see
-        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Use :py:meth:`getlength()` to measure the offset of following text with
         1/64 pixel precision.
@@ -504,8 +502,7 @@ class FreeTypeFont:
         """
         .. deprecated:: 9.2.0
 
-        For more information, see
-        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
 
@@ -566,8 +563,7 @@ class FreeTypeFont:
         """
         .. deprecated:: 9.2.0
 
-        For more information, see
-        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Use :py:meth:`.getbbox` instead.
 
@@ -863,8 +859,7 @@ class TransposedFont:
         """
         .. deprecated:: 9.2.0
 
-        For more information, see
-        https://pillow.readthedocs.io/en/stable/releasenotes/9.2.0.html#deprecations.
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
         """
