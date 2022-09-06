@@ -139,9 +139,9 @@ class ImageFont:
         """
         .. deprecated:: 9.2.0
 
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Returns width and height (in pixels) of given text.
 
