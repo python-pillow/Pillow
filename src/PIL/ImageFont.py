@@ -430,11 +430,11 @@ class FreeTypeFont:
         """
         .. deprecated:: 9.2.0
 
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
         Use :py:meth:`getlength()` to measure the offset of following text with
         1/64 pixel precision.
         Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
+
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Returns width and height (in pixels) of given text if rendered in font with
         provided direction, features, and language.
@@ -502,9 +502,9 @@ class FreeTypeFont:
         """
         .. deprecated:: 9.2.0
 
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
         Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
+
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Returns width and height (in pixels) of given text if rendered in font
         with provided direction, features, and language, while respecting
@@ -563,9 +563,9 @@ class FreeTypeFont:
         """
         .. deprecated:: 9.2.0
 
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
         Use :py:meth:`.getbbox` instead.
+
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Returns the offset of given text. This is the gap between the
         starting coordinate and the first marking. Note that this gap is
@@ -859,9 +859,9 @@ class TransposedFont:
         """
         .. deprecated:: 9.2.0
 
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+
+        See :ref:`deprecations <Font size and offset methods>` for more information.
         """
         deprecate("getsize", 10, "getbbox or getlength")
         with warnings.catch_warnings():
