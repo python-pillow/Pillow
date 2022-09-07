@@ -103,6 +103,11 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
 
+    # for FreeType WOFF2 font support
+    - name: Build dependencies / brotli
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_brotli.cmd"
+
     - name: Build dependencies / FreeType
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_freetype.cmd"
