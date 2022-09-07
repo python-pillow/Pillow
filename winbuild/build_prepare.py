@@ -188,6 +188,7 @@ deps = {
                 "all",
                 [
                     "CFG=release-static",
+                    "RTLIBCFG=dynamic",
                     "OBJDIR=output",
                     "ARCH={architecture}",
                     "LIBWEBP_BASENAME=webp",
