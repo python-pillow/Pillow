@@ -8,6 +8,7 @@ TINY5x3GX.ttf, from http://velvetyne.fr/fonts/tiny
 ArefRuqaa-Regular.ttf, from https://github.com/google/fonts/tree/master/ofl/arefruqaa
 ter-x20b.pcf, from http://terminus-font.sourceforge.net/
 BungeeColor-Regular_colr_Windows.ttf, from https://github.com/djrrb/bungee
+OpenSans.woff2, from https://fonts.googleapis.com/css?family=Open+Sans
 
 All of the above fonts are published under the SIL Open Font License (OFL) v1.1 (http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL), which allows you to copy, modify, and redistribute them if you need to.
 
