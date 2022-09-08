@@ -12,5 +12,6 @@
             "matchManagers": ["github-actions"],
             "separateMajorMinor": "false"
         }
-  ]
+    ],
+    "schedule": ["on the first day of the month"]
 }
