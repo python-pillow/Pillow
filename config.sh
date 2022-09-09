@@ -43,6 +43,10 @@ function build_brotli {
     (cd $out_dir \
         && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
         && make install)
+    if [[ "$MB_ML_LIBC" == "manylinux" ]] && [[ "$PLAT" == "x86_64" ]]; then
+        cp /usr/local/lib64/libbrotli* /usr/local/lib
+        cp /usr/local/lib64/pkgconfig/libbrotli* /usr/local/lib/pkgconfig
+    fi
 }
 
 function pre_build {
