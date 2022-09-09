@@ -25,6 +25,7 @@ fi
 LIBWEBP_VERSION=1.2.4
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.14
+BROTLI_VERSION=1.0.9
 
 if [[ -n "$IS_MACOS" ]] && [[ "$PLAT" == "x86_64" ]]; then
     function build_openjpeg {
@@ -35,6 +36,14 @@ if [[ -n "$IS_MACOS" ]] && [[ "$PLAT" == "x86_64" ]]; then
         touch openjpeg-stamp
     }
 fi
+
+function build_brotli {
+    local cmake=$(get_modern_cmake)
+    local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz)
+    (cd $out_dir \
+        && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
+        && make install)
+}
 
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
@@ -92,9 +101,11 @@ function pre_build {
     build_libwebp
     CFLAGS=$ORIGINAL_CFLAGS
 
+    build_brotli
+
     if [ -n "$IS_MACOS" ]; then
         # Custom freetype build
-        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no --with-brotli=no
+        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
     else
         build_freetype
     fi
