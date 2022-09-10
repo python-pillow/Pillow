@@ -84,6 +84,23 @@ class TestFileTiff:
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
+    def test_get_child_images(self):
+        def check(ims, sizes):
+            assert len(ims) == len(sizes)
+
+            for i, im in enumerate(ims):
+                w = sizes[i]
+                expected = Image.new("RGB", (w, w), "#f00")
+                assert_image_similar(im, expected, 1)
+
+        with Image.open("Tests/images/child_ifd.tiff") as im:
+            ims = im.get_child_images()
+        check(ims, (16, 8))
+
+        with Image.open("Tests/images/child_ifd_jpeg.tiff") as im:
+            ims = im.get_child_images()
+        check(ims, (20,))
+
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
 
