@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Do not call load() before draft() in Image.thumbnail #6539
+  [radarhere]
+
 - Copy palette when converting from P to PA #6497
   [radarhere]
 
