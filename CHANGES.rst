@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Do not call load() before draft() in Image.thumbnail #6539
+  [radarhere]
+
+- Copy palette when converting from P to PA #6497
+  [radarhere]
+
+- Allow RGB and RGBA values for PA image putpixel #6504
+  [radarhere]
+
 - Removed support for tkinter in PyPy before Python 3.6 #6551
   [nulano]
 
