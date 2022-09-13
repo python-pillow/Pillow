@@ -999,9 +999,6 @@ try:
         version=PILLOW_VERSION,
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
-        include_package_data=True,
-        packages=["PIL"],
-        package_dir={"": "src"},
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
