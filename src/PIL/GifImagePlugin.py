@@ -432,16 +432,13 @@ class GifImageFile(ImageFile.ImageFile):
                 self.mode = "RGB"
                 self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
             return
-        if self.mode == "P" and self._prev_im:
-            if self._frame_transparency is not None:
-                self.im.putpalettealpha(self._frame_transparency, 0)
-                frame_im = self.im.convert("RGBA")
-            else:
-                frame_im = self.im.convert("RGB")
+        if not self._prev_im:
+            return
+        if self._frame_transparency is not None:
+            self.im.putpalettealpha(self._frame_transparency, 0)
+            frame_im = self.im.convert("RGBA")
         else:
-            if not self._prev_im:
-                return
-            frame_im = self.im
+            frame_im = self.im.convert("RGB")
         frame_im = self._crop(frame_im, self.dispose_extent)
 
         self.im = self._prev_im
