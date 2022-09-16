@@ -295,7 +295,8 @@ TAGS = {
 
 TAG_CODES = {
     # possibly incomplete
-    tag_name: tag_code for tag_code, tag_name in TAGS.items()
+    tag_name: tag_code
+    for tag_code, tag_name in TAGS.items()
 }
 """Maps tag names to EXIF tags."""
 
