@@ -16,7 +16,7 @@ provide constants and clear-text names for various well-known EXIF tags.
         >>> from PIL.ExifTags import TAGS
         >>> TAGS[0x010e]
         'ImageDescription'
-        
+
 .. py:data:: TAG_CODES
     :type: dict
 
@@ -36,7 +36,7 @@ provide constants and clear-text names for various well-known EXIF tags.
         >>> from PIL.ExifTags import GPSTAGS
         >>> GPSTAGS[20]
         'GPSDestLatitude'
-        
+
 .. py:data:: GPS_CODES
     :type: dict
 
