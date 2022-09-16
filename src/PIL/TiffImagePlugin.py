@@ -727,7 +727,9 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(2)
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
-        return b"" + value.encode("ascii", "replace") + b"\0"
+        if not isinstance(value, bytes):
+            value = value.encode("ascii", "replace")
+        return value + b"\0"
 
     @_register_loader(5, 8)
     def load_rational(self, data, legacy_api=True):
@@ -1153,7 +1155,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         :returns: XMP tags in a dictionary.
         """
-        return self._getxmp(self.tag_v2[700]) if 700 in self.tag_v2 else {}
+        return self._getxmp(self.tag_v2[XMP]) if XMP in self.tag_v2 else {}
 
     def get_photoshop_blocks(self):
         """
@@ -1328,7 +1330,7 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug(f"- photometric_interpretation: {photo}")
         logger.debug(f"- planar_configuration: {self._planar_configuration}")
         logger.debug(f"- fill_order: {fillorder}")
-        logger.debug(f"- YCbCr subsampling: {self.tag.get(530)}")
+        logger.debug(f"- YCbCr subsampling: {self.tag.get(YCBCRSUBSAMPLING)}")
 
         # size
         xsize = int(self.tag_v2.get(IMAGEWIDTH))
@@ -1469,8 +1471,8 @@ class TiffImageFile(ImageFile.ImageFile):
             else:
                 # tiled image
                 offsets = self.tag_v2[TILEOFFSETS]
-                w = self.tag_v2.get(322)
-                h = self.tag_v2.get(323)
+                w = self.tag_v2.get(TILEWIDTH)
+                h = self.tag_v2.get(TILELENGTH)
 
             for offset in offsets:
                 if x + w > xsize:
@@ -1684,7 +1686,8 @@ def _save(im, fp, filename):
     stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
     # aim for given strip size (64 KB by default) when using libtiff writer
     if libtiff:
-        rows_per_strip = 1 if stride == 0 else min(STRIP_SIZE // stride, im.size[1])
+        im_strip_size = encoderinfo.get("strip_size", STRIP_SIZE)
+        rows_per_strip = 1 if stride == 0 else min(im_strip_size // stride, im.size[1])
         # JPEG encoder expects multiple of 8 rows
         if compression == "jpeg":
             rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, im.size[1])

@@ -5,6 +5,60 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Corrected BMP and TGA palette size when saving #6500
+  [radarhere]
+
+- Do not call load() before draft() in Image.thumbnail #6539
+  [radarhere]
+
+- Copy palette when converting from P to PA #6497
+  [radarhere]
+
+- Allow RGB and RGBA values for PA image putpixel #6504
+  [radarhere]
+
+- Removed support for tkinter in PyPy before Python 3.6 #6551
+  [nulano]
+
+- Do not use CCITTFaxDecode filter if libtiff is not available #6518
+  [radarhere]
+
+- Fallback to not using mmap if buffer is not large enough #6510
+  [radarhere]
+
+- Fixed writing bytes as ASCII tag #6493
+  [radarhere]
+
+- Open 1 bit EPS in mode 1 #6499
+  [radarhere]
+
+- Removed support for tkinter before Python 1.5.2 #6549
+  [radarhere]
+
+- Allow default ImageDraw font to be set #6484
+  [radarhere, hugovk]
+
+- Save 1 mode PDF using CCITTFaxDecode filter #6470
+  [radarhere]
+
+- Added support for RGBA PSD images #6481
+  [radarhere]
+
+- Parse orientation from XMP tag contents #6463
+  [bigcat88, radarhere]
+
+- Added support for reading ATI1/ATI2 (BC4/BC5) DDS images #6457
+  [REDxEYE, radarhere]
+
+- Do not clear GIF tile when checking number of frames #6455
+  [radarhere]
+
+- Support saving multiple MPO frames #6444
+  [radarhere]
+
+- Do not double quote Pillow version for setuptools >= 60 #6450
+  [radarhere]
+
 - Added ABGR BMP mask mode #6436
   [radarhere]
 

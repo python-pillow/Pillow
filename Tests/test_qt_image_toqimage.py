@@ -16,32 +16,32 @@ if ImageQt.qt_is_installed:
     from PIL.ImageQt import QImage
 
 
-def test_sanity(tmp_path):
-    for mode in ("RGB", "RGBA", "L", "P", "1"):
-        src = hopper(mode)
-        data = ImageQt.toqimage(src)
+@pytest.mark.parametrize("mode", ("RGB", "RGBA", "L", "P", "1"))
+def test_sanity(mode, tmp_path):
+    src = hopper(mode)
+    data = ImageQt.toqimage(src)
 
-        assert isinstance(data, QImage)
-        assert not data.isNull()
+    assert isinstance(data, QImage)
+    assert not data.isNull()
 
-        # reload directly from the qimage
-        rt = ImageQt.fromqimage(data)
-        if mode in ("L", "P", "1"):
-            assert_image_equal(rt, src.convert("RGB"))
-        else:
-            assert_image_equal(rt, src)
+    # reload directly from the qimage
+    rt = ImageQt.fromqimage(data)
+    if mode in ("L", "P", "1"):
+        assert_image_equal(rt, src.convert("RGB"))
+    else:
+        assert_image_equal(rt, src)
 
-        if mode == "1":
-            # BW appears to not save correctly on QT4 and QT5
-            # kicks out errors on console:
-            #     libpng warning: Invalid color type/bit depth combination
-            #                     in IHDR
-            #     libpng error: Invalid IHDR data
-            continue
+    if mode == "1":
+        # BW appears to not save correctly on QT5
+        # kicks out errors on console:
+        #     libpng warning: Invalid color type/bit depth combination
+        #                     in IHDR
+        #     libpng error: Invalid IHDR data
+        return
 
-        # Test saving the file
-        tempfile = str(tmp_path / f"temp_{mode}.png")
-        data.save(tempfile)
+    # Test saving the file
+    tempfile = str(tmp_path / f"temp_{mode}.png")
+    data.save(tempfile)
 
-        # Check that it actually worked.
-        assert_image_equal_tofile(src, tempfile)
+    # Check that it actually worked.
+    assert_image_equal_tofile(src, tempfile)

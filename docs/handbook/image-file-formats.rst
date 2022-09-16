@@ -837,6 +837,24 @@ Pillow reads and writes TGA images containing ``L``, ``LA``, ``P``,
 ``RGB``, and ``RGBA`` data. Pillow can read and write both uncompressed and
 run-length encoded TGAs.
 
+The :py:meth:`~PIL.Image.Image.save` method can take the following keyword arguments:
+
+**compression**
+    If set to "tga_rle", the file will be run-length encoded.
+
+    .. versionadded:: 5.3.0
+
+**id_section**
+    The identification field.
+
+    .. versionadded:: 5.3.0
+
+**orientation**
+    If present and a positive number, the first pixel is for the top left corner,
+    rather than the bottom left corner.
+
+    .. versionadded:: 5.3.0
+
 TIFF
 ^^^^
 
@@ -968,7 +986,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     methods are: :data:`None`, ``"group3"``, ``"group4"``, ``"jpeg"``, ``"lzma"``,
     ``"packbits"``, ``"tiff_adobe_deflate"``, ``"tiff_ccitt"``, ``"tiff_lzw"``,
     ``"tiff_raw_16"``, ``"tiff_sgilog"``, ``"tiff_sgilog24"``, ``"tiff_thunderscan"``,
-    ``"webp"`, ``"zstd"``
+    ``"webp"``, ``"zstd"``
 
 **quality**
     The image quality for JPEG compression, on a scale from 0 (worst) to 100
@@ -1208,6 +1226,17 @@ Pillow identifies and reads Multi Picture Object (MPO) files, loading the primar
 image when first opened. The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell`
 methods may be used to read other pictures from the file. The pictures are
 zero-indexed and random access is supported.
+
+When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+option will also be available.
+
+**append_images**
+    A list of images to append as additional pictures. Each of the
+    images in the list can be single or multiframe images.
+
+    .. versionadded:: 9.3.0
 
 PCD
 ^^^

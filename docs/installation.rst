@@ -15,35 +15,13 @@ Python Support
 
 Pillow supports these Python versions.
 
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-|        Python        |3.10 | 3.9 | 3.8 | 3.7 | 3.6 | 3.5 | 3.4 | 2.7 |
-+======================+=====+=====+=====+=====+=====+=====+=====+=====+
-| Pillow >= 9.0        | Yes | Yes | Yes | Yes |     |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 8.3.2 - 8.4   | Yes | Yes | Yes | Yes | Yes |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 8.0 - 8.3.1   |     | Yes | Yes | Yes | Yes |     |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 7.0 - 7.2     |     |     | Yes | Yes | Yes | Yes |     |     |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 6.2.1 - 6.2.2 |     |     | Yes | Yes | Yes | Yes |     | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 6.0 - 6.2.0   |     |     |     | Yes | Yes | Yes |     | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 5.2 - 5.4     |     |     |     | Yes | Yes | Yes | Yes | Yes |
-+----------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+.. csv-table:: Newer versions
+   :file: newer-versions.csv
+   :header-rows: 1
 
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-|      Python      | 3.6 | 3.5 | 3.4 | 3.3 | 3.2 | 2.7 | 2.6 | 2.5 | 2.4 |
-+==================+=====+=====+=====+=====+=====+=====+=====+=====+=====+
-| Pillow 5.0 - 5.1 | Yes | Yes | Yes |     |     | Yes |     |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 4         | Yes | Yes | Yes | Yes |     | Yes |     |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow 2 - 3     |     | Yes | Yes | Yes | Yes | Yes | Yes |     |     |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-| Pillow < 2       |     |     |     |     |     | Yes | Yes | Yes | Yes |
-+------------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+.. csv-table:: Older versions
+   :file: older-versions.csv
+   :header-rows: 1
 
 Basic Installation
 ------------------
@@ -188,7 +166,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.0**
+  * Pillow has been tested with libimagequant **2.6-4.0.4**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -389,7 +367,7 @@ In Alpine, the command is::
 
 .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
-Prerequisites for **Ubuntu 16.04 LTS - 20.04 LTS** are installed with::
+Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
 
     sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
         libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \

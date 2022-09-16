@@ -1,3 +1,5 @@
+import pytest
+
 from PIL import Image
 
 from .helper import (
@@ -22,25 +24,25 @@ def rotate(im, mode, angle, center=None, translate=None):
         assert out.size != im.size
 
 
-def test_mode():
-    for mode in ("1", "P", "L", "RGB", "I", "F"):
-        im = hopper(mode)
-        rotate(im, mode, 45)
+@pytest.mark.parametrize("mode", ("1", "P", "L", "RGB", "I", "F"))
+def test_mode(mode):
+    im = hopper(mode)
+    rotate(im, mode, 45)
 
 
-def test_angle():
-    for angle in (0, 90, 180, 270):
-        with Image.open("Tests/images/test-card.png") as im:
-            rotate(im, im.mode, angle)
-
-        im = hopper()
-        assert_image_equal(im.rotate(angle), im.rotate(angle, expand=1))
-
-
-def test_zero():
-    for angle in (0, 45, 90, 180, 270):
-        im = Image.new("RGB", (0, 0))
+@pytest.mark.parametrize("angle", (0, 90, 180, 270))
+def test_angle(angle):
+    with Image.open("Tests/images/test-card.png") as im:
         rotate(im, im.mode, angle)
+
+    im = hopper()
+    assert_image_equal(im.rotate(angle), im.rotate(angle, expand=1))
+
+
+@pytest.mark.parametrize("angle", (0, 45, 90, 180, 270))
+def test_zero(angle):
+    im = Image.new("RGB", (0, 0))
+    rotate(im, im.mode, angle)
 
 
 def test_resample():

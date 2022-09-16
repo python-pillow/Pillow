@@ -64,7 +64,7 @@ Fonts
 
 PIL can use bitmap fonts or OpenType/TrueType fonts.
 
-Bitmap fonts are stored in PIL’s own format, where each font typically consists
+Bitmap fonts are stored in PIL's own format, where each font typically consists
 of two files, one named .pil and the other usually named .pbm. The former
 contains font metrics, the latter raster data.
 
@@ -145,6 +145,11 @@ Methods
 .. py:method:: ImageDraw.getfont()
 
     Get the current default font.
+
+    To set the default font for all future ImageDraw instances::
+
+        from PIL import ImageDraw, ImageFont
+        ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
 
     :returns: An image font.
 

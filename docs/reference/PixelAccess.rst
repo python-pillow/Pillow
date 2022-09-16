@@ -73,7 +73,7 @@ Access using negative indexes is also possible.
         Modifies the pixel at x,y. The color is given as a single
         numerical value for single band images, and a tuple for
         multi-band images. In addition to this, RGB and RGBA tuples
-        are accepted for P images.
+        are accepted for P and PA images.
 
         :param xy: The pixel coordinate, given as (x, y).
         :param color: The pixel value according to its mode. e.g. tuple (r, g, b) for RGB mode)

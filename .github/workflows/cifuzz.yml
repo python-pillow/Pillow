@@ -11,6 +11,9 @@ on:
       - "**.h"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   Fuzzing:
     runs-on: ubuntu-latest

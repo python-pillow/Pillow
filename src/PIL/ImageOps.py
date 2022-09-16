@@ -572,8 +572,11 @@ def solarize(image, threshold=128):
 
 def exif_transpose(image):
     """
-    If an image has an EXIF Orientation tag, return a new image that is
-    transposed accordingly. Otherwise, return a copy of the image.
+    If an image has an EXIF Orientation tag, other than 1, return a new image
+    that is transposed accordingly. The new image will have the orientation
+    data removed.
+
+    Otherwise, return a copy of the image.
 
     :param image: The image to transpose.
     :return: An image.
@@ -601,10 +604,12 @@ def exif_transpose(image):
                     "Raw profile type exif"
                 ] = transposed_exif.tobytes().hex()
             elif "XML:com.adobe.xmp" in transposed_image.info:
-                transposed_image.info["XML:com.adobe.xmp"] = re.sub(
+                for pattern in (
                     r'tiff:Orientation="([0-9])"',
-                    "",
-                    transposed_image.info["XML:com.adobe.xmp"],
-                )
+                    r"<tiff:Orientation>([0-9])</tiff:Orientation>",
+                ):
+                    transposed_image.info["XML:com.adobe.xmp"] = re.sub(
+                        pattern, "", transposed_image.info["XML:com.adobe.xmp"]
+                    )
         return transposed_image
     return image.copy()
