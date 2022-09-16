@@ -376,7 +376,7 @@ The :py:meth:`~PIL.Image.open` method may set the following
     The ICC color profile for the image.
 
 **exif**
-    Raw EXIF data from the image.
+    If present, the image will be stored with the provided raw EXIF data.
 
 **comment**
     A comment about the image.
@@ -411,9 +411,6 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     attached. To preserve the existing profile::
 
         im.save(filename, 'jpeg', icc_profile=im.info.get('icc_profile'))
-
-**exif**
-    If present, the image will be stored with the provided raw EXIF data.
 
 **subsampling**
     If present, sets the subsampling for the encoder.
