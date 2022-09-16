@@ -293,6 +293,11 @@ TAGS = {
 }
 """Maps EXIF tags to tag names."""
 
+TAG_CODES = {
+    # possibly incomplete
+    tag_name: tag_code for tag_code, tag_name in TAGS.items()
+}
+"""Maps tag names to EXIF tags."""
 
 GPSTAGS = {
     0: "GPSVersionID",
@@ -329,3 +334,6 @@ GPSTAGS = {
     31: "GPSHPositioningError",
 }
 """Maps EXIF GPS tags to tag names."""
+
+GPS_CODES = {gps_name: gps_code for gps_code, gps_name in GPSTAGS.items()}
+"""Maps tag names to EXIF GPS tags."""
