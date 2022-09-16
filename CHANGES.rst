@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Corrected BMP and TGA palette size when saving #6500
+  [radarhere]
+
 - Do not call load() before draft() in Image.thumbnail #6539
   [radarhere]
 
