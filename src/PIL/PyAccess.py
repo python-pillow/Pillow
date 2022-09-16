@@ -58,7 +58,7 @@ class PyAccess:
 
         # Keep pointer to im object to prevent dereferencing.
         self._im = img.im
-        if self._im.mode == "P":
+        if self._im.mode in ("P", "PA"):
             self._palette = img.palette
 
         # Debugging is polluting test traces, only useful here
@@ -89,12 +89,17 @@ class PyAccess:
         (x, y) = self.check_xy((x, y))
 
         if (
-            self._im.mode == "P"
+            self._im.mode in ("P", "PA")
             and isinstance(color, (list, tuple))
             and len(color) in [3, 4]
         ):
-            # RGB or RGBA value for a P image
+            # RGB or RGBA value for a P or PA image
+            if self._im.mode == "PA":
+                alpha = color[3] if len(color) == 4 else 255
+                color = color[:3]
             color = self._palette.getcolor(color, self._img)
+            if self._im.mode == "PA":
+                color = (color, alpha)
 
         return self.set_pixel(x, y, color)
 
