@@ -293,7 +293,7 @@ def pad(image, size, method=Image.Resampling.BICUBIC, color=None, centering=(0.5
         out = Image.new(image.mode, size, color)
         palette = image.palette.copy()
         if palette:
-            out.putpalette(palette.palette)
+            out.putpalette(palette)
         if resized.width != size[0]:
             x = int((size[0] - resized.width) * max(0, min(centering[0], 1)))
             out.paste(resized, (x, 0))
