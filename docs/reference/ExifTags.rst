@@ -10,7 +10,7 @@ provide constants and clear-text names for various well-known EXIF tags.
 .. py:data:: TAGS
     :type: dict
 
-    The TAG dictionary maps 16-bit integer EXIF tag enumerations to
+    The TAGS dictionary maps 16-bit integer EXIF tag enumerations to
     descriptive string names.  For instance:
 
         >>> from PIL.ExifTags import TAGS
