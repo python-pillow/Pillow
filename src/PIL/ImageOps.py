@@ -398,7 +398,7 @@ def expand(image, border=0, fill=0):
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom
     color = _color(fill, image.mode)
-    if image.mode == "P" and image.palette:
+    if image.palette:
         palette = ImagePalette.ImagePalette(palette=image.getpalette())
         if isinstance(color, tuple):
             color = palette.getcolor(color)

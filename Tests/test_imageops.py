@@ -130,8 +130,9 @@ def test_pad():
             )
 
 
-def test_palette():
-    im = hopper("P")
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_palette(mode):
+    im = hopper(mode)
 
     # Expand
     expanded_im = ImageOps.expand(im)
