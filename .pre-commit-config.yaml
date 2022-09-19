@@ -3,6 +3,7 @@ repos:
     rev: 3298ddab3c13dd77d6ce1fc0baf97691430d84b0  # frozen: v4.3.0
     hooks:
       - id: check-merge-conflict
+      - id: check-json
       - id: check-yaml
 
 ci:

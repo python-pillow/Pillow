@@ -1,0 +1,14 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:base"
+    ],
+    "packageRules": [
+        {
+            "groupName": "github-actions",
+            "matchManagers": ["github-actions"],
+            "separateMajorMinor": "false"
+        }
+    ],
+    "schedule": ["on the 4th day of the month"]
+}
