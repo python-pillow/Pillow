@@ -21,7 +21,7 @@ import functools
 import operator
 import re
 
-from . import Image
+from . import Image, ImagePalette
 
 #
 # helpers
@@ -292,7 +292,7 @@ def pad(image, size, method=Image.Resampling.BICUBIC, color=None, centering=(0.5
     else:
         out = Image.new(image.mode, size, color)
         if resized.palette:
-            out.putpalette(resized.palette)
+            out.putpalette(resized.getpalette())
         if resized.width != size[0]:
             x = int((size[0] - resized.width) * max(0, min(centering[0], 1)))
             out.paste(resized, (x, 0))
@@ -399,8 +399,7 @@ def expand(image, border=0, fill=0):
     height = top + image.size[1] + bottom
     color = _color(fill, image.mode)
     if image.mode == "P" and image.palette:
-        image.load()
-        palette = image.palette.copy()
+        palette = ImagePalette.ImagePalette(palette=image.getpalette())
         if isinstance(color, tuple):
             color = palette.getcolor(color)
     else:
