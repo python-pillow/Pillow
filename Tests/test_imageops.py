@@ -130,6 +130,21 @@ def test_pad():
             )
 
 
+@pytest.mark.parametrize("mode", ("P", "PA"))
+def test_palette(mode):
+    im = hopper(mode)
+
+    # Expand
+    expanded_im = ImageOps.expand(im)
+    assert_image_equal(im.convert("RGB"), expanded_im.convert("RGB"))
+
+    # Pad
+    padded_im = ImageOps.pad(im, (256, 128), centering=(0, 0))
+    assert_image_equal(
+        im.convert("RGB"), padded_im.convert("RGB").crop((0, 0, 128, 128))
+    )
+
+
 def test_pil163():
     # Division by zero in equalize if < 255 pixels in image (@PIL163)
 
