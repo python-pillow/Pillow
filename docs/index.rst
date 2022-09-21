@@ -69,6 +69,10 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://pypi.org/project/Pillow/
    :alt: Number of PyPI downloads
 
+.. image:: https://bestpractices.coreinfrastructure.org/projects/6331/badge
+   :target: https://bestpractices.coreinfrastructure.org/projects/6331
+   :alt: OpenSSF Best Practices
+
 Overview
 ========
 

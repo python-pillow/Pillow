@@ -1087,6 +1087,19 @@ def test_palette_save_P(tmp_path):
         assert_image_equal(reloaded, im)
 
 
+def test_palette_save_duplicate_entries(tmp_path):
+    im = Image.new("P", (1, 2))
+    im.putpixel((0, 1), 1)
+
+    im.putpalette((0, 0, 0, 0, 0, 0))
+
+    out = str(tmp_path / "temp.gif")
+    im.save(out, palette=[0, 0, 0, 0, 0, 0, 1, 1, 1])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.convert("RGB").getpixel((0, 1)) == (0, 0, 0)
+
+
 def test_palette_save_all_P(tmp_path):
     frames = []
     colors = ((255, 0, 0), (0, 255, 0))
