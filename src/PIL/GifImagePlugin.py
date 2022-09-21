@@ -519,9 +519,8 @@ def _normalize_palette(im, palette, info):
         used_palette_colors = []
         for i in range(0, len(source_palette), 3):
             source_color = tuple(source_palette[i : i + 3])
-            try:
-                index = im.palette.colors[source_color]
-            except KeyError:
+            index = im.palette.colors.get(source_color)
+            if index in used_palette_colors:
                 index = None
             used_palette_colors.append(index)
         for i, index in enumerate(used_palette_colors):
