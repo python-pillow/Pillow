@@ -110,6 +110,16 @@ def test_contain(new_size):
     assert new_im.size == (256, 256)
 
 
+def test_contain_round():
+    im = Image.new("1", (43, 63), 1)
+    new_im = ImageOps.contain(im, (5, 7))
+    assert new_im.width == 5
+
+    im = Image.new("1", (63, 43), 1)
+    new_im = ImageOps.contain(im, (7, 5))
+    assert new_im.height == 5
+
+
 def test_pad():
     # Same ratio
     im = hopper()
@@ -128,6 +138,15 @@ def test_pad():
             assert_image_similar_tofile(
                 new_im, "Tests/images/imageops_pad_" + label + "_" + str(i) + ".jpg", 6
             )
+
+
+def test_pad_round():
+    im = Image.new("1", (1, 1), 1)
+    new_im = ImageOps.pad(im, (4, 1))
+    assert new_im.load()[2, 0] == 1
+
+    new_im = ImageOps.pad(im, (1, 4))
+    assert new_im.load()[0, 2] == 1
 
 
 def test_pil163():

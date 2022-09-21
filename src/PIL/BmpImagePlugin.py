@@ -375,6 +375,16 @@ def _save(im, fp, filename, bitmap_header=True):
     header = 40  # or 64 for OS/2 version 2
     image = stride * im.size[1]
 
+    if im.mode == "1":
+        palette = b"".join(o8(i) * 4 for i in (0, 255))
+    elif im.mode == "L":
+        palette = b"".join(o8(i) * 4 for i in range(256))
+    elif im.mode == "P":
+        palette = im.im.getpalette("RGB", "BGRX")
+        colors = len(palette) // 4
+    else:
+        palette = None
+
     # bitmap header
     if bitmap_header:
         offset = 14 + header + colors * 4
@@ -405,14 +415,8 @@ def _save(im, fp, filename, bitmap_header=True):
 
     fp.write(b"\0" * (header - 40))  # padding (for OS/2 format)
 
-    if im.mode == "1":
-        for i in (0, 255):
-            fp.write(o8(i) * 4)
-    elif im.mode == "L":
-        for i in range(256):
-            fp.write(o8(i) * 4)
-    elif im.mode == "P":
-        fp.write(im.im.getpalette("RGB", "BGRX"))
+    if palette:
+        fp.write(palette)
 
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))])
 
