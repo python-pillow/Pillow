@@ -44,6 +44,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         s = self.fp.read(6)
         if not _accept(s):
             raise SyntaxError("not a CUR file")
+        self.is_cur = True
 
         # pick the largest cursor in the file
         m = b""

@@ -209,7 +209,10 @@ class BmpImageFile(ImageFile.ImageFile):
             else:
                 raise OSError("Unsupported BMP bitfields layout")
         elif file_info["compression"] == self.RAW:
-            if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
+            try: self.is_cur
+            except: self.is_cur = False
+
+            if file_info["bits"] == 32 and self.is_cur:
                 raw_mode, self.mode = "BGRA", "RGBA"
         elif file_info["compression"] == self.RLE8:
             decoder_name = "bmp_rle"
