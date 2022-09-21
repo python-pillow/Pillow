@@ -1949,11 +1949,7 @@ class Image:
 
         m_im = m_im.convert("L")
 
-        # Internally, we require 256 palette entries.
-        new_palette_bytes = (
-            palette_bytes + ((256 * bands) - len(palette_bytes)) * b"\x00"
-        )
-        m_im.putpalette(new_palette_bytes, palette_mode)
+        m_im.putpalette(palette_bytes, palette_mode)
         m_im.palette = ImagePalette.ImagePalette(palette_mode, palette=palette_bytes)
 
         if "transparency" in self.info:
