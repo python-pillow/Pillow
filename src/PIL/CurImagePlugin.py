@@ -168,6 +168,7 @@ class CurFile(IcoImagePlugin.IcoFile):
     def hotspots(self):
         return [(h["x_hotspot"], h["y_hotspot"]) for h in self.entry]
 
+
 class CurImageFile(IcoImagePlugin.IcoImageFile):
 
     format = "CUR"
