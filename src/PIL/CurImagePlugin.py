@@ -17,7 +17,7 @@
 #
 from io import BytesIO
 
-from . import BmpImagePlugin, Image, ImageFile, IcoImagePlugin
+from . import BmpImagePlugin, IcoImagePlugin, Image, ImageFile
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
