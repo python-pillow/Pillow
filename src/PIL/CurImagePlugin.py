@@ -15,11 +15,9 @@
 #
 # See the README file for information on usage and redistribution.
 #
-import warnings
 from io import BytesIO
-from math import ceil, log
 
-from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin, IcoImagePlugin
+from . import BmpImagePlugin, Image, ImageFile, IcoImagePlugin
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
