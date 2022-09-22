@@ -177,7 +177,10 @@ class CurImageFile(IcoImagePlugin.IcoImageFile):
         self.ico = CurFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
         self.info["hotspots"] = self.ico.hotspots()
-        self.size = self.ico.entry[0]["dim"]
+        if len(self.ico.entry) > 0:
+            self.size = self.ico.entry[0]["dim"]
+        else:
+            raise TypeError("No cursors were found")
         self.load()
 
 
