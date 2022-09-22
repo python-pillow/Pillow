@@ -162,6 +162,11 @@ class CurFile(IcoImagePlugin.IcoFile):
         self.entry = sorted(self.entry, key=lambda x: x["square"])
         self.entry.reverse()
 
+    def sizes(self):
+        return [(h["width"], h["height"]) for h in self.entry]
+
+    def hotspots(self):
+        return [(h["x_hotspot"], h["y_hotspot"]) for h in self.entry]
 
 class CurImageFile(IcoImagePlugin.IcoImageFile):
 
@@ -171,6 +176,7 @@ class CurImageFile(IcoImagePlugin.IcoImageFile):
     def _open(self):
         self.ico = CurFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
+        self.info["hotspots"] = self.ico.hotspots()
         self.size = self.ico.entry[0]["dim"]
         self.load()
 
