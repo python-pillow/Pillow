@@ -35,10 +35,7 @@ def _save(im, fp, filename):
         "sizes",
         [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
     )
-    hotspots = im.encoderinfo.get(
-        "hotspots",
-        [(0, 0) for i in range(len(sizes))]
-    )
+    hotspots = im.encoderinfo.get("hotspots", [(0, 0) for i in range(len(sizes))])
     if len(hotspots) != len(sizes):
         raise ValueError("Number of hotspots must be equal to number of cursor sizes")
 
@@ -116,6 +113,7 @@ def _accept(prefix):
 
 ##
 # Image plugin for Windows Cursor files.
+
 
 class CurFile(IcoImagePlugin.IcoFile):
     def __init__(self, buf):
