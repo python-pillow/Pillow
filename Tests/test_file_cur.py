@@ -2,11 +2,9 @@ import pytest
 
 from PIL import CurImagePlugin, Image
 
-TEST_FILE = "Tests/images/deerstalker.cur"
 
-
-def test_sanity():
-    with Image.open(TEST_FILE) as im:
+def test_deerstalker():
+    with Image.open("Tests/images/cur/deerstalker.cur") as im:
         assert im.size == (32, 32)
         assert isinstance(im, CurImagePlugin.CurImageFile)
         # Check some pixel colors to ensure image is loaded properly
@@ -15,13 +13,21 @@ def test_sanity():
         assert im.getpixel((16, 16)) == (84, 87, 86, 255)
 
 
+def test_posy_link():
+    with Image.open("Tests/images/cur/posy_link.cur") as im:
+        assert im.size == (128, 128)
+        assert im.getpixel((0, 0)) == (0, 0, 0, 0)
+        assert im.getpixel((20, 20)) == (0, 0, 0, 255)
+        assert im.getpixel((40,40)) == (255, 255, 255, 255)
+
+
 def test_invalid_file():
-    invalid_file = "Tests/images/flower.jpg"
+    invalid_file = "Tests/images/cur/posy_link.png"
 
     with pytest.raises(SyntaxError):
         CurImagePlugin.CurImageFile(invalid_file)
 
-    no_cursors_file = "Tests/images/no_cursors.cur"
+    no_cursors_file = "Tests/images/cur/no_cursors.cur"
 
     cur = CurImagePlugin.CurImageFile(TEST_FILE)
     cur.fp.close()
