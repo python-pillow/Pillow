@@ -29,7 +29,7 @@ def test_invalid_file():
 
     no_cursors_file = "Tests/images/cur/no_cursors.cur"
 
-    cur = CurImagePlugin.CurImageFile(TEST_FILE)
+    cur = CurImagePlugin.CurImageFile("Tests/images/cur/deerstalker.cur")
     cur.fp.close()
     with open(no_cursors_file, "rb") as cur.fp:
         with pytest.raises(TypeError):
