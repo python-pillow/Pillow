@@ -1,14 +1,16 @@
-from io import BytesIO
 import struct
-from PIL import Image, CurImagePlugin, ImageFile, BmpImagePlugin
+from io import BytesIO
+
+from PIL import BmpImagePlugin, CurImagePlugin, Image, ImageFile
 from PIL._binary import i16le as i16
 from PIL._binary import i32le as i32
 from PIL._binary import o8
 from PIL._binary import o16le as o16
 from PIL._binary import o32le as o32
 
+
 def _accept(s):
-    return s[:4] == b'RIFF'
+    return s[:4] == b"RIFF"
 
 
 def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
@@ -71,11 +73,12 @@ def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
         offset = offset + bytes_len
         fp.seek(current)
 
+
 def _write_single_frame(im: Image.Image, fp: BytesIO, filename: str):
     fp.write(b"anih")
     anih = o32(36) + o32(36) + (o32(1) * 2) + (o32(0) * 4) + o32(60) + o32(1)
     fp.write(anih)
-    
+
     fp.write(b"LIST" + o32(0))
     list_offset = fp.tell()
     fp.write(b"fram")
@@ -89,7 +92,7 @@ def _write_single_frame(im: Image.Image, fp: BytesIO, filename: str):
 
     fp.write(icon_data)
     fram_end = fp.tell()
-    
+
     fp.seek(icon_offset - 4)
     icon_size = fram_end - icon_offset
     fp.write(o32(icon_size))
@@ -100,7 +103,8 @@ def _write_single_frame(im: Image.Image, fp: BytesIO, filename: str):
 
     fp.seek(fram_end)
 
-def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename:str):  
+
+def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
     anih_offset = fp.tell()
     fp.write(b"anih" + o32(36))
     fp.write(o32(0) * 9)
@@ -120,7 +124,7 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename:str):
 
         fp.write(icon_data)
         fram_end = fp.tell()
-    
+
         fp.seek(icon_offset - 4)
         icon_size = fram_end - icon_offset
         fp.write(o32(icon_size))
@@ -140,9 +144,9 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename:str):
         for i in seq:
             if i >= len(frames):
                 raise ValueError("Sequence index out of animation frame bounds")
-            
+
             fp.write(o32(i))
-        
+
         fram_end = fp.tell()
         fp.seek(seq_offset - 4)
         seq_size = fram_end - seq_offset
@@ -154,14 +158,14 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename:str):
     if rate:
         fp.write(b"rate" + o32(0))
         rate_offset = fp.tell()
-        
+
         if seq:
             if len(rate) != len(seq):
                 raise ValueError("Length of rate must match rate of sequence")
         else:
             if len(rate) != len(frames):
                 raise ValueError("Length of rate must match number of frames")
-        
+
         for r in rate:
             fp.write(o32(r))
 
@@ -171,7 +175,7 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename:str):
         fp.write(o32(rate_size))
 
         fp.seek(fram_end)
-        
+
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
     display_rate = im.encoderinfo.get("display_rate", 2)
     n_frames = len(frames)
@@ -182,11 +186,18 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename:str):
 
     fp.seek(anih_offset)
     fp.write(b"anih")
-    anih = o32(36) + o32(36) + o32(n_frames) + o32(n_steps) + (o32(0) * 4) + o32(display_rate) + o32(flag)
+    anih = (
+        o32(36)
+        + o32(36)
+        + o32(n_frames)
+        + o32(n_steps)
+        + (o32(0) * 4)
+        + o32(display_rate)
+        + o32(flag)
+    )
     fp.write(anih)
 
     fp.seek(fram_end)
-
 
 
 def _write_info(im: Image.Image, fp: BytesIO, filename: str):
@@ -214,7 +225,7 @@ def _write_info(im: Image.Image, fp: BytesIO, filename: str):
     inam_size = fp.tell() - inam_offset
 
     fp.write(b"IART" + o32(0))
-    iart_offset = fp.tell()    
+    iart_offset = fp.tell()
 
     fp.write(iart + b"\x00")
     iart_size = fp.tell() - iart_offset
@@ -230,8 +241,9 @@ def _write_info(im: Image.Image, fp: BytesIO, filename: str):
     fp.seek(list_offset - 4)
     list_size = info_end - list_offset
     fp.write(o32(list_size))
-    
+
     fp.seek(info_end)
+
 
 def _save(im: Image.Image, fp: BytesIO, filename: str):
     fp.write(b"RIFF\x00\x00\x00\x00")
@@ -239,7 +251,7 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
 
     fp.write(b"ACON")
     _write_info(im, fp, filename)
-    
+
     frames = im.encoderinfo.get("append_images", [])
     if frames:
         _write_multiple_frames(im, fp, filename)
@@ -251,8 +263,9 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
     fp.seek(riff_offset - 4)
     riff_size = riff_end - riff_offset
     fp.write(o32(riff_size))
-    
+
     fp.seek(riff_end)
+
 
 class AniFile:
     def __init__(self, buf: BytesIO) -> None:
@@ -263,25 +276,22 @@ class AniFile:
         self.seq = None
         self.anih = None
 
-        riff, size, fformat = struct.unpack('<4sI4s', buf.read(12))
-        if riff != b'RIFF':
+        riff, size, fformat = struct.unpack("<4sI4s", buf.read(12))
+        if riff != b"RIFF":
             SyntaxError("Not an ANI file")
 
-        self.riff = {
-            "size": size,
-            "fformat": fformat
-        }
+        self.riff = {"size": size, "fformat": fformat}
 
         chunkOffset = buf.tell()
-        while chunkOffset < self.riff['size']:
+        while chunkOffset < self.riff["size"]:
             buf.seek(chunkOffset)
-            chunk, size = struct.unpack('<4sI', buf.read(8))
+            chunk, size = struct.unpack("<4sI", buf.read(8))
             chunkOffset = chunkOffset + size + 8
 
-            if chunk == b'anih':
+            if chunk == b"anih":
                 s = buf.read(36)
                 self.anih = {
-                    "size":  i32(s),  # Data structure size (in bytes)
+                    "size": i32(s),  # Data structure size (in bytes)
                     "nFrames": i32(s, 4),  # Number of frames
                     "nSteps": i32(s, 8),  # Number of frames before repeat
                     "iWidth": i32(s, 12),  # Width of frame (in pixels)
@@ -293,22 +303,22 @@ class AniFile:
                     "bfAttributes": i32(s, 32),  # ANI attribute bit flags
                 }
 
-            if chunk == b'seq ':
+            if chunk == b"seq ":
                 s = buf.read(size)
-                self.seq = [i32(s, i*4) for i in range(size // 4)]
+                self.seq = [i32(s, i * 4) for i in range(size // 4)]
 
-            if chunk == b'rate':
+            if chunk == b"rate":
                 s = buf.read(size)
-                self.rate = [i32(s, i*4) for i in range(size // 4)]
+                self.rate = [i32(s, i * 4) for i in range(size // 4)]
 
-            if chunk == b'LIST':
-                listtype = struct.unpack('<4s', buf.read(4))[0]
-                if listtype != b'fram':
+            if chunk == b"LIST":
+                listtype = struct.unpack("<4s", buf.read(4))[0]
+                if listtype != b"fram":
                     continue
 
                 listOffset = 0
                 while listOffset < size - 8:
-                    _, lSize = struct.unpack('<4sI', buf.read(8))
+                    _, lSize = struct.unpack("<4sI", buf.read(8))
                     self.image_data.append({"offset": buf.tell(), "size": lSize})
 
                     buf.read(lSize)
@@ -333,14 +343,13 @@ class AniFile:
 
         im = CurImagePlugin.CurImageFile(BytesIO(data))
         return im
-        
 
 
 class AniImageFile(ImageFile.ImageFile):
     format = "ANI"
     format_description = "Windows Animated Cursor"
-    
-    def _open(self):       
+
+    def _open(self):
         self.ani = AniFile(self.fp)
         self.frame = 0
         self.seek(0)
@@ -354,14 +363,13 @@ class AniImageFile(ImageFile.ImageFile):
 
     @size.setter
     def size(self, value):
-        if value not in self.info['sizes']:
+        if value not in self.info["sizes"]:
             raise ValueError("This is not one of the allowed sizes of this image")
         self._size = value
 
-
     def load(self):
-        im = self.ani.frame(self.frame)  
-        self.info['sizes'] = im.info['sizes']
+        im = self.ani.frame(self.frame)
+        self.info["sizes"] = im.info["sizes"]
         self.im = im.im
         self.mode = im.mode
 
@@ -372,7 +380,7 @@ class AniImageFile(ImageFile.ImageFile):
         self.frame = frame
         self.load()
 
-        
+
 Image.register_open(AniImageFile.format, AniImageFile, _accept)
 Image.register_extension(AniImageFile.format, ".ani")
 Image.register_save(AniImageFile.format, _save)

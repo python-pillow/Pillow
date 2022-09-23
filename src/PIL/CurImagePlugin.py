@@ -29,6 +29,7 @@ from ._binary import o32le as o32
 
 _MAGIC = b"\0\0\2\0"
 
+
 def _save(im: Image.Image, fp: BytesIO, filename: str):
     fp.write(_MAGIC)
     bmp = im.encoderinfo.get("bitmap_format", "") == "bmp"
@@ -138,13 +139,18 @@ class CurFile(IcoImagePlugin.IcoFile):
 
             # TODO: This needs further investigation. Cursor files do not really specify their bpp
             # like ICO's as those bits are used for the y_hotspot. For now, bpp is calculated by
-            # subtracting the AND mask (equal to number of pixels * 1bpp) and dividing by the number 
+            # subtracting the AND mask (equal to number of pixels * 1bpp) and dividing by the number
             # of pixels. This seems to work well so far.
             BITMAP_INFO_HEADER_SIZE = 40
-            bpp_without_and = ((icon_header["size"] - BITMAP_INFO_HEADER_SIZE) * 8) // icon_header["square"]
+            bpp_without_and = (
+                (icon_header["size"] - BITMAP_INFO_HEADER_SIZE) * 8
+            ) // icon_header["square"]
 
             if bpp_without_and != 32:
-                icon_header["bpp"] = ((icon_header["size"] - BITMAP_INFO_HEADER_SIZE) * 8 - icon_header["square"]) // icon_header["square"]
+                icon_header["bpp"] = (
+                    (icon_header["size"] - BITMAP_INFO_HEADER_SIZE) * 8
+                    - icon_header["square"]
+                ) // icon_header["square"]
             else:
                 icon_header["bpp"] = bpp_without_and
 

@@ -18,7 +18,7 @@ def test_posy_link():
         assert im.size == (128, 128)
         assert im.getpixel((0, 0)) == (0, 0, 0, 0)
         assert im.getpixel((20, 20)) == (0, 0, 0, 255)
-        assert im.getpixel((40,40)) == (255, 255, 255, 255)
+        assert im.getpixel((40, 40)) == (255, 255, 255, 255)
 
 
 def test_invalid_file():
