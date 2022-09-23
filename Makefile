@@ -17,11 +17,13 @@ coverage:
 
 .PHONY: doc
 doc:
+	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
+	python3 -c "import olefile" > /dev/null 2>&1 || python3 -m pip install olefile
 	$(MAKE) -C docs html
 
 .PHONY: doccheck
 doccheck:
-	$(MAKE) -C docs html
+	$(MAKE) doc
 # Don't make our tests rely on the links in the docs being up every single build.
 # We don't control them.  But do check, and update them to the target of their redirects.
 	$(MAKE) -C docs linkcheck || true
