@@ -133,7 +133,6 @@ class CurFile(IcoImagePlugin.IcoFile):
                 if not icon_header[j]:
                     icon_header[j] = 256
 
-           
             icon_header["dim"] = (icon_header["width"], icon_header["height"])
             icon_header["square"] = icon_header["width"] * icon_header["height"]
 
