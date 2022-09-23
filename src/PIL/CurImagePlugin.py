@@ -27,10 +27,11 @@ from ._binary import o32le as o32
 #
 # --------------------------------------------------------------------
 
+_MAGIC = b"\0\0\2\0"
 
-def _save(im, fp, filename):
-    fp.write(b"\0\0\2\0")
-    bmp = im.encoderinfo.get("bitmap_format") == "bmp"
+def _save(im: Image.Image, fp: BytesIO, filename: str):
+    fp.write(_MAGIC)
+    bmp = im.encoderinfo.get("bitmap_format", "") == "bmp"
     sizes = im.encoderinfo.get(
         "sizes",
         [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
@@ -40,34 +41,16 @@ def _save(im, fp, filename):
         raise ValueError("Number of hotspots must be equal to number of cursor sizes")
 
     frames = []
-    provided_ims = [im] + im.encoderinfo.get("append_images", [])
     width, height = im.size
     for size in sorted(set(sizes)):
         if size[0] > width or size[1] > height or size[0] > 256 or size[1] > 256:
             continue
 
-        for provided_im in provided_ims:
-            if provided_im.size != size:
-                continue
-            frames.append(provided_im)
-            if bmp:
-                bits = BmpImagePlugin.SAVE[provided_im.mode][1]
-                bits_used = [bits]
-                for other_im in provided_ims:
-                    if other_im.size != size:
-                        continue
-                    bits = BmpImagePlugin.SAVE[other_im.mode][1]
-                    if bits not in bits_used:
-                        # Another image has been supplied for this size
-                        # with a different bit depth
-                        frames.append(other_im)
-                        bits_used.append(bits)
-            break
-        else:
-            # TODO: invent a more convenient method for proportional scalings
-            frame = provided_im.copy()
-            frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
-            frames.append(frame)
+        # TODO: invent a more convenient method for proportional scalings
+        frame = im.copy()
+        frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
+        frames.append(frame)
+
     fp.write(o16(len(frames)))  # idCount(2)
     offset = fp.tell() + len(frames) * 16
     for hotspot, frame in zip(hotspots, frames):
@@ -108,13 +91,13 @@ def _save(im, fp, filename):
 
 
 def _accept(prefix):
-    return prefix[:4] == b"\0\0\2\0"
+    return prefix[:4] == _MAGIC
 
 
 ##
 # Image plugin for Windows Cursor files.
 class CurFile(IcoImagePlugin.IcoFile):
-    def __init__(self, buf):
+    def __init__(self, buf: BytesIO):
         """
         Parse image from file-like object containing cur file data
         """
@@ -157,9 +140,14 @@ class CurFile(IcoImagePlugin.IcoFile):
             # TODO: This needs further investigation. Cursor files do not really specify their bpp
             # like ICO's as those bits are used for the y_hotspot. For now, bpp is calculated by
             # subtracting the AND mask (equal to number of pixels * 1bpp) and dividing by the number 
-            # of pixels.
+            # of pixels. This seems to work well so far.
             BITMAP_INFO_HEADER_SIZE = 40
-            icon_header["bpp"] = (icon_header["size"] - BITMAP_INFO_HEADER_SIZE) * 8 - (icon_header["square"]) // icon_header["square"]
+            bpp_without_and = ((icon_header["size"] - BITMAP_INFO_HEADER_SIZE) * 8) // icon_header["square"]
+
+            if bpp_without_and != 32:
+                icon_header["bpp"] = ((icon_header["size"] - BITMAP_INFO_HEADER_SIZE) * 8 - icon_header["square"]) // icon_header["square"]
+            else:
+                icon_header["bpp"] = bpp_without_and
 
             self.entry.append(icon_header)
 
