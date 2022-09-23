@@ -731,4 +731,4 @@ Methods
         homogeneous, but similar, colors.
 
 .. _BCP 47 language code: https://www.w3.org/International/articles/language-tags/
-.. _OpenType docs: https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+.. _OpenType docs: https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
