@@ -18,7 +18,6 @@ coverage:
 .PHONY: doc
 doc:
 	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
-	python3 -c "import olefile" > /dev/null 2>&1 || python3 -m pip install olefile
 	$(MAKE) -C docs html
 
 .PHONY: doccheck
