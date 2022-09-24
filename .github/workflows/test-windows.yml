@@ -36,7 +36,7 @@ jobs:
 
     # sets env: pythonLocation
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
@@ -66,7 +66,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: winbuild\build
         key:
