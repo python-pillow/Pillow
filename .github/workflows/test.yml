@@ -94,7 +94,6 @@ jobs:
     - name: Docs
       if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.10
       run: |
-        python3 -m pip install furo sphinx-copybutton sphinx-issues sphinx-removed-in sphinxext-opengraph
         make doccheck
 
     - name: After success
