@@ -338,7 +338,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
         :param language: Language of the text. Different languages may use
@@ -391,7 +391,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
         :param language: Language of the text. Different languages may use
@@ -456,7 +456,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
                          .. versionadded:: 4.2.0
@@ -520,7 +520,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
         :param language: Language of the text. Different languages may use
@@ -610,7 +610,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
                          .. versionadded:: 4.2.0
@@ -702,7 +702,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
                          .. versionadded:: 4.2.0

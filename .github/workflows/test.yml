@@ -30,11 +30,6 @@ jobs:
           REVERSE: "--reverse"
         - python-version: "3.8"
           PYTHONOPTIMIZE: 2
-        # Include new variables for Codecov
-        - os: ubuntu-latest
-          codecov-flag: GHA_Ubuntu
-        - os: macos-latest
-          codecov-flag: GHA_macOS
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
@@ -106,9 +101,11 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      run: bash <(curl -s https://codecov.io/bash) -F ${{ matrix.codecov-flag }}
-      env:
-        CODECOV_NAME: ${{ matrix.os }} Python ${{ matrix.python-version }}
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: ${{ matrix.os == 'macos-latest' && 'GHA_macOS' || 'GHA_Ubuntu' }}
+        name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
   success:
     permissions:
