@@ -418,7 +418,7 @@ unpackLAL(UINT8 *out, const UINT8 *in, int pixels) {
     UINT8 *in1 = in;
     UINT8 *in2 = in + pixels;
     /* LA, line interleaved */
-    for (i = 0; i < pixels; ++i) {
+    for (i = 0; i < pixels; i++) {
         *out++ = *in1++;
         *out++ = *in2++;
     }
