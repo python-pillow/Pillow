@@ -8,6 +8,10 @@ on:
 permissions:
   issues: write
 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   stale:
     if: github.repository_owner == 'python-pillow'
