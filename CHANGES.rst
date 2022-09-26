@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Improved ImageOps palette handling #6596
+  [PososikTeam, radarhere]
+
 - Defer parsing of palette into colors #6567
   [radarhere]
 
