@@ -288,7 +288,6 @@ ImagingResampleHorizontal_8bpc(
     ImagingSectionCookie cookie;
     int xx, yy, b, x, xmin, xmax, ss;
     UINT8 *out, *in;
-    INT32 *k;
 
     // use the same buffer for normalized coefficients
     const INT32 *kk = (INT32 *)prekk;
@@ -303,7 +302,7 @@ ImagingResampleHorizontal_8bpc(
         for (xx = 0; xx < imOut->xsize; xx++) {
             xmin = bounds[xx * 2 + 0];
             xmax = bounds[xx * 2 + 1];
-            k = &kk[xx * ksize];
+            const INT32 *k = &kk[xx * ksize];
             for (b = 0; b < pixelsize; b++) {
                 ss = 1 << (PRECISION_BITS - 1);
                 for (x = 0; x < xmax; x++) {
@@ -322,7 +321,6 @@ ImagingResampleVertical_8bpc(
     ImagingSectionCookie cookie;
     int xx, yy, b, y, ymin, ymax, ss;
     UINT8 *out, *in;
-    INT32 *k;
 
     // use the same buffer for normalized coefficients
     const INT32 *kk = (INT32 *)prekk;
@@ -333,7 +331,7 @@ ImagingResampleVertical_8bpc(
     ImagingSectionEnter(&cookie);
     for (yy = 0; yy < imOut->ysize; yy++) {
         out = (UINT8 *)imOut->image[yy];
-        k = &kk[yy * ksize];
+        const INT32 *k = &kk[yy * ksize];
         ymin = bounds[yy * 2 + 0];
         ymax = bounds[yy * 2 + 1];
         for (xx = 0; xx < imOut->xsize; xx++) {
