@@ -58,13 +58,15 @@ def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
 
         image_io = BytesIO()
         if bmp:
-            frame.save(image_io, "dib")
-
             if bits != 32:
                 and_mask = Image.new("1", size)
                 ImageFile._save(
                     and_mask, image_io, [("raw", (0, 0) + size, 0, ("1", 0, -1))]
                 )
+            else:
+                frame.alpha = True
+
+            frame.save(image_io, "dib")
         else:
             frame.save(image_io, "png")
         image_io.seek(0)
