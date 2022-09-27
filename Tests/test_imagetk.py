@@ -69,6 +69,13 @@ def test_photoimage():
         assert_image_equal(reloaded, im.convert("RGBA"))
 
 
+def test_photoimage_apply_transparency():
+    with Image.open("Tests/images/pil123p.png") as im:
+        im_tk = ImageTk.PhotoImage(im)
+        reloaded = ImageTk.getimage(im_tk)
+        assert_image_equal(reloaded, im.convert("RGBA"))
+
+
 def test_photoimage_blank():
     # test a image using mode/size:
     for mode in TK_MODES:

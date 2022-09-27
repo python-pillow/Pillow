@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Improved ImageOps palette handling #6596
+  [PososikTeam, radarhere]
+
+- Defer parsing of palette into colors #6567
+  [radarhere]
+
+- Apply transparency to P images in ImageTk.PhotoImage #6559
+  [radarhere]
+
 - Use rounding in ImageOps contain() and pad() #6522
   [bibinhashley, radarhere]
 
