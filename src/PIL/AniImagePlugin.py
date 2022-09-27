@@ -15,22 +15,21 @@ def _accept(s):
 def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
     fp.write(b"\0\0\2\0")
     bmp = True
-    s = im.encoderinfo.get(
+    s = info.get(
         "sizes",
         [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
     )
-    h = im.encoderinfo.get("hotspots", [(0, 0) for i in range(len(s))])
+    h = info.get("hotspots", [(0, 0) for _ in range(len(s))])
 
     if len(h) != len(s):
         raise ValueError("Number of hotspots must be equal to number of cursor sizes")
 
     # sort and remove duplicate sizes
-    sizes = []
-    hotspots = []
-    for size, hotspot in zip(*sorted(zip(s, h), lambda x: x[0])):
+    sizes, hotspots = [], []
+    for size, hotspot in sorted(zip(s, h), key=lambda x: x[0]):
         if size not in sizes:
             sizes.append(size)
-            hotspots.append(hotspots)
+            hotspots.append(hotspot)
 
     frames = []
     width, height = im.size
@@ -72,6 +71,7 @@ def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
         image_bytes = image_io.read()
         if bmp:
             image_bytes = image_bytes[:8] + o32(height * 2) + image_bytes[12:]
+            
         bytes_len = len(image_bytes)
         fp.write(o32(bytes_len))  # dwBytesInRes(4)
         fp.write(o32(offset))  # dwImageOffset(4)
@@ -121,7 +121,8 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
     list_offset = fp.tell()
     fp.write(b"fram")
 
-    frames = [im] + im.encoderinfo.get("append_images", [])
+    frames = [im]
+    frames.extend(im.encoderinfo.get("append_images", []))
     for frame in frames:
         fp.write(b"icon" + o32(0))
         icon_offset = fp.tell()
@@ -342,7 +343,7 @@ class AniFile:
 
     def frame(self, frame):
         if frame > self.anih["nFrames"]:
-            raise ValueError("Frame index out of animation bounds")
+            raise EOFError("Frame index out of animation bounds")
 
         offset, size = self.image_data[frame].values()
         self.buf.seek(offset)
@@ -392,6 +393,7 @@ class AniImageFile(ImageFile.ImageFile):
         self.info["frames"] = self.ani.anih["nFrames"]
 
         self.frame = 0
+        self._min_frame = 0
         self.seek(0)
         self.size = self.im.size
 
@@ -413,8 +415,9 @@ class AniImageFile(ImageFile.ImageFile):
         self.mode = im.mode
 
     def seek(self, frame):
-        if frame > self.info["frames"]:
-            raise ValueError("Frame index out of animation bounds")
+        
+        if frame > self.info["frames"] - 1 or frame < 0:
+            raise EOFError("Frame index out of animation bounds")
 
         self.frame = frame
         self.load()
