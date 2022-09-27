@@ -1,13 +1,14 @@
+from io import BytesIO
+
 import pytest
 
-from io import BytesIO
 from PIL import CurImagePlugin, Image
 
 
 def test_deerstalker():
     with Image.open("Tests/images/cur/deerstalker.cur") as im:
         assert im.size == (32, 32)
-        assert im.info['hotspots'] == [(0, 0)]
+        assert im.info["hotspots"] == [(0, 0)]
         assert isinstance(im, CurImagePlugin.CurImageFile)
         # Check some pixel colors to ensure image is loaded properly
         assert im.getpixel((10, 1)) == (0, 0, 0, 0)
@@ -18,8 +19,8 @@ def test_deerstalker():
 def test_posy_link():
     with Image.open("Tests/images/cur/posy_link.cur") as im:
         assert im.size == (128, 128)
-        assert im.info['sizes'] == [(128, 128), (96, 96), (64, 64), (48, 48), (32, 32)]
-        assert im.info['hotspots'] == [(25, 7), (18, 5), (12, 3), (9, 2), (5, 1)]
+        assert im.info["sizes"] == [(128, 128), (96, 96), (64, 64), (48, 48), (32, 32)]
+        assert im.info["hotspots"] == [(25, 7), (18, 5), (12, 3), (9, 2), (5, 1)]
         # check some pixel colors
         assert im.getpixel((0, 0)) == (0, 0, 0, 0)
         assert im.getpixel((20, 20)) == (0, 0, 0, 255)
@@ -69,8 +70,13 @@ def test_save_win98_arrow():
     with Image.open("Tests/images/cur/win98_arrow.png") as im:
         # save the data
         with BytesIO() as output:
-            im.save(output, format="CUR", sizes=[(32, 32)], hotspots=[
-                    (10, 10)], bitmap_format="bmp")
+            im.save(
+                output,
+                format="CUR",
+                sizes=[(32, 32)],
+                hotspots=[(10, 10)],
+                bitmap_format="bmp",
+            )
 
             with Image.open(output) as im2:
                 assert im.tobytes() == im2.tobytes()
@@ -92,27 +98,36 @@ def test_save_posy_link():
     with Image.open("Tests/images/cur/posy_link.png") as im:
         # save the data
         with BytesIO() as output:
-            im.save(output, sizes=sizes, hotspots=hotspots,
-                    format="CUR", bitmap_format="bmp")
+            im.save(
+                output,
+                sizes=sizes,
+                hotspots=hotspots,
+                format="CUR",
+                bitmap_format="bmp",
+            )
 
             # make sure saved output is readable
             # and sizes/hotspots are correct
             with Image.open(output, formats=["CUR"]) as im2:
                 assert (128, 128) == im2.size
-                assert sizes == im2.info['sizes']
+                assert sizes == im2.info["sizes"]
 
         with BytesIO() as output:
-            im.save(output, sizes=sizes[3:], hotspots=hotspots[3:],
-                    format="CUR")
+            im.save(output, sizes=sizes[3:], hotspots=hotspots[3:], format="CUR")
 
             # make sure saved output is readable
             # and sizes/hotspots are correct
             with Image.open(output, formats=["CUR"]) as im2:
                 assert (48, 48) == im2.size
-                assert sizes[3:] == im2.info['sizes']
+                assert sizes[3:] == im2.info["sizes"]
 
             # make sure error is thrown when size and hotspot len's
             # don't match
             with pytest.raises(ValueError):
-                im.save(output, sizes=sizes[2:], hotspots=hotspots[3:],
-                        format="CUR", bitmap_format="bmp")
+                im.save(
+                    output,
+                    sizes=sizes[2:],
+                    hotspots=hotspots[3:],
+                    format="CUR",
+                    bitmap_format="bmp",
+                )

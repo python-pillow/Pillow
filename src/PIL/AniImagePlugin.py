@@ -73,7 +73,7 @@ def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
         image_bytes = image_io.read()
         if bmp:
             image_bytes = image_bytes[:8] + o32(height * 2) + image_bytes[12:]
-            
+
         bytes_len = len(image_bytes)
         fp.write(o32(bytes_len))  # dwBytesInRes(4)
         fp.write(o32(offset))  # dwImageOffset(4)
@@ -417,7 +417,7 @@ class AniImageFile(ImageFile.ImageFile):
         self.mode = im.mode
 
     def seek(self, frame):
-        
+
         if frame > self.info["frames"] - 1 or frame < 0:
             raise EOFError("Frame index out of animation bounds")
 
