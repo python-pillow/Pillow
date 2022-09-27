@@ -16,13 +16,22 @@ def _accept(s):
 def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
     fp.write(b"\0\0\2\0")
     bmp = True
-    sizes = info.get(
+    s = im.encoderinfo.get(
         "sizes",
         [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
     )
-    hotspots = info.get("hotspots", [(0, 0) for i in range(len(sizes))])
+    h = im.encoderinfo.get("hotspots", [(0, 0) for i in range(len(s))])
+
     if len(hotspots) != len(sizes):
         raise ValueError("Number of hotspots must be equal to number of cursor sizes")
+
+    # sort and remove duplicate sizes
+    sizes = []
+    hotspots = []
+    for size, hotspot in zip(*sorted(zip(s, h), lambda x: x[0])):
+        if size not in sizes:
+            sizes.append(size)
+            hotspots.append(hotspots)
 
     frames = []
     width, height = im.size
@@ -161,7 +170,7 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
 
         if seq:
             if len(rate) != len(seq):
-                raise ValueError("Length of rate must match rate of sequence")
+                raise ValueError("Length of rate must match length of sequence")
         else:
             if len(rate) != len(frames):
                 raise ValueError("Length of rate must match number of frames")
@@ -344,18 +353,49 @@ class AniFile:
         im = CurImagePlugin.CurImageFile(BytesIO(data))
         return im
 
+    def sizes(self):
+        return [data['size'] for data in self.image_data]
+
+    def hotspots(self):
+        pass
+
 
 class AniImageFile(ImageFile.ImageFile):
+    """
+    PIL read-only image support for Microsoft Windows .ani files.
+
+    By default the largest resolution image and first frame in the file will 
+    be loaded.
+
+    The info dictionary has four keys:
+        'seq': the sequence of the frames used for animation.
+        'rate': the rate (in 1/60th of a second) for each frame in the sequence.
+        'frames': the number of frames in the file.
+        'sizes': a list of the sizes available for the current frame.
+        'hotspots': a list of the cursor hotspots for a given frame.
+
+    Saving is similar to GIF. Arguments for encoding are:
+        'sizes': The sizes of the cursor (used for scaling by windows).
+        'hotspots': The hotspot for each size, with (0, 0) being the top left.
+        'append_images': The frames for animation. Please note that the sizes and
+        hotspots are shared across each frame.
+        'seq': The sequence of frames, zero indexed.
+        'rate': The rate for each frame in the seq. Must be the same length as seq or
+        equal to the number of frames if seq is not passed.
+    """
+
     format = "ANI"
     format_description = "Windows Animated Cursor"
 
     def _open(self):
         self.ani = AniFile(self.fp)
+        self.info["seq"] = self.ani.seq
+        self.info["rate"] = self.ani.rate
+        self.info["frames"] = self.ani.anih["nFrames"]
+
         self.frame = 0
         self.seek(0)
         self.size = self.im.size
-        self.info["seq"] = self.ani.seq
-        self.info["rate"] = self.ani.rate
 
     @property
     def size(self):
@@ -370,11 +410,12 @@ class AniImageFile(ImageFile.ImageFile):
     def load(self):
         im = self.ani.frame(self.frame)
         self.info["sizes"] = im.info["sizes"]
+        self.info["hotspots"] = im.info["hotspots"]
         self.im = im.im
         self.mode = im.mode
 
     def seek(self, frame):
-        if frame > self.ani.anih["nFrames"]:
+        if frame > self.info["frames"]:
             raise ValueError("Frame index out of animation bounds")
 
         self.frame = frame
