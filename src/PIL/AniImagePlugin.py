@@ -354,7 +354,7 @@ class AniFile:
         return im
 
     def sizes(self):
-        return [data['size'] for data in self.image_data]
+        return [data["size"] for data in self.image_data]
 
     def hotspots(self):
         pass
@@ -364,7 +364,7 @@ class AniImageFile(ImageFile.ImageFile):
     """
     PIL read-only image support for Microsoft Windows .ani files.
 
-    By default the largest resolution image and first frame in the file will 
+    By default the largest resolution image and first frame in the file will
     be loaded.
 
     The info dictionary has four keys:
