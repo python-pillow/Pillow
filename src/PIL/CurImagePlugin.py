@@ -27,7 +27,7 @@ from ._binary import o32le as o32
 #
 # --------------------------------------------------------------------
 
-_MAGIC = b"\0\0\2\0"
+_MAGIC = b"\x00\x00\x02\x00"
 
 
 def _save(im: Image.Image, fp: BytesIO, filename: str):
@@ -43,12 +43,11 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
         raise ValueError("Number of hotspots must be equal to number of cursor sizes")
 
     # sort and remove duplicate sizes
-    sizes = []
-    hotspots = []
-    for size, hotspot in zip(*sorted(zip(s, h), lambda x: x[0])):
+    sizes, hotspots = [], []
+    for size, hotspot in sorted(zip(s, h), key=lambda x: x[0]):
         if size not in sizes:
             sizes.append(size)
-            hotspots.append(hotspots)
+            hotspots.append(hotspot)
 
     frames = []
     width, height = im.size
@@ -90,6 +89,7 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
         image_bytes = image_io.read()
         if bmp:
             image_bytes = image_bytes[:8] + o32(height * 2) + image_bytes[12:]
+
         bytes_len = len(image_bytes)
         fp.write(o32(bytes_len))  # dwBytesInRes(4)
         fp.write(o32(offset))  # dwImageOffset(4)
@@ -146,10 +146,10 @@ class CurFile(IcoImagePlugin.IcoFile):
             icon_header["dim"] = (icon_header["width"], icon_header["height"])
             icon_header["square"] = icon_header["width"] * icon_header["height"]
 
-            # TODO: This needs further investigation. Cursor files do not really 
-            # specify their bpp like ICO's as those bits are used for the y_hotspot. 
-            # For now, bpp is calculated by subtracting the AND mask (equal to number 
-            # of pixels * 1bpp) and dividing by the number of pixels. This seems 
+            # TODO: This needs further investigation. Cursor files do not really
+            # specify their bpp like ICO's as those bits are used for the y_hotspot.
+            # For now, bpp is calculated by subtracting the AND mask (equal to number
+            # of pixels * 1bpp) and dividing by the number of pixels. This seems
             # to work well so far.
             BITMAP_INFO_HEADER_SIZE = 40
             bpp_without_and = (
