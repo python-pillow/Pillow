@@ -2,7 +2,6 @@ import struct
 from io import BytesIO
 
 from PIL import BmpImagePlugin, CurImagePlugin, Image, ImageFile
-from PIL._binary import i16le as i16
 from PIL._binary import i32le as i32
 from PIL._binary import o8
 from PIL._binary import o16le as o16
@@ -22,7 +21,7 @@ def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
     )
     h = im.encoderinfo.get("hotspots", [(0, 0) for i in range(len(s))])
 
-    if len(hotspots) != len(sizes):
+    if len(h) != len(s):
         raise ValueError("Number of hotspots must be equal to number of cursor sizes")
 
     # sort and remove duplicate sizes
@@ -185,7 +184,6 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
 
         fp.seek(fram_end)
 
-    bmp = im.encoderinfo.get("bitmap_format") == "bmp"
     display_rate = im.encoderinfo.get("display_rate", 2)
     n_frames = len(frames)
     n_steps = len(seq) if seq else n_frames

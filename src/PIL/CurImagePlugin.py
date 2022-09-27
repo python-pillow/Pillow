@@ -39,7 +39,7 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
     )
     h = im.encoderinfo.get("hotspots", [(0, 0) for i in range(len(s))])
 
-    if len(hotspots) != len(sizes):
+    if len(h) != len(s):
         raise ValueError("Number of hotspots must be equal to number of cursor sizes")
 
     # sort and remove duplicate sizes
@@ -146,10 +146,11 @@ class CurFile(IcoImagePlugin.IcoFile):
             icon_header["dim"] = (icon_header["width"], icon_header["height"])
             icon_header["square"] = icon_header["width"] * icon_header["height"]
 
-            # TODO: This needs further investigation. Cursor files do not really specify their bpp
-            # like ICO's as those bits are used for the y_hotspot. For now, bpp is calculated by
-            # subtracting the AND mask (equal to number of pixels * 1bpp) and dividing by the number
-            # of pixels. This seems to work well so far.
+            # TODO: This needs further investigation. Cursor files do not really 
+            # specify their bpp like ICO's as those bits are used for the y_hotspot. 
+            # For now, bpp is calculated by subtracting the AND mask (equal to number 
+            # of pixels * 1bpp) and dividing by the number of pixels. This seems 
+            # to work well so far.
             BITMAP_INFO_HEADER_SIZE = 40
             bpp_without_and = (
                 (icon_header["size"] - BITMAP_INFO_HEADER_SIZE) * 8
