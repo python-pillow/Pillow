@@ -33,17 +33,26 @@ _MAGIC = b"\0\0\2\0"
 def _save(im: Image.Image, fp: BytesIO, filename: str):
     fp.write(_MAGIC)
     bmp = im.encoderinfo.get("bitmap_format", "") == "bmp"
-    sizes = im.encoderinfo.get(
+    s = im.encoderinfo.get(
         "sizes",
         [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
     )
-    hotspots = im.encoderinfo.get("hotspots", [(0, 0) for i in range(len(sizes))])
+    h = im.encoderinfo.get("hotspots", [(0, 0) for i in range(len(s))])
+
     if len(hotspots) != len(sizes):
         raise ValueError("Number of hotspots must be equal to number of cursor sizes")
 
+    # sort and remove duplicate sizes
+    sizes = []
+    hotspots = []
+    for size, hotspot in zip(*sorted(zip(s, h), lambda x: x[0])):
+        if size not in sizes:
+            sizes.append(size)
+            hotspots.append(hotspots)
+
     frames = []
     width, height = im.size
-    for size in sorted(set(sizes)):
+    for size in sizes:
         if size[0] > width or size[1] > height or size[0] > 256 or size[1] > 256:
             continue
 
@@ -167,6 +176,27 @@ class CurFile(IcoImagePlugin.IcoFile):
 
 
 class CurImageFile(IcoImagePlugin.IcoImageFile):
+    """
+    PIL read-only image support for Microsoft Windows .cur files.
+
+    By default the largest resolution image in the file will be loaded. This
+    can be changed by altering the 'size' attribute before calling 'load'.
+
+    The info dictionary has a key 'sizes' that is a list of the sizes available
+    in the icon file. It also contains key 'hotspots' that is a list of the
+    cursor hotspots.
+
+    Handles classic, XP and Vista icon formats.
+
+    When saving, PNG compression is used. Support for this was only added in
+    Windows Vista. If you are unable to view the icon in Windows, convert the
+    image to "RGBA" mode before saving. This is an extension of the IcoImagePlugin.
+
+    Raises:
+        ValueError: The number of sizes and hotspots do not match.
+        SyntaxError: The file is not a cursor file.
+        TypeError: There are no cursors contained withing the file.
+    """
 
     format = "CUR"
     format_description = "Windows Cursor"
