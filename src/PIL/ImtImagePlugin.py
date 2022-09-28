@@ -74,13 +74,13 @@ class ImtImageFile(ImageFile.ImageFile):
                 if not m:
                     break
                 k, v = m.group(1, 2)
-                if k == "width":
+                if k == b"width":
                     xsize = int(v)
                     self._size = xsize, ysize
-                elif k == "height":
+                elif k == b"height":
                     ysize = int(v)
                     self._size = xsize, ysize
-                elif k == "pixel" and v == "n8":
+                elif k == b"pixel" and v == b"n8":
                     self.mode = "L"
 
 
