@@ -224,7 +224,7 @@ class ChunkStream:
             ) from e
 
     def crc_skip(self, cid, data):
-        """Read checksum.  Used if the C module is not present"""
+        """Read checksum"""
 
         self.fp.read(4)
 
