@@ -152,9 +152,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.2.6.tar.gz/download",
-        "filename": "xz-5.2.6.tar.gz",
-        "dir": "xz-5.2.6",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.2.7.tar.gz/download",
+        "filename": "xz-5.2.7.tar.gz",
+        "dir": "xz-5.2.7",
         "license": "COPYING",
         "patch": {
             r"src\liblzma\api\lzma.h": {
@@ -228,9 +228,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libpng": {
-        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.37/lpng1637.zip/download",
-        "filename": "lpng1637.zip",
-        "dir": "lpng1637",
+        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.38/lpng1638.zip/download",
+        "filename": "lpng1638.zip",
+        "dir": "lpng1638",
         "license": "LICENSE",
         "build": [
             # lint: do not inline
