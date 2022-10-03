@@ -443,6 +443,8 @@ Methods
 
     .. deprecated:: 9.2.0
 
+    See :ref:`deprecations <Font size and offset methods>` for more information.
+
     Use :py:meth:`textlength()` to measure the offset of following text with
     1/64 pixel precision.
     Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
@@ -489,9 +491,13 @@ Methods
 
                      .. versionadded:: 6.2.0
 
+    :return: (width, height)
+
 .. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
     .. deprecated:: 9.2.0
+
+    See :ref:`deprecations <Font size and offset methods>` for more information.
 
     Use :py:meth:`.multiline_textbbox` instead.
 
@@ -540,6 +546,8 @@ Methods
     :param stroke_width: The width of the text stroke.
 
                      .. versionadded:: 6.2.0
+
+    :return: (width, height)
 
 .. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None, embedded_color=False)
 
@@ -608,6 +616,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :return: Width for horizontal, height for vertical text.
 
 .. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -657,6 +666,7 @@ Methods
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :return: ``(left, top, right, bottom)`` bounding box
 
 .. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -700,6 +710,7 @@ Methods
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :return: ``(left, top, right, bottom)`` bounding box
 
 .. py:method:: getdraw(im=None, hints=None)
 

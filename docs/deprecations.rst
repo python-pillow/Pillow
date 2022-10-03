@@ -178,6 +178,8 @@ Image.coerce_e
 This undocumented method has been deprecated and will be removed in Pillow 10
 (2023-07-01).
 
+.. _Font size and offset methods:
+
 Font size and offset methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -196,6 +198,40 @@ Deprecated                                                                  Use 
 :py:meth:`.ImageDraw.textsize` and :py:meth:`.ImageDraw.multiline_textsize` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
 :py:meth:`.ImageDraw2.Draw.textsize`                                        :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
 =========================================================================== =============================================================================================================
+
+Previous code:
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+    width, height = font.getsize("Hello world")
+    left, top = font.getoffset("Hello world")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width, height = draw.textsize("Hello world")
+
+    width, height = font.getsize_multiline("Hello\nworld")
+    width, height = draw.multiline_textsize("Hello\nworld")
+
+Use instead:
+
+.. code-block:: python
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+    left, top, right, bottom = font.getbbox("Hello world")
+    width, height = right - left, bottom - top
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width = draw.textlength("Hello world")
+
+    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
+    width, height = right - left, bottom - top
 
 Removed features
 ----------------
