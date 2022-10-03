@@ -109,7 +109,7 @@ def _accept(prefix):
 ##
 # Image plugin for Windows Cursor files.
 class CurFile(IcoImagePlugin.IcoFile):
-    def __init__(self, buf: BytesIO):
+    def __init__(self, buf: BytesIO()):
         """
         Parse image from file-like object containing cur file data
         """
