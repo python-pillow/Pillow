@@ -125,14 +125,6 @@ def test_file_object(tmp_path):
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_iobase_object(tmp_path):
-    # issue 479
-    with Image.open(FILE1) as image1:
-        with open(str(tmp_path / "temp_iobase.eps"), "wb") as fh:
-            image1.save(fh, "EPS")
-
-
-@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_bytesio_object():
     with open(FILE1, "rb") as f:
         img_bytes = io.BytesIO(f.read())
