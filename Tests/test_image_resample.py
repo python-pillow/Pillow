@@ -554,44 +554,48 @@ class TestCoreResampleBox:
                 # check that the difference at least that much
                 assert_image_similar(res, im.crop(box), 20, f">>> {size} {box}")
 
-    def test_skip_horizontal(self):
+    @pytest.mark.parametrize(
+        "flt", (Image.Resampling.NEAREST, Image.Resampling.BICUBIC)
+    )
+    def test_skip_horizontal(self, flt):
         # Can skip resize for one dimension
         im = hopper()
 
-        for flt in [Image.Resampling.NEAREST, Image.Resampling.BICUBIC]:
-            for size, box in [
-                ((40, 50), (0, 0, 40, 90)),
-                ((40, 50), (0, 20, 40, 90)),
-                ((40, 50), (10, 0, 50, 90)),
-                ((40, 50), (10, 20, 50, 90)),
-            ]:
-                res = im.resize(size, flt, box)
-                assert res.size == size
-                # Borders should be slightly different
-                assert_image_similar(
-                    res,
-                    im.crop(box).resize(size, flt),
-                    0.4,
-                    f">>> {size} {box} {flt}",
-                )
+        for size, box in [
+            ((40, 50), (0, 0, 40, 90)),
+            ((40, 50), (0, 20, 40, 90)),
+            ((40, 50), (10, 0, 50, 90)),
+            ((40, 50), (10, 20, 50, 90)),
+        ]:
+            res = im.resize(size, flt, box)
+            assert res.size == size
+            # Borders should be slightly different
+            assert_image_similar(
+                res,
+                im.crop(box).resize(size, flt),
+                0.4,
+                f">>> {size} {box} {flt}",
+            )
 
-    def test_skip_vertical(self):
+    @pytest.mark.parametrize(
+        "flt", (Image.Resampling.NEAREST, Image.Resampling.BICUBIC)
+    )
+    def test_skip_vertical(self, flt):
         # Can skip resize for one dimension
         im = hopper()
 
-        for flt in [Image.Resampling.NEAREST, Image.Resampling.BICUBIC]:
-            for size, box in [
-                ((40, 50), (0, 0, 90, 50)),
-                ((40, 50), (20, 0, 90, 50)),
-                ((40, 50), (0, 10, 90, 60)),
-                ((40, 50), (20, 10, 90, 60)),
-            ]:
-                res = im.resize(size, flt, box)
-                assert res.size == size
-                # Borders should be slightly different
-                assert_image_similar(
-                    res,
-                    im.crop(box).resize(size, flt),
-                    0.4,
-                    f">>> {size} {box} {flt}",
-                )
+        for size, box in [
+            ((40, 50), (0, 0, 90, 50)),
+            ((40, 50), (20, 0, 90, 50)),
+            ((40, 50), (0, 10, 90, 60)),
+            ((40, 50), (20, 10, 90, 60)),
+        ]:
+            res = im.resize(size, flt, box)
+            assert res.size == size
+            # Borders should be slightly different
+            assert_image_similar(
+                res,
+                im.crop(box).resize(size, flt),
+                0.4,
+                f">>> {size} {box} {flt}",
+            )

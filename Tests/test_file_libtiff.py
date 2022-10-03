@@ -509,7 +509,8 @@ class TestFileLibTiff(LibTiffTestCase):
             # colormap/palette tag
             assert len(reloaded.tag_v2[320]) == 768
 
-    def xtest_bw_compression_w_rgb(self, tmp_path):
+    @pytest.mark.parametrize("compression", ("tiff_ccitt", "group3", "group4"))
+    def xtest_bw_compression_w_rgb(self, compression, tmp_path):
         """This test passes, but when running all tests causes a failure due
         to output on stderr from the error thrown by libtiff. We need to
         capture that but not now"""
@@ -518,11 +519,7 @@ class TestFileLibTiff(LibTiffTestCase):
         out = str(tmp_path / "temp.tif")
 
         with pytest.raises(OSError):
-            im.save(out, compression="tiff_ccitt")
-        with pytest.raises(OSError):
-            im.save(out, compression="group3")
-        with pytest.raises(OSError):
-            im.save(out, compression="group4")
+            im.save(out, compression=compression)
 
     def test_fp_leak(self):
         im = Image.open("Tests/images/hopper_g4_500.tif")
