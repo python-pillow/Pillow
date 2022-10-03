@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Added reading of TIFF child images #6569
+  [radarhere]
+
 - Improved ImageOps palette handling #6596
   [PososikTeam, radarhere]
 
