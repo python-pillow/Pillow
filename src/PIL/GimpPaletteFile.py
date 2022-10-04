@@ -18,8 +18,6 @@ import re
 
 from ._binary import o8
 
-_str_to_o8 = lambda v: o8(int(v))
-
 
 class GimpPaletteFile:
     """File handler for GIMP's palette format."""
