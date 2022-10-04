@@ -51,7 +51,7 @@ def test_palette__has_correct_color_indexes():
     ]
 
     for i, color in enumerate(colors_in_test_palette):
-        assert tuple(palette[i * 3: i * 3 + 3]) == color
+        assert tuple(palette[i * 3 : i * 3 + 3]) == color
 
 
 def test_palette_counts_number_of_colors_in_file():

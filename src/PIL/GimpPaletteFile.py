@@ -45,12 +45,11 @@ class GimpPaletteFile:
             if len(v) < 3:
                 raise ValueError("bad palette entry")
 
-            palette[index * 3: index * 3 + 3] = v
+            palette[index * 3 : index * 3 + 3] = v
             index += 1
 
         self.palette = bytes(palette)
         self.n_colors = index
-
 
     def getpalette(self):
 
