@@ -632,24 +632,24 @@ def test_imagefont_getters(font):
     assert len(log) == 11
 
 
-def test_getsize_stroke(font):
-    for stroke_width in [0, 2]:
-        assert font.getbbox("A", stroke_width=stroke_width) == (
-            0 - stroke_width,
-            4 - stroke_width,
-            12 + stroke_width,
-            16 + stroke_width,
+@pytest.mark.parametrize("stroke_width", (0, 2))
+def test_getsize_stroke(font, stroke_width):
+    assert font.getbbox("A", stroke_width=stroke_width) == (
+        0 - stroke_width,
+        4 - stroke_width,
+        12 + stroke_width,
+        16 + stroke_width,
+    )
+    with pytest.warns(DeprecationWarning) as log:
+        assert font.getsize("A", stroke_width=stroke_width) == (
+            12 + stroke_width * 2,
+            16 + stroke_width * 2,
         )
-        with pytest.warns(DeprecationWarning) as log:
-            assert font.getsize("A", stroke_width=stroke_width) == (
-                12 + stroke_width * 2,
-                16 + stroke_width * 2,
-            )
-            assert font.getsize_multiline("ABC\nAaaa", stroke_width=stroke_width) == (
-                48 + stroke_width * 2,
-                36 + stroke_width * 4,
-            )
-        assert len(log) == 2
+        assert font.getsize_multiline("ABC\nAaaa", stroke_width=stroke_width) == (
+            48 + stroke_width * 2,
+            36 + stroke_width * 4,
+        )
+    assert len(log) == 2
 
 
 def test_complex_font_settings():

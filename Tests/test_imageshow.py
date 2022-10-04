@@ -45,10 +45,10 @@ def test_viewer_show(order):
     not on_ci() or is_win32(),
     reason="Only run on CIs; hangs on Windows CIs",
 )
-def test_show():
-    for mode in ("1", "I;16", "LA", "RGB", "RGBA"):
-        im = hopper(mode)
-        assert ImageShow.show(im)
+@pytest.mark.parametrize("mode", ("1", "I;16", "LA", "RGB", "RGBA"))
+def test_show(mode):
+    im = hopper(mode)
+    assert ImageShow.show(im)
 
 
 def test_show_without_viewers():
@@ -70,12 +70,12 @@ def test_viewer():
         viewer.get_command(None)
 
 
-def test_viewers():
-    for viewer in ImageShow._viewers:
-        try:
-            viewer.get_command("test.jpg")
-        except NotImplementedError:
-            pass
+@pytest.mark.parametrize("viewer", ImageShow._viewers)
+def test_viewers(viewer):
+    try:
+        viewer.get_command("test.jpg")
+    except NotImplementedError:
+        pass
 
 
 def test_ipythonviewer():
@@ -95,14 +95,14 @@ def test_ipythonviewer():
     not on_ci() or is_win32(),
     reason="Only run on CIs; hangs on Windows CIs",
 )
-def test_file_deprecated(tmp_path):
+@pytest.mark.parametrize("viewer", ImageShow._viewers)
+def test_file_deprecated(tmp_path, viewer):
     f = str(tmp_path / "temp.jpg")
-    for viewer in ImageShow._viewers:
-        hopper().save(f)
-        with pytest.warns(DeprecationWarning):
-            try:
-                viewer.show_file(file=f)
-            except NotImplementedError:
-                pass
-        with pytest.raises(TypeError):
-            viewer.show_file()
+    hopper().save(f)
+    with pytest.warns(DeprecationWarning):
+        try:
+            viewer.show_file(file=f)
+        except NotImplementedError:
+            pass
+    with pytest.raises(TypeError):
+        viewer.show_file()

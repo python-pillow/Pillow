@@ -37,6 +37,11 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
     return outfile
 
 
+@pytest.mark.parametrize("mode", ("L", "P", "RGB", "CMYK"))
+def test_save(tmp_path, mode):
+    helper_save_as_pdf(tmp_path, mode)
+
+
 @pytest.mark.valgrind_known_error(reason="Temporary skip")
 def test_monochrome(tmp_path):
     # Arrange
@@ -45,38 +50,6 @@ def test_monochrome(tmp_path):
     # Act / Assert
     outfile = helper_save_as_pdf(tmp_path, mode)
     assert os.path.getsize(outfile) < (5000 if features.check("libtiff") else 15000)
-
-
-def test_greyscale(tmp_path):
-    # Arrange
-    mode = "L"
-
-    # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
-
-
-def test_rgb(tmp_path):
-    # Arrange
-    mode = "RGB"
-
-    # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
-
-
-def test_p_mode(tmp_path):
-    # Arrange
-    mode = "P"
-
-    # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
-
-
-def test_cmyk_mode(tmp_path):
-    # Arrange
-    mode = "CMYK"
-
-    # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
 
 
 def test_unsupported_mode(tmp_path):
