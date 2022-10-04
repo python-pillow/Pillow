@@ -978,7 +978,7 @@ ImagingTransformAffine(
             if (xin >= 0 && xin < xsize) {
                 yin = COORD(yy);
                 if (yin >= 0 && yin < ysize) {
-                    UINT8T *in = (UINT8 *)imIn->image[yin];
+                    UINT8 *in = (UINT8 *)imIn->image[yin];
                     for (b = 0; b < pixelsize; b++) {
                         out[x * pixelsize + b] = in[xin * pixelsize + b];
                     }
