@@ -967,10 +967,9 @@ ImagingTransformAffine(
 
     ImagingSectionEnter(&cookie);
     for (y = y0; y < y1; y++) {
-        UINT8 *out;
+        UINT8 *out = (UINT8 *)imOut->image[y];
         xx = xo;
         yy = yo;
-        out = (UINT8 *)imOut->image[y];
         if (fill && x1 > x0) {
             memset(out + x0 * pixelsize, 0, (x1 - x0) * pixelsize);
         }
@@ -979,8 +978,9 @@ ImagingTransformAffine(
             if (xin >= 0 && xin < xsize) {
                 yin = COORD(yy);
                 if (yin >= 0 && yin < ysize) {
+                    UINT8T *in = (UINT8 *)imIn->image[yin];
                     for (b = 0; b < pixelsize; b++) {
-                        out[x * pixelsize + b] = (UINT8 *)imIn->image[yin][xin * pixelsize + b];
+                        out[x * pixelsize + b] = in[xin * pixelsize + b];
                     }
                 }
             }
