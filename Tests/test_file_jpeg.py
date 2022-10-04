@@ -150,27 +150,30 @@ class TestFileJpeg:
             assert not im1.info.get("icc_profile")
             assert im2.info.get("icc_profile")
 
-    def test_icc_big(self):
+    @pytest.mark.parametrize(
+        "n",
+        (
+            0,
+            1,
+            3,
+            4,
+            5,
+            65533 - 14,  # full JPEG marker block
+            65533 - 14 + 1,  # full block plus one byte
+            ImageFile.MAXBLOCK,  # full buffer block
+            ImageFile.MAXBLOCK + 1,  # full buffer block plus one byte
+            ImageFile.MAXBLOCK * 4 + 3,  # large block
+        ),
+    )
+    def test_icc_big(self, n):
         # Make sure that the "extra" support handles large blocks
-        def test(n):
-            # The ICC APP marker can store 65519 bytes per marker, so
-            # using a 4-byte test code should allow us to detect out of
-            # order issues.
-            icc_profile = (b"Test" * int(n / 4 + 1))[:n]
-            assert len(icc_profile) == n  # sanity
-            im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
-            assert im1.info.get("icc_profile") == (icc_profile or None)
-
-        test(0)
-        test(1)
-        test(3)
-        test(4)
-        test(5)
-        test(65533 - 14)  # full JPEG marker block
-        test(65533 - 14 + 1)  # full block plus one byte
-        test(ImageFile.MAXBLOCK)  # full buffer block
-        test(ImageFile.MAXBLOCK + 1)  # full buffer block plus one byte
-        test(ImageFile.MAXBLOCK * 4 + 3)  # large block
+        # The ICC APP marker can store 65519 bytes per marker, so
+        # using a 4-byte test code should allow us to detect out of
+        # order issues.
+        icc_profile = (b"Test" * int(n / 4 + 1))[:n]
+        assert len(icc_profile) == n  # sanity
+        im1 = self.roundtrip(hopper(), icc_profile=icc_profile)
+        assert im1.info.get("icc_profile") == (icc_profile or None)
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -649,11 +652,11 @@ class TestFileJpeg:
             # Assert
             assert im.format == "JPEG"
 
-    def test_save_correct_modes(self):
+    @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
+    def test_save_correct_modes(self, mode):
         out = BytesIO()
-        for mode in ["1", "L", "RGB", "RGBX", "CMYK", "YCbCr"]:
-            img = Image.new(mode, (20, 20))
-            img.save(out, "JPEG")
+        img = Image.new(mode, (20, 20))
+        img.save(out, "JPEG")
 
     def test_save_wrong_modes(self, tmp_path):
         # ref https://github.com/python-pillow/Pillow/issues/2005

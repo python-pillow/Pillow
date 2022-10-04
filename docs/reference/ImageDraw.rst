@@ -64,7 +64,7 @@ Fonts
 
 PIL can use bitmap fonts or OpenType/TrueType fonts.
 
-Bitmap fonts are stored in PIL’s own format, where each font typically consists
+Bitmap fonts are stored in PIL's own format, where each font typically consists
 of two files, one named .pil and the other usually named .pbm. The former
 contains font metrics, the latter raster data.
 
@@ -145,6 +145,11 @@ Methods
 .. py:method:: ImageDraw.getfont()
 
     Get the current default font.
+
+    To set the default font for all future ImageDraw instances::
+
+        from PIL import ImageDraw, ImageFont
+        ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
 
     :returns: An image font.
 
@@ -280,8 +285,8 @@ Methods
     Draws a rectangle.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The second point
-            is just outside the drawn rectangle.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The bounding box
+            is inclusive of both endpoints.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
@@ -293,8 +298,8 @@ Methods
     Draws a rounded rectangle.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The second point
-            is just outside the drawn rectangle.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The bounding box
+            is inclusive of both endpoints.
     :param radius: Radius of the corners.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
@@ -436,11 +441,15 @@ Methods
 
 .. py:method:: ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
 
-    Return the size of the given string, in pixels.
+    .. deprecated:: 9.2.0
+
+    See :ref:`deprecations <Font size and offset methods>` for more information.
 
     Use :py:meth:`textlength()` to measure the offset of following text with
     1/64 pixel precision.
     Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
+
+    Return the size of the given string, in pixels.
 
     .. note:: For historical reasons this function measures text height from
         the ascender line instead of the top, see :ref:`text-anchors`.
@@ -482,7 +491,15 @@ Methods
 
                      .. versionadded:: 6.2.0
 
+    :return: (width, height)
+
 .. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
+
+    .. deprecated:: 9.2.0
+
+    See :ref:`deprecations <Font size and offset methods>` for more information.
+
+    Use :py:meth:`.multiline_textbbox` instead.
 
     Return the size of the given string, in pixels.
 
@@ -529,6 +546,8 @@ Methods
     :param stroke_width: The width of the text stroke.
 
                      .. versionadded:: 6.2.0
+
+    :return: (width, height)
 
 .. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None, embedded_color=False)
 
@@ -597,6 +616,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :return: Width for horizontal, height for vertical text.
 
 .. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -646,6 +666,7 @@ Methods
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :return: ``(left, top, right, bottom)`` bounding box
 
 .. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
@@ -689,6 +710,7 @@ Methods
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :return: ``(left, top, right, bottom)`` bounding box
 
 .. py:method:: getdraw(im=None, hints=None)
 
@@ -720,4 +742,4 @@ Methods
         homogeneous, but similar, colors.
 
 .. _BCP 47 language code: https://www.w3.org/International/articles/language-tags/
-.. _OpenType docs: https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+.. _OpenType docs: https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist

@@ -711,7 +711,7 @@ def _save(im, fp, filename):
         qtables = getattr(im, "quantization", None)
     qtables = validate_qtables(qtables)
 
-    extra = b""
+    extra = info.get("extra", b"")
 
     icc_profile = info.get("icc_profile")
     if icc_profile:

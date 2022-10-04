@@ -174,19 +174,24 @@ def test_exceptions():
     psRGB = ImageCms.createProfile("sRGB")
     pLab = ImageCms.createProfile("LAB")
     t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="mode mismatch"):
         t.apply_in_place(hopper("RGBA"))
 
     # the procedural pyCMS API uses PyCMSError for all sorts of errors
     with hopper() as im:
-        with pytest.raises(ImageCms.PyCMSError):
+        with pytest.raises(ImageCms.PyCMSError, match="cannot open profile file"):
             ImageCms.profileToProfile(im, "foo", "bar")
-    with pytest.raises(ImageCms.PyCMSError):
+
+    with pytest.raises(ImageCms.PyCMSError, match="cannot open profile file"):
         ImageCms.buildTransform("foo", "bar", "RGB", "RGB")
-    with pytest.raises(ImageCms.PyCMSError):
+
+    with pytest.raises(ImageCms.PyCMSError, match="Invalid type for Profile"):
         ImageCms.getProfileName(None)
     skip_missing()
-    with pytest.raises(ImageCms.PyCMSError):
+
+    # Python <= 3.9: "an integer is required (got type NoneType)"
+    # Python > 3.9: "'NoneType' object cannot be interpreted as an integer"
+    with pytest.raises(ImageCms.PyCMSError, match="integer"):
         ImageCms.isIntentSupported(SRGB, None, None)
 
 
@@ -201,13 +206,30 @@ def test_lab_color_profile():
 
 
 def test_unsupported_color_space():
-    with pytest.raises(ImageCms.PyCMSError):
+    with pytest.raises(
+        ImageCms.PyCMSError,
+        match=re.escape(
+            "Color space not supported for on-the-fly profile creation (unsupported)"
+        ),
+    ):
         ImageCms.createProfile("unsupported")
 
 
 def test_invalid_color_temperature():
-    with pytest.raises(ImageCms.PyCMSError):
+    with pytest.raises(
+        ImageCms.PyCMSError,
+        match='Color temperature must be numeric, "invalid" not valid',
+    ):
         ImageCms.createProfile("LAB", "invalid")
+
+
+@pytest.mark.parametrize("flag", ("my string", -1))
+def test_invalid_flag(flag):
+    with hopper() as im:
+        with pytest.raises(
+            ImageCms.PyCMSError, match="flags must be an integer between 0 and "
+        ):
+            ImageCms.profileToProfile(im, "foo", "bar", flags=flag)
 
 
 def test_simple_lab():
@@ -461,9 +483,9 @@ def test_profile_typesafety():
     prepatch, these would segfault, postpatch they should emit a typeerror
     """
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Invalid type for Profile"):
         ImageCms.ImageCmsProfile(0).tobytes()
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Invalid type for Profile"):
         ImageCms.ImageCmsProfile(1).tobytes()
 
 

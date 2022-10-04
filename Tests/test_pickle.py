@@ -60,11 +60,11 @@ def helper_pickle_string(pickle, protocol, test_file, mode):
         ("Tests/images/itxt_chunks.png", None),
     ],
 )
-def test_pickle_image(tmp_path, test_file, test_mode):
+@pytest.mark.parametrize("protocol", range(0, pickle.HIGHEST_PROTOCOL + 1))
+def test_pickle_image(tmp_path, test_file, test_mode, protocol):
     # Act / Assert
-    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        helper_pickle_string(pickle, protocol, test_file, test_mode)
-        helper_pickle_file(tmp_path, pickle, protocol, test_file, test_mode)
+    helper_pickle_string(pickle, protocol, test_file, test_mode)
+    helper_pickle_file(tmp_path, pickle, protocol, test_file, test_mode)
 
 
 def test_pickle_la_mode_with_palette(tmp_path):

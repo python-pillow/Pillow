@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image, PsdImagePlugin
 
-from .helper import assert_image_similar, hopper, is_pypy
+from .helper import assert_image_equal_tofile, assert_image_similar, hopper, is_pypy
 
 test_file = "Tests/images/hopper.psd"
 
@@ -105,6 +105,11 @@ def test_open_after_exclusive_load():
         im.load()
         im.seek(im.tell() + 1)
         im.load()
+
+
+def test_rgba():
+    with Image.open("Tests/images/rgba.psd") as im:
+        assert_image_equal_tofile(im, "Tests/images/imagedraw_square.png")
 
 
 def test_icc_profile():

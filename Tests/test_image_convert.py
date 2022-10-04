@@ -236,6 +236,12 @@ def test_p2pa_alpha():
             assert im_a.getpixel((x, y)) == alpha
 
 
+def test_p2pa_palette():
+    with Image.open("Tests/images/tiny.png") as im:
+        im_pa = im.convert("PA")
+    assert im_pa.getpalette() == im.getpalette()
+
+
 def test_matrix_illegal_conversion():
     # Arrange
     im = hopper("CMYK")
@@ -268,36 +274,33 @@ def test_matrix_wrong_mode():
         im.convert(mode="L", matrix=matrix)
 
 
-def test_matrix_xyz():
-    def matrix_convert(mode):
-        # Arrange
-        im = hopper("RGB")
-        im.info["transparency"] = (255, 0, 0)
-        # fmt: off
-        matrix = (
-            0.412453, 0.357580, 0.180423, 0,
-            0.212671, 0.715160, 0.072169, 0,
-            0.019334, 0.119193, 0.950227, 0)
-        # fmt: on
-        assert im.mode == "RGB"
+@pytest.mark.parametrize("mode", ("RGB", "L"))
+def test_matrix_xyz(mode):
+    # Arrange
+    im = hopper("RGB")
+    im.info["transparency"] = (255, 0, 0)
+    # fmt: off
+    matrix = (
+        0.412453, 0.357580, 0.180423, 0,
+        0.212671, 0.715160, 0.072169, 0,
+        0.019334, 0.119193, 0.950227, 0)
+    # fmt: on
+    assert im.mode == "RGB"
 
-        # Act
-        # Convert an RGB image to the CIE XYZ colour space
-        converted_im = im.convert(mode=mode, matrix=matrix)
+    # Act
+    # Convert an RGB image to the CIE XYZ colour space
+    converted_im = im.convert(mode=mode, matrix=matrix)
 
-        # Assert
-        assert converted_im.mode == mode
-        assert converted_im.size == im.size
-        with Image.open("Tests/images/hopper-XYZ.png") as target:
-            if converted_im.mode == "RGB":
-                assert_image_similar(converted_im, target, 3)
-                assert converted_im.info["transparency"] == (105, 54, 4)
-            else:
-                assert_image_similar(converted_im, target.getchannel(0), 1)
-                assert converted_im.info["transparency"] == 105
-
-    matrix_convert("RGB")
-    matrix_convert("L")
+    # Assert
+    assert converted_im.mode == mode
+    assert converted_im.size == im.size
+    with Image.open("Tests/images/hopper-XYZ.png") as target:
+        if converted_im.mode == "RGB":
+            assert_image_similar(converted_im, target, 3)
+            assert converted_im.info["transparency"] == (105, 54, 4)
+        else:
+            assert_image_similar(converted_im, target.getchannel(0), 1)
+            assert converted_im.info["transparency"] == 105
 
 
 def test_matrix_identity():

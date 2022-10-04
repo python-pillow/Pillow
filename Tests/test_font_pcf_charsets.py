@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
 from .helper import (
@@ -59,23 +61,13 @@ def save_font(request, tmp_path, encoding):
     return tempname
 
 
-def _test_sanity(request, tmp_path, encoding):
+@pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
+def test_sanity(request, tmp_path, encoding):
     save_font(request, tmp_path, encoding)
 
 
-def test_sanity_iso8859_1(request, tmp_path):
-    _test_sanity(request, tmp_path, "iso8859-1")
-
-
-def test_sanity_iso8859_2(request, tmp_path):
-    _test_sanity(request, tmp_path, "iso8859-2")
-
-
-def test_sanity_cp1250(request, tmp_path):
-    _test_sanity(request, tmp_path, "cp1250")
-
-
-def _test_draw(request, tmp_path, encoding):
+@pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
+def test_draw(request, tmp_path, encoding):
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     im = Image.new("L", (150, 30), "white")
@@ -85,38 +77,19 @@ def _test_draw(request, tmp_path, encoding):
     assert_image_similar_tofile(im, charsets[encoding]["image1"], 0)
 
 
-def test_draw_iso8859_1(request, tmp_path):
-    _test_draw(request, tmp_path, "iso8859-1")
-
-
-def test_draw_iso8859_2(request, tmp_path):
-    _test_draw(request, tmp_path, "iso8859-2")
-
-
-def test_draw_cp1250(request, tmp_path):
-    _test_draw(request, tmp_path, "cp1250")
-
-
-def _test_textsize(request, tmp_path, encoding):
+@pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
+def test_textsize(request, tmp_path, encoding):
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     for i in range(255):
-        (dx, dy) = font.getsize(bytearray([i]))
+        (ox, oy, dx, dy) = font.getbbox(bytearray([i]))
+        assert ox == 0
+        assert oy == 0
         assert dy == 20
         assert dx in (0, 10)
+        assert font.getlength(bytearray([i])) == dx
     message = charsets[encoding]["message"].encode(encoding)
     for i in range(len(message)):
         msg = message[: i + 1]
-        assert font.getsize(msg) == (len(msg) * 10, 20)
-
-
-def test_textsize_iso8859_1(request, tmp_path):
-    _test_textsize(request, tmp_path, "iso8859-1")
-
-
-def test_textsize_iso8859_2(request, tmp_path):
-    _test_textsize(request, tmp_path, "iso8859-2")
-
-
-def test_textsize_cp1250(request, tmp_path):
-    _test_textsize(request, tmp_path, "cp1250")
+        assert font.getlength(msg) == len(msg) * 10
+        assert font.getbbox(msg) == (0, 0, len(msg) * 10, 20)

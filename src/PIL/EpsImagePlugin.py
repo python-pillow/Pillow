@@ -288,11 +288,14 @@ class EpsImageFile(ImageFile.ImageFile):
                 # Encoded bitmapped image.
                 x, y, bi, mo = s[11:].split(None, 7)[:4]
 
-                if int(bi) != 8:
-                    break
-                try:
-                    self.mode = self.mode_map[int(mo)]
-                except ValueError:
+                if int(bi) == 1:
+                    self.mode = "1"
+                elif int(bi) == 8:
+                    try:
+                        self.mode = self.mode_map[int(mo)]
+                    except ValueError:
+                        break
+                else:
                     break
 
                 self._size = int(x), int(y)

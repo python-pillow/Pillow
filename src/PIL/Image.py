@@ -646,7 +646,7 @@ class Image:
     def _repr_pretty_(self, p, cycle):
         """IPython plain text display support"""
 
-        # Same as __repr__ but without unpredicatable id(self),
+        # Same as __repr__ but without unpredictable id(self),
         # to keep Jupyter notebook `text/plain` output stable.
         p.text(
             "<%s.%s image mode=%s size=%dx%d>"
@@ -671,14 +671,9 @@ class Image:
             raise ValueError("Could not save to PNG for display") from e
         return b.getvalue()
 
-    class _ArrayData:
-        def __init__(self, new):
-            self.__array_interface__ = new
-
-    def __array__(self, dtype=None):
+    @property
+    def __array_interface__(self):
         # numpy array interface support
-        import numpy as np
-
         new = {}
         shape, typestr = _conv_type_shape(self)
         new["shape"] = shape
@@ -690,8 +685,7 @@ class Image:
             new["data"] = self.tobytes("raw", "L")
         else:
             new["data"] = self.tobytes()
-
-        return np.array(self._ArrayData(new), dtype)
+        return new
 
     def __getstate__(self):
         return [self.info, self.mode, self.size, self.getpalette(), self.tobytes()]
@@ -721,6 +715,11 @@ class Image:
 
         :param encoder_name: What encoder to use.  The default is to
                              use the standard "raw" encoder.
+
+                             A list of C encoders can be seen under
+                             codecs section of the function array in
+                             :file:`_imaging.c`. Python encoders are
+                             registered within the relevant plugins.
         :param args: Extra arguments to the encoder.
         :returns: A :py:class:`bytes` object.
         """
@@ -1405,9 +1404,9 @@ class Image:
         if 0x0112 not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
             if xmp_tags:
-                match = re.search(r'tiff:Orientation="([0-9])"', xmp_tags)
+                match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_tags)
                 if match:
-                    self._exif[0x0112] = int(match[1])
+                    self._exif[0x0112] = int(match[2])
 
         return self._exif
 
@@ -1840,7 +1839,7 @@ class Image:
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
         multi-band images. In addition to this, RGB and RGBA tuples are
-        accepted for P images.
+        accepted for P and PA images.
 
         Note that this method is relatively slow.  For more extensive changes,
         use :py:meth:`~PIL.Image.Image.paste` or the :py:mod:`~PIL.ImageDraw`
@@ -1865,12 +1864,17 @@ class Image:
             return self.pyaccess.putpixel(xy, value)
 
         if (
-            self.mode == "P"
+            self.mode in ("P", "PA")
             and isinstance(value, (list, tuple))
             and len(value) in [3, 4]
         ):
-            # RGB or RGBA value for a P image
+            # RGB or RGBA value for a P or PA image
+            if self.mode == "PA":
+                alpha = value[3] if len(value) == 4 else 255
+                value = value[:3]
             value = self.palette.getcolor(value, self)
+            if self.mode == "PA":
+                value = (value, alpha)
         return self.im.putpixel(xy, value)
 
     def remap_palette(self, dest_map, source_palette=None):
@@ -1945,11 +1949,7 @@ class Image:
 
         m_im = m_im.convert("L")
 
-        # Internally, we require 256 palette entries.
-        new_palette_bytes = (
-            palette_bytes + ((256 * bands) - len(palette_bytes)) * b"\x00"
-        )
-        m_im.putpalette(new_palette_bytes, palette_mode)
+        m_im.putpalette(palette_bytes, palette_mode)
         m_im.palette = ImagePalette.ImagePalette(palette_mode, palette=palette_bytes)
 
         if "transparency" in self.info:
@@ -1985,18 +1985,14 @@ class Image:
         :param size: The requested size in pixels, as a 2-tuple:
            (width, height).
         :param resample: An optional resampling filter.  This can be
-           one of :py:data:`PIL.Image.Resampling.NEAREST`,
-           :py:data:`PIL.Image.Resampling.BOX`,
-           :py:data:`PIL.Image.Resampling.BILINEAR`,
-           :py:data:`PIL.Image.Resampling.HAMMING`,
-           :py:data:`PIL.Image.Resampling.BICUBIC` or
-           :py:data:`PIL.Image.Resampling.LANCZOS`.
+           one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
+           :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
+           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
            If the image has mode "1" or "P", it is always set to
-           :py:data:`PIL.Image.Resampling.NEAREST`.
-           If the image mode specifies a number of bits, such as "I;16", then the
-           default filter is :py:data:`PIL.Image.Resampling.NEAREST`.
-           Otherwise, the default filter is
-           :py:data:`PIL.Image.Resampling.BICUBIC`. See: :ref:`concept-filters`.
+           :py:data:`Resampling.NEAREST`. If the image mode specifies a number
+           of bits, such as "I;16", then the default filter is
+           :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
+           :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
            the source image region to be scaled.
            The values must be within (0, 0, width, height) rectangle.
@@ -2136,12 +2132,12 @@ class Image:
 
         :param angle: In degrees counter clockwise.
         :param resample: An optional resampling filter.  This can be
-           one of :py:data:`PIL.Image.Resampling.NEAREST` (use nearest neighbour),
-           :py:data:`PIL.Image.BILINEAR` (linear interpolation in a 2x2
-           environment), or :py:data:`PIL.Image.Resampling.BICUBIC`
-           (cubic spline interpolation in a 4x4 environment).
-           If omitted, or if the image has mode "1" or "P", it is
-           set to :py:data:`PIL.Image.Resampling.NEAREST`. See :ref:`concept-filters`.
+           one of :py:data:`Resampling.NEAREST` (use nearest neighbour),
+           :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
+           environment), or :py:data:`Resampling.BICUBIC` (cubic spline
+           interpolation in a 4x4 environment). If omitted, or if the image has
+           mode "1" or "P", it is set to :py:data:`Resampling.NEAREST`.
+           See :ref:`concept-filters`.
         :param expand: Optional expansion flag.  If true, expands the output
            image to make it large enough to hold the entire rotated image.
            If false or omitted, make the output image the same size as the
@@ -2511,14 +2507,11 @@ class Image:
 
         :param size: Requested size.
         :param resample: Optional resampling filter.  This can be one
-           of :py:data:`PIL.Image.Resampling.NEAREST`,
-           :py:data:`PIL.Image.Resampling.BOX`,
-           :py:data:`PIL.Image.Resampling.BILINEAR`,
-           :py:data:`PIL.Image.Resampling.HAMMING`,
-           :py:data:`PIL.Image.Resampling.BICUBIC` or
-           :py:data:`PIL.Image.Resampling.LANCZOS`.
-           If omitted, it defaults to :py:data:`PIL.Image.Resampling.BICUBIC`.
-           (was :py:data:`PIL.Image.Resampling.NEAREST` prior to version 2.5.0).
+           of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
+           :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
+           :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
+           If omitted, it defaults to :py:data:`Resampling.BICUBIC`.
+           (was :py:data:`Resampling.NEAREST` prior to version 2.5.0).
            See: :ref:`concept-filters`.
         :param reducing_gap: Apply optimization by resizing the image
            in two steps. First, reducing the image by integer times
@@ -2537,29 +2530,41 @@ class Image:
         :returns: None
         """
 
-        self.load()
-        x, y = map(math.floor, size)
-        if x >= self.width and y >= self.height:
-            return
+        provided_size = tuple(map(math.floor, size))
 
-        def round_aspect(number, key):
-            return max(min(math.floor(number), math.ceil(number), key=key), 1)
+        def preserve_aspect_ratio():
+            def round_aspect(number, key):
+                return max(min(math.floor(number), math.ceil(number), key=key), 1)
 
-        # preserve aspect ratio
-        aspect = self.width / self.height
-        if x / y >= aspect:
-            x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
-        else:
-            y = round_aspect(
-                x / aspect, key=lambda n: 0 if n == 0 else abs(aspect - x / n)
-            )
-        size = (x, y)
+            x, y = provided_size
+            if x >= self.width and y >= self.height:
+                return
+
+            aspect = self.width / self.height
+            if x / y >= aspect:
+                x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
+            else:
+                y = round_aspect(
+                    x / aspect, key=lambda n: 0 if n == 0 else abs(aspect - x / n)
+                )
+            return x, y
 
         box = None
         if reducing_gap is not None:
+            size = preserve_aspect_ratio()
+            if size is None:
+                return
+
             res = self.draft(None, (size[0] * reducing_gap, size[1] * reducing_gap))
             if res is not None:
                 box = res[1]
+        if box is None:
+            self.load()
+
+            # load() may have changed the size of the image
+            size = preserve_aspect_ratio()
+            if size is None:
+                return
 
         if self.size != size:
             im = self.resize(size, resample, box=box, reducing_gap=reducing_gap)
@@ -2589,11 +2594,11 @@ class Image:
 
         :param size: The output size.
         :param method: The transformation method.  This is one of
-          :py:data:`PIL.Image.Transform.EXTENT` (cut out a rectangular subregion),
-          :py:data:`PIL.Image.Transform.AFFINE` (affine transform),
-          :py:data:`PIL.Image.Transform.PERSPECTIVE` (perspective transform),
-          :py:data:`PIL.Image.Transform.QUAD` (map a quadrilateral to a rectangle), or
-          :py:data:`PIL.Image.Transform.MESH` (map a number of source quadrilaterals
+          :py:data:`Transform.EXTENT` (cut out a rectangular subregion),
+          :py:data:`Transform.AFFINE` (affine transform),
+          :py:data:`Transform.PERSPECTIVE` (perspective transform),
+          :py:data:`Transform.QUAD` (map a quadrilateral to a rectangle), or
+          :py:data:`Transform.MESH` (map a number of source quadrilaterals
           in one operation).
 
           It may also be an :py:class:`~PIL.Image.ImageTransformHandler`
@@ -2613,11 +2618,11 @@ class Image:
                     return method, data
         :param data: Extra data to the transformation method.
         :param resample: Optional resampling filter.  It can be one of
-           :py:data:`PIL.Image.Resampling.NEAREST` (use nearest neighbour),
-           :py:data:`PIL.Image.Resampling.BILINEAR` (linear interpolation in a 2x2
-           environment), or :py:data:`PIL.Image.BICUBIC` (cubic spline
+           :py:data:`Resampling.NEAREST` (use nearest neighbour),
+           :py:data:`Resampling.BILINEAR` (linear interpolation in a 2x2
+           environment), or :py:data:`Resampling.BICUBIC` (cubic spline
            interpolation in a 4x4 environment). If omitted, or if the image
-           has mode "1" or "P", it is set to :py:data:`PIL.Image.Resampling.NEAREST`.
+           has mode "1" or "P", it is set to :py:data:`Resampling.NEAREST`.
            See: :ref:`concept-filters`.
         :param fill: If ``method`` is an
           :py:class:`~PIL.Image.ImageTransformHandler` object, this is one of
@@ -2744,13 +2749,10 @@ class Image:
         """
         Transpose image (flip or rotate in 90 degree steps)
 
-        :param method: One of :py:data:`PIL.Image.Transpose.FLIP_LEFT_RIGHT`,
-          :py:data:`PIL.Image.Transpose.FLIP_TOP_BOTTOM`,
-          :py:data:`PIL.Image.Transpose.ROTATE_90`,
-          :py:data:`PIL.Image.Transpose.ROTATE_180`,
-          :py:data:`PIL.Image.Transpose.ROTATE_270`,
-          :py:data:`PIL.Image.Transpose.TRANSPOSE` or
-          :py:data:`PIL.Image.Transpose.TRANSVERSE`.
+        :param method: One of :py:data:`Transpose.FLIP_LEFT_RIGHT`,
+          :py:data:`Transpose.FLIP_TOP_BOTTOM`, :py:data:`Transpose.ROTATE_90`,
+          :py:data:`Transpose.ROTATE_180`, :py:data:`Transpose.ROTATE_270`,
+          :py:data:`Transpose.TRANSPOSE` or :py:data:`Transpose.TRANSVERSE`.
         :returns: Returns a flipped or rotated copy of this image.
         """
 

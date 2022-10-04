@@ -100,40 +100,41 @@ class TestImagingCoreResampleAccuracy:
             for y in range(image.size[1])
         )
 
-    def test_reduce_box(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (8, 8), 0xE1)
-            case = case.resize((4, 4), Image.Resampling.BOX)
-            # fmt: off
-            data = ("e1 e1"
-                    "e1 e1")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (4, 4)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_reduce_box(self, mode):
+        case = self.make_case(mode, (8, 8), 0xE1)
+        case = case.resize((4, 4), Image.Resampling.BOX)
+        # fmt: off
+        data = ("e1 e1"
+                "e1 e1")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (4, 4)))
 
-    def test_reduce_bilinear(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (8, 8), 0xE1)
-            case = case.resize((4, 4), Image.Resampling.BILINEAR)
-            # fmt: off
-            data = ("e1 c9"
-                    "c9 b7")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (4, 4)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_reduce_bilinear(self, mode):
+        case = self.make_case(mode, (8, 8), 0xE1)
+        case = case.resize((4, 4), Image.Resampling.BILINEAR)
+        # fmt: off
+        data = ("e1 c9"
+                "c9 b7")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (4, 4)))
 
-    def test_reduce_hamming(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (8, 8), 0xE1)
-            case = case.resize((4, 4), Image.Resampling.HAMMING)
-            # fmt: off
-            data = ("e1 da"
-                    "da d3")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (4, 4)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_reduce_hamming(self, mode):
+        case = self.make_case(mode, (8, 8), 0xE1)
+        case = case.resize((4, 4), Image.Resampling.HAMMING)
+        # fmt: off
+        data = ("e1 da"
+                "da d3")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (4, 4)))
 
-    def test_reduce_bicubic(self):
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_reduce_bicubic(self, mode):
         for mode in ["RGBX", "RGB", "La", "L"]:
             case = self.make_case(mode, (12, 12), 0xE1)
             case = case.resize((6, 6), Image.Resampling.BICUBIC)
@@ -145,79 +146,79 @@ class TestImagingCoreResampleAccuracy:
             for channel in case.split():
                 self.check_case(channel, self.make_sample(data, (6, 6)))
 
-    def test_reduce_lanczos(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (16, 16), 0xE1)
-            case = case.resize((8, 8), Image.Resampling.LANCZOS)
-            # fmt: off
-            data = ("e1 e0 e4 d7"
-                    "e0 df e3 d6"
-                    "e4 e3 e7 da"
-                    "d7 d6 d9 ce")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (8, 8)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_reduce_lanczos(self, mode):
+        case = self.make_case(mode, (16, 16), 0xE1)
+        case = case.resize((8, 8), Image.Resampling.LANCZOS)
+        # fmt: off
+        data = ("e1 e0 e4 d7"
+                "e0 df e3 d6"
+                "e4 e3 e7 da"
+                "d7 d6 d9 ce")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (8, 8)))
 
-    def test_enlarge_box(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (2, 2), 0xE1)
-            case = case.resize((4, 4), Image.Resampling.BOX)
-            # fmt: off
-            data = ("e1 e1"
-                    "e1 e1")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (4, 4)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_enlarge_box(self, mode):
+        case = self.make_case(mode, (2, 2), 0xE1)
+        case = case.resize((4, 4), Image.Resampling.BOX)
+        # fmt: off
+        data = ("e1 e1"
+                "e1 e1")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (4, 4)))
 
-    def test_enlarge_bilinear(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (2, 2), 0xE1)
-            case = case.resize((4, 4), Image.Resampling.BILINEAR)
-            # fmt: off
-            data = ("e1 b0"
-                    "b0 98")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (4, 4)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_enlarge_bilinear(self, mode):
+        case = self.make_case(mode, (2, 2), 0xE1)
+        case = case.resize((4, 4), Image.Resampling.BILINEAR)
+        # fmt: off
+        data = ("e1 b0"
+                "b0 98")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (4, 4)))
 
-    def test_enlarge_hamming(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (2, 2), 0xE1)
-            case = case.resize((4, 4), Image.Resampling.HAMMING)
-            # fmt: off
-            data = ("e1 d2"
-                    "d2 c5")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (4, 4)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_enlarge_hamming(self, mode):
+        case = self.make_case(mode, (2, 2), 0xE1)
+        case = case.resize((4, 4), Image.Resampling.HAMMING)
+        # fmt: off
+        data = ("e1 d2"
+                "d2 c5")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (4, 4)))
 
-    def test_enlarge_bicubic(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (4, 4), 0xE1)
-            case = case.resize((8, 8), Image.Resampling.BICUBIC)
-            # fmt: off
-            data = ("e1 e5 ee b9"
-                    "e5 e9 f3 bc"
-                    "ee f3 fd c1"
-                    "b9 bc c1 a2")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (8, 8)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_enlarge_bicubic(self, mode):
+        case = self.make_case(mode, (4, 4), 0xE1)
+        case = case.resize((8, 8), Image.Resampling.BICUBIC)
+        # fmt: off
+        data = ("e1 e5 ee b9"
+                "e5 e9 f3 bc"
+                "ee f3 fd c1"
+                "b9 bc c1 a2")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (8, 8)))
 
-    def test_enlarge_lanczos(self):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (6, 6), 0xE1)
-            case = case.resize((12, 12), Image.Resampling.LANCZOS)
-            data = (
-                "e1 e0 db ed f5 b8"
-                "e0 df da ec f3 b7"
-                "db db d6 e7 ee b5"
-                "ed ec e6 fb ff bf"
-                "f5 f4 ee ff ff c4"
-                "b8 b7 b4 bf c4 a0"
-            )
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (12, 12)))
+    @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
+    def test_enlarge_lanczos(self, mode):
+        case = self.make_case(mode, (6, 6), 0xE1)
+        case = case.resize((12, 12), Image.Resampling.LANCZOS)
+        data = (
+            "e1 e0 db ed f5 b8"
+            "e0 df da ec f3 b7"
+            "db db d6 e7 ee b5"
+            "ed ec e6 fb ff bf"
+            "f5 f4 ee ff ff c4"
+            "b8 b7 b4 bf c4 a0"
+        )
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (12, 12)))
 
     def test_box_filter_correct_range(self):
         im = Image.new("RGB", (8, 8), "#1688ff").resize(
@@ -419,40 +420,43 @@ class TestCoreResampleCoefficients:
 
 
 class TestCoreResampleBox:
-    def test_wrong_arguments(self):
-        im = hopper()
-        for resample in (
+    @pytest.mark.parametrize(
+        "resample",
+        (
             Image.Resampling.NEAREST,
             Image.Resampling.BOX,
             Image.Resampling.BILINEAR,
             Image.Resampling.HAMMING,
             Image.Resampling.BICUBIC,
             Image.Resampling.LANCZOS,
-        ):
-            im.resize((32, 32), resample, (0, 0, im.width, im.height))
-            im.resize((32, 32), resample, (20, 20, im.width, im.height))
-            im.resize((32, 32), resample, (20, 20, 20, 100))
-            im.resize((32, 32), resample, (20, 20, 100, 20))
+        ),
+    )
+    def test_wrong_arguments(self, resample):
+        im = hopper()
+        im.resize((32, 32), resample, (0, 0, im.width, im.height))
+        im.resize((32, 32), resample, (20, 20, im.width, im.height))
+        im.resize((32, 32), resample, (20, 20, 20, 100))
+        im.resize((32, 32), resample, (20, 20, 100, 20))
 
-            with pytest.raises(TypeError, match="must be sequence of length 4"):
-                im.resize((32, 32), resample, (im.width, im.height))
+        with pytest.raises(TypeError, match="must be sequence of length 4"):
+            im.resize((32, 32), resample, (im.width, im.height))
 
-            with pytest.raises(ValueError, match="can't be negative"):
-                im.resize((32, 32), resample, (-20, 20, 100, 100))
-            with pytest.raises(ValueError, match="can't be negative"):
-                im.resize((32, 32), resample, (20, -20, 100, 100))
+        with pytest.raises(ValueError, match="can't be negative"):
+            im.resize((32, 32), resample, (-20, 20, 100, 100))
+        with pytest.raises(ValueError, match="can't be negative"):
+            im.resize((32, 32), resample, (20, -20, 100, 100))
 
-            with pytest.raises(ValueError, match="can't be empty"):
-                im.resize((32, 32), resample, (20.1, 20, 20, 100))
-            with pytest.raises(ValueError, match="can't be empty"):
-                im.resize((32, 32), resample, (20, 20.1, 100, 20))
-            with pytest.raises(ValueError, match="can't be empty"):
-                im.resize((32, 32), resample, (20.1, 20.1, 20, 20))
+        with pytest.raises(ValueError, match="can't be empty"):
+            im.resize((32, 32), resample, (20.1, 20, 20, 100))
+        with pytest.raises(ValueError, match="can't be empty"):
+            im.resize((32, 32), resample, (20, 20.1, 100, 20))
+        with pytest.raises(ValueError, match="can't be empty"):
+            im.resize((32, 32), resample, (20.1, 20.1, 20, 20))
 
-            with pytest.raises(ValueError, match="can't exceed"):
-                im.resize((32, 32), resample, (0, 0, im.width + 1, im.height))
-            with pytest.raises(ValueError, match="can't exceed"):
-                im.resize((32, 32), resample, (0, 0, im.width, im.height + 1))
+        with pytest.raises(ValueError, match="can't exceed"):
+            im.resize((32, 32), resample, (0, 0, im.width + 1, im.height))
+        with pytest.raises(ValueError, match="can't exceed"):
+            im.resize((32, 32), resample, (0, 0, im.width, im.height + 1))
 
     def resize_tiled(self, im, dst_size, xtiles, ytiles):
         def split_range(size, tiles):
@@ -509,14 +513,16 @@ class TestCoreResampleBox:
         with pytest.raises(AssertionError, match=r"difference 29\."):
             assert_image_similar(reference, without_box, 5)
 
-    def test_formats(self):
-        for resample in [Image.Resampling.NEAREST, Image.Resampling.BILINEAR]:
-            for mode in ["RGB", "L", "RGBA", "LA", "I", ""]:
-                im = hopper(mode)
-                box = (20, 20, im.size[0] - 20, im.size[1] - 20)
-                with_box = im.resize((32, 32), resample, box)
-                cropped = im.crop(box).resize((32, 32), resample)
-                assert_image_similar(cropped, with_box, 0.4)
+    @pytest.mark.parametrize("mode", ("RGB", "L", "RGBA", "LA", "I", ""))
+    @pytest.mark.parametrize(
+        "resample", (Image.Resampling.NEAREST, Image.Resampling.BILINEAR)
+    )
+    def test_formats(self, mode, resample):
+        im = hopper(mode)
+        box = (20, 20, im.size[0] - 20, im.size[1] - 20)
+        with_box = im.resize((32, 32), resample, box)
+        cropped = im.crop(box).resize((32, 32), resample)
+        assert_image_similar(cropped, with_box, 0.4)
 
     def test_passthrough(self):
         # When no resize is required
@@ -548,44 +554,48 @@ class TestCoreResampleBox:
                 # check that the difference at least that much
                 assert_image_similar(res, im.crop(box), 20, f">>> {size} {box}")
 
-    def test_skip_horizontal(self):
+    @pytest.mark.parametrize(
+        "flt", (Image.Resampling.NEAREST, Image.Resampling.BICUBIC)
+    )
+    def test_skip_horizontal(self, flt):
         # Can skip resize for one dimension
         im = hopper()
 
-        for flt in [Image.Resampling.NEAREST, Image.Resampling.BICUBIC]:
-            for size, box in [
-                ((40, 50), (0, 0, 40, 90)),
-                ((40, 50), (0, 20, 40, 90)),
-                ((40, 50), (10, 0, 50, 90)),
-                ((40, 50), (10, 20, 50, 90)),
-            ]:
-                res = im.resize(size, flt, box)
-                assert res.size == size
-                # Borders should be slightly different
-                assert_image_similar(
-                    res,
-                    im.crop(box).resize(size, flt),
-                    0.4,
-                    f">>> {size} {box} {flt}",
-                )
+        for size, box in [
+            ((40, 50), (0, 0, 40, 90)),
+            ((40, 50), (0, 20, 40, 90)),
+            ((40, 50), (10, 0, 50, 90)),
+            ((40, 50), (10, 20, 50, 90)),
+        ]:
+            res = im.resize(size, flt, box)
+            assert res.size == size
+            # Borders should be slightly different
+            assert_image_similar(
+                res,
+                im.crop(box).resize(size, flt),
+                0.4,
+                f">>> {size} {box} {flt}",
+            )
 
-    def test_skip_vertical(self):
+    @pytest.mark.parametrize(
+        "flt", (Image.Resampling.NEAREST, Image.Resampling.BICUBIC)
+    )
+    def test_skip_vertical(self, flt):
         # Can skip resize for one dimension
         im = hopper()
 
-        for flt in [Image.Resampling.NEAREST, Image.Resampling.BICUBIC]:
-            for size, box in [
-                ((40, 50), (0, 0, 90, 50)),
-                ((40, 50), (20, 0, 90, 50)),
-                ((40, 50), (0, 10, 90, 60)),
-                ((40, 50), (20, 10, 90, 60)),
-            ]:
-                res = im.resize(size, flt, box)
-                assert res.size == size
-                # Borders should be slightly different
-                assert_image_similar(
-                    res,
-                    im.crop(box).resize(size, flt),
-                    0.4,
-                    f">>> {size} {box} {flt}",
-                )
+        for size, box in [
+            ((40, 50), (0, 0, 90, 50)),
+            ((40, 50), (20, 0, 90, 50)),
+            ((40, 50), (0, 10, 90, 60)),
+            ((40, 50), (20, 10, 90, 60)),
+        ]:
+            res = im.resize(size, flt, box)
+            assert res.size == size
+            # Borders should be slightly different
+            assert_image_similar(
+                res,
+                im.crop(box).resize(size, flt),
+                0.4,
+                f">>> {size} {box} {flt}",
+            )

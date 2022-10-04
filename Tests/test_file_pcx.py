@@ -20,6 +20,11 @@ def test_sanity(tmp_path):
     for mode in ("1", "L", "P", "RGB"):
         _roundtrip(tmp_path, hopper(mode))
 
+    # Test a palette with less than 256 colors
+    im = Image.new("P", (1, 1))
+    im.putpalette((255, 0, 0))
+    _roundtrip(tmp_path, im)
+
     # Test an unsupported mode
     f = str(tmp_path / "temp.pcx")
     im = hopper("RGBA")
@@ -34,14 +39,14 @@ def test_invalid_file():
         PcxImagePlugin.PcxImageFile(invalid_file)
 
 
-def test_odd(tmp_path):
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
+def test_odd(tmp_path, mode):
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
-    for mode in ("1", "L", "P", "RGB"):
-        # larger, odd sized images are better here to ensure that
-        # we handle interrupted scan lines properly.
-        _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
+    # larger, odd sized images are better here to ensure that
+    # we handle interrupted scan lines properly.
+    _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
 
 
 def test_odd_read():

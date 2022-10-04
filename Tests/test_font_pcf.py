@@ -49,6 +49,14 @@ def test_sanity(request, tmp_path):
     save_font(request, tmp_path)
 
 
+def test_less_than_256_characters():
+    with open("Tests/fonts/10x20-ISO8859-1-fewer-characters.pcf", "rb") as test_file:
+        font = PcfFontFile.PcfFontFile(test_file)
+    assert isinstance(font, FontFile.FontFile)
+    # check the number of characters in the font
+    assert len([_f for _f in font.glyph if _f]) == 127
+
+
 def test_invalid_file():
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
@@ -68,12 +76,19 @@ def test_textsize(request, tmp_path):
     tempname = save_font(request, tmp_path)
     font = ImageFont.load(tempname)
     for i in range(255):
-        (dx, dy) = font.getsize(chr(i))
+        (ox, oy, dx, dy) = font.getbbox(chr(i))
+        assert ox == 0
+        assert oy == 0
         assert dy == 20
         assert dx in (0, 10)
+        assert font.getlength(chr(i)) == dx
+        with pytest.warns(DeprecationWarning) as log:
+            assert font.getsize(chr(i)) == (dx, dy)
+        assert len(log) == 1
     for i in range(len(message)):
         msg = message[: i + 1]
-        assert font.getsize(msg) == (len(msg) * 10, 20)
+        assert font.getlength(msg) == len(msg) * 10
+        assert font.getbbox(msg) == (0, 0, len(msg) * 10, 20)
 
 
 def _test_high_characters(request, tmp_path, message):

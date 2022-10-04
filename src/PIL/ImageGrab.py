@@ -15,14 +15,13 @@
 # See the README file for information on usage and redistribution.
 #
 
+import os
+import shutil
+import subprocess
 import sys
+import tempfile
 
 from . import Image
-
-if sys.platform == "darwin":
-    import os
-    import subprocess
-    import tempfile
 
 
 def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None):
@@ -61,6 +60,18 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 x0, y0 = offset
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
+            return im
+        elif shutil.which("gnome-screenshot"):
+            fh, filepath = tempfile.mkstemp(".png")
+            os.close(fh)
+            subprocess.call(["gnome-screenshot", "-f", filepath])
+            im = Image.open(filepath)
+            im.load()
+            os.unlink(filepath)
+            if bbox:
+                im_cropped = im.crop(bbox)
+                im.close()
+                return im_cropped
             return im
     # use xdisplay=None for default display on non-win32/macOS systems
     if not Image.core.HAVE_XCB:

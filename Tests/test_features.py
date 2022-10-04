@@ -70,14 +70,14 @@ def test_libimagequant_version():
     assert re.search(r"\d+\.\d+\.\d+$", features.version("libimagequant"))
 
 
-def test_check_modules():
-    for feature in features.modules:
-        assert features.check_module(feature) in [True, False]
+@pytest.mark.parametrize("feature", features.modules)
+def test_check_modules(feature):
+    assert features.check_module(feature) in [True, False]
 
 
-def test_check_codecs():
-    for feature in features.codecs:
-        assert features.check_codec(feature) in [True, False]
+@pytest.mark.parametrize("feature", features.codecs)
+def test_check_codecs(feature):
+    assert features.check_codec(feature) in [True, False]
 
 
 def test_check_warns_on_nonexistent():

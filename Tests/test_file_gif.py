@@ -158,6 +158,9 @@ def test_optimize_correctness():
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     # These do optimize the palette
+    check(256, 511, 256)
+    check(255, 511, 255)
+    check(129, 511, 129)
     check(128, 511, 128)
     check(64, 511, 64)
     check(4, 511, 4)
@@ -167,17 +170,25 @@ def test_optimize_correctness():
     check(64, 513, 256)
     check(4, 513, 256)
 
-    # Other limits that don't optimize the palette
-    check(129, 511, 256)
-    check(255, 511, 256)
-    check(256, 511, 256)
-
 
 def test_optimize_full_l():
     im = Image.frombytes("L", (16, 16), bytes(range(256)))
     test_file = BytesIO()
     im.save(test_file, "GIF", optimize=True)
     assert im.mode == "L"
+
+
+def test_optimize_if_palette_can_be_reduced_by_half():
+    with Image.open("Tests/images/test.colors.gif") as im:
+        # Reduce dimensions because original is too big for _get_optimize()
+        im = im.resize((591, 443))
+    im_rgb = im.convert("RGB")
+
+    for (optimize, colors) in ((False, 256), (True, 8)):
+        out = BytesIO()
+        im_rgb.save(out, "GIF", optimize=optimize)
+        with Image.open(out) as reloaded:
+            assert len(reloaded.palette.palette) // 3 == colors
 
 
 def test_roundtrip(tmp_path):
@@ -386,6 +397,11 @@ def test_no_change():
         im.seek(3)
         expected = im.copy()
         assert im.is_animated
+        assert_image_equal(im, expected)
+
+    with Image.open("Tests/images/comment_after_only_frame.gif") as im:
+        expected = Image.new("P", (1, 1))
+        assert not im.is_animated
         assert_image_equal(im, expected)
 
 
@@ -777,24 +793,24 @@ def test_identical_frames(tmp_path):
         assert reread.info["duration"] == 4500
 
 
-def test_identical_frames_to_single_frame(tmp_path):
-    for duration in ([1000, 1500, 2000, 4000], (1000, 1500, 2000, 4000), 8500):
-        out = str(tmp_path / "temp.gif")
-        im_list = [
-            Image.new("L", (100, 100), "#000"),
-            Image.new("L", (100, 100), "#000"),
-            Image.new("L", (100, 100), "#000"),
-        ]
+@pytest.mark.parametrize(
+    "duration", ([1000, 1500, 2000, 4000], (1000, 1500, 2000, 4000), 8500)
+)
+def test_identical_frames_to_single_frame(duration, tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im_list = [
+        Image.new("L", (100, 100), "#000"),
+        Image.new("L", (100, 100), "#000"),
+        Image.new("L", (100, 100), "#000"),
+    ]
 
-        im_list[0].save(
-            out, save_all=True, append_images=im_list[1:], duration=duration
-        )
-        with Image.open(out) as reread:
-            # Assert that all frames were combined
-            assert reread.n_frames == 1
+    im_list[0].save(out, save_all=True, append_images=im_list[1:], duration=duration)
+    with Image.open(out) as reread:
+        # Assert that all frames were combined
+        assert reread.n_frames == 1
 
-            # Assert that the new duration is the total of the identical frames
-            assert reread.info["duration"] == 8500
+        # Assert that the new duration is the total of the identical frames
+        assert reread.info["duration"] == 8500
 
 
 def test_number_of_loops(tmp_path):
@@ -982,8 +998,8 @@ def test_append_images(tmp_path):
 def test_transparent_optimize(tmp_path):
     # From issue #2195, if the transparent color is incorrectly optimized out, GIF loses
     # transparency.
-    # Need a palette that isn't using the 0 color, and one that's > 128 items where the
-    # transparent color is actually the top palette entry to trigger the bug.
+    # Need a palette that isn't using the 0 color,
+    # where the transparent color is actually the top palette entry to trigger the bug.
 
     data = bytes(range(1, 254))
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
@@ -993,10 +1009,10 @@ def test_transparent_optimize(tmp_path):
     im.putpalette(palette)
 
     out = str(tmp_path / "temp.gif")
-    im.save(out, transparency=253)
-    with Image.open(out) as reloaded:
+    im.save(out, transparency=im.getpixel((252, 0)))
 
-        assert reloaded.info["transparency"] == 253
+    with Image.open(out) as reloaded:
+        assert reloaded.info["transparency"] == reloaded.getpixel((252, 0))
 
 
 def test_rgb_transparency(tmp_path):
@@ -1069,6 +1085,19 @@ def test_palette_save_P(tmp_path):
     with Image.open(out) as reloaded:
         im.putpalette(palette)
         assert_image_equal(reloaded, im)
+
+
+def test_palette_save_duplicate_entries(tmp_path):
+    im = Image.new("P", (1, 2))
+    im.putpixel((0, 1), 1)
+
+    im.putpalette((0, 0, 0, 0, 0, 0))
+
+    out = str(tmp_path / "temp.gif")
+    im.save(out, palette=[0, 0, 0, 0, 0, 0, 1, 1, 1])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.convert("RGB").getpixel((0, 1)) == (0, 0, 0)
 
 
 def test_palette_save_all_P(tmp_path):

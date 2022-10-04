@@ -141,6 +141,10 @@ The fields are used as follows:
     uncompressed data, in a variety of pixel formats. For more information on
     this decoder, see the description below.
 
+    A list of C decoders can be seen under codecs section of the function array
+    in :file:`_imaging.c`. Python decoders are registered within the relevant
+    plugins.
+
 **region**
     A 4-tuple specifying where to store data in the image.
 

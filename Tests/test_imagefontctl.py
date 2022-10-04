@@ -140,8 +140,8 @@ def test_ligature_features():
     target = "Tests/images/test_ligature_features.png"
     assert_image_similar_tofile(im, target, 0.5)
 
-    liga_size = ttf.getsize("fi", features=["-liga"])
-    assert liga_size == (13, 19)
+    liga_bbox = ttf.getbbox("fi", features=["-liga"])
+    assert liga_bbox == (0, 4, 13, 19)
 
 
 def test_kerning_features():

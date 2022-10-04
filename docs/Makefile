@@ -2,8 +2,9 @@
 #
 
 # You can set these variables from the command line.
+PYTHON        = python3
 SPHINXOPTS    =
-SPHINXBUILD   = python3 -m sphinx.cmd.build
+SPHINXBUILD   = $(PYTHON) -m sphinx.cmd.build
 PAPER         =
 BUILDDIR      = _build
 
@@ -42,7 +43,7 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 install-sphinx:
-	python3 -c "import sphinx" > /dev/null 2>&1 || python3 -m pip install sphinx
+	$(PYTHON) -m pip install --quiet sphinx sphinx-copybutton sphinx-issues sphinx-removed-in sphinxext-opengraph furo olefile
 
 html:
 	$(MAKE) install-sphinx
@@ -178,4 +179,4 @@ livehtml: html
 	livereload $(BUILDDIR)/html -p 33233
 
 serve:
-	cd $(BUILDDIR)/html; python3 -m http.server
+	cd $(BUILDDIR)/html; $(PYTHON) -m http.server

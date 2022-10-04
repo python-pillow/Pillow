@@ -39,13 +39,12 @@ def test_apng_basic():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_fdat():
-    with Image.open("Tests/images/apng/split_fdat.png") as im:
-        im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
-        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
-
-    with Image.open("Tests/images/apng/split_fdat_zero_chunk.png") as im:
+@pytest.mark.parametrize(
+    "filename",
+    ("Tests/images/apng/split_fdat.png", "Tests/images/apng/split_fdat_zero_chunk.png"),
+)
+def test_apng_fdat(filename):
+    with Image.open(filename) as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
@@ -325,8 +324,9 @@ def test_apng_syntax_errors():
     pytest.warns(UserWarning, open)
 
 
-def test_apng_sequence_errors():
-    test_files = [
+@pytest.mark.parametrize(
+    "test_file",
+    (
         "sequence_start.png",
         "sequence_gap.png",
         "sequence_repeat.png",
@@ -334,12 +334,13 @@ def test_apng_sequence_errors():
         "sequence_reorder.png",
         "sequence_reorder_chunk.png",
         "sequence_fdat_fctl.png",
-    ]
-    for f in test_files:
-        with pytest.raises(SyntaxError):
-            with Image.open(f"Tests/images/apng/{f}") as im:
-                im.seek(im.n_frames - 1)
-                im.load()
+    ),
+)
+def test_apng_sequence_errors(test_file):
+    with pytest.raises(SyntaxError):
+        with Image.open(f"Tests/images/apng/{test_file}") as im:
+            im.seek(im.n_frames - 1)
+            im.load()
 
 
 def test_apng_save(tmp_path):

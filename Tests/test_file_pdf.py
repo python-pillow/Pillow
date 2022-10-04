@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from PIL import Image, PdfParser
+from PIL import Image, PdfParser, features
 
 from .helper import hopper, mark_if_feature_version
 
@@ -37,45 +37,19 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
     return outfile
 
 
+@pytest.mark.parametrize("mode", ("L", "P", "RGB", "CMYK"))
+def test_save(tmp_path, mode):
+    helper_save_as_pdf(tmp_path, mode)
+
+
+@pytest.mark.valgrind_known_error(reason="Temporary skip")
 def test_monochrome(tmp_path):
     # Arrange
     mode = "1"
 
     # Act / Assert
     outfile = helper_save_as_pdf(tmp_path, mode)
-    assert os.path.getsize(outfile) < 15000
-
-
-def test_greyscale(tmp_path):
-    # Arrange
-    mode = "L"
-
-    # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
-
-
-def test_rgb(tmp_path):
-    # Arrange
-    mode = "RGB"
-
-    # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
-
-
-def test_p_mode(tmp_path):
-    # Arrange
-    mode = "P"
-
-    # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
-
-
-def test_cmyk_mode(tmp_path):
-    # Arrange
-    mode = "CMYK"
-
-    # Act / Assert
-    helper_save_as_pdf(tmp_path, mode)
+    assert os.path.getsize(outfile) < (5000 if features.check("libtiff") else 15000)
 
 
 def test_unsupported_mode(tmp_path):

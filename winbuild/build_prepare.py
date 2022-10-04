@@ -108,9 +108,9 @@ header = [
 deps = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/2.1.3/libjpeg-turbo-2.1.3.tar.gz/download",
-        "filename": "libjpeg-turbo-2.1.3.tar.gz",
-        "dir": "libjpeg-turbo-2.1.3",
+        + "/libjpeg-turbo/files/2.1.4/libjpeg-turbo-2.1.4.tar.gz/download",
+        "filename": "libjpeg-turbo-2.1.4.tar.gz",
+        "dir": "libjpeg-turbo-2.1.4",
         "build": [
             cmd_cmake(
                 [
@@ -157,9 +157,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.2.tar.gz",
-        "filename": "libwebp-1.2.2.tar.gz",
-        "dir": "libwebp-1.2.2",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
+        "filename": "libwebp-1.2.4.tar.gz",
+        "dir": "libwebp-1.2.4",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
             cmd_nmake(
@@ -226,21 +226,21 @@ deps = {
         "filename": "lcms2-2.13.1.tar.gz",
         "dir": "lcms2-2.13.1",
         "patch": {
-            r"Projects\VC2019\lcms2_static\lcms2_static.vcxproj": {
+            r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
                 "<RuntimeLibrary>MultiThreaded</RuntimeLibrary>": "<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",  # noqa: E501
                 # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
+                "<PlatformToolset>v143</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
                 # retarget to latest (selected by vcvarsall.bat)
                 "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
             }
         },
         "build": [
             cmd_rmdir("Lib"),
-            cmd_rmdir(r"Projects\VC2019\Release"),
-            cmd_msbuild(r"Projects\VC2019\lcms2.sln", "Release", "Clean"),
+            cmd_rmdir(r"Projects\VC2022\Release"),
+            cmd_msbuild(r"Projects\VC2022\lcms2.sln", "Release", "Clean"),
             cmd_msbuild(
-                r"Projects\VC2019\lcms2.sln", "Release", "lcms2_static:Rebuild"
+                r"Projects\VC2022\lcms2.sln", "Release", "lcms2_static:Rebuild"
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
@@ -281,9 +281,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/4.3.0.zip",
-        "filename": "harfbuzz-4.3.0.zip",
-        "dir": "harfbuzz-4.3.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/5.2.0.zip",
+        "filename": "harfbuzz-5.2.0.zip",
+        "dir": "harfbuzz-5.2.0",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),

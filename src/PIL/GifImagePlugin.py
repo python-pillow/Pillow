@@ -185,8 +185,6 @@ class GifImageFile(ImageFile.ImageFile):
         if not s or s == b";":
             raise EOFError
 
-        self.tile = []
-
         palette = None
 
         info = {}
@@ -265,6 +263,7 @@ class GifImageFile(ImageFile.ImageFile):
                 x1, y1 = x0 + i16(s, 4), y0 + i16(s, 6)
                 if (x1 > self.size[0] or y1 > self.size[1]) and update_image:
                     self._size = max(x1, self.size[0]), max(y1, self.size[1])
+                    Image._decompression_bomb_check(self._size)
                 frame_dispose_extent = x0, y0, x1, y1
                 flags = s[8]
 
@@ -293,6 +292,8 @@ class GifImageFile(ImageFile.ImageFile):
         self.__frame = frame
         if not update_image:
             return
+
+        self.tile = []
 
         if self.dispose:
             self.im.paste(self.dispose, self.dispose_extent)
@@ -518,9 +519,8 @@ def _normalize_palette(im, palette, info):
         used_palette_colors = []
         for i in range(0, len(source_palette), 3):
             source_color = tuple(source_palette[i : i + 3])
-            try:
-                index = im.palette.colors[source_color]
-            except KeyError:
+            index = im.palette.colors.get(source_color)
+            if index in used_palette_colors:
                 index = None
             used_palette_colors.append(index)
         for i, index in enumerate(used_palette_colors):
@@ -824,9 +824,18 @@ def _get_optimize(im, info):
                 if count:
                     used_palette_colors.append(i)
 
-            if optimise or (
-                len(used_palette_colors) <= 128
-                and max(used_palette_colors) > len(used_palette_colors)
+            if optimise or max(used_palette_colors) >= len(used_palette_colors):
+                return used_palette_colors
+
+            num_palette_colors = len(im.palette.palette) // Image.getmodebands(
+                im.palette.mode
+            )
+            current_palette_size = 1 << (num_palette_colors - 1).bit_length()
+            if (
+                # check that the palette would become smaller when saved
+                len(used_palette_colors) <= current_palette_size // 2
+                # check that the palette is not already the smallest possible size
+                and current_palette_size > 2
             ):
                 return used_palette_colors
 

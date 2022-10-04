@@ -15,7 +15,9 @@ import subprocess
 import sys
 import warnings
 
-from setuptools import Extension, setup
+from setuptools import Extension
+from setuptools import __version__ as setuptools_version
+from setuptools import setup
 from setuptools.command.build_ext import build_ext
 
 
@@ -38,7 +40,7 @@ TIFF_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 11):
+if sys.platform == "win32" and sys.version_info >= (3, 12):
     import atexit
 
     atexit.register(
@@ -850,6 +852,7 @@ class pil_build_ext(build_ext):
             sys.platform == "win32"
             and sys.version_info < (3, 9)
             and not (PLATFORM_PYPY or PLATFORM_MINGW)
+            and int(setuptools_version.split(".")[0]) < 60
         ):
             defs.append(("PILLOW_VERSION", f'"\\"{PILLOW_VERSION}\\""'))
         else:
@@ -996,9 +999,6 @@ try:
         version=PILLOW_VERSION,
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
-        include_package_data=True,
-        packages=["PIL"],
-        package_dir={"": "src"},
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:

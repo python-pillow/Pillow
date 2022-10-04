@@ -192,6 +192,9 @@ class ImageFile(Image.Image):
 
                     with open(self.filename) as fp:
                         self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
+                    if offset + self.size[1] * args[1] > self.map.size():
+                        # buffer is not large enough
+                        raise OSError
                     self.im = Image.core.map_buffer(
                         self.map, self.size, decoder_name, offset, args
                     )
@@ -499,9 +502,14 @@ def _save(im, fp, tile, bufsize=0):
     try:
         fh = fp.fileno()
         fp.flush()
-        exc = None
-    except (AttributeError, io.UnsupportedOperation) as e:
-        exc = e
+        _encode_tile(im, fp, tile, bufsize, fh)
+    except (AttributeError, io.UnsupportedOperation) as exc:
+        _encode_tile(im, fp, tile, bufsize, None, exc)
+    if hasattr(fp, "flush"):
+        fp.flush()
+
+
+def _encode_tile(im, fp, tile, bufsize, fh, exc=None):
     for e, b, o, a in tile:
         if o > 0:
             fp.seek(o)
@@ -526,8 +534,6 @@ def _save(im, fp, tile, bufsize=0):
                 raise OSError(f"encoder error {s} when writing image file") from exc
         finally:
             encoder.cleanup()
-    if hasattr(fp, "flush"):
-        fp.flush()
 
 
 def _safe_read(fp, size):

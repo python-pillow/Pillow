@@ -21,10 +21,11 @@
 ##
 
 import io
+import math
 import os
 import time
 
-from . import Image, ImageFile, ImageSequence, PdfParser, __version__
+from . import Image, ImageFile, ImageSequence, PdfParser, __version__, features
 
 #
 # --------------------------------------------------------------------
@@ -123,8 +124,29 @@ def _save(im, fp, filename, save_all=False):
             params = None
             decode = None
 
+            #
+            # Get image characteristics
+
+            width, height = im.size
+
             if im.mode == "1":
-                filter = "DCTDecode"
+                if features.check("libtiff"):
+                    filter = "CCITTFaxDecode"
+                    bits = 1
+                    params = PdfParser.PdfArray(
+                        [
+                            PdfParser.PdfDict(
+                                {
+                                    "K": -1,
+                                    "BlackIs1": True,
+                                    "Columns": width,
+                                    "Rows": height,
+                                }
+                            )
+                        ]
+                    )
+                else:
+                    filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "L":
@@ -161,6 +183,14 @@ def _save(im, fp, filename, save_all=False):
 
             if filter == "ASCIIHexDecode":
                 ImageFile._save(im, op, [("hex", (0, 0) + im.size, 0, im.mode)])
+            elif filter == "CCITTFaxDecode":
+                im.save(
+                    op,
+                    "TIFF",
+                    compression="group4",
+                    # use a single strip
+                    strip_size=math.ceil(im.width / 8) * im.height,
+                )
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
             elif filter == "FlateDecode":
@@ -170,22 +200,24 @@ def _save(im, fp, filename, save_all=False):
             else:
                 raise ValueError(f"unsupported PDF filter ({filter})")
 
-            #
-            # Get image characteristics
-
-            width, height = im.size
+            stream = op.getvalue()
+            if filter == "CCITTFaxDecode":
+                stream = stream[8:]
+                filter = PdfParser.PdfArray([PdfParser.PdfName(filter)])
+            else:
+                filter = PdfParser.PdfName(filter)
 
             existing_pdf.write_obj(
                 image_refs[page_number],
-                stream=op.getvalue(),
+                stream=stream,
                 Type=PdfParser.PdfName("XObject"),
                 Subtype=PdfParser.PdfName("Image"),
                 Width=width,  # * 72.0 / resolution,
                 Height=height,  # * 72.0 / resolution,
-                Filter=PdfParser.PdfName(filter),
+                Filter=filter,
                 BitsPerComponent=bits,
                 Decode=decode,
-                DecodeParams=params,
+                DecodeParms=params,
                 ColorSpace=colorspace,
             )
 
