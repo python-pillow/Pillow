@@ -315,9 +315,9 @@ ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius, int passes);
 extern Imaging
 ImagingGetBand(Imaging im, int band);
 extern Imaging
-ImagingMerge(const char *mode, Imaging bands[4]);
+ImagingMerge(const char *mode, Imaging *bands);
 extern int
-ImagingSplit(Imaging im, Imaging bands[4]);
+ImagingSplit(Imaging im, Imaging *bands);
 extern int
 ImagingGetBBox(Imaging im, int bbox[4]);
 typedef struct {
