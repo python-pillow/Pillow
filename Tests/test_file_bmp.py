@@ -58,6 +58,18 @@ def test_save_to_bytes():
         assert reloaded.format == "BMP"
 
 
+def test_small_palette(tmp_path):
+    im = Image.new("P", (1, 1))
+    colors = [0, 0, 0, 125, 125, 125, 255, 255, 255]
+    im.putpalette(colors)
+
+    out = str(tmp_path / "temp.bmp")
+    im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.getpalette() == colors
+
+
 def test_save_too_large(tmp_path):
     outfile = str(tmp_path / "temp.bmp")
     with Image.new("RGB", (1, 1)) as im:

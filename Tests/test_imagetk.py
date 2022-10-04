@@ -54,32 +54,39 @@ def test_kw():
     assert im is None
 
 
-def test_photoimage():
-    for mode in TK_MODES:
-        # test as image:
-        im = hopper(mode)
+@pytest.mark.parametrize("mode", TK_MODES)
+def test_photoimage(mode):
+    # test as image:
+    im = hopper(mode)
 
-        # this should not crash
+    # this should not crash
+    im_tk = ImageTk.PhotoImage(im)
+
+    assert im_tk.width() == im.width
+    assert im_tk.height() == im.height
+
+    reloaded = ImageTk.getimage(im_tk)
+    assert_image_equal(reloaded, im.convert("RGBA"))
+
+
+def test_photoimage_apply_transparency():
+    with Image.open("Tests/images/pil123p.png") as im:
         im_tk = ImageTk.PhotoImage(im)
-
-        assert im_tk.width() == im.width
-        assert im_tk.height() == im.height
-
         reloaded = ImageTk.getimage(im_tk)
         assert_image_equal(reloaded, im.convert("RGBA"))
 
 
-def test_photoimage_blank():
+@pytest.mark.parametrize("mode", TK_MODES)
+def test_photoimage_blank(mode):
     # test a image using mode/size:
-    for mode in TK_MODES:
-        im_tk = ImageTk.PhotoImage(mode, (100, 100))
+    im_tk = ImageTk.PhotoImage(mode, (100, 100))
 
-        assert im_tk.width() == 100
-        assert im_tk.height() == 100
+    assert im_tk.width() == 100
+    assert im_tk.height() == 100
 
-        im = Image.new(mode, (100, 100))
-        reloaded = ImageTk.getimage(im_tk)
-        assert_image_equal(reloaded.convert(mode), im)
+    im = Image.new(mode, (100, 100))
+    reloaded = ImageTk.getimage(im_tk)
+    assert_image_equal(reloaded.convert(mode), im)
 
 
 def test_box_deprecation():

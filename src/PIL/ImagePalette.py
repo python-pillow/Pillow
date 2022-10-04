@@ -50,15 +50,24 @@ class ImagePalette:
 
     @palette.setter
     def palette(self, palette):
+        self._colors = None
         self._palette = palette
 
-        mode_len = len(self.mode)
-        self.colors = {}
-        for i in range(0, len(self.palette), mode_len):
-            color = tuple(self.palette[i : i + mode_len])
-            if color in self.colors:
-                continue
-            self.colors[color] = i // mode_len
+    @property
+    def colors(self):
+        if self._colors is None:
+            mode_len = len(self.mode)
+            self._colors = {}
+            for i in range(0, len(self.palette), mode_len):
+                color = tuple(self.palette[i : i + mode_len])
+                if color in self._colors:
+                    continue
+                self._colors[color] = i // mode_len
+        return self._colors
+
+    @colors.setter
+    def colors(self, colors):
+        self._colors = colors
 
     def copy(self):
         new = ImagePalette()

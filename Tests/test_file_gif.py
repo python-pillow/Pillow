@@ -793,24 +793,24 @@ def test_identical_frames(tmp_path):
         assert reread.info["duration"] == 4500
 
 
-def test_identical_frames_to_single_frame(tmp_path):
-    for duration in ([1000, 1500, 2000, 4000], (1000, 1500, 2000, 4000), 8500):
-        out = str(tmp_path / "temp.gif")
-        im_list = [
-            Image.new("L", (100, 100), "#000"),
-            Image.new("L", (100, 100), "#000"),
-            Image.new("L", (100, 100), "#000"),
-        ]
+@pytest.mark.parametrize(
+    "duration", ([1000, 1500, 2000, 4000], (1000, 1500, 2000, 4000), 8500)
+)
+def test_identical_frames_to_single_frame(duration, tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im_list = [
+        Image.new("L", (100, 100), "#000"),
+        Image.new("L", (100, 100), "#000"),
+        Image.new("L", (100, 100), "#000"),
+    ]
 
-        im_list[0].save(
-            out, save_all=True, append_images=im_list[1:], duration=duration
-        )
-        with Image.open(out) as reread:
-            # Assert that all frames were combined
-            assert reread.n_frames == 1
+    im_list[0].save(out, save_all=True, append_images=im_list[1:], duration=duration)
+    with Image.open(out) as reread:
+        # Assert that all frames were combined
+        assert reread.n_frames == 1
 
-            # Assert that the new duration is the total of the identical frames
-            assert reread.info["duration"] == 8500
+        # Assert that the new duration is the total of the identical frames
+        assert reread.info["duration"] == 8500
 
 
 def test_number_of_loops(tmp_path):
@@ -1085,6 +1085,19 @@ def test_palette_save_P(tmp_path):
     with Image.open(out) as reloaded:
         im.putpalette(palette)
         assert_image_equal(reloaded, im)
+
+
+def test_palette_save_duplicate_entries(tmp_path):
+    im = Image.new("P", (1, 2))
+    im.putpixel((0, 1), 1)
+
+    im.putpalette((0, 0, 0, 0, 0, 0))
+
+    out = str(tmp_path / "temp.gif")
+    im.save(out, palette=[0, 0, 0, 0, 0, 0, 1, 1, 1])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.convert("RGB").getpixel((0, 1)) == (0, 0, 0)
 
 
 def test_palette_save_all_P(tmp_path):

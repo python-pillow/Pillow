@@ -1,3 +1,5 @@
+import pytest
+
 from PIL import Image, features
 
 from .helper import assert_image_equal, hopper
@@ -29,19 +31,12 @@ def test_split():
     assert split("YCbCr") == [("L", 128, 128), ("L", 128, 128), ("L", 128, 128)]
 
 
-def test_split_merge():
-    def split_merge(mode):
-        return Image.merge(mode, hopper(mode).split())
-
-    assert_image_equal(hopper("1"), split_merge("1"))
-    assert_image_equal(hopper("L"), split_merge("L"))
-    assert_image_equal(hopper("I"), split_merge("I"))
-    assert_image_equal(hopper("F"), split_merge("F"))
-    assert_image_equal(hopper("P"), split_merge("P"))
-    assert_image_equal(hopper("RGB"), split_merge("RGB"))
-    assert_image_equal(hopper("RGBA"), split_merge("RGBA"))
-    assert_image_equal(hopper("CMYK"), split_merge("CMYK"))
-    assert_image_equal(hopper("YCbCr"), split_merge("YCbCr"))
+@pytest.mark.parametrize(
+    "mode", ("1", "L", "I", "F", "P", "RGB", "RGBA", "CMYK", "YCbCr")
+)
+def test_split_merge(mode):
+    expected = Image.merge(mode, hopper(mode).split())
+    assert_image_equal(hopper(mode), expected)
 
 
 def test_split_open(tmp_path):

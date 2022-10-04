@@ -21,7 +21,7 @@ import functools
 import operator
 import re
 
-from . import Image
+from . import Image, ImagePalette
 
 #
 # helpers
@@ -255,11 +255,11 @@ def contain(image, size, method=Image.Resampling.BICUBIC):
 
     if im_ratio != dest_ratio:
         if im_ratio > dest_ratio:
-            new_height = int(image.height / image.width * size[0])
+            new_height = round(image.height / image.width * size[0])
             if new_height != size[1]:
                 size = (size[0], new_height)
         else:
-            new_width = int(image.width / image.height * size[1])
+            new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
     return image.resize(size, resample=method)
@@ -291,11 +291,13 @@ def pad(image, size, method=Image.Resampling.BICUBIC, color=None, centering=(0.5
         out = resized
     else:
         out = Image.new(image.mode, size, color)
+        if resized.palette:
+            out.putpalette(resized.getpalette())
         if resized.width != size[0]:
-            x = int((size[0] - resized.width) * max(0, min(centering[0], 1)))
+            x = round((size[0] - resized.width) * max(0, min(centering[0], 1)))
             out.paste(resized, (x, 0))
         else:
-            y = int((size[1] - resized.height) * max(0, min(centering[1], 1)))
+            y = round((size[1] - resized.height) * max(0, min(centering[1], 1)))
             out.paste(resized, (0, y))
     return out
 
@@ -396,9 +398,8 @@ def expand(image, border=0, fill=0):
     width = left + image.size[0] + right
     height = top + image.size[1] + bottom
     color = _color(fill, image.mode)
-    if image.mode == "P" and image.palette:
-        image.load()
-        palette = image.palette.copy()
+    if image.palette:
+        palette = ImagePalette.ImagePalette(palette=image.getpalette())
         if isinstance(color, tuple):
             color = palette.getcolor(color)
     else:

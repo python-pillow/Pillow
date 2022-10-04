@@ -5,6 +5,33 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Added reading of TIFF child images #6569
+  [radarhere]
+
+- Improved ImageOps palette handling #6596
+  [PososikTeam, radarhere]
+
+- Defer parsing of palette into colors #6567
+  [radarhere]
+
+- Apply transparency to P images in ImageTk.PhotoImage #6559
+  [radarhere]
+
+- Use rounding in ImageOps contain() and pad() #6522
+  [bibinhashley, radarhere]
+
+- Fixed GIF remapping to palette with duplicate entries #6548
+  [radarhere]
+
+- Allow remap_palette() to return an image with less than 256 palette entries #6543
+  [radarhere]
+
+- Corrected BMP and TGA palette size when saving #6500
+  [radarhere]
+
+- Do not call load() before draft() in Image.thumbnail #6539
+  [radarhere]
+
 - Copy palette when converting from P to PA #6497
   [radarhere]
 
