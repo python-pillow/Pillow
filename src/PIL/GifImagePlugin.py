@@ -274,6 +274,8 @@ class GifImageFile(ImageFile.ImageFile):
                     p = self.fp.read(3 << bits)
                     if self._is_palette_needed(p):
                         palette = ImagePalette.raw("RGB", p)
+                    else:
+                        palette = False
 
                 # image data
                 bits = self.fp.read(1)[0]
@@ -298,7 +300,7 @@ class GifImageFile(ImageFile.ImageFile):
         if self.dispose:
             self.im.paste(self.dispose, self.dispose_extent)
 
-        self._frame_palette = palette or self.global_palette
+        self._frame_palette = palette if palette is not None else self.global_palette
         if frame == 0:
             if self._frame_palette:
                 self.mode = (
