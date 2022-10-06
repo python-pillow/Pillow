@@ -20,6 +20,21 @@ def test_sanity():
             GimpPaletteFile(fp)
 
 
+def test_large_file_is_truncated():
+    import warnings
+    from unittest.mock import patch
+    try:
+        original_value = GimpPaletteFile._max_file_size
+        GimpPaletteFile._max_file_size = 100
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            with pytest.raises(UserWarning):
+                with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
+                    palette_file = GimpPaletteFile(fp)
+
+    finally:
+        GimpPaletteFile._max_file_size = original_value
+
 def test_get_palette():
     # Arrange
     with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
@@ -43,3 +58,13 @@ def test_get_palette():
         expected_palette += bytes(color)
     assert palette == expected_palette
     assert mode == "RGB"
+
+
+def test_n_colors():
+    # Arrange
+    with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
+        palette_file = GimpPaletteFile(fp)
+
+    palette, _ = palette_file.getpalette()
+    assert len(palette) == 24
+    assert palette_file.n_colors == 8

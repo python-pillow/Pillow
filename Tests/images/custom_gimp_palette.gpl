@@ -1,7 +1,7 @@
 GIMP Palette
 Name: custompalette
 Columns: 4
-#
+# Original written by David Wetz in https://stackoverflow.com/questions/815836/im-creating-a-program-that-generates-a-palette-from-a-true-color-image-need-hel/815855#815855
   0   0   0     Index 0
  65  38  30     Index 1
 103  62  49     Index 2
