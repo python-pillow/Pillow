@@ -60,6 +60,8 @@
 
 #else /* C99+ */
 
+#define INT8 signed char
+
 #if SIZEOF_SHORT == 2
 #define INT16 short
 #elif SIZEOF_INT == 2
@@ -86,9 +88,7 @@
 #warning Cannot find required 64-bit integer type
 #endif
 
-#define INT8 signed char
 #define UINT8 unsigned char
-
 #define UINT16 unsigned INT16
 #define UINT32 unsigned INT32
 #ifdef INT64
