@@ -25,7 +25,7 @@
 #endif
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) /* WIN */
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -37,7 +37,7 @@
 #undef WIN32
 #endif
 
-#else
+#else /* WIN */
 /* For System that are not Windows, we'll need to define these. */
 
 #if SIZEOF_SHORT == 2
@@ -75,7 +75,7 @@
 #define UINT64 unsigned INT64
 #endif
 
-#endif
+#endif /* WIN */
 
 /* assume IEEE; tweak if necessary (patches are welcome) */
 #define FLOAT16 UINT16
