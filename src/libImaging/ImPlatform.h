@@ -71,6 +71,9 @@
 
 #define UINT16 unsigned INT16
 #define UINT32 unsigned INT32
+#ifdef INT64
+#define UINT64 unsigned INT64
+#endif
 
 #endif
 
