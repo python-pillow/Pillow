@@ -23,6 +23,7 @@ def test_sanity():
 def test_large_file_is_truncated():
     import warnings
     from unittest.mock import patch
+
     try:
         original_value = GimpPaletteFile._max_file_size
         GimpPaletteFile._max_file_size = 100
@@ -34,6 +35,7 @@ def test_large_file_is_truncated():
 
     finally:
         GimpPaletteFile._max_file_size = original_value
+
 
 def test_get_palette():
     # Arrange

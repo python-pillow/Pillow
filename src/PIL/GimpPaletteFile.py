@@ -28,7 +28,7 @@ class GimpPaletteFile:
     #: override if reading larger palettes is needed
     max_colors = 256
     _max_line_size = 100
-    _max_file_size = 2 ** 20
+    _max_file_size = 2**20
 
     def __init__(self, fp):
 
@@ -47,7 +47,8 @@ class GimpPaletteFile:
             read += len(s)
             if read >= self._max_file_size:
                 warnings.warn(
-                    f"Palette file truncated at {self._max_file_size - len(s)} bytes")
+                    f"Palette file truncated at {self._max_file_size - len(s)} bytes"
+                )
                 break
 
             # skip fields and comment lines
