@@ -67,7 +67,7 @@
 #elif SIZEOF_INT == 2
 #define INT16 int
 #else
-#define INT16 short /* most things works just fine anyway... */
+#error Cannot find required 16-bit integer type
 #endif
 
 #if SIZEOF_SHORT == 4
