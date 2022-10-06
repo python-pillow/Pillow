@@ -43,6 +43,23 @@
    defines their own types with the same names, so we need to be able to undef
    ours before including the JPEG code. */
 
+#if __STDC_VERSION__ >= 199901L /* C99+ */
+
+#include <stdint.h>
+
+#define INT8 int8_t
+#define UINT8 uint8_t
+#define INT16 int16_t
+#define UINT16 uint16_t
+#define INT32 int32_t
+#define UINT32 uint32_t
+#ifdef INT64_MAX
+#define INT64 int64_t
+#define UINT64 uint64_t
+#endif
+
+#else /* C99+ */
+
 #if SIZEOF_SHORT == 2
 #define INT16 short
 #elif SIZEOF_INT == 2
@@ -77,6 +94,8 @@
 #ifdef INT64
 #define UINT64 unsigned INT64
 #endif
+
+#endif /* C99+ */
 
 #endif /* WIN */
 
