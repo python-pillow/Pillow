@@ -39,6 +39,9 @@
 
 #else /* WIN */
 /* For System that are not Windows, we'll need to define these. */
+/* We have to define them instead of using typedef because the JPEG lib also
+   defines their own types with the same names, so we need to be able to undef
+   ours before including the JPEG code. */
 
 #if SIZEOF_SHORT == 2
 #define INT16 short
