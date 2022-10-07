@@ -59,12 +59,3 @@ def test_get_palette():
         expected_palette += bytes(color)
     assert palette == expected_palette
     assert mode == "RGB"
-
-
-def test_n_colors():
-    # Arrange
-    with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
-        palette_file = GimpPaletteFile(fp)
-
-    palette, _ = palette_file.getpalette()
-    assert len(palette) == 24
