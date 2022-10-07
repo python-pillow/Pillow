@@ -58,7 +58,7 @@ class GimpPaletteFile:
                 raise SyntaxError("bad palette file")
 
             # 4th column is color name and may contain spaces.
-            v = s.split(None, 4)
+            v = s.split(maxsplit=3)
             if len(v) < 3:
                 raise ValueError("bad palette entry")
             for i in range(3):
