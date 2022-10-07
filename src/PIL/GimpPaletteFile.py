@@ -67,7 +67,3 @@ class GimpPaletteFile:
     def getpalette(self):
 
         return self.palette, self.rawmode
-
-    @property
-    def n_colors(self):
-        return len(self.palette) / 3

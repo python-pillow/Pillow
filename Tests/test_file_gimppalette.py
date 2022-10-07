@@ -68,4 +68,3 @@ def test_n_colors():
 
     palette, _ = palette_file.getpalette()
     assert len(palette) == 24
-    assert palette_file.n_colors == 8
