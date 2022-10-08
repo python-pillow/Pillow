@@ -15,6 +15,7 @@ from enum import IntEnum, IntFlag
 from io import BytesIO
 
 from . import Image, ImageFile
+from ._binary import i32le as i32
 from ._binary import o32le as o32
 
 # Magic ("DDS ")
@@ -191,10 +192,6 @@ class DXGI_FORMAT(IntEnum):
         return cls.INVALID
 
 
-def make_fourcc(name):
-    return struct.unpack("I", name.encode("ascii"))[0]
-
-
 class D3DFMT(IntEnum):
     UNKNOWN = 0
     R8G8B8 = 20
@@ -252,20 +249,20 @@ class D3DFMT(IntEnum):
     A2B10G10R10_XR_BIAS = 119
     BINARYBUFFER = 199
 
-    UYVY = make_fourcc("UYVY")
-    R8G8_B8G8 = make_fourcc("RGBG")
-    YUY2 = make_fourcc("YUY2")
-    G8R8_G8B8 = make_fourcc("GRGB")
-    DXT1 = make_fourcc("DXT1")
-    DXT2 = make_fourcc("DXT2")
-    DXT3 = make_fourcc("DXT3")
-    DXT4 = make_fourcc("DXT4")
-    DXT5 = make_fourcc("DXT5")
-    DX10 = make_fourcc("DX10")
-    BC5S = make_fourcc("BC5S")
-    ATI1 = make_fourcc("ATI1")
-    ATI2 = make_fourcc("ATI2")
-    MULTI2_ARGB8 = make_fourcc("MET1")
+    UYVY = i32(b"UYVY")
+    R8G8_B8G8 = i32(b"RGBG")
+    YUY2 = i32(b"YUY2")
+    G8R8_G8B8 = i32(b"GRGB")
+    DXT1 = i32(b"DXT1")
+    DXT2 = i32(b"DXT2")
+    DXT3 = i32(b"DXT3")
+    DXT4 = i32(b"DXT4")
+    DXT5 = i32(b"DXT5")
+    DX10 = i32(b"DX10")
+    BC5S = i32(b"BC5S")
+    ATI1 = i32(b"ATI1")
+    ATI2 = i32(b"ATI2")
+    MULTI2_ARGB8 = i32(b"MET1")
     INVALID = -1
 
     @classmethod
