@@ -304,6 +304,21 @@ def test_save_unsupported_mode(tmp_path):
 
 @pytest.mark.parametrize(
     ("mode", "test_file"),
+    (
+        ("L", "Tests/images/l.dds"),
+        ("LA", "Tests/images/la.dds"),
+        ("RGB", "Tests/images/rgb.dds"),
+        ("RGBA", "Tests/images/rgba.dds"),
+    ),
+)
+def test_open(mode, test_file):
+    with Image.open(test_file) as im:
+        assert im.mode == mode
+        assert_image_equal_tofile(im, test_file.replace(".dds", ".png"))
+
+
+@pytest.mark.parametrize(
+    ("mode", "test_file"),
     [
         ("L", "Tests/images/linear_gradient.png"),
         ("LA", "Tests/images/uncompressed_la.png"),
@@ -320,19 +335,3 @@ def test_save(mode, test_file, tmp_path):
 
         with Image.open(out) as reloaded:
             assert_image_equal(im, reloaded)
-
-
-@pytest.mark.parametrize(
-    ("mode", "expected_file", "input_file"),
-    [
-        ("L", "Tests/images/l.png", "Tests/images/l.dds"),
-        ("LA", "Tests/images/la.png", "Tests/images/la.dds"),
-        ("RGB", "Tests/images/rgb.png", "Tests/images/rgb.dds"),
-        ("RGBA", "Tests/images/rgba.png", "Tests/images/rgba.dds"),
-    ],
-)
-def test_open(mode, expected_file, input_file):
-    with Image.open(input_file) as im:
-        assert im.mode == mode
-        with Image.open(expected_file) as im2:
-            assert_image_equal(im, im2)
