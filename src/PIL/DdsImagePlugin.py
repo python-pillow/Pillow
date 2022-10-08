@@ -444,7 +444,7 @@ def _save(im, fp, filename):
     stride = (im.width * bit_count + 7) // 8
     fp.write(
         o32(DDS_MAGIC)
-        # header size, flags, height, width, pith, depth, mipmaps
+        # header size, flags, height, width, pitch, depth, mipmaps
         + struct.pack("<IIIIIII", 124, flags, im.height, im.width, stride, 0, 0, )
         + struct.pack("11I", *((0,) * 11))  # reserved
         # pfsize, pfflags, fourcc, bitcount
