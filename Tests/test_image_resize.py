@@ -47,7 +47,7 @@ class TestImagingCoreResize:
             assert r.im.bands == im.im.bands
 
     @pytest.mark.parametrize(
-        "resample",
+        "resampling_filter",
         (
             Image.Resampling.NEAREST,
             Image.Resampling.BOX,
@@ -57,13 +57,13 @@ class TestImagingCoreResize:
             Image.Resampling.LANCZOS,
         ),
     )
-    def test_reduce_filters(self, resample):
-        r = self.resize(hopper("RGB"), (15, 12), resample)
+    def test_reduce_filters(self, resampling_filter):
+        r = self.resize(hopper("RGB"), (15, 12), resampling_filter)
         assert r.mode == "RGB"
         assert r.size == (15, 12)
 
     @pytest.mark.parametrize(
-        "resample",
+        "resampling_filter",
         (
             Image.Resampling.NEAREST,
             Image.Resampling.BOX,
@@ -73,13 +73,13 @@ class TestImagingCoreResize:
             Image.Resampling.LANCZOS,
         ),
     )
-    def test_enlarge_filters(self, resample):
-        r = self.resize(hopper("RGB"), (212, 195), resample)
+    def test_enlarge_filters(self, resampling_filter):
+        r = self.resize(hopper("RGB"), (212, 195), resampling_filter)
         assert r.mode == "RGB"
         assert r.size == (212, 195)
 
     @pytest.mark.parametrize(
-        "resample",
+        "resampling_filter",
         (
             Image.Resampling.NEAREST,
             Image.Resampling.BOX,
@@ -97,7 +97,7 @@ class TestImagingCoreResize:
             ("LA", ("filled", "dirty")),
         ),
     )
-    def test_endianness(self, resample, mode, channels_set):
+    def test_endianness(self, resampling_filter, mode, channels_set):
         # Make an image with one colored pixel, in one channel.
         # When resized, that channel should be the same as a GS image.
         # Other channels should be unaffected.
@@ -113,13 +113,14 @@ class TestImagingCoreResize:
 
         # samples resized with current filter
         references = {
-            name: self.resize(ch, (4, 4), resample) for name, ch in samples.items()
+            name: self.resize(ch, (4, 4), resampling_filter)
+            for name, ch in samples.items()
         }
 
         for channels in set(permutations(channels_set)):
             # compile image from different channels permutations
             im = Image.merge(mode, [samples[ch] for ch in channels])
-            resized = self.resize(im, (4, 4), resample)
+            resized = self.resize(im, (4, 4), resampling_filter)
 
             for i, ch in enumerate(resized.split()):
                 # check what resized channel in image is the same
@@ -127,7 +128,7 @@ class TestImagingCoreResize:
                 assert_image_equal(ch, references[channels[i]])
 
     @pytest.mark.parametrize(
-        "resample",
+        "resampling_filter",
         (
             Image.Resampling.NEAREST,
             Image.Resampling.BOX,
@@ -137,8 +138,10 @@ class TestImagingCoreResize:
             Image.Resampling.LANCZOS,
         ),
     )
-    def test_enlarge_zero(self, resample):
-        r = self.resize(Image.new("RGB", (0, 0), "white"), (212, 195), resample)
+    def test_enlarge_zero(self, resampling_filter):
+        r = self.resize(
+            Image.new("RGB", (0, 0), "white"), (212, 195), resampling_filter
+        )
         assert r.mode == "RGB"
         assert r.size == (212, 195)
         assert r.getdata()[0] == (0, 0, 0)
