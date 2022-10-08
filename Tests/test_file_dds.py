@@ -125,7 +125,7 @@ def test_dx10_bc6h(image_path):
 
         assert im.format == "DDS"
         assert im.mode == "RGB"
-        assert im.size == (256, 256)
+        assert im.size == (128, 128)
 
         assert_image_equal_tofile(im, image_path.replace(".dds", ".png"))
 
