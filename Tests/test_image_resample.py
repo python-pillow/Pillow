@@ -135,16 +135,15 @@ class TestImagingCoreResampleAccuracy:
 
     @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
     def test_reduce_bicubic(self, mode):
-        for mode in ["RGBX", "RGB", "La", "L"]:
-            case = self.make_case(mode, (12, 12), 0xE1)
-            case = case.resize((6, 6), Image.Resampling.BICUBIC)
-            # fmt: off
-            data = ("e1 e3 d4"
-                    "e3 e5 d6"
-                    "d4 d6 c9")
-            # fmt: on
-            for channel in case.split():
-                self.check_case(channel, self.make_sample(data, (6, 6)))
+        case = self.make_case(mode, (12, 12), 0xE1)
+        case = case.resize((6, 6), Image.Resampling.BICUBIC)
+        # fmt: off
+        data = ("e1 e3 d4"
+                "e3 e5 d6"
+                "d4 d6 c9")
+        # fmt: on
+        for channel in case.split():
+            self.check_case(channel, self.make_sample(data, (6, 6)))
 
     @pytest.mark.parametrize("mode", ("RGBX", "RGB", "La", "L"))
     def test_reduce_lanczos(self, mode):
