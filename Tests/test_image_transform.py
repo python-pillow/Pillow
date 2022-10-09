@@ -178,11 +178,13 @@ class TestImageTransform:
 
         im = op(im, (40, 10))
 
-        colors = im.getcolors()
-        assert colors == [
-            (20 * 10, opaque),
-            (20 * 10, transparent),
-        ]
+        colors = sorted(im.getcolors())
+        assert colors == sorted(
+            (
+                (20 * 10, opaque),
+                (20 * 10, transparent),
+            )
+        )
 
     @pytest.mark.parametrize("mode", ("RGBA", "LA"))
     def test_nearest_resize(self, mode):
