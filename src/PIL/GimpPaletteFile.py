@@ -28,7 +28,7 @@ class GimpPaletteFile:
     #: override if reading larger palettes is needed
     max_colors = 256
     _max_line_size = 100
-    _max_file_size = 2 ** 20  # 1MB
+    _max_file_size = 2**20  # 1MB
 
     def __init__(self, fp):
 
