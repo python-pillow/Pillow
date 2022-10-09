@@ -948,8 +948,8 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      If it is available, Raqm layout will be used by default.
                      Otherwise, basic layout will be used.
 
-                     If complex text layout is not required, basic layout will have
-                     better performance.
+                     Raqm layout is recommended for all non-English text. If Raqm layout
+                     is not required, basic layout will have better performance.
 
                      You can check support for Raqm layout using
                      :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
