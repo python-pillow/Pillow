@@ -150,12 +150,12 @@ class TestFileLibTiff(LibTiffTestCase):
 
         # PhotometricInterpretation is set from SAVE_INFO,
         # not the original image.
-        ignored = [
+        ignored = {
             "StripByteCounts",
             "RowsPerStrip",
             "PageNumber",
             "PhotometricInterpretation",
-        ]
+        }
 
         with Image.open(f) as loaded:
             if legacy_api:
@@ -177,7 +177,7 @@ class TestFileLibTiff(LibTiffTestCase):
                     assert val == value, f"{tag} didn't roundtrip"
 
         # https://github.com/python-pillow/Pillow/issues/1561
-        requested_fields = ["StripByteCounts", "RowsPerStrip", "StripOffsets"]
+        requested_fields = ("StripByteCounts", "RowsPerStrip", "StripOffsets")
         for field in requested_fields:
             assert field in reloaded, f"{field} not in metadata"
 
@@ -244,7 +244,7 @@ class TestFileLibTiff(LibTiffTestCase):
         custom = {
             37000 + k: v
             for k, v in enumerate(
-                [
+                (
                     tc(4, TiffTags.SHORT, True),
                     tc(123456789, TiffTags.LONG, True),
                     tc(-4, TiffTags.SIGNED_BYTE, False),
@@ -270,7 +270,7 @@ class TestFileLibTiff(LibTiffTestCase):
                     # compatibility
                     tc(bytes([4]), TiffTags.BYTE, True),
                     tc(bytes((4, 9, 10)), TiffTags.BYTE, True),
-                ]
+                )
             )
         }
 

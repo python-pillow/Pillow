@@ -129,7 +129,7 @@ def test_write_metadata(tmp_path):
     with Image.open(f) as loaded:
         reloaded = loaded.tag_v2.named()
 
-    ignored = ["StripByteCounts", "RowsPerStrip", "PageNumber", "StripOffsets"]
+    ignored = {"StripByteCounts", "RowsPerStrip", "PageNumber", "StripOffsets"}
 
     for tag, value in reloaded.items():
         if tag in ignored:

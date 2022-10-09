@@ -139,10 +139,10 @@ def test_seek():
 
 @pytest.mark.parametrize(
     "test_file",
-    [
+    (
         "Tests/images/timeout-9139147ce93e20eb14088fe238e541443ffd64b3.fli",
         "Tests/images/timeout-bff0a9dc7243a8e6ede2408d2ffa6a9964698b87.fli",
-    ],
+    ),
 )
 @pytest.mark.timeout(timeout=3)
 def test_timeouts(test_file):
@@ -154,9 +154,7 @@ def test_timeouts(test_file):
 
 @pytest.mark.parametrize(
     "test_file",
-    [
-        "Tests/images/crash-5762152299364352.fli",
-    ],
+    ("Tests/images/crash-5762152299364352.fli",),
 )
 def test_crash(test_file):
     with open(test_file, "rb") as f:

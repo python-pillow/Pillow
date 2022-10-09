@@ -353,9 +353,9 @@ class TestCffi(AccessTest):
 
 
 class TestImagePutPixelError(AccessTest):
-    IMAGE_MODES1 = ["LA", "RGB", "RGBA", "BGR;15"]
-    IMAGE_MODES2 = ["L", "I", "I;16"]
-    INVALID_TYPES = ["foo", 1.0, None]
+    IMAGE_MODES1 = ("LA", "RGB", "RGBA", "BGR;15")
+    IMAGE_MODES2 = ("L", "I", "I;16")
+    INVALID_TYPES = ("foo", 1.0, None)
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1)
     def test_putpixel_type_error1(self, mode):

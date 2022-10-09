@@ -92,7 +92,7 @@ class TestFilePng:
             assert im.format == "PNG"
             assert im.get_format_mimetype() == "image/png"
 
-        for mode in ["1", "L", "P", "RGB", "I", "I;16"]:
+        for mode in ("1", "L", "P", "RGB", "I", "I;16"):
             im = hopper(mode)
             im.save(test_file)
             with Image.open(test_file) as reloaded:

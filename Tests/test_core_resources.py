@@ -46,7 +46,7 @@ class TestCoreMemory:
         assert alignment > 0
 
     def test_set_alignment(self):
-        for i in [1, 2, 4, 8, 16, 32]:
+        for i in (1, 2, 4, 8, 16, 32):
             Image.core.set_alignment(i)
             alignment = Image.core.get_alignment()
             assert alignment == i
@@ -67,7 +67,7 @@ class TestCoreMemory:
         assert block_size >= 4096
 
     def test_set_block_size(self):
-        for i in [4096, 2 * 4096, 3 * 4096]:
+        for i in (4096, 2 * 4096, 3 * 4096):
             Image.core.set_block_size(i)
             block_size = Image.core.get_block_size()
             assert block_size == i
@@ -100,7 +100,7 @@ class TestCoreMemory:
         assert blocks_max >= 0
 
     def test_set_blocks_max(self):
-        for i in [0, 1, 10]:
+        for i in (0, 1, 10):
             Image.core.set_blocks_max(i)
             blocks_max = Image.core.get_blocks_max()
             assert blocks_max == i

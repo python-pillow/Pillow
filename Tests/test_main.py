@@ -4,7 +4,7 @@ import sys
 
 
 def test_main():
-    out = subprocess.check_output([sys.executable, "-m", "PIL"]).decode("utf-8")
+    out = subprocess.check_output((sys.executable, "-m", "PIL")).decode("utf-8")
     lines = out.splitlines()
     assert lines[0] == "-" * 68
     assert lines[1].startswith("Pillow ")

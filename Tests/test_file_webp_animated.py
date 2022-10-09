@@ -109,14 +109,14 @@ def test_timestamp_and_duration(tmp_path):
     timestamps and durations are correct.
     """
 
-    durations = [0, 10, 20, 30, 40]
+    durations = (0, 10, 20, 30, 40)
     temp_file = str(tmp_path / "temp.webp")
     with Image.open("Tests/images/anim_frame1.webp") as frame1:
         with Image.open("Tests/images/anim_frame2.webp") as frame2:
             frame1.save(
                 temp_file,
                 save_all=True,
-                append_images=[frame2, frame1, frame2, frame1],
+                append_images=(frame2, frame1, frame2, frame1),
                 duration=durations,
             )
 
@@ -159,7 +159,7 @@ def test_seeking(tmp_path):
             frame1.save(
                 temp_file,
                 save_all=True,
-                append_images=[frame2, frame1, frame2, frame1],
+                append_images=(frame2, frame1, frame2, frame1),
                 duration=dur,
             )
 

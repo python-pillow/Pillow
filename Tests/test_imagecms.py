@@ -51,7 +51,7 @@ def test_sanity():
 
     v = ImageCms.versions()  # should return four strings
     assert v[0] == "1.0.0 pil"
-    assert list(map(type, v)) == [str, str, str, str]
+    assert tuple(map(type, v)) == (str, str, str, str)
 
     # internal version number
     assert re.search(r"\d+\.\d+(\.\d+)?$", features.version_module("littlecms2"))
@@ -493,11 +493,11 @@ def assert_aux_channel_preserved(mode, transform_in_place, preserved_channel):
     def create_test_image():
         # set up test image with something interesting in the tested aux channel.
         # fmt: off
-        nine_grid_deltas = [
+        nine_grid_deltas = (
             (-1, -1), (-1, 0), (-1, 1),
             (0,  -1),  (0, 0),  (0, 1),
             (1,  -1),  (1, 0),  (1, 1),
-        ]
+        )
         # fmt: on
         chans = []
         bands = ImageMode.getmode(mode).bands
@@ -570,15 +570,15 @@ def test_preserve_auxiliary_channels_rgbx_in_place():
 
 def test_auxiliary_channels_isolated():
     # test data in aux channels does not affect non-aux channels
-    aux_channel_formats = [
+    aux_channel_formats = (
         # format, profile, color-only format, source test image
         ("RGBA", "sRGB", "RGB", hopper("RGBA")),
         ("RGBX", "sRGB", "RGB", hopper("RGBX")),
         ("LAB", "LAB", "LAB", Image.open("Tests/images/hopper.Lab.tif")),
-    ]
+    )
     for src_format in aux_channel_formats:
         for dst_format in aux_channel_formats:
-            for transform_in_place in [True, False]:
+            for transform_in_place in (True, False):
                 # inplace only if format doesn't change
                 if transform_in_place and src_format[0] != dst_format[0]:
                     continue

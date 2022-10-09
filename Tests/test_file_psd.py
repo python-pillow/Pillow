@@ -56,7 +56,7 @@ def test_n_frames():
         assert im.n_frames == 1
         assert not im.is_animated
 
-    for path in [test_file, "Tests/images/negative_layer_count.psd"]:
+    for path in (test_file, "Tests/images/negative_layer_count.psd"):
         with Image.open(path) as im:
             assert im.n_frames == 2
             assert im.is_animated
@@ -137,7 +137,7 @@ def test_combined_larger_than_size():
 
 @pytest.mark.parametrize(
     "test_file,raises",
-    [
+    (
         (
             "Tests/images/timeout-1ee28a249896e05b83840ae8140622de8e648ba9.psd",
             Image.UnidentifiedImageError,
@@ -148,7 +148,7 @@ def test_combined_larger_than_size():
         ),
         ("Tests/images/timeout-c8efc3fded6426986ba867a399791bae544f59bc.psd", OSError),
         ("Tests/images/timeout-dedc7a4ebd856d79b4359bbcc79e8ef231ce38f6.psd", OSError),
-    ],
+    ),
 )
 def test_crashes(test_file, raises):
     with open(test_file, "rb") as f:

@@ -117,12 +117,12 @@ def test_apng_dispose_op_previous_frame():
     # red.save(
     #     "Tests/images/apng/dispose_op_previous_frame.png",
     #     save_all=True,
-    #     append_images=[green, blue],
-    #     disposal=[
+    #     append_images=(green, blue),
+    #     disposal=(
     #         PngImagePlugin.Disposal.OP_NONE,
     #         PngImagePlugin.Disposal.OP_PREVIOUS,
     #         PngImagePlugin.Disposal.OP_PREVIOUS
-    #     ],
+    #     ),
     # )
     with Image.open("Tests/images/apng/dispose_op_previous_frame.png") as im:
         im.seek(im.n_frames - 1)
@@ -381,7 +381,7 @@ def test_apng_save_split_fdat(tmp_path):
     # data chunks)
     test_file = str(tmp_path / "temp.png")
     with Image.open("Tests/images/old-style-jpeg-compression.png") as im:
-        frames = [im.copy(), Image.new("RGBA", im.size, (255, 0, 0, 255))]
+        frames = (im.copy(), Image.new("RGBA", im.size, (255, 0, 0, 255)))
         im.save(
             test_file,
             save_all=True,
@@ -433,7 +433,7 @@ def test_apng_save_duration_loop(tmp_path):
     # test removal of duplicated frames
     frame = Image.new("RGBA", (128, 64), (255, 0, 0, 255))
     frame.save(
-        test_file, save_all=True, append_images=[frame, frame], duration=[500, 100, 150]
+        test_file, save_all=True, append_images=(frame, frame), duration=(500, 100, 150)
     )
     with Image.open(test_file) as im:
         im.load()
@@ -458,7 +458,7 @@ def test_apng_save_disposal(tmp_path):
     red.save(
         test_file,
         save_all=True,
-        append_images=[green, transparent],
+        append_images=(green, transparent),
         disposal=PngImagePlugin.Disposal.OP_NONE,
         blend=PngImagePlugin.Blend.OP_OVER,
     )
@@ -468,15 +468,15 @@ def test_apng_save_disposal(tmp_path):
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
     # test OP_BACKGROUND
-    disposal = [
+    disposal = (
         PngImagePlugin.Disposal.OP_NONE,
         PngImagePlugin.Disposal.OP_BACKGROUND,
         PngImagePlugin.Disposal.OP_NONE,
-    ]
+    )
     red.save(
         test_file,
         save_all=True,
-        append_images=[red, transparent],
+        append_images=(red, transparent),
         disposal=disposal,
         blend=PngImagePlugin.Blend.OP_OVER,
     )
@@ -485,10 +485,10 @@ def test_apng_save_disposal(tmp_path):
         assert im.getpixel((0, 0)) == (0, 0, 0, 0)
         assert im.getpixel((64, 32)) == (0, 0, 0, 0)
 
-    disposal = [
+    disposal = (
         PngImagePlugin.Disposal.OP_NONE,
         PngImagePlugin.Disposal.OP_BACKGROUND,
-    ]
+    )
     red.save(
         test_file,
         save_all=True,
@@ -502,15 +502,15 @@ def test_apng_save_disposal(tmp_path):
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
     # test OP_PREVIOUS
-    disposal = [
+    disposal = (
         PngImagePlugin.Disposal.OP_NONE,
         PngImagePlugin.Disposal.OP_PREVIOUS,
         PngImagePlugin.Disposal.OP_NONE,
-    ]
+    )
     red.save(
         test_file,
         save_all=True,
-        append_images=[green, red, transparent],
+        append_images=(green, red, transparent),
         default_image=True,
         disposal=disposal,
         blend=PngImagePlugin.Blend.OP_OVER,
@@ -520,10 +520,10 @@ def test_apng_save_disposal(tmp_path):
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
-    disposal = [
+    disposal = (
         PngImagePlugin.Disposal.OP_NONE,
         PngImagePlugin.Disposal.OP_PREVIOUS,
-    ]
+    )
     red.save(
         test_file,
         save_all=True,
@@ -559,7 +559,7 @@ def test_apng_save_disposal_previous(tmp_path):
     blue.save(
         test_file,
         save_all=True,
-        append_images=[red, green],
+        append_images=(red, green),
         disposal=PngImagePlugin.Disposal.OP_PREVIOUS,
     )
     with Image.open(test_file) as im:
@@ -578,14 +578,14 @@ def test_apng_save_blend(tmp_path):
     transparent = Image.new("RGBA", size, (0, 0, 0, 0))
 
     # test OP_SOURCE on solid color
-    blend = [
+    blend = (
         PngImagePlugin.Blend.OP_OVER,
         PngImagePlugin.Blend.OP_SOURCE,
-    ]
+    )
     red.save(
         test_file,
         save_all=True,
-        append_images=[red, green],
+        append_images=(red, green),
         default_image=True,
         disposal=PngImagePlugin.Disposal.OP_NONE,
         blend=blend,
@@ -596,14 +596,14 @@ def test_apng_save_blend(tmp_path):
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
     # test OP_SOURCE on transparent color
-    blend = [
+    blend = (
         PngImagePlugin.Blend.OP_OVER,
         PngImagePlugin.Blend.OP_SOURCE,
-    ]
+    )
     red.save(
         test_file,
         save_all=True,
-        append_images=[red, transparent],
+        append_images=(red, transparent),
         default_image=True,
         disposal=PngImagePlugin.Disposal.OP_NONE,
         blend=blend,
@@ -617,7 +617,7 @@ def test_apng_save_blend(tmp_path):
     red.save(
         test_file,
         save_all=True,
-        append_images=[green, transparent],
+        append_images=(green, transparent),
         default_image=True,
         disposal=PngImagePlugin.Disposal.OP_NONE,
         blend=PngImagePlugin.Blend.OP_OVER,
@@ -632,7 +632,7 @@ def test_apng_save_blend(tmp_path):
 
     # test info blend
     red.info["blend"] = PngImagePlugin.Blend.OP_OVER
-    red.save(test_file, save_all=True, append_images=[green, transparent])
+    red.save(test_file, save_all=True, append_images=(green, transparent))
     with Image.open(test_file) as im:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)

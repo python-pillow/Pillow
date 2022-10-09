@@ -26,7 +26,7 @@ def test_sanity():
 
     ImageOps.autocontrast(hopper("L"), cutoff=10)
     ImageOps.autocontrast(hopper("L"), cutoff=(2, 10))
-    ImageOps.autocontrast(hopper("L"), ignore=[0, 255])
+    ImageOps.autocontrast(hopper("L"), ignore=(0, 255))
     ImageOps.autocontrast(hopper("L"), mask=hopper("L"))
     ImageOps.autocontrast(hopper("L"), preserve_tone=True)
 
@@ -126,11 +126,11 @@ def test_pad():
     new_im = ImageOps.pad(im, new_size)
     assert new_im.size == new_size
 
-    for label, color, new_size in [
+    for label, color, new_size in (
         ("h", None, (im.width * 4, im.height * 2)),
         ("v", "#f00", (im.width * 2, im.height * 4)),
-    ]:
-        for i, centering in enumerate([(0, 0), (0.5, 0.5), (1, 1)]):
+    ):
+        for i, centering in enumerate(((0, 0), (0.5, 0.5), (1, 1))):
             new_im = ImageOps.pad(im, new_size, color=color, centering=centering)
             assert new_im.size == new_size
 
@@ -344,14 +344,15 @@ def test_exif_transpose():
     exts = [".jpg"]
     if features.check("webp") and features.check("webp_anim"):
         exts.append(".webp")
+
     for ext in exts:
         with Image.open("Tests/images/hopper" + ext) as base_im:
 
             def check(orientation_im):
-                for im in [
+                for im in (
                     orientation_im,
                     orientation_im.copy(),
-                ]:  # ImageFile  # Image
+                ):  # ImageFile  # Image
                     if orientation_im is base_im:
                         assert "exif" not in im.info
                     else:
@@ -449,13 +450,13 @@ def test_autocontrast_mask_real_input():
         assert result_nomask != result
         assert_tuple_approx_equal(
             ImageStat.Stat(result, mask=rect_mask).median,
-            [195, 202, 184],
+            (195, 202, 184),
             threshold=2,
             msg="autocontrast with mask pixel incorrect",
         )
         assert_tuple_approx_equal(
             ImageStat.Stat(result_nomask).median,
-            [119, 106, 79],
+            (119, 106, 79),
             threshold=2,
             msg="autocontrast without mask pixel incorrect",
         )

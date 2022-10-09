@@ -165,7 +165,7 @@ def test_arabictext_features():
         "اللغة العربية",
         font=ttf,
         fill=500,
-        features=["-fina", "-init", "-medi"],
+        features=("-fina", "-init", "-medi"),
     )
 
     target = "Tests/images/test_arabictext_features.png"
@@ -359,7 +359,7 @@ def test_anchor_invalid_ttb():
     d = ImageDraw.Draw(im)
     d.font = font
 
-    for anchor in ["", "l", "a", "lax", "xa", "la", "ls", "ld", "lx"]:
+    for anchor in ("", "l", "a", "lax", "xa", "la", "ls", "ld", "lx"):
         with pytest.raises(ValueError):
             font.getmask2("hello", anchor=anchor, direction="ttb")
         with pytest.raises(ValueError):

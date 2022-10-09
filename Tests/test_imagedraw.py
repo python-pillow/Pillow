@@ -174,8 +174,8 @@ def test_arc_high():
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.arc([10, 10, 89, 189], 20, 330, width=20, fill="white")
-    draw.arc([110, 10, 189, 189], 20, 150, width=20, fill="white")
+    draw.arc((10, 10, 89, 189), 20, 330, width=20, fill="white")
+    draw.arc((110, 10, 189, 189), 20, 150, width=20, fill="white")
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_arc_high.png")
@@ -255,7 +255,7 @@ def test_chord_too_fat():
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.chord([-150, -150, 99, 99], 15, 60, width=10, fill="white", outline="red")
+    draw.chord((-150, -150, 99, 99), 15, 60, width=10, fill="white", outline="red")
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_chord_too_fat.png")
@@ -537,7 +537,7 @@ def test_pieslice_wide():
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.pieslice([0, 0, 199, 99], 190, 170, width=10, fill="white", outline="red")
+    draw.pieslice((0, 0, 199, 99), 190, 170, width=10, fill="white", outline="red")
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_pieslice_wide.png")
@@ -563,12 +563,12 @@ def test_pieslice_no_spikes():
 
     for cx, cy, angle in zip(cxs, cys, range(0, 360, 15)):
         draw.pieslice(
-            [cx - 100, cy - 100, cx + 100, cy + 100], angle, angle + 1, fill="black"
+            (cx - 100, cy - 100, cx + 100, cy + 100), angle, angle + 1, fill="black"
         )
-        draw.point([cx, cy], fill="red")
+        draw.point((cx, cy), fill="red")
 
     im_pre_erase = im.copy()
-    draw.rectangle([21, 21, 139, 139], fill="white")
+    draw.rectangle((21, 21, 139, 139), fill="white")
 
     assert_image_equal(im, im_pre_erase)
 
@@ -624,7 +624,7 @@ def test_polygon_1px_high():
     expected = "Tests/images/imagedraw_polygon_1px_high.png"
 
     # Act
-    draw.polygon([(0, 1), (0, 1), (2, 1), (2, 1)], "#f00")
+    draw.polygon(((0, 1), (0, 1), (2, 1), (2, 1)), "#f00")
 
     # Assert
     assert_image_equal_tofile(im, expected)
@@ -638,7 +638,7 @@ def test_polygon_1px_high_translucent():
     expected = "Tests/images/imagedraw_polygon_1px_high_translucent.png"
 
     # Act
-    draw.polygon([(1, 1), (1, 1), (3, 1), (3, 1)], (255, 0, 0, 127))
+    draw.polygon(((1, 1), (1, 1), (3, 1), (3, 1)), (255, 0, 0, 127))
 
     # Assert
     assert_image_equal_tofile(im, expected)
@@ -650,7 +650,7 @@ def test_polygon_translucent():
     draw = ImageDraw.Draw(im, "RGBA")
 
     # Act
-    draw.polygon([(20, 80), (80, 80), (80, 20)], fill=(0, 255, 0, 127))
+    draw.polygon(((20, 80), (80, 80), (80, 20)), fill=(0, 255, 0, 127))
 
     # Assert
     expected = "Tests/images/imagedraw_polygon_translucent.png"
@@ -674,7 +674,7 @@ def test_big_rectangle():
     # Test drawing a rectangle bigger than the image
     # Arrange
     im = Image.new("RGB", (W, H))
-    bbox = [(-1, -1), (W + 1, H + 1)]
+    bbox = ((-1, -1), (W + 1, H + 1))
     draw = ImageDraw.Draw(im)
 
     # Act
@@ -755,7 +755,7 @@ def test_rectangle_translucent_outline(bbox):
 
 @pytest.mark.parametrize(
     "xy",
-    [(10, 20, 190, 180), ([10, 20], [190, 180]), ((10, 20), (190, 180))],
+    ((10, 20, 190, 180), ([10, 20], [190, 180]), ((10, 20), (190, 180))),
 )
 def test_rounded_rectangle(xy):
     # Arrange
@@ -801,11 +801,11 @@ def test_rounded_rectangle_corners(top_left, top_right, bottom_right, bottom_lef
 
 @pytest.mark.parametrize(
     "xy, radius, type",
-    [
+    (
         ((10, 20, 190, 180), 30.5, "given"),
         ((10, 10, 181, 190), 90, "width"),
         ((10, 20, 190, 181), 85, "height"),
-    ],
+    ),
 )
 def test_rounded_rectangle_non_integer_radius(xy, radius, type):
     # Arrange
@@ -837,11 +837,11 @@ def test_rounded_rectangle_zero_radius(bbox):
 
 @pytest.mark.parametrize(
     "xy, suffix",
-    [
+    (
         ((20, 10, 80, 90), "x"),
         ((10, 20, 90, 80), "y"),
         ((20, 20, 80, 80), "both"),
-    ],
+    ),
 )
 def test_rounded_rectangle_translucent(xy, suffix):
     # Arrange
@@ -863,7 +863,7 @@ def test_rounded_rectangle_translucent(xy, suffix):
 def test_floodfill(bbox):
     red = ImageColor.getrgb("red")
 
-    for mode, value in [("L", 1), ("RGBA", (255, 0, 0, 0)), ("RGB", red)]:
+    for mode, value in (("L", 1), ("RGBA", (255, 0, 0, 0)), ("RGB", red)):
         # Arrange
         im = Image.new(mode, (W, H))
         draw = ImageDraw.Draw(im)
@@ -962,10 +962,10 @@ def create_base_image_draw(
 def test_square():
     expected = os.path.join(IMAGES_PATH, "square.png")
     img, draw = create_base_image_draw((10, 10))
-    draw.polygon([(2, 2), (2, 7), (7, 7), (7, 2)], BLACK)
+    draw.polygon(((2, 2), (2, 7), (7, 7), (7, 2)), BLACK)
     assert_image_equal_tofile(img, expected, "square as normal polygon failed")
     img, draw = create_base_image_draw((10, 10))
-    draw.polygon([(7, 7), (7, 2), (2, 2), (2, 7)], BLACK)
+    draw.polygon(((7, 7), (7, 2), (2, 2), (2, 7)), BLACK)
     assert_image_equal_tofile(img, expected, "square as inverted polygon failed")
     img, draw = create_base_image_draw((10, 10))
     draw.rectangle((2, 2, 7, 7), BLACK)
@@ -974,7 +974,7 @@ def test_square():
 
 def test_triangle_right():
     img, draw = create_base_image_draw((20, 20))
-    draw.polygon([(3, 5), (17, 5), (10, 12)], BLACK)
+    draw.polygon(((3, 5), (17, 5), (10, 12)), BLACK)
     assert_image_equal_tofile(
         img, os.path.join(IMAGES_PATH, "triangle_right.png"), "triangle right failed"
     )
@@ -986,7 +986,7 @@ def test_triangle_right():
 )
 def test_triangle_right_width(fill, suffix):
     img, draw = create_base_image_draw((100, 100))
-    draw.polygon([(15, 25), (85, 25), (50, 60)], fill, WHITE, width=5)
+    draw.polygon(((15, 25), (85, 25), (50, 60)), fill, WHITE, width=5)
     assert_image_equal_tofile(
         img, os.path.join(IMAGES_PATH, "triangle_right_" + suffix + ".png")
     )
@@ -1116,7 +1116,7 @@ def test_wide_line_dot():
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.line([(50, 50), (50, 50)], width=3)
+    draw.line(((50, 50), (50, 50)), width=3)
 
     # Assert
     assert_image_similar_tofile(im, "Tests/images/imagedraw_wide_line_dot.png", 1)
@@ -1129,7 +1129,7 @@ def test_wide_line_larger_than_int():
     expected = "Tests/images/imagedraw_wide_line_larger_than_int.png"
 
     # Act
-    draw.line([(0, 0), (32768, 32768)], width=3)
+    draw.line(((0, 0), (32768, 32768)), width=3)
 
     # Assert
     assert_image_similar_tofile(im, expected, 1)
@@ -1137,7 +1137,7 @@ def test_wide_line_larger_than_int():
 
 @pytest.mark.parametrize(
     "xy",
-    [
+    (
         [
             (400, 280),
             (380, 280),
@@ -1214,7 +1214,7 @@ def test_wide_line_larger_than_int():
             250,
             100,
         ],
-    ],
+    ),
 )
 def test_line_joint(xy):
     im = Image.new("RGB", (500, 325))
@@ -1355,8 +1355,8 @@ def test_same_color_outline(bbox):
     s.line(x0, y0)
 
     # Begin
-    for mode in ["RGB", "L"]:
-        for fill, outline in [["red", None], ["red", "red"], ["red", "#f00"]]:
+    for mode in ("RGB", "L"):
+        for fill, outline in (("red", None), ("red", "red"), ("red", "#f00")):
             for operation, args in {
                 "chord": [bbox, 0, 180],
                 "ellipse": [bbox],
@@ -1381,12 +1381,12 @@ def test_same_color_outline(bbox):
 
 @pytest.mark.parametrize(
     "n_sides, polygon_name, args",
-    [
+    (
         (4, "square", {}),
         (8, "regular_octagon", {}),
         (4, "square_rotate_45", {"rotation": 45}),
         (3, "triangle_width", {"width": 5, "outline": "yellow"}),
-    ],
+    ),
 )
 def test_draw_regular_polygon(n_sides, polygon_name, args):
     im = Image.new("RGBA", size=(W, H), color=(255, 0, 0, 0))
@@ -1399,7 +1399,7 @@ def test_draw_regular_polygon(n_sides, polygon_name, args):
 
 @pytest.mark.parametrize(
     "n_sides, expected_vertices",
-    [
+    (
         (3, [(28.35, 62.5), (71.65, 62.5), (50.0, 25.0)]),
         (4, [(32.32, 67.68), (67.68, 67.68), (67.68, 32.32), (32.32, 32.32)]),
         (
@@ -1423,7 +1423,7 @@ def test_draw_regular_polygon(n_sides, polygon_name, args):
                 (25.0, 50.0),
             ],
         ),
-    ],
+    ),
 )
 def test_compute_regular_polygon_vertices(n_sides, expected_vertices):
     bounding_circle = (W // 2, H // 2, 25)
@@ -1433,7 +1433,7 @@ def test_compute_regular_polygon_vertices(n_sides, expected_vertices):
 
 @pytest.mark.parametrize(
     "n_sides, bounding_circle, rotation, expected_error, error_message",
-    [
+    (
         (None, (50, 50, 25), 0, TypeError, "n_sides should be an int"),
         (1, (50, 50, 25), 0, ValueError, "n_sides should be an int > 2"),
         (3, 50, 0, TypeError, "bounding_circle should be a tuple"),
@@ -1473,7 +1473,7 @@ def test_compute_regular_polygon_vertices(n_sides, expected_vertices):
             ValueError,
             "rotation should be an int or float",
         ),
-    ],
+    ),
 )
 def test_compute_regular_polygon_vertices_input_error_handling(
     n_sides, bounding_circle, rotation, expected_error, error_message
@@ -1484,7 +1484,7 @@ def test_compute_regular_polygon_vertices_input_error_handling(
 
 
 def test_continuous_horizontal_edges_polygon():
-    xy = [
+    xy = (
         (2, 6),
         (6, 6),
         (12, 6),
@@ -1493,7 +1493,7 @@ def test_continuous_horizontal_edges_polygon():
         (8, 8),
         (4, 8),
         (2, 8),
-    ]
+    )
     img, draw = create_base_image_draw((16, 16))
     draw.polygon(xy, BLACK)
     expected = os.path.join(IMAGES_PATH, "continuous_horizontal_edges_polygon.png")
@@ -1517,7 +1517,7 @@ def test_discontiguous_corners_polygon():
 def test_polygon2():
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
-    draw.polygon([(18, 30), (19, 31), (18, 30), (85, 30), (60, 72)], "red")
+    draw.polygon(((18, 30), (19, 31), (18, 30), (85, 30), (60, 72)), "red")
     expected = "Tests/images/imagedraw_outline_polygon_RGB.png"
     assert_image_similar_tofile(im, expected, 1)
 

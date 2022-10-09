@@ -144,7 +144,7 @@ class TestFileTiff:
 
     @pytest.mark.parametrize(
         "resolution_unit, dpi",
-        [(None, 72.8), (2, 72.8), (3, 184.912)],
+        ((None, 72.8), (2, 72.8), (3, 184.912)),
     )
     def test_load_float_dpi(self, resolution_unit, dpi):
         with Image.open(
@@ -450,7 +450,7 @@ class TestFileTiff:
             assert exif[271] == "FLIR"
 
             gps = exif.get_ifd(0x8825)
-            assert list(gps.keys()) == [0, 1, 2, 3, 4, 5, 6, 18]
+            assert tuple(gps.keys()) == (0, 1, 2, 3, 4, 5, 6, 18)
             assert gps[0] == b"\x03\x02\x00\x00"
             assert gps[18] == "WGS-84"
 
@@ -663,7 +663,7 @@ class TestFileTiff:
         # Test appending images
         mp = BytesIO()
         im = Image.new("RGB", (100, 100), "#f00")
-        ims = [Image.new("RGB", (100, 100), color) for color in ["#0f0", "#00f"]]
+        ims = [Image.new("RGB", (100, 100), color) for color in ("#0f0", "#00f")]
         im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
 
         mp.seek(0, os.SEEK_SET)
@@ -738,7 +738,7 @@ class TestFileTiff:
 
     def test_get_photoshop_blocks(self):
         with Image.open("Tests/images/lab.tif") as im:
-            assert list(im.get_photoshop_blocks().keys()) == [
+            assert tuple(im.get_photoshop_blocks().keys()) == (
                 1061,
                 1002,
                 1005,
@@ -760,7 +760,7 @@ class TestFileTiff:
                 1057,
                 4000,
                 4001,
-            ]
+            )
 
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os

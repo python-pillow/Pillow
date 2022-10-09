@@ -5,7 +5,7 @@ from PIL import _deprecate
 
 @pytest.mark.parametrize(
     "version, expected",
-    [
+    (
         (
             11,
             "Old thing is deprecated and will be removed in Pillow 11 "
@@ -16,7 +16,7 @@ from PIL import _deprecate
             r"Old thing is deprecated and will be removed in a future version\. "
             r"Use new thing instead\.",
         ),
-    ],
+    ),
 )
 def test_version(version, expected):
     with pytest.warns(DeprecationWarning, match=expected):
@@ -31,7 +31,7 @@ def test_unknown_version():
 
 @pytest.mark.parametrize(
     "deprecated, plural, expected",
-    [
+    (
         (
             "Old thing",
             False,
@@ -42,7 +42,7 @@ def test_unknown_version():
             True,
             r"Old things are deprecated and should be removed\.",
         ),
-    ],
+    ),
 )
 def test_old_version(deprecated, plural, expected):
     expected = r""
@@ -69,10 +69,10 @@ def test_replacement_and_action():
 
 @pytest.mark.parametrize(
     "action",
-    [
+    (
         "Upgrade to new thing",
         "Upgrade to new thing.",
-    ],
+    ),
 )
 def test_action(action):
     expected = (

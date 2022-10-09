@@ -42,7 +42,7 @@ def helper_pickle_string(pickle, protocol, test_file, mode):
 
 @pytest.mark.parametrize(
     ("test_file", "test_mode"),
-    [
+    (
         ("Tests/images/hopper.jpg", None),
         ("Tests/images/hopper.jpg", "L"),
         ("Tests/images/hopper.jpg", "PA"),
@@ -58,7 +58,7 @@ def helper_pickle_string(pickle, protocol, test_file, mode):
         ("Tests/images/p_trns_single.png", None),
         ("Tests/images/pil123p.png", None),
         ("Tests/images/itxt_chunks.png", None),
-    ],
+    ),
 )
 @pytest.mark.parametrize("protocol", range(0, pickle.HIGHEST_PROTOCOL + 1))
 def test_pickle_image(tmp_path, test_file, test_mode, protocol):

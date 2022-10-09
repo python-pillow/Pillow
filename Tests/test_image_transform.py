@@ -35,7 +35,7 @@ class TestImageTransform:
     def test_palette(self):
         with Image.open("Tests/images/hopper.gif") as im:
             transformed = im.transform(
-                im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0]
+                im.size, Image.Transform.AFFINE, (1, 0, 0, 0, 1, 0)
             )
             assert im.palette.palette == transformed.palette.palette
 
@@ -276,11 +276,11 @@ class TestImageTransformAffine:
         else:
             transposed = im
 
-        for resample in [
+        for resample in (
             Image.Resampling.NEAREST,
             Image.Resampling.BILINEAR,
             Image.Resampling.BICUBIC,
-        ]:
+        ):
             transformed = im.transform(
                 transposed.size, self.transform, matrix, resample
             )
@@ -308,8 +308,8 @@ class TestImageTransformAffine:
         im = self._test_image()
 
         size_up = int(round(im.width * scale)), int(round(im.height * scale))
-        matrix_up = [1 / scale, 0, 0, 0, 1 / scale, 0, 0, 0]
-        matrix_down = [scale, 0, 0, 0, scale, 0, 0, 0]
+        matrix_up = (1 / scale, 0, 0, 0, 1 / scale, 0, 0, 0)
+        matrix_down = (scale, 0, 0, 0, scale, 0, 0, 0)
 
         transformed = im.transform(size_up, self.transform, matrix_up, resample)
         transformed = transformed.transform(
@@ -337,8 +337,8 @@ class TestImageTransformAffine:
         im = self._test_image()
 
         size_up = int(round(im.width + x)), int(round(im.height + y))
-        matrix_up = [1, 0, -x, 0, 1, -y, 0, 0]
-        matrix_down = [1, 0, x, 0, 1, y, 0, 0]
+        matrix_up = (1, 0, -x, 0, 1, -y, 0, 0)
+        matrix_down = (1, 0, x, 0, 1, y, 0, 0)
 
         transformed = im.transform(size_up, self.transform, matrix_up, resample)
         transformed = transformed.transform(

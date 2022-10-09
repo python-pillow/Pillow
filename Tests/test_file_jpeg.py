@@ -143,7 +143,7 @@ class TestFileJpeg:
 
     @pytest.mark.parametrize(
         "test_image_path",
-        [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
+        (TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"),
     )
     def test_dpi(self, test_image_path):
         def test(xdpi, ydpi=None):
@@ -559,6 +559,7 @@ class TestFileJpeg:
                     None
                 )
             ]
+
             # list of qtable lists
             assert_image_similar(
                 im,

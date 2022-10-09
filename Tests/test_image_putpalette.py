@@ -16,7 +16,7 @@ def test_putpalette():
 
     with pytest.raises(ValueError):
         palette("1")
-    for mode in ["L", "LA", "P", "PA"]:
+    for mode in ("L", "LA", "P", "PA"):
         assert palette(mode) == (
             "PA" if "A" in mode else "P",
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],

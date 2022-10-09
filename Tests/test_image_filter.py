@@ -70,7 +70,7 @@ def test_modefilter(mode, expected):
     #   3 4 5
     #   6 7 8
     mod = im.filter(ImageFilter.ModeFilter).getpixel((1, 1))
-    im.putdata([0, 0, 1, 2, 5, 1, 5, 2, 0])  # mode=0
+    im.putdata((0, 0, 1, 2, 5, 1, 5, 2, 0))  # mode=0
     mod2 = im.filter(ImageFilter.ModeFilter).getpixel((1, 1))
     assert (mod, mod2) == expected
 

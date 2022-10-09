@@ -96,7 +96,7 @@ def test_n_frames():
 def test_load_image_series():
     # Arrange
     not_spider_file = "Tests/images/hopper.ppm"
-    file_list = [TEST_FILE, not_spider_file, "path/not_found.ext"]
+    file_list = (TEST_FILE, not_spider_file, "path/not_found.ext")
 
     # Act
     img_list = SpiderImagePlugin.loadImageSeries(file_list)

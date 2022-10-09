@@ -56,12 +56,12 @@ def test_getcolor_rgba_color_rgb_palette():
 
 @pytest.mark.parametrize(
     "index, palette",
-    [
+    (
         # Test when the palette is not full
         (0, ImagePalette.ImagePalette()),
         # Test when the palette is full
         (255, ImagePalette.ImagePalette("RGB", list(range(256)) * 3)),
-    ],
+    ),
 )
 def test_getcolor_not_special(index, palette):
     im = Image.new("P", (1, 1))

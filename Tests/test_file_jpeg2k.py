@@ -125,7 +125,7 @@ def test_irreversible_rt():
 
 
 def test_prog_qual_rt():
-    im = roundtrip(test_card, quality_layers=[60, 40, 20], progression="LRCP")
+    im = roundtrip(test_card, quality_layers=(60, 40, 20), progression="LRCP")
     assert_image_similar(im, test_card, 2.0)
 
 
@@ -192,17 +192,17 @@ def test_header_errors():
 
 def test_layers_type(tmp_path):
     outfile = str(tmp_path / "temp_layers.jp2")
-    for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
+    for quality_layers in ([100, 50, 10], (100, 50, 10), None):
         test_card.save(outfile, quality_layers=quality_layers)
 
-    for quality_layers in ["quality_layers", ("100", "50", "10")]:
+    for quality_layers in ("quality_layers", ("100", "50", "10")):
         with pytest.raises(ValueError):
             test_card.save(outfile, quality_layers=quality_layers)
 
 
 def test_layers():
     out = BytesIO()
-    test_card.save(out, "JPEG2000", quality_layers=[100, 50, 10], progression="LRCP")
+    test_card.save(out, "JPEG2000", quality_layers=(100, 50, 10), progression="LRCP")
     out.seek(0)
 
     with Image.open(out) as im:
@@ -392,12 +392,12 @@ def test_save_comment():
 
 @pytest.mark.parametrize(
     "test_file",
-    [
+    (
         "Tests/images/crash-4fb027452e6988530aa5dabee76eecacb3b79f8a.j2k",
         "Tests/images/crash-7d4c83eb92150fb8f1653a697703ae06ae7c4998.j2k",
         "Tests/images/crash-ccca68ff40171fdae983d924e127a721cab2bd50.j2k",
         "Tests/images/crash-d2c93af851d3ab9a19e34503626368b2ecde9c03.j2k",
-    ],
+    ),
 )
 def test_crashes(test_file):
     with open(test_file, "rb") as f:

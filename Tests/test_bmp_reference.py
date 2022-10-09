@@ -9,9 +9,9 @@ base = os.path.join("Tests", "images", "bmp")
 
 
 def get_files(d, ext=".bmp"):
-    return [
+    return (
         os.path.join(base, d, f) for f in os.listdir(os.path.join(base, d)) if ext in f
-    ]
+    )
 
 
 def test_bad():
@@ -30,7 +30,7 @@ def test_bad():
 def test_questionable():
     """These shouldn't crash/dos, but it's not well defined that these
     are in spec"""
-    supported = [
+    supported = {
         "pal8os2v2.bmp",
         "rgb24prof.bmp",
         "pal1p1.bmp",
@@ -42,7 +42,7 @@ def test_questionable():
         "pal8os2sp.bmp",
         "pal8rletrns.bmp",
         "rgb32bf-xbgr.bmp",
-    ]
+    }
     for f in get_files("q"):
         try:
             with Image.open(f) as im:

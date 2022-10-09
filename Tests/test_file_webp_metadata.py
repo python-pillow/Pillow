@@ -139,7 +139,7 @@ def test_write_animated_metadata(tmp_path):
             frame1.save(
                 temp_file,
                 save_all=True,
-                append_images=[frame2, frame1, frame2],
+                append_images=(frame2, frame1, frame2),
                 icc_profile=iccp_data,
                 exif=exif_data,
                 xmp=xmp_data,

@@ -48,7 +48,7 @@ def test_alpha(op):
 
     original = _half_transparent_image()
 
-    for amount in [0, 0.5, 1.0]:
+    for amount in (0, 0.5, 1.0):
         _check_alpha(
             getattr(ImageEnhance, op)(original).enhance(amount),
             original,

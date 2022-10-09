@@ -72,12 +72,12 @@ def test_libimagequant_version():
 
 @pytest.mark.parametrize("feature", features.modules)
 def test_check_modules(feature):
-    assert features.check_module(feature) in [True, False]
+    assert features.check_module(feature) in {True, False}
 
 
 @pytest.mark.parametrize("feature", features.codecs)
 def test_check_codecs(feature):
-    assert features.check_codec(feature) in [True, False]
+    assert features.check_codec(feature) in {True, False}
 
 
 def test_check_warns_on_nonexistent():

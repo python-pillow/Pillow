@@ -20,7 +20,7 @@ def test_register():
 
 @pytest.mark.parametrize(
     "order",
-    [-1, 0],
+    (-1, 0),
 )
 def test_viewer_show(order):
     class TestViewer(ImageShow.Viewer):

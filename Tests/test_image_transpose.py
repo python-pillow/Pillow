@@ -7,7 +7,7 @@ from .helper import assert_image_equal
 
 HOPPER = {
     mode: helper.hopper(mode).crop((0, 0, 121, 127)).copy()
-    for mode in ["L", "RGB", "I;16", "I;16L", "I;16B"]
+    for mode in ("L", "RGB", "I;16", "I;16L", "I;16B")
 }
 
 

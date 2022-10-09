@@ -34,10 +34,10 @@ def test_sanity():
 
 @pytest.fixture(
     scope="module",
-    params=[
+    params=(
         pytest.param(ImageFont.Layout.BASIC),
         pytest.param(ImageFont.Layout.RAQM, marks=skip_unless_feature("raqm")),
-    ],
+    ),
 )
 def layout_engine(request):
     return request.param
@@ -683,14 +683,14 @@ def test_variation_set_by_name(font):
 
     font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
     _check_text(font, "Tests/images/variation_adobe.png", 11)
-    for name in ["Bold", b"Bold"]:
+    for name in ("Bold", b"Bold"):
         font.set_variation_by_name(name)
         assert font.getname()[1] == "Bold"
     _check_text(font, "Tests/images/variation_adobe_name.png", 16)
 
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     _check_text(font, "Tests/images/variation_tiny.png", 40)
-    for name in ["200", b"200"]:
+    for name in ("200", b"200"):
         font.set_variation_by_name(name)
         assert font.getname()[1] == "200"
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
@@ -807,7 +807,7 @@ def test_anchor_invalid(font):
     d = ImageDraw.Draw(im)
     d.font = font
 
-    for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
+    for anchor in ("", "l", "a", "lax", "sa", "xa", "lx"):
         with pytest.raises(ValueError):
             font.getmask2("hello", anchor=anchor)
         with pytest.raises(ValueError):
@@ -820,7 +820,7 @@ def test_anchor_invalid(font):
             d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
         with pytest.raises(ValueError):
             d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)
-    for anchor in ["lt", "lb"]:
+    for anchor in ("lt", "lb"):
         with pytest.raises(ValueError):
             d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
         with pytest.raises(ValueError):
@@ -830,7 +830,7 @@ def test_anchor_invalid(font):
 @pytest.mark.parametrize("bpp", (1, 2, 4, 8))
 def test_bitmap_font(layout_engine, bpp):
     text = "Bitmap Font"
-    layout_name = ["basic", "raqm"][layout_engine]
+    layout_name = ("basic", "raqm")[layout_engine]
     target = f"Tests/images/bitmap_font_{bpp}_{layout_name}.png"
     font = ImageFont.truetype(
         f"Tests/fonts/DejaVuSans/DejaVuSans-24-{bpp}-stripped.ttf",
@@ -847,7 +847,7 @@ def test_bitmap_font(layout_engine, bpp):
 
 def test_bitmap_font_stroke(layout_engine):
     text = "Bitmap Font"
-    layout_name = ["basic", "raqm"][layout_engine]
+    layout_name = ("basic", "raqm")[layout_engine]
     target = f"Tests/images/bitmap_font_stroke_{layout_name}.png"
     font = ImageFont.truetype(
         "Tests/fonts/DejaVuSans/DejaVuSans-24-8-stripped.ttf",
@@ -1035,9 +1035,7 @@ def test_render_mono_size():
 
 @pytest.mark.parametrize(
     "test_file",
-    [
-        "Tests/fonts/oom-e8e927ba6c0d38274a37c1567560eb33baf74627.ttf",
-    ],
+    ("Tests/fonts/oom-e8e927ba6c0d38274a37c1567560eb33baf74627.ttf",),
 )
 def test_oom(test_file):
     with open(test_file, "rb") as f:

@@ -12,7 +12,7 @@ from .helper import (
     skip_unless_feature,
 )
 
-test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
+test_files = ("Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo")
 
 pytestmark = skip_unless_feature("jpg")
 

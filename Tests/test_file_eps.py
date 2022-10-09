@@ -314,8 +314,8 @@ def test_read_binary_preview():
 def test_readline_psfile(tmp_path):
     # check all the freaking line endings possible from the spec
     # test_string = u'something\r\nelse\n\rbaz\rbif\n'
-    line_endings = ["\r\n", "\n", "\n\r", "\r"]
-    strings = ["something", "else", "baz", "bif"]
+    line_endings = ("\r\n", "\n", "\n\r", "\r")
+    strings = ("something", "else", "baz", "bif")
 
     def _test_readline(t, ending):
         ending = "Failure with line ending: %s" % (

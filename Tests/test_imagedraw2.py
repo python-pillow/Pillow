@@ -145,7 +145,7 @@ def test_big_rectangle():
     # Test drawing a rectangle bigger than the image
     # Arrange
     im = Image.new("RGB", (W, H))
-    bbox = [(-1, -1), (W + 1, H + 1)]
+    bbox = ((-1, -1), (W + 1, H + 1))
     brush = ImageDraw2.Brush("orange")
     draw = ImageDraw2.Draw(im)
     expected = "Tests/images/imagedraw_big_rectangle.png"

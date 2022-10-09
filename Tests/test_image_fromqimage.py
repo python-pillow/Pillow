@@ -17,11 +17,11 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture
 def test_images():
-    ims = [
+    ims = (
         hopper(),
         Image.open("Tests/images/transparent.png"),
         Image.open("Tests/images/7x13.png"),
-    ]
+    )
     try:
         yield ims
     finally:

@@ -53,9 +53,9 @@ class TestImageGrab:
 
     def test_grabclipboard(self):
         if sys.platform == "darwin":
-            subprocess.call(["screencapture", "-cx"])
+            subprocess.call(("screencapture", "-cx"))
         elif sys.platform == "win32":
-            p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
+            p = subprocess.Popen(("powershell", "-command", "-"), stdin=subprocess.PIPE)
             p.stdin.write(
                 b"""[Reflection.Assembly]::LoadWithPartialName("System.Drawing")
 [Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
@@ -77,7 +77,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
     def test_grabclipboard_file(self):
-        p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
+        p = subprocess.Popen(("powershell", "-command", "-"), stdin=subprocess.PIPE)
         p.stdin.write(rb'Set-Clipboard -Path "Tests\images\hopper.gif"')
         p.communicate()
 
@@ -87,7 +87,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
     def test_grabclipboard_png(self):
-        p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
+        p = subprocess.Popen(("powershell", "-command", "-"), stdin=subprocess.PIPE)
         p.stdin.write(
             rb"""$bytes = [System.IO.File]::ReadAllBytes("Tests\images\hopper.png")
 $ms = new-object System.IO.MemoryStream(, $bytes)

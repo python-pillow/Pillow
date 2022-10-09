@@ -20,13 +20,13 @@ class TestColorLut3DCoreAPI:
             size_1d, size_2d, size_3d = (size, size, size)
 
         table = [
-            [
+            (
                 r / (size_1d - 1) if size_1d != 1 else 0,
                 g / (size_2d - 1) if size_2d != 1 else 0,
                 b / (size_3d - 1) if size_3d != 1 else 0,
                 r / (size_1d - 1) if size_1d != 1 else 0,
                 g / (size_2d - 1) if size_2d != 1 else 0,
-            ][:channels]
+            )[:channels]
             for b in range(size_3d)
             for g in range(size_2d)
             for r in range(size_1d)
@@ -83,17 +83,17 @@ class TestColorLut3DCoreAPI:
 
         with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 7
+                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, (0, 0, 0) * 7
             )
 
         with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 9
+                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, (0, 0, 0) * 9
             )
 
         with pytest.raises(TypeError):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, "0"] * 8
+                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, (0, 0, "0") * 8
             )
 
         with pytest.raises(TypeError):
@@ -190,15 +190,15 @@ class TestColorLut3DCoreAPI:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
-            [
+            (
                 g,
                 g.transpose(Image.Transpose.ROTATE_90),
                 g.transpose(Image.Transpose.ROTATE_180),
-            ],
+            ),
         )
 
         # Fast test with small cubes
-        for size in [2, 3, 5, 7, 11, 16, 17]:
+        for size in (2, 3, 5, 7, 11, 16, 17):
             assert_image_equal(
                 im,
                 im._new(
@@ -226,11 +226,11 @@ class TestColorLut3DCoreAPI:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
-            [
+            (
                 g,
                 g.transpose(Image.Transpose.ROTATE_90),
                 g.transpose(Image.Transpose.ROTATE_180),
-            ],
+            ),
         )
 
         # Red channel copied to alpha
@@ -249,12 +249,12 @@ class TestColorLut3DCoreAPI:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGBA",
-            [
+            (
                 g,
                 g.transpose(Image.Transpose.ROTATE_90),
                 g.transpose(Image.Transpose.ROTATE_180),
                 g.transpose(Image.Transpose.ROTATE_270),
-            ],
+            ),
         )
 
         assert_image_equal(
@@ -272,11 +272,11 @@ class TestColorLut3DCoreAPI:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
-            [
+            (
                 g,
                 g.transpose(Image.Transpose.ROTATE_90),
                 g.transpose(Image.Transpose.ROTATE_180),
-            ],
+            ),
         )
 
         # Reverse channels by splitting and using table
@@ -284,36 +284,36 @@ class TestColorLut3DCoreAPI:
         assert_image_equal(
             Image.merge('RGB', im.split()[::-1]),
             im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                    3, 2, 2, 2, [
+                    3, 2, 2, 2, (
                         0, 0, 0,  0, 0, 1,
                         0, 1, 0,  0, 1, 1,
 
                         1, 0, 0,  1, 0, 1,
                         1, 1, 0,  1, 1, 1,
-                    ])))
+                    ))))
         # fmt: on
 
     def test_overflow(self):
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
-            [
+            (
                 g,
                 g.transpose(Image.Transpose.ROTATE_90),
                 g.transpose(Image.Transpose.ROTATE_180),
-            ],
+            ),
         )
 
         # fmt: off
         transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
                               3, 2, 2, 2,
-                              [
+                              (
                                   -1, -1, -1,   2, -1, -1,
                                   -1,  2, -1,   2,  2, -1,
 
                                   -1, -1,  2,   2, -1,  2,
                                   -1,  2,  2,   2,  2,  2,
-                              ])).load()
+                              ))).load()
         # fmt: on
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
@@ -327,13 +327,13 @@ class TestColorLut3DCoreAPI:
         # fmt: off
         transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
                               3, 2, 2, 2,
-                              [
+                              (
                                   -3, -3, -3,   5, -3, -3,
                                   -3,  5, -3,   5,  5, -3,
 
                                   -3, -3,  5,   5, -3,  5,
                                   -3,  5,  5,   5,  5,  5,
-                              ])).load()
+                              ))).load()
         # fmt: on
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
@@ -360,30 +360,38 @@ class TestColorLut3DFilter:
             ImageFilter.Color3DLUT((11, 11, 66), [1])
 
         with pytest.raises(ValueError, match="table should have .+ items"):
-            ImageFilter.Color3DLUT((3, 3, 3), [1, 1, 1])
+            ImageFilter.Color3DLUT((3, 3, 3), (1, 1, 1))
 
         with pytest.raises(ValueError, match="table should have .+ items"):
-            ImageFilter.Color3DLUT((3, 3, 3), [[1, 1, 1]] * 2)
+            ImageFilter.Color3DLUT((3, 3, 3), [(1, 1, 1)] * 2)
 
         with pytest.raises(ValueError, match="should have a length of 4"):
-            ImageFilter.Color3DLUT((3, 3, 3), [[1, 1, 1]] * 27, channels=4)
+            ImageFilter.Color3DLUT((3, 3, 3), [(1, 1, 1)] * 27, channels=4)
 
         with pytest.raises(ValueError, match="should have a length of 3"):
-            ImageFilter.Color3DLUT((2, 2, 2), [[1, 1]] * 8)
+            ImageFilter.Color3DLUT((2, 2, 2), [(1, 1)] * 8)
 
         with pytest.raises(ValueError, match="Only 3 or 4 output"):
-            ImageFilter.Color3DLUT((2, 2, 2), [[1, 1]] * 8, channels=2)
+            ImageFilter.Color3DLUT((2, 2, 2), [(1, 1)] * 8, channels=2)
 
     def test_convert_table(self):
-        lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
+        lut = ImageFilter.Color3DLUT(2, (0, 1, 2) * 8)
         assert tuple(lut.size) == (2, 2, 2)
         assert lut.name == "Color 3D LUT"
 
-        # fmt: off
-        lut = ImageFilter.Color3DLUT((2, 2, 2), [
-            (0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, 11),
-            (12, 13, 14), (15, 16, 17), (18, 19, 20), (21, 22, 23)])
-        # fmt: on
+        lut = ImageFilter.Color3DLUT(
+            (2, 2, 2),
+            (
+                (0, 1, 2),
+                (3, 4, 5),
+                (6, 7, 8),
+                (9, 10, 11),
+                (12, 13, 14),
+                (15, 16, 17),
+                (18, 19, 20),
+                (21, 22, 23),
+            ),
+        )
         assert tuple(lut.size) == (2, 2, 2)
         assert lut.table == list(range(24))
 
@@ -429,11 +437,11 @@ class TestColorLut3DFilter:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
-            [
+            (
                 g,
                 g.transpose(Image.Transpose.ROTATE_90),
                 g.transpose(Image.Transpose.ROTATE_180),
-            ],
+            ),
         )
 
         lut = ImageFilter.Color3DLUT.generate((7, 9, 11), lambda r, g, b: (r, g, b))
@@ -465,12 +473,12 @@ class TestColorLut3DFilter:
         im.filter(lut)
 
     def test_repr(self):
-        lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
+        lut = ImageFilter.Color3DLUT(2, (0, 1, 2) * 8)
         assert repr(lut) == "<Color3DLUT from list size=2x2x2 channels=3>"
 
         lut = ImageFilter.Color3DLUT(
             (3, 4, 5),
-            array("f", [0, 0, 0, 0] * (3 * 4 * 5)),
+            array("f", (0, 0, 0, 0) * (3 * 4 * 5)),
             channels=4,
             target_mode="YCbCr",
             _copy_table=False,
@@ -525,11 +533,11 @@ class TestGenerateColorLut3D:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
-            [
+            (
                 g,
                 g.transpose(Image.Transpose.ROTATE_90),
                 g.transpose(Image.Transpose.ROTATE_180),
-            ],
+            ),
         )
         assert im == im.filter(lut)
 

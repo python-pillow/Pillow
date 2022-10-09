@@ -5,7 +5,7 @@ from PIL import Image
 
 @pytest.mark.parametrize(
     "test_file",
-    [
+    (
         "Tests/images/sgi_overrun_expandrowF04.bin",
         "Tests/images/sgi_crash.bin",
         "Tests/images/crash-6b7f2244da6d0ae297ee0754a424213444e92778.sgi",
@@ -17,7 +17,7 @@ from PIL import Image
         "Tests/images/crash-b82e64d4f3f76d7465b6af535283029eda211259.sgi",
         "Tests/images/crash-c1b2595b8b0b92cc5f38b6635e98e3a119ade807.sgi",
         "Tests/images/crash-db8bfa78b19721225425530c5946217720d7df4e.sgi",
-    ],
+    ),
 )
 def test_crashes(test_file):
     with open(test_file, "rb") as f:

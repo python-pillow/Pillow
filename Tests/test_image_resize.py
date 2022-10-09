@@ -39,7 +39,7 @@ class TestImagingCoreResize:
             self.resize(hopper("P"), (15, 12), Image.Resampling.BILINEAR)
         with pytest.raises(ValueError):
             self.resize(hopper("I;16"), (15, 12), Image.Resampling.BILINEAR)
-        for mode in ["L", "I", "F", "RGB", "RGBA", "CMYK", "YCbCr"]:
+        for mode in ("L", "I", "F", "RGB", "RGBA", "CMYK", "YCbCr"):
             im = hopper(mode)
             r = self.resize(im, (15, 12), Image.Resampling.BILINEAR)
             assert r.mode == mode

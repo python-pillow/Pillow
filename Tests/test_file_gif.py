@@ -279,13 +279,14 @@ def test_loading_multiple_palettes(path, mode):
 
 
 def test_headers_saving_for_animated_gifs(tmp_path):
-    important_headers = ["background", "version", "duration", "loop"]
+    important_headers = ("background", "version", "duration", "loop")
+
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
         info = im.info.copy()
-
         out = str(tmp_path / "temp.gif")
         im.save(out, save_all=True)
+
     with Image.open(out) as reread:
         for header in important_headers:
             assert info[header] == reread.info[header]
@@ -459,10 +460,9 @@ def test_dispose_none_load_end():
     # im = Image.open("transparent.gif")
     # im_rotated = im.rotate(180)
     # im.save("dispose_none_load_end.gif",
-    #         save_all=True, append_images=[im_rotated], disposal=[1,2])
+    #         save_all=True, append_images=[im_rotated], disposal=(1, 2))
     with Image.open("Tests/images/dispose_none_load_end.gif") as img:
         img.seek(1)
-
         assert_image_equal_tofile(img, "Tests/images/dispose_none_load_end_second.png")
 
 
@@ -578,7 +578,7 @@ def test_dispose2_palette(tmp_path):
     out = str(tmp_path / "temp.gif")
 
     # Four colors: white, grey, black, red
-    circles = [(255, 255, 255), (153, 153, 153), (0, 0, 0), (255, 0, 0)]
+    circles = ((255, 255, 255), (153, 153, 153), (0, 0, 0), (255, 0, 0))
 
     im_list = []
     for circle in circles:
@@ -587,7 +587,7 @@ def test_dispose2_palette(tmp_path):
 
         # Circle in center of each frame
         d = ImageDraw.Draw(img)
-        d.ellipse([(40, 40), (60, 60)], fill=circle)
+        d.ellipse(((40, 40), (60, 60)), fill=circle)
 
         im_list.append(img)
 
@@ -609,12 +609,12 @@ def test_dispose2_diff(tmp_path):
     out = str(tmp_path / "temp.gif")
 
     # 4 frames: red/blue, red/red, blue/blue, red/blue
-    circles = [
+    circles = (
         ((255, 0, 0, 255), (0, 0, 255, 255)),
         ((255, 0, 0, 255), (255, 0, 0, 255)),
         ((0, 0, 255, 255), (0, 0, 255, 255)),
         ((255, 0, 0, 255), (0, 0, 255, 255)),
-    ]
+    )
 
     im_list = []
     for i in range(len(circles)):
@@ -623,8 +623,8 @@ def test_dispose2_diff(tmp_path):
 
         # Two circles per frame
         d = ImageDraw.Draw(img)
-        d.ellipse([(0, 30), (40, 70)], fill=circles[i][0])
-        d.ellipse([(60, 30), (100, 70)], fill=circles[i][1])
+        d.ellipse(((0, 30), (40, 70)), fill=circles[i][0])
+        d.ellipse(((60, 30), (100, 70)), fill=circles[i][1])
 
         im_list.append(img)
 
@@ -654,14 +654,14 @@ def test_dispose2_background(tmp_path):
 
     im = Image.new("P", (100, 100))
     d = ImageDraw.Draw(im)
-    d.rectangle([(50, 0), (100, 100)], fill="#f00")
-    d.rectangle([(0, 0), (50, 100)], fill="#0f0")
+    d.rectangle(((50, 0), (100, 100)), fill="#f00")
+    d.rectangle(((0, 0), (50, 100)), fill="#0f0")
     im_list.append(im)
 
     im = Image.new("P", (100, 100))
     d = ImageDraw.Draw(im)
-    d.rectangle([(0, 0), (100, 50)], fill="#f00")
-    d.rectangle([(0, 50), (100, 100)], fill="#0f0")
+    d.rectangle(((0, 0), (100, 50)), fill="#f00")
+    d.rectangle(((0, 50), (100, 100)), fill="#0f0")
     im_list.append(im)
 
     im_list[0].save(
@@ -1153,7 +1153,7 @@ def test_palette_save_duplicate_entries(tmp_path):
     im.putpalette((0, 0, 0, 0, 0, 0))
 
     out = str(tmp_path / "temp.gif")
-    im.save(out, palette=[0, 0, 0, 0, 0, 0, 1, 1, 1])
+    im.save(out, palette=(0, 0, 0, 0, 0, 0, 1, 1, 1))
 
     with Image.open(out) as reloaded:
         assert reloaded.convert("RGB").getpixel((0, 1)) == (0, 0, 0)

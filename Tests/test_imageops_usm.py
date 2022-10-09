@@ -81,7 +81,7 @@ def test_blur_accuracy(test_images):
     i = snakes.filter(ImageFilter.GaussianBlur(0.4))
     # These pixels surrounded with pixels with 255 intensity.
     # They must be very close to 255.
-    for x, y, c in [
+    for x, y, c in (
         (1, 0, 1),
         (2, 0, 1),
         (7, 8, 1),
@@ -94,13 +94,13 @@ def test_blur_accuracy(test_images):
         (1, 3, 0),
         (4, 3, 2),
         (4, 2, 2),
-    ]:
+    ):
         assert i.im.getpixel((x, y))[c] >= 250
-    # Fuzzy match.
 
     def gp(x, y):
         return i.im.getpixel((x, y))
 
+    # Fuzzy match.
     assert 236 <= gp(7, 4)[0] <= 239
     assert 236 <= gp(7, 5)[2] <= 239
     assert 236 <= gp(7, 6)[2] <= 239

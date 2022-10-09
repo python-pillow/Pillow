@@ -8,7 +8,7 @@ codecs = dir(Image.core)
 
 
 # There are several internal implementations
-remarkable_factors = [
+remarkable_factors = (
     # special implementations
     1,
     2,
@@ -32,7 +32,7 @@ remarkable_factors = [
     (4, 7),
     (5, 7),
     (19, 17),
-]
+)
 
 gradients_image = Image.open("Tests/images/radial_gradients.png")
 gradients_image.load()

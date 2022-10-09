@@ -102,12 +102,12 @@ def test_path_odd_number_of_coordinates(coords):
 
 @pytest.mark.parametrize(
     "coords, expected",
-    [
+    (
         ([0, 1, 2, 3], (0.0, 1.0, 2.0, 3.0)),
         ([3, 2, 1, 0], (1.0, 0.0, 3.0, 2.0)),
         (0, (0.0, 0.0, 0.0, 0.0)),
         (1, (0.0, 0.0, 0.0, 0.0)),
-    ],
+    ),
 )
 def test_getbbox(coords, expected):
     # Arrange
@@ -119,7 +119,7 @@ def test_getbbox(coords, expected):
 
 def test_getbbox_no_args():
     # Arrange
-    p = ImagePath.Path([0, 1, 2, 3])
+    p = ImagePath.Path((0, 1, 2, 3))
 
     # Act / Assert
     with pytest.raises(TypeError):
@@ -128,10 +128,10 @@ def test_getbbox_no_args():
 
 @pytest.mark.parametrize(
     "coords, expected",
-    [
+    (
         (0, []),
         (list(range(6)), [(0.0, 3.0), (4.0, 9.0), (8.0, 15.0)]),
-    ],
+    ),
 )
 def test_map(coords, expected):
     # Arrange
@@ -147,7 +147,7 @@ def test_map(coords, expected):
 
 def test_transform():
     # Arrange
-    p = ImagePath.Path([0, 1, 2, 3])
+    p = ImagePath.Path((0, 1, 2, 3))
     theta = math.pi / 15
 
     # Act
@@ -165,7 +165,7 @@ def test_transform():
 
 def test_transform_with_wrap():
     # Arrange
-    p = ImagePath.Path([0, 1, 2, 3])
+    p = ImagePath.Path((0, 1, 2, 3))
     theta = math.pi / 15
 
     # Act

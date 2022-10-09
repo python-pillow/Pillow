@@ -113,7 +113,7 @@ class TestImage:
             with Image.open(PNGFILE, formats=123):
                 pass
 
-        for formats in [["JPEG"], ("JPEG",), ["jpeg"], ["Jpeg"], ["jPeG"], ["JpEg"]]:
+        for formats in (["JPEG"], ("JPEG",), ["jpeg"], ["Jpeg"], ["jPeG"], ["JpEg"]):
             with pytest.raises(UnidentifiedImageError):
                 with Image.open(PNGFILE, formats=formats):
                     pass
@@ -122,7 +122,7 @@ class TestImage:
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
 
-        for file in [PNGFILE, JPGFILE]:
+        for file in (PNGFILE, JPGFILE):
             with Image.open(file, formats=None) as im:
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
@@ -319,7 +319,7 @@ class TestImage:
         # https://stackoverflow.com/questions/3374878
         # Arrange
         expected_colors = sorted(
-            [
+            (
                 (1122, (128, 127, 0, 255)),
                 (1089, (0, 255, 0, 255)),
                 (3300, (255, 0, 0, 255)),
@@ -327,7 +327,7 @@ class TestImage:
                 (1122, (0, 255, 0, 128)),
                 (1122, (255, 0, 0, 128)),
                 (1089, (0, 255, 0, 0)),
-            ]
+            )
         )
 
         dst = Image.new("RGBA", size=(100, 100), color=(0, 255, 0, 255))
@@ -430,7 +430,7 @@ class TestImage:
 
         # Assert
         assert extensions
-        for ext in [".cur", ".icns", ".tif", ".tiff"]:
+        for ext in (".cur", ".icns", ".tif", ".tiff"):
             assert ext in extensions
 
     def test_effect_mandelbrot(self):
@@ -474,7 +474,7 @@ class TestImage:
         p2 = im.getpixel((0, 2))
         p3 = im.getpixel((0, 3))
         p4 = im.getpixel((0, 4))
-        assert_not_all_same([p0, p1, p2, p3, p4])
+        assert_not_all_same((p0, p1, p2, p3, p4))
 
     def test_effect_spread(self):
         # Arrange
@@ -520,7 +520,7 @@ class TestImage:
 
         assert Image.new("RGB", (1, 1))
         # Should pass lists too
-        i = Image.new("RGB", [1, 1])
+        i = Image.new("RGB", (1, 1))
         assert isinstance(i.size, tuple)
 
     @pytest.mark.timeout(0.75)
@@ -598,7 +598,7 @@ class TestImage:
 
     def test_register_extensions(self):
         test_format = "a"
-        exts = ["b", "c"]
+        exts = ("b", "c")
         for ext in exts:
             Image.register_extension(test_format, ext)
         ext_individual = Image.EXTENSION.copy()
@@ -636,14 +636,14 @@ class TestImage:
         im.putpixel((0, 1), 1)
         im.info["transparency"] = 0
 
-        im_remapped = im.remap_palette([1, 0])
+        im_remapped = im.remap_palette((1, 0))
         assert im_remapped.info["transparency"] == 1
         assert len(im_remapped.getpalette()) == 6
 
         # Test unused transparency
         im.info["transparency"] = 2
 
-        im_remapped = im.remap_palette([1, 0])
+        im_remapped = im.remap_palette((1, 0))
         assert "transparency" not in im_remapped.info
 
     def test__new(self):
@@ -671,11 +671,11 @@ class TestImage:
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
 
     def test_p_from_rgb_rgba(self):
-        for mode, color in [
+        for mode, color in (
             ("RGB", "#DDEEFF"),
             ("RGB", (221, 238, 255)),
             ("RGBA", (221, 238, 255, 255)),
-        ]:
+        ):
             im = Image.new("P", (100, 100), color)
             expected = Image.new(mode, (100, 100), color)
             assert_image_equal(im.convert(mode), expected)
@@ -943,7 +943,7 @@ class TestImage:
 
     @pytest.mark.parametrize(
         "path",
-        [
+        (
             "fli_overrun.bin",
             "sgi_overrun.bin",
             "sgi_overrun_expandrow.bin",
@@ -952,7 +952,7 @@ class TestImage:
             "pcx_overrun2.bin",
             "ossfuzz-4836216264589312.pcx",
             "01r_00.pcx",
-        ],
+        ),
     )
     def test_overrun(self, path):
         """For overrun completeness, test as:

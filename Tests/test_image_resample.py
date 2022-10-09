@@ -482,7 +482,7 @@ class TestCoreResampleBox:
             dst_size = (251, 188)
             reference = im.resize(dst_size, Image.Resampling.BICUBIC)
 
-            for tiles in [(1, 1), (3, 3), (9, 7), (100, 100)]:
+            for tiles in ((1, 1), (3, 3), (9, 7), (100, 100)):
                 tiled = self.resize_tiled(im, dst_size, *tiles)
                 assert_image_similar(reference, tiled, 0.01)
 
@@ -527,12 +527,12 @@ class TestCoreResampleBox:
         # When no resize is required
         im = hopper()
 
-        for size, box in [
+        for size, box in (
             ((40, 50), (0, 0, 40, 50)),
             ((40, 50), (0, 10, 40, 60)),
             ((40, 50), (10, 0, 50, 50)),
             ((40, 50), (10, 20, 50, 70)),
-        ]:
+        ):
             res = im.resize(size, Image.Resampling.LANCZOS, box)
             assert res.size == size
             assert_image_equal(res, im.crop(box), f">>> {size} {box}")
@@ -541,12 +541,12 @@ class TestCoreResampleBox:
         # When resize is required
         im = hopper()
 
-        for size, box in [
+        for size, box in (
             ((40, 50), (0.4, 0.4, 40.4, 50.4)),
             ((40, 50), (0.4, 10.4, 40.4, 60.4)),
             ((40, 50), (10.4, 0.4, 50.4, 50.4)),
             ((40, 50), (10.4, 20.4, 50.4, 70.4)),
-        ]:
+        ):
             res = im.resize(size, Image.Resampling.LANCZOS, box)
             assert res.size == size
             with pytest.raises(AssertionError, match=r"difference \d"):
@@ -560,12 +560,12 @@ class TestCoreResampleBox:
         # Can skip resize for one dimension
         im = hopper()
 
-        for size, box in [
+        for size, box in (
             ((40, 50), (0, 0, 40, 90)),
             ((40, 50), (0, 20, 40, 90)),
             ((40, 50), (10, 0, 50, 90)),
             ((40, 50), (10, 20, 50, 90)),
-        ]:
+        ):
             res = im.resize(size, flt, box)
             assert res.size == size
             # Borders should be slightly different
@@ -583,12 +583,12 @@ class TestCoreResampleBox:
         # Can skip resize for one dimension
         im = hopper()
 
-        for size, box in [
+        for size, box in (
             ((40, 50), (0, 0, 90, 50)),
             ((40, 50), (20, 0, 90, 50)),
             ((40, 50), (0, 10, 90, 60)),
             ((40, 50), (20, 10, 90, 60)),
-        ]:
+        ):
             res = im.resize(size, flt, box)
             assert res.size == size
             # Borders should be slightly different

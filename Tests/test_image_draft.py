@@ -18,7 +18,7 @@ def draft_roundtrip(in_mode, in_size, req_mode, req_size):
 
 
 def test_size():
-    for in_size, req_size, out_size in [
+    for in_size, req_size, out_size in (
         ((435, 361), (2048, 2048), (435, 361)),  # bigger
         ((435, 361), (435, 361), (435, 361)),  # same
         ((128, 128), (64, 64), (64, 64)),
@@ -40,14 +40,14 @@ def test_size():
         ((435, 361), (32, 46), (109, 91)),  # almost 8x
         ((435, 361), (32, 45), (55, 46)),  # more than 8x
         ((435, 361), (16, 22), (55, 46)),  # more than 16x
-    ]:
+    ):
         im = draft_roundtrip("L", in_size, None, req_size)
         im.load()
         assert im.size == out_size
 
 
 def test_mode():
-    for in_mode, req_mode, out_mode in [
+    for in_mode, req_mode, out_mode in (
         ("RGB", "1", "RGB"),
         ("RGB", "L", "L"),
         ("RGB", "RGB", "RGB"),
@@ -60,7 +60,7 @@ def test_mode():
         ("CMYK", "L", "CMYK"),
         ("CMYK", "RGB", "CMYK"),
         ("CMYK", "YCbCr", "CMYK"),
-    ]:
+    ):
         im = draft_roundtrip(in_mode, (64, 64), req_mode, None)
         im.load()
         assert im.mode == out_mode

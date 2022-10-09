@@ -79,7 +79,7 @@ def test_parsing():
     assert isinstance(s, PdfStream)
     assert s.dictionary.Name == "value"
     assert s.decode() == b"abcde"
-    for name in ["CreationDate", "ModDate"]:
+    for name in ("CreationDate", "ModDate"):
         for date, value in {
             b"20180729214124": "20180729214124",
             b"D:20180729214124": "20180729214124",

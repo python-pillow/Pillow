@@ -54,10 +54,10 @@ def to_xxx_colorsys(im, func, mode):
 
     conv_func = int_to_float
 
-    converted = [
+    converted = (
         tuple_to_ints(func(conv_func(_r), conv_func(_g), conv_func(_b)))
         for (_r, _g, _b) in itertools.zip_longest(r.tobytes(), g.tobytes(), b.tobytes())
-    ]
+    )
 
     new_bytes = b"".join(
         bytes(chr(h) + chr(s) + chr(v), "latin-1") for (h, s, v) in converted
