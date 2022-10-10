@@ -50,11 +50,12 @@ def test_getcolor():
         palette.getcolor("unknown")
 
 
-def test_getcolor_raises_on_incompatible_color():
-    palette = ImagePalette.ImagePalette(mode="RGB")
-    # Opaque RGBA colors should work
-    palette.getcolor((0, 0, 0, 255))
-    assert palette.getcolor((0, 0, 0)) == palette.getcolor((0, 0, 0, 255))
+def test_getcolor_rgba_color_rgb_palette():
+    palette = ImagePalette.ImagePalette("RGB")
+
+    # Opaque RGBA colors are converted
+    assert palette.getcolor((0, 0, 0, 255)) == palette.getcolor((0, 0, 0))
+
     with pytest.raises(ValueError):
         palette.getcolor((0, 0, 0, 128))
 
