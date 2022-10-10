@@ -688,11 +688,6 @@ bc6_clamp(float value) {
     }
 }
 
-static float
-bc6_gamma_correct(float value, float gamma) {
-    return powf(1.0f - expf(-value), 1.0f / gamma);
-}
-
 static void
 bc6_lerp(rgba *col, int *e0, int *e1, int s, int sign) {
     int r, g, b;
@@ -700,9 +695,9 @@ bc6_lerp(rgba *col, int *e0, int *e1, int s, int sign) {
     r = (e0[0] * t + e1[0] * s) >> 6;
     g = (e0[1] * t + e1[1] * s) >> 6;
     b = (e0[2] * t + e1[2] * s) >> 6;
-    col->r = bc6_clamp(bc6_gamma_correct(bc6_finalize(r, sign), 2.2f));
-    col->g = bc6_clamp(bc6_gamma_correct(bc6_finalize(g, sign), 2.2f));
-    col->b = bc6_clamp(bc6_gamma_correct(bc6_finalize(b, sign), 2.2f));
+    col->r = bc6_clamp(bc6_finalize(r, sign));
+    col->g = bc6_clamp(bc6_finalize(g, sign));
+    col->b = bc6_clamp(bc6_finalize(b, sign));
 }
 
 static void
