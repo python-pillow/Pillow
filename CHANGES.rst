@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Raise an error when allocating translucent color to RGB palette #6654
+  [jsbueno, radarhere]
+
 - Added reading of TIFF child images #6569
   [radarhere]
 
