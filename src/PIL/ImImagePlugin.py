@@ -352,7 +352,13 @@ def _save(im, fp, filename):
         fp.write(b"Lut: 1\r\n")
     fp.write(b"\000" * (511 - fp.tell()) + b"\032")
     if im.mode in ["P", "PA"]:
-        fp.write(im.im.getpalette("RGB", "RGB;L"))  # 768 bytes
+        im_palette = im.im.getpalette("RGB", "RGB;L")
+        colors = len(im_palette) // 3
+        palette = b""
+        for i in range(3):
+            palette += im_palette[colors * i : colors * (i + 1)]
+            palette += b"\x00" * (256 - colors)
+        fp.write(palette)  # 768 bytes
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, -1))])
 
 
