@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Added DDS BC6 reading #6449
+  [ShadelessFox, REDxEYE, radarhere]
+
 - Added support for opening WhiteIsZero 16-bit integer TIFF images #6642
   [JayWiz, radarhere]
 
