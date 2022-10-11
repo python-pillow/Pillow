@@ -55,9 +55,7 @@ def test_write_exif_metadata():
     test_buffer.seek(0)
     with Image.open(test_buffer) as webp_image:
         webp_exif = webp_image.info.get("exif", None)
-    assert webp_exif
-    if webp_exif:
-        assert webp_exif == expected_exif, "WebP EXIF didn't match"
+    assert webp_exif == expected_exif[6:], "WebP EXIF didn't match"
 
 
 def test_read_icc_profile():
