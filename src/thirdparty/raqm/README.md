@@ -81,5 +81,5 @@ The following projects have patches to support complex text layout using Raqm:
 [1]: https://github.com/fribidi/fribidi
 [2]: https://github.com/Tehreer/SheenBidi
 [3]: https://github.com/harfbuzz/harfbuzz
-[4]: https://www.freetype.org
+[4]: https://freetype.org/
 [5]: https://www.gtk.org/gtk-doc

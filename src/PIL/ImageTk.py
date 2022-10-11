@@ -107,6 +107,7 @@ class PhotoImage:
             mode = image.mode
             if mode == "P":
                 # palette mapped data
+                image.apply_transparency()
                 image.load()
                 try:
                     mode = image.palette.mode

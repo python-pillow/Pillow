@@ -5,6 +5,10 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -36,7 +40,7 @@ jobs:
 
     # sets env: pythonLocation
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.architecture }}
@@ -55,8 +59,8 @@ jobs:
         7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
         echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
 
-        winbuild\depends\gs9561w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs9.56.1\bin" >> $env:GITHUB_PATH
+        winbuild\depends\gs1000w32.exe /S
+        echo "C:\Program Files (x86)\gs\gs10.0.0\bin" >> $env:GITHUB_PATH
 
         xcopy /S /Y winbuild\depends\test_images\* Tests\images\
 
@@ -66,7 +70,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: winbuild\build
         key:
@@ -180,7 +184,7 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
         flags: GHA_Windows

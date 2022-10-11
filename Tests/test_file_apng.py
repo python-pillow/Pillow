@@ -39,13 +39,12 @@ def test_apng_basic():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_fdat():
-    with Image.open("Tests/images/apng/split_fdat.png") as im:
-        im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
-        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
-
-    with Image.open("Tests/images/apng/split_fdat_zero_chunk.png") as im:
+@pytest.mark.parametrize(
+    "filename",
+    ("Tests/images/apng/split_fdat.png", "Tests/images/apng/split_fdat_zero_chunk.png"),
+)
+def test_apng_fdat(filename):
+    with Image.open(filename) as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
