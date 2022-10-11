@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Round box position to integer when pasting embedded color #6517
+  [radarhere, nulano]
+
+- Removed EXIF prefix when saving WebP #6582
+  [radarhere]
+
+- Pad IM palette to 768 bytes when saving #6579
+  [radarhere]
+
 - Added DDS BC6 reading #6449
   [ShadelessFox, REDxEYE, radarhere]
 
