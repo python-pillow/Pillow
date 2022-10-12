@@ -193,9 +193,10 @@ def _save(im, fp, filename):
         warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
-        colormapfirst, colormaplength, colormapentry = 0, 256, 24
+        palette = im.im.getpalette("RGB", "BGR")
+        colormaplength, colormapentry = len(palette) // 3, 24
     else:
-        colormapfirst, colormaplength, colormapentry = 0, 0, 0
+        colormaplength, colormapentry = 0, 0
 
     if im.mode in ("LA", "RGBA"):
         flags = 8
@@ -210,7 +211,7 @@ def _save(im, fp, filename):
         o8(id_len)
         + o8(colormaptype)
         + o8(imagetype)
-        + o16(colormapfirst)
+        + o16(0)  # colormapfirst
         + o16(colormaplength)
         + o8(colormapentry)
         + o16(0)
@@ -225,7 +226,7 @@ def _save(im, fp, filename):
         fp.write(id_section)
 
     if colormaptype:
-        fp.write(im.im.getpalette("RGB", "BGR"))
+        fp.write(palette)
 
     if rle:
         ImageFile._save(

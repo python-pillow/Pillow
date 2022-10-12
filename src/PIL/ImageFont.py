@@ -141,6 +141,8 @@ class ImageFont:
 
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
 
+        See :ref:`deprecations <Font size and offset methods>` for more information.
+
         Returns width and height (in pixels) of given text.
 
         :param text: Text to measure.
@@ -338,7 +340,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
         :param language: Language of the text. Different languages may use
@@ -391,7 +393,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
         :param language: Language of the text. Different languages may use
@@ -432,6 +434,8 @@ class FreeTypeFont:
         1/64 pixel precision.
         Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
 
+        See :ref:`deprecations <Font size and offset methods>` for more information.
+
         Returns width and height (in pixels) of given text if rendered in font with
         provided direction, features, and language.
 
@@ -456,7 +460,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
                          .. versionadded:: 4.2.0
@@ -500,6 +504,8 @@ class FreeTypeFont:
 
         Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
 
+        See :ref:`deprecations <Font size and offset methods>` for more information.
+
         Returns width and height (in pixels) of given text if rendered in font
         with provided direction, features, and language, while respecting
         newline characters.
@@ -520,7 +526,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
         :param language: Language of the text. Different languages may use
@@ -558,6 +564,8 @@ class FreeTypeFont:
         .. deprecated:: 9.2.0
 
         Use :py:meth:`.getbbox` instead.
+
+        See :ref:`deprecations <Font size and offset methods>` for more information.
 
         Returns the offset of given text. This is the gap between the
         starting coordinate and the first marking. Note that this gap is
@@ -610,7 +618,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
                          .. versionadded:: 4.2.0
@@ -702,7 +710,7 @@ class FreeTypeFont:
                          example '-liga' to disable ligatures or '-kern'
                          to disable kerning.  To get all supported
                          features, see
-                         https://docs.microsoft.com/en-us/typography/opentype/spec/featurelist
+                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
                          Requires libraqm.
 
                          .. versionadded:: 4.2.0
@@ -852,6 +860,8 @@ class TransposedFont:
         .. deprecated:: 9.2.0
 
         Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
+
+        See :ref:`deprecations <Font size and offset methods>` for more information.
         """
         deprecate("getsize", 10, "getbbox or getlength")
         with warnings.catch_warnings():
@@ -945,6 +955,11 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
                      :data:`.ImageFont.Layout.BASIC` or :data:`.ImageFont.Layout.RAQM`.
+                     If it is available, Raqm layout will be used by default.
+                     Otherwise, basic layout will be used.
+
+                     Raqm layout is recommended for all non-English text. If Raqm layout
+                     is not required, basic layout will have better performance.
 
                      You can check support for Raqm layout using
                      :py:func:`PIL.features.check_feature` with ``feature="raqm"``.

@@ -679,12 +679,24 @@ class Image:
         new["shape"] = shape
         new["typestr"] = typestr
         new["version"] = 3
-        if self.mode == "1":
-            # Binary images need to be extended from bits to bytes
-            # See: https://github.com/python-pillow/Pillow/issues/350
-            new["data"] = self.tobytes("raw", "L")
-        else:
-            new["data"] = self.tobytes()
+        try:
+            if self.mode == "1":
+                # Binary images need to be extended from bits to bytes
+                # See: https://github.com/python-pillow/Pillow/issues/350
+                new["data"] = self.tobytes("raw", "L")
+            else:
+                new["data"] = self.tobytes()
+        except Exception as e:
+            if not isinstance(e, (MemoryError, RecursionError)):
+                try:
+                    import numpy
+                    from packaging.version import parse as parse_version
+                except ImportError:
+                    pass
+                else:
+                    if parse_version(numpy.__version__) < parse_version("1.23"):
+                        warnings.warn(e)
+            raise
         return new
 
     def __getstate__(self):
@@ -1949,11 +1961,7 @@ class Image:
 
         m_im = m_im.convert("L")
 
-        # Internally, we require 256 palette entries.
-        new_palette_bytes = (
-            palette_bytes + ((256 * bands) - len(palette_bytes)) * b"\x00"
-        )
-        m_im.putpalette(new_palette_bytes, palette_mode)
+        m_im.putpalette(palette_bytes, palette_mode)
         m_im.palette = ImagePalette.ImagePalette(palette_mode, palette=palette_bytes)
 
         if "transparency" in self.info:

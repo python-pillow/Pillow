@@ -86,6 +86,18 @@ def test_roundtrip(mode, tmp_path):
     assert_image_equal_tofile(im, out)
 
 
+def test_small_palette(tmp_path):
+    im = Image.new("P", (1, 1))
+    colors = [0, 1, 2]
+    im.putpalette(colors)
+
+    out = str(tmp_path / "temp.im")
+    im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.getpalette() == colors + [0] * 765
+
+
 def test_save_unsupported_mode(tmp_path):
     out = str(tmp_path / "temp.im")
     im = hopper("HSV")

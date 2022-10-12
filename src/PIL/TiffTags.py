@@ -160,6 +160,7 @@ TAGS_V2 = {
     323: ("TileLength", LONG, 1),
     324: ("TileOffsets", LONG, 0),
     325: ("TileByteCounts", LONG, 0),
+    330: ("SubIFDs", LONG, 0),
     332: ("InkSet", SHORT, 1),
     333: ("InkNames", ASCII, 1),
     334: ("NumberOfInks", SHORT, 1),

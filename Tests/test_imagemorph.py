@@ -65,14 +65,16 @@ def create_lut():
 
 
 # create_lut()
-def test_lut():
-    for op in ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge"):
-        lb = ImageMorph.LutBuilder(op_name=op)
-        assert lb.get_lut() is None
+@pytest.mark.parametrize(
+    "op", ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge")
+)
+def test_lut(op):
+    lb = ImageMorph.LutBuilder(op_name=op)
+    assert lb.get_lut() is None
 
-        lut = lb.build_lut()
-        with open(f"Tests/images/{op}.lut", "rb") as f:
-            assert lut == bytearray(f.read())
+    lut = lb.build_lut()
+    with open(f"Tests/images/{op}.lut", "rb") as f:
+        assert lut == bytearray(f.read())
 
 
 def test_no_operator_loaded():

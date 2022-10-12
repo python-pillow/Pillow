@@ -5,6 +5,10 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -44,7 +48,7 @@ jobs:
             qt5-devel-tools subversion xorg-server-extra zlib-devel
 
       - name: Add Lapack to PATH
-        uses: egor-tensin/cleanup-path@v1
+        uses: egor-tensin/cleanup-path@v2
         with:
           dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
 

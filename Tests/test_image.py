@@ -620,6 +620,7 @@ class TestImage:
 
         im_remapped = im.remap_palette([1, 0])
         assert im_remapped.info["transparency"] == 1
+        assert len(im_remapped.getpalette()) == 6
 
         # Test unused transparency
         im.info["transparency"] = 2
