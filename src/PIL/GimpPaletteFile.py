@@ -49,7 +49,7 @@ class GimpPaletteFile:
                 warnings.warn(
                     f"Palette file truncated at {self._max_file_size - len(s)} bytes"
                 )
-                break  # pragma: no cover
+                break
 
             # skip fields and comment lines
             if re.match(rb"\w+:|#", s):

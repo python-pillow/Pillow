@@ -21,19 +21,14 @@ def test_sanity():
 
 
 def test_large_file_is_truncated():
-    import warnings
-
+    original_max_file_size = GimpPaletteFile._max_file_size
     try:
-        original_value = GimpPaletteFile._max_file_size
         GimpPaletteFile._max_file_size = 100
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            with pytest.raises(UserWarning):
-                with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
-                    GimpPaletteFile(fp)
-
+        with open("Tests/images/custom_gimp_palette.gpl", "rb") as fp:
+            with pytest.warns(UserWarning):
+                GimpPaletteFile(fp)
     finally:
-        GimpPaletteFile._max_file_size = original_value
+        GimpPaletteFile._max_file_size = original_max_file_size
 
 
 def test_get_palette():
