@@ -189,7 +189,7 @@ class ChunkStream:
         self.close()
 
     def close(self):
-        self.queue = self.crc = self.fp = None
+        self.queue = self.fp = None
 
     def push(self, cid, pos, length):
 
@@ -224,7 +224,7 @@ class ChunkStream:
             ) from e
 
     def crc_skip(self, cid, data):
-        """Read checksum.  Used if the C module is not present"""
+        """Read checksum"""
 
         self.fp.read(4)
 
