@@ -414,7 +414,7 @@ class TestEmbeddable:
     def test_embeddable(self):
         import ctypes
 
-        with open("embed_pil.c", "w", encoding='utf-8') as fh:
+        with open("embed_pil.c", "w", encoding="utf-8") as fh:
             fh.write(
                 """
 #include "Python.h"
