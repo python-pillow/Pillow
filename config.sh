@@ -18,7 +18,7 @@ else
     GIFLIB_VERSION=5.2.1
 fi
 if [[ -n "$IS_MACOS" ]] || [[ "$MB_ML_VER" != 2014 ]]; then
-    ZLIB_VERSION=1.2.12
+    ZLIB_VERSION=1.2.13
 else
     ZLIB_VERSION=1.2.8
 fi
@@ -58,11 +58,6 @@ function pre_build {
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
-    fi
-
-    if [[ -n "$IS_MACOS" ]]; then
-        # Workaround for zlib 1.2.12
-        export cc=$CC
     fi
     build_new_zlib
 
