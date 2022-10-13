@@ -129,7 +129,6 @@ class TestImage:
             im.size = (3, 4)
 
     def test_invalid_image(self):
-        import io
 
         im = io.BytesIO(b"")
         with pytest.raises(UnidentifiedImageError):
@@ -699,15 +698,15 @@ class TestImage:
     def test_empty_exif(self):
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
-        assert dict(exif) != {}
+        assert dict(exif)
 
         # Test that exif data is cleared after another load
         exif.load(None)
-        assert dict(exif) == {}
+        assert not dict(exif)
 
         # Test loading just the EXIF header
         exif.load(b"Exif\x00\x00")
-        assert dict(exif) == {}
+        assert not dict(exif)
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"

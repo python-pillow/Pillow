@@ -131,8 +131,7 @@ class TestImageGetPixel(AccessTest):
         bands = Image.getmodebands(mode)
         if bands == 1:
             return 1
-        else:
-            return tuple(range(1, bands + 1))
+        return tuple(range(1, bands + 1))
 
     def check(self, mode, c=None):
         if not c:
@@ -415,7 +414,7 @@ class TestEmbeddable:
     def test_embeddable(self):
         import ctypes
 
-        with open("embed_pil.c", "w") as fh:
+        with open("embed_pil.c", "w", encoding='utf-8') as fh:
             fh.write(
                 """
 #include "Python.h"

@@ -934,7 +934,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, exif=tags, compression=compression)
 
         with Image.open(out) as reloaded:
-            for tag in tags.keys():
+            for tag in tags:
                 assert tag not in reloaded.getexif()
 
     def test_old_style_jpeg(self):
