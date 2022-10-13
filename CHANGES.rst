@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Don't reassign crc on ChunkStream close #6627
+  [wiredfool, radarhere]
+
 - Raise a warning if NumPy failed to raise an error during conversion #6594
   [radarhere]
 
