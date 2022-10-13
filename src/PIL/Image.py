@@ -880,7 +880,7 @@ class Image:
         and the palette can be represented without a palette.
 
         The current version supports all possible conversions between
-        "L", "RGB" and "CMYK." The ``matrix`` argument only supports "L"
+        "L", "RGB" and "CMYK". The ``matrix`` argument only supports "L"
         and "RGB".
 
         When translating a color image to greyscale (mode "L"),
@@ -898,6 +898,9 @@ class Image:
         When converting from "RGBA" to "P" without a ``matrix`` argument,
         this passes the operation to :py:meth:`~PIL.Image.Image.quantize`,
         and ``dither`` and ``palette`` are ignored.
+
+        When converting from "PA", if an "RGBA" palette is present, the alpha
+        channel from the image will be used instead of the values from the palette.
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
