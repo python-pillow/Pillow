@@ -15,6 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import os
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -80,11 +81,19 @@ class FliImageFile(ImageFile.ImageFile):
 
         if i16(s, 4) == 0xF1FA:
             # look for palette chunk
-            s = self.fp.read(6)
-            if i16(s, 4) == 11:
-                self._palette(palette, 2)
-            elif i16(s, 4) == 4:
-                self._palette(palette, 0)
+            number_of_subchunks = i16(s, 6)
+            chunk_size = None
+            for _ in range(number_of_subchunks):
+                if chunk_size is not None:
+                    self.fp.seek(chunk_size - 6, os.SEEK_CUR)
+                s = self.fp.read(6)
+                chunk_type = i16(s, 4)
+                if chunk_type in (4, 11):
+                    self._palette(palette, 2 if chunk_type == 11 else 0)
+                    break
+                chunk_size = i32(s)
+                if not chunk_size:
+                    break
 
         palette = [o8(r) + o8(g) + o8(b) for (r, g, b) in palette]
         self.palette = ImagePalette.raw("RGB", b"".join(palette))

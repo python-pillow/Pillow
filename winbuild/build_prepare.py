@@ -138,9 +138,9 @@ deps = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "https://zlib.net/zlib1212.zip",
-        "filename": "zlib1212.zip",
-        "dir": "zlib-1.2.12",
+        "url": "https://zlib.net/zlib1213.zip",
+        "filename": "zlib1213.zip",
+        "dir": "zlib-1.2.13",
         "license": "README",
         "license_pattern": "Copyright notice:\n\n(.+)$",
         "build": [

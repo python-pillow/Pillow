@@ -5,6 +5,30 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Don't reassign crc on ChunkStream close #6627
+  [wiredfool, radarhere]
+
+- Raise a warning if NumPy failed to raise an error during conversion #6594
+  [radarhere]
+
+- Show all frames in ImageShow #6611
+  [radarhere]
+
+- Allow FLI palette chunk to not be first #6626
+  [radarhere]
+
+- If first GIF frame has transparency for RGB_ALWAYS loading strategy, use RGBA mode #6592
+  [radarhere]
+
+- Round box position to integer when pasting embedded color #6517
+  [radarhere, nulano]
+
+- Removed EXIF prefix when saving WebP #6582
+  [radarhere]
+
+- Pad IM palette to 768 bytes when saving #6579
+  [radarhere]
+
 - Added DDS BC6 reading #6449
   [ShadelessFox, REDxEYE, radarhere]
 

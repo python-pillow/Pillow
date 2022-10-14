@@ -935,7 +935,30 @@ def test_standard_embedded_color(layout_engine):
     d = ImageDraw.Draw(im)
     d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
 
-    assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 6.2)
+    assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 3.1)
+
+
+@pytest.mark.parametrize("fontmode", ("1", "L", "RGBA"))
+def test_float_coord(layout_engine, fontmode):
+    txt = "Hello World!"
+    ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=layout_engine)
+
+    im = Image.new("RGB", (300, 64), "white")
+    d = ImageDraw.Draw(im)
+    if fontmode == "1":
+        d.fontmode = "1"
+
+    embedded_color = fontmode == "RGBA"
+    d.text((9.5, 9.5), txt, font=ttf, fill="#fa6", embedded_color=embedded_color)
+    try:
+        assert_image_similar_tofile(im, "Tests/images/text_float_coord.png", 3.9)
+    except AssertionError:
+        if fontmode == "1" and layout_engine == ImageFont.Layout.BASIC:
+            assert_image_similar_tofile(
+                im, "Tests/images/text_float_coord_1_alt.png", 1
+            )
+        else:
+            raise
 
 
 def test_cbdt(layout_engine):

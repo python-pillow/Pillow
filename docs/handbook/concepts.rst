@@ -60,7 +60,10 @@ Pillow also provides limited support for a few additional modes, including:
     * ``BGR;24`` (24-bit reversed true colour)
     * ``BGR;32`` (32-bit reversed true colour)
 
-However, Pillow doesn’t support user-defined modes; if you need to handle band
+Apart from these additional modes, Pillow doesn't yet support multichannel
+images with a depth of more than 8 bits per channel.
+
+Pillow also doesn’t support user-defined modes; if you need to handle band
 combinations that are not listed above, use a sequence of Image objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
