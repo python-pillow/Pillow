@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Fixed seeking to an L frame in a GIF #6576
+  [radarhere]
+
+- Consider all frames when selecting mode for PNG save_all #6610
+  [radarhere]
+
 - Don't reassign crc on ChunkStream close #6627
   [wiredfool, radarhere]
 
