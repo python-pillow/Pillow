@@ -83,6 +83,21 @@ def test_l_mode_transparency():
         assert im.load()[0, 0] == 128
 
 
+def test_l_mode_after_rgb():
+    with Image.open("Tests/images/no_palette_after_rgb.gif") as im:
+        im.seek(1)
+        assert im.mode == "RGB"
+
+        im.seek(2)
+        assert im.mode == "RGB"
+
+
+def test_palette_not_needed_for_second_frame():
+    with Image.open("Tests/images/palette_not_needed_for_second_frame.gif") as im:
+        im.seek(1)
+        assert_image_similar(im, hopper("L").convert("RGB"), 8)
+
+
 def test_strategy():
     with Image.open("Tests/images/iss634.gif") as im:
         expected_rgb_always = im.convert("RGB")
