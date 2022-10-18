@@ -289,9 +289,18 @@ def test_dxt5_colorblock_alpha_issue_4142():
         assert px[2] != 0
 
 
-def test_unimplemented_pixel_format():
+@pytest.mark.parametrize(
+    "test_file",
+    (
+        "Tests/images/unknown_fourcc.dds",
+        "Tests/images/unimplemented_fourcc.dds",
+        "Tests/images/unimplemented_dxgi_format.dds",
+        "Tests/images/unimplemented_pfflags.dds",
+    ),
+)
+def test_not_implemented(test_file):
     with pytest.raises(NotImplementedError):
-        with Image.open("Tests/images/unimplemented_pixel_format.dds"):
+        with Image.open(test_file):
             pass
 
 

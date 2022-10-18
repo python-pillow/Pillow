@@ -184,11 +184,6 @@ class DXGI_FORMAT(IntEnum):
     V408 = 132
     SAMPLER_FEEDBACK_MIN_MIP_OPAQUE = 133
     SAMPLER_FEEDBACK_MIP_REGION_USED_OPAQUE = 134
-    INVALID = -1
-
-    @classmethod
-    def _missing_(cls, value: object):
-        return cls.INVALID
 
 
 class D3DFMT(IntEnum):
@@ -262,11 +257,6 @@ class D3DFMT(IntEnum):
     ATI1 = i32(b"ATI1")
     ATI2 = i32(b"ATI2")
     MULTI2_ARGB8 = i32(b"MET1")
-    INVALID = -1
-
-    @classmethod
-    def _missing_(cls, value: object):
-        return cls.INVALID
 
 
 class DdsImageFile(ImageFile.ImageFile):
@@ -297,7 +287,6 @@ class DdsImageFile(ImageFile.ImageFile):
         # pixel format
         pfsize, pfflags_, fourcc_, bitcount = struct.unpack("<4I", header.read(16))
         pfflags = DDPF(pfflags_)
-        fourcc = D3DFMT(fourcc_)
         masks = struct.unpack("<4I", header.read(16))
         if flags & DDSD.CAPS:
             header.seek(20, io.SEEK_CUR)
@@ -333,6 +322,10 @@ class DdsImageFile(ImageFile.ImageFile):
                 raise OSError(msg)
         elif pfflags & DDPF.FOURCC:
             data_offs = header_size + 4
+            try:
+                fourcc = D3DFMT(fourcc_)
+            except ValueError:
+                raise NotImplementedError(f"Unimplemented pixel format {repr(fourcc_)}")
             if fourcc == D3DFMT.DXT1:
                 self.mode = "RGBA"
                 self.pixel_format = "DXT1"
