@@ -319,7 +319,8 @@ class DdsImageFile(ImageFile.ImageFile):
                 )
                 self.tile = [("raw", extents, 0, (rawmode[::-1], 0, 1))]
             else:
-                raise OSError(f"Unsupported bitcount {bitcount} for {pfflags}")
+                msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
+                raise OSError(msg)
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self.mode = "L"
@@ -328,7 +329,8 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.mode = "LA"
                 self.tile = [("raw", extents, 0, ("LA", 0, 1))]
             else:
-                raise OSError(f"Unsupported bitcount {bitcount} for {pfflags}")
+                msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
+                raise OSError(msg)
         elif pfflags & DDPF.FOURCC:
             data_offs = header_size + 4
             if fourcc == D3DFMT.DXT1:
@@ -398,12 +400,12 @@ class DdsImageFile(ImageFile.ImageFile):
                     msg = f"Unimplemented DXGI format {dxgi_format}"
                     raise NotImplementedError(msg)
             else:
-                msg = f"Unimplemented pixel format {repr(fourcc)}"
+                msg = f"Unimplemented pixel format {repr(fourcc_)}"
                 raise NotImplementedError(msg)
 
             self.tile = [tile]
         else:
-            msg = f"Unknown pixel format flags {repr(pfflags)}"
+            msg = f"Unknown pixel format flags {repr(pfflags_)}"
             raise NotImplementedError(msg)
 
     def load_seek(self, pos):
