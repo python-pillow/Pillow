@@ -67,3 +67,9 @@ Added DDS ATI1, ATI2 and BC6H reading
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Support has been added to read the ATI1, ATI2 and BC6H formats of DDS images.
+
+Show all frames with ImageShow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calling :py:meth:`~PIL.Image.Image.show` or using
+:py:mod:`~PIL.ImageShow`, all frames will now be shown.
