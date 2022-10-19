@@ -63,7 +63,7 @@ TODO
 Other Changes
 =============
 
-Added DDS ATI1 and ATI2 reading
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added DDS ATI1, ATI2 and BC6H reading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Support has been added to read the ATI1 and ATI2 formats of DDS images.
+Support has been added to read the ATI1, ATI2 and BC6H formats of DDS images.
