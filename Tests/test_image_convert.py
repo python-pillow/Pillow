@@ -38,6 +38,12 @@ def test_sanity():
             convert(im, output_mode)
 
 
+def test_unsupported_conversion():
+    im = hopper()
+    with pytest.raises(ValueError):
+        im.convert("INVALID")
+
+
 def test_default():
 
     im = hopper("P")

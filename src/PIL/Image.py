@@ -1051,7 +1051,10 @@ class Image:
         except ValueError:
             try:
                 # normalize source image and try again
-                im = self.im.convert(getmodebase(self.mode))
+                modebase = getmodebase(self.mode)
+                if modebase == self.mode:
+                    raise
+                im = self.im.convert(modebase)
                 im = im.convert(mode, dither)
             except KeyError as e:
                 raise ValueError("illegal conversion") from e
