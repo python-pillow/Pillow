@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Added conversion between RGB/RGBA/RGBX and LAB #6647
+  [radarhere]
+
+- Do not attempt normalization if mode is already normal #6644
+  [radarhere]
+
 - Fixed seeking to an L frame in a GIF #6576
   [radarhere]
 
