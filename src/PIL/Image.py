@@ -1042,6 +1042,19 @@ class Image:
                     warnings.warn("Couldn't allocate palette entry for transparency")
             return new
 
+        if "LAB" in (self.mode, mode):
+            other_mode = mode if self.mode == "LAB" else self.mode
+            if other_mode in ("RGB", "RGBA", "RGBX"):
+                from . import ImageCms
+
+                srgb = ImageCms.createProfile("sRGB")
+                lab = ImageCms.createProfile("LAB")
+                profiles = [lab, srgb] if self.mode == "LAB" else [srgb, lab]
+                transform = ImageCms.buildTransform(
+                    profiles[0], profiles[1], self.mode, mode
+                )
+                return transform.apply(self)
+
         # colorspace conversion
         if dither is None:
             dither = Dither.FLOYDSTEINBERG
