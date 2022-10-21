@@ -175,6 +175,13 @@ def test_rle8():
             with pytest.raises(ValueError):
                 im.load()
 
+def test_rle4():
+    with Image.open("Tests/images/hopper_rle4.bmp") as im:
+        assert_image_similar_tofile(im, "Tests/images/hopper_4bit.bmp", 12)
+
+    with Image.open("Tests/images/bmp/g/pal4rle.bmp") as im:
+        assert_image_similar_tofile(im, "Tests/images/bmp/g/pal4.bmp", 12)
+
 
 @pytest.mark.parametrize(
     "file_name,length",
