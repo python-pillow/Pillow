@@ -348,7 +348,7 @@ class BmpRle4Decoder(ImageFile.PyDecoder):
                     # Too much data for row
                     num_pixels = max(0, self.state.xsize - x)
                 first_pixel = o8(byte[0] >> 4)
-                second_pixel = o8(byte[0] & 0x0f)
+                second_pixel = o8(byte[0] & 0x0F)
                 for index in range(num_pixels):
                     if index % 2 == 0:
                         data += first_pixel
@@ -379,11 +379,11 @@ class BmpRle4Decoder(ImageFile.PyDecoder):
                     for byte_read in bytes_read:
                         first_pixel = o8(byte_read >> 4)
                         data += first_pixel
-                        second_pixel = o8(byte_read & 0x0f)
+                        second_pixel = o8(byte_read & 0x0F)
                         data += second_pixel
                     if len(bytes_read) < total_bytes_to_read:
                         break
-                    x += byte[0] 
+                    x += byte[0]
 
                     # align to 16-bit word boundary
                     if self.fd.tell() % 2 != 0:
@@ -391,6 +391,7 @@ class BmpRle4Decoder(ImageFile.PyDecoder):
         rawmode = "L" if self.mode == "L" else "P"
         self.set_as_raw(bytes(data), (rawmode, 0, self.args[-1]))
         return -1, 0
+
 
 # =============================================================================
 # Image plugin for the DIB format (BMP alias)
