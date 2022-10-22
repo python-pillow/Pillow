@@ -56,8 +56,8 @@ The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **compression**
-    Set to ``bmp_rle8`` if the file is a 256-color run-length encoded image.
-    Set to ``bmp_rle4`` if the file is a 16-color run-length encoded image.
+    Set to 1 if the file is a 256-color run-length encoded image.
+    Set to 2 if the file is a 16-color run-length encoded image.
 
 DDS
 ^^^
