@@ -127,9 +127,6 @@ function pre_build {
 }
 
 function pip_wheel_cmd {
-    git clone https://github.com/pypa/auditwheel
-    (cd auditwheel && git checkout fe45465 && pipx install --force .)
-
     local abs_wheelhouse=$1
     if [ -z "$IS_MACOS" ]; then
         CFLAGS="$CFLAGS --std=c99"  # for Raqm
