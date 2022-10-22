@@ -229,7 +229,7 @@ class BmpImageFile(ImageFile.ImageFile):
                 palette = read(padding * file_info["colors"])
                 greyscale = True
                 indices = (
-                    (0, file_info["colors"])
+                    (0, 255)
                     if file_info["colors"] == 2
                     else list(range(file_info["colors"]))
                 )
