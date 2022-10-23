@@ -240,8 +240,8 @@ def test_header_token_too_long(tmp_path):
 def test_truncated_file(tmp_path):
     # Test EOF in header
     path = str(tmp_path / "temp.pgm")
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("P6")
+    with open(path, "wb") as f:
+        f.write(b"P6")
 
     with pytest.raises(ValueError) as e:
         with Image.open(path):
@@ -256,11 +256,11 @@ def test_truncated_file(tmp_path):
             im.load()
 
 
-@pytest.mark.parametrize("maxval", (0, 65536))
+@pytest.mark.parametrize("maxval", (b"0", b"65536"))
 def test_invalid_maxval(maxval, tmp_path):
     path = str(tmp_path / "temp.ppm")
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("P6\n3 1 " + str(maxval))
+    with open(path, "wb") as f:
+        f.write(b"P6\n3 1 " + maxval)
 
     with pytest.raises(ValueError) as e:
         with Image.open(path):
@@ -283,13 +283,13 @@ def test_neg_ppm():
 def test_mimetypes(tmp_path):
     path = str(tmp_path / "temp.pgm")
 
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("P4\n128 128\n255")
+    with open(path, "wb") as f:
+        f.write(b"P4\n128 128\n255")
     with Image.open(path) as im:
         assert im.get_format_mimetype() == "image/x-portable-bitmap"
 
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("PyCMYK\n128 128\n255")
+    with open(path, "wb") as f:
+        f.write(b"PyCMYK\n128 128\n255")
     with Image.open(path) as im:
         assert im.get_format_mimetype() == "image/x-portable-anymap"
 
