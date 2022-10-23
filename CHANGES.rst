@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Decode JPEG compressed BLP1 data in original mode #6678
+  [radarhere]
+
+- Added GPS TIFF tag info #6661
+  [radarhere]
+
 - Added conversion between RGB/RGBA/RGBX and LAB #6647
   [radarhere]
 
@@ -41,7 +47,7 @@ Changelog (Pillow)
 - Pad IM palette to 768 bytes when saving #6579
   [radarhere]
 
-- Added DDS BC6 reading #6449
+- Added DDS BC6H reading #6449
   [ShadelessFox, REDxEYE, radarhere]
 
 - Added support for opening WhiteIsZero 16-bit integer TIFF images #6642
