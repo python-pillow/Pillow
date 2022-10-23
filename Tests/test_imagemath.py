@@ -6,7 +6,7 @@ from PIL import Image, ImageMath
 def pixel(im):
     if hasattr(im, "im"):
         return f"{im.mode} {repr(im.getpixel((0, 0)))}"
-    elif isinstance(im, int):
+    if isinstance(im, int):
         return int(im)  # hack to deal with booleans
 
 
