@@ -129,7 +129,6 @@ class TestImage:
             im.size = (3, 4)
 
     def test_invalid_image(self):
-
         im = io.BytesIO(b"")
         with pytest.raises(UnidentifiedImageError):
             with Image.open(im):
