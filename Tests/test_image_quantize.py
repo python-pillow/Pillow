@@ -25,7 +25,7 @@ def test_libimagequant_quantize():
         libimagequant = parse_version(features.version_feature("libimagequant"))
         if libimagequant < parse_version("4"):
             pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
-    converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
+    converted = image.quantize(100, Image.LIBIMAGEQUANT)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 15)
     assert len(converted.getcolors()) == 100
@@ -33,7 +33,7 @@ def test_libimagequant_quantize():
 
 def test_octree_quantize():
     image = hopper()
-    converted = image.quantize(100, Image.Quantize.FASTOCTREE)
+    converted = image.quantize(100, Image.FASTOCTREE)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 20)
     assert len(converted.getcolors()) == 100
@@ -60,7 +60,7 @@ def test_quantize_no_dither():
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
         palette = palette.convert("P")
 
-    converted = image.quantize(dither=Image.Dither.NONE, palette=palette)
+    converted = image.quantize(dither=Image.NONE, palette=palette)
     assert converted.mode == "P"
     assert converted.palette.palette == palette.palette.palette
 
@@ -72,7 +72,7 @@ def test_quantize_no_dither2():
     palette = Image.new("P", (1, 1))
     data = (0, 0, 0, 32, 32, 32)
     palette.putpalette(data)
-    quantized = im.quantize(dither=Image.Dither.NONE, palette=palette)
+    quantized = im.quantize(dither=Image.NONE, palette=palette)
 
     assert tuple(quantized.palette.palette) == data
 
@@ -86,8 +86,8 @@ def test_quantize_dither_diff():
     with Image.open("Tests/images/caption_6_33_22.png") as palette:
         palette = palette.convert("P")
 
-    dither = image.quantize(dither=Image.Dither.FLOYDSTEINBERG, palette=palette)
-    nodither = image.quantize(dither=Image.Dither.NONE, palette=palette)
+    dither = image.quantize(dither=Image.FLOYDSTEINBERG, palette=palette)
+    nodither = image.quantize(dither=Image.NONE, palette=palette)
 
     assert dither.tobytes() != nodither.tobytes()
 
@@ -112,10 +112,10 @@ def test_transparent_colors_equal():
 @pytest.mark.parametrize(
     "method, color",
     (
-        (Image.Quantize.MEDIANCUT, (0, 0, 0)),
-        (Image.Quantize.MAXCOVERAGE, (0, 0, 0)),
-        (Image.Quantize.FASTOCTREE, (0, 0, 0)),
-        (Image.Quantize.FASTOCTREE, (0, 0, 0, 0)),
+        (Image.MEDIANCUT, (0, 0, 0)),
+        (Image.MAXCOVERAGE, (0, 0, 0)),
+        (Image.FASTOCTREE, (0, 0, 0)),
+        (Image.FASTOCTREE, (0, 0, 0, 0)),
     ),
 )
 def test_palette(method, color):

@@ -298,8 +298,8 @@ def test_palette_handling(tmp_path):
     with Image.open(TEST_GIF) as im:
         im = im.convert("RGB")
 
-        im = im.resize((100, 100), Image.Resampling.LANCZOS)
-        im2 = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
+        im = im.resize((100, 100), Image.LANCZOS)
+        im2 = im.convert("P", palette=Image.ADAPTIVE, colors=256)
 
         f = str(tmp_path / "temp.gif")
         im2.save(f, optimize=True)
@@ -1175,7 +1175,7 @@ def test_save_I(tmp_path):
 def test_getdata():
     # Test getheader/getdata against legacy values.
     # Create a 'P' image with holes in the palette.
-    im = Image._wedge().resize((16, 16), Image.Resampling.NEAREST)
+    im = Image._wedge().resize((16, 16), Image.NEAREST)
     im.putpalette(ImagePalette.ImagePalette("RGB"))
     im.info = {"background": 0}
 

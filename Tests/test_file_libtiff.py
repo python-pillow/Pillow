@@ -111,7 +111,7 @@ class TestFileLibTiff(LibTiffTestCase):
         test_file = "Tests/images/hopper_g4_500.tif"
         with Image.open(test_file) as orig:
             out = str(tmp_path / "temp.tif")
-            rot = orig.transpose(Image.Transpose.ROTATE_90)
+            rot = orig.transpose(Image.ROTATE_90)
             assert rot.size == (500, 500)
             rot.save(out)
 

@@ -175,7 +175,7 @@ def test_bitmap():
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     with Image.open("Tests/images/pil123rgba.png") as small:
-        small = small.resize((50, 50), Image.Resampling.NEAREST)
+        small = small.resize((50, 50), Image.NEAREST)
 
         # Act
         draw.bitmap((10, 10), small)
@@ -295,7 +295,7 @@ def test_ellipse_symmetric():
         im = Image.new("RGB", (width, 100))
         draw = ImageDraw.Draw(im)
         draw.ellipse(bbox, fill="green", outline="blue")
-        assert_image_equal(im, im.transpose(Image.Transpose.FLIP_LEFT_RIGHT))
+        assert_image_equal(im, im.transpose(Image.FLIP_LEFT_RIGHT))
 
 
 def test_ellipse_width():

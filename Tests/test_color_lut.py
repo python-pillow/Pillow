@@ -44,93 +44,83 @@ class TestColorLut3DCoreAPI:
 
         with pytest.raises(ValueError, match="filter"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BICUBIC, *self.generate_identity_table(3, 3)
+                "RGB", Image.BICUBIC, *self.generate_identity_table(3, 3)
             )
 
         with pytest.raises(ValueError, match="image mode"):
             im.im.color_lut_3d(
-                "wrong", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
+                "wrong", Image.BILINEAR, *self.generate_identity_table(3, 3)
             )
 
         with pytest.raises(ValueError, match="table_channels"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(5, 3)
+                "RGB", Image.BILINEAR, *self.generate_identity_table(5, 3)
             )
 
         with pytest.raises(ValueError, match="table_channels"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(1, 3)
+                "RGB", Image.BILINEAR, *self.generate_identity_table(1, 3)
             )
 
         with pytest.raises(ValueError, match="table_channels"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(2, 3)
+                "RGB", Image.BILINEAR, *self.generate_identity_table(2, 3)
             )
 
         with pytest.raises(ValueError, match="Table size"):
             im.im.color_lut_3d(
                 "RGB",
-                Image.Resampling.BILINEAR,
+                Image.BILINEAR,
                 *self.generate_identity_table(3, (1, 3, 3)),
             )
 
         with pytest.raises(ValueError, match="Table size"):
             im.im.color_lut_3d(
                 "RGB",
-                Image.Resampling.BILINEAR,
+                Image.BILINEAR,
                 *self.generate_identity_table(3, (66, 3, 3)),
             )
 
         with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 7
-            )
+            im.im.color_lut_3d("RGB", Image.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 7)
 
         with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 9
-            )
+            im.im.color_lut_3d("RGB", Image.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 9)
 
         with pytest.raises(TypeError):
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, "0"] * 8
-            )
+            im.im.color_lut_3d("RGB", Image.BILINEAR, 3, 2, 2, 2, [0, 0, "0"] * 8)
 
         with pytest.raises(TypeError):
-            im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, 16)
+            im.im.color_lut_3d("RGB", Image.BILINEAR, 3, 2, 2, 2, 16)
 
     def test_correct_args(self):
         im = Image.new("RGB", (10, 10), 0)
 
-        im.im.color_lut_3d(
-            "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
+        im.im.color_lut_3d("RGB", Image.BILINEAR, *self.generate_identity_table(3, 3))
 
-        im.im.color_lut_3d(
-            "CMYK", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
+        im.im.color_lut_3d("CMYK", Image.BILINEAR, *self.generate_identity_table(4, 3))
 
         im.im.color_lut_3d(
             "RGB",
-            Image.Resampling.BILINEAR,
+            Image.BILINEAR,
             *self.generate_identity_table(3, (2, 3, 3)),
         )
 
         im.im.color_lut_3d(
             "RGB",
-            Image.Resampling.BILINEAR,
+            Image.BILINEAR,
             *self.generate_identity_table(3, (65, 3, 3)),
         )
 
         im.im.color_lut_3d(
             "RGB",
-            Image.Resampling.BILINEAR,
+            Image.BILINEAR,
             *self.generate_identity_table(3, (3, 65, 3)),
         )
 
         im.im.color_lut_3d(
             "RGB",
-            Image.Resampling.BILINEAR,
+            Image.BILINEAR,
             *self.generate_identity_table(3, (3, 3, 65)),
         )
 
@@ -138,53 +128,41 @@ class TestColorLut3DCoreAPI:
         with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("L", (10, 10), 0)
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
+                "RGB", Image.BILINEAR, *self.generate_identity_table(3, 3)
             )
 
         with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "L", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
+            im.im.color_lut_3d("L", Image.BILINEAR, *self.generate_identity_table(3, 3))
 
         with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("L", (10, 10), 0)
+            im.im.color_lut_3d("L", Image.BILINEAR, *self.generate_identity_table(3, 3))
+
+        with pytest.raises(ValueError, match="wrong mode"):
+            im = Image.new("RGB", (10, 10), 0)
             im.im.color_lut_3d(
-                "L", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
+                "RGBA", Image.BILINEAR, *self.generate_identity_table(3, 3)
             )
 
         with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new("RGB", (10, 10), 0)
             im.im.color_lut_3d(
-                "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
+                "RGB", Image.BILINEAR, *self.generate_identity_table(4, 3)
             )
 
     def test_correct_mode(self):
         im = Image.new("RGBA", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
+        im.im.color_lut_3d("RGBA", Image.BILINEAR, *self.generate_identity_table(3, 3))
 
         im = Image.new("RGBA", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
+        im.im.color_lut_3d("RGBA", Image.BILINEAR, *self.generate_identity_table(4, 3))
 
         im = Image.new("RGB", (10, 10), 0)
-        im.im.color_lut_3d(
-            "HSV", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
+        im.im.color_lut_3d("HSV", Image.BILINEAR, *self.generate_identity_table(3, 3))
 
         im = Image.new("RGB", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
+        im.im.color_lut_3d("RGBA", Image.BILINEAR, *self.generate_identity_table(4, 3))
 
     def test_identities(self):
         g = Image.linear_gradient("L")
@@ -192,8 +170,8 @@ class TestColorLut3DCoreAPI:
             "RGB",
             [
                 g,
-                g.transpose(Image.Transpose.ROTATE_90),
-                g.transpose(Image.Transpose.ROTATE_180),
+                g.transpose(Image.ROTATE_90),
+                g.transpose(Image.ROTATE_180),
             ],
         )
 
@@ -204,7 +182,7 @@ class TestColorLut3DCoreAPI:
                 im._new(
                     im.im.color_lut_3d(
                         "RGB",
-                        Image.Resampling.BILINEAR,
+                        Image.BILINEAR,
                         *self.generate_identity_table(3, size),
                     )
                 ),
@@ -216,7 +194,7 @@ class TestColorLut3DCoreAPI:
             im._new(
                 im.im.color_lut_3d(
                     "RGB",
-                    Image.Resampling.BILINEAR,
+                    Image.BILINEAR,
                     *self.generate_identity_table(3, (2, 2, 65)),
                 )
             ),
@@ -228,8 +206,8 @@ class TestColorLut3DCoreAPI:
             "RGB",
             [
                 g,
-                g.transpose(Image.Transpose.ROTATE_90),
-                g.transpose(Image.Transpose.ROTATE_180),
+                g.transpose(Image.ROTATE_90),
+                g.transpose(Image.ROTATE_180),
             ],
         )
 
@@ -239,7 +217,7 @@ class TestColorLut3DCoreAPI:
             im._new(
                 im.im.color_lut_3d(
                     "RGBA",
-                    Image.Resampling.BILINEAR,
+                    Image.BILINEAR,
                     *self.generate_identity_table(4, 17),
                 )
             ),
@@ -251,9 +229,9 @@ class TestColorLut3DCoreAPI:
             "RGBA",
             [
                 g,
-                g.transpose(Image.Transpose.ROTATE_90),
-                g.transpose(Image.Transpose.ROTATE_180),
-                g.transpose(Image.Transpose.ROTATE_270),
+                g.transpose(Image.ROTATE_90),
+                g.transpose(Image.ROTATE_180),
+                g.transpose(Image.ROTATE_270),
             ],
         )
 
@@ -262,7 +240,7 @@ class TestColorLut3DCoreAPI:
             im._new(
                 im.im.color_lut_3d(
                     "RGBA",
-                    Image.Resampling.BILINEAR,
+                    Image.BILINEAR,
                     *self.generate_identity_table(3, 17),
                 )
             ),
@@ -274,8 +252,8 @@ class TestColorLut3DCoreAPI:
             "RGB",
             [
                 g,
-                g.transpose(Image.Transpose.ROTATE_90),
-                g.transpose(Image.Transpose.ROTATE_180),
+                g.transpose(Image.ROTATE_90),
+                g.transpose(Image.ROTATE_180),
             ],
         )
 
@@ -283,7 +261,7 @@ class TestColorLut3DCoreAPI:
         # fmt: off
         assert_image_equal(
             Image.merge('RGB', im.split()[::-1]),
-            im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
+            im._new(im.im.color_lut_3d('RGB', Image.BILINEAR,
                     3, 2, 2, 2, [
                         0, 0, 0,  0, 0, 1,
                         0, 1, 0,  0, 1, 1,
@@ -299,13 +277,13 @@ class TestColorLut3DCoreAPI:
             "RGB",
             [
                 g,
-                g.transpose(Image.Transpose.ROTATE_90),
-                g.transpose(Image.Transpose.ROTATE_180),
+                g.transpose(Image.ROTATE_90),
+                g.transpose(Image.ROTATE_180),
             ],
         )
 
         # fmt: off
-        transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
+        transformed = im._new(im.im.color_lut_3d('RGB', Image.BILINEAR,
                               3, 2, 2, 2,
                               [
                                   -1, -1, -1,   2, -1, -1,
@@ -325,7 +303,7 @@ class TestColorLut3DCoreAPI:
         assert transformed[205, 205] == (255, 255, 0)
 
         # fmt: off
-        transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
+        transformed = im._new(im.im.color_lut_3d('RGB', Image.BILINEAR,
                               3, 2, 2, 2,
                               [
                                   -3, -3, -3,   5, -3, -3,
@@ -431,8 +409,8 @@ class TestColorLut3DFilter:
             "RGB",
             [
                 g,
-                g.transpose(Image.Transpose.ROTATE_90),
-                g.transpose(Image.Transpose.ROTATE_180),
+                g.transpose(Image.ROTATE_90),
+                g.transpose(Image.ROTATE_180),
             ],
         )
 
@@ -527,8 +505,8 @@ class TestGenerateColorLut3D:
             "RGB",
             [
                 g,
-                g.transpose(Image.Transpose.ROTATE_90),
-                g.transpose(Image.Transpose.ROTATE_180),
+                g.transpose(Image.ROTATE_90),
+                g.transpose(Image.ROTATE_180),
             ],
         )
         assert im == im.filter(lut)

@@ -35,8 +35,8 @@ def test_sanity():
 @pytest.fixture(
     scope="module",
     params=[
-        pytest.param(ImageFont.Layout.BASIC),
-        pytest.param(ImageFont.Layout.RAQM, marks=skip_unless_feature("raqm")),
+        pytest.param(ImageFont.LAYOUT_BASIC),
+        pytest.param(ImageFont.LAYOUT_RAQM, marks=skip_unless_feature("raqm")),
     ],
 )
 def layout_engine(request):
@@ -182,7 +182,7 @@ def test_getlength(
     im = Image.new(mode, (1, 1), 0)
     d = ImageDraw.Draw(im)
 
-    if layout_engine == ImageFont.Layout.BASIC:
+    if layout_engine == ImageFont.LAYOUT_BASIC:
         length = d.textlength(text, f)
         assert length == length_basic
     else:
@@ -314,9 +314,7 @@ def test_multiline_spacing(font):
     assert_image_similar_tofile(im, "Tests/images/multiline_text_spacing.png", 2.5)
 
 
-@pytest.mark.parametrize(
-    "orientation", (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270)
-)
+@pytest.mark.parametrize("orientation", (Image.ROTATE_90, Image.ROTATE_270))
 def test_rotated_transposed_font(font, orientation):
     img_grey = Image.new("L", (100, 100))
     draw = ImageDraw.Draw(img_grey)
@@ -358,9 +356,9 @@ def test_rotated_transposed_font(font, orientation):
     "orientation",
     (
         None,
-        Image.Transpose.ROTATE_180,
-        Image.Transpose.FLIP_LEFT_RIGHT,
-        Image.Transpose.FLIP_TOP_BOTTOM,
+        Image.ROTATE_180,
+        Image.FLIP_LEFT_RIGHT,
+        Image.FLIP_TOP_BOTTOM,
     ),
 )
 def test_unrotated_transposed_font(font, orientation):
@@ -398,9 +396,7 @@ def test_unrotated_transposed_font(font, orientation):
     assert length_a == length_b
 
 
-@pytest.mark.parametrize(
-    "orientation", (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270)
-)
+@pytest.mark.parametrize("orientation", (Image.ROTATE_90, Image.ROTATE_270))
 def test_rotated_transposed_font_get_mask(font, orientation):
     # Arrange
     text = "mask this"
@@ -417,9 +413,9 @@ def test_rotated_transposed_font_get_mask(font, orientation):
     "orientation",
     (
         None,
-        Image.Transpose.ROTATE_180,
-        Image.Transpose.FLIP_LEFT_RIGHT,
-        Image.Transpose.FLIP_TOP_BOTTOM,
+        Image.ROTATE_180,
+        Image.FLIP_LEFT_RIGHT,
+        Image.FLIP_TOP_BOTTOM,
     ),
 )
 def test_unrotated_transposed_font_get_mask(font, orientation):
@@ -653,7 +649,7 @@ def test_getsize_stroke(font, stroke_width):
 
 
 def test_complex_font_settings():
-    t = ImageFont.truetype(FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.BASIC)
+    t = ImageFont.truetype(FONT_PATH, FONT_SIZE, layout_engine=ImageFont.LAYOUT_BASIC)
     with pytest.raises(KeyError):
         t.getmask("абвг", direction="rtl")
     with pytest.raises(KeyError):
@@ -805,7 +801,7 @@ def test_anchor(layout_engine, anchor, left, top):
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"
 
-    if layout_engine == ImageFont.Layout.RAQM:
+    if layout_engine == ImageFont.LAYOUT_RAQM:
         width, height = (129, 44)
     else:
         width, height = (128, 44)
@@ -953,7 +949,7 @@ def test_float_coord(layout_engine, fontmode):
     try:
         assert_image_similar_tofile(im, "Tests/images/text_float_coord.png", 3.9)
     except AssertionError:
-        if fontmode == "1" and layout_engine == ImageFont.Layout.BASIC:
+        if fontmode == "1" and layout_engine == ImageFont.LAYOUT_BASIC:
             assert_image_similar_tofile(
                 im, "Tests/images/text_float_coord_1_alt.png", 1
             )
@@ -1079,7 +1075,7 @@ def test_render_mono_size():
     ttf = ImageFont.truetype(
         "Tests/fonts/DejaVuSans/DejaVuSans.ttf",
         18,
-        layout_engine=ImageFont.Layout.BASIC,
+        layout_engine=ImageFont.LAYOUT_BASIC,
     )
 
     draw.text((10, 10), "r" * 10, "black", ttf)
@@ -1103,19 +1099,10 @@ def test_raqm_missing_warning(monkeypatch):
     monkeypatch.setattr(ImageFont.core, "HAVE_RAQM", False)
     with pytest.warns(UserWarning) as record:
         font = ImageFont.truetype(
-            FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM
+            FONT_PATH, FONT_SIZE, layout_engine=ImageFont.LAYOUT_RAQM
         )
-    assert font.layout_engine == ImageFont.Layout.BASIC
+    assert font.layout_engine == ImageFont.LAYOUT_BASIC
     assert str(record[-1].message) == (
         "Raqm layout was requested, but Raqm is not available. "
         "Falling back to basic layout."
     )
-
-
-def test_constants_deprecation():
-    for enum, prefix in {
-        ImageFont.Layout: "LAYOUT_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(ImageFont, prefix + name) == enum[name]

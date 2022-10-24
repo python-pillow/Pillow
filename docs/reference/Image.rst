@@ -255,7 +255,7 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
 
-This flips the input image by using the :data:`Transpose.FLIP_LEFT_RIGHT`
+This flips the input image by using the :data:`FLIP_LEFT_RIGHT`
 method.
 
 .. code-block:: python
@@ -265,9 +265,9 @@ method.
     with Image.open("hopper.jpg") as im:
 
         # Flip the image from left to right
-        im_flipped = im.transpose(method=Image.Transpose.FLIP_LEFT_RIGHT)
+        im_flipped = im.transpose(method=Image.FLIP_LEFT_RIGHT)
         # To flip the image from top to bottom,
-        # use the method "Image.Transpose.FLIP_TOP_BOTTOM"
+        # use the method "Image.FLIP_TOP_BOTTOM"
 
 
 .. automethod:: PIL.Image.Image.verify
@@ -391,57 +391,63 @@ Transpose methods
 
 Used to specify the :meth:`Image.transpose` method to use.
 
-.. autoclass:: Transpose
-    :members:
-    :undoc-members:
+.. data:: FLIP_LEFT_RIGHT
+.. data:: FLIP_TOP_BOTTOM
+.. data:: ROTATE_90
+.. data:: ROTATE_180
+.. data:: ROTATE_270
+.. data:: TRANSPOSE
+.. data:: TRANSVERSE
 
 Transform methods
 ^^^^^^^^^^^^^^^^^
 
 Used to specify the :meth:`Image.transform` method to use.
 
-.. py:class:: Transform
+.. data:: AFFINE
+    Affine transform
 
-    .. py:attribute:: AFFINE
+.. data:: EXTENT
+    Cut out a rectangular subregion
 
-        Affine transform
+.. data:: PERSPECTIVE
+    Perspective transform
 
-    .. py:attribute:: EXTENT
+.. data:: QUAD
+    Map a quadrilateral to a rectangle
 
-        Cut out a rectangular subregion
-
-    .. py:attribute:: PERSPECTIVE
-
-        Perspective transform
-
-    .. py:attribute:: QUAD
-
-        Map a quadrilateral to a rectangle
-
-    .. py:attribute:: MESH
-
-        Map a number of source quadrilaterals in one operation
+.. data:: MESH
+    Map a number of source quadrilaterals in one operation
 
 Resampling filters
 ^^^^^^^^^^^^^^^^^^
 
 See :ref:`concept-filters` for details.
 
-.. autoclass:: Resampling
-    :members:
-    :undoc-members:
+.. data:: NEAREST
+    :noindex:
+.. data:: BOX
+    :noindex:
+.. data:: BILINEAR
+    :noindex:
+.. data:: HAMMING
+    :noindex:
+.. data:: BICUBIC
+    :noindex:
+.. data:: LANCZOS
+    :noindex:
 
-Some deprecated filters are also available under the following names:
+Some filters are also available under the following names for backwards compatibility:
 
 .. data:: NONE
     :noindex:
-    :value: Resampling.NEAREST
+    :value: NEAREST
 .. data:: LINEAR
-    :value: Resampling.BILINEAR
+    :value: BILINEAR
 .. data:: CUBIC
-    :value: Resampling.BICUBIC
+    :value: BICUBIC
 .. data:: ANTIALIAS
-    :value: Resampling.LANCZOS
+    :value: LANCZOS
 
 Dither modes
 ^^^^^^^^^^^^
@@ -449,56 +455,42 @@ Dither modes
 Used to specify the dithering method to use for the
 :meth:`~Image.convert` and :meth:`~Image.quantize` methods.
 
-.. py:class:: Dither
+.. data:: NONE
+    :noindex:
 
-    .. py:attribute:: NONE
+    No dither
+.. comment: (not implemented)
+    .. data:: ORDERED
+    .. data:: RASTERIZE
 
-      No dither
-
-    .. py:attribute:: ORDERED
-
-      Not implemented
-
-    .. py:attribute:: RASTERIZE
-
-      Not implemented
-
-    .. py:attribute:: FLOYDSTEINBERG
-
-      Floyd-Steinberg dither
+.. data:: FLOYDSTEINBERG
+    Floyd-Steinberg dither
 
 Palettes
 ^^^^^^^^
 
 Used to specify the pallete to use for the :meth:`~Image.convert` method.
 
-.. autoclass:: Palette
-    :members:
-    :undoc-members:
+.. data:: WEB
+.. data:: ADAPTIVE
 
 Quantization methods
 ^^^^^^^^^^^^^^^^^^^^
 
 Used to specify the quantization method to use for the :meth:`~Image.quantize` method.
 
-.. py:class:: Quantize
+.. data:: MEDIANCUT
+    Median cut. Default method, except for RGBA images. This method does not support
+    RGBA images.
 
-    .. py:attribute:: MEDIANCUT
+.. data:: MAXCOVERAGE
+    Maximum coverage. This method does not support RGBA images.
 
-      Median cut. Default method, except for RGBA images. This method does not support
-      RGBA images.
+.. data:: FASTOCTREE
+    Fast octree. Default method for RGBA images.
 
-    .. py:attribute:: MAXCOVERAGE
+.. data:: LIBIMAGEQUANT
+    libimagequant
 
-      Maximum coverage. This method does not support RGBA images.
-
-    .. py:attribute:: FASTOCTREE
-
-      Fast octree. Default method for RGBA images.
-
-    .. py:attribute:: LIBIMAGEQUANT
-
-      libimagequant
-
-      Check support using :py:func:`PIL.features.check_feature` with
-      ``feature="libimagequant"``.
+    Check support using :py:func:`PIL.features.check_feature`
+    with ``feature="libimagequant"``.

@@ -73,7 +73,7 @@ def _save(im, fp, filename):
         else:
             # TODO: invent a more convenient method for proportional scalings
             frame = provided_im.copy()
-            frame.thumbnail(size, Image.Resampling.LANCZOS, reducing_gap=None)
+            frame.thumbnail(size, Image.LANCZOS, reducing_gap=None)
             frames.append(frame)
     fp.write(o16(len(frames)))  # idCount(2)
     offset = fp.tell() + len(frames) * 16

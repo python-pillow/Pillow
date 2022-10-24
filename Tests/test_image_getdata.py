@@ -14,7 +14,7 @@ def test_sanity():
 
 def test_roundtrip():
     def getdata(mode):
-        im = hopper(mode).resize((32, 30), Image.Resampling.NEAREST)
+        im = hopper(mode).resize((32, 30), Image.NEAREST)
         data = im.getdata()
         return data[0], len(data), len(list(data))
 

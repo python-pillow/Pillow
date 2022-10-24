@@ -237,7 +237,7 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
     return _lut(image, red + green + blue)
 
 
-def contain(image, size, method=Image.Resampling.BICUBIC):
+def contain(image, size, method=Image.BICUBIC):
     """
     Returns a resized version of the image, set to the maximum width and height
     within the requested size, while maintaining the original aspect ratio.
@@ -265,7 +265,7 @@ def contain(image, size, method=Image.Resampling.BICUBIC):
     return image.resize(size, resample=method)
 
 
-def pad(image, size, method=Image.Resampling.BICUBIC, color=None, centering=(0.5, 0.5)):
+def pad(image, size, method=Image.BICUBIC, color=None, centering=(0.5, 0.5)):
     """
     Returns a resized and padded version of the image, expanded to fill the
     requested aspect ratio and size.
@@ -317,7 +317,7 @@ def crop(image, border=0):
     return image.crop((left, top, image.size[0] - right, image.size[1] - bottom))
 
 
-def scale(image, factor, resample=Image.Resampling.BICUBIC):
+def scale(image, factor, resample=Image.BICUBIC):
     """
     Returns a rescaled image by a specific factor given in parameter.
     A factor greater than 1 expands the image, between 0 and 1 contracts the
@@ -338,7 +338,7 @@ def scale(image, factor, resample=Image.Resampling.BICUBIC):
         return image.resize(size, resample)
 
 
-def deform(image, deformer, resample=Image.Resampling.BILINEAR):
+def deform(image, deformer, resample=Image.BILINEAR):
     """
     Deform the image.
 
@@ -349,9 +349,7 @@ def deform(image, deformer, resample=Image.Resampling.BILINEAR):
        in the PIL.Image.transform function.
     :return: An image.
     """
-    return image.transform(
-        image.size, Image.Transform.MESH, deformer.getmesh(image), resample
-    )
+    return image.transform(image.size, Image.MESH, deformer.getmesh(image), resample)
 
 
 def equalize(image, mask=None):
@@ -411,7 +409,7 @@ def expand(image, border=0, fill=0):
     return out
 
 
-def fit(image, size, method=Image.Resampling.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
+def fit(image, size, method=Image.BICUBIC, bleed=0.0, centering=(0.5, 0.5)):
     """
     Returns a resized and cropped version of the image, cropped to the
     requested aspect ratio and size.
@@ -503,7 +501,7 @@ def flip(image):
     :param image: The image to flip.
     :return: An image.
     """
-    return image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+    return image.transpose(Image.FLIP_TOP_BOTTOM)
 
 
 def grayscale(image):
@@ -536,7 +534,7 @@ def mirror(image):
     :param image: The image to mirror.
     :return: An image.
     """
-    return image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    return image.transpose(Image.FLIP_LEFT_RIGHT)
 
 
 def posterize(image, bits):
@@ -585,13 +583,13 @@ def exif_transpose(image):
     exif = image.getexif()
     orientation = exif.get(0x0112)
     method = {
-        2: Image.Transpose.FLIP_LEFT_RIGHT,
-        3: Image.Transpose.ROTATE_180,
-        4: Image.Transpose.FLIP_TOP_BOTTOM,
-        5: Image.Transpose.TRANSPOSE,
-        6: Image.Transpose.ROTATE_270,
-        7: Image.Transpose.TRANSVERSE,
-        8: Image.Transpose.ROTATE_90,
+        2: Image.FLIP_LEFT_RIGHT,
+        3: Image.ROTATE_180,
+        4: Image.FLIP_TOP_BOTTOM,
+        5: Image.TRANSPOSE,
+        6: Image.ROTATE_270,
+        7: Image.TRANSVERSE,
+        8: Image.ROTATE_90,
     }.get(orientation)
     if method is not None:
         transposed_image = image.transpose(method)

@@ -29,27 +29,14 @@ import base64
 import os
 import sys
 import warnings
-from enum import IntEnum
 from io import BytesIO
 
 from . import Image
 from ._deprecate import deprecate
 from ._util import is_directory, is_path
 
-
-class Layout(IntEnum):
-    BASIC = 0
-    RAQM = 1
-
-
-def __getattr__(name):
-    for enum, prefix in {Layout: "LAYOUT_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+LAYOUT_BASIC = 0
+LAYOUT_RAQM = 1
 
 
 class _ImagingFtNotInstalled:
@@ -216,16 +203,16 @@ class FreeTypeFont:
         self.index = index
         self.encoding = encoding
 
-        if layout_engine not in (Layout.BASIC, Layout.RAQM):
-            layout_engine = Layout.BASIC
+        if layout_engine not in (LAYOUT_BASIC, LAYOUT_RAQM):
+            layout_engine = LAYOUT_BASIC
             if core.HAVE_RAQM:
-                layout_engine = Layout.RAQM
-        elif layout_engine == Layout.RAQM and not core.HAVE_RAQM:
+                layout_engine = LAYOUT_RAQM
+        elif layout_engine == LAYOUT_RAQM and not core.HAVE_RAQM:
             warnings.warn(
                 "Raqm layout was requested, but Raqm is not available. "
                 "Falling back to basic layout."
             )
-            layout_engine = Layout.BASIC
+            layout_engine = LAYOUT_BASIC
 
         self.layout_engine = layout_engine
 
@@ -848,9 +835,8 @@ class TransposedFont:
 
         :param font: A font object.
         :param orientation: An optional orientation.  If given, this should
-            be one of Image.Transpose.FLIP_LEFT_RIGHT, Image.Transpose.FLIP_TOP_BOTTOM,
-            Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_180, or
-            Image.Transpose.ROTATE_270.
+            be one of Image.FLIP_LEFT_RIGHT, Image.FLIP_TOP_BOTTOM,
+            Image.ROTATE_90, Image.ROTATE_180, or Image.ROTATE_270.
         """
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
@@ -867,7 +853,7 @@ class TransposedFont:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             w, h = self.font.getsize(text)
-        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+        if self.orientation in (Image.ROTATE_90, Image.ROTATE_270):
             return h, w
         return w, h
 
@@ -883,12 +869,12 @@ class TransposedFont:
         left, top, right, bottom = self.font.getbbox(text, *args, **kwargs)
         width = right - left
         height = bottom - top
-        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+        if self.orientation in (Image.ROTATE_90, Image.ROTATE_270):
             return 0, 0, height, width
         return 0, 0, width, height
 
     def getlength(self, text, *args, **kwargs):
-        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
+        if self.orientation in (Image.ROTATE_90, Image.ROTATE_270):
             raise ValueError(
                 "text length is undefined for text rotated by 90 or 270 degrees"
             )
@@ -954,7 +940,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      This specifies the character set to use. It does not alter the
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
-                     :data:`.ImageFont.Layout.BASIC` or :data:`.ImageFont.Layout.RAQM`.
+                     :data:`.ImageFont.LAYOUT_BASIC` or :data:`.ImageFont.LAYOUT_RAQM`.
                      If it is available, Raqm layout will be used by default.
                      Otherwise, basic layout will be used.
 

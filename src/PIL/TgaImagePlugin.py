@@ -152,7 +152,7 @@ class TgaImageFile(ImageFile.ImageFile):
 
     def load_end(self):
         if self._flip_horizontally:
-            self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            self.im = self.im.transpose(Image.FLIP_LEFT_RIGHT)
 
 
 #

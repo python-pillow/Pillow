@@ -336,7 +336,7 @@ def test_subsampling_decode(name):
                 # RGB reference images are downscaled
                 epsilon = 3e-3
                 width, height = width * 2, height * 2
-            expected = im2.resize((width, height), Image.Resampling.NEAREST)
+            expected = im2.resize((width, height), Image.NEAREST)
         assert_image_similar(im, expected, epsilon)
 
 

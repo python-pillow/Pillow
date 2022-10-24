@@ -155,7 +155,7 @@ Processing a subrectangle, and pasting it back
 
 ::
 
-    region = region.transpose(Image.Transpose.ROTATE_180)
+    region = region.transpose(Image.ROTATE_180)
     im.paste(region, box)
 
 When pasting regions back, the size of the region must match the given region
@@ -255,11 +255,11 @@ Transposing an image
 
 ::
 
-    out = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-    out = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
-    out = im.transpose(Image.Transpose.ROTATE_90)
-    out = im.transpose(Image.Transpose.ROTATE_180)
-    out = im.transpose(Image.Transpose.ROTATE_270)
+    out = im.transpose(Image.FLIP_LEFT_RIGHT)
+    out = im.transpose(Image.FLIP_TOP_BOTTOM)
+    out = im.transpose(Image.ROTATE_90)
+    out = im.transpose(Image.ROTATE_180)
+    out = im.transpose(Image.ROTATE_270)
 
 ``transpose(ROTATE)`` operations can also be performed identically with
 :py:meth:`~PIL.Image.Image.rotate` operations, provided the ``expand`` flag is

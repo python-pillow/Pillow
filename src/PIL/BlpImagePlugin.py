@@ -31,41 +31,19 @@ BLP files come in many different flavours:
 
 import os
 import struct
-from enum import IntEnum
 from io import BytesIO
 
 from . import Image, ImageFile
-from ._deprecate import deprecate
 
+BLP_FORMAT_JPEG = 0
 
-class Format(IntEnum):
-    JPEG = 0
+BLP_ENCODING_UNCOMPRESSED = 1
+BLP_ENCODING_DXT = 2
+BLP_ENCODING_UNCOMPRESSED_RAW_BGRA = 3
 
-
-class Encoding(IntEnum):
-    UNCOMPRESSED = 1
-    DXT = 2
-    UNCOMPRESSED_RAW_BGRA = 3
-
-
-class AlphaEncoding(IntEnum):
-    DXT1 = 0
-    DXT3 = 1
-    DXT5 = 7
-
-
-def __getattr__(name):
-    for enum, prefix in {
-        Format: "BLP_FORMAT_",
-        Encoding: "BLP_ENCODING_",
-        AlphaEncoding: "BLP_ALPHA_ENCODING_",
-    }.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+BLP_ALPHA_ENCODING_DXT1 = 0
+BLP_ALPHA_ENCODING_DXT3 = 1
+BLP_ALPHA_ENCODING_DXT5 = 7
 
 
 def unpack_565(i):
@@ -345,7 +323,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
 
 class BLP1Decoder(_BLPBaseDecoder):
     def _load(self):
-        if self._blp_compression == Format.JPEG:
+        if self._blp_compression == BLP_FORMAT_JPEG:
             self._decode_jpeg_stream()
 
         elif self._blp_compression == 1:
@@ -387,12 +365,12 @@ class BLP2Decoder(_BLPBaseDecoder):
         if self._blp_compression == 1:
             # Uncompressed or DirectX compression
 
-            if self._blp_encoding == Encoding.UNCOMPRESSED:
+            if self._blp_encoding == BLP_ENCODING_UNCOMPRESSED:
                 data = self._read_bgra(palette)
 
-            elif self._blp_encoding == Encoding.DXT:
+            elif self._blp_encoding == BLP_ENCODING_DXT:
                 data = bytearray()
-                if self._blp_alpha_encoding == AlphaEncoding.DXT1:
+                if self._blp_alpha_encoding == BLP_ALPHA_ENCODING_DXT1:
                     linesize = (self.size[0] + 3) // 4 * 8
                     for yb in range((self.size[1] + 3) // 4):
                         for d in decode_dxt1(
@@ -400,13 +378,13 @@ class BLP2Decoder(_BLPBaseDecoder):
                         ):
                             data += d
 
-                elif self._blp_alpha_encoding == AlphaEncoding.DXT3:
+                elif self._blp_alpha_encoding == BLP_ALPHA_ENCODING_DXT3:
                     linesize = (self.size[0] + 3) // 4 * 16
                     for yb in range((self.size[1] + 3) // 4):
                         for d in decode_dxt3(self._safe_read(linesize)):
                             data += d
 
-                elif self._blp_alpha_encoding == AlphaEncoding.DXT5:
+                elif self._blp_alpha_encoding == BLP_ALPHA_ENCODING_DXT5:
                     linesize = (self.size[0] + 3) // 4 * 16
                     for yb in range((self.size[1] + 3) // 4):
                         for d in decode_dxt5(self._safe_read(linesize)):
@@ -463,7 +441,7 @@ def _save(im, fp, filename, save_all=False):
     fp.write(magic)
 
     fp.write(struct.pack("<i", 1))  # Uncompressed or DirectX compression
-    fp.write(struct.pack("<b", Encoding.UNCOMPRESSED))
+    fp.write(struct.pack("<b", BLP_ENCODING_UNCOMPRESSED))
     fp.write(struct.pack("<b", 1 if im.palette.mode == "RGBA" else 0))
     fp.write(struct.pack("<b", 0))  # alpha encoding
     fp.write(struct.pack("<b", 0))  # mips

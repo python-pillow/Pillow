@@ -35,7 +35,7 @@ def test_basic(tmp_path, mode):
     im_out = im_in.copy()
     verify(im_out)  # copy
 
-    im_out = im_in.transform((w, h), Image.Transform.EXTENT, (0, 0, w, h))
+    im_out = im_in.transform((w, h), Image.EXTENT, (0, 0, w, h))
     verify(im_out)  # transform
 
     filename = str(tmp_path / "temp.im")

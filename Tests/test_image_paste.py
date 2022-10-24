@@ -47,7 +47,7 @@ class TestImagingPaste:
 
     @CachedProperty
     def mask_L(self):
-        return self.gradient_L.transpose(Image.Transpose.ROTATE_270)
+        return self.gradient_L.transpose(Image.ROTATE_270)
 
     @CachedProperty
     def gradient_L(self):
@@ -64,8 +64,8 @@ class TestImagingPaste:
             "RGB",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
-                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
+                self.gradient_L.transpose(Image.ROTATE_90),
+                self.gradient_L.transpose(Image.ROTATE_180),
             ],
         )
 
@@ -75,7 +75,7 @@ class TestImagingPaste:
             "LA",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
+                self.gradient_L.transpose(Image.ROTATE_90),
             ],
         )
 
@@ -85,9 +85,9 @@ class TestImagingPaste:
             "RGBA",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
-                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
-                self.gradient_L.transpose(Image.Transpose.ROTATE_270),
+                self.gradient_L.transpose(Image.ROTATE_90),
+                self.gradient_L.transpose(Image.ROTATE_180),
+                self.gradient_L.transpose(Image.ROTATE_270),
             ],
         )
 
@@ -97,9 +97,9 @@ class TestImagingPaste:
             "RGBa",
             [
                 self.gradient_L,
-                self.gradient_L.transpose(Image.Transpose.ROTATE_90),
-                self.gradient_L.transpose(Image.Transpose.ROTATE_180),
-                self.gradient_L.transpose(Image.Transpose.ROTATE_270),
+                self.gradient_L.transpose(Image.ROTATE_90),
+                self.gradient_L.transpose(Image.ROTATE_180),
+                self.gradient_L.transpose(Image.ROTATE_270),
             ],
         )
 

@@ -61,12 +61,12 @@ Methods
 Constants
 ---------
 
-.. data:: PIL.ImageFont.Layout.BASIC
+.. data:: PIL.ImageFont.LAYOUT_BASIC
 
     Use basic text layout for TrueType font.
     Advanced features such as text direction are not supported.
 
-.. data:: PIL.ImageFont.Layout.RAQM
+.. data:: PIL.ImageFont.LAYOUT_RAQM
 
     Use Raqm text layout for TrueType font.
     Advanced features are supported.

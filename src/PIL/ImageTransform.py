@@ -47,7 +47,7 @@ class AffineTransform(Transform):
         from an affine transform matrix.
     """
 
-    method = Image.Transform.AFFINE
+    method = Image.AFFINE
 
 
 class ExtentTransform(Transform):
@@ -69,7 +69,7 @@ class ExtentTransform(Transform):
         input image's coordinate system. See :ref:`coordinate-system`.
     """
 
-    method = Image.Transform.EXTENT
+    method = Image.EXTENT
 
 
 class QuadTransform(Transform):
@@ -86,7 +86,7 @@ class QuadTransform(Transform):
         source quadrilateral.
     """
 
-    method = Image.Transform.QUAD
+    method = Image.QUAD
 
 
 class MeshTransform(Transform):
@@ -99,4 +99,4 @@ class MeshTransform(Transform):
     :param data: A list of (bbox, quad) tuples.
     """
 
-    method = Image.Transform.MESH
+    method = Image.MESH

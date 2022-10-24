@@ -325,12 +325,12 @@ class GifImageFile(ImageFile.ImageFile):
                     self.pyaccess = None
                     if "transparency" in self.info:
                         self.im.putpalettealpha(self.info["transparency"], 0)
-                        self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
+                        self.im = self.im.convert("RGBA", Image.FLOYDSTEINBERG)
                         self.mode = "RGBA"
                         del self.info["transparency"]
                     else:
                         self.mode = "RGB"
-                        self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+                        self.im = self.im.convert("RGB", Image.FLOYDSTEINBERG)
 
         def _rgb(color):
             if self._frame_palette:
@@ -438,7 +438,7 @@ class GifImageFile(ImageFile.ImageFile):
                     self.mode = "RGBA"
                 else:
                     self.mode = "RGB"
-                self.im = self.im.convert(self.mode, Image.Dither.FLOYDSTEINBERG)
+                self.im = self.im.convert(self.mode, Image.FLOYDSTEINBERG)
             return
         if not self._prev_im:
             return
@@ -482,7 +482,7 @@ def _normalize_mode(im):
         im.load()
         return im
     if Image.getmodebase(im.mode) == "RGB":
-        im = im.convert("P", palette=Image.Palette.ADAPTIVE)
+        im = im.convert("P", palette=Image.ADAPTIVE)
         if im.palette.mode == "RGBA":
             for rgba in im.palette.colors.keys():
                 if rgba[3] == 0:

@@ -529,7 +529,7 @@ class Color3DLUT(MultibandFilter):
 
         return image.color_lut_3d(
             self.mode or image.mode,
-            Image.Resampling.BILINEAR,
+            Image.BILINEAR,
             self.channels,
             self.size[0],
             self.size[1],

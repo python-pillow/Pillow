@@ -31,7 +31,7 @@ class TestImageFile:
     def test_parser(self):
         def roundtrip(format):
 
-            im = hopper("L").resize((1000, 1000), Image.Resampling.NEAREST)
+            im = hopper("L").resize((1000, 1000), Image.NEAREST)
             if format in ("MSP", "XBM"):
                 im = im.convert("1")
 

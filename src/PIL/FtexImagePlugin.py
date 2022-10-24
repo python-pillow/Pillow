@@ -52,28 +52,15 @@ Note: All data is stored in little-Endian (Intel) byte order.
 """
 
 import struct
-from enum import IntEnum
 from io import BytesIO
 
 from . import Image, ImageFile
-from ._deprecate import deprecate
 
 MAGIC = b"FTEX"
 
 
-class Format(IntEnum):
-    DXT1 = 0
-    UNCOMPRESSED = 1
-
-
-def __getattr__(name):
-    for enum, prefix in {Format: "FORMAT_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+FORMAT_DXT1 = 0
+FORMAT_UNCOMPRESSED = 1
 
 
 class FtexImageFile(ImageFile.ImageFile):
@@ -99,10 +86,10 @@ class FtexImageFile(ImageFile.ImageFile):
 
         data = self.fp.read(mipmap_size)
 
-        if format == Format.DXT1:
+        if format == FORMAT_DXT1:
             self.mode = "RGBA"
             self.tile = [("bcn", (0, 0) + self.size, 0, 1)]
-        elif format == Format.UNCOMPRESSED:
+        elif format == FORMAT_UNCOMPRESSED:
             self.tile = [("raw", (0, 0) + self.size, 0, ("RGB", 0, 1))]
         else:
             raise ValueError(f"Invalid texture compression format: {repr(format)}")
