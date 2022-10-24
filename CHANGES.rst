@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Added ExifTags enums #6630
+  [radarhere]
+
+- Do not modify previous frame when calculating delta in PNG #6683
+  [radarhere]
+
 - Added support for reading BMP images with RLE4 compression #6674
   [npjg, radarhere]
 
