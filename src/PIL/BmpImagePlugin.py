@@ -308,7 +308,6 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     data += byte * num_pixels
                 x += num_pixels
             else:
-                # absolute mode
                 if byte[0] == 0:
                     # end of line
                     while len(data) % self.state.xsize != 0:
@@ -326,6 +325,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     data += b"\x00" * (right + up * self.state.xsize)
                     x = len(data) % self.state.xsize
                 else:
+                    # absolute mode
                     if rle4:
                         # 2 pixels per byte
                         byte_count = byte[0] // 2
