@@ -1128,7 +1128,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                     prev_disposal = Disposal.OP_BACKGROUND
 
                 if prev_disposal == Disposal.OP_BACKGROUND:
-                    base_im = previous["im"]
+                    base_im = previous["im"].copy()
                     dispose = Image.core.fill("RGBA", im.size, (0, 0, 0, 0))
                     bbox = previous["bbox"]
                     if bbox:
