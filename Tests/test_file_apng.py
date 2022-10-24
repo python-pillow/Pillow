@@ -647,6 +647,16 @@ def test_seek_after_close():
         im.seek(0)
 
 
+@pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
+def test_different_modes_in_later_frames(mode, tmp_path):
+    test_file = str(tmp_path / "temp.png")
+
+    im = Image.new("L", (1, 1))
+    im.save(test_file, save_all=True, append_images=[Image.new(mode, (1, 1))])
+    with Image.open(test_file) as reloaded:
+        assert reloaded.mode == mode
+
+
 def test_constants_deprecation():
     for enum, prefix in {
         PngImagePlugin.Disposal: "APNG_DISPOSE_",

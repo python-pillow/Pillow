@@ -45,9 +45,9 @@ BMP
 ^^^
 
 Pillow reads and writes Windows and OS/2 BMP files containing ``1``, ``L``, ``P``,
-or ``RGB`` data. 16-colour images are read as ``P`` images. 4-bit run-length encoding
-is not supported. Support for reading 8-bit run-length encoding was added in Pillow
-9.1.0.
+or ``RGB`` data. 16-colour images are read as ``P`` images.
+Support for reading 8-bit run-length encoding was added in Pillow 9.1.0.
+Support for reading 4-bit run-length encoding was added in Pillow 9.3.0.
 
 Opening
 ~~~~~~~
@@ -56,7 +56,8 @@ The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **compression**
-    Set to ``bmp_rle`` if the file is run-length encoded.
+    Set to 1 if the file is a 256-color run-length encoded image.
+    Set to 2 if the file is a 16-color run-length encoded image.
 
 DDS
 ^^^

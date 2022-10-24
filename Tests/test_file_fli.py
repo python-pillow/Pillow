@@ -4,7 +4,7 @@ import pytest
 
 from PIL import FliImagePlugin, Image
 
-from .helper import assert_image_equal_tofile, is_pypy
+from .helper import assert_image_equal, assert_image_equal_tofile, is_pypy
 
 # created as an export of a palette image from Gimp2.6
 # save as...-> hopper.fli, default options.
@@ -77,6 +77,12 @@ def test_invalid_file():
 
     with pytest.raises(SyntaxError):
         FliImagePlugin.FliImageFile(invalid_file)
+
+
+def test_palette_chunk_second():
+    with Image.open("Tests/images/hopper_palette_chunk_second.fli") as im:
+        with Image.open(static_test_file) as expected:
+            assert_image_equal(im.convert("RGB"), expected.convert("RGB"))
 
 
 def test_n_frames():

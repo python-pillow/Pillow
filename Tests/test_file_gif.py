@@ -83,18 +83,40 @@ def test_l_mode_transparency():
         assert im.load()[0, 0] == 128
 
 
+def test_l_mode_after_rgb():
+    with Image.open("Tests/images/no_palette_after_rgb.gif") as im:
+        im.seek(1)
+        assert im.mode == "RGB"
+
+        im.seek(2)
+        assert im.mode == "RGB"
+
+
+def test_palette_not_needed_for_second_frame():
+    with Image.open("Tests/images/palette_not_needed_for_second_frame.gif") as im:
+        im.seek(1)
+        assert_image_similar(im, hopper("L").convert("RGB"), 8)
+
+
 def test_strategy():
+    with Image.open("Tests/images/iss634.gif") as im:
+        expected_rgb_always = im.convert("RGB")
+
     with Image.open("Tests/images/chi.gif") as im:
-        expected_zero = im.convert("RGB")
+        expected_rgb_always_rgba = im.convert("RGBA")
 
         im.seek(1)
-        expected_one = im.convert("RGB")
+        expected_different = im.convert("RGB")
 
     try:
         GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
-        with Image.open("Tests/images/chi.gif") as im:
+        with Image.open("Tests/images/iss634.gif") as im:
             assert im.mode == "RGB"
-            assert_image_equal(im, expected_zero)
+            assert_image_equal(im, expected_rgb_always)
+
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "RGBA"
+            assert_image_equal(im, expected_rgb_always_rgba)
 
         GifImagePlugin.LOADING_STRATEGY = (
             GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
@@ -105,7 +127,7 @@ def test_strategy():
 
             im.seek(1)
             assert im.mode == "P"
-            assert_image_equal(im.convert("RGB"), expected_one)
+            assert_image_equal(im.convert("RGB"), expected_different)
 
         # Change to RGB mode when a frame has an individual palette
         with Image.open("Tests/images/iss634.gif") as im:

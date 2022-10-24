@@ -115,7 +115,11 @@ class ImagePalette:
             raise ValueError("palette contains raw palette data")
         if isinstance(color, tuple):
             if self.mode == "RGB":
-                if len(color) == 4 and color[3] == 255:
+                if len(color) == 4:
+                    if color[3] != 255:
+                        raise ValueError(
+                            "cannot add non-opaque RGBA color to RGB palette"
+                        )
                     color = color[:3]
             elif self.mode == "RGBA":
                 if len(color) == 3:

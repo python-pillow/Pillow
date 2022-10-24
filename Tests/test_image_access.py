@@ -131,8 +131,7 @@ class TestImageGetPixel(AccessTest):
         bands = Image.getmodebands(mode)
         if bands == 1:
             return 1
-        else:
-            return tuple(range(1, bands + 1))
+        return tuple(range(1, bands + 1))
 
     def check(self, mode, c=None):
         if not c:
@@ -345,13 +344,14 @@ class TestCffi(AccessTest):
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     def test_p_putpixel_rgb_rgba(self, mode):
-        for color in [(255, 0, 0), (255, 0, 0, 127)]:
+        for color in ((255, 0, 0), (255, 0, 0, 127 if mode == "PA" else 255)):
             im = Image.new(mode, (1, 1))
             access = PyAccess.new(im, False)
             access.putpixel((0, 0), color)
 
-            alpha = color[3] if len(color) == 4 and mode == "PA" else 255
-            assert im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, alpha)
+            if len(color) == 3:
+                color += (255,)
+            assert im.convert("RGBA").getpixel((0, 0)) == color
 
 
 class TestImagePutPixelError(AccessTest):
@@ -414,7 +414,7 @@ class TestEmbeddable:
     def test_embeddable(self):
         import ctypes
 
-        with open("embed_pil.c", "w") as fh:
+        with open("embed_pil.c", "w", encoding="utf-8") as fh:
             fh.write(
                 """
 #include "Python.h"

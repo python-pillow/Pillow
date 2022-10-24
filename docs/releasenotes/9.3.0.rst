@@ -4,25 +4,6 @@
 Backwards Incompatible Changes
 ==============================
 
-TODO
-^^^^
-
-Deprecations
-============
-
-TODO
-^^^^
-
-TODO
-
-API Changes
-===========
-
-TODO
-^^^^
-
-TODO
-
 API Additions
 =============
 
@@ -55,15 +36,25 @@ Additional images can also be appended when saving, by combining the
 Security
 ========
 
-TODO
-^^^^
+Decode JPEG compressed BLP1 data in original mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Within the BLP image format, BLP1 data may use JPEG compression. Instead of
+telling the JPEG library that this data is in BGRX mode, Pillow will now
+decode the data in its natural CMYK mode, then convert it to RGB and rearrange
+the channels afterwards. Trying to load the data in an incorrect mode could
+result in a segmentation fault.
 
 Other Changes
 =============
 
-Added DDS ATI1 and ATI2 reading
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added DDS ATI1, ATI2 and BC6H reading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Support has been added to read the ATI1 and ATI2 formats of DDS images.
+Support has been added to read the ATI1, ATI2 and BC6H formats of DDS images.
+
+Show all frames with ImageShow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When calling :py:meth:`~PIL.Image.Image.show` or using
+:py:mod:`~PIL.ImageShow`, all frames will now be shown.

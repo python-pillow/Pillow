@@ -132,9 +132,9 @@ deps = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "https://zlib.net/zlib1212.zip",
-        "filename": "zlib1212.zip",
-        "dir": "zlib-1.2.12",
+        "url": "https://zlib.net/zlib1213.zip",
+        "filename": "zlib1213.zip",
+        "dir": "zlib-1.2.13",
         "build": [
             cmd_nmake(r"win32\Makefile.msc", "clean"),
             cmd_nmake(r"win32\Makefile.msc", "zlib.lib"),
@@ -281,9 +281,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/5.2.0.zip",
-        "filename": "harfbuzz-5.2.0.zip",
-        "dir": "harfbuzz-5.2.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/5.3.1.zip",
+        "filename": "harfbuzz-5.3.1.zip",
+        "dir": "harfbuzz-5.3.1",
         "build": [
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),

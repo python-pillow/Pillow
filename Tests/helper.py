@@ -208,12 +208,11 @@ class PillowLeakTestCase:
             #     ru_maxrss
             # This is the maximum resident set size utilized (in bytes).
             return mem / 1024  # Kb
-        else:
-            # linux
-            # man 2 getrusage
-            #        ru_maxrss (since Linux 2.6.32)
-            #  This is the maximum resident set size used (in kilobytes).
-            return mem  # Kb
+        # linux
+        # man 2 getrusage
+        #        ru_maxrss (since Linux 2.6.32)
+        #  This is the maximum resident set size used (in kilobytes).
+        return mem  # Kb
 
     def _test_leak(self, core):
         start_mem = self._get_mem_usage()
@@ -285,7 +284,7 @@ def magick_command():
 
     if imagemagick and shutil.which(imagemagick[0]):
         return imagemagick
-    elif graphicsmagick and shutil.which(graphicsmagick[0]):
+    if graphicsmagick and shutil.which(graphicsmagick[0]):
         return graphicsmagick
 
 
