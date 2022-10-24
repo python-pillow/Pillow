@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Added support for reading BMP images with RLE4 compression #6674
+  [npjg, radarhere]
+
 - Decode JPEG compressed BLP1 data in original mode #6678
   [radarhere]
 
