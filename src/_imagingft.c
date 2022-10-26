@@ -1179,7 +1179,7 @@ font_setvaraxes(FontObject *self, PyObject *args) {
     }
 
     num_coords = PyObject_Length(axes);
-    coords = malloc(2 * sizeof(coords));
+    coords = (FT_Fixed*)malloc(num_coords * sizeof(FT_Fixed));
     if (coords == NULL) {
         return PyErr_NoMemory();
     }
