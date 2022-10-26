@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Release Python GIL when converting images using matrix operations #6418
+  [hmaarrfk]
+
 - Added ExifTags enums #6630
   [radarhere]
 
