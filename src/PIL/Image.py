@@ -97,7 +97,7 @@ try:
     # import Image and use the Image.core variable instead.
     # Also note that Image.core is not a publicly documented interface,
     # and should be considered private and subject to change.
-    from . import _imaging as core
+    from .. import _imaging as core
 
     if __version__ != getattr(core, "PILLOW_VERSION", None):
         raise ImportError(
@@ -225,6 +225,10 @@ OPEN = {}
 MIME = {}
 SAVE = {}
 SAVE_ALL = {}
+# Convert jpg to jpeg, Can apply other case.
+FORMAT_MAP = {
+    'JPG': 'jpeg',
+}
 EXTENSION = {}
 DECODERS = {}
 ENCODERS = {}
@@ -2332,6 +2336,7 @@ class Image:
             except KeyError as e:
                 raise ValueError(f"unknown file extension: {ext}") from e
 
+        format = FORMAT_MAP.get(format.upper(), format)
         if format.upper() not in SAVE:
             init()
         if save_all:
