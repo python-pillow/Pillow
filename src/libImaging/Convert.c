@@ -43,13 +43,6 @@
 #define L(rgb) ((INT32)(rgb)[0] * 299 + (INT32)(rgb)[1] * 587 + (INT32)(rgb)[2] * 114)
 #define L24(rgb) ((rgb)[0] * 19595 + (rgb)[1] * 38470 + (rgb)[2] * 7471 + 0x8000)
 
-#ifndef round
-double
-round(double x) {
-    return floor(x + 0.5);
-}
-#endif
-
 /* ------------------- */
 /* 1 (bit) conversions */
 /* ------------------- */
