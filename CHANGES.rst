@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Fix malloc in _imagingft.c:font_setvaraxes #6690
+  [cgohlke]
+
 - Release Python GIL when converting images using matrix operations #6418
   [hmaarrfk]
 
