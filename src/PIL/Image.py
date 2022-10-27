@@ -97,7 +97,7 @@ try:
     # import Image and use the Image.core variable instead.
     # Also note that Image.core is not a publicly documented interface,
     # and should be considered private and subject to change.
-    from .. import _imaging as core
+    from . import _imaging as core
 
     if __version__ != getattr(core, "PILLOW_VERSION", None):
         raise ImportError(
