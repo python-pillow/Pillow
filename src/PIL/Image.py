@@ -227,7 +227,7 @@ SAVE = {}
 SAVE_ALL = {}
 # Convert jpg to jpeg, Can apply other case.
 FORMAT_MAP = {
-    'JPG': 'jpeg',
+    "JPG": "jpeg",
 }
 EXTENSION = {}
 DECODERS = {}
