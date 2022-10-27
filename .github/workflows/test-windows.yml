@@ -90,18 +90,27 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_zlib.cmd"
 
-    - name: Build dependencies / LibTiff
+    - name: Build dependencies / xz
       if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_libtiff.cmd"
+      run: "& winbuild\\build\\build_dep_xz.cmd"
 
     - name: Build dependencies / WebP
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libwebp.cmd"
 
+    - name: Build dependencies / LibTiff
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libtiff.cmd"
+
     # for FreeType CBDT/SBIX font support
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
+
+    # for FreeType WOFF2 font support
+    - name: Build dependencies / brotli
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_brotli.cmd"
 
     - name: Build dependencies / FreeType
       if: steps.build-cache.outputs.cache-hit != 'true'
@@ -185,6 +194,22 @@ jobs:
       id: wheel
       if: "github.event_name != 'pull_request'"
       run: |
+        setlocal EnableDelayedExpansion
+        for %%f in (winbuild\build\license\*) do (
+          set x=%%~nf
+          rem Skip FriBiDi license, it is not included in the wheel.
+          set fribidi=!x:~0,7!
+          if NOT !fribidi!==fribidi (
+            rem Skip imagequant license, it is not included in the wheel.
+            set libimagequant=!x:~0,13!
+            if NOT !libimagequant!==libimagequant (
+              echo. >> LICENSE
+              echo ===== %%~nf ===== >> LICENSE
+              echo. >> LICENSE
+              type %%f >> LICENSE
+            )
+          )
+        )
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd

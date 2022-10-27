@@ -1063,6 +1063,25 @@ def test_colr_mask(layout_engine):
     assert_image_similar_tofile(im, "Tests/images/colr_bungee_mask.png", 22)
 
 
+def test_woff2(layout_engine):
+    try:
+        font = ImageFont.truetype(
+            "Tests/fonts/OpenSans.woff2",
+            size=64,
+            layout_engine=layout_engine,
+        )
+    except OSError as e:
+        assert str(e) in ("unimplemented feature", "unknown file format")
+        pytest.skip("FreeType compiled without brotli or WOFF2 support")
+
+    im = Image.new("RGB", (350, 100), "white")
+    d = ImageDraw.Draw(im)
+
+    d.text((15, 5), "OpenSans", "black", font=font)
+
+    assert_image_similar_tofile(im, "Tests/images/test_woff2.png", 5)
+
+
 def test_fill_deprecation(font):
     with pytest.warns(DeprecationWarning):
         font.getmask2("Hello world", fill=Image.core.fill)
