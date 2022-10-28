@@ -868,9 +868,8 @@ class TestFileTiff:
     def test_oom(self, test_file):
         with pytest.raises(UnidentifiedImageError):
             with pytest.warns(UserWarning):
-                with Image.open(test_file) as im:
+                with Image.open(test_file):
                     pass
-
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

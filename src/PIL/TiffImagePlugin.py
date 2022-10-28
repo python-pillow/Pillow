@@ -1401,7 +1401,9 @@ class TiffImageFile(ImageFile.ImageFile):
 
         if samples_per_pixel > MAX_SAMPLESPERPIXEL:
             # DOS check, samples_per_pixel can be a Long, and we extend the tuple below
-            logger.error("More samples per pixel than can be decoded: %s", samples_per_pixel)
+            logger.error(
+                "More samples per pixel than can be decoded: %s", samples_per_pixel
+            )
             raise SyntaxError("Invalid value for samples per pixel")
 
         if samples_per_pixel < bps_actual_count:
