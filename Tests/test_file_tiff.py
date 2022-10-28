@@ -867,8 +867,9 @@ class TestFileTiff:
     @pytest.mark.timeout(2)
     def test_oom(self, test_file):
         with pytest.raises(UnidentifiedImageError):
-            with Image.open(test_file) as im:
-                pass
+            with pytest.warns(UserWarning):
+                with Image.open(test_file) as im:
+                    pass
 
 
 
