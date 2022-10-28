@@ -65,7 +65,9 @@ jobs:
         xcopy /S /Y winbuild\depends\test_images\* Tests\images\
 
         # make cache key depend on VS version
-        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" | find """catalog_buildVersion""" | ForEach-Object { $a = $_.split(" ")[1]; echo "::set-output name=vs::$a" }
+        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
+          | find """catalog_buildVersion""" `
+          | ForEach-Object { $a = $_.split(" ")[1]; echo "vs=$a" >> $env:GITHUB_OUTPUT }
       shell: pwsh
 
     - name: Cache build
@@ -212,7 +214,7 @@ jobs:
             )
           )
         )
-        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
+        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo dist=dist-%%a >> %GITHUB_OUTPUT%
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
