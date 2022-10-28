@@ -868,7 +868,7 @@ class TestFileTiff:
     def test_oom(self, test_file):
         with pytest.raises(UnidentifiedImageError):
             with Image.open(test_file) as im:
-                im.load()
+                pass
 
 
 
