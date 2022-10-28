@@ -611,7 +611,7 @@ class TestFileTiffW32(PillowTestCase):
     def test_oom(self, test_file):
         with pytest.raises(UnidentifiedImageError):
             with Image.open(test_file) as im:
-                im.load()
+                pass
 
         # this is an mmaped file.
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
