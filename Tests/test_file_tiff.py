@@ -4,7 +4,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageFile, TiffImagePlugin
+from PIL import Image, ImageFile, TiffImagePlugin, UnidentifiedImageError
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
 from .helper import (
@@ -857,6 +857,19 @@ class TestFileTiff:
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             im.load()
             ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+    @pytest.mark.parametrize(
+        "test_file",
+        [
+            "Tests/images/oom-225817ca0f8c663be7ab4b9e717b02c661e66834.tif",
+        ],
+    )
+    @pytest.mark.timeout(2)
+    def test_oom(self, test_file):
+        with pytest.raises(UnidentifiedImageError):
+            with Image.open(test_file) as im:
+                im.load()
+
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

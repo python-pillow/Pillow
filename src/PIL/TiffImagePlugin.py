@@ -257,6 +257,8 @@ OPEN_INFO = {
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
 
+MAX_SAMPLESPERPIXEL = max(len(key_tp[4]) for key_tp in OPEN_INFO.keys())
+
 PREFIXES = [
     b"MM\x00\x2A",  # Valid TIFF header with big-endian byte order
     b"II\x2A\x00",  # Valid TIFF header with little-endian byte order
@@ -1396,6 +1398,12 @@ class TiffImageFile(ImageFile.ImageFile):
             SAMPLESPERPIXEL,
             3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
         )
+
+        if samples_per_pixel > MAX_SAMPLESPERPIXEL:
+            # DOS check, samples_per_pixel can be a Long, and we extend the tuple below
+            logger.error("More samples per pixel than can be decoded: %s", samples_per_pixel)
+            raise SyntaxError("Invalid value for samples per pixel")
+
         if samples_per_pixel < bps_actual_count:
             # If a file has more values in bps_tuple than expected,
             # remove the excess.
