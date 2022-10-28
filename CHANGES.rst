@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Fixed set_variation_by_name offset #6445
+  [radarhere]
+
 - Fix malloc in _imagingft.c:font_setvaraxes #6690
   [cgohlke]
 
