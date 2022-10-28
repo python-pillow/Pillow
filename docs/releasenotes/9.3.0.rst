@@ -52,6 +52,15 @@ result in a segmentation fault. This issue was introduced in Pillow 9.1.0.
 Other Changes
 =============
 
+Python 3.11 wheels
+^^^^^^^^^^^^^^^^^^
+
+Pillow 9.2.0 had wheels built against Python 3.11 beta, available as a preview to help
+others prepare for 3.11, and ensure Pillow can be used immediately on release day of
+3.11.0 final (2022-10-24, :pep:`664`).
+
+Pillow 9.3.0 now officially includes binary wheels for Python 3.11 final.
+
 Windows wheels
 ^^^^^^^^^^^^^^
 
