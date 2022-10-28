@@ -49,6 +49,15 @@ decode the data in its natural CMYK mode, then convert it to RGB and rearrange
 the channels afterwards. Trying to load the data in an incorrect mode could
 result in a segmentation fault. This issue was introduced in Pillow 9.1.0.
 
+Limit SAMPLESPERPIXEL to avoid runtime DOS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A large value in the ``SAMPLESPERPIXEL`` tag could lead to a memory and runtime DOS in
+``TiffImagePlugin.py`` when setting up the context for image decoding.
+This was introduced in Pillow 9.2.0, found with `OSS-Fuzz`_ and fixed by limiting
+``SAMPLESPERPIXEL`` to the number of planes that we can decode.
+
+
 Other Changes
 =============
 
@@ -88,3 +97,5 @@ Show all frames with ImageShow
 
 When calling :py:meth:`~PIL.Image.Image.show` or using
 :py:mod:`~PIL.ImageShow`, all frames will now be shown.
+
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz
