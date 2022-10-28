@@ -746,12 +746,14 @@ def test_variation_set_by_name(font):
     _check_text(font, "Tests/images/variation_adobe.png", 11)
     for name in ["Bold", b"Bold"]:
         font.set_variation_by_name(name)
-    _check_text(font, "Tests/images/variation_adobe_name.png", 11)
+        assert font.getname()[1] == "Bold"
+    _check_text(font, "Tests/images/variation_adobe_name.png", 16)
 
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     _check_text(font, "Tests/images/variation_tiny.png", 40)
     for name in ["200", b"200"]:
         font.set_variation_by_name(name)
+        assert font.getname()[1] == "200"
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
 

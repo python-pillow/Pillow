@@ -803,7 +803,7 @@ class FreeTypeFont:
         names = self.get_variation_names()
         if not isinstance(name, bytes):
             name = name.encode()
-        index = names.index(name)
+        index = names.index(name) + 1
 
         if index == getattr(self, "_last_variation_index", None):
             # When the same name is set twice in a row,
