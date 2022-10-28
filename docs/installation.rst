@@ -166,7 +166,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.0.2**
+  * Pillow has been tested with libimagequant **2.6-4.0.4**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -184,7 +184,7 @@ Many of Pillow's features require external libraries:
     loads libfribidi at runtime if it is installed.
     On Windows this requires compiling FriBiDi and installing ``fribidi.dll``
     into a directory listed in the `Dynamic-Link Library Search Order (Microsoft Docs)
-    <https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-desktop-applications>`_
+    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-desktop-applications>`_
     (``fribidi-0.dll`` or ``libfribidi-0.dll`` are also detected).
     See `Build Options`_ to see how to build this version.
   * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.

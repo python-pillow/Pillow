@@ -5,6 +5,10 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -73,11 +77,11 @@ jobs:
           python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
 
       - name: Upload coverage
-        run: |
-          python3 -m pip install codecov
-          bash <(curl -s https://codecov.io/bash) -F GHA_Windows
-        env:
-          CODECOV_NAME: ${{ matrix.name }}
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: GHA_Windows
+          name: ${{ matrix.name }}
 
   success:
     permissions:

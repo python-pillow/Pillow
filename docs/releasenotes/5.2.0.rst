@@ -105,7 +105,7 @@ Resolve confusion getting PIL / Pillow version string
 Re: "version constants deprecated" listed above, as user gnbl notes in #3082:
 
 - it's confusing that PIL.VERSION returns the version string of the former PIL instead of Pillow's
-- there does not seem to be documentation on this version number (why this, will it ever change, ..) e.g. at https://pillow.readthedocs.io/en/5.1.x/about.html#why-a-fork
+- ReadTheDocs documentation is missing for some version branches (why is this, will it ever change, ...)
 - it's confusing that PIL.version is a module and does not return the version information directly or hints on how to get it
 - the package information header is essentially useless (placeholder, does not even mention Pillow, nor the version)
 - PIL._version module documentation comment could explain how to access the version information

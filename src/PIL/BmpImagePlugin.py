@@ -211,7 +211,7 @@ class BmpImageFile(ImageFile.ImageFile):
         elif file_info["compression"] == self.RAW:
             if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
                 raw_mode, self.mode = "BGRA", "RGBA"
-        elif file_info["compression"] == self.RLE8:
+        elif file_info["compression"] in (self.RLE8, self.RLE4):
             decoder_name = "bmp_rle"
         else:
             raise OSError(f"Unsupported BMP compression ({file_info['compression']})")
@@ -250,16 +250,18 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # ---------------------------- Finally set the tile data for the plugin
         self.info["compression"] = file_info["compression"]
+        args = [raw_mode]
+        if decoder_name == "bmp_rle":
+            args.append(file_info["compression"] == self.RLE4)
+        else:
+            args.append(((file_info["width"] * file_info["bits"] + 31) >> 3) & (~3))
+        args.append(file_info["direction"])
         self.tile = [
             (
                 decoder_name,
                 (0, 0, file_info["width"], file_info["height"]),
                 offset or self.fp.tell(),
-                (
-                    raw_mode,
-                    ((file_info["width"] * file_info["bits"] + 31) >> 3) & (~3),
-                    file_info["direction"],
-                ),
+                tuple(args),
             )
         ]
 
@@ -280,6 +282,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
     def decode(self, buffer):
+        rle4 = self.args[1]
         data = bytearray()
         x = 0
         while len(data) < self.state.xsize * self.state.ysize:
@@ -293,7 +296,16 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                 if x + num_pixels > self.state.xsize:
                     # Too much data for row
                     num_pixels = max(0, self.state.xsize - x)
-                data += byte * num_pixels
+                if rle4:
+                    first_pixel = o8(byte[0] >> 4)
+                    second_pixel = o8(byte[0] & 0x0F)
+                    for index in range(num_pixels):
+                        if index % 2 == 0:
+                            data += first_pixel
+                        else:
+                            data += second_pixel
+                else:
+                    data += byte * num_pixels
                 x += num_pixels
             else:
                 if byte[0] == 0:
@@ -314,9 +326,18 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     x = len(data) % self.state.xsize
                 else:
                     # absolute mode
-                    bytes_read = self.fd.read(byte[0])
-                    data += bytes_read
-                    if len(bytes_read) < byte[0]:
+                    if rle4:
+                        # 2 pixels per byte
+                        byte_count = byte[0] // 2
+                        bytes_read = self.fd.read(byte_count)
+                        for byte_read in bytes_read:
+                            data += o8(byte_read >> 4)
+                            data += o8(byte_read & 0x0F)
+                    else:
+                        byte_count = byte[0]
+                        bytes_read = self.fd.read(byte_count)
+                        data += bytes_read
+                    if len(bytes_read) < byte_count:
                         break
                     x += byte[0]
 
@@ -375,6 +396,16 @@ def _save(im, fp, filename, bitmap_header=True):
     header = 40  # or 64 for OS/2 version 2
     image = stride * im.size[1]
 
+    if im.mode == "1":
+        palette = b"".join(o8(i) * 4 for i in (0, 255))
+    elif im.mode == "L":
+        palette = b"".join(o8(i) * 4 for i in range(256))
+    elif im.mode == "P":
+        palette = im.im.getpalette("RGB", "BGRX")
+        colors = len(palette) // 4
+    else:
+        palette = None
+
     # bitmap header
     if bitmap_header:
         offset = 14 + header + colors * 4
@@ -405,14 +436,8 @@ def _save(im, fp, filename, bitmap_header=True):
 
     fp.write(b"\0" * (header - 40))  # padding (for OS/2 format)
 
-    if im.mode == "1":
-        for i in (0, 255):
-            fp.write(o8(i) * 4)
-    elif im.mode == "L":
-        for i in range(256):
-            fp.write(o8(i) * 4)
-    elif im.mode == "P":
-        fp.write(im.im.getpalette("RGB", "BGRX"))
+    if palette:
+        fp.write(palette)
 
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))])
 

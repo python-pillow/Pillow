@@ -25,6 +25,7 @@ exclude .coveragerc
 exclude .editorconfig
 exclude .readthedocs.yml
 exclude codecov.yml
+exclude renovate.json
 global-exclude .git*
 global-exclude *.pyc
 global-exclude *.so

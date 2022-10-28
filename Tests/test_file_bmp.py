@@ -39,6 +39,13 @@ def test_invalid_file():
             BmpImagePlugin.BmpImageFile(fp)
 
 
+def test_fallback_if_mmap_errors():
+    # This image has been truncated,
+    # so that the buffer is not large enough when using mmap
+    with Image.open("Tests/images/mmap_error.bmp") as im:
+        assert_image_equal_tofile(im, "Tests/images/pal8_offset.bmp")
+
+
 def test_save_to_bytes():
     output = io.BytesIO()
     im = hopper()
@@ -49,6 +56,18 @@ def test_save_to_bytes():
         assert im.mode == reloaded.mode
         assert im.size == reloaded.size
         assert reloaded.format == "BMP"
+
+
+def test_small_palette(tmp_path):
+    im = Image.new("P", (1, 1))
+    colors = [0, 0, 0, 125, 125, 125, 255, 255, 255]
+    im.putpalette(colors)
+
+    out = str(tmp_path / "temp.bmp")
+    im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.getpalette() == colors
 
 
 def test_save_too_large(tmp_path):
@@ -155,6 +174,11 @@ def test_rle8():
         with Image.open(io.BytesIO(data)) as im:
             with pytest.raises(ValueError):
                 im.load()
+
+
+def test_rle4():
+    with Image.open("Tests/images/bmp/g/pal4rle.bmp") as im:
+        assert_image_similar_tofile(im, "Tests/images/bmp/g/pal4.bmp", 12)
 
 
 @pytest.mark.parametrize(

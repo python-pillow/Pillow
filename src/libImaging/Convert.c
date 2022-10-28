@@ -1243,7 +1243,7 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
     if (!imOut) {
         return NULL;
     }
-    if (strcmp(mode, "P") == 0) {
+    if (strcmp(mode, "P") == 0 || strcmp(mode, "PA") == 0) {
         ImagingPaletteDelete(imOut->palette);
         imOut->palette = ImagingPaletteDuplicate(imIn->palette);
     }

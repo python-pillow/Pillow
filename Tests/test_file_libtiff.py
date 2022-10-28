@@ -3,6 +3,7 @@ import io
 import itertools
 import os
 import re
+import sys
 from collections import namedtuple
 
 import pytest
@@ -509,20 +510,13 @@ class TestFileLibTiff(LibTiffTestCase):
             # colormap/palette tag
             assert len(reloaded.tag_v2[320]) == 768
 
-    def xtest_bw_compression_w_rgb(self, tmp_path):
-        """This test passes, but when running all tests causes a failure due
-        to output on stderr from the error thrown by libtiff. We need to
-        capture that but not now"""
-
+    @pytest.mark.parametrize("compression", ("tiff_ccitt", "group3", "group4"))
+    def test_bw_compression_w_rgb(self, compression, tmp_path):
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
 
         with pytest.raises(OSError):
-            im.save(out, compression="tiff_ccitt")
-        with pytest.raises(OSError):
-            im.save(out, compression="group3")
-        with pytest.raises(OSError):
-            im.save(out, compression="group4")
+            im.save(out, compression=compression)
 
     def test_fp_leak(self):
         im = Image.open("Tests/images/hopper_g4_500.tif")
@@ -832,6 +826,44 @@ class TestFileLibTiff(LibTiffTestCase):
             assert reloaded.mode == "F"
             assert reloaded.getexif()[SAMPLEFORMAT] == 3
 
+    def test_lzma(self, capfd):
+        try:
+            with Image.open("Tests/images/hopper_lzma.tif") as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
+                assert im.format == "TIFF"
+                im2 = hopper()
+                assert_image_similar(im, im2, 5)
+        except OSError:
+            captured = capfd.readouterr()
+            if "LZMA compression support is not configured" in captured.err:
+                pytest.skip("LZMA compression support is not configured")
+            sys.stdout.write(captured.out)
+            sys.stderr.write(captured.err)
+            raise
+
+    def test_webp(self, capfd):
+        try:
+            with Image.open("Tests/images/hopper_webp.tif") as im:
+                assert im.mode == "RGB"
+                assert im.size == (128, 128)
+                assert im.format == "TIFF"
+                assert_image_similar_tofile(im, "Tests/images/hopper_webp.png", 1)
+        except OSError:
+            captured = capfd.readouterr()
+            if "WEBP compression support is not configured" in captured.err:
+                pytest.skip("WEBP compression support is not configured")
+            if (
+                "Compression scheme 50001 strip decoding is not implemented"
+                in captured.err
+            ):
+                pytest.skip(
+                    "Compression scheme 50001 strip decoding is not implemented"
+                )
+            sys.stdout.write(captured.out)
+            sys.stderr.write(captured.err)
+            raise
+
     def test_lzw(self):
         with Image.open("Tests/images/hopper_lzw.tif") as im:
             assert im.mode == "RGB"
@@ -941,7 +973,7 @@ class TestFileLibTiff(LibTiffTestCase):
         im.save(out, exif=tags, compression=compression)
 
         with Image.open(out) as reloaded:
-            for tag in tags.keys():
+            for tag in tags:
                 assert tag not in reloaded.getexif()
 
     def test_old_style_jpeg(self):

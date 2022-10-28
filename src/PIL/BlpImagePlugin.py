@@ -373,8 +373,8 @@ class BLP1Decoder(_BLPBaseDecoder):
         data = BytesIO(data)
         image = JpegImageFile(data)
         Image._decompression_bomb_check(image.size)
-        image.mode = "RGB"
-        image.tile = [("jpeg", (0, 0) + self.size, 0, ("BGRX", ""))]
+        r, g, b = image.convert("RGB").split()
+        image = Image.merge("RGB", (b, g, r))
         self.set_as_raw(image.tobytes())
 
 

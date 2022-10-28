@@ -24,7 +24,7 @@
  *
  * This cast is safe, as the top 32-bits of HFILE are guaranteed to be zero,
  * see
- * https://docs.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
+ * https://learn.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
  */
 #ifndef USE_WIN32_FILEIO
 #define fd_to_tiff_fd(fd) (fd)
@@ -916,7 +916,7 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     dump_state(clientstate);
 
     if (state->state == 0) {
-        TRACE(("Encoding line bt line"));
+        TRACE(("Encoding line by line"));
         while (state->y < state->ysize) {
             state->shuffle(
                 state->buffer,

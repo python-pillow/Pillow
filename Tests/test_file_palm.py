@@ -63,19 +63,7 @@ def test_p_mode(tmp_path):
     roundtrip(tmp_path, mode)
 
 
-def test_l_oserror(tmp_path):
-    # Arrange
-    mode = "L"
-
-    # Act / Assert
-    with pytest.raises(OSError):
-        helper_save_as_palm(tmp_path, mode)
-
-
-def test_rgb_oserror(tmp_path):
-    # Arrange
-    mode = "RGB"
-
-    # Act / Assert
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+def test_oserror(tmp_path, mode):
     with pytest.raises(OSError):
         helper_save_as_palm(tmp_path, mode)

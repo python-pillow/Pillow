@@ -18,7 +18,7 @@ from .helper import (
 )
 
 try:
-    import defusedxml.ElementTree as ElementTree
+    from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
 
@@ -83,6 +83,24 @@ class TestFileTiff:
         with warnings.catch_warnings():
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
+
+    @pytest.mark.parametrize(
+        "path, sizes",
+        (
+            ("Tests/images/hopper.tif", ()),
+            ("Tests/images/child_ifd.tiff", (16, 8)),
+            ("Tests/images/child_ifd_jpeg.tiff", (20,)),
+        ),
+    )
+    def test_get_child_images(self, path, sizes):
+        with Image.open(path) as im:
+            ims = im.get_child_images()
+
+        assert len(ims) == len(sizes)
+        for i, im in enumerate(ims):
+            w = sizes[i]
+            expected = Image.new("RGB", (w, w), "#f00")
+            assert_image_similar(im, expected, 1)
 
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
@@ -293,14 +311,17 @@ class TestFileTiff:
             with Image.open("Tests/images/hopper_unknown_pixel_mode.tif"):
                 pass
 
-    def test_n_frames(self):
-        for path, n_frames in [
-            ["Tests/images/multipage-lastframe.tif", 1],
-            ["Tests/images/multipage.tiff", 3],
-        ]:
-            with Image.open(path) as im:
-                assert im.n_frames == n_frames
-                assert im.is_animated == (n_frames != 1)
+    @pytest.mark.parametrize(
+        "path, n_frames",
+        (
+            ("Tests/images/multipage-lastframe.tif", 1),
+            ("Tests/images/multipage.tiff", 3),
+        ),
+    )
+    def test_n_frames(self, path, n_frames):
+        with Image.open(path) as im:
+            assert im.n_frames == n_frames
+            assert im.is_animated == (n_frames != 1)
 
     def test_eoferror(self):
         with Image.open("Tests/images/multipage-lastframe.tif") as im:
@@ -416,12 +437,12 @@ class TestFileTiff:
             len_after = len(dict(im.ifd))
             assert len_before == len_after + 1
 
-    def test_load_byte(self):
-        for legacy_api in [False, True]:
-            ifd = TiffImagePlugin.ImageFileDirectory_v2()
-            data = b"abc"
-            ret = ifd.load_byte(data, legacy_api)
-            assert ret == b"abc"
+    @pytest.mark.parametrize("legacy_api", (False, True))
+    def test_load_byte(self, legacy_api):
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        data = b"abc"
+        ret = ifd.load_byte(data, legacy_api)
+        assert ret == b"abc"
 
     def test_load_string(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
@@ -667,18 +688,15 @@ class TestFileTiff:
             with Image.open(outfile) as reloaded:
                 assert_image_equal_tofile(reloaded, infile)
 
-    def test_palette(self, tmp_path):
-        def roundtrip(mode):
-            outfile = str(tmp_path / "temp.tif")
+    @pytest.mark.parametrize("mode", ("P", "PA"))
+    def test_palette(self, mode, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
 
-            im = hopper(mode)
-            im.save(outfile)
+        im = hopper(mode)
+        im.save(outfile)
 
-            with Image.open(outfile) as reloaded:
-                assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
-
-        for mode in ["P", "PA"]:
-            roundtrip(mode)
+        with Image.open(outfile) as reloaded:
+            assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
     def test_tiff_save_all(self):
         mp = BytesIO()

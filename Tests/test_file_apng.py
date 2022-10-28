@@ -39,13 +39,12 @@ def test_apng_basic():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_fdat():
-    with Image.open("Tests/images/apng/split_fdat.png") as im:
-        im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
-        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
-
-    with Image.open("Tests/images/apng/split_fdat_zero_chunk.png") as im:
+@pytest.mark.parametrize(
+    "filename",
+    ("Tests/images/apng/split_fdat.png", "Tests/images/apng/split_fdat_zero_chunk.png"),
+)
+def test_apng_fdat(filename):
+    with Image.open(filename) as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
@@ -554,18 +553,20 @@ def test_apng_save_disposal(tmp_path):
 def test_apng_save_disposal_previous(tmp_path):
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)
-    transparent = Image.new("RGBA", size, (0, 0, 0, 0))
+    blue = Image.new("RGBA", size, (0, 0, 255, 255))
     red = Image.new("RGBA", size, (255, 0, 0, 255))
     green = Image.new("RGBA", size, (0, 255, 0, 255))
 
     # test OP_NONE
-    transparent.save(
+    blue.save(
         test_file,
         save_all=True,
         append_images=[red, green],
         disposal=PngImagePlugin.Disposal.OP_PREVIOUS,
     )
     with Image.open(test_file) as im:
+        assert im.getpixel((0, 0)) == (0, 0, 255, 255)
+
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
@@ -646,6 +647,16 @@ def test_seek_after_close():
 
     with pytest.raises(ValueError):
         im.seek(0)
+
+
+@pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
+def test_different_modes_in_later_frames(mode, tmp_path):
+    test_file = str(tmp_path / "temp.png")
+
+    im = Image.new("L", (1, 1))
+    im.save(test_file, save_all=True, append_images=[Image.new(mode, (1, 1))])
+    with Image.open(test_file) as reloaded:
+        assert reloaded.mode == mode
 
 
 def test_constants_deprecation():

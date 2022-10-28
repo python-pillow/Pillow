@@ -23,7 +23,7 @@ from setuptools.command.build_ext import build_ext
 
 def get_version():
     version_file = "src/PIL/_version.py"
-    with open(version_file) as f:
+    with open(version_file, encoding="utf-8") as f:
         exec(compile(f.read(), version_file, "exec"))
     return locals()["__version__"]
 
@@ -999,9 +999,6 @@ try:
         version=PILLOW_VERSION,
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
-        include_package_data=True,
-        packages=["PIL"],
-        package_dir={"": "src"},
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:

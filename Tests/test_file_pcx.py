@@ -39,14 +39,14 @@ def test_invalid_file():
         PcxImagePlugin.PcxImageFile(invalid_file)
 
 
-def test_odd(tmp_path):
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
+def test_odd(tmp_path, mode):
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
-    for mode in ("1", "L", "P", "RGB"):
-        # larger, odd sized images are better here to ensure that
-        # we handle interrupted scan lines properly.
-        _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
+    # larger, odd sized images are better here to ensure that
+    # we handle interrupted scan lines properly.
+    _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
 
 
 def test_odd_read():

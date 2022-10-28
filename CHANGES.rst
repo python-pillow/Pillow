@@ -5,6 +5,126 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Fixed set_variation_by_name offset #6445
+  [radarhere]
+
+- Fix malloc in _imagingft.c:font_setvaraxes #6690
+  [cgohlke]
+
+- Release Python GIL when converting images using matrix operations #6418
+  [hmaarrfk]
+
+- Added ExifTags enums #6630
+  [radarhere]
+
+- Do not modify previous frame when calculating delta in PNG #6683
+  [radarhere]
+
+- Added support for reading BMP images with RLE4 compression #6674
+  [npjg, radarhere]
+
+- Decode JPEG compressed BLP1 data in original mode #6678
+  [radarhere]
+
+- Added GPS TIFF tag info #6661
+  [radarhere]
+
+- Added conversion between RGB/RGBA/RGBX and LAB #6647
+  [radarhere]
+
+- Do not attempt normalization if mode is already normal #6644
+  [radarhere]
+
+- Fixed seeking to an L frame in a GIF #6576
+  [radarhere]
+
+- Consider all frames when selecting mode for PNG save_all #6610
+  [radarhere]
+
+- Don't reassign crc on ChunkStream close #6627
+  [wiredfool, radarhere]
+
+- Raise a warning if NumPy failed to raise an error during conversion #6594
+  [radarhere]
+
+- Show all frames in ImageShow #6611
+  [radarhere]
+
+- Allow FLI palette chunk to not be first #6626
+  [radarhere]
+
+- If first GIF frame has transparency for RGB_ALWAYS loading strategy, use RGBA mode #6592
+  [radarhere]
+
+- Round box position to integer when pasting embedded color #6517
+  [radarhere, nulano]
+
+- Removed EXIF prefix when saving WebP #6582
+  [radarhere]
+
+- Pad IM palette to 768 bytes when saving #6579
+  [radarhere]
+
+- Added DDS BC6H reading #6449
+  [ShadelessFox, REDxEYE, radarhere]
+
+- Added support for opening WhiteIsZero 16-bit integer TIFF images #6642
+  [JayWiz, radarhere]
+
+- Raise an error when allocating translucent color to RGB palette #6654
+  [jsbueno, radarhere]
+
+- Added reading of TIFF child images #6569
+  [radarhere]
+
+- Improved ImageOps palette handling #6596
+  [PososikTeam, radarhere]
+
+- Defer parsing of palette into colors #6567
+  [radarhere]
+
+- Apply transparency to P images in ImageTk.PhotoImage #6559
+  [radarhere]
+
+- Use rounding in ImageOps contain() and pad() #6522
+  [bibinhashley, radarhere]
+
+- Fixed GIF remapping to palette with duplicate entries #6548
+  [radarhere]
+
+- Allow remap_palette() to return an image with less than 256 palette entries #6543
+  [radarhere]
+
+- Corrected BMP and TGA palette size when saving #6500
+  [radarhere]
+
+- Do not call load() before draft() in Image.thumbnail #6539
+  [radarhere]
+
+- Copy palette when converting from P to PA #6497
+  [radarhere]
+
+- Allow RGB and RGBA values for PA image putpixel #6504
+  [radarhere]
+
+- Removed support for tkinter in PyPy before Python 3.6 #6551
+  [nulano]
+
+- Do not use CCITTFaxDecode filter if libtiff is not available #6518
+  [radarhere]
+
+- Fallback to not using mmap if buffer is not large enough #6510
+  [radarhere]
+
+- Fixed writing bytes as ASCII tag #6493
+  [radarhere]
+
+- Open 1 bit EPS in mode 1 #6499
+  [radarhere]
+
+- Removed support for tkinter before Python 1.5.2 #6549
+  [radarhere]
+
 - Allow default ImageDraw font to be set #6484
   [radarhere, hugovk]
 

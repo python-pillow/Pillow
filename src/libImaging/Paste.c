@@ -432,18 +432,18 @@ fill_mask_L(
         }
 
     } else {
+        int alpha_channel = strcmp(imOut->mode, "RGBa") == 0 ||
+                            strcmp(imOut->mode, "RGBA") == 0 ||
+                            strcmp(imOut->mode, "La") == 0 ||
+                            strcmp(imOut->mode, "LA") == 0 ||
+                            strcmp(imOut->mode, "PA") == 0;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx * pixelsize;
             UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 for (i = 0; i < pixelsize; i++) {
                     UINT8 channel_mask = *mask;
-                    if ((strcmp(imOut->mode, "RGBa") == 0 ||
-                         strcmp(imOut->mode, "RGBA") == 0 ||
-                         strcmp(imOut->mode, "La") == 0 ||
-                         strcmp(imOut->mode, "LA") == 0 ||
-                         strcmp(imOut->mode, "PA") == 0) &&
-                        i != 3 && channel_mask != 0) {
+                    if (alpha_channel && i != 3 && channel_mask != 0) {
                         channel_mask =
                             255 - (255 - channel_mask) * (1 - (255 - out[3]) / 255);
                     }

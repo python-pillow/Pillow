@@ -274,6 +274,8 @@ class GifImageFile(ImageFile.ImageFile):
                     p = self.fp.read(3 << bits)
                     if self._is_palette_needed(p):
                         palette = ImagePalette.raw("RGB", p)
+                    else:
+                        palette = False
 
                 # image data
                 bits = self.fp.read(1)[0]
@@ -298,12 +300,14 @@ class GifImageFile(ImageFile.ImageFile):
         if self.dispose:
             self.im.paste(self.dispose, self.dispose_extent)
 
-        self._frame_palette = palette or self.global_palette
+        self._frame_palette = palette if palette is not None else self.global_palette
+        self._frame_transparency = frame_transparency
         if frame == 0:
             if self._frame_palette:
-                self.mode = (
-                    "RGB" if LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS else "P"
-                )
+                if LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
+                    self.mode = "RGBA" if frame_transparency is not None else "RGB"
+                else:
+                    self.mode = "P"
             else:
                 self.mode = "L"
 
@@ -313,7 +317,6 @@ class GifImageFile(ImageFile.ImageFile):
                 palette = copy(self.global_palette)
             self.palette = palette
         else:
-            self._frame_transparency = frame_transparency
             if self.mode == "P":
                 if (
                     LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
@@ -386,7 +389,8 @@ class GifImageFile(ImageFile.ImageFile):
             transparency = -1
             if frame_transparency is not None:
                 if frame == 0:
-                    self.info["transparency"] = frame_transparency
+                    if LOADING_STRATEGY != LoadingStrategy.RGB_ALWAYS:
+                        self.info["transparency"] = frame_transparency
                 elif self.mode not in ("RGB", "RGBA"):
                     transparency = frame_transparency
             self.tile = [
@@ -410,9 +414,9 @@ class GifImageFile(ImageFile.ImageFile):
         temp_mode = "P" if self._frame_palette else "L"
         self._prev_im = None
         if self.__frame == 0:
-            if "transparency" in self.info:
+            if self._frame_transparency is not None:
                 self.im = Image.core.fill(
-                    temp_mode, self.size, self.info["transparency"]
+                    temp_mode, self.size, self._frame_transparency
                 )
         elif self.mode in ("RGB", "RGBA"):
             self._prev_im = self.im
@@ -429,19 +433,20 @@ class GifImageFile(ImageFile.ImageFile):
     def load_end(self):
         if self.__frame == 0:
             if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
-                self.mode = "RGB"
-                self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+                if self._frame_transparency is not None:
+                    self.im.putpalettealpha(self._frame_transparency, 0)
+                    self.mode = "RGBA"
+                else:
+                    self.mode = "RGB"
+                self.im = self.im.convert(self.mode, Image.Dither.FLOYDSTEINBERG)
             return
-        if self.mode == "P" and self._prev_im:
-            if self._frame_transparency is not None:
-                self.im.putpalettealpha(self._frame_transparency, 0)
-                frame_im = self.im.convert("RGBA")
-            else:
-                frame_im = self.im.convert("RGB")
+        if not self._prev_im:
+            return
+        if self._frame_transparency is not None:
+            self.im.putpalettealpha(self._frame_transparency, 0)
+            frame_im = self.im.convert("RGBA")
         else:
-            if not self._prev_im:
-                return
-            frame_im = self.im
+            frame_im = self.im.convert("RGB")
         frame_im = self._crop(frame_im, self.dispose_extent)
 
         self.im = self._prev_im
@@ -519,9 +524,8 @@ def _normalize_palette(im, palette, info):
         used_palette_colors = []
         for i in range(0, len(source_palette), 3):
             source_color = tuple(source_palette[i : i + 3])
-            try:
-                index = im.palette.colors[source_color]
-            except KeyError:
+            index = im.palette.colors.get(source_color)
+            if index in used_palette_colors:
                 index = None
             used_palette_colors.append(index)
         for i, index in enumerate(used_palette_colors):

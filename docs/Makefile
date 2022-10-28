@@ -43,8 +43,7 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 install-sphinx:
-	$(PYTHON) -c "import sphinx" > /dev/null 2>&1 || $(PYTHON) -m pip install sphinx
-	$(PYTHON) -c "import furo" > /dev/null 2>&1 || $(PYTHON) -m pip install furo
+	$(PYTHON) -m pip install --quiet sphinx sphinx-copybutton sphinx-issues sphinx-removed-in sphinxext-opengraph furo olefile
 
 html:
 	$(MAKE) install-sphinx
