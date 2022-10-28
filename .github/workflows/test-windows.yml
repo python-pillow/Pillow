@@ -194,6 +194,8 @@ jobs:
       id: wheel
       if: "github.event_name != 'pull_request'"
       run: |
+        mkdir fribidi\${{ matrix.architecture }}
+        copy winbuild\build\bin\fribidi* fribidi\${{ matrix.architecture }}
         setlocal EnableDelayedExpansion
         for %%f in (winbuild\build\license\*) do (
           set x=%%~nf
@@ -214,11 +216,19 @@ jobs:
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
-    - uses: actions/upload-artifact@v3
+    - name: Upload wheel
+      uses: actions/upload-artifact@v3
       if: "github.event_name != 'pull_request'"
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl
+
+    - name: Upload fribidi.dll
+      if: "github.event_name != 'pull_request' && matrix.python-version == 3.10"
+      uses: actions/upload-artifact@v3
+      with:
+        name: fribidi
+        path: fribidi\*
 
   success:
     permissions:

@@ -373,6 +373,7 @@ deps = {
         "dir": "fribidi-1.0.12",
         "license": "COPYING",
         "build": [
+            cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.12-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             cmd_cmake(),
             cmd_nmake(target="clean"),
