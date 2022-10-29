@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Inline fname2char to fix memory leak #6329
+  [nulano]
+
+- Fix memory leaks related to text features #6330
+  [nulano]
+
+- Use double quotes for version check on old CPython on Windows #6695
+  [hugovk]
+
 - Remove backup implementation of Round for Windows platforms #6693
   [cgohlke]
 
