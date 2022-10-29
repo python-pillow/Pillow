@@ -2,8 +2,14 @@
 Changelog (Pillow)
 ==================
 
-9.3.0 (unreleased)
+9.3.0 (2022-10-29)
 ------------------
+
+- Limit SAMPLESPERPIXEL to avoid runtime DOS #6700
+  [wiredfool]
+
+- Initialize libtiff buffer when saving #6699
+  [radarhere]
 
 - Inline fname2char to fix memory leak #6329
   [nulano]
