@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.3.0 (unreleased)
 ------------------
 
+- Remove backup implementation of Round for Windows platforms #6693
+  [cgohlke]
+
 - Fixed set_variation_by_name offset #6445
   [radarhere]
 
