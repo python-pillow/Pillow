@@ -4,11 +4,10 @@ import sys
 import sysconfig
 
 import pytest
-from setuptools.command.build_ext import new_compiler
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, is_win32, on_ci
+from .helper import assert_image_equal, hopper, is_win32
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -410,6 +409,7 @@ class TestEmbeddable:
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self):
         import ctypes
+        from setuptools.command.build_ext import new_compiler
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             fh.write(
