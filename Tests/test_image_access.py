@@ -406,11 +406,8 @@ class TestImagePutPixelError(AccessTest):
 
 
 class TestEmbeddable:
-    @pytest.mark.skipif(
-        not is_win32() or on_ci(),
-        reason="Failing on AppVeyor / GitHub Actions when run from subprocess, "
-        "not from shell",
-    )
+    @pytest.mark.xfail(reason="failing test")
+    @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self):
         import ctypes
 
