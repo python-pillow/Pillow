@@ -409,6 +409,7 @@ class TestEmbeddable:
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self):
         import ctypes
+
         from setuptools.command.build_ext import new_compiler
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
