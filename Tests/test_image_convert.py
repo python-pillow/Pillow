@@ -338,3 +338,17 @@ def test_matrix_identity():
     # Assert
     # No change
     assert_image_equal(converted_im, im)
+
+
+def test_rgba_premultiplied_to_rgb():
+    im = Image.merge(
+        "RGBa",
+        [
+            Image.new(mode="L", size=(1, 1), color=128),
+            Image.new(mode="L", size=(1, 1), color=255),
+            Image.new(mode="L", size=(1, 1), color=64),
+            Image.new(mode="L", size=(1, 1), color=64),
+        ],
+    )
+    im = im.convert(mode="RGB")
+    assert im.getpixel((0, 0)) == (32, 64, 16)

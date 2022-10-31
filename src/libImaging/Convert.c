@@ -933,6 +933,7 @@ static struct {
     {"RGBA", "YCbCr", ImagingConvertRGB2YCbCr},
     {"RGBA", "HSV", rgb2hsv},
 
+    {"RGBa", "RGB", rgbA2rgba},
     {"RGBa", "RGBA", rgba2rgbA},
 
     {"RGBX", "1", rgb2bit},
