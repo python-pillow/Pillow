@@ -321,6 +321,7 @@ def _save(im, fp, filename):
     progression = info.get("progression", "LRCP")
     cinema_mode = info.get("cinema_mode", "no")
     mct = info.get("mct", 0)
+    signed = info.get("signed", False)
     fd = -1
 
     if hasattr(fp, "fileno"):
@@ -342,6 +343,7 @@ def _save(im, fp, filename):
         progression,
         cinema_mode,
         mct,
+        signed,
         fd,
     )
 

@@ -563,6 +563,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     encoded using RLCP mode will have increasing resolutions decoded as they
     arrive, and so on.
 
+**signed**
+    If true, then tell the encoder to save the image as signed.
+
+    .. versionadded:: 9.4.0
+
 **cinema_mode**
     Set the encoder to produce output compliant with the digital cinema
     specifications.  The options here are ``"no"`` (the default),
