@@ -923,7 +923,7 @@ font_render(FontObject *self, PyObject *args) {
 
         // Null buffer, is dereferenced in FT_Bitmap_Convert
         if (!bitmap.buffer && bitmap.rows) {
-            return geterror(0x9D); // Bitmap missing
+            PyErr_SetString(PyExc_IOError, "Bitmap missing for glyph");
             goto glyph_error;
         }
 
