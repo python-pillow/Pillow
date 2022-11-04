@@ -67,7 +67,7 @@ debug:
 # for our stuff, kills optimization, and redirects to dev null so we
 # see any build failures.
 	make clean > /dev/null
-	CFLAGS='-g -O0' python3 -m pip install --global-option="build_ext" . > /dev/null
+	CFLAGS='-g -O0' python3 -m pip -v install --global-option="build_ext" . > /dev/null
 
 .PHONY: release-test
 release-test:
