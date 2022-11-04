@@ -360,6 +360,7 @@ deps = {
         "dir": "harfbuzz-5.3.1",
         "license": "COPYING",
         "build": [
+            cmd_set("CXXFLAGS", "-d2FH4-"),
             cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
             cmd_nmake(target="clean"),
             cmd_nmake(target="harfbuzz"),
