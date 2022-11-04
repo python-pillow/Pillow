@@ -57,6 +57,9 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml"><img
                 alt="Tidelift Align"
                 src="https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml/badge.svg"></a>
+            <a href="https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:pillow"><img
+                alt="Fuzzing Status"
+                src="https://oss-fuzz-build-logs.storage.googleapis.com/badges/pillow.svg"></a>
         </td>
     </tr>
     <tr>
