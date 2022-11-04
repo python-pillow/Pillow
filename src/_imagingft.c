@@ -956,7 +956,7 @@ font_render(FontObject *self, PyObject *args) {
                 /* we didn't ask for color, fall through to default */
 #endif
             default:
-                PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
                 goto glyph_error;
         }
 
@@ -1023,7 +1023,7 @@ font_render(FontObject *self, PyObject *args) {
                         }
                     }
                 } else {
-                    PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                    PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
                     goto glyph_error;
                 }
             }
