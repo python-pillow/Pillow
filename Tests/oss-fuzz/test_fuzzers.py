@@ -59,6 +59,6 @@ def test_fuzz_fonts(path):
             fuzzers.fuzz_font(f.read())
         except (Image.DecompressionBombError,
                 Image.DecompressionBombWarning,
-                IOError):
+                OSError):
             pass
         assert True
