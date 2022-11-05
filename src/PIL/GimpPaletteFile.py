@@ -17,8 +17,6 @@
 import re
 import warnings
 
-from ._binary import o8
-
 
 class GimpPaletteFile:
     """File handler for GIMP's palette format."""
@@ -37,7 +35,7 @@ class GimpPaletteFile:
 
         read = 0
 
-        self.palette = b""
+        self.palette = []
         while len(self.palette) < 3 * self.max_colors:
 
             s = fp.readline(self._max_file_size)
@@ -61,8 +59,10 @@ class GimpPaletteFile:
             v = s.split(maxsplit=3)
             if len(v) < 3:
                 raise ValueError("bad palette entry")
-            for i in range(3):
-                self.palette += o8(int(v[i]))
+
+            self.palette += (int(v[0]), int(v[1]), int(v[2]))
+
+        self.palette = bytes(self.palette)
 
     def getpalette(self):
 

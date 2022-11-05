@@ -40,7 +40,7 @@ def test_get_palette():
     palette, mode = palette_file.getpalette()
 
     # Assert
-    expected_palette = b""
+    expected_palette = []
     for color in (
         (0, 0, 0),
         (65, 38, 30),
@@ -51,6 +51,6 @@ def test_get_palette():
         (151, 144, 142),
         (221, 207, 199),
     ):
-        expected_palette += bytes(color)
-    assert palette == expected_palette
+        expected_palette += color
+    assert palette == bytes(expected_palette)
     assert mode == "RGB"
