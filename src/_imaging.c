@@ -1829,7 +1829,7 @@ _resize(ImagingObject *self, PyObject *args) {
         box[1] - (int)box[1] == 0 && box[3] - box[1] == ysize) {
         imOut = ImagingCrop(imIn, box[0], box[1], box[2], box[3]);
     } else if (filter == IMAGING_TRANSFORM_NEAREST) {
-        double a[6];
+        double a[8];
 
         memset(a, 0, sizeof a);
         a[0] = (double)(box[2] - box[0]) / xsize;
