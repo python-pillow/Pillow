@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 22.8.0
+    rev: 22.10.0
     hooks:
       - id: black
         args: ["--target-version", "py37"]
@@ -44,7 +44,7 @@ repos:
       - id: check-yaml
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
-    rev: v0.6.1
+    rev: v0.6.7
     hooks:
       - id: sphinx-lint
 
