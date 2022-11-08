@@ -4,8 +4,35 @@
 :py:mod:`~PIL.ExifTags` Module
 ==============================
 
-The :py:mod:`~PIL.ExifTags` module exposes two dictionaries which
-provide constants and clear-text names for various well-known EXIF tags.
+The :py:mod:`~PIL.ExifTags` module exposes several ``enum.IntEnum`` classes
+which provide constants and clear-text names for various well-known EXIF tags.
+
+.. py:data:: Base
+
+    >>> from PIL.ExifTags import Base
+    >>> Base.ImageDescription.value
+    270
+    >>> Base(270).name
+    'ImageDescription'
+
+.. py:data:: GPS
+
+    >>> from PIL.ExifTags import GPS
+    >>> GPS.GPSDestLatitude.value
+    20
+    >>> GPS(20).name
+    'GPSDestLatitude'
+
+.. py:data:: Interop
+
+    >>> from PIL.ExifTags import Interop
+    >>> Interop.RelatedImageFileFormat.value
+    4096
+    >>> Interop(4096).name
+    'RelatedImageFileFormat'
+
+
+Two of these values are also exposed as dictionaries.
 
 .. py:data:: TAGS
     :type: dict
@@ -26,22 +53,3 @@ provide constants and clear-text names for various well-known EXIF tags.
         >>> from PIL.ExifTags import GPSTAGS
         >>> GPSTAGS[20]
         'GPSDestLatitude'
-
-
-These values are also exposed as ``enum.IntEnum`` classes.
-
-.. py:data:: Base
-
-    >>> from PIL.ExifTags import Base
-    >>> Base.ImageDescription.value
-    270
-    >>> Base(270).name
-    'ImageDescription'
-
-.. py:data:: GPS
-
-    >>> from PIL.ExifTags import GPS
-    >>> GPS.GPSDestLatitude.value
-    20
-    >>> GPS(20).name
-    'GPSDestLatitude'
