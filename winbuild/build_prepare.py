@@ -470,11 +470,22 @@ def extract_dep(url, filename):
             raise RuntimeError(ex)
 
     print("Extracting " + filename)
+    sources_dir_abs = os.path.abspath(sources_dir)
     if filename.endswith(".zip"):
         with zipfile.ZipFile(file) as zf:
+            for member in zf.namelist():
+                member_abspath = os.path.abspath(os.path.join(sources_dir, member))
+                member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
+                if sources_dir_abs != member_prefix:
+                    raise RuntimeError("Attempted Path Traversal in Zip File")
             zf.extractall(sources_dir)
     elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
         with tarfile.open(file, "r:gz") as tgz:
+            for member in tgz.getnames():
+                member_abspath = os.path.abspath(os.path.join(sources_dir, member))
+                member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
+                if sources_dir_abs != member_prefix:
+                    raise RuntimeError("Attempted Path Traversal in Tar File")
             tgz.extractall(sources_dir)
     else:
         raise RuntimeError("Unknown archive type: " + filename)
