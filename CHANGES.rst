@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- CVE-2007-4559 patch when building on Windows #6704
+  [TrellixVulnTeam, nulano, radarhere]
+
 - Fix compiler warning: accessing 64 bytes in a region of size 48 #6714
   [wiredfool]
 
