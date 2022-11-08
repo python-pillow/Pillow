@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Added Interop to ExifTags #6724
+  [radarhere]
+
 - CVE-2007-4559 patch when building on Windows #6704
   [TrellixVulnTeam, nulano, radarhere]
 
