@@ -149,9 +149,6 @@ EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux
 
 function run_tests {
     if [ -n "$IS_MACOS" ]; then
-        brew install openblas
-        echo -e "[openblas]\nlibraries = openblas\nlibrary_dirs = /usr/local/opt/openblas/lib" >> ~/.numpy-site.cfg
-
         brew install fribidi
     elif [ -n "$IS_ALPINE" ]; then
         apk add fribidi
