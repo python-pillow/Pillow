@@ -3626,7 +3626,6 @@ class Exif(MutableMapping):
         for tag, value in self.items():
             if tag in [
                 ExifTags.IFD.Exif,
-                0x8225,
                 ExifTags.IFD.GPSInfo,
             ] and not isinstance(value, dict):
                 value = self.get_ifd(tag)
