@@ -226,7 +226,7 @@ jobs:
         path: dist\*.whl
 
     - name: Upload fribidi.dll
-      if: "github.event_name != 'pull_request' && matrix.python-version == 3.11"
+      if: "github.event_name != 'pull_request' && matrix.python-version == 3.10"
       uses: actions/upload-artifact@v3
       with:
         name: fribidi
