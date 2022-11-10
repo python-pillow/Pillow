@@ -570,12 +570,13 @@ class Image:
         more information.
         """
         try:
-            if getattr(self, "_fp", False):
-                if self._fp != self.fp:
-                    self._fp.close()
-                self._fp = DeferredError(ValueError("Operation on closed image"))
-            if self.fp:
-                self.fp.close()
+            if hasattr(self, "fp") and getattr(self, "_exclusive_fp", False):
+                if getattr(self, "_fp", False):
+                    if self._fp != self.fp:
+                        self._fp.close()
+                    self._fp = DeferredError(ValueError("Operation on closed image"))
+                if self.fp:
+                    self.fp.close()
             self.fp = None
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
