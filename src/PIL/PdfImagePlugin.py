@@ -194,6 +194,13 @@ def _save(im, fp, filename, save_all=False):
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
             elif filter == "FlateDecode":
+                params = PdfParser.PdfDict(
+                    {
+                        "Predictor": 15,
+                        "Columns": width,
+                        "Colors": 3,
+                    }
+                )
                 ImageFile._save(im, op, [("zip", (0, 0) + im.size, 0, im.mode)])
             elif filter == "RunLengthDecode":
                 ImageFile._save(im, op, [("packbits", (0, 0) + im.size, 0, im.mode)])
