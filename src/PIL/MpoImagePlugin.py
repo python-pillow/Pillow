@@ -51,7 +51,7 @@ def _save_all(im, fp, filename):
             if not offsets:
                 # APP2 marker
                 im.encoderinfo["extra"] = (
-                    b"\xFF\xE2" + struct.pack(">H", 6 + 70) + b"MPF\0" + b" " * 70
+                    b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
                 )
                 JpegImagePlugin._save(im_frame, fp, filename)
                 offsets.append(fp.tell())
@@ -60,6 +60,7 @@ def _save_all(im, fp, filename):
                 offsets.append(fp.tell() - offsets[-1])
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[0xB000] = b"0100"
     ifd[0xB001] = len(offsets)
 
     mpentries = b""
