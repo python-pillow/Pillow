@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Added MP Format Version when saving MPO #6735
+  [radarhere]
+
 - Added Interop to ExifTags #6724
   [radarhere]
 
