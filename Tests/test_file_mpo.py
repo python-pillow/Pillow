@@ -268,6 +268,7 @@ def test_save_all():
     im_reloaded = roundtrip(im, save_all=True, append_images=[im2])
 
     assert_image_equal(im, im_reloaded)
+    assert im_reloaded.mpinfo[45056] == b"0100"
 
     im_reloaded.seek(1)
     assert_image_similar(im2, im_reloaded, 1)
