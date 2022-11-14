@@ -201,6 +201,22 @@ def test_writing_bytes_to_ascii(tmp_path):
         assert reloaded.tag_v2[271] == "test"
 
 
+def test_writing_int_to_bytes(tmp_path):
+    im = hopper()
+    info = TiffImagePlugin.ImageFileDirectory_v2()
+
+    tag = TiffTags.TAGS_V2[700]
+    assert tag.type == TiffTags.BYTE
+
+    info[700] = 1
+
+    out = str(tmp_path / "temp.tiff")
+    im.save(out, tiffinfo=info)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.tag_v2[700] == b"\x01"
+
+
 def test_undefined_zero(tmp_path):
     # Check that the tag has not been changed since this test was created
     tag = TiffTags.TAGS_V2[45059]
