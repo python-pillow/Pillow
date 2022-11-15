@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Fixed writing int as BYTE tag #6740
+  [radarhere]
+
 - Added MP Format Version when saving MPO #6735
   [radarhere]
 
