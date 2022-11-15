@@ -649,6 +649,11 @@ class FreeTypeFont:
 
                          .. versionadded:: 8.0.0
 
+        :param start: Tuple of horizontal and vertical offset, as text may render
+                      differently when starting at fractional coordinates.
+
+                         .. versionadded:: 9.4.0
+
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
@@ -742,6 +747,11 @@ class FreeTypeFont:
         :param ink: Foreground ink for rendering in RGBA mode.
 
                          .. versionadded:: 8.0.0
+
+        :param start: Tuple of horizontal and vertical offset, as text may render
+                      differently when starting at fractional coordinates.
+
+                         .. versionadded:: 9.4.0
 
         :return: A tuple of an internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
