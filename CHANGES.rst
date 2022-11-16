@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Use fractional coordinates when drawing text #6722
+  [radarhere]
+
 - Fixed writing int as BYTE tag #6740
   [radarhere]
 
