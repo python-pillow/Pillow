@@ -1,0 +1,54 @@
+9.4.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Added start position for getmask and getmask2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Text may render differently when starting at fractional coordinates, so
+:py:meth:`.FreeTypeFont.getmask` and :py:meth:`.FreeTypeFont.getmask2` now
+support a ``start`` argument. This tuple of horizontal and vertical offset
+will be used internally by :py:meth:`.ImageDraw.text` to more accurately place
+text at the ``xy`` coordinates.
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO

@@ -452,7 +452,11 @@ class ImageDraw:
             mode = self.fontmode
             if stroke_width == 0 and embedded_color:
                 mode = "RGBA"
-            coord = xy
+            coord = []
+            start = []
+            for i in range(2):
+                coord.append(int(xy[i]))
+                start.append(math.modf(xy[i])[0])
             try:
                 mask, offset = font.getmask2(
                     text,
@@ -463,6 +467,7 @@ class ImageDraw:
                     stroke_width=stroke_width,
                     anchor=anchor,
                     ink=ink,
+                    start=start,
                     *args,
                     **kwargs,
                 )
@@ -478,6 +483,7 @@ class ImageDraw:
                         stroke_width,
                         anchor,
                         ink,
+                        start=start,
                         *args,
                         **kwargs,
                     )
@@ -490,7 +496,7 @@ class ImageDraw:
                 # extract mask and set text alpha
                 color, mask = mask, mask.getband(3)
                 color.fillband(3, (ink >> 24) & 0xFF)
-                x, y = (int(c) for c in coord)
+                x, y = coord
                 self.im.paste(color, (x, y, x + mask.size[0], y + mask.size[1]), mask)
             else:
                 self.draw.draw_bitmap(coord, mask, ink)

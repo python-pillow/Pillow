@@ -26,6 +26,7 @@
 #
 
 import base64
+import math
 import os
 import sys
 import warnings
@@ -588,6 +589,7 @@ class FreeTypeFont:
         stroke_width=0,
         anchor=None,
         ink=0,
+        start=None,
     ):
         """
         Create a bitmap for the text.
@@ -647,6 +649,11 @@ class FreeTypeFont:
 
                          .. versionadded:: 8.0.0
 
+        :param start: Tuple of horizontal and vertical offset, as text may render
+                      differently when starting at fractional coordinates.
+
+                         .. versionadded:: 9.4.0
+
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
@@ -659,6 +666,7 @@ class FreeTypeFont:
             stroke_width=stroke_width,
             anchor=anchor,
             ink=ink,
+            start=start,
         )[0]
 
     def getmask2(
@@ -672,6 +680,7 @@ class FreeTypeFont:
         stroke_width=0,
         anchor=None,
         ink=0,
+        start=None,
         *args,
         **kwargs,
     ):
@@ -739,6 +748,11 @@ class FreeTypeFont:
 
                          .. versionadded:: 8.0.0
 
+        :param start: Tuple of horizontal and vertical offset, as text may render
+                      differently when starting at fractional coordinates.
+
+                         .. versionadded:: 9.4.0
+
         :return: A tuple of an internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
@@ -750,12 +764,23 @@ class FreeTypeFont:
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
-        size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
+        if start is None:
+            start = (0, 0)
+        size = tuple(math.ceil(size[i] + stroke_width * 2 + start[i]) for i in range(2))
         offset = offset[0] - stroke_width, offset[1] - stroke_width
         Image._decompression_bomb_check(size)
         im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
         self.font.render(
-            text, im.id, mode, direction, features, language, stroke_width, ink
+            text,
+            im.id,
+            mode,
+            direction,
+            features,
+            language,
+            stroke_width,
+            ink,
+            start[0],
+            start[1],
         )
         return im, offset
 
