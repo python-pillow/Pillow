@@ -96,6 +96,7 @@ def test_write_rgba(tmp_path):
         else:
             assert_image_similar(image, pil_image, 1.0)
 
+
 def test_write_rgba_keep_transparent(tmp_path):
     """
     Can we write a RGBA mode file to WebP while preserving
@@ -111,7 +112,7 @@ def test_write_rgba_keep_transparent(tmp_path):
     # make a single channel image with the same size as input_image
     new_alpha = Image.new("L", input_image.size, 255)
     # make the left half transparent
-    new_alpha.paste((0,), (0, 0, new_alpha.size[0]//2, new_alpha.size[1]))
+    new_alpha.paste((0,), (0, 0, new_alpha.size[0] // 2, new_alpha.size[1]))
     # putalpha on output_image
     output_image.putalpha(new_alpha)
 
@@ -128,7 +129,6 @@ def test_write_rgba_keep_transparent(tmp_path):
         image.load()
         image = image.convert("RGB")
         assert_image_similar(image, input_image, 1.0)
-
 
 
 def test_write_unsupported_mode_PA(tmp_path):
