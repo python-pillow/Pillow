@@ -635,7 +635,10 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     config.lossless = lossless;
     config.quality = quality_factor;
     config.method = method;
+#if WEBP_ENCODER_ABI_VERSION >= 0x0209
+    // the exact flag is only available in libwebp 0.5.0 and later
     config.exact = exact;
+#endif
 
     // Validate the config
     if (!WebPValidateConfig(&config)) {
