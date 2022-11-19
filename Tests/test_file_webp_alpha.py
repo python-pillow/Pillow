@@ -123,7 +123,7 @@ def test_keep_rgb_values_when_transparent(tmp_path):
         # even though it is lossless, if we don't use exact=True
         # in libwebp >= 0.5, the transparent area will be filled with black
         # (or something more conducive to compression)
-        assert_image_similar(reloaded.convert("RGB"), image, 1)
+        assert_image_equal(reloaded.convert("RGB"), image)
 
 
 def test_write_unsupported_mode_PA(tmp_path):
