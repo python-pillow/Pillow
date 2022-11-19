@@ -97,38 +97,33 @@ def test_write_rgba(tmp_path):
             assert_image_similar(image, pil_image, 1.0)
 
 
-def test_write_rgba_keep_transparent(tmp_path):
+def test_keep_rgb_values_when_transparent(tmp_path):
     """
-    Can we write a RGBA mode file to WebP while preserving
-    the transparent RGB without error.
-    Does it have the bits we expect?
+    Saving transparent pixels should retain their original RGB values
+    when using the "exact" parameter.
     """
 
-    temp_output_file = str(tmp_path / "temp.webp")
+    image = hopper("RGB")
 
-    input_image = hopper("RGB")
-    # make a copy of the image
-    output_image = input_image.copy()
-    # make a single channel image with the same size as input_image
-    new_alpha = Image.new("L", input_image.size, 255)
-    # make the left half transparent
-    new_alpha.paste((0,), (0, 0, new_alpha.size[0] // 2, new_alpha.size[1]))
-    # putalpha on output_image
-    output_image.putalpha(new_alpha)
+    # create a copy of the image
+    # with the left half transparent
+    half_transparent_image = image.copy()
+    new_alpha = Image.new("L", (128, 128), 255)
+    new_alpha.paste(0, (0, 0, 64, 128))
+    half_transparent_image.putalpha(new_alpha)
 
-    # now save with transparent area preserved.
-    output_image.save(temp_output_file, "WEBP", exact=True, lossless=True)
-    # even though it is lossless, if we don't put exact=True, the transparent
-    # area will be filled with black (or something more conducive to compression)
+    # save with transparent area preserved
+    temp_file = str(tmp_path / "temp.webp")
+    half_transparent_image.save(temp_file, exact=True, lossless=True)
 
-    with Image.open(temp_output_file) as image:
-        image.load()
+    with Image.open(temp_file) as reloaded:
+        assert reloaded.mode == "RGBA"
+        assert reloaded.format == "WEBP"
 
-        assert image.mode == "RGBA"
-        assert image.format == "WEBP"
-        image.load()
-        image = image.convert("RGB")
-        assert_image_similar(image, input_image, 1.0)
+        # even though it is lossless, if we don't use exact=True
+        # in libwebp >= 0.5, the transparent area will be filled with black
+        # (or something more conducive to compression)
+        assert_image_similar(reloaded.convert("RGB"), image, 1)
 
 
 def test_write_unsupported_mode_PA(tmp_path):
