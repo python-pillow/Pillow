@@ -228,9 +228,9 @@ deps = {
         # "bins": [r"libtiff\*.dll"],
     },
     "libpng": {
-        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.38/lpng1638.zip/download",
-        "filename": "lpng1638.zip",
-        "dir": "lpng1638",
+        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.39/lpng1639.zip/download",
+        "filename": "lpng1639.zip",
+        "dir": "lpng1639",
         "license": "LICENSE",
         "build": [
             # lint: do not inline
