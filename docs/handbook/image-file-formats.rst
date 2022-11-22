@@ -200,7 +200,9 @@ Saving
 ~~~~~~
 
 When calling :py:meth:`~PIL.Image.Image.save` to write a GIF file, the
-following options are available::
+following options are available:
+
+.. code-block:: python
 
     im.save(out, save_all=True, append_images=[im1, im2, ...])
 
@@ -883,7 +885,9 @@ The :py:meth:`~PIL.Image.open` method sets the following attributes:
     Set to the number of images in the stack.
 
 A convenience method, :py:meth:`~PIL.SpiderImagePlugin.SpiderImageFile.convert2byte`,
-is provided for converting floating point data to byte data (mode ``L``)::
+is provided for converting floating point data to byte data (mode ``L``):
+
+.. code-block:: python
 
     im = Image.open("image001.spi").convert2byte()
 
@@ -893,7 +897,9 @@ Saving
 ~~~~~~
 
 The extension of SPIDER files may be any 3 alphanumeric characters. Therefore
-the output format must be specified explicitly::
+the output format must be specified explicitly:
+
+.. code-block:: python
 
     im.save('newimage.spi', format='SPIDER')
 
