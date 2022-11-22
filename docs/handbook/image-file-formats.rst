@@ -95,7 +95,7 @@ method with the following parameters to affect how Ghostscript renders the EPS
     Affects the scale of the resultant rasterized image. If the EPS suggests
     that the image be rendered at 100px x 100px, setting this parameter to
     2 will make the Ghostscript render a 200px x 200px image instead. The
-    relative position of the bounding box is maintained.
+    relative position of the bounding box is maintained
     
 .. code-block:: python
 
