@@ -271,7 +271,7 @@ Reading local images
 
 The GIF loader creates an image memory the same size as the GIF file’s *logical
 screen size*, and pastes the actual pixel data (the *local image*) into this
-image. If you only want the actual pixel rectangle, you can crop the image
+image. If you only want the actual pixel rectangle, you can crop the image:
 
 .. code-block:: python
 
@@ -454,7 +454,9 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **icc_profile**
     If present and true, the image is stored with the provided ICC profile.
     If this parameter is not provided, the image will be saved with no profile
-    attached. To preserve the existing profile::
+    attached. To preserve the existing profile:
+    
+.. code-block:: python
 
         im.save(filename, 'jpeg', icc_profile=im.info.get('icc_profile'))
 
