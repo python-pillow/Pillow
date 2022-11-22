@@ -95,7 +95,9 @@ method with the following parameters to affect how Ghostscript renders the EPS
     Affects the scale of the resultant rasterized image. If the EPS suggests
     that the image be rendered at 100px x 100px, setting this parameter to
     2 will make the Ghostscript render a 200px x 200px image instead. The
-    relative position of the bounding box is maintained::
+    relative position of the bounding box is maintained.
+    
+.. code-block:: python
 
         im = Image.open(...)
         im.size  # (100,100)
@@ -125,7 +127,9 @@ colors. Instead, the image is converted to ``RGB`` handle this.
 
 If you would prefer the first ``P`` image frame to be ``RGB`` as well, so that
 every ``P`` frame is converted to ``RGB`` or ``RGBA`` mode, there is a setting
-available::
+available
+
+.. code-block:: python
 
     from PIL import GifImagePlugin
     GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
@@ -133,13 +137,17 @@ available::
 GIF frames do not always contain individual palettes however. If there is only
 a global palette, then all of the colors can fit within ``P`` mode. If you would
 prefer the frames to be kept as ``P`` in that case, there is also a setting
-available::
+available
+
+.. code-block:: python
 
     from PIL import GifImagePlugin
     GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
 
 To restore the default behavior, where ``P`` mode images are only converted to
-``RGB`` or ``RGBA`` after the first frame::
+``RGB`` or ``RGBA`` after the first frame
+
+.. code-block:: python
 
     from PIL import GifImagePlugin
     GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
@@ -263,7 +271,9 @@ Reading local images
 
 The GIF loader creates an image memory the same size as the GIF file’s *logical
 screen size*, and pastes the actual pixel data (the *local image*) into this
-image. If you only want the actual pixel rectangle, you can crop the image::
+image. If you only want the actual pixel rectangle, you can crop the image
+
+.. code-block:: python
 
     im = Image.open(...)
 
