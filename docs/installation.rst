@@ -103,10 +103,6 @@ Pillow can be installed on FreeBSD via the official Ports or Packages systems:
 Building From Source
 --------------------
 
-Download and extract the `compressed archive from PyPI`_.
-
-.. _compressed archive from PyPI: https://pypi.org/project/Pillow/
-
 .. _external-libraries:
 
 External Libraries
@@ -191,7 +187,8 @@ Many of Pillow's features require external libraries:
 
 * **libxcb** provides X11 screengrab support.
 
-Once you have installed the prerequisites, run::
+Once you have installed the prerequisites, to install Pillow from the source
+code on PyPI, run::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow --no-binary :all:
@@ -211,6 +208,16 @@ prerequisites, it may be necessary to manually clear the pip cache or
 build without cache using the ``--no-cache-dir`` option to force a
 build with newly installed external libraries.
 
+If you would like to install from a local copy of the source code instead, you
+can download and extract the `compressed archive from PyPI`_, or clone from
+GitHub with ``git clone https://github.com/python-pillow/Pillow``.
+
+After navigating to the Pillow directory, run::
+
+    python3 -m pip install --upgrade pip
+    python3 -m pip install .
+
+.. _compressed archive from PyPI: https://pypi.org/project/Pillow/
 
 Build Options
 ^^^^^^^^^^^^^
