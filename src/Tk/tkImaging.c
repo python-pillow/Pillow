@@ -332,7 +332,7 @@ load_tkinter_funcs(void) {
         PyErr_SetFromWindowsErr(0);
         return 1;
     }
-    if (!(hMods = static_cast<HMODULE*>(malloc(cbNeeded)))) {
+    if (!(hMods = (HMODULE*) malloc(cbNeeded))) {
         PyErr_NoMemory();
         return 1;
     }
