@@ -329,7 +329,11 @@ load_tkinter_funcs(void) {
 
     /* Allocate module handlers array */
     if (!EnumProcessModules(hProcess, NULL, 0, &cbNeeded)) {
+#if defined(__CYGWIN__)
+        PyErr_SetString(PyExc_OSError, "Call to EnumProcessModules failed");
+#else
         PyErr_SetFromWindowsErr(0);
+#endif
         return 1;
     }
     if (!(hMods = (HMODULE*) malloc(cbNeeded))) {
