@@ -34,9 +34,9 @@ python3 -m pip install olefile
 python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
-python3 -m pip install pyroma
 
 if [[ $(uname) != CYGWIN* ]]; then
+    python3 -m pip install pyroma
     python3 -m pip install numpy
 
     # PyQt6 doesn't support PyPy3
@@ -57,5 +57,6 @@ if [[ $(uname) != CYGWIN* ]]; then
     # extra test images
     pushd depends && ./install_extra_test_images.sh && popd
 else
+    python3 -m pip install pyroma==4.0
     cd depends && ./install_extra_test_images.sh && cd ..
 fi
