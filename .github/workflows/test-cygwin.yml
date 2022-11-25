@@ -5,7 +5,7 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -76,7 +76,7 @@ jobs:
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
         run: |
-          .ci/build.sh
+          SETUPTOOLS_USE_DISTUTILS=stdlib .ci/build.sh
 
       - name: Test
         run: |
