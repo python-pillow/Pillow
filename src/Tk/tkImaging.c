@@ -310,7 +310,7 @@ load_tkinter_funcs(void) {
      * Return 0 for success, non-zero for failure.
      */
 
-    HMODULE hMods[1024];
+    HMODULE* hMods = NULL;
     HANDLE hProcess;
     DWORD cbNeeded;
     unsigned int i;
@@ -327,33 +327,45 @@ load_tkinter_funcs(void) {
     /* Returns pseudo-handle that does not need to be closed */
     hProcess = GetCurrentProcess();
 
+    /* Allocate module handlers array */
+    if (!EnumProcessModules(hProcess, NULL, 0, &cbNeeded)) {
+        PyErr_SetFromWindowsErr(0);
+        return 1;
+    }
+    if (!(hMods = static_cast<HMODULE*>(malloc(cbNeeded)))) {
+        PyErr_NoMemory();
+        return 1;
+    }
+
     /* Iterate through modules in this process looking for Tcl / Tk names */
-    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
+    if (EnumProcessModules(hProcess, hMods, cbNeeded, &cbNeeded)) {
         for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
             if (!found_tcl) {
                 found_tcl = get_tcl(hMods[i]);
                 if (found_tcl == -1) {
-                    return 1;
+                    goto exit;
                 }
             }
             if (!found_tk) {
                 found_tk = get_tk(hMods[i]);
                 if (found_tk == -1) {
-                    return 1;
+                    goto exit;
                 }
             }
             if (found_tcl && found_tk) {
-                return 0;
+                goto exit;
             }
         }
     }
 
-    if (found_tcl == 0) {
+exit:
+    free(hMods);
+    if (found_tcl != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tcl routines");
-    } else {
+    } else if (found_tk != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tk routines");
     }
-    return 1;
+    return int((found_tcl != 1) && (found_tk != 1));
 }
 
 #else /* not Windows */
