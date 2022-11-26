@@ -347,22 +347,21 @@ load_tkinter_funcs(void) {
             if (!found_tcl) {
                 found_tcl = get_tcl(hMods[i]);
                 if (found_tcl == -1) {
-                    goto exit;
+                    break;
                 }
             }
             if (!found_tk) {
                 found_tk = get_tk(hMods[i]);
                 if (found_tk == -1) {
-                    goto exit;
+                    break;
                 }
             }
             if (found_tcl && found_tk) {
-                goto exit;
+                break;
             }
         }
     }
 
-exit:
     free(hMods);
     if (found_tcl != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tcl routines");
