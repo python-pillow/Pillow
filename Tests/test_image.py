@@ -838,6 +838,31 @@ class TestImage:
                 34665: 196,
             }
 
+    def test_exif_hide_offsets(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+
+        # Check offsets are present initially
+        assert 0x8769 in exif
+        for tag in (0xA005, 0x927C):
+            assert tag in exif.get_ifd(0x8769)
+        assert exif.get_ifd(0xA005)
+        loaded_exif = exif
+
+        with Image.open("Tests/images/flower.jpg") as im:
+            new_exif = im.getexif()
+
+            for exif in (loaded_exif, new_exif):
+                exif.hide_offsets()
+
+                # Assert they are hidden afterwards,
+                # but that the IFDs are still available
+                assert 0x8769 not in exif
+                assert exif.get_ifd(0x8769)
+                for tag in (0xA005, 0x927C):
+                    assert tag not in exif.get_ifd(0x8769)
+                assert exif.get_ifd(0xA005)
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size):
         im = Image.new("RGB", size)

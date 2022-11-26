@@ -3503,6 +3503,7 @@ class Exif(MutableMapping):
 
     def __init__(self):
         self._data = {}
+        self._hidden_data = {}
         self._ifds = {}
         self._info = None
         self._loaded_exif = None
@@ -3556,6 +3557,7 @@ class Exif(MutableMapping):
             return
         self._loaded_exif = data
         self._data.clear()
+        self._hidden_data.clear()
         self._ifds.clear()
         if data and data.startswith(b"Exif\x00\x00"):
             data = data[6:]
@@ -3576,6 +3578,7 @@ class Exif(MutableMapping):
     def load_from_fp(self, fp, offset=None):
         self._loaded_exif = None
         self._data.clear()
+        self._hidden_data.clear()
         self._ifds.clear()
 
         # process dictionary
@@ -3631,8 +3634,9 @@ class Exif(MutableMapping):
         if tag not in self._ifds:
             if tag in [0x8769, 0x8825]:
                 # exif, gpsinfo
-                if tag in self:
-                    self._ifds[tag] = self._get_ifd_dict(self[tag])
+                offset = self._hidden_data.get(tag, self.get(tag))
+                if offset is not None:
+                    self._ifds[tag] = self._get_ifd_dict(offset)
             elif tag in [0xA005, 0x927C]:
                 # interop, makernote
                 if 0x8769 not in self._ifds:
@@ -3717,7 +3721,16 @@ class Exif(MutableMapping):
                 else:
                     # interop
                     self._ifds[tag] = self._get_ifd_dict(tag_data)
-        return self._ifds.get(tag, {})
+        ifd = self._ifds.get(tag, {})
+        if tag == 0x8769 and self._hidden_data:
+            ifd = {k: v for (k, v) in ifd.items() if k not in (0xA005, 0x927C)}
+        return ifd
+
+    def hide_offsets(self):
+        for tag in (0x8769, 0x8825):
+            if tag in self:
+                self._hidden_data[tag] = self[tag]
+                del self[tag]
 
     def __str__(self):
         if self._info is not None:
