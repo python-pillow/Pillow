@@ -47,7 +47,14 @@ except ImportError:
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
 # Use __version__ instead.
-from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
+from . import (
+    ExifTags,
+    ImageMode,
+    TiffTags,
+    UnidentifiedImageError,
+    __version__,
+    _plugins,
+)
 from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
 from ._util import DeferredError, is_path
@@ -3598,14 +3605,16 @@ class Exif(MutableMapping):
         merged_dict = dict(self)
 
         # get EXIF extension
-        if 0x8769 in self:
-            ifd = self._get_ifd_dict(self[0x8769])
+        if ExifTags.IFD.Exif in self:
+            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif])
             if ifd:
                 merged_dict.update(ifd)
 
         # GPS
-        if 0x8825 in self:
-            merged_dict[0x8825] = self._get_ifd_dict(self[0x8825])
+        if ExifTags.IFD.GPSInfo in self:
+            merged_dict[ExifTags.IFD.GPSInfo] = self._get_ifd_dict(
+                self[ExifTags.IFD.GPSInfo]
+            )
 
         return merged_dict
 
@@ -3615,30 +3624,34 @@ class Exif(MutableMapping):
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, value in self.items():
-            if tag in [0x8769, 0x8225, 0x8825] and not isinstance(value, dict):
+            if tag in [
+                ExifTags.IFD.Exif,
+                0x8225,
+                ExifTags.IFD.GPSInfo,
+            ] and not isinstance(value, dict):
                 value = self.get_ifd(tag)
                 if (
-                    tag == 0x8769
-                    and 0xA005 in value
-                    and not isinstance(value[0xA005], dict)
+                    tag == ExifTags.IFD.Exif
+                    and ExifTags.IFD.Interop in value
+                    and not isinstance(value[ExifTags.IFD.Interop], dict)
                 ):
                     value = value.copy()
-                    value[0xA005] = self.get_ifd(0xA005)
+                    value[ExifTags.IFD.Interop] = self.get_ifd(ExifTags.IFD.Interop)
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
     def get_ifd(self, tag):
         if tag not in self._ifds:
-            if tag in [0x8769, 0x8825]:
+            if tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
                 # exif, gpsinfo
                 if tag in self:
                     self._ifds[tag] = self._get_ifd_dict(self[tag])
-            elif tag in [0xA005, 0x927C]:
+            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
                 # interop, makernote
-                if 0x8769 not in self._ifds:
-                    self.get_ifd(0x8769)
-                tag_data = self._ifds[0x8769][tag]
-                if tag == 0x927C:
+                if ExifTags.IFD.Exif not in self._ifds:
+                    self.get_ifd(ExifTags.IFD.Exif)
+                tag_data = self._ifds[ExifTags.IFD.Exif][tag]
+                if tag == ExifTags.IFD.Makernote:
                     # makernote
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
