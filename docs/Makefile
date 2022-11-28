@@ -90,7 +90,7 @@ htmlhelp:
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
 	      ".hhp project file in $(BUILDDIR)/htmlhelp."
 
-.PHONY:  qthelp
+.PHONY: qthelp
 qthelp:
 	$(MAKE) install-sphinx
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
