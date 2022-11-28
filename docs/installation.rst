@@ -23,9 +23,9 @@ Pillow supports these Python versions.
    :file: older-versions.csv
    :header-rows: 1
 
-.. _Windows Installation:
-.. _macOS Installation:
 .. _Linux Installation:
+.. _macOS Installation:
+.. _Windows Installation:
 .. _FreeBSD Installation:
 
 Basic Installation
@@ -43,29 +43,6 @@ Install Pillow with :command:`pip`::
     python3 -m pip install --upgrade Pillow
 
 
-.. tab:: Windows
-
-   We provide Pillow binaries for Windows compiled for the matrix of
-   supported Pythons in both 32 and 64-bit versions in the wheel format.
-   These binaries include support for all optional libraries except
-   libimagequant and libxcb. Raqm support requires
-   FriBiDi to be installed separately::
-
-       python3 -m pip install --upgrade pip
-       python3 -m pip install --upgrade Pillow
-
-   To install Pillow in MSYS2, see `Building on Windows using MSYS2/MinGW`_.
-
-.. tab:: macOS
-
-   We provide binaries for macOS for each of the supported Python
-   versions in the wheel format. These include support for all optional
-   libraries except libimagequant. Raqm support requires
-   FriBiDi to be installed separately::
-
-       python3 -m pip install --upgrade pip
-       python3 -m pip install --upgrade Pillow
-
 .. tab:: Linux
 
    We provide binaries for Linux for each of the supported Python
@@ -80,6 +57,29 @@ Install Pillow with :command:`pip`::
    also include Pillow in packages that previously contained PIL e.g.
    ``python-imaging``. Debian splits it into two packages, ``python3-pil``
    and ``python3-pil.imagetk``.
+
+.. tab:: macOS
+
+   We provide binaries for macOS for each of the supported Python
+   versions in the wheel format. These include support for all optional
+   libraries except libimagequant. Raqm support requires
+   FriBiDi to be installed separately::
+
+       python3 -m pip install --upgrade pip
+       python3 -m pip install --upgrade Pillow
+
+.. tab:: Windows
+
+   We provide Pillow binaries for Windows compiled for the matrix of
+   supported Pythons in both 32 and 64-bit versions in the wheel format.
+   These binaries include support for all optional libraries except
+   libimagequant and libxcb. Raqm support requires
+   FriBiDi to be installed separately::
+
+       python3 -m pip install --upgrade pip
+       python3 -m pip install --upgrade Pillow
+
+   To install Pillow in MSYS2, see `Building on Windows using MSYS2/MinGW`_.
 
 .. tab:: FreeBSD
 
@@ -100,11 +100,11 @@ Install Pillow with :command:`pip`::
        are tested by the ports team with all supported FreeBSD versions.
 
 
+.. _Building on Linux:
 .. _Building on macOS:
 .. _Building on Windows:
 .. _Building on Windows using MSYS2/MinGW:
 .. _Building on FreeBSD:
-.. _Building on Linux:
 .. _Building on Android:
 
 Building From Source
@@ -194,6 +194,53 @@ Many of Pillow's features require external libraries:
 
 * **libxcb** provides X11 screengrab support.
 
+.. tab:: Linux
+
+   If you didn't build Python from source, make sure you have Python's
+   development libraries installed.
+
+   In Debian or Ubuntu::
+
+       sudo apt-get install python3-dev python3-setuptools
+
+   In Fedora, the command is::
+
+       sudo dnf install python3-devel redhat-rpm-config
+
+   In Alpine, the command is::
+
+       sudo apk add python3-dev py3-setuptools
+
+   .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
+
+   Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
+
+       sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
+           libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
+           libharfbuzz-dev libfribidi-dev libxcb1-dev
+
+   To install libraqm, ``sudo apt-get install meson`` and then see
+   ``depends/install_raqm.sh``.
+
+   Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
+
+       sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
+           freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
+           harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel libxcb-devel
+
+   Note that the package manager may be yum or DNF, depending on the
+   exact distribution.
+
+   Prerequisites are installed for **Alpine** with::
+
+       sudo apk add tiff-dev jpeg-dev openjpeg-dev zlib-dev freetype-dev lcms2-dev \
+           libwebp-dev tcl-dev tk-dev harfbuzz-dev fribidi-dev libimagequant-dev \
+           libxcb-dev libpng-dev
+
+   See also the ``Dockerfile``\s in the Test Infrastructure repo
+   (https://github.com/python-pillow/docker-images) for a known working
+   install process for other tested distros.
+
 .. tab:: macOS
 
    The Xcode command line tools are required to compile portions of
@@ -266,53 +313,6 @@ Many of Pillow's features require external libraries:
        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb
 
    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
-
-.. tab:: Linux
-
-   If you didn't build Python from source, make sure you have Python's
-   development libraries installed.
-
-   In Debian or Ubuntu::
-
-       sudo apt-get install python3-dev python3-setuptools
-
-   In Fedora, the command is::
-
-       sudo dnf install python3-devel redhat-rpm-config
-
-   In Alpine, the command is::
-
-       sudo apk add python3-dev py3-setuptools
-
-   .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
-
-   Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
-
-       sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
-           libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
-           libharfbuzz-dev libfribidi-dev libxcb1-dev
-
-   To install libraqm, ``sudo apt-get install meson`` and then see
-   ``depends/install_raqm.sh``.
-
-   Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
-
-       sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
-           freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
-           harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel libxcb-devel
-
-   Note that the package manager may be yum or DNF, depending on the
-   exact distribution.
-
-   Prerequisites are installed for **Alpine** with::
-
-       sudo apk add tiff-dev jpeg-dev openjpeg-dev zlib-dev freetype-dev lcms2-dev \
-           libwebp-dev tcl-dev tk-dev harfbuzz-dev fribidi-dev libimagequant-dev \
-           libxcb-dev libpng-dev
-
-   See also the ``Dockerfile``\s in the Test Infrastructure repo
-   (https://github.com/python-pillow/docker-images) for a known working
-   install process for other tested distros.
 
 .. tab:: Android
 
