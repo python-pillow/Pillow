@@ -13,6 +13,10 @@ indent_style = space
 
 trim_trailing_whitespace = true
 
+[*.rst]
+# Three-space indentation
+indent_size = 3
+
 [*.yml]
 # Two-space indentation
 indent_size = 2
