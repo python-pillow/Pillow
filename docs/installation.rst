@@ -103,10 +103,6 @@ Pillow can be installed on FreeBSD via the official Ports or Packages systems:
 Building From Source
 --------------------
 
-Download and extract the `compressed archive from PyPI`_.
-
-.. _compressed archive from PyPI: https://pypi.org/project/Pillow/
-
 .. _external-libraries:
 
 External Libraries
@@ -191,74 +187,8 @@ Many of Pillow's features require external libraries:
 
 * **libxcb** provides X11 screengrab support.
 
-Once you have installed the prerequisites, run::
-
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow --no-binary :all:
-
-If the prerequisites are installed in the standard library locations
-for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
-additional configuration should be required. If they are installed in
-a non-standard location, you may need to configure setuptools to use
-those locations by editing :file:`setup.py` or
-:file:`setup.cfg`, or by adding environment variables on the command
-line::
-
-    CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow --no-binary :all:
-
-If Pillow has been previously built without the required
-prerequisites, it may be necessary to manually clear the pip cache or
-build without cache using the ``--no-cache-dir`` option to force a
-build with newly installed external libraries.
-
-
-Build Options
-^^^^^^^^^^^^^
-
-* Environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
-  multiprocessing to build the extension. Setting ``MAX_CONCURRENCY``
-  sets the number of CPUs to use, or can disable parallel building by
-  using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
-  available, as many as are present.
-
-* Build flags: ``--disable-zlib``, ``--disable-jpeg``,
-  ``--disable-tiff``, ``--disable-freetype``, ``--disable-lcms``,
-  ``--disable-webp``, ``--disable-webpmux``, ``--disable-jpeg2000``,
-  ``--disable-imagequant``, ``--disable-xcb``.
-  Disable building the corresponding feature even if the development
-  libraries are present on the building machine.
-
-* Build flags: ``--enable-zlib``, ``--enable-jpeg``,
-  ``--enable-tiff``, ``--enable-freetype``, ``--enable-lcms``,
-  ``--enable-webp``, ``--enable-webpmux``, ``--enable-jpeg2000``,
-  ``--enable-imagequant``, ``--enable-xcb``.
-  Require that the corresponding feature is built. The build will raise
-  an exception if the libraries are not found. Webpmux (WebP metadata)
-  relies on WebP support. Tcl and Tk also must be used together.
-
-* Build flags: ``--vendor-raqm --vendor-fribidi``
-  These flags are used to compile a modified version of libraqm and
-  a shim that dynamically loads libfribidi at runtime. These are
-  used to compile the standard Pillow wheels. Compiling libraqm requires
-  a C99-compliant compiler.
-
-* Build flag: ``--disable-platform-guessing``. Skips all of the
-  platform dependent guessing of include and library directories for
-  automated build systems that configure the proper paths in the
-  environment variables (e.g. Buildroot).
-
-* Build flag: ``--debug``. Adds a debugging flag to the include and
-  library search process to dump all paths searched for and found to
-  stdout.
-
-
-Sample usage::
-
-    python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
-
-
 Building on macOS
-^^^^^^^^^^^^^^^^^
+"""""""""""""""""
 
 The Xcode command line tools are required to compile portions of
 Pillow. The tools are installed by running ``xcode-select --install``
@@ -278,25 +208,19 @@ To install libraqm on macOS use Homebrew to install its dependencies::
 
 Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
-Now install Pillow with::
-
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow --no-binary :all:
-
-or from within the uncompressed source directory::
-
-    python3 -m pip install .
-
 Building on Windows
-^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""
 
 We recommend you use prebuilt wheels from PyPI.
 If you wish to compile Pillow manually, you can use the build scripts
 in the ``winbuild`` directory used for CI testing and development.
 These scripts require Visual Studio 2017 or newer and NASM.
 
+The scripts also install Pillow from the local copy of the source code, so the
+`Installing`_ instructions will not be necessary afterwards.
+
 Building on Windows using MSYS2/MinGW
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 To build Pillow using MSYS2, make sure you run the **MSYS2 MinGW 32-bit** or
 **MSYS2 MinGW 64-bit** console, *not* **MSYS2** directly.
@@ -325,14 +249,8 @@ Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
         mingw-w64-x86_64-libimagequant \
         mingw-w64-x86_64-libraqm
 
-Now install Pillow with::
-
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow --no-binary :all:
-
-
 Building on FreeBSD
-^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""
 
 .. Note:: Only FreeBSD 10 and 11 tested
 
@@ -346,9 +264,8 @@ Prerequisites are installed on **FreeBSD 10 or 11** with::
 
 Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
-
 Building on Linux
-^^^^^^^^^^^^^^^^^
+"""""""""""""""""
 
 If you didn't build Python from source, make sure you have Python's
 development libraries installed.
@@ -396,7 +313,7 @@ See also the ``Dockerfile``\s in the Test Infrastructure repo
 install process for other tested distros.
 
 Building on Android
-^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""
 
 Basic Android support has been added for compilation within the Termux
 environment. The dependencies can be installed by::
@@ -406,6 +323,84 @@ environment. The dependencies can be installed by::
 
 This has been tested within the Termux app on ChromeOS, on x86.
 
+Installing
+^^^^^^^^^^
+
+Once you have installed the prerequisites, to install Pillow from the source
+code on PyPI, run::
+
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade Pillow --no-binary :all:
+
+If the prerequisites are installed in the standard library locations
+for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
+additional configuration should be required. If they are installed in
+a non-standard location, you may need to configure setuptools to use
+those locations by editing :file:`setup.py` or
+:file:`setup.cfg`, or by adding environment variables on the command
+line::
+
+    CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow --no-binary :all:
+
+If Pillow has been previously built without the required
+prerequisites, it may be necessary to manually clear the pip cache or
+build without cache using the ``--no-cache-dir`` option to force a
+build with newly installed external libraries.
+
+If you would like to install from a local copy of the source code instead, you
+can clone from GitHub with ``git clone https://github.com/python-pillow/Pillow``
+or download and extract the `compressed archive from PyPI`_.
+
+After navigating to the Pillow directory, run::
+
+    python3 -m pip install --upgrade pip
+    python3 -m pip install .
+
+.. _compressed archive from PyPI: https://pypi.org/project/Pillow/#files
+
+Build Options
+"""""""""""""
+
+* Environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
+  multiprocessing to build the extension. Setting ``MAX_CONCURRENCY``
+  sets the number of CPUs to use, or can disable parallel building by
+  using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
+  available, as many as are present.
+
+* Build flags: ``--disable-zlib``, ``--disable-jpeg``,
+  ``--disable-tiff``, ``--disable-freetype``, ``--disable-lcms``,
+  ``--disable-webp``, ``--disable-webpmux``, ``--disable-jpeg2000``,
+  ``--disable-imagequant``, ``--disable-xcb``.
+  Disable building the corresponding feature even if the development
+  libraries are present on the building machine.
+
+* Build flags: ``--enable-zlib``, ``--enable-jpeg``,
+  ``--enable-tiff``, ``--enable-freetype``, ``--enable-lcms``,
+  ``--enable-webp``, ``--enable-webpmux``, ``--enable-jpeg2000``,
+  ``--enable-imagequant``, ``--enable-xcb``.
+  Require that the corresponding feature is built. The build will raise
+  an exception if the libraries are not found. Webpmux (WebP metadata)
+  relies on WebP support. Tcl and Tk also must be used together.
+
+* Build flags: ``--vendor-raqm --vendor-fribidi``
+  These flags are used to compile a modified version of libraqm and
+  a shim that dynamically loads libfribidi at runtime. These are
+  used to compile the standard Pillow wheels. Compiling libraqm requires
+  a C99-compliant compiler.
+
+* Build flag: ``--disable-platform-guessing``. Skips all of the
+  platform dependent guessing of include and library directories for
+  automated build systems that configure the proper paths in the
+  environment variables (e.g. Buildroot).
+
+* Build flag: ``--debug``. Adds a debugging flag to the include and
+  library search process to dump all paths searched for and found to
+  stdout.
+
+
+Sample usage::
+
+    python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
 
 Platform Support
 ----------------
