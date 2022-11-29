@@ -77,7 +77,7 @@ class Viewer:
 
         if not (
             image.mode in ("1", "RGBA")
-            or (self.format == "PNG" and image.mode in ("I;16", "LA"))
+            or (self.format == "PNG" and image.mode in ("I", "I;16", "LA"))
         ):
             base = Image.getmodebase(image.mode)
             if image.mode != base:
