@@ -205,11 +205,11 @@ Many of Pillow's features require external libraries:
 
     In Fedora, the command is::
 
-       sudo dnf install python3-devel redhat-rpm-config
+        sudo dnf install python3-devel redhat-rpm-config
 
     In Alpine, the command is::
 
-       sudo apk add python3-dev py3-setuptools
+        sudo apk add python3-dev py3-setuptools
 
     .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
 
