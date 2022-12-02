@@ -93,11 +93,11 @@ class TestFileJpeg:
             with BytesIO() as buf:
                 im.save(buf, format="JPEG")
                 with Image.open(buf) as im2:
-                    assert im.app['COM'] == im2.app['COM']
+                    assert im.app["COM"] == im2.app["COM"]
             with BytesIO() as buf:
                 im.save(buf, format="JPEG", comment=dummy_text)
                 with Image.open(buf) as im2:
-                    assert im2.app['COM'].decode() == dummy_text
+                    assert im2.app["COM"].decode() == dummy_text
 
     def test_cmyk(self):
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
