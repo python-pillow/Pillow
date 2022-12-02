@@ -87,6 +87,18 @@ class TestFileJpeg:
 
             assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
 
+    def test_com_write(self):
+        dummy_text = "this is a test comment"
+        with Image.open(TEST_FILE) as im:
+            with BytesIO() as buf:
+                im.save(buf, format="JPEG")
+                with Image.open(buf) as im2:
+                    assert im.app['COM'] == im2.app['COM']
+            with BytesIO() as buf:
+                im.save(buf, format="JPEG", comment=dummy_text)
+                with Image.open(buf) as im2:
+                    assert im2.app['COM'].decode() == dummy_text
+
     def test_cmyk(self):
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
         # Michael for getting me to look one more time.

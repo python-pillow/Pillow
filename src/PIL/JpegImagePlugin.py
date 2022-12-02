@@ -44,6 +44,7 @@ import warnings
 from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
 from ._binary import i32be as i32
+from ._binary import o16be as o16
 from ._binary import o8
 from ._deprecate import deprecate
 from .JpegPresets import presets
@@ -712,6 +713,15 @@ def _save(im, fp, filename):
     qtables = validate_qtables(qtables)
 
     extra = info.get("extra", b"")
+
+    comment = info.get("comment")
+    if comment is None and isinstance(im, JpegImageFile):
+        comment = im.app.get('COM')
+    if comment:
+        if isinstance(comment, str):
+            comment = comment.encode()
+        size = o16(2 + len(comment))
+        extra += b'\xFF\xFE%s%s' % (size, comment)
 
     icc_profile = info.get("icc_profile")
     if icc_profile:
