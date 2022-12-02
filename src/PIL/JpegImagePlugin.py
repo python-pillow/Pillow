@@ -732,7 +732,7 @@ def _save(im, fp, filename):
             icc_profile = icc_profile[MAX_DATA_BYTES_IN_MARKER:]
         i = 1
         for marker in markers:
-            size = struct.pack(">H", 2 + ICC_OVERHEAD_LEN + len(marker))
+            size = o16(2 + ICC_OVERHEAD_LEN + len(marker))
             extra += (
                 b"\xFF\xE2"
                 + size
