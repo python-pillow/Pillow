@@ -714,9 +714,7 @@ def _save(im, fp, filename):
 
     extra = info.get("extra", b"")
 
-    comment = info.get("comment")
-    if comment is None and isinstance(im, JpegImageFile):
-        comment = im.app.get("COM")
+    comment = info.get("comment", im.info.get("comment"))
     if comment:
         if isinstance(comment, str):
             comment = comment.encode()
