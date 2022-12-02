@@ -141,7 +141,7 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
 
-    # trim ~150MB x 9
+    # trim ~150MB for each job
     - name: Optimize build cache
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: rmdir /S /Q winbuild\build\src
