@@ -19,9 +19,7 @@ python3 setup.py build --build-base=/tmp/build install
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  fuzzer_basename=$(basename -s .py $fuzzer)
-  fuzzer_package=${fuzzer_basename}.pkg
-  pyinstaller \
+  compile_python_fuzzer $fuzzer \
       --add-binary /usr/local/lib/libjpeg.so.62.3.0:. \
       --add-binary /usr/local/lib/libfreetype.so.6:. \
       --add-binary /usr/local/lib/liblcms2.so.2:. \
@@ -31,17 +29,7 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
       --add-binary /usr/local/lib/libwebp.so.7:. \
       --add-binary /usr/local/lib/libwebpdemux.so.2:. \
       --add-binary /usr/local/lib/libwebpmux.so.3:. \
-      --add-binary /usr/local/lib/libxcb.so.1:. \
-      --distpath $OUT --onefile --name $fuzzer_package $fuzzer
-
-  # Create execution wrapper.
-  echo "#!/bin/sh
-# LLVMFuzzerTestOneInput for fuzzer detection.
-this_dir=\$(dirname \"\$0\")
-LD_PRELOAD=\$this_dir/sanitizer_with_fuzzer.so \
-ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
-\$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+      --add-binary /usr/local/lib/libxcb.so.1:.
 done
 
 find Tests/images Tests/icc -print | zip -q $OUT/fuzz_pillow_seed_corpus.zip -@
