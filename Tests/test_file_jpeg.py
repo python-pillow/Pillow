@@ -98,6 +98,13 @@ class TestFileJpeg:
             with Image.open(out) as reloaded:
                 assert im.info["comment"] == reloaded.info["comment"]
 
+            # Ensure that a blank comment causes any existing comment to be removed
+            for comment in ("", b"", None):
+                out = BytesIO()
+                im.save(out, format="JPEG", comment=comment)
+                with Image.open(out) as reloaded:
+                    assert "comment" not in reloaded.info
+
             # Test that a comment argument overrides the default comment
             for comment in ("Test comment text", b"Text comment text"):
                 out = BytesIO()
