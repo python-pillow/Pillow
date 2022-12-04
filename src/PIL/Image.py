@@ -3641,17 +3641,17 @@ class Exif(MutableMapping):
 
     def get_ifd(self, tag):
         if tag not in self._ifds:
-            if tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
-                # exif, gpsinfo
+            if tag == ExifTags.IFD.IFD1:
+                if self._info is not None:
+                    self._ifds[tag] = self._get_ifd_dict(self._info.next)
+            elif tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
                 if tag in self:
                     self._ifds[tag] = self._get_ifd_dict(self[tag])
             elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
-                # interop, makernote
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
                 tag_data = self._ifds[ExifTags.IFD.Exif][tag]
                 if tag == ExifTags.IFD.Makernote:
-                    # makernote
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     if tag_data[:8] == b"FUJIFILM":
@@ -3727,7 +3727,7 @@ class Exif(MutableMapping):
                                 makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
                         self._ifds[tag] = makernote
                 else:
-                    # interop
+                    # Interop
                     self._ifds[tag] = self._get_ifd_dict(tag_data)
         return self._ifds.get(tag, {})
 

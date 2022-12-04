@@ -353,3 +353,4 @@ class IFD(IntEnum):
     GPSInfo = 34853
     Makernote = 37500
     Interop = 40965
+    IFD1 = -1
