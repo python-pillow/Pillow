@@ -92,6 +92,10 @@ typedef struct {
     /* in factors of DCTSIZE2 */
     int qtablesLen;
 
+    /* Comment */
+    char *comment;
+    size_t comment_size;
+
     /* Extra data (to be injected after header) */
     char *extra;
     int extra_size;

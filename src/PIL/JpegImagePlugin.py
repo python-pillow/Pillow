@@ -714,13 +714,6 @@ def _save(im, fp, filename):
 
     extra = info.get("extra", b"")
 
-    comment = info.get("comment", im.info.get("comment"))
-    if comment:
-        if isinstance(comment, str):
-            comment = comment.encode()
-        size = o16(2 + len(comment))
-        extra += b"\xFF\xFE%s%s" % (size, comment)
-
     icc_profile = info.get("icc_profile")
     if icc_profile:
         ICC_OVERHEAD_LEN = 14
@@ -742,6 +735,10 @@ def _save(im, fp, filename):
                 + marker
             )
             i += 1
+
+    comment = info.get("comment", im.info.get("comment")) or b""
+    if isinstance(comment, str):
+        comment = comment.encode()
 
     # "progressive" is the official name, but older documentation
     # says "progression"
@@ -765,6 +762,7 @@ def _save(im, fp, filename):
         dpi[1],
         subsampling,
         qtables,
+        comment,
         extra,
         exif,
     )
