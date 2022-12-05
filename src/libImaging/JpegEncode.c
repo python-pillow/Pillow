@@ -278,7 +278,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
         case 4:
 
-            if (context->comment_size > 0) {
+            if (context->comment) {
                 jpeg_write_marker(&context->cinfo, JPEG_COM, (unsigned char *)context->comment, context->comment_size);
             }
             state->state++;

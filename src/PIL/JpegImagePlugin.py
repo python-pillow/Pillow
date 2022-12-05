@@ -736,9 +736,7 @@ def _save(im, fp, filename):
             )
             i += 1
 
-    comment = info.get("comment", im.info.get("comment")) or b""
-    if isinstance(comment, str):
-        comment = comment.encode()
+    comment = info.get("comment", im.info.get("comment"))
 
     # "progressive" is the official name, but older documentation
     # says "progression"

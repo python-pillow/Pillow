@@ -1057,7 +1057,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|nnnnnnnnOy#y#y#",
+            "ss|nnnnnnnnOz#y#y#",
             &mode,
             &rawmode,
             &quality,
