@@ -618,7 +618,7 @@ def _write_multiple_frames(im, fp, palette):
                 bbox = delta.getbbox()
                 if not bbox:
                     # This frame is identical to the previous frame
-                    if duration:
+                    if encoderinfo.get("duration"):
                         previous["encoderinfo"]["duration"] += encoderinfo["duration"]
                     continue
             else:

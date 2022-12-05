@@ -791,6 +791,22 @@ def test_roundtrip_info_duration(tmp_path):
         ] == duration_list
 
 
+def test_roundtrip_info_duration_combined(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/duplicate_frame.gif") as im:
+        assert [frame.info["duration"] for frame in ImageSequence.Iterator(im)] == [
+            1000,
+            1000,
+            1000,
+        ]
+        im.save(out, save_all=True)
+
+    with Image.open(out) as reloaded:
+        assert [
+            frame.info["duration"] for frame in ImageSequence.Iterator(reloaded)
+        ] == [1000, 2000]
+
+
 def test_identical_frames(tmp_path):
     duration_list = [1000, 1500, 2000, 4000]
 
