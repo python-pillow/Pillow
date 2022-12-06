@@ -89,6 +89,7 @@ def APP(self, marker):
         if "exif" not in self.info:
             # extract EXIF information (incomplete)
             self.info["exif"] = s  # FIXME: value will change
+            self._exif_offset = self.fp.tell() - n + 6
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
