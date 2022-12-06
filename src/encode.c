@@ -1113,6 +1113,9 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *p = malloc(extra_size);  // Freed in JpegEncode, Case 6
         if (!p) {
+            if (comment) {
+                free(comment);
+            }
             return ImagingError_MemoryError();
         }
         memcpy(p, extra, extra_size);
@@ -1125,6 +1128,9 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         /* malloc check ok, length is from python parsearg */
         char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 6
         if (!pp) {
+            if (comment) {
+                free(comment);
+            }
             if (extra) {
                 free(extra);
             }
