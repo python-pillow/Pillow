@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Support saving JPEG comments #6774
+  [smason, radarhere]
+
 - Added getxmp() to WebPImagePlugin #6758
   [radarhere]
 
