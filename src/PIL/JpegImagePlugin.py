@@ -45,6 +45,7 @@ from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._binary import o16be as o16
 from ._deprecate import deprecate
 from .JpegPresets import presets
 
@@ -724,7 +725,7 @@ def _save(im, fp, filename):
             icc_profile = icc_profile[MAX_DATA_BYTES_IN_MARKER:]
         i = 1
         for marker in markers:
-            size = struct.pack(">H", 2 + ICC_OVERHEAD_LEN + len(marker))
+            size = o16(2 + ICC_OVERHEAD_LEN + len(marker))
             extra += (
                 b"\xFF\xE2"
                 + size
@@ -734,6 +735,8 @@ def _save(im, fp, filename):
                 + marker
             )
             i += 1
+
+    comment = info.get("comment", im.info.get("comment"))
 
     # "progressive" is the official name, but older documentation
     # says "progression"
@@ -757,6 +760,7 @@ def _save(im, fp, filename):
         dpi[1],
         subsampling,
         qtables,
+        comment,
         extra,
         exif,
     )
