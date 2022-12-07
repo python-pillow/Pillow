@@ -68,8 +68,8 @@ $bmp = New-Object Drawing.Bitmap 200, 200
                 with pytest.raises(NotImplementedError) as e:
                     ImageGrab.grabclipboard()
                 assert (
-                    str(e.value)
-                    == "wl-paste is required for ImageGrab.grabclipboard() on Linux"
+                    str(e.value) == "wl-paste or xclip is required"
+                    " for ImageGrab.grabclipboard() on Linux"
                 )
             return
 
