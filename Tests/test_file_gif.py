@@ -859,13 +859,22 @@ def test_background(tmp_path):
     im.info["background"] = 1
     im.save(out)
     with Image.open(out) as reread:
-
         assert reread.info["background"] == im.info["background"]
 
+
+def test_webp_background(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    # Test opaque WebP background
     if features.check("webp") and features.check("webp_anim"):
         with Image.open("Tests/images/hopper.webp") as im:
-            assert isinstance(im.info["background"], tuple)
+            assert im.info["background"] == (255, 255, 255, 255)
             im.save(out)
+
+    # Test non-opaque WebP background
+    im = Image.new("L", (100, 100), "#000")
+    im.info["background"] = (0, 0, 0, 0)
+    im.save(out)
 
 
 def test_comment(tmp_path):
