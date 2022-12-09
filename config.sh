@@ -70,7 +70,7 @@ function pre_build {
     build_simple xcb-proto 1.15.2 https://xcb.freedesktop.org/dist
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2022.2 https://www.x.org/pub/individual/proto
-        build_simple libXau 1.0.10 https://www.x.org/pub/individual/lib
+        build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
         cp venv/share/pkgconfig/xcb-proto.pc venv/lib/pkgconfig/xcb-proto.pc
     else
