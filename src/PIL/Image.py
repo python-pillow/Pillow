@@ -704,7 +704,6 @@ class Image:
 
     def __setstate__(self, state):
         Image.__init__(self)
-        self.tile = []
         info, mode, size, palette, data = state
         self.info = info
         self.mode = mode
