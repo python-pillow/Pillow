@@ -41,6 +41,9 @@ supports the following standard modes:
 
     * ``LAB`` (3x8-bit pixels, the L*a*b color space)
     * ``HSV`` (3x8-bit pixels, Hue, Saturation, Value color space)
+
+      * Hue's range of 0-255 is a scaled version of 0 degrees <= Hue < 360 degrees
+
     * ``I`` (32-bit signed integer pixels)
     * ``F`` (32-bit floating point pixels)
 
