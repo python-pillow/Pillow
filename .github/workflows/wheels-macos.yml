@@ -34,9 +34,9 @@ jobs:
         exclude:
           - python: "3.7"
             platform: "arm64"
-          - python: "pypy3.8-7.3.9"
+          - python: "pypy3.8-7.3.10"
             platform: "arm64"
-          - python: "pypy3.9-7.3.9"
+          - python: "pypy3.9-7.3.10"
             platform: "arm64"
     env:
       BUILD_COMMIT: ${{ inputs.build-commit }}
