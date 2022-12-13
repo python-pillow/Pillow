@@ -1476,18 +1476,18 @@ class Image:
                 offset = current_offset
 
             fp = self.fp
-            thumbnailOffset = ifd.get(513)
-            if thumbnailOffset is not None:
+            thumbnail_offset = ifd.get(513)
+            if thumbnail_offset is not None:
                 try:
-                    thumbnailOffset += self._exif_offset
+                    thumbnail_offset += self._exif_offset
                 except AttributeError:
                     pass
-                self.fp.seek(thumbnailOffset)
+                self.fp.seek(thumbnail_offset)
                 data = self.fp.read(ifd.get(514))
                 fp = io.BytesIO(data)
 
             with open(fp) as im:
-                if thumbnailOffset is None:
+                if thumbnail_offset is None:
                     im._frame_pos = [ifd_offset]
                     im._seek(0)
                 im.load()
