@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Added IFD enum to ExifTags #6748
+  [radarhere]
+
 - Fixed bug combining GIF frame durations #6779
   [radarhere]
 
