@@ -185,20 +185,21 @@ def test_iptc(tmp_path):
         im.save(out)
 
 
-def test_writing_bytes_to_ascii(tmp_path):
+def test_writing_other_types_to_ascii(tmp_path):
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     tag = TiffTags.TAGS_V2[271]
     assert tag.type == TiffTags.ASCII
 
-    info[271] = b"test"
-
     out = str(tmp_path / "temp.tiff")
-    im.save(out, tiffinfo=info)
+    for (value, expected) in {b"test": "test", 1: "1"}.items():
+        info[271] = value
 
-    with Image.open(out) as reloaded:
-        assert reloaded.tag_v2[271] == "test"
+        im.save(out, tiffinfo=info)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.tag_v2[271] == expected
 
 
 def test_writing_int_to_bytes(tmp_path):
