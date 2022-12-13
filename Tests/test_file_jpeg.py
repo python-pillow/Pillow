@@ -442,6 +442,13 @@ class TestFileJpeg:
             info = im._getexif()
             assert info[305] == "Adobe Photoshop CS Macintosh"
 
+    def test_get_child_images(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            ims = im.get_child_images()
+
+        assert len(ims) == 1
+        assert_image_equal_tofile(ims[0], "Tests/images/flower_thumbnail.png")
+
     def test_mp(self):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             assert im._getmp() is None
