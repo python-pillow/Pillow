@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Fixed bug combining GIF frame durations #6779
+  [radarhere]
+
 - Support saving JPEG comments #6774
   [smason, radarhere]
 
