@@ -151,6 +151,7 @@ class ImageFont:
         :return: (width, height)
         """
         deprecate("getsize", 10, "getbbox or getlength")
+        text = text.encode("utf-8")
         return self.font.getsize(text)
 
     def getmask(self, text, mode="", *args, **kwargs):
@@ -171,6 +172,7 @@ class ImageFont:
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
+        text = text.encode("utf-8")
         return self.font.getmask(text, mode)
 
     def getbbox(self, text, *args, **kwargs):
