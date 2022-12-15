@@ -1601,14 +1601,13 @@ def _save(im, fp, filename):
     # write any arbitrary tags passed in as an ImageFileDirectory
     if "tiffinfo" in encoderinfo:
         info = encoderinfo["tiffinfo"]
-    elif "exif" in encoderinfo:
-        info = encoderinfo["exif"]
+    else:
+        info = encoderinfo.get("exif", im.info.get("exif", b""))
         if isinstance(info, bytes):
             exif = Image.Exif()
             exif.load(info)
             info = exif
-    else:
-        info = {}
+
     logger.debug("Tiffinfo Keys: %s" % list(info))
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()

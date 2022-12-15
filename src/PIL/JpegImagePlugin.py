@@ -746,7 +746,7 @@ def _save(im, fp, filename):
 
     optimize = info.get("optimize", False)
 
-    exif = info.get("exif", b"")
+    exif = info.get("exif", im.info.get("exif", b""))
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
 

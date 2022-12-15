@@ -320,7 +320,7 @@ def _save(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
-    exif = im.encoderinfo.get("exif", b"")
+    exif = im.encoderinfo.get("exif", im.info.get("exif", b""))
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
     if exif.startswith(b"Exif\x00\x00"):
