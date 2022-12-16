@@ -28,32 +28,32 @@ from .helper import (
 )
 
 
+all_modes = (
+    "1",
+    "P",
+    "PA",
+    "L",
+    "LA",
+    "La",
+    "F",
+    "I",
+    "I;16",
+    "I;16L",
+    "I;16B",
+    "I;16N",
+    "RGB",
+    "RGBX",
+    "RGBA",
+    "RGBa",
+    "CMYK",
+    "YCbCr",
+    "LAB",
+    "HSV",
+)
+
+
 class TestImage:
-    @pytest.mark.parametrize(
-        "mode",
-        (
-            "1",
-            "P",
-            "PA",
-            "L",
-            "LA",
-            "La",
-            "F",
-            "I",
-            "I;16",
-            "I;16L",
-            "I;16B",
-            "I;16N",
-            "RGB",
-            "RGBX",
-            "RGBA",
-            "RGBa",
-            "CMYK",
-            "YCbCr",
-            "LAB",
-            "HSV",
-        ),
-    )
+    @pytest.mark.parametrize("mode", all_modes)
     def test_image_modes_success(self, mode):
         Image.new(mode, (1, 1))
 
@@ -861,6 +861,21 @@ class TestImage:
     def test_zero_tobytes(self, size):
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
+
+    @pytest.mark.parametrize("mode", all_modes)
+    def test_roundtrip_bytes_constructor(self, mode):
+        source_image = hopper(mode)
+        source_bytes = image.tobytes()
+        copy_image = Image.frombytes(mode, source_image.size, source_bytes)
+        assert copy_image.tobytes() == source_bytes
+
+    @pytest.mark.parametrize("mode", all_modes)
+    def test_roundtrip_bytes_method(self, mode):
+        source_image = hopper(mode)
+        source_bytes = image.tobytes()
+        copy_image = Image.new(mode, source_image.size)
+        copy_image.frombytes(source_bytes)
+        assert copy_image.tobytes() == source_bytes
 
     def test_apply_transparency(self):
         im = Image.new("P", (1, 1))
