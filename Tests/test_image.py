@@ -865,14 +865,14 @@ class TestImage:
     @pytest.mark.parametrize("mode", all_modes)
     def test_roundtrip_bytes_constructor(self, mode):
         source_image = hopper(mode)
-        source_bytes = image.tobytes()
+        source_bytes = source_image.tobytes()
         copy_image = Image.frombytes(mode, source_image.size, source_bytes)
         assert copy_image.tobytes() == source_bytes
 
     @pytest.mark.parametrize("mode", all_modes)
     def test_roundtrip_bytes_method(self, mode):
         source_image = hopper(mode)
-        source_bytes = image.tobytes()
+        source_bytes = source_image.tobytes()
         copy_image = Image.new(mode, source_image.size)
         copy_image.frombytes(source_bytes)
         assert copy_image.tobytes() == source_bytes
