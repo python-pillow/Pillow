@@ -27,7 +27,6 @@ from .helper import (
     skip_unless_feature,
 )
 
-
 all_modes = (
     "1",
     "P",
@@ -40,7 +39,7 @@ all_modes = (
     "I;16",
     "I;16L",
     "I;16B",
-    "I;16N",
+    #"I;16N",
     "RGB",
     "RGBX",
     "RGBA",
