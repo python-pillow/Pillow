@@ -247,7 +247,9 @@ def hopper(mode=None, cache={}):
     # (for fast, isolated, repeatable tests).
     im = cache.get(mode)
     if im is None:
-        if mode == "F":
+        if mode == "La":
+            im = hopper("LA").convert(mode)
+        elif mode == "F":
             im = hopper("L").convert(mode)
         elif mode[:4] == "I;16":
             im = hopper("I").convert(mode)
