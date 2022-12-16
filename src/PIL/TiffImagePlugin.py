@@ -1602,7 +1602,7 @@ def _save(im, fp, filename):
     if "tiffinfo" in encoderinfo:
         info = encoderinfo["tiffinfo"]
     else:
-        info = encoderinfo.get("exif", im.info.get("exif", b""))
+        info = encoderinfo.get("exif", im.info.get("exif", im.getexif()))
         if isinstance(info, bytes):
             exif = Image.Exif()
             exif.load(info)

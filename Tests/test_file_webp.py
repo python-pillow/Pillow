@@ -119,6 +119,18 @@ class TestFileWebp:
             reloaded.seek(1)
             assert_image_similar(im2, reloaded, 1)
 
+    def test_exif_keep(self, tmp_path):
+        with Image.open("Tests/images/flower.webp") as orig_im:
+            orig_exif = orig_im.getexif()
+            f = str(tmp_path / "exif_img.webp")
+            orig_im.save(f)
+
+        with Image.open(f) as new_im:
+            new_exif = new_im.getexif()
+
+        assert orig_exif[271] == "Canon"
+        assert orig_exif[271] == new_exif[271]
+
     def test_icc_profile(self, tmp_path):
         self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})
         if _webp.HAVE_WEBPANIM:

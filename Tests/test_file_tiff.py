@@ -530,6 +530,18 @@ class TestFileTiff:
             exif = im.getexif()
             assert exif[256] == 100
 
+    def test_exif_keep(self, tmp_path):
+        with Image.open("Tests/images/ifd_tag_type.tiff") as orig_im:
+            orig_exif = orig_im.getexif()
+            assert orig_exif[271] == "FLIR"
+
+            f = str(tmp_path / "temp.tif")
+            orig_im.save(f)
+
+        with Image.open(f) as new_im:
+            new_exif = new_im.getexif()
+            assert orig_exif[271] == new_exif[271]
+
     def test_reload_exif_after_seek(self):
         with Image.open("Tests/images/multipage.tiff") as im:
             exif = im.getexif()

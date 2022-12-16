@@ -442,6 +442,17 @@ class TestFileJpeg:
             info = im._getexif()
             assert info[305] == "Adobe Photoshop CS Macintosh"
 
+    def test_exif_keep(self, tmp_path):
+        with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            f = str(tmp_path / "temp.jpg")
+            im.save(f)
+
+        with Image.open(f) as new_im:
+            orig_info = im._getexif()
+            new_info = new_im._getexif()
+
+        assert orig_info == new_info
+
     def test_get_child_images(self):
         with Image.open("Tests/images/flower.jpg") as im:
             ims = im.get_child_images()
