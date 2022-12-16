@@ -48,7 +48,7 @@ jobs:
             qt5-devel-tools subversion xorg-server-extra zlib-devel
 
       - name: Add Lapack to PATH
-        uses: egor-tensin/cleanup-path@v2
+        uses: egor-tensin/cleanup-path@v3
         with:
           dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
 
