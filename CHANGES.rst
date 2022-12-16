@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- When reading BLP, do not trust JPEG decoder to determine image is CMYK #6767
+  [radarhere]
+
 - Added IFD enum to ExifTags #6748
   [radarhere]
 
