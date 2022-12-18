@@ -401,18 +401,12 @@ class TestImage:
     def test_registered_extensions_uninitialized(self):
         # Arrange
         Image._initialized = 0
-        extension = Image.EXTENSION
-        Image.EXTENSION = {}
 
         # Act
         Image.registered_extensions()
 
         # Assert
         assert Image._initialized == 2
-
-        # Restore the original state and assert
-        Image.EXTENSION = extension
-        assert Image.EXTENSION
 
     def test_registered_extensions(self):
         # Arrange
