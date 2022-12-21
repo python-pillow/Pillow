@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-minor-version: [7, 8, 9]
+        python-minor-version: [8, 9]
 
     timeout-minutes: 40
 
