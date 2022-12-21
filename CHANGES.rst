@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Ignore non-opaque WebP background when saving as GIF #6792
+  [radarhere]
+
+- Only set tile in ImageFile __setstate__ #6793
+  [radarhere]
+
 - When reading BLP, do not trust JPEG decoder to determine image is CMYK #6767
   [radarhere]
 
