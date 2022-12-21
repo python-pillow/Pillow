@@ -137,6 +137,10 @@ class ImageFile(Image.Image):
         if self.format is not None:
             return Image.MIME.get(self.format.upper())
 
+    def __setstate__(self, state):
+        self.tile = []
+        super().__setstate__(state)
+
     def verify(self):
         """Check file integrity"""
 
