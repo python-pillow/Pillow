@@ -1,7 +1,6 @@
 include *.c
 include *.h
 include *.in
-include *.lock
 include *.md
 include *.py
 include *.rst
@@ -10,7 +9,6 @@ include *.txt
 include *.yaml
 include LICENSE
 include Makefile
-include Pipfile
 include tox.ini
 graft Tests
 graft src

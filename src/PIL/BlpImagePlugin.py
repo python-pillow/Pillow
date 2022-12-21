@@ -373,6 +373,9 @@ class BLP1Decoder(_BLPBaseDecoder):
         data = BytesIO(data)
         image = JpegImageFile(data)
         Image._decompression_bomb_check(image.size)
+        if image.mode == "CMYK":
+            decoder_name, extents, offset, args = image.tile[0]
+            image.tile = [(decoder_name, extents, offset, (args[0], "CMYK"))]
         r, g, b = image.convert("RGB").split()
         image = Image.merge("RGB", (b, g, r))
         self.set_as_raw(image.tobytes())

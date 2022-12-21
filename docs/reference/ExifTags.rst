@@ -31,6 +31,13 @@ which provide constants and clear-text names for various well-known EXIF tags.
     >>> Interop(4096).name
     'RelatedImageFileFormat'
 
+.. py:data:: IFD
+
+    >>> from PIL.ExifTags import IFD
+    >>> IFD.Exif.value
+    34665
+    >>> IFD(34665).name
+    'Exif'
 
 Two of these values are also exposed as dictionaries.
 
