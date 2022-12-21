@@ -478,7 +478,8 @@ def extract_dep(url, filename):
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
                 if sources_dir_abs != member_prefix:
-                    raise RuntimeError("Attempted Path Traversal in Zip File")
+                    msg = "Attempted Path Traversal in Zip File"
+                    raise RuntimeError(msg)
             zf.extractall(sources_dir)
     elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
         with tarfile.open(file, "r:gz") as tgz:
@@ -486,7 +487,8 @@ def extract_dep(url, filename):
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
                 if sources_dir_abs != member_prefix:
-                    raise RuntimeError("Attempted Path Traversal in Tar File")
+                    msg = "Attempted Path Traversal in Tar File"
+                    raise RuntimeError(msg)
             tgz.extractall(sources_dir)
     else:
         raise RuntimeError("Unknown archive type: " + filename)
@@ -642,9 +644,8 @@ if __name__ == "__main__":
 
     msvs = find_msvs()
     if msvs is None:
-        raise RuntimeError(
-            "Visual Studio not found. Please install Visual Studio 2017 or newer."
-        )
+        msg = "Visual Studio not found. Please install Visual Studio 2017 or newer."
+        raise RuntimeError(msg)
     print("Found Visual Studio at:", msvs["vs_dir"])
 
     print("Using output directory:", build_dir)

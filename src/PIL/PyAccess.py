@@ -79,7 +79,8 @@ class PyAccess:
         :param color: The pixel value.
         """
         if self.readonly:
-            raise ValueError("Attempt to putpixel a read only image")
+            msg = "Attempt to putpixel a read only image"
+            raise ValueError(msg)
         (x, y) = xy
         if x < 0:
             x = self.xsize + x
@@ -127,7 +128,8 @@ class PyAccess:
     def check_xy(self, xy):
         (x, y) = xy
         if not (0 <= x < self.xsize and 0 <= y < self.ysize):
-            raise ValueError("pixel location out of range")
+            msg = "pixel location out of range"
+            raise ValueError(msg)
         return xy
 
 

@@ -174,7 +174,8 @@ def _save(im, fp, filename, save_all=False):
                 procset = "ImageC"  # color images
                 decode = [1, 0, 1, 0, 1, 0, 1, 0]
             else:
-                raise ValueError(f"cannot save mode {im.mode}")
+                msg = f"cannot save mode {im.mode}"
+                raise ValueError(msg)
 
             #
             # image
@@ -198,7 +199,8 @@ def _save(im, fp, filename, save_all=False):
             elif filter == "RunLengthDecode":
                 ImageFile._save(im, op, [("packbits", (0, 0) + im.size, 0, im.mode)])
             else:
-                raise ValueError(f"unsupported PDF filter ({filter})")
+                msg = f"unsupported PDF filter ({filter})"
+                raise ValueError(msg)
 
             stream = op.getvalue()
             if filter == "CCITTFaxDecode":

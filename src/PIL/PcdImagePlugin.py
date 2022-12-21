@@ -35,7 +35,8 @@ class PcdImageFile(ImageFile.ImageFile):
         s = self.fp.read(2048)
 
         if s[:4] != b"PCD_":
-            raise SyntaxError("not a PCD file")
+            msg = "not a PCD file"
+            raise SyntaxError(msg)
 
         orientation = s[1538] & 3
         self.tile_post_rotate = None

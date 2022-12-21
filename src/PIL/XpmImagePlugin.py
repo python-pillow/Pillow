@@ -40,13 +40,15 @@ class XpmImageFile(ImageFile.ImageFile):
     def _open(self):
 
         if not _accept(self.fp.read(9)):
-            raise SyntaxError("not an XPM file")
+            msg = "not an XPM file"
+            raise SyntaxError(msg)
 
         # skip forward to next string
         while True:
             s = self.fp.readline()
             if not s:
-                raise SyntaxError("broken XPM file")
+                msg = "broken XPM file"
+                raise SyntaxError(msg)
             m = xpm_head.match(s)
             if m:
                 break
@@ -57,7 +59,8 @@ class XpmImageFile(ImageFile.ImageFile):
         bpp = int(m.group(4))
 
         if pal > 256 or bpp != 1:
-            raise ValueError("cannot read this XPM file")
+            msg = "cannot read this XPM file"
+            raise ValueError(msg)
 
         #
         # load palette description
@@ -91,13 +94,15 @@ class XpmImageFile(ImageFile.ImageFile):
                         )
                     else:
                         # unknown colour
-                        raise ValueError("cannot read this XPM file")
+                        msg = "cannot read this XPM file"
+                        raise ValueError(msg)
                     break
 
             else:
 
                 # missing colour key
-                raise ValueError("cannot read this XPM file")
+                msg = "cannot read this XPM file"
+                raise ValueError(msg)
 
         self.mode = "P"
         self.palette = ImagePalette.raw("RGB", b"".join(palette))

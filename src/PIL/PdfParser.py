@@ -138,9 +138,10 @@ class XrefTable:
         elif key in self.deleted_entries:
             generation = self.deleted_entries[key]
         else:
-            raise IndexError(
+            msg = (
                 "object ID " + str(key) + " cannot be deleted because it doesn't exist"
             )
+            raise IndexError(msg)
 
     def __contains__(self, key):
         return key in self.existing_entries or key in self.new_entries
@@ -314,9 +315,8 @@ class PdfStream:
                 expected_length = self.dictionary.Length
             return zlib.decompress(self.buf, bufsize=int(expected_length))
         else:
-            raise NotImplementedError(
-                f"stream filter {repr(self.dictionary.Filter)} unknown/unsupported"
-            )
+            msg = f"stream filter {repr(self.dictionary.Filter)} unknown/unsupported"
+            raise NotImplementedError(msg)
 
 
 def pdf_repr(x):
@@ -358,7 +358,8 @@ class PdfParser:
 
     def __init__(self, filename=None, f=None, buf=None, start_offset=0, mode="rb"):
         if buf and f:
-            raise RuntimeError("specify buf or f or filename, but not both buf and f")
+            msg = "specify buf or f or filename, but not both buf and f"
+            raise RuntimeError(msg)
         self.filename = filename
         self.buf = buf
         self.f = f
@@ -920,7 +921,8 @@ class PdfParser:
                 result.extend(b")")
                 nesting_depth -= 1
             offset = m.end()
-        raise PdfFormatError("unfinished literal string")
+        msg = "unfinished literal string"
+        raise PdfFormatError(msg)
 
     re_xref_section_start = re.compile(whitespace_optional + rb"xref" + newline)
     re_xref_subsection_start = re.compile(

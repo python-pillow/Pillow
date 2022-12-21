@@ -54,12 +54,14 @@ class PcxImageFile(ImageFile.ImageFile):
         # header
         s = self.fp.read(128)
         if not _accept(s):
-            raise SyntaxError("not a PCX file")
+            msg = "not a PCX file"
+            raise SyntaxError(msg)
 
         # image
         bbox = i16(s, 4), i16(s, 6), i16(s, 8) + 1, i16(s, 10) + 1
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
-            raise SyntaxError("bad PCX image size")
+            msg = "bad PCX image size"
+            raise SyntaxError(msg)
         logger.debug("BBox: %s %s %s %s", *bbox)
 
         # format
@@ -105,7 +107,8 @@ class PcxImageFile(ImageFile.ImageFile):
             rawmode = "RGB;L"
 
         else:
-            raise OSError("unknown PCX mode")
+            msg = "unknown PCX mode"
+            raise OSError(msg)
 
         self.mode = mode
         self._size = bbox[2] - bbox[0], bbox[3] - bbox[1]
@@ -144,7 +147,8 @@ def _save(im, fp, filename):
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:
-        raise ValueError(f"Cannot save {im.mode} images as PCX") from e
+        msg = f"Cannot save {im.mode} images as PCX"
+        raise ValueError(msg) from e
 
     # bytes per plane
     stride = (im.size[0] * bits + 7) // 8

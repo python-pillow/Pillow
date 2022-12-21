@@ -43,7 +43,8 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         # check magic
         s = self.fp.read(6)
         if not _accept(s):
-            raise SyntaxError("not a CUR file")
+            msg = "not a CUR file"
+            raise SyntaxError(msg)
 
         # pick the largest cursor in the file
         m = b""
@@ -54,7 +55,8 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
             elif s[0] > m[0] and s[1] > m[1]:
                 m = s
         if not m:
-            raise TypeError("No cursors were found")
+            msg = "No cursors were found"
+            raise TypeError(msg)
 
         # load as bitmap
         self._bitmap(i32(m, 12) + offset)
