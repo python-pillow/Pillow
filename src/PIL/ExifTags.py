@@ -348,6 +348,14 @@ class Interop(IntEnum):
     RleatedImageHeight = 4098
 
 
+class IFD(IntEnum):
+    Exif = 34665
+    GPSInfo = 34853
+    Makernote = 37500
+    Interop = 40965
+    IFD1 = -1
+
+
 class LightSource(IntEnum):
     Unknown = 0
     Daylight = 1

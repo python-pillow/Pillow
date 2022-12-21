@@ -125,7 +125,7 @@ class Viewer:
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
-        os.system(self.get_command(path, **options))
+        os.system(self.get_command(path, **options))  # nosec
         return 1
 
 

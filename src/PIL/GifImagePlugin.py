@@ -618,7 +618,7 @@ def _write_multiple_frames(im, fp, palette):
                 bbox = delta.getbbox()
                 if not bbox:
                     # This frame is identical to the previous frame
-                    if duration:
+                    if encoderinfo.get("duration"):
                         previous["encoderinfo"]["duration"] += encoderinfo["duration"]
                     continue
             else:
@@ -886,20 +886,23 @@ def _get_palette_bytes(im):
 def _get_background(im, info_background):
     background = 0
     if info_background:
-        background = info_background
-        if isinstance(background, tuple):
+        if isinstance(info_background, tuple):
             # WebPImagePlugin stores an RGBA value in info["background"]
             # So it must be converted to the same format as GifImagePlugin's
             # info["background"] - a global color table index
             try:
-                background = im.palette.getcolor(background, im)
+                background = im.palette.getcolor(info_background, im)
             except ValueError as e:
-                if str(e) == "cannot allocate more than 256 colors":
+                if str(e) not in (
                     # If all 256 colors are in use,
                     # then there is no need for the background color
-                    return 0
-                else:
+                    "cannot allocate more than 256 colors",
+                    # Ignore non-opaque WebP background
+                    "cannot add non-opaque RGBA color to RGB palette",
+                ):
                     raise
+        else:
+            background = info_background
     return background
 
 
