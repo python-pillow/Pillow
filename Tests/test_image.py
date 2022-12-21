@@ -7,7 +7,14 @@ import warnings
 
 import pytest
 
-from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError, features
+from PIL import (
+    ExifTags,
+    Image,
+    ImageDraw,
+    ImagePalette,
+    UnidentifiedImageError,
+    features,
+)
 
 from .helper import (
     assert_image_equal,
@@ -807,6 +814,18 @@ class TestImage:
             reloaded_exif = Image.Exif()
             reloaded_exif.load(exif.tobytes())
             assert reloaded_exif.get_ifd(0xA005) == exif.get_ifd(0xA005)
+
+    def test_exif_ifd1(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            assert exif.get_ifd(ExifTags.IFD.IFD1) == {
+                513: 2036,
+                514: 5448,
+                259: 6,
+                296: 2,
+                282: 180.0,
+                283: 180.0,
+            }
 
     def test_exif_ifd(self):
         with Image.open("Tests/images/flower.jpg") as im:

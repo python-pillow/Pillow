@@ -45,6 +45,20 @@ removes the hidden RGB values for better compression by default in libwebp 0.5
 or later. By setting this option to ``True``, the encoder will keep the hidden
 RGB values.
 
+getxmp()
+^^^^^^^^
+
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ can now be
+decoded for WEBP images through ``getxmp()``.
+
+Writing JPEG comments
+^^^^^^^^^^^^^^^^^^^^^
+
+When saving a JPEG image, a comment can now be written from
+:py:attr:`~PIL.Image.Image.info`, or by using an argument when saving::
+
+    im.save(out, comment="Test comment")
+
 Security
 ========
 

@@ -474,6 +474,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     .. versionadded:: 2.5.0
 
+**comment**
+    A comment about the image.
+
+    .. versionadded:: 9.4.0
+
 
 .. note::
 

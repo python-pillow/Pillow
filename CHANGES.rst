@@ -5,6 +5,27 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Ignore non-opaque WebP background when saving as GIF #6792
+  [radarhere]
+
+- Only set tile in ImageFile __setstate__ #6793
+  [radarhere]
+
+- When reading BLP, do not trust JPEG decoder to determine image is CMYK #6767
+  [radarhere]
+
+- Added IFD enum to ExifTags #6748
+  [radarhere]
+
+- Fixed bug combining GIF frame durations #6779
+  [radarhere]
+
+- Support saving JPEG comments #6774
+  [smason, radarhere]
+
+- Added getxmp() to WebPImagePlugin #6758
+  [radarhere]
+
 - Added "exact" option when saving WebP #6747
   [ashafaei, radarhere]
 

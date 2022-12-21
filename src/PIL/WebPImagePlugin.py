@@ -98,6 +98,15 @@ class WebPImageFile(ImageFile.ImageFile):
             return None
         return self.getexif()._get_merged_dict()
 
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+
+        :returns: XMP tags in a dictionary.
+        """
+        return self._getxmp(self.info["xmp"]) if "xmp" in self.info else {}
+
     def seek(self, frame):
         if not self._seek_check(frame):
             return

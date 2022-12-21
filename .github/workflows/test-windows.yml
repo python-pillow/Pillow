@@ -19,9 +19,9 @@ jobs:
         architecture: ["x86", "x64"]
         include:
           # PyPy 7.3.4+ only ships 64-bit binaries for Windows
-          - python-version: "pypy-3.7"
+          - python-version: "pypy3.8"
             architecture: "x64"
-          - python-version: "pypy-3.8"
+          - python-version: "pypy3.9"
             architecture: "x64"
 
     timeout-minutes: 30
@@ -141,7 +141,7 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
 
-    # trim ~150MB x 9
+    # trim ~150MB for each job
     - name: Optimize build cache
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: rmdir /S /Q winbuild\build\src

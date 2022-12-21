@@ -152,9 +152,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.2.8.tar.gz/download",
-        "filename": "xz-5.2.8.tar.gz",
-        "dir": "xz-5.2.8",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.0.tar.gz/download",
+        "filename": "xz-5.4.0.tar.gz",
+        "dir": "xz-5.4.0",
         "license": "COPYING",
         "patch": {
             r"src\liblzma\api\lzma.h": {
@@ -355,9 +355,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/5.3.1.zip",
-        "filename": "harfbuzz-5.3.1.zip",
-        "dir": "harfbuzz-5.3.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/6.0.0.zip",
+        "filename": "harfbuzz-6.0.0.zip",
+        "dir": "harfbuzz-6.0.0",
         "license": "COPYING",
         "build": [
             cmd_set("CXXFLAGS", "-d2FH4-"),

@@ -178,12 +178,11 @@ _anim_encoder_new(PyObject *self, PyObject *args) {
     return NULL;
 }
 
-PyObject *
+void
 _anim_encoder_dealloc(PyObject *self) {
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPPictureFree(&(encp->frame));
     WebPAnimEncoderDelete(encp->enc);
-    Py_RETURN_NONE;
 }
 
 PyObject *
@@ -400,12 +399,11 @@ _anim_decoder_new(PyObject *self, PyObject *args) {
     return NULL;
 }
 
-PyObject *
+void
 _anim_decoder_dealloc(PyObject *self) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPDataClear(&(decp->data));
     WebPAnimDecoderDelete(decp->dec);
-    Py_RETURN_NONE;
 }
 
 PyObject *
