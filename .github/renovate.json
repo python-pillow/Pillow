@@ -13,5 +13,5 @@
             "separateMajorMinor": "false"
         }
     ],
-    "schedule": ["on the 3rd day of the month"]
+    "schedule": ["0 12 3 * *"]
 }
