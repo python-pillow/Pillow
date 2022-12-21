@@ -208,7 +208,9 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
             tokens = b"".join(block.split())
             for token in tokens:
                 if token not in (48, 49):
-                    raise ValueError(f"Invalid token for this mode: {bytes([token])}")
+                    raise ValueError(
+                        b"Invalid token for this mode: %s" % bytes([token])
+                    )
             data = (data + tokens)[:total_bytes]
         invert = bytes.maketrans(b"01", b"\xFF\x00")
         return data.translate(invert)
@@ -242,13 +244,13 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                 half_token = tokens.pop()  # save half token for later
                 if len(half_token) > max_len:  # prevent buildup of half_token
                     raise ValueError(
-                        f"Token too long found in data: {half_token[:max_len + 1]}"
+                        b"Token too long found in data: %s" % half_token[: max_len + 1]
                     )
 
             for token in tokens:
                 if len(token) > max_len:
                     raise ValueError(
-                        f"Token too long found in data: {token[:max_len + 1]}"
+                        b"Token too long found in data: %s" % token[: max_len + 1]
                     )
                 value = int(token)
                 if value > maxval:
