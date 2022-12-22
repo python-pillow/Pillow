@@ -5,7 +5,7 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -20,9 +20,9 @@ jobs:
           "ubuntu-latest",
         ]
         python-version: [
-          "pypy-3.8",
-          "pypy-3.7",
-          "3.11-dev",
+          "pypy3.9",
+          "pypy3.8",
+          "3.11",
           "3.10",
           "3.9",
           "3.8",
@@ -96,7 +96,7 @@ jobs:
         path: Tests/errors
 
     - name: Docs
-      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.10
+      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.11
       run: |
         make doccheck
 

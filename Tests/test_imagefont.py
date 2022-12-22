@@ -746,12 +746,14 @@ def test_variation_set_by_name(font):
     _check_text(font, "Tests/images/variation_adobe.png", 11)
     for name in ["Bold", b"Bold"]:
         font.set_variation_by_name(name)
-    _check_text(font, "Tests/images/variation_adobe_name.png", 11)
+        assert font.getname()[1] == "Bold"
+    _check_text(font, "Tests/images/variation_adobe_name.png", 16)
 
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     _check_text(font, "Tests/images/variation_tiny.png", 40)
     for name in ["200", b"200"]:
         font.set_variation_by_name(name)
+        assert font.getname()[1] == "200"
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
 
@@ -935,7 +937,30 @@ def test_standard_embedded_color(layout_engine):
     d = ImageDraw.Draw(im)
     d.text((10, 10), txt, font=ttf, fill="#fa6", embedded_color=True)
 
-    assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 6.2)
+    assert_image_similar_tofile(im, "Tests/images/standard_embedded.png", 3.1)
+
+
+@pytest.mark.parametrize("fontmode", ("1", "L", "RGBA"))
+def test_float_coord(layout_engine, fontmode):
+    txt = "Hello World!"
+    ttf = ImageFont.truetype(FONT_PATH, 40, layout_engine=layout_engine)
+
+    im = Image.new("RGB", (300, 64), "white")
+    d = ImageDraw.Draw(im)
+    if fontmode == "1":
+        d.fontmode = "1"
+
+    embedded_color = fontmode == "RGBA"
+    d.text((9.5, 9.5), txt, font=ttf, fill="#fa6", embedded_color=embedded_color)
+    try:
+        assert_image_similar_tofile(im, "Tests/images/text_float_coord.png", 3.9)
+    except AssertionError:
+        if fontmode == "1" and layout_engine == ImageFont.Layout.BASIC:
+            assert_image_similar_tofile(
+                im, "Tests/images/text_float_coord_1_alt.png", 1
+            )
+        else:
+            raise
 
 
 def test_cbdt(layout_engine):
@@ -1038,6 +1063,25 @@ def test_colr_mask(layout_engine):
     d.text((15, 5), "Bungee", "black", font=font)
 
     assert_image_similar_tofile(im, "Tests/images/colr_bungee_mask.png", 22)
+
+
+def test_woff2(layout_engine):
+    try:
+        font = ImageFont.truetype(
+            "Tests/fonts/OpenSans.woff2",
+            size=64,
+            layout_engine=layout_engine,
+        )
+    except OSError as e:
+        assert str(e) in ("unimplemented feature", "unknown file format")
+        pytest.skip("FreeType compiled without brotli or WOFF2 support")
+
+    im = Image.new("RGB", (350, 100), "white")
+    d = ImageDraw.Draw(im)
+
+    d.text((15, 5), "OpenSans", "black", font=font)
+
+    assert_image_similar_tofile(im, "Tests/images/test_woff2.png", 5)
 
 
 def test_fill_deprecation(font):

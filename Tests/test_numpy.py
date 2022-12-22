@@ -34,7 +34,7 @@ def test_numpy_to_image():
 
     # Check supported 1-bit integer formats
     assert_image(to_image(bool, 1, 1), "1", TEST_IMAGE_SIZE)
-    assert_image(to_image(numpy.bool8, 1, 1), "1", TEST_IMAGE_SIZE)
+    assert_image(to_image(numpy.bool_, 1, 1), "1", TEST_IMAGE_SIZE)
 
     # Check supported 8-bit integer formats
     assert_image(to_image(numpy.uint8), "L", TEST_IMAGE_SIZE)
@@ -193,7 +193,7 @@ def test_putdata():
     "dtype",
     (
         bool,
-        numpy.bool8,
+        numpy.bool_,
         numpy.int8,
         numpy.int16,
         numpy.int32,

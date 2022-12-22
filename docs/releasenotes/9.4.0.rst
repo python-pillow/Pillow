@@ -1,0 +1,76 @@
+9.4.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Added start position for getmask and getmask2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Text may render differently when starting at fractional coordinates, so
+:py:meth:`.FreeTypeFont.getmask` and :py:meth:`.FreeTypeFont.getmask2` now
+support a ``start`` argument. This tuple of horizontal and vertical offset
+will be used internally by :py:meth:`.ImageDraw.text` to more accurately place
+text at the ``xy`` coordinates.
+
+Added the ``exact`` encoding option for WebP
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``exact`` encoding option for WebP is now supported. The WebP encoder
+removes the hidden RGB values for better compression by default in libwebp 0.5
+or later. By setting this option to ``True``, the encoder will keep the hidden
+RGB values.
+
+getxmp()
+^^^^^^^^
+
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ can now be
+decoded for WEBP images through ``getxmp()``.
+
+Writing JPEG comments
+^^^^^^^^^^^^^^^^^^^^^
+
+When saving a JPEG image, a comment can now be written from
+:py:attr:`~PIL.Image.Image.info`, or by using an argument when saving::
+
+    im.save(out, comment="Test comment")
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO

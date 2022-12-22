@@ -14,6 +14,9 @@ def test_load_blp1():
     with Image.open("Tests/images/blp/blp1_jpeg.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp1_jpeg.png")
 
+    with Image.open("Tests/images/blp/blp1_jpeg2.blp") as im:
+        im.load()
+
 
 def test_load_blp2_raw():
     with Image.open("Tests/images/blp/blp2_raw.blp") as im:

@@ -189,7 +189,7 @@ class ChunkStream:
         self.close()
 
     def close(self):
-        self.queue = self.crc = self.fp = None
+        self.queue = self.fp = None
 
     def push(self, cid, pos, length):
 
@@ -224,7 +224,7 @@ class ChunkStream:
             ) from e
 
     def crc_skip(self, cid, data):
-        """Read checksum.  Used if the C module is not present"""
+        """Read checksum"""
 
         self.fp.read(4)
 
@@ -1089,28 +1089,28 @@ class _fdat:
         self.seq_num += 1
 
 
-def _write_multiple_frames(im, fp, chunk, rawmode):
-    default_image = im.encoderinfo.get("default_image", im.info.get("default_image"))
+def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images):
     duration = im.encoderinfo.get("duration", im.info.get("duration", 0))
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal", Disposal.OP_NONE))
     blend = im.encoderinfo.get("blend", im.info.get("blend", Blend.OP_SOURCE))
 
     if default_image:
-        chain = itertools.chain(im.encoderinfo.get("append_images", []))
+        chain = itertools.chain(append_images)
     else:
-        chain = itertools.chain([im], im.encoderinfo.get("append_images", []))
+        chain = itertools.chain([im], append_images)
 
     im_frames = []
     frame_count = 0
     for im_seq in chain:
         for im_frame in ImageSequence.Iterator(im_seq):
-            im_frame = im_frame.copy()
-            if im_frame.mode != im.mode:
-                if im.mode == "P":
-                    im_frame = im_frame.convert(im.mode, palette=im.palette)
+            if im_frame.mode == rawmode:
+                im_frame = im_frame.copy()
+            else:
+                if rawmode == "P":
+                    im_frame = im_frame.convert(rawmode, palette=im.palette)
                 else:
-                    im_frame = im_frame.convert(im.mode)
+                    im_frame = im_frame.convert(rawmode)
             encoderinfo = im.encoderinfo.copy()
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
@@ -1128,7 +1128,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode):
                     prev_disposal = Disposal.OP_BACKGROUND
 
                 if prev_disposal == Disposal.OP_BACKGROUND:
-                    base_im = previous["im"]
+                    base_im = previous["im"].copy()
                     dispose = Image.core.fill("RGBA", im.size, (0, 0, 0, 0))
                     bbox = previous["bbox"]
                     if bbox:
@@ -1221,7 +1221,26 @@ def _save_all(im, fp, filename):
 def _save(im, fp, filename, chunk=putchunk, save_all=False):
     # save an image to disk (called by the save method)
 
-    mode = im.mode
+    if save_all:
+        default_image = im.encoderinfo.get(
+            "default_image", im.info.get("default_image")
+        )
+        modes = set()
+        append_images = im.encoderinfo.get("append_images", [])
+        if default_image:
+            chain = itertools.chain(append_images)
+        else:
+            chain = itertools.chain([im], append_images)
+        for im_seq in chain:
+            for im_frame in ImageSequence.Iterator(im_seq):
+                modes.add(im_frame.mode)
+        for mode in ("RGBA", "RGB", "P"):
+            if mode in modes:
+                break
+        else:
+            mode = modes.pop()
+    else:
+        mode = im.mode
 
     if mode == "P":
 
@@ -1373,7 +1392,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
         chunk(fp, b"eXIf", exif)
 
     if save_all:
-        _write_multiple_frames(im, fp, chunk, rawmode)
+        _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
     else:
         ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
 

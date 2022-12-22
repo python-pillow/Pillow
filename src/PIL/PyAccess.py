@@ -13,8 +13,7 @@
 
 # Notes:
 #
-#  * Implements the pixel access object following Access.
-#  * Does not implement the line functions, as they don't appear to be used
+#  * Implements the pixel access object following Access.c
 #  * Taking only the tuple form, which is used from python.
 #    * Fill.c uses the integer form, but it's still going to use the old
 #      Access.c implementation.

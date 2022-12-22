@@ -125,7 +125,7 @@ class Viewer:
                 path = options.pop("file")
             else:
                 raise TypeError("Missing required argument: 'path'")
-        os.system(self.get_command(path, **options))
+        os.system(self.get_command(path, **options))  # nosec
         return 1
 
 
@@ -136,7 +136,7 @@ class WindowsViewer(Viewer):
     """The default viewer on Windows is the default system application for PNG files."""
 
     format = "PNG"
-    options = {"compress_level": 1}
+    options = {"compress_level": 1, "save_all": True}
 
     def get_command(self, file, **options):
         return (
@@ -154,7 +154,7 @@ class MacViewer(Viewer):
     """The default viewer on macOS using ``Preview.app``."""
 
     format = "PNG"
-    options = {"compress_level": 1}
+    options = {"compress_level": 1, "save_all": True}
 
     def get_command(self, file, **options):
         # on darwin open returns immediately resulting in the temp
@@ -197,7 +197,7 @@ if sys.platform == "darwin":
 
 class UnixViewer(Viewer):
     format = "PNG"
-    options = {"compress_level": 1}
+    options = {"compress_level": 1, "save_all": True}
 
     def get_command(self, file, **options):
         command = self.get_command_ex(file, **options)[0]

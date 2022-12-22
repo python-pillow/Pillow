@@ -83,18 +83,40 @@ def test_l_mode_transparency():
         assert im.load()[0, 0] == 128
 
 
+def test_l_mode_after_rgb():
+    with Image.open("Tests/images/no_palette_after_rgb.gif") as im:
+        im.seek(1)
+        assert im.mode == "RGB"
+
+        im.seek(2)
+        assert im.mode == "RGB"
+
+
+def test_palette_not_needed_for_second_frame():
+    with Image.open("Tests/images/palette_not_needed_for_second_frame.gif") as im:
+        im.seek(1)
+        assert_image_similar(im, hopper("L").convert("RGB"), 8)
+
+
 def test_strategy():
+    with Image.open("Tests/images/iss634.gif") as im:
+        expected_rgb_always = im.convert("RGB")
+
     with Image.open("Tests/images/chi.gif") as im:
-        expected_zero = im.convert("RGB")
+        expected_rgb_always_rgba = im.convert("RGBA")
 
         im.seek(1)
-        expected_one = im.convert("RGB")
+        expected_different = im.convert("RGB")
 
     try:
         GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
-        with Image.open("Tests/images/chi.gif") as im:
+        with Image.open("Tests/images/iss634.gif") as im:
             assert im.mode == "RGB"
-            assert_image_equal(im, expected_zero)
+            assert_image_equal(im, expected_rgb_always)
+
+        with Image.open("Tests/images/chi.gif") as im:
+            assert im.mode == "RGBA"
+            assert_image_equal(im, expected_rgb_always_rgba)
 
         GifImagePlugin.LOADING_STRATEGY = (
             GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
@@ -105,7 +127,7 @@ def test_strategy():
 
             im.seek(1)
             assert im.mode == "P"
-            assert_image_equal(im.convert("RGB"), expected_one)
+            assert_image_equal(im.convert("RGB"), expected_different)
 
         # Change to RGB mode when a frame has an individual palette
         with Image.open("Tests/images/iss634.gif") as im:
@@ -769,6 +791,22 @@ def test_roundtrip_info_duration(tmp_path):
         ] == duration_list
 
 
+def test_roundtrip_info_duration_combined(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    with Image.open("Tests/images/duplicate_frame.gif") as im:
+        assert [frame.info["duration"] for frame in ImageSequence.Iterator(im)] == [
+            1000,
+            1000,
+            1000,
+        ]
+        im.save(out, save_all=True)
+
+    with Image.open(out) as reloaded:
+        assert [
+            frame.info["duration"] for frame in ImageSequence.Iterator(reloaded)
+        ] == [1000, 2000]
+
+
 def test_identical_frames(tmp_path):
     duration_list = [1000, 1500, 2000, 4000]
 
@@ -837,13 +875,22 @@ def test_background(tmp_path):
     im.info["background"] = 1
     im.save(out)
     with Image.open(out) as reread:
-
         assert reread.info["background"] == im.info["background"]
 
+
+def test_webp_background(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    # Test opaque WebP background
     if features.check("webp") and features.check("webp_anim"):
         with Image.open("Tests/images/hopper.webp") as im:
-            assert isinstance(im.info["background"], tuple)
+            assert im.info["background"] == (255, 255, 255, 255)
             im.save(out)
+
+    # Test non-opaque WebP background
+    im = Image.new("L", (100, 100), "#000")
+    im.info["background"] = (0, 0, 0, 0)
+    im.save(out)
 
 
 def test_comment(tmp_path):

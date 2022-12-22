@@ -364,17 +364,6 @@ load_tkinter_funcs(void) {
  * tkinter dynamic library (module).
  */
 
-/* From module __file__ attribute to char *string for dlopen. */
-char *
-fname2char(PyObject *fname) {
-    PyObject *bytes;
-    bytes = PyUnicode_EncodeFSDefault(fname);
-    if (bytes == NULL) {
-        return NULL;
-    }
-    return PyBytes_AsString(bytes);
-}
-
 #include <dlfcn.h>
 
 void *
@@ -442,7 +431,7 @@ load_tkinter_funcs(void) {
     int ret = -1;
     void *main_program, *tkinter_lib;
     char *tkinter_libname;
-    PyObject *pModule = NULL, *pString = NULL;
+    PyObject *pModule = NULL, *pString = NULL, *pBytes = NULL;
 
     /* Try loading from the main program namespace first */
     main_program = dlopen(NULL, RTLD_LAZY);
@@ -462,7 +451,12 @@ load_tkinter_funcs(void) {
     if (pString == NULL) {
         goto exit;
     }
-    tkinter_libname = fname2char(pString);
+    /* From module __file__ attribute to char *string for dlopen. */
+    pBytes = PyUnicode_EncodeFSDefault(pString);
+    if (pBytes == NULL) {
+        goto exit;
+    }
+    tkinter_libname = PyBytes_AsString(pBytes);
     if (tkinter_libname == NULL) {
         goto exit;
     }
@@ -478,6 +472,7 @@ exit:
     dlclose(main_program);
     Py_XDECREF(pModule);
     Py_XDECREF(pString);
+    Py_XDECREF(pBytes);
     return ret;
 }
 #endif /* end not Windows */

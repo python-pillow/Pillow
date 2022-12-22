@@ -8,6 +8,7 @@ import warnings
 import pytest
 
 from PIL import (
+    ExifTags,
     Image,
     ImageDraw,
     ImagePalette,
@@ -765,15 +766,15 @@ class TestImage:
     def test_empty_exif(self):
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
-        assert dict(exif) != {}
+        assert dict(exif)
 
         # Test that exif data is cleared after another load
         exif.load(None)
-        assert dict(exif) == {}
+        assert not dict(exif)
 
         # Test loading just the EXIF header
         exif.load(b"Exif\x00\x00")
-        assert dict(exif) == {}
+        assert not dict(exif)
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -875,6 +876,18 @@ class TestImage:
             reloaded_exif = Image.Exif()
             reloaded_exif.load(exif.tobytes())
             assert reloaded_exif.get_ifd(0xA005) == exif.get_ifd(0xA005)
+
+    def test_exif_ifd1(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            assert exif.get_ifd(ExifTags.IFD.IFD1) == {
+                513: 2036,
+                514: 5448,
+                259: 6,
+                296: 2,
+                282: 180.0,
+                283: 180.0,
+            }
 
     def test_exif_ifd(self):
         with Image.open("Tests/images/flower.jpg") as im:

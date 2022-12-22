@@ -173,6 +173,7 @@ OPEN_INFO = {
     (II, 1, (1,), 2, (8,), ()): ("L", "L;R"),
     (MM, 1, (1,), 2, (8,), ()): ("L", "L;R"),
     (II, 1, (1,), 1, (12,), ()): ("I;16", "I;12"),
+    (II, 0, (1,), 1, (16,), ()): ("I;16", "I;16"),
     (II, 1, (1,), 1, (16,), ()): ("I;16", "I;16"),
     (MM, 1, (1,), 1, (16,), ()): ("I;16B", "I;16B"),
     (II, 1, (1,), 2, (16,), ()): ("I;16", "I;16R"),
@@ -255,6 +256,8 @@ OPEN_INFO = {
     (II, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
+
+MAX_SAMPLESPERPIXEL = max(len(key_tp[4]) for key_tp in OPEN_INFO.keys())
 
 PREFIXES = [
     b"MM\x00\x2A",  # Valid TIFF header with big-endian byte order
@@ -716,6 +719,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_writer(1)  # Basic type, except for the legacy API.
     def write_byte(self, data):
+        if isinstance(data, int):
+            data = bytes((data,))
         return data
 
     @_register_loader(2, 1)
@@ -1148,39 +1153,6 @@ class TiffImageFile(ImageFile.ImageFile):
         """Return the current frame number"""
         return self.__frame
 
-    def get_child_images(self):
-        if SUBIFD not in self.tag_v2:
-            return []
-        child_images = []
-        exif = self.getexif()
-        offset = None
-        for im_offset in self.tag_v2[SUBIFD]:
-            # reset buffered io handle in case fp
-            # was passed to libtiff, invalidating the buffer
-            current_offset = self._fp.tell()
-            if offset is None:
-                offset = current_offset
-
-            fp = self._fp
-            ifd = exif._get_ifd_dict(im_offset)
-            jpegInterchangeFormat = ifd.get(513)
-            if jpegInterchangeFormat is not None:
-                fp.seek(jpegInterchangeFormat)
-                jpeg_data = fp.read(ifd.get(514))
-
-                fp = io.BytesIO(jpeg_data)
-
-            with Image.open(fp) as im:
-                if jpegInterchangeFormat is None:
-                    im._frame_pos = [im_offset]
-                    im._seek(0)
-                im.load()
-                child_images.append(im)
-
-        if offset is not None:
-            self._fp.seek(offset)
-        return child_images
-
     def getxmp(self):
         """
         Returns a dictionary containing the XMP tags.
@@ -1395,6 +1367,14 @@ class TiffImageFile(ImageFile.ImageFile):
             SAMPLESPERPIXEL,
             3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
         )
+
+        if samples_per_pixel > MAX_SAMPLESPERPIXEL:
+            # DOS check, samples_per_pixel can be a Long, and we extend the tuple below
+            logger.error(
+                "More samples per pixel than can be decoded: %s", samples_per_pixel
+            )
+            raise SyntaxError("Invalid value for samples per pixel")
+
         if samples_per_pixel < bps_actual_count:
             # If a file has more values in bps_tuple than expected,
             # remove the excess.

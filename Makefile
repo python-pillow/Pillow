@@ -53,12 +53,12 @@ inplace: clean
 
 .PHONY: install
 install:
-	python3 -m pip install .
+	python3 -m pip -v install .
 	python3 selftest.py
 
 .PHONY: install-coverage
 install-coverage:
-	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip install --global-option="build_ext" .
+	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install --global-option="build_ext" .
 	python3 selftest.py
 
 .PHONY: debug
@@ -67,7 +67,7 @@ debug:
 # for our stuff, kills optimization, and redirects to dev null so we
 # see any build failures.
 	make clean > /dev/null
-	CFLAGS='-g -O0' python3 -m pip install --global-option="build_ext" . > /dev/null
+	CFLAGS='-g -O0' python3 -m pip -v install --global-option="build_ext" . > /dev/null
 
 .PHONY: release-test
 release-test:

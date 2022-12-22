@@ -87,16 +87,24 @@ class ImageDraw:
             self.fontmode = "1"
         else:
             self.fontmode = "L"  # aliasing is okay for other modes
-        self.fill = 0
+        self.fill = False
 
     def getfont(self):
         """
         Get the current default font.
 
+        To set the default font for this ImageDraw instance::
+
+            from PIL import ImageDraw, ImageFont
+            draw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
         To set the default font for all future ImageDraw instances::
 
             from PIL import ImageDraw, ImageFont
             ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+        If the current default font is ``None``,
+        it is initialized with ``ImageFont.load_default()``.
 
         :returns: An image font."""
         if not self.font:
@@ -444,7 +452,11 @@ class ImageDraw:
             mode = self.fontmode
             if stroke_width == 0 and embedded_color:
                 mode = "RGBA"
-            coord = xy
+            coord = []
+            start = []
+            for i in range(2):
+                coord.append(int(xy[i]))
+                start.append(math.modf(xy[i])[0])
             try:
                 mask, offset = font.getmask2(
                     text,
@@ -455,6 +467,7 @@ class ImageDraw:
                     stroke_width=stroke_width,
                     anchor=anchor,
                     ink=ink,
+                    start=start,
                     *args,
                     **kwargs,
                 )
@@ -470,6 +483,7 @@ class ImageDraw:
                         stroke_width,
                         anchor,
                         ink,
+                        start=start,
                         *args,
                         **kwargs,
                     )
@@ -482,8 +496,8 @@ class ImageDraw:
                 # extract mask and set text alpha
                 color, mask = mask, mask.getband(3)
                 color.fillband(3, (ink >> 24) & 0xFF)
-                coord2 = coord[0] + mask.size[0], coord[1] + mask.size[1]
-                self.im.paste(color, coord + coord2, mask)
+                x, y = coord
+                self.im.paste(color, (x, y, x + mask.size[0], y + mask.size[1]), mask)
             else:
                 self.draw.draw_bitmap(coord, mask, ink)
 

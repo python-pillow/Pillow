@@ -2,8 +2,143 @@
 Changelog (Pillow)
 ==================
 
-9.3.0 (unreleased)
+9.4.0 (unreleased)
 ------------------
+
+- Ignore non-opaque WebP background when saving as GIF #6792
+  [radarhere]
+
+- Only set tile in ImageFile __setstate__ #6793
+  [radarhere]
+
+- When reading BLP, do not trust JPEG decoder to determine image is CMYK #6767
+  [radarhere]
+
+- Added IFD enum to ExifTags #6748
+  [radarhere]
+
+- Fixed bug combining GIF frame durations #6779
+  [radarhere]
+
+- Support saving JPEG comments #6774
+  [smason, radarhere]
+
+- Added getxmp() to WebPImagePlugin #6758
+  [radarhere]
+
+- Added "exact" option when saving WebP #6747
+  [ashafaei, radarhere]
+
+- Use fractional coordinates when drawing text #6722
+  [radarhere]
+
+- Fixed writing int as BYTE tag #6740
+  [radarhere]
+
+- Added MP Format Version when saving MPO #6735
+  [radarhere]
+
+- Added Interop to ExifTags #6724
+  [radarhere]
+
+- CVE-2007-4559 patch when building on Windows #6704
+  [TrellixVulnTeam, nulano, radarhere]
+
+- Fix compiler warning: accessing 64 bytes in a region of size 48 #6714
+  [wiredfool]
+
+- Use verbose flag for pip install #6713
+  [wiredfool, radarhere]
+
+9.3.0 (2022-10-29)
+------------------
+
+- Limit SAMPLESPERPIXEL to avoid runtime DOS #6700
+  [wiredfool]
+
+- Initialize libtiff buffer when saving #6699
+  [radarhere]
+
+- Inline fname2char to fix memory leak #6329
+  [nulano]
+
+- Fix memory leaks related to text features #6330
+  [nulano]
+
+- Use double quotes for version check on old CPython on Windows #6695
+  [hugovk]
+
+- Remove backup implementation of Round for Windows platforms #6693
+  [cgohlke]
+
+- Fixed set_variation_by_name offset #6445
+  [radarhere]
+
+- Fix malloc in _imagingft.c:font_setvaraxes #6690
+  [cgohlke]
+
+- Release Python GIL when converting images using matrix operations #6418
+  [hmaarrfk]
+
+- Added ExifTags enums #6630
+  [radarhere]
+
+- Do not modify previous frame when calculating delta in PNG #6683
+  [radarhere]
+
+- Added support for reading BMP images with RLE4 compression #6674
+  [npjg, radarhere]
+
+- Decode JPEG compressed BLP1 data in original mode #6678
+  [radarhere]
+
+- Added GPS TIFF tag info #6661
+  [radarhere]
+
+- Added conversion between RGB/RGBA/RGBX and LAB #6647
+  [radarhere]
+
+- Do not attempt normalization if mode is already normal #6644
+  [radarhere]
+
+- Fixed seeking to an L frame in a GIF #6576
+  [radarhere]
+
+- Consider all frames when selecting mode for PNG save_all #6610
+  [radarhere]
+
+- Don't reassign crc on ChunkStream close #6627
+  [wiredfool, radarhere]
+
+- Raise a warning if NumPy failed to raise an error during conversion #6594
+  [radarhere]
+
+- Show all frames in ImageShow #6611
+  [radarhere]
+
+- Allow FLI palette chunk to not be first #6626
+  [radarhere]
+
+- If first GIF frame has transparency for RGB_ALWAYS loading strategy, use RGBA mode #6592
+  [radarhere]
+
+- Round box position to integer when pasting embedded color #6517
+  [radarhere, nulano]
+
+- Removed EXIF prefix when saving WebP #6582
+  [radarhere]
+
+- Pad IM palette to 768 bytes when saving #6579
+  [radarhere]
+
+- Added DDS BC6H reading #6449
+  [ShadelessFox, REDxEYE, radarhere]
+
+- Added support for opening WhiteIsZero 16-bit integer TIFF images #6642
+  [JayWiz, radarhere]
+
+- Raise an error when allocating translucent color to RGB palette #6654
+  [jsbueno, radarhere]
 
 - Added reading of TIFF child images #6569
   [radarhere]

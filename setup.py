@@ -15,15 +15,13 @@ import subprocess
 import sys
 import warnings
 
-from setuptools import Extension
-from setuptools import __version__ as setuptools_version
-from setuptools import setup
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
 
 def get_version():
     version_file = "src/PIL/_version.py"
-    with open(version_file) as f:
+    with open(version_file, encoding="utf-8") as f:
         exec(compile(f.read(), version_file, "exec"))
     return locals()["__version__"]
 
@@ -852,7 +850,6 @@ class pil_build_ext(build_ext):
             sys.platform == "win32"
             and sys.version_info < (3, 9)
             and not (PLATFORM_PYPY or PLATFORM_MINGW)
-            and int(setuptools_version.split(".")[0]) < 60
         ):
             defs.append(("PILLOW_VERSION", f'"\\"{PILLOW_VERSION}\\""'))
         else:

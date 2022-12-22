@@ -771,11 +771,11 @@ ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
         TRACE(("Opening using fd: %d for writing \n", clientstate->fp));
         clientstate->tiff = TIFFFdOpen(fd_to_tiff_fd(clientstate->fp), filename, mode);
     } else {
-        // malloc a buffer to write the tif, we're going to need to realloc or something
+        // calloc a buffer to write the tif, we're going to need to realloc or something
         // if we need bigger.
         TRACE(("Opening a buffer for writing \n"));
-        /* malloc check ok, small constant allocation */
-        clientstate->data = malloc(bufsize);
+        /* calloc check ok, small constant allocation */
+        clientstate->data = calloc(bufsize, 1);
         clientstate->size = bufsize;
         clientstate->flrealloc = 1;
 

@@ -124,7 +124,6 @@ struct ImagingMemoryInstance {
 
 struct ImagingAccessInstance {
     const char *mode;
-    void *(*line)(Imaging im, int x, int y);
     void (*get_pixel)(Imaging im, int x, int y, void *pixel);
     void (*put_pixel)(Imaging im, int x, int y, const void *pixel);
 };

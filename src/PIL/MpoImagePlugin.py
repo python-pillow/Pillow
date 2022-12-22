@@ -22,7 +22,14 @@ import itertools
 import os
 import struct
 
-from . import Image, ImageFile, ImageSequence, JpegImagePlugin, TiffImagePlugin
+from . import (
+    ExifTags,
+    Image,
+    ImageFile,
+    ImageSequence,
+    JpegImagePlugin,
+    TiffImagePlugin,
+)
 from ._binary import i16be as i16
 from ._binary import o32le
 
@@ -51,7 +58,7 @@ def _save_all(im, fp, filename):
             if not offsets:
                 # APP2 marker
                 im.encoderinfo["extra"] = (
-                    b"\xFF\xE2" + struct.pack(">H", 6 + 70) + b"MPF\0" + b" " * 70
+                    b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
                 )
                 JpegImagePlugin._save(im_frame, fp, filename)
                 offsets.append(fp.tell())
@@ -60,6 +67,7 @@ def _save_all(im, fp, filename):
                 offsets.append(fp.tell() - offsets[-1])
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[0xB000] = b"0100"
     ifd[0xB001] = len(offsets)
 
     mpentries = b""
@@ -136,7 +144,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
             mptype = self.mpinfo[0xB002][frame]["Attribute"]["MPType"]
             if mptype.startswith("Large Thumbnail"):
-                exif = self.getexif().get_ifd(0x8769)
+                exif = self.getexif().get_ifd(ExifTags.IFD.Exif)
                 if 40962 in exif and 40963 in exif:
                     self._size = (exif[40962], exif[40963])
         elif "exif" in self.info:

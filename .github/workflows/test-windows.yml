@@ -5,7 +5,7 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -15,13 +15,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         architecture: ["x86", "x64"]
         include:
           # PyPy 7.3.4+ only ships 64-bit binaries for Windows
-          - python-version: "pypy-3.7"
+          - python-version: "pypy3.8"
             architecture: "x64"
-          - python-version: "pypy-3.8"
+          - python-version: "pypy3.9"
             architecture: "x64"
 
     timeout-minutes: 30
@@ -65,7 +65,9 @@ jobs:
         xcopy /S /Y winbuild\depends\test_images\* Tests\images\
 
         # make cache key depend on VS version
-        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" | find """catalog_buildVersion""" | ForEach-Object { $a = $_.split(" ")[1]; echo "::set-output name=vs::$a" }
+        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
+          | find """catalog_buildVersion""" `
+          | ForEach-Object { $a = $_.split(" ")[1]; echo "vs=$a" >> $env:GITHUB_OUTPUT }
       shell: pwsh
 
     - name: Cache build
@@ -90,18 +92,27 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_zlib.cmd"
 
-    - name: Build dependencies / LibTiff
+    - name: Build dependencies / xz
       if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_libtiff.cmd"
+      run: "& winbuild\\build\\build_dep_xz.cmd"
 
     - name: Build dependencies / WebP
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libwebp.cmd"
 
+    - name: Build dependencies / LibTiff
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libtiff.cmd"
+
     # for FreeType CBDT/SBIX font support
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
+
+    # for FreeType WOFF2 font support
+    - name: Build dependencies / brotli
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_brotli.cmd"
 
     - name: Build dependencies / FreeType
       if: steps.build-cache.outputs.cache-hit != 'true'
@@ -130,7 +141,7 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
 
-    # trim ~150MB x 9
+    # trim ~150MB for each job
     - name: Optimize build cache
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: rmdir /S /Q winbuild\build\src
@@ -185,15 +196,41 @@ jobs:
       id: wheel
       if: "github.event_name != 'pull_request'"
       run: |
-        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
+        mkdir fribidi\${{ matrix.architecture }}
+        copy winbuild\build\bin\fribidi* fribidi\${{ matrix.architecture }}
+        setlocal EnableDelayedExpansion
+        for %%f in (winbuild\build\license\*) do (
+          set x=%%~nf
+          rem Skip FriBiDi license, it is not included in the wheel.
+          set fribidi=!x:~0,7!
+          if NOT !fribidi!==fribidi (
+            rem Skip imagequant license, it is not included in the wheel.
+            set libimagequant=!x:~0,13!
+            if NOT !libimagequant!==libimagequant (
+              echo. >> LICENSE
+              echo ===== %%~nf ===== >> LICENSE
+              echo. >> LICENSE
+              type %%f >> LICENSE
+            )
+          )
+        )
+        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo dist=dist-%%a >> %GITHUB_OUTPUT%
         winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
       shell: cmd
 
-    - uses: actions/upload-artifact@v3
+    - name: Upload wheel
+      uses: actions/upload-artifact@v3
       if: "github.event_name != 'pull_request'"
       with:
         name: ${{ steps.wheel.outputs.dist }}
         path: dist\*.whl
+
+    - name: Upload fribidi.dll
+      if: "github.event_name != 'pull_request' && matrix.python-version == 3.11"
+      uses: actions/upload-artifact@v3
+      with:
+        name: fribidi
+        path: fribidi\*
 
   success:
     permissions:
