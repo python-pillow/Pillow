@@ -24,9 +24,10 @@ To get the number and names of bands in an image, use the
 Modes
 -----
 
-The ``mode`` of an image is a string which defines the type and depth of a pixel in the image.
-Each pixel uses the full range of the bit depth. So a 1-bit pixel has a range
-of 0-1, an 8-bit pixel has a range of 0-255 and so on. The current release
+The ``mode`` of an image is a string which defines the type and depth of a pixel in the
+image. Each pixel uses the full range of the bit depth. So a 1-bit pixel has a range of
+0-1, an 8-bit pixel has a range of 0-255, a 32-signed integer pixel has the range of
+INT32 and a 32-bit floating point pixel has the range of FLOAT32. The current release
 supports the following standard modes:
 
     * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
@@ -41,6 +42,9 @@ supports the following standard modes:
 
     * ``LAB`` (3x8-bit pixels, the L*a*b color space)
     * ``HSV`` (3x8-bit pixels, Hue, Saturation, Value color space)
+
+      * Hue's range of 0-255 is a scaled version of 0 degrees <= Hue < 360 degrees
+
     * ``I`` (32-bit signed integer pixels)
     * ``F`` (32-bit floating point pixels)
 
