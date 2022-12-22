@@ -1717,7 +1717,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
         withAlpha = !strcmp(im->mode, "RGBA");
         int transparency = 0;
-        unsigned char r, g, b;
+        unsigned char r = 0, g = 0, b = 0;
         for (i = y = 0; y < im->ysize; y++) {
             for (x = 0; x < im->xsize; x++, i++) {
                 p[i].v = im->image32[y][x];
