@@ -1383,7 +1383,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
                 chunks.remove(cid)
                 chunk(fp, cid, data)
 
-    exif = im.encoderinfo.get("exif", im.info.get("exif"))
+    exif = im.encoderinfo.get("exif")
     if exif:
         if isinstance(exif, Image.Exif):
             exif = exif.tobytes(8)

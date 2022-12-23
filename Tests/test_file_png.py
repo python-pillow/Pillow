@@ -706,9 +706,17 @@ class TestFilePng:
         assert exif[274] == 3
 
     def test_exif_save(self, tmp_path):
+        # Test exif is not saved from info
+        test_file = str(tmp_path / "temp.png")
         with Image.open("Tests/images/exif.png") as im:
-            test_file = str(tmp_path / "temp.png")
             im.save(test_file)
+
+        with Image.open(test_file) as reloaded:
+            assert reloaded._getexif() is None
+
+        # Test passing in exif
+        with Image.open("Tests/images/exif.png") as im:
+            im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
             exif = reloaded._getexif()
@@ -720,7 +728,7 @@ class TestFilePng:
     def test_exif_from_jpg(self, tmp_path):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = str(tmp_path / "temp.png")
-            im.save(test_file)
+            im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
             exif = reloaded._getexif()
