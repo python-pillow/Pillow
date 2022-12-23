@@ -327,6 +327,7 @@ class IcoImageFile(ImageFile.ImageFile):
         # if tile is PNG, it won't really be loaded yet
         im.load()
         self.im = im.im
+        self.pyaccess = None
         self.mode = im.mode
         if im.size != self.size:
             warnings.warn("Image was not the expected size")
