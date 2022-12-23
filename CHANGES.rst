@@ -5,6 +5,24 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Fixed PyAccess after changing ICO size #6821
+  [radarhere]
+
+- Do not use EXIF from info when saving PNG images #6819
+  [radarhere]
+
+- Fixed saving EXIF data to MPO #6817
+  [radarhere]
+
+- Added Exif hide_offsets() #6762
+  [radarhere]
+
+- Only compare to previous frame when checking for duplicate GIF frames while saving #6787
+  [radarhere]
+
+- Always initialize all plugins in registered_extensions() #6811
+  [radarhere]
+
 - Ignore non-opaque WebP background when saving as GIF #6792
   [radarhere]
 
