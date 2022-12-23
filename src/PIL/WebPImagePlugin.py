@@ -369,6 +369,7 @@ def _supported_modes():
         "F",
         "P",
         "LA",
+        "LAB",
         "L",
         "1",
     ]
