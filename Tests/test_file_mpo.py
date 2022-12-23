@@ -80,7 +80,10 @@ def test_app(test_file):
 
 @pytest.mark.parametrize("test_file", test_files)
 def test_exif(test_file):
-    with Image.open(test_file) as im:
+    with Image.open(test_file) as im_original:
+        im_reloaded = roundtrip(im_original, save_all=True, exif=im_original.getexif())
+
+    for im in (im_original, im_reloaded):
         info = im._getexif()
         assert info[272] == "Nintendo 3DS"
         assert info[296] == 2
