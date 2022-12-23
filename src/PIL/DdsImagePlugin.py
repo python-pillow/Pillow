@@ -136,15 +136,18 @@ class DdsImageFile(ImageFile.ImageFile):
         (bitcount,) = struct.unpack("<I", header.read(4))
         masks = struct.unpack("<4I", header.read(16))
         if pfflags & DDPF_LUMINANCE:
-            # Texture contains uncompressed L data
-            self.mode = "L"
+            # Texture contains uncompressed L or LA data
+            if pfflags & DDPF_ALPHAPIXELS:
+                self.mode = "LA"
+            else:
+                self.mode = "L"
 
-            self.tile = [("raw", (0, 0) + self.size, 0, ("L", 0, 1))]
+            self.tile = [("raw", (0, 0) + self.size, 0, (self.mode, 0, 1))]
         elif pfflags & DDPF_RGB:
             # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             rawmode = ""
-            if bitcount == 32:
+            if pfflags & DDPF_ALPHAPIXELS:
                 rawmode += masks[0xFF000000]
             else:
                 self.mode = "RGB"
@@ -228,19 +231,19 @@ class DdsImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, filename):
-    if im.mode not in ("RGB", "RGBA", "L"):
+    if im.mode not in ("RGB", "RGBA", "L", "LA"):
         raise OSError(f"cannot write mode {im.mode} as DDS")
 
-    if im.mode == "L":
-        masks = [0xFF000000]
+    rawmode = im.mode
+    masks = [0xFF0000, 0xFF00, 0xFF]
+    if im.mode in ("L", "LA"):
         pixel_flags = DDPF_LUMINANCE
     else:
-        masks = [0xFF0000, 0xFF00, 0xFF]
-        if im.mode == "RGBA":
-            pixel_flags = DDS_RGBA
-            masks.append(0xFF000000)
-        else:
-            pixel_flags = DDPF_RGB
+        pixel_flags = DDPF_RGB
+        rawmode = rawmode[::-1]
+    if im.mode in ("LA", "RGBA"):
+        pixel_flags |= DDPF_ALPHAPIXELS
+        masks.append(0xFF000000)
 
     bitcount = len(masks) * 8
     while len(masks) < 4:
@@ -272,7 +275,7 @@ def _save(im, fp, filename):
     if im.mode == "RGBA":
         r, g, b, a = im.split()
         im = Image.merge("RGBA", (a, r, g, b))
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (im.mode[::-1], 0, 1))])
+    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
 
 def _accept(prefix):
