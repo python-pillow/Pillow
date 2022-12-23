@@ -22,6 +22,7 @@ TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
 TEST_FILE_DX10_BC7_UNORM_SRGB = "Tests/images/DXGI_FORMAT_BC7_UNORM_SRGB.dds"
 TEST_FILE_DX10_R8G8B8A8 = "Tests/images/argb-32bpp_MipMaps-1.dds"
 TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB = "Tests/images/DXGI_FORMAT_R8G8B8A8_UNORM_SRGB.dds"
+TEST_FILE_UNCOMPRESSED_L = "Tests/images/uncompressed_l.dds"
 TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/hopper.dds"
 TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 
@@ -194,8 +195,14 @@ def test_unimplemented_dxgi_format():
             pass
 
 
-def test_uncompressed_rgb():
-    """Check uncompressed RGB images can be opened"""
+def test_uncompressed():
+    """Check uncompressed images can be opened"""
+    with Image.open(TEST_FILE_UNCOMPRESSED_L) as im:
+        assert im.format == "DDS"
+        assert im.mode == "L"
+        assert im.size == (128, 128)
+
+        assert_image_equal_tofile(im, "Tests/images/uncompressed_l.png")
 
     # convert -format dds -define dds:compression=none hopper.jpg hopper.dds
     with Image.open(TEST_FILE_UNCOMPRESSED_RGB) as im:
@@ -305,6 +312,7 @@ def test_save_unsupported_mode(tmp_path):
 @pytest.mark.parametrize(
     ("mode", "test_file"),
     [
+        ("L", "Tests/images/linear_gradient.png"),
         ("RGB", "Tests/images/hopper.png"),
         ("RGBA", "Tests/images/pil123rgba.png"),
     ],

@@ -135,7 +135,12 @@ class DdsImageFile(ImageFile.ImageFile):
         fourcc = header.read(4)
         (bitcount,) = struct.unpack("<I", header.read(4))
         masks = struct.unpack("<4I", header.read(16))
-        if pfflags & DDPF_RGB:
+        if pfflags & DDPF_LUMINANCE:
+            # Texture contains uncompressed L data
+            self.mode = "L"
+
+            self.tile = [("raw", (0, 0) + self.size, 0, ("L", 0, 1))]
+        elif pfflags & DDPF_RGB:
             # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             rawmode = ""
@@ -223,8 +228,23 @@ class DdsImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, filename):
-    if im.mode not in ("RGB", "RGBA"):
+    if im.mode not in ("RGB", "RGBA", "L"):
         raise OSError(f"cannot write mode {im.mode} as DDS")
+
+    if im.mode == "L":
+        masks = [0xFF000000]
+        pixel_flags = DDPF_LUMINANCE
+    else:
+        masks = [0xFF0000, 0xFF00, 0xFF]
+        if im.mode == "RGBA":
+            pixel_flags = DDS_RGBA
+            masks.append(0xFF000000)
+        else:
+            pixel_flags = DDPF_RGB
+
+    bitcount = len(masks) * 8
+    while len(masks) < 4:
+        masks.append(0)
 
     fp.write(
         o32(DDS_MAGIC)
@@ -234,18 +254,15 @@ def _save(im, fp, filename):
         )  # flags
         + o32(im.height)
         + o32(im.width)
-        + o32((im.width * (32 if im.mode == "RGBA" else 24) + 7) // 8)  # pitch
+        + o32((im.width * bitcount + 7) // 8)  # pitch
         + o32(0)  # depth
         + o32(0)  # mipmaps
         + o32(0) * 11  # reserved
         + o32(32)  # pfsize
-        + o32(DDS_RGBA if im.mode == "RGBA" else DDPF_RGB)  # pfflags
+        + o32(pixel_flags)  # pfflags
         + o32(0)  # fourcc
-        + o32(32 if im.mode == "RGBA" else 24)  # bitcount
-        + o32(0xFF0000)  # rbitmask
-        + o32(0xFF00)  # gbitmask
-        + o32(0xFF)  # bbitmask
-        + o32(0xFF000000 if im.mode == "RGBA" else 0)  # abitmask
+        + o32(bitcount)  # bitcount
+        + b"".join(o32(mask) for mask in masks)  # rgbabitmask
         + o32(DDSCAPS_TEXTURE)  # dwCaps
         + o32(0)  # dwCaps2
         + o32(0)  # dwCaps3
