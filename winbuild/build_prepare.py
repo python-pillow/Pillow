@@ -200,15 +200,11 @@ deps = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.4.0.tar.gz",
-        "filename": "tiff-4.4.0.tar.gz",
-        "dir": "tiff-4.4.0",
-        "license": "COPYRIGHT",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.5.0.tar.gz",
+        "filename": "tiff-4.5.0.tar.gz",
+        "dir": "tiff-4.5.0",
+        "license": "LICENSE.md",
         "patch": {
-            r"cmake\LZMACodec.cmake": {
-                # fix typo
-                "${{LZMA_FOUND}}": "${{LIBLZMA_FOUND}}",
-            },
             r"libtiff\tif_lzma.c": {
                 # link against liblzma.lib
                 "#ifdef LZMA_SUPPORT": '#ifdef LZMA_SUPPORT\n#pragma comment(lib, "liblzma.lib")',  # noqa: E501
