@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Added DDS support for uncompressed L and LA images #6820
+  [radarhere, REDxEYE]
+
+- Added LightSource tag values to ExifTags #6749
+  [radarhere]
+
 - Fixed PyAccess after changing ICO size #6821
   [radarhere]
 
