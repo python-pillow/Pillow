@@ -1042,6 +1042,90 @@ class TestImage:
             assert im.fp is None
 
 
+class TestImageBytes:
+    # modes grouped by pixel size
+    one_byte_modes = (
+        "1",
+        "L",
+        "P",
+    )
+    two_byte_modes = (
+        "I;16",
+        "I;16L",
+        "I;16B",
+        # "I;16N", # unknown raw mode for given image mode
+        # "BGR;15", # unrecognized image mode
+        # "BGR;16", # unrecognized image mode
+    )
+    # three_byte_modes = ("BGR;24",) # unrecognized image mode
+    three_byte_modes = ()
+    four_byte_modes = (
+        "LA",
+        "La",
+        "PA",
+        "F",
+        "I",
+        # "BGR;32", # unrecognized image mode
+        "RGB",
+        "RGBA",
+        "RGBa",
+        "RGBX",
+        "CMYK",
+        "YCbCr",
+        "HSV",
+        "LAB",
+    )
+    all_modes = one_byte_modes + two_byte_modes + three_byte_modes + four_byte_modes
+
+    # make this bigger if necessary
+    sample_bytes = bytes(range(16))
+
+    @pytest.mark.parametrize("mode", all_modes)
+    def test_roundtrip_bytes_constructor(self, mode):
+        source_image = hopper(mode)
+        source_bytes = source_image.tobytes()
+        copy_image = Image.frombytes(mode, source_image.size, source_bytes)
+        assert copy_image.tobytes() == source_bytes
+
+    @pytest.mark.parametrize("mode", all_modes)
+    def test_roundtrip_bytes_method(self, mode):
+        source_image = hopper(mode)
+        source_bytes = source_image.tobytes()
+        copy_image = Image.new(mode, source_image.size)
+        copy_image.frombytes(source_bytes)
+        assert copy_image.tobytes() == source_bytes
+
+    @pytest.mark.parametrize(
+        ("mode", "pixelsize"),
+        tuple((m, 1) for m in one_byte_modes)
+        + tuple((m, 2) for m in two_byte_modes)
+        + tuple((m, 3) for m in three_byte_modes)
+        + tuple((m, 4) for m in four_byte_modes),
+    )
+    def test_get_pixel(self, mode, pixelsize):
+        image_byte_size = 2 * 2 * pixelsize
+        start_bytes = self.sample_bytes[:image_byte_size]
+        image = Image.frombytes(mode, (2, 2), start_bytes)
+
+        start_pixels = (
+            image.getpixel((0, 0)),
+            image.getpixel((0, 1)),
+            image.getpixel((1, 0)),
+            image.getpixel((1, 1)),
+        )
+
+        image.putdata(image.getdata())
+
+        end_pixels = (
+            image.getpixel((0, 0)),
+            image.getpixel((0, 1)),
+            image.getpixel((1, 0)),
+            image.getpixel((1, 1)),
+        )
+
+        assert start_pixels == end_pixels
+
+
 class MockEncoder(ImageFile.PyEncoder):
     pass
 
