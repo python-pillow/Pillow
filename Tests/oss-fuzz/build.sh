@@ -25,7 +25,7 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
       --add-binary /usr/local/lib/liblcms2.so.2:. \
       --add-binary /usr/local/lib/libopenjp2.so.7:. \
       --add-binary /usr/local/lib/libpng16.so.16:. \
-      --add-binary /usr/local/lib/libtiff.so.5:. \
+      --add-binary /usr/local/lib/libtiff.so.6:. \
       --add-binary /usr/local/lib/libwebp.so.7:. \
       --add-binary /usr/local/lib/libwebpdemux.so.2:. \
       --add-binary /usr/local/lib/libwebpmux.so.3:. \
