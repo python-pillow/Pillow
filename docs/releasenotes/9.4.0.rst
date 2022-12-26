@@ -98,7 +98,8 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Added support for DDS L and LA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Support has been added to read and write L and LA DDS images in the uncompressed
+format, known as "luminance" textures.

@@ -22,6 +22,8 @@ TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
 TEST_FILE_DX10_BC7_UNORM_SRGB = "Tests/images/DXGI_FORMAT_BC7_UNORM_SRGB.dds"
 TEST_FILE_DX10_R8G8B8A8 = "Tests/images/argb-32bpp_MipMaps-1.dds"
 TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB = "Tests/images/DXGI_FORMAT_R8G8B8A8_UNORM_SRGB.dds"
+TEST_FILE_UNCOMPRESSED_L = "Tests/images/uncompressed_l.dds"
+TEST_FILE_UNCOMPRESSED_L_WITH_ALPHA = "Tests/images/uncompressed_la.dds"
 TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/hopper.dds"
 TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 
@@ -194,26 +196,24 @@ def test_unimplemented_dxgi_format():
             pass
 
 
-def test_uncompressed_rgb():
-    """Check uncompressed RGB images can be opened"""
+@pytest.mark.parametrize(
+    ("mode", "size", "test_file"),
+    [
+        ("L", (128, 128), TEST_FILE_UNCOMPRESSED_L),
+        ("LA", (128, 128), TEST_FILE_UNCOMPRESSED_L_WITH_ALPHA),
+        ("RGB", (128, 128), TEST_FILE_UNCOMPRESSED_RGB),
+        ("RGBA", (800, 600), TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA),
+    ],
+)
+def test_uncompressed(mode, size, test_file):
+    """Check uncompressed images can be opened"""
 
-    # convert -format dds -define dds:compression=none hopper.jpg hopper.dds
-    with Image.open(TEST_FILE_UNCOMPRESSED_RGB) as im:
+    with Image.open(test_file) as im:
         assert im.format == "DDS"
-        assert im.mode == "RGB"
-        assert im.size == (128, 128)
+        assert im.mode == mode
+        assert im.size == size
 
-        assert_image_equal_tofile(im, "Tests/images/hopper.png")
-
-    # Test image with alpha
-    with Image.open(TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA) as im:
-        assert im.format == "DDS"
-        assert im.mode == "RGBA"
-        assert im.size == (800, 600)
-
-        assert_image_equal_tofile(
-            im, TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA.replace(".dds", ".png")
-        )
+        assert_image_equal_tofile(im, test_file.replace(".dds", ".png"))
 
 
 def test__accept_true():
@@ -305,6 +305,8 @@ def test_save_unsupported_mode(tmp_path):
 @pytest.mark.parametrize(
     ("mode", "test_file"),
     [
+        ("L", "Tests/images/linear_gradient.png"),
+        ("LA", "Tests/images/uncompressed_la.png"),
         ("RGB", "Tests/images/hopper.png"),
         ("RGBA", "Tests/images/pil123rgba.png"),
     ],
