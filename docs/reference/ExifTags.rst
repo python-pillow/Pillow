@@ -37,7 +37,15 @@ which provide constants and clear-text names for various well-known EXIF tags.
     >>> IFD.Exif.value
     34665
     >>> IFD(34665).name
-    'Exif'
+    'Exif
+
+.. py:data:: LightSource
+
+    >>> from PIL.ExifTags import LightSource
+    >>> LightSource.Unknown.value
+    0
+    >>> LightSource(0).name
+    'Unknown'
 
 Two of these values are also exposed as dictionaries.
 
