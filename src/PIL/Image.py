@@ -65,21 +65,16 @@ def __getattr__(name):
     if name in categories:
         deprecate("Image categories", 10, "is_animated", plural=True)
         return categories[name]
-    elif name in ("NEAREST", "NONE"):
-        deprecate(name, 10, "Resampling.NEAREST or Dither.NONE")
-        return 0
     old_resampling = {
         "LINEAR": "BILINEAR",
         "CUBIC": "BICUBIC",
         "ANTIALIAS": "LANCZOS",
     }
     if name in old_resampling:
-        deprecate(name, 10, f"Resampling.{old_resampling[name]}")
+        deprecate(
+            name, 10, f"{old_resampling[name]} or Resampling.{old_resampling[name]}"
+        )
         return Resampling[old_resampling[name]]
-    for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
-        if name in enum.__members__:
-            deprecate(name, 10, f"{enum.__name__}.{name}")
-            return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -214,6 +209,12 @@ class Quantize(IntEnum):
     MAXCOVERAGE = 1
     FASTOCTREE = 2
     LIBIMAGEQUANT = 3
+
+
+module = sys.modules[__name__]
+for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
+    for item in enum:
+        setattr(module, item.name, item.value)
 
 
 if hasattr(core, "DEFAULT_STRATEGY"):
