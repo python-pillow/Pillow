@@ -33,36 +33,38 @@ from .helper import (
     skip_unless_feature,
 )
 
+# name, number of bands, pixel size
+image_modes = (
+    ("1", 1, 1),
+    ("L", 1, 1),
+    ("LA", 2, 4),
+    ("La", 2, 4),
+    ("P", 1, 1),
+    ("PA", 2, 4),
+    ("F", 1, 4),
+    ("I", 1, 4),
+    ("I;16", 1, 2),
+    ("I;16L", 1, 2),
+    ("I;16B", 1, 2),
+    ("I;16N", 1, 2),
+    ("RGB", 3, 4),
+    ("RGBA", 4, 4),
+    ("RGBa", 4, 4),
+    ("RGBX", 4, 4),
+    ("BGR;15", 3, 2),
+    ("BGR;16", 3, 2),
+    ("BGR;24", 3, 3),
+    ("CMYK", 4, 4),
+    ("YCbCr", 3, 4),
+    ("HSV", 3, 4),
+    ("LAB", 3, 4),
+)
+
+image_mode_names = [name for name, num_bands, pixelsize in image_modes]
+
 
 class TestImage:
-    @pytest.mark.parametrize(
-        "mode",
-        (
-            "1",
-            "P",
-            "PA",
-            "L",
-            "LA",
-            "La",
-            "F",
-            "I",
-            "I;16",
-            "I;16L",
-            "I;16B",
-            "I;16N",
-            "RGB",
-            "RGBX",
-            "RGBA",
-            "RGBa",
-            "BGR;15",
-            "BGR;16",
-            "BGR;24",
-            "CMYK",
-            "YCbCr",
-            "LAB",
-            "HSV",
-        ),
-    )
+    @pytest.mark.parametrize("mode", image_mode_names)
     def test_image_modes_success(self, mode: str) -> None:
         Image.new(mode, (1, 1))
 
@@ -1043,51 +1045,23 @@ class TestImage:
 
 
 class TestImageBytes:
-    # modes grouped by pixel size
-    one_byte_modes = (
-        "1",
-        "L",
-        "P",
-    )
-    two_byte_modes = (
-        "I;16",
-        "I;16L",
-        "I;16B",
-        # "I;16N", # unknown raw mode for given image mode
-        # "BGR;15", # unrecognized image mode
-        # "BGR;16", # unrecognized image mode
-    )
-    # three_byte_modes = ("BGR;24",) # unrecognized image mode
-    three_byte_modes = ()
-    four_byte_modes = (
-        "LA",
-        "La",
-        "PA",
-        "F",
-        "I",
-        # "BGR;32", # unrecognized image mode
-        "RGB",
-        "RGBA",
-        "RGBa",
-        "RGBX",
-        "CMYK",
-        "YCbCr",
-        "HSV",
-        "LAB",
-    )
-    all_modes = one_byte_modes + two_byte_modes + three_byte_modes + four_byte_modes
+    # The BGR modes don't support the methods tested in this class.
+    image_modes_not_bgr = [mode for mode in image_modes if "BGR" not in mode[0]]
+    image_mode_names_not_bgr = [
+        name for name, num_bands, pixelsize in image_modes if "BGR" not in name
+    ]
 
     # make this bigger if necessary
     sample_bytes = bytes(range(16))
 
-    @pytest.mark.parametrize("mode", all_modes)
+    @pytest.mark.parametrize("mode", image_mode_names_not_bgr)
     def test_roundtrip_bytes_constructor(self, mode):
         source_image = hopper(mode)
         source_bytes = source_image.tobytes()
         copy_image = Image.frombytes(mode, source_image.size, source_bytes)
         assert copy_image.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", all_modes)
+    @pytest.mark.parametrize("mode", image_mode_names_not_bgr)
     def test_roundtrip_bytes_method(self, mode):
         source_image = hopper(mode)
         source_bytes = source_image.tobytes()
@@ -1095,14 +1069,8 @@ class TestImageBytes:
         copy_image.frombytes(source_bytes)
         assert copy_image.tobytes() == source_bytes
 
-    @pytest.mark.parametrize(
-        ("mode", "pixelsize"),
-        tuple((m, 1) for m in one_byte_modes)
-        + tuple((m, 2) for m in two_byte_modes)
-        + tuple((m, 3) for m in three_byte_modes)
-        + tuple((m, 4) for m in four_byte_modes),
-    )
-    def test_get_pixel(self, mode, pixelsize):
+    @pytest.mark.parametrize(("mode", "num_bands", "pixelsize"), image_modes_not_bgr)
+    def test_pixels_after_getdata_putdata(self, mode, num_bands, pixelsize):
         image_byte_size = 2 * 2 * pixelsize
         start_bytes = self.sample_bytes[:image_byte_size]
         image = Image.frombytes(mode, (2, 2), start_bytes)
