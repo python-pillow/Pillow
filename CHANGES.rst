@@ -2,6 +2,78 @@
 Changelog (Pillow)
 ==================
 
+9.4.0 (unreleased)
+------------------
+
+- Added DDS support for uncompressed L and LA images #6820
+  [radarhere, REDxEYE]
+
+- Added LightSource tag values to ExifTags #6749
+  [radarhere]
+
+- Fixed PyAccess after changing ICO size #6821
+  [radarhere]
+
+- Do not use EXIF from info when saving PNG images #6819
+  [radarhere]
+
+- Fixed saving EXIF data to MPO #6817
+  [radarhere]
+
+- Added Exif hide_offsets() #6762
+  [radarhere]
+
+- Only compare to previous frame when checking for duplicate GIF frames while saving #6787
+  [radarhere]
+
+- Always initialize all plugins in registered_extensions() #6811
+  [radarhere]
+
+- Ignore non-opaque WebP background when saving as GIF #6792
+  [radarhere]
+
+- Only set tile in ImageFile __setstate__ #6793
+  [radarhere]
+
+- When reading BLP, do not trust JPEG decoder to determine image is CMYK #6767
+  [radarhere]
+
+- Added IFD enum to ExifTags #6748
+  [radarhere]
+
+- Fixed bug combining GIF frame durations #6779
+  [radarhere]
+
+- Support saving JPEG comments #6774
+  [smason, radarhere]
+
+- Added getxmp() to WebPImagePlugin #6758
+  [radarhere]
+
+- Added "exact" option when saving WebP #6747
+  [ashafaei, radarhere]
+
+- Use fractional coordinates when drawing text #6722
+  [radarhere]
+
+- Fixed writing int as BYTE tag #6740
+  [radarhere]
+
+- Added MP Format Version when saving MPO #6735
+  [radarhere]
+
+- Added Interop to ExifTags #6724
+  [radarhere]
+
+- CVE-2007-4559 patch when building on Windows #6704
+  [TrellixVulnTeam, nulano, radarhere]
+
+- Fix compiler warning: accessing 64 bytes in a region of size 48 #6714
+  [wiredfool]
+
+- Use verbose flag for pip install #6713
+  [wiredfool, radarhere]
+
 9.3.0 (2022-10-29)
 ------------------
 

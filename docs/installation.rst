@@ -23,6 +23,11 @@ Pillow supports these Python versions.
    :file: older-versions.csv
    :header-rows: 1
 
+.. _Linux Installation:
+.. _macOS Installation:
+.. _Windows Installation:
+.. _FreeBSD Installation:
+
 Basic Installation
 ------------------
 
@@ -38,74 +43,72 @@ Install Pillow with :command:`pip`::
     python3 -m pip install --upgrade Pillow
 
 
-Windows Installation
-^^^^^^^^^^^^^^^^^^^^
+.. tab:: Linux
 
-We provide Pillow binaries for Windows compiled for the matrix of
-supported Pythons in both 32 and 64-bit versions in the wheel format.
-These binaries include support for all optional libraries except
-libimagequant and libxcb. Raqm support requires
-FriBiDi to be installed separately::
+    We provide binaries for Linux for each of the supported Python
+    versions in the manylinux wheel format. These include support for all
+    optional libraries except libimagequant. Raqm support requires
+    FriBiDi to be installed separately::
 
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
+        python3 -m pip install --upgrade pip
+        python3 -m pip install --upgrade Pillow
 
-To install Pillow in MSYS2, see `Building on Windows using MSYS2/MinGW`_.
+    Most major Linux distributions, including Fedora, Ubuntu and ArchLinux
+    also include Pillow in packages that previously contained PIL e.g.
+    ``python-imaging``. Debian splits it into two packages, ``python3-pil``
+    and ``python3-pil.imagetk``.
+
+.. tab:: macOS
+
+    We provide binaries for macOS for each of the supported Python
+    versions in the wheel format. These include support for all optional
+    libraries except libimagequant. Raqm support requires
+    FriBiDi to be installed separately::
+
+        python3 -m pip install --upgrade pip
+        python3 -m pip install --upgrade Pillow
+
+.. tab:: Windows
+
+    We provide Pillow binaries for Windows compiled for the matrix of
+    supported Pythons in both 32 and 64-bit versions in the wheel format.
+    These binaries include support for all optional libraries except
+    libimagequant and libxcb. Raqm support requires
+    FriBiDi to be installed separately::
+
+        python3 -m pip install --upgrade pip
+        python3 -m pip install --upgrade Pillow
+
+    To install Pillow in MSYS2, see `Building on Windows using MSYS2/MinGW`_.
+
+.. tab:: FreeBSD
+
+    Pillow can be installed on FreeBSD via the official Ports or Packages systems:
+
+    **Ports**::
+
+        cd /usr/ports/graphics/py-pillow && make install clean
+
+    **Packages**::
+
+        pkg install py38-pillow
+
+    .. note::
+
+        The `Pillow FreeBSD port
+        <https://www.freshports.org/graphics/py-pillow/>`_ and packages
+        are tested by the ports team with all supported FreeBSD versions.
 
 
-macOS Installation
-^^^^^^^^^^^^^^^^^^
-
-We provide binaries for macOS for each of the supported Python
-versions in the wheel format. These include support for all optional
-libraries except libimagequant. Raqm support requires
-FriBiDi to be installed separately::
-
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
-
-Linux Installation
-^^^^^^^^^^^^^^^^^^
-
-We provide binaries for Linux for each of the supported Python
-versions in the manylinux wheel format. These include support for all
-optional libraries except libimagequant. Raqm support requires
-FriBiDi to be installed separately::
-
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow
-
-Most major Linux distributions, including Fedora, Ubuntu and ArchLinux
-also include Pillow in packages that previously contained PIL e.g.
-``python-imaging``. Debian splits it into two packages, ``python3-pil``
-and ``python3-pil.imagetk``.
-
-FreeBSD Installation
-^^^^^^^^^^^^^^^^^^^^
-
-Pillow can be installed on FreeBSD via the official Ports or Packages systems:
-
-**Ports**::
-
-  cd /usr/ports/graphics/py-pillow && make install clean
-
-**Packages**::
-
-  pkg install py38-pillow
-
-.. note::
-
-    The `Pillow FreeBSD port
-    <https://www.freshports.org/graphics/py-pillow/>`_ and packages
-    are tested by the ports team with all supported FreeBSD versions.
-
+.. _Building on Linux:
+.. _Building on macOS:
+.. _Building on Windows:
+.. _Building on Windows using MSYS2/MinGW:
+.. _Building on FreeBSD:
+.. _Building on Android:
 
 Building From Source
 --------------------
-
-Download and extract the `compressed archive from PyPI`_.
-
-.. _compressed archive from PyPI: https://pypi.org/project/Pillow/
 
 .. _external-libraries:
 
@@ -140,14 +143,14 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.4**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.5**
 
 * **libfreetype** provides type related services
 
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.13.1**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.14**.
 
 * **libwebp** provides the WebP format.
 
@@ -191,7 +194,141 @@ Many of Pillow's features require external libraries:
 
 * **libxcb** provides X11 screengrab support.
 
-Once you have installed the prerequisites, run::
+.. tab:: Linux
+
+    If you didn't build Python from source, make sure you have Python's
+    development libraries installed.
+
+    In Debian or Ubuntu::
+
+        sudo apt-get install python3-dev python3-setuptools
+
+    In Fedora, the command is::
+
+        sudo dnf install python3-devel redhat-rpm-config
+
+    In Alpine, the command is::
+
+        sudo apk add python3-dev py3-setuptools
+
+    .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
+
+    Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
+
+        sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
+            libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
+            libharfbuzz-dev libfribidi-dev libxcb1-dev
+
+    To install libraqm, ``sudo apt-get install meson`` and then see
+    ``depends/install_raqm.sh``.
+
+    Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
+
+        sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
+            freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
+            harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel libxcb-devel
+
+    Note that the package manager may be yum or DNF, depending on the
+    exact distribution.
+
+    Prerequisites are installed for **Alpine** with::
+
+        sudo apk add tiff-dev jpeg-dev openjpeg-dev zlib-dev freetype-dev lcms2-dev \
+            libwebp-dev tcl-dev tk-dev harfbuzz-dev fribidi-dev libimagequant-dev \
+            libxcb-dev libpng-dev
+
+    See also the ``Dockerfile``\s in the Test Infrastructure repo
+    (https://github.com/python-pillow/docker-images) for a known working
+    install process for other tested distros.
+
+.. tab:: macOS
+
+    The Xcode command line tools are required to compile portions of
+    Pillow. The tools are installed by running ``xcode-select --install``
+    from the command line. The command line tools are required even if you
+    have the full Xcode package installed.  It may be necessary to run
+    ``sudo xcodebuild -license`` to accept the license prior to using the
+    tools.
+
+    The easiest way to install external libraries is via `Homebrew
+    <https://brew.sh/>`_. After you install Homebrew, run::
+
+        brew install libjpeg libtiff little-cms2 openjpeg webp
+
+    To install libraqm on macOS use Homebrew to install its dependencies::
+
+        brew install freetype harfbuzz fribidi
+
+    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
+
+.. tab:: Windows
+
+    We recommend you use prebuilt wheels from PyPI.
+    If you wish to compile Pillow manually, you can use the build scripts
+    in the ``winbuild`` directory used for CI testing and development.
+    These scripts require Visual Studio 2017 or newer and NASM.
+
+    The scripts also install Pillow from the local copy of the source code, so the
+    `Installing`_ instructions will not be necessary afterwards.
+
+.. tab:: Windows using MSYS2/MinGW
+
+    To build Pillow using MSYS2, make sure you run the **MSYS2 MinGW 32-bit** or
+    **MSYS2 MinGW 64-bit** console, *not* **MSYS2** directly.
+
+    The following instructions target the 64-bit build, for 32-bit
+    replace all occurrences of ``mingw-w64-x86_64-`` with ``mingw-w64-i686-``.
+
+    Make sure you have Python and GCC installed::
+
+        pacman -S \
+            mingw-w64-x86_64-gcc \
+            mingw-w64-x86_64-python3 \
+            mingw-w64-x86_64-python3-pip \
+            mingw-w64-x86_64-python3-setuptools
+
+    Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
+
+        pacman -S \
+            mingw-w64-x86_64-libjpeg-turbo \
+            mingw-w64-x86_64-zlib \
+            mingw-w64-x86_64-libtiff \
+            mingw-w64-x86_64-freetype \
+            mingw-w64-x86_64-lcms2 \
+            mingw-w64-x86_64-libwebp \
+            mingw-w64-x86_64-openjpeg2 \
+            mingw-w64-x86_64-libimagequant \
+            mingw-w64-x86_64-libraqm
+
+.. tab:: FreeBSD
+
+    .. Note:: Only FreeBSD 10 and 11 tested
+
+    Make sure you have Python's development libraries installed::
+
+        sudo pkg install python3
+
+    Prerequisites are installed on **FreeBSD 10 or 11** with::
+
+        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb
+
+    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
+
+.. tab:: Android
+
+    Basic Android support has been added for compilation within the Termux
+    environment. The dependencies can be installed by::
+
+        pkg install -y python ndk-sysroot clang make \
+            libjpeg-turbo
+
+    This has been tested within the Termux app on ChromeOS, on x86.
+
+Installing
+^^^^^^^^^^
+
+Once you have installed the prerequisites, to install Pillow from the source
+code on PyPI, run::
 
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow --no-binary :all:
@@ -211,9 +348,19 @@ prerequisites, it may be necessary to manually clear the pip cache or
 build without cache using the ``--no-cache-dir`` option to force a
 build with newly installed external libraries.
 
+If you would like to install from a local copy of the source code instead, you
+can clone from GitHub with ``git clone https://github.com/python-pillow/Pillow``
+or download and extract the `compressed archive from PyPI`_.
+
+After navigating to the Pillow directory, run::
+
+    python3 -m pip install --upgrade pip
+    python3 -m pip install .
+
+.. _compressed archive from PyPI: https://pypi.org/project/Pillow/#files
 
 Build Options
-^^^^^^^^^^^^^
+"""""""""""""
 
 * Environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
   multiprocessing to build the extension. Setting ``MAX_CONCURRENCY``
@@ -256,157 +403,6 @@ Sample usage::
 
     python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
 
-
-Building on macOS
-^^^^^^^^^^^^^^^^^
-
-The Xcode command line tools are required to compile portions of
-Pillow. The tools are installed by running ``xcode-select --install``
-from the command line. The command line tools are required even if you
-have the full Xcode package installed.  It may be necessary to run
-``sudo xcodebuild -license`` to accept the license prior to using the
-tools.
-
-The easiest way to install external libraries is via `Homebrew
-<https://brew.sh/>`_. After you install Homebrew, run::
-
-    brew install libjpeg libtiff little-cms2 openjpeg webp
-
-To install libraqm on macOS use Homebrew to install its dependencies::
-
-    brew install freetype harfbuzz fribidi
-
-Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
-
-Now install Pillow with::
-
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow --no-binary :all:
-
-or from within the uncompressed source directory::
-
-    python3 -m pip install .
-
-Building on Windows
-^^^^^^^^^^^^^^^^^^^
-
-We recommend you use prebuilt wheels from PyPI.
-If you wish to compile Pillow manually, you can use the build scripts
-in the ``winbuild`` directory used for CI testing and development.
-These scripts require Visual Studio 2017 or newer and NASM.
-
-Building on Windows using MSYS2/MinGW
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To build Pillow using MSYS2, make sure you run the **MSYS2 MinGW 32-bit** or
-**MSYS2 MinGW 64-bit** console, *not* **MSYS2** directly.
-
-The following instructions target the 64-bit build, for 32-bit
-replace all occurrences of ``mingw-w64-x86_64-`` with ``mingw-w64-i686-``.
-
-Make sure you have Python and GCC installed::
-
-    pacman -S \
-        mingw-w64-x86_64-gcc \
-        mingw-w64-x86_64-python3 \
-        mingw-w64-x86_64-python3-pip \
-        mingw-w64-x86_64-python3-setuptools
-
-Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
-
-    pacman -S \
-        mingw-w64-x86_64-libjpeg-turbo \
-        mingw-w64-x86_64-zlib \
-        mingw-w64-x86_64-libtiff \
-        mingw-w64-x86_64-freetype \
-        mingw-w64-x86_64-lcms2 \
-        mingw-w64-x86_64-libwebp \
-        mingw-w64-x86_64-openjpeg2 \
-        mingw-w64-x86_64-libimagequant \
-        mingw-w64-x86_64-libraqm
-
-Now install Pillow with::
-
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade Pillow --no-binary :all:
-
-
-Building on FreeBSD
-^^^^^^^^^^^^^^^^^^^
-
-.. Note:: Only FreeBSD 10 and 11 tested
-
-Make sure you have Python's development libraries installed::
-
-    sudo pkg install python3
-
-Prerequisites are installed on **FreeBSD 10 or 11** with::
-
-    sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb
-
-Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
-
-
-Building on Linux
-^^^^^^^^^^^^^^^^^
-
-If you didn't build Python from source, make sure you have Python's
-development libraries installed.
-
-In Debian or Ubuntu::
-
-    sudo apt-get install python3-dev python3-setuptools
-
-In Fedora, the command is::
-
-    sudo dnf install python3-devel redhat-rpm-config
-
-In Alpine, the command is::
-
-    sudo apk add python3-dev py3-setuptools
-
-.. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
-
-Prerequisites for **Ubuntu 16.04 LTS - 22.04 LTS** are installed with::
-
-    sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
-        libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
-        libharfbuzz-dev libfribidi-dev libxcb1-dev
-
-To install libraqm, ``sudo apt-get install meson`` and then see
-``depends/install_raqm.sh``.
-
-Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
-
-    sudo dnf install libtiff-devel libjpeg-devel openjpeg2-devel zlib-devel \
-        freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel \
-        harfbuzz-devel fribidi-devel libraqm-devel libimagequant-devel libxcb-devel
-
-Note that the package manager may be yum or DNF, depending on the
-exact distribution.
-
-Prerequisites are installed for **Alpine** with::
-
-    sudo apk add tiff-dev jpeg-dev openjpeg-dev zlib-dev freetype-dev lcms2-dev \
-        libwebp-dev tcl-dev tk-dev harfbuzz-dev fribidi-dev libimagequant-dev \
-        libxcb-dev libpng-dev
-
-See also the ``Dockerfile``\s in the Test Infrastructure repo
-(https://github.com/python-pillow/docker-images) for a known working
-install process for other tested distros.
-
-Building on Android
-^^^^^^^^^^^^^^^^^^^
-
-Basic Android support has been added for compilation within the Termux
-environment. The dependencies can be installed by::
-
-    pkg install -y python ndk-sysroot clang make \
-        libjpeg-turbo
-
-This has been tested within the Termux app on ChromeOS, on x86.
-
-
 Platform Support
 ----------------
 
@@ -440,9 +436,9 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | Debian 11 Bullseye               | 3.9                        | x86                 |
 +----------------------------------+----------------------------+---------------------+
-| Fedora 35                        | 3.10                       | x86-64              |
-+----------------------------------+----------------------------+---------------------+
 | Fedora 36                        | 3.10                       | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Fedora 37                        | 3.11                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Gentoo                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
@@ -464,7 +460,7 @@ These platforms are built and tested for every change.
 |                                  +----------------------------+---------------------+
 |                                  | 3.9 (MinGW)                | x86, x86-64         |
 |                                  +----------------------------+---------------------+
-|                                  | 3.7, 3.8, 3.9 (Cygwin)     | x86-64              |
+|                                  | 3.8, 3.9 (Cygwin)          | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 
 
@@ -482,11 +478,13 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
 |                                  | | versions                | | Pillow version | | processors |
 +==================================+===========================+==================+==============+
-| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 9.2.0            |arm           |
+| macOS 13 Ventura                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
++----------------------------------+---------------------------+------------------+--------------+
+| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
 |                                  +---------------------------+------------------+--------------+
-|                                  | 3.7, 3.8, 3.9, 3.10       | 9.2.0            |x86-64        |
+|                                  | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |x86-64        |
 |                                  +---------------------------+------------------+              |
 |                                  | 3.6                       | 8.4.0            |              |
 +----------------------------------+---------------------------+------------------+--------------+

@@ -71,6 +71,19 @@ def test_save_to_bytes():
         )
 
 
+def test_getpixel(tmp_path):
+    temp_file = str(tmp_path / "temp.ico")
+
+    im = hopper()
+    im.save(temp_file, "ico", sizes=[(32, 32), (64, 64)])
+
+    with Image.open(temp_file) as reloaded:
+        reloaded.load()
+        reloaded.size = (32, 32)
+
+        assert reloaded.getpixel((0, 0)) == (18, 20, 62)
+
+
 def test_no_duplicates(tmp_path):
     temp_file = str(tmp_path / "temp.ico")
     temp_file2 = str(tmp_path / "temp2.ico")

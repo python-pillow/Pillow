@@ -47,7 +47,14 @@ except ImportError:
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
 # Use __version__ instead.
-from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
+from . import (
+    ExifTags,
+    ImageMode,
+    TiffTags,
+    UnidentifiedImageError,
+    __version__,
+    _plugins,
+)
 from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
 from ._util import DeferredError, is_path
@@ -704,7 +711,6 @@ class Image:
 
     def __setstate__(self, state):
         Image.__init__(self)
-        self.tile = []
         info, mode, size, palette, data = state
         self.info = info
         self.mode = mode
@@ -1447,6 +1453,49 @@ class Image:
         self._exif._loaded = False
         self.getexif()
 
+    def get_child_images(self):
+        child_images = []
+        exif = self.getexif()
+        ifds = []
+        if ExifTags.Base.SubIFDs in exif:
+            subifd_offsets = exif[ExifTags.Base.SubIFDs]
+            if subifd_offsets:
+                if not isinstance(subifd_offsets, tuple):
+                    subifd_offsets = (subifd_offsets,)
+                for subifd_offset in subifd_offsets:
+                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
+        ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
+        if ifd1 and ifd1.get(513):
+            ifds.append((ifd1, exif._info.next))
+
+        offset = None
+        for ifd, ifd_offset in ifds:
+            current_offset = self.fp.tell()
+            if offset is None:
+                offset = current_offset
+
+            fp = self.fp
+            thumbnail_offset = ifd.get(513)
+            if thumbnail_offset is not None:
+                try:
+                    thumbnail_offset += self._exif_offset
+                except AttributeError:
+                    pass
+                self.fp.seek(thumbnail_offset)
+                data = self.fp.read(ifd.get(514))
+                fp = io.BytesIO(data)
+
+            with open(fp) as im:
+                if thumbnail_offset is None:
+                    im._frame_pos = [ifd_offset]
+                    im._seek(0)
+                im.load()
+                child_images.append(im)
+
+        if offset is not None:
+            self.fp.seek(offset)
+        return child_images
+
     def getim(self):
         """
         Returns a capsule that points to the internal image memory.
@@ -1482,7 +1531,8 @@ class Image:
     def apply_transparency(self):
         """
         If a P mode image has a "transparency" key in the info dictionary,
-        remove the key and apply the transparency to the palette instead.
+        remove the key and instead apply the transparency to the palette.
+        Otherwise, the image is unchanged.
         """
         if self.mode != "P" or "transparency" not in self.info:
             return
@@ -3368,8 +3418,7 @@ def registered_extensions():
     Returns a dictionary containing all file extensions belonging
     to registered plugins
     """
-    if not EXTENSION:
-        init()
+    init()
     return EXTENSION
 
 
@@ -3503,6 +3552,7 @@ class Exif(MutableMapping):
 
     def __init__(self):
         self._data = {}
+        self._hidden_data = {}
         self._ifds = {}
         self._info = None
         self._loaded_exif = None
@@ -3556,6 +3606,7 @@ class Exif(MutableMapping):
             return
         self._loaded_exif = data
         self._data.clear()
+        self._hidden_data.clear()
         self._ifds.clear()
         if data and data.startswith(b"Exif\x00\x00"):
             data = data[6:]
@@ -3576,6 +3627,7 @@ class Exif(MutableMapping):
     def load_from_fp(self, fp, offset=None):
         self._loaded_exif = None
         self._data.clear()
+        self._hidden_data.clear()
         self._ifds.clear()
 
         # process dictionary
@@ -3598,14 +3650,16 @@ class Exif(MutableMapping):
         merged_dict = dict(self)
 
         # get EXIF extension
-        if 0x8769 in self:
-            ifd = self._get_ifd_dict(self[0x8769])
+        if ExifTags.IFD.Exif in self:
+            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif])
             if ifd:
                 merged_dict.update(ifd)
 
         # GPS
-        if 0x8825 in self:
-            merged_dict[0x8825] = self._get_ifd_dict(self[0x8825])
+        if ExifTags.IFD.GPSInfo in self:
+            merged_dict[ExifTags.IFD.GPSInfo] = self._get_ifd_dict(
+                self[ExifTags.IFD.GPSInfo]
+            )
 
         return merged_dict
 
@@ -3615,31 +3669,35 @@ class Exif(MutableMapping):
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, value in self.items():
-            if tag in [0x8769, 0x8225, 0x8825] and not isinstance(value, dict):
+            if tag in [
+                ExifTags.IFD.Exif,
+                ExifTags.IFD.GPSInfo,
+            ] and not isinstance(value, dict):
                 value = self.get_ifd(tag)
                 if (
-                    tag == 0x8769
-                    and 0xA005 in value
-                    and not isinstance(value[0xA005], dict)
+                    tag == ExifTags.IFD.Exif
+                    and ExifTags.IFD.Interop in value
+                    and not isinstance(value[ExifTags.IFD.Interop], dict)
                 ):
                     value = value.copy()
-                    value[0xA005] = self.get_ifd(0xA005)
+                    value[ExifTags.IFD.Interop] = self.get_ifd(ExifTags.IFD.Interop)
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
     def get_ifd(self, tag):
         if tag not in self._ifds:
-            if tag in [0x8769, 0x8825]:
-                # exif, gpsinfo
-                if tag in self:
-                    self._ifds[tag] = self._get_ifd_dict(self[tag])
-            elif tag in [0xA005, 0x927C]:
-                # interop, makernote
-                if 0x8769 not in self._ifds:
-                    self.get_ifd(0x8769)
-                tag_data = self._ifds[0x8769][tag]
-                if tag == 0x927C:
-                    # makernote
+            if tag == ExifTags.IFD.IFD1:
+                if self._info is not None:
+                    self._ifds[tag] = self._get_ifd_dict(self._info.next)
+            elif tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
+                offset = self._hidden_data.get(tag, self.get(tag))
+                if offset is not None:
+                    self._ifds[tag] = self._get_ifd_dict(offset)
+            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
+                if ExifTags.IFD.Exif not in self._ifds:
+                    self.get_ifd(ExifTags.IFD.Exif)
+                tag_data = self._ifds[ExifTags.IFD.Exif][tag]
+                if tag == ExifTags.IFD.Makernote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     if tag_data[:8] == b"FUJIFILM":
@@ -3715,9 +3773,22 @@ class Exif(MutableMapping):
                                 makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
                         self._ifds[tag] = makernote
                 else:
-                    # interop
+                    # Interop
                     self._ifds[tag] = self._get_ifd_dict(tag_data)
-        return self._ifds.get(tag, {})
+        ifd = self._ifds.get(tag, {})
+        if tag == ExifTags.IFD.Exif and self._hidden_data:
+            ifd = {
+                k: v
+                for (k, v) in ifd.items()
+                if k not in (ExifTags.IFD.Interop, ExifTags.IFD.Makernote)
+            }
+        return ifd
+
+    def hide_offsets(self):
+        for tag in (ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo):
+            if tag in self:
+                self._hidden_data[tag] = self[tag]
+                del self[tag]
 
     def __str__(self):
         if self._info is not None:

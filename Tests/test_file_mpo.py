@@ -80,7 +80,10 @@ def test_app(test_file):
 
 @pytest.mark.parametrize("test_file", test_files)
 def test_exif(test_file):
-    with Image.open(test_file) as im:
+    with Image.open(test_file) as im_original:
+        im_reloaded = roundtrip(im_original, save_all=True, exif=im_original.getexif())
+
+    for im in (im_original, im_reloaded):
         info = im._getexif()
         assert info[272] == "Nintendo 3DS"
         assert info[296] == 2
@@ -268,6 +271,7 @@ def test_save_all():
     im_reloaded = roundtrip(im, save_all=True, append_images=[im2])
 
     assert_image_equal(im, im_reloaded)
+    assert im_reloaded.mpinfo[45056] == b"0100"
 
     im_reloaded.seek(1)
     assert_image_similar(im2, im_reloaded, 1)

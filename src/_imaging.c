@@ -1531,25 +1531,21 @@ if (PySequence_Check(op)) { \
                 PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
+            int endian = strncmp(image->mode, "I;16", 4) == 0 ? (strcmp(image->mode, "I;16B") == 0 ? 2 : 1) : 0;
             double value;
-            if (scale == 1.0 && offset == 0.0) {
-                /* Clipped data */
-                for (i = x = y = 0; i < n; i++) {
-                    set_value_to_item(seq, i);
-                    image->image8[y][x] = (UINT8)CLIP8(value);
-                    if (++x >= (int)image->xsize) {
-                        x = 0, y++;
-                    }
+            for (i = x = y = 0; i < n; i++) {
+                set_value_to_item(seq, i);
+                if (scale != 1.0 || offset != 0.0) {
+                    value = value * scale + offset;
                 }
-
-            } else {
-                /* Scaled and clipped data */
-                for (i = x = y = 0; i < n; i++) {
-                    set_value_to_item(seq, i);
-                    image->image8[y][x] = CLIP8(value * scale + offset);
-                    if (++x >= (int)image->xsize) {
-                        x = 0, y++;
-                    }
+                if (endian == 0) {
+                    image->image8[y][x] = (UINT8)CLIP8(value);
+                } else {
+                    image->image8[y][x * 2 + (endian == 2 ? 1 : 0)] = CLIP8((int)value % 256);
+                    image->image8[y][x * 2 + (endian == 2 ? 0 : 1)] = CLIP8((int)value >> 8);
+                }
+                if (++x >= (int)image->xsize) {
+                    x = 0, y++;
                 }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
@@ -1829,7 +1825,7 @@ _resize(ImagingObject *self, PyObject *args) {
         box[1] - (int)box[1] == 0 && box[3] - box[1] == ysize) {
         imOut = ImagingCrop(imIn, box[0], box[1], box[2], box[3]);
     } else if (filter == IMAGING_TRANSFORM_NEAREST) {
-        double a[6];
+        double a[8];
 
         memset(a, 0, sizeof a);
         a[0] = (double)(box[2] - box[0]) / xsize;

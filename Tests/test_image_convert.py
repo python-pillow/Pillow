@@ -104,6 +104,13 @@ def test_rgba_p():
     assert_image_similar(im, comparable, 20)
 
 
+def test_rgba():
+    with Image.open("Tests/images/transparent.png") as im:
+        assert im.mode == "RGBA"
+
+        assert_image_similar(im.convert("RGBa").convert("RGB"), im.convert("RGB"), 1.5)
+
+
 def test_trns_p(tmp_path):
     im = hopper("P")
     im.info["transparency"] = 0

@@ -86,6 +86,33 @@ class TestFileJpeg:
             assert len(im.applist) == 2
 
             assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
+            assert im.app["COM"] == im.info["comment"]
+
+    def test_comment_write(self):
+        with Image.open(TEST_FILE) as im:
+            assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
+
+            # Test that existing comment is saved by default
+            out = BytesIO()
+            im.save(out, format="JPEG")
+            with Image.open(out) as reloaded:
+                assert im.info["comment"] == reloaded.info["comment"]
+
+            # Ensure that a blank comment causes any existing comment to be removed
+            for comment in ("", b"", None):
+                out = BytesIO()
+                im.save(out, format="JPEG", comment=comment)
+                with Image.open(out) as reloaded:
+                    assert "comment" not in reloaded.info
+
+            # Test that a comment argument overrides the default comment
+            for comment in ("Test comment text", b"Text comment text"):
+                out = BytesIO()
+                im.save(out, format="JPEG", comment=comment)
+                with Image.open(out) as reloaded:
+                    if not isinstance(comment, bytes):
+                        comment = comment.encode()
+                    assert reloaded.info["comment"] == comment
 
     def test_cmyk(self):
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
@@ -414,6 +441,13 @@ class TestFileJpeg:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             info = im._getexif()
             assert info[305] == "Adobe Photoshop CS Macintosh"
+
+    def test_get_child_images(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            ims = im.get_child_images()
+
+        assert len(ims) == 1
+        assert_image_equal_tofile(ims[0], "Tests/images/flower_thumbnail.png")
 
     def test_mp(self):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
