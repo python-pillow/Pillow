@@ -65,12 +65,12 @@ $bmp = New-Object Drawing.Bitmap 200, 200
             p.communicate()
         else:
             if not shutil.which("wl-paste"):
-                with pytest.raises(NotImplementedError) as e:
+                with pytest.raises(
+                    NotImplementedError,
+                    match="wl-paste or xclip is required for"
+                    r" ImageGrab.grabclipboard\(\) on Linux",
+                ):
                     ImageGrab.grabclipboard()
-                assert (
-                    str(e.value) == "wl-paste or xclip is required"
-                    " for ImageGrab.grabclipboard() on Linux"
-                )
             return
 
         ImageGrab.grabclipboard()
