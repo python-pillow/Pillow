@@ -1531,7 +1531,8 @@ class Image:
     def apply_transparency(self):
         """
         If a P mode image has a "transparency" key in the info dictionary,
-        remove the key and apply the transparency to the palette instead.
+        remove the key and instead apply the transparency to the palette.
+        Otherwise, the image is unchanged.
         """
         if self.mode != "P" or "transparency" not in self.info:
             return
