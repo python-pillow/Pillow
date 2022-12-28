@@ -185,21 +185,21 @@ def test_iptc(tmp_path):
         im.save(out)
 
 
-def test_writing_other_types_to_ascii(tmp_path):
-    im = hopper()
+@pytest.mark.parametrize("value, expected", ((b"test", "test"), (1, "1")))
+def test_writing_other_types_to_ascii(value, expected, tmp_path):
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     tag = TiffTags.TAGS_V2[271]
     assert tag.type == TiffTags.ASCII
 
+    info[271] = value
+
+    im = hopper()
     out = str(tmp_path / "temp.tiff")
-    for (value, expected) in {b"test": "test", 1: "1"}.items():
-        info[271] = value
+    im.save(out, tiffinfo=info)
 
-        im.save(out, tiffinfo=info)
-
-        with Image.open(out) as reloaded:
-            assert reloaded.tag_v2[271] == expected
+    with Image.open(out) as reloaded:
+        assert reloaded.tag_v2[271] == expected
 
 
 def test_writing_int_to_bytes(tmp_path):
