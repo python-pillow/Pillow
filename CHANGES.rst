@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Patch OpenJPEG to include ARM64 fix #6718
+  [radarhere]
+
+- Added support for I;16 modes in putdata() #6825
+  [radarhere]
+
+- Added conversion from RGBa to RGB #6708
+  [radarhere]
+
 - Added DDS support for uncompressed L and LA images #6820
   [radarhere, REDxEYE]
 
