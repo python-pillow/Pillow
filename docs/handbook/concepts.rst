@@ -64,6 +64,12 @@ Pillow also provides limited support for a few additional modes, including:
     * ``BGR;24`` (24-bit reversed true colour)
     * ``BGR;32`` (32-bit reversed true colour)
 
+Premultiplied alpha is where the values for each other channel have been
+multiplied by the alpha. For example, an RGBA pixel of ``(10, 20, 30, 127)``
+would convert to an RGBa pixel of ``(5, 10, 15, 127)``. The values of the R,
+G and B channels are halved as a result of the half transparency in the alpha
+channel.
+
 Apart from these additional modes, Pillow doesn't yet support multichannel
 images with a depth of more than 8 bits per channel.
 
