@@ -18,8 +18,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+import io
 import itertools
-import os
 import struct
 
 from . import (
@@ -31,7 +31,7 @@ from . import (
     TiffImagePlugin,
 )
 from ._binary import i16be as i16
-from ._binary import o32le
+from ._binary import o16be, o32le
 
 # def _accept(prefix):
 #     return JpegImagePlugin._accept(prefix)
@@ -52,48 +52,75 @@ def _save_all(im, fp, filename):
             _save(im, fp, filename)
             return
 
-    mpf_offset = 28
-    offsets = []
+    data = []
     for imSequence in itertools.chain([im], append_images):
         for im_frame in ImageSequence.Iterator(imSequence):
-            if not offsets:
-                # APP2 marker
-                im_frame.encoderinfo["extra"] = (
-                    b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
-                )
-                exif = im_frame.encoderinfo.get("exif")
+            b = io.BytesIO()
+
+            exif = b""
+            if not data:
+                # Do not pass EXIF to JpegImagePlugin
+                try:
+                    exif = im_frame.encoderinfo["exif"]
+                    del im_frame.encoderinfo["exif"]
+                except KeyError:
+                    pass
+
+                JpegImagePlugin._save(im_frame, b, filename)
+            else:
+                im_frame.save(b, "JPEG")
+
+            jpeg = b.getvalue()
+
+            # SOI
+            start = jpeg[:2]
+
+            # APP1
+            if exif:
                 if isinstance(exif, Image.Exif):
                     exif = exif.tobytes()
-                    im_frame.encoderinfo["exif"] = exif
-                if exif:
-                    mpf_offset += 4 + len(exif)
+                exif = b"\xFF\xE1" + o16be(2 + len(exif)) + exif
 
-                JpegImagePlugin._save(im_frame, fp, filename)
-                offsets.append(fp.tell())
-            else:
-                im_frame.save(fp, "JPEG")
-                offsets.append(fp.tell() - offsets[-1])
+            end = jpeg[2:]
+            data.append((start, exif, end))
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"
-    ifd[0xB001] = len(offsets)
+    ifd[0xB001] = len(data)
 
     mpentries = b""
     data_offset = 0
-    for i, size in enumerate(offsets):
+    for i, frame_data in enumerate(data):
+        size = sum(len(part) for part in frame_data)
         if i == 0:
+            # APP2 will be appended later
+            size += 90
+
             mptype = 0x030000  # Baseline MP Primary Image
         else:
             mptype = 0x000000  # Undefined
         mpentries += struct.pack("<LLLHH", mptype, size, data_offset, 0, 0)
         if i == 0:
-            data_offset -= mpf_offset
+            exif = frame_data[1]
+            data_offset -= 10 + len(exif)
         data_offset += size
     ifd[0xB002] = mpentries
 
-    fp.seek(mpf_offset)
-    fp.write(b"II\x2A\x00" + o32le(8) + ifd.tobytes(8))
-    fp.seek(0, os.SEEK_END)
+    for i, frame_data in enumerate(data):
+        start, exif, end = frame_data
+
+        fp.write(start + exif)
+        if i == 0:
+            # APP2
+            fp.write(
+                b"\xFF\xE2"
+                + o16be(6 + 82)
+                + b"MPF\0"
+                + b"II\x2A\x00"
+                + o32le(8)
+                + ifd.tobytes(8)
+            )
+        fp.write(end)
 
 
 ##

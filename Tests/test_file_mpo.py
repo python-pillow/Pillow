@@ -82,6 +82,7 @@ def test_app(test_file):
 def test_exif(test_file):
     with Image.open(test_file) as im_original:
         im_reloaded = roundtrip(im_original, save_all=True, exif=im_original.getexif())
+        assert tuple(app[0] for app in im_reloaded.applist[:2]) == ("APP1", "APP2")
 
     for im in (im_original, im_reloaded):
         info = im._getexif()
@@ -258,6 +259,7 @@ def test_save_all():
     for test_file in test_files:
         with Image.open(test_file) as im:
             im_reloaded = roundtrip(im, save_all=True)
+            assert im_reloaded.applist[0][0] == "APP2"
 
             im.seek(0)
             assert_image_similar(im, im_reloaded, 30)
