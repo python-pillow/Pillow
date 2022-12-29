@@ -74,6 +74,11 @@ Constants
 A number of constants have been deprecated and will be removed in Pillow 10.0.0
 (2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
 
+.. note::
+
+    Additional ``Image`` constants were deprecated in Pillow 9.1.0, but they
+    were later restored in Pillow 9.4.0. See  :ref:`restored-image-constants`
+
 =====================================================  ============================================================
 Deprecated                                             Use instead
 =====================================================  ============================================================
