@@ -3687,7 +3687,7 @@ class Exif(MutableMapping):
     def get_ifd(self, tag):
         if tag not in self._ifds:
             if tag == ExifTags.IFD.IFD1:
-                if self._info is not None:
+                if self._info is not None and self._info.next != 0:
                     self._ifds[tag] = self._get_ifd_dict(self._info.next)
             elif tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
                 offset = self._hidden_data.get(tag, self.get(tag))
