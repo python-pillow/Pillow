@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Do not attempt to read IFD1 if absent #6840
+  [radarhere]
+
+- Fixed writing int as ASCII tag #6800
+  [radarhere]
+
 - If available, use wl-paste or xclip for grabclipboard() on Linux #6783
   [radarhere]
 
