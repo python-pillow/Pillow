@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- If available, use wl-paste or xclip for grabclipboard() on Linux #6783
+  [radarhere]
+
+- Added signed option when saving JPEG2000 images #6709
+  [radarhere]
+
 - Patch OpenJPEG to include ARM64 fix #6718
   [radarhere]
 
