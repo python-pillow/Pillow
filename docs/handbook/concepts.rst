@@ -118,7 +118,7 @@ If an image does not have an alpha band, transparency may be specified in the
 :py:attr:`~PIL.Image.Image.info` attribute with a "transparency" key.
 
 Most of the time, the "transparency" value is a single integer, describing
-which pixel value is transparent in an "1", "L", "I" or "P" mode image.
+which pixel value is transparent in a "1", "L", "I" or "P" mode image.
 However, PNG images may have three values, one for each channel in an "RGB"
 mode image, or can have a byte string for a "P" mode image, to specify the
 alpha value for each palette entry.
