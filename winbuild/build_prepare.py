@@ -289,7 +289,7 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.13/lcms2-2.14.tar.gz/download",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.14/lcms2-2.14.tar.gz/download",
         "filename": "lcms2-2.14.tar.gz",
         "dir": "lcms2-2.14",
         "license": "COPYING",
