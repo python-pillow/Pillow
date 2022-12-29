@@ -132,4 +132,18 @@ def grabclipboard():
                 return BmpImagePlugin.DibImageFile(data)
         return None
     else:
-        raise NotImplementedError("ImageGrab.grabclipboard() is macOS and Windows only")
+        if shutil.which("wl-paste"):
+            args = ["wl-paste"]
+        elif shutil.which("xclip"):
+            args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
+        else:
+            raise NotImplementedError(
+                "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
+            )
+        fh, filepath = tempfile.mkstemp()
+        subprocess.call(args, stdout=fh)
+        os.close(fh)
+        im = Image.open(filepath)
+        im.load()
+        os.unlink(filepath)
+        return im
