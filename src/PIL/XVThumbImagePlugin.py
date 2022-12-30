@@ -49,7 +49,8 @@ class XVThumbImageFile(ImageFile.ImageFile):
 
         # check magic
         if not _accept(self.fp.read(6)):
-            raise SyntaxError("not an XV thumbnail file")
+            msg = "not an XV thumbnail file"
+            raise SyntaxError(msg)
 
         # Skip to beginning of next line
         self.fp.readline()
@@ -58,7 +59,8 @@ class XVThumbImageFile(ImageFile.ImageFile):
         while True:
             s = self.fp.readline()
             if not s:
-                raise SyntaxError("Unexpected EOF reading XV thumbnail file")
+                msg = "Unexpected EOF reading XV thumbnail file"
+                raise SyntaxError(msg)
             if s[0] != 35:  # ie. when not a comment: '#'
                 break
 

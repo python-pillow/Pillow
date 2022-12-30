@@ -143,7 +143,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.fp.seek(self.offset + 2)  # skip SOI marker
         segment = self.fp.read(2)
         if not segment:
-            raise ValueError("No data found for frame")
+            msg = "No data found for frame"
+            raise ValueError(msg)
         self._size = self._initial_size
         if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2

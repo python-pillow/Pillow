@@ -80,7 +80,8 @@ def __getattr__(name):
         if name in enum.__members__:
             deprecate(name, 10, f"{enum.__name__}.{name}")
             return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
 
 
 logger = logging.getLogger(__name__)
@@ -107,11 +108,12 @@ try:
     from . import _imaging as core
 
     if __version__ != getattr(core, "PILLOW_VERSION", None):
-        raise ImportError(
+        msg = (
             "The _imaging extension was built for another version of Pillow or PIL:\n"
             f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
             f"Pillow version: {__version__}"
         )
+        raise ImportError(msg)
 
 except ImportError as v:
     core = DeferredError(ImportError("The _imaging C module is not installed."))
@@ -406,7 +408,8 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
     except AttributeError as e:
-        raise OSError(f"decoder {decoder_name} not available") from e
+        msg = f"decoder {decoder_name} not available"
+        raise OSError(msg) from e
     return decoder(mode, *args + extra)
 
 
@@ -429,7 +432,8 @@ def _getencoder(mode, encoder_name, args, extra=()):
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
     except AttributeError as e:
-        raise OSError(f"encoder {encoder_name} not available") from e
+        msg = f"encoder {encoder_name} not available"
+        raise OSError(msg) from e
     return encoder(mode, *args + extra)
 
 
@@ -675,7 +679,8 @@ class Image:
         try:
             self.save(b, "PNG")
         except Exception as e:
-            raise ValueError("Could not save to PNG for display") from e
+            msg = "Could not save to PNG for display"
+            raise ValueError(msg) from e
         return b.getvalue()
 
     @property
@@ -767,7 +772,8 @@ class Image:
             if s:
                 break
         if s < 0:
-            raise RuntimeError(f"encoder error {s} in tobytes")
+            msg = f"encoder error {s} in tobytes"
+            raise RuntimeError(msg)
 
         return b"".join(data)
 
@@ -784,7 +790,8 @@ class Image:
 
         self.load()
         if self.mode != "1":
-            raise ValueError("not a bitmap")
+            msg = "not a bitmap"
+            raise ValueError(msg)
         data = self.tobytes("xbm")
         return b"".join(
             [
@@ -818,9 +825,11 @@ class Image:
         s = d.decode(data)
 
         if s[0] >= 0:
-            raise ValueError("not enough image data")
+            msg = "not enough image data"
+            raise ValueError(msg)
         if s[1] != 0:
-            raise ValueError("cannot decode image data")
+            msg = "cannot decode image data"
+            raise ValueError(msg)
 
     def load(self):
         """
@@ -941,7 +950,8 @@ class Image:
         if matrix:
             # matrix conversion
             if mode not in ("L", "RGB"):
-                raise ValueError("illegal conversion")
+                msg = "illegal conversion"
+                raise ValueError(msg)
             im = self.im.convert_matrix(mode, matrix)
             new = self._new(im)
             if has_transparency and self.im.bands == 3:
@@ -1026,7 +1036,8 @@ class Image:
                 elif isinstance(t, int):
                     self.im.putpalettealpha(t, 0)
                 else:
-                    raise ValueError("Transparency for P mode should be bytes or int")
+                    msg = "Transparency for P mode should be bytes or int"
+                    raise ValueError(msg)
 
         if mode == "P" and palette == Palette.ADAPTIVE:
             im = self.im.quantize(colors)
@@ -1076,7 +1087,8 @@ class Image:
                 im = self.im.convert(modebase)
                 im = im.convert(mode, dither)
             except KeyError as e:
-                raise ValueError("illegal conversion") from e
+                msg = "illegal conversion"
+                raise ValueError(msg) from e
 
         new_im = self._new(im)
         if mode == "P" and palette != Palette.ADAPTIVE:
@@ -1151,20 +1163,21 @@ class Image:
             Quantize.LIBIMAGEQUANT,
         ):
             # Caller specified an invalid mode.
-            raise ValueError(
+            msg = (
                 "Fast Octree (method == 2) and libimagequant (method == 3) "
                 "are the only valid methods for quantizing RGBA images"
             )
+            raise ValueError(msg)
 
         if palette:
             # use palette from reference image
             palette.load()
             if palette.mode != "P":
-                raise ValueError("bad mode for palette image")
+                msg = "bad mode for palette image"
+                raise ValueError(msg)
             if self.mode != "RGB" and self.mode != "L":
-                raise ValueError(
-                    "only RGB or L mode images can be quantized to a palette"
-                )
+                msg = "only RGB or L mode images can be quantized to a palette"
+                raise ValueError(msg)
             im = self.im.convert("P", dither, palette.im)
             new_im = self._new(im)
             new_im.palette = palette.palette.copy()
@@ -1210,9 +1223,11 @@ class Image:
             return self.copy()
 
         if box[2] < box[0]:
-            raise ValueError("Coordinate 'right' is less than 'left'")
+            msg = "Coordinate 'right' is less than 'left'"
+            raise ValueError(msg)
         elif box[3] < box[1]:
-            raise ValueError("Coordinate 'lower' is less than 'upper'")
+            msg = "Coordinate 'lower' is less than 'upper'"
+            raise ValueError(msg)
 
         self.load()
         return self._new(self._crop(self.im, box))
@@ -1280,9 +1295,8 @@ class Image:
         if isinstance(filter, Callable):
             filter = filter()
         if not hasattr(filter, "filter"):
-            raise TypeError(
-                "filter argument should be ImageFilter.Filter instance or class"
-            )
+            msg = "filter argument should be ImageFilter.Filter instance or class"
+            raise TypeError(msg)
 
         multiband = isinstance(filter, ImageFilter.MultibandFilter)
         if self.im.bands == 1 or multiband:
@@ -1691,7 +1705,8 @@ class Image:
                 size = mask.size
             else:
                 # FIXME: use self.size here?
-                raise ValueError("cannot determine region size; use 4-item box")
+                msg = "cannot determine region size; use 4-item box"
+                raise ValueError(msg)
             box += (box[0] + size[0], box[1] + size[1])
 
         if isinstance(im, str):
@@ -1730,15 +1745,20 @@ class Image:
         """
 
         if not isinstance(source, (list, tuple)):
-            raise ValueError("Source must be a tuple")
+            msg = "Source must be a tuple"
+            raise ValueError(msg)
         if not isinstance(dest, (list, tuple)):
-            raise ValueError("Destination must be a tuple")
+            msg = "Destination must be a tuple"
+            raise ValueError(msg)
         if not len(source) in (2, 4):
-            raise ValueError("Source must be a 2 or 4-tuple")
+            msg = "Source must be a 2 or 4-tuple"
+            raise ValueError(msg)
         if not len(dest) == 2:
-            raise ValueError("Destination must be a 2-tuple")
+            msg = "Destination must be a 2-tuple"
+            raise ValueError(msg)
         if min(source) < 0:
-            raise ValueError("Source must be non-negative")
+            msg = "Source must be non-negative"
+            raise ValueError(msg)
 
         if len(source) == 2:
             source = source + im.size
@@ -1803,7 +1823,8 @@ class Image:
 
         if self.mode == "F":
             # FIXME: _imaging returns a confusing error message for this case
-            raise ValueError("point operation not supported for this mode")
+            msg = "point operation not supported for this mode"
+            raise ValueError(msg)
 
         if mode != "F":
             lut = [round(i) for i in lut]
@@ -1837,7 +1858,8 @@ class Image:
                 self.pyaccess = None
                 self.mode = self.im.mode
             except KeyError as e:
-                raise ValueError("illegal image mode") from e
+                msg = "illegal image mode"
+                raise ValueError(msg) from e
 
         if self.mode in ("LA", "PA"):
             band = 1
@@ -1847,7 +1869,8 @@ class Image:
         if isImageType(alpha):
             # alpha layer
             if alpha.mode not in ("1", "L"):
-                raise ValueError("illegal image mode")
+                msg = "illegal image mode"
+                raise ValueError(msg)
             alpha.load()
             if alpha.mode == "1":
                 alpha = alpha.convert("L")
@@ -1903,7 +1926,8 @@ class Image:
         from . import ImagePalette
 
         if self.mode not in ("L", "LA", "P", "PA"):
-            raise ValueError("illegal image mode")
+            msg = "illegal image mode"
+            raise ValueError(msg)
         if isinstance(data, ImagePalette.ImagePalette):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
@@ -1972,7 +1996,8 @@ class Image:
         from . import ImagePalette
 
         if self.mode not in ("L", "P"):
-            raise ValueError("illegal image mode")
+            msg = "illegal image mode"
+            raise ValueError(msg)
 
         bands = 3
         palette_mode = "RGB"
@@ -2104,7 +2129,7 @@ class Image:
             Resampling.BOX,
             Resampling.HAMMING,
         ):
-            message = f"Unknown resampling filter ({resample})."
+            msg = f"Unknown resampling filter ({resample})."
 
             filters = [
                 f"{filter[1]} ({filter[0]})"
@@ -2117,12 +2142,12 @@ class Image:
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
                 )
             ]
-            raise ValueError(
-                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
-            )
+            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            raise ValueError(msg)
 
         if reducing_gap is not None and reducing_gap < 1.0:
-            raise ValueError("reducing_gap must be 1.0 or greater")
+            msg = "reducing_gap must be 1.0 or greater"
+            raise ValueError(msg)
 
         size = tuple(size)
 
@@ -2380,7 +2405,8 @@ class Image:
             try:
                 format = EXTENSION[ext]
             except KeyError as e:
-                raise ValueError(f"unknown file extension: {ext}") from e
+                msg = f"unknown file extension: {ext}"
+                raise ValueError(msg) from e
 
         if format.upper() not in SAVE:
             init()
@@ -2494,7 +2520,8 @@ class Image:
             try:
                 channel = self.getbands().index(channel)
             except ValueError as e:
-                raise ValueError(f'The image has no channel "{channel}"') from e
+                msg = f'The image has no channel "{channel}"'
+                raise ValueError(msg) from e
 
         return self._new(self.im.getband(channel))
 
@@ -2665,7 +2692,8 @@ class Image:
             method, data = method.getdata()
 
         if data is None:
-            raise ValueError("missing method data")
+            msg = "missing method data"
+            raise ValueError(msg)
 
         im = new(self.mode, size, fillcolor)
         if self.mode == "P" and self.palette:
@@ -2726,7 +2754,8 @@ class Image:
             )
 
         else:
-            raise ValueError("unknown transformation method")
+            msg = "unknown transformation method"
+            raise ValueError(msg)
 
         if resample not in (
             Resampling.NEAREST,
@@ -2734,13 +2763,13 @@ class Image:
             Resampling.BICUBIC,
         ):
             if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
-                message = {
+                msg = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
                 }[resample] + f" ({resample}) cannot be used."
             else:
-                message = f"Unknown resampling filter ({resample})."
+                msg = f"Unknown resampling filter ({resample})."
 
             filters = [
                 f"{filter[1]} ({filter[0]})"
@@ -2750,9 +2779,8 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                 )
             ]
-            raise ValueError(
-                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
-            )
+            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            raise ValueError(msg)
 
         image.load()
 
@@ -2791,7 +2819,8 @@ class Image:
         from . import ImageQt
 
         if not ImageQt.qt_is_installed:
-            raise ImportError("Qt bindings are not installed")
+            msg = "Qt bindings are not installed"
+            raise ImportError(msg)
         return ImageQt.toqimage(self)
 
     def toqpixmap(self):
@@ -2799,7 +2828,8 @@ class Image:
         from . import ImageQt
 
         if not ImageQt.qt_is_installed:
-            raise ImportError("Qt bindings are not installed")
+            msg = "Qt bindings are not installed"
+            raise ImportError(msg)
         return ImageQt.toqpixmap(self)
 
 
@@ -2847,11 +2877,14 @@ def _check_size(size):
     """
 
     if not isinstance(size, (list, tuple)):
-        raise ValueError("Size must be a tuple")
+        msg = "Size must be a tuple"
+        raise ValueError(msg)
     if len(size) != 2:
-        raise ValueError("Size must be a tuple of length 2")
+        msg = "Size must be a tuple of length 2"
+        raise ValueError(msg)
     if size[0] < 0 or size[1] < 0:
-        raise ValueError("Width and height must be >= 0")
+        msg = "Width and height must be >= 0"
+        raise ValueError(msg)
 
     return True
 
@@ -3037,11 +3070,13 @@ def fromarray(obj, mode=None):
         try:
             typekey = (1, 1) + shape[2:], arr["typestr"]
         except KeyError as e:
-            raise TypeError("Cannot handle this data type") from e
+            msg = "Cannot handle this data type"
+            raise TypeError(msg) from e
         try:
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError as e:
-            raise TypeError("Cannot handle this data type: %s, %s" % typekey) from e
+            msg = "Cannot handle this data type: %s, %s" % typekey
+            raise TypeError(msg) from e
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
@@ -3051,7 +3086,8 @@ def fromarray(obj, mode=None):
     else:
         ndmax = 4
     if ndim > ndmax:
-        raise ValueError(f"Too many dimensions: {ndim} > {ndmax}.")
+        msg = f"Too many dimensions: {ndim} > {ndmax}."
+        raise ValueError(msg)
 
     size = 1 if ndim == 1 else shape[1], shape[0]
     if strides is not None:
@@ -3068,7 +3104,8 @@ def fromqimage(im):
     from . import ImageQt
 
     if not ImageQt.qt_is_installed:
-        raise ImportError("Qt bindings are not installed")
+        msg = "Qt bindings are not installed"
+        raise ImportError(msg)
     return ImageQt.fromqimage(im)
 
 
@@ -3077,7 +3114,8 @@ def fromqpixmap(im):
     from . import ImageQt
 
     if not ImageQt.qt_is_installed:
-        raise ImportError("Qt bindings are not installed")
+        msg = "Qt bindings are not installed"
+        raise ImportError(msg)
     return ImageQt.fromqpixmap(im)
 
 
@@ -3115,10 +3153,11 @@ def _decompression_bomb_check(size):
     pixels = size[0] * size[1]
 
     if pixels > 2 * MAX_IMAGE_PIXELS:
-        raise DecompressionBombError(
+        msg = (
             f"Image size ({pixels} pixels) exceeds limit of {2 * MAX_IMAGE_PIXELS} "
             "pixels, could be decompression bomb DOS attack."
         )
+        raise DecompressionBombError(msg)
 
     if pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
@@ -3158,17 +3197,20 @@ def open(fp, mode="r", formats=None):
     """
 
     if mode != "r":
-        raise ValueError(f"bad mode {repr(mode)}")
+        msg = f"bad mode {repr(mode)}"
+        raise ValueError(msg)
     elif isinstance(fp, io.StringIO):
-        raise ValueError(
+        msg = (
             "StringIO cannot be used to open an image. "
             "Binary data must be used instead."
         )
+        raise ValueError(msg)
 
     if formats is None:
         formats = ID
     elif not isinstance(formats, (list, tuple)):
-        raise TypeError("formats must be a list or tuple")
+        msg = "formats must be a list or tuple"
+        raise TypeError(msg)
 
     exclusive_fp = False
     filename = ""
@@ -3233,9 +3275,8 @@ def open(fp, mode="r", formats=None):
         fp.close()
     for message in accept_warnings:
         warnings.warn(message)
-    raise UnidentifiedImageError(
-        "cannot identify image file %r" % (filename if filename else fp)
-    )
+    msg = "cannot identify image file %r" % (filename if filename else fp)
+    raise UnidentifiedImageError(msg)
 
 
 #
@@ -3326,12 +3367,15 @@ def merge(mode, bands):
     """
 
     if getmodebands(mode) != len(bands) or "*" in mode:
-        raise ValueError("wrong number of bands")
+        msg = "wrong number of bands"
+        raise ValueError(msg)
     for band in bands[1:]:
         if band.mode != getmodetype(mode):
-            raise ValueError("mode mismatch")
+            msg = "mode mismatch"
+            raise ValueError(msg)
         if band.size != bands[0].size:
-            raise ValueError("size mismatch")
+            msg = "size mismatch"
+            raise ValueError(msg)
     for band in bands:
         band.load()
     return bands[0]._new(core.merge(mode, *[b.im for b in bands]))

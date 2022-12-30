@@ -39,7 +39,8 @@ class _Operand:
             elif im1.im.mode in ("I", "F"):
                 return im1.im
             else:
-                raise ValueError(f"unsupported mode: {im1.im.mode}")
+                msg = f"unsupported mode: {im1.im.mode}"
+                raise ValueError(msg)
         else:
             # argument was a constant
             if _isconstant(im1) and self.im.mode in ("1", "L", "I"):
@@ -56,7 +57,8 @@ class _Operand:
             try:
                 op = getattr(_imagingmath, op + "_" + im1.mode)
             except AttributeError as e:
-                raise TypeError(f"bad operand type for '{op}'") from e
+                msg = f"bad operand type for '{op}'"
+                raise TypeError(msg) from e
             _imagingmath.unop(op, out.im.id, im1.im.id)
         else:
             # binary operation
@@ -80,7 +82,8 @@ class _Operand:
             try:
                 op = getattr(_imagingmath, op + "_" + im1.mode)
             except AttributeError as e:
-                raise TypeError(f"bad operand type for '{op}'") from e
+                msg = f"bad operand type for '{op}'"
+                raise TypeError(msg) from e
             _imagingmath.binop(op, out.im.id, im1.im.id, im2.im.id)
         return _Operand(out)
 
@@ -249,7 +252,8 @@ def eval(expression, _dict={}, **kw):
 
         for name in code.co_names:
             if name not in args and name != "abs":
-                raise ValueError(f"'{name}' not allowed")
+                msg = f"'{name}' not allowed"
+                raise ValueError(msg)
 
     scan(compiled_code)
     out = builtins.eval(expression, {"__builtins": {"abs": abs}}, args)

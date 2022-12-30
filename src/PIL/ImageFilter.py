@@ -28,7 +28,8 @@ class MultibandFilter(Filter):
 class BuiltinFilter(MultibandFilter):
     def filter(self, image):
         if image.mode == "P":
-            raise ValueError("cannot filter palette images")
+            msg = "cannot filter palette images"
+            raise ValueError(msg)
         return image.filter(*self.filterargs)
 
 
@@ -57,7 +58,8 @@ class Kernel(BuiltinFilter):
             # default scale is sum of kernel
             scale = functools.reduce(lambda a, b: a + b, kernel)
         if size[0] * size[1] != len(kernel):
-            raise ValueError("not enough coefficients in kernel")
+            msg = "not enough coefficients in kernel"
+            raise ValueError(msg)
         self.filterargs = size, scale, offset, kernel
 
 
@@ -80,7 +82,8 @@ class RankFilter(Filter):
 
     def filter(self, image):
         if image.mode == "P":
-            raise ValueError("cannot filter palette images")
+            msg = "cannot filter palette images"
+            raise ValueError(msg)
         image = image.expand(self.size // 2, self.size // 2)
         return image.rankfilter(self.size, self.rank)
 
@@ -355,7 +358,8 @@ class Color3DLUT(MultibandFilter):
 
     def __init__(self, size, table, channels=3, target_mode=None, **kwargs):
         if channels not in (3, 4):
-            raise ValueError("Only 3 or 4 output channels are supported")
+            msg = "Only 3 or 4 output channels are supported"
+            raise ValueError(msg)
         self.size = size = self._check_size(size)
         self.channels = channels
         self.mode = target_mode
@@ -395,19 +399,21 @@ class Color3DLUT(MultibandFilter):
                 table, raw_table = [], table
                 for pixel in raw_table:
                     if len(pixel) != channels:
-                        raise ValueError(
+                        msg = (
                             "The elements of the table should "
-                            "have a length of {}.".format(channels)
+                            f"have a length of {channels}."
                         )
+                        raise ValueError(msg)
                     table.extend(pixel)
 
         if wrong_size or len(table) != items * channels:
-            raise ValueError(
+            msg = (
                 "The table should have either channels * size**3 float items "
                 "or size**3 items of channels-sized tuples with floats. "
                 f"Table should be: {channels}x{size[0]}x{size[1]}x{size[2]}. "
                 f"Actual length: {len(table)}"
             )
+            raise ValueError(msg)
         self.table = table
 
     @staticmethod
@@ -415,15 +421,15 @@ class Color3DLUT(MultibandFilter):
         try:
             _, _, _ = size
         except ValueError as e:
-            raise ValueError(
-                "Size should be either an integer or a tuple of three integers."
-            ) from e
+            msg = "Size should be either an integer or a tuple of three integers."
+            raise ValueError(msg) from e
         except TypeError:
             size = (size, size, size)
         size = [int(x) for x in size]
         for size_1d in size:
             if not 2 <= size_1d <= 65:
-                raise ValueError("Size should be in [2, 65] range.")
+                msg = "Size should be in [2, 65] range."
+                raise ValueError(msg)
         return size
 
     @classmethod
@@ -441,7 +447,8 @@ class Color3DLUT(MultibandFilter):
         """
         size_1d, size_2d, size_3d = cls._check_size(size)
         if channels not in (3, 4):
-            raise ValueError("Only 3 or 4 output channels are supported")
+            msg = "Only 3 or 4 output channels are supported"
+            raise ValueError(msg)
 
         table = [0] * (size_1d * size_2d * size_3d * channels)
         idx_out = 0
@@ -481,7 +488,8 @@ class Color3DLUT(MultibandFilter):
                             lookup table.
         """
         if channels not in (None, 3, 4):
-            raise ValueError("Only 3 or 4 output channels are supported")
+            msg = "Only 3 or 4 output channels are supported"
+            raise ValueError(msg)
         ch_in = self.channels
         ch_out = channels or ch_in
         size_1d, size_2d, size_3d = self.size
