@@ -22,8 +22,8 @@ jobs:
       fail-fast: false
       matrix:
         python: [
-          "pypy3.8-7.3.10",
-          "pypy3.9-7.3.10",
+          "pypy3.8-7.3.11",
+          "pypy3.9-7.3.11",
           "3.7",
           "3.8",
           "3.9",
@@ -34,9 +34,9 @@ jobs:
         exclude:
           - python: "3.7"
             platform: "arm64"
-          - python: "pypy3.8-7.3.10"
+          - python: "pypy3.8-7.3.11"
             platform: "arm64"
-          - python: "pypy3.9-7.3.10"
+          - python: "pypy3.9-7.3.11"
             platform: "arm64"
     env:
       BUILD_COMMIT: ${{ inputs.build-commit }}
