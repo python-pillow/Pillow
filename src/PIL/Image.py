@@ -2129,7 +2129,7 @@ class Image:
             Resampling.BOX,
             Resampling.HAMMING,
         ):
-            message = f"Unknown resampling filter ({resample})."
+            msg = f"Unknown resampling filter ({resample})."
 
             filters = [
                 f"{filter[1]} ({filter[0]})"
@@ -2142,9 +2142,8 @@ class Image:
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
                 )
             ]
-            raise ValueError(
-                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
-            )
+            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            raise ValueError(msg)
 
         if reducing_gap is not None and reducing_gap < 1.0:
             msg = "reducing_gap must be 1.0 or greater"
@@ -2764,13 +2763,13 @@ class Image:
             Resampling.BICUBIC,
         ):
             if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
-                message = {
+                msg = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
                 }[resample] + f" ({resample}) cannot be used."
             else:
-                message = f"Unknown resampling filter ({resample})."
+                msg = f"Unknown resampling filter ({resample})."
 
             filters = [
                 f"{filter[1]} ({filter[0]})"
@@ -2780,9 +2779,8 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                 )
             ]
-            raise ValueError(
-                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
-            )
+            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            raise ValueError(msg)
 
         image.load()
 
@@ -3077,7 +3075,8 @@ def fromarray(obj, mode=None):
         try:
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError as e:
-            raise TypeError("Cannot handle this data type: %s, %s" % typekey) from e
+            msg = "Cannot handle this data type: %s, %s" % typekey
+            raise TypeError(msg) from e
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
@@ -3276,9 +3275,8 @@ def open(fp, mode="r", formats=None):
         fp.close()
     for message in accept_warnings:
         warnings.warn(message)
-    raise UnidentifiedImageError(
-        "cannot identify image file %r" % (filename if filename else fp)
-    )
+    msg = "cannot identify image file %r" % (filename if filename else fp)
+    raise UnidentifiedImageError(msg)
 
 
 #

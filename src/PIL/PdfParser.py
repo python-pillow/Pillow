@@ -817,10 +817,10 @@ class PdfParser:
                 try:
                     stream_len = int(result[b"Length"])
                 except (TypeError, KeyError, ValueError) as e:
-                    raise PdfFormatError(
-                        "bad or missing Length in stream dict (%r)"
-                        % result.get(b"Length", None)
-                    ) from e
+                    msg = "bad or missing Length in stream dict (%r)" % result.get(
+                        b"Length", None
+                    )
+                    raise PdfFormatError(msg) from e
                 stream_data = data[m.end() : m.end() + stream_len]
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m, "stream end not found")
@@ -874,7 +874,8 @@ class PdfParser:
         if m:
             return cls.get_literal_string(data, m.end())
         # return None, offset  # fallback (only for debugging)
-        raise PdfFormatError("unrecognized object: " + repr(data[offset : offset + 32]))
+        msg = "unrecognized object: " + repr(data[offset : offset + 32])
+        raise PdfFormatError(msg)
 
     re_lit_str_token = re.compile(
         rb"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))"

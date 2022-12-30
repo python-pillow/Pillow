@@ -491,7 +491,8 @@ def extract_dep(url, filename):
                     raise RuntimeError(msg)
             tgz.extractall(sources_dir)
     else:
-        raise RuntimeError("Unknown archive type: " + filename)
+        msg = "Unknown archive type: " + filename
+        raise RuntimeError(msg)
 
 
 def write_script(name, lines):
@@ -628,7 +629,8 @@ if __name__ == "__main__":
         elif arg == "--srcdir":
             sources_dir = os.path.sep + "src"
         else:
-            raise ValueError("Unknown parameter: " + arg)
+            msg = "Unknown parameter: " + arg
+            raise ValueError(msg)
 
     # dependency cache directory
     os.makedirs(depends_dir, exist_ok=True)

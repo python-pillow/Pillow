@@ -201,9 +201,8 @@ class ImImageFile(ImageFile.ImageFile):
 
             else:
 
-                raise SyntaxError(
-                    "Syntax error in IM header: " + s.decode("ascii", "replace")
-                )
+                msg = "Syntax error in IM header: " + s.decode("ascii", "replace")
+                raise SyntaxError(msg)
 
         if not n:
             msg = "Not an IM file"

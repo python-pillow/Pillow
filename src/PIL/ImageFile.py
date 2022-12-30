@@ -63,12 +63,13 @@ Dict of known error codes returned from :meth:`.PyDecoder.decode`,
 
 def raise_oserror(error):
     try:
-        message = Image.core.getcodecstatus(error)
+        msg = Image.core.getcodecstatus(error)
     except AttributeError:
-        message = ERRORS.get(error)
-    if not message:
-        message = f"decoder error {error}"
-    raise OSError(message + " when reading image file")
+        msg = ERRORS.get(error)
+    if not msg:
+        msg = f"decoder error {error}"
+    msg += " when reading image file"
+    raise OSError(msg)
 
 
 def _tilesort(t):
