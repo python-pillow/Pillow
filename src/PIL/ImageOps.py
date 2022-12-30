@@ -49,13 +49,15 @@ def _color(color, mode):
 def _lut(image, lut):
     if image.mode == "P":
         # FIXME: apply to lookup table, not image data
-        raise NotImplementedError("mode P support coming soon")
+        msg = "mode P support coming soon"
+        raise NotImplementedError(msg)
     elif image.mode in ("L", "RGB"):
         if image.mode == "RGB" and len(lut) == 256:
             lut = lut + lut + lut
         return image.point(lut)
     else:
-        raise OSError("not supported for this image mode")
+        msg = "not supported for this image mode"
+        raise OSError(msg)
 
 
 #
@@ -332,7 +334,8 @@ def scale(image, factor, resample=Image.Resampling.BICUBIC):
     if factor == 1:
         return image.copy()
     elif factor <= 0:
-        raise ValueError("the factor must be greater than 0")
+        msg = "the factor must be greater than 0"
+        raise ValueError(msg)
     else:
         size = (round(factor * image.width), round(factor * image.height))
         return image.resize(size, resample)

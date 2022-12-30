@@ -85,7 +85,8 @@ class GifImageFile(ImageFile.ImageFile):
         # Screen
         s = self.fp.read(13)
         if not _accept(s):
-            raise SyntaxError("not a GIF file")
+            msg = "not a GIF file"
+            raise SyntaxError(msg)
 
         self.info["version"] = s[:6]
         self._size = i16(s, 6), i16(s, 8)
@@ -152,7 +153,8 @@ class GifImageFile(ImageFile.ImageFile):
                 self._seek(f)
             except EOFError as e:
                 self.seek(last_frame)
-                raise EOFError("no more images in GIF file") from e
+                msg = "no more images in GIF file"
+                raise EOFError(msg) from e
 
     def _seek(self, frame, update_image=True):
 
@@ -171,7 +173,8 @@ class GifImageFile(ImageFile.ImageFile):
                 self.load()
 
         if frame != self.__frame + 1:
-            raise ValueError(f"cannot seek to frame {frame}")
+            msg = f"cannot seek to frame {frame}"
+            raise ValueError(msg)
 
         self.fp = self._fp
         if self.__offset:

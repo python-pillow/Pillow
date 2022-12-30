@@ -64,6 +64,12 @@ Pillow also provides limited support for a few additional modes, including:
     * ``BGR;24`` (24-bit reversed true colour)
     * ``BGR;32`` (32-bit reversed true colour)
 
+Premultiplied alpha is where the values for each other channel have been
+multiplied by the alpha. For example, an RGBA pixel of ``(10, 20, 30, 127)``
+would convert to an RGBa pixel of ``(5, 10, 15, 127)``. The values of the R,
+G and B channels are halved as a result of the half transparency in the alpha
+channel.
+
 Apart from these additional modes, Pillow doesn't yet support multichannel
 images with a depth of more than 8 bits per channel.
 
@@ -110,6 +116,18 @@ How such information is handled when loading and saving image files is up to
 the file format handler (see the chapter on :ref:`image-file-formats`). Most
 handlers add properties to the :py:attr:`~PIL.Image.Image.info` attribute when
 loading an image, but ignore it when saving images.
+
+Transparency
+------------
+
+If an image does not have an alpha band, transparency may be specified in the
+:py:attr:`~PIL.Image.Image.info` attribute with a "transparency" key.
+
+Most of the time, the "transparency" value is a single integer, describing
+which pixel value is transparent in a "1", "L", "I" or "P" mode image.
+However, PNG images may have three values, one for each channel in an "RGB"
+mode image, or can have a byte string for a "P" mode image, to specify the
+alpha value for each palette entry.
 
 Orientation
 -----------

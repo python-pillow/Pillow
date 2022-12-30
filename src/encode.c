@@ -1212,11 +1212,12 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     char *cinema_mode = "no";
     OPJ_CINEMA_MODE cine_mode;
     char mct = 0;
+    int sgnd = 0;
     Py_ssize_t fd = -1;
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbn",
+            "ss|OOOsOnOOOssbbn",
             &mode,
             &format,
             &offset,
@@ -1231,6 +1232,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             &progression,
             &cinema_mode,
             &mct,
+            &sgnd,
             &fd)) {
         return NULL;
     }
@@ -1329,6 +1331,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
     context->mct = mct;
+    context->sgnd = sgnd;
 
     return (PyObject *)encoder;
 }

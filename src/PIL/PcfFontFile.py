@@ -63,7 +63,8 @@ class PcfFontFile(FontFile.FontFile):
 
         magic = l32(fp.read(4))
         if magic != PCF_MAGIC:
-            raise SyntaxError("not a PCF file")
+            msg = "not a PCF file"
+            raise SyntaxError(msg)
 
         super().__init__()
 
@@ -186,7 +187,8 @@ class PcfFontFile(FontFile.FontFile):
         nbitmaps = i32(fp.read(4))
 
         if nbitmaps != len(metrics):
-            raise OSError("Wrong number of bitmaps")
+            msg = "Wrong number of bitmaps"
+            raise OSError(msg)
 
         offsets = []
         for i in range(nbitmaps):

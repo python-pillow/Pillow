@@ -44,13 +44,13 @@ class BoxReader:
 
     def _read_bytes(self, num_bytes):
         if not self._can_read(num_bytes):
-            raise SyntaxError("Not enough data in header")
+            msg = "Not enough data in header"
+            raise SyntaxError(msg)
 
         data = self.fp.read(num_bytes)
         if len(data) < num_bytes:
-            raise OSError(
-                f"Expected to read {num_bytes} bytes but only got {len(data)}."
-            )
+            msg = f"Expected to read {num_bytes} bytes but only got {len(data)}."
+            raise OSError(msg)
 
         if self.remaining_in_box > 0:
             self.remaining_in_box -= num_bytes
@@ -87,7 +87,8 @@ class BoxReader:
             hlen = 8
 
         if lbox < hlen or not self._can_read(lbox - hlen):
-            raise SyntaxError("Invalid header length")
+            msg = "Invalid header length"
+            raise SyntaxError(msg)
 
         self.remaining_in_box = lbox - hlen
         return tbox
@@ -189,7 +190,8 @@ def _parse_jp2_header(fp):
                     break
 
     if size is None or mode is None:
-        raise SyntaxError("Malformed JP2 header")
+        msg = "Malformed JP2 header"
+        raise SyntaxError(msg)
 
     return size, mode, mimetype, dpi
 
@@ -217,10 +219,12 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 if dpi is not None:
                     self.info["dpi"] = dpi
             else:
-                raise SyntaxError("not a JPEG 2000 file")
+                msg = "not a JPEG 2000 file"
+                raise SyntaxError(msg)
 
         if self.size is None or self.mode is None:
-            raise SyntaxError("unable to determine size/mode")
+            msg = "unable to determine size/mode"
+            raise SyntaxError(msg)
 
         self._reduce = 0
         self.layers = 0
@@ -312,7 +316,8 @@ def _save(im, fp, filename):
             ]
         )
     ):
-        raise ValueError("quality_layers must be a sequence of numbers")
+        msg = "quality_layers must be a sequence of numbers"
+        raise ValueError(msg)
 
     num_resolutions = info.get("num_resolutions", 0)
     cblk_size = info.get("codeblock_size", None)
@@ -321,6 +326,7 @@ def _save(im, fp, filename):
     progression = info.get("progression", "LRCP")
     cinema_mode = info.get("cinema_mode", "no")
     mct = info.get("mct", 0)
+    signed = info.get("signed", False)
     fd = -1
 
     if hasattr(fp, "fileno"):
@@ -342,6 +348,7 @@ def _save(im, fp, filename):
         progression,
         cinema_mode,
         mct,
+        signed,
         fd,
     )
 

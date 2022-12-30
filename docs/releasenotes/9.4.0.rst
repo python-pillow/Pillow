@@ -45,6 +45,12 @@ removes the hidden RGB values for better compression by default in libwebp 0.5
 or later. By setting this option to ``True``, the encoder will keep the hidden
 RGB values.
 
+Added ``signed`` option when saving JPEG2000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the ``signed`` keyword argument is present and true when saving JPEG2000
+images, then tell the encoder to save the image as signed.
+
 Added IFD, Interop and LightSource ExifTags enums
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

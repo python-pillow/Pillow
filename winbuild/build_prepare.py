@@ -289,7 +289,7 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.13/lcms2-2.14.tar.gz/download",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.14/lcms2-2.14.tar.gz/download",
         "filename": "lcms2-2.14.tar.gz",
         "dir": "lcms2-2.14",
         "license": "COPYING",
@@ -319,6 +319,11 @@ deps = {
         "filename": "openjpeg-2.5.0.tar.gz",
         "dir": "openjpeg-2.5.0",
         "license": "LICENSE",
+        "patch": {
+            r"src\lib\openjp2\ht_dec.c": {
+                "#ifdef OPJ_COMPILER_MSVC\n    return (OPJ_UINT32)__popcnt(val);": "#if defined(OPJ_COMPILER_MSVC) && (defined(_M_IX86) || defined(_M_AMD64))\n    return (OPJ_UINT32)__popcnt(val);",  # noqa: E501
+            }
+        },
         "build": [
             cmd_cmake(("-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
@@ -473,7 +478,8 @@ def extract_dep(url, filename):
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
                 if sources_dir_abs != member_prefix:
-                    raise RuntimeError("Attempted Path Traversal in Zip File")
+                    msg = "Attempted Path Traversal in Zip File"
+                    raise RuntimeError(msg)
             zf.extractall(sources_dir)
     elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
         with tarfile.open(file, "r:gz") as tgz:
@@ -481,10 +487,12 @@ def extract_dep(url, filename):
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
                 if sources_dir_abs != member_prefix:
-                    raise RuntimeError("Attempted Path Traversal in Tar File")
+                    msg = "Attempted Path Traversal in Tar File"
+                    raise RuntimeError(msg)
             tgz.extractall(sources_dir)
     else:
-        raise RuntimeError("Unknown archive type: " + filename)
+        msg = "Unknown archive type: " + filename
+        raise RuntimeError(msg)
 
 
 def write_script(name, lines):
@@ -621,7 +629,8 @@ if __name__ == "__main__":
         elif arg == "--srcdir":
             sources_dir = os.path.sep + "src"
         else:
-            raise ValueError("Unknown parameter: " + arg)
+            msg = "Unknown parameter: " + arg
+            raise ValueError(msg)
 
     # dependency cache directory
     os.makedirs(depends_dir, exist_ok=True)
@@ -637,9 +646,8 @@ if __name__ == "__main__":
 
     msvs = find_msvs()
     if msvs is None:
-        raise RuntimeError(
-            "Visual Studio not found. Please install Visual Studio 2017 or newer."
-        )
+        msg = "Visual Studio not found. Please install Visual Studio 2017 or newer."
+        raise RuntimeError(msg)
     print("Found Visual Studio at:", msvs["vs_dir"])
 
     print("Using output directory:", build_dir)

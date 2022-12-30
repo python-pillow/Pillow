@@ -43,14 +43,17 @@ def deprecate(
     if when is None:
         removed = "a future version"
     elif when <= int(__version__.split(".")[0]):
-        raise RuntimeError(f"{deprecated} {is_} deprecated and should be removed.")
+        msg = f"{deprecated} {is_} deprecated and should be removed."
+        raise RuntimeError(msg)
     elif when == 10:
         removed = "Pillow 10 (2023-07-01)"
     else:
-        raise ValueError(f"Unknown removal version, update {__name__}?")
+        msg = f"Unknown removal version, update {__name__}?"
+        raise ValueError(msg)
 
     if replacement and action:
-        raise ValueError("Use only one of 'replacement' and 'action'")
+        msg = "Use only one of 'replacement' and 'action'"
+        raise ValueError(msg)
 
     if replacement:
         action = f". Use {replacement} instead."

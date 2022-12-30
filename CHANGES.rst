@@ -5,6 +5,30 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Improve exception traceback readability #6836
+  [hugovk, radarhere]
+
+- Do not attempt to read IFD1 if absent #6840
+  [radarhere]
+
+- Fixed writing int as ASCII tag #6800
+  [radarhere]
+
+- If available, use wl-paste or xclip for grabclipboard() on Linux #6783
+  [radarhere]
+
+- Added signed option when saving JPEG2000 images #6709
+  [radarhere]
+
+- Patch OpenJPEG to include ARM64 fix #6718
+  [radarhere]
+
+- Added support for I;16 modes in putdata() #6825
+  [radarhere]
+
+- Added conversion from RGBa to RGB #6708
+  [radarhere]
+
 - Added DDS support for uncompressed L and LA images #6820
   [radarhere, REDxEYE]
 
