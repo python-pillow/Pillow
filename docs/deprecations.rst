@@ -76,8 +76,9 @@ A number of constants have been deprecated and will be removed in Pillow 10.0.0
 
 .. note::
 
-    Additional ``Image`` constants were deprecated in Pillow 9.1.0, but they
-    were later restored in Pillow 9.4.0. See  :ref:`restored-image-constants`
+    Additional ``Image`` constants were deprecated in Pillow 9.1.0, but that
+    was reversed in Pillow 9.4.0 and those constants will now remain available.
+    See :ref:`restored-image-constants`
 
 =====================================================  ============================================================
 Deprecated                                             Use instead

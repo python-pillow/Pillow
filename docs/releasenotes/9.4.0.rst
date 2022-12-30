@@ -115,8 +115,8 @@ format, known as "luminance" textures.
 Constants
 ^^^^^^^^^
 
-In Pillow 9.1.0, the following constants were deprecated. Those deprecations have now
-been restored.
+In Pillow 9.1.0, the following constants were deprecated. That has been reversed and
+these constants will now remain available.
 
 - ``Image.NONE``
 - ``Image.NEAREST``
