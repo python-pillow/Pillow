@@ -24,9 +24,10 @@ To get the number and names of bands in an image, use the
 Modes
 -----
 
-The ``mode`` of an image is a string which defines the type and depth of a pixel in the image.
-Each pixel uses the full range of the bit depth. So a 1-bit pixel has a range
-of 0-1, an 8-bit pixel has a range of 0-255 and so on. The current release
+The ``mode`` of an image is a string which defines the type and depth of a pixel in the
+image. Each pixel uses the full range of the bit depth. So a 1-bit pixel has a range of
+0-1, an 8-bit pixel has a range of 0-255, a 32-signed integer pixel has the range of
+INT32 and a 32-bit floating point pixel has the range of FLOAT32. The current release
 supports the following standard modes:
 
     * ``1`` (1-bit pixels, black and white, stored with one pixel per byte)
@@ -41,6 +42,9 @@ supports the following standard modes:
 
     * ``LAB`` (3x8-bit pixels, the L*a*b color space)
     * ``HSV`` (3x8-bit pixels, Hue, Saturation, Value color space)
+
+      * Hue's range of 0-255 is a scaled version of 0 degrees <= Hue < 360 degrees
+
     * ``I`` (32-bit signed integer pixels)
     * ``F`` (32-bit floating point pixels)
 
@@ -60,7 +64,16 @@ Pillow also provides limited support for a few additional modes, including:
     * ``BGR;24`` (24-bit reversed true colour)
     * ``BGR;32`` (32-bit reversed true colour)
 
-However, Pillow doesn’t support user-defined modes; if you need to handle band
+Premultiplied alpha is where the values for each other channel have been
+multiplied by the alpha. For example, an RGBA pixel of ``(10, 20, 30, 127)``
+would convert to an RGBa pixel of ``(5, 10, 15, 127)``. The values of the R,
+G and B channels are halved as a result of the half transparency in the alpha
+channel.
+
+Apart from these additional modes, Pillow doesn't yet support multichannel
+images with a depth of more than 8 bits per channel.
+
+Pillow also doesn’t support user-defined modes; if you need to handle band
 combinations that are not listed above, use a sequence of Image objects.
 
 You can read the mode of an image through the :py:attr:`~PIL.Image.Image.mode`
@@ -103,6 +116,18 @@ How such information is handled when loading and saving image files is up to
 the file format handler (see the chapter on :ref:`image-file-formats`). Most
 handlers add properties to the :py:attr:`~PIL.Image.Image.info` attribute when
 loading an image, but ignore it when saving images.
+
+Transparency
+------------
+
+If an image does not have an alpha band, transparency may be specified in the
+:py:attr:`~PIL.Image.Image.info` attribute with a "transparency" key.
+
+Most of the time, the "transparency" value is a single integer, describing
+which pixel value is transparent in a "1", "L", "I" or "P" mode image.
+However, PNG images may have three values, one for each channel in an "RGB"
+mode image, or can have a byte string for a "P" mode image, to specify the
+alpha value for each palette entry.
 
 Orientation
 -----------

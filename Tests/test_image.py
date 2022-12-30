@@ -7,7 +7,14 @@ import warnings
 
 import pytest
 
-from PIL import Image, ImageDraw, ImagePalette, UnidentifiedImageError, features
+from PIL import (
+    ExifTags,
+    Image,
+    ImageDraw,
+    ImagePalette,
+    UnidentifiedImageError,
+    features,
+)
 
 from .helper import (
     assert_image_equal,
@@ -129,8 +136,6 @@ class TestImage:
             im.size = (3, 4)
 
     def test_invalid_image(self):
-        import io
-
         im = io.BytesIO(b"")
         with pytest.raises(UnidentifiedImageError):
             with Image.open(im):
@@ -396,18 +401,12 @@ class TestImage:
     def test_registered_extensions_uninitialized(self):
         # Arrange
         Image._initialized = 0
-        extension = Image.EXTENSION
-        Image.EXTENSION = {}
 
         # Act
         Image.registered_extensions()
 
         # Assert
         assert Image._initialized == 2
-
-        # Restore the original state and assert
-        Image.EXTENSION = extension
-        assert Image.EXTENSION
 
     def test_registered_extensions(self):
         # Arrange
@@ -699,15 +698,15 @@ class TestImage:
     def test_empty_exif(self):
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
-        assert dict(exif) != {}
+        assert dict(exif)
 
         # Test that exif data is cleared after another load
         exif.load(None)
-        assert dict(exif) == {}
+        assert not dict(exif)
 
         # Test loading just the EXIF header
         exif.load(b"Exif\x00\x00")
-        assert dict(exif) == {}
+        assert not dict(exif)
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -810,6 +809,18 @@ class TestImage:
             reloaded_exif.load(exif.tobytes())
             assert reloaded_exif.get_ifd(0xA005) == exif.get_ifd(0xA005)
 
+    def test_exif_ifd1(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+            assert exif.get_ifd(ExifTags.IFD.IFD1) == {
+                513: 2036,
+                514: 5448,
+                259: 6,
+                296: 2,
+                282: 180.0,
+                283: 180.0,
+            }
+
     def test_exif_ifd(self):
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
@@ -839,6 +850,31 @@ class TestImage:
                 531: 1,
                 34665: 196,
             }
+
+    def test_exif_hide_offsets(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+
+        # Check offsets are present initially
+        assert 0x8769 in exif
+        for tag in (0xA005, 0x927C):
+            assert tag in exif.get_ifd(0x8769)
+        assert exif.get_ifd(0xA005)
+        loaded_exif = exif
+
+        with Image.open("Tests/images/flower.jpg") as im:
+            new_exif = im.getexif()
+
+            for exif in (loaded_exif, new_exif):
+                exif.hide_offsets()
+
+                # Assert they are hidden afterwards,
+                # but that the IFDs are still available
+                assert 0x8769 not in exif
+                assert exif.get_ifd(0x8769)
+                for tag in (0xA005, 0x927C):
+                    assert tag not in exif.get_ifd(0x8769)
+                assert exif.get_ifd(0xA005)
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size):

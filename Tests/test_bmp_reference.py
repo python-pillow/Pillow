@@ -35,6 +35,7 @@ def test_questionable():
         "pal8os2v2.bmp",
         "rgb24prof.bmp",
         "pal1p1.bmp",
+        "pal4rletrns.bmp",
         "pal8offs.bmp",
         "rgb24lprof.bmp",
         "rgb32fakealpha.bmp",

@@ -45,6 +45,7 @@ from . import Image, ImageFile, TiffImagePlugin
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._binary import o16be as o16
 from ._deprecate import deprecate
 from .JpegPresets import presets
 
@@ -89,6 +90,7 @@ def APP(self, marker):
         if "exif" not in self.info:
             # extract EXIF information (incomplete)
             self.info["exif"] = s  # FIXME: value will change
+            self._exif_offset = self.fp.tell() - n + 6
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
@@ -202,7 +204,8 @@ def SOF(self, marker):
 
     self.bits = s[0]
     if self.bits != 8:
-        raise SyntaxError(f"cannot handle {self.bits}-bit layers")
+        msg = f"cannot handle {self.bits}-bit layers"
+        raise SyntaxError(msg)
 
     self.layers = s[5]
     if self.layers == 1:
@@ -212,7 +215,8 @@ def SOF(self, marker):
     elif self.layers == 4:
         self.mode = "CMYK"
     else:
-        raise SyntaxError(f"cannot handle {self.layers}-layer images")
+        msg = f"cannot handle {self.layers}-layer images"
+        raise SyntaxError(msg)
 
     if marker in [0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE]:
         self.info["progressive"] = self.info["progression"] = 1
@@ -251,7 +255,8 @@ def DQT(self, marker):
         precision = 1 if (v // 16 == 0) else 2  # in bytes
         qt_length = 1 + precision * 64
         if len(s) < qt_length:
-            raise SyntaxError("bad quantization table marker")
+            msg = "bad quantization table marker"
+            raise SyntaxError(msg)
         data = array.array("B" if precision == 1 else "H", s[1:qt_length])
         if sys.byteorder == "little" and precision > 1:
             data.byteswap()  # the values are always big-endian
@@ -348,7 +353,8 @@ class JpegImageFile(ImageFile.ImageFile):
         s = self.fp.read(3)
 
         if not _accept(s):
-            raise SyntaxError("not a JPEG file")
+            msg = "not a JPEG file"
+            raise SyntaxError(msg)
         s = b"\xFF"
 
         # Create attributes
@@ -392,7 +398,8 @@ class JpegImageFile(ImageFile.ImageFile):
             elif i == 0xFF00:  # Skip extraneous data (escaped 0xFF)
                 s = self.fp.read(1)
             else:
-                raise SyntaxError("no marker found")
+                msg = "no marker found"
+                raise SyntaxError(msg)
 
     def load_read(self, read_bytes):
         """
@@ -456,7 +463,8 @@ class JpegImageFile(ImageFile.ImageFile):
         if os.path.exists(self.filename):
             subprocess.check_call(["djpeg", "-outfile", path, self.filename])
         else:
-            raise ValueError("Invalid Filename")
+            msg = "Invalid Filename"
+            raise ValueError(msg)
 
         try:
             with Image.open(path) as _im:
@@ -522,12 +530,14 @@ def _getmp(self):
         info.load(file_contents)
         mp = dict(info)
     except Exception as e:
-        raise SyntaxError("malformed MP Index (unreadable directory)") from e
+        msg = "malformed MP Index (unreadable directory)"
+        raise SyntaxError(msg) from e
     # it's an error not to have a number of images
     try:
         quant = mp[0xB001]
     except KeyError as e:
-        raise SyntaxError("malformed MP Index (no number of images)") from e
+        msg = "malformed MP Index (no number of images)"
+        raise SyntaxError(msg) from e
     # get MP entries
     mpentries = []
     try:
@@ -549,7 +559,8 @@ def _getmp(self):
             if mpentryattr["ImageDataFormat"] == 0:
                 mpentryattr["ImageDataFormat"] = "JPEG"
             else:
-                raise SyntaxError("unsupported picture format in MPO")
+                msg = "unsupported picture format in MPO"
+                raise SyntaxError(msg)
             mptypemap = {
                 0x000000: "Undefined",
                 0x010001: "Large Thumbnail (VGA Equivalent)",
@@ -564,7 +575,8 @@ def _getmp(self):
             mpentries.append(mpentry)
         mp[0xB002] = mpentries
     except KeyError as e:
-        raise SyntaxError("malformed MP Index (bad MP Entry)") from e
+        msg = "malformed MP Index (bad MP Entry)"
+        raise SyntaxError(msg) from e
     # Next we should try and parse the individual image unique ID list;
     # we don't because I've never seen this actually used in a real MPO
     # file and so can't test it.
@@ -624,12 +636,14 @@ def get_sampling(im):
 
 def _save(im, fp, filename):
     if im.width == 0 or im.height == 0:
-        raise ValueError("cannot write empty image as JPEG")
+        msg = "cannot write empty image as JPEG"
+        raise ValueError(msg)
 
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError as e:
-        raise OSError(f"cannot write mode {im.mode} as JPEG") from e
+        msg = f"cannot write mode {im.mode} as JPEG"
+        raise OSError(msg) from e
 
     info = im.encoderinfo
 
@@ -649,7 +663,8 @@ def _save(im, fp, filename):
         subsampling = preset.get("subsampling", -1)
         qtables = preset.get("quantization")
     elif not isinstance(quality, int):
-        raise ValueError("Invalid quality setting")
+        msg = "Invalid quality setting"
+        raise ValueError(msg)
     else:
         if subsampling in presets:
             subsampling = presets[subsampling].get("subsampling", -1)
@@ -668,7 +683,8 @@ def _save(im, fp, filename):
         subsampling = 2
     elif subsampling == "keep":
         if im.format != "JPEG":
-            raise ValueError("Cannot use 'keep' when original image is not a JPEG")
+            msg = "Cannot use 'keep' when original image is not a JPEG"
+            raise ValueError(msg)
         subsampling = get_sampling(im)
 
     def validate_qtables(qtables):
@@ -682,7 +698,8 @@ def _save(im, fp, filename):
                     for num in line.split("#", 1)[0].split()
                 ]
             except ValueError as e:
-                raise ValueError("Invalid quantization table") from e
+                msg = "Invalid quantization table"
+                raise ValueError(msg) from e
             else:
                 qtables = [lines[s : s + 64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
@@ -693,21 +710,24 @@ def _save(im, fp, filename):
             elif isinstance(qtables, tuple):
                 qtables = list(qtables)
             if not (0 < len(qtables) < 5):
-                raise ValueError("None or too many quantization tables")
+                msg = "None or too many quantization tables"
+                raise ValueError(msg)
             for idx, table in enumerate(qtables):
                 try:
                     if len(table) != 64:
                         raise TypeError
                     table = array.array("H", table)
                 except TypeError as e:
-                    raise ValueError("Invalid quantization table") from e
+                    msg = "Invalid quantization table"
+                    raise ValueError(msg) from e
                 else:
                     qtables[idx] = list(table)
             return qtables
 
     if qtables == "keep":
         if im.format != "JPEG":
-            raise ValueError("Cannot use 'keep' when original image is not a JPEG")
+            msg = "Cannot use 'keep' when original image is not a JPEG"
+            raise ValueError(msg)
         qtables = getattr(im, "quantization", None)
     qtables = validate_qtables(qtables)
 
@@ -724,7 +744,7 @@ def _save(im, fp, filename):
             icc_profile = icc_profile[MAX_DATA_BYTES_IN_MARKER:]
         i = 1
         for marker in markers:
-            size = struct.pack(">H", 2 + ICC_OVERHEAD_LEN + len(marker))
+            size = o16(2 + ICC_OVERHEAD_LEN + len(marker))
             extra += (
                 b"\xFF\xE2"
                 + size
@@ -734,6 +754,8 @@ def _save(im, fp, filename):
                 + marker
             )
             i += 1
+
+    comment = info.get("comment", im.info.get("comment"))
 
     # "progressive" is the official name, but older documentation
     # says "progression"
@@ -757,6 +779,7 @@ def _save(im, fp, filename):
         dpi[1],
         subsampling,
         qtables,
+        comment,
         extra,
         exif,
     )

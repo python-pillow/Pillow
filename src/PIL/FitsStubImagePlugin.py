@@ -67,7 +67,8 @@ class FITSStubImageFile(ImageFile.StubImageFile):
 
 
 def _save(im, fp, filename):
-    raise OSError("FITS save handler not installed")
+    msg = "FITS save handler not installed"
+    raise OSError(msg)
 
 
 # --------------------------------------------------------------------

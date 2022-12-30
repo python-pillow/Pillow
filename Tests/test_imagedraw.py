@@ -64,7 +64,9 @@ def test_mode_mismatch():
         ImageDraw.ImageDraw(im, mode="L")
 
 
-def helper_arc(bbox, start, end):
+@pytest.mark.parametrize("bbox", (BBOX1, BBOX2))
+@pytest.mark.parametrize("start, end", ((0, 180), (0.5, 180.4)))
+def test_arc(bbox, start, end):
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -74,16 +76,6 @@ def helper_arc(bbox, start, end):
 
     # Assert
     assert_image_similar_tofile(im, "Tests/images/imagedraw_arc.png", 1)
-
-
-def test_arc1():
-    helper_arc(BBOX1, 0, 180)
-    helper_arc(BBOX1, 0.5, 180.4)
-
-
-def test_arc2():
-    helper_arc(BBOX2, 0, 180)
-    helper_arc(BBOX2, 0.5, 180.4)
 
 
 def test_arc_end_le_start():
@@ -192,27 +184,19 @@ def test_bitmap():
     assert_image_equal_tofile(im, "Tests/images/imagedraw_bitmap.png")
 
 
-def helper_chord(mode, bbox, start, end):
+@pytest.mark.parametrize("mode", ("RGB", "L"))
+@pytest.mark.parametrize("bbox", (BBOX1, BBOX2))
+def test_chord(mode, bbox):
     # Arrange
     im = Image.new(mode, (W, H))
     draw = ImageDraw.Draw(im)
     expected = f"Tests/images/imagedraw_chord_{mode}.png"
 
     # Act
-    draw.chord(bbox, start, end, fill="red", outline="yellow")
+    draw.chord(bbox, 0, 180, fill="red", outline="yellow")
 
     # Assert
     assert_image_similar_tofile(im, expected, 1)
-
-
-def test_chord1():
-    for mode in ["RGB", "L"]:
-        helper_chord(mode, BBOX1, 0, 180)
-
-
-def test_chord2():
-    for mode in ["RGB", "L"]:
-        helper_chord(mode, BBOX2, 0, 180)
 
 
 def test_chord_width():
@@ -263,7 +247,9 @@ def test_chord_too_fat():
     assert_image_equal_tofile(im, "Tests/images/imagedraw_chord_too_fat.png")
 
 
-def helper_ellipse(mode, bbox):
+@pytest.mark.parametrize("mode", ("RGB", "L"))
+@pytest.mark.parametrize("bbox", (BBOX1, BBOX2))
+def test_ellipse(mode, bbox):
     # Arrange
     im = Image.new(mode, (W, H))
     draw = ImageDraw.Draw(im)
@@ -274,16 +260,6 @@ def helper_ellipse(mode, bbox):
 
     # Assert
     assert_image_similar_tofile(im, expected, 1)
-
-
-def test_ellipse1():
-    for mode in ["RGB", "L"]:
-        helper_ellipse(mode, BBOX1)
-
-
-def test_ellipse2():
-    for mode in ["RGB", "L"]:
-        helper_ellipse(mode, BBOX2)
 
 
 def test_ellipse_translucent():
@@ -405,7 +381,8 @@ def test_ellipse_various_sizes_filled():
     )
 
 
-def helper_line(points):
+@pytest.mark.parametrize("points", (POINTS1, POINTS2))
+def test_line(points):
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -415,14 +392,6 @@ def helper_line(points):
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
-
-
-def test_line1():
-    helper_line(POINTS1)
-
-
-def test_line2():
-    helper_line(POINTS2)
 
 
 def test_shape1():
@@ -484,7 +453,9 @@ def test_transform():
     assert_image_equal(im, expected)
 
 
-def helper_pieslice(bbox, start, end):
+@pytest.mark.parametrize("bbox", (BBOX1, BBOX2))
+@pytest.mark.parametrize("start, end", ((-92, 46), (-92.2, 46.2)))
+def test_pieslice(bbox, start, end):
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -494,16 +465,6 @@ def helper_pieslice(bbox, start, end):
 
     # Assert
     assert_image_similar_tofile(im, "Tests/images/imagedraw_pieslice.png", 1)
-
-
-def test_pieslice1():
-    helper_pieslice(BBOX1, -92, 46)
-    helper_pieslice(BBOX1, -92.2, 46.2)
-
-
-def test_pieslice2():
-    helper_pieslice(BBOX2, -92, 46)
-    helper_pieslice(BBOX2, -92.2, 46.2)
 
 
 def test_pieslice_width():
@@ -585,7 +546,8 @@ def test_pieslice_no_spikes():
     assert_image_equal(im, im_pre_erase)
 
 
-def helper_point(points):
+@pytest.mark.parametrize("points", (POINTS1, POINTS2))
+def test_point(points):
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -597,15 +559,8 @@ def helper_point(points):
     assert_image_equal_tofile(im, "Tests/images/imagedraw_point.png")
 
 
-def test_point1():
-    helper_point(POINTS1)
-
-
-def test_point2():
-    helper_point(POINTS2)
-
-
-def helper_polygon(points):
+@pytest.mark.parametrize("points", (POINTS1, POINTS2))
+def test_polygon(points):
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -615,14 +570,6 @@ def helper_polygon(points):
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon.png")
-
-
-def test_polygon1():
-    helper_polygon(POINTS1)
-
-
-def test_polygon2():
-    helper_polygon(POINTS2)
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -682,7 +629,8 @@ def test_polygon_translucent():
     assert_image_equal_tofile(im, expected)
 
 
-def helper_rectangle(bbox):
+@pytest.mark.parametrize("bbox", (BBOX1, BBOX2))
+def test_rectangle(bbox):
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -692,14 +640,6 @@ def helper_rectangle(bbox):
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle.png")
-
-
-def test_rectangle1():
-    helper_rectangle(BBOX1)
-
-
-def test_rectangle2():
-    helper_rectangle(BBOX2)
 
 
 def test_big_rectangle():
@@ -1299,6 +1239,27 @@ def test_stroke_descender():
 
 
 @skip_unless_feature("freetype2")
+def test_split_word():
+    # Arrange
+    im = Image.new("RGB", (230, 55))
+    expected = im.copy()
+    expected_draw = ImageDraw.Draw(expected)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 48)
+    expected_draw.text((0, 0), "paradise", font=font)
+
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.text((0, 0), "par", font=font)
+
+    length = draw.textlength("par", font=font)
+    draw.text((length, 0), "adise", font=font)
+
+    # Assert
+    assert_image_equal(im, expected)
+
+
+@skip_unless_feature("freetype2")
 def test_stroke_multiline():
     # Arrange
     im = Image.new("RGB", (100, 250))
@@ -1503,7 +1464,7 @@ def test_discontiguous_corners_polygon():
     assert_image_similar_tofile(img, expected, 1)
 
 
-def test_polygon():
+def test_polygon2():
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     draw.polygon([(18, 30), (19, 31), (18, 30), (85, 30), (60, 72)], "red")

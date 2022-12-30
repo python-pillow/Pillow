@@ -47,7 +47,14 @@ except ImportError:
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
 # Use __version__ instead.
-from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
+from . import (
+    ExifTags,
+    ImageMode,
+    TiffTags,
+    UnidentifiedImageError,
+    __version__,
+    _plugins,
+)
 from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
 from ._util import DeferredError, is_path
@@ -73,7 +80,8 @@ def __getattr__(name):
         if name in enum.__members__:
             deprecate(name, 10, f"{enum.__name__}.{name}")
             return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
 
 
 logger = logging.getLogger(__name__)
@@ -100,11 +108,12 @@ try:
     from . import _imaging as core
 
     if __version__ != getattr(core, "PILLOW_VERSION", None):
-        raise ImportError(
+        msg = (
             "The _imaging extension was built for another version of Pillow or PIL:\n"
             f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"
             f"Pillow version: {__version__}"
         )
+        raise ImportError(msg)
 
 except ImportError as v:
     core = DeferredError(ImportError("The _imaging C module is not installed."))
@@ -399,7 +408,8 @@ def _getdecoder(mode, decoder_name, args, extra=()):
         # get decoder
         decoder = getattr(core, decoder_name + "_decoder")
     except AttributeError as e:
-        raise OSError(f"decoder {decoder_name} not available") from e
+        msg = f"decoder {decoder_name} not available"
+        raise OSError(msg) from e
     return decoder(mode, *args + extra)
 
 
@@ -422,7 +432,8 @@ def _getencoder(mode, encoder_name, args, extra=()):
         # get encoder
         encoder = getattr(core, encoder_name + "_encoder")
     except AttributeError as e:
-        raise OSError(f"encoder {encoder_name} not available") from e
+        msg = f"encoder {encoder_name} not available"
+        raise OSError(msg) from e
     return encoder(mode, *args + extra)
 
 
@@ -668,7 +679,8 @@ class Image:
         try:
             self.save(b, "PNG")
         except Exception as e:
-            raise ValueError("Could not save to PNG for display") from e
+            msg = "Could not save to PNG for display"
+            raise ValueError(msg) from e
         return b.getvalue()
 
     @property
@@ -679,12 +691,24 @@ class Image:
         new["shape"] = shape
         new["typestr"] = typestr
         new["version"] = 3
-        if self.mode == "1":
-            # Binary images need to be extended from bits to bytes
-            # See: https://github.com/python-pillow/Pillow/issues/350
-            new["data"] = self.tobytes("raw", "L")
-        else:
-            new["data"] = self.tobytes()
+        try:
+            if self.mode == "1":
+                # Binary images need to be extended from bits to bytes
+                # See: https://github.com/python-pillow/Pillow/issues/350
+                new["data"] = self.tobytes("raw", "L")
+            else:
+                new["data"] = self.tobytes()
+        except Exception as e:
+            if not isinstance(e, (MemoryError, RecursionError)):
+                try:
+                    import numpy
+                    from packaging.version import parse as parse_version
+                except ImportError:
+                    pass
+                else:
+                    if parse_version(numpy.__version__) < parse_version("1.23"):
+                        warnings.warn(e)
+            raise
         return new
 
     def __getstate__(self):
@@ -692,7 +716,6 @@ class Image:
 
     def __setstate__(self, state):
         Image.__init__(self)
-        self.tile = []
         info, mode, size, palette, data = state
         self.info = info
         self.mode = mode
@@ -749,7 +772,8 @@ class Image:
             if s:
                 break
         if s < 0:
-            raise RuntimeError(f"encoder error {s} in tobytes")
+            msg = f"encoder error {s} in tobytes"
+            raise RuntimeError(msg)
 
         return b"".join(data)
 
@@ -766,7 +790,8 @@ class Image:
 
         self.load()
         if self.mode != "1":
-            raise ValueError("not a bitmap")
+            msg = "not a bitmap"
+            raise ValueError(msg)
         data = self.tobytes("xbm")
         return b"".join(
             [
@@ -800,9 +825,11 @@ class Image:
         s = d.decode(data)
 
         if s[0] >= 0:
-            raise ValueError("not enough image data")
+            msg = "not enough image data"
+            raise ValueError(msg)
         if s[1] != 0:
-            raise ValueError("cannot decode image data")
+            msg = "cannot decode image data"
+            raise ValueError(msg)
 
     def load(self):
         """
@@ -868,7 +895,7 @@ class Image:
         and the palette can be represented without a palette.
 
         The current version supports all possible conversions between
-        "L", "RGB" and "CMYK." The ``matrix`` argument only supports "L"
+        "L", "RGB" and "CMYK". The ``matrix`` argument only supports "L"
         and "RGB".
 
         When translating a color image to greyscale (mode "L"),
@@ -886,6 +913,9 @@ class Image:
         When converting from "RGBA" to "P" without a ``matrix`` argument,
         this passes the operation to :py:meth:`~PIL.Image.Image.quantize`,
         and ``dither`` and ``palette`` are ignored.
+
+        When converting from "PA", if an "RGBA" palette is present, the alpha
+        channel from the image will be used instead of the values from the palette.
 
         :param mode: The requested mode. See: :ref:`concept-modes`.
         :param matrix: An optional conversion matrix.  If given, this
@@ -920,7 +950,8 @@ class Image:
         if matrix:
             # matrix conversion
             if mode not in ("L", "RGB"):
-                raise ValueError("illegal conversion")
+                msg = "illegal conversion"
+                raise ValueError(msg)
             im = self.im.convert_matrix(mode, matrix)
             new = self._new(im)
             if has_transparency and self.im.bands == 3:
@@ -1005,7 +1036,8 @@ class Image:
                 elif isinstance(t, int):
                     self.im.putpalettealpha(t, 0)
                 else:
-                    raise ValueError("Transparency for P mode should be bytes or int")
+                    msg = "Transparency for P mode should be bytes or int"
+                    raise ValueError(msg)
 
         if mode == "P" and palette == Palette.ADAPTIVE:
             im = self.im.quantize(colors)
@@ -1027,6 +1059,19 @@ class Image:
                     warnings.warn("Couldn't allocate palette entry for transparency")
             return new
 
+        if "LAB" in (self.mode, mode):
+            other_mode = mode if self.mode == "LAB" else self.mode
+            if other_mode in ("RGB", "RGBA", "RGBX"):
+                from . import ImageCms
+
+                srgb = ImageCms.createProfile("sRGB")
+                lab = ImageCms.createProfile("LAB")
+                profiles = [lab, srgb] if self.mode == "LAB" else [srgb, lab]
+                transform = ImageCms.buildTransform(
+                    profiles[0], profiles[1], self.mode, mode
+                )
+                return transform.apply(self)
+
         # colorspace conversion
         if dither is None:
             dither = Dither.FLOYDSTEINBERG
@@ -1036,10 +1081,14 @@ class Image:
         except ValueError:
             try:
                 # normalize source image and try again
-                im = self.im.convert(getmodebase(self.mode))
+                modebase = getmodebase(self.mode)
+                if modebase == self.mode:
+                    raise
+                im = self.im.convert(modebase)
                 im = im.convert(mode, dither)
             except KeyError as e:
-                raise ValueError("illegal conversion") from e
+                msg = "illegal conversion"
+                raise ValueError(msg) from e
 
         new_im = self._new(im)
         if mode == "P" and palette != Palette.ADAPTIVE:
@@ -1114,20 +1163,21 @@ class Image:
             Quantize.LIBIMAGEQUANT,
         ):
             # Caller specified an invalid mode.
-            raise ValueError(
+            msg = (
                 "Fast Octree (method == 2) and libimagequant (method == 3) "
                 "are the only valid methods for quantizing RGBA images"
             )
+            raise ValueError(msg)
 
         if palette:
             # use palette from reference image
             palette.load()
             if palette.mode != "P":
-                raise ValueError("bad mode for palette image")
+                msg = "bad mode for palette image"
+                raise ValueError(msg)
             if self.mode != "RGB" and self.mode != "L":
-                raise ValueError(
-                    "only RGB or L mode images can be quantized to a palette"
-                )
+                msg = "only RGB or L mode images can be quantized to a palette"
+                raise ValueError(msg)
             im = self.im.convert("P", dither, palette.im)
             new_im = self._new(im)
             new_im.palette = palette.palette.copy()
@@ -1173,9 +1223,11 @@ class Image:
             return self.copy()
 
         if box[2] < box[0]:
-            raise ValueError("Coordinate 'right' is less than 'left'")
+            msg = "Coordinate 'right' is less than 'left'"
+            raise ValueError(msg)
         elif box[3] < box[1]:
-            raise ValueError("Coordinate 'lower' is less than 'upper'")
+            msg = "Coordinate 'lower' is less than 'upper'"
+            raise ValueError(msg)
 
         self.load()
         return self._new(self._crop(self.im, box))
@@ -1243,9 +1295,8 @@ class Image:
         if isinstance(filter, Callable):
             filter = filter()
         if not hasattr(filter, "filter"):
-            raise TypeError(
-                "filter argument should be ImageFilter.Filter instance or class"
-            )
+            msg = "filter argument should be ImageFilter.Filter instance or class"
+            raise TypeError(msg)
 
         multiband = isinstance(filter, ImageFilter.MultibandFilter)
         if self.im.bands == 1 or multiband:
@@ -1416,6 +1467,49 @@ class Image:
         self._exif._loaded = False
         self.getexif()
 
+    def get_child_images(self):
+        child_images = []
+        exif = self.getexif()
+        ifds = []
+        if ExifTags.Base.SubIFDs in exif:
+            subifd_offsets = exif[ExifTags.Base.SubIFDs]
+            if subifd_offsets:
+                if not isinstance(subifd_offsets, tuple):
+                    subifd_offsets = (subifd_offsets,)
+                for subifd_offset in subifd_offsets:
+                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
+        ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
+        if ifd1 and ifd1.get(513):
+            ifds.append((ifd1, exif._info.next))
+
+        offset = None
+        for ifd, ifd_offset in ifds:
+            current_offset = self.fp.tell()
+            if offset is None:
+                offset = current_offset
+
+            fp = self.fp
+            thumbnail_offset = ifd.get(513)
+            if thumbnail_offset is not None:
+                try:
+                    thumbnail_offset += self._exif_offset
+                except AttributeError:
+                    pass
+                self.fp.seek(thumbnail_offset)
+                data = self.fp.read(ifd.get(514))
+                fp = io.BytesIO(data)
+
+            with open(fp) as im:
+                if thumbnail_offset is None:
+                    im._frame_pos = [ifd_offset]
+                    im._seek(0)
+                im.load()
+                child_images.append(im)
+
+        if offset is not None:
+            self.fp.seek(offset)
+        return child_images
+
     def getim(self):
         """
         Returns a capsule that points to the internal image memory.
@@ -1451,7 +1545,8 @@ class Image:
     def apply_transparency(self):
         """
         If a P mode image has a "transparency" key in the info dictionary,
-        remove the key and apply the transparency to the palette instead.
+        remove the key and instead apply the transparency to the palette.
+        Otherwise, the image is unchanged.
         """
         if self.mode != "P" or "transparency" not in self.info:
             return
@@ -1610,7 +1705,8 @@ class Image:
                 size = mask.size
             else:
                 # FIXME: use self.size here?
-                raise ValueError("cannot determine region size; use 4-item box")
+                msg = "cannot determine region size; use 4-item box"
+                raise ValueError(msg)
             box += (box[0] + size[0], box[1] + size[1])
 
         if isinstance(im, str):
@@ -1649,15 +1745,20 @@ class Image:
         """
 
         if not isinstance(source, (list, tuple)):
-            raise ValueError("Source must be a tuple")
+            msg = "Source must be a tuple"
+            raise ValueError(msg)
         if not isinstance(dest, (list, tuple)):
-            raise ValueError("Destination must be a tuple")
+            msg = "Destination must be a tuple"
+            raise ValueError(msg)
         if not len(source) in (2, 4):
-            raise ValueError("Source must be a 2 or 4-tuple")
+            msg = "Source must be a 2 or 4-tuple"
+            raise ValueError(msg)
         if not len(dest) == 2:
-            raise ValueError("Destination must be a 2-tuple")
+            msg = "Destination must be a 2-tuple"
+            raise ValueError(msg)
         if min(source) < 0:
-            raise ValueError("Source must be non-negative")
+            msg = "Source must be non-negative"
+            raise ValueError(msg)
 
         if len(source) == 2:
             source = source + im.size
@@ -1722,7 +1823,8 @@ class Image:
 
         if self.mode == "F":
             # FIXME: _imaging returns a confusing error message for this case
-            raise ValueError("point operation not supported for this mode")
+            msg = "point operation not supported for this mode"
+            raise ValueError(msg)
 
         if mode != "F":
             lut = [round(i) for i in lut]
@@ -1756,7 +1858,8 @@ class Image:
                 self.pyaccess = None
                 self.mode = self.im.mode
             except KeyError as e:
-                raise ValueError("illegal image mode") from e
+                msg = "illegal image mode"
+                raise ValueError(msg) from e
 
         if self.mode in ("LA", "PA"):
             band = 1
@@ -1766,7 +1869,8 @@ class Image:
         if isImageType(alpha):
             # alpha layer
             if alpha.mode not in ("1", "L"):
-                raise ValueError("illegal image mode")
+                msg = "illegal image mode"
+                raise ValueError(msg)
             alpha.load()
             if alpha.mode == "1":
                 alpha = alpha.convert("L")
@@ -1822,7 +1926,8 @@ class Image:
         from . import ImagePalette
 
         if self.mode not in ("L", "LA", "P", "PA"):
-            raise ValueError("illegal image mode")
+            msg = "illegal image mode"
+            raise ValueError(msg)
         if isinstance(data, ImagePalette.ImagePalette):
             palette = ImagePalette.raw(data.rawmode, data.palette)
         else:
@@ -1891,7 +1996,8 @@ class Image:
         from . import ImagePalette
 
         if self.mode not in ("L", "P"):
-            raise ValueError("illegal image mode")
+            msg = "illegal image mode"
+            raise ValueError(msg)
 
         bands = 3
         palette_mode = "RGB"
@@ -2023,7 +2129,7 @@ class Image:
             Resampling.BOX,
             Resampling.HAMMING,
         ):
-            message = f"Unknown resampling filter ({resample})."
+            msg = f"Unknown resampling filter ({resample})."
 
             filters = [
                 f"{filter[1]} ({filter[0]})"
@@ -2036,12 +2142,12 @@ class Image:
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
                 )
             ]
-            raise ValueError(
-                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
-            )
+            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            raise ValueError(msg)
 
         if reducing_gap is not None and reducing_gap < 1.0:
-            raise ValueError("reducing_gap must be 1.0 or greater")
+            msg = "reducing_gap must be 1.0 or greater"
+            raise ValueError(msg)
 
         size = tuple(size)
 
@@ -2299,7 +2405,8 @@ class Image:
             try:
                 format = EXTENSION[ext]
             except KeyError as e:
-                raise ValueError(f"unknown file extension: {ext}") from e
+                msg = f"unknown file extension: {ext}"
+                raise ValueError(msg) from e
 
         if format.upper() not in SAVE:
             init()
@@ -2413,7 +2520,8 @@ class Image:
             try:
                 channel = self.getbands().index(channel)
             except ValueError as e:
-                raise ValueError(f'The image has no channel "{channel}"') from e
+                msg = f'The image has no channel "{channel}"'
+                raise ValueError(msg) from e
 
         return self._new(self.im.getband(channel))
 
@@ -2584,7 +2692,8 @@ class Image:
             method, data = method.getdata()
 
         if data is None:
-            raise ValueError("missing method data")
+            msg = "missing method data"
+            raise ValueError(msg)
 
         im = new(self.mode, size, fillcolor)
         if self.mode == "P" and self.palette:
@@ -2645,7 +2754,8 @@ class Image:
             )
 
         else:
-            raise ValueError("unknown transformation method")
+            msg = "unknown transformation method"
+            raise ValueError(msg)
 
         if resample not in (
             Resampling.NEAREST,
@@ -2653,13 +2763,13 @@ class Image:
             Resampling.BICUBIC,
         ):
             if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
-                message = {
+                msg = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
                 }[resample] + f" ({resample}) cannot be used."
             else:
-                message = f"Unknown resampling filter ({resample})."
+                msg = f"Unknown resampling filter ({resample})."
 
             filters = [
                 f"{filter[1]} ({filter[0]})"
@@ -2669,9 +2779,8 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                 )
             ]
-            raise ValueError(
-                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
-            )
+            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            raise ValueError(msg)
 
         image.load()
 
@@ -2710,7 +2819,8 @@ class Image:
         from . import ImageQt
 
         if not ImageQt.qt_is_installed:
-            raise ImportError("Qt bindings are not installed")
+            msg = "Qt bindings are not installed"
+            raise ImportError(msg)
         return ImageQt.toqimage(self)
 
     def toqpixmap(self):
@@ -2718,7 +2828,8 @@ class Image:
         from . import ImageQt
 
         if not ImageQt.qt_is_installed:
-            raise ImportError("Qt bindings are not installed")
+            msg = "Qt bindings are not installed"
+            raise ImportError(msg)
         return ImageQt.toqpixmap(self)
 
 
@@ -2766,11 +2877,14 @@ def _check_size(size):
     """
 
     if not isinstance(size, (list, tuple)):
-        raise ValueError("Size must be a tuple")
+        msg = "Size must be a tuple"
+        raise ValueError(msg)
     if len(size) != 2:
-        raise ValueError("Size must be a tuple of length 2")
+        msg = "Size must be a tuple of length 2"
+        raise ValueError(msg)
     if size[0] < 0 or size[1] < 0:
-        raise ValueError("Width and height must be >= 0")
+        msg = "Width and height must be >= 0"
+        raise ValueError(msg)
 
     return True
 
@@ -2956,11 +3070,13 @@ def fromarray(obj, mode=None):
         try:
             typekey = (1, 1) + shape[2:], arr["typestr"]
         except KeyError as e:
-            raise TypeError("Cannot handle this data type") from e
+            msg = "Cannot handle this data type"
+            raise TypeError(msg) from e
         try:
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError as e:
-            raise TypeError("Cannot handle this data type: %s, %s" % typekey) from e
+            msg = "Cannot handle this data type: %s, %s" % typekey
+            raise TypeError(msg) from e
     else:
         rawmode = mode
     if mode in ["1", "L", "I", "P", "F"]:
@@ -2970,7 +3086,8 @@ def fromarray(obj, mode=None):
     else:
         ndmax = 4
     if ndim > ndmax:
-        raise ValueError(f"Too many dimensions: {ndim} > {ndmax}.")
+        msg = f"Too many dimensions: {ndim} > {ndmax}."
+        raise ValueError(msg)
 
     size = 1 if ndim == 1 else shape[1], shape[0]
     if strides is not None:
@@ -2987,7 +3104,8 @@ def fromqimage(im):
     from . import ImageQt
 
     if not ImageQt.qt_is_installed:
-        raise ImportError("Qt bindings are not installed")
+        msg = "Qt bindings are not installed"
+        raise ImportError(msg)
     return ImageQt.fromqimage(im)
 
 
@@ -2996,7 +3114,8 @@ def fromqpixmap(im):
     from . import ImageQt
 
     if not ImageQt.qt_is_installed:
-        raise ImportError("Qt bindings are not installed")
+        msg = "Qt bindings are not installed"
+        raise ImportError(msg)
     return ImageQt.fromqpixmap(im)
 
 
@@ -3034,10 +3153,11 @@ def _decompression_bomb_check(size):
     pixels = size[0] * size[1]
 
     if pixels > 2 * MAX_IMAGE_PIXELS:
-        raise DecompressionBombError(
+        msg = (
             f"Image size ({pixels} pixels) exceeds limit of {2 * MAX_IMAGE_PIXELS} "
             "pixels, could be decompression bomb DOS attack."
         )
+        raise DecompressionBombError(msg)
 
     if pixels > MAX_IMAGE_PIXELS:
         warnings.warn(
@@ -3077,17 +3197,20 @@ def open(fp, mode="r", formats=None):
     """
 
     if mode != "r":
-        raise ValueError(f"bad mode {repr(mode)}")
+        msg = f"bad mode {repr(mode)}"
+        raise ValueError(msg)
     elif isinstance(fp, io.StringIO):
-        raise ValueError(
+        msg = (
             "StringIO cannot be used to open an image. "
             "Binary data must be used instead."
         )
+        raise ValueError(msg)
 
     if formats is None:
         formats = ID
     elif not isinstance(formats, (list, tuple)):
-        raise TypeError("formats must be a list or tuple")
+        msg = "formats must be a list or tuple"
+        raise TypeError(msg)
 
     exclusive_fp = False
     filename = ""
@@ -3152,9 +3275,8 @@ def open(fp, mode="r", formats=None):
         fp.close()
     for message in accept_warnings:
         warnings.warn(message)
-    raise UnidentifiedImageError(
-        "cannot identify image file %r" % (filename if filename else fp)
-    )
+    msg = "cannot identify image file %r" % (filename if filename else fp)
+    raise UnidentifiedImageError(msg)
 
 
 #
@@ -3245,12 +3367,15 @@ def merge(mode, bands):
     """
 
     if getmodebands(mode) != len(bands) or "*" in mode:
-        raise ValueError("wrong number of bands")
+        msg = "wrong number of bands"
+        raise ValueError(msg)
     for band in bands[1:]:
         if band.mode != getmodetype(mode):
-            raise ValueError("mode mismatch")
+            msg = "mode mismatch"
+            raise ValueError(msg)
         if band.size != bands[0].size:
-            raise ValueError("size mismatch")
+            msg = "size mismatch"
+            raise ValueError(msg)
     for band in bands:
         band.load()
     return bands[0]._new(core.merge(mode, *[b.im for b in bands]))
@@ -3337,8 +3462,7 @@ def registered_extensions():
     Returns a dictionary containing all file extensions belonging
     to registered plugins
     """
-    if not EXTENSION:
-        init()
+    init()
     return EXTENSION
 
 
@@ -3472,6 +3596,7 @@ class Exif(MutableMapping):
 
     def __init__(self):
         self._data = {}
+        self._hidden_data = {}
         self._ifds = {}
         self._info = None
         self._loaded_exif = None
@@ -3525,6 +3650,7 @@ class Exif(MutableMapping):
             return
         self._loaded_exif = data
         self._data.clear()
+        self._hidden_data.clear()
         self._ifds.clear()
         if data and data.startswith(b"Exif\x00\x00"):
             data = data[6:]
@@ -3545,6 +3671,7 @@ class Exif(MutableMapping):
     def load_from_fp(self, fp, offset=None):
         self._loaded_exif = None
         self._data.clear()
+        self._hidden_data.clear()
         self._ifds.clear()
 
         # process dictionary
@@ -3567,14 +3694,16 @@ class Exif(MutableMapping):
         merged_dict = dict(self)
 
         # get EXIF extension
-        if 0x8769 in self:
-            ifd = self._get_ifd_dict(self[0x8769])
+        if ExifTags.IFD.Exif in self:
+            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif])
             if ifd:
                 merged_dict.update(ifd)
 
         # GPS
-        if 0x8825 in self:
-            merged_dict[0x8825] = self._get_ifd_dict(self[0x8825])
+        if ExifTags.IFD.GPSInfo in self:
+            merged_dict[ExifTags.IFD.GPSInfo] = self._get_ifd_dict(
+                self[ExifTags.IFD.GPSInfo]
+            )
 
         return merged_dict
 
@@ -3584,31 +3713,35 @@ class Exif(MutableMapping):
         head = self._get_head()
         ifd = TiffImagePlugin.ImageFileDirectory_v2(ifh=head)
         for tag, value in self.items():
-            if tag in [0x8769, 0x8225, 0x8825] and not isinstance(value, dict):
+            if tag in [
+                ExifTags.IFD.Exif,
+                ExifTags.IFD.GPSInfo,
+            ] and not isinstance(value, dict):
                 value = self.get_ifd(tag)
                 if (
-                    tag == 0x8769
-                    and 0xA005 in value
-                    and not isinstance(value[0xA005], dict)
+                    tag == ExifTags.IFD.Exif
+                    and ExifTags.IFD.Interop in value
+                    and not isinstance(value[ExifTags.IFD.Interop], dict)
                 ):
                     value = value.copy()
-                    value[0xA005] = self.get_ifd(0xA005)
+                    value[ExifTags.IFD.Interop] = self.get_ifd(ExifTags.IFD.Interop)
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
     def get_ifd(self, tag):
         if tag not in self._ifds:
-            if tag in [0x8769, 0x8825]:
-                # exif, gpsinfo
-                if tag in self:
-                    self._ifds[tag] = self._get_ifd_dict(self[tag])
-            elif tag in [0xA005, 0x927C]:
-                # interop, makernote
-                if 0x8769 not in self._ifds:
-                    self.get_ifd(0x8769)
-                tag_data = self._ifds[0x8769][tag]
-                if tag == 0x927C:
-                    # makernote
+            if tag == ExifTags.IFD.IFD1:
+                if self._info is not None and self._info.next != 0:
+                    self._ifds[tag] = self._get_ifd_dict(self._info.next)
+            elif tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
+                offset = self._hidden_data.get(tag, self.get(tag))
+                if offset is not None:
+                    self._ifds[tag] = self._get_ifd_dict(offset)
+            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
+                if ExifTags.IFD.Exif not in self._ifds:
+                    self.get_ifd(ExifTags.IFD.Exif)
+                tag_data = self._ifds[ExifTags.IFD.Exif][tag]
+                if tag == ExifTags.IFD.Makernote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     if tag_data[:8] == b"FUJIFILM":
@@ -3684,9 +3817,22 @@ class Exif(MutableMapping):
                                 makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
                         self._ifds[tag] = makernote
                 else:
-                    # interop
+                    # Interop
                     self._ifds[tag] = self._get_ifd_dict(tag_data)
-        return self._ifds.get(tag, {})
+        ifd = self._ifds.get(tag, {})
+        if tag == ExifTags.IFD.Exif and self._hidden_data:
+            ifd = {
+                k: v
+                for (k, v) in ifd.items()
+                if k not in (ExifTags.IFD.Interop, ExifTags.IFD.Makernote)
+            }
+        return ifd
+
+    def hide_offsets(self):
+        for tag in (ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo):
+            if tag in self:
+                self._hidden_data[tag] = self[tag]
+                del self[tag]
 
     def __str__(self):
         if self._info is not None:

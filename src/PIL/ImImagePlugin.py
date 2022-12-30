@@ -126,7 +126,8 @@ class ImImageFile(ImageFile.ImageFile):
         # 100 bytes, this is (probably) not a text header.
 
         if b"\n" not in self.fp.read(100):
-            raise SyntaxError("not an IM file")
+            msg = "not an IM file"
+            raise SyntaxError(msg)
         self.fp.seek(0)
 
         n = 0
@@ -153,7 +154,8 @@ class ImImageFile(ImageFile.ImageFile):
             s = s + self.fp.readline()
 
             if len(s) > 100:
-                raise SyntaxError("not an IM file")
+                msg = "not an IM file"
+                raise SyntaxError(msg)
 
             if s[-2:] == b"\r\n":
                 s = s[:-2]
@@ -163,7 +165,8 @@ class ImImageFile(ImageFile.ImageFile):
             try:
                 m = split.match(s)
             except re.error as e:
-                raise SyntaxError("not an IM file") from e
+                msg = "not an IM file"
+                raise SyntaxError(msg) from e
 
             if m:
 
@@ -198,12 +201,12 @@ class ImImageFile(ImageFile.ImageFile):
 
             else:
 
-                raise SyntaxError(
-                    "Syntax error in IM header: " + s.decode("ascii", "replace")
-                )
+                msg = "Syntax error in IM header: " + s.decode("ascii", "replace")
+                raise SyntaxError(msg)
 
         if not n:
-            raise SyntaxError("Not an IM file")
+            msg = "Not an IM file"
+            raise SyntaxError(msg)
 
         # Basic attributes
         self._size = self.info[SIZE]
@@ -213,7 +216,8 @@ class ImImageFile(ImageFile.ImageFile):
         while s and s[:1] != b"\x1A":
             s = self.fp.read(1)
         if not s:
-            raise SyntaxError("File truncated")
+            msg = "File truncated"
+            raise SyntaxError(msg)
 
         if LUT in self.info:
             # convert lookup table to palette or lut attribute
@@ -332,7 +336,8 @@ def _save(im, fp, filename):
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:
-        raise ValueError(f"Cannot save {im.mode} images as IM") from e
+        msg = f"Cannot save {im.mode} images as IM"
+        raise ValueError(msg) from e
 
     frames = im.encoderinfo.get("frames", 1)
 
@@ -352,7 +357,13 @@ def _save(im, fp, filename):
         fp.write(b"Lut: 1\r\n")
     fp.write(b"\000" * (511 - fp.tell()) + b"\032")
     if im.mode in ["P", "PA"]:
-        fp.write(im.im.getpalette("RGB", "RGB;L"))  # 768 bytes
+        im_palette = im.im.getpalette("RGB", "RGB;L")
+        colors = len(im_palette) // 3
+        palette = b""
+        for i in range(3):
+            palette += im_palette[colors * i : colors * (i + 1)]
+            palette += b"\x00" * (256 - colors)
+        fp.write(palette)  # 768 bytes
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, -1))])
 
 

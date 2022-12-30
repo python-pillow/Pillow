@@ -139,17 +139,50 @@ Functions
         must be the same as the image mode.  If omitted, the mode
         defaults to the mode of the image.
 
+Attributes
+----------
+
+.. py:attribute:: ImageDraw.fill
+    :type: bool
+    :value: False
+
+    Selects whether :py:attr:`ImageDraw.ink` should be used as a fill or outline color.
+
+.. py:attribute:: ImageDraw.font
+
+    The current default font.
+
+    Can be set per instance::
+
+        from PIL import ImageDraw, ImageFont
+        draw = ImageDraw.Draw(image)
+        draw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    Or globally for all future ImageDraw instances::
+
+        from PIL import ImageDraw, ImageFont
+        ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+.. py:attribute:: ImageDraw.fontmode
+
+    The current font drawing mode.
+
+    Set to ``"1"`` to disable antialiasing or ``"L"`` to enable it.
+
+.. py:attribute:: ImageDraw.ink
+    :type: int
+
+    The internal representation of the current default color.
+
 Methods
 -------
 
 .. py:method:: ImageDraw.getfont()
 
-    Get the current default font.
+    Get the current default font, :py:attr:`ImageDraw.font`.
 
-    To set the default font for all future ImageDraw instances::
-
-        from PIL import ImageDraw, ImageFont
-        ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+    If the current default font is ``None``,
+    it is initialized with :py:func:`.ImageFont.load_default`.
 
     :returns: An image font.
 

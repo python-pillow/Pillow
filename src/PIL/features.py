@@ -25,7 +25,8 @@ def check_module(feature):
     :raises ValueError: If the module is not defined in this version of Pillow.
     """
     if not (feature in modules):
-        raise ValueError(f"Unknown module {feature}")
+        msg = f"Unknown module {feature}"
+        raise ValueError(msg)
 
     module, ver = modules[feature]
 
@@ -78,7 +79,8 @@ def check_codec(feature):
     :raises ValueError: If the codec is not defined in this version of Pillow.
     """
     if feature not in codecs:
-        raise ValueError(f"Unknown codec {feature}")
+        msg = f"Unknown codec {feature}"
+        raise ValueError(msg)
 
     codec, lib = codecs[feature]
 
@@ -135,7 +137,8 @@ def check_feature(feature):
     :raises ValueError: If the feature is not defined in this version of Pillow.
     """
     if feature not in features:
-        raise ValueError(f"Unknown feature {feature}")
+        msg = f"Unknown feature {feature}"
+        raise ValueError(msg)
 
     module, flag, ver = features[feature]
 

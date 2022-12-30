@@ -127,7 +127,8 @@ class IcoFile:
         # check magic
         s = buf.read(6)
         if not _accept(s):
-            raise SyntaxError("not an ICO file")
+            msg = "not an ICO file"
+            raise SyntaxError(msg)
 
         self.buf = buf
         self.entry = []
@@ -316,7 +317,8 @@ class IcoImageFile(ImageFile.ImageFile):
     @size.setter
     def size(self, value):
         if value not in self.info["sizes"]:
-            raise ValueError("This is not one of the allowed sizes of this image")
+            msg = "This is not one of the allowed sizes of this image"
+            raise ValueError(msg)
         self._size = value
 
     def load(self):
@@ -327,6 +329,7 @@ class IcoImageFile(ImageFile.ImageFile):
         # if tile is PNG, it won't really be loaded yet
         im.load()
         self.im = im.im
+        self.pyaccess = None
         self.mode = im.mode
         if im.size != self.size:
             warnings.warn("Image was not the expected size")

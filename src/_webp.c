@@ -178,12 +178,11 @@ _anim_encoder_new(PyObject *self, PyObject *args) {
     return NULL;
 }
 
-PyObject *
+void
 _anim_encoder_dealloc(PyObject *self) {
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPPictureFree(&(encp->frame));
     WebPAnimEncoderDelete(encp->enc);
-    Py_RETURN_NONE;
 }
 
 PyObject *
@@ -400,12 +399,11 @@ _anim_decoder_new(PyObject *self, PyObject *args) {
     return NULL;
 }
 
-PyObject *
+void
 _anim_decoder_dealloc(PyObject *self) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPDataClear(&(decp->data));
     WebPAnimDecoderDelete(decp->dec);
-    Py_RETURN_NONE;
 }
 
 PyObject *
@@ -576,6 +574,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     int lossless;
     float quality_factor;
     int method;
+    int exact;
     uint8_t *rgb;
     uint8_t *icc_bytes;
     uint8_t *exif_bytes;
@@ -597,7 +596,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "y#iiifss#is#s#",
+            "y#iiifss#iis#s#",
             (char **)&rgb,
             &size,
             &width,
@@ -608,6 +607,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
             &icc_bytes,
             &icc_size,
             &method,
+            &exact,
             &exif_bytes,
             &exif_size,
             &xmp_bytes,
@@ -633,6 +633,10 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     config.lossless = lossless;
     config.quality = quality_factor;
     config.method = method;
+#if WEBP_ENCODER_ABI_VERSION >= 0x0209
+    // the "exact" flag is only available in libwebp 0.5.0 and later
+    config.exact = exact;
+#endif
 
     // Validate the config
     if (!WebPValidateConfig(&config)) {

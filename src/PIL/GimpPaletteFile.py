@@ -31,7 +31,8 @@ class GimpPaletteFile:
     def __init__(self, fp):
 
         if fp.readline()[:12] != b"GIMP Palette":
-            raise SyntaxError("not a GIMP palette file")
+            msg = "not a GIMP palette file"
+            raise SyntaxError(msg)
 
         read = 0
 
@@ -53,12 +54,14 @@ class GimpPaletteFile:
             if re.match(rb"\w+:|#", s):
                 continue
             if len(s) > self._max_line_size:
-                raise SyntaxError("bad palette file")
+                msg = "bad palette file"
+                raise SyntaxError(msg)
 
             # 4th column is color name and may contain spaces.
             v = s.split(maxsplit=3)
             if len(v) < 3:
-                raise ValueError("bad palette entry")
+                msg = "bad palette entry"
+                raise ValueError(msg)
 
             self.palette += (int(v[0]), int(v[1]), int(v[2]))
 

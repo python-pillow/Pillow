@@ -202,7 +202,7 @@ Pillow now builds binary wheels for musllinux, suitable for Linux distributions 
 (rather than the glibc library used by manylinux wheels). See :pep:`656`.
 
 ImageShow temporary files on Unix
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When calling :py:meth:`~PIL.Image.Image.show` or using :py:mod:`~PIL.ImageShow`,
 a temporary file is created from the image. On Unix, Pillow will no longer delete these

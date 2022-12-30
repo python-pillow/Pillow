@@ -124,8 +124,9 @@ class Viewer:
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
-        os.system(self.get_command(path, **options))
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
+        os.system(self.get_command(path, **options))  # nosec
         return 1
 
 
@@ -136,7 +137,7 @@ class WindowsViewer(Viewer):
     """The default viewer on Windows is the default system application for PNG files."""
 
     format = "PNG"
-    options = {"compress_level": 1}
+    options = {"compress_level": 1, "save_all": True}
 
     def get_command(self, file, **options):
         return (
@@ -154,7 +155,7 @@ class MacViewer(Viewer):
     """The default viewer on macOS using ``Preview.app``."""
 
     format = "PNG"
-    options = {"compress_level": 1}
+    options = {"compress_level": 1, "save_all": True}
 
     def get_command(self, file, **options):
         # on darwin open returns immediately resulting in the temp
@@ -176,7 +177,8 @@ class MacViewer(Viewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         subprocess.call(["open", "-a", "Preview.app", path])
         executable = sys.executable or shutil.which("python3")
         if executable:
@@ -197,7 +199,7 @@ if sys.platform == "darwin":
 
 class UnixViewer(Viewer):
     format = "PNG"
-    options = {"compress_level": 1}
+    options = {"compress_level": 1, "save_all": True}
 
     def get_command(self, file, **options):
         command = self.get_command_ex(file, **options)[0]
@@ -226,7 +228,8 @@ class XDGViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         subprocess.Popen(["xdg-open", path])
         return 1
 
@@ -255,7 +258,8 @@ class DisplayViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         args = ["display"]
         title = options.get("title")
         if title:
@@ -286,7 +290,8 @@ class GmDisplayViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         subprocess.Popen(["gm", "display", path])
         return 1
 
@@ -311,7 +316,8 @@ class EogViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         subprocess.Popen(["eog", "-n", path])
         return 1
 
@@ -342,7 +348,8 @@ class XVViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         args = ["xv"]
         title = options.get("title")
         if title:

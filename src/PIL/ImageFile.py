@@ -63,12 +63,13 @@ Dict of known error codes returned from :meth:`.PyDecoder.decode`,
 
 def raise_oserror(error):
     try:
-        message = Image.core.getcodecstatus(error)
+        msg = Image.core.getcodecstatus(error)
     except AttributeError:
-        message = ERRORS.get(error)
-    if not message:
-        message = f"decoder error {error}"
-    raise OSError(message + " when reading image file")
+        msg = ERRORS.get(error)
+    if not msg:
+        msg = f"decoder error {error}"
+    msg += " when reading image file"
+    raise OSError(msg)
 
 
 def _tilesort(t):
@@ -124,7 +125,8 @@ class ImageFile(Image.Image):
                 raise SyntaxError(v) from v
 
             if not self.mode or self.size[0] <= 0 or self.size[1] <= 0:
-                raise SyntaxError("not identified by this driver")
+                msg = "not identified by this driver"
+                raise SyntaxError(msg)
         except BaseException:
             # close the file only if we have opened it this constructor
             if self._exclusive_fp:
@@ -136,6 +138,10 @@ class ImageFile(Image.Image):
             return self.custom_mimetype
         if self.format is not None:
             return Image.MIME.get(self.format.upper())
+
+    def __setstate__(self, state):
+        self.tile = []
+        super().__setstate__(state)
 
     def verify(self):
         """Check file integrity"""
@@ -150,7 +156,8 @@ class ImageFile(Image.Image):
         """Load image data based on tile list"""
 
         if self.tile is None:
-            raise OSError("cannot load this image")
+            msg = "cannot load this image"
+            raise OSError(msg)
 
         pixel = Image.Image.load(self)
         if not self.tile:
@@ -245,16 +252,18 @@ class ImageFile(Image.Image):
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    raise OSError("image file is truncated") from e
+                                    msg = "image file is truncated"
+                                    raise OSError(msg) from e
 
                             if not s:  # truncated jpeg
                                 if LOAD_TRUNCATED_IMAGES:
                                     break
                                 else:
-                                    raise OSError(
+                                    msg = (
                                         "image file is truncated "
                                         f"({len(b)} bytes not processed)"
                                     )
+                                    raise OSError(msg)
 
                             b = b + s
                             n, err_code = decoder.decode(b)
@@ -310,7 +319,8 @@ class ImageFile(Image.Image):
                 and frame >= self.n_frames + self._min_frame
             )
         ):
-            raise EOFError("attempt to seek outside sequence")
+            msg = "attempt to seek outside sequence"
+            raise EOFError(msg)
 
         return self.tell() != frame
 
@@ -324,12 +334,14 @@ class StubImageFile(ImageFile):
     """
 
     def _open(self):
-        raise NotImplementedError("StubImageFile subclass must implement _open")
+        msg = "StubImageFile subclass must implement _open"
+        raise NotImplementedError(msg)
 
     def load(self):
         loader = self._load()
         if loader is None:
-            raise OSError(f"cannot find loader for this {self.format} file")
+            msg = f"cannot find loader for this {self.format} file"
+            raise OSError(msg)
         image = loader.load(self)
         assert image is not None
         # become the other object (!)
@@ -339,7 +351,8 @@ class StubImageFile(ImageFile):
 
     def _load(self):
         """(Hook) Find actual image loader."""
-        raise NotImplementedError("StubImageFile subclass must implement _load")
+        msg = "StubImageFile subclass must implement _load"
+        raise NotImplementedError(msg)
 
 
 class Parser:
@@ -464,9 +477,11 @@ class Parser:
             self.feed(b"")
             self.data = self.decoder = None
             if not self.finished:
-                raise OSError("image was incomplete")
+                msg = "image was incomplete"
+                raise OSError(msg)
         if not self.image:
-            raise OSError("cannot parse this image")
+            msg = "cannot parse this image"
+            raise OSError(msg)
         if self.data:
             # incremental parsing not possible; reopen the file
             # not that we have all data
@@ -531,7 +546,8 @@ def _encode_tile(im, fp, tile, bufsize, fh, exc=None):
                     # slight speedup: compress to real file object
                     s = encoder.encode_to_file(fh, bufsize)
             if s < 0:
-                raise OSError(f"encoder error {s} when writing image file") from exc
+                msg = f"encoder error {s} when writing image file"
+                raise OSError(msg) from exc
         finally:
             encoder.cleanup()
 
@@ -554,7 +570,8 @@ def _safe_read(fp, size):
     if size <= SAFEBLOCK:
         data = fp.read(size)
         if len(data) < size:
-            raise OSError("Truncated File Read")
+            msg = "Truncated File Read"
+            raise OSError(msg)
         return data
     data = []
     remaining_size = size
@@ -565,7 +582,8 @@ def _safe_read(fp, size):
         data.append(block)
         remaining_size -= len(block)
     if sum(len(d) for d in data) < size:
-        raise OSError("Truncated File Read")
+        msg = "Truncated File Read"
+        raise OSError(msg)
     return b"".join(data)
 
 
@@ -641,13 +659,15 @@ class PyCodec:
             self.state.ysize = y1 - y0
 
         if self.state.xsize <= 0 or self.state.ysize <= 0:
-            raise ValueError("Size cannot be negative")
+            msg = "Size cannot be negative"
+            raise ValueError(msg)
 
         if (
             self.state.xsize + self.state.xoff > self.im.size[0]
             or self.state.ysize + self.state.yoff > self.im.size[1]
         ):
-            raise ValueError("Tile cannot extend outside image")
+            msg = "Tile cannot extend outside image"
+            raise ValueError(msg)
 
 
 class PyDecoder(PyCodec):
@@ -692,9 +712,11 @@ class PyDecoder(PyCodec):
         s = d.decode(data)
 
         if s[0] >= 0:
-            raise ValueError("not enough image data")
+            msg = "not enough image data"
+            raise ValueError(msg)
         if s[1] != 0:
-            raise ValueError("cannot decode image data")
+            msg = "cannot decode image data"
+            raise ValueError(msg)
 
 
 class PyEncoder(PyCodec):

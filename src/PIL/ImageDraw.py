@@ -69,7 +69,8 @@ class ImageDraw:
             if mode == "RGBA" and im.mode == "RGB":
                 blend = 1
             else:
-                raise ValueError("mode mismatch")
+                msg = "mode mismatch"
+                raise ValueError(msg)
         if mode == "P":
             self.palette = im.palette
         else:
@@ -87,16 +88,24 @@ class ImageDraw:
             self.fontmode = "1"
         else:
             self.fontmode = "L"  # aliasing is okay for other modes
-        self.fill = 0
+        self.fill = False
 
     def getfont(self):
         """
         Get the current default font.
 
+        To set the default font for this ImageDraw instance::
+
+            from PIL import ImageDraw, ImageFont
+            draw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
         To set the default font for all future ImageDraw instances::
 
             from PIL import ImageDraw, ImageFont
             ImageDraw.ImageDraw.font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+        If the current default font is ``None``,
+        it is initialized with ``ImageFont.load_default()``.
 
         :returns: An image font."""
         if not self.font:
@@ -429,7 +438,8 @@ class ImageDraw:
             )
 
         if embedded_color and self.mode not in ("RGB", "RGBA"):
-            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+            msg = "Embedded color supported only in RGB and RGBA modes"
+            raise ValueError(msg)
 
         if font is None:
             font = self.getfont()
@@ -444,7 +454,11 @@ class ImageDraw:
             mode = self.fontmode
             if stroke_width == 0 and embedded_color:
                 mode = "RGBA"
-            coord = xy
+            coord = []
+            start = []
+            for i in range(2):
+                coord.append(int(xy[i]))
+                start.append(math.modf(xy[i])[0])
             try:
                 mask, offset = font.getmask2(
                     text,
@@ -455,6 +469,7 @@ class ImageDraw:
                     stroke_width=stroke_width,
                     anchor=anchor,
                     ink=ink,
+                    start=start,
                     *args,
                     **kwargs,
                 )
@@ -470,6 +485,7 @@ class ImageDraw:
                         stroke_width,
                         anchor,
                         ink,
+                        start=start,
                         *args,
                         **kwargs,
                     )
@@ -482,8 +498,8 @@ class ImageDraw:
                 # extract mask and set text alpha
                 color, mask = mask, mask.getband(3)
                 color.fillband(3, (ink >> 24) & 0xFF)
-                coord2 = coord[0] + mask.size[0], coord[1] + mask.size[1]
-                self.im.paste(color, coord + coord2, mask)
+                x, y = coord
+                self.im.paste(color, (x, y, x + mask.size[0], y + mask.size[1]), mask)
             else:
                 self.draw.draw_bitmap(coord, mask, ink)
 
@@ -520,14 +536,17 @@ class ImageDraw:
         embedded_color=False,
     ):
         if direction == "ttb":
-            raise ValueError("ttb direction is unsupported for multiline text")
+            msg = "ttb direction is unsupported for multiline text"
+            raise ValueError(msg)
 
         if anchor is None:
             anchor = "la"
         elif len(anchor) != 2:
-            raise ValueError("anchor must be a 2 character string")
+            msg = "anchor must be a 2 character string"
+            raise ValueError(msg)
         elif anchor[1] in "tb":
-            raise ValueError("anchor not supported for multiline text")
+            msg = "anchor not supported for multiline text"
+            raise ValueError(msg)
 
         widths = []
         max_width = 0
@@ -564,7 +583,8 @@ class ImageDraw:
             elif align == "right":
                 left += width_difference
             else:
-                raise ValueError('align must be "left", "center" or "right"')
+                msg = 'align must be "left", "center" or "right"'
+                raise ValueError(msg)
 
             self.text(
                 (left, top),
@@ -658,9 +678,11 @@ class ImageDraw:
     ):
         """Get the length of a given string, in pixels with 1/64 precision."""
         if self._multiline_check(text):
-            raise ValueError("can't measure length of multiline text")
+            msg = "can't measure length of multiline text"
+            raise ValueError(msg)
         if embedded_color and self.mode not in ("RGB", "RGBA"):
-            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+            msg = "Embedded color supported only in RGB and RGBA modes"
+            raise ValueError(msg)
 
         if font is None:
             font = self.getfont()
@@ -698,7 +720,8 @@ class ImageDraw:
     ):
         """Get the bounding box of a given string, in pixels."""
         if embedded_color and self.mode not in ("RGB", "RGBA"):
-            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+            msg = "Embedded color supported only in RGB and RGBA modes"
+            raise ValueError(msg)
 
         if self._multiline_check(text):
             return self.multiline_textbbox(
@@ -738,14 +761,17 @@ class ImageDraw:
         embedded_color=False,
     ):
         if direction == "ttb":
-            raise ValueError("ttb direction is unsupported for multiline text")
+            msg = "ttb direction is unsupported for multiline text"
+            raise ValueError(msg)
 
         if anchor is None:
             anchor = "la"
         elif len(anchor) != 2:
-            raise ValueError("anchor must be a 2 character string")
+            msg = "anchor must be a 2 character string"
+            raise ValueError(msg)
         elif anchor[1] in "tb":
-            raise ValueError("anchor not supported for multiline text")
+            msg = "anchor not supported for multiline text"
+            raise ValueError(msg)
 
         widths = []
         max_width = 0
@@ -789,7 +815,8 @@ class ImageDraw:
             elif align == "right":
                 left += width_difference
             else:
-                raise ValueError('align must be "left", "center" or "right"')
+                msg = 'align must be "left", "center" or "right"'
+                raise ValueError(msg)
 
             bbox_line = self.textbbox(
                 (left, top),
@@ -965,38 +992,44 @@ def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
     # 1. Error Handling
     # 1.1 Check `n_sides` has an appropriate value
     if not isinstance(n_sides, int):
-        raise TypeError("n_sides should be an int")
+        msg = "n_sides should be an int"
+        raise TypeError(msg)
     if n_sides < 3:
-        raise ValueError("n_sides should be an int > 2")
+        msg = "n_sides should be an int > 2"
+        raise ValueError(msg)
 
     # 1.2 Check `bounding_circle` has an appropriate value
     if not isinstance(bounding_circle, (list, tuple)):
-        raise TypeError("bounding_circle should be a tuple")
+        msg = "bounding_circle should be a tuple"
+        raise TypeError(msg)
 
     if len(bounding_circle) == 3:
         *centroid, polygon_radius = bounding_circle
     elif len(bounding_circle) == 2:
         centroid, polygon_radius = bounding_circle
     else:
-        raise ValueError(
+        msg = (
             "bounding_circle should contain 2D coordinates "
             "and a radius (e.g. (x, y, r) or ((x, y), r) )"
         )
+        raise ValueError(msg)
 
     if not all(isinstance(i, (int, float)) for i in (*centroid, polygon_radius)):
-        raise ValueError("bounding_circle should only contain numeric data")
+        msg = "bounding_circle should only contain numeric data"
+        raise ValueError(msg)
 
     if not len(centroid) == 2:
-        raise ValueError(
-            "bounding_circle centre should contain 2D coordinates (e.g. (x, y))"
-        )
+        msg = "bounding_circle centre should contain 2D coordinates (e.g. (x, y))"
+        raise ValueError(msg)
 
     if polygon_radius <= 0:
-        raise ValueError("bounding_circle radius should be > 0")
+        msg = "bounding_circle radius should be > 0"
+        raise ValueError(msg)
 
     # 1.3 Check `rotation` has an appropriate value
     if not isinstance(rotation, (int, float)):
-        raise ValueError("rotation should be an int or float")
+        msg = "rotation should be an int or float"
+        raise ValueError(msg)
 
     # 2. Define Helper Functions
     def _apply_rotation(point, degrees, centroid):

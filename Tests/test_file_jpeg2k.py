@@ -126,14 +126,14 @@ def test_prog_res_rt():
     assert_image_equal(im, test_card)
 
 
-def test_default_num_resolutions():
-    for num_resolutions in range(2, 6):
-        d = 1 << (num_resolutions - 1)
-        im = test_card.resize((d - 1, d - 1))
-        with pytest.raises(OSError):
-            roundtrip(im, num_resolutions=num_resolutions)
-        reloaded = roundtrip(im)
-        assert_image_equal(im, reloaded)
+@pytest.mark.parametrize("num_resolutions", range(2, 6))
+def test_default_num_resolutions(num_resolutions):
+    d = 1 << (num_resolutions - 1)
+    im = test_card.resize((d - 1, d - 1))
+    with pytest.raises(OSError):
+        roundtrip(im, num_resolutions=num_resolutions)
+    reloaded = roundtrip(im)
+    assert_image_equal(im, reloaded)
 
 
 def test_reduce():
@@ -252,6 +252,20 @@ def test_mct():
             assert_image_similar(im, jp2, 1.0e-3)
 
 
+def test_sgnd(tmp_path):
+    outfile = str(tmp_path / "temp.jp2")
+
+    im = Image.new("L", (1, 1))
+    im.save(outfile)
+    with Image.open(outfile) as reloaded:
+        assert reloaded.getpixel((0, 0)) == 0
+
+    im = Image.new("L", (1, 1))
+    im.save(outfile, signed=True)
+    with Image.open(outfile) as reloaded_signed:
+        assert reloaded_signed.getpixel((0, 0)) == 128
+
+
 def test_rgba():
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
@@ -266,14 +280,11 @@ def test_rgba():
             assert jp2.mode == "RGBA"
 
 
-def test_16bit_monochrome_has_correct_mode():
-    with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
-        j2k.load()
-        assert j2k.mode == "I;16"
-
-    with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
-        jp2.load()
-        assert jp2.mode == "I;16"
+@pytest.mark.parametrize("ext", (".j2k", ".jp2"))
+def test_16bit_monochrome_has_correct_mode(ext):
+    with Image.open("Tests/images/16bit.cropped" + ext) as im:
+        im.load()
+        assert im.mode == "I;16"
 
 
 def test_16bit_monochrome_jp2_like_tiff():

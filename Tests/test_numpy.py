@@ -34,7 +34,7 @@ def test_numpy_to_image():
 
     # Check supported 1-bit integer formats
     assert_image(to_image(bool, 1, 1), "1", TEST_IMAGE_SIZE)
-    assert_image(to_image(numpy.bool8, 1, 1), "1", TEST_IMAGE_SIZE)
+    assert_image(to_image(numpy.bool_, 1, 1), "1", TEST_IMAGE_SIZE)
 
     # Check supported 8-bit integer formats
     assert_image(to_image(numpy.uint8), "L", TEST_IMAGE_SIZE)
@@ -137,19 +137,9 @@ def test_save_tiff_uint16():
     assert img_px[0, 0] == pixel_value
 
 
-def test_to_array():
-    def _to_array(mode, dtype):
-        img = hopper(mode)
-
-        # Resize to non-square
-        img = img.crop((3, 0, 124, 127))
-        assert img.size == (121, 127)
-
-        np_img = numpy.array(img)
-        _test_img_equals_nparray(img, np_img)
-        assert np_img.dtype == dtype
-
-    modes = [
+@pytest.mark.parametrize(
+    "mode, dtype",
+    (
         ("L", numpy.uint8),
         ("I", numpy.int32),
         ("F", numpy.float32),
@@ -163,10 +153,18 @@ def test_to_array():
         ("I;16B", ">u2"),
         ("I;16L", "<u2"),
         ("HSV", numpy.uint8),
-    ]
+    ),
+)
+def test_to_array(mode, dtype):
+    img = hopper(mode)
 
-    for mode in modes:
-        _to_array(*mode)
+    # Resize to non-square
+    img = img.crop((3, 0, 124, 127))
+    assert img.size == (121, 127)
+
+    np_img = numpy.array(img)
+    _test_img_equals_nparray(img, np_img)
+    assert np_img.dtype == dtype
 
 
 def test_point_lut():
@@ -195,7 +193,7 @@ def test_putdata():
     "dtype",
     (
         bool,
-        numpy.bool8,
+        numpy.bool_,
         numpy.int8,
         numpy.int16,
         numpy.int32,

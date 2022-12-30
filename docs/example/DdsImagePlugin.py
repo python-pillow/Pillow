@@ -211,13 +211,16 @@ class DdsImageFile(ImageFile.ImageFile):
 
     def _open(self):
         if not _accept(self.fp.read(4)):
-            raise SyntaxError("not a DDS file")
+            msg = "not a DDS file"
+            raise SyntaxError(msg)
         (header_size,) = struct.unpack("<I", self.fp.read(4))
         if header_size != 124:
-            raise OSError(f"Unsupported header size {repr(header_size)}")
+            msg = f"Unsupported header size {repr(header_size)}"
+            raise OSError(msg)
         header_bytes = self.fp.read(header_size - 4)
         if len(header_bytes) != 120:
-            raise OSError(f"Incomplete header: {len(header_bytes)} bytes")
+            msg = f"Incomplete header: {len(header_bytes)} bytes"
+            raise OSError(msg)
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
@@ -237,7 +240,8 @@ class DdsImageFile(ImageFile.ImageFile):
         elif fourcc == b"DXT5":
             self.decoder = "DXT5"
         else:
-            raise NotImplementedError(f"Unimplemented pixel format {fourcc}")
+            msg = f"Unimplemented pixel format {fourcc}"
+            raise NotImplementedError(msg)
 
         self.tile = [(self.decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
 
@@ -252,7 +256,8 @@ class DXT1Decoder(ImageFile.PyDecoder):
         try:
             self.set_as_raw(_dxt1(self.fd, self.state.xsize, self.state.ysize))
         except struct.error as e:
-            raise OSError("Truncated DDS file") from e
+            msg = "Truncated DDS file"
+            raise OSError(msg) from e
         return -1, 0
 
 
@@ -263,7 +268,8 @@ class DXT5Decoder(ImageFile.PyDecoder):
         try:
             self.set_as_raw(_dxt5(self.fd, self.state.xsize, self.state.ysize))
         except struct.error as e:
-            raise OSError("Truncated DDS file") from e
+            msg = "Truncated DDS file"
+            raise OSError(msg) from e
         return -1, 0
 
 

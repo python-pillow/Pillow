@@ -179,7 +179,8 @@ def _toqclass_helper(im):
     else:
         if exclusive_fp:
             im.close()
-        raise ValueError(f"unsupported image mode {repr(im.mode)}")
+        msg = f"unsupported image mode {repr(im.mode)}"
+        raise ValueError(msg)
 
     size = im.size
     __data = data or align8to32(im.tobytes(), size[0], im.mode)

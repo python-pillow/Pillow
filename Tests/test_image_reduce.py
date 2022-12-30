@@ -196,11 +196,11 @@ def assert_compare_images(a, b, max_average_diff, max_diff=255):
         )
 
 
-def test_mode_L():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_L(factor):
     im = get_image("L")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
 @pytest.mark.parametrize("factor", remarkable_factors)

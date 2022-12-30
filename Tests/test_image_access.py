@@ -4,11 +4,10 @@ import sys
 import sysconfig
 
 import pytest
-from setuptools.command.build_ext import new_compiler
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, is_win32, on_ci
+from .helper import assert_image_equal, hopper, is_win32
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -131,8 +130,7 @@ class TestImageGetPixel(AccessTest):
         bands = Image.getmodebands(mode)
         if bands == 1:
             return 1
-        else:
-            return tuple(range(1, bands + 1))
+        return tuple(range(1, bands + 1))
 
     def check(self, mode, c=None):
         if not c:
@@ -345,13 +343,14 @@ class TestCffi(AccessTest):
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     def test_p_putpixel_rgb_rgba(self, mode):
-        for color in [(255, 0, 0), (255, 0, 0, 127)]:
+        for color in ((255, 0, 0), (255, 0, 0, 127 if mode == "PA" else 255)):
             im = Image.new(mode, (1, 1))
             access = PyAccess.new(im, False)
             access.putpixel((0, 0), color)
 
-            alpha = color[3] if len(color) == 4 and mode == "PA" else 255
-            assert im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, alpha)
+            if len(color) == 3:
+                color += (255,)
+            assert im.convert("RGBA").getpixel((0, 0)) == color
 
 
 class TestImagePutPixelError(AccessTest):
@@ -406,15 +405,14 @@ class TestImagePutPixelError(AccessTest):
 
 
 class TestEmbeddable:
-    @pytest.mark.skipif(
-        not is_win32() or on_ci(),
-        reason="Failing on AppVeyor / GitHub Actions when run from subprocess, "
-        "not from shell",
-    )
+    @pytest.mark.xfail(reason="failing test")
+    @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self):
         import ctypes
 
-        with open("embed_pil.c", "w") as fh:
+        from setuptools.command.build_ext import new_compiler
+
+        with open("embed_pil.c", "w", encoding="utf-8") as fh:
             fh.write(
                 """
 #include "Python.h"

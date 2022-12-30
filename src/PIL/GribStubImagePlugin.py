@@ -42,7 +42,8 @@ class GribStubImageFile(ImageFile.StubImageFile):
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(8)):
-            raise SyntaxError("Not a GRIB file")
+            msg = "Not a GRIB file"
+            raise SyntaxError(msg)
 
         self.fp.seek(offset)
 
@@ -60,7 +61,8 @@ class GribStubImageFile(ImageFile.StubImageFile):
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr(_handler, "save"):
-        raise OSError("GRIB save handler not installed")
+        msg = "GRIB save handler not installed"
+        raise OSError(msg)
     _handler.save(im, fp, filename)
 
 
