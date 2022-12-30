@@ -146,7 +146,8 @@ class LutBuilder:
         for p in self.patterns:
             m = re.search(r"(\w*):?\s*\((.+?)\)\s*->\s*(\d)", p.replace("\n", ""))
             if not m:
-                raise Exception('Syntax error in pattern "' + p + '"')
+                msg = 'Syntax error in pattern "' + p + '"'
+                raise Exception(msg)
             options = m.group(1)
             pattern = m.group(2)
             result = int(m.group(3))
