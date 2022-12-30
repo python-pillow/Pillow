@@ -343,7 +343,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         image_params[n].x0 = image_params[n].y0 = 0;
         image_params[n].prec = prec;
         image_params[n].bpp = bpp;
-        image_params[n].sgnd = 0;
+        image_params[n].sgnd = context->sgnd == 0 ? 0 : 1;
     }
 
     image = opj_image_create(components, image_params, color_space);

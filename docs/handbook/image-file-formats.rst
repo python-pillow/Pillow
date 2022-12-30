@@ -474,6 +474,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     .. versionadded:: 2.5.0
 
+**comment**
+    A comment about the image.
+
+    .. versionadded:: 9.4.0
+
 
 .. note::
 
@@ -562,6 +567,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     have its quality layers decoded as they arrive at the decoder, while one
     encoded using RLCP mode will have increasing resolutions decoded as they
     arrive, and so on.
+
+**signed**
+    If true, then tell the encoder to save the image as signed.
+
+    .. versionadded:: 9.4.0
 
 **cinema_mode**
     Set the encoder to produce output compliant with the digital cinema
@@ -1123,6 +1133,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **method**
     Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 4.
+
+**exact**
+    If true, preserve the transparent RGB values. Otherwise, discard
+    invisible RGB values for better compression. Defaults to false.
+    Requires libwebp 0.5.0 or later.
 
 **icc_profile**
     The ICC Profile to include in the saved file. Only supported if

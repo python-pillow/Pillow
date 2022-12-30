@@ -284,7 +284,8 @@ def _show(image, title):
             super().__init__(master, image=self.image, bg="black", bd=0)
 
     if not tkinter._default_root:
-        raise OSError("tkinter not initialized")
+        msg = "tkinter not initialized"
+        raise OSError(msg)
     top = tkinter.Toplevel()
     if title:
         top.title(title)

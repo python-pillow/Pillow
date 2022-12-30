@@ -22,7 +22,14 @@ import itertools
 import os
 import struct
 
-from . import Image, ImageFile, ImageSequence, JpegImagePlugin, TiffImagePlugin
+from . import (
+    ExifTags,
+    Image,
+    ImageFile,
+    ImageSequence,
+    JpegImagePlugin,
+    TiffImagePlugin,
+)
 from ._binary import i16be as i16
 from ._binary import o32le
 
@@ -45,14 +52,22 @@ def _save_all(im, fp, filename):
             _save(im, fp, filename)
             return
 
+    mpf_offset = 28
     offsets = []
     for imSequence in itertools.chain([im], append_images):
         for im_frame in ImageSequence.Iterator(imSequence):
             if not offsets:
                 # APP2 marker
-                im.encoderinfo["extra"] = (
-                    b"\xFF\xE2" + struct.pack(">H", 6 + 70) + b"MPF\0" + b" " * 70
+                im_frame.encoderinfo["extra"] = (
+                    b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
                 )
+                exif = im_frame.encoderinfo.get("exif")
+                if isinstance(exif, Image.Exif):
+                    exif = exif.tobytes()
+                    im_frame.encoderinfo["exif"] = exif
+                if exif:
+                    mpf_offset += 4 + len(exif)
+
                 JpegImagePlugin._save(im_frame, fp, filename)
                 offsets.append(fp.tell())
             else:
@@ -60,6 +75,7 @@ def _save_all(im, fp, filename):
                 offsets.append(fp.tell() - offsets[-1])
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[0xB000] = b"0100"
     ifd[0xB001] = len(offsets)
 
     mpentries = b""
@@ -71,11 +87,11 @@ def _save_all(im, fp, filename):
             mptype = 0x000000  # Undefined
         mpentries += struct.pack("<LLLHH", mptype, size, data_offset, 0, 0)
         if i == 0:
-            data_offset -= 28
+            data_offset -= mpf_offset
         data_offset += size
     ifd[0xB002] = mpentries
 
-    fp.seek(28)
+    fp.seek(mpf_offset)
     fp.write(b"II\x2A\x00" + o32le(8) + ifd.tobytes(8))
     fp.seek(0, os.SEEK_END)
 
@@ -127,7 +143,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.fp.seek(self.offset + 2)  # skip SOI marker
         segment = self.fp.read(2)
         if not segment:
-            raise ValueError("No data found for frame")
+            msg = "No data found for frame"
+            raise ValueError(msg)
         self._size = self._initial_size
         if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2
@@ -136,7 +153,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
 
             mptype = self.mpinfo[0xB002][frame]["Attribute"]["MPType"]
             if mptype.startswith("Large Thumbnail"):
-                exif = self.getexif().get_ifd(0x8769)
+                exif = self.getexif().get_ifd(ExifTags.IFD.Exif)
                 if 40962 in exif and 40963 in exif:
                     self._size = (exif[40962], exif[40963])
         elif "exif" in self.info:

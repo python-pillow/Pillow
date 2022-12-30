@@ -133,7 +133,8 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
 
     if gs_windows_binary is not None:
         if not gs_windows_binary:
-            raise OSError("Unable to locate Ghostscript on paths")
+            msg = "Unable to locate Ghostscript on paths"
+            raise OSError(msg)
         command[0] = gs_windows_binary
 
     # push data through Ghostscript
@@ -229,12 +230,14 @@ class EpsImageFile(ImageFile.ImageFile):
         while s_raw:
             if s:
                 if len(s) > 255:
-                    raise SyntaxError("not an EPS file")
+                    msg = "not an EPS file"
+                    raise SyntaxError(msg)
 
                 try:
                     m = split.match(s)
                 except re.error as e:
-                    raise SyntaxError("not an EPS file") from e
+                    msg = "not an EPS file"
+                    raise SyntaxError(msg) from e
 
                 if m:
                     k, v = m.group(1, 2)
@@ -268,7 +271,8 @@ class EpsImageFile(ImageFile.ImageFile):
                         # tools mistakenly put in the Comments section
                         pass
                     else:
-                        raise OSError("bad EPS header")
+                        msg = "bad EPS header"
+                        raise OSError(msg)
 
             s_raw = fp.readline()
             s = s_raw.strip("\r\n")
@@ -282,7 +286,8 @@ class EpsImageFile(ImageFile.ImageFile):
         while s[:1] == "%":
 
             if len(s) > 255:
-                raise SyntaxError("not an EPS file")
+                msg = "not an EPS file"
+                raise SyntaxError(msg)
 
             if s[:11] == "%ImageData:":
                 # Encoded bitmapped image.
@@ -306,7 +311,8 @@ class EpsImageFile(ImageFile.ImageFile):
                 break
 
         if not box:
-            raise OSError("cannot determine EPS bounding box")
+            msg = "cannot determine EPS bounding box"
+            raise OSError(msg)
 
     def _find_offset(self, fp):
 
@@ -326,7 +332,8 @@ class EpsImageFile(ImageFile.ImageFile):
             offset = i32(s, 4)
             length = i32(s, 8)
         else:
-            raise SyntaxError("not an EPS file")
+            msg = "not an EPS file"
+            raise SyntaxError(msg)
 
         return length, offset
 
@@ -365,7 +372,8 @@ def _save(im, fp, filename, eps=1):
     elif im.mode == "CMYK":
         operator = (8, 4, b"false 4 colorimage")
     else:
-        raise ValueError("image mode is not supported")
+        msg = "image mode is not supported"
+        raise ValueError(msg)
 
     if eps:
         #

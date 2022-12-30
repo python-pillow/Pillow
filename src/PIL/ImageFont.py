@@ -26,6 +26,7 @@
 #
 
 import base64
+import math
 import os
 import sys
 import warnings
@@ -49,13 +50,15 @@ def __getattr__(name):
             if name in enum.__members__:
                 deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
 
 
 class _ImagingFtNotInstalled:
     # module placeholder
     def __getattr__(self, id):
-        raise ImportError("The _imagingft C module is not installed")
+        msg = "The _imagingft C module is not installed"
+        raise ImportError(msg)
 
 
 try:
@@ -104,7 +107,8 @@ class ImageFont:
             else:
                 if image:
                     image.close()
-                raise OSError("cannot find glyph data file")
+                msg = "cannot find glyph data file"
+                raise OSError(msg)
 
             self.file = fullname
 
@@ -115,7 +119,8 @@ class ImageFont:
 
         # read PILfont header
         if file.readline() != b"PILfont\n":
-            raise SyntaxError("Not a PILfont file")
+            msg = "Not a PILfont file"
+            raise SyntaxError(msg)
         file.readline().split(b";")
         self.info = []  # FIXME: should be a dictionary
         while True:
@@ -129,7 +134,8 @@ class ImageFont:
 
         # check image
         if image.mode not in ("1", "L"):
-            raise TypeError("invalid font image mode")
+            msg = "invalid font image mode"
+            raise TypeError(msg)
 
         image.load()
 
@@ -588,6 +594,7 @@ class FreeTypeFont:
         stroke_width=0,
         anchor=None,
         ink=0,
+        start=None,
     ):
         """
         Create a bitmap for the text.
@@ -647,6 +654,11 @@ class FreeTypeFont:
 
                          .. versionadded:: 8.0.0
 
+        :param start: Tuple of horizontal and vertical offset, as text may render
+                      differently when starting at fractional coordinates.
+
+                         .. versionadded:: 9.4.0
+
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
@@ -659,6 +671,7 @@ class FreeTypeFont:
             stroke_width=stroke_width,
             anchor=anchor,
             ink=ink,
+            start=start,
         )[0]
 
     def getmask2(
@@ -672,6 +685,7 @@ class FreeTypeFont:
         stroke_width=0,
         anchor=None,
         ink=0,
+        start=None,
         *args,
         **kwargs,
     ):
@@ -739,6 +753,11 @@ class FreeTypeFont:
 
                          .. versionadded:: 8.0.0
 
+        :param start: Tuple of horizontal and vertical offset, as text may render
+                      differently when starting at fractional coordinates.
+
+                         .. versionadded:: 9.4.0
+
         :return: A tuple of an internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
@@ -750,12 +769,23 @@ class FreeTypeFont:
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
-        size = size[0] + stroke_width * 2, size[1] + stroke_width * 2
+        if start is None:
+            start = (0, 0)
+        size = tuple(math.ceil(size[i] + stroke_width * 2 + start[i]) for i in range(2))
         offset = offset[0] - stroke_width, offset[1] - stroke_width
         Image._decompression_bomb_check(size)
         im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
         self.font.render(
-            text, im.id, mode, direction, features, language, stroke_width, ink
+            text,
+            im.id,
+            mode,
+            direction,
+            features,
+            language,
+            stroke_width,
+            ink,
+            start[0],
+            start[1],
         )
         return im, offset
 
@@ -792,7 +822,8 @@ class FreeTypeFont:
         try:
             names = self.font.getvarnames()
         except AttributeError as e:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+            msg = "FreeType 2.9.1 or greater is required"
+            raise NotImplementedError(msg) from e
         return [name.replace(b"\x00", b"") for name in names]
 
     def set_variation_by_name(self, name):
@@ -803,7 +834,7 @@ class FreeTypeFont:
         names = self.get_variation_names()
         if not isinstance(name, bytes):
             name = name.encode()
-        index = names.index(name)
+        index = names.index(name) + 1
 
         if index == getattr(self, "_last_variation_index", None):
             # When the same name is set twice in a row,
@@ -822,7 +853,8 @@ class FreeTypeFont:
         try:
             axes = self.font.getvaraxes()
         except AttributeError as e:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+            msg = "FreeType 2.9.1 or greater is required"
+            raise NotImplementedError(msg) from e
         for axis in axes:
             axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
@@ -835,7 +867,8 @@ class FreeTypeFont:
         try:
             self.font.setvaraxes(axes)
         except AttributeError as e:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+            msg = "FreeType 2.9.1 or greater is required"
+            raise NotImplementedError(msg) from e
 
 
 class TransposedFont:
@@ -889,9 +922,8 @@ class TransposedFont:
 
     def getlength(self, text, *args, **kwargs):
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
-            raise ValueError(
-                "text length is undefined for text rotated by 90 or 270 degrees"
-            )
+            msg = "text length is undefined for text rotated by 90 or 270 degrees"
+            raise ValueError(msg)
         return self.font.getlength(text, *args, **kwargs)
 
 
@@ -1036,7 +1068,8 @@ def load_path(filename):
                 return load(os.path.join(directory, filename))
             except OSError:
                 pass
-    raise OSError("cannot find font file")
+    msg = "cannot find font file"
+    raise OSError(msg)
 
 
 def load_default():

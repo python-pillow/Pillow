@@ -27,12 +27,13 @@ needs_sphinx = "2.4"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx_copybutton",
-    "sphinx_issues",
-    "sphinx_removed_in",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx_copybutton",
+    "sphinx_inline_tabs",
+    "sphinx_issues",
+    "sphinx_removed_in",
     "sphinxext.opengraph",
 ]
 

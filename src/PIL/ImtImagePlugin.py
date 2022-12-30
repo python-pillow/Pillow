@@ -41,7 +41,8 @@ class ImtImageFile(ImageFile.ImageFile):
 
         buffer = self.fp.read(100)
         if b"\n" not in buffer:
-            raise SyntaxError("not an IM file")
+            msg = "not an IM file"
+            raise SyntaxError(msg)
 
         xsize = ysize = 0
 

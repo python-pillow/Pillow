@@ -78,7 +78,8 @@ true color.
             elif bits == 24:
                 self.mode = "RGB"
             else:
-                raise SyntaxError("unknown number of bits")
+                msg = "unknown number of bits"
+                raise SyntaxError(msg)
 
             # data descriptor
             self.tile = [("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))]

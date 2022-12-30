@@ -1239,6 +1239,27 @@ def test_stroke_descender():
 
 
 @skip_unless_feature("freetype2")
+def test_split_word():
+    # Arrange
+    im = Image.new("RGB", (230, 55))
+    expected = im.copy()
+    expected_draw = ImageDraw.Draw(expected)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 48)
+    expected_draw.text((0, 0), "paradise", font=font)
+
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.text((0, 0), "par", font=font)
+
+    length = draw.textlength("par", font=font)
+    draw.text((length, 0), "adise", font=font)
+
+    # Assert
+    assert_image_equal(im, expected)
+
+
+@skip_unless_feature("freetype2")
 def test_stroke_multiline():
     # Arrange
     im = Image.new("RGB", (100, 250))

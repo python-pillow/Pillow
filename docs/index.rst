@@ -57,9 +57,9 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge
    :alt: Tidelift
 
-.. image:: https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml/badge.svg
-   :target: https://github.com/python-pillow/Pillow/actions/workflows/tidelift.yml
-   :alt: Tidelift Align
+.. image:: https://oss-fuzz-build-logs.storage.googleapis.com/badges/pillow.svg
+   :target: https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:pillow
+   :alt: Fuzzing Status
 
 .. image:: https://img.shields.io/pypi/v/pillow.svg
    :target: https://pypi.org/project/Pillow/

@@ -127,7 +127,8 @@ class IcoFile:
         # check magic
         s = buf.read(6)
         if not _accept(s):
-            raise SyntaxError("not an ICO file")
+            msg = "not an ICO file"
+            raise SyntaxError(msg)
 
         self.buf = buf
         self.entry = []
@@ -316,7 +317,8 @@ class IcoImageFile(ImageFile.ImageFile):
     @size.setter
     def size(self, value):
         if value not in self.info["sizes"]:
-            raise ValueError("This is not one of the allowed sizes of this image")
+            msg = "This is not one of the allowed sizes of this image"
+            raise ValueError(msg)
         self._size = value
 
     def load(self):

@@ -75,7 +75,8 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             return im
     # use xdisplay=None for default display on non-win32/macOS systems
     if not Image.core.HAVE_XCB:
-        raise OSError("Pillow was built without XCB support")
+        msg = "Pillow was built without XCB support"
+        raise OSError(msg)
     size, data = Image.core.grabscreen_x11(xdisplay)
     im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
     if bbox:
@@ -132,4 +133,17 @@ def grabclipboard():
                 return BmpImagePlugin.DibImageFile(data)
         return None
     else:
-        raise NotImplementedError("ImageGrab.grabclipboard() is macOS and Windows only")
+        if shutil.which("wl-paste"):
+            args = ["wl-paste"]
+        elif shutil.which("xclip"):
+            args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
+        else:
+            msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
+            raise NotImplementedError(msg)
+        fh, filepath = tempfile.mkstemp()
+        subprocess.call(args, stdout=fh)
+        os.close(fh)
+        im = Image.open(filepath)
+        im.load()
+        os.unlink(filepath)
+        return im

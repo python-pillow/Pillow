@@ -124,8 +124,9 @@ class Viewer:
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
-        os.system(self.get_command(path, **options))
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
+        os.system(self.get_command(path, **options))  # nosec
         return 1
 
 
@@ -176,7 +177,8 @@ class MacViewer(Viewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         subprocess.call(["open", "-a", "Preview.app", path])
         executable = sys.executable or shutil.which("python3")
         if executable:
@@ -226,7 +228,8 @@ class XDGViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         subprocess.Popen(["xdg-open", path])
         return 1
 
@@ -255,7 +258,8 @@ class DisplayViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         args = ["display"]
         title = options.get("title")
         if title:
@@ -286,7 +290,8 @@ class GmDisplayViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         subprocess.Popen(["gm", "display", path])
         return 1
 
@@ -311,7 +316,8 @@ class EogViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         subprocess.Popen(["eog", "-n", path])
         return 1
 
@@ -342,7 +348,8 @@ class XVViewer(UnixViewer):
                 deprecate("The 'file' argument", 10, "'path'")
                 path = options.pop("file")
             else:
-                raise TypeError("Missing required argument: 'path'")
+                msg = "Missing required argument: 'path'"
+                raise TypeError(msg)
         args = ["xv"]
         title = options.get("title")
         if title:

@@ -85,7 +85,8 @@ class GifImageFile(ImageFile.ImageFile):
         # Screen
         s = self.fp.read(13)
         if not _accept(s):
-            raise SyntaxError("not a GIF file")
+            msg = "not a GIF file"
+            raise SyntaxError(msg)
 
         self.info["version"] = s[:6]
         self._size = i16(s, 6), i16(s, 8)
@@ -152,7 +153,8 @@ class GifImageFile(ImageFile.ImageFile):
                 self._seek(f)
             except EOFError as e:
                 self.seek(last_frame)
-                raise EOFError("no more images in GIF file") from e
+                msg = "no more images in GIF file"
+                raise EOFError(msg) from e
 
     def _seek(self, frame, update_image=True):
 
@@ -171,7 +173,8 @@ class GifImageFile(ImageFile.ImageFile):
                 self.load()
 
         if frame != self.__frame + 1:
-            raise ValueError(f"cannot seek to frame {frame}")
+            msg = f"cannot seek to frame {frame}"
+            raise ValueError(msg)
 
         self.fp = self._fp
         if self.__offset:
@@ -565,6 +568,16 @@ def _write_single_frame(im, fp, palette):
     fp.write(b"\0")  # end of image data
 
 
+def _getbbox(base_im, im_frame):
+    if _get_palette_bytes(im_frame) == _get_palette_bytes(base_im):
+        delta = ImageChops.subtract_modulo(im_frame, base_im)
+    else:
+        delta = ImageChops.subtract_modulo(
+            im_frame.convert("RGB"), base_im.convert("RGB")
+        )
+    return delta.getbbox()
+
+
 def _write_multiple_frames(im, fp, palette):
 
     duration = im.encoderinfo.get("duration")
@@ -598,6 +611,12 @@ def _write_multiple_frames(im, fp, palette):
             if im_frames:
                 # delta frame
                 previous = im_frames[-1]
+                bbox = _getbbox(previous["im"], im_frame)
+                if not bbox:
+                    # This frame is identical to the previous frame
+                    if encoderinfo.get("duration"):
+                        previous["encoderinfo"]["duration"] += encoderinfo["duration"]
+                    continue
                 if encoderinfo.get("disposal") == 2:
                     if background_im is None:
                         color = im.encoderinfo.get(
@@ -606,21 +625,7 @@ def _write_multiple_frames(im, fp, palette):
                         background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
                         background_im.putpalette(im_frames[0]["im"].palette)
-                    base_im = background_im
-                else:
-                    base_im = previous["im"]
-                if _get_palette_bytes(im_frame) == _get_palette_bytes(base_im):
-                    delta = ImageChops.subtract_modulo(im_frame, base_im)
-                else:
-                    delta = ImageChops.subtract_modulo(
-                        im_frame.convert("RGB"), base_im.convert("RGB")
-                    )
-                bbox = delta.getbbox()
-                if not bbox:
-                    # This frame is identical to the previous frame
-                    if duration:
-                        previous["encoderinfo"]["duration"] += encoderinfo["duration"]
-                    continue
+                    bbox = _getbbox(background_im, im_frame)
             else:
                 bbox = None
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
@@ -886,20 +891,23 @@ def _get_palette_bytes(im):
 def _get_background(im, info_background):
     background = 0
     if info_background:
-        background = info_background
-        if isinstance(background, tuple):
+        if isinstance(info_background, tuple):
             # WebPImagePlugin stores an RGBA value in info["background"]
             # So it must be converted to the same format as GifImagePlugin's
             # info["background"] - a global color table index
             try:
-                background = im.palette.getcolor(background, im)
+                background = im.palette.getcolor(info_background, im)
             except ValueError as e:
-                if str(e) == "cannot allocate more than 256 colors":
+                if str(e) not in (
                     # If all 256 colors are in use,
                     # then there is no need for the background color
-                    return 0
-                else:
+                    "cannot allocate more than 256 colors",
+                    # Ignore non-opaque WebP background
+                    "cannot add non-opaque RGBA color to RGB palette",
+                ):
                     raise
+        else:
+            background = info_background
     return background
 
 

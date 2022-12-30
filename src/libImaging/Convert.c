@@ -43,13 +43,6 @@
 #define L(rgb) ((INT32)(rgb)[0] * 299 + (INT32)(rgb)[1] * 587 + (INT32)(rgb)[2] * 114)
 #define L24(rgb) ((rgb)[0] * 19595 + (rgb)[1] * 38470 + (rgb)[2] * 7471 + 0x8000)
 
-#ifndef round
-double
-round(double x) {
-    return floor(x + 0.5);
-}
-#endif
-
 /* ------------------- */
 /* 1 (bit) conversions */
 /* ------------------- */
@@ -483,6 +476,25 @@ rgba2rgbA(UINT8 *out, const UINT8 *in, int xsize) {
             *out++ = CLIP8((255 * in[2]) / alpha);
         }
         *out++ = in[3];
+    }
+}
+
+static void
+rgba2rgb_(UINT8 *out, const UINT8 *in, int xsize) {
+    int x;
+    unsigned int alpha;
+    for (x = 0; x < xsize; x++, in += 4) {
+        alpha = in[3];
+        if (alpha == 255 || alpha == 0) {
+            *out++ = in[0];
+            *out++ = in[1];
+            *out++ = in[2];
+        } else {
+            *out++ = CLIP8((255 * in[0]) / alpha);
+            *out++ = CLIP8((255 * in[1]) / alpha);
+            *out++ = CLIP8((255 * in[2]) / alpha);
+        }
+        *out++ = 255;
     }
 }
 
@@ -941,6 +953,7 @@ static struct {
     {"RGBA", "HSV", rgb2hsv},
 
     {"RGBa", "RGBA", rgba2rgbA},
+    {"RGBa", "RGB", rgba2rgb_},
 
     {"RGBX", "1", rgb2bit},
     {"RGBX", "L", rgb2l},

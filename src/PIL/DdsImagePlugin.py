@@ -114,13 +114,16 @@ class DdsImageFile(ImageFile.ImageFile):
 
     def _open(self):
         if not _accept(self.fp.read(4)):
-            raise SyntaxError("not a DDS file")
+            msg = "not a DDS file"
+            raise SyntaxError(msg)
         (header_size,) = struct.unpack("<I", self.fp.read(4))
         if header_size != 124:
-            raise OSError(f"Unsupported header size {repr(header_size)}")
+            msg = f"Unsupported header size {repr(header_size)}"
+            raise OSError(msg)
         header_bytes = self.fp.read(header_size - 4)
         if len(header_bytes) != 120:
-            raise OSError(f"Incomplete header: {len(header_bytes)} bytes")
+            msg = f"Incomplete header: {len(header_bytes)} bytes"
+            raise OSError(msg)
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
@@ -135,11 +138,19 @@ class DdsImageFile(ImageFile.ImageFile):
         fourcc = header.read(4)
         (bitcount,) = struct.unpack("<I", header.read(4))
         masks = struct.unpack("<4I", header.read(16))
-        if pfflags & DDPF_RGB:
+        if pfflags & DDPF_LUMINANCE:
+            # Texture contains uncompressed L or LA data
+            if pfflags & DDPF_ALPHAPIXELS:
+                self.mode = "LA"
+            else:
+                self.mode = "L"
+
+            self.tile = [("raw", (0, 0) + self.size, 0, (self.mode, 0, 1))]
+        elif pfflags & DDPF_RGB:
             # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             rawmode = ""
-            if bitcount == 32:
+            if pfflags & DDPF_ALPHAPIXELS:
                 rawmode += masks[0xFF000000]
             else:
                 self.mode = "RGB"
@@ -208,11 +219,11 @@ class DdsImageFile(ImageFile.ImageFile):
                         self.info["gamma"] = 1 / 2.2
                     return
                 else:
-                    raise NotImplementedError(
-                        f"Unimplemented DXGI format {dxgi_format}"
-                    )
+                    msg = f"Unimplemented DXGI format {dxgi_format}"
+                    raise NotImplementedError(msg)
             else:
-                raise NotImplementedError(f"Unimplemented pixel format {repr(fourcc)}")
+                msg = f"Unimplemented pixel format {repr(fourcc)}"
+                raise NotImplementedError(msg)
 
             self.tile = [
                 ("bcn", (0, 0) + self.size, data_start, (n, self.pixel_format))
@@ -223,8 +234,24 @@ class DdsImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, filename):
-    if im.mode not in ("RGB", "RGBA"):
-        raise OSError(f"cannot write mode {im.mode} as DDS")
+    if im.mode not in ("RGB", "RGBA", "L", "LA"):
+        msg = f"cannot write mode {im.mode} as DDS"
+        raise OSError(msg)
+
+    rawmode = im.mode
+    masks = [0xFF0000, 0xFF00, 0xFF]
+    if im.mode in ("L", "LA"):
+        pixel_flags = DDPF_LUMINANCE
+    else:
+        pixel_flags = DDPF_RGB
+        rawmode = rawmode[::-1]
+    if im.mode in ("LA", "RGBA"):
+        pixel_flags |= DDPF_ALPHAPIXELS
+        masks.append(0xFF000000)
+
+    bitcount = len(masks) * 8
+    while len(masks) < 4:
+        masks.append(0)
 
     fp.write(
         o32(DDS_MAGIC)
@@ -234,18 +261,15 @@ def _save(im, fp, filename):
         )  # flags
         + o32(im.height)
         + o32(im.width)
-        + o32((im.width * (32 if im.mode == "RGBA" else 24) + 7) // 8)  # pitch
+        + o32((im.width * bitcount + 7) // 8)  # pitch
         + o32(0)  # depth
         + o32(0)  # mipmaps
         + o32(0) * 11  # reserved
         + o32(32)  # pfsize
-        + o32(DDS_RGBA if im.mode == "RGBA" else DDPF_RGB)  # pfflags
+        + o32(pixel_flags)  # pfflags
         + o32(0)  # fourcc
-        + o32(32 if im.mode == "RGBA" else 24)  # bitcount
-        + o32(0xFF0000)  # rbitmask
-        + o32(0xFF00)  # gbitmask
-        + o32(0xFF)  # bbitmask
-        + o32(0xFF000000 if im.mode == "RGBA" else 0)  # abitmask
+        + o32(bitcount)  # bitcount
+        + b"".join(o32(mask) for mask in masks)  # rgbabitmask
         + o32(DDSCAPS_TEXTURE)  # dwCaps
         + o32(0)  # dwCaps2
         + o32(0)  # dwCaps3
@@ -255,7 +279,7 @@ def _save(im, fp, filename):
     if im.mode == "RGBA":
         r, g, b, a = im.split()
         im = Image.merge("RGBA", (a, r, g, b))
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (im.mode[::-1], 0, 1))])
+    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
 
 def _accept(prefix):

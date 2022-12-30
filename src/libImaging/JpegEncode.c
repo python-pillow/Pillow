@@ -277,6 +277,13 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
 
         case 4:
+
+            if (context->comment) {
+                jpeg_write_marker(&context->cinfo, JPEG_COM, (unsigned char *)context->comment, context->comment_size);
+            }
+            state->state++;
+
+        case 5:
             if (1024 > context->destination.pub.free_in_buffer) {
                 break;
             }
@@ -301,7 +308,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             state->state++;
             /* fall through */
 
-        case 5:
+        case 6:
 
             /* Finish compression */
             if (context->destination.pub.free_in_buffer < 100) {
@@ -310,6 +317,10 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             jpeg_finish_compress(&context->cinfo);
 
             /* Clean up */
+            if (context->comment) {
+                free(context->comment);
+                context->comment = NULL;
+            }
             if (context->extra) {
                 free(context->extra);
                 context->extra = NULL;

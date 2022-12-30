@@ -33,7 +33,8 @@ def getrgb(color):
     :return: ``(red, green, blue[, alpha])``
     """
     if len(color) > 100:
-        raise ValueError("color specifier is too long")
+        msg = "color specifier is too long"
+        raise ValueError(msg)
     color = color.lower()
 
     rgb = colormap.get(color, None)
@@ -115,7 +116,8 @@ def getrgb(color):
     m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
         return int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
-    raise ValueError(f"unknown color specifier: {repr(color)}")
+    msg = f"unknown color specifier: {repr(color)}"
+    raise ValueError(msg)
 
 
 def getcolor(color, mode):

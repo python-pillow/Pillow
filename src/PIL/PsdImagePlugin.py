@@ -65,7 +65,8 @@ class PsdImageFile(ImageFile.ImageFile):
 
         s = read(26)
         if not _accept(s) or i16(s, 4) != 1:
-            raise SyntaxError("not a PSD file")
+            msg = "not a PSD file"
+            raise SyntaxError(msg)
 
         psd_bits = i16(s, 22)
         psd_channels = i16(s, 12)
@@ -74,7 +75,8 @@ class PsdImageFile(ImageFile.ImageFile):
         mode, channels = MODES[(psd_mode, psd_bits)]
 
         if channels > psd_channels:
-            raise OSError("not enough channels")
+            msg = "not enough channels"
+            raise OSError(msg)
         if mode == "RGB" and psd_channels == 4:
             mode = "RGBA"
             channels = 4
@@ -152,7 +154,8 @@ class PsdImageFile(ImageFile.ImageFile):
             self.fp = self._fp
             return name, bbox
         except IndexError as e:
-            raise EOFError("no such layer") from e
+            msg = "no such layer"
+            raise EOFError(msg) from e
 
     def tell(self):
         # return layer number (0=image, 1..max=layers)
@@ -170,7 +173,8 @@ def _layerinfo(fp, ct_bytes):
 
     # sanity check
     if ct_bytes < (abs(ct) * 20):
-        raise SyntaxError("Layer block too short for number of layers requested")
+        msg = "Layer block too short for number of layers requested"
+        raise SyntaxError(msg)
 
     for _ in range(abs(ct)):
 

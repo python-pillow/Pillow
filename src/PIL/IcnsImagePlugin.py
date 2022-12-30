@@ -42,7 +42,8 @@ def read_32t(fobj, start_length, size):
     fobj.seek(start)
     sig = fobj.read(4)
     if sig != b"\x00\x00\x00\x00":
-        raise SyntaxError("Unknown signature, expecting 0x00000000")
+        msg = "Unknown signature, expecting 0x00000000"
+        raise SyntaxError(msg)
     return read_32(fobj, (start + 4, length - 4), size)
 
 
@@ -82,7 +83,8 @@ def read_32(fobj, start_length, size):
                 if bytesleft <= 0:
                     break
             if bytesleft != 0:
-                raise SyntaxError(f"Error reading channel [{repr(bytesleft)} left]")
+                msg = f"Error reading channel [{repr(bytesleft)} left]"
+                raise SyntaxError(msg)
             band = Image.frombuffer("L", pixel_size, b"".join(data), "raw", "L", 0, 1)
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
@@ -113,10 +115,11 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         or sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
     ):
         if not enable_jpeg2k:
-            raise ValueError(
+            msg = (
                 "Unsupported icon subimage format (rebuild PIL "
                 "with JPEG 2000 support to fix this)"
             )
+            raise ValueError(msg)
         # j2k, jpc or j2c
         fobj.seek(start)
         jp2kstream = fobj.read(length)
@@ -127,7 +130,8 @@ def read_png_or_jpeg2000(fobj, start_length, size):
             im = im.convert("RGBA")
         return {"RGBA": im}
     else:
-        raise ValueError("Unsupported icon subimage format")
+        msg = "Unsupported icon subimage format"
+        raise ValueError(msg)
 
 
 class IcnsFile:
@@ -168,12 +172,14 @@ class IcnsFile:
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
         if not _accept(sig):
-            raise SyntaxError("not an icns file")
+            msg = "not an icns file"
+            raise SyntaxError(msg)
         i = HEADERSIZE
         while i < filesize:
             sig, blocksize = nextheader(fobj)
             if blocksize <= 0:
-                raise SyntaxError("invalid block header")
+                msg = "invalid block header"
+                raise SyntaxError(msg)
             i += HEADERSIZE
             blocksize -= HEADERSIZE
             dct[sig] = (i, blocksize)
@@ -192,7 +198,8 @@ class IcnsFile:
     def bestsize(self):
         sizes = self.itersizes()
         if not sizes:
-            raise SyntaxError("No 32bit icon resources found")
+            msg = "No 32bit icon resources found"
+            raise SyntaxError(msg)
         return max(sizes)
 
     def dataforsize(self, size):
@@ -275,7 +282,8 @@ class IcnsImageFile(ImageFile.ImageFile):
             if value in simple_sizes:
                 info_size = self.info["sizes"][simple_sizes.index(value)]
         if info_size not in self.info["sizes"]:
-            raise ValueError("This is not one of the allowed sizes of this image")
+            msg = "This is not one of the allowed sizes of this image"
+            raise ValueError(msg)
         self._size = value
 
     def load(self):

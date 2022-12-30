@@ -84,9 +84,11 @@ class PpmImageFile(ImageFile.ImageFile):
             token += c
         if not token:
             # Token was not even 1 byte
-            raise ValueError("Reached EOF while reading header")
+            msg = "Reached EOF while reading header"
+            raise ValueError(msg)
         elif len(token) > 10:
-            raise ValueError(f"Token too long in file header: {token.decode()}")
+            msg = f"Token too long in file header: {token.decode()}"
+            raise ValueError(msg)
         return token
 
     def _open(self):
@@ -94,7 +96,8 @@ class PpmImageFile(ImageFile.ImageFile):
         try:
             mode = MODES[magic_number]
         except KeyError:
-            raise SyntaxError("not a PPM file")
+            msg = "not a PPM file"
+            raise SyntaxError(msg)
 
         if magic_number in (b"P1", b"P4"):
             self.custom_mimetype = "image/x-portable-bitmap"
@@ -122,9 +125,8 @@ class PpmImageFile(ImageFile.ImageFile):
             elif ix == 2:  # token is maxval
                 maxval = token
                 if not 0 < maxval < 65536:
-                    raise ValueError(
-                        "maxval must be greater than 0 and less than 65536"
-                    )
+                    msg = "maxval must be greater than 0 and less than 65536"
+                    raise ValueError(msg)
                 if maxval > 255 and mode == "L":
                     self.mode = "I"
 
@@ -208,7 +210,8 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
             tokens = b"".join(block.split())
             for token in tokens:
                 if token not in (48, 49):
-                    raise ValueError(f"Invalid token for this mode: {bytes([token])}")
+                    msg = b"Invalid token for this mode: %s" % bytes([token])
+                    raise ValueError(msg)
             data = (data + tokens)[:total_bytes]
         invert = bytes.maketrans(b"01", b"\xFF\x00")
         return data.translate(invert)
@@ -241,18 +244,19 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
             if block and not block[-1:].isspace():  # block might split token
                 half_token = tokens.pop()  # save half token for later
                 if len(half_token) > max_len:  # prevent buildup of half_token
-                    raise ValueError(
-                        f"Token too long found in data: {half_token[:max_len + 1]}"
+                    msg = (
+                        b"Token too long found in data: %s" % half_token[: max_len + 1]
                     )
+                    raise ValueError(msg)
 
             for token in tokens:
                 if len(token) > max_len:
-                    raise ValueError(
-                        f"Token too long found in data: {token[:max_len + 1]}"
-                    )
+                    msg = b"Token too long found in data: %s" % token[: max_len + 1]
+                    raise ValueError(msg)
                 value = int(token)
                 if value > maxval:
-                    raise ValueError(f"Channel value too large for this mode: {value}")
+                    msg = f"Channel value too large for this mode: {value}"
+                    raise ValueError(msg)
                 value = round(value / maxval * out_max)
                 data += o32(value) if self.mode == "I" else o8(value)
                 if len(data) == total_bytes:  # finished!
@@ -312,7 +316,8 @@ def _save(im, fp, filename):
     elif im.mode in ("RGB", "RGBA"):
         rawmode, head = "RGB", b"P6"
     else:
-        raise OSError(f"cannot write mode {im.mode} as PPM")
+        msg = f"cannot write mode {im.mode} as PPM"
+        raise OSError(msg)
     fp.write(head + b"\n%d %d\n" % im.size)
     if head == b"P6":
         fp.write(b"255\n")

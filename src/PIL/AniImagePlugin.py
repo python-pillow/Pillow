@@ -22,7 +22,8 @@ def _save_frame(im: Image.Image, fp: BytesIO, filename: str, info: dict):
     h = info.get("hotspots", [(0, 0) for _ in range(len(s))])
 
     if len(h) != len(s):
-        raise ValueError("Number of hotspots must be equal to number of cursor sizes")
+        msg = "Number of hotspots must be equal to number of cursor sizes"
+        raise ValueError(msg)
 
     # sort and remove duplicate sizes
     sizes, hotspots = [], []
@@ -154,7 +155,8 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
         seq_offset = fp.tell()
         for i in seq:
             if i >= len(frames):
-                raise ValueError("Sequence index out of animation frame bounds")
+                msg = "Sequence index out of animation frame bounds"
+                raise ValueError(msg)
 
             fp.write(o32(i))
 
@@ -172,10 +174,12 @@ def _write_multiple_frames(im: Image.Image, fp: BytesIO, filename: str):
 
         if seq:
             if len(rate) != len(seq):
-                raise ValueError("Length of rate must match length of sequence")
+                msg = "Length of rate must match length of sequence"
+                raise ValueError(msg)
         else:
             if len(rate) != len(frames):
-                raise ValueError("Length of rate must match number of frames")
+                msg = "Length of rate must match number of frames"
+                raise ValueError(msg)
 
         for r in rate:
             fp.write(o32(r))
@@ -220,12 +224,14 @@ def _write_info(im: Image.Image, fp: BytesIO, filename: str):
     if isinstance(inam, str):
         inam = inam.encode()
     if not isinstance(inam, bytes):
-        raise TypeError("'inam' argument must be either a string or bytes")
+        msg = "'inam' argument must be either a string or bytes"
+        raise TypeError(msg)
 
     if isinstance(iart, str):
         iart = iart.encode()
     if not isinstance(iart, bytes):
-        raise TypeError("'iart' argument must be either a string or bytes")
+        msg = "'iart' argument must be either a string or bytes"
+        raise TypeError(msg)
 
     fp.write(b"INFO")
     fp.write(b"INAM" + o32(0))
@@ -335,7 +341,8 @@ class AniFile:
                     listOffset = listOffset + lSize + 8
 
         if self.anih is None:
-            raise SyntaxError("not an ANI file")
+            msg = "not an ANI file"
+            raise SyntaxError(msg)
 
         if self.seq is None:
             self.seq = [i for i in range(self.anih["nFrames"])]
@@ -345,7 +352,8 @@ class AniFile:
 
     def frame(self, frame):
         if frame > self.anih["nFrames"]:
-            raise EOFError("Frame index out of animation bounds")
+            msg = "Frame index out of animation bounds"
+            raise EOFError(msg)
 
         offset, size = self.image_data[frame].values()
         self.buf.seek(offset)
@@ -406,7 +414,8 @@ class AniImageFile(ImageFile.ImageFile):
     @size.setter
     def size(self, value):
         if value not in self.info["sizes"]:
-            raise ValueError("This is not one of the allowed sizes of this image")
+            msg = "This is not one of the allowed sizes of this image"
+            raise ValueError(msg)
         self._size = value
 
     def load(self):
@@ -419,7 +428,8 @@ class AniImageFile(ImageFile.ImageFile):
     def seek(self, frame):
 
         if frame > self.info["frames"] - 1 or frame < 0:
-            raise EOFError("Frame index out of animation bounds")
+            msg = "Frame index out of animation bounds"
+            raise EOFError(msg)
 
         self.frame = frame
         self.load()

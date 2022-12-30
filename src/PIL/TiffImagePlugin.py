@@ -257,6 +257,8 @@ OPEN_INFO = {
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
 
+MAX_SAMPLESPERPIXEL = max(len(key_tp[4]) for key_tp in OPEN_INFO.keys())
+
 PREFIXES = [
     b"MM\x00\x2A",  # Valid TIFF header with big-endian byte order
     b"II\x2A\x00",  # Valid TIFF header with little-endian byte order
@@ -498,14 +500,16 @@ class ImageFileDirectory_v2(MutableMapping):
         :param prefix: Override the endianness of the file.
         """
         if not _accept(ifh):
-            raise SyntaxError(f"not a TIFF file (header {repr(ifh)} not valid)")
+            msg = f"not a TIFF file (header {repr(ifh)} not valid)"
+            raise SyntaxError(msg)
         self._prefix = prefix if prefix is not None else ifh[:2]
         if self._prefix == MM:
             self._endian = ">"
         elif self._prefix == II:
             self._endian = "<"
         else:
-            raise SyntaxError("not a TIFF IFD")
+            msg = "not a TIFF IFD"
+            raise SyntaxError(msg)
         self._bigtiff = ifh[2] == 43
         self.group = group
         self.tagtype = {}
@@ -522,7 +526,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @legacy_api.setter
     def legacy_api(self, value):
-        raise Exception("Not allowing setting of legacy api")
+        msg = "Not allowing setting of legacy api"
+        raise Exception(msg)
 
     def reset(self):
         self._tags_v1 = {}  # will remain empty if legacy_api is false
@@ -717,6 +722,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_writer(1)  # Basic type, except for the legacy API.
     def write_byte(self, data):
+        if isinstance(data, int):
+            data = bytes((data,))
         return data
 
     @_register_loader(2, 1)
@@ -728,6 +735,8 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(2)
     def write_string(self, value):
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
+        if isinstance(value, int):
+            value = str(value)
         if not isinstance(value, bytes):
             value = value.encode("ascii", "replace")
         return value + b"\0"
@@ -774,10 +783,11 @@ class ImageFileDirectory_v2(MutableMapping):
     def _ensure_read(self, fp, size):
         ret = fp.read(size)
         if len(ret) != size:
-            raise OSError(
+            msg = (
                 "Corrupt EXIF data.  "
                 f"Expecting to read {size} bytes but only got {len(ret)}. "
             )
+            raise OSError(msg)
         return ret
 
     def load(self, fp):
@@ -904,7 +914,8 @@ class ImageFileDirectory_v2(MutableMapping):
         if stripoffsets is not None:
             tag, typ, count, value, data = entries[stripoffsets]
             if data:
-                raise NotImplementedError("multistrip support not yet implemented")
+                msg = "multistrip support not yet implemented"
+                raise NotImplementedError(msg)
             value = self._pack("L", self._unpack("L", value)[0] + offset)
             entries[stripoffsets] = tag, typ, count, value, data
 
@@ -1117,7 +1128,8 @@ class TiffImageFile(ImageFile.ImageFile):
 
         while len(self._frame_pos) <= frame:
             if not self.__next:
-                raise EOFError("no more images in TIFF file")
+                msg = "no more images in TIFF file"
+                raise EOFError(msg)
             logger.debug(
                 f"Seeking to frame {frame}, on frame {self.__frame}, "
                 f"__next {self.__next}, location: {self.fp.tell()}"
@@ -1148,39 +1160,6 @@ class TiffImageFile(ImageFile.ImageFile):
     def tell(self):
         """Return the current frame number"""
         return self.__frame
-
-    def get_child_images(self):
-        if SUBIFD not in self.tag_v2:
-            return []
-        child_images = []
-        exif = self.getexif()
-        offset = None
-        for im_offset in self.tag_v2[SUBIFD]:
-            # reset buffered io handle in case fp
-            # was passed to libtiff, invalidating the buffer
-            current_offset = self._fp.tell()
-            if offset is None:
-                offset = current_offset
-
-            fp = self._fp
-            ifd = exif._get_ifd_dict(im_offset)
-            jpegInterchangeFormat = ifd.get(513)
-            if jpegInterchangeFormat is not None:
-                fp.seek(jpegInterchangeFormat)
-                jpeg_data = fp.read(ifd.get(514))
-
-                fp = io.BytesIO(jpeg_data)
-
-            with Image.open(fp) as im:
-                if jpegInterchangeFormat is None:
-                    im._frame_pos = [im_offset]
-                    im._seek(0)
-                im.load()
-                child_images.append(im)
-
-        if offset is not None:
-            self._fp.seek(offset)
-        return child_images
 
     def getxmp(self):
         """
@@ -1257,7 +1236,8 @@ class TiffImageFile(ImageFile.ImageFile):
         self.load_prepare()
 
         if not len(self.tile) == 1:
-            raise OSError("Not exactly one tile")
+            msg = "Not exactly one tile"
+            raise OSError(msg)
 
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
@@ -1289,7 +1269,8 @@ class TiffImageFile(ImageFile.ImageFile):
         try:
             decoder.setimage(self.im, extents)
         except ValueError as e:
-            raise OSError("Couldn't set the image") from e
+            msg = "Couldn't set the image"
+            raise OSError(msg) from e
 
         close_self_fp = self._exclusive_fp and not self.is_animated
         if hasattr(self.fp, "getvalue"):
@@ -1343,7 +1324,8 @@ class TiffImageFile(ImageFile.ImageFile):
         """Setup this image object based on current tags"""
 
         if 0xBC01 in self.tag_v2:
-            raise OSError("Windows Media Photo files not yet supported")
+            msg = "Windows Media Photo files not yet supported"
+            raise OSError(msg)
 
         # extract relevant tags
         self._compression = COMPRESSION_INFO[self.tag_v2.get(COMPRESSION, 1)]
@@ -1396,6 +1378,15 @@ class TiffImageFile(ImageFile.ImageFile):
             SAMPLESPERPIXEL,
             3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
         )
+
+        if samples_per_pixel > MAX_SAMPLESPERPIXEL:
+            # DOS check, samples_per_pixel can be a Long, and we extend the tuple below
+            logger.error(
+                "More samples per pixel than can be decoded: %s", samples_per_pixel
+            )
+            msg = "Invalid value for samples per pixel"
+            raise SyntaxError(msg)
+
         if samples_per_pixel < bps_actual_count:
             # If a file has more values in bps_tuple than expected,
             # remove the excess.
@@ -1406,7 +1397,8 @@ class TiffImageFile(ImageFile.ImageFile):
             bps_tuple = bps_tuple * samples_per_pixel
 
         if len(bps_tuple) != samples_per_pixel:
-            raise SyntaxError("unknown data organization")
+            msg = "unknown data organization"
+            raise SyntaxError(msg)
 
         # mode: check photometric interpretation and bits per pixel
         key = (
@@ -1422,7 +1414,8 @@ class TiffImageFile(ImageFile.ImageFile):
             self.mode, rawmode = OPEN_INFO[key]
         except KeyError as e:
             logger.debug("- unsupported format")
-            raise SyntaxError("unknown pixel mode") from e
+            msg = "unknown pixel mode"
+            raise SyntaxError(msg) from e
 
         logger.debug(f"- raw mode: {rawmode}")
         logger.debug(f"- pil mode: {self.mode}")
@@ -1538,7 +1531,8 @@ class TiffImageFile(ImageFile.ImageFile):
                         layer += 1
         else:
             logger.debug("- unsupported data organization")
-            raise SyntaxError("unknown data organization")
+            msg = "unknown data organization"
+            raise SyntaxError(msg)
 
         # Fix up info.
         if ICCPROFILE in self.tag_v2:
@@ -1590,7 +1584,8 @@ def _save(im, fp, filename):
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
-        raise OSError(f"cannot write mode {im.mode} as TIFF") from e
+        msg = f"cannot write mode {im.mode} as TIFF"
+        raise OSError(msg) from e
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
 
@@ -1755,11 +1750,11 @@ def _save(im, fp, filename):
         if "quality" in encoderinfo:
             quality = encoderinfo["quality"]
             if not isinstance(quality, int) or quality < 0 or quality > 100:
-                raise ValueError("Invalid quality setting")
+                msg = "Invalid quality setting"
+                raise ValueError(msg)
             if compression != "jpeg":
-                raise ValueError(
-                    "quality setting only supported for 'jpeg' compression"
-                )
+                msg = "quality setting only supported for 'jpeg' compression"
+                raise ValueError(msg)
             ifd[JPEGQUALITY] = quality
 
         logger.debug("Saving using libtiff encoder")
@@ -1856,7 +1851,8 @@ def _save(im, fp, filename):
             if s:
                 break
         if s < 0:
-            raise OSError(f"encoder error {s} when writing image file")
+            msg = f"encoder error {s} when writing image file"
+            raise OSError(msg)
 
     else:
         for tag in blocklist:
@@ -1931,7 +1927,8 @@ class AppendingTiffWriter:
         elif iimm == b"MM\x00\x2a":
             self.setEndian(">")
         else:
-            raise RuntimeError("Invalid TIFF file header")
+            msg = "Invalid TIFF file header"
+            raise RuntimeError(msg)
 
         self.skipIFDs()
         self.goToEnd()
@@ -1945,12 +1942,14 @@ class AppendingTiffWriter:
 
         iimm = self.f.read(4)
         if not iimm:
-            # raise RuntimeError("nothing written into new page")
+            # msg = "nothing written into new page"
+            # raise RuntimeError(msg)
             # Make it easy to finish a frame without committing to a new one.
             return
 
         if iimm != self.IIMM:
-            raise RuntimeError("IIMM of new page doesn't match IIMM of first page")
+            msg = "IIMM of new page doesn't match IIMM of first page"
+            raise RuntimeError(msg)
 
         ifd_offset = self.readLong()
         ifd_offset += self.offsetOfNewPage
@@ -2024,29 +2023,34 @@ class AppendingTiffWriter:
         self.f.seek(-2, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
         if bytes_written is not None and bytes_written != 4:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
+            msg = f"wrote only {bytes_written} bytes but wanted 4"
+            raise RuntimeError(msg)
 
     def rewriteLastShort(self, value):
         self.f.seek(-2, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
         if bytes_written is not None and bytes_written != 2:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 2")
+            msg = f"wrote only {bytes_written} bytes but wanted 2"
+            raise RuntimeError(msg)
 
     def rewriteLastLong(self, value):
         self.f.seek(-4, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
         if bytes_written is not None and bytes_written != 4:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
+            msg = f"wrote only {bytes_written} bytes but wanted 4"
+            raise RuntimeError(msg)
 
     def writeShort(self, value):
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
         if bytes_written is not None and bytes_written != 2:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 2")
+            msg = f"wrote only {bytes_written} bytes but wanted 2"
+            raise RuntimeError(msg)
 
     def writeLong(self, value):
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
         if bytes_written is not None and bytes_written != 4:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
+            msg = f"wrote only {bytes_written} bytes but wanted 4"
+            raise RuntimeError(msg)
 
     def close(self):
         self.finalize()
@@ -2089,7 +2093,8 @@ class AppendingTiffWriter:
 
     def fixOffsets(self, count, isShort=False, isLong=False):
         if not isShort and not isLong:
-            raise RuntimeError("offset is neither short nor long")
+            msg = "offset is neither short nor long"
+            raise RuntimeError(msg)
 
         for i in range(count):
             offset = self.readShort() if isShort else self.readLong()
@@ -2097,7 +2102,8 @@ class AppendingTiffWriter:
             if isShort and offset >= 65536:
                 # offset is now too large - we must convert shorts to longs
                 if count != 1:
-                    raise RuntimeError("not implemented")  # XXX TODO
+                    msg = "not implemented"
+                    raise RuntimeError(msg)  # XXX TODO
 
                 # simple case - the offset is just one and therefore it is
                 # local (not referenced with another offset)

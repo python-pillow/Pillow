@@ -40,7 +40,8 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
     h = im.encoderinfo.get("hotspots", [(0, 0) for i in range(len(s))])
 
     if len(h) != len(s):
-        raise ValueError("Number of hotspots must be equal to number of cursor sizes")
+        msg = "Number of hotspots must be equal to number of cursor sizes"
+        raise ValueError(msg)
 
     # sort and remove duplicate sizes
     sizes, hotspots = [], []
@@ -117,7 +118,8 @@ class CurFile(IcoImagePlugin.IcoFile):
         # check if CUR
         s = buf.read(6)
         if not _accept(s):
-            raise SyntaxError("not a CUR file")
+            msg = "not a CUR file"
+            raise SyntaxError(msg)
 
         self.buf = buf
         self.entry = []
@@ -211,7 +213,8 @@ class CurImageFile(IcoImagePlugin.IcoImageFile):
         if len(self.ico.entry) > 0:
             self.size = self.ico.entry[0]["dim"]
         else:
-            raise TypeError("No cursors were found")
+            msg = "No cursors were found"
+            raise TypeError(msg)
         self.load()
 
 

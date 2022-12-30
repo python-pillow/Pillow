@@ -138,7 +138,8 @@ def _save(im, fp, filename):
             bpp = im.info["bpp"]
             im = im.point(lambda x, maxval=(1 << bpp) - 1: maxval - (x & maxval))
         else:
-            raise OSError(f"cannot write mode {im.mode} as Palm")
+            msg = f"cannot write mode {im.mode} as Palm"
+            raise OSError(msg)
 
         # we ignore the palette here
         im.mode = "P"
@@ -154,7 +155,8 @@ def _save(im, fp, filename):
 
     else:
 
-        raise OSError(f"cannot write mode {im.mode} as Palm")
+        msg = f"cannot write mode {im.mode} as Palm"
+        raise OSError(msg)
 
     #
     # make sure image data is available

@@ -15,9 +15,7 @@ import subprocess
 import sys
 import warnings
 
-from setuptools import Extension
-from setuptools import __version__ as setuptools_version
-from setuptools import setup
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
 
@@ -364,15 +362,15 @@ class pil_build_ext(build_ext):
                 self.feature.required.discard(x)
                 _dbg("Disabling %s", x)
                 if getattr(self, f"enable_{x}"):
-                    raise ValueError(
-                        f"Conflicting options: --enable-{x} and --disable-{x}"
-                    )
+                    msg = f"Conflicting options: --enable-{x} and --disable-{x}"
+                    raise ValueError(msg)
                 if x == "freetype":
                     _dbg("--disable-freetype implies --disable-raqm")
                     if getattr(self, "enable_raqm"):
-                        raise ValueError(
+                        msg = (
                             "Conflicting options: --enable-raqm and --disable-freetype"
                         )
+                        raise ValueError(msg)
                     setattr(self, "disable_raqm", True)
             if getattr(self, f"enable_{x}"):
                 _dbg("Requiring %s", x)
@@ -383,13 +381,11 @@ class pil_build_ext(build_ext):
         for x in ("raqm", "fribidi"):
             if getattr(self, f"vendor_{x}"):
                 if getattr(self, "disable_raqm"):
-                    raise ValueError(
-                        f"Conflicting options: --vendor-{x} and --disable-raqm"
-                    )
+                    msg = f"Conflicting options: --vendor-{x} and --disable-raqm"
+                    raise ValueError(msg)
                 if x == "fribidi" and not getattr(self, "vendor_raqm"):
-                    raise ValueError(
-                        f"Conflicting options: --vendor-{x} and not --vendor-raqm"
-                    )
+                    msg = f"Conflicting options: --vendor-{x} and not --vendor-raqm"
+                    raise ValueError(msg)
                 _dbg("Using vendored version of %s", x)
                 self.feature.vendor.add(x)
 
@@ -852,7 +848,6 @@ class pil_build_ext(build_ext):
             sys.platform == "win32"
             and sys.version_info < (3, 9)
             and not (PLATFORM_PYPY or PLATFORM_MINGW)
-            and int(setuptools_version.split(".")[0]) < 60
         ):
             defs.append(("PILLOW_VERSION", f'"\\"{PILLOW_VERSION}\\""'))
         else:

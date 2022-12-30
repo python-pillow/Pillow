@@ -1048,6 +1048,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     PyObject *qtables = NULL;
     unsigned int *qarrays = NULL;
     int qtablesLen = 0;
+    char *comment = NULL;
+    Py_ssize_t comment_size;
     char *extra = NULL;
     Py_ssize_t extra_size;
     char *rawExif = NULL;
@@ -1055,7 +1057,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|nnnnnnnnOy#y#",
+            "ss|nnnnnnnnOz#y#y#",
             &mode,
             &rawmode,
             &quality,
@@ -1067,6 +1069,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
             &ydpi,
             &subsampling,
             &qtables,
+            &comment,
+            &comment_size,
             &extra,
             &extra_size,
             &rawExif,
@@ -1090,13 +1094,28 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // Freed in JpegEncode, Case 5
+    // Freed in JpegEncode, Case 6
     qarrays = get_qtables_arrays(qtables, &qtablesLen);
+
+    if (comment && comment_size > 0) {
+        /* malloc check ok, length is from python parsearg */
+        char *p = malloc(comment_size);  // Freed in JpegEncode, Case 6
+        if (!p) {
+            return ImagingError_MemoryError();
+        }
+        memcpy(p, comment, comment_size);
+        comment = p;
+    } else {
+        comment = NULL;
+    }
 
     if (extra && extra_size > 0) {
         /* malloc check ok, length is from python parsearg */
-        char *p = malloc(extra_size);  // Freed in JpegEncode, Case 5
+        char *p = malloc(extra_size);  // Freed in JpegEncode, Case 6
         if (!p) {
+            if (comment) {
+                free(comment);
+            }
             return ImagingError_MemoryError();
         }
         memcpy(p, extra, extra_size);
@@ -1107,8 +1126,11 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (rawExif && rawExifLen > 0) {
         /* malloc check ok, length is from python parsearg */
-        char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 5
+        char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 6
         if (!pp) {
+            if (comment) {
+                free(comment);
+            }
             if (extra) {
                 free(extra);
             }
@@ -1134,6 +1156,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     ((JPEGENCODERSTATE *)encoder->state.context)->streamtype = streamtype;
     ((JPEGENCODERSTATE *)encoder->state.context)->xdpi = xdpi;
     ((JPEGENCODERSTATE *)encoder->state.context)->ydpi = ydpi;
+    ((JPEGENCODERSTATE *)encoder->state.context)->comment = comment;
+    ((JPEGENCODERSTATE *)encoder->state.context)->comment_size = comment_size;
     ((JPEGENCODERSTATE *)encoder->state.context)->extra = extra;
     ((JPEGENCODERSTATE *)encoder->state.context)->extra_size = extra_size;
     ((JPEGENCODERSTATE *)encoder->state.context)->rawExif = rawExif;
@@ -1188,11 +1212,12 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     char *cinema_mode = "no";
     OPJ_CINEMA_MODE cine_mode;
     char mct = 0;
+    int sgnd = 0;
     Py_ssize_t fd = -1;
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbn",
+            "ss|OOOsOnOOOssbbn",
             &mode,
             &format,
             &offset,
@@ -1207,6 +1232,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             &progression,
             &cinema_mode,
             &mct,
+            &sgnd,
             &fd)) {
         return NULL;
     }
@@ -1305,6 +1331,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
     context->mct = mct;
+    context->sgnd = sgnd;
 
     return (PyObject *)encoder;
 }

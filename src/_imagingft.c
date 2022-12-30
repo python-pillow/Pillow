@@ -303,7 +303,7 @@ text_layout_raqm(
             goto failed;
         }
 
-        len = PySequence_Size(seq);
+        len = PySequence_Fast_GET_SIZE(seq);
         for (j = 0; j < len; j++) {
             PyObject *item = PySequence_Fast_GET_ITEM(seq, j);
             char *feature = NULL;
@@ -311,23 +311,26 @@ text_layout_raqm(
             PyObject *bytes;
 
             if (!PyUnicode_Check(item)) {
+                Py_DECREF(seq);
                 PyErr_SetString(PyExc_TypeError, "expected a string");
                 goto failed;
             }
-
-            if (PyUnicode_Check(item)) {
-                bytes = PyUnicode_AsUTF8String(item);
-                if (bytes == NULL) {
-                    goto failed;
-                }
-                feature = PyBytes_AS_STRING(bytes);
-                size = PyBytes_GET_SIZE(bytes);
+            bytes = PyUnicode_AsUTF8String(item);
+            if (bytes == NULL) {
+                Py_DECREF(seq);
+                goto failed;
             }
+            feature = PyBytes_AS_STRING(bytes);
+            size = PyBytes_GET_SIZE(bytes);
             if (!raqm_add_font_feature(rq, feature, size)) {
+                Py_DECREF(seq);
+                Py_DECREF(bytes);
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
                 goto failed;
             }
+            Py_DECREF(bytes);
         }
+        Py_DECREF(seq);
     }
 
     if (!raqm_set_freetype_face(rq, self->face)) {
@@ -774,13 +777,15 @@ font_render(FontObject *self, PyObject *args) {
     const char *lang = NULL;
     PyObject *features = Py_None;
     PyObject *string;
+    float x_start = 0;
+    float y_start = 0;
 
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
 
     if (!PyArg_ParseTuple(
             args,
-            "On|zzOziL:render",
+            "On|zzOziLff:render",
             &string,
             &id,
             &mode,
@@ -788,7 +793,9 @@ font_render(FontObject *self, PyObject *args) {
             &features,
             &lang,
             &stroke_width,
-            &foreground_ink_long)) {
+            &foreground_ink_long,
+            &x_start,
+            &y_start)) {
         return NULL;
     }
 
@@ -873,8 +880,8 @@ font_render(FontObject *self, PyObject *args) {
     }
 
     /* set pen position to text origin */
-    x = (-x_min + stroke_width) << 6;
-    y = (-y_max + (-stroke_width)) << 6;
+    x = (-x_min + stroke_width + x_start) * 64;
+    y = (-y_max + (-stroke_width) - y_start) * 64;
 
     if (stroker == NULL) {
         load_flags |= FT_LOAD_RENDER;
@@ -953,7 +960,7 @@ font_render(FontObject *self, PyObject *args) {
                 /* we didn't ask for color, fall through to default */
 #endif
             default:
-                PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
                 goto glyph_error;
         }
 
@@ -1020,7 +1027,7 @@ font_render(FontObject *self, PyObject *args) {
                         }
                     }
                 } else {
-                    PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                    PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
                     goto glyph_error;
                 }
             }
@@ -1179,7 +1186,7 @@ font_setvaraxes(FontObject *self, PyObject *args) {
     }
 
     num_coords = PyObject_Length(axes);
-    coords = malloc(2 * sizeof(coords));
+    coords = (FT_Fixed*)malloc(num_coords * sizeof(FT_Fixed));
     if (coords == NULL) {
         return PyErr_NoMemory();
     }

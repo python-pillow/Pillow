@@ -553,18 +553,20 @@ def test_apng_save_disposal(tmp_path):
 def test_apng_save_disposal_previous(tmp_path):
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)
-    transparent = Image.new("RGBA", size, (0, 0, 0, 0))
+    blue = Image.new("RGBA", size, (0, 0, 255, 255))
     red = Image.new("RGBA", size, (255, 0, 0, 255))
     green = Image.new("RGBA", size, (0, 255, 0, 255))
 
     # test OP_NONE
-    transparent.save(
+    blue.save(
         test_file,
         save_all=True,
         append_images=[red, green],
         disposal=PngImagePlugin.Disposal.OP_PREVIOUS,
     )
     with Image.open(test_file) as im:
+        assert im.getpixel((0, 0)) == (0, 0, 255, 255)
+
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
