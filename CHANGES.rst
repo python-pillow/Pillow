@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Improve exception traceback readability #6836
+  [hugovk, radarhere]
+
 - Do not attempt to read IFD1 if absent #6840
   [radarhere]
 
