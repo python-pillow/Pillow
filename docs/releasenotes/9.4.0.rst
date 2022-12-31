@@ -109,3 +109,40 @@ Added support for DDS L and LA images
 
 Support has been added to read and write L and LA DDS images in the uncompressed
 format, known as "luminance" textures.
+
+.. _restored-image-constants:
+
+Constants
+^^^^^^^^^
+
+In Pillow 9.1.0, the following constants were deprecated. That has been reversed and
+these constants will now remain available.
+
+- ``Image.NONE``
+- ``Image.NEAREST``
+- ``Image.ORDERED``
+- ``Image.RASTERIZE``
+- ``Image.FLOYDSTEINBERG``
+- ``Image.WEB``
+- ``Image.ADAPTIVE``
+- ``Image.AFFINE``
+- ``Image.EXTENT``
+- ``Image.PERSPECTIVE``
+- ``Image.QUAD``
+- ``Image.MESH``
+- ``Image.FLIP_LEFT_RIGHT``
+- ``Image.FLIP_TOP_BOTTOM``
+- ``Image.ROTATE_90``
+- ``Image.ROTATE_180``
+- ``Image.ROTATE_270``
+- ``Image.TRANSPOSE``
+- ``Image.TRANSVERSE``
+- ``Image.BOX``
+- ``Image.BILINEAR``
+- ``Image.HAMMING``
+- ``Image.BICUBIC``
+- ``Image.LANCZOS``
+- ``Image.MEDIANCUT``
+- ``Image.MAXCOVERAGE``
+- ``Image.FASTOCTREE``
+- ``Image.LIBIMAGEQUANT``
