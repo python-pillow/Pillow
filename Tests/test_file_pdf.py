@@ -286,6 +286,7 @@ def test_pdf_append_to_bytesio():
 
 
 @pytest.mark.timeout(1)
+@pytest.mark.skipif("PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower")
 @pytest.mark.parametrize("newline", (b"\r", b"\n"))
 def test_redos(newline):
     malicious = b" trailer<<>>" + newline * 3456
