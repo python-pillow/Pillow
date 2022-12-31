@@ -27,15 +27,16 @@ X1 = int(X0 * 3)
 Y0 = int(H / 4)
 Y1 = int(X0 * 3)
 
-# Two kinds of bounding box
-BBOX1 = [(X0, Y0), (X1, Y1)]
-BBOX2 = [X0, Y0, X1, Y1]
+# Bounding boxes
+BBOX = (((X0, Y0), (X1, Y1)), [(X0, Y0), (X1, Y1)], (X0, Y0, X1, Y1), [X0, Y0, X1, Y1])
 
-# Two kinds of coordinate sequences
-POINTS1 = [(10, 10), (20, 40), (30, 30)]
-POINTS2 = [10, 10, 20, 40, 30, 30]
-
-KITE_POINTS = [(10, 50), (70, 10), (90, 50), (70, 90), (10, 50)]
+# Coordinate sequences
+POINTS = (
+    ((10, 10), (20, 40), (30, 30)),
+    [(10, 10), (20, 40), (30, 30)],
+    (10, 10, 20, 40, 30, 30),
+    [10, 10, 20, 40, 30, 30],
+)
 
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
@@ -52,7 +53,7 @@ def test_sanity():
     draw.line(list(range(10)), pen)
 
 
-@pytest.mark.parametrize("bbox", (BBOX1, BBOX2))
+@pytest.mark.parametrize("bbox", BBOX)
 def test_ellipse(bbox):
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -80,7 +81,7 @@ def test_ellipse_edge():
     assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_edge.png", 1)
 
 
-@pytest.mark.parametrize("points", (POINTS1, POINTS2))
+@pytest.mark.parametrize("points", POINTS)
 def test_line(points):
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -94,7 +95,8 @@ def test_line(points):
     assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
 
 
-def test_line_pen_as_brush():
+@pytest.mark.parametrize("points", POINTS)
+def test_line_pen_as_brush(points):
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -103,13 +105,13 @@ def test_line_pen_as_brush():
 
     # Act
     # Pass in the pen as the brush parameter
-    draw.line(POINTS1, pen, brush)
+    draw.line(points, pen, brush)
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
 
 
-@pytest.mark.parametrize("points", (POINTS1, POINTS2))
+@pytest.mark.parametrize("points", POINTS)
 def test_polygon(points):
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -124,7 +126,7 @@ def test_polygon(points):
     assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon.png")
 
 
-@pytest.mark.parametrize("bbox", (BBOX1, BBOX2))
+@pytest.mark.parametrize("bbox", BBOX)
 def test_rectangle(bbox):
     # Arrange
     im = Image.new("RGB", (W, H))

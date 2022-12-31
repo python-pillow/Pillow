@@ -110,11 +110,13 @@ def test_qtables_leak():
         )
     ]
 
-    qtables = [standard_l_qtable, standard_chrominance_qtable]
-
-    for _ in range(iterations):
-        test_output = BytesIO()
-        im.save(test_output, "JPEG", qtables=qtables)
+    for qtables in (
+        (standard_l_qtable, standard_chrominance_qtable),
+        [standard_l_qtable, standard_chrominance_qtable],
+    ):
+        for _ in range(iterations):
+            test_output = BytesIO()
+            im.save(test_output, "JPEG", qtables=qtables)
 
 
 def test_exif_leak():
