@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Return from ImagingFill early if image has a zero dimension #6842
+  [radarhere]
+
 - Reversed deprecations for Image constants, except for duplicate Resampling attributes #6830
   [radarhere]
 
