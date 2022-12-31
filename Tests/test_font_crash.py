@@ -1,6 +1,6 @@
-from PIL import Image, ImageDraw, ImageFont
-
 import pytest
+
+from PIL import Image, ImageDraw, ImageFont
 
 from .helper import skip_unless_feature
 
