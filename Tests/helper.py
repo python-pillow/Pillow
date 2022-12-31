@@ -87,7 +87,10 @@ def assert_image(im, mode, size, msg=None):
 def assert_image_equal(a, b, msg=None):
     assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
-    if a.tobytes() != b.tobytes():
+
+    try:
+        assert a.tobytes() == b.tobytes(), msg or "got different content"
+    except AssertionError:
         if HAS_UPLOADER:
             try:
                 url = test_image_results.upload(a, b)
@@ -95,7 +98,7 @@ def assert_image_equal(a, b, msg=None):
             except Exception:
                 pass
 
-        assert a.tobytes() == b.tobytes(), msg or "got different content"
+        raise
 
 
 def assert_image_equal_tofile(a, filename, msg=None, mode=None):
