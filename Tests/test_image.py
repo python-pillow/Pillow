@@ -512,6 +512,14 @@ class TestImage:
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
 
+    @pytest.mark.timeout(0.75)
+    @pytest.mark.skipif(
+        "PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower"
+    )
+    @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
+    def test_empty_image(self, size):
+        Image.new("RGB", size)
+
     def test_storage_neg(self):
         # Storage.c accepted negative values for xsize, ysize.  Was
         # test_neg_ppm, but the core function for that has been
