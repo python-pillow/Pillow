@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Reversed deprecations for Image constants, except for duplicate Resampling attributes #6830
+  [radarhere]
+
 - Improve exception traceback readability #6836
   [hugovk, radarhere]
 
