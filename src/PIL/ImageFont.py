@@ -1020,7 +1020,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            lindirs = os.environ.get("XDG_DATA_DIRS")
             if not lindirs:
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share
