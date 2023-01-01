@@ -235,6 +235,20 @@ jobs:
         %pythonLocation%\python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor -C imagequant=disable .
       shell: cmd
 
+    - name: Test Wheel
+      if: "github.event_name != 'pull_request' && !contains(matrix.python-version, 'pypy')"
+      run: |
+        cd C:\pillow
+        python -m pip install pytest pytest-timeout
+        for %%f in (dist\*.whl) do python -m pip install %%f
+        reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe" /v "GlobalFlag" /t REG_SZ /d "0x02000000" /f
+        path C:\pillow\winbuild\build\bin\;%PATH%
+        set CI=
+        python -m pytest -vx Tests\check_wheel.py Tests
+      shell: cmd /c copy {0} docker.bat && docker run --rm -v %GITHUB_WORKSPACE%:C:\pillow %DOCKER_IMAGE% C:\pillow\docker.bat
+      env:
+        DOCKER_IMAGE: winamd64/python:${{ matrix.python-version }}-windowsservercore
+
     - name: Upload wheel
       uses: actions/upload-artifact@v3
       if: "github.event_name != 'pull_request'"
