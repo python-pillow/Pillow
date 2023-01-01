@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-9.4.0 (unreleased)
+9.4.0 (2023-01-02)
 ------------------
 
 - Fixed null pointer dereference crash with malformed font #6846
