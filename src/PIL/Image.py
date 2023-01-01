@@ -1271,7 +1271,8 @@ class Image:
         currently implemented only for JPEG and MPO images.
 
         :param mode: The requested mode.
-        :param size: The requested size.
+        :param size: The requested size in pixels, as a 2-tuple:
+           (width, height).
         """
         pass
 
@@ -2551,7 +2552,8 @@ class Image:
         apply this method to a :py:meth:`~PIL.Image.Image.copy` of the original
         image.
 
-        :param size: Requested size.
+        :param size: The requested size in pixels, as a 2-tuple:
+           (width, height).
         :param resample: Optional resampling filter.  This can be one
            of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
@@ -2638,7 +2640,8 @@ class Image:
         given size, and the same mode as the original, and copies data
         to the new image using the given transform.
 
-        :param size: The output size.
+        :param size: The output size in pixels, as a 2-tuple:
+           (width, height).
         :param method: The transformation method.  This is one of
           :py:data:`Transform.EXTENT` (cut out a rectangular subregion),
           :py:data:`Transform.AFFINE` (affine transform),
