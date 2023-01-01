@@ -238,16 +238,8 @@ jobs:
     - name: Test Wheel
       if: "github.event_name != 'pull_request' && !contains(matrix.python-version, 'pypy')"
       run: |
-        cd C:\pillow
-        python -m pip install pytest pytest-timeout
-        for %%f in (dist\*.whl) do python -m pip install %%f
-        reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe" /v "GlobalFlag" /t REG_SZ /d "0x02000000" /f
-        path C:\pillow\winbuild\build\bin\;%PATH%
-        set CI=
-        python -m pytest -vx Tests\check_wheel.py Tests
-      shell: cmd /c copy {0} docker.bat && docker run --rm -v %GITHUB_WORKSPACE%:C:\pillow %DOCKER_IMAGE% C:\pillow\docker.bat
-      env:
-        DOCKER_IMAGE: winamd64/python:${{ matrix.python-version }}-windowsservercore
+        docker run --rm -v ${env:GITHUB_WORKSPACE}:C:\pillow mcr.microsoft.com/windows/servercore:ltsc2022 powershell C:\pillow\winbuild\test_docker.ps1 ${{ matrix.python-version }}.0 ${{ matrix.architecture }}
+      shell: pwsh
 
     - name: Upload wheel
       uses: actions/upload-artifact@v3
