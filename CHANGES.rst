@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.4.0 (unreleased)
 ------------------
 
+- Fixed null pointer dereference crash with malformed font #6846
+  [wiredfool, radarhere]
+
 - Return from ImagingFill early if image has a zero dimension #6842
   [radarhere]
 
