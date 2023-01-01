@@ -5,6 +5,7 @@ Helper functions.
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import sysconfig
 import tempfile
@@ -258,11 +259,21 @@ def hopper(mode=None, cache={}):
 
 
 def djpeg_available():
-    return bool(shutil.which("djpeg"))
+    if shutil.which("djpeg"):
+        try:
+            subprocess.check_call(["djpeg", "-version"])
+            return True
+        except subprocess.CalledProcessError:
+            return False
 
 
 def cjpeg_available():
-    return bool(shutil.which("cjpeg"))
+    if shutil.which("cjpeg"):
+        try:
+            subprocess.check_call(["cjpeg", "-version"])
+            return True
+        except subprocess.CalledProcessError:
+            return False
 
 
 def netpbm_available():

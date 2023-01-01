@@ -15,6 +15,8 @@ class TestImageGrab:
         sys.platform not in ("win32", "darwin"), reason="requires Windows or macOS"
     )
     def test_grab(self):
+        if os.environ.get("USERNAME") == "ContainerAdministrator":
+            pytest.skip("can't grab screen when running in Docker")
         ImageGrab.grab()
         ImageGrab.grab(include_layered_windows=True)
         ImageGrab.grab(all_screens=True)

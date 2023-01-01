@@ -88,7 +88,7 @@ version = {attr = "PIL.__version__"}
 
 [tool.cibuildwheel]
 before-all = ".github/workflows/wheels-dependencies.sh"
-config-settings = "raqm=enable raqm=vendor fribidi=vendor"
+config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
