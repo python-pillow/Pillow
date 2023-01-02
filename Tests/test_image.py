@@ -8,7 +8,7 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
-from typing import IO, NamedTuple
+from typing import IO
 
 import pytest
 
@@ -23,49 +23,18 @@ from PIL import (
 )
 
 from .helper import (
+    ImageModeInfo,
     assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
+    image_mode_names,
+    image_modes,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
 )
-
-
-class ImageModeInfo(NamedTuple):
-    name: str
-    pixel_size: int
-
-
-image_modes = (
-    ImageModeInfo("1", 1),
-    ImageModeInfo("L", 1),
-    ImageModeInfo("LA", 4),
-    ImageModeInfo("La", 4),
-    ImageModeInfo("P", 1),
-    ImageModeInfo("PA", 4),
-    ImageModeInfo("F", 4),
-    ImageModeInfo("I", 4),
-    ImageModeInfo("I;16", 2),
-    ImageModeInfo("I;16L", 2),
-    ImageModeInfo("I;16B", 2),
-    ImageModeInfo("I;16N", 2),
-    ImageModeInfo("RGB", 4),
-    ImageModeInfo("RGBA", 4),
-    ImageModeInfo("RGBa", 4),
-    ImageModeInfo("RGBX", 4),
-    ImageModeInfo("BGR;15", 2),
-    ImageModeInfo("BGR;16", 2),
-    ImageModeInfo("BGR;24", 3),
-    ImageModeInfo("CMYK", 4),
-    ImageModeInfo("YCbCr", 4),
-    ImageModeInfo("HSV", 4),
-    ImageModeInfo("LAB", 4),
-)
-
-image_mode_names = [mode.name for mode in image_modes]
 
 
 class TestImage:
