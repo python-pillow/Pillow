@@ -58,10 +58,7 @@ def test_path():
     assert list(p) == [(0.0, 1.0)]
 
     arr = array.array("f", [0, 1])
-    if hasattr(arr, "tobytes"):
-        p = ImagePath.Path(arr.tobytes())
-    else:
-        p = ImagePath.Path(arr.tostring())
+    p = ImagePath.Path(arr.tobytes())
     assert list(p) == [(0.0, 1.0)]
 
 
