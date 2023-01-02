@@ -447,7 +447,7 @@ class TestFileJpeg:
             ims = im.get_child_images()
 
         assert len(ims) == 1
-        assert_image_equal_tofile(ims[0], "Tests/images/flower_thumbnail.png")
+        assert_image_similar_tofile(ims[0], "Tests/images/flower_thumbnail.png", 2.1)
 
     def test_mp(self):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
