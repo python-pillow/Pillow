@@ -236,9 +236,9 @@ jobs:
       shell: cmd
 
     - name: Test Wheel
-      if: "github.event_name != 'pull_request' && !contains(matrix.python-version, 'pypy')"
+      if: "github.event_name != 'pull_request'"
       run: |
-        docker run --rm -v ${env:GITHUB_WORKSPACE}:C:\pillow mcr.microsoft.com/windows/servercore:ltsc2022 powershell C:\pillow\winbuild\test_docker.ps1 ${{ matrix.python-version }}.0 ${{ matrix.architecture }}
+        docker run --rm -v ${env:GITHUB_WORKSPACE}:C:\pillow mcr.microsoft.com/windows/servercore:ltsc2022 powershell C:\pillow\winbuild\test_docker.ps1 ${{ matrix.python-version }} ${{ matrix.architecture }}
       shell: pwsh
 
     - name: Upload wheel
