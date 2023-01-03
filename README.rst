@@ -42,6 +42,9 @@ Wheels are uploaded to https://github.com/python-pillow/pillow-wheels/releases.
 Credentials for this specific repo are stored in a Travis CI secret, so the upload
 won't work from another repository.
 
+Windows wheels are not created here. Instead, they are
+`GitHub Actions artifacts created on each run of the Pillow repository <https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml?query=branch%3Amain>`_.
+
 PyPI
 ~~~~
 
