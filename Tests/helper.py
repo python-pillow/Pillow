@@ -15,6 +15,9 @@ from packaging.version import parse as parse_version
 
 from PIL import Image, ImageMath, features
 
+# overridden in conftest.py
+pytestconfig = {"option": {"verbose": 0}}
+
 logger = logging.getLogger(__name__)
 
 
@@ -88,7 +91,10 @@ def assert_image_equal(a, b, msg=None):
     assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
 
+    original_verbosity = pytestconfig.option.verbose
     try:
+        # set pytest's verbosity to 0 so that it doesn't show the full bytes diff
+        pytestconfig.option.verbose = 0
         assert a.tobytes() == b.tobytes(), msg or "got different content"
     except AssertionError:
         if HAS_UPLOADER:
@@ -99,6 +105,8 @@ def assert_image_equal(a, b, msg=None):
                 pass
 
         raise
+    finally:
+        pytestconfig.option.verbose = original_verbosity
 
 
 def assert_image_equal_tofile(a, filename, msg=None, mode=None):
