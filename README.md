@@ -90,7 +90,7 @@ As of 2019, Pillow development is
                 src="https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg"></a>
             <a href="https://fosstodon.org/@pillow"><img
                 alt="Follow on https://fosstodon.org/@pillow"
-                src="https://img.shields.io/badge/publish-on%20Mastodon-595aff"
+                src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"
                 rel="me"></a>
         </td>
     </tr>
