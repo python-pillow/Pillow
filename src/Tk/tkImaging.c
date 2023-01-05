@@ -368,7 +368,7 @@ load_tkinter_funcs(void) {
     } else if (found_tk != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tk routines");
     }
-    return (int) ((found_tcl != 1) && (found_tk != 1));
+    return (int) ((found_tcl != 1) || (found_tk != 1));
 }
 
 #else /* not Windows */
