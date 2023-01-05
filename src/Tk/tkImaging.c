@@ -365,7 +365,7 @@ load_tkinter_funcs(void) {
     free(hMods);
     if (found_tcl != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tcl routines");
-    } else if (found_tk != 1) {
+    } else if (found_tk == 0) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tk routines");
     }
     return (int) ((found_tcl != 1) || (found_tk != 1));
