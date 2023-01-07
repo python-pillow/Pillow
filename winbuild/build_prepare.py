@@ -39,7 +39,7 @@ def cmd_rmdir(path):
 def cmd_nmake(makefile=None, target="", params=None):
     if params is None:
         params = ""
-    elif isinstance(params, list) or isinstance(params, tuple):
+    elif isinstance(params, (list, tuple)):
         params = " ".join(params)
     else:
         params = str(params)
@@ -58,7 +58,7 @@ def cmd_nmake(makefile=None, target="", params=None):
 def cmd_cmake(params=None, file="."):
     if params is None:
         params = ""
-    elif isinstance(params, list) or isinstance(params, tuple):
+    elif isinstance(params, (list, tuple)):
         params = " ".join(params)
     else:
         params = str(params)
