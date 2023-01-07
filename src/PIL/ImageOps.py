@@ -248,7 +248,7 @@ def contain(image, size, method=Image.Resampling.BICUBIC):
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: Resampling method to use. Default is
-                   :py:attr:`PIL.Image.Resampling.BICUBIC`.
+                   :py:attr:`~PIL.Image.Resampling.BICUBIC`.
                    See :ref:`concept-filters`.
     :return: An image.
     """
@@ -277,7 +277,7 @@ def pad(image, size, method=Image.Resampling.BICUBIC, color=None, centering=(0.5
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: Resampling method to use. Default is
-                   :py:attr:`PIL.Image.Resampling.BICUBIC`.
+                   :py:attr:`~PIL.Image.Resampling.BICUBIC`.
                    See :ref:`concept-filters`.
     :param color: The background color of the padded image.
     :param centering: Control the position of the original image within the
@@ -330,7 +330,7 @@ def scale(image, factor, resample=Image.Resampling.BICUBIC):
     :param image: The image to rescale.
     :param factor: The expansion factor, as a float.
     :param resample: Resampling method to use. Default is
-                     :py:attr:`PIL.Image.Resampling.BICUBIC`.
+                     :py:attr:`~PIL.Image.Resampling.BICUBIC`.
                      See :ref:`concept-filters`.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
@@ -428,7 +428,7 @@ def fit(image, size, method=Image.Resampling.BICUBIC, bleed=0.0, centering=(0.5,
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: Resampling method to use. Default is
-                   :py:attr:`PIL.Image.Resampling.BICUBIC`.
+                   :py:attr:`~PIL.Image.Resampling.BICUBIC`.
                    See :ref:`concept-filters`.
     :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
