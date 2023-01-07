@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+9.5.0 (unreleased)
+------------------
+
+- Support arbitrary number of loaded modules on Windows #6761
+  [javidcf, radarhere, nulano]
+
 9.4.0 (2023-01-02)
 ------------------
 
