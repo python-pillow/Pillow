@@ -238,15 +238,13 @@ def _layerinfo(fp, ct_bytes):
         layers.append((name, mode, (x0, y0, x1, y1)))
 
     # get tiles
-    i = 0
-    for name, mode, bbox in layers:
+    for i, (name, mode, bbox) in enumerate(layers):
         tile = []
         for m in mode:
             t = _maketile(fp, m, bbox, 1)
             if t:
                 tile.extend(t)
         layers[i] = name, mode, bbox, tile
-        i += 1
 
     return layers
 

@@ -168,8 +168,7 @@ def test_mp_no_data():
 def test_mp_attribute(test_file):
     with Image.open(test_file) as im:
         mpinfo = im._getmp()
-    frame_number = 0
-    for mpentry in mpinfo[0xB002]:
+    for frame_number, mpentry in enumerate(mpinfo[0xB002]):
         mpattr = mpentry["Attribute"]
         if frame_number:
             assert not mpattr["RepresentativeImageFlag"]
@@ -180,7 +179,6 @@ def test_mp_attribute(test_file):
         assert mpattr["ImageDataFormat"] == "JPEG"
         assert mpattr["MPType"] == "Multi-Frame Image: (Disparity)"
         assert mpattr["Reserved"] == 0
-        frame_number += 1
 
 
 @pytest.mark.parametrize("test_file", test_files)
