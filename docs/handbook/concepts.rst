@@ -148,44 +148,44 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 
 .. py:currentmodule:: PIL.Image
 
-.. data:: NEAREST
+.. data:: Resampling.NEAREST
 
     Pick one nearest pixel from the input image. Ignore all other input pixels.
 
-.. data:: BOX
+.. data:: Resampling.BOX
 
     Each pixel of source image contributes to one pixel of the
     destination image with identical weights.
-    For upscaling is equivalent of :data:`NEAREST`.
+    For upscaling is equivalent of :data:`Resampling.NEAREST`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 3.4.0
 
-.. data:: BILINEAR
+.. data:: Resampling.BILINEAR
 
     For resize calculate the output pixel value using linear interpolation
     on all pixels that may contribute to the output value.
     For other transformations linear interpolation over a 2x2 environment
     in the input image is used.
 
-.. data:: HAMMING
+.. data:: Resampling.HAMMING
 
-    Produces a sharper image than :data:`BILINEAR`, doesn't have dislocations
-    on local level like with :data:`BOX`.
+    Produces a sharper image than :data:`Resampling.BILINEAR`, doesn't have
+    dislocations on local level like with :data:`Resampling.BOX`.
     This filter can only be used with the :py:meth:`~PIL.Image.Image.resize`
     and :py:meth:`~PIL.Image.Image.thumbnail` methods.
 
     .. versionadded:: 3.4.0
 
-.. data:: BICUBIC
+.. data:: Resampling.BICUBIC
 
     For resize calculate the output pixel value using cubic interpolation
     on all pixels that may contribute to the output value.
     For other transformations cubic interpolation over a 4x4 environment
     in the input image is used.
 
-.. data:: LANCZOS
+.. data:: Resampling.LANCZOS
 
     Calculate the output pixel value using a high-quality Lanczos filter (a
     truncated sinc) on all pixels that may contribute to the output value.
@@ -198,19 +198,19 @@ pixel, the Python Imaging Library provides different resampling *filters*.
 Filters comparison table
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+----------------+-------------+-----------+-------------+
-| Filter         | Downscaling | Upscaling | Performance |
-|                | quality     | quality   |             |
-+================+=============+===========+=============+
-|:data:`NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
-+----------------+-------------+-----------+-------------+
-|:data:`BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
-+----------------+-------------+-----------+-------------+
-|:data:`BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
-+----------------+-------------+-----------+-------------+
-|:data:`HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
-+----------------+-------------+-----------+-------------+
-|:data:`BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
-+----------------+-------------+-----------+-------------+
-|:data:`LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
-+----------------+-------------+-----------+-------------+
++---------------------------+-------------+-----------+-------------+
+| Filter                    | Downscaling | Upscaling | Performance |
+|                           | quality     | quality   |             |
++===========================+=============+===========+=============+
+|:data:`Resampling.NEAREST` |             |           | ⭐⭐⭐⭐⭐  |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.BOX`     | ⭐          |           | ⭐⭐⭐⭐    |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.BILINEAR`| ⭐          | ⭐        | ⭐⭐⭐      |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.HAMMING` | ⭐⭐        |           | ⭐⭐⭐      |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.BICUBIC` | ⭐⭐⭐      | ⭐⭐⭐    | ⭐⭐        |
++---------------------------+-------------+-----------+-------------+
+|:data:`Resampling.LANCZOS` | ⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐          |
++---------------------------+-------------+-----------+-------------+
