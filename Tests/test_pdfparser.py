@@ -88,9 +88,8 @@ def test_parsing():
             b"D:20180729214124+08'00'": "20180729134124",
             b"D:20180729214124-05'00'": "20180730024124",
         }.items():
-            d = PdfParser.get_value(b"<</" + name.encode() + b" (" + date + b")>>", 0)[
-                0
-            ]
+            b = b"<</" + name.encode() + b" (" + date + b")>>"
+            d = PdfParser.get_value(b, 0)[0]
             assert time.strftime("%Y%m%d%H%M%S", getattr(d, name)) == value
 
 
