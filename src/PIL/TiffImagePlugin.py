@@ -257,7 +257,7 @@ OPEN_INFO = {
     (MM, 8, (1,), 1, (8, 8, 8), ()): ("LAB", "LAB"),
 }
 
-MAX_SAMPLESPERPIXEL = max(len(key_tp[4]) for key_tp in OPEN_INFO.keys())
+MAX_SAMPLESPERPIXEL = max(len(key_tp[4]) for key_tp in OPEN_INFO)
 
 PREFIXES = [
     b"MM\x00\x2A",  # Valid TIFF header with big-endian byte order
@@ -1222,7 +1222,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
             # load IFD data from fp before it is closed
             exif = self.getexif()
-            for key in TiffTags.TAGS_V2_GROUPS.keys():
+            for key in TiffTags.TAGS_V2_GROUPS:
                 if key not in exif:
                     continue
                 exif.get_ifd(key)
@@ -1629,7 +1629,7 @@ def _save(im, fp, filename):
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
     for key in info:
-        if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS.keys():
+        if isinstance(info, Image.Exif) and key in TiffTags.TAGS_V2_GROUPS:
             ifd[key] = info.get_ifd(key)
         else:
             ifd[key] = info.get(key)
