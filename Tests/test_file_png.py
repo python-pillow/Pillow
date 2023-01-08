@@ -593,7 +593,7 @@ class TestFilePng:
 
     def test_textual_chunks_after_idat(self):
         with Image.open("Tests/images/hopper.png") as im:
-            assert "comment" in im.text.keys()
+            assert "comment" in im.text
             for k, v in {
                 "date:create": "2014-09-04T09:37:08+03:00",
                 "date:modify": "2014-09-04T09:37:08+03:00",

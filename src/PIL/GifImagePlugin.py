@@ -487,7 +487,7 @@ def _normalize_mode(im):
     if Image.getmodebase(im.mode) == "RGB":
         im = im.convert("P", palette=Image.Palette.ADAPTIVE)
         if im.palette.mode == "RGBA":
-            for rgba in im.palette.colors.keys():
+            for rgba in im.palette.colors:
                 if rgba[3] == 0:
                     im.info["transparency"] = im.palette.colors[rgba]
                     break
