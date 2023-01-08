@@ -158,39 +158,42 @@ def test_optimize():
     assert test_bilevel(1) == 799
 
 
-def test_optimize_correctness():
-    # 256 color Palette image, posterize to > 128 and < 128 levels
-    # Size bigger and smaller than 512x512
+@pytest.mark.parametrize(
+    "colors, size, expected_palette_length",
+    (
+        # These do optimize the palette
+        (256, 511, 256),
+        (255, 511, 255),
+        (129, 511, 129),
+        (128, 511, 128),
+        (64, 511, 64),
+        (4, 511, 4),
+        # These don't optimize the palette
+        (128, 513, 256),
+        (64, 513, 256),
+        (4, 513, 256),
+    ),
+)
+def test_optimize_correctness(colors, size, expected_palette_length):
+    # 256 color Palette image, posterize to > 128 and < 128 levels.
+    # Size bigger and smaller than 512x512.
     # Check the palette for number of colors allocated.
-    # Check for correctness after conversion back to RGB
-    def check(colors, size, expected_palette_length):
-        # make an image with empty colors in the start of the palette range
-        im = Image.frombytes(
-            "P", (colors, colors), bytes(range(256 - colors, 256)) * colors
-        )
-        im = im.resize((size, size))
-        outfile = BytesIO()
-        im.save(outfile, "GIF")
-        outfile.seek(0)
-        with Image.open(outfile) as reloaded:
-            # check palette length
-            palette_length = max(i + 1 for i, v in enumerate(reloaded.histogram()) if v)
-            assert expected_palette_length == palette_length
+    # Check for correctness after conversion back to RGB.
 
-            assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
+    # make an image with empty colors in the start of the palette range
+    im = Image.frombytes(
+        "P", (colors, colors), bytes(range(256 - colors, 256)) * colors
+    )
+    im = im.resize((size, size))
+    outfile = BytesIO()
+    im.save(outfile, "GIF")
+    outfile.seek(0)
+    with Image.open(outfile) as reloaded:
+        # check palette length
+        palette_length = max(i + 1 for i, v in enumerate(reloaded.histogram()) if v)
+        assert expected_palette_length == palette_length
 
-    # These do optimize the palette
-    check(256, 511, 256)
-    check(255, 511, 255)
-    check(129, 511, 129)
-    check(128, 511, 128)
-    check(64, 511, 64)
-    check(4, 511, 4)
-
-    # These don't optimize the palette
-    check(128, 513, 256)
-    check(64, 513, 256)
-    check(4, 513, 256)
+        assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
 
 def test_optimize_full_l():
