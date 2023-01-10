@@ -369,21 +369,21 @@ Build Options
   available, as many as are present.
 
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
-  ``--disable-tiff``, ``--disable-freetype``, ``--disable-lcms``,
-  ``--disable-webp``, ``--disable-webpmux``, ``--disable-jpeg2000``,
-  ``--disable-imagequant``, ``--disable-xcb``.
+  ``--disable-tiff``, ``--disable-freetype``, ``--disable-raqm``,
+  ``--disable-lcms``, ``--disable-webp``, ``--disable-webpmux``,
+  ``--disable-jpeg2000``, ``--disable-imagequant``, ``--disable-xcb``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
 * Build flags: ``--enable-zlib``, ``--enable-jpeg``,
-  ``--enable-tiff``, ``--enable-freetype``, ``--enable-lcms``,
-  ``--enable-webp``, ``--enable-webpmux``, ``--enable-jpeg2000``,
-  ``--enable-imagequant``, ``--enable-xcb``.
+  ``--enable-tiff``, ``--enable-freetype``, ``--enable-raqm``,
+  ``--enable-lcms``, ``--enable-webp``, ``--enable-webpmux``,
+  ``--enable-jpeg2000``, ``--enable-imagequant``, ``--enable-xcb``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
 
-* Build flags: ``--vendor-raqm --vendor-fribidi``
+* Build flags: ``--vendor-raqm``, ``--vendor-fribidi``.
   These flags are used to compile a modified version of libraqm and
   a shim that dynamically loads libfribidi at runtime. These are
   used to compile the standard Pillow wheels. Compiling libraqm requires
