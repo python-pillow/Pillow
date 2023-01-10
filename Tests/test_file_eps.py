@@ -221,7 +221,7 @@ def test_read_binary_preview():
         pass
 
 
-def test_readline(tmp_path):
+def test_readline_psfile(tmp_path):
     # check all the freaking line endings possible from the spec
     # test_string = u'something\r\nelse\n\rbaz\rbif\n'
     line_endings = ["\r\n", "\n", "\n\r", "\r"]
@@ -254,6 +254,31 @@ def test_readline(tmp_path):
         s = ending.join(strings)
         _test_readline_io_psfile(s, ending)
         _test_readline_file_psfile(s, ending)
+
+
+@pytest.mark.parametrize(
+    "line_ending",
+    (b"\r\n", b"\n", b"\n\r", b"\r"),
+)
+def test_readline(line_ending):
+    simple_file = line_ending.join(
+        (
+            b"%!PS-Adobe-3.0 EPSF-3.0",
+            b"%%Comment1: Some Value",
+            b"%%SecondComment: Another Value",
+            b"%%BoundingBox: 5 5 105 105",
+            b"10 setlinewidth",
+            b"10 10 moveto",
+            b"0 90 rlineto 90 0 rlineto 0 -90 rlineto closepath",
+            b"stroke",
+        )
+    )
+
+    data = io.BytesIO(simple_file)
+    test_file = EpsImagePlugin.EpsImageFile(data)
+    assert test_file.info["Comment1"] == "Some Value"
+    assert test_file.info["SecondComment"] == "Another Value"
+    assert test_file.size == (100, 100)
 
 
 @pytest.mark.parametrize(

@@ -162,6 +162,7 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
 class PSFile:
     """
     Wrapper for bytesio object that treats either CR or LF as end of line.
+    This class is no longer used internally, but kept for backwards-compatibility.
     """
 
     def __init__(self, fp):
@@ -194,7 +195,7 @@ def _accept(prefix):
 
 
 ##
-# Image plugin for Encapsulated PostScript.  This plugin supports only
+# Image plugin for Encapsulated PostScript. This plugin supports only
 # a few variants of this format.
 
 
@@ -209,29 +210,69 @@ class EpsImageFile(ImageFile.ImageFile):
     def _open(self):
         (length, offset) = self._find_offset(self.fp)
 
-        # Rewrap the open file pointer in something that will
-        # convert line endings and decode to latin-1.
-        fp = PSFile(self.fp)
-
         # go to offset - start of "%!PS"
-        fp.seek(offset)
-
-        box = None
+        self.fp.seek(offset)
 
         self.mode = "RGB"
-        self._size = 1, 1  # FIXME: huh?
+        self._size = None
 
-        #
-        # Load EPS header
+        byte_arr = bytearray(255)
+        bytes_mv = memoryview(byte_arr)
+        bytes_read = 0
+        reading_comments = True
 
-        s_raw = fp.readline()
-        s = s_raw.strip("\r\n")
+        def check_required_header_comments():
+            if "PS-Adobe" not in self.info:
+                msg = 'EPS header missing "%!PS-Adobe" comment'
+                raise SyntaxError(msg)
+            if "BoundingBox" not in self.info:
+                msg = 'EPS header missing "%%BoundingBox" comment'
+                raise SyntaxError(msg)
 
-        while s_raw:
-            if s:
-                if len(s) > 255:
-                    msg = "not an EPS file"
-                    raise SyntaxError(msg)
+        while True:
+            byte = self.fp.read(1)
+            if byte == b"":
+                # if we didn't read a byte we must be at the end of the file
+                if bytes_read == 0:
+                    break
+            elif byte in b"\r\n":
+                # if we read a line ending character, ignore it and parse what
+                # we have already read. if we haven't read any other characters,
+                # continue reading
+                if bytes_read == 0:
+                    continue
+            else:
+                # ASCII/hexadecimal lines in an EPS file must not exceed
+                # 255 characters, not including line ending characters
+                if bytes_read >= 255:
+                    # only enforce this for lines starting with a "%",
+                    # otherwise assume it's binary data
+                    if byte_arr[0] == ord("%"):
+                        msg = "not an EPS file"
+                        raise SyntaxError(msg)
+                    else:
+                        if reading_comments:
+                            check_required_header_comments()
+                            reading_comments = False
+                        # reset bytes_read so we can keep reading
+                        # data until the end of the line
+                        bytes_read = 0
+                byte_arr[bytes_read] = byte[0]
+                bytes_read += 1
+                continue
+
+            if reading_comments:
+                # Load EPS header
+
+                # if this line doesn't start with a "%",
+                # or does start with "%%EndComments",
+                # then we've reached the end of the header/comments
+                if byte_arr[0] != ord("%") or bytes_mv[:13] == b"%%EndComments":
+                    check_required_header_comments()
+                    reading_comments = False
+                    continue
+
+                s = str(bytes_mv[:bytes_read], "latin-1")
 
                 try:
                     m = split.match(s)
@@ -254,16 +295,12 @@ class EpsImageFile(ImageFile.ImageFile):
                             ]
                         except Exception:
                             pass
-
                 else:
                     m = field.match(s)
                     if m:
                         k = m.group(1)
-
-                        if k == "EndComments":
-                            break
                         if k[:8] == "PS-Adobe":
-                            self.info[k[:8]] = k[9:]
+                            self.info["PS-Adobe"] = k[9:]
                         else:
                             self.info[k] = ""
                     elif s[0] == "%":
@@ -273,25 +310,11 @@ class EpsImageFile(ImageFile.ImageFile):
                     else:
                         msg = "bad EPS header"
                         raise OSError(msg)
+            elif bytes_mv[:11] == b"%ImageData:":
+                # Check for an "ImageData" descriptor
 
-            s_raw = fp.readline()
-            s = s_raw.strip("\r\n")
-
-            if s and s[:1] != "%":
-                break
-
-        #
-        # Scan for an "ImageData" descriptor
-
-        while s[:1] == "%":
-
-            if len(s) > 255:
-                msg = "not an EPS file"
-                raise SyntaxError(msg)
-
-            if s[:11] == "%ImageData:":
                 # Encoded bitmapped image.
-                x, y, bi, mo = s[11:].split(None, 7)[:4]
+                x, y, bi, mo = byte_arr[11:].split(None, 7)[:4]
 
                 if int(bi) == 1:
                     self.mode = "1"
@@ -306,16 +329,16 @@ class EpsImageFile(ImageFile.ImageFile):
                 self._size = int(x), int(y)
                 return
 
-            s = fp.readline().strip("\r\n")
-            if not s:
-                break
+            bytes_read = 0
 
-        if not box:
+        check_required_header_comments()
+
+        if not self._size:
+            self._size = 1, 1  # errors if this isn't set. why (1,1)?
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
 
     def _find_offset(self, fp):
-
         s = fp.read(160)
 
         if s[:4] == b"%!PS":
