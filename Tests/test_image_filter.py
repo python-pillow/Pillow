@@ -179,3 +179,9 @@ def test_consistency_5x5(mode):
 def test_invalid_box_blur_filter():
     with pytest.raises(ValueError):
         ImageFilter.BoxBlur(-2)
+
+    im = hopper()
+    box_blur_filter = ImageFilter.BoxBlur(2)
+    box_blur_filter.radius = -2
+    with pytest.raises(ValueError):
+        im.filter(box_blur_filter)
