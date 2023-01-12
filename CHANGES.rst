@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Raise ValueError for BoxBlur filter with negative radius #6874
+  [hugovk, radarhere]
+
 - Support arbitrary number of loaded modules on Windows #6761
   [javidcf, radarhere, nulano]
 

@@ -24,6 +24,7 @@ from .helper import assert_image_equal, hopper
         ImageFilter.ModeFilter,
         ImageFilter.GaussianBlur,
         ImageFilter.GaussianBlur(5),
+        ImageFilter.BoxBlur(0),
         ImageFilter.BoxBlur(5),
         ImageFilter.UnsharpMask,
         ImageFilter.UnsharpMask(10),
@@ -173,3 +174,14 @@ def test_consistency_5x5(mode):
                 Image.merge(mode, source[: len(mode)]).filter(kernel),
                 Image.merge(mode, reference[: len(mode)]),
             )
+
+
+def test_invalid_box_blur_filter():
+    with pytest.raises(ValueError):
+        ImageFilter.BoxBlur(-2)
+
+    im = hopper()
+    box_blur_filter = ImageFilter.BoxBlur(2)
+    box_blur_filter.radius = -2
+    with pytest.raises(ValueError):
+        im.filter(box_blur_filter)

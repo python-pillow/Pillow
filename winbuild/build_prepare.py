@@ -152,9 +152,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.0.tar.gz/download",
-        "filename": "xz-5.4.0.tar.gz",
-        "dir": "xz-5.4.0",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.1.tar.gz/download",
+        "filename": "xz-5.4.1.tar.gz",
+        "dir": "xz-5.4.1",
         "license": "COPYING",
         "patch": {
             r"src\liblzma\api\lzma.h": {

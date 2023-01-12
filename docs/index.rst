@@ -85,6 +85,10 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://fosstodon.org/@pillow
    :alt: Follow on https://fosstodon.org/@pillow
 
+.. raw:: html
+
+   <link rel="me" href="https://fosstodon.org/@pillow">
+
 Overview
 ========
 

@@ -5,7 +5,7 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -49,7 +49,6 @@ jobs:
               ${{ matrix.package }}-python3-numpy \
               ${{ matrix.package }}-python3-olefile \
               ${{ matrix.package }}-python3-pip \
-              ${{ matrix.package }}-python-pyqt6 \
               ${{ matrix.package }}-python3-setuptools \
               ${{ matrix.package }}-freetype \
               ${{ matrix.package }}-gcc \
@@ -62,6 +61,11 @@ jobs:
               ${{ matrix.package }}-libwebp \
               ${{ matrix.package }}-openjpeg2 \
               subversion
+
+          if [ ${{ matrix.package }} == "mingw-w64-x86_64" ]; then
+              pacman -S --noconfirm \
+                  ${{ matrix.package }}-python-pyqt6
+          fi
 
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
