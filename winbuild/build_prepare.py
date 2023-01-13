@@ -177,9 +177,9 @@ deps = {
         "libs": [r"windows\vs2019\Release\{msbuild_arch}\liblzma\liblzma.lib"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
-        "filename": "libwebp-1.2.4.tar.gz",
-        "dir": "libwebp-1.2.4",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.0.tar.gz",
+        "filename": "libwebp-1.3.0.tar.gz",
+        "dir": "libwebp-1.3.0",
         "license": "COPYING",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
