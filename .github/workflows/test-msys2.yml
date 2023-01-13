@@ -1,4 +1,4 @@
-name: Test MinGW
+name: Test MSYS2
 
 on:
   push:
@@ -21,16 +21,26 @@ concurrency:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - msystem: "UCRT64"
+            package: "mingw-w64-ucrt-x86_64"
+          - msystem: "CLANG64"
+            package: "mingw-w64-clang-i686"
+          - msystem: "MINGW64"
+            package: "mingw-w64-x86_64"
 
     defaults:
       run:
         shell: bash.exe --login -eo pipefail "{0}"
     env:
-      MSYSTEM: MINGW64
+      MSYSTEM: ${{ matrix.msystem }}
       CHERE_INVOKING: 1
 
     timeout-minutes: 30
-    name: "MinGW"
+    name: MSYS2 ${{ matrix.msystem }}
 
     steps:
       - name: Checkout Pillow
@@ -43,22 +53,27 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -S --noconfirm \
-              mingw-w64-x86_64-freetype \
-              mingw-w64-x86_64-gcc \
-              mingw-w64-x86_64-ghostscript \
-              mingw-w64-x86_64-lcms2 \
-              mingw-w64-x86_64-libimagequant \
-              mingw-w64-x86_64-libjpeg-turbo \
-              mingw-w64-x86_64-libraqm \
-              mingw-w64-x86_64-libtiff \
-              mingw-w64-x86_64-libwebp \
-              mingw-w64-x86_64-openjpeg2 \
-              mingw-w64-x86_64-python3-cffi \
-              mingw-w64-x86_64-python3-numpy \
-              mingw-w64-x86_64-python3-olefile \
-              mingw-w64-x86_64-python3-pip \
-              mingw-w64-x86_64-python3-setuptools \
-              mingw-w64-x86_64-python-pyqt6
+              ${{ matrix.package }}-freetype \
+              ${{ matrix.package }}-gcc \
+              ${{ matrix.package }}-ghostscript \
+              ${{ matrix.package }}-lcms2 \
+              ${{ matrix.package }}-libimagequant \
+              ${{ matrix.package }}-libjpeg-turbo \
+              ${{ matrix.package }}-libraqm \
+              ${{ matrix.package }}-libtiff \
+              ${{ matrix.package }}-libwebp \
+              ${{ matrix.package }}-openjpeg2 \
+              ${{ matrix.package }}-python3-cffi \
+              ${{ matrix.package }}-python3-numpy \
+              ${{ matrix.package }}-python3-olefile \
+              ${{ matrix.package }}-python3-pip \
+              ${{ matrix.package }}-python3-setuptools \
+              subversion
+
+          if [[ ${{ matrix.package }} =~ "x86_64" ]]; then
+              pacman -S --noconfirm \
+                  ${{ matrix.package }}-python-pyqt6
+          fi
 
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
