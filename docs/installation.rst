@@ -285,8 +285,23 @@ Many of Pillow's features require external libraries:
 
 .. tab:: Windows using MSYS2/MinGW
 
-    To build Pillow using MSYS2, make sure you run the **MSYS2 MinGW 64-bit** console,
-    *not* **MSYS2** directly.
+    The following instructions are for the **MSYS2 MINGW64** system.
+    To build Pillow on one of the other MSYS2 systems, replace all occurences of
+    ``mingw-w64-x86_64`` with the corresponding prefix:
+
+    .. list-table::
+        :header-rows: 1
+
+        * - MSYS2 system
+          - Package prefix
+        * - **UCRT64**
+          - ``mingw-w64-ucrt-x86_64``
+        * - **CLANG64**
+          - ``mingw-w64-clang-x86_64``
+        * - **MINGW64**
+          - ``mingw-w64-x86_64``
+
+    Installing in **MSYS2 MSYS** is not supported.
 
     Make sure you have Python and GCC installed::
 
@@ -296,7 +311,7 @@ Many of Pillow's features require external libraries:
             mingw-w64-x86_64-python3-pip \
             mingw-w64-x86_64-python3-setuptools
 
-    Prerequisites are installed on **MSYS2 MinGW 64-bit** with::
+    Prerequisites are installed on **MSYS2 MINGW64** with::
 
         pacman -S \
             mingw-w64-x86_64-libjpeg-turbo \
@@ -472,7 +487,7 @@ These platforms are built and tested for every change.
 | Windows Server 2022              | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
 |                                  | 3.12, PyPy3                |                     |
 |                                  +----------------------------+---------------------+
-|                                  | 3.9 (MinGW)                | x86-64              |
+|                                  | 3.9 (MSYS2)                | x86-64              |
 |                                  +----------------------------+---------------------+
 |                                  | 3.8, 3.9 (Cygwin)          | x86-64              |
 +----------------------------------+----------------------------+---------------------+
