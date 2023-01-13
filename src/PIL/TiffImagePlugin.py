@@ -722,6 +722,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_writer(1)  # Basic type, except for the legacy API.
     def write_byte(self, data):
+        if isinstance(data, IFDRational):
+            data = int(data)
         if isinstance(data, int):
             data = bytes((data,))
         return data
