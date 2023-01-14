@@ -52,7 +52,9 @@ master_doc = "index"
 
 # General information about the project.
 project = "Pillow (PIL Fork)"
-copyright = "1995-2011 Fredrik Lundh, 2010-2023 Jeffrey A. Clark (Alex) and contributors"
+copyright = (
+    "1995-2011 Fredrik Lundh, 2010-2023 Jeffrey A. Clark (Alex) and contributors"
+)
 author = "Fredrik Lundh, Jeffrey A. Clark (Alex), contributors"
 
 # The version info for the project you're documenting, acts as replacement for
