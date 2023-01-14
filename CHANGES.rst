@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Allow writing IFDRational to BYTE tag #6890
+  [radarhere]
+
 - Raise ValueError for BoxBlur filter with negative radius #6874
   [hugovk, radarhere]
 
