@@ -41,7 +41,7 @@ import sys
 import tempfile
 import warnings
 
-from . import Image, ImageFile, TiffImagePlugin
+from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
@@ -524,6 +524,8 @@ def _getmp(self):
     head = file_contents.read(8)
     endianness = ">" if head[:4] == b"\x4d\x4d\x00\x2a" else "<"
     # process dictionary
+    from . import TiffImagePlugin
+
     try:
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
         file_contents.seek(info.next)
