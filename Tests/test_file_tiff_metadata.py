@@ -202,14 +202,15 @@ def test_writing_other_types_to_ascii(value, expected, tmp_path):
         assert reloaded.tag_v2[271] == expected
 
 
-def test_writing_int_to_bytes(tmp_path):
+@pytest.mark.parametrize("value", (1, IFDRational(1)))
+def test_writing_other_types_to_bytes(value, tmp_path):
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     tag = TiffTags.TAGS_V2[700]
     assert tag.type == TiffTags.BYTE
 
-    info[700] = 1
+    info[700] = value
 
     out = str(tmp_path / "temp.tiff")
     im.save(out, tiffinfo=info)
