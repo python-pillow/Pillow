@@ -52,8 +52,10 @@ master_doc = "index"
 
 # General information about the project.
 project = "Pillow (PIL Fork)"
-copyright = "1995-2011 Fredrik Lundh, 2010-2023 Alex Clark and Contributors"
-author = "Fredrik Lundh, Alex Clark and Contributors"
+copyright = (
+    "1995-2011 Fredrik Lundh, 2010-2023 Jeffrey A. Clark (Alex) and contributors"
+)
+author = "Fredrik Lundh, Jeffrey A. Clark (Alex), contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -243,7 +245,7 @@ latex_documents = [
         master_doc,
         "PillowPILFork.tex",
         "Pillow (PIL Fork) Documentation",
-        "Alex Clark",
+        "Jeffrey A. Clark (Alex)",
         "manual",
     )
 ]
@@ -293,7 +295,7 @@ texinfo_documents = [
         "Pillow (PIL Fork) Documentation",
         author,
         "PillowPILFork",
-        "Pillow is the friendly PIL fork by Alex Clark and Contributors.",
+        "Pillow is the friendly PIL fork by Jeffrey A. Clark (Alex) and contributors.",
         "Miscellaneous",
     )
 ]
