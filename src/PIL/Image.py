@@ -3267,7 +3267,7 @@ def open(fp, mode="r", formats=None):
 
     im = _open_core(fp, filename, prefix, formats)
 
-    if im is None:
+    if im is None and formats is ID:
         if init():
             im = _open_core(fp, filename, prefix, formats)
 
