@@ -55,6 +55,7 @@ simple_eps_file_with_comments = (
 )
 simple_eps_file_without_version = simple_eps_file[1:]
 simple_eps_file_without_boundingbox = simple_eps_file[:1] + simple_eps_file[2:]
+simple_eps_file_with_invalid_boundingbox = simple_eps_file[:1] + (b"%%BoundingBox",) + simple_eps_file[2:]
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
@@ -103,6 +104,13 @@ def test_missing_version_comment(prefix):
 def test_missing_boundingbox_comment(prefix):
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_without_boundingbox))
     with pytest.raises(SyntaxError, match='EPS header missing "%%BoundingBox" comment'):
+        EpsImagePlugin.EpsImageFile(data)
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_invalid_boundingbox_comment(prefix):
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox))
+    with pytest.raises(OSError, match="cannot determine EPS bounding box"):
         EpsImagePlugin.EpsImageFile(data)
 
 
