@@ -55,7 +55,21 @@ simple_eps_file_with_comments = (
 )
 simple_eps_file_without_version = simple_eps_file[1:]
 simple_eps_file_without_boundingbox = simple_eps_file[:1] + simple_eps_file[2:]
-simple_eps_file_with_invalid_boundingbox = simple_eps_file[:1] + (b"%%BoundingBox",) + simple_eps_file[2:]
+simple_eps_file_with_invalid_boundingbox = (
+    simple_eps_file[:1] + (b"%%BoundingBox",) + simple_eps_file[2:]
+)
+simple_eps_file_with_long_ascii_comment = (
+    simple_eps_file[:2] + (b"%%Comment: " + b"X" * 300,) + simple_eps_file[2:]
+)
+simple_eps_file_with_long_binary_data = (
+    simple_eps_file[:2]
+    + (
+        b"%%BeginBinary: 300",
+        b"\0" * 300,
+        b"%%EndBinary",
+    )
+    + simple_eps_file[2:]
+)
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
@@ -112,6 +126,30 @@ def test_invalid_boundingbox_comment(prefix):
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox))
     with pytest.raises(OSError, match="cannot determine EPS bounding box"):
         EpsImagePlugin.EpsImageFile(data)
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_ascii_comment_too_long(prefix):
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_long_ascii_comment))
+    with pytest.raises(SyntaxError, match="not an EPS file"):
+        EpsImagePlugin.EpsImageFile(data)
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_long_binary_data(prefix):
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_long_binary_data))
+    EpsImagePlugin.EpsImageFile(data)
+
+
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_load_long_binary_data(prefix):
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_long_binary_data))
+    with Image.open(data) as img:
+        img.load()
+        assert img.mode == "RGB"
+        assert img.size == (100, 100)
+        assert img.format == "EPS"
 
 
 @mark_if_feature_version(
