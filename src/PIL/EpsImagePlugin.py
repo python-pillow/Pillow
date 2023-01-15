@@ -173,11 +173,13 @@ class PSFile:
         self.fp.seek(offset, whence)
 
     def readline(self):
-        s = [self.char or b""]
-        self.char = None
+        s = []
+        if self.char:
+            s.append(self.char)
+            self.char = None
 
         c = self.fp.read(1)
-        while (c not in b"\r\n") and len(c):
+        while (c not in b"\r\n") and len(c) and len(b"".join(s).strip(b"\r\n")) <= 255:
             s.append(c)
             c = self.fp.read(1)
 
