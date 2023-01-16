@@ -11,7 +11,7 @@ TEST_TAR_FILE = "Tests/images/hopper.tar"
 
 
 @pytest.mark.parametrize(
-    ("codec", "test_path", "format"),
+    "codec, test_path, format",
     (
         ("zlib", "hopper.png", "PNG"),
         ("jpg", "hopper.jpg", "JPEG"),
