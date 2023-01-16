@@ -132,24 +132,25 @@ class TestImageGetPixel(AccessTest):
             return 1
         return tuple(range(1, bands + 1))
 
-    def check(self, mode, c=None):
-        if not c:
-            c = self.color(mode)
+    def check(self, mode, expected_color=None):
+        if not expected_color:
+            expected_color = self.color(mode)
 
         # check putpixel
         im = Image.new(mode, (1, 1), None)
-        im.putpixel((0, 0), c)
-        d = im.getpixel((0, 0))
-        assert (
-            d == c
-        ), f"put/getpixel roundtrip failed for mode {mode}, expected {c} got {d}"
+        im.putpixel((0, 0), expected_color)
+        actual_color = im.getpixel((0, 0))
+        assert actual_color == expected_color, (
+            f"put/getpixel roundtrip failed for mode {mode}, "
+            f"expected {expected_color} got {actual_color}"
+        )
 
         # check putpixel negative index
-        im.putpixel((-1, -1), c)
-        d = im.getpixel((-1, -1))
-        assert d == c, (
+        im.putpixel((-1, -1), expected_color)
+        actual_color = im.getpixel((-1, -1))
+        assert actual_color == expected_color, (
             f"put/getpixel roundtrip negative index failed for mode {mode}, "
-            f"expected {c} got {d}"
+            f"expected {expected_color} got {actual_color}"
         )
 
         # Check 0
@@ -158,29 +159,32 @@ class TestImageGetPixel(AccessTest):
 
         error = ValueError if self._need_cffi_access else IndexError
         with pytest.raises(error):
-            im.putpixel((0, 0), c)
+            im.putpixel((0, 0), expected_color)
         with pytest.raises(error):
             im.getpixel((0, 0))
         # Check 0 negative index
         with pytest.raises(error):
-            im.putpixel((-1, -1), c)
+            im.putpixel((-1, -1), expected_color)
         with pytest.raises(error):
             im.getpixel((-1, -1))
 
         # check initial color
-        im = Image.new(mode, (1, 1), c)
-        d = im.getpixel((0, 0))
-        assert d == c, f"initial color failed for mode {mode}, expected {c} got {d}"
+        im = Image.new(mode, (1, 1), expected_color)
+        actual_color = im.getpixel((0, 0))
+        assert actual_color == expected_color, (
+            f"initial color failed for mode {mode}, "
+            f"expected {expected_color} got {actual_color}"
+        )
 
         # check initial color negative index
-        d = im.getpixel((-1, -1))
-        assert d == c, (
+        actual_color = im.getpixel((-1, -1))
+        assert actual_color == expected_color, (
             f"initial color failed with negative index for mode {mode}, "
-            f"expected {c} got {d}"
+            f"expected {expected_color} got {actual_color}"
         )
 
         # Check 0
-        im = Image.new(mode, (0, 0), c)
+        im = Image.new(mode, (0, 0), expected_color)
         with pytest.raises(error):
             im.getpixel((0, 0))
         # Check 0 negative index
