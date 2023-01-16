@@ -214,13 +214,13 @@ class TestImageGetPixel(AccessTest):
         self.check(mode)
 
     @pytest.mark.parametrize("mode", ("I;16", "I;16B"))
-    def test_signedness(self, mode):
+    @pytest.mark.parametrize(
+        "expected_color", (2**15 - 1, 2**15, 2**15 + 1, 2**16 - 1)
+    )
+    def test_signedness(self, mode, expected_color):
         # see https://github.com/python-pillow/Pillow/issues/452
         # pixelaccess is using signed int* instead of uint*
-        self.check(mode, 2**15 - 1)
-        self.check(mode, 2**15)
-        self.check(mode, 2**15 + 1)
-        self.check(mode, 2**16 - 1)
+        self.check(mode, expected_color)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     @pytest.mark.parametrize("color", ((255, 0, 0), (255, 0, 0, 255)))
