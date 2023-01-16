@@ -4,11 +4,6 @@
 ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
-if [[ -n "$IS_MACOS" ]] && [[ $MACOSX_DEPLOYMENT_TARGET == "10.10" ]]; then
-    LIBXAU_VERSION=1.0.10
-else
-    LIBXAU_VERSION=1.0.11
-fi
 FREETYPE_VERSION=2.12.1
 HARFBUZZ_VERSION=6.0.0
 LIBPNG_VERSION=1.6.39
@@ -75,7 +70,7 @@ function pre_build {
     build_simple xcb-proto 1.15.2 https://xcb.freedesktop.org/dist
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2022.2 https://www.x.org/pub/individual/proto
-        build_simple libXau $LIBXAU_VERSION https://www.x.org/pub/individual/lib
+        build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
         cp venv/share/pkgconfig/xcb-proto.pc venv/lib/pkgconfig/xcb-proto.pc
     else
