@@ -1,7 +1,7 @@
 #!/bin/bash
 # install libimagequant
 
-archive=libimagequant-4.0.4
+archive=libimagequant-4.0.5
 
 ./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/main/$archive.tar.gz
 
