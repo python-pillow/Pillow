@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Stop reading when EPS line becomes too long #6897
+  [radarhere]
+
 - Allow writing IFDRational to BYTE tag #6890
   [radarhere]
 
