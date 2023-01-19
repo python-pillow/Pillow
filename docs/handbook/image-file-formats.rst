@@ -590,13 +590,13 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     .. versionadded:: 9.1.0
 
 **comment**
-    Adds a custom comment to the file, replacing the default 
+    Adds a custom comment to the file, replacing the default
     "Created by OpenJPEG version" comment.
 
     .. versionadded:: 9.5.0
 
 **add_plt**
-    If ``True`` then include a PLT (packet length, tile-part header) marker 
+    If ``True`` then include a PLT (packet length, tile-part header) marker
     segment in the produced file.
     The default is to not include it.
 
