@@ -8,7 +8,6 @@ from PIL import Image, ImagePath
 
 
 def test_path():
-
     p = ImagePath.Path(list(range(10)))
 
     # sequence interface
@@ -39,48 +38,76 @@ def test_path():
     p.transform((1, 0, 1, 0, 1, 1))
     assert list(p) == [(1.0, 2.0), (5.0, 6.0), (9.0, 10.0)]
 
-    # alternative constructors
-    p = ImagePath.Path([0, 1])
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path([0.0, 1.0])
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path([0, 1])
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path([(0, 1)])
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path(p)
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path(p.tolist(0))
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path(p.tolist(1))
-    assert list(p) == [(0.0, 1.0)]
-    p = ImagePath.Path(array.array("f", [0, 1]))
+
+@pytest.mark.parametrize(
+    "coords",
+    (
+        (0, 1),
+        [0, 1],
+        (0.0, 1.0),
+        [0.0, 1.0],
+        ((0, 1),),
+        [(0, 1)],
+        ((0.0, 1.0),),
+        [(0.0, 1.0)],
+        array.array("f", [0, 1]),
+        array.array("f", [0.0, 1.0]),
+        ImagePath.Path((0, 1)),
+    ),
+)
+def test_path_constructors(coords):
+    # Arrange / Act
+    p = ImagePath.Path(coords)
+
+    # Assert
     assert list(p) == [(0.0, 1.0)]
 
-    arr = array.array("f", [0, 1])
-    p = ImagePath.Path(arr.tobytes())
-    assert list(p) == [(0.0, 1.0)]
 
-
-def test_invalid_coords():
+def test_path_constructor_text():
     # Arrange
-    coords = ["a", "b"]
+    arr = array.array("f", (0, 1))
 
-    # Act / Assert
+    # Act
+    p = ImagePath.Path(arr.tobytes())
+
+    # Assert
+    assert list(p) == [(0.0, 1.0)]
+
+
+@pytest.mark.parametrize(
+    "coords",
+    (
+        ("a", "b"),
+        ([0, 1],),
+        [[0, 1]],
+        ([0.0, 1.0],),
+        [[0.0, 1.0]],
+    ),
+)
+def test_invalid_path_constructors(coords):
+    # Act
     with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
 
+    # Assert
     assert str(e.value) == "incorrect coordinate type"
 
 
-def test_path_odd_number_of_coordinates():
-    # Arrange
-    coords = [0]
-
-    # Act / Assert
+@pytest.mark.parametrize(
+    "coords",
+    (
+        (0,),
+        [0],
+        (0, 1, 2),
+        [0, 1, 2],
+    ),
+)
+def test_path_odd_number_of_coordinates(coords):
+    # Act
     with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
 
+    # Assert
     assert str(e.value) == "wrong number of coordinates"
 
 
