@@ -1,5 +1,6 @@
 import os
 import re
+import struct
 from io import BytesIO
 
 import pytest
@@ -371,3 +372,46 @@ def test_crashes(test_file):
                 im.load()
             except OSError:
                 pass
+
+
+def test_custom_comment():
+    output_stream = BytesIO()
+    unique_comment = "This is a unique comment, which should be found below"
+    test_card.save(output_stream, "JPEG2000", comment=unique_comment)
+    output_stream.seek(0)
+    data = output_stream.read()
+    # Lazy method to determine if the comment is in the image generated
+    assert(bytes(unique_comment, "utf-8") in data)
+
+
+def test_plt_marker():
+    # Search the start of the codesteam for the PLT box (id 0xFF58)
+    opj_version = re.search(r"(\d+\.\d+)\.\d+$", features.version_codec("jpg_2000"))
+    assert opj_version is not None
+
+    if float(opj_version[1]) >= 2.4:
+        out = BytesIO()
+        test_card.save(out, "JPEG2000", no_jp2=True, add_plt=True)
+        out.seek(0)
+        while True:
+            box_bytes = out.read(2)
+            if len(box_bytes) == 0:
+                # End of steam encounterd and no PLT or SOD
+                break
+            jp2_boxid = struct.unpack(">H", box_bytes)[0]
+
+            if jp2_boxid == 0xff4f:
+                # No length specifier for main header
+                continue
+            elif jp2_boxid == 0xff58:
+                # This is the PLT box we're looking for
+                return
+            elif jp2_boxid == 0xff93:
+                break
+                # SOD box encountered and no PLT, so it wasn't found
+
+            jp2_boxlength = struct.unpack(">H", out.read(2))[0]
+            out.seek(jp2_boxlength - 2, os.SEEK_CUR)
+
+        # The PLT box wasn't found
+        raise ValueError

@@ -328,6 +328,8 @@ def _save(im, fp, filename):
     mct = info.get("mct", 0)
     signed = info.get("signed", False)
     fd = -1
+    comment = info.get("comment", None)
+    add_plt = info.get("add_plt", False)
 
     if hasattr(fp, "fileno"):
         try:
@@ -350,6 +352,8 @@ def _save(im, fp, filename):
         mct,
         signed,
         fd,
+        comment,
+        add_plt
     )
 
     ImageFile._save(im, fp, [("jpeg2k", (0, 0) + im.size, 0, kind)])
