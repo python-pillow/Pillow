@@ -381,7 +381,7 @@ def test_custom_comment():
     output_stream.seek(0)
     data = output_stream.read()
     # Lazy method to determine if the comment is in the image generated
-    assert(bytes(unique_comment, "utf-8") in data)
+    assert bytes(unique_comment, "utf-8") in data
 
 
 def test_plt_marker():
@@ -400,13 +400,13 @@ def test_plt_marker():
                 break
             jp2_boxid = struct.unpack(">H", box_bytes)[0]
 
-            if jp2_boxid == 0xff4f:
+            if jp2_boxid == 0xFF4F:
                 # No length specifier for main header
                 continue
-            elif jp2_boxid == 0xff58:
+            elif jp2_boxid == 0xFF58:
                 # This is the PLT box we're looking for
                 return
-            elif jp2_boxid == 0xff93:
+            elif jp2_boxid == 0xFF93:
                 break
                 # SOD box encountered and no PLT, so it wasn't found
 

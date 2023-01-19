@@ -353,7 +353,7 @@ def _save(im, fp, filename):
         signed,
         fd,
         comment,
-        add_plt
+        add_plt,
     )
 
     ImageFile._save(im, fp, [("jpeg2k", (0, 0) + im.size, 0, kind)])
