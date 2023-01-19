@@ -396,7 +396,7 @@ def test_plt_marker():
         while True:
             box_bytes = out.read(2)
             if len(box_bytes) == 0:
-                # End of steam encounterd and no PLT or SOD
+                # End of steam encountered and no PLT or SOD
                 break
             jp2_boxid = struct.unpack(">H", box_bytes)[0]
 
