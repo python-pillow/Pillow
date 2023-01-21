@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Do not retry past formats when loading all formats for the first time #6902
+  [radarhere]
+
+- Do not retry specified formats if they failed when opening #6893
+  [radarhere]
+
+- Do not unintentionally load TIFF format at first #6892
+  [radarhere]
+
 - Stop reading when EPS line becomes too long #6897
   [radarhere]
 
