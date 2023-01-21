@@ -3268,8 +3268,14 @@ def open(fp, mode="r", formats=None):
     im = _open_core(fp, filename, prefix, formats)
 
     if im is None and formats is ID:
+        checked_formats = formats.copy()
         if init():
-            im = _open_core(fp, filename, prefix, formats)
+            im = _open_core(
+                fp,
+                filename,
+                prefix,
+                tuple(format for format in formats if format not in checked_formats),
+            )
 
     if im:
         im._exclusive_fp = exclusive_fp
