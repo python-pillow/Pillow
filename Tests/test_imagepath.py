@@ -51,7 +51,7 @@ def test_path():
         ((0.0, 1.0),),
         [(0.0, 1.0)],
         array.array("f", [0, 1]),
-        array.array("f", [0.0, 1.0]),
+        array.array("f", [0, 1]).tobytes(),
         ImagePath.Path((0, 1)),
     ),
 )
