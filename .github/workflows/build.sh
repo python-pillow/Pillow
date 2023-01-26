@@ -4,9 +4,8 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   # libxdmcp causes an issue on macOS < 11
   # curl from brew requires zstd, use system curl
   # if php is installed, brew tries to reinstall these after installing openblas
-  # remove lcms2 to fix building openjpeg on arm64
-  # remove xmlto to skip building giflib docs
-  brew remove --ignore-dependencies webp zstd xz libtiff libxcb libxdmcp curl php lcms2 xmlto ghostscript
+  # remove lcms2 and libpng to fix building openjpeg on arm64
+  brew remove --ignore-dependencies webp zstd xz libpng libtiff libxcb libxdmcp curl php lcms2 ghostscript
 
   if [[ "$PLAT" == "arm64" ]]; then
     export MACOSX_DEPLOYMENT_TARGET="11.0"
