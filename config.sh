@@ -87,10 +87,6 @@ function pre_build {
         rm /usr/local/lib/libjpeg.dylib
     fi
     build_tiff
-    if [ -n "$IS_MACOS" ]; then
-        # Remove existing libpng
-        rm /usr/local/lib/libpng*
-    fi
     build_libpng
     build_lcms2
     build_openjpeg
