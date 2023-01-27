@@ -68,6 +68,18 @@ Install Pillow with :command:`pip`::
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow
 
+    While we provide binaries for both x86-64 and arm64, we do not provide universal2
+    binaries. However, it is simple to combine our current binaries to create one::
+
+        python3 -m pip download --only-binary=:all: --platform macosx_10_10_x86_64 Pillow
+        python3 -m pip download --only-binary=:all: --platform macosx_11_0_arm64 Pillow
+        python3 -m pip install delocate
+
+    Then, with the names of the downloaded wheels, use Python to combine them::
+
+        from delocate.fuse import fuse_wheels
+        fuse_wheels('Pillow-9.4.0-2-cp39-cp39-macosx_10_10_x86_64.whl', 'Pillow-9.4.0-cp39-cp39-macosx_11_0_arm64.whl', 'Pillow-9.4.0-cp39-cp39-macosx_11_0_universal2.whl')
+
 .. tab:: Windows
 
     We provide Pillow binaries for Windows compiled for the matrix of
