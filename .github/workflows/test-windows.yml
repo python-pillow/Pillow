@@ -62,7 +62,10 @@ jobs:
         winbuild\depends\gs1000w32.exe /S
         echo "C:\Program Files (x86)\gs\gs10.0.0\bin" >> $env:GITHUB_PATH
 
-        xcopy /S /Y winbuild\depends\test_images\* Tests\images\
+        # Install extra test images
+        curl -fsSL -o pillow-test-images.zip https://github.com/hugovk/test-images/archive/main.zip
+        7z x pillow-test-images.zip -oc:\
+        xcopy /S /Y c:\test-images-main\* Tests\images\
 
         # make cache key depend on VS version
         & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
