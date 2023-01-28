@@ -314,7 +314,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 # Check for an "ImageData" descriptor
 
                 # Encoded bitmapped image.
-                x, y, bi, mo = byte_arr[11:].split(None, 7)[:4]
+                x, y, bi, mo = byte_arr[11:bytes_read].split(None, 7)[:4]
 
                 if int(bi) == 1:
                     self.mode = "1"

@@ -56,7 +56,10 @@ simple_eps_file_with_comments = (
 simple_eps_file_without_version = simple_eps_file[1:]
 simple_eps_file_without_boundingbox = simple_eps_file[:1] + simple_eps_file[2:]
 simple_eps_file_with_invalid_boundingbox = (
-    simple_eps_file[:1] + (b"%%BoundingBox",) + simple_eps_file[2:]
+    simple_eps_file[:1] + (b"%%BoundingBox: a b c d",) + simple_eps_file[2:]
+)
+simple_eps_file_with_invalid_boundingbox_valid_imagedata = (
+    simple_eps_file_with_invalid_boundingbox + (b"%ImageData: 100 100 8 3",)
 )
 simple_eps_file_with_long_ascii_comment = (
     simple_eps_file[:2] + (b"%%Comment: " + b"X" * 300,) + simple_eps_file[2:]
@@ -126,6 +129,17 @@ def test_invalid_boundingbox_comment(prefix):
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox))
     with pytest.raises(OSError, match="cannot determine EPS bounding box"):
         EpsImagePlugin.EpsImageFile(data)
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_invalid_boundingbox_comment_valid_imagedata_comment(prefix):
+    data = io.BytesIO(
+        prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox_valid_imagedata)
+    )
+    with Image.open(data) as img:
+        assert img.mode == "RGB"
+        assert img.size == (100, 100)
+        assert img.format == "EPS"
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
