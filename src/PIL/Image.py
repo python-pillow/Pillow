@@ -3406,7 +3406,8 @@ def register_open(id, factory, accept=None):
        reject images having another format.
     """
     id = id.upper()
-    ID.append(id)
+    if id not in ID:
+        ID.append(id)
     OPEN[id] = factory, accept
 
 
