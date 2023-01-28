@@ -60,7 +60,7 @@ jobs:
               ${{ matrix.package }}-python3-olefile \
               ${{ matrix.package }}-python3-pip \
               ${{ matrix.package }}-python3-setuptools \
-              subversion
+              ${{ matrix.package }}-wget
 
           if [ ${{ matrix.package }} == "mingw-w64-x86_64" ]; then
               pacman -S --noconfirm \
