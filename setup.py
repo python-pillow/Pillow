@@ -264,19 +264,17 @@ def _pkg_config(name):
                 command_libs.append("--silence-errors")
                 command_cflags.append("--silence-errors")
             libs = re.split(
-                r"\s*-L",
+                r"(^|\s+)-L",
                 subprocess.check_output(command_libs, stderr=stderr)
                 .decode("utf8")
                 .strip(),
-            )
-            libs.remove("")
+            )[::2][1:]
             cflags = re.split(
-                r"\s*-I",
+                r"(^|\s+)-I",
                 subprocess.check_output(command_cflags, stderr=stderr)
                 .decode("utf8")
                 .strip(),
-            )
-            cflags.remove("")
+            )[::2][1:]
             return libs, cflags
         except Exception:
             pass
