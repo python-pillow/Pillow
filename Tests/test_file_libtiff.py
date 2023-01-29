@@ -986,6 +986,36 @@ class TestFileLibTiff(LibTiffTestCase):
         ) as im:
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
+    @pytest.mark.parametrize(
+        "file_name,mode,size,tile",
+        [
+            (
+                "tiff_wrong_bits_per_sample.tiff",
+                "RGBA",
+                (52, 53),
+                [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))],
+            ),
+            (
+                "tiff_wrong_bits_per_sample_2.tiff",
+                "RGB",
+                (16, 16),
+                [("raw", (0, 0, 16, 16), 8, ("RGB", 0, 1))],
+            ),
+            (
+                "tiff_wrong_bits_per_sample_3.tiff",
+                "RGBA",
+                (512, 256),
+                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", "tiff_lzw", False, 48782))],
+            ),
+        ],
+    )
+    def test_wrong_bits_per_sample(self, file_name, mode, size, tile):
+        with Image.open("Tests/images/" + file_name) as im:
+            assert im.mode == mode
+            assert im.size == size
+            assert im.tile == tile
+            im.load()
+
     def test_no_rows_per_strip(self):
         # This image does not have a RowsPerStrip TIFF tag
         infile = "Tests/images/no_rows_per_strip.tif"
