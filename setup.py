@@ -255,23 +255,21 @@ def _pkg_config(name):
         try:
             command_libs = [command, "--libs-only-L", name]
             command_cflags = [command, "--cflags-only-I", name]
-            stderr = None
             if keep_system:
                 command_libs.append("--keep-system-libs")
                 command_cflags.append("--keep-system-cflags")
-                stderr = subprocess.DEVNULL
             if not DEBUG:
                 command_libs.append("--silence-errors")
                 command_cflags.append("--silence-errors")
             libs = re.split(
                 r"(^|\s+)-L",
-                subprocess.check_output(command_libs, stderr=stderr)
+                subprocess.check_output(command_libs, stderr=subprocess.DEVNULL)
                 .decode("utf8")
                 .strip(),
             )[::2][1:]
             cflags = re.split(
                 r"(^|\s+)-I",
-                subprocess.check_output(command_cflags, stderr=stderr)
+                subprocess.check_output(command_cflags, stderr=subprocess.DEVNULL)
                 .decode("utf8")
                 .strip(),
             )[::2][1:]
