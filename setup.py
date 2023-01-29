@@ -263,18 +263,18 @@ def _pkg_config(name):
             if not DEBUG:
                 command_libs.append("--silence-errors")
                 command_cflags.append("--silence-errors")
-            libs = (
+            libs = re.split(
+                r"(^|\s+)-L",
                 subprocess.check_output(command_libs, stderr=stderr)
                 .decode("utf8")
-                .strip()
-                .replace("-L", "")
-            )
-            cflags = (
-                subprocess.check_output(command_cflags)
+                .strip(),
+            )[::2][1:]
+            cflags = re.split(
+                r"(^|\s+)-I",
+                subprocess.check_output(command_cflags, stderr=stderr)
                 .decode("utf8")
-                .strip()
-                .replace("-I", "")
-            )
+                .strip(),
+            )[::2][1:]
             return libs, cflags
         except Exception:
             pass
@@ -473,8 +473,12 @@ class pil_build_ext(build_ext):
             else:
                 lib_root = include_root = root
 
-            _add_directory(library_dirs, lib_root)
-            _add_directory(include_dirs, include_root)
+            if lib_root is not None:
+                for lib_dir in lib_root:
+                    _add_directory(library_dirs, lib_dir)
+            if include_root is not None:
+                for include_dir in include_root:
+                    _add_directory(include_dirs, include_dir)
 
         # respect CFLAGS/CPPFLAGS/LDFLAGS
         for k in ("CFLAGS", "CPPFLAGS", "LDFLAGS"):
