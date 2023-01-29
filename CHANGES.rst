@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Handle more than one directory returned by pkg-config #6896
+  [sebastic, radarhere]
+
 - Do not retry past formats when loading all formats for the first time #6902
   [radarhere]
 
