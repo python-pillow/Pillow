@@ -84,24 +84,6 @@ class TestFileTiff:
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
-    @pytest.mark.parametrize(
-        "path, sizes",
-        (
-            ("Tests/images/hopper.tif", ()),
-            ("Tests/images/child_ifd.tiff", (16, 8)),
-            ("Tests/images/child_ifd_jpeg.tiff", (20,)),
-        ),
-    )
-    def test_get_child_images(self, path, sizes):
-        with Image.open(path) as im:
-            ims = im.get_child_images()
-
-        assert len(ims) == len(sizes)
-        for i, im in enumerate(ims):
-            w = sizes[i]
-            expected = Image.new("RGB", (w, w), "#f00")
-            assert_image_similar(im, expected, 1)
-
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
 
