@@ -12,6 +12,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     skip_unless_feature,
+    skip_unless_feature_version,
 )
 
 EXTRA_DIR = "Tests/images/jpeg2000"
@@ -384,34 +385,31 @@ def test_custom_comment():
     assert bytes(unique_comment, "utf-8") in data
 
 
+@skip_unless_feature_version("jpg_2000", "2.4.0")
 def test_plt_marker():
     # Search the start of the codesteam for the PLT box (id 0xFF58)
-    opj_version = re.search(r"(\d+\.\d+)\.\d+$", features.version_codec("jpg_2000"))
-    assert opj_version is not None
+    out = BytesIO()
+    test_card.save(out, "JPEG2000", no_jp2=True, add_plt=True)
+    out.seek(0)
+    while True:
+        box_bytes = out.read(2)
+        if len(box_bytes) == 0:
+            # End of steam encountered and no PLT or SOD
+            break
+        jp2_boxid = struct.unpack(">H", box_bytes)[0]
 
-    if float(opj_version[1]) >= 2.4:
-        out = BytesIO()
-        test_card.save(out, "JPEG2000", no_jp2=True, add_plt=True)
-        out.seek(0)
-        while True:
-            box_bytes = out.read(2)
-            if len(box_bytes) == 0:
-                # End of steam encountered and no PLT or SOD
-                break
-            jp2_boxid = struct.unpack(">H", box_bytes)[0]
+        if jp2_boxid == 0xFF4F:
+            # No length specifier for main header
+            continue
+        elif jp2_boxid == 0xFF58:
+            # This is the PLT box we're looking for
+            return
+        elif jp2_boxid == 0xFF93:
+            break
+            # SOD box encountered and no PLT, so it wasn't found
 
-            if jp2_boxid == 0xFF4F:
-                # No length specifier for main header
-                continue
-            elif jp2_boxid == 0xFF58:
-                # This is the PLT box we're looking for
-                return
-            elif jp2_boxid == 0xFF93:
-                break
-                # SOD box encountered and no PLT, so it wasn't found
+        jp2_boxlength = struct.unpack(">H", out.read(2))[0]
+        out.seek(jp2_boxlength - 2, os.SEEK_CUR)
 
-            jp2_boxlength = struct.unpack(">H", out.read(2))[0]
-            out.seek(jp2_boxlength - 2, os.SEEK_CUR)
-
-        # The PLT box wasn't found
-        raise ValueError
+    # The PLT box wasn't found
+    raise ValueError
