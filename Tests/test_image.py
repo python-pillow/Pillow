@@ -398,6 +398,17 @@ class TestImage:
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
 
+    def test_register_open_duplicates(self):
+        # Arrange
+        factory, accept = Image.OPEN["JPEG"]
+        id_length = len(Image.ID)
+
+        # Act
+        Image.register_open("JPEG", factory, accept)
+
+        # Assert
+        assert len(Image.ID) == id_length
+
     def test_registered_extensions_uninitialized(self):
         # Arrange
         Image._initialized = 0
