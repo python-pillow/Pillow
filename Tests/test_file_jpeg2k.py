@@ -1,11 +1,17 @@
 import os
 import re
-import struct
 from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageFile, Jpeg2KImagePlugin, UnidentifiedImageError, features
+from PIL import (
+    Image,
+    ImageFile,
+    Jpeg2KImagePlugin,
+    UnidentifiedImageError,
+    _binary,
+    features,
+)
 
 from .helper import (
     assert_image_equal,
@@ -393,11 +399,11 @@ def test_plt_marker():
     out.seek(0)
     while True:
         box_bytes = out.read(2)
-        if len(box_bytes) == 0:
+        if not box_bytes:
             # End of steam encountered and no PLT or SOD
             break
-        jp2_boxid = struct.unpack(">H", box_bytes)[0]
 
+        jp2_boxid = _binary.i16be(box_bytes)
         if jp2_boxid == 0xFF4F:
             # No length specifier for main header
             continue
@@ -405,10 +411,10 @@ def test_plt_marker():
             # This is the PLT box we're looking for
             return
         elif jp2_boxid == 0xFF93:
-            break
             # SOD box encountered and no PLT, so it wasn't found
+            break
 
-        jp2_boxlength = struct.unpack(">H", out.read(2))[0]
+        jp2_boxlength = _binary.i16be(out.read(2))
         out.seek(jp2_boxlength - 2, os.SEEK_CUR)
 
     # The PLT box wasn't found
