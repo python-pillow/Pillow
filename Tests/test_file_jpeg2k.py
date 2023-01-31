@@ -390,6 +390,10 @@ def test_custom_comment():
     # Lazy method to determine if the comment is in the image generated
     assert bytes(unique_comment, "utf-8") in data
 
+    too_long_comment = " " * 65532
+    with pytest.raises(ValueError):
+        test_card.save(output_stream, "JPEG2000", comment=too_long_comment)
+
 
 @skip_unless_feature_version("jpg_2000", "2.4.0")
 def test_plt_marker():
