@@ -98,7 +98,7 @@ typedef struct {
     const char *error_msg;
 
     /* Custom comment */
-    char * comment;
+    char *comment;
 
     /* Include PLT marker segment */
     int add_plt;
