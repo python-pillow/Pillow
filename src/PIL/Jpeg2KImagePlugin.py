@@ -328,7 +328,7 @@ def _save(im, fp, filename):
     mct = info.get("mct", 0)
     signed = info.get("signed", False)
     fd = -1
-    comment = info.get("comment", None)
+    comment = info.get("comment")
     add_plt = info.get("add_plt", False)
 
     if hasattr(fp, "fileno"):
