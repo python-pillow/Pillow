@@ -63,7 +63,7 @@ jobs:
         echo "C:\Program Files (x86)\gs\gs10.0.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
-        curl -fsSL -o pillow-test-images.zip https://github.com/hugovk/test-images/archive/main.zip
+        curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
         7z x pillow-test-images.zip -oc:\
         xcopy /S /Y c:\test-images-main\* Tests\images\
 

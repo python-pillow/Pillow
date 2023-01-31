@@ -3,7 +3,7 @@
 
 archive=test-images-main
 
-./download-and-extract.sh $archive https://github.com/hugovk/test-images/archive/refs/heads/main.tar.gz
+./download-and-extract.sh $archive https://github.com/python-pillow/test-images/archive/refs/heads/main.tar.gz
 
 mv $archive/* ../Tests/images/
 
