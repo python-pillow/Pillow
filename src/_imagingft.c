@@ -463,7 +463,7 @@ text_layout_raqm(
         }
     }
 
-    for (face = 0; face < family->font_count; face++) {
+    for (face = 0; ; face++) {
 #ifdef RAQM_VERSION_ATLEAST
 #if RAQM_VERSION_ATLEAST(0, 9, 0)
         if (face >= 1) {
@@ -544,7 +544,9 @@ text_layout_raqm(
             }
         } else {
             start = 0;
-            for (i = 0; i <= size; i++) {
+            /* use first font's missing glyph */
+            int f = face < family->font_count ? face : 0;
+            for (i = 1; i <= size; i++) {
                 if (i < size) {
                     if (fallback[i] == -2) {
                         /* not a cluster boundary */
@@ -557,7 +559,7 @@ text_layout_raqm(
                 }
                 if (fallback[start] < 0) {
                     raqm_set_freetype_face_range(
-                        rq, family->faces[face], start, i - start);
+                        rq, family->faces[f], start, i - start);
                 } else {
                     raqm_set_freetype_face_range(
                         rq, family->faces[fallback[start]], start, i - start);
@@ -578,14 +580,11 @@ text_layout_raqm(
             goto failed;
         }
 
-        //if (face + 1 == family->font_count) {
-        //    break;
-        //}
-        if (family->font_count == 1) {
+        if (family->font_count == 1 || face == family->font_count) {
             break;
         }
 
-        for (i = 1; i < size; i++) {
+        for (i = 0; i < size; i++) {
             if (fallback[i] == -1) {
                 fallback[i] = -2;
             }
@@ -603,7 +602,6 @@ text_layout_raqm(
                 fallback[cluster] = face;
             }
         }
-
         if (!missing) {
             break;
         }
