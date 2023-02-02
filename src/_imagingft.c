@@ -254,7 +254,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
 static PyObject *
 getfamily(PyObject *self_, PyObject *args, PyObject *kw) {
     /* create a font family object from a list of file names and a sizes (in pixels) */
-
+    int i, j;
     FontFamilyObject *self;
     FontFamily *family;
     int error = 0;
@@ -299,7 +299,7 @@ getfamily(PyObject *self_, PyObject *args, PyObject *kw) {
         return NULL;
     }
 
-    for (int i = 0; i < family->font_count; i++) {
+    for (i = 0; i < family->font_count; i++) {
         char *filename;
         Py_ssize_t size;
         Py_ssize_t index;
@@ -369,23 +369,21 @@ getfamily(PyObject *self_, PyObject *args, PyObject *kw) {
             geterror(error);
             goto err;
         }
-
-        continue;
-
-    err:
-        for (int j = 0; j < i; j++) {
-            if (family->faces[j]) {
-                FT_Done_Face(family->faces[j]);
-            }
-            if (self->font_bytes[j]) {
-                PyMem_Free(self->font_bytes[j]);
-            }
-        }
-        PyObject_Del(self);
-        return NULL;
     }
 
     return (PyObject *)self;
+
+err:
+    for (j = 0; j < i; j++) {
+        if (family->faces[j]) {
+            FT_Done_Face(family->faces[j]);
+        }
+        if (self->font_bytes[j]) {
+            PyMem_Free(self->font_bytes[j]);
+        }
+    }
+    PyObject_Del(self);
+    return NULL;
 }
 
 #ifdef HAVE_RAQM
@@ -399,8 +397,9 @@ text_layout_raqm(
     const char *lang,
     GlyphInfo **glyph_info
 ) {
-    size_t i = 0, count = 0, start = 0;
-    raqm_t *rq;
+    int face = 0;
+    size_t i = 0, j = 0, count = 0, start = 0;
+    raqm_t *rq = NULL;
     raqm_glyph_t *glyphs = NULL;
     raqm_direction_t direction;
 
@@ -408,12 +407,6 @@ text_layout_raqm(
     Py_UCS4 *text = NULL;
     Py_ssize_t size;
     int *fallback = NULL;
-
-    rq = raqm_create();
-    if (rq == NULL) {
-        PyErr_SetString(PyExc_ValueError, "raqm_create() failed.");
-        goto failed;
-    }
 
     if (PyUnicode_Check(string)) {
         text = PyUnicode_AsUCS4Copy(string);
@@ -466,13 +459,29 @@ text_layout_raqm(
             goto failed;
         }
         fallback[0] = -1;
-        for (size_t j = 1; j < size; j++) {
+        for (j = 1; j < size; j++) {
             fallback[j] = -2;
         }
     }
 
-    for (int face = 0; face < family->font_count; face++) {
-        raqm_clear_contents(rq);
+    for (face = 0; face < family->font_count; face++) {
+#ifdef RAQM_VERSION_ATLEAST
+#if RAQM_VERSION_ATLEAST(0, 9, 0)
+        if (face >= 1) {
+            raqm_clear_contents(rq);
+        } else
+#endif
+#endif
+        {
+            if (rq != NULL) {
+                raqm_destroy(rq);
+            }
+            rq = raqm_create();
+            if (rq == NULL) {
+                PyErr_SetString(PyExc_ValueError, "raqm_create() failed.");
+                goto failed;
+            }
+        }
 
         int set_text = text != NULL ? raqm_set_text(rq, text, size) : raqm_set_text_utf8(rq, buffer, size);
         if (!set_text) {
@@ -480,6 +489,7 @@ text_layout_raqm(
             goto failed;
         }
         if (lang) {
+            start = 0;
             if (!raqm_set_language(rq, lang, start, size)) {
                 PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
                 goto failed;
@@ -535,7 +545,7 @@ text_layout_raqm(
             }
         } else {
             start = 0;
-            for (size_t j = 0; j <= size; j++) {
+            for (j = 0; j <= size; j++) {
                 if (j < size) {
                     if (fallback[j] == -2) {
                         /* not a cluster boundary */
@@ -573,14 +583,14 @@ text_layout_raqm(
             break;
         }
 
-        for (size_t j = 1; j < size; j++) {
+        for (j = 1; j < size; j++) {
             if (fallback[j] == -1) {
                 fallback[j] = -2;
             }
         }
 
         int missing = 0;
-        for (size_t j = 0; j < count; j++) {
+        for (j = 0; j < count; j++) {
             int cluster = glyphs[j].cluster;
             if (glyphs[j].index == 0) {
                 /* cluster contains missing glyph */
@@ -622,11 +632,15 @@ text_layout_raqm(
     }
 
 failed:
-    PyMem_Free(text);
+    if (text) {
+        PyMem_Free(text);
+    }
     if (fallback) {
         PyMem_Free(fallback);
     }
-    raqm_destroy(rq);
+    if (rq != NULL) {
+        raqm_destroy(rq);
+    }
     return count;
 }
 
@@ -643,7 +657,7 @@ text_layout_fallback(
     int mask,
     int color
 ) {
-    int error, load_flags, i;
+    int error, load_flags, i, j;
     char *buffer = NULL;
     FT_ULong ch;
     Py_ssize_t count;
@@ -687,7 +701,7 @@ text_layout_fallback(
             ch = PyUnicode_READ_CHAR(string, i);
         }
         int found = 0;
-        for (int j = 0; !found && j < family->font_count; j++) {
+        for (j = 0; !found && j < family->font_count; j++) {
             FT_Face face = family->faces[j];
             (*glyph_info)[i].index = FT_Get_Char_Index(face, ch);
             if ((*glyph_info)[i].index != 0) {
@@ -1855,7 +1869,8 @@ static PyTypeObject Font_Type = {
 
 static void
 family_dealloc(FontFamilyObject *self) {
-    for (int i = 0; i < self->data.font_count; i++) {
+    int i;
+    for (i = 0; i < self->data.font_count; i++) {
         if (self->data.faces[i]) {
             FT_Done_Face(self->data.faces[i]);
         }

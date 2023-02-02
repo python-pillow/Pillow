@@ -726,7 +726,8 @@ class FreeTypeFontFamily:
     # example:
     #   from PIL import Image, ImageDraw, ImageFont
     #   le = ImageFont.Layout.RAQM
-    #   f1 = ImageFont.truetype(r"C:\Users\Nulano\AppData\Local\Microsoft\Windows\Fonts\SCRIPTIN.ttf", 24)
+    #   f1 = ImageFont.truetype(
+    #       r"C:\Users\Nulano\AppData\Local\Microsoft\Windows\Fonts\SCRIPTIN.ttf", 24)
     #   f2 = ImageFont.truetype("segoeui.ttf", 24)
     #   f3 = ImageFont.truetype("seguisym.ttf", 24)
     #   ff = ImageFont.FreeTypeFontFamily(f1, f2, f3, layout_engine=le)
