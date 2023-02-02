@@ -25,7 +25,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - msystem: "UCRT64"
+          # skip to save CI time:
+          # see https://github.com/python-pillow/Pillow/pull/6888#issuecomment-1400392821
+          # - msystem: "UCRT64"
           - msystem: "CLANG64"
           - msystem: "MINGW64"
     defaults:
