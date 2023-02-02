@@ -731,7 +731,7 @@ class FreeTypeFontFamily:
     #   f2 = ImageFont.truetype("segoeui.ttf", 24)
     #   f3 = ImageFont.truetype("seguisym.ttf", 24)
     #   ff = ImageFont.FreeTypeFontFamily(f1, f2, f3, layout_engine=le)
-    #   for s in ("testčingšsšccčcč", "ية↦α,abc", "a↦ľ"):
+    #   for s in ("testčingšsšccčcč", "ية↦α,abc", "a↦ľ", "ῶ,ω̃,ώ,ώ, ́,á"):
     #     im = Image.new("RGBA", (300, 300), "white")
     #     d = ImageDraw.Draw(im)
     #     d.text((10, 60), s, "black", f1, direction="ltr", anchor="ls")

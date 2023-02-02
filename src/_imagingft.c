@@ -398,7 +398,7 @@ text_layout_raqm(
     GlyphInfo **glyph_info
 ) {
     int face = 0;
-    size_t i = 0, j = 0, count = 0, start = 0;
+    size_t i = 0, count = 0, start = 0;
     raqm_t *rq = NULL;
     raqm_glyph_t *glyphs = NULL;
     raqm_direction_t direction;
@@ -458,9 +458,8 @@ text_layout_raqm(
             PyErr_SetString(PyExc_ValueError, "failed to allocate fallback buffer.");
             goto failed;
         }
-        fallback[0] = -1;
-        for (j = 1; j < size; j++) {
-            fallback[j] = -2;
+        for (i = 0; i < size; i++) {
+            fallback[i] = -2;
         }
     }
 
@@ -545,25 +544,25 @@ text_layout_raqm(
             }
         } else {
             start = 0;
-            for (j = 0; j <= size; j++) {
-                if (j < size) {
-                    if (fallback[j] == -2) {
+            for (i = 0; i <= size; i++) {
+                if (i < size) {
+                    if (fallback[i] == -2) {
                         /* not a cluster boundary */
                         continue;
                     }
-                    if (fallback[start] == fallback[j]) {
+                    if (fallback[start] == fallback[i]) {
                         /* use same font face for this cluster */
                         continue;
                     }
                 }
-                if (fallback[start] == -1) {
+                if (fallback[start] < 0) {
                     raqm_set_freetype_face_range(
-                        rq, family->faces[face], start, j - start);
+                        rq, family->faces[face], start, i - start);
                 } else {
                     raqm_set_freetype_face_range(
-                        rq, family->faces[fallback[start]], start, j - start);
+                        rq, family->faces[fallback[start]], start, i - start);
                 }
-                start = j;
+                start = i;
             }
         }
 
@@ -579,24 +578,27 @@ text_layout_raqm(
             goto failed;
         }
 
-        if (i + 1 == family->font_count) {
+        //if (face + 1 == family->font_count) {
+        //    break;
+        //}
+        if (family->font_count == 1) {
             break;
         }
 
-        for (j = 1; j < size; j++) {
-            if (fallback[j] == -1) {
-                fallback[j] = -2;
+        for (i = 1; i < size; i++) {
+            if (fallback[i] == -1) {
+                fallback[i] = -2;
             }
         }
 
         int missing = 0;
-        for (j = 0; j < count; j++) {
-            int cluster = glyphs[j].cluster;
-            if (glyphs[j].index == 0) {
+        for (i = 0; i < count; i++) {
+            int cluster = glyphs[i].cluster;
+            if (glyphs[i].index == 0) {
                 /* cluster contains missing glyph */
                 fallback[cluster] = -1;
                 missing = 1;
-            } else if (fallback[cluster] < 0) {
+            } else if (fallback[cluster] == -2) {
                 /* use current font face for this cluster */
                 fallback[cluster] = face;
             }
