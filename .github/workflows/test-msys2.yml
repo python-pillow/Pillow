@@ -50,6 +50,10 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pacman -S --noconfirm \
+              pactoys \
+              subversion
+
           pacboy -S --noconfirm \
               freetype:p \
               gcc:p \
@@ -66,8 +70,7 @@ jobs:
               python3-olefile:p \
               python3-pip:p \
               python3-setuptools:p \
-              python-pyqt6:p \
-              subversion:
+              python-pyqt6:p
 
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
