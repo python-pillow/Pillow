@@ -725,18 +725,20 @@ class FreeTypeFontFamily:
 
     # example:
     #   from PIL import Image, ImageDraw, ImageFont
-    #   f1 = ImageFont.truetype("segoeui.ttf", 24)
-    #   f2 = ImageFont.truetype("seguisym.ttf", 24)
-    #   ff = ImageFont.FreeTypeFontFamily(f1, f2)
-    #   s = "a↦ľ"
-    #   im = Image.new("RGBA", (100, 100), "white")
-    #   d = ImageDraw.Draw(im)
-    #   d.text((10, 10), s, "black", f1)
-    #   d.text((10, 40), s, "black", f2)
-    #   d.text((10, 70), s, "black", ff)
-    #   im.show()
+    #   le = ImageFont.Layout.RAQM
+    #   f1 = ImageFont.truetype(r"C:\Users\Nulano\AppData\Local\Microsoft\Windows\Fonts\SCRIPTIN.ttf", 24)
+    #   f2 = ImageFont.truetype("segoeui.ttf", 24)
+    #   f3 = ImageFont.truetype("seguisym.ttf", 24)
+    #   ff = ImageFont.FreeTypeFontFamily(f1, f2, f3, layout_engine=le)
+    #   for s in ("testčingšsšccčcč", "ية↦α,abc", "a↦ľ"):
+    #     im = Image.new("RGBA", (300, 300), "white")
+    #     d = ImageDraw.Draw(im)
+    #     d.text((10, 60), s, "black", f1, direction="ltr", anchor="ls")
+    #     d.text((10, 160), s, "black", f2, direction="ltr", anchor="ls")
+    #     d.text((10, 260), s, "black", ff, direction="ltr", anchor="ls")
+    #     im.show()
 
-    def __init__(self, *fonts):
+    def __init__(self, *fonts, layout_engine=None):
         fonts_list = []
         for font in fonts:
             try:
@@ -745,9 +747,21 @@ class FreeTypeFontFamily:
                 )
             except AttributeError:
                 fonts_list.append((font.path, font.size, font.index, font.encoding))
-
         self.fonts = tuple(fonts_list)
-        self.font = core.getfamily(self.fonts, layout_engine=Layout.BASIC)
+
+        if layout_engine not in (Layout.BASIC, Layout.RAQM):
+            layout_engine = Layout.BASIC
+            if core.HAVE_RAQM:
+                layout_engine = Layout.RAQM
+        elif layout_engine == Layout.RAQM and not core.HAVE_RAQM:
+            warnings.warn(
+                "Raqm layout was requested, but Raqm is not available. "
+                "Falling back to basic layout."
+            )
+            layout_engine = Layout.BASIC
+        self.layout_engine = layout_engine
+
+        self.font = core.getfamily(self.fonts, layout_engine=self.layout_engine)
 
     def getlength(self, text, mode="", direction=None, features=None, language=None):
         """
