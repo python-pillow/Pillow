@@ -285,9 +285,9 @@ Many of Pillow's features require external libraries:
 
 .. tab:: Windows using MSYS2/MinGW
 
-    The following instructions are for the **MSYS2 MINGW64** system.
+    The following instructions are for the **MSYS2 UCRT64** system.
     To build Pillow on one of the other MSYS2 systems, replace all occurences of
-    ``mingw-w64-x86_64`` with the corresponding prefix:
+    ``mingw-w64-ucrt-x86_64`` with the corresponding prefix:
 
     .. list-table::
         :header-rows: 1
@@ -306,23 +306,23 @@ Many of Pillow's features require external libraries:
     Make sure you have Python and GCC installed::
 
         pacman -S \
-            mingw-w64-x86_64-gcc \
-            mingw-w64-x86_64-python3 \
-            mingw-w64-x86_64-python3-pip \
-            mingw-w64-x86_64-python3-setuptools
+            mingw-w64-ucrt-x86_64-gcc \
+            mingw-w64-ucrt-x86_64-python3 \
+            mingw-w64-ucrt-x86_64-python3-pip \
+            mingw-w64-ucrt-x86_64-python3-setuptools
 
-    Prerequisites are installed on **MSYS2 MINGW64** with::
+    Prerequisites are installed on **MSYS2 UCRT64** with::
 
         pacman -S \
-            mingw-w64-x86_64-libjpeg-turbo \
-            mingw-w64-x86_64-zlib \
-            mingw-w64-x86_64-libtiff \
-            mingw-w64-x86_64-freetype \
-            mingw-w64-x86_64-lcms2 \
-            mingw-w64-x86_64-libwebp \
-            mingw-w64-x86_64-openjpeg2 \
-            mingw-w64-x86_64-libimagequant \
-            mingw-w64-x86_64-libraqm
+            mingw-w64-ucrt-x86_64-libjpeg-turbo \
+            mingw-w64-ucrt-x86_64-zlib \
+            mingw-w64-ucrt-x86_64-libtiff \
+            mingw-w64-ucrt-x86_64-freetype \
+            mingw-w64-ucrt-x86_64-lcms2 \
+            mingw-w64-ucrt-x86_64-libwebp \
+            mingw-w64-ucrt-x86_64-openjpeg2 \
+            mingw-w64-ucrt-x86_64-libimagequant \
+            mingw-w64-ucrt-x86_64-libraqm
 
     https://www.msys2.org/docs/python/ states that setuptools >= 60 does not work with
     MSYS2. To workaround this, before installing Pillow you must run::
