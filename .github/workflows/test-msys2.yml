@@ -70,7 +70,7 @@ jobs:
               ${{ matrix.package }}-python3-setuptools \
               subversion
 
-          if [[ ${{ matrix.package }} =~ "x86_64" ]]; then
+          if [[ ${{ matrix.msystem }} =~ "64" ]]; then
               pacman -S --noconfirm \
                   ${{ matrix.package }}-python-pyqt6
           fi
