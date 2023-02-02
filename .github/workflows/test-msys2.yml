@@ -26,12 +26,8 @@ jobs:
       matrix:
         include:
           - msystem: "UCRT64"
-            package: "mingw-w64-ucrt-x86_64"
           - msystem: "CLANG64"
-            package: "mingw-w64-clang-i686"
           - msystem: "MINGW64"
-            package: "mingw-w64-x86_64"
-
     defaults:
       run:
         shell: bash.exe --login -eo pipefail "{0}"
@@ -52,28 +48,24 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -S --noconfirm \
-              ${{ matrix.package }}-freetype \
-              ${{ matrix.package }}-gcc \
-              ${{ matrix.package }}-ghostscript \
-              ${{ matrix.package }}-lcms2 \
-              ${{ matrix.package }}-libimagequant \
-              ${{ matrix.package }}-libjpeg-turbo \
-              ${{ matrix.package }}-libraqm \
-              ${{ matrix.package }}-libtiff \
-              ${{ matrix.package }}-libwebp \
-              ${{ matrix.package }}-openjpeg2 \
-              ${{ matrix.package }}-python3-cffi \
-              ${{ matrix.package }}-python3-numpy \
-              ${{ matrix.package }}-python3-olefile \
-              ${{ matrix.package }}-python3-pip \
-              ${{ matrix.package }}-python3-setuptools \
-              subversion
-
-          if [[ ${{ matrix.msystem }} =~ "64" ]]; then
-              pacman -S --noconfirm \
-                  ${{ matrix.package }}-python-pyqt6
-          fi
+          pacboy -S --noconfirm \
+              freetype:p \
+              gcc:p \
+              ghostscript:p \
+              lcms2:p \
+              libimagequant:p \
+              libjpeg-turbo:p \
+              libraqm:p \
+              libtiff:p \
+              libwebp:p \
+              openjpeg2:p \
+              python3-cffi:p \
+              python3-numpy:p \
+              python3-olefile:p \
+              python3-pip:p \
+              python3-setuptools:p \
+              python-pyqt6:p \
+              subversion:
 
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
