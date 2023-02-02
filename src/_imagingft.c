@@ -626,8 +626,7 @@ text_layout_raqm(
         if (fallback && fallback[cluster] >= 0) {
             (*glyph_info)[i].face = family->faces[fallback[cluster]];
         } else {
-            /* FIXME use first font's missing glyph, not last font's */
-            (*glyph_info)[i].face = family->faces[family->font_count - 1];
+            (*glyph_info)[i].face = family->faces[0];
         }
     }
 
