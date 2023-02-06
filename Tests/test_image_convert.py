@@ -45,7 +45,6 @@ def test_unsupported_conversion():
 
 
 def test_default():
-
     im = hopper("P")
     assert im.mode == "P"
     converted_im = im.convert()

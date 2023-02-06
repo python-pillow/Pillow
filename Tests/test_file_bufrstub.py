@@ -10,7 +10,6 @@ TEST_FILE = "Tests/images/gfs.t06z.rassda.tm00.bufr_d"
 def test_open():
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert im.format == "BUFR"
 
@@ -31,7 +30,6 @@ def test_invalid_file():
 def test_load():
     # Arrange
     with Image.open(TEST_FILE) as im:
-
         # Act / Assert: stub cannot load without an implemented handler
         with pytest.raises(OSError):
             im.load()

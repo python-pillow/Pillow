@@ -45,12 +45,10 @@ def _accept(prefix):
 
 
 class PcxImageFile(ImageFile.ImageFile):
-
     format = "PCX"
     format_description = "Paintbrush"
 
     def _open(self):
-
         # header
         s = self.fp.read(128)
         if not _accept(s):
@@ -143,7 +141,6 @@ SAVE = {
 
 
 def _save(im, fp, filename):
-
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:

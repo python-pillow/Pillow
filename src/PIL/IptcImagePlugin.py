@@ -48,7 +48,6 @@ def dump(c):
 
 
 class IptcImageFile(ImageFile.ImageFile):
-
     format = "IPTC"
     format_description = "IPTC/NAA"
 
@@ -84,7 +83,6 @@ class IptcImageFile(ImageFile.ImageFile):
         return tag, size
 
     def _open(self):
-
         # load descriptive fields
         while True:
             offset = self.fp.tell()
@@ -134,7 +132,6 @@ class IptcImageFile(ImageFile.ImageFile):
             ]
 
     def load(self):
-
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
             return ImageFile.ImageFile.load(self)
 

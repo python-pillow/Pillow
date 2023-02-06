@@ -54,7 +54,6 @@ def test_rt_metadata(tmp_path):
     img.save(f, tiffinfo=info)
 
     with Image.open(f) as loaded:
-
         assert loaded.tag[ImageJMetaDataByteCounts] == (len(bin_data),)
         assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bin_data),)
 
@@ -74,14 +73,12 @@ def test_rt_metadata(tmp_path):
     info[ImageJMetaDataByteCounts] = (8, len(bin_data) - 8)
     img.save(f, tiffinfo=info)
     with Image.open(f) as loaded:
-
         assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
         assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
 
 
 def test_read_metadata():
     with Image.open("Tests/images/hopper_g4.tif") as img:
-
         assert {
             "YResolution": IFDRational(4294967295, 113653537),
             "PlanarConfiguration": 1,

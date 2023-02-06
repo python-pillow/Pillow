@@ -35,12 +35,10 @@ def _accept(prefix):
 
 
 class PixarImageFile(ImageFile.ImageFile):
-
     format = "PIXAR"
     format_description = "PIXAR raster image"
 
     def _open(self):
-
         # assuming a 4-byte magic label
         s = self.fp.read(4)
         if not _accept(s):

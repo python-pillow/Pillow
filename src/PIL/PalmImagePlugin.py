@@ -112,9 +112,7 @@ _COMPRESSION_TYPES = {"none": 0xFF, "rle": 0x01, "scanline": 0x00}
 
 
 def _save(im, fp, filename):
-
     if im.mode == "P":
-
         # we assume this is a color Palm image with the standard colormap,
         # unless the "info" dict has a "custom-colormap" field
 
@@ -147,14 +145,12 @@ def _save(im, fp, filename):
         version = 1
 
     elif im.mode == "1":
-
         # monochrome -- write it inverted, as is the Palm standard
         rawmode = "1;I"
         bpp = 1
         version = 0
 
     else:
-
         msg = f"cannot write mode {im.mode} as Palm"
         raise OSError(msg)
 

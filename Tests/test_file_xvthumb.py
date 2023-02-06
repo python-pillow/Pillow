@@ -10,7 +10,6 @@ TEST_FILE = "Tests/images/hopper.p7"
 def test_open():
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert im.format == "XVThumb"
 

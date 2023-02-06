@@ -15,7 +15,6 @@ def test_sanity():
 
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert im.size == (128, 128)
         assert isinstance(im, DcxImagePlugin.DcxImageFile)
@@ -54,7 +53,6 @@ def test_invalid_file():
 def test_tell():
     # Arrange
     with Image.open(TEST_FILE) as im:
-
         # Act
         frame = im.tell()
 

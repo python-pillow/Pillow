@@ -793,7 +793,6 @@ class ImageFileDirectory_v2(MutableMapping):
         return ret
 
     def load(self, fp):
-
         self.reset()
         self._offset = fp.tell()
 
@@ -938,7 +937,6 @@ class ImageFileDirectory_v2(MutableMapping):
         return result
 
     def save(self, fp):
-
         if fp.tell() == 0:  # skip TIFF header on subsequent pages
             # tiff header -- PIL always starts the first IFD at offset 8
             fp.write(self._prefix + self._pack("HL", 42, 8))
@@ -1059,7 +1057,6 @@ ImageFileDirectory = ImageFileDirectory_v1
 
 
 class TiffImageFile(ImageFile.ImageFile):
-
     format = "TIFF"
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
@@ -1582,7 +1579,6 @@ SAVE_INFO = {
 
 
 def _save(im, fp, filename):
-
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:

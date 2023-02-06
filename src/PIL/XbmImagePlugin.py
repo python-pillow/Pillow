@@ -44,12 +44,10 @@ def _accept(prefix):
 
 
 class XbmImageFile(ImageFile.ImageFile):
-
     format = "XBM"
     format_description = "X11 Bitmap"
 
     def _open(self):
-
         m = xbm_head.match(self.fp.read(512))
 
         if not m:
@@ -69,7 +67,6 @@ class XbmImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, filename):
-
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as XBM"
         raise OSError(msg)

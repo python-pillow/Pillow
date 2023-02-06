@@ -78,7 +78,6 @@ def test_id_field():
 
     # Act
     with Image.open(test_file) as im:
-
         # Assert
         assert im.size == (100, 100)
 
@@ -89,7 +88,6 @@ def test_id_field_rle():
 
     # Act
     with Image.open(test_file) as im:
-
         # Assert
         assert im.size == (199, 199)
 
@@ -171,7 +169,6 @@ def test_save_id_section(tmp_path):
 
     test_file = "Tests/images/tga_id_field.tga"
     with Image.open(test_file) as im:
-
         # Save with no id section
         im.save(out, id_section="")
     with Image.open(out) as test_im:

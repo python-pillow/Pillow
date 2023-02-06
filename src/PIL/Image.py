@@ -153,6 +153,7 @@ def isImageType(t):
 #
 # Constants
 
+
 # transpose
 class Transpose(IntEnum):
     FLIP_LEFT_RIGHT = 0
@@ -391,7 +392,6 @@ def init():
 
 
 def _getdecoder(mode, decoder_name, args, extra=()):
-
     # tweak arguments
     if args is None:
         args = ()
@@ -415,7 +415,6 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
-
     # tweak arguments
     if args is None:
         args = ()

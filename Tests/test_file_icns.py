@@ -16,7 +16,6 @@ def test_sanity():
     # Loading this icon by default should result in the largest size
     # (512x512@2x) being loaded
     with Image.open(TEST_FILE) as im:
-
         # Assert that there is no unclosed file warning
         with warnings.catch_warnings():
             im.load()

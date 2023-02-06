@@ -42,7 +42,6 @@ def test_basic(tmp_path, mode):
     im_in.save(filename)
 
     with Image.open(filename) as im_out:
-
         verify(im_in)
         verify(im_out)
 
@@ -87,7 +86,6 @@ def test_tobytes():
 
 
 def test_convert():
-
     im = original.copy()
 
     verify(im.convert("I;16"))
