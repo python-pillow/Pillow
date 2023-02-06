@@ -153,6 +153,7 @@ def isImageType(t):
 #
 # Constants
 
+
 # transpose
 class Transpose(IntEnum):
     FLIP_LEFT_RIGHT = 0
@@ -391,7 +392,6 @@ def init():
 
 
 def _getdecoder(mode, decoder_name, args, extra=()):
-
     # tweak arguments
     if args is None:
         args = ()
@@ -415,7 +415,6 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
-
     # tweak arguments
     if args is None:
         args = ()
@@ -3267,9 +3266,15 @@ def open(fp, mode="r", formats=None):
 
     im = _open_core(fp, filename, prefix, formats)
 
-    if im is None:
+    if im is None and formats is ID:
+        checked_formats = formats.copy()
         if init():
-            im = _open_core(fp, filename, prefix, formats)
+            im = _open_core(
+                fp,
+                filename,
+                prefix,
+                tuple(format for format in formats if format not in checked_formats),
+            )
 
     if im:
         im._exclusive_fp = exclusive_fp
@@ -3400,7 +3405,8 @@ def register_open(id, factory, accept=None):
        reject images having another format.
     """
     id = id.upper()
-    ID.append(id)
+    if id not in ID:
+        ID.append(id)
     OPEN[id] = factory, accept
 
 

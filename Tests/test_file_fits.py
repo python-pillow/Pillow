@@ -12,7 +12,6 @@ TEST_FILE = "Tests/images/hopper.fits"
 def test_open():
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert im.format == "FITS"
         assert im.size == (128, 128)

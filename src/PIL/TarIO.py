@@ -32,7 +32,6 @@ class TarIO(ContainerIO.ContainerIO):
         self.fh = open(tarfile, "rb")
 
         while True:
-
             s = self.fh.read(512)
             if len(s) != 512:
                 msg = "unexpected end of tar file"

@@ -5,6 +5,24 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Handle more than one directory returned by pkg-config #6896
+  [sebastic, radarhere]
+
+- Do not retry past formats when loading all formats for the first time #6902
+  [radarhere]
+
+- Do not retry specified formats if they failed when opening #6893
+  [radarhere]
+
+- Do not unintentionally load TIFF format at first #6892
+  [radarhere]
+
+- Stop reading when EPS line becomes too long #6897
+  [radarhere]
+
+- Allow writing IFDRational to BYTE tag #6890
+  [radarhere]
+
 - Raise ValueError for BoxBlur filter with negative radius #6874
   [hugovk, radarhere]
 

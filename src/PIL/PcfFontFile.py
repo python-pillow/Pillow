@@ -58,7 +58,6 @@ class PcfFontFile(FontFile.FontFile):
     name = "name"
 
     def __init__(self, fp, charset_encoding="iso8859-1"):
-
         self.charset_encoding = charset_encoding
 
         magic = l32(fp.read(4))
@@ -92,7 +91,6 @@ class PcfFontFile(FontFile.FontFile):
                 self.glyph[ch] = glyph
 
     def _getformat(self, tag):
-
         format, size, offset = self.toc[tag]
 
         fp = self.fp
@@ -108,7 +106,6 @@ class PcfFontFile(FontFile.FontFile):
         return fp, format, i16, i32
 
     def _load_properties(self):
-
         #
         # font properties
 
@@ -136,7 +133,6 @@ class PcfFontFile(FontFile.FontFile):
         return properties
 
     def _load_metrics(self):
-
         #
         # font metrics
 
@@ -147,7 +143,6 @@ class PcfFontFile(FontFile.FontFile):
         append = metrics.append
 
         if (format & 0xFF00) == 0x100:
-
             # "compressed" metrics
             for i in range(i16(fp.read(2))):
                 left = i8(fp.read(1)) - 128
@@ -160,7 +155,6 @@ class PcfFontFile(FontFile.FontFile):
                 append((xsize, ysize, left, right, width, ascent, descent, 0))
 
         else:
-
             # "jumbo" metrics
             for i in range(i32(fp.read(4))):
                 left = i16(fp.read(2))
@@ -176,7 +170,6 @@ class PcfFontFile(FontFile.FontFile):
         return metrics
 
     def _load_bitmaps(self, metrics):
-
         #
         # bitmap data
 

@@ -395,7 +395,6 @@ class Parser:
 
         # parse what we have
         if self.decoder:
-
             if self.offset > 0:
                 # skip header
                 skip = min(len(self.data), self.offset)
@@ -420,14 +419,12 @@ class Parser:
             self.data = self.data[n:]
 
         elif self.image:
-
             # if we end up here with no decoder, this file cannot
             # be incrementally parsed.  wait until we've gotten all
             # available data
             pass
 
         else:
-
             # attempt to open this file
             try:
                 with io.BytesIO(self.data) as fp:

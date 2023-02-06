@@ -54,7 +54,6 @@ def test_rt_metadata(tmp_path):
     img.save(f, tiffinfo=info)
 
     with Image.open(f) as loaded:
-
         assert loaded.tag[ImageJMetaDataByteCounts] == (len(bin_data),)
         assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bin_data),)
 
@@ -74,14 +73,12 @@ def test_rt_metadata(tmp_path):
     info[ImageJMetaDataByteCounts] = (8, len(bin_data) - 8)
     img.save(f, tiffinfo=info)
     with Image.open(f) as loaded:
-
         assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
         assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
 
 
 def test_read_metadata():
     with Image.open("Tests/images/hopper_g4.tif") as img:
-
         assert {
             "YResolution": IFDRational(4294967295, 113653537),
             "PlanarConfiguration": 1,
@@ -202,14 +199,15 @@ def test_writing_other_types_to_ascii(value, expected, tmp_path):
         assert reloaded.tag_v2[271] == expected
 
 
-def test_writing_int_to_bytes(tmp_path):
+@pytest.mark.parametrize("value", (1, IFDRational(1)))
+def test_writing_other_types_to_bytes(value, tmp_path):
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     tag = TiffTags.TAGS_V2[700]
     assert tag.type == TiffTags.BYTE
 
-    info[700] = 1
+    info[700] = value
 
     out = str(tmp_path / "temp.tiff")
     im.save(out, tiffinfo=info)

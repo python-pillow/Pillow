@@ -33,12 +33,10 @@ def _accept(prefix):
 
 
 class GribStubImageFile(ImageFile.StubImageFile):
-
     format = "GRIB"
     format_description = "GRIB"
 
     def _open(self):
-
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(8)):

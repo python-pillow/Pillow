@@ -19,7 +19,6 @@ def _accept(prefix):
 
 
 class FitsImageFile(ImageFile.ImageFile):
-
     format = "FITS"
     format_description = "FITS"
 

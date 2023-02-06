@@ -64,18 +64,15 @@ SEGMENTS = [linear, curved, sine, sphere_increasing, sphere_decreasing]
 
 
 class GradientFile:
-
     gradient = None
 
     def getpalette(self, entries=256):
-
         palette = []
 
         ix = 0
         x0, x1, xm, rgb0, rgb1, segment = self.gradient[ix]
 
         for i in range(entries):
-
             x = i / (entries - 1)
 
             while x1 < x:
@@ -105,7 +102,6 @@ class GimpGradientFile(GradientFile):
     """File handler for GIMP's gradient format."""
 
     def __init__(self, fp):
-
         if fp.readline()[:13] != b"GIMP Gradient":
             msg = "not a GIMP gradient file"
             raise SyntaxError(msg)
@@ -121,7 +117,6 @@ class GimpGradientFile(GradientFile):
         gradient = []
 
         for i in range(count):
-
             s = fp.readline().split()
             w = [float(x) for x in s[:11]]
 

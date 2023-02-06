@@ -8,7 +8,6 @@ from PIL import Image, ImagePath
 
 
 def test_path():
-
     p = ImagePath.Path(list(range(10)))
 
     # sequence interface

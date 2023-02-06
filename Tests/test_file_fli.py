@@ -64,7 +64,6 @@ def test_context_manager():
 def test_tell():
     # Arrange
     with Image.open(static_test_file) as im:
-
         # Act
         frame = im.tell()
 
@@ -110,7 +109,6 @@ def test_eoferror():
 
 def test_seek_tell():
     with Image.open(animated_test_file) as im:
-
         layer_number = im.tell()
         assert layer_number == 0
 

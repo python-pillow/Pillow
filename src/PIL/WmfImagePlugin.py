@@ -75,7 +75,6 @@ def _accept(prefix):
 
 
 class WmfStubImageFile(ImageFile.StubImageFile):
-
     format = "WMF"
     format_description = "Windows Metafile"
 
@@ -86,7 +85,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         s = self.fp.read(80)
 
         if s[:6] == b"\xd7\xcd\xc6\x9a\x00\x00":
-
             # placeable windows metafile
 
             # get units per inch

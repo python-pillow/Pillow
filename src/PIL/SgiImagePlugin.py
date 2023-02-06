@@ -49,12 +49,10 @@ MODES = {
 ##
 # Image plugin for SGI images.
 class SgiImageFile(ImageFile.ImageFile):
-
     format = "SGI"
     format_description = "SGI Image File Format"
 
     def _open(self):
-
         # HEAD
         headlen = 512
         s = self.fp.read(headlen)

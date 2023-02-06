@@ -50,7 +50,6 @@ def test_add():
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
-
             # Act
             new = ImageChops.add(im1, im2)
 
@@ -63,7 +62,6 @@ def test_add_scale_offset():
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
-
             # Act
             new = ImageChops.add(im1, im2, scale=2.5, offset=100)
 
@@ -87,7 +85,6 @@ def test_add_modulo():
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
-
             # Act
             new = ImageChops.add_modulo(im1, im2)
 
@@ -111,7 +108,6 @@ def test_blend():
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
-
             # Act
             new = ImageChops.blend(im1, im2, 0.5)
 
@@ -137,7 +133,6 @@ def test_darker_image():
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
-
             # Act
             new = ImageChops.darker(im1, im2)
 
@@ -149,7 +144,6 @@ def test_darker_pixel():
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
-
         # Act
         new = ImageChops.darker(im1, im2)
 
@@ -161,7 +155,6 @@ def test_difference():
     # Arrange
     with Image.open("Tests/images/imagedraw_arc_end_le_start.png") as im1:
         with Image.open("Tests/images/imagedraw_arc_no_loops.png") as im2:
-
             # Act
             new = ImageChops.difference(im1, im2)
 
@@ -173,7 +166,6 @@ def test_difference_pixel():
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_polygon_kite_RGB.png") as im2:
-
         # Act
         new = ImageChops.difference(im1, im2)
 
@@ -195,7 +187,6 @@ def test_duplicate():
 def test_invert():
     # Arrange
     with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im:
-
         # Act
         new = ImageChops.invert(im)
 
@@ -209,7 +200,6 @@ def test_lighter_image():
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
-
             # Act
             new = ImageChops.lighter(im1, im2)
 
@@ -221,7 +211,6 @@ def test_lighter_pixel():
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
-
         # Act
         new = ImageChops.lighter(im1, im2)
 
@@ -275,7 +264,6 @@ def test_offset():
     xoffset = 45
     yoffset = 20
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im:
-
         # Act
         new = ImageChops.offset(im, xoffset, yoffset)
 
@@ -292,7 +280,6 @@ def test_screen():
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
-
             # Act
             new = ImageChops.screen(im1, im2)
 
@@ -305,7 +292,6 @@ def test_subtract():
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
-
             # Act
             new = ImageChops.subtract(im1, im2)
 
@@ -319,7 +305,6 @@ def test_subtract_scale_offset():
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
-
             # Act
             new = ImageChops.subtract(im1, im2, scale=2.5, offset=100)
 
@@ -332,7 +317,6 @@ def test_subtract_clip():
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
-
         # Act
         new = ImageChops.subtract(im1, im2)
 
@@ -344,7 +328,6 @@ def test_subtract_modulo():
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
-
             # Act
             new = ImageChops.subtract_modulo(im1, im2)
 
@@ -358,7 +341,6 @@ def test_subtract_modulo_no_clip():
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
-
         # Act
         new = ImageChops.subtract_modulo(im1, im2)
 
@@ -370,7 +352,6 @@ def test_soft_light():
     # Arrange
     with Image.open("Tests/images/hopper.png") as im1:
         with Image.open("Tests/images/hopper-XYZ.png") as im2:
-
             # Act
             new = ImageChops.soft_light(im1, im2)
 
@@ -383,7 +364,6 @@ def test_hard_light():
     # Arrange
     with Image.open("Tests/images/hopper.png") as im1:
         with Image.open("Tests/images/hopper-XYZ.png") as im2:
-
             # Act
             new = ImageChops.hard_light(im1, im2)
 
@@ -396,7 +376,6 @@ def test_overlay():
     # Arrange
     with Image.open("Tests/images/hopper.png") as im1:
         with Image.open("Tests/images/hopper-XYZ.png") as im2:
-
             # Act
             new = ImageChops.overlay(im1, im2)
 

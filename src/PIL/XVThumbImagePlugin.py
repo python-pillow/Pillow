@@ -41,12 +41,10 @@ def _accept(prefix):
 
 
 class XVThumbImageFile(ImageFile.ImageFile):
-
     format = "XVThumb"
     format_description = "XV thumbnail image"
 
     def _open(self):
-
         # check magic
         if not _accept(self.fp.read(6)):
             msg = "not an XV thumbnail file"
