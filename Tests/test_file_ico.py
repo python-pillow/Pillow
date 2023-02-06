@@ -175,7 +175,6 @@ def test_save_256x256(tmp_path):
         # Act
         im.save(outfile)
     with Image.open(outfile) as im_saved:
-
         # Assert
         assert im_saved.size == (256, 256)
 

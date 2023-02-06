@@ -90,7 +90,6 @@ class ImageFont:
     """PIL font wrapper"""
 
     def _load_pilfont(self, filename):
-
         with open(filename, "rb") as fp:
             image = None
             for ext in (".png", ".gif", ".pbm"):
@@ -116,7 +115,6 @@ class ImageFont:
             image.close()
 
     def _load_pilfont_data(self, file, image):
-
         # read PILfont header
         if file.readline() != b"PILfont\n":
             msg = "Not a PILfont file"

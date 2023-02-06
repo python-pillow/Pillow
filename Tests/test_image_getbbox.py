@@ -4,7 +4,6 @@ from .helper import hopper
 
 
 def test_sanity():
-
     bbox = hopper().getbbox()
     assert isinstance(bbox, tuple)
 

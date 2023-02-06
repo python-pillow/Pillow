@@ -91,7 +91,6 @@ def isSpiderImage(filename):
 
 
 class SpiderImageFile(ImageFile.ImageFile):
-
     format = "SPIDER"
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
@@ -200,6 +199,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Image series
 
+
 # given a list of filenames, return a list of images
 def loadImageSeries(filelist=None):
     """create a list of :py:class:`~PIL.Image.Image` objects for use in a montage"""
@@ -289,7 +289,6 @@ Image.register_open(SpiderImageFile.format, SpiderImageFile)
 Image.register_save(SpiderImageFile.format, _save_spider)
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 2:
         print("Syntax: python3 SpiderImagePlugin.py [infile] [outfile]")
         sys.exit()

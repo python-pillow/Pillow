@@ -430,7 +430,6 @@ class pil_build_ext(build_ext):
         return sdk_path
 
     def build_extensions(self):
-
         library_dirs = []
         include_dirs = []
 
@@ -917,7 +916,6 @@ class pil_build_ext(build_ext):
         self.summary_report(feature)
 
     def summary_report(self, feature):
-
         print("-" * 68)
         print("PIL SETUP SUMMARY")
         print("-" * 68)

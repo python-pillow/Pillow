@@ -77,7 +77,6 @@ def test_eoferror():
 
 def test_seek_tell():
     with Image.open(test_file) as im:
-
         layer_number = im.tell()
         assert layer_number == 1
 
@@ -95,7 +94,6 @@ def test_seek_tell():
 
 def test_seek_eoferror():
     with Image.open(test_file) as im:
-
         with pytest.raises(EOFError):
             im.seek(-1)
 

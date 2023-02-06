@@ -6,7 +6,6 @@ from .helper import assert_image_equal, assert_image_equal_tofile
 
 
 def test_sanity():
-
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
     assert len(palette.colors) == 256
 
@@ -23,7 +22,6 @@ def test_reload():
 
 
 def test_getcolor():
-
     palette = ImagePalette.ImagePalette()
     assert len(palette.palette) == 0
     assert len(palette.colors) == 0
@@ -84,7 +82,6 @@ def test_getcolor_not_special(index, palette):
 
 
 def test_file(tmp_path):
-
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
 
     f = str(tmp_path / "temp.lut")

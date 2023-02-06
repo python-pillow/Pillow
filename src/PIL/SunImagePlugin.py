@@ -30,12 +30,10 @@ def _accept(prefix):
 
 
 class SunImageFile(ImageFile.ImageFile):
-
     format = "SUN"
     format_description = "Sun Raster File"
 
     def _open(self):
-
         # The Sun Raster file header is 32 bytes in length
         # and has the following format:
 

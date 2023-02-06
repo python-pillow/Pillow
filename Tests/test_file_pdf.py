@@ -89,7 +89,6 @@ def test_save_all(tmp_path):
 
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-
         outfile = str(tmp_path / "temp.pdf")
         im.save(outfile, save_all=True)
 
@@ -123,7 +122,6 @@ def test_save_all(tmp_path):
 def test_multiframe_normal_save(tmp_path):
     # Test saving a multiframe image without save_all
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-
         outfile = str(tmp_path / "temp.pdf")
         im.save(outfile)
 
