@@ -311,6 +311,7 @@ def test_read_binary_preview():
         pass
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_readline_psfile(tmp_path):
     # check all the freaking line endings possible from the spec
     # test_string = u'something\r\nelse\n\rbaz\rbif\n'
@@ -344,6 +345,11 @@ def test_readline_psfile(tmp_path):
         s = ending.join(strings)
         _test_readline_io_psfile(s, ending)
         _test_readline_file_psfile(s, ending)
+
+
+def test_psfile_deprecation():
+    with pytest.warns(DeprecationWarning):
+        EpsImagePlugin.PSFile(None)
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))

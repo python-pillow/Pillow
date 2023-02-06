@@ -29,6 +29,7 @@ import tempfile
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
+from ._deprecate import deprecate
 
 #
 # --------------------------------------------------------------------
@@ -166,6 +167,11 @@ class PSFile:
     """
 
     def __init__(self, fp):
+        deprecate(
+            "PSFile",
+            11,
+            action="If you need the functionality of this class you will need to implement it yourself.",
+        )
         self.fp = fp
         self.char = None
 
