@@ -163,7 +163,7 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
 class PSFile:
     """
     Wrapper for bytesio object that treats either CR or LF as end of line.
-    This class is no longer used internally, but kept for backwards-compatibility.
+    This class is no longer used internally, but kept for backwards compatibility.
     """
 
     def __init__(self, fp):
