@@ -311,7 +311,6 @@ def test_read_binary_preview():
         pass
 
 
-@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_readline_psfile(tmp_path):
     # check all the freaking line endings possible from the spec
     # test_string = u'something\r\nelse\n\rbaz\rbif\n'
@@ -329,7 +328,8 @@ def test_readline_psfile(tmp_path):
 
     def _test_readline_io_psfile(test_string, ending):
         f = io.BytesIO(test_string.encode("latin-1"))
-        t = EpsImagePlugin.PSFile(f)
+        with pytest.warns(DeprecationWarning):
+            t = EpsImagePlugin.PSFile(f)
         _test_readline(t, ending)
 
     def _test_readline_file_psfile(test_string, ending):
@@ -338,7 +338,8 @@ def test_readline_psfile(tmp_path):
             w.write(test_string.encode("latin-1"))
 
         with open(f, "rb") as r:
-            t = EpsImagePlugin.PSFile(r)
+            with pytest.warns(DeprecationWarning):
+                t = EpsImagePlugin.PSFile(r)
             _test_readline(t, ending)
 
     for ending in line_endings:
