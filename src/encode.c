@@ -1214,7 +1214,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     char mct = 0;
     int sgnd = 0;
     Py_ssize_t fd = -1;
-    char * comment = NULL;
+    char *comment = NULL;
     int add_plt = 0;
 
     if (!PyArg_ParseTuple(
@@ -1326,7 +1326,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
                 PyExc_ValueError,
                 "JPEG 2000 comment is too long");
             Py_DECREF(encoder);
-            return NULL;            
+            return NULL;
         }
 
         context->comment = strdup(comment);
@@ -1338,8 +1338,6 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             Py_DECREF(encoder);
             return NULL;
         }
-    } else {
-        context->comment = NULL;
     }
 
     if (quality_layers && PySequence_Check(quality_layers)) {
