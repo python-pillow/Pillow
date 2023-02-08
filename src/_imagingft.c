@@ -386,6 +386,42 @@ err:
     return NULL;
 }
 
+static FT_Pos
+family_getascender(FontFamily *family) {
+    int i;
+    FT_Pos ascender = 0;
+    for (i = 0; i < family->font_count; i++) {
+        ascender = (ascender > family->faces[i]->size->metrics.ascender)
+                       ? ascender
+                       : family->faces[i]->size->metrics.ascender;
+    }
+    return ascender;
+}
+
+static FT_Pos
+family_getdescender(FontFamily *family) {
+    int i;
+    FT_Pos descender = 0;
+    for (i = 0; i < family->font_count; i++) {
+        descender = (descender < family->faces[i]->size->metrics.descender)
+                        ? descender
+                        : family->faces[i]->size->metrics.descender;
+    }
+    return descender;
+}
+
+static FT_Pos
+family_getheight(FontFamily *family) {
+    int i;
+    FT_Pos height = 0;
+    for (i = 0; i < family->font_count; i++) {
+        height = (height > family->faces[i]->size->metrics.height)
+                     ? height
+                     : family->faces[i]->size->metrics.height;
+    }
+    return height;
+}
+
 #ifdef HAVE_RAQM
 
 static size_t
@@ -949,16 +985,16 @@ bounding_box_and_anchors(
             }
             switch (anchor[1]) {
                 case 'a':  // ascender
-                    y_anchor = PIXEL(family->faces[0]->size->metrics.ascender);
+                    // this should be consistent with getmetrics()
+                    y_anchor = PIXEL(family_getascender(family));
                     break;
                 case 't':  // top
                     y_anchor = y_max;
                     break;
                 case 'm':  // middle (ascender + descender) / 2
+                    // this should be consistent with getmetrics()
                     y_anchor = PIXEL(
-                        (family->faces[0]->size->metrics.ascender + family->faces[0]->size->metrics.descender) /
-                        2
-                    );
+                        (family_getascender(family) + family_getdescender(family)) / 2);
                     break;
                 case 's':  // horizontal baseline
                     y_anchor = 0;
@@ -967,7 +1003,8 @@ bounding_box_and_anchors(
                     y_anchor = y_min;
                     break;
                 case 'd':  // descender
-                    y_anchor = PIXEL(family->faces[0]->size->metrics.descender);
+                    // this should be consistent with getmetrics()
+                    y_anchor = PIXEL(family_getdescender(family));
                     break;
                 default:
                     goto bad_anchor;
@@ -1897,6 +1934,33 @@ static PyMethodDef family_methods[] = {
 */
     {NULL, NULL}};
 
+static PyObject *
+family_getattr_ascent(FontFamilyObject *self, void *closure) {
+    return PyLong_FromLong(PIXEL(family_getascender(&self->data)));
+}
+
+static PyObject *
+family_getattr_descent(FontFamilyObject *self, void *closure) {
+    return PyLong_FromLong(-PIXEL(family_getdescender(&self->data)));
+}
+
+static PyObject *
+family_getattr_height(FontFamilyObject *self, void *closure) {
+    return PyLong_FromLong(PIXEL(family_getheight(&self->data)));
+}
+
+
+static struct PyGetSetDef family_getsetters[] = {
+    //{"family", (getter)font_getattr_family},
+    //{"style", (getter)font_getattr_style},
+    {"ascent", (getter)family_getattr_ascent},
+    {"descent", (getter)family_getattr_descent},
+    {"height", (getter)family_getattr_height},
+    //{"x_ppem", (getter)font_getattr_x_ppem},
+    //{"y_ppem", (getter)font_getattr_y_ppem},
+    //{"glyphs", (getter)font_getattr_glyphs},
+    {NULL}};
+
 
 static PyTypeObject FontFamily_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "FontFamily",
@@ -1928,7 +1992,7 @@ static PyTypeObject FontFamily_Type = {
     0,                          /*tp_iternext*/
     family_methods,             /*tp_methods*/
     0,                          /*tp_members*/
-    0,                          /*TODO tp_getset*/
+    family_getsetters,          /* tp_getset*/
 };
 
 static PyMethodDef _functions[] = {

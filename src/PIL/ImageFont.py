@@ -1016,6 +1016,14 @@ class FreeTypeFontFamily:
             start[1],
         )
 
+    def getmetrics(self):
+        """
+        :return: A tuple of the maximum font ascent (the distance from the baseline to
+            the highest outline point) and maximum descent (the distance from the
+            baseline to the lowest outline point, a negative value)
+        """
+        return self.font.ascent, self.font.descent
+
 
 class TransposedFont:
     """Wrapper for writing rotated or mirrored text"""
