@@ -9,4 +9,4 @@ mv $archive/* ../Tests/images/
 
 # Cleanup old tarball and empty directory
 rm $archive.tar.gz
-rm -r $archive
+rmdir $archive
