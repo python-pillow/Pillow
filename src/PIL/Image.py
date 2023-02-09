@@ -3612,8 +3612,8 @@ class Exif(MutableMapping):
     Only basic information is available on the root level, in Exif object
     itself. In order to access the rest, obtain their respective IFDs using
     :py:meth:`~PIL.Image.Exif.get_ifd` method and one of
-    :py:class:`~PIL.ExifTags.IFD` members (most notably `Exif` and
-    `GPSInfo`).
+    :py:class:`~PIL.ExifTags.IFD` members (most notably ``Exif`` and
+    ``GPSInfo``).
     
     Both root Exif and child IFD objects support dict interface and can be
     indexed by int values that are available as enum members of
