@@ -109,9 +109,9 @@ header = [
 deps = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/2.1.5/libjpeg-turbo-2.1.5.tar.gz/download",
-        "filename": "libjpeg-turbo-2.1.5.tar.gz",
-        "dir": "libjpeg-turbo-2.1.5",
+        + "/libjpeg-turbo/files/2.1.5.1/libjpeg-turbo-2.1.5.1.tar.gz/download",
+        "filename": "libjpeg-turbo-2.1.5.1.tar.gz",
+        "dir": "libjpeg-turbo-2.1.5.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
