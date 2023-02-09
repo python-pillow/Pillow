@@ -1434,7 +1434,7 @@ class Image:
     def getexif(self):
         """
         Gets EXIF data of the image.
-        
+
         :returns: an :py:class:`~PIL.Image.Exif` object.
         """
         if self._exif is None:
@@ -3608,18 +3608,19 @@ atexit.register(core.clear_cache)
 class Exif(MutableMapping):
     """
     Exif class provides read and write access to EXIF image data.
-    
+
     Only basic information is available on the root level, in Exif object
     itself. In order to access the rest, obtain their respective IFDs using
     :py:meth:`~PIL.Image.Exif.get_ifd` method and one of
     :py:class:`~PIL.ExifTags.IFD` members (most notably ``Exif`` and
     ``GPSInfo``).
-    
+
     Both root Exif and child IFD objects support dict interface and can be
     indexed by int values that are available as enum members of
     :py:class:`~PIL.ExifTags.Base`, :py:class:`~PIL.ExifTags.GPS`, and
     :py:class:`~PIL.ExifTags.Interop`.
     """
+
     endian = None
     bigtiff = False
 
