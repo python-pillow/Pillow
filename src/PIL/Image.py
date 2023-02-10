@@ -1433,7 +1433,7 @@ class Image:
 
     def getexif(self):
         """
-        Gets EXIF data of the image.
+        Gets EXIF data from the image.
 
         :returns: an :py:class:`~PIL.Image.Exif` object.
         """
@@ -3607,18 +3607,36 @@ atexit.register(core.clear_cache)
 
 class Exif(MutableMapping):
     """
-    Exif class provides read and write access to EXIF image data.
+    This class provides read and write access to EXIF image data::
 
-    Only basic information is available on the root level, in Exif object
-    itself. In order to access the rest, obtain their respective IFDs using
-    :py:meth:`~PIL.Image.Exif.get_ifd` method and one of
-    :py:class:`~PIL.ExifTags.IFD` members (most notably ``Exif`` and
-    ``GPSInfo``).
+      from PIL import Image
+      im = Image.open("exif.png")
+      exif = im.getexif()  # Returns an instance of this class
 
-    Both root Exif and child IFD objects support dict interface and can be
-    indexed by int values that are available as enum members of
-    :py:class:`~PIL.ExifTags.Base`, :py:class:`~PIL.ExifTags.GPS`, and
-    :py:class:`~PIL.ExifTags.Interop`.
+    Information can be read and written, iterated over or deleted::
+
+      print(exif[274])  # 1
+      exif[274] = 2
+      for k, v in exif.items():
+        print("Tag", k, "Value", v)  # Tag 274 Value 2
+      del exif[274]
+
+    To access information beyond IFD0, :py:meth:`~PIL.Image.Exif.get_ifd`
+    returns a dictionary::
+
+      from PIL import ExifTags
+      im = Image.open("exif_gps.jpg")
+      exif = im.getexif()
+      gps_ifd = exif.get_ifd(ExifTags.IFD.GPSInfo)
+      print(gps_ifd)
+
+    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.Makernote``,
+    ``ExifTags.IFD.Interop`` and ``ExifTags.IFD.IFD1``.
+
+    :py:mod:`~PIL.ExifTags` also has enum classes to provide names for data::
+
+      print(exif[ExifTags.Base.Software])  # PIL
+      print(gps_ifd[ExifTags.GPS.GPSDateStamp])  # '1999:99:99 99:99:99'
     """
 
     endian = None
