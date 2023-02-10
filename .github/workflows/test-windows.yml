@@ -38,6 +38,12 @@ jobs:
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
+    - name: Checkout extra test images
+      uses: actions/checkout@v3
+      with:
+        repository: python-pillow/test-images
+        path: Tests\test-images
+
     # sets env: pythonLocation
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -63,9 +69,7 @@ jobs:
         echo "C:\Program Files (x86)\gs\gs10.0.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
-        curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
-        7z x pillow-test-images.zip -oc:\
-        xcopy /S /Y c:\test-images-main\* Tests\images\
+        xcopy /S /Y Tests\test-images\* Tests\images
 
         # make cache key depend on VS version
         & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
