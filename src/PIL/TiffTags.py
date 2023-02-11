@@ -312,7 +312,7 @@ TAGS = {
     34910: "HylaFAX FaxRecvTime",
     36864: "ExifVersion",
     36867: "DateTimeOriginal",
-    36868: "DateTImeDigitized",
+    36868: "DateTimeDigitized",
     37121: "ComponentsConfiguration",
     37122: "CompressedBitsPerPixel",
     37724: "ImageSourceData",
