@@ -147,9 +147,10 @@ function run_tests {
     if [ -n "$IS_MACOS" ]; then
         brew install fribidi
     elif [ -n "$IS_ALPINE" ]; then
-        apk add fribidi
+        apk add curl fribidi
     else
-        apt-get install libfribidi0
+        apt-get update
+        apt-get install -y curl libfribidi0 unzip
     fi
     if [[ $(uname -m) == "i686" ]]; then
         if [[ "$MB_PYTHON_VERSION" != 3.11 ]]; then
@@ -159,7 +160,9 @@ function run_tests {
         python3 -m pip install numpy
     fi
 
-    mv ../pillow-depends-main/test_images/* ../Pillow/Tests/images
+    curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
+    untar pillow-test-images.zip
+    mv test-images-main/* ../Pillow/Tests/images
 
     # Runs tests on installed distribution from an empty directory
     (cd ../Pillow && run_tests_in_repo)
