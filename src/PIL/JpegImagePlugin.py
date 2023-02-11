@@ -730,10 +730,10 @@ def _save(im, fp, filename):
 
     extra = info.get("extra", b"")
 
+    MAX_BYTES_IN_MARKER = 65533
     icc_profile = info.get("icc_profile")
     if icc_profile:
         ICC_OVERHEAD_LEN = 14
-        MAX_BYTES_IN_MARKER = 65533
         MAX_DATA_BYTES_IN_MARKER = MAX_BYTES_IN_MARKER - ICC_OVERHEAD_LEN
         markers = []
         while icc_profile:
@@ -764,6 +764,9 @@ def _save(im, fp, filename):
     exif = info.get("exif", b"")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
+    if len(exif) > MAX_BYTES_IN_MARKER:
+        msg = "EXIF data is too long"
+        raise ValueError(msg)
 
     # get keyword arguments
     im.encoderconfig = (

@@ -270,7 +270,10 @@ class TestFileJpeg:
         # https://github.com/python-pillow/Pillow/issues/148
         f = str(tmp_path / "temp.jpg")
         im = hopper()
-        im.save(f, "JPEG", quality=90, exif=b"1" * 65532)
+        im.save(f, "JPEG", quality=90, exif=b"1" * 65533)
+
+        with pytest.raises(ValueError):
+            im.save(f, "JPEG", quality=90, exif=b"1" * 65534)
 
     def test_exif_typeerror(self):
         with Image.open("Tests/images/exif_typeerror.jpg") as im:
