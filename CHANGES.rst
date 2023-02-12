@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Raise an error if EXIF data is too long when saving JPEG #6939
+  [radarhere]
+
 - Handle more than one directory returned by pkg-config #6896
   [sebastic, radarhere]
 
