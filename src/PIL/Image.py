@@ -3636,7 +3636,7 @@ class Exif(MutableMapping):
     :py:mod:`~PIL.ExifTags` also has enum classes to provide names for data::
 
       print(exif[ExifTags.Base.Software])  # PIL
-      print(gps_ifd[ExifTags.GPS.GPSDateStamp])  # '1999:99:99 99:99:99'
+      print(gps_ifd[ExifTags.GPS.GPSDateStamp])  # 1999:99:99 99:99:99
     """
 
     endian = None
