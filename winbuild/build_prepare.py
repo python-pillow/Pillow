@@ -156,25 +156,15 @@ deps = {
         "filename": "xz-5.4.1.tar.gz",
         "dir": "xz-5.4.1",
         "license": "COPYING",
-        "patch": {
-            r"src\liblzma\api\lzma.h": {
-                "#ifndef LZMA_API_IMPORT": "#ifndef LZMA_API_IMPORT\n#define LZMA_API_STATIC",  # noqa: E501
-            },
-            r"windows\vs2019\liblzma.vcxproj": {
-                # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
-                # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
-            },
-        },
         "build": [
-            cmd_msbuild(r"windows\vs2019\liblzma.vcxproj", "Release", "Clean"),
-            cmd_msbuild(r"windows\vs2019\liblzma.vcxproj", "Release", "Build"),
+            cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            cmd_nmake(target="clean"),
+            cmd_nmake(target="liblzma"),
             cmd_mkdir(r"{inc_dir}\lzma"),
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],
         "headers": [r"src\liblzma\api\lzma.h"],
-        "libs": [r"windows\vs2019\Release\{msbuild_arch}\liblzma\liblzma.lib"],
+        "libs": [r"liblzma.lib"],
     },
     "libwebp": {
         "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.0.tar.gz",
@@ -215,7 +205,9 @@ deps = {
             },
         },
         "build": [
-            cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
+            cmd_cmake(
+                "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DCMAKE_C_FLAGS=-DLZMA_API_STATIC"
+            ),
             cmd_nmake(target="clean"),
             cmd_nmake(target="tiff"),
         ],
