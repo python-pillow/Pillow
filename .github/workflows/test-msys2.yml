@@ -51,6 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -S --noconfirm \
+              make \
               pactoys \
               subversion
 
@@ -77,17 +78,17 @@ jobs:
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: SETUPTOOLS_USE_DISTUTILS="stdlib" CFLAGS="-coverage" python3 -m pip install .
+        run: SETUPTOOLS_USE_DISTUTILS="stdlib" .ci/build.sh
 
       - name: Test Pillow
-        run: |
-          python3 selftest.py --installed
-          python3 -c "from PIL import Image"
-          python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+        run: .ci/test.sh
+
+      - name: After success
+        run: .ci/after_success.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
           flags: GHA_Windows
-          name: "MSYS2 MinGW"
+          name: MSYS2 ${{ matrix.msystem }}
