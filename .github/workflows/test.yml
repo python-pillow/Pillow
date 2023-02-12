@@ -22,6 +22,7 @@ jobs:
         python-version: [
           "pypy3.9",
           "pypy3.8",
+          "3.12-dev",
           "3.11",
           "3.10",
           "3.9",
