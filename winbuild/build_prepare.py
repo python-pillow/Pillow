@@ -603,7 +603,8 @@ if __name__ == "__main__":
         dest="depends_dir",
         metavar="PILLOW_DEPS",
         default=os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends")),
-        help="directory used to store cached dependencies (default: 'winbuild\\depends')",  # noqa: E501
+        help="directory used to store cached dependencies "
+             "(default: 'winbuild\\depends')",
     )
     parser.add_argument(
         "--architecture",
@@ -616,21 +617,21 @@ if __name__ == "__main__":
                 else ("x86" if struct.calcsize("P") == 4 else "x64")
             ),
         ),
-        help="build architecture (default: same as host python)",
+        help="build architecture (default: same as host Python)",
     )
     parser.add_argument(
         "--python",
         dest="python_dir",
         metavar="PYTHON",
         default=os.environ.get("PYTHON"),
-        help="Python install directory (default: use host python)",
+        help="Python install directory (default: use host Python)",
     )
     parser.add_argument(
         "--executable",
         dest="python_exe",
         metavar="EXECUTABLE",
         default=os.environ.get("EXECUTABLE", "python.exe"),
-        help="Python executable (default: use host python)",
+        help="Python executable (default: use host Python)",
     )
     parser.add_argument(
         "--nmake",
@@ -654,7 +655,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     arch_prefs = architectures[args.architecture]
-    print("Target Architecture:", args.architecture)
+    print("Target architecture:", args.architecture)
 
     if args.python_dir is None:
         args.python_dir = os.path.dirname(os.path.realpath(sys.executable))

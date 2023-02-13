@@ -57,10 +57,10 @@ Run ``build_prepare.py`` to configure the build::
                             directory used to store cached dependencies (default:
                             'winbuild\depends')
       --architecture {x86,x64,ARM64}
-                            build architecture (default: same as host python)
-      --python PYTHON       Python install directory (default: use host python)
+                            build architecture (default: same as host Python)
+      --python PYTHON       Python install directory (default: use host Python)
       --executable EXECUTABLE
-                            Python executable (default: use host python)
+                            Python executable (default: use host Python)
       --nmake               build dependencies using NMake instead of Ninja
       --no-imagequant       skip GPL-licensed optional dependency libimagequant
       --no-fribidi, --no-raqm
