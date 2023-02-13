@@ -38,42 +38,50 @@ Visual Studio is found automatically with ``vswhere.exe``.
 Build configuration
 -------------------
 
-The following environment variables, if set, will override the default
-behaviour of ``build_prepare.py``:
+Run ``build_prepare.py`` to configure the build::
 
-* ``PYTHON`` + ``EXECUTABLE`` point to the target version of Python.
-  If ``PYTHON`` is unset, the version of Python used to run
-  ``build_prepare.py`` will be used. If only ``PYTHON`` is set,
-  ``EXECUTABLE`` defaults to ``python.exe``.
-* ``ARCHITECTURE`` is used to select a ``x86``, ``x64`` or ``ARM64`` build.
-  By default, uses same architecture as the version of Python used to run ``build_prepare.py``.
-* ``PILLOW_BUILD`` can be used to override the ``winbuild\build`` directory
-  path, used to store generated build scripts and compiled libraries.
-  **Warning:** This directory is wiped when ``build_prepare.py`` is run.
-* ``PILLOW_DEPS`` points to the directory used to store downloaded
-  dependencies. By default ``winbuild\depends`` is used.
+    usage: winbuild\build_prepare.py [-h] [-v] [-d PILLOW_BUILD]
+                                     [--depends PILLOW_DEPS]
+                                     [--architecture {x86,x64,ARM64}]
+                                     [--python PYTHON] [--executable EXECUTABLE]
+                                     [--nmake] [--no-imagequant] [--no-fribidi]
 
-``build_prepare.py`` also supports the following command line parameters:
+    Download dependencies and generate build scripts for Pillow.
 
-* ``-v`` will print generated scripts.
-* ``--nmake`` will use NMake instead of Ninja for CMake dependencies
-* ``--no-imagequant`` will skip GPL-licensed ``libimagequant`` optional dependency
-* ``--no-fribidi`` or ``--no-raqm`` will skip optional LGPL-licensed dependency FriBiDi
-  (required for Raqm text shaping).
-* ``--python=<path>`` and ``--executable=<exe>`` override ``PYTHON`` and ``EXECUTABLE``.
-* ``--architecture=<arch>`` overrides ``ARCHITECTURE``.
-* ``--dir=<path>`` and ``--depends=<path>`` override ``PILLOW_BUILD``
-  and ``PILLOW_DEPS``.
+    options:
+      -h, --help            show this help message and exit
+      -v, --verbose         print generated scripts
+      -d PILLOW_BUILD, --dir PILLOW_BUILD, --build-dir PILLOW_BUILD
+                            build directory (default: 'winbuild\build')
+      --depends PILLOW_DEPS
+                            directory used to store cached dependencies (default:
+                            'winbuild\depends')
+      --architecture {x86,x64,ARM64}
+                            build architecture (default: same as host python)
+      --python PYTHON       Python install directory (default: use host python)
+      --executable EXECUTABLE
+                            Python executable (default: use host python)
+      --nmake               build dependencies using NMake instead of Ninja
+      --no-imagequant       skip GPL-licensed optional dependency libimagequant
+      --no-fribidi, --no-raqm
+                            skip LGPL-licensed optional dependency FriBiDi
+
+    Arguments can also be supplied using the environment variables PILLOW_BUILD,
+    PILLOW_DEPS, ARCHITECTURE, PYTHON, EXECUTABLE. See winbuild\build.rst for more
+    information.
+
+**Warning:** The build directory is wiped when ``build_prepare.py`` is run.
 
 Dependencies
 ------------
 
 Dependencies will be automatically downloaded by ``build_prepare.py``.
 By default, downloaded dependencies are stored in ``winbuild\depends``;
-set the ``PILLOW_DEPS`` environment variable to override this location.
+use the ``--depends`` argument or ``PILLOW_DEPS`` environment variable
+to override this location.
 
 To build all dependencies, run ``winbuild\build\build_dep_all.cmd``,
-or run the individual scripts to build each dependency separately.
+or run the individual scripts in order to build each dependency separately.
 
 Building Pillow
 ---------------
@@ -106,7 +114,7 @@ The following is a simplified version of the script used on AppVeyor:
 
     set PYTHON=C:\Python38\bin
     cd /D C:\Pillow\winbuild
-    C:\Python37\bin\python.exe build_prepare.py -v --depends=C:\pillow-depends
+    C:\Python37\bin\python.exe build_prepare.py -v --depends C:\pillow-depends
     build\build_dep_all.cmd
     build\build_pillow.cmd install
     cd ..
