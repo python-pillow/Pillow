@@ -56,10 +56,8 @@ def cmd_nmake(makefile=None, target="", params=None):
 
 
 def cmds_cmake(target, *params):
-    if isinstance(target, str):
-        targets = ("clean", target)
-    else:
-        targets = ("clean", *target)
+    if not isinstance(target, str):
+        target = " ".join(target)
 
     return [
         " ".join(
@@ -70,12 +68,14 @@ def cmds_cmake(target, *params):
                 "-DCMAKE_RULE_MESSAGES:BOOL=OFF",  # for NMake
                 "-DCMAKE_C_COMPILER=cl.exe",  # for Ninja
                 "-DCMAKE_CXX_COMPILER=cl.exe",  # for Ninja
+                "-DCMAKE_C_FLAGS=-nologo",
+                "-DCMAKE_CXX_FLAGS=-nologo",
                 *params,
                 '-G "{cmake_generator}"',
                 ".",
             ]
         ),
-        *(f"{{cmake}} --build . --target {tgt}" for tgt in targets),
+        f"{{cmake}} --build . --clean-first --parallel --target {target}",
     ]
 
 
@@ -205,7 +205,7 @@ deps = {
             *cmds_cmake(
                 "tiff",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
-                "-DCMAKE_C_FLAGS=-DLZMA_API_STATIC",
+                '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
             )
         ],
         "headers": [r"libtiff\tiff*.h"],
@@ -341,8 +341,11 @@ deps = {
         "dir": "harfbuzz-7.0.0",
         "license": "COPYING",
         "build": [
-            cmd_set("CXXFLAGS", "-d2FH4-"),
-            *cmds_cmake("harfbuzz", "-DHB_HAVE_FREETYPE:BOOL=TRUE"),
+            *cmds_cmake(
+                "harfbuzz",
+                "-DHB_HAVE_FREETYPE:BOOL=TRUE",
+                '-DCMAKE_CXX_FLAGS="-nologo -d2FH4-"',
+            ),
         ],
         "headers": [r"src\*.h"],
         "libs": [r"*.lib"],
