@@ -604,7 +604,7 @@ if __name__ == "__main__":
         metavar="PILLOW_DEPS",
         default=os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends")),
         help="directory used to store cached dependencies "
-             "(default: 'winbuild\\depends')",
+        "(default: 'winbuild\\depends')",
     )
     parser.add_argument(
         "--architecture",
