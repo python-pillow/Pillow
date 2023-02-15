@@ -1126,7 +1126,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present and true, instructs the WebP writer to use lossless compression.
 
 **quality**
-    Integer, 1-100, Defaults to 80. For lossy, 0 gives the smallest
+    Integer, 0-100, Defaults to 80. For lossy, 0 gives the smallest
     size and 100 the largest. For lossless, this parameter is the amount
     of effort put into the compression: 0 is the fastest, but gives larger
     files compared to the slowest, but best, 100.
