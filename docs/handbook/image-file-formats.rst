@@ -1147,6 +1147,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     The exif data to include in the saved file. Only supported if
     the system WebP library was built with webpmux support.
 
+**xmp**
+    The XMP data to include in the saved file. Only supported if
+    the system WebP library was built with webpmux support.
+
 Saving sequences
 ~~~~~~~~~~~~~~~~
 
