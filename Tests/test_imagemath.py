@@ -1,4 +1,5 @@
 from __future__ import print_function
+import pytest
 
 from PIL import Image, ImageMath
 
@@ -55,6 +56,10 @@ class TestImageMath(PillowTestCase):
         self.assertEqual(
             pixel(ImageMath.eval("float(B)**33", images)), "F 8589934592.0"
         )
+
+    def test_prevent_exec(self):
+        with pytest.raises(ValueError):
+            ImageMath.eval("exec('pass')")
 
     def test_logical(self):
         self.assertEqual(pixel(ImageMath.eval("not A", images)), 0)

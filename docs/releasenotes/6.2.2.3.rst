@@ -1,0 +1,21 @@
+6.2.2.3
+-------
+
+Security
+========
+
+This release addresses several critical CVEs.
+
+restrict builtins available to ImageMath.eval
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CVE-2022-22817 Restrict builtins for ImageMath.eval()
+
+To limit :py:class:`PIL.ImageMath` to working with images, Pillow will now restrict the
+builtins available to :py:meth:`PIL.ImageMath.eval`. This will help prevent problems
+arising if users evaluate arbitrary expressions, such as
+``ImageMath.eval("exec(exit())")``.
+
+CVE-2022-24303 Pillow before 9.0.1 allows attackers to delete files because spaces in temporary pathnames are mishandled.
+
+A bunch of changes related to temporary files and race conditions are fixed

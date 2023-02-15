@@ -1,4 +1,8 @@
 from PIL import Image, ImageShow
+from tempfile import mkdtemp
+from os import rmdir
+from os.path import join
+from shutil import rmtree
 
 from .helper import PillowTestCase, hopper, on_ci, unittest
 
@@ -50,3 +54,11 @@ class TestImageShow(PillowTestCase):
     def test_viewers(self):
         for viewer in ImageShow._viewers:
             viewer.get_command("test.jpg")
+
+    def test_file_deprecated(self):
+        tmp_path = mkdtemp()
+        f = join(tmp_path, "temp.jpg")
+        for viewer in ImageShow._viewers:
+            hopper().save(f)
+            viewer.show_file(file=f)
+            # viewer.show_file()

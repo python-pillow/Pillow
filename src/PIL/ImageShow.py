@@ -17,7 +17,6 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
-import tempfile
 
 from PIL import Image
 
@@ -98,6 +97,15 @@ class Viewer(object):
         os.system(self.get_command(file, **options))
         return 1
 
+    def _remove_path_after_delay(self, path):
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import os, sys, time; time.sleep(20); os.remove(sys.argv[1])",
+                path,
+            ]
+        )
 
 # --------------------------------------------------------------------
 
@@ -136,16 +144,9 @@ elif sys.platform == "darwin":
 
         def show_file(self, file, **options):
             """Display given file"""
-            fd, path = tempfile.mkstemp()
-            with os.fdopen(fd, "w") as f:
-                f.write(file)
-            with open(path, "r") as f:
-                subprocess.Popen(
-                    ["im=$(cat); open -a Preview.app $im; sleep 20; rm -f $im"],
-                    shell=True,
-                    stdin=f,
-                )
-            os.remove(path)
+
+            subprocess.call(["open", "-a", "Preview.app", file])
+            self._remove_path_after_delay(file)
             return 1
 
     register(MacViewer)
@@ -168,49 +169,49 @@ else:
         format = "PNG"
         options = {"compress_level": 1}
 
-        def get_command(self, file, **options):
-            command = self.get_command_ex(file, **options)[0]
-            return "(%s %s; rm -f %s)&" % (command, quote(file), quote(file))
+        def get_command(self,file,**options):
+            return " ".join(self.get_command_ex(file,options=options))
+
+        def get_command_ex(self, file, **options):
+            return ["display",file]
 
         def show_file(self, file, **options):
-            """Display given file"""
-            fd, path = tempfile.mkstemp()
-            with os.fdopen(fd, "w") as f:
-                f.write(file)
-            with open(path, "r") as f:
-                command = self.get_command_ex(file, **options)[0]
-                subprocess.Popen(
-                    ["im=$(cat);" + command + " $im; rm -f $im"], shell=True, stdin=f
-                )
-            os.remove(path)
+            """
+            Display given file.
+            """
+            args = self.get_command_ex(file,**options)
+            subprocess.Popen(args)
+
+            self._remove_path_after_delay(file)
             return 1
 
     # implementations
 
     class DisplayViewer(UnixViewer):
         def get_command_ex(self, file, **options):
-            command = executable = "display"
-            return command, executable
+            return ["display", file]
 
     if which("display"):
         register(DisplayViewer)
 
     class EogViewer(UnixViewer):
         def get_command_ex(self, file, **options):
-            command = executable = "eog"
-            return command, executable
+            return ["eog", "-n", file]
 
     if which("eog"):
         register(EogViewer)
 
     class XVViewer(UnixViewer):
-        def get_command_ex(self, file, title=None, **options):
+        def get_command_ex(self, file, **options):
             # note: xv is pretty outdated.  most modern systems have
             # imagemagick's display command instead.
-            command = executable = "xv"
-            if title:
-                command += " -name %s" % quote(title)
-            return command, executable
+            args = ["xv"]
+            if options.get("title") is not None:
+                args.append("-name")
+                args.append(options.get("title"))
+            args.append(file)
+            return args
+
 
     if which("xv"):
         register(XVViewer)

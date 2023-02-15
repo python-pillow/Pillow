@@ -264,7 +264,13 @@ def eval(expression, _dict={}, **kw):
         if hasattr(v, "im"):
             args[k] = _Operand(v)
 
-    out = builtins.eval(expression, args)
+    # out = builtins.eval(expression, args)
+    code = compile(expression, "<string>", "eval")
+    for name in code.co_names:
+        if name not in args and name != "abs":
+            raise ValueError(f"'{name}' not allowed")
+
+    out = builtins.eval(expression, {"__builtins": {"abs": abs}}, args)
     try:
         return out.im
     except AttributeError:
