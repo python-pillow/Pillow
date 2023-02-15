@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Fixed writing int as UNDEFINED tag #6950
+  [radarhere]
+
 - Raise an error if EXIF data is too long when saving JPEG #6939
   [radarhere]
 
