@@ -736,6 +736,22 @@ def test_rounded_rectangle(xy):
 
 
 @pytest.mark.parametrize(
+    "xy",
+    ((10, 20, 190, 180), (190, 20, 10, 180), (190, 180, 10, 20), (10, 180, 190, 20)),
+)
+def test_rounded_rectangle_unordered_points(xy):
+    # Arrange
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rounded_rectangle(xy, 30, fill="red", outline="green", width=5)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle.png")
+
+
+@pytest.mark.parametrize(
     "xy, radius, type",
     [
         ((10, 20, 190, 180), 30.5, "given"),

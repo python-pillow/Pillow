@@ -301,6 +301,7 @@ class ImageDraw:
             (x0, y0), (x1, y1) = xy
         else:
             x0, y0, x1, y1 = xy
+        x0, y0, x1, y1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
 
         d = radius * 2
 
