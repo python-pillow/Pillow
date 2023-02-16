@@ -296,7 +296,7 @@ class ImageDraw:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
     def rounded_rectangle(
-        self, xy, radius=0, fill=None, outline=None, width=1, corners=None
+        self, xy, radius=0, fill=None, outline=None, width=1, *, corners=None
     ):
         """Draw a rounded rectangle."""
         if isinstance(xy[0], (list, tuple)):
