@@ -337,6 +337,8 @@ Methods
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
+    :param corners: A tuple of whether to round each corner,
+                    `(top_left, top_right, bottom_right, bottom_left)`.
 
     .. versionadded:: 8.2.0
 
