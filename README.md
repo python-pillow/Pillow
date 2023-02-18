@@ -82,8 +82,8 @@ As of 2019, Pillow development is
     <tr>
         <th>social</th>
         <td>
-            <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
-                alt="Join the chat at https://gitter.im/python-pillow/Pillow"
+            <a href="https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
+                alt="Join the chat at https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im"
                 src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
             <a href="https://twitter.com/PythonPillow"><img
                 alt="Follow on https://twitter.com/PythonPillow"

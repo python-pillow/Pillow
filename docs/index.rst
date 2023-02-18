@@ -74,8 +74,8 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :alt: OpenSSF Best Practices
 
 .. image:: https://badges.gitter.im/python-pillow/Pillow.svg
-   :target: https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-   :alt: Join the chat at https://gitter.im/python-pillow/Pillow
+   :target: https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+   :alt: Join the chat at https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im
 
 .. image:: https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg
    :target: https://twitter.com/PythonPillow

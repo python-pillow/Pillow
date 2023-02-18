@@ -4,7 +4,7 @@ Bug fixes, feature additions, tests, documentation and more can be contributed v
 
 ## Bug fixes, feature additions, etc.
 
-Please send a pull request to the `main` branch. Please include [documentation](https://pillow.readthedocs.io) and [tests](../Tests/README.rst) for new features. Tests or documentation without bug fixes or feature additions are welcome too. Feel free to ask questions [via issues](https://github.com/python-pillow/Pillow/issues/new), [discussions](https://github.com/python-pillow/Pillow/discussions/new), [Gitter](https://gitter.im/python-pillow/Pillow) or irc://irc.freenode.net#pil
+Please send a pull request to the `main` branch. Please include [documentation](https://pillow.readthedocs.io) and [tests](../Tests/README.rst) for new features. Tests or documentation without bug fixes or feature additions are welcome too. Feel free to ask questions [via issues](https://github.com/python-pillow/Pillow/issues/new), [discussions](https://github.com/python-pillow/Pillow/discussions/new), [Gitter](https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im) or irc://irc.freenode.net#pil
 
 - Fork the Pillow repository.
 - Create a branch from `main`.
