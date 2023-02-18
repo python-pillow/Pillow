@@ -127,9 +127,7 @@ methods. Unless otherwise stated, all methods return a new instance of the
 .. automethod:: PIL.Image.Image.convert
 
 The following example converts an RGB image (linearly calibrated according to
-ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
-
-.. code-block:: python
+ITU-R 709, using the D65 luminant) to the CIE XYZ color space::
 
     rgb2xyz = (
         0.412453, 0.357580, 0.180423, 0,
@@ -140,9 +138,7 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
 .. automethod:: PIL.Image.Image.copy
 .. automethod:: PIL.Image.Image.crop
 
-This crops the input image with the provided coordinates:
-
-.. code-block:: python
+This crops the input image with the provided coordinates::
 
     from PIL import Image
 
@@ -162,9 +158,7 @@ This crops the input image with the provided coordinates:
 .. automethod:: PIL.Image.Image.entropy
 .. automethod:: PIL.Image.Image.filter
 
-This blurs the input image using a filter from the ``ImageFilter`` module:
-
-.. code-block:: python
+This blurs the input image using a filter from the ``ImageFilter`` module::
 
     from PIL import Image, ImageFilter
 
@@ -176,9 +170,7 @@ This blurs the input image using a filter from the ``ImageFilter`` module:
 .. automethod:: PIL.Image.Image.frombytes
 .. automethod:: PIL.Image.Image.getbands
 
-This helps to get the bands of the input image:
-
-.. code-block:: python
+This helps to get the bands of the input image::
 
     from PIL import Image
 
@@ -187,9 +179,7 @@ This helps to get the bands of the input image:
 
 .. automethod:: PIL.Image.Image.getbbox
 
-This helps to get the bounding box coordinates of the input image:
-
-.. code-block:: python
+This helps to get the bounding box coordinates of the input image::
 
     from PIL import Image
 
@@ -217,9 +207,7 @@ This helps to get the bounding box coordinates of the input image:
 .. automethod:: PIL.Image.Image.remap_palette
 .. automethod:: PIL.Image.Image.resize
 
-This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``:
-
-.. code-block:: python
+This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``::
 
     from PIL import Image
 
@@ -231,9 +219,7 @@ This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``
 
 .. automethod:: PIL.Image.Image.rotate
 
-This rotates the input image by ``theta`` degrees counter clockwise:
-
-.. code-block:: python
+This rotates the input image by ``theta`` degrees counter clockwise::
 
     from PIL import Image
 
