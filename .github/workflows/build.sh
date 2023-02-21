@@ -7,6 +7,8 @@ if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   # remove lcms2 and libpng to fix building openjpeg on arm64
   brew remove --ignore-dependencies webp zstd xz libpng libtiff libxcb libxdmcp curl php lcms2 ghostscript
 
+  brew install pkg-config
+
   if [[ "$PLAT" == "arm64" ]]; then
     export MACOSX_DEPLOYMENT_TARGET="11.0"
   else
