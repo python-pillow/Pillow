@@ -80,32 +80,18 @@ def test_resolution(tmp_path):
     assert size == (61.44, 61.44)
 
 
-def test_dpi(tmp_path):
+@pytest.mark.parametrize(
+    "params",
+    (
+        {"dpi": (75, 150)},
+        {"dpi": (75, 150), "resolution": 200},
+    ),
+)
+def test_dpi(params, tmp_path):
     im = hopper()
 
     outfile = str(tmp_path / "temp.pdf")
-    im.save(outfile, dpi=(75, 150))
-
-    with open(outfile, "rb") as fp:
-        contents = fp.read()
-
-    size = tuple(
-        float(d)
-        for d in contents.split(b"stream\nq ")[1].split(b" 0 0 cm")[0].split(b" 0 0 ")
-    )
-    assert size == (122.88, 61.44)
-
-    size = tuple(
-        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
-    )
-    assert size == (122.88, 61.44)
-
-
-def test_resolution_and_dpi(tmp_path):
-    im = hopper()
-
-    outfile = str(tmp_path / "temp.pdf")
-    im.save(outfile, resolution=200, dpi=(75, 150))
+    im.save(outfile, **params)
 
     with open(outfile, "rb") as fp:
         contents = fp.read()
