@@ -136,39 +136,7 @@ class IcoFile:
 
         # Get headers for each item
         for i in range(self.nb_items):
-            s = buf.read(16)
-
-            icon_header = {
-                "width": s[0],
-                "height": s[1],
-                "nb_color": s[2],  # No. of colors in image (0 if >=8bpp)
-                "reserved": s[3],
-                "planes": i16(s, 4),
-                "bpp": i16(s, 6),
-                "size": i32(s, 8),
-                "offset": i32(s, 12),
-            }
-
-            # See Wikipedia
-            for j in ("width", "height"):
-                if not icon_header[j]:
-                    icon_header[j] = 256
-
-            # See Wikipedia notes about color depth.
-            # We need this just to differ images with equal sizes
-            icon_header["color_depth"] = (
-                icon_header["bpp"]
-                or (
-                    icon_header["nb_color"] != 0
-                    and ceil(log(icon_header["nb_color"], 2))
-                )
-                or 256
-            )
-
-            icon_header["dim"] = (icon_header["width"], icon_header["height"])
-            icon_header["square"] = icon_header["width"] * icon_header["height"]
-
-            self.entry.append(icon_header)
+            self.entry.append(self._read_icon_header(buf))
 
         if not self.entry:
             msg = "No images were found"
@@ -184,6 +152,38 @@ class IcoFile:
         if not _accept(header):
             msg = "not an ICO file"
             raise SyntaxError(msg)
+
+    def _read_icon_header(self, buf) -> dict:
+        """
+        Read an icon header from the buffer.
+
+        This could be subclassed by e.g. CurFile to read a cursor header.
+        """
+        s = buf.read(16)
+        icon_header = {
+            "width": s[0],
+            "height": s[1],
+            "nb_color": s[2],  # No. of colors in image (0 if >=8bpp)
+            "reserved": s[3],
+            "planes": i16(s, 4),  # No. of color planes (hotspot_x for cursors)
+            "bpp": i16(s, 6),  # No. of bits per pixel (hotspot_y for cursors)
+            "size": i32(s, 8),
+            "offset": i32(s, 12),
+        }
+        # See Wikipedia
+        for j in ("width", "height"):
+            if not icon_header[j]:
+                icon_header[j] = 256
+        # See Wikipedia notes about color depth.
+        # We need this just to differ images with equal sizes
+        icon_header["color_depth"] = (
+            icon_header["bpp"]
+            or (icon_header["nb_color"] != 0 and ceil(log(icon_header["nb_color"], 2)))
+            or 256
+        )
+        icon_header["dim"] = (icon_header["width"], icon_header["height"])
+        icon_header["square"] = icon_header["width"] * icon_header["height"]
+        return icon_header
 
     def sizes(self):
         """
