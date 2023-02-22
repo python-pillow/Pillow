@@ -172,6 +172,10 @@ class IcoFile:
 
             self.entry.append(icon_header)
 
+        if not self.entry:
+            msg = "No images were found"
+            raise TypeError(msg)
+
         self.entry = sorted(self.entry, key=lambda x: x["color_depth"])
         # ICO images are usually squares
         # self.entry = sorted(self.entry, key=lambda x: x['width'])

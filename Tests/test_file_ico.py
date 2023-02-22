@@ -229,3 +229,8 @@ def test_draw_reloaded(tmp_path):
 
     with Image.open(outfile) as im:
         assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")
+
+
+def test_empty():
+    with pytest.raises(SyntaxError, match="No images were found"):
+        IcoImagePlugin.IcoImageFile("Tests/images/no_icons.ico")
