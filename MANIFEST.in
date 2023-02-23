@@ -5,6 +5,7 @@ include *.md
 include *.py
 include *.rst
 include *.sh
+include *.toml
 include *.txt
 include *.yaml
 include .flake8
