@@ -1498,7 +1498,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     saved in the PDF.
 
 **dpi**
-    A tuple of (x_resolution, y_resolution), with inches as the resolution
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
     unit. If both the ``resolution`` parameter and the ``dpi`` parameter are
     present, ``resolution`` will be ignored.
 
