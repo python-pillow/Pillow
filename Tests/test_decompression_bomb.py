@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import hopper
+from .helper import hopper, on_ci
 
 TEST_FILE = "Tests/images/hopper.ppm"
 
@@ -58,8 +58,14 @@ class TestDecompressionBomb:
 
     def test_exception_gif(self):
         with pytest.raises(Image.DecompressionBombError):
-            with Image.open("Tests/images/decompression_bomb.gif"):
-                pass
+            try:
+                with Image.open("Tests/images/decompression_bomb.gif"):
+                    pass
+            except FileNotFoundError:
+                if not on_ci():
+                    pytest.skip("test image not found")
+                    return
+                raise
 
     def test_exception_gif_extents(self):
         with Image.open("Tests/images/decompression_bomb_extents.gif") as im:
