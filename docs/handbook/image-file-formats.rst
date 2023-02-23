@@ -1104,7 +1104,7 @@ using the general tags available through tiffinfo.
     Either an integer or a float.
 
 **dpi**
-    A tuple of (x_resolution, y_resolution), with inches as the resolution
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
     unit. For consistency with other image formats, the x and y resolutions
     of the dpi will be rounded to the nearest integer.
 
