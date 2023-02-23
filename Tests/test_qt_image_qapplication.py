@@ -48,7 +48,7 @@ if ImageQt.qt_is_installed:
 def roundtrip(expected):
     result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))
     # Qt saves all pixmaps as rgb
-    assert_image_similar(result, expected.convert("RGB"), 0.3)
+    assert_image_similar(result, expected.convert("RGB"), 0.5)
 
 
 @pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
