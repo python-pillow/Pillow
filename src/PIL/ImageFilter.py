@@ -222,7 +222,7 @@ class UnsharpMask(MultibandFilter):
 
     .. _digital unsharp masking: https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
 
-    """  # noqa: E501
+    """
 
     name = "UnsharpMask"
 
