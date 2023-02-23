@@ -17,9 +17,7 @@ Open, rotate, and display an image (using the default viewer)
 
 The following script loads an image, rotates it 45 degrees, and displays it
 using an external viewer (usually xv on Unix, and the Paint program on
-Windows).
-
-.. code-block:: python
+Windows). ::
 
     from PIL import Image
     with Image.open("hopper.jpg") as im:
@@ -29,9 +27,7 @@ Create thumbnails
 ^^^^^^^^^^^^^^^^^
 
 The following script creates nice thumbnails of all JPEG images in the
-current directory preserving aspect ratios with 128x128 max resolution.
-
-.. code-block:: python
+current directory preserving aspect ratios with 128x128 max resolution. ::
 
     from PIL import Image
     import glob, os
@@ -242,9 +238,7 @@ This rotates the input image by ``theta`` degrees counter clockwise::
 .. automethod:: PIL.Image.Image.transpose
 
 This flips the input image by using the :data:`Transpose.FLIP_LEFT_RIGHT`
-method.
-
-.. code-block:: python
+method. ::
 
     from PIL import Image
 

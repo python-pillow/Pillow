@@ -16,7 +16,7 @@ For a more advanced drawing library for PIL, see the `aggdraw module`_.
 Example: Draw a gray cross over an image
 ----------------------------------------
 
-.. code-block:: python
+::
 
     import sys
     from PIL import Image, ImageDraw
@@ -78,7 +78,7 @@ libraries, and may not available in all PIL builds.
 Example: Draw Partial Opacity Text
 ----------------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -105,7 +105,7 @@ Example: Draw Partial Opacity Text
 Example: Draw Multiline Text
 ----------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -597,18 +597,14 @@ Methods
     string due to kerning. If you need to adjust for kerning, include the following
     character and subtract its length.
 
-    For example, instead of
-
-    .. code-block:: python
+    For example, instead of ::
 
         hello = draw.textlength("Hello", font)
         world = draw.textlength("World", font)
         hello_world = hello + world  # not adjusted for kerning
         assert hello_world == draw.textlength("HelloWorld", font)  # may fail
 
-    use
-
-    .. code-block:: python
+    use ::
 
         hello = draw.textlength("HelloW", font) - draw.textlength(
             "W", font
@@ -617,9 +613,7 @@ Methods
         hello_world = hello + world  # adjusted for kerning
         assert hello_world == draw.textlength("HelloWorld", font)  # True
 
-    or disable kerning with (requires libraqm)
-
-    .. code-block:: python
+    or disable kerning with (requires libraqm) ::
 
         hello = draw.textlength("Hello", font, features=["-kern"])
         world = draw.textlength("World", font, features=["-kern"])

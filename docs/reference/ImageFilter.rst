@@ -11,7 +11,7 @@ filters, which can be be used with the :py:meth:`Image.filter()
 Example: Filter an image
 ------------------------
 
-.. code-block:: python
+::
 
     from PIL import ImageFilter
 

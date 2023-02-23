@@ -1402,9 +1402,7 @@ at 72 dpi. To load it at another resolution::
 
 To add other read or write support, use
 :py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
-handler.
-
-.. code-block:: python
+handler. ::
 
     from PIL import Image
     from PIL import WmfImagePlugin
