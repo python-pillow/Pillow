@@ -32,11 +32,10 @@ def test_sanity():
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file():
-    def open():
+    with pytest.warns(ResourceWarning):
         im = Image.open(TEST_GIF)
         im.load()
-
-    pytest.warns(ResourceWarning, open)
+        del im
 
 
 def test_closed_file():
@@ -1087,7 +1086,8 @@ def test_rgb_transparency(tmp_path):
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = b""
     ims = [Image.new("RGB", (1, 1))]
-    pytest.warns(UserWarning, im.save, out, save_all=True, append_images=ims)
+    with pytest.warns(UserWarning):
+        im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reloaded:
         assert "transparency" not in reloaded.info

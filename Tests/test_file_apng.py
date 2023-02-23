@@ -263,12 +263,9 @@ def test_apng_chunk_errors():
     with Image.open("Tests/images/apng/chunk_no_actl.png") as im:
         assert not im.is_animated
 
-    def open():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/chunk_multi_actl.png") as im:
             im.load()
-        assert not im.is_animated
-
-    pytest.warns(UserWarning, open)
 
     with Image.open("Tests/images/apng/chunk_actl_after_idat.png") as im:
         assert not im.is_animated
@@ -287,20 +284,16 @@ def test_apng_chunk_errors():
 
 
 def test_apng_syntax_errors():
-    def open_frames_zero():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/syntax_num_frames_zero.png") as im:
             assert not im.is_animated
             with pytest.raises(OSError):
                 im.load()
 
-    pytest.warns(UserWarning, open_frames_zero)
-
-    def open_frames_zero_default():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/syntax_num_frames_zero_default.png") as im:
             assert not im.is_animated
             im.load()
-
-    pytest.warns(UserWarning, open_frames_zero_default)
 
     # we can handle this case gracefully
     exception = None
@@ -316,12 +309,10 @@ def test_apng_syntax_errors():
             im.seek(im.n_frames - 1)
             im.load()
 
-    def open():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/syntax_num_frames_invalid.png") as im:
             assert not im.is_animated
             im.load()
-
-    pytest.warns(UserWarning, open)
 
 
 @pytest.mark.parametrize(

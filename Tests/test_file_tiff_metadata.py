@@ -252,7 +252,8 @@ def test_empty_metadata():
     head = f.read(8)
     info = TiffImagePlugin.ImageFileDirectory(head)
     # Should not raise struct.error.
-    pytest.warns(UserWarning, info.load, f)
+    with pytest.warns(UserWarning):
+        info.load(f)
 
 
 def test_iccprofile(tmp_path):
@@ -422,7 +423,8 @@ def test_too_many_entries():
     ifd.tagtype[277] = TiffTags.SHORT
 
     # Should not raise ValueError.
-    pytest.warns(UserWarning, lambda: ifd[277])
+    with pytest.warns(UserWarning):
+        _ = ifd[277]
 
 
 def test_tag_group_data():

@@ -57,11 +57,10 @@ class TestFileTiff:
 
     @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_unclosed_file(self):
-        def open():
+        with pytest.warns(ResourceWarning):
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
-
-        pytest.warns(ResourceWarning, open)
+            del im
 
     def test_closed_file(self):
         with warnings.catch_warnings():
@@ -231,7 +230,8 @@ class TestFileTiff:
     def test_bad_exif(self):
         with Image.open("Tests/images/hopper_bad_exif.jpg") as i:
             # Should not raise struct.error.
-            pytest.warns(UserWarning, i._getexif)
+            with pytest.warns(UserWarning):
+                i._getexif()
 
     def test_save_rgba(self, tmp_path):
         im = hopper("RGBA")
