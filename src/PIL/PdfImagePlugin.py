@@ -53,12 +53,12 @@ def _save(im, fp, filename, save_all=False):
     else:
         existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="w+b")
 
-    x_resolution = y_resolution = im.encoderinfo.get("resolution", 72.0)
-
     dpi = im.encoderinfo.get("dpi")
     if dpi:
         x_resolution = dpi[0]
         y_resolution = dpi[1]
+    else:
+        x_resolution = y_resolution = im.encoderinfo.get("resolution", 72.0)
 
     info = {
         "title": None
