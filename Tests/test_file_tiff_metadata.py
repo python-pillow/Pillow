@@ -419,12 +419,12 @@ def test_too_many_entries():
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
 
     #    277: ("SamplesPerPixel", SHORT, 1),
-    ifd._tagdata[277] = struct.pack("hh", 4, 4)
+    ifd._tagdata[277] = struct.pack("<hh", 4, 4)
     ifd.tagtype[277] = TiffTags.SHORT
 
     # Should not raise ValueError.
     with pytest.warns(UserWarning):
-        _ = ifd[277]
+        assert ifd[277] == 4
 
 
 def test_tag_group_data():
