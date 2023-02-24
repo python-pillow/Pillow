@@ -2,6 +2,28 @@
 Changelog (Pillow)
 ==================
 
+6.2.2.4 (date TBD)
+------------------
+
+- Use more specific regex chars to prevent ReDoS. CVE-2021-25292
+  [rickprice,hugovk]
+
+- Fix CVE CVE-2021-25293: There is an out-of-bounds read in ``SgiRleDecode.c``,
+since Pillow 4.3.0.
+  [rickprice]
+
+- Fix CVE-2021-2791
+  [rickprice]
+
+6.2.2.3 (2023-02-23)
+------------------
+
+- CVE-2022-22817 Restrict builtins for ImageMath.eval()
+  [rickprice]
+
+- CVE-2022-24303 Pillow before 9.0.1 allows attackers to delete files because spaces in temporary pathnames are mishandled.
+  [rickprice]
+
 6.2.2.2 (date TBD)
 ------------------
 
@@ -12,7 +34,7 @@ Changelog (Pillow)
 
 - Use snprintf instead of sprintf. CVE-2021-34552
   [wooken]
-  
+
 6.2.2.1 (2021-10-08)
 ------------------
 
