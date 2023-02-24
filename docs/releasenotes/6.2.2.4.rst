@@ -1,0 +1,11 @@
+6.2.2.4
+-------
+
+Security
+========
+
+This release addresses several critical CVEs.
+
+:cve:`CVE-2021-25293`: There is an out-of-bounds read in ``SgiRleDecode.c``,
+since Pillow 4.3.0.
+

@@ -2,6 +2,21 @@
 Changelog (Pillow)
 ==================
 
+6.2.2.4 (date TBD)
+------------------
+
+- Use more specific regex chars to prevent ReDoS. CVE-2021-25292
+  [rickprice,hugovk]
+
+6.2.2.3 (2023-02-23)
+------------------
+
+- CVE-2022-22817 Restrict builtins for ImageMath.eval()
+  [rickprice]
+
+- CVE-2022-24303 Pillow before 9.0.1 allows attackers to delete files because spaces in temporary pathnames are mishandled.
+  [rickprice]
+
 6.2.2.2 (date TBD)
 ------------------
 
