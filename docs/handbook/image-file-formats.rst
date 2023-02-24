@@ -1497,6 +1497,11 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     image, will determine the physical dimensions of the page that will be
     saved in the PDF.
 
+**dpi**
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
+    unit. If both the ``resolution`` parameter and the ``dpi`` parameter are
+    present, ``resolution`` will be ignored.
+
 **title**
     The document’s title. If not appending to an existing PDF file, this will
     default to the filename.
