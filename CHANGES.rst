@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Support saving PDF with different X and Y resolutions #6961
+  [jvanderneutstulen, radarhere, hugovk]
+
 - Fixed writing int as UNDEFINED tag #6950
   [radarhere]
 
