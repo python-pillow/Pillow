@@ -178,13 +178,13 @@ class TestEnvVars:
         assert Image.core.get_block_size() == 2 * 1024 * 1024
 
     @pytest.mark.parametrize(
-        "vars",
+        "var",
         [
             {"PILLOW_ALIGNMENT": "15"},
             {"PILLOW_BLOCK_SIZE": "1024"},
             {"PILLOW_BLOCKS_MAX": "wat"},
         ],
     )
-    def test_warnings(self, vars):
+    def test_warnings(self, var):
         with pytest.warns(UserWarning):
-            Image._apply_env_variables(vars)
+            Image._apply_env_variables(var)
