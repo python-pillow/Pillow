@@ -767,12 +767,12 @@ class Image:
 
         data = []
         while True:
-            l, s, d = e.encode(bufsize)
-            data.append(d)
-            if s:
+            length, error_code, chunk = e.encode(bufsize)
+            data.append(chunk)
+            if error_code:
                 break
-        if s < 0:
-            msg = f"encoder error {s} in tobytes"
+        if error_code < 0:
+            msg = f"encoder error {error_code} in tobytes"
             raise RuntimeError(msg)
 
         return b"".join(data)
