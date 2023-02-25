@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Allow comments in FITS images #6973
+  [radarhere]
+
 - Support saving PDF with different X and Y resolutions #6961
   [jvanderneutstulen, radarhere, hugovk]
 
