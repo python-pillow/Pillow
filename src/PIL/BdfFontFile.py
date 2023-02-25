@@ -64,16 +64,18 @@ def bdf_char(f):
         bitmap.append(s[:-1])
     bitmap = b"".join(bitmap)
 
-    # The word BBX followed by the width in x (BBw), height in y (BBh),
-    # and x and y displacement (BBox, BBoy) of the lower left corner
-    # from the origin of the character.
+    # The word BBX
+    # followed by the width in x (BBw), height in y (BBh),
+    # and x and y displacement (BBxoff0, BByoff0)
+    # of the lower left corner from the origin of the character.
     width, height, x_disp, y_disp = [int(p) for p in props["BBX"].split()]
 
-    # The word DWIDTH followed by the width in x and y of the character in device units.
-    dx, dy = [int(p) for p in props["DWIDTH"].split()]
+    # The word DWIDTH
+    # followed by the width in x and y of the character in device pixels.
+    dwx, dwy = [int(p) for p in props["DWIDTH"].split()]
 
     bbox = (
-        (dx, dy),
+        (dwx, dwy),
         (x_disp, -y_disp - height, width + x_disp, -y_disp),
         (0, 0, width, height),
     )
