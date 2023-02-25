@@ -426,7 +426,6 @@ class AniImageFile(ImageFile.ImageFile):
         self.mode = im.mode
 
     def seek(self, frame):
-
         if frame > self.info["frames"] - 1 or frame < 0:
             msg = "Frame index out of animation bounds"
             raise EOFError(msg)
