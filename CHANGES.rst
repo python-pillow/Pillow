@@ -2,8 +2,59 @@
 Changelog (Pillow)
 ==================
 
-9.4.0 (unreleased)
+9.5.0 (unreleased)
 ------------------
+
+- Added memoryview support to frombytes() #6974
+  [radarhere]
+
+- Allow comments in FITS images #6973
+  [radarhere]
+
+- Support saving PDF with different X and Y resolutions #6961
+  [jvanderneutstulen, radarhere, hugovk]
+
+- Fixed writing int as UNDEFINED tag #6950
+  [radarhere]
+
+- Raise an error if EXIF data is too long when saving JPEG #6939
+  [radarhere]
+
+- Handle more than one directory returned by pkg-config #6896
+  [sebastic, radarhere]
+
+- Do not retry past formats when loading all formats for the first time #6902
+  [radarhere]
+
+- Do not retry specified formats if they failed when opening #6893
+  [radarhere]
+
+- Do not unintentionally load TIFF format at first #6892
+  [radarhere]
+
+- Stop reading when EPS line becomes too long #6897
+  [radarhere]
+
+- Allow writing IFDRational to BYTE tag #6890
+  [radarhere]
+
+- Raise ValueError for BoxBlur filter with negative radius #6874
+  [hugovk, radarhere]
+
+- Support arbitrary number of loaded modules on Windows #6761
+  [javidcf, radarhere, nulano]
+
+9.4.0 (2023-01-02)
+------------------
+
+- Fixed null pointer dereference crash with malformed font #6846
+  [wiredfool, radarhere]
+
+- Return from ImagingFill early if image has a zero dimension #6842
+  [radarhere]
+
+- Reversed deprecations for Image constants, except for duplicate Resampling attributes #6830
+  [radarhere]
 
 - Improve exception traceback readability #6836
   [hugovk, radarhere]

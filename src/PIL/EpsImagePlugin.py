@@ -173,11 +173,13 @@ class PSFile:
         self.fp.seek(offset, whence)
 
     def readline(self):
-        s = [self.char or b""]
-        self.char = None
+        s = []
+        if self.char:
+            s.append(self.char)
+            self.char = None
 
         c = self.fp.read(1)
-        while (c not in b"\r\n") and len(c):
+        while (c not in b"\r\n") and len(c) and len(b"".join(s).strip(b"\r\n")) <= 255:
             s.append(c)
             c = self.fp.read(1)
 
@@ -284,7 +286,6 @@ class EpsImageFile(ImageFile.ImageFile):
         # Scan for an "ImageData" descriptor
 
         while s[:1] == "%":
-
             if len(s) > 255:
                 msg = "not an EPS file"
                 raise SyntaxError(msg)
@@ -315,22 +316,22 @@ class EpsImageFile(ImageFile.ImageFile):
             raise OSError(msg)
 
     def _find_offset(self, fp):
+        s = fp.read(4)
 
-        s = fp.read(160)
-
-        if s[:4] == b"%!PS":
+        if s == b"%!PS":
             # for HEAD without binary preview
             fp.seek(0, io.SEEK_END)
             length = fp.tell()
             offset = 0
-        elif i32(s, 0) == 0xC6D3D0C5:
+        elif i32(s) == 0xC6D3D0C5:
             # FIX for: Some EPS file not handled correctly / issue #302
             # EPS can contain binary data
             # or start directly with latin coding
             # more info see:
             # https://web.archive.org/web/20160528181353/http://partners.adobe.com/public/developer/en/ps/5002.EPSF_Spec.pdf
-            offset = i32(s, 4)
-            length = i32(s, 8)
+            s = fp.read(8)
+            offset = i32(s)
+            length = i32(s, 4)
         else:
             msg = "not an EPS file"
             raise SyntaxError(msg)

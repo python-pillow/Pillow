@@ -39,7 +39,7 @@ def cmd_rmdir(path):
 def cmd_nmake(makefile=None, target="", params=None):
     if params is None:
         params = ""
-    elif isinstance(params, list) or isinstance(params, tuple):
+    elif isinstance(params, (list, tuple)):
         params = " ".join(params)
     else:
         params = str(params)
@@ -58,7 +58,7 @@ def cmd_nmake(makefile=None, target="", params=None):
 def cmd_cmake(params=None, file="."):
     if params is None:
         params = ""
-    elif isinstance(params, list) or isinstance(params, tuple):
+    elif isinstance(params, (list, tuple)):
         params = " ".join(params)
     else:
         params = str(params)
@@ -109,9 +109,9 @@ header = [
 deps = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/2.1.4/libjpeg-turbo-2.1.4.tar.gz/download",
-        "filename": "libjpeg-turbo-2.1.4.tar.gz",
-        "dir": "libjpeg-turbo-2.1.4",
+        + "/libjpeg-turbo/files/2.1.5.1/libjpeg-turbo-2.1.5.1.tar.gz/download",
+        "filename": "libjpeg-turbo-2.1.5.1.tar.gz",
+        "dir": "libjpeg-turbo-2.1.5.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
@@ -152,9 +152,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.0.tar.gz/download",
-        "filename": "xz-5.4.0.tar.gz",
-        "dir": "xz-5.4.0",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.1.tar.gz/download",
+        "filename": "xz-5.4.1.tar.gz",
+        "dir": "xz-5.4.1",
         "license": "COPYING",
         "patch": {
             r"src\liblzma\api\lzma.h": {
@@ -177,9 +177,9 @@ deps = {
         "libs": [r"windows\vs2019\Release\{msbuild_arch}\liblzma\liblzma.lib"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
-        "filename": "libwebp-1.2.4.tar.gz",
-        "dir": "libwebp-1.2.4",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.0.tar.gz",
+        "filename": "libwebp-1.3.0.tar.gz",
+        "dir": "libwebp-1.3.0",
         "license": "COPYING",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
@@ -253,9 +253,9 @@ deps = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.gz",  # noqa: E501
-        "filename": "freetype-2.12.1.tar.gz",
-        "dir": "freetype-2.12.1",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz",  # noqa: E501
+        "filename": "freetype-2.13.0.tar.gz",
+        "dir": "freetype-2.13.0",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -356,9 +356,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/6.0.0.zip",
-        "filename": "harfbuzz-6.0.0.zip",
-        "dir": "harfbuzz-6.0.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/7.0.1.zip",
+        "filename": "harfbuzz-7.0.1.zip",
+        "dir": "harfbuzz-7.0.1",
         "license": "COPYING",
         "build": [
             cmd_set("CXXFLAGS", "-d2FH4-"),

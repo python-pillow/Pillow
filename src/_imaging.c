@@ -3984,8 +3984,6 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args);
 extern PyObject *
-PyImaging_ListWindowsWin32(PyObject *self, PyObject *args);
-extern PyObject *
 PyImaging_EventLoopWin32(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_DrawWmf(PyObject *self, PyObject *args);
@@ -4069,7 +4067,6 @@ static PyMethodDef functions[] = {
     {"grabclipboard_win32", (PyCFunction)PyImaging_GrabClipboardWin32, METH_VARARGS},
     {"createwindow", (PyCFunction)PyImaging_CreateWindowWin32, METH_VARARGS},
     {"eventloop", (PyCFunction)PyImaging_EventLoopWin32, METH_VARARGS},
-    {"listwindows", (PyCFunction)PyImaging_ListWindowsWin32, METH_VARARGS},
     {"drawwmf", (PyCFunction)PyImaging_DrawWmf, METH_VARARGS},
 #endif
 #ifdef HAVE_XCB

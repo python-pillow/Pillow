@@ -921,6 +921,12 @@ font_render(FontObject *self, PyObject *args) {
             yy = -(py + glyph_slot->bitmap_top);
         }
 
+        // Null buffer, is dereferenced in FT_Bitmap_Convert
+        if (!bitmap.buffer && bitmap.rows) {
+            PyErr_SetString(PyExc_OSError, "Bitmap missing for glyph");
+            goto glyph_error;
+        }
+
         /* convert non-8bpp bitmaps */
         switch (bitmap.pixel_mode) {
             case FT_PIXEL_MODE_MONO:

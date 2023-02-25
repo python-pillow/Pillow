@@ -65,21 +65,16 @@ def __getattr__(name):
     if name in categories:
         deprecate("Image categories", 10, "is_animated", plural=True)
         return categories[name]
-    elif name in ("NEAREST", "NONE"):
-        deprecate(name, 10, "Resampling.NEAREST or Dither.NONE")
-        return 0
     old_resampling = {
         "LINEAR": "BILINEAR",
         "CUBIC": "BICUBIC",
         "ANTIALIAS": "LANCZOS",
     }
     if name in old_resampling:
-        deprecate(name, 10, f"Resampling.{old_resampling[name]}")
+        deprecate(
+            name, 10, f"{old_resampling[name]} or Resampling.{old_resampling[name]}"
+        )
         return Resampling[old_resampling[name]]
-    for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
-        if name in enum.__members__:
-            deprecate(name, 10, f"{enum.__name__}.{name}")
-            return enum[name]
     msg = f"module '{__name__}' has no attribute '{name}'"
     raise AttributeError(msg)
 
@@ -158,6 +153,7 @@ def isImageType(t):
 #
 # Constants
 
+
 # transpose
 class Transpose(IntEnum):
     FLIP_LEFT_RIGHT = 0
@@ -216,6 +212,12 @@ class Quantize(IntEnum):
     MAXCOVERAGE = 1
     FASTOCTREE = 2
     LIBIMAGEQUANT = 3
+
+
+module = sys.modules[__name__]
+for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
+    for item in enum:
+        setattr(module, item.name, item.value)
 
 
 if hasattr(core, "DEFAULT_STRATEGY"):
@@ -390,7 +392,6 @@ def init():
 
 
 def _getdecoder(mode, decoder_name, args, extra=()):
-
     # tweak arguments
     if args is None:
         args = ()
@@ -414,7 +415,6 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
-
     # tweak arguments
     if args is None:
         args = ()
@@ -1270,7 +1270,8 @@ class Image:
         currently implemented only for JPEG and MPO images.
 
         :param mode: The requested mode.
-        :param size: The requested size.
+        :param size: The requested size in pixels, as a 2-tuple:
+           (width, height).
         """
         pass
 
@@ -1431,6 +1432,11 @@ class Image:
             return {get_name(root.tag): get_value(root)}
 
     def getexif(self):
+        """
+        Gets EXIF data from the image.
+
+        :returns: an :py:class:`~PIL.Image.Exif` object.
+        """
         if self._exif is None:
             self._exif = Exif()
             self._exif._loaded = False
@@ -2550,7 +2556,8 @@ class Image:
         apply this method to a :py:meth:`~PIL.Image.Image.copy` of the original
         image.
 
-        :param size: Requested size.
+        :param size: The requested size in pixels, as a 2-tuple:
+           (width, height).
         :param resample: Optional resampling filter.  This can be one
            of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
@@ -2637,7 +2644,8 @@ class Image:
         given size, and the same mode as the original, and copies data
         to the new image using the given transform.
 
-        :param size: The output size.
+        :param size: The output size in pixels, as a 2-tuple:
+           (width, height).
         :param method: The transformation method.  This is one of
           :py:data:`Transform.EXTENT` (cut out a rectangular subregion),
           :py:data:`Transform.AFFINE` (affine transform),
@@ -3263,9 +3271,15 @@ def open(fp, mode="r", formats=None):
 
     im = _open_core(fp, filename, prefix, formats)
 
-    if im is None:
+    if im is None and formats is ID:
+        checked_formats = formats.copy()
         if init():
-            im = _open_core(fp, filename, prefix, formats)
+            im = _open_core(
+                fp,
+                filename,
+                prefix,
+                tuple(format for format in formats if format not in checked_formats),
+            )
 
     if im:
         im._exclusive_fp = exclusive_fp
@@ -3396,7 +3410,8 @@ def register_open(id, factory, accept=None):
        reject images having another format.
     """
     id = id.upper()
-    ID.append(id)
+    if id not in ID:
+        ID.append(id)
     OPEN[id] = factory, accept
 
 
@@ -3591,6 +3606,39 @@ atexit.register(core.clear_cache)
 
 
 class Exif(MutableMapping):
+    """
+    This class provides read and write access to EXIF image data::
+
+      from PIL import Image
+      im = Image.open("exif.png")
+      exif = im.getexif()  # Returns an instance of this class
+
+    Information can be read and written, iterated over or deleted::
+
+      print(exif[274])  # 1
+      exif[274] = 2
+      for k, v in exif.items():
+        print("Tag", k, "Value", v)  # Tag 274 Value 2
+      del exif[274]
+
+    To access information beyond IFD0, :py:meth:`~PIL.Image.Exif.get_ifd`
+    returns a dictionary::
+
+      from PIL import ExifTags
+      im = Image.open("exif_gps.jpg")
+      exif = im.getexif()
+      gps_ifd = exif.get_ifd(ExifTags.IFD.GPSInfo)
+      print(gps_ifd)
+
+    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.Makernote``,
+    ``ExifTags.IFD.Interop`` and ``ExifTags.IFD.IFD1``.
+
+    :py:mod:`~PIL.ExifTags` also has enum classes to provide names for data::
+
+      print(exif[ExifTags.Base.Software])  # PIL
+      print(gps_ifd[ExifTags.GPS.GPSDateStamp])  # 1999:99:99 99:99:99
+    """
+
     endian = None
     bigtiff = False
 
@@ -3837,7 +3885,7 @@ class Exif(MutableMapping):
     def __str__(self):
         if self._info is not None:
             # Load all keys into self._data
-            for tag in self._info.keys():
+            for tag in self._info:
                 self[tag]
 
         return str(self._data)

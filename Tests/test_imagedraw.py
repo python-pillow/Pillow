@@ -52,7 +52,6 @@ def test_sanity():
 
 def test_valueerror():
     with Image.open("Tests/images/chi.gif") as im:
-
         draw = ImageDraw.Draw(im)
         draw.line((0, 0), fill=(0, 0, 0))
 

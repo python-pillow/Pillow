@@ -57,7 +57,6 @@ class TestFileJpeg:
         return Image.frombytes(mode, size, os.urandom(size[0] * size[1] * len(mode)))
 
     def test_sanity(self):
-
         # internal version number
         assert re.search(r"\d+\.\d+$", features.version_codec("jpg"))
 
@@ -271,7 +270,10 @@ class TestFileJpeg:
         # https://github.com/python-pillow/Pillow/issues/148
         f = str(tmp_path / "temp.jpg")
         im = hopper()
-        im.save(f, "JPEG", quality=90, exif=b"1" * 65532)
+        im.save(f, "JPEG", quality=90, exif=b"1" * 65533)
+
+        with pytest.raises(ValueError):
+            im.save(f, "JPEG", quality=90, exif=b"1" * 65534)
 
     def test_exif_typeerror(self):
         with Image.open("Tests/images/exif_typeerror.jpg") as im:
@@ -368,7 +370,6 @@ class TestFileJpeg:
 
     def test_exif_gps_typeerror(self):
         with Image.open("Tests/images/exif_gps_typeerror.jpg") as im:
-
             # Should not raise a TypeError
             im._getexif()
 
@@ -447,7 +448,7 @@ class TestFileJpeg:
             ims = im.get_child_images()
 
         assert len(ims) == 1
-        assert_image_equal_tofile(ims[0], "Tests/images/flower_thumbnail.png")
+        assert_image_similar_tofile(ims[0], "Tests/images/flower_thumbnail.png", 2.1)
 
     def test_mp(self):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
@@ -682,7 +683,6 @@ class TestFileJpeg:
         # Shouldn't raise error
         fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
         with pytest.warns(UserWarning, Image.open, fn) as im:
-
             # Assert
             assert im.format == "JPEG"
 
@@ -704,7 +704,6 @@ class TestFileJpeg:
         # Arrange
         outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/hopper.tif") as im:
-
             # Act
             im.save(outfile, "JPEG", dpi=im.info["dpi"])
 
@@ -731,7 +730,6 @@ class TestFileJpeg:
         # This Photoshop CC 2017 image has DPI in EXIF not metadata
         # EXIF XResolution is (2000000, 10000)
         with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
-
             # Act / Assert
             assert im.info.get("dpi") == (200, 200)
 
@@ -740,7 +738,6 @@ class TestFileJpeg:
         # This image has DPI in EXIF not metadata
         # EXIF XResolution is 72
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:
-
             # Act / Assert
             assert im.info.get("dpi") == (72, 72)
 
@@ -749,7 +746,6 @@ class TestFileJpeg:
         # This is photoshop-200dpi.jpg with EXIF resolution unit set to cm:
         # exiftool -exif:ResolutionUnit=cm photoshop-200dpi.jpg
         with Image.open("Tests/images/exif-200dpcm.jpg") as im:
-
             # Act / Assert
             assert im.info.get("dpi") == (508, 508)
 
@@ -758,7 +754,6 @@ class TestFileJpeg:
         # This is photoshop-200dpi.jpg with EXIF resolution set to 0/0:
         # exiftool -XResolution=0/0 -YResolution=0/0 photoshop-200dpi.jpg
         with Image.open("Tests/images/exif-dpi-zerodivision.jpg") as im:
-
             # Act / Assert
             # This should return the default, and not raise a ZeroDivisionError
             assert im.info.get("dpi") == (72, 72)
@@ -767,7 +762,6 @@ class TestFileJpeg:
         # Arrange
         # 0x011A tag in this exif contains string '300300\x02'
         with Image.open("Tests/images/broken_exif_dpi.jpg") as im:
-
             # Act / Assert
             # This should return the default
             assert im.info.get("dpi") == (72, 72)
@@ -777,7 +771,6 @@ class TestFileJpeg:
         # This is photoshop-200dpi.jpg with resolution removed from EXIF:
         # exiftool "-*resolution*"= photoshop-200dpi.jpg
         with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:
-
             # Act / Assert
             # "When the image resolution is unknown, 72 [dpi] is designated."
             # https://exiv2.org/tags.html
@@ -787,7 +780,6 @@ class TestFileJpeg:
         # This is no-dpi-in-exif with the tiff header of the exif block
         # hexedited from MM * to FF FF FF FF
         with Image.open("Tests/images/invalid-exif.jpg") as im:
-
             # This should return the default, and not a SyntaxError or
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
@@ -810,7 +802,6 @@ class TestFileJpeg:
     def test_invalid_exif_x_resolution(self):
         # When no x or y resolution is defined in EXIF
         with Image.open("Tests/images/invalid-exif-without-x-resolution.jpg") as im:
-
             # This should return the default, and not a ValueError or
             # OSError for an unidentified image.
             assert im.info.get("dpi") == (72, 72)
@@ -820,7 +811,6 @@ class TestFileJpeg:
         # This image has been manually hexedited to have an IFD offset of 10,
         # in contrast to normal 8
         with Image.open("Tests/images/exif-ifd-offset.jpg") as im:
-
             # Act / Assert
             assert im._getexif()[306] == "2017:03:13 23:03:09"
 

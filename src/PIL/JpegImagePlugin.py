@@ -41,7 +41,7 @@ import sys
 import tempfile
 import warnings
 
-from . import Image, ImageFile, TiffImagePlugin
+from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
@@ -344,12 +344,10 @@ def _accept(prefix):
 
 
 class JpegImageFile(ImageFile.ImageFile):
-
     format = "JPEG"
     format_description = "JPEG (ISO 10918)"
 
     def _open(self):
-
         s = self.fp.read(3)
 
         if not _accept(s):
@@ -370,7 +368,6 @@ class JpegImageFile(ImageFile.ImageFile):
         self.icclist = []
 
         while True:
-
             i = s[0]
             if i == 0xFF:
                 s = s + self.fp.read(1)
@@ -418,7 +415,6 @@ class JpegImageFile(ImageFile.ImageFile):
         return s
 
     def draft(self, mode, size):
-
         if len(self.tile) != 1:
             return
 
@@ -455,7 +451,6 @@ class JpegImageFile(ImageFile.ImageFile):
         return self.mode, box
 
     def load_djpeg(self):
-
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
         f, path = tempfile.mkstemp()
@@ -524,6 +519,8 @@ def _getmp(self):
     head = file_contents.read(8)
     endianness = ">" if head[:4] == b"\x4d\x4d\x00\x2a" else "<"
     # process dictionary
+    from . import TiffImagePlugin
+
     try:
         info = TiffImagePlugin.ImageFileDirectory_v2(head)
         file_contents.seek(info.next)
@@ -733,10 +730,10 @@ def _save(im, fp, filename):
 
     extra = info.get("extra", b"")
 
+    MAX_BYTES_IN_MARKER = 65533
     icc_profile = info.get("icc_profile")
     if icc_profile:
         ICC_OVERHEAD_LEN = 14
-        MAX_BYTES_IN_MARKER = 65533
         MAX_DATA_BYTES_IN_MARKER = MAX_BYTES_IN_MARKER - ICC_OVERHEAD_LEN
         markers = []
         while icc_profile:
@@ -767,6 +764,9 @@ def _save(im, fp, filename):
     exif = info.get("exif", b"")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
+    if len(exif) > MAX_BYTES_IN_MARKER:
+        msg = "EXIF data is too long"
+        raise ValueError(msg)
 
     # get keyword arguments
     im.encoderconfig = (

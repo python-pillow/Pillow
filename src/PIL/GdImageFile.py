@@ -44,7 +44,6 @@ class GdImageFile(ImageFile.ImageFile):
     format_description = "GD uncompressed images"
 
     def _open(self):
-
         # Header
         s = self.fp.read(1037)
 

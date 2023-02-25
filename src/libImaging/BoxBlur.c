@@ -237,6 +237,9 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n) {
     if (n < 1) {
         return ImagingError_ValueError("number of passes must be greater than zero");
     }
+    if (radius < 0) {
+        return ImagingError_ValueError("radius must be >= 0");
+    }
 
     if (strcmp(imIn->mode, imOut->mode) || imIn->type != imOut->type ||
         imIn->bands != imOut->bands || imIn->xsize != imOut->xsize ||

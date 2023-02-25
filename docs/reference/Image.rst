@@ -430,6 +430,7 @@ See :ref:`concept-filters` for details.
 .. autoclass:: Resampling
     :members:
     :undoc-members:
+    :noindex:
 
 Some deprecated filters are also available under the following names:
 

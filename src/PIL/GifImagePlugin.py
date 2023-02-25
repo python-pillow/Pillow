@@ -61,7 +61,6 @@ def _accept(prefix):
 
 
 class GifImageFile(ImageFile.ImageFile):
-
     format = "GIF"
     format_description = "Compuserve GIF"
     _close_exclusive_fp_after_loading = False
@@ -81,7 +80,6 @@ class GifImageFile(ImageFile.ImageFile):
         return False
 
     def _open(self):
-
         # Screen
         s = self.fp.read(13)
         if not _accept(s):
@@ -157,7 +155,6 @@ class GifImageFile(ImageFile.ImageFile):
                 raise EOFError(msg) from e
 
     def _seek(self, frame, update_image=True):
-
         if frame == 0:
             # rewind
             self.__offset = 0
@@ -195,7 +192,6 @@ class GifImageFile(ImageFile.ImageFile):
         interlace = None
         frame_dispose_extent = None
         while True:
-
             if not s:
                 s = self.fp.read(1)
             if not s or s == b";":
@@ -487,7 +483,7 @@ def _normalize_mode(im):
     if Image.getmodebase(im.mode) == "RGB":
         im = im.convert("P", palette=Image.Palette.ADAPTIVE)
         if im.palette.mode == "RGBA":
-            for rgba in im.palette.colors.keys():
+            for rgba in im.palette.colors:
                 if rgba[3] == 0:
                     im.info["transparency"] = im.palette.colors[rgba]
                     break
@@ -579,7 +575,6 @@ def _getbbox(base_im, im_frame):
 
 
 def _write_multiple_frames(im, fp, palette):
-
     duration = im.encoderinfo.get("duration")
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
@@ -752,7 +747,6 @@ def _write_local_header(fp, im, offset, flags):
 
 
 def _save_netpbm(im, fp, filename):
-
     # Unused by default.
     # To use, uncomment the register_save call at the end of the file.
     #

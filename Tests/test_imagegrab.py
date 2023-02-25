@@ -64,7 +64,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
             )
             p.communicate()
         else:
-            if not shutil.which("wl-paste"):
+            if not shutil.which("wl-paste") and not shutil.which("xclip"):
                 with pytest.raises(
                     NotImplementedError,
                     match="wl-paste or xclip is required for"

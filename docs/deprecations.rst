@@ -74,40 +74,18 @@ Constants
 A number of constants have been deprecated and will be removed in Pillow 10.0.0
 (2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
 
+.. note::
+
+    Additional ``Image`` constants were deprecated in Pillow 9.1.0, but that
+    was reversed in Pillow 9.4.0 and those constants will now remain available.
+    See :ref:`restored-image-constants`
+
 =====================================================  ============================================================
 Deprecated                                             Use instead
 =====================================================  ============================================================
-``Image.NONE``                                         Either ``Image.Dither.NONE`` or ``Image.Resampling.NEAREST``
-``Image.NEAREST``                                      Either ``Image.Dither.NONE`` or ``Image.Resampling.NEAREST``
-``Image.ORDERED``                                      ``Image.Dither.ORDERED``
-``Image.RASTERIZE``                                    ``Image.Dither.RASTERIZE``
-``Image.FLOYDSTEINBERG``                               ``Image.Dither.FLOYDSTEINBERG``
-``Image.WEB``                                          ``Image.Palette.WEB``
-``Image.ADAPTIVE``                                     ``Image.Palette.ADAPTIVE``
-``Image.AFFINE``                                       ``Image.Transform.AFFINE``
-``Image.EXTENT``                                       ``Image.Transform.EXTENT``
-``Image.PERSPECTIVE``                                  ``Image.Transform.PERSPECTIVE``
-``Image.QUAD``                                         ``Image.Transform.QUAD``
-``Image.MESH``                                         ``Image.Transform.MESH``
-``Image.FLIP_LEFT_RIGHT``                              ``Image.Transpose.FLIP_LEFT_RIGHT``
-``Image.FLIP_TOP_BOTTOM``                              ``Image.Transpose.FLIP_TOP_BOTTOM``
-``Image.ROTATE_90``                                    ``Image.Transpose.ROTATE_90``
-``Image.ROTATE_180``                                   ``Image.Transpose.ROTATE_180``
-``Image.ROTATE_270``                                   ``Image.Transpose.ROTATE_270``
-``Image.TRANSPOSE``                                    ``Image.Transpose.TRANSPOSE``
-``Image.TRANSVERSE``                                   ``Image.Transpose.TRANSVERSE``
-``Image.BOX``                                          ``Image.Resampling.BOX``
-``Image.BILINEAR``                                     ``Image.Resampling.BILINEAR``
-``Image.LINEAR``                                       ``Image.Resampling.BILINEAR``
-``Image.HAMMING``                                      ``Image.Resampling.HAMMING``
-``Image.BICUBIC``                                      ``Image.Resampling.BICUBIC``
-``Image.CUBIC``                                        ``Image.Resampling.BICUBIC``
-``Image.LANCZOS``                                      ``Image.Resampling.LANCZOS``
-``Image.ANTIALIAS``                                    ``Image.Resampling.LANCZOS``
-``Image.MEDIANCUT``                                    ``Image.Quantize.MEDIANCUT``
-``Image.MAXCOVERAGE``                                  ``Image.Quantize.MAXCOVERAGE``
-``Image.FASTOCTREE``                                   ``Image.Quantize.FASTOCTREE``
-``Image.LIBIMAGEQUANT``                                ``Image.Quantize.LIBIMAGEQUANT``
+``Image.LINEAR``                                       ``Image.BILINEAR`` or ``Image.Resampling.BILINEAR``
+``Image.CUBIC``                                        ``Image.BICUBIC`` or ``Image.Resampling.BICUBIC``
+``Image.ANTIALIAS``                                    ``Image.LANCZOS`` or ``Image.Resampling.LANCZOS``
 ``ImageCms.INTENT_PERCEPTUAL``                         ``ImageCms.Intent.PERCEPTUAL``
 ``ImageCms.INTENT_RELATIVE_COLORMETRIC``               ``ImageCms.Intent.RELATIVE_COLORMETRIC``
 ``ImageCms.INTENT_SATURATION``                         ``ImageCms.Intent.SATURATION``

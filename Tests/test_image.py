@@ -69,7 +69,6 @@ class TestImage:
         assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
-
         im = Image.new("L", (100, 100))
         assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
         assert im.mode == "L"
@@ -398,6 +397,17 @@ class TestImage:
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
 
+    def test_register_open_duplicates(self):
+        # Arrange
+        factory, accept = Image.OPEN["JPEG"]
+        id_length = len(Image.ID)
+
+        # Act
+        Image.register_open("JPEG", factory, accept)
+
+        # Assert
+        assert len(Image.ID) == id_length
+
     def test_registered_extensions_uninitialized(self):
         # Arrange
         Image._initialized = 0
@@ -511,6 +521,14 @@ class TestImage:
         # Should pass lists too
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
+
+    @pytest.mark.timeout(0.75)
+    @pytest.mark.skipif(
+        "PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower"
+    )
+    @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
+    def test_empty_image(self, size):
+        Image.new("RGB", size)
 
     def test_storage_neg(self):
         # Storage.c accepted negative values for xsize, ysize.  Was
@@ -921,12 +939,7 @@ class TestImage:
         with pytest.warns(DeprecationWarning):
             assert Image.CONTAINER == 2
 
-    def test_constants_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            assert Image.NEAREST == 0
-        with pytest.warns(DeprecationWarning):
-            assert Image.NONE == 0
-
+    def test_constants(self):
         with pytest.warns(DeprecationWarning):
             assert Image.LINEAR == Image.Resampling.BILINEAR
         with pytest.warns(DeprecationWarning):
@@ -943,8 +956,7 @@ class TestImage:
             Image.Quantize,
         ):
             for name in enum.__members__:
-                with pytest.warns(DeprecationWarning):
-                    assert getattr(Image, name) == enum[name]
+                assert getattr(Image, name) == enum[name]
 
     @pytest.mark.parametrize(
         "path",
@@ -994,7 +1006,6 @@ def mock_encode(*args):
 
 class TestRegistry:
     def test_encode_registry(self):
-
         Image.register_encoder("MOCK", mock_encode)
         assert "MOCK" in Image.ENCODERS
 
