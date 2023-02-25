@@ -44,6 +44,12 @@ def test_naxis_zero():
             pass
 
 
+def test_comment():
+    image_data = b"SIMPLE  =                    T / comment string"
+    with pytest.raises(OSError):
+        FitsImagePlugin.FitsImageFile(BytesIO(image_data))
+
+
 def test_stub_deprecated():
     class Handler:
         opened = False
