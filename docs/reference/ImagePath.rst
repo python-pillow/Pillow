@@ -60,9 +60,7 @@ vector data. Path objects can be passed to the methods on the
 .. py:method:: PIL.ImagePath.Path.transform(matrix)
 
     Transforms the path in place, using an affine transform. The matrix is a
-    6-tuple (a, b, c, d, e, f), and each point is mapped as follows:
-
-    .. code-block:: python
+    6-tuple (a, b, c, d, e, f), and each point is mapped as follows::
 
         xOut = xIn * a + yIn * b + c
         yOut = xIn * d + yIn * e + f

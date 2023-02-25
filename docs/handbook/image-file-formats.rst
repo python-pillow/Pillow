@@ -1393,9 +1393,7 @@ WMF, EMF
 Pillow can identify WMF and EMF files.
 
 On Windows, it can read WMF and EMF files. By default, it will load the image
-at 72 dpi. To load it at another resolution:
-
-.. code-block:: python
+at 72 dpi. To load it at another resolution::
 
     from PIL import Image
 
@@ -1404,9 +1402,7 @@ at 72 dpi. To load it at another resolution:
 
 To add other read or write support, use
 :py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
-handler.
-
-.. code-block:: python
+handler. ::
 
     from PIL import Image
     from PIL import WmfImagePlugin

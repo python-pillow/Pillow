@@ -11,7 +11,7 @@ an expression string and one or more images.
 Example: Using the :py:mod:`~PIL.ImageMath` module
 --------------------------------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageMath
 
