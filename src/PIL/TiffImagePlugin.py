@@ -1845,13 +1845,13 @@ def _save(im, fp, filename):
         e.setimage(im.im, (0, 0) + im.size)
         while True:
             # undone, change to self.decodermaxblock:
-            length, error_code, chunk = e.encode(16 * 1024)
+            errcode, data = e.encode(16 * 1024)[1:]
             if not _fp:
-                fp.write(chunk)
-            if error_code:
+                fp.write(data)
+            if errcode:
                 break
-        if error_code < 0:
-            msg = f"encoder error {error_code} when writing image file"
+        if errcode < 0:
+            msg = f"encoder error {errcode} when writing image file"
             raise OSError(msg)
 
     else:

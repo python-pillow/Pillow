@@ -86,7 +86,6 @@ class PcfFontFile(FontFile.FontFile):
 
         for ch, ix in enumerate(encoding):
             if ix is not None:
-                ix_metrics = metrics[ix]
                 (
                     xsize,
                     ysize,
@@ -96,7 +95,7 @@ class PcfFontFile(FontFile.FontFile):
                     ascent,
                     descent,
                     attributes,
-                ) = ix_metrics
+                ) = metrics[ix]
                 self.glyph[ch] = (
                     (width, 0),
                     (left, descent - ysize, xsize + left, descent),
@@ -220,9 +219,11 @@ class PcfFontFile(FontFile.FontFile):
             mode = "1"
 
         for i in range(nbitmaps):
-            x, y = metrics[i][0], metrics[i][1]
-            b, e = offsets[i], offsets[i + 1]
-            bitmaps.append(Image.frombytes("1", (x, y), data[b:e], "raw", mode, pad(x)))
+            left, right = metrics[i][:2]
+            b, e = offsets[i : i + 2]
+            bitmaps.append(
+                Image.frombytes("1", (left, right), data[b:e], "raw", mode, pad(left))
+            )
 
         return bitmaps
 

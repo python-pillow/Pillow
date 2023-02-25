@@ -765,17 +765,17 @@ class Image:
 
         bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
 
-        data = []
+        output = []
         while True:
-            length, error_code, chunk = e.encode(bufsize)
-            data.append(chunk)
-            if error_code:
+            bytes_consumed, errcode, data = e.encode(bufsize)
+            output.append(data)
+            if errcode:
                 break
-        if error_code < 0:
-            msg = f"encoder error {error_code} in tobytes"
+        if errcode < 0:
+            msg = f"encoder error {errcode} in tobytes"
             raise RuntimeError(msg)
 
-        return b"".join(data)
+        return b"".join(output)
 
     def tobitmap(self, name="image"):
         """
