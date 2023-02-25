@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Added memoryview support to frombytes() #6974
+  [radarhere]
+
 - Allow comments in FITS images #6973
   [radarhere]
 
