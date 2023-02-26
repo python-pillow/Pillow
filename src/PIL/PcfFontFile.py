@@ -219,10 +219,10 @@ class PcfFontFile(FontFile.FontFile):
             mode = "1"
 
         for i in range(nbitmaps):
-            left, right = metrics[i][:2]
+            xsize, ysize = metrics[i][:2]
             b, e = offsets[i : i + 2]
             bitmaps.append(
-                Image.frombytes("1", (left, right), data[b:e], "raw", mode, pad(left))
+                Image.frombytes("1", (xsize, ysize), data[b:e], "raw", mode, pad(xsize))
             )
 
         return bitmaps
