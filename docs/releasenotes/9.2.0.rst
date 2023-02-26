@@ -59,9 +59,7 @@ Deprecated                                                                  Use 
 :py:meth:`.ImageDraw2.Draw.textsize`                                        :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
 =========================================================================== =============================================================================================================
 
-Previous code:
-
-.. code-block:: python
+Previous code::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -76,9 +74,7 @@ Previous code:
     width, height = font.getsize_multiline("Hello\nworld")
     width, height = draw.multiline_textsize("Hello\nworld")
 
-Use instead:
-
-.. code-block:: python
+Use instead::
 
     from PIL import Image, ImageDraw, ImageFont
 

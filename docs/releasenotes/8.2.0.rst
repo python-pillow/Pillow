@@ -76,9 +76,7 @@ ImageDraw.rounded_rectangle
 Added :py:meth:`~PIL.ImageDraw.ImageDraw.rounded_rectangle`. It works the same as
 :py:meth:`~PIL.ImageDraw.ImageDraw.rectangle`, except with an additional ``radius``
 argument. ``radius`` is limited to half of the width or the height, so that users can
-create a circle, but not any other ellipse.
-
-.. code-block:: python
+create a circle, but not any other ellipse. ::
 
     from PIL import Image, ImageDraw
     im = Image.new("RGB", (200, 200))

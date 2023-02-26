@@ -10,9 +10,7 @@ Text stroking
 ``stroke_width`` and ``stroke_fill`` arguments have been added to text drawing
 operations. They allow text to be outlined, setting the width of the stroke and
 and the color respectively. If not provided, ``stroke_fill`` will default to
-the ``fill`` parameter.
-
-.. code-block:: python
+the ``fill`` parameter. ::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -28,9 +26,7 @@ the ``fill`` parameter.
     draw.multiline_text((10, 10), "A\nB", "#f00", font,
                         stroke_width=2, stroke_fill="#0f0")
 
-For example,
-
-.. code-block:: python
+For example, ::
 
     from PIL import Image, ImageDraw, ImageFont
 

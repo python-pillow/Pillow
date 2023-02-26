@@ -735,6 +735,36 @@ def test_rounded_rectangle(xy):
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle.png")
 
 
+@pytest.mark.parametrize("top_left", (True, False))
+@pytest.mark.parametrize("top_right", (True, False))
+@pytest.mark.parametrize("bottom_right", (True, False))
+@pytest.mark.parametrize("bottom_left", (True, False))
+def test_rounded_rectangle_corners(top_left, top_right, bottom_right, bottom_left):
+    corners = (top_left, top_right, bottom_right, bottom_left)
+
+    # Arrange
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rounded_rectangle(
+        (10, 20, 190, 180), 30, fill="red", outline="green", width=5, corners=corners
+    )
+
+    # Assert
+    suffix = "".join(
+        (
+            ("y" if top_left else "n"),
+            ("y" if top_right else "n"),
+            ("y" if bottom_right else "n"),
+            ("y" if bottom_left else "n"),
+        )
+    )
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rounded_rectangle_corners_" + suffix + ".png"
+    )
+
+
 @pytest.mark.parametrize(
     "xy",
     ((10, 20, 190, 180), (190, 20, 10, 180), (190, 180, 10, 20), (10, 180, 190, 20)),

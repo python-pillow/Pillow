@@ -530,20 +530,20 @@ def _encode_tile(im, fp, tile, bufsize, fh, exc=None):
             encoder.setimage(im.im, b)
             if encoder.pushes_fd:
                 encoder.setfd(fp)
-                l, s = encoder.encode_to_pyfd()
+                errcode = encoder.encode_to_pyfd()[1]
             else:
                 if exc:
                     # compress to Python file-compatible object
                     while True:
-                        l, s, d = encoder.encode(bufsize)
-                        fp.write(d)
-                        if s:
+                        errcode, data = encoder.encode(bufsize)[1:]
+                        fp.write(data)
+                        if errcode:
                             break
                 else:
                     # slight speedup: compress to real file object
-                    s = encoder.encode_to_file(fh, bufsize)
-            if s < 0:
-                msg = f"encoder error {s} when writing image file"
+                    errcode = encoder.encode_to_file(fh, bufsize)
+            if errcode < 0:
+                msg = f"encoder error {errcode} when writing image file"
                 raise OSError(msg) from exc
         finally:
             encoder.cleanup()

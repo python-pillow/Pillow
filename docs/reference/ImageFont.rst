@@ -21,7 +21,7 @@ the imToolkit package.
 Example
 -------
 
-.. code-block:: python
+::
 
     from PIL import ImageFont, ImageDraw
 

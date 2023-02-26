@@ -155,9 +155,7 @@ altered slightly with this change.
 Added support for pickling TrueType fonts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TrueType fonts may now be pickled and unpickled. For example:
-
-.. code-block:: python
+TrueType fonts may now be pickled and unpickled. For example::
 
     import pickle
     from PIL import ImageFont
