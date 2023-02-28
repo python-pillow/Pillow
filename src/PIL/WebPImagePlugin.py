@@ -285,7 +285,7 @@ def _save_all(im, fp, filename):
                 # Append the frame to the animation encoder
                 enc.add(
                     frame.tobytes("raw", rawmode),
-                    timestamp,
+                    int(timestamp),
                     frame.size[0],
                     frame.size[1],
                     rawmode,
@@ -305,7 +305,7 @@ def _save_all(im, fp, filename):
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, timestamp, 0, 0, "", lossless, quality, 0)
+    enc.add(None, int(timestamp), 0, 0, "", lossless, quality, 0)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
