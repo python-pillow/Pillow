@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Added "corners" argument to ImageDraw rounded_rectangle() #6954
+  [radarhere]
+
 - Added memoryview support to frombytes() #6974
   [radarhere]
 
