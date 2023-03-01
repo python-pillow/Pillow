@@ -8,6 +8,13 @@ Changelog (Pillow)
 - Use more specific regex chars to prevent ReDoS. CVE-2021-25292
   [rickprice,hugovk]
 
+- Fix CVE CVE-2021-25293: There is an out-of-bounds read in ``SgiRleDecode.c``,
+since Pillow 4.3.0.
+  [rickprice]
+
+- Fix CVE-2021-2791
+  [rickprice]
+
 6.2.2.3 (2023-02-23)
 ------------------
 
@@ -27,7 +34,7 @@ Changelog (Pillow)
 
 - Use snprintf instead of sprintf. CVE-2021-34552
   [wooken]
-  
+
 6.2.2.1 (2021-10-08)
 ------------------
 

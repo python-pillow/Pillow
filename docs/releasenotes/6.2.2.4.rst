@@ -9,3 +9,4 @@ This release addresses several critical CVEs.
 :cve:`CVE-2021-25293`: There is an out-of-bounds read in ``SgiRleDecode.c``,
 since Pillow 4.3.0.
 
+:cve: `CVE-2021-2791` : Pillow before 8.1.1 allows attackers to cause a denial of service (memory consumption) because the reported size of a contained image is not properly checked for a BLP container, and thus an attempted memory allocation can be very large.
