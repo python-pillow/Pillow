@@ -303,6 +303,12 @@ class ImageDraw:
             (x0, y0), (x1, y1) = xy
         else:
             x0, y0, x1, y1 = xy
+        if x1 < x0 or y1 < y0:
+            msg = (
+                "x1 must be greater than or equal to x0,"
+                " and y1 must be greater than or equal to y0"
+            )
+            raise ValueError(msg)
         if corners is None:
             corners = (True, True, True, True)
 

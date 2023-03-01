@@ -355,7 +355,13 @@ def ellipse_various_sizes_helper(filled):
     for w in ellipse_sizes:
         y = 1
         for h in ellipse_sizes:
-            border = [x, y, x + w - 1, y + h - 1]
+            x1 = x + w
+            if w:
+                x1 -= 1
+            y1 = y + h
+            if h:
+                y1 -= 1
+            border = [x, y, x1, y1]
             if filled:
                 draw.ellipse(border, fill="white")
             else:
@@ -932,9 +938,6 @@ def test_square():
     img, draw = create_base_image_draw((10, 10))
     draw.rectangle((2, 2, 7, 7), BLACK)
     assert_image_equal_tofile(img, expected, "square as normal rectangle failed")
-    img, draw = create_base_image_draw((10, 10))
-    draw.rectangle((7, 7, 2, 2), BLACK)
-    assert_image_equal_tofile(img, expected, "square as inverted rectangle failed")
 
 
 def test_triangle_right():
@@ -1499,3 +1502,20 @@ def test_polygon2():
     draw.polygon([(18, 30), (19, 31), (18, 30), (85, 30), (60, 72)], "red")
     expected = "Tests/images/imagedraw_outline_polygon_RGB.png"
     assert_image_similar_tofile(im, expected, 1)
+
+
+def test_incorrectly_ordered_coordinates():
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+    with pytest.raises(ValueError):
+        draw.arc((1, 1, 0, 0), 10, 260)
+    with pytest.raises(ValueError):
+        draw.chord((1, 1, 0, 0), 10, 260)
+    with pytest.raises(ValueError):
+        draw.ellipse((1, 1, 0, 0))
+    with pytest.raises(ValueError):
+        draw.pieslice((1, 1, 0, 0), 10, 260)
+    with pytest.raises(ValueError):
+        draw.rectangle((1, 1, 0, 0))
+    with pytest.raises(ValueError):
+        draw.rounded_rectangle((1, 1, 0, 0))
