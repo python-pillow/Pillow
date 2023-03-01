@@ -1504,18 +1504,19 @@ def test_polygon2():
     assert_image_similar_tofile(im, expected, 1)
 
 
-def test_incorrectly_ordered_coordinates():
+@pytest.mark.parametrize("xy", ((1, 1, 0, 1), (1, 1, 1, 0)))
+def test_incorrectly_ordered_coordinates(xy):
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
     with pytest.raises(ValueError):
-        draw.arc((1, 1, 0, 0), 10, 260)
+        draw.arc(xy, 10, 260)
     with pytest.raises(ValueError):
-        draw.chord((1, 1, 0, 0), 10, 260)
+        draw.chord(xy, 10, 260)
     with pytest.raises(ValueError):
-        draw.ellipse((1, 1, 0, 0))
+        draw.ellipse(xy)
     with pytest.raises(ValueError):
-        draw.pieslice((1, 1, 0, 0), 10, 260)
+        draw.pieslice(xy, 10, 260)
     with pytest.raises(ValueError):
-        draw.rectangle((1, 1, 0, 0))
+        draw.rectangle(xy)
     with pytest.raises(ValueError):
-        draw.rounded_rectangle((1, 1, 0, 0))
+        draw.rounded_rectangle(xy)

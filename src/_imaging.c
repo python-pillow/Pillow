@@ -251,8 +251,10 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
 static const char *must_be_sequence = "argument must be a sequence";
 static const char *must_be_two_coordinates =
     "coordinate list must contain exactly 2 coordinates";
-static const char *incorrectly_ordered_coordinates =
-    "x1 must be greater than or equal to x0, and y1 must be greater than or equal to y0";
+static const char *incorrectly_ordered_x_coordinate =
+    "x1 must be greater than or equal to x0";
+static const char *incorrectly_ordered_y_coordinate =
+    "y1 must be greater than or equal to y0";
 static const char *wrong_mode = "unrecognized image mode";
 static const char *wrong_raw_mode = "unrecognized raw mode";
 static const char *outside_image = "image index out of range";
@@ -2807,8 +2809,13 @@ _draw_arc(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
-    if (xy[2] < xy[0] || xy[3] < xy[1]) {
-        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_coordinates);
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -2893,8 +2900,13 @@ _draw_chord(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
-    if (xy[2] < xy[0] || xy[3] < xy[1]) {
-        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_coordinates);
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -2944,8 +2956,13 @@ _draw_ellipse(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
-    if (xy[2] < xy[0] || xy[3] < xy[1]) {
-        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_coordinates);
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -3118,8 +3135,13 @@ _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
-    if (xy[2] < xy[0] || xy[3] < xy[1]) {
-        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_coordinates);
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -3219,8 +3241,13 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
-    if (xy[2] < xy[0] || xy[3] < xy[1]) {
-        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_coordinates);
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
