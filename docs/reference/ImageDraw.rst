@@ -318,8 +318,8 @@ Methods
     Draws a rectangle.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The bounding box
-            is inclusive of both endpoints.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and
+            ``y1 >= y0``. The bounding box is inclusive of both endpoints.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
@@ -331,8 +331,8 @@ Methods
     Draws a rounded rectangle.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The bounding box
-            is inclusive of both endpoints.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and
+            ``y1 >= y0``. The bounding box is inclusive of both endpoints.
     :param radius: Radius of the corners.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
