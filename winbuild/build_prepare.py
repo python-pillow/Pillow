@@ -289,9 +289,9 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.14/lcms2-2.14.tar.gz/download",
-        "filename": "lcms2-2.14.tar.gz",
-        "dir": "lcms2-2.14",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.15/lcms2-2.15.tar.gz/download",
+        "filename": "lcms2-2.15.tar.gz",
+        "dir": "lcms2-2.15",
         "license": "COPYING",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
