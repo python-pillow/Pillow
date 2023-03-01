@@ -108,9 +108,7 @@ directory.
 Example
 -------
 
-The following is a simplified version of the script used on AppVeyor:
-
-.. code-block::
+The following is a simplified version of the script used on AppVeyor::
 
     set PYTHON=C:\Python38\bin
     cd /D C:\Pillow\winbuild
