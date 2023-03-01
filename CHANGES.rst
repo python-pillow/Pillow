@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Raise an error if ImageDraw co-ordinates are incorrectly ordered #6978
+  [radarhere]
+
 - Added "corners" argument to ImageDraw rounded_rectangle() #6954
   [radarhere]
 
