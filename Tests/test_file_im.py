@@ -28,10 +28,12 @@ def test_name_limit(tmp_path):
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file():
-    with pytest.warns(ResourceWarning):
+    def open():
         im = Image.open(TEST_IM)
         im.load()
-        del im
+
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():

@@ -24,10 +24,12 @@ def test_sanity():
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file():
-    with pytest.warns(ResourceWarning):
+    def open():
         im = Image.open(TEST_FILE)
         im.load()
-        del im
+
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():

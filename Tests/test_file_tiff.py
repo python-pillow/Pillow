@@ -57,10 +57,12 @@ class TestFileTiff:
 
     @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
     def test_unclosed_file(self):
-        with pytest.warns(ResourceWarning):
+        def open():
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
-            del im
+
+        with pytest.warns(ResourceWarning):
+            open()
 
     def test_closed_file(self):
         with warnings.catch_warnings():
