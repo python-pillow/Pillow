@@ -187,9 +187,7 @@ Deprecated                                                                  Use 
 :py:meth:`.ImageDraw2.Draw.textsize`                                        :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
 =========================================================================== =============================================================================================================
 
-Previous code:
-
-.. code-block:: python
+Previous code::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -204,9 +202,7 @@ Previous code:
     width, height = font.getsize_multiline("Hello\nworld")
     width, height = draw.multiline_textsize("Hello\nworld")
 
-Use instead:
-
-.. code-block:: python
+Use instead::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -346,16 +342,12 @@ Implicitly closing the image's underlying file in ``Image.__del__`` has been rem
 Use a context manager or call ``Image.close()`` instead to close the file in a
 deterministic way.
 
-Previous method:
-
-.. code-block:: python
+Previous method::
 
     im = Image.open("hopper.png")
     im.save("out.jpg")
 
-Use instead:
-
-.. code-block:: python
+Use instead::
 
     with Image.open("hopper.png") as im:
         im.save("out.jpg")

@@ -297,27 +297,21 @@ class FreeTypeFont:
         string due to kerning. If you need to adjust for kerning, include the following
         character and subtract its length.
 
-        For example, instead of
-
-        .. code-block:: python
+        For example, instead of ::
 
           hello = font.getlength("Hello")
           world = font.getlength("World")
           hello_world = hello + world  # not adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # may fail
 
-        use
-
-        .. code-block:: python
+        use ::
 
           hello = font.getlength("HelloW") - font.getlength("W")  # adjusted for kerning
           world = font.getlength("World")
           hello_world = hello + world  # adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # True
 
-        or disable kerning with (requires libraqm)
-
-        .. code-block:: python
+        or disable kerning with (requires libraqm) ::
 
           hello = draw.textlength("Hello", font, features=["-kern"])
           world = draw.textlength("World", font, features=["-kern"])

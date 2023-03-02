@@ -22,6 +22,7 @@ jobs:
         python-version: [
           "pypy3.9",
           "pypy3.8",
+          "3.12-dev",
           "3.11",
           "3.10",
           "3.9",
@@ -107,9 +108,9 @@ jobs:
     - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
-        file: ./coverage.xml
         flags: ${{ matrix.os == 'macos-latest' && 'GHA_macOS' || 'GHA_Ubuntu' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+        gcov: true
 
   success:
     permissions:

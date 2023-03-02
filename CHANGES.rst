@@ -5,6 +5,27 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Raise an error if ImageDraw co-ordinates are incorrectly ordered #6978
+  [radarhere]
+
+- Added "corners" argument to ImageDraw rounded_rectangle() #6954
+  [radarhere]
+
+- Added memoryview support to frombytes() #6974
+  [radarhere]
+
+- Allow comments in FITS images #6973
+  [radarhere]
+
+- Support saving PDF with different X and Y resolutions #6961
+  [jvanderneutstulen, radarhere, hugovk]
+
+- Fixed writing int as UNDEFINED tag #6950
+  [radarhere]
+
+- Raise an error if EXIF data is too long when saving JPEG #6939
+  [radarhere]
+
 - Handle more than one directory returned by pkg-config #6896
   [sebastic, radarhere]
 

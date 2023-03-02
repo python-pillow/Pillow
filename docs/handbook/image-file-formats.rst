@@ -1104,7 +1104,7 @@ using the general tags available through tiffinfo.
     Either an integer or a float.
 
 **dpi**
-    A tuple of (x_resolution, y_resolution), with inches as the resolution
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
     unit. For consistency with other image formats, the x and y resolutions
     of the dpi will be rounded to the nearest integer.
 
@@ -1126,7 +1126,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present and true, instructs the WebP writer to use lossless compression.
 
 **quality**
-    Integer, 1-100, Defaults to 80. For lossy, 0 gives the smallest
+    Integer, 0-100, Defaults to 80. For lossy, 0 gives the smallest
     size and 100 the largest. For lossless, this parameter is the amount
     of effort put into the compression: 0 is the fastest, but gives larger
     files compared to the slowest, but best, 100.
@@ -1145,6 +1145,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **exif**
     The exif data to include in the saved file. Only supported if
+    the system WebP library was built with webpmux support.
+
+**xmp**
+    The XMP data to include in the saved file. Only supported if
     the system WebP library was built with webpmux support.
 
 Saving sequences
@@ -1389,9 +1393,7 @@ WMF, EMF
 Pillow can identify WMF and EMF files.
 
 On Windows, it can read WMF and EMF files. By default, it will load the image
-at 72 dpi. To load it at another resolution:
-
-.. code-block:: python
+at 72 dpi. To load it at another resolution::
 
     from PIL import Image
 
@@ -1400,9 +1402,7 @@ at 72 dpi. To load it at another resolution:
 
 To add other read or write support, use
 :py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
-handler.
-
-.. code-block:: python
+handler. ::
 
     from PIL import Image
     from PIL import WmfImagePlugin
@@ -1492,6 +1492,11 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     Image resolution in DPI. This, together with the number of pixels in the
     image, will determine the physical dimensions of the page that will be
     saved in the PDF.
+
+**dpi**
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
+    unit. If both the ``resolution`` parameter and the ``dpi`` parameter are
+    present, ``resolution`` will be ignored.
 
 **title**
     The document’s title. If not appending to an existing PDF file, this will

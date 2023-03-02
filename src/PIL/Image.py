@@ -765,17 +765,17 @@ class Image:
 
         bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
 
-        data = []
+        output = []
         while True:
-            l, s, d = e.encode(bufsize)
-            data.append(d)
-            if s:
+            bytes_consumed, errcode, data = e.encode(bufsize)
+            output.append(data)
+            if errcode:
                 break
-        if s < 0:
-            msg = f"encoder error {s} in tobytes"
+        if errcode < 0:
+            msg = f"encoder error {errcode} in tobytes"
             raise RuntimeError(msg)
 
-        return b"".join(data)
+        return b"".join(output)
 
     def tobitmap(self, name="image"):
         """
@@ -1432,6 +1432,11 @@ class Image:
             return {get_name(root.tag): get_value(root)}
 
     def getexif(self):
+        """
+        Gets EXIF data from the image.
+
+        :returns: an :py:class:`~PIL.Image.Exif` object.
+        """
         if self._exif is None:
             self._exif = Exif()
             self._exif._loaded = False
@@ -3601,6 +3606,39 @@ atexit.register(core.clear_cache)
 
 
 class Exif(MutableMapping):
+    """
+    This class provides read and write access to EXIF image data::
+
+      from PIL import Image
+      im = Image.open("exif.png")
+      exif = im.getexif()  # Returns an instance of this class
+
+    Information can be read and written, iterated over or deleted::
+
+      print(exif[274])  # 1
+      exif[274] = 2
+      for k, v in exif.items():
+        print("Tag", k, "Value", v)  # Tag 274 Value 2
+      del exif[274]
+
+    To access information beyond IFD0, :py:meth:`~PIL.Image.Exif.get_ifd`
+    returns a dictionary::
+
+      from PIL import ExifTags
+      im = Image.open("exif_gps.jpg")
+      exif = im.getexif()
+      gps_ifd = exif.get_ifd(ExifTags.IFD.GPSInfo)
+      print(gps_ifd)
+
+    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.Makernote``,
+    ``ExifTags.IFD.Interop`` and ``ExifTags.IFD.IFD1``.
+
+    :py:mod:`~PIL.ExifTags` also has enum classes to provide names for data::
+
+      print(exif[ExifTags.Base.Software])  # PIL
+      print(gps_ifd[ExifTags.GPS.GPSDateStamp])  # 1999:99:99 99:99:99
+    """
+
     endian = None
     bigtiff = False
 

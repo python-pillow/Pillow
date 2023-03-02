@@ -10,7 +10,7 @@ iterate over the frames of an image sequence.
 Extracting frames from an animation
 -----------------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageSequence
 
