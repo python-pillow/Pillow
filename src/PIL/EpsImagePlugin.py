@@ -31,8 +31,8 @@ from . import Image, ImageFile
 from ._binary import i32le as i32
 from ._deprecate import deprecate
 
-#
 # --------------------------------------------------------------------
+
 
 split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
@@ -319,11 +319,12 @@ class EpsImageFile(ImageFile.ImageFile):
                         raise OSError(msg)
             elif bytes_mv[:11] == b"%ImageData:":
                 # Check for an "ImageData" descriptor
+                # https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577413_pgfId-1035096
 
                 # Values:
                 # columns
                 # rows
-                # bit depth
+                # bit depth (1 or 8)
                 # mode (1: L, 2: LAB, 3: RGB, 4: CMYK)
                 # number of padding channels
                 # block size (number of bytes per row per channel)
@@ -395,18 +396,15 @@ class EpsImageFile(ImageFile.ImageFile):
         pass
 
 
-#
 # --------------------------------------------------------------------
 
 
 def _save(im, fp, filename, eps=1):
     """EPS Writer for the Python Imaging Library."""
 
-    #
     # make sure image data is available
     im.load()
 
-    #
     # determine PostScript image mode
     if im.mode == "L":
         operator = (8, 1, b"image")
@@ -419,7 +417,6 @@ def _save(im, fp, filename, eps=1):
         raise ValueError(msg)
 
     if eps:
-        #
         # write EPS header
         fp.write(b"%!PS-Adobe-3.0 EPSF-3.0\n")
         fp.write(b"%%Creator: PIL 0.1 EpsEncode\n")
@@ -431,7 +428,6 @@ def _save(im, fp, filename, eps=1):
         fp.write(b"%%ImageData: %d %d " % im.size)
         fp.write(b'%d %d 0 1 1 "%s"\n' % operator)
 
-    #
     # image header
     fp.write(b"gsave\n")
     fp.write(b"10 dict begin\n")
@@ -452,7 +448,6 @@ def _save(im, fp, filename, eps=1):
         fp.flush()
 
 
-#
 # --------------------------------------------------------------------
 
 
