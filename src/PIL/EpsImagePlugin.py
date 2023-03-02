@@ -320,20 +320,32 @@ class EpsImageFile(ImageFile.ImageFile):
             elif bytes_mv[:11] == b"%ImageData:":
                 # Check for an "ImageData" descriptor
 
-                # Encoded bitmapped image.
-                x, y, bi, mo = byte_arr[11:bytes_read].split(None, 7)[:4]
+                # Values:
+                # columns
+                # rows
+                # bit depth
+                # mode (1: L, 2: LAB, 3: RGB, 4: CMYK)
+                # number of padding channels
+                # block size (number of bytes per row per channel)
+                # binary/ascii (1: binary, 2: ascii)
+                # data start identifier (the image data follows after a single line
+                #   consisting only of this quoted value)
+                image_data_values = byte_arr[11:bytes_read].split(None, 7)
+                columns, rows, bit_depth, mode_id = [
+                    int(value) for value in image_data_values[:4]
+                ]
 
-                if int(bi) == 1:
+                if bit_depth == 1:
                     self.mode = "1"
-                elif int(bi) == 8:
+                elif bit_depth == 8:
                     try:
-                        self.mode = self.mode_map[int(mo)]
+                        self.mode = self.mode_map[mode_id]
                     except ValueError:
                         break
                 else:
                     break
 
-                self._size = int(x), int(y)
+                self._size = columns, rows
                 return
 
             bytes_read = 0
