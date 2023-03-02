@@ -134,6 +134,7 @@ _decode(ImagingDecoderObject *decoder, PyObject *args) {
         ImagingSectionLeave(&cookie);
     }
 
+    PyBuffer_Release(&buffer);
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
 
