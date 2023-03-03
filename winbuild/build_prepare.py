@@ -356,9 +356,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/7.0.1.zip",
-        "filename": "harfbuzz-7.0.1.zip",
-        "dir": "harfbuzz-7.0.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/7.1.0.zip",
+        "filename": "harfbuzz-7.1.0.zip",
+        "dir": "harfbuzz-7.1.0",
         "license": "COPYING",
         "build": [
             cmd_set("CXXFLAGS", "-d2FH4-"),
