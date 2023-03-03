@@ -179,11 +179,11 @@ class TestEnvVars:
 
     @pytest.mark.parametrize(
         "var",
-        [
+        (
             {"PILLOW_ALIGNMENT": "15"},
             {"PILLOW_BLOCK_SIZE": "1024"},
             {"PILLOW_BLOCKS_MAX": "wat"},
-        ],
+        ),
     )
     def test_warnings(self, var):
         with pytest.warns(UserWarning):
