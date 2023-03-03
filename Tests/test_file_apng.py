@@ -266,6 +266,7 @@ def test_apng_chunk_errors():
     with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/chunk_multi_actl.png") as im:
             im.load()
+        assert not im.is_animated
 
     with Image.open("Tests/images/apng/chunk_actl_after_idat.png") as im:
         assert not im.is_animated
