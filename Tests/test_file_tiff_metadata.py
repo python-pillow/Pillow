@@ -252,7 +252,8 @@ def test_empty_metadata():
     head = f.read(8)
     info = TiffImagePlugin.ImageFileDirectory(head)
     # Should not raise struct.error.
-    pytest.warns(UserWarning, info.load, f)
+    with pytest.warns(UserWarning):
+        info.load(f)
 
 
 def test_iccprofile(tmp_path):
@@ -418,11 +419,12 @@ def test_too_many_entries():
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
 
     #    277: ("SamplesPerPixel", SHORT, 1),
-    ifd._tagdata[277] = struct.pack("hh", 4, 4)
+    ifd._tagdata[277] = struct.pack("<hh", 4, 4)
     ifd.tagtype[277] = TiffTags.SHORT
 
     # Should not raise ValueError.
-    pytest.warns(UserWarning, lambda: ifd[277])
+    with pytest.warns(UserWarning):
+        assert ifd[277] == 4
 
 
 def test_tag_group_data():

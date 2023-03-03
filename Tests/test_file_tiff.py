@@ -61,7 +61,8 @@ class TestFileTiff:
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
 
-        pytest.warns(ResourceWarning, open)
+        with pytest.warns(ResourceWarning):
+            open()
 
     def test_closed_file(self):
         with warnings.catch_warnings():
@@ -231,7 +232,8 @@ class TestFileTiff:
     def test_bad_exif(self):
         with Image.open("Tests/images/hopper_bad_exif.jpg") as i:
             # Should not raise struct.error.
-            pytest.warns(UserWarning, i._getexif)
+            with pytest.warns(UserWarning):
+                i._getexif()
 
     def test_save_rgba(self, tmp_path):
         im = hopper("RGBA")
