@@ -928,6 +928,17 @@ class TestImage:
             im.apply_transparency()
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
+    def test_closed(self):
+        im = Image.open("Tests/images/hopper.jpg")
+        assert not im.closed
+
+        im.close()
+        assert im.closed
+
+        with Image.open("Tests/images/hopper.jpg") as im:
+            assert not im.closed
+        assert im.closed
+
     def test_categories_deprecation(self):
         with pytest.warns(DeprecationWarning):
             assert hopper().category == 0

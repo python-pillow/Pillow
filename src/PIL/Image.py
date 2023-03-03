@@ -519,6 +519,7 @@ class Image:
         self._category = 0
         self.readonly = 0
         self.pyaccess = None
+        self.closed = False
         self._exif = None
 
     def __getattr__(self, name):
@@ -567,6 +568,7 @@ class Image:
             if self.fp:
                 self.fp.close()
         self.fp = None
+        self.closed = True
 
     def close(self):
         """
@@ -593,6 +595,8 @@ class Image:
 
         if getattr(self, "map", None):
             self.map = None
+
+        self.closed = True
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image

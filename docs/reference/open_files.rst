@@ -41,6 +41,7 @@ Image Lifecycle
 
 * ``Image.open()`` Filenames and ``Path`` objects are opened as a file.
   Metadata is read from the open file. The file is left open for further usage.
+  When an image is created, the ``closed`` property is set to ``False``.
 
 * ``Image.Image.load()`` When the pixel data from the image is
   required, ``load()`` is called. The current frame is read into
@@ -58,14 +59,16 @@ Image Lifecycle
   (e.g. multipage TIFF and animated GIF) the image file is left open so that
   ``Image.Image.seek()`` can load the appropriate frame.
 
-* ``Image.Image.close()`` Closes the file and destroys the core image object.
+* ``Image.Image.close()`` Closes the file, sets the ``closed`` property to
+  ``True`` and destroys the core image object.
 
-  The Pillow context manager will also close the file, but will not destroy
-  the core image object. e.g.::
+  The Pillow context manager will also close the file and update the ``closed``
+  property, but will not destroy the core image object. e.g.::
 
     with Image.open("test.jpg") as img:
         img.load()
     assert img.fp is None
+    assert img.closed
     img.save("test.png")
 
 
