@@ -195,20 +195,20 @@ _releasedc(ImagingDisplayObject *display, PyObject *args) {
 
 static PyObject *
 _frombytes(ImagingDisplayObject *display, PyObject *args) {
-    char *ptr;
-    Py_ssize_t bytes;
+    Py_buffer buffer;
 
-    if (!PyArg_ParseTuple(args, "y#:frombytes", &ptr, &bytes)) {
+    if (!PyArg_ParseTuple(args, "y*:frombytes", &buffer)) {
         return NULL;
     }
 
-    if (display->dib->ysize * display->dib->linesize != bytes) {
+    if (display->dib->ysize * display->dib->linesize != buffer.len) {
         PyErr_SetString(PyExc_ValueError, "wrong size");
         return NULL;
     }
 
-    memcpy(display->dib->bits, ptr, bytes);
+    memcpy(display->dib->bits, buffer.buf, buffer.len);
 
+    PyBuffer_Release(&buffer);
     Py_INCREF(Py_None);
     return Py_None;
 }
