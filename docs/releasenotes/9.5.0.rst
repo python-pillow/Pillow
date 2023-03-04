@@ -40,7 +40,7 @@ Added ``corners`` argument to ``ImageDraw.rounded_rectangle()``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:meth:`.ImageDraw.rounded_rectangle` now accepts a keyword argument of
-``corners``. This a tuple of booleans, specifying whether to round each corner,
+``corners``. This a tuple of Booleans, specifying whether to round each corner,
 ``(top_left, top_right, bottom_right, bottom_left)``.
 
 Security
