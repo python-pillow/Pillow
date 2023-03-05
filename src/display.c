@@ -202,6 +202,7 @@ _frombytes(ImagingDisplayObject *display, PyObject *args) {
     }
 
     if (display->dib->ysize * display->dib->linesize != buffer.len) {
+        PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "wrong size");
         return NULL;
     }
