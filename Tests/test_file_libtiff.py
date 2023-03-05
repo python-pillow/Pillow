@@ -1065,3 +1065,9 @@ class TestFileLibTiff(LibTiffTestCase):
         out = str(tmp_path / "temp.tif")
         with pytest.raises(SystemError):
             im.save(out, compression=compression)
+
+    def test_save_many_compressed(self, tmp_path):
+        im = hopper()
+        out = str(tmp_path / "temp.tif")
+        for _ in range(10000):
+            im.save(out, compression="jpeg")
