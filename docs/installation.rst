@@ -186,8 +186,8 @@ Many of Pillow's features require external libraries:
   * Pillow wheels since version 8.2.0 include a modified version of libraqm that
     loads libfribidi at runtime if it is installed.
     On Windows this requires compiling FriBiDi and installing ``fribidi.dll``
-    into a directory listed in the `Dynamic-link library search order (Microsoft Docs)
-    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order>`_
+    into a directory listed in the `Dynamic-link library search order (Microsoft Learn)
+    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-unpackaged-apps>`_
     (``fribidi-0.dll`` or ``libfribidi-0.dll`` are also detected).
     See `Build Options`_ to see how to build this version.
   * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
