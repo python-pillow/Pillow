@@ -57,6 +57,34 @@ def test_write_animation_L(tmp_path):
             im.load()
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
+def test_write_animation_float(tmp_path):
+    """
+    Convert an animated PNG to animated WebP, then compare the frame count, and first
+    and last frames to ensure they're visually similar.
+    """
+
+    with Image.open("Tests/images/signalstickercat.png") as orig:
+        assert orig.n_frames > 1
+
+        temp_file = str(tmp_path / "temp.webp")
+        orig.save(temp_file, save_all=True)
+        with Image.open(temp_file) as im:
+            assert im.n_frames == orig.n_frames
+
+            # Compare first and last frames to the original animated GIF
+            orig.load()
+            im.load()
+            assert_image_similar(im, orig.convert("RGBA"), 32.9)
+
+            if is_big_endian():
+                webp = parse_version(features.version_module("webp"))
+                if webp < parse_version("1.2.2"):
+                    pytest.skip("Fails with libwebp earlier than 1.2.2")
+            orig.seek(orig.n_frames - 1)
+            im.seek(im.n_frames - 1)
+            orig.load()
+            im.load()
+            assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
 def test_write_animation_RGB(tmp_path):
     """
