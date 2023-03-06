@@ -40,6 +40,8 @@ jobs:
     - name: Install Linux dependencies
       run: |
         .ci/install.sh
+      env:
+        GHA_PYTHON_VERSION: "3.x"
 
     - name: Build
       run: |
