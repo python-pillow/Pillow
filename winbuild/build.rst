@@ -21,7 +21,7 @@ Download and install:
   <https://visualstudio.microsoft.com/downloads/>`_
   (MSVC C++ build tools, and any Windows SDK version required)
 
-* `CMake 3.13 or newer <https://cmake.org/download/>`_
+* `CMake 3.15 or newer <https://cmake.org/download/>`_
   (also available as Visual Studio component C++ CMake tools for Windows)
 
 * `Ninja <https://ninja-build.org/>`_
