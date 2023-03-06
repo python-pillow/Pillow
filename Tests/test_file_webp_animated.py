@@ -57,6 +57,7 @@ def test_write_animation_L(tmp_path):
             im.load()
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
+
 def test_write_animation_float(tmp_path):
     """
     Convert an animated PNG to animated WebP, then compare the frame count, and first
@@ -85,6 +86,7 @@ def test_write_animation_float(tmp_path):
             orig.load()
             im.load()
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
+
 
 def test_write_animation_RGB(tmp_path):
     """
