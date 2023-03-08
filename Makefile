@@ -16,7 +16,8 @@ coverage:
 	python3 -m coverage report
 
 .PHONY: doc
-doc:
+.PHONY: html
+doc html:
 	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
 	$(MAKE) -C docs html
 
