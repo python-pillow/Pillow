@@ -21,6 +21,11 @@ doc html:
 	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
 	$(MAKE) -C docs html
 
+.PHONY: htmlview
+htmlview:
+	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
+	$(MAKE) -C docs htmlview
+
 .PHONY: doccheck
 doccheck:
 	$(MAKE) doc
@@ -40,6 +45,7 @@ help:
 	@echo "  doc                make HTML docs"
 	@echo "  docserve           run an HTTP server on the docs directory"
 	@echo "  html               to make standalone HTML files"
+	@echo "  htmlview           to open the index page built by the html target in your browser"
 	@echo "  inplace            make inplace extension"
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"

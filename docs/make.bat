@@ -19,6 +19,7 @@ if "%1" == "help" (
 	:help
 	echo.Please use `make ^<target^>` where ^<target^> is one of
 	echo.  html       to make standalone HTML files
+	echo.  htmlview   to open the index page built by the html target in your browser
 	echo.  dirhtml    to make HTML files named index.html in directories
 	echo.  singlehtml to make a single large HTML file
 	echo.  pickle     to make pickle files
@@ -50,6 +51,17 @@ if "%1" == "html" (
 	echo.
 	echo.Build finished. The HTML pages are in %BUILDDIR%/html.
 	goto end
+)
+
+if "%1" == "htmlview" (
+    cmd /C %this% html
+
+    if EXIST "%BUILDDIR%\html\index.html" (
+        echo.Opening "%BUILDDIR%\html\index.html" in the default web browser...
+        start "" "%BUILDDIR%\html\index.html"
+    )
+
+    goto end
 )
 
 if "%1" == "dirhtml" (

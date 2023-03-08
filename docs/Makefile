@@ -19,6 +19,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html       to make standalone HTML files"
+	@echo "  htmlview   to open the index page built by the html target in your browser"
 	@echo "  serve      to start a local server for viewing docs"
 	@echo "  livehtml   to start a local server for viewing docs and auto-reload on change"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
@@ -195,6 +196,10 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
+.PHONY: htmlview
+htmlview: html
+	$(PYTHON) -c "import os, webbrowser; webbrowser.open('file://' + os.path.realpath('$(BUILDDIR)/html/index.html'))"
 
 .PHONY: livehtml
 livehtml: html
