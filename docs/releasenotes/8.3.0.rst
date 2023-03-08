@@ -85,7 +85,7 @@ Security
 Buffer overflow
 ^^^^^^^^^^^^^^^
 
-This release addresses :cve:`CVE-2021-34552`. PIL since 1.1.4 and Pillow since 1.0
+This release addresses :cve:`2021-34552`. PIL since 1.1.4 and Pillow since 1.0
 allowed parameters passed into a convert function to trigger buffer overflow in
 Convert.c.
 

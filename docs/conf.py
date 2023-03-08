@@ -29,10 +29,10 @@ needs_sphinx = "2.4"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.extlinks",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_inline_tabs",
-    "sphinx_issues",
     "sphinx_removed_in",
     "sphinxext.opengraph",
 ]
@@ -317,8 +317,17 @@ def setup(app):
     app.add_css_file("css/dark.css")
 
 
-# GitHub repo for sphinx-issues
-issues_github_path = "python-pillow/Pillow"
+# sphinx.ext.extlinks
+# This config is a dictionary of external sites,
+# mapping unique short aliases to a base URL and a prefix.
+# https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+_repo = "https://github.com/python-pillow/Pillow/"
+extlinks = {
+    "cve": ("https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-%s", "CVE-%s"),
+    "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
+    "issue": (_repo + "issues/%s", "#%s"),
+    "pr": (_repo + "pull/%s", "#%s"),
+}
 
 # sphinxext.opengraph
 ogp_image = (
