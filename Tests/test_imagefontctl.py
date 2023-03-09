@@ -360,37 +360,20 @@ def test_anchor_invalid_ttb():
     d.font = font
 
     for anchor in ["", "l", "a", "lax", "xa", "la", "ls", "ld", "lx"]:
-        pytest.raises(
-            ValueError, lambda: font.getmask2("hello", anchor=anchor, direction="ttb")
-        )
-        pytest.raises(
-            ValueError, lambda: font.getbbox("hello", anchor=anchor, direction="ttb")
-        )
-        pytest.raises(
-            ValueError, lambda: d.text((0, 0), "hello", anchor=anchor, direction="ttb")
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.textbbox((0, 0), "hello", anchor=anchor, direction="ttb"),
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.multiline_text(
-                (0, 0), "foo\nbar", anchor=anchor, direction="ttb"
-            ),
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.multiline_textbbox(
-                (0, 0), "foo\nbar", anchor=anchor, direction="ttb"
-            ),
-        )
+        with pytest.raises(ValueError):
+            font.getmask2("hello", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            font.getbbox("hello", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            d.text((0, 0), "hello", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            d.textbbox((0, 0), "hello", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor, direction="ttb")
+        with pytest.raises(ValueError):
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor, direction="ttb")
     # ttb multiline text does not support anchors at all
-    pytest.raises(
-        ValueError,
-        lambda: d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb"),
-    )
-    pytest.raises(
-        ValueError,
-        lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor="mm", direction="ttb"),
-    )
+    with pytest.raises(ValueError):
+        d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb")
+    with pytest.raises(ValueError):
+        d.multiline_textbbox((0, 0), "foo\nbar", anchor="mm", direction="ttb")

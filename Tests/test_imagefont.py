@@ -351,7 +351,8 @@ def test_rotated_transposed_font(font, orientation):
     assert bbox_b[3] == 20 + bbox_a[2] - bbox_a[0]
 
     # text length is undefined for vertical text
-    pytest.raises(ValueError, draw.textlength, word)
+    with pytest.raises(ValueError):
+        draw.textlength(word)
 
 
 @pytest.mark.parametrize(
@@ -872,25 +873,23 @@ def test_anchor_invalid(font):
     d.font = font
 
     for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
-        pytest.raises(ValueError, lambda: font.getmask2("hello", anchor=anchor))
-        pytest.raises(ValueError, lambda: font.getbbox("hello", anchor=anchor))
-        pytest.raises(ValueError, lambda: d.text((0, 0), "hello", anchor=anchor))
-        pytest.raises(ValueError, lambda: d.textbbox((0, 0), "hello", anchor=anchor))
-        pytest.raises(
-            ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
-        )
+        with pytest.raises(ValueError):
+            font.getmask2("hello", anchor=anchor)
+        with pytest.raises(ValueError):
+            font.getbbox("hello", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.text((0, 0), "hello", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.textbbox((0, 0), "hello", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)
     for anchor in ["lt", "lb"]:
-        pytest.raises(
-            ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
-        )
+        with pytest.raises(ValueError):
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)
 
 
 @pytest.mark.parametrize("bpp", (1, 2, 4, 8))

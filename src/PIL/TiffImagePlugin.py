@@ -1850,6 +1850,11 @@ def _save(im, fp, filename):
                 fp.write(data)
             if errcode:
                 break
+        if _fp:
+            try:
+                os.close(_fp)
+            except OSError:
+                pass
         if errcode < 0:
             msg = f"encoder error {errcode} when writing image file"
             raise OSError(msg)

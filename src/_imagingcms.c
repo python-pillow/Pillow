@@ -116,7 +116,7 @@ cms_profile_open(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-cms_profile_fromstring(PyObject *self, PyObject *args) {
+cms_profile_frombytes(PyObject *self, PyObject *args) {
     cmsHPROFILE hProfile;
 
     char *pProfile;
@@ -960,8 +960,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
 static PyMethodDef pyCMSdll_methods[] = {
 
     {"profile_open", cms_profile_open, METH_VARARGS},
-    {"profile_frombytes", cms_profile_fromstring, METH_VARARGS},
-    {"profile_fromstring", cms_profile_fromstring, METH_VARARGS},
+    {"profile_frombytes", cms_profile_frombytes, METH_VARARGS},
     {"profile_tobytes", cms_profile_tobytes, METH_VARARGS},
 
     /* profile and transform functions */

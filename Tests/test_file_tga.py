@@ -163,7 +163,9 @@ def test_save_id_section(tmp_path):
 
     # Save with custom id section greater than 255 characters
     id_section = b"Test content" * 25
-    pytest.warns(UserWarning, lambda: im.save(out, id_section=id_section))
+    with pytest.warns(UserWarning):
+        im.save(out, id_section=id_section)
+
     with Image.open(out) as test_im:
         assert test_im.info["id_section"] == id_section[:255]
 
