@@ -28,6 +28,11 @@ TODO
 API Additions
 =============
 
+QOI file format
+^^^^^^^^^^^^^^^
+
+Pillow can now read QOI images.
+
 Added ``dpi`` argument when saving PDFs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
