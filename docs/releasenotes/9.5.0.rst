@@ -28,6 +28,13 @@ TODO
 API Additions
 =============
 
+Added ``closed`` property to images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Images now have a ``closed`` property. It is set to ``False`` until
+:py:meth:`~PIL.Image.Image.close` is called or the image exits its context manager.
+It is then set to ``True``.
+
 Added ``dpi`` argument when saving PDFs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
