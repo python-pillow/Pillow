@@ -136,6 +136,9 @@ match(PyObject *self, PyObject *args) {
     int row_idx, col_idx;
     UINT8 **inrows;
     PyObject *ret = PyList_New(0);
+    if (ret == NULL) {
+        return NULL;
+    }
 
     if (!PyArg_ParseTuple(args, "On", &py_lut, &i0)) {
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
@@ -213,10 +216,12 @@ get_on_pixels(PyObject *self, PyObject *args) {
     int row_idx, col_idx;
     int width, height;
     PyObject *ret = PyList_New(0);
+    if (ret == NULL) {
+        return NULL;
+    }
 
     if (!PyArg_ParseTuple(args, "n", &i0)) {
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
-
         return NULL;
     }
     img = (Imaging)i0;
