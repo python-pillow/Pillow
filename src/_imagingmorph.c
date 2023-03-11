@@ -194,6 +194,7 @@ match(PyObject *self, PyObject *args) {
             if (lut[lut_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
                 PyList_Append(ret, coordObj);
+                Py_XDECREF(coordObj);
             }
         }
     }
@@ -230,6 +231,7 @@ get_on_pixels(PyObject *self, PyObject *args) {
             if (row[col_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
                 PyList_Append(ret, coordObj);
+                Py_XDECREF(coordObj);
             }
         }
     }
@@ -240,7 +242,9 @@ static int
 setup_module(PyObject *m) {
     PyObject *d = PyModule_GetDict(m);
 
-    PyDict_SetItemString(d, "__version", PyUnicode_FromString("0.1"));
+    PyObject *version = PyUnicode_FromString("0.1");
+    PyDict_SetItemString(d, "__version", version);
+    Py_DECREF(version);
 
     return 0;
 }

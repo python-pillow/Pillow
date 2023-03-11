@@ -1129,11 +1129,17 @@ font_getvaraxes(FontObject *self) {
         axis = master->axis[i];
 
         list_axis = PyDict_New();
-        PyDict_SetItemString(
-            list_axis, "minimum", PyLong_FromLong(axis.minimum / 65536));
-        PyDict_SetItemString(list_axis, "default", PyLong_FromLong(axis.def / 65536));
-        PyDict_SetItemString(
-            list_axis, "maximum", PyLong_FromLong(axis.maximum / 65536));
+        PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
+        PyDict_SetItemString(list_axis, "minimum", minimum);
+        Py_XDECREF(minimum);
+
+        PyObject *def = PyLong_FromLong(axis.def / 65536);
+        PyDict_SetItemString(list_axis, "default", def);
+        Py_XDECREF(def);
+
+        PyObject *maximum = PyLong_FromLong(axis.maximum / 65536);
+        PyDict_SetItemString(list_axis, "maximum", maximum);
+        Py_XDECREF(maximum);
 
         for (j = 0; j < name_count; j++) {
             error = FT_Get_Sfnt_Name(self->face, j, &name);
@@ -1144,6 +1150,7 @@ font_getvaraxes(FontObject *self) {
             if (name.name_id == axis.strid) {
                 axis_name = Py_BuildValue("y#", name.string, name.string_len);
                 PyDict_SetItemString(list_axis, "name", axis_name);
+                Py_XDECREF(axis_name);
                 break;
             }
         }
@@ -1359,6 +1366,7 @@ setup_module(PyObject *m) {
 
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
     PyDict_SetItemString(d, "freetype2_version", v);
+    Py_DECREF(v);
 
 #ifdef HAVE_RAQM
 #if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)
@@ -1376,6 +1384,7 @@ setup_module(PyObject *m) {
     PyDict_SetItemString(d, "HAVE_RAQM", v);
     PyDict_SetItemString(d, "HAVE_FRIBIDI", v);
     PyDict_SetItemString(d, "HAVE_HARFBUZZ", v);
+    Py_DECREF(v);
     if (have_raqm) {
 #ifdef RAQM_VERSION_MAJOR
         v = PyUnicode_FromString(raqm_version_string());
@@ -1383,6 +1392,7 @@ setup_module(PyObject *m) {
         v = Py_None;
 #endif
         PyDict_SetItemString(d, "raqm_version", v);
+        Py_DECREF(v);
 
 #ifdef FRIBIDI_MAJOR_VERSION
         {
