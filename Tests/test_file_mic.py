@@ -51,6 +51,16 @@ def test_seek():
         assert im.tell() == 0
 
 
+def test_close():
+    with Image.open(TEST_FILE) as im:
+        pass
+    assert im.ole.fp.closed
+
+    im = Image.open(TEST_FILE)
+    im.close()
+    assert im.ole.fp.closed
+
+
 def test_invalid_file():
     # Test an invalid OLE file
     invalid_file = "Tests/images/flower.jpg"
