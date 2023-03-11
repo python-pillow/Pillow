@@ -60,6 +60,7 @@ def test_stub_deprecated():
 
         def load(self, im):
             self.loaded = True
+            im.fp.close()
             return Image.new("RGB", (1, 1))
 
     handler = Handler()
