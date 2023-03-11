@@ -30,8 +30,8 @@ install:
 - ..\pillow-depends\gs1000w32.exe /S
 - path c:\nasm-2.15.05;C:\Program Files (x86)\gs\gs10.0.0\bin;%PATH%
 - cd c:\pillow\winbuild\
+- '%PYTHON%\%EXECUTABLE% c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends'
 - ps: |
-        c:\python37\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
 - path C:\pillow\winbuild\build\bin;%PATH%
