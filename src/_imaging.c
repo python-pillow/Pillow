@@ -4306,6 +4306,7 @@ PyInit__imaging(void) {
     m = PyModule_Create(&module_def);
 
     if (setup_module(m) < 0) {
+        Py_DECREF(m);
         return NULL;
     }
 

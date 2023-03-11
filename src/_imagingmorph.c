@@ -141,11 +141,13 @@ match(PyObject *self, PyObject *args) {
     }
 
     if (!PyArg_ParseTuple(args, "On", &py_lut, &i0)) {
+        Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
         return NULL;
     }
 
     if (!PyBytes_Check(py_lut)) {
+        Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a bytes object");
         return NULL;
     }
@@ -153,6 +155,7 @@ match(PyObject *self, PyObject *args) {
     lut_len = PyBytes_Size(py_lut);
 
     if (lut_len < LUT_SIZE) {
+        Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "The morphology LUT has the wrong size");
         return NULL;
     }
@@ -161,6 +164,7 @@ match(PyObject *self, PyObject *args) {
     imgin = (Imaging)i0;
 
     if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1) {
+        Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
         return NULL;
     }
@@ -221,6 +225,7 @@ get_on_pixels(PyObject *self, PyObject *args) {
     }
 
     if (!PyArg_ParseTuple(args, "n", &i0)) {
+        Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
         return NULL;
     }

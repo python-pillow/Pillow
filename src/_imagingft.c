@@ -1090,6 +1090,7 @@ font_getvarnames(FontObject *self) {
     for (i = 0; i < name_count; i++) {
         error = FT_Get_Sfnt_Name(self->face, i, &name);
         if (error) {
+            Py_DECREF(list_names);
             return geterror(error);
         }
 
@@ -1136,6 +1137,11 @@ font_getvaraxes(FontObject *self) {
 
         list_axis = PyDict_New();
         if (list_axis == NULL) {
+            for (j = 0; j < i; j++) {
+                list_axis = PyList_GetItem(list_axes, j);
+                Py_DECREF(list_axis);
+            }
+            Py_DECREF(list_axes);
             return NULL;
         }
         PyDict_SetItemString(
@@ -1147,6 +1153,12 @@ font_getvaraxes(FontObject *self) {
         for (j = 0; j < name_count; j++) {
             error = FT_Get_Sfnt_Name(self->face, j, &name);
             if (error) {
+                Py_DECREF(list_axis);
+                for (j = 0; j < i; j++) {
+                    list_axis = PyList_GetItem(list_axes, j);
+                    Py_DECREF(list_axis);
+                }
+                Py_DECREF(list_axes);
                 return geterror(error);
             }
 
