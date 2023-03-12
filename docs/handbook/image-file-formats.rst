@@ -1549,7 +1549,7 @@ QOI
 
 .. versionadded:: 9.5.0
 
-Pillow identifies and reads QOI images.
+Pillow identifies and reads images in Quite OK Image format.
 
 XV Thumbnails
 ^^^^^^^^^^^^^

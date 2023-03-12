@@ -31,7 +31,7 @@ API Additions
 QOI file format
 ^^^^^^^^^^^^^^^
 
-Pillow can now read QOI images.
+Pillow can now read images in Quite OK Image format.
 
 Added ``dpi`` argument when saving PDFs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
