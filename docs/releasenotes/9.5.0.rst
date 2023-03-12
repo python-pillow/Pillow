@@ -54,7 +54,7 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Added support for saving PDFs in RGBA mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Using the JPXDecode filter, PDFs can now be saved in RGBA mode.
