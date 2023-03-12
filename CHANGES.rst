@@ -5,6 +5,15 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Added QOI reading #6852
+  [radarhere, hugovk]
+
+- Added saving RGBA images as PDFs #6925
+  [radarhere]
+
+- Do not raise an error if os.environ does not contain PATH #6935
+  [radarhere, hugovk]
+
 - Close OleFileIO instance when closing or exiting FPX or MIC #7005
   [radarhere]
 
