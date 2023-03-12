@@ -1549,6 +1549,13 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 5.3.0
 
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow identifies and reads images in Quite OK Image format.
+
 XV Thumbnails
 ^^^^^^^^^^^^^
 
