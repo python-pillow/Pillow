@@ -242,7 +242,9 @@ def _find_include_dir(self, dirname, include):
             return subdir
 
 
-def _cmd_exists(cmd):
+def _cmd_exists(cmd: str) -> bool:
+    if "PATH" not in os.environ:
+        return False
     return any(
         os.access(os.path.join(path, cmd), os.X_OK)
         for path in os.environ["PATH"].split(os.pathsep)
