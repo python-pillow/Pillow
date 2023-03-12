@@ -235,6 +235,14 @@ class FpxImageFile(ImageFile.ImageFile):
 
         return ImageFile.ImageFile.load(self)
 
+    def close(self):
+        self.ole.close()
+        super().close()
+
+    def __exit__(self, *args):
+        self.ole.close()
+        super().__exit__()
+
 
 #
 # --------------------------------------------------------------------
