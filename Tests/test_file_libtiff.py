@@ -645,7 +645,6 @@ class TestFileLibTiff(LibTiffTestCase):
         pilim = hopper()
 
         def save_bytesio(compression=None):
-
             buffer_io = io.BytesIO()
             pilim.save(buffer_io, format="tiff", compression=compression)
             buffer_io.seek(0)
@@ -740,7 +739,6 @@ class TestFileLibTiff(LibTiffTestCase):
 
     def test_multipage_compression(self):
         with Image.open("Tests/images/compression.tif") as im:
-
             im.seek(0)
             assert im._compression == "tiff_ccitt"
             assert im.size == (10, 10)
@@ -1067,3 +1065,9 @@ class TestFileLibTiff(LibTiffTestCase):
         out = str(tmp_path / "temp.tif")
         with pytest.raises(SystemError):
             im.save(out, compression=compression)
+
+    def test_save_many_compressed(self, tmp_path):
+        im = hopper()
+        out = str(tmp_path / "temp.tif")
+        for _ in range(10000):
+            im.save(out, compression="jpeg")

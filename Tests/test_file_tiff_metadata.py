@@ -54,7 +54,6 @@ def test_rt_metadata(tmp_path):
     img.save(f, tiffinfo=info)
 
     with Image.open(f) as loaded:
-
         assert loaded.tag[ImageJMetaDataByteCounts] == (len(bin_data),)
         assert loaded.tag_v2[ImageJMetaDataByteCounts] == (len(bin_data),)
 
@@ -74,14 +73,12 @@ def test_rt_metadata(tmp_path):
     info[ImageJMetaDataByteCounts] = (8, len(bin_data) - 8)
     img.save(f, tiffinfo=info)
     with Image.open(f) as loaded:
-
         assert loaded.tag[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
         assert loaded.tag_v2[ImageJMetaDataByteCounts] == (8, len(bin_data) - 8)
 
 
 def test_read_metadata():
     with Image.open("Tests/images/hopper_g4.tif") as img:
-
         assert {
             "YResolution": IFDRational(4294967295, 113653537),
             "PlanarConfiguration": 1,
@@ -219,6 +216,22 @@ def test_writing_other_types_to_bytes(value, tmp_path):
         assert reloaded.tag_v2[700] == b"\x01"
 
 
+def test_writing_other_types_to_undefined(tmp_path):
+    im = hopper()
+    info = TiffImagePlugin.ImageFileDirectory_v2()
+
+    tag = TiffTags.TAGS_V2[33723]
+    assert tag.type == TiffTags.UNDEFINED
+
+    info[33723] = 1
+
+    out = str(tmp_path / "temp.tiff")
+    im.save(out, tiffinfo=info)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.tag_v2[33723] == b"1"
+
+
 def test_undefined_zero(tmp_path):
     # Check that the tag has not been changed since this test was created
     tag = TiffTags.TAGS_V2[45059]
@@ -239,7 +252,8 @@ def test_empty_metadata():
     head = f.read(8)
     info = TiffImagePlugin.ImageFileDirectory(head)
     # Should not raise struct.error.
-    pytest.warns(UserWarning, info.load, f)
+    with pytest.warns(UserWarning):
+        info.load(f)
 
 
 def test_iccprofile(tmp_path):
@@ -405,11 +419,12 @@ def test_too_many_entries():
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
 
     #    277: ("SamplesPerPixel", SHORT, 1),
-    ifd._tagdata[277] = struct.pack("hh", 4, 4)
+    ifd._tagdata[277] = struct.pack("<hh", 4, 4)
     ifd.tagtype[277] = TiffTags.SHORT
 
     # Should not raise ValueError.
-    pytest.warns(UserWarning, lambda: ifd[277])
+    with pytest.warns(UserWarning):
+        assert ifd[277] == 4
 
 
 def test_tag_group_data():

@@ -48,7 +48,6 @@ def _accept(prefix):
 
 
 class FpxImageFile(ImageFile.ImageFile):
-
     format = "FPX"
     format_description = "FlashPix"
 
@@ -157,7 +156,6 @@ class FpxImageFile(ImageFile.ImageFile):
         self.tile = []
 
         for i in range(0, len(s), length):
-
             x1 = min(xsize, x + xtile)
             y1 = min(ysize, y + ytile)
 
@@ -174,7 +172,6 @@ class FpxImageFile(ImageFile.ImageFile):
                 )
 
             elif compression == 1:
-
                 # FIXME: the fill decoder is not implemented
                 self.tile.append(
                     (
@@ -186,7 +183,6 @@ class FpxImageFile(ImageFile.ImageFile):
                 )
 
             elif compression == 2:
-
                 internal_color_conversion = s[14]
                 jpeg_tables = s[15]
                 rawmode = self.rawmode
@@ -234,11 +230,18 @@ class FpxImageFile(ImageFile.ImageFile):
         self.fp = None
 
     def load(self):
-
         if not self.fp:
             self.fp = self.ole.openstream(self.stream[:2] + ["Subimage 0000 Data"])
 
         return ImageFile.ImageFile.load(self)
+
+    def close(self):
+        self.ole.close()
+        super().close()
+
+    def __exit__(self, *args):
+        self.ole.close()
+        super().__exit__()
 
 
 #

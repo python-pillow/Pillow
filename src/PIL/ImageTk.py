@@ -97,7 +97,6 @@ class PhotoImage:
     """
 
     def __init__(self, image=None, size=None, **kw):
-
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
@@ -209,7 +208,6 @@ class BitmapImage:
     """
 
     def __init__(self, image=None, **kw):
-
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)

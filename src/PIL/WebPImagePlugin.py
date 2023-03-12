@@ -35,7 +35,6 @@ def _accept(prefix):
 
 
 class WebPImageFile(ImageFile.ImageFile):
-
     format = "WEBP"
     format_description = "WebP image"
     __loaded = 0

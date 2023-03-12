@@ -46,12 +46,10 @@ MODES = {
 
 
 class TgaImageFile(ImageFile.ImageFile):
-
     format = "TGA"
     format_description = "Targa"
 
     def _open(self):
-
         # process header
         s = self.fp.read(18)
 
@@ -174,7 +172,6 @@ SAVE = {
 
 
 def _save(im, fp, filename):
-
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:

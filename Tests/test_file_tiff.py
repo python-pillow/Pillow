@@ -25,7 +25,6 @@ except ImportError:
 
 class TestFileTiff:
     def test_sanity(self, tmp_path):
-
         filename = str(tmp_path / "temp.tif")
 
         hopper("RGB").save(filename)
@@ -62,7 +61,8 @@ class TestFileTiff:
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
 
-        pytest.warns(ResourceWarning, open)
+        with pytest.warns(ResourceWarning):
+            open()
 
     def test_closed_file(self):
         with warnings.catch_warnings():
@@ -157,7 +157,6 @@ class TestFileTiff:
     def test_xyres_tiff(self):
         filename = "Tests/images/pil168.tif"
         with Image.open(filename) as im:
-
             # legacy api
             assert isinstance(im.tag[X_RESOLUTION][0], tuple)
             assert isinstance(im.tag[Y_RESOLUTION][0], tuple)
@@ -171,7 +170,6 @@ class TestFileTiff:
     def test_xyres_fallback_tiff(self):
         filename = "Tests/images/compression.tif"
         with Image.open(filename) as im:
-
             # v2 api
             assert isinstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
             assert isinstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
@@ -186,7 +184,6 @@ class TestFileTiff:
     def test_int_resolution(self):
         filename = "Tests/images/pil168.tif"
         with Image.open(filename) as im:
-
             # Try to read a file where X,Y_RESOLUTION are ints
             im.tag_v2[X_RESOLUTION] = 71
             im.tag_v2[Y_RESOLUTION] = 71
@@ -235,7 +232,8 @@ class TestFileTiff:
     def test_bad_exif(self):
         with Image.open("Tests/images/hopper_bad_exif.jpg") as i:
             # Should not raise struct.error.
-            pytest.warns(UserWarning, i._getexif)
+            with pytest.warns(UserWarning):
+                i._getexif()
 
     def test_save_rgba(self, tmp_path):
         im = hopper("RGBA")
@@ -381,7 +379,6 @@ class TestFileTiff:
     def test___str__(self):
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
-
             # Act
             ret = str(im.ifd)
 
@@ -392,7 +389,6 @@ class TestFileTiff:
         # Arrange
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
-
             # v2 interface
             v2_tags = {
                 256: 55,
@@ -630,7 +626,6 @@ class TestFileTiff:
         filename = str(tmp_path / "temp.tif")
         hopper("RGB").save(filename, **kwargs)
         with Image.open(filename) as im:
-
             # legacy interface
             assert im.tag[X_RESOLUTION][0][0] == 72
             assert im.tag[Y_RESOLUTION][0][0] == 36

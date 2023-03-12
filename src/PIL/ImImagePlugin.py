@@ -115,13 +115,11 @@ def number(s):
 
 
 class ImImageFile(ImageFile.ImageFile):
-
     format = "IM"
     format_description = "IFUNC Image Memory"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
@@ -140,7 +138,6 @@ class ImImageFile(ImageFile.ImageFile):
         self.rawmode = "L"
 
         while True:
-
             s = self.fp.read(1)
 
             # Some versions of IFUNC uses \n\r instead of \r\n...
@@ -169,7 +166,6 @@ class ImImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg) from e
 
             if m:
-
                 k, v = m.group(1, 2)
 
                 # Don't know if this is the correct encoding,
@@ -200,7 +196,6 @@ class ImImageFile(ImageFile.ImageFile):
                     n += 1
 
             else:
-
                 msg = "Syntax error in IM header: " + s.decode("ascii", "replace")
                 raise SyntaxError(msg)
 
@@ -252,7 +247,6 @@ class ImImageFile(ImageFile.ImageFile):
         self._fp = self.fp  # FIXME: hack
 
         if self.rawmode[:2] == "F;":
-
             # ifunc95 formats
             try:
                 # use bit decoder (if necessary)
@@ -332,7 +326,6 @@ SAVE = {
 
 
 def _save(im, fp, filename):
-
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:

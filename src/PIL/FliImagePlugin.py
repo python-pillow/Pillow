@@ -40,13 +40,11 @@ def _accept(prefix):
 
 
 class FliImageFile(ImageFile.ImageFile):
-
     format = "FLI"
     format_description = "Autodesk FLI/FLC Animation"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # HEAD
         s = self.fp.read(128)
         if not (_accept(s) and s[20:22] == b"\x00\x00"):

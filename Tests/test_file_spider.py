@@ -25,7 +25,8 @@ def test_unclosed_file():
         im = Image.open(TEST_FILE)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():
@@ -79,7 +80,6 @@ def test_is_spider_image():
 def test_tell():
     # Arrange
     with Image.open(TEST_FILE) as im:
-
         # Act
         index = im.tell()
 

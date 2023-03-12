@@ -18,9 +18,7 @@ Example
 -------
 
 The following script loads an image, accesses one pixel from it, then
-changes it.
-
-.. code-block:: python
+changes it. ::
 
     from PIL import Image
 
@@ -35,9 +33,7 @@ Results in the following::
     (23, 24, 68)
     (0, 0, 0)
 
-Access using negative indexes is also possible.
-
-.. code-block:: python
+Access using negative indexes is also possible. ::
 
     px[-1, -1] = (0, 0, 0)
     print(px[-1, -1])

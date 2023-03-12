@@ -52,7 +52,7 @@ def test_resample():
     # >>> im.save('Tests/images/hopper_45.png')
 
     with Image.open("Tests/images/hopper_45.png") as target:
-        for (resample, epsilon) in (
+        for resample, epsilon in (
             (Image.Resampling.NEAREST, 10),
             (Image.Resampling.BILINEAR, 5),
             (Image.Resampling.BICUBIC, 0),

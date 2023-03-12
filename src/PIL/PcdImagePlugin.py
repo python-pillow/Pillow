@@ -24,12 +24,10 @@ from . import Image, ImageFile
 
 
 class PcdImageFile(ImageFile.ImageFile):
-
     format = "PCD"
     format_description = "Kodak PhotoCD"
 
     def _open(self):
-
         # rough
         self.fp.seek(2048)
         s = self.fp.read(2048)

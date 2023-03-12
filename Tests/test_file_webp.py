@@ -29,7 +29,10 @@ class TestUnsupportedWebp:
             WebPImagePlugin.SUPPORTED = False
 
         file_path = "Tests/images/hopper.webp"
-        pytest.warns(UserWarning, lambda: pytest.raises(OSError, Image.open, file_path))
+        with pytest.warns(UserWarning):
+            with pytest.raises(OSError):
+                with Image.open(file_path):
+                    pass
 
         if HAVE_WEBP:
             WebPImagePlugin.SUPPORTED = True

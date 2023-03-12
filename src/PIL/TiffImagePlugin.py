@@ -425,6 +425,9 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
+    # Python >= 3.11
+    if hasattr(Fraction, "__int__"):
+        __int__ = _delegate("__int__")
 
 
 class ImageFileDirectory_v2(MutableMapping):
@@ -764,6 +767,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_writer(7)
     def write_undefined(self, value):
+        if isinstance(value, int):
+            value = str(value).encode("ascii", "replace")
         return value
 
     @_register_loader(10, 8)
@@ -793,7 +798,6 @@ class ImageFileDirectory_v2(MutableMapping):
         return ret
 
     def load(self, fp):
-
         self.reset()
         self._offset = fp.tell()
 
@@ -938,7 +942,6 @@ class ImageFileDirectory_v2(MutableMapping):
         return result
 
     def save(self, fp):
-
         if fp.tell() == 0:  # skip TIFF header on subsequent pages
             # tiff header -- PIL always starts the first IFD at offset 8
             fp.write(self._prefix + self._pack("HL", 42, 8))
@@ -1059,7 +1062,6 @@ ImageFileDirectory = ImageFileDirectory_v1
 
 
 class TiffImageFile(ImageFile.ImageFile):
-
     format = "TIFF"
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
@@ -1582,7 +1584,6 @@ SAVE_INFO = {
 
 
 def _save(im, fp, filename):
-
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
@@ -1847,13 +1848,18 @@ def _save(im, fp, filename):
         e.setimage(im.im, (0, 0) + im.size)
         while True:
             # undone, change to self.decodermaxblock:
-            l, s, d = e.encode(16 * 1024)
+            errcode, data = e.encode(16 * 1024)[1:]
             if not _fp:
-                fp.write(d)
-            if s:
+                fp.write(data)
+            if errcode:
                 break
-        if s < 0:
-            msg = f"encoder error {s} when writing image file"
+        if _fp:
+            try:
+                os.close(_fp)
+            except OSError:
+                pass
+        if errcode < 0:
+            msg = f"encoder error {errcode} when writing image file"
             raise OSError(msg)
 
     else:

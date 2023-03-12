@@ -37,7 +37,6 @@ def _accept(prefix):
 
 
 class GbrImageFile(ImageFile.ImageFile):
-
     format = "GBR"
     format_description = "GIMP brush file"
 

@@ -430,7 +430,6 @@ class pil_build_ext(build_ext):
         return sdk_path
 
     def build_extensions(self):
-
         library_dirs = []
         include_dirs = []
 
@@ -571,9 +570,7 @@ class pil_build_ext(build_ext):
         ):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
-            if sys.platform.startswith("linux") and os.environ.get(
-                "ANDROID_ROOT", None
-            ):
+            if sys.platform.startswith("linux") and os.environ.get("ANDROID_ROOT"):
                 # termux support for android.
                 # system libraries (zlib) are installed in /system/lib
                 # headers are at $PREFIX/include
@@ -917,7 +914,6 @@ class pil_build_ext(build_ext):
         self.summary_report(feature)
 
     def summary_report(self, feature):
-
         print("-" * 68)
         print("PIL SETUP SUMMARY")
         print("-" * 68)

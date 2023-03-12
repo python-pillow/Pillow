@@ -69,7 +69,6 @@ class TestImage:
         assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
-
         im = Image.new("L", (100, 100))
         assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
         assert im.mode == "L"
@@ -1007,7 +1006,6 @@ def mock_encode(*args):
 
 class TestRegistry:
     def test_encode_registry(self):
-
         Image.register_encoder("MOCK", mock_encode)
         assert "MOCK" in Image.ENCODERS
 

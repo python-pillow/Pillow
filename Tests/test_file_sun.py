@@ -16,7 +16,6 @@ def test_sanity():
 
     # Act
     with Image.open(test_file) as im:
-
         # Assert
         assert im.size == (128, 128)
 
