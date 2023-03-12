@@ -25,7 +25,6 @@ class GimpPaletteFile:
     rawmode = "RGB"
 
     def __init__(self, fp):
-
         self.palette = [o8(i) * 3 for i in range(256)]
 
         if fp.readline()[:12] != b"GIMP Palette":
@@ -33,7 +32,6 @@ class GimpPaletteFile:
             raise SyntaxError(msg)
 
         for i in range(256):
-
             s = fp.readline()
             if not s:
                 break
@@ -55,5 +53,4 @@ class GimpPaletteFile:
         self.palette = b"".join(self.palette)
 
     def getpalette(self):
-
         return self.palette, self.rawmode

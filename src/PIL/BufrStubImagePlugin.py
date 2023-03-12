@@ -33,12 +33,10 @@ def _accept(prefix):
 
 
 class BufrStubImageFile(ImageFile.StubImageFile):
-
     format = "BUFR"
     format_description = "BUFR"
 
     def _open(self):
-
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(4)):

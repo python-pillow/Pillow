@@ -30,12 +30,10 @@ def _accept(s):
 
 
 class McIdasImageFile(ImageFile.ImageFile):
-
     format = "MCIDAS"
     format_description = "McIdas area file"
 
     def _open(self):
-
         # parse area file directory
         s = self.fp.read(256)
         if not _accept(s) or len(s) != 256:

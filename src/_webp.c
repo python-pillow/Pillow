@@ -955,6 +955,13 @@ addTransparencyFlagToModule(PyObject *m) {
 
 static int
 setup_module(PyObject *m) {
+#ifdef HAVE_WEBPANIM
+    /* Ready object types */
+    if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
+        PyType_Ready(&WebPAnimEncoder_Type) < 0) {
+        return -1;
+    }
+#endif
     PyObject *d = PyModule_GetDict(m);
     addMuxFlagToModule(m);
     addAnimFlagToModule(m);
@@ -963,13 +970,6 @@ setup_module(PyObject *m) {
     PyDict_SetItemString(
         d, "webpdecoder_version", PyUnicode_FromString(WebPDecoderVersion_str()));
 
-#ifdef HAVE_WEBPANIM
-    /* Ready object types */
-    if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
-        PyType_Ready(&WebPAnimEncoder_Type) < 0) {
-        return -1;
-    }
-#endif
     return 0;
 }
 

@@ -44,12 +44,10 @@ def _accept(prefix):
 
 
 class MspImageFile(ImageFile.ImageFile):
-
     format = "MSP"
     format_description = "Windows Paint"
 
     def _open(self):
-
         # Header
         s = self.fp.read(32)
         if not _accept(s):
@@ -111,7 +109,6 @@ class MspDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
     def decode(self, buffer):
-
         img = io.BytesIO()
         blank_line = bytearray((0xFF,) * ((self.state.xsize + 7) // 8))
         try:
@@ -162,7 +159,6 @@ Image.register_decoder("MSP", MspDecoder)
 
 
 def _save(im, fp, filename):
-
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as MSP"
         raise OSError(msg)

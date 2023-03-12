@@ -16,7 +16,7 @@ For a more advanced drawing library for PIL, see the `aggdraw module`_.
 Example: Draw a gray cross over an image
 ----------------------------------------
 
-.. code-block:: python
+::
 
     import sys
     from PIL import Image, ImageDraw
@@ -78,7 +78,7 @@ libraries, and may not available in all PIL builds.
 Example: Draw Partial Opacity Text
 ----------------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -105,7 +105,7 @@ Example: Draw Partial Opacity Text
 Example: Draw Multiline Text
 ----------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -318,8 +318,8 @@ Methods
     Draws a rectangle.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The bounding box
-            is inclusive of both endpoints.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and
+            ``y1 >= y0``. The bounding box is inclusive of both endpoints.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
@@ -331,12 +331,14 @@ Methods
     Draws a rounded rectangle.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The bounding box
-            is inclusive of both endpoints.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and
+            ``y1 >= y0``. The bounding box is inclusive of both endpoints.
     :param radius: Radius of the corners.
     :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
+    :param corners: A tuple of whether to round each corner,
+                    ``(top_left, top_right, bottom_right, bottom_left)``.
 
     .. versionadded:: 8.2.0
 
@@ -597,18 +599,14 @@ Methods
     string due to kerning. If you need to adjust for kerning, include the following
     character and subtract its length.
 
-    For example, instead of
-
-    .. code-block:: python
+    For example, instead of ::
 
         hello = draw.textlength("Hello", font)
         world = draw.textlength("World", font)
         hello_world = hello + world  # not adjusted for kerning
         assert hello_world == draw.textlength("HelloWorld", font)  # may fail
 
-    use
-
-    .. code-block:: python
+    use ::
 
         hello = draw.textlength("HelloW", font) - draw.textlength(
             "W", font
@@ -617,9 +615,7 @@ Methods
         hello_world = hello + world  # adjusted for kerning
         assert hello_world == draw.textlength("HelloWorld", font)  # True
 
-    or disable kerning with (requires libraqm)
-
-    .. code-block:: python
+    or disable kerning with (requires libraqm) ::
 
         hello = draw.textlength("Hello", font, features=["-kern"])
         world = draw.textlength("World", font, features=["-kern"])

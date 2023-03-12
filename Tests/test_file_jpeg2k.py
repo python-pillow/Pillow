@@ -270,7 +270,6 @@ def test_rgba():
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
         with Image.open("Tests/images/rgb_trns_ycbc.jp2") as jp2:
-
             # Act
             j2k.load()
             jp2.load()

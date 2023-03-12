@@ -28,7 +28,6 @@ from ._binary import i32le as i32
 
 
 class WalImageFile(ImageFile.ImageFile):
-
     format = "WAL"
     format_description = "Quake2 Texture"
 

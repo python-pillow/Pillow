@@ -150,7 +150,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.14**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.15**.
 
 * **libwebp** provides the WebP format.
 
@@ -169,7 +169,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.1**
+  * Pillow has been tested with libimagequant **2.6-4.1.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -186,8 +186,8 @@ Many of Pillow's features require external libraries:
   * Pillow wheels since version 8.2.0 include a modified version of libraqm that
     loads libfribidi at runtime if it is installed.
     On Windows this requires compiling FriBiDi and installing ``fribidi.dll``
-    into a directory listed in the `Dynamic-Link Library Search Order (Microsoft Docs)
-    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-desktop-applications>`_
+    into a directory listed in the `Dynamic-link library search order (Microsoft Learn)
+    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-unpackaged-apps>`_
     (``fribidi-0.dll`` or ``libfribidi-0.dll`` are also detected).
     See `Build Options`_ to see how to build this version.
   * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
@@ -442,21 +442,23 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | Gentoo                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
-|                                  | PyPy3                      |                     |
+| macOS 12 Monterey                | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
+|                                  | 3.12, PyPy3                |                     |
 +----------------------------------+----------------------------+---------------------+
 | Ubuntu Linux 18.04 LTS (Bionic)  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 20.04 LTS (Focal)   | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
-|                                  | PyPy3                      |                     |
+| Ubuntu Linux 20.04 LTS (Focal)   | 3.8                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 22.04 LTS (Jammy)   | 3.10                       | arm64v8, ppc64le,   |
-|                                  |                            | s390x, x86-64       |
+| Ubuntu Linux 22.04 LTS (Jammy)   | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
+|                                  | 3.12, PyPy3                |                     |
+|                                  +----------------------------+---------------------+
+|                                  | 3.10                       | arm64v8, ppc64le,   |
+|                                  |                            | s390x               |
 +----------------------------------+----------------------------+---------------------+
 | Windows Server 2016              | 3.7                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Windows Server 2022              | 3.7, 3.8, 3.9, 3.10, 3.11, | x86, x86-64         |
-|                                  | PyPy3                      |                     |
+|                                  | 3.12, PyPy3                |                     |
 |                                  +----------------------------+---------------------+
 |                                  | 3.9 (MinGW)                | x86, x86-64         |
 |                                  +----------------------------+---------------------+

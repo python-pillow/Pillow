@@ -34,13 +34,11 @@ def _accept(prefix):
 
 
 class MicImageFile(TiffImagePlugin.TiffImageFile):
-
     format = "MIC"
     format_description = "Microsoft Image Composer"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # read the OLE directory and see if this is a likely
         # to be a Microsoft Image Composer file
 
@@ -90,6 +88,14 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
     def tell(self):
         return self.frame
+
+    def close(self):
+        self.ole.close()
+        super().close()
+
+    def __exit__(self, *args):
+        self.ole.close()
+        super().__exit__()
 
 
 #

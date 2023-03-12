@@ -36,7 +36,8 @@ def test_unclosed_file():
         im = Image.open(TEST_GIF)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():
@@ -209,7 +210,7 @@ def test_optimize_if_palette_can_be_reduced_by_half():
         im = im.resize((591, 443))
     im_rgb = im.convert("RGB")
 
-    for (optimize, colors) in ((False, 256), (True, 8)):
+    for optimize, colors in ((False, 256), (True, 8)):
         out = BytesIO()
         im_rgb.save(out, "GIF", optimize=optimize)
         with Image.open(out) as reloaded:
@@ -221,7 +222,6 @@ def test_roundtrip(tmp_path):
     im = hopper()
     im.save(out)
     with Image.open(out) as reread:
-
         assert_image_similar(reread.convert("RGB"), im, 50)
 
 
@@ -232,7 +232,6 @@ def test_roundtrip2(tmp_path):
         im2 = im.copy()
         im2.save(out)
     with Image.open(out) as reread:
-
         assert_image_similar(reread.convert("RGB"), hopper(), 50)
 
 
@@ -242,7 +241,6 @@ def test_roundtrip_save_all(tmp_path):
     im = hopper()
     im.save(out, save_all=True)
     with Image.open(out) as reread:
-
         assert_image_similar(reread.convert("RGB"), im, 50)
 
     # Multiframe image
@@ -284,13 +282,11 @@ def test_headers_saving_for_animated_gifs(tmp_path):
     important_headers = ["background", "version", "duration", "loop"]
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-
         info = im.info.copy()
 
         out = str(tmp_path / "temp.gif")
         im.save(out, save_all=True)
     with Image.open(out) as reread:
-
         for header in important_headers:
             assert info[header] == reread.info[header]
 
@@ -308,7 +304,6 @@ def test_palette_handling(tmp_path):
         im2.save(f, optimize=True)
 
     with Image.open(f) as reloaded:
-
         assert_image_similar(im, reloaded.convert("RGB"), 10)
 
 
@@ -324,7 +319,6 @@ def test_palette_434(tmp_path):
 
     orig = "Tests/images/test.colors.gif"
     with Image.open(orig) as im:
-
         with roundtrip(im) as reloaded:
             assert_image_similar(im, reloaded, 1)
         with roundtrip(im, optimize=True) as reloaded:
@@ -575,7 +569,6 @@ def test_save_dispose(tmp_path):
     )
 
     with Image.open(out) as img:
-
         for i in range(2):
             img.seek(img.tell() + 1)
             assert img.disposal_method == i + 1
@@ -773,7 +766,6 @@ def test_multiple_duration(tmp_path):
         out, save_all=True, append_images=im_list[1:], duration=duration_list
     )
     with Image.open(out) as reread:
-
         for duration in duration_list:
             assert reread.info["duration"] == duration
             try:
@@ -786,7 +778,6 @@ def test_multiple_duration(tmp_path):
         out, save_all=True, append_images=im_list[1:], duration=tuple(duration_list)
     )
     with Image.open(out) as reread:
-
         for duration in duration_list:
             assert reread.info["duration"] == duration
             try:
@@ -844,7 +835,6 @@ def test_identical_frames(tmp_path):
         out, save_all=True, append_images=im_list[1:], duration=duration_list
     )
     with Image.open(out) as reread:
-
         # Assert that the first three frames were combined
         assert reread.n_frames == 2
 
@@ -1098,7 +1088,8 @@ def test_rgb_transparency(tmp_path):
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = b""
     ims = [Image.new("RGB", (1, 1))]
-    pytest.warns(UserWarning, im.save, out, save_all=True, append_images=ims)
+    with pytest.warns(UserWarning):
+        im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reloaded:
         assert "transparency" not in reloaded.info

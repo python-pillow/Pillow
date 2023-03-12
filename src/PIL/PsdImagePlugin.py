@@ -51,13 +51,11 @@ def _accept(prefix):
 
 
 class PsdImageFile(ImageFile.ImageFile):
-
     format = "PSD"
     format_description = "Adobe Photoshop"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         read = self.fp.read
 
         #
@@ -177,7 +175,6 @@ def _layerinfo(fp, ct_bytes):
         raise SyntaxError(msg)
 
     for _ in range(abs(ct)):
-
         # bounding box
         y0 = i32(read(4))
         x0 = i32(read(4))
@@ -250,7 +247,6 @@ def _layerinfo(fp, ct_bytes):
 
 
 def _maketile(file, mode, bbox, channels):
-
     tile = None
     read = file.read
 

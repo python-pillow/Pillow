@@ -80,7 +80,6 @@ def test_invalid_file():
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk():
     with Image.open("Tests/images/pil_sample_cmyk.eps") as cmyk_image:
-
         assert cmyk_image.mode == "CMYK"
         assert cmyk_image.size == (100, 100)
         assert cmyk_image.format == "EPS"

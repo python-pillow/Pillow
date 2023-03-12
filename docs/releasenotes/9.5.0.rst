@@ -1,0 +1,60 @@
+9.5.0
+-----
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Added ``dpi`` argument when saving PDFs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a PDF, resolution could already be specified using the
+``resolution`` argument. Now, a tuple of ``(x_resolution, y_resolution)`` can
+be provided as ``dpi``. If both are provided, ``dpi`` will override
+``resolution``.
+
+Added ``corners`` argument to ``ImageDraw.rounded_rectangle()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`.ImageDraw.rounded_rectangle` now accepts a keyword argument of
+``corners``. This a tuple of Booleans, specifying whether to round each corner,
+``(top_left, top_right, bottom_right, bottom_left)``.
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO

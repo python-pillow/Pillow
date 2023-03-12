@@ -390,7 +390,6 @@ else:
 
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 2:
         print("Syntax: python3 ImageShow.py imagefile [title]")
         sys.exit()

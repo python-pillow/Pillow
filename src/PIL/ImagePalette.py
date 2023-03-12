@@ -248,11 +248,9 @@ def wedge(mode="RGB"):
 
 
 def load(filename):
-
     # FIXME: supports GIMP gradients only
 
     with open(filename, "rb") as fp:
-
         for paletteHandler in [
             GimpPaletteFile.GimpPaletteFile,
             GimpGradientFile.GimpGradientFile,

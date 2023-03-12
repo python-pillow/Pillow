@@ -286,7 +286,6 @@ class EpsImageFile(ImageFile.ImageFile):
         # Scan for an "ImageData" descriptor
 
         while s[:1] == "%":
-
             if len(s) > 255:
                 msg = "not an EPS file"
                 raise SyntaxError(msg)
@@ -317,7 +316,6 @@ class EpsImageFile(ImageFile.ImageFile):
             raise OSError(msg)
 
     def _find_offset(self, fp):
-
         s = fp.read(4)
 
         if s == b"%!PS":

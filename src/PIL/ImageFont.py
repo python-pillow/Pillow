@@ -90,7 +90,6 @@ class ImageFont:
     """PIL font wrapper"""
 
     def _load_pilfont(self, filename):
-
         with open(filename, "rb") as fp:
             image = None
             for ext in (".png", ".gif", ".pbm"):
@@ -116,7 +115,6 @@ class ImageFont:
             image.close()
 
     def _load_pilfont_data(self, file, image):
-
         # read PILfont header
         if file.readline() != b"PILfont\n":
             msg = "Not a PILfont file"
@@ -299,27 +297,21 @@ class FreeTypeFont:
         string due to kerning. If you need to adjust for kerning, include the following
         character and subtract its length.
 
-        For example, instead of
-
-        .. code-block:: python
+        For example, instead of ::
 
           hello = font.getlength("Hello")
           world = font.getlength("World")
           hello_world = hello + world  # not adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # may fail
 
-        use
-
-        .. code-block:: python
+        use ::
 
           hello = font.getlength("HelloW") - font.getlength("W")  # adjusted for kerning
           world = font.getlength("World")
           hello_world = hello + world  # adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # True
 
-        or disable kerning with (requires libraqm)
-
-        .. code-block:: python
+        or disable kerning with (requires libraqm) ::
 
           hello = draw.textlength("Hello", font, features=["-kern"])
           world = draw.textlength("World", font, features=["-kern"])
@@ -1020,7 +1012,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            lindirs = os.environ.get("XDG_DATA_DIRS")
             if not lindirs:
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share
