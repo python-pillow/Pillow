@@ -1457,8 +1457,13 @@ PDF
 ^^^
 
 Pillow can write PDF (Acrobat) images. Such images are written as binary PDF 1.4
-files, using either JPEG or HEX encoding depending on the image mode (and
-whether JPEG support is available or not).
+files. Different encoding methods are used, depending on the image mode.
+
+* 1 mode images are saved using TIFF encoding, or JPEG encoding if libtiff support is
+  unavailable
+* L, RGB and CMYK mode images use JPEG encoding
+* P mode images use HEX encoding
+* RGBA mode images use JPEG2000 encoding
 
 .. _pdf-saving:
 

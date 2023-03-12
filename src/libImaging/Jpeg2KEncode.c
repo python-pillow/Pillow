@@ -487,6 +487,10 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         goto quick_exit;
     }
 
+    if (strcmp(im->mode, "RGBA") == 0) {
+        image->comps[3].alpha = 1;
+    }
+
     opj_set_error_handler(codec, j2k_error, context);
     opj_set_info_handler(codec, j2k_warn, context);
     opj_set_warning_handler(codec, j2k_warn, context);
