@@ -89,6 +89,14 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
     def tell(self):
         return self.frame
 
+    def close(self):
+        self.ole.close()
+        super().close()
+
+    def __exit__(self, *args):
+        self.ole.close()
+        super().__exit__()
+
 
 #
 # --------------------------------------------------------------------

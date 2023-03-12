@@ -242,7 +242,9 @@ def _find_include_dir(self, dirname, include):
             return subdir
 
 
-def _cmd_exists(cmd):
+def _cmd_exists(cmd: str) -> bool:
+    if "PATH" not in os.environ:
+        return False
     return any(
         os.access(os.path.join(path, cmd), os.X_OK)
         for path in os.environ["PATH"].split(os.pathsep)
@@ -570,9 +572,7 @@ class pil_build_ext(build_ext):
         ):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
-            if sys.platform.startswith("linux") and os.environ.get(
-                "ANDROID_ROOT", None
-            ):
+            if sys.platform.startswith("linux") and os.environ.get("ANDROID_ROOT"):
                 # termux support for android.
                 # system libraries (zlib) are installed in /system/lib
                 # headers are at $PREFIX/include

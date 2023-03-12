@@ -5,6 +5,18 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Close OleFileIO instance when closing or exiting FPX or MIC #7005
+  [radarhere]
+
+- Added __int__ to IFDRational for Python >= 3.11 #6998
+  [radarhere]
+
+- Added memoryview support to Dib.frombytes() #6988
+  [radarhere, nulano]
+
+- Close file pointer copy in the libtiff encoder if still open #6986
+  [fcarron, radarhere]
+
 - Raise an error if ImageDraw co-ordinates are incorrectly ordered #6978
   [radarhere]
 
