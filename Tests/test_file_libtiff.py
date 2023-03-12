@@ -985,7 +985,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert_image_equal_tofile(im, "Tests/images/old-style-jpeg-compression.png")
 
     @pytest.mark.parametrize(
-        "file_name,mode,size,tile",
+        "file_name, mode, size, tile",
         [
             (
                 "tiff_wrong_bits_per_sample.tiff",
