@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id$
  *
  * hash tables used by the image quantizer
  *

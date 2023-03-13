@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id$
  *
  * interpolate between two existing images
  *

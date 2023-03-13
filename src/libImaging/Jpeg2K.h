@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id$
  *
  * declarations for the OpenJPEG codec interface.
  *

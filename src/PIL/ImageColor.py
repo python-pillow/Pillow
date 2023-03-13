@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library
-# $Id$
 #
 # map CSS3-style colour description strings to RGB
 #

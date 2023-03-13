@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id$
  *
  * offset an image in x and y directions
  *

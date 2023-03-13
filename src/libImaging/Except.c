@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id$
  *
  * default exception handling
  *

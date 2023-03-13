@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library.
-# $Id$
 #
 # XV Thumbnail file handler by Charles E. "Gene" Cash
 # (gcash@magicnet.net)

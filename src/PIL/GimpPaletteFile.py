@@ -1,6 +1,5 @@
 #
 # Python Imaging Library
-# $Id$
 #
 # stuff to read GIMP palette files
 #

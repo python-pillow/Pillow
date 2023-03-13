@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library
-# $Id$
 #
 # base class for raster font file parsers
 #

@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library
-# $Id$
 #
 # a simple math add-on for the Python Imaging Library
 #

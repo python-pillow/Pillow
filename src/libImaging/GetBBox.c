@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id$
  *
  * helpers to bounding boxes, min/max values, number of colors, etc.
  *

@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library.
- * $Id$
  *
  * decoder for Autodesk Animator FLI/FLC animations
  *

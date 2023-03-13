@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library.
-# $Id$
 #
 # macOS icns file decoder, based on icns.py by Bob Ippolito.
 #

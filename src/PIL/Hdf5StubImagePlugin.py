@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library
-# $Id$
 #
 # HDF5 stub adapter
 #

@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id$
  *
  * Alpha composite imSrc over imDst.
  * https://en.wikipedia.org/wiki/Alpha_compositing

@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library
-# $Id$
 #
 # drawing interface operations
 #

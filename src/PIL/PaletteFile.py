@@ -1,6 +1,5 @@
 #
 # Python Imaging Library
-# $Id$
 #
 # stuff to read simple, teragon-style palette files
 #

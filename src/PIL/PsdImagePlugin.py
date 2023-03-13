@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library
-# $Id$
 #
 # Adobe PSD 2.5/3.0 file handling
 #

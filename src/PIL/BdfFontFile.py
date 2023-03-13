@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library
-# $Id$
 #
 # bitmap distribution font (bdf) file parser
 #

@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library.
- * $Id$
  *
  * Declarations for a fast, suspendable GIF decoder.
  *

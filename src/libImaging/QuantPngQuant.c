@@ -1,6 +1,5 @@
 /*
  * The Python Imaging Library
- * $Id$
  *
  * quantization using libimagequant, a part of pngquant.
  *

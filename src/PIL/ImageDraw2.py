@@ -1,6 +1,5 @@
 #
 # The Python Imaging Library
-# $Id$
 #
 # WCK-style drawing interface operations
 #
