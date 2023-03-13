@@ -320,6 +320,7 @@ mode_map = {
     "1": _PyAccess8,
     "L": _PyAccess8,
     "P": _PyAccess8,
+    "I;16N": _PyAccessI16_N,
     "LA": _PyAccess32_2,
     "La": _PyAccess32_2,
     "PA": _PyAccess32_2,

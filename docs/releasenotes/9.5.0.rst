@@ -63,3 +63,10 @@ Added support for saving PDFs in RGBA mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Using the JPXDecode filter, PDFs can now be saved in RGBA mode.
+
+
+Improved I;16N support
+^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for I;16N access, packing and unpacking. Conversion to
+and from L mode has also been added.
