@@ -1,5 +1,5 @@
 #
-# Python Imaging Library
+# The Python Imaging Library
 #
 # stuff to read (and render) GIMP gradient files
 #

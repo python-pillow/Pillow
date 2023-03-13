@@ -1,5 +1,5 @@
 #
-# Python Imaging Library
+# The Python Imaging Library
 #
 # stuff to read simple, teragon-style palette files
 #
