@@ -39,7 +39,7 @@ def cmd_rmdir(path):
 def cmd_nmake(makefile=None, target="", params=None):
     if params is None:
         params = ""
-    elif isinstance(params, list) or isinstance(params, tuple):
+    elif isinstance(params, (list, tuple)):
         params = " ".join(params)
     else:
         params = str(params)
@@ -58,7 +58,7 @@ def cmd_nmake(makefile=None, target="", params=None):
 def cmd_cmake(params=None, file="."):
     if params is None:
         params = ""
-    elif isinstance(params, list) or isinstance(params, tuple):
+    elif isinstance(params, (list, tuple)):
         params = " ".join(params)
     else:
         params = str(params)
@@ -109,9 +109,9 @@ header = [
 deps = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/2.1.4/libjpeg-turbo-2.1.4.tar.gz/download",
-        "filename": "libjpeg-turbo-2.1.4.tar.gz",
-        "dir": "libjpeg-turbo-2.1.4",
+        + "/libjpeg-turbo/files/2.1.5.1/libjpeg-turbo-2.1.5.1.tar.gz/download",
+        "filename": "libjpeg-turbo-2.1.5.1.tar.gz",
+        "dir": "libjpeg-turbo-2.1.5.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
@@ -152,9 +152,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.0.tar.gz/download",
-        "filename": "xz-5.4.0.tar.gz",
-        "dir": "xz-5.4.0",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.1.tar.gz/download",
+        "filename": "xz-5.4.1.tar.gz",
+        "dir": "xz-5.4.1",
         "license": "COPYING",
         "patch": {
             r"src\liblzma\api\lzma.h": {
@@ -177,9 +177,9 @@ deps = {
         "libs": [r"windows\vs2019\Release\{msbuild_arch}\liblzma\liblzma.lib"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
-        "filename": "libwebp-1.2.4.tar.gz",
-        "dir": "libwebp-1.2.4",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.0.tar.gz",
+        "filename": "libwebp-1.3.0.tar.gz",
+        "dir": "libwebp-1.3.0",
         "license": "COPYING",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
@@ -253,9 +253,9 @@ deps = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.gz",  # noqa: E501
-        "filename": "freetype-2.12.1.tar.gz",
-        "dir": "freetype-2.12.1",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz",  # noqa: E501
+        "filename": "freetype-2.13.0.tar.gz",
+        "dir": "freetype-2.13.0",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -289,9 +289,9 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.13/lcms2-2.14.tar.gz/download",
-        "filename": "lcms2-2.14.tar.gz",
-        "dir": "lcms2-2.14",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.15/lcms2-2.15.tar.gz/download",
+        "filename": "lcms2-2.15.tar.gz",
+        "dir": "lcms2-2.15",
         "license": "COPYING",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
@@ -319,6 +319,11 @@ deps = {
         "filename": "openjpeg-2.5.0.tar.gz",
         "dir": "openjpeg-2.5.0",
         "license": "LICENSE",
+        "patch": {
+            r"src\lib\openjp2\ht_dec.c": {
+                "#ifdef OPJ_COMPILER_MSVC\n    return (OPJ_UINT32)__popcnt(val);": "#if defined(OPJ_COMPILER_MSVC) && (defined(_M_IX86) || defined(_M_AMD64))\n    return (OPJ_UINT32)__popcnt(val);",  # noqa: E501
+            }
+        },
         "build": [
             cmd_cmake(("-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
             cmd_nmake(target="clean"),
@@ -351,9 +356,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/6.0.0.zip",
-        "filename": "harfbuzz-6.0.0.zip",
-        "dir": "harfbuzz-6.0.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/7.1.0.zip",
+        "filename": "harfbuzz-7.1.0.zip",
+        "dir": "harfbuzz-7.1.0",
         "license": "COPYING",
         "build": [
             cmd_set("CXXFLAGS", "-d2FH4-"),
@@ -473,7 +478,8 @@ def extract_dep(url, filename):
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
                 if sources_dir_abs != member_prefix:
-                    raise RuntimeError("Attempted Path Traversal in Zip File")
+                    msg = "Attempted Path Traversal in Zip File"
+                    raise RuntimeError(msg)
             zf.extractall(sources_dir)
     elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
         with tarfile.open(file, "r:gz") as tgz:
@@ -481,10 +487,12 @@ def extract_dep(url, filename):
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
                 if sources_dir_abs != member_prefix:
-                    raise RuntimeError("Attempted Path Traversal in Tar File")
+                    msg = "Attempted Path Traversal in Tar File"
+                    raise RuntimeError(msg)
             tgz.extractall(sources_dir)
     else:
-        raise RuntimeError("Unknown archive type: " + filename)
+        msg = "Unknown archive type: " + filename
+        raise RuntimeError(msg)
 
 
 def write_script(name, lines):
@@ -621,7 +629,8 @@ if __name__ == "__main__":
         elif arg == "--srcdir":
             sources_dir = os.path.sep + "src"
         else:
-            raise ValueError("Unknown parameter: " + arg)
+            msg = "Unknown parameter: " + arg
+            raise ValueError(msg)
 
     # dependency cache directory
     os.makedirs(depends_dir, exist_ok=True)
@@ -637,9 +646,8 @@ if __name__ == "__main__":
 
     msvs = find_msvs()
     if msvs is None:
-        raise RuntimeError(
-            "Visual Studio not found. Please install Visual Studio 2017 or newer."
-        )
+        msg = "Visual Studio not found. Please install Visual Studio 2017 or newer."
+        raise RuntimeError(msg)
     print("Found Visual Studio at:", msvs["vs_dir"])
 
     print("Using output directory:", build_dir)

@@ -37,25 +37,28 @@ def _accept(prefix):
 
 
 class GbrImageFile(ImageFile.ImageFile):
-
     format = "GBR"
     format_description = "GIMP brush file"
 
     def _open(self):
         header_size = i32(self.fp.read(4))
         if header_size < 20:
-            raise SyntaxError("not a GIMP brush")
+            msg = "not a GIMP brush"
+            raise SyntaxError(msg)
         version = i32(self.fp.read(4))
         if version not in (1, 2):
-            raise SyntaxError(f"Unsupported GIMP brush version: {version}")
+            msg = f"Unsupported GIMP brush version: {version}"
+            raise SyntaxError(msg)
 
         width = i32(self.fp.read(4))
         height = i32(self.fp.read(4))
         color_depth = i32(self.fp.read(4))
         if width <= 0 or height <= 0:
-            raise SyntaxError("not a GIMP brush")
+            msg = "not a GIMP brush"
+            raise SyntaxError(msg)
         if color_depth not in (1, 4):
-            raise SyntaxError(f"Unsupported GIMP brush color depth: {color_depth}")
+            msg = f"Unsupported GIMP brush color depth: {color_depth}"
+            raise SyntaxError(msg)
 
         if version == 1:
             comment_length = header_size - 20
@@ -63,7 +66,8 @@ class GbrImageFile(ImageFile.ImageFile):
             comment_length = header_size - 28
             magic_number = self.fp.read(4)
             if magic_number != b"GIMP":
-                raise SyntaxError("not a GIMP brush, bad magic number")
+                msg = "not a GIMP brush, bad magic number"
+                raise SyntaxError(msg)
             self.info["spacing"] = i32(self.fp.read(4))
 
         comment = self.fp.read(comment_length)[:-1]

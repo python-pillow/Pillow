@@ -1,10 +1,17 @@
+import pytest
+
 from PIL import Image
 
 from .helper import assert_image_equal, hopper
 
 
-def test_sanity():
+@pytest.mark.parametrize("data_type", ("bytes", "memoryview"))
+def test_sanity(data_type):
     im1 = hopper()
-    im2 = Image.frombytes(im1.mode, im1.size, im1.tobytes())
+
+    data = im1.tobytes()
+    if data_type == "memoryview":
+        data = memoryview(data)
+    im2 = Image.frombytes(im1.mode, im1.size, data)
 
     assert_image_equal(im1, im2)

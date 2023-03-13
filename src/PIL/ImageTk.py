@@ -97,7 +97,6 @@ class PhotoImage:
     """
 
     def __init__(self, image=None, size=None, **kw):
-
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
@@ -209,7 +208,6 @@ class BitmapImage:
     """
 
     def __init__(self, image=None, **kw):
-
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
@@ -284,7 +282,8 @@ def _show(image, title):
             super().__init__(master, image=self.image, bg="black", bd=0)
 
     if not tkinter._default_root:
-        raise OSError("tkinter not initialized")
+        msg = "tkinter not initialized"
+        raise OSError(msg)
     top = tkinter.Toplevel()
     if title:
         top.title(title)

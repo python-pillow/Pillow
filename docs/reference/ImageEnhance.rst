@@ -10,7 +10,7 @@ for image enhancement.
 Example: Vary the sharpness of an image
 ---------------------------------------
 
-.. code-block:: python
+::
 
     from PIL import ImageEnhance
 

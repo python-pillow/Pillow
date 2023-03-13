@@ -78,7 +78,8 @@ true color.
             elif bits == 24:
                 self.mode = "RGB"
             else:
-                raise SyntaxError("unknown number of bits")
+                msg = "unknown number of bits"
+                raise SyntaxError(msg)
 
             # data descriptor
             self.tile = [("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))]
@@ -107,9 +108,7 @@ Note that the image plugin must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
 idea to register any extensions used by this format.
 
-Once the plugin has been imported, it can be used:
-
-.. code-block:: python
+Once the plugin has been imported, it can be used::
 
     from PIL import Image
     import SpamImagePlugin
@@ -168,9 +167,7 @@ The raw decoder
 The ``raw`` decoder is used to read uncompressed data from an image file. It
 can be used with most uncompressed file formats, such as PPM, BMP, uncompressed
 TIFF, and many others. To use the raw decoder with the
-:py:func:`PIL.Image.frombytes` function, use the following syntax:
-
-.. code-block:: python
+:py:func:`PIL.Image.frombytes` function, use the following syntax::
 
     image = Image.frombytes(
         mode, size, data, "raw",
@@ -280,9 +277,7 @@ decoder that can be used to read various packed formats into a floating point
 image memory.
 
 To use the bit decoder with the :py:func:`PIL.Image.frombytes` function, use
-the following syntax:
-
-.. code-block:: python
+the following syntax::
 
     image = Image.frombytes(
         mode, size, data, "bit",

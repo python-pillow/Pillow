@@ -242,7 +242,9 @@ def _find_include_dir(self, dirname, include):
             return subdir
 
 
-def _cmd_exists(cmd):
+def _cmd_exists(cmd: str) -> bool:
+    if "PATH" not in os.environ:
+        return False
     return any(
         os.access(os.path.join(path, cmd), os.X_OK)
         for path in os.environ["PATH"].split(os.pathsep)
@@ -263,18 +265,18 @@ def _pkg_config(name):
             if not DEBUG:
                 command_libs.append("--silence-errors")
                 command_cflags.append("--silence-errors")
-            libs = (
+            libs = re.split(
+                r"(^|\s+)-L",
                 subprocess.check_output(command_libs, stderr=stderr)
                 .decode("utf8")
-                .strip()
-                .replace("-L", "")
-            )
-            cflags = (
-                subprocess.check_output(command_cflags)
+                .strip(),
+            )[::2][1:]
+            cflags = re.split(
+                r"(^|\s+)-I",
+                subprocess.check_output(command_cflags, stderr=stderr)
                 .decode("utf8")
-                .strip()
-                .replace("-I", "")
-            )
+                .strip(),
+            )[::2][1:]
             return libs, cflags
         except Exception:
             pass
@@ -362,15 +364,15 @@ class pil_build_ext(build_ext):
                 self.feature.required.discard(x)
                 _dbg("Disabling %s", x)
                 if getattr(self, f"enable_{x}"):
-                    raise ValueError(
-                        f"Conflicting options: --enable-{x} and --disable-{x}"
-                    )
+                    msg = f"Conflicting options: --enable-{x} and --disable-{x}"
+                    raise ValueError(msg)
                 if x == "freetype":
                     _dbg("--disable-freetype implies --disable-raqm")
                     if getattr(self, "enable_raqm"):
-                        raise ValueError(
+                        msg = (
                             "Conflicting options: --enable-raqm and --disable-freetype"
                         )
+                        raise ValueError(msg)
                     setattr(self, "disable_raqm", True)
             if getattr(self, f"enable_{x}"):
                 _dbg("Requiring %s", x)
@@ -381,13 +383,11 @@ class pil_build_ext(build_ext):
         for x in ("raqm", "fribidi"):
             if getattr(self, f"vendor_{x}"):
                 if getattr(self, "disable_raqm"):
-                    raise ValueError(
-                        f"Conflicting options: --vendor-{x} and --disable-raqm"
-                    )
+                    msg = f"Conflicting options: --vendor-{x} and --disable-raqm"
+                    raise ValueError(msg)
                 if x == "fribidi" and not getattr(self, "vendor_raqm"):
-                    raise ValueError(
-                        f"Conflicting options: --vendor-{x} and not --vendor-raqm"
-                    )
+                    msg = f"Conflicting options: --vendor-{x} and not --vendor-raqm"
+                    raise ValueError(msg)
                 _dbg("Using vendored version of %s", x)
                 self.feature.vendor.add(x)
 
@@ -432,7 +432,6 @@ class pil_build_ext(build_ext):
         return sdk_path
 
     def build_extensions(self):
-
         library_dirs = []
         include_dirs = []
 
@@ -475,8 +474,12 @@ class pil_build_ext(build_ext):
             else:
                 lib_root = include_root = root
 
-            _add_directory(library_dirs, lib_root)
-            _add_directory(include_dirs, include_root)
+            if lib_root is not None:
+                for lib_dir in lib_root:
+                    _add_directory(library_dirs, lib_dir)
+            if include_root is not None:
+                for include_dir in include_root:
+                    _add_directory(include_dirs, include_dir)
 
         # respect CFLAGS/CPPFLAGS/LDFLAGS
         for k in ("CFLAGS", "CPPFLAGS", "LDFLAGS"):
@@ -569,9 +572,7 @@ class pil_build_ext(build_ext):
         ):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
-            if sys.platform.startswith("linux") and os.environ.get(
-                "ANDROID_ROOT", None
-            ):
+            if sys.platform.startswith("linux") and os.environ.get("ANDROID_ROOT"):
                 # termux support for android.
                 # system libraries (zlib) are installed in /system/lib
                 # headers are at $PREFIX/include
@@ -915,7 +916,6 @@ class pil_build_ext(build_ext):
         self.summary_report(feature)
 
     def summary_report(self, feature):
-
         print("-" * 68)
         print("PIL SETUP SUMMARY")
         print("-" * 68)

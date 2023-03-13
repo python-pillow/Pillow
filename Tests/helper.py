@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 HAS_UPLOADER = False
 
-if os.environ.get("SHOW_ERRORS", None):
+if os.environ.get("SHOW_ERRORS"):
     # local img.show for errors.
     HAS_UPLOADER = True
 
@@ -271,7 +271,7 @@ def netpbm_available():
 
 def magick_command():
     if sys.platform == "win32":
-        magickhome = os.environ.get("MAGICK_HOME", "")
+        magickhome = os.environ.get("MAGICK_HOME")
         if magickhome:
             imagemagick = [os.path.join(magickhome, "convert.exe")]
             graphicsmagick = [os.path.join(magickhome, "gm.exe"), "convert"]

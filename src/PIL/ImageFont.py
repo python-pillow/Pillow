@@ -50,13 +50,15 @@ def __getattr__(name):
             if name in enum.__members__:
                 deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
 
 
 class _ImagingFtNotInstalled:
     # module placeholder
     def __getattr__(self, id):
-        raise ImportError("The _imagingft C module is not installed")
+        msg = "The _imagingft C module is not installed"
+        raise ImportError(msg)
 
 
 try:
@@ -88,7 +90,6 @@ class ImageFont:
     """PIL font wrapper"""
 
     def _load_pilfont(self, filename):
-
         with open(filename, "rb") as fp:
             image = None
             for ext in (".png", ".gif", ".pbm"):
@@ -105,7 +106,8 @@ class ImageFont:
             else:
                 if image:
                     image.close()
-                raise OSError("cannot find glyph data file")
+                msg = "cannot find glyph data file"
+                raise OSError(msg)
 
             self.file = fullname
 
@@ -113,10 +115,10 @@ class ImageFont:
             image.close()
 
     def _load_pilfont_data(self, file, image):
-
         # read PILfont header
         if file.readline() != b"PILfont\n":
-            raise SyntaxError("Not a PILfont file")
+            msg = "Not a PILfont file"
+            raise SyntaxError(msg)
         file.readline().split(b";")
         self.info = []  # FIXME: should be a dictionary
         while True:
@@ -130,7 +132,8 @@ class ImageFont:
 
         # check image
         if image.mode not in ("1", "L"):
-            raise TypeError("invalid font image mode")
+            msg = "invalid font image mode"
+            raise TypeError(msg)
 
         image.load()
 
@@ -294,27 +297,21 @@ class FreeTypeFont:
         string due to kerning. If you need to adjust for kerning, include the following
         character and subtract its length.
 
-        For example, instead of
-
-        .. code-block:: python
+        For example, instead of ::
 
           hello = font.getlength("Hello")
           world = font.getlength("World")
           hello_world = hello + world  # not adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # may fail
 
-        use
-
-        .. code-block:: python
+        use ::
 
           hello = font.getlength("HelloW") - font.getlength("W")  # adjusted for kerning
           world = font.getlength("World")
           hello_world = hello + world  # adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # True
 
-        or disable kerning with (requires libraqm)
-
-        .. code-block:: python
+        or disable kerning with (requires libraqm) ::
 
           hello = draw.textlength("Hello", font, features=["-kern"])
           world = draw.textlength("World", font, features=["-kern"])
@@ -817,7 +814,8 @@ class FreeTypeFont:
         try:
             names = self.font.getvarnames()
         except AttributeError as e:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+            msg = "FreeType 2.9.1 or greater is required"
+            raise NotImplementedError(msg) from e
         return [name.replace(b"\x00", b"") for name in names]
 
     def set_variation_by_name(self, name):
@@ -847,7 +845,8 @@ class FreeTypeFont:
         try:
             axes = self.font.getvaraxes()
         except AttributeError as e:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+            msg = "FreeType 2.9.1 or greater is required"
+            raise NotImplementedError(msg) from e
         for axis in axes:
             axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
@@ -860,7 +859,8 @@ class FreeTypeFont:
         try:
             self.font.setvaraxes(axes)
         except AttributeError as e:
-            raise NotImplementedError("FreeType 2.9.1 or greater is required") from e
+            msg = "FreeType 2.9.1 or greater is required"
+            raise NotImplementedError(msg) from e
 
 
 class TransposedFont:
@@ -914,9 +914,8 @@ class TransposedFont:
 
     def getlength(self, text, *args, **kwargs):
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
-            raise ValueError(
-                "text length is undefined for text rotated by 90 or 270 degrees"
-            )
+            msg = "text length is undefined for text rotated by 90 or 270 degrees"
+            raise ValueError(msg)
         return self.font.getlength(text, *args, **kwargs)
 
 
@@ -1013,7 +1012,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            lindirs = os.environ.get("XDG_DATA_DIRS")
             if not lindirs:
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share
@@ -1061,7 +1060,8 @@ def load_path(filename):
                 return load(os.path.join(directory, filename))
             except OSError:
                 pass
-    raise OSError("cannot find font file")
+    msg = "cannot find font file"
+    raise OSError(msg)
 
 
 def load_default():

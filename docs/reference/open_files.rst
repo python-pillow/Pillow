@@ -61,9 +61,7 @@ Image Lifecycle
 * ``Image.Image.close()`` Closes the file and destroys the core image object.
 
   The Pillow context manager will also close the file, but will not destroy
-  the core image object. e.g.:
-
-.. code-block:: python
+  the core image object. e.g.::
 
     with Image.open("test.jpg") as img:
         img.load()

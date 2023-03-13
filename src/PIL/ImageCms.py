@@ -124,7 +124,8 @@ def __getattr__(name):
             if name in enum.__members__:
                 deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
 
 
 #
@@ -191,7 +192,8 @@ class ImageCmsProfile:
         elif isinstance(profile, _imagingcms.CmsProfile):
             self._set(profile)
         else:
-            raise TypeError("Invalid type for Profile")
+            msg = "Invalid type for Profile"
+            raise TypeError(msg)
 
     def _set(self, profile, filename=None):
         self.profile = profile
@@ -269,7 +271,8 @@ class ImageCmsTransform(Image.ImagePointHandler):
     def apply_in_place(self, im):
         im.load()
         if im.mode != self.output_mode:
-            raise ValueError("mode mismatch")  # wrong output mode
+            msg = "mode mismatch"
+            raise ValueError(msg)  # wrong output mode
         self.transform.apply(im.im.id, im.im.id)
         im.info["icc_profile"] = self.output_profile.tobytes()
         return im
@@ -374,10 +377,12 @@ def profileToProfile(
         outputMode = im.mode
 
     if not isinstance(renderingIntent, int) or not (0 <= renderingIntent <= 3):
-        raise PyCMSError("renderingIntent must be an integer between 0 and 3")
+        msg = "renderingIntent must be an integer between 0 and 3"
+        raise PyCMSError(msg)
 
     if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
-        raise PyCMSError(f"flags must be an integer between 0 and {_MAX_FLAG}")
+        msg = f"flags must be an integer between 0 and {_MAX_FLAG}"
+        raise PyCMSError(msg)
 
     try:
         if not isinstance(inputProfile, ImageCmsProfile):
@@ -489,10 +494,12 @@ def buildTransform(
     """
 
     if not isinstance(renderingIntent, int) or not (0 <= renderingIntent <= 3):
-        raise PyCMSError("renderingIntent must be an integer between 0 and 3")
+        msg = "renderingIntent must be an integer between 0 and 3"
+        raise PyCMSError(msg)
 
     if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
-        raise PyCMSError("flags must be an integer between 0 and %s" + _MAX_FLAG)
+        msg = "flags must be an integer between 0 and %s" + _MAX_FLAG
+        raise PyCMSError(msg)
 
     try:
         if not isinstance(inputProfile, ImageCmsProfile):
@@ -591,10 +598,12 @@ def buildProofTransform(
     """
 
     if not isinstance(renderingIntent, int) or not (0 <= renderingIntent <= 3):
-        raise PyCMSError("renderingIntent must be an integer between 0 and 3")
+        msg = "renderingIntent must be an integer between 0 and 3"
+        raise PyCMSError(msg)
 
     if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
-        raise PyCMSError("flags must be an integer between 0 and %s" + _MAX_FLAG)
+        msg = "flags must be an integer between 0 and %s" + _MAX_FLAG
+        raise PyCMSError(msg)
 
     try:
         if not isinstance(inputProfile, ImageCmsProfile):
@@ -705,17 +714,17 @@ def createProfile(colorSpace, colorTemp=-1):
     """
 
     if colorSpace not in ["LAB", "XYZ", "sRGB"]:
-        raise PyCMSError(
+        msg = (
             f"Color space not supported for on-the-fly profile creation ({colorSpace})"
         )
+        raise PyCMSError(msg)
 
     if colorSpace == "LAB":
         try:
             colorTemp = float(colorTemp)
         except (TypeError, ValueError) as e:
-            raise PyCMSError(
-                f'Color temperature must be numeric, "{colorTemp}" not valid'
-            ) from e
+            msg = f'Color temperature must be numeric, "{colorTemp}" not valid'
+            raise PyCMSError(msg) from e
 
     try:
         return core.createProfile(colorSpace, colorTemp)

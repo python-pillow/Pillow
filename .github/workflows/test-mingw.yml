@@ -1,11 +1,20 @@
 name: Test MinGW
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -45,12 +54,6 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -S --noconfirm \
-              ${{ matrix.package }}-python3-cffi \
-              ${{ matrix.package }}-python3-numpy \
-              ${{ matrix.package }}-python3-olefile \
-              ${{ matrix.package }}-python3-pip \
-              ${{ matrix.package }}-python-pyqt6 \
-              ${{ matrix.package }}-python3-setuptools \
               ${{ matrix.package }}-freetype \
               ${{ matrix.package }}-gcc \
               ${{ matrix.package }}-ghostscript \
@@ -61,7 +64,16 @@ jobs:
               ${{ matrix.package }}-libtiff \
               ${{ matrix.package }}-libwebp \
               ${{ matrix.package }}-openjpeg2 \
-              subversion
+              ${{ matrix.package }}-python3-cffi \
+              ${{ matrix.package }}-python3-numpy \
+              ${{ matrix.package }}-python3-olefile \
+              ${{ matrix.package }}-python3-pip \
+              ${{ matrix.package }}-python3-setuptools
+
+          if [ ${{ matrix.package }} == "mingw-w64-x86_64" ]; then
+              pacman -S --noconfirm \
+                  ${{ matrix.package }}-python-pyqt6
+          fi
 
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 

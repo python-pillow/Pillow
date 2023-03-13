@@ -33,20 +33,20 @@ def _accept(prefix):
 
 
 class XpmImageFile(ImageFile.ImageFile):
-
     format = "XPM"
     format_description = "X11 Pixel Map"
 
     def _open(self):
-
         if not _accept(self.fp.read(9)):
-            raise SyntaxError("not an XPM file")
+            msg = "not an XPM file"
+            raise SyntaxError(msg)
 
         # skip forward to next string
         while True:
             s = self.fp.readline()
             if not s:
-                raise SyntaxError("broken XPM file")
+                msg = "broken XPM file"
+                raise SyntaxError(msg)
             m = xpm_head.match(s)
             if m:
                 break
@@ -57,7 +57,8 @@ class XpmImageFile(ImageFile.ImageFile):
         bpp = int(m.group(4))
 
         if pal > 256 or bpp != 1:
-            raise ValueError("cannot read this XPM file")
+            msg = "cannot read this XPM file"
+            raise ValueError(msg)
 
         #
         # load palette description
@@ -65,7 +66,6 @@ class XpmImageFile(ImageFile.ImageFile):
         palette = [b"\0\0\0"] * 256
 
         for _ in range(pal):
-
             s = self.fp.readline()
             if s[-2:] == b"\r\n":
                 s = s[:-2]
@@ -76,9 +76,7 @@ class XpmImageFile(ImageFile.ImageFile):
             s = s[2:-2].split()
 
             for i in range(0, len(s), 2):
-
                 if s[i] == b"c":
-
                     # process colour key
                     rgb = s[i + 1]
                     if rgb == b"None":
@@ -91,13 +89,14 @@ class XpmImageFile(ImageFile.ImageFile):
                         )
                     else:
                         # unknown colour
-                        raise ValueError("cannot read this XPM file")
+                        msg = "cannot read this XPM file"
+                        raise ValueError(msg)
                     break
 
             else:
-
                 # missing colour key
-                raise ValueError("cannot read this XPM file")
+                msg = "cannot read this XPM file"
+                raise ValueError(msg)
 
         self.mode = "P"
         self.palette = ImagePalette.raw("RGB", b"".join(palette))
@@ -105,7 +104,6 @@ class XpmImageFile(ImageFile.ImageFile):
         self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))]
 
     def load_read(self, bytes):
-
         #
         # load all image data in one chunk
 

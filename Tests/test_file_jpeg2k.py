@@ -252,11 +252,24 @@ def test_mct():
             assert_image_similar(im, jp2, 1.0e-3)
 
 
+def test_sgnd(tmp_path):
+    outfile = str(tmp_path / "temp.jp2")
+
+    im = Image.new("L", (1, 1))
+    im.save(outfile)
+    with Image.open(outfile) as reloaded:
+        assert reloaded.getpixel((0, 0)) == 0
+
+    im = Image.new("L", (1, 1))
+    im.save(outfile, signed=True)
+    with Image.open(outfile) as reloaded_signed:
+        assert reloaded_signed.getpixel((0, 0)) == 128
+
+
 def test_rgba():
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
         with Image.open("Tests/images/rgb_trns_ycbc.jp2") as jp2:
-
             # Act
             j2k.load()
             jp2.load()

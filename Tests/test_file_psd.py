@@ -27,7 +27,8 @@ def test_unclosed_file():
         im = Image.open(test_file)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():
@@ -77,7 +78,6 @@ def test_eoferror():
 
 def test_seek_tell():
     with Image.open(test_file) as im:
-
         layer_number = im.tell()
         assert layer_number == 1
 
@@ -95,7 +95,6 @@ def test_seek_tell():
 
 def test_seek_eoferror():
     with Image.open(test_file) as im:
-
         with pytest.raises(EOFError):
             im.seek(-1)
 

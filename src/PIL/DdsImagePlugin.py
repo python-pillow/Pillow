@@ -114,13 +114,16 @@ class DdsImageFile(ImageFile.ImageFile):
 
     def _open(self):
         if not _accept(self.fp.read(4)):
-            raise SyntaxError("not a DDS file")
+            msg = "not a DDS file"
+            raise SyntaxError(msg)
         (header_size,) = struct.unpack("<I", self.fp.read(4))
         if header_size != 124:
-            raise OSError(f"Unsupported header size {repr(header_size)}")
+            msg = f"Unsupported header size {repr(header_size)}"
+            raise OSError(msg)
         header_bytes = self.fp.read(header_size - 4)
         if len(header_bytes) != 120:
-            raise OSError(f"Incomplete header: {len(header_bytes)} bytes")
+            msg = f"Incomplete header: {len(header_bytes)} bytes"
+            raise OSError(msg)
         header = BytesIO(header_bytes)
 
         flags, height, width = struct.unpack("<3I", header.read(12))
@@ -216,11 +219,11 @@ class DdsImageFile(ImageFile.ImageFile):
                         self.info["gamma"] = 1 / 2.2
                     return
                 else:
-                    raise NotImplementedError(
-                        f"Unimplemented DXGI format {dxgi_format}"
-                    )
+                    msg = f"Unimplemented DXGI format {dxgi_format}"
+                    raise NotImplementedError(msg)
             else:
-                raise NotImplementedError(f"Unimplemented pixel format {repr(fourcc)}")
+                msg = f"Unimplemented pixel format {repr(fourcc)}"
+                raise NotImplementedError(msg)
 
             self.tile = [
                 ("bcn", (0, 0) + self.size, data_start, (n, self.pixel_format))
@@ -232,7 +235,8 @@ class DdsImageFile(ImageFile.ImageFile):
 
 def _save(im, fp, filename):
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
-        raise OSError(f"cannot write mode {im.mode} as DDS")
+        msg = f"cannot write mode {im.mode} as DDS"
+        raise OSError(msg)
 
     rawmode = im.mode
     masks = [0xFF0000, 0xFF00, 0xFF]

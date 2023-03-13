@@ -48,7 +48,6 @@ def dump(c):
 
 
 class IptcImageFile(ImageFile.ImageFile):
-
     format = "IPTC"
     format_description = "IPTC/NAA"
 
@@ -66,12 +65,14 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # syntax
         if s[0] != 0x1C or tag[0] < 1 or tag[0] > 9:
-            raise SyntaxError("invalid IPTC/NAA file")
+            msg = "invalid IPTC/NAA file"
+            raise SyntaxError(msg)
 
         # field size
         size = s[3]
         if size > 132:
-            raise OSError("illegal field length in IPTC/NAA file")
+            msg = "illegal field length in IPTC/NAA file"
+            raise OSError(msg)
         elif size == 128:
             size = 0
         elif size > 128:
@@ -82,7 +83,6 @@ class IptcImageFile(ImageFile.ImageFile):
         return tag, size
 
     def _open(self):
-
         # load descriptive fields
         while True:
             offset = self.fp.tell()
@@ -122,7 +122,8 @@ class IptcImageFile(ImageFile.ImageFile):
         try:
             compression = COMPRESSION[self.getint((3, 120))]
         except KeyError as e:
-            raise OSError("Unknown IPTC image compression") from e
+            msg = "Unknown IPTC image compression"
+            raise OSError(msg) from e
 
         # tile
         if tag == (8, 10):
@@ -131,7 +132,6 @@ class IptcImageFile(ImageFile.ImageFile):
             ]
 
     def load(self):
-
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
             return ImageFile.ImageFile.load(self)
 

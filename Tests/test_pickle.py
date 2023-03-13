@@ -89,7 +89,6 @@ def test_pickle_la_mode_with_palette(tmp_path):
 def test_pickle_tell():
     # Arrange
     with Image.open("Tests/images/hopper.webp") as image:
-
         # Act: roundtrip
         unpickled_image = pickle.loads(pickle.dumps(image))
 

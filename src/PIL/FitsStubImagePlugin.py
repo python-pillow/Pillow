@@ -44,7 +44,6 @@ def register_handler(handler):
 
 
 class FITSStubImageFile(ImageFile.StubImageFile):
-
     format = FitsImagePlugin.FitsImageFile.format
     format_description = FitsImagePlugin.FitsImageFile.format_description
 
@@ -67,7 +66,8 @@ class FITSStubImageFile(ImageFile.StubImageFile):
 
 
 def _save(im, fp, filename):
-    raise OSError("FITS save handler not installed")
+    msg = "FITS save handler not installed"
+    raise OSError(msg)
 
 
 # --------------------------------------------------------------------

@@ -64,9 +64,13 @@ $bmp = New-Object Drawing.Bitmap 200, 200
             )
             p.communicate()
         else:
-            with pytest.raises(NotImplementedError) as e:
-                ImageGrab.grabclipboard()
-            assert str(e.value) == "ImageGrab.grabclipboard() is macOS and Windows only"
+            if not shutil.which("wl-paste") and not shutil.which("xclip"):
+                with pytest.raises(
+                    NotImplementedError,
+                    match="wl-paste or xclip is required for"
+                    r" ImageGrab.grabclipboard\(\) on Linux",
+                ):
+                    ImageGrab.grabclipboard()
             return
 
         ImageGrab.grabclipboard()

@@ -6,7 +6,7 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore", category=DeprecationWarning)
     from PIL import ImageQt
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import QPixmap
@@ -48,7 +48,7 @@ if ImageQt.qt_is_installed:
 def roundtrip(expected):
     result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))
     # Qt saves all pixmaps as rgb
-    assert_image_equal(result, expected.convert("RGB"))
+    assert_image_similar(result, expected.convert("RGB"), 1)
 
 
 @pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")

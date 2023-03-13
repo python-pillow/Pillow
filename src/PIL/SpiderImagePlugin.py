@@ -91,7 +91,6 @@ def isSpiderImage(filename):
 
 
 class SpiderImageFile(ImageFile.ImageFile):
-
     format = "SPIDER"
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
@@ -110,14 +109,17 @@ class SpiderImageFile(ImageFile.ImageFile):
                 t = struct.unpack("<27f", f)  # little-endian
                 hdrlen = isSpiderHeader(t)
             if hdrlen == 0:
-                raise SyntaxError("not a valid Spider file")
+                msg = "not a valid Spider file"
+                raise SyntaxError(msg)
         except struct.error as e:
-            raise SyntaxError("not a valid Spider file") from e
+            msg = "not a valid Spider file"
+            raise SyntaxError(msg) from e
 
         h = (99,) + t  # add 1 value : spider header index starts at 1
         iform = int(h[5])
         if iform != 1:
-            raise SyntaxError("not a Spider 2D image")
+            msg = "not a Spider 2D image"
+            raise SyntaxError(msg)
 
         self._size = int(h[12]), int(h[2])  # size in pixels (width, height)
         self.istack = int(h[24])
@@ -140,7 +142,8 @@ class SpiderImageFile(ImageFile.ImageFile):
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
-            raise SyntaxError("inconsistent stack header values")
+            msg = "inconsistent stack header values"
+            raise SyntaxError(msg)
 
         if self.bigendian:
             self.rawmode = "F;32BF"
@@ -168,7 +171,8 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     def seek(self, frame):
         if self.istack == 0:
-            raise EOFError("attempt to seek in a non-stack file")
+            msg = "attempt to seek in a non-stack file"
+            raise EOFError(msg)
         if not self._seek_check(frame):
             return
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
@@ -194,6 +198,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
 # --------------------------------------------------------------------
 # Image series
+
 
 # given a list of filenames, return a list of images
 def loadImageSeries(filelist=None):
@@ -260,7 +265,8 @@ def _save(im, fp, filename):
 
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:
-        raise OSError("Error creating Spider header")
+        msg = "Error creating Spider header"
+        raise OSError(msg)
 
     # write the SPIDER header
     fp.writelines(hdr)
@@ -283,7 +289,6 @@ Image.register_open(SpiderImageFile.format, SpiderImageFile)
 Image.register_save(SpiderImageFile.format, _save_spider)
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 2:
         print("Syntax: python3 SpiderImagePlugin.py [infile] [outfile]")
         sys.exit()

@@ -69,7 +69,8 @@ class ImageDraw:
             if mode == "RGBA" and im.mode == "RGB":
                 blend = 1
             else:
-                raise ValueError("mode mismatch")
+                msg = "mode mismatch"
+                raise ValueError(msg)
         if mode == "P":
             self.palette = im.palette
         else:
@@ -294,29 +295,43 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
-    def rounded_rectangle(self, xy, radius=0, fill=None, outline=None, width=1):
+    def rounded_rectangle(
+        self, xy, radius=0, fill=None, outline=None, width=1, *, corners=None
+    ):
         """Draw a rounded rectangle."""
         if isinstance(xy[0], (list, tuple)):
             (x0, y0), (x1, y1) = xy
         else:
             x0, y0, x1, y1 = xy
+        if x1 < x0:
+            msg = "x1 must be greater than or equal to x0"
+            raise ValueError(msg)
+        if y1 < y0:
+            msg = "y1 must be greater than or equal to y0"
+            raise ValueError(msg)
+        if corners is None:
+            corners = (True, True, True, True)
 
         d = radius * 2
 
-        full_x = d >= x1 - x0
-        if full_x:
-            # The two left and two right corners are joined
-            d = x1 - x0
-        full_y = d >= y1 - y0
-        if full_y:
-            # The two top and two bottom corners are joined
-            d = y1 - y0
-        if full_x and full_y:
-            # If all corners are joined, that is a circle
-            return self.ellipse(xy, fill, outline, width)
+        full_x, full_y = False, False
+        if all(corners):
+            full_x = d >= x1 - x0
+            if full_x:
+                # The two left and two right corners are joined
+                d = x1 - x0
+            full_y = d >= y1 - y0
+            if full_y:
+                # The two top and two bottom corners are joined
+                d = y1 - y0
+            if full_x and full_y:
+                # If all corners are joined, that is a circle
+                return self.ellipse(xy, fill, outline, width)
 
-        if d == 0:
-            # If the corners have no curve, that is a rectangle
+        if d == 0 or not any(corners):
+            # If the corners have no curve,
+            # or there are no corners,
+            # that is a rectangle
             return self.rectangle(xy, fill, outline, width)
 
         r = d // 2
@@ -337,12 +352,17 @@ class ImageDraw:
                 )
             else:
                 # Draw four separate corners
-                parts = (
-                    ((x1 - d, y0, x1, y0 + d), 270, 360),
-                    ((x1 - d, y1 - d, x1, y1), 0, 90),
-                    ((x0, y1 - d, x0 + d, y1), 90, 180),
-                    ((x0, y0, x0 + d, y0 + d), 180, 270),
-                )
+                parts = []
+                for i, part in enumerate(
+                    (
+                        ((x0, y0, x0 + d, y0 + d), 180, 270),
+                        ((x1 - d, y0, x1, y0 + d), 270, 360),
+                        ((x1 - d, y1 - d, x1, y1), 0, 90),
+                        ((x0, y1 - d, x0 + d, y1), 90, 180),
+                    )
+                ):
+                    if corners[i]:
+                        parts.append(part)
             for part in parts:
                 if pieslice:
                     self.draw.draw_pieslice(*(part + (fill, 1)))
@@ -357,25 +377,50 @@ class ImageDraw:
             else:
                 self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill, 1)
             if not full_x and not full_y:
-                self.draw.draw_rectangle((x0, y0 + r + 1, x0 + r, y1 - r - 1), fill, 1)
-                self.draw.draw_rectangle((x1 - r, y0 + r + 1, x1, y1 - r - 1), fill, 1)
+                left = [x0, y0, x0 + r, y1]
+                if corners[0]:
+                    left[1] += r + 1
+                if corners[3]:
+                    left[3] -= r + 1
+                self.draw.draw_rectangle(left, fill, 1)
+
+                right = [x1 - r, y0, x1, y1]
+                if corners[1]:
+                    right[1] += r + 1
+                if corners[2]:
+                    right[3] -= r + 1
+                self.draw.draw_rectangle(right, fill, 1)
         if ink is not None and ink != fill and width != 0:
             draw_corners(False)
 
             if not full_x:
-                self.draw.draw_rectangle(
-                    (x0 + r + 1, y0, x1 - r - 1, y0 + width - 1), ink, 1
-                )
-                self.draw.draw_rectangle(
-                    (x0 + r + 1, y1 - width + 1, x1 - r - 1, y1), ink, 1
-                )
+                top = [x0, y0, x1, y0 + width - 1]
+                if corners[0]:
+                    top[0] += r + 1
+                if corners[1]:
+                    top[2] -= r + 1
+                self.draw.draw_rectangle(top, ink, 1)
+
+                bottom = [x0, y1 - width + 1, x1, y1]
+                if corners[3]:
+                    bottom[0] += r + 1
+                if corners[2]:
+                    bottom[2] -= r + 1
+                self.draw.draw_rectangle(bottom, ink, 1)
             if not full_y:
-                self.draw.draw_rectangle(
-                    (x0, y0 + r + 1, x0 + width - 1, y1 - r - 1), ink, 1
-                )
-                self.draw.draw_rectangle(
-                    (x1 - width + 1, y0 + r + 1, x1, y1 - r - 1), ink, 1
-                )
+                left = [x0, y0, x0 + width - 1, y1]
+                if corners[0]:
+                    left[1] += r + 1
+                if corners[3]:
+                    left[3] -= r + 1
+                self.draw.draw_rectangle(left, ink, 1)
+
+                right = [x1 - width + 1, y0, x1, y1]
+                if corners[1]:
+                    right[1] += r + 1
+                if corners[2]:
+                    right[3] -= r + 1
+                self.draw.draw_rectangle(right, ink, 1)
 
     def _multiline_check(self, text):
         """Draw text."""
@@ -437,7 +482,8 @@ class ImageDraw:
             )
 
         if embedded_color and self.mode not in ("RGB", "RGBA"):
-            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+            msg = "Embedded color supported only in RGB and RGBA modes"
+            raise ValueError(msg)
 
         if font is None:
             font = self.getfont()
@@ -534,14 +580,17 @@ class ImageDraw:
         embedded_color=False,
     ):
         if direction == "ttb":
-            raise ValueError("ttb direction is unsupported for multiline text")
+            msg = "ttb direction is unsupported for multiline text"
+            raise ValueError(msg)
 
         if anchor is None:
             anchor = "la"
         elif len(anchor) != 2:
-            raise ValueError("anchor must be a 2 character string")
+            msg = "anchor must be a 2 character string"
+            raise ValueError(msg)
         elif anchor[1] in "tb":
-            raise ValueError("anchor not supported for multiline text")
+            msg = "anchor not supported for multiline text"
+            raise ValueError(msg)
 
         widths = []
         max_width = 0
@@ -578,7 +627,8 @@ class ImageDraw:
             elif align == "right":
                 left += width_difference
             else:
-                raise ValueError('align must be "left", "center" or "right"')
+                msg = 'align must be "left", "center" or "right"'
+                raise ValueError(msg)
 
             self.text(
                 (left, top),
@@ -672,9 +722,11 @@ class ImageDraw:
     ):
         """Get the length of a given string, in pixels with 1/64 precision."""
         if self._multiline_check(text):
-            raise ValueError("can't measure length of multiline text")
+            msg = "can't measure length of multiline text"
+            raise ValueError(msg)
         if embedded_color and self.mode not in ("RGB", "RGBA"):
-            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+            msg = "Embedded color supported only in RGB and RGBA modes"
+            raise ValueError(msg)
 
         if font is None:
             font = self.getfont()
@@ -712,7 +764,8 @@ class ImageDraw:
     ):
         """Get the bounding box of a given string, in pixels."""
         if embedded_color and self.mode not in ("RGB", "RGBA"):
-            raise ValueError("Embedded color supported only in RGB and RGBA modes")
+            msg = "Embedded color supported only in RGB and RGBA modes"
+            raise ValueError(msg)
 
         if self._multiline_check(text):
             return self.multiline_textbbox(
@@ -752,14 +805,17 @@ class ImageDraw:
         embedded_color=False,
     ):
         if direction == "ttb":
-            raise ValueError("ttb direction is unsupported for multiline text")
+            msg = "ttb direction is unsupported for multiline text"
+            raise ValueError(msg)
 
         if anchor is None:
             anchor = "la"
         elif len(anchor) != 2:
-            raise ValueError("anchor must be a 2 character string")
+            msg = "anchor must be a 2 character string"
+            raise ValueError(msg)
         elif anchor[1] in "tb":
-            raise ValueError("anchor not supported for multiline text")
+            msg = "anchor not supported for multiline text"
+            raise ValueError(msg)
 
         widths = []
         max_width = 0
@@ -803,7 +859,8 @@ class ImageDraw:
             elif align == "right":
                 left += width_difference
             else:
-                raise ValueError('align must be "left", "center" or "right"')
+                msg = 'align must be "left", "center" or "right"'
+                raise ValueError(msg)
 
             bbox_line = self.textbbox(
                 (left, top),
@@ -915,8 +972,8 @@ def floodfill(image, xy, value, border=None, thresh=0):
     full_edge = set()
     while edge:
         new_edge = set()
-        for (x, y) in edge:  # 4 adjacent method
-            for (s, t) in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+        for x, y in edge:  # 4 adjacent method
+            for s, t in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
                 # If already processed, or if a coordinate is negative, skip
                 if (s, t) in full_edge or s < 0 or t < 0:
                     continue
@@ -979,38 +1036,44 @@ def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
     # 1. Error Handling
     # 1.1 Check `n_sides` has an appropriate value
     if not isinstance(n_sides, int):
-        raise TypeError("n_sides should be an int")
+        msg = "n_sides should be an int"
+        raise TypeError(msg)
     if n_sides < 3:
-        raise ValueError("n_sides should be an int > 2")
+        msg = "n_sides should be an int > 2"
+        raise ValueError(msg)
 
     # 1.2 Check `bounding_circle` has an appropriate value
     if not isinstance(bounding_circle, (list, tuple)):
-        raise TypeError("bounding_circle should be a tuple")
+        msg = "bounding_circle should be a tuple"
+        raise TypeError(msg)
 
     if len(bounding_circle) == 3:
         *centroid, polygon_radius = bounding_circle
     elif len(bounding_circle) == 2:
         centroid, polygon_radius = bounding_circle
     else:
-        raise ValueError(
+        msg = (
             "bounding_circle should contain 2D coordinates "
             "and a radius (e.g. (x, y, r) or ((x, y), r) )"
         )
+        raise ValueError(msg)
 
     if not all(isinstance(i, (int, float)) for i in (*centroid, polygon_radius)):
-        raise ValueError("bounding_circle should only contain numeric data")
+        msg = "bounding_circle should only contain numeric data"
+        raise ValueError(msg)
 
     if not len(centroid) == 2:
-        raise ValueError(
-            "bounding_circle centre should contain 2D coordinates (e.g. (x, y))"
-        )
+        msg = "bounding_circle centre should contain 2D coordinates (e.g. (x, y))"
+        raise ValueError(msg)
 
     if polygon_radius <= 0:
-        raise ValueError("bounding_circle radius should be > 0")
+        msg = "bounding_circle radius should be > 0"
+        raise ValueError(msg)
 
     # 1.3 Check `rotation` has an appropriate value
     if not isinstance(rotation, (int, float)):
-        raise ValueError("rotation should be an int or float")
+        msg = "rotation should be an int or float"
+        raise ValueError(msg)
 
     # 2. Define Helper Functions
     def _apply_rotation(point, degrees, centroid):

@@ -132,22 +132,26 @@ class TestImageGetPixel(AccessTest):
             return 1
         return tuple(range(1, bands + 1))
 
-    def check(self, mode, c=None):
-        if not c:
-            c = self.color(mode)
+    def check(self, mode, expected_color=None):
+        if not expected_color:
+            expected_color = self.color(mode)
 
         # check putpixel
         im = Image.new(mode, (1, 1), None)
-        im.putpixel((0, 0), c)
-        assert (
-            im.getpixel((0, 0)) == c
-        ), f"put/getpixel roundtrip failed for mode {mode}, color {c}"
+        im.putpixel((0, 0), expected_color)
+        actual_color = im.getpixel((0, 0))
+        assert actual_color == expected_color, (
+            f"put/getpixel roundtrip failed for mode {mode}, "
+            f"expected {expected_color} got {actual_color}"
+        )
 
         # check putpixel negative index
-        im.putpixel((-1, -1), c)
-        assert (
-            im.getpixel((-1, -1)) == c
-        ), f"put/getpixel roundtrip negative index failed for mode {mode}, color {c}"
+        im.putpixel((-1, -1), expected_color)
+        actual_color = im.getpixel((-1, -1))
+        assert actual_color == expected_color, (
+            f"put/getpixel roundtrip negative index failed for mode {mode}, "
+            f"expected {expected_color} got {actual_color}"
+        )
 
         # Check 0
         im = Image.new(mode, (0, 0), None)
@@ -155,27 +159,32 @@ class TestImageGetPixel(AccessTest):
 
         error = ValueError if self._need_cffi_access else IndexError
         with pytest.raises(error):
-            im.putpixel((0, 0), c)
+            im.putpixel((0, 0), expected_color)
         with pytest.raises(error):
             im.getpixel((0, 0))
         # Check 0 negative index
         with pytest.raises(error):
-            im.putpixel((-1, -1), c)
+            im.putpixel((-1, -1), expected_color)
         with pytest.raises(error):
             im.getpixel((-1, -1))
 
         # check initial color
-        im = Image.new(mode, (1, 1), c)
-        assert (
-            im.getpixel((0, 0)) == c
-        ), f"initial color failed for mode {mode}, color {c} "
+        im = Image.new(mode, (1, 1), expected_color)
+        actual_color = im.getpixel((0, 0))
+        assert actual_color == expected_color, (
+            f"initial color failed for mode {mode}, "
+            f"expected {expected_color} got {actual_color}"
+        )
+
         # check initial color negative index
-        assert (
-            im.getpixel((-1, -1)) == c
-        ), f"initial color failed with negative index for mode {mode}, color {c} "
+        actual_color = im.getpixel((-1, -1))
+        assert actual_color == expected_color, (
+            f"initial color failed with negative index for mode {mode}, "
+            f"expected {expected_color} got {actual_color}"
+        )
 
         # Check 0
-        im = Image.new(mode, (0, 0), c)
+        im = Image.new(mode, (0, 0), expected_color)
         with pytest.raises(error):
             im.getpixel((0, 0))
         # Check 0 negative index
@@ -205,13 +214,13 @@ class TestImageGetPixel(AccessTest):
         self.check(mode)
 
     @pytest.mark.parametrize("mode", ("I;16", "I;16B"))
-    def test_signedness(self, mode):
+    @pytest.mark.parametrize(
+        "expected_color", (2**15 - 1, 2**15, 2**15 + 1, 2**16 - 1)
+    )
+    def test_signedness(self, mode, expected_color):
         # see https://github.com/python-pillow/Pillow/issues/452
         # pixelaccess is using signed int* instead of uint*
-        self.check(mode, 2**15 - 1)
-        self.check(mode, 2**15)
-        self.check(mode, 2**15 + 1)
-        self.check(mode, 2**16 - 1)
+        self.check(mode, expected_color)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     @pytest.mark.parametrize("color", ((255, 0, 0), (255, 0, 0, 255)))

@@ -30,23 +30,21 @@ field = re.compile(rb"([a-z]*) ([^ \r\n]*)")
 
 
 class ImtImageFile(ImageFile.ImageFile):
-
     format = "IMT"
     format_description = "IM Tools"
 
     def _open(self):
-
         # Quick rejection: if there's not a LF among the first
         # 100 bytes, this is (probably) not a text header.
 
         buffer = self.fp.read(100)
         if b"\n" not in buffer:
-            raise SyntaxError("not an IM file")
+            msg = "not an IM file"
+            raise SyntaxError(msg)
 
         xsize = ysize = 0
 
         while True:
-
             if buffer:
                 s = buffer[:1]
                 buffer = buffer[1:]
@@ -56,7 +54,6 @@ class ImtImageFile(ImageFile.ImageFile):
                 break
 
             if s == b"\x0C":
-
                 # image data begins
                 self.tile = [
                     (
@@ -70,7 +67,6 @@ class ImtImageFile(ImageFile.ImageFile):
                 break
 
             else:
-
                 # read key/value pair
                 if b"\n" not in buffer:
                     buffer += self.fp.read(100)

@@ -101,7 +101,6 @@ def _save_all(im, fp, filename):
 
 
 class MpoImageFile(JpegImagePlugin.JpegImageFile):
-
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False
@@ -143,7 +142,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.fp.seek(self.offset + 2)  # skip SOI marker
         segment = self.fp.read(2)
         if not segment:
-            raise ValueError("No data found for frame")
+            msg = "No data found for frame"
+            raise ValueError(msg)
         self._size = self._initial_size
         if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2

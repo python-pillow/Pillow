@@ -19,7 +19,6 @@ def _accept(prefix):
 
 
 class FitsImageFile(ImageFile.ImageFile):
-
     format = "FITS"
     format_description = "FITS"
 
@@ -28,20 +27,23 @@ class FitsImageFile(ImageFile.ImageFile):
         while True:
             header = self.fp.read(80)
             if not header:
-                raise OSError("Truncated FITS file")
+                msg = "Truncated FITS file"
+                raise OSError(msg)
             keyword = header[:8].strip()
             if keyword == b"END":
                 break
-            value = header[8:].strip()
+            value = header[8:].split(b"/")[0].strip()
             if value.startswith(b"="):
                 value = value[1:].strip()
             if not headers and (not _accept(keyword) or value != b"T"):
-                raise SyntaxError("Not a FITS file")
+                msg = "Not a FITS file"
+                raise SyntaxError(msg)
             headers[keyword] = value
 
         naxis = int(headers[b"NAXIS"])
         if naxis == 0:
-            raise ValueError("No image data")
+            msg = "No image data"
+            raise ValueError(msg)
         elif naxis == 1:
             self._size = 1, int(headers[b"NAXIS1"])
         else:

@@ -55,10 +55,11 @@ def test_mode_with_L_with_float():
     assert im.getpixel((0, 0)) == 2
 
 
-def test_mode_i():
+@pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B"))
+def test_mode_i(mode):
     src = hopper("L")
     data = list(src.getdata())
-    im = Image.new("I", src.size, 0)
+    im = Image.new(mode, src.size, 0)
     im.putdata(data, 2, 256)
 
     target = [2 * elt + 256 for elt in data]

@@ -251,6 +251,10 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
 static const char *must_be_sequence = "argument must be a sequence";
 static const char *must_be_two_coordinates =
     "coordinate list must contain exactly 2 coordinates";
+static const char *incorrectly_ordered_x_coordinate =
+    "x1 must be greater than or equal to x0";
+static const char *incorrectly_ordered_y_coordinate =
+    "y1 must be greater than or equal to y0";
 static const char *wrong_mode = "unrecognized image mode";
 static const char *wrong_raw_mode = "unrecognized raw mode";
 static const char *outside_image = "image index out of range";
@@ -1531,25 +1535,21 @@ if (PySequence_Check(op)) { \
                 PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
+            int endian = strncmp(image->mode, "I;16", 4) == 0 ? (strcmp(image->mode, "I;16B") == 0 ? 2 : 1) : 0;
             double value;
-            if (scale == 1.0 && offset == 0.0) {
-                /* Clipped data */
-                for (i = x = y = 0; i < n; i++) {
-                    set_value_to_item(seq, i);
-                    image->image8[y][x] = (UINT8)CLIP8(value);
-                    if (++x >= (int)image->xsize) {
-                        x = 0, y++;
-                    }
+            for (i = x = y = 0; i < n; i++) {
+                set_value_to_item(seq, i);
+                if (scale != 1.0 || offset != 0.0) {
+                    value = value * scale + offset;
                 }
-
-            } else {
-                /* Scaled and clipped data */
-                for (i = x = y = 0; i < n; i++) {
-                    set_value_to_item(seq, i);
-                    image->image8[y][x] = CLIP8(value * scale + offset);
-                    if (++x >= (int)image->xsize) {
-                        x = 0, y++;
-                    }
+                if (endian == 0) {
+                    image->image8[y][x] = (UINT8)CLIP8(value);
+                } else {
+                    image->image8[y][x * 2 + (endian == 2 ? 1 : 0)] = CLIP8((int)value % 256);
+                    image->image8[y][x * 2 + (endian == 2 ? 0 : 1)] = CLIP8((int)value >> 8);
+                }
+                if (++x >= (int)image->xsize) {
+                    x = 0, y++;
                 }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
@@ -2809,6 +2809,16 @@ _draw_arc(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawArc(
         self->image->image,
@@ -2890,6 +2900,16 @@ _draw_chord(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawChord(
         self->image->image,
@@ -2933,6 +2953,16 @@ _draw_ellipse(ImagingDrawObject *self, PyObject *args) {
     }
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
+        return NULL;
+    }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -3105,6 +3135,16 @@ _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawPieslice(
         self->image->image,
@@ -3198,6 +3238,16 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
     }
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
+        return NULL;
+    }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -3988,8 +4038,6 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args);
 extern PyObject *
-PyImaging_ListWindowsWin32(PyObject *self, PyObject *args);
-extern PyObject *
 PyImaging_EventLoopWin32(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_DrawWmf(PyObject *self, PyObject *args);
@@ -4073,7 +4121,6 @@ static PyMethodDef functions[] = {
     {"grabclipboard_win32", (PyCFunction)PyImaging_GrabClipboardWin32, METH_VARARGS},
     {"createwindow", (PyCFunction)PyImaging_CreateWindowWin32, METH_VARARGS},
     {"eventloop", (PyCFunction)PyImaging_EventLoopWin32, METH_VARARGS},
-    {"listwindows", (PyCFunction)PyImaging_ListWindowsWin32, METH_VARARGS},
     {"drawwmf", (PyCFunction)PyImaging_DrawWmf, METH_VARARGS},
 #endif
 #ifdef HAVE_XCB

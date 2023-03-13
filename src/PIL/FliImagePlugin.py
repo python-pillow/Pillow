@@ -40,17 +40,16 @@ def _accept(prefix):
 
 
 class FliImageFile(ImageFile.ImageFile):
-
     format = "FLI"
     format_description = "Autodesk FLI/FLC Animation"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # HEAD
         s = self.fp.read(128)
         if not (_accept(s) and s[20:22] == b"\x00\x00"):
-            raise SyntaxError("not an FLI/FLC file")
+            msg = "not an FLI/FLC file"
+            raise SyntaxError(msg)
 
         # frames
         self.n_frames = i16(s, 6)
@@ -141,7 +140,8 @@ class FliImageFile(ImageFile.ImageFile):
             self.load()
 
         if frame != self.__frame + 1:
-            raise ValueError(f"cannot seek to frame {frame}")
+            msg = f"cannot seek to frame {frame}"
+            raise ValueError(msg)
         self.__frame = frame
 
         # move to next frame

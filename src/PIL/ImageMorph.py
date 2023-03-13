@@ -81,7 +81,8 @@ class LutBuilder:
                 ],
             }
             if op_name not in known_patterns:
-                raise Exception("Unknown pattern " + op_name + "!")
+                msg = "Unknown pattern " + op_name + "!"
+                raise Exception(msg)
 
             self.patterns = known_patterns[op_name]
 
@@ -145,7 +146,8 @@ class LutBuilder:
         for p in self.patterns:
             m = re.search(r"(\w*):?\s*\((.+?)\)\s*->\s*(\d)", p.replace("\n", ""))
             if not m:
-                raise Exception('Syntax error in pattern "' + p + '"')
+                msg = 'Syntax error in pattern "' + p + '"'
+                raise Exception(msg)
             options = m.group(1)
             pattern = m.group(2)
             result = int(m.group(3))
@@ -193,10 +195,12 @@ class MorphOp:
         Returns a tuple of the number of changed pixels and the
         morphed image"""
         if self.lut is None:
-            raise Exception("No operator loaded")
+            msg = "No operator loaded"
+            raise Exception(msg)
 
         if image.mode != "L":
-            raise ValueError("Image mode must be L")
+            msg = "Image mode must be L"
+            raise ValueError(msg)
         outimage = Image.new(image.mode, image.size, None)
         count = _imagingmorph.apply(bytes(self.lut), image.im.id, outimage.im.id)
         return count, outimage
@@ -208,10 +212,12 @@ class MorphOp:
         Returns a list of tuples of (x,y) coordinates
         of all matching pixels. See :ref:`coordinate-system`."""
         if self.lut is None:
-            raise Exception("No operator loaded")
+            msg = "No operator loaded"
+            raise Exception(msg)
 
         if image.mode != "L":
-            raise ValueError("Image mode must be L")
+            msg = "Image mode must be L"
+            raise ValueError(msg)
         return _imagingmorph.match(bytes(self.lut), image.im.id)
 
     def get_on_pixels(self, image):
@@ -221,7 +227,8 @@ class MorphOp:
         of all matching pixels. See :ref:`coordinate-system`."""
 
         if image.mode != "L":
-            raise ValueError("Image mode must be L")
+            msg = "Image mode must be L"
+            raise ValueError(msg)
         return _imagingmorph.get_on_pixels(image.im.id)
 
     def load_lut(self, filename):
@@ -231,12 +238,14 @@ class MorphOp:
 
         if len(self.lut) != LUT_SIZE:
             self.lut = None
-            raise Exception("Wrong size operator file!")
+            msg = "Wrong size operator file!"
+            raise Exception(msg)
 
     def save_lut(self, filename):
         """Save an operator to an mrl file"""
         if self.lut is None:
-            raise Exception("No operator loaded")
+            msg = "No operator loaded"
+            raise Exception(msg)
         with open(filename, "wb") as f:
             f.write(self.lut)
 

@@ -35,7 +35,6 @@ def _accept(prefix):
 
 
 class WebPImageFile(ImageFile.ImageFile):
-
     format = "WEBP"
     format_description = "WebP image"
     __loaded = 0
@@ -130,7 +129,8 @@ class WebPImageFile(ImageFile.ImageFile):
         if ret is None:
             self._reset()  # Reset just to be safe
             self.seek(0)
-            raise EOFError("failed to decode next frame in WebP file")
+            msg = "failed to decode next frame in WebP file"
+            raise EOFError(msg)
 
         # Compute duration
         data, timestamp = ret
@@ -233,9 +233,8 @@ def _save_all(im, fp, filename):
         or len(background) != 4
         or not all(0 <= v < 256 for v in background)
     ):
-        raise OSError(
-            f"Background color is not an RGBA tuple clamped to (0-255): {background}"
-        )
+        msg = f"Background color is not an RGBA tuple clamped to (0-255): {background}"
+        raise OSError(msg)
 
     # Convert to packed uint
     bg_r, bg_g, bg_b, bg_a = background
@@ -311,7 +310,8 @@ def _save_all(im, fp, filename):
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
     if data is None:
-        raise OSError("cannot write file as WebP (encoder returned None)")
+        msg = "cannot write file as WebP (encoder returned None)"
+        raise OSError(msg)
 
     fp.write(data)
 
@@ -351,7 +351,8 @@ def _save(im, fp, filename):
         xmp,
     )
     if data is None:
-        raise OSError("cannot write file as WebP (encoder returned None)")
+        msg = "cannot write file as WebP (encoder returned None)"
+        raise OSError(msg)
 
     fp.write(data)
 

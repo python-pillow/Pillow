@@ -46,12 +46,10 @@ MODES = {
 
 
 class TgaImageFile(ImageFile.ImageFile):
-
     format = "TGA"
     format_description = "Targa"
 
     def _open(self):
-
         # process header
         s = self.fp.read(18)
 
@@ -73,7 +71,8 @@ class TgaImageFile(ImageFile.ImageFile):
             or self.size[1] <= 0
             or depth not in (1, 8, 16, 24, 32)
         ):
-            raise SyntaxError("not a TGA file")
+            msg = "not a TGA file"
+            raise SyntaxError(msg)
 
         # image mode
         if imagetype in (3, 11):
@@ -89,7 +88,8 @@ class TgaImageFile(ImageFile.ImageFile):
             if depth == 32:
                 self.mode = "RGBA"
         else:
-            raise SyntaxError("unknown TGA mode")
+            msg = "unknown TGA mode"
+            raise SyntaxError(msg)
 
         # orientation
         orientation = flags & 0x30
@@ -99,7 +99,8 @@ class TgaImageFile(ImageFile.ImageFile):
         elif orientation in [0, 0x10]:
             orientation = -1
         else:
-            raise SyntaxError("unknown TGA orientation")
+            msg = "unknown TGA orientation"
+            raise SyntaxError(msg)
 
         self.info["orientation"] = orientation
 
@@ -171,11 +172,11 @@ SAVE = {
 
 
 def _save(im, fp, filename):
-
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:
-        raise OSError(f"cannot write mode {im.mode} as TGA") from e
+        msg = f"cannot write mode {im.mode} as TGA"
+        raise OSError(msg) from e
 
     if "rle" in im.encoderinfo:
         rle = im.encoderinfo["rle"]

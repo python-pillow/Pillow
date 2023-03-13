@@ -78,7 +78,6 @@ class TestFilePng:
         return chunks
 
     def test_sanity(self, tmp_path):
-
         # internal version number
         assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", features.version_codec("zlib"))
 
@@ -156,7 +155,6 @@ class TestFilePng:
         assert im.info == {"spam": "egg"}
 
     def test_bad_itxt(self):
-
         im = load(HEAD + chunk(b"iTXt") + TAIL)
         assert im.info == {}
 
@@ -201,7 +199,6 @@ class TestFilePng:
         assert im.info["spam"].tkey == "Spam"
 
     def test_interlace(self):
-
         test_file = "Tests/images/pil123p.png"
         with Image.open(test_file) as im:
             assert_image(im, "P", (162, 150))
@@ -495,7 +492,6 @@ class TestFilePng:
         # Check reading images with null tRNS value, issue #1239
         test_file = "Tests/images/tRNS_null_1x1.png"
         with Image.open(test_file) as im:
-
             assert im.info["transparency"] == 0
 
     def test_save_icc_profile(self):
@@ -593,7 +589,7 @@ class TestFilePng:
 
     def test_textual_chunks_after_idat(self):
         with Image.open("Tests/images/hopper.png") as im:
-            assert "comment" in im.text.keys()
+            assert "comment" in im.text
             for k, v in {
                 "date:create": "2014-09-04T09:37:08+03:00",
                 "date:modify": "2014-09-04T09:37:08+03:00",

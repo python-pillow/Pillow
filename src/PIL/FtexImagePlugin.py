@@ -73,7 +73,8 @@ def __getattr__(name):
             if name in enum.__members__:
                 deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
                 return enum[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
 
 
 class FtexImageFile(ImageFile.ImageFile):
@@ -82,7 +83,8 @@ class FtexImageFile(ImageFile.ImageFile):
 
     def _open(self):
         if not _accept(self.fp.read(4)):
-            raise SyntaxError("not an FTEX file")
+            msg = "not an FTEX file"
+            raise SyntaxError(msg)
         struct.unpack("<i", self.fp.read(4))  # version
         self._size = struct.unpack("<2i", self.fp.read(8))
         mipmap_count, format_count = struct.unpack("<2i", self.fp.read(8))
@@ -105,7 +107,8 @@ class FtexImageFile(ImageFile.ImageFile):
         elif format == Format.UNCOMPRESSED:
             self.tile = [("raw", (0, 0) + self.size, 0, ("RGB", 0, 1))]
         else:
-            raise ValueError(f"Invalid texture compression format: {repr(format)}")
+            msg = f"Invalid texture compression format: {repr(format)}"
+            raise ValueError(msg)
 
         self.fp.close()
         self.fp = BytesIO(data)

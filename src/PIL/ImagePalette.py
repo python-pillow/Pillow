@@ -42,7 +42,8 @@ class ImagePalette:
         if size != 0:
             deprecate("The size parameter", 10, None)
             if size != len(self.palette):
-                raise ValueError("wrong palette size")
+                msg = "wrong palette size"
+                raise ValueError(msg)
 
     @property
     def palette(self):
@@ -97,7 +98,8 @@ class ImagePalette:
         .. warning:: This method is experimental.
         """
         if self.rawmode:
-            raise ValueError("palette contains raw palette data")
+            msg = "palette contains raw palette data"
+            raise ValueError(msg)
         if isinstance(self.palette, bytes):
             return self.palette
         arr = array.array("B", self.palette)
@@ -112,14 +114,14 @@ class ImagePalette:
         .. warning:: This method is experimental.
         """
         if self.rawmode:
-            raise ValueError("palette contains raw palette data")
+            msg = "palette contains raw palette data"
+            raise ValueError(msg)
         if isinstance(color, tuple):
             if self.mode == "RGB":
                 if len(color) == 4:
                     if color[3] != 255:
-                        raise ValueError(
-                            "cannot add non-opaque RGBA color to RGB palette"
-                        )
+                        msg = "cannot add non-opaque RGBA color to RGB palette"
+                        raise ValueError(msg)
                     color = color[:3]
             elif self.mode == "RGBA":
                 if len(color) == 3:
@@ -147,7 +149,8 @@ class ImagePalette:
                                 index = i
                                 break
                     if index >= 256:
-                        raise ValueError("cannot allocate more than 256 colors") from e
+                        msg = "cannot allocate more than 256 colors"
+                        raise ValueError(msg) from e
                 self.colors[color] = index
                 if index * 3 < len(self.palette):
                     self._palette = (
@@ -160,7 +163,8 @@ class ImagePalette:
                 self.dirty = 1
                 return index
         else:
-            raise ValueError(f"unknown color specifier: {repr(color)}")
+            msg = f"unknown color specifier: {repr(color)}"
+            raise ValueError(msg)
 
     def save(self, fp):
         """Save palette to text file.
@@ -168,7 +172,8 @@ class ImagePalette:
         .. warning:: This method is experimental.
         """
         if self.rawmode:
-            raise ValueError("palette contains raw palette data")
+            msg = "palette contains raw palette data"
+            raise ValueError(msg)
         if isinstance(fp, str):
             fp = open(fp, "w")
         fp.write("# Palette\n")
@@ -243,11 +248,9 @@ def wedge(mode="RGB"):
 
 
 def load(filename):
-
     # FIXME: supports GIMP gradients only
 
     with open(filename, "rb") as fp:
-
         for paletteHandler in [
             GimpPaletteFile.GimpPaletteFile,
             GimpGradientFile.GimpGradientFile,
@@ -263,6 +266,7 @@ def load(filename):
                 # traceback.print_exc()
                 pass
         else:
-            raise OSError("cannot load palette")
+            msg = "cannot load palette"
+            raise OSError(msg)
 
     return lut  # data, rawmode

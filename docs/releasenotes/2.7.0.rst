@@ -29,84 +29,78 @@ Image resizing filters
 Image resizing methods :py:meth:`~PIL.Image.Image.resize` and
 :py:meth:`~PIL.Image.Image.thumbnail` take a ``resample`` argument, which tells
 which filter should be used for resampling. Possible values are:
-:py:data:`PIL.Image.NEAREST`, :py:data:`PIL.Image.BILINEAR`,
-:py:data:`PIL.Image.BICUBIC` and :py:data:`PIL.Image.ANTIALIAS`.
-Almost all of them were changed in this version.
+``NEAREST``, ``BILINEAR``, ``BICUBIC`` and ``ANTIALIAS``. Almost all of them
+were changed in this version.
 
 Bicubic and bilinear downscaling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-From the beginning :py:data:`~PIL.Image.BILINEAR` and
-:py:data:`~PIL.Image.BICUBIC` filters were based on affine transformations
-and used a fixed number of pixels from the source image for every destination
-pixel (2x2 pixels for :py:data:`~PIL.Image.BILINEAR` and 4x4 for
-:py:data:`~PIL.Image.BICUBIC`). This gave an unsatisfactory result for
-downscaling. At the same time, a high quality convolutions-based algorithm with
-flexible kernel was used for :py:data:`~PIL.Image.ANTIALIAS` filter.
+From the beginning ``BILINEAR`` and ``BICUBIC`` filters were based on affine
+transformations and used a fixed number of pixels from the source image for
+every destination pixel (2x2 pixels for ``BILINEAR`` and 4x4 for ``BICUBIC``).
+This gave an unsatisfactory result for downscaling. At the same time, a high
+quality convolutions-based algorithm with flexible kernel was used for
+``ANTIALIAS`` filter.
 
 Starting from Pillow 2.7.0, a high quality convolutions-based algorithm is used
 for all of these three filters.
 
 If you have previously used any tricks to maintain quality when downscaling with
-:py:data:`~PIL.Image.BILINEAR` and :py:data:`~PIL.Image.BICUBIC` filters
-(for example, reducing within several steps), they are unnecessary now.
+``BILINEAR`` and ``BICUBIC`` filters (for example, reducing within several
+steps), they are unnecessary now.
 
 Antialias renamed to Lanczos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A new :py:data:`PIL.Image.LANCZOS` constant was added instead of
-:py:data:`~PIL.Image.ANTIALIAS`.
+A new ``LANCZOS`` constant was added instead of ``ANTIALIAS``.
 
-When :py:data:`~PIL.Image.ANTIALIAS` was initially added, it was the only
-high-quality filter based on convolutions. It's name was supposed to reflect
-this. Starting from Pillow 2.7.0 all resize method are based on convolutions.
-All of them are antialias from now on. And the real name of the
-:py:data:`~PIL.Image.ANTIALIAS` filter is Lanczos filter.
+When ``ANTIALIAS`` was initially added, it was the only high-quality filter
+based on convolutions. It's name was supposed to reflect this. Starting from
+Pillow 2.7.0 all resize method are based on convolutions. All of them are
+antialias from now on. And the real name of the ``ANTIALIAS`` filter is Lanczos
+filter.
 
-The :py:data:`~PIL.Image.ANTIALIAS` constant is left for backward compatibility
-and is an alias for :py:data:`~PIL.Image.LANCZOS`.
+The ``ANTIALIAS`` constant is left for backward compatibility and is an alias
+for ``LANCZOS``.
 
 Lanczos upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The image upscaling quality with :py:data:`~PIL.Image.LANCZOS` filter was
-almost the same as :py:data:`~PIL.Image.BILINEAR` due to bug. This has been fixed.
+The image upscaling quality with ``LANCZOS`` filter was almost the same as
+``BILINEAR`` due to a bug. This has been fixed.
 
 Bicubic upscaling quality
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :py:data:`~PIL.Image.BICUBIC` filter for affine transformations produced
-sharp, slightly pixelated image for upscaling. Bicubic for convolutions is
-more soft.
+The ``BICUBIC`` filter for affine transformations produced sharp, slightly
+pixelated image for upscaling. Bicubic for convolutions is more soft.
 
 Resize performance
 ^^^^^^^^^^^^^^^^^^
 
 In most cases, convolution is more a expensive algorithm for downscaling
 because it takes into account all the pixels of source image. Therefore
-:py:data:`~PIL.Image.BILINEAR` and :py:data:`~PIL.Image.BICUBIC` filters'
-performance can be lower than before. On the other hand the quality of
-:py:data:`~PIL.Image.BILINEAR` and :py:data:`~PIL.Image.BICUBIC` was close to
-:py:data:`~PIL.Image.NEAREST`. So if such quality is suitable for your tasks
-you can switch to :py:data:`~PIL.Image.NEAREST` filter for downscaling,
-which will give a huge improvement in performance.
+``BILINEAR`` and ``BICUBIC`` filters' performance can be lower than before.
+On the other hand the quality of ``BILINEAR`` and ``BICUBIC`` was close to
+``NEAREST``. So if such quality is suitable for your tasks you can switch to
+``NEAREST`` filter for downscaling, which will give a huge improvement in
+performance.
 
 At the same time performance of convolution resampling for downscaling has been
 improved by around a factor of two compared to the previous version.
-The upscaling performance of the :py:data:`~PIL.Image.LANCZOS` filter has
-remained the same. For :py:data:`~PIL.Image.BILINEAR` filter it has improved by
-1.5 times and for :py:data:`~PIL.Image.BICUBIC` by four times.
+The upscaling performance of the ``LANCZOS`` filter has remained the same. For
+``BILINEAR`` filter it has improved by 1.5 times and for ``BICUBIC`` by four
+times.
 
 Default filter for thumbnails
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In Pillow 2.5 the default filter for :py:meth:`~PIL.Image.Image.thumbnail` was
-changed from :py:data:`~PIL.Image.NEAREST` to :py:data:`~PIL.Image.ANTIALIAS`.
-Antialias was chosen because all the other filters gave poor quality for
-reduction. Starting from Pillow 2.7.0, :py:data:`~PIL.Image.ANTIALIAS` has been
-replaced with :py:data:`~PIL.Image.BICUBIC`, because it's faster and
-:py:data:`~PIL.Image.ANTIALIAS` doesn't give any advantages after
-downscaling with libjpeg, which uses supersampling internally, not convolutions.
+changed from ``NEAREST`` to ``ANTIALIAS``. Antialias was chosen because all the
+other filters gave poor quality for reduction. Starting from Pillow 2.7.0,
+``ANTIALIAS`` has been replaced with ``BICUBIC``, because it's faster and
+``ANTIALIAS`` doesn't give any advantages after downscaling with libjpeg, which
+uses supersampling internally, not convolutions.
 
 Image transposition
 -------------------

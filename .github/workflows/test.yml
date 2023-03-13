@@ -1,6 +1,15 @@
 name: Test
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,6 +31,7 @@ jobs:
         python-version: [
           "pypy3.9",
           "pypy3.8",
+          "3.12-dev",
           "3.11",
           "3.10",
           "3.9",
@@ -95,11 +105,6 @@ jobs:
         name: errors
         path: Tests/errors
 
-    - name: Docs
-      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.11
-      run: |
-        make doccheck
-
     - name: After success
       run: |
         .ci/after_success.sh
@@ -107,9 +112,9 @@ jobs:
     - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
-        file: ./coverage.xml
         flags: ${{ matrix.os == 'macos-latest' && 'GHA_macOS' || 'GHA_Ubuntu' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+        gcov: true
 
   success:
     permissions:

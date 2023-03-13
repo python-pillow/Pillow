@@ -49,18 +49,17 @@ MODES = {
 ##
 # Image plugin for SGI images.
 class SgiImageFile(ImageFile.ImageFile):
-
     format = "SGI"
     format_description = "SGI Image File Format"
 
     def _open(self):
-
         # HEAD
         headlen = 512
         s = self.fp.read(headlen)
 
         if not _accept(s):
-            raise ValueError("Not an SGI image file")
+            msg = "Not an SGI image file"
+            raise ValueError(msg)
 
         # compression : verbatim or RLE
         compression = s[2]
@@ -91,7 +90,8 @@ class SgiImageFile(ImageFile.ImageFile):
             pass
 
         if rawmode == "":
-            raise ValueError("Unsupported SGI image mode")
+            msg = "Unsupported SGI image mode"
+            raise ValueError(msg)
 
         self._size = xsize, ysize
         self.mode = rawmode.split(";")[0]
@@ -124,7 +124,8 @@ class SgiImageFile(ImageFile.ImageFile):
 
 def _save(im, fp, filename):
     if im.mode != "RGB" and im.mode != "RGBA" and im.mode != "L":
-        raise ValueError("Unsupported SGI image mode")
+        msg = "Unsupported SGI image mode"
+        raise ValueError(msg)
 
     # Get the keyword arguments
     info = im.encoderinfo
@@ -133,7 +134,8 @@ def _save(im, fp, filename):
     bpc = info.get("bpc", 1)
 
     if bpc not in (1, 2):
-        raise ValueError("Unsupported number of bytes per pixel")
+        msg = "Unsupported number of bytes per pixel"
+        raise ValueError(msg)
 
     # Flip the image, since the origin of SGI file is the bottom-left corner
     orientation = -1
@@ -158,9 +160,8 @@ def _save(im, fp, filename):
 
     # assert we've got the right number of bands.
     if len(im.getbands()) != z:
-        raise ValueError(
-            f"incorrect number of bands in SGI write: {z} vs {len(im.getbands())}"
-        )
+        msg = f"incorrect number of bands in SGI write: {z} vs {len(im.getbands())}"
+        raise ValueError(msg)
 
     # Minimum Byte value
     pinmin = 0

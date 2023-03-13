@@ -30,16 +30,15 @@ def _accept(s):
 
 
 class McIdasImageFile(ImageFile.ImageFile):
-
     format = "MCIDAS"
     format_description = "McIdas area file"
 
     def _open(self):
-
         # parse area file directory
         s = self.fp.read(256)
         if not _accept(s) or len(s) != 256:
-            raise SyntaxError("not an McIdas area file")
+            msg = "not an McIdas area file"
+            raise SyntaxError(msg)
 
         self.area_descriptor_raw = s
         self.area_descriptor = w = [0] + list(struct.unpack("!64i", s))
@@ -56,7 +55,8 @@ class McIdasImageFile(ImageFile.ImageFile):
             mode = "I"
             rawmode = "I;32B"
         else:
-            raise SyntaxError("unsupported McIdas format")
+            msg = "unsupported McIdas format"
+            raise SyntaxError(msg)
 
         self.mode = mode
         self._size = w[10], w[9]

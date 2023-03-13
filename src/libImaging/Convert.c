@@ -479,6 +479,25 @@ rgba2rgbA(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
+static void
+rgba2rgb_(UINT8 *out, const UINT8 *in, int xsize) {
+    int x;
+    unsigned int alpha;
+    for (x = 0; x < xsize; x++, in += 4) {
+        alpha = in[3];
+        if (alpha == 255 || alpha == 0) {
+            *out++ = in[0];
+            *out++ = in[1];
+            *out++ = in[2];
+        } else {
+            *out++ = CLIP8((255 * in[0]) / alpha);
+            *out++ = CLIP8((255 * in[1]) / alpha);
+            *out++ = CLIP8((255 * in[2]) / alpha);
+        }
+        *out++ = 255;
+    }
+}
+
 /*
  * Conversion of RGB + single transparent color to RGBA,
  * where any pixel that matches the color will have the
@@ -934,6 +953,7 @@ static struct {
     {"RGBA", "HSV", rgb2hsv},
 
     {"RGBa", "RGBA", rgba2rgbA},
+    {"RGBa", "RGB", rgba2rgb_},
 
     {"RGBX", "1", rgb2bit},
     {"RGBX", "L", rgb2l},

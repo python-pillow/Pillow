@@ -115,18 +115,17 @@ def number(s):
 
 
 class ImImageFile(ImageFile.ImageFile):
-
     format = "IM"
     format_description = "IFUNC Image Memory"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
         if b"\n" not in self.fp.read(100):
-            raise SyntaxError("not an IM file")
+            msg = "not an IM file"
+            raise SyntaxError(msg)
         self.fp.seek(0)
 
         n = 0
@@ -139,7 +138,6 @@ class ImImageFile(ImageFile.ImageFile):
         self.rawmode = "L"
 
         while True:
-
             s = self.fp.read(1)
 
             # Some versions of IFUNC uses \n\r instead of \r\n...
@@ -153,7 +151,8 @@ class ImImageFile(ImageFile.ImageFile):
             s = s + self.fp.readline()
 
             if len(s) > 100:
-                raise SyntaxError("not an IM file")
+                msg = "not an IM file"
+                raise SyntaxError(msg)
 
             if s[-2:] == b"\r\n":
                 s = s[:-2]
@@ -163,10 +162,10 @@ class ImImageFile(ImageFile.ImageFile):
             try:
                 m = split.match(s)
             except re.error as e:
-                raise SyntaxError("not an IM file") from e
+                msg = "not an IM file"
+                raise SyntaxError(msg) from e
 
             if m:
-
                 k, v = m.group(1, 2)
 
                 # Don't know if this is the correct encoding,
@@ -197,13 +196,12 @@ class ImImageFile(ImageFile.ImageFile):
                     n += 1
 
             else:
-
-                raise SyntaxError(
-                    "Syntax error in IM header: " + s.decode("ascii", "replace")
-                )
+                msg = "Syntax error in IM header: " + s.decode("ascii", "replace")
+                raise SyntaxError(msg)
 
         if not n:
-            raise SyntaxError("Not an IM file")
+            msg = "Not an IM file"
+            raise SyntaxError(msg)
 
         # Basic attributes
         self._size = self.info[SIZE]
@@ -213,7 +211,8 @@ class ImImageFile(ImageFile.ImageFile):
         while s and s[:1] != b"\x1A":
             s = self.fp.read(1)
         if not s:
-            raise SyntaxError("File truncated")
+            msg = "File truncated"
+            raise SyntaxError(msg)
 
         if LUT in self.info:
             # convert lookup table to palette or lut attribute
@@ -248,7 +247,6 @@ class ImImageFile(ImageFile.ImageFile):
         self._fp = self.fp  # FIXME: hack
 
         if self.rawmode[:2] == "F;":
-
             # ifunc95 formats
             try:
                 # use bit decoder (if necessary)
@@ -328,11 +326,11 @@ SAVE = {
 
 
 def _save(im, fp, filename):
-
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:
-        raise ValueError(f"Cannot save {im.mode} images as IM") from e
+        msg = f"Cannot save {im.mode} images as IM"
+        raise ValueError(msg) from e
 
     frames = im.encoderinfo.get("frames", 1)
 

@@ -21,7 +21,6 @@ deformer = Deformer()
 
 
 def test_sanity():
-
     ImageOps.autocontrast(hopper("L"))
     ImageOps.autocontrast(hopper("RGB"))
 
@@ -419,7 +418,6 @@ def test_autocontrast_cutoff():
 def test_autocontrast_mask_toy_input():
     # Test the mask argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
-
         rect_mask = Image.new("L", img.size, 0)
         draw = ImageDraw.Draw(rect_mask)
         x0 = img.size[0] // 4
@@ -439,7 +437,6 @@ def test_autocontrast_mask_toy_input():
 def test_autocontrast_mask_real_input():
     # Test the autocontrast with a rectangular mask
     with Image.open("Tests/images/iptc.jpg") as img:
-
         rect_mask = Image.new("L", img.size, 0)
         draw = ImageDraw.Draw(rect_mask)
         x0, y0 = img.size[0] // 2, img.size[1] // 2
