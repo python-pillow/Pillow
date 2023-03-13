@@ -12,7 +12,10 @@ Changelog (Pillow)
 since Pillow 4.3.0.
   [rickprice]
 
-- Fix CVE-2021-2791
+- Fix CVE-2021-27291
+  [rickprice]
+
+- Fix CVE-2021-25290
   [rickprice]
 
 - Fix CVE-2021-25291
