@@ -62,7 +62,6 @@ Pillow also provides limited support for a few additional modes, including:
     * ``BGR;15`` (15-bit reversed true colour)
     * ``BGR;16`` (16-bit reversed true colour)
     * ``BGR;24`` (24-bit reversed true colour)
-    * ``BGR;32`` (32-bit reversed true colour)
 
 Premultiplied alpha is where the values for each other channel have been
 multiplied by the alpha. For example, an RGBA pixel of ``(10, 20, 30, 127)``

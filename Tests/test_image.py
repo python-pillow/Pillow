@@ -58,7 +58,7 @@ class TestImage:
         Image.new(mode, (1, 1))
 
     @pytest.mark.parametrize(
-        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24", "BGR;32")
+        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24")
     )
     def test_image_modes_fail(self, mode):
         with pytest.raises(ValueError) as e:

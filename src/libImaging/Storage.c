@@ -152,14 +152,6 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->linesize = (xsize * 3 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
-    } else if (strcmp(mode, "BGR;32") == 0) {
-        /* EXPERIMENTAL */
-        /* 32-bit reversed true colour */
-        im->bands = 1;
-        im->pixelsize = 4;
-        im->linesize = (xsize * 4 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-
     } else if (strcmp(mode, "RGBX") == 0) {
         /* 32-bit true colour images with padding */
         im->bands = im->pixelsize = 4;
