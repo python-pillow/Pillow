@@ -12,7 +12,11 @@ Changelog (Pillow)
 since Pillow 4.3.0.
   [rickprice]
 
-- Fix CVE-2021-27291
+- Fix CVE-2021-27921
+  [rickprice]
+- Fix CVE-2021-27922
+  [rickprice]
+- Fix CVE-2021-27923
   [rickprice]
 
 - Fix CVE-2021-25290
@@ -40,7 +44,7 @@ since Pillow 4.3.0.
 
 - Use snprintf instead of sprintf. CVE-2021-34552
   [wooken]
-  
+
 6.2.2.1 (2021-10-08)
 ------------------
 
