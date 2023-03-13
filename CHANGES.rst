@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Improved I;16N support #6834
+  [radarhere]
+
 - Added QOI reading #6852
   [radarhere, hugovk]
 
