@@ -15,7 +15,7 @@ distributions.
 
 Then ``sudo apt-get install libtiff5-dbgsym``
 
--  There's a bug with the ``python3-dbg`` package for at least python 3.8 on
+-  There's a bug with the ``python3-dbg`` package for at least Python 3.8 on
    Ubuntu 20.04, and you need to add a new link or two to make it autoload when
    running python:
 
