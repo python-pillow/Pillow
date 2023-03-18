@@ -60,7 +60,7 @@ PyInit__imagingtk(void) {
     m = PyModule_Create(&module_def);
     if (load_tkinter_funcs() != 0) {
         Py_DECREF(m);
-        return NULL;;
+        return NULL;
     }
     return m;
 }
