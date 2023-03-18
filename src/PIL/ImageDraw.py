@@ -423,7 +423,6 @@ class ImageDraw:
                 self.draw.draw_rectangle(right, ink, 1)
 
     def _multiline_check(self, text):
-        """Draw text."""
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
