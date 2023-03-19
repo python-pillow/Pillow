@@ -48,6 +48,9 @@ class TestImage:
             "RGBX",
             "RGBA",
             "RGBa",
+            "BGR;15",
+            "BGR;16",
+            "BGR;24",
             "CMYK",
             "YCbCr",
             "LAB",
@@ -57,9 +60,7 @@ class TestImage:
     def test_image_modes_success(self, mode):
         Image.new(mode, (1, 1))
 
-    @pytest.mark.parametrize(
-        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24")
-    )
+    @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode):
         with pytest.raises(ValueError) as e:
             Image.new(mode, (1, 1))

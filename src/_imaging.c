@@ -517,14 +517,12 @@ getink(PyObject *color, Imaging im, char *ink) {
                 return NULL;
             }
             rIsInt = 1;
-        } else if (im->type == IMAGING_TYPE_UINT8) {
-            if (!PyTuple_Check(color)) {
-                PyErr_SetString(PyExc_TypeError, "color must be int or tuple");
-                return NULL;
-            }
-        } else {
+        } else if (im->bands == 1) {
             PyErr_SetString(
                 PyExc_TypeError, "color must be int or single-element tuple");
+            return NULL;
+        } else if (!PyTuple_Check(color)) {
+            PyErr_SetString(PyExc_TypeError, "color must be int or tuple");
             return NULL;
         }
     }
@@ -596,6 +594,41 @@ getink(PyObject *color, Imaging im, char *ink) {
                 ink[1] = (UINT8)(r >> 8);
                 ink[2] = ink[3] = 0;
                 return ink;
+            } else {
+                if (rIsInt) {
+                    b = (UINT8)(r >> 16);
+                    g = (UINT8)(r >> 8);
+                    r = (UINT8)r;
+                } else if (tupleSize != 3) {
+                    PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or three elements");
+                    return NULL;
+                } else if (!PyArg_ParseTuple(color, "Lii", &r, &g, &b)) {
+                    return NULL;
+                }
+                if (!strcmp(im->mode, "BGR;15")) {
+                    UINT16 v = ((((UINT16)r) << 7) & 0x7c00) +
+                               ((((UINT16)g) << 2) & 0x03e0) +
+                               ((((UINT16)b) >> 3) & 0x001f);
+
+                    ink[0] = (UINT8)v;
+                    ink[1] = (UINT8)(v >> 8);
+                    ink[2] = ink[3] = 0;
+                    return ink;
+                } else if (!strcmp(im->mode, "BGR;16")) {
+                    UINT16 v = ((((UINT16)r) << 8) & 0xf800) +
+                               ((((UINT16)g) << 3) & 0x07e0) +
+                               ((((UINT16)b) >> 3) & 0x001f);
+                    ink[0] = (UINT8)v;
+                    ink[1] = (UINT8)(v >> 8);
+                    ink[2] = ink[3] = 0;
+                    return ink;
+                } else if (!strcmp(im->mode, "BGR;24")) {
+                    ink[0] = (UINT8)b;
+                    ink[1] = (UINT8)g;
+                    ink[2] = (UINT8)r;
+                    ink[3] = 0;
+                    return ink;
+                }
             }
     }
 
