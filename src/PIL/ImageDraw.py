@@ -463,6 +463,7 @@ class ImageDraw:
         *args,
         **kwargs,
     ):
+        """Draw text."""
         if self._multiline_check(text):
             return self.multiline_text(
                 xy,
