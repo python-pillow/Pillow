@@ -1114,7 +1114,7 @@ font_getvarnames(FontObject *self) {
 
 static PyObject *
 font_getvaraxes(FontObject *self) {
-    int error;
+    int error, failed = 0;
     FT_UInt i, j, num_axis, name_count;
     FT_MM_Var *master;
     FT_Var_Axis axis;
@@ -1137,36 +1137,39 @@ font_getvaraxes(FontObject *self) {
 
         list_axis = PyDict_New();
         if (list_axis == NULL) {
+            failed = 1;
+        } else {
+            PyDict_SetItemString(
+                list_axis, "minimum", PyLong_FromLong(axis.minimum / 65536));
+            PyDict_SetItemString(list_axis, "default", PyLong_FromLong(axis.def / 65536));
+            PyDict_SetItemString(
+                list_axis, "maximum", PyLong_FromLong(axis.maximum / 65536));
+
+            for (j = 0; j < name_count; j++) {
+                error = FT_Get_Sfnt_Name(self->face, j, &name);
+                if (error) {
+                    Py_DECREF(list_axis);
+                    failed = 1;
+                    break;
+                }
+
+                if (name.name_id == axis.strid) {
+                    axis_name = Py_BuildValue("y#", name.string, name.string_len);
+                    PyDict_SetItemString(list_axis, "name", axis_name);
+                    break;
+                }
+            }
+        }
+        if (failed) {
             for (j = 0; j < i; j++) {
                 list_axis = PyList_GetItem(list_axes, j);
                 Py_DECREF(list_axis);
             }
             Py_DECREF(list_axes);
-            return NULL;
-        }
-        PyDict_SetItemString(
-            list_axis, "minimum", PyLong_FromLong(axis.minimum / 65536));
-        PyDict_SetItemString(list_axis, "default", PyLong_FromLong(axis.def / 65536));
-        PyDict_SetItemString(
-            list_axis, "maximum", PyLong_FromLong(axis.maximum / 65536));
-
-        for (j = 0; j < name_count; j++) {
-            error = FT_Get_Sfnt_Name(self->face, j, &name);
             if (error) {
-                Py_DECREF(list_axis);
-                for (j = 0; j < i; j++) {
-                    list_axis = PyList_GetItem(list_axes, j);
-                    Py_DECREF(list_axis);
-                }
-                Py_DECREF(list_axes);
                 return geterror(error);
             }
-
-            if (name.name_id == axis.strid) {
-                axis_name = Py_BuildValue("y#", name.string, name.string_len);
-                PyDict_SetItemString(list_axis, "name", axis_name);
-                break;
-            }
+            return NULL;
         }
 
         PyList_SetItem(list_axes, i, list_axis);
