@@ -964,7 +964,7 @@ setup_module(PyObject *m) {
 
     PyObject *webpdecoder_version = PyUnicode_FromString(WebPDecoderVersion_str());
     PyDict_SetItemString(d, "webpdecoder_version", webpdecoder_version);
-    Py_DECREF(webpdecoder_version);
+    Py_XDECREF(webpdecoder_version);
 
 #ifdef HAVE_WEBPANIM
     /* Ready object types */

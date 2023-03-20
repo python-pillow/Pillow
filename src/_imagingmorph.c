@@ -244,7 +244,7 @@ setup_module(PyObject *m) {
 
     PyObject *version = PyUnicode_FromString("0.1");
     PyDict_SetItemString(d, "__version", version);
-    Py_DECREF(version);
+    Py_XDECREF(version);
 
     return 0;
 }

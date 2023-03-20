@@ -4213,7 +4213,7 @@ setup_module(PyObject *m) {
         extern const char *ImagingJpegVersion(void);
         PyObject *jpeglib_version = PyUnicode_FromString(ImagingJpegVersion());
         PyDict_SetItemString(d, "jpeglib_version", jpeglib_version);
-        Py_DECREF(jpeglib_version);
+        Py_XDECREF(jpeglib_version);
     }
 #endif
 
@@ -4222,7 +4222,7 @@ setup_module(PyObject *m) {
         extern const char *ImagingJpeg2KVersion(void);
         PyObject *jp2klib_version = PyUnicode_FromString(ImagingJpeg2KVersion());
         PyDict_SetItemString(d, "jp2klib_version", jp2klib_version);
-        Py_DECREF(jp2klib_version);
+        Py_XDECREF(jp2klib_version);
     }
 #endif
 
@@ -4233,7 +4233,7 @@ setup_module(PyObject *m) {
 #define tostr(a) tostr1(a)
     PyObject *libjpeg_turbo_version = PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION));
     PyDict_SetItemString(d, "libjpeg_turbo_version", libjpeg_turbo_version);
-    Py_DECREF(libjpeg_turbo_version);
+    Py_XDECREF(libjpeg_turbo_version);
 #undef tostr
 #undef tostr1
 #else
@@ -4249,7 +4249,7 @@ setup_module(PyObject *m) {
         extern const char *ImagingImageQuantVersion(void);
         PyObject *imagequant_version = PyUnicode_FromString(ImagingImageQuantVersion());
         PyDict_SetItemString(d, "imagequant_version", imagequant_version);
-        Py_DECREF(imagequant_version);
+        Py_XDECREF(imagequant_version);
     }
 #else
     have_libimagequant = Py_False;
@@ -4268,7 +4268,7 @@ setup_module(PyObject *m) {
         extern const char *ImagingZipVersion(void);
         PyObject *zlibversion = PyUnicode_FromString(ImagingZipVersion());
         PyDict_SetItemString(d, "zlib_version", zlibversion);
-        Py_DECREF(zlibversion);
+        Py_XDECREF(zlibversion);
     }
 #endif
 
@@ -4277,7 +4277,7 @@ setup_module(PyObject *m) {
         extern const char *ImagingTiffVersion(void);
         PyObject *libtiff_version = PyUnicode_FromString(ImagingTiffVersion());
         PyDict_SetItemString(d, "libtiff_version", libtiff_version);
-        Py_DECREF(libtiff_version);
+        Py_XDECREF(libtiff_version);
 
         // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
         PyObject *support_custom_tags;
@@ -4302,7 +4302,7 @@ setup_module(PyObject *m) {
 
     PyObject *pillow_version = PyUnicode_FromString(version);
     PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version);
-    Py_DECREF(pillow_version);
+    Py_XDECREF(pillow_version);
 
     return 0;
 }

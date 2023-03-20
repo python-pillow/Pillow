@@ -1534,7 +1534,7 @@ setup_module(PyObject *m) {
         v = PyUnicode_FromFormat("%d.%d", vn / 1000, (vn / 10) % 100);
     }
     PyDict_SetItemString(d, "littlecms_version", v);
-    Py_DECREF(v);
+    Py_XDECREF(v);
 
     return 0;
 }

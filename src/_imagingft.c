@@ -1366,7 +1366,7 @@ setup_module(PyObject *m) {
 
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
     PyDict_SetItemString(d, "freetype2_version", v);
-    Py_DECREF(v);
+    Py_XDECREF(v);
 
 #ifdef HAVE_RAQM
 #if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)
@@ -1392,7 +1392,7 @@ setup_module(PyObject *m) {
         v = Py_None;
 #endif
         PyDict_SetItemString(d, "raqm_version", v);
-        Py_DECREF(v);
+        Py_XDECREF(v);
 
 #ifdef FRIBIDI_MAJOR_VERSION
         {
