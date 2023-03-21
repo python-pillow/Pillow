@@ -1365,7 +1365,7 @@ setup_module(PyObject *m) {
     FT_Library_Version(library, &major, &minor, &patch);
 
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
-    PyDict_SetItemString(d, "freetype2_version", v);
+    PyDict_SetItemString(d, "freetype2_version", v ? v : Py_None);
     Py_XDECREF(v);
 
 #ifdef HAVE_RAQM
@@ -1386,35 +1386,32 @@ setup_module(PyObject *m) {
     PyDict_SetItemString(d, "HAVE_HARFBUZZ", v);
     Py_DECREF(v);
     if (have_raqm) {
+        v = NULL;
 #ifdef RAQM_VERSION_MAJOR
         v = PyUnicode_FromString(raqm_version_string());
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "raqm_version", v);
+        PyDict_SetItemString(d, "raqm_version", v ? v : Py_None);
         Py_XDECREF(v);
 
+        v = NULL;
 #ifdef FRIBIDI_MAJOR_VERSION
         {
             const char *a = strchr(fribidi_version_info, ')');
             const char *b = strchr(fribidi_version_info, '\n');
             if (a && b && a + 2 < b) {
                 v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
-            } else {
-                v = Py_None;
             }
         }
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "fribidi_version", v);
+        PyDict_SetItemString(d, "fribidi_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
+        v = NULL;
 #ifdef HB_VERSION_STRING
         v = PyUnicode_FromString(hb_version_string());
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "harfbuzz_version", v);
+        PyDict_SetItemString(d, "harfbuzz_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 
     return 0;
