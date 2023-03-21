@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Allow libtiff_support_custom_tags to be missing #7020
+  [radarhere]
+
 - Improved I;16N support #6834
   [radarhere]
 
