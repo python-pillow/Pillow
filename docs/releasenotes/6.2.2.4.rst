@@ -17,5 +17,6 @@ since Pillow 4.3.0.
 
 :cve: `CVE-2021-27923` : Pillow before 8.1.1 allows attackers to cause a denial of service (memory consumption) because the reported size of a contained image is not properly checked for a BLP container, and thus an attempted memory allocation can be very large.
 
-
 :cve: `CVE-2021-25290` : Fix negative size read in TiffDecode.c
+
+:cve: `CVE-2021-23437` : Raise ValueError if color specifier is too long
