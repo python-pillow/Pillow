@@ -45,20 +45,20 @@ if "%1" == "clean" (
 	goto end
 )
 
-if "%1" == "html" (
+set html=false
+if "%1%" == "html" set html=true
+if "%1%" == "htmlview" set html=true
+if "%html%" == "true" (
 	%SPHINXBUILD% -b html %ALLSPHINXOPTS% %BUILDDIR%/html
 	if errorlevel 1 exit /b 1
 	echo.
 	echo.Build finished. The HTML pages are in %BUILDDIR%/html.
-	goto end
-)
 
-if "%1" == "htmlview" (
-    cmd /C %this% html
-
-    if EXIST "%BUILDDIR%\html\index.html" (
-        echo.Opening "%BUILDDIR%\html\index.html" in the default web browser...
-        start "" "%BUILDDIR%\html\index.html"
+    if "%1" == "htmlview" (
+        if EXIST "%BUILDDIR%\html\index.html" (
+            echo.Opening "%BUILDDIR%\html\index.html" in the default web browser...
+            start "" "%BUILDDIR%\html\index.html"
+        )
     )
 
     goto end
