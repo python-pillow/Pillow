@@ -1130,15 +1130,15 @@ font_getvaraxes(FontObject *self) {
 
         list_axis = PyDict_New();
         PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
-        PyDict_SetItemString(list_axis, "minimum", minimum);
+        PyDict_SetItemString(list_axis, "minimum", minimum ? minimum : Py_None);
         Py_XDECREF(minimum);
 
         PyObject *def = PyLong_FromLong(axis.def / 65536);
-        PyDict_SetItemString(list_axis, "default", def);
+        PyDict_SetItemString(list_axis, "default", def ? def : Py_None);
         Py_XDECREF(def);
 
         PyObject *maximum = PyLong_FromLong(axis.maximum / 65536);
-        PyDict_SetItemString(list_axis, "maximum", maximum);
+        PyDict_SetItemString(list_axis, "maximum", maximum ? maximum : Py_None);
         Py_XDECREF(maximum);
 
         for (j = 0; j < name_count; j++) {
@@ -1149,7 +1149,7 @@ font_getvaraxes(FontObject *self) {
 
             if (name.name_id == axis.strid) {
                 axis_name = Py_BuildValue("y#", name.string, name.string_len);
-                PyDict_SetItemString(list_axis, "name", axis_name);
+                PyDict_SetItemString(list_axis, "name", axis_name ? axis_name : Py_None);
                 Py_XDECREF(axis_name);
                 break;
             }

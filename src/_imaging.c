@@ -3810,6 +3810,7 @@ static PyTypeObject PixelAccess_Type = {
 static PyObject *
 _get_stats(PyObject *self, PyObject *args) {
     PyObject *d;
+    PyObject *v;
     ImagingMemoryArena arena = &ImagingDefaultArena;
 
     if (!PyArg_ParseTuple(args, ":get_stats")) {
@@ -3820,29 +3821,29 @@ _get_stats(PyObject *self, PyObject *args) {
     if (!d) {
         return NULL;
     }
-    PyObject *new_count = PyLong_FromLong(arena->stats_new_count);
-    PyDict_SetItemString(d, "new_count", new_count);
-    Py_XDECREF(new_count);
+    v = PyLong_FromLong(arena->stats_new_count);
+    PyDict_SetItemString(d, "new_count", v ? v : Py_None);
+    Py_XDECREF(v);
 
-    PyObject *allocated_blocks = PyLong_FromLong(arena->stats_allocated_blocks);
-    PyDict_SetItemString(d, "allocated_blocks", allocated_blocks);
-    Py_XDECREF(allocated_blocks);
+    v = PyLong_FromLong(arena->stats_allocated_blocks);
+    PyDict_SetItemString(d, "allocated_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
 
-    PyObject *reused_blocks = PyLong_FromLong(arena->stats_reused_blocks);
-    PyDict_SetItemString(d, "reused_blocks", reused_blocks);
-    Py_XDECREF(reused_blocks);
+    v = PyLong_FromLong(arena->stats_reused_blocks);
+    PyDict_SetItemString(d, "reused_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
 
-    PyObject *reallocated_blocks = PyLong_FromLong(arena->stats_reallocated_blocks);
-    PyDict_SetItemString(d, "reallocated_blocks", reallocated_blocks);
-    Py_XDECREF(reallocated_blocks);
+    v = PyLong_FromLong(arena->stats_reallocated_blocks);
+    PyDict_SetItemString(d, "reallocated_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
 
-    PyObject *freed_blocks = PyLong_FromLong(arena->stats_freed_blocks);
-    PyDict_SetItemString(d, "freed_blocks", freed_blocks);
-    Py_XDECREF(freed_blocks);
+    v = PyLong_FromLong(arena->stats_freed_blocks);
+    PyDict_SetItemString(d, "freed_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
 
-    PyObject *blocks_cached = PyLong_FromLong(arena->blocks_cached);
-    PyDict_SetItemString(d, "blocks_cached", blocks_cached);
-    Py_XDECREF(blocks_cached);
+    v = PyLong_FromLong(arena->blocks_cached);
+    PyDict_SetItemString(d, "blocks_cached", v ? v : Py_None);
+    Py_XDECREF(v);
     return d;
 }
 
@@ -4211,31 +4212,33 @@ setup_module(PyObject *m) {
 #ifdef HAVE_LIBJPEG
     {
         extern const char *ImagingJpegVersion(void);
-        PyObject *jpeglib_version = PyUnicode_FromString(ImagingJpegVersion());
-        PyDict_SetItemString(d, "jpeglib_version", jpeglib_version);
-        Py_XDECREF(jpeglib_version);
+        PyObject *v = PyUnicode_FromString(ImagingJpegVersion());
+        PyDict_SetItemString(d, "jpeglib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
 #ifdef HAVE_OPENJPEG
     {
         extern const char *ImagingJpeg2KVersion(void);
-        PyObject *jp2klib_version = PyUnicode_FromString(ImagingJpeg2KVersion());
-        PyDict_SetItemString(d, "jp2klib_version", jp2klib_version);
-        Py_XDECREF(jp2klib_version);
+        PyObject *v = PyUnicode_FromString(ImagingJpeg2KVersion());
+        PyDict_SetItemString(d, "jp2klib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
     PyObject *have_libjpegturbo;
 #ifdef LIBJPEG_TURBO_VERSION
     have_libjpegturbo = Py_True;
+    {
 #define tostr1(a) #a
 #define tostr(a) tostr1(a)
-    PyObject *libjpeg_turbo_version = PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION));
-    PyDict_SetItemString(d, "libjpeg_turbo_version", libjpeg_turbo_version);
-    Py_XDECREF(libjpeg_turbo_version);
+        PyObject *v = PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION));
+        PyDict_SetItemString(d, "libjpeg_turbo_version", v ? v : Py_None);
+        Py_XDECREF(v);
 #undef tostr
 #undef tostr1
+    }
 #else
     have_libjpegturbo = Py_False;
 #endif
@@ -4247,9 +4250,9 @@ setup_module(PyObject *m) {
     have_libimagequant = Py_True;
     {
         extern const char *ImagingImageQuantVersion(void);
-        PyObject *imagequant_version = PyUnicode_FromString(ImagingImageQuantVersion());
-        PyDict_SetItemString(d, "imagequant_version", imagequant_version);
-        Py_XDECREF(imagequant_version);
+        PyObject *v = PyUnicode_FromString(ImagingImageQuantVersion());
+        PyDict_SetItemString(d, "imagequant_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #else
     have_libimagequant = Py_False;
@@ -4266,18 +4269,18 @@ setup_module(PyObject *m) {
     PyModule_AddIntConstant(m, "FIXED", Z_FIXED);
     {
         extern const char *ImagingZipVersion(void);
-        PyObject *zlibversion = PyUnicode_FromString(ImagingZipVersion());
-        PyDict_SetItemString(d, "zlib_version", zlibversion);
-        Py_XDECREF(zlibversion);
+        PyObject *v = PyUnicode_FromString(ImagingZipVersion());
+        PyDict_SetItemString(d, "zlib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
 #ifdef HAVE_LIBTIFF
     {
         extern const char *ImagingTiffVersion(void);
-        PyObject *libtiff_version = PyUnicode_FromString(ImagingTiffVersion());
-        PyDict_SetItemString(d, "libtiff_version", libtiff_version);
-        Py_XDECREF(libtiff_version);
+        PyObject *v = PyUnicode_FromString(ImagingTiffVersion());
+        PyDict_SetItemString(d, "libtiff_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
         // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
         PyObject *support_custom_tags;
@@ -4301,7 +4304,7 @@ setup_module(PyObject *m) {
     PyModule_AddObject(m, "HAVE_XCB", have_xcb);
 
     PyObject *pillow_version = PyUnicode_FromString(version);
-    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version);
+    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None);
     Py_XDECREF(pillow_version);
 
     return 0;

@@ -962,9 +962,9 @@ setup_module(PyObject *m) {
     addAnimFlagToModule(m);
     addTransparencyFlagToModule(m);
 
-    PyObject *webpdecoder_version = PyUnicode_FromString(WebPDecoderVersion_str());
-    PyDict_SetItemString(d, "webpdecoder_version", webpdecoder_version);
-    Py_XDECREF(webpdecoder_version);
+    PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
+    PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
+    Py_XDECREF(v);
 
 #ifdef HAVE_WEBPANIM
     /* Ready object types */
