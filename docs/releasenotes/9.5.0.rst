@@ -48,6 +48,12 @@ Added ``corners`` argument to ``ImageDraw.rounded_rectangle()``
 ``corners``. This a tuple of Booleans, specifying whether to round each corner,
 ``(top_left, top_right, bottom_right, bottom_left)``.
 
+Reading JPEG comments
+^^^^^^^^^^^^^^^^^^^^^
+
+When opening a JPEG2000 image, the comment may now be read into
+:py:attr:`~PIL.Image.Image.info`.
+
 Security
 ========
 
