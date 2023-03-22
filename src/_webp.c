@@ -949,8 +949,10 @@ addAnimFlagToModule(PyObject *m) {
 
 void
 addTransparencyFlagToModule(PyObject *m) {
-    PyModule_AddObject(
-        m, "HAVE_TRANSPARENCY", PyBool_FromLong(!WebPDecoderBuggyAlpha()));
+    PyObject *have_transparency = PyBool_FromLong(!WebPDecoderBuggyAlpha());
+    if (PyModule_AddObject(m, "HAVE_TRANSPARENCY", have_transparency)) {
+        Py_DECREF(have_transparency);
+    }
 }
 
 static int
@@ -967,8 +969,9 @@ setup_module(PyObject *m) {
     addAnimFlagToModule(m);
     addTransparencyFlagToModule(m);
 
-    PyDict_SetItemString(
-        d, "webpdecoder_version", PyUnicode_FromString(WebPDecoderVersion_str()));
+    PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
+    PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
+    Py_XDECREF(v);
 
     return 0;
 }
