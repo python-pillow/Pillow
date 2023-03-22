@@ -1130,15 +1130,15 @@ font_getvaraxes(FontObject *self) {
 
         list_axis = PyDict_New();
         PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
-        PyDict_SetItemString(list_axis, "minimum", minimum);
+        PyDict_SetItemString(list_axis, "minimum", minimum ? minimum : Py_None);
         Py_XDECREF(minimum);
 
         PyObject *def = PyLong_FromLong(axis.def / 65536);
-        PyDict_SetItemString(list_axis, "default", def);
+        PyDict_SetItemString(list_axis, "default", def ? def : Py_None);
         Py_XDECREF(def);
 
         PyObject *maximum = PyLong_FromLong(axis.maximum / 65536);
-        PyDict_SetItemString(list_axis, "maximum", maximum);
+        PyDict_SetItemString(list_axis, "maximum", maximum ? maximum : Py_None);
         Py_XDECREF(maximum);
 
         for (j = 0; j < name_count; j++) {
@@ -1149,7 +1149,7 @@ font_getvaraxes(FontObject *self) {
 
             if (name.name_id == axis.strid) {
                 axis_name = Py_BuildValue("y#", name.string, name.string_len);
-                PyDict_SetItemString(list_axis, "name", axis_name);
+                PyDict_SetItemString(list_axis, "name", axis_name ? axis_name : Py_None);
                 Py_XDECREF(axis_name);
                 break;
             }
@@ -1365,7 +1365,7 @@ setup_module(PyObject *m) {
     FT_Library_Version(library, &major, &minor, &patch);
 
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
-    PyDict_SetItemString(d, "freetype2_version", v);
+    PyDict_SetItemString(d, "freetype2_version", v ? v : Py_None);
     Py_XDECREF(v);
 
 #ifdef HAVE_RAQM
@@ -1386,35 +1386,32 @@ setup_module(PyObject *m) {
     PyDict_SetItemString(d, "HAVE_HARFBUZZ", v);
     Py_DECREF(v);
     if (have_raqm) {
+        v = NULL;
 #ifdef RAQM_VERSION_MAJOR
         v = PyUnicode_FromString(raqm_version_string());
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "raqm_version", v);
+        PyDict_SetItemString(d, "raqm_version", v ? v : Py_None);
         Py_XDECREF(v);
 
+        v = NULL;
 #ifdef FRIBIDI_MAJOR_VERSION
         {
             const char *a = strchr(fribidi_version_info, ')');
             const char *b = strchr(fribidi_version_info, '\n');
             if (a && b && a + 2 < b) {
                 v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
-            } else {
-                v = Py_None;
             }
         }
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "fribidi_version", v);
+        PyDict_SetItemString(d, "fribidi_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
+        v = NULL;
 #ifdef HB_VERSION_STRING
         v = PyUnicode_FromString(hb_version_string());
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "harfbuzz_version", v);
+        PyDict_SetItemString(d, "harfbuzz_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 
     return 0;

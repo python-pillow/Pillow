@@ -238,17 +238,6 @@ get_on_pixels(PyObject *self, PyObject *args) {
     return ret;
 }
 
-static int
-setup_module(PyObject *m) {
-    PyObject *d = PyModule_GetDict(m);
-
-    PyObject *version = PyUnicode_FromString("0.1");
-    PyDict_SetItemString(d, "__version", version);
-    Py_XDECREF(version);
-
-    return 0;
-}
-
 static PyMethodDef functions[] = {
     /* Functions */
     {"apply", (PyCFunction)apply, METH_VARARGS, NULL},
@@ -269,10 +258,6 @@ PyInit__imagingmorph(void) {
     };
 
     m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
 
     return m;
 }
