@@ -23,7 +23,6 @@ def test_ignore_dos_text():
 
 
 def test_dos_text():
-
     try:
         im = Image.open(TEST_FILE)
         im.load()

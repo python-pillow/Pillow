@@ -116,12 +116,11 @@ _dealloc(ImagingDecoderObject *decoder) {
 
 static PyObject *
 _decode(ImagingDecoderObject *decoder, PyObject *args) {
-    UINT8 *buffer;
-    Py_ssize_t bufsize;
+    Py_buffer buffer;
     int status;
     ImagingSectionCookie cookie;
 
-    if (!PyArg_ParseTuple(args, "y#", &buffer, &bufsize)) {
+    if (!PyArg_ParseTuple(args, "y*", &buffer)) {
         return NULL;
     }
 
@@ -129,12 +128,13 @@ _decode(ImagingDecoderObject *decoder, PyObject *args) {
         ImagingSectionEnter(&cookie);
     }
 
-    status = decoder->decode(decoder->im, &decoder->state, buffer, bufsize);
+    status = decoder->decode(decoder->im, &decoder->state, buffer.buf, buffer.len);
 
     if (!decoder->pulls_fd) {
         ImagingSectionLeave(&cookie);
     }
 
+    PyBuffer_Release(&buffer);
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
 

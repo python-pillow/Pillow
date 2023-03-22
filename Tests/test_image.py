@@ -69,7 +69,6 @@ class TestImage:
         assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
-
         im = Image.new("L", (100, 100))
         assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
         assert im.mode == "L"
@@ -397,6 +396,17 @@ class TestImage:
             source.alpha_composite(over, (0, 0), 0)
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
+
+    def test_register_open_duplicates(self):
+        # Arrange
+        factory, accept = Image.OPEN["JPEG"]
+        id_length = len(Image.ID)
+
+        # Act
+        Image.register_open("JPEG", factory, accept)
+
+        # Assert
+        assert len(Image.ID) == id_length
 
     def test_registered_extensions_uninitialized(self):
         # Arrange
@@ -996,7 +1006,6 @@ def mock_encode(*args):
 
 class TestRegistry:
     def test_encode_registry(self):
-
         Image.register_encoder("MOCK", mock_encode)
         assert "MOCK" in Image.ENCODERS
 

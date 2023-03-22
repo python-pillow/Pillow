@@ -32,7 +32,8 @@ def test_unclosed_file():
         im = Image.open(TEST_IM)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():
@@ -51,7 +52,6 @@ def test_context_manager():
 def test_tell():
     # Arrange
     with Image.open(TEST_IM) as im:
-
         # Act
         frame = im.tell()
 

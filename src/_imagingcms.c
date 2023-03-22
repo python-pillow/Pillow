@@ -116,7 +116,7 @@ cms_profile_open(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-cms_profile_fromstring(PyObject *self, PyObject *args) {
+cms_profile_frombytes(PyObject *self, PyObject *args) {
     cmsHPROFILE hProfile;
 
     char *pProfile;
@@ -950,6 +950,8 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
             return Py_None;
         }
         PyDict_SetItem(result, id, entry);
+        Py_DECREF(id);
+        Py_DECREF(entry);
     }
     return result;
 }
@@ -960,8 +962,7 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
 static PyMethodDef pyCMSdll_methods[] = {
 
     {"profile_open", cms_profile_open, METH_VARARGS},
-    {"profile_frombytes", cms_profile_fromstring, METH_VARARGS},
-    {"profile_fromstring", cms_profile_fromstring, METH_VARARGS},
+    {"profile_frombytes", cms_profile_frombytes, METH_VARARGS},
     {"profile_tobytes", cms_profile_tobytes, METH_VARARGS},
 
     /* profile and transform functions */
@@ -1532,7 +1533,8 @@ setup_module(PyObject *m) {
     } else {
         v = PyUnicode_FromFormat("%d.%d", vn / 1000, (vn / 10) % 100);
     }
-    PyDict_SetItemString(d, "littlecms_version", v);
+    PyDict_SetItemString(d, "littlecms_version", v ? v : Py_None);
+    Py_XDECREF(v);
 
     return 0;
 }

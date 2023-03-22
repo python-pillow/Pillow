@@ -12,7 +12,6 @@ TEST_FILE = "Tests/images/hopper.fits"
 def test_open():
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert im.format == "FITS"
         assert im.size == (128, 128)
@@ -45,6 +44,12 @@ def test_naxis_zero():
             pass
 
 
+def test_comment():
+    image_data = b"SIMPLE  =                    T / comment string"
+    with pytest.raises(OSError):
+        FitsImagePlugin.FitsImageFile(BytesIO(image_data))
+
+
 def test_stub_deprecated():
     class Handler:
         opened = False
@@ -55,6 +60,7 @@ def test_stub_deprecated():
 
         def load(self, im):
             self.loaded = True
+            im.fp.close()
             return Image.new("RGB", (1, 1))
 
     handler = Handler()

@@ -278,7 +278,6 @@ def test_rgba():
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
         with Image.open("Tests/images/rgb_trns_ycbc.jp2") as jp2:
-
             # Act
             j2k.load()
             jp2.load()
@@ -360,6 +359,17 @@ def test_subsampling_decode(name):
                 width, height = width * 2, height * 2
             expected = im2.resize((width, height), Image.Resampling.NEAREST)
         assert_image_similar(im, expected, epsilon)
+
+
+def test_comment():
+    with Image.open("Tests/images/comment.jp2") as im:
+        assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
+
+    # Test an image that is truncated partway through a codestream
+    with open("Tests/images/comment.jp2", "rb") as fp:
+        b = BytesIO(fp.read(130))
+        with Image.open(b) as im:
+            pass
 
 
 @pytest.mark.parametrize(

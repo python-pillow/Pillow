@@ -12,6 +12,11 @@ from PIL import _deprecate
             r"\(2023-07-01\)\. Use new thing instead\.",
         ),
         (
+            11,
+            "Old thing is deprecated and will be removed in Pillow 11 "
+            r"\(2024-10-15\)\. Use new thing instead\.",
+        ),
+        (
             None,
             r"Old thing is deprecated and will be removed in a future version\. "
             r"Use new thing instead\.",

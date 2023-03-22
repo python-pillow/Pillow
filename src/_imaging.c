@@ -251,6 +251,10 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
 static const char *must_be_sequence = "argument must be a sequence";
 static const char *must_be_two_coordinates =
     "coordinate list must contain exactly 2 coordinates";
+static const char *incorrectly_ordered_x_coordinate =
+    "x1 must be greater than or equal to x0";
+static const char *incorrectly_ordered_y_coordinate =
+    "y1 must be greater than or equal to y0";
 static const char *wrong_mode = "unrecognized image mode";
 static const char *wrong_raw_mode = "unrecognized raw mode";
 static const char *outside_image = "image index out of range";
@@ -2805,6 +2809,16 @@ _draw_arc(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawArc(
         self->image->image,
@@ -2886,6 +2900,16 @@ _draw_chord(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawChord(
         self->image->image,
@@ -2929,6 +2953,16 @@ _draw_ellipse(ImagingDrawObject *self, PyObject *args) {
     }
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
+        return NULL;
+    }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -3101,6 +3135,16 @@ _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawPieslice(
         self->image->image,
@@ -3194,6 +3238,16 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
     }
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
+        return NULL;
+    }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -3756,6 +3810,7 @@ static PyTypeObject PixelAccess_Type = {
 static PyObject *
 _get_stats(PyObject *self, PyObject *args) {
     PyObject *d;
+    PyObject *v;
     ImagingMemoryArena arena = &ImagingDefaultArena;
 
     if (!PyArg_ParseTuple(args, ":get_stats")) {
@@ -3766,15 +3821,29 @@ _get_stats(PyObject *self, PyObject *args) {
     if (!d) {
         return NULL;
     }
-    PyDict_SetItemString(d, "new_count", PyLong_FromLong(arena->stats_new_count));
-    PyDict_SetItemString(
-        d, "allocated_blocks", PyLong_FromLong(arena->stats_allocated_blocks));
-    PyDict_SetItemString(
-        d, "reused_blocks", PyLong_FromLong(arena->stats_reused_blocks));
-    PyDict_SetItemString(
-        d, "reallocated_blocks", PyLong_FromLong(arena->stats_reallocated_blocks));
-    PyDict_SetItemString(d, "freed_blocks", PyLong_FromLong(arena->stats_freed_blocks));
-    PyDict_SetItemString(d, "blocks_cached", PyLong_FromLong(arena->blocks_cached));
+    v = PyLong_FromLong(arena->stats_new_count);
+    PyDict_SetItemString(d, "new_count", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->stats_allocated_blocks);
+    PyDict_SetItemString(d, "allocated_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->stats_reused_blocks);
+    PyDict_SetItemString(d, "reused_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->stats_reallocated_blocks);
+    PyDict_SetItemString(d, "reallocated_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->stats_freed_blocks);
+    PyDict_SetItemString(d, "freed_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->blocks_cached);
+    PyDict_SetItemString(d, "blocks_cached", v ? v : Py_None);
+    Py_XDECREF(v);
     return d;
 }
 
@@ -3984,8 +4053,6 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args);
 extern PyObject *
-PyImaging_ListWindowsWin32(PyObject *self, PyObject *args);
-extern PyObject *
 PyImaging_EventLoopWin32(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_DrawWmf(PyObject *self, PyObject *args);
@@ -4069,7 +4136,6 @@ static PyMethodDef functions[] = {
     {"grabclipboard_win32", (PyCFunction)PyImaging_GrabClipboardWin32, METH_VARARGS},
     {"createwindow", (PyCFunction)PyImaging_CreateWindowWin32, METH_VARARGS},
     {"eventloop", (PyCFunction)PyImaging_EventLoopWin32, METH_VARARGS},
-    {"listwindows", (PyCFunction)PyImaging_ListWindowsWin32, METH_VARARGS},
     {"drawwmf", (PyCFunction)PyImaging_DrawWmf, METH_VARARGS},
 #endif
 #ifdef HAVE_XCB
@@ -4146,28 +4212,33 @@ setup_module(PyObject *m) {
 #ifdef HAVE_LIBJPEG
     {
         extern const char *ImagingJpegVersion(void);
-        PyDict_SetItemString(
-            d, "jpeglib_version", PyUnicode_FromString(ImagingJpegVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingJpegVersion());
+        PyDict_SetItemString(d, "jpeglib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
 #ifdef HAVE_OPENJPEG
     {
         extern const char *ImagingJpeg2KVersion(void);
-        PyDict_SetItemString(
-            d, "jp2klib_version", PyUnicode_FromString(ImagingJpeg2KVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingJpeg2KVersion());
+        PyDict_SetItemString(d, "jp2klib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
     PyObject *have_libjpegturbo;
 #ifdef LIBJPEG_TURBO_VERSION
     have_libjpegturbo = Py_True;
+    {
 #define tostr1(a) #a
 #define tostr(a) tostr1(a)
-    PyDict_SetItemString(
-        d, "libjpeg_turbo_version", PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION)));
+        PyObject *v = PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION));
+        PyDict_SetItemString(d, "libjpeg_turbo_version", v ? v : Py_None);
+        Py_XDECREF(v);
 #undef tostr
 #undef tostr1
+    }
 #else
     have_libjpegturbo = Py_False;
 #endif
@@ -4179,8 +4250,9 @@ setup_module(PyObject *m) {
     have_libimagequant = Py_True;
     {
         extern const char *ImagingImageQuantVersion(void);
-        PyDict_SetItemString(
-            d, "imagequant_version", PyUnicode_FromString(ImagingImageQuantVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingImageQuantVersion());
+        PyDict_SetItemString(d, "imagequant_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #else
     have_libimagequant = Py_False;
@@ -4197,16 +4269,18 @@ setup_module(PyObject *m) {
     PyModule_AddIntConstant(m, "FIXED", Z_FIXED);
     {
         extern const char *ImagingZipVersion(void);
-        PyDict_SetItemString(
-            d, "zlib_version", PyUnicode_FromString(ImagingZipVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingZipVersion());
+        PyDict_SetItemString(d, "zlib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
 #ifdef HAVE_LIBTIFF
     {
         extern const char *ImagingTiffVersion(void);
-        PyDict_SetItemString(
-            d, "libtiff_version", PyUnicode_FromString(ImagingTiffVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingTiffVersion());
+        PyDict_SetItemString(d, "libtiff_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
         // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
         PyObject *support_custom_tags;
@@ -4229,7 +4303,9 @@ setup_module(PyObject *m) {
     Py_INCREF(have_xcb);
     PyModule_AddObject(m, "HAVE_XCB", have_xcb);
 
-    PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(version));
+    PyObject *pillow_version = PyUnicode_FromString(version);
+    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None);
+    Py_XDECREF(pillow_version);
 
     return 0;
 }

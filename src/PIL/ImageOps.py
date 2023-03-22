@@ -205,7 +205,6 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
 
     # Create the mapping (2-color)
     if mid is None:
-
         range_map = range(0, whitepoint - blackpoint)
 
         for i in range_map:
@@ -215,7 +214,6 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
 
     # Create the mapping (3-color)
     else:
-
         range_map1 = range(0, midpoint - blackpoint)
         range_map2 = range(0, whitepoint - midpoint)
 

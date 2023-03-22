@@ -223,7 +223,6 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # --------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
-
             # ---------------------------------------------------- 1-bit images
             if not (0 < file_info["colors"] <= 65536):
                 msg = f"Unsupported BMP Palette size ({file_info['colors']})"
@@ -360,7 +359,6 @@ class BmpRleDecoder(ImageFile.PyDecoder):
 # Image plugin for the DIB format (BMP alias)
 # =============================================================================
 class DibImageFile(BmpImageFile):
-
     format = "DIB"
     format_description = "Windows Bitmap"
 

@@ -33,12 +33,10 @@ def _accept(prefix):
 
 
 class XpmImageFile(ImageFile.ImageFile):
-
     format = "XPM"
     format_description = "X11 Pixel Map"
 
     def _open(self):
-
         if not _accept(self.fp.read(9)):
             msg = "not an XPM file"
             raise SyntaxError(msg)
@@ -68,7 +66,6 @@ class XpmImageFile(ImageFile.ImageFile):
         palette = [b"\0\0\0"] * 256
 
         for _ in range(pal):
-
             s = self.fp.readline()
             if s[-2:] == b"\r\n":
                 s = s[:-2]
@@ -79,9 +76,7 @@ class XpmImageFile(ImageFile.ImageFile):
             s = s[2:-2].split()
 
             for i in range(0, len(s), 2):
-
                 if s[i] == b"c":
-
                     # process colour key
                     rgb = s[i + 1]
                     if rgb == b"None":
@@ -99,7 +94,6 @@ class XpmImageFile(ImageFile.ImageFile):
                     break
 
             else:
-
                 # missing colour key
                 msg = "cannot read this XPM file"
                 raise ValueError(msg)
@@ -110,7 +104,6 @@ class XpmImageFile(ImageFile.ImageFile):
         self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))]
 
     def load_read(self, bytes):
-
         #
         # load all image data in one chunk
 

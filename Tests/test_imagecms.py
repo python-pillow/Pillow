@@ -625,3 +625,14 @@ def test_constants_deprecation():
         for name in enum.__members__:
             with pytest.warns(DeprecationWarning):
                 assert getattr(ImageCms, prefix + name) == enum[name]
+
+
+@pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
+def test_rgb_lab(mode):
+    im = Image.new(mode, (1, 1))
+    converted_im = im.convert("LAB")
+    assert converted_im.getpixel((0, 0)) == (0, 128, 128)
+
+    im = Image.new("LAB", (1, 1), (255, 0, 0))
+    converted_im = im.convert(mode)
+    assert converted_im.getpixel((0, 0))[:3] == (0, 255, 255)

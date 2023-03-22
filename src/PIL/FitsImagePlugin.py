@@ -19,7 +19,6 @@ def _accept(prefix):
 
 
 class FitsImageFile(ImageFile.ImageFile):
-
     format = "FITS"
     format_description = "FITS"
 
@@ -33,7 +32,7 @@ class FitsImageFile(ImageFile.ImageFile):
             keyword = header[:8].strip()
             if keyword == b"END":
                 break
-            value = header[8:].strip()
+            value = header[8:].split(b"/")[0].strip()
             if value.startswith(b"="):
                 value = value[1:].strip()
             if not headers and (not _accept(keyword) or value != b"T"):

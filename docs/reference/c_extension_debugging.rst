@@ -10,19 +10,13 @@ distributions.
 
 -  ``python3-dbg`` package for the gdb extensions and python symbols
 -  ``gdb`` and ``valgrind``
--  Potentially debug symbols for libraries. On ubuntu they're shipped
-   in package-dbgsym packages, from a different repo.
+-  Potentially debug symbols for libraries. On Ubuntu you can follow those
+   instructions to install the corresponding packages: `Debug Symbol Packages <https://wiki.ubuntu.com/Debug%20Symbol%20Packages#Getting_-dbgsym.ddeb_packages>`_
 
-::
+Then ``sudo apt-get install libtiff5-dbgsym``
 
-    deb http://ddebs.ubuntu.com focal main restricted universe multiverse
-    deb http://ddebs.ubuntu.com focal-updates main restricted universe multiverse
-    deb http://ddebs.ubuntu.com focal-proposed main restricted universe multiverse
-
-Then ``sudo apt-get update && sudo apt-get install libtiff5-dbgsym``
-
--  There's a bug with the dbg package for at least python 3.8 on ubuntu
-   20.04, and you need to add a new link or two to make it autoload when
+-  There's a bug with the ``python3-dbg`` package for at least Python 3.8 on
+   Ubuntu 20.04, and you need to add a new link or two to make it autoload when
    running python:
 
 ::

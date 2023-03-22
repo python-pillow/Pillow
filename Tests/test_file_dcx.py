@@ -15,7 +15,6 @@ def test_sanity():
 
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert im.size == (128, 128)
         assert isinstance(im, DcxImagePlugin.DcxImageFile)
@@ -29,7 +28,8 @@ def test_unclosed_file():
         im = Image.open(TEST_FILE)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():
@@ -54,7 +54,6 @@ def test_invalid_file():
 def test_tell():
     # Arrange
     with Image.open(TEST_FILE) as im:
-
         # Act
         frame = im.tell()
 

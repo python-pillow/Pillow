@@ -101,7 +101,6 @@ def _save_all(im, fp, filename):
 
 
 class MpoImageFile(JpegImagePlugin.JpegImageFile):
-
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False

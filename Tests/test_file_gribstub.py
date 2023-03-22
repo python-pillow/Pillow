@@ -10,7 +10,6 @@ TEST_FILE = "Tests/images/WAlaska.wind.7days.grb"
 def test_open():
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert im.format == "GRIB"
 
@@ -31,7 +30,6 @@ def test_invalid_file():
 def test_load():
     # Arrange
     with Image.open(TEST_FILE) as im:
-
         # Act / Assert: stub cannot load without an implemented handler
         with pytest.raises(OSError):
             im.load()
@@ -58,6 +56,7 @@ def test_handler(tmp_path):
 
         def load(self, im):
             self.loaded = True
+            im.fp.close()
             return Image.new("RGB", (1, 1))
 
         def save(self, im, fp, filename):

@@ -22,11 +22,9 @@ class PaletteFile:
     rawmode = "RGB"
 
     def __init__(self, fp):
-
         self.palette = [(i, i, i) for i in range(256)]
 
         while True:
-
             s = fp.readline()
 
             if not s:
@@ -50,5 +48,4 @@ class PaletteFile:
         self.palette = b"".join(self.palette)
 
     def getpalette(self):
-
         return self.palette, self.rawmode

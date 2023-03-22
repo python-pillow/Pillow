@@ -29,10 +29,8 @@ def test_sanity(codec, test_path, format):
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file():
-    def open():
+    with pytest.warns(ResourceWarning):
         TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
-
-    pytest.warns(ResourceWarning, open)
 
 
 def test_close():

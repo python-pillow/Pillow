@@ -37,13 +37,11 @@ def _accept(prefix):
 
 
 class DcxImageFile(PcxImageFile):
-
     format = "DCX"
     format_description = "Intel DCX"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # Header
         s = self.fp.read(4)
         if not _accept(s):

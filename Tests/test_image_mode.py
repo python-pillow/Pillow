@@ -6,7 +6,6 @@ from .helper import hopper
 
 
 def test_sanity():
-
     with hopper() as im:
         im.mode
 

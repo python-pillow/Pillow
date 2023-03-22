@@ -51,7 +51,6 @@ def _accept(prefix):
 
 
 class PpmImageFile(ImageFile.ImageFile):
-
     format = "PPM"
     format_description = "Pbmplus image"
 

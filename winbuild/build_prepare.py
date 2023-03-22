@@ -109,9 +109,9 @@ header = [
 deps = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/2.1.4/libjpeg-turbo-2.1.4.tar.gz/download",
-        "filename": "libjpeg-turbo-2.1.4.tar.gz",
-        "dir": "libjpeg-turbo-2.1.4",
+        + "/libjpeg-turbo/files/2.1.5.1/libjpeg-turbo-2.1.5.1.tar.gz/download",
+        "filename": "libjpeg-turbo-2.1.5.1.tar.gz",
+        "dir": "libjpeg-turbo-2.1.5.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
@@ -152,9 +152,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.1.tar.gz/download",
-        "filename": "xz-5.4.1.tar.gz",
-        "dir": "xz-5.4.1",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.2.tar.gz/download",
+        "filename": "xz-5.4.2.tar.gz",
+        "dir": "xz-5.4.2",
         "license": "COPYING",
         "patch": {
             r"src\liblzma\api\lzma.h": {
@@ -253,9 +253,9 @@ deps = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.gz",  # noqa: E501
-        "filename": "freetype-2.12.1.tar.gz",
-        "dir": "freetype-2.12.1",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz",  # noqa: E501
+        "filename": "freetype-2.13.0.tar.gz",
+        "dir": "freetype-2.13.0",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -289,9 +289,9 @@ deps = {
         # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.14/lcms2-2.14.tar.gz/download",
-        "filename": "lcms2-2.14.tar.gz",
-        "dir": "lcms2-2.14",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.15/lcms2-2.15.tar.gz/download",
+        "filename": "lcms2-2.15.tar.gz",
+        "dir": "lcms2-2.15",
         "license": "COPYING",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
@@ -356,9 +356,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/6.0.0.zip",
-        "filename": "harfbuzz-6.0.0.zip",
-        "dir": "harfbuzz-6.0.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/7.1.0.zip",
+        "filename": "harfbuzz-7.1.0.zip",
+        "dir": "harfbuzz-7.1.0",
         "license": "COPYING",
         "build": [
             cmd_set("CXXFLAGS", "-d2FH4-"),

@@ -295,29 +295,43 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
-    def rounded_rectangle(self, xy, radius=0, fill=None, outline=None, width=1):
+    def rounded_rectangle(
+        self, xy, radius=0, fill=None, outline=None, width=1, *, corners=None
+    ):
         """Draw a rounded rectangle."""
         if isinstance(xy[0], (list, tuple)):
             (x0, y0), (x1, y1) = xy
         else:
             x0, y0, x1, y1 = xy
+        if x1 < x0:
+            msg = "x1 must be greater than or equal to x0"
+            raise ValueError(msg)
+        if y1 < y0:
+            msg = "y1 must be greater than or equal to y0"
+            raise ValueError(msg)
+        if corners is None:
+            corners = (True, True, True, True)
 
         d = radius * 2
 
-        full_x = d >= x1 - x0
-        if full_x:
-            # The two left and two right corners are joined
-            d = x1 - x0
-        full_y = d >= y1 - y0
-        if full_y:
-            # The two top and two bottom corners are joined
-            d = y1 - y0
-        if full_x and full_y:
-            # If all corners are joined, that is a circle
-            return self.ellipse(xy, fill, outline, width)
+        full_x, full_y = False, False
+        if all(corners):
+            full_x = d >= x1 - x0
+            if full_x:
+                # The two left and two right corners are joined
+                d = x1 - x0
+            full_y = d >= y1 - y0
+            if full_y:
+                # The two top and two bottom corners are joined
+                d = y1 - y0
+            if full_x and full_y:
+                # If all corners are joined, that is a circle
+                return self.ellipse(xy, fill, outline, width)
 
-        if d == 0:
-            # If the corners have no curve, that is a rectangle
+        if d == 0 or not any(corners):
+            # If the corners have no curve,
+            # or there are no corners,
+            # that is a rectangle
             return self.rectangle(xy, fill, outline, width)
 
         r = d // 2
@@ -338,12 +352,17 @@ class ImageDraw:
                 )
             else:
                 # Draw four separate corners
-                parts = (
-                    ((x1 - d, y0, x1, y0 + d), 270, 360),
-                    ((x1 - d, y1 - d, x1, y1), 0, 90),
-                    ((x0, y1 - d, x0 + d, y1), 90, 180),
-                    ((x0, y0, x0 + d, y0 + d), 180, 270),
-                )
+                parts = []
+                for i, part in enumerate(
+                    (
+                        ((x0, y0, x0 + d, y0 + d), 180, 270),
+                        ((x1 - d, y0, x1, y0 + d), 270, 360),
+                        ((x1 - d, y1 - d, x1, y1), 0, 90),
+                        ((x0, y1 - d, x0 + d, y1), 90, 180),
+                    )
+                ):
+                    if corners[i]:
+                        parts.append(part)
             for part in parts:
                 if pieslice:
                     self.draw.draw_pieslice(*(part + (fill, 1)))
@@ -358,28 +377,52 @@ class ImageDraw:
             else:
                 self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill, 1)
             if not full_x and not full_y:
-                self.draw.draw_rectangle((x0, y0 + r + 1, x0 + r, y1 - r - 1), fill, 1)
-                self.draw.draw_rectangle((x1 - r, y0 + r + 1, x1, y1 - r - 1), fill, 1)
+                left = [x0, y0, x0 + r, y1]
+                if corners[0]:
+                    left[1] += r + 1
+                if corners[3]:
+                    left[3] -= r + 1
+                self.draw.draw_rectangle(left, fill, 1)
+
+                right = [x1 - r, y0, x1, y1]
+                if corners[1]:
+                    right[1] += r + 1
+                if corners[2]:
+                    right[3] -= r + 1
+                self.draw.draw_rectangle(right, fill, 1)
         if ink is not None and ink != fill and width != 0:
             draw_corners(False)
 
             if not full_x:
-                self.draw.draw_rectangle(
-                    (x0 + r + 1, y0, x1 - r - 1, y0 + width - 1), ink, 1
-                )
-                self.draw.draw_rectangle(
-                    (x0 + r + 1, y1 - width + 1, x1 - r - 1, y1), ink, 1
-                )
+                top = [x0, y0, x1, y0 + width - 1]
+                if corners[0]:
+                    top[0] += r + 1
+                if corners[1]:
+                    top[2] -= r + 1
+                self.draw.draw_rectangle(top, ink, 1)
+
+                bottom = [x0, y1 - width + 1, x1, y1]
+                if corners[3]:
+                    bottom[0] += r + 1
+                if corners[2]:
+                    bottom[2] -= r + 1
+                self.draw.draw_rectangle(bottom, ink, 1)
             if not full_y:
-                self.draw.draw_rectangle(
-                    (x0, y0 + r + 1, x0 + width - 1, y1 - r - 1), ink, 1
-                )
-                self.draw.draw_rectangle(
-                    (x1 - width + 1, y0 + r + 1, x1, y1 - r - 1), ink, 1
-                )
+                left = [x0, y0, x0 + width - 1, y1]
+                if corners[0]:
+                    left[1] += r + 1
+                if corners[3]:
+                    left[3] -= r + 1
+                self.draw.draw_rectangle(left, ink, 1)
+
+                right = [x1 - width + 1, y0, x1, y1]
+                if corners[1]:
+                    right[1] += r + 1
+                if corners[2]:
+                    right[3] -= r + 1
+                self.draw.draw_rectangle(right, ink, 1)
 
     def _multiline_check(self, text):
-        """Draw text."""
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
@@ -420,6 +463,7 @@ class ImageDraw:
         *args,
         **kwargs,
     ):
+        """Draw text."""
         if self._multiline_check(text):
             return self.multiline_text(
                 xy,
@@ -928,8 +972,8 @@ def floodfill(image, xy, value, border=None, thresh=0):
     full_edge = set()
     while edge:
         new_edge = set()
-        for (x, y) in edge:  # 4 adjacent method
-            for (s, t) in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+        for x, y in edge:  # 4 adjacent method
+            for s, t in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
                 # If already processed, or if a coordinate is negative, skip
                 if (s, t) in full_edge or s < 0 or t < 0:
                     continue
