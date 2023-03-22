@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Added reading of JPEG2000 comments #6909
+  [radarhere]
+
+- Decrement reference count #7003
+  [radarhere, nulano]
+
 - Allow libtiff_support_custom_tags to be missing #7020
   [radarhere]
 
