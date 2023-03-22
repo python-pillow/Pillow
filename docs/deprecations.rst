@@ -261,7 +261,7 @@ FreeType 2.7
 Support for FreeType 2.7 has been removed.
 
 We recommend upgrading to at least `FreeType`_ 2.10.4, which fixed a severe
-vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 
 .. _FreeType: https://freetype.org/
 
