@@ -18,6 +18,16 @@ def test_sanity():
         assert_image_equal_tofile(im, "Tests/images/input_bw_one_band.png")
 
 
+def test_close():
+    with Image.open("Tests/images/input_bw_one_band.fpx") as im:
+        pass
+    assert im.ole.fp.closed
+
+    im = Image.open("Tests/images/input_bw_one_band.fpx")
+    im.close()
+    assert im.ole.fp.closed
+
+
 def test_invalid_file():
     # Test an invalid OLE file
     invalid_file = "Tests/images/flower.jpg"

@@ -201,6 +201,7 @@ match(PyObject *self, PyObject *args) {
             if (lut[lut_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
                 PyList_Append(ret, coordObj);
+                Py_XDECREF(coordObj);
             }
         }
     }
@@ -240,19 +241,11 @@ get_on_pixels(PyObject *self, PyObject *args) {
             if (row[col_idx]) {
                 PyObject *coordObj = Py_BuildValue("(nn)", col_idx, row_idx);
                 PyList_Append(ret, coordObj);
+                Py_XDECREF(coordObj);
             }
         }
     }
     return ret;
-}
-
-static int
-setup_module(PyObject *m) {
-    PyObject *d = PyModule_GetDict(m);
-
-    PyDict_SetItemString(d, "__version", PyUnicode_FromString("0.1"));
-
-    return 0;
 }
 
 static PyMethodDef functions[] = {
@@ -275,10 +268,6 @@ PyInit__imagingmorph(void) {
     };
 
     m = PyModule_Create(&module_def);
-
-    if (setup_module(m) < 0) {
-        return NULL;
-    }
 
     return m;
 }

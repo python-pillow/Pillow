@@ -28,6 +28,11 @@ TODO
 API Additions
 =============
 
+QOI file format
+^^^^^^^^^^^^^^^
+
+Pillow can now read images in Quite OK Image format.
+
 Added ``dpi`` argument when saving PDFs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -54,7 +59,14 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Added support for saving PDFs in RGBA mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Using the JPXDecode filter, PDFs can now be saved in RGBA mode.
+
+
+Improved I;16N support
+^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for I;16N access, packing and unpacking. Conversion to
+and from L mode has also been added.

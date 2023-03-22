@@ -950,6 +950,8 @@ _is_intent_supported(CmsProfileObject *self, int clut) {
             return Py_None;
         }
         PyDict_SetItem(result, id, entry);
+        Py_DECREF(id);
+        Py_DECREF(entry);
     }
     return result;
 }
@@ -1531,7 +1533,8 @@ setup_module(PyObject *m) {
     } else {
         v = PyUnicode_FromFormat("%d.%d", vn / 1000, (vn / 10) % 100);
     }
-    PyDict_SetItemString(d, "littlecms_version", v);
+    PyDict_SetItemString(d, "littlecms_version", v ? v : Py_None);
+    Py_XDECREF(v);
 
     return 0;
 }

@@ -425,6 +425,9 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
+    # Python >= 3.11
+    if hasattr(Fraction, "__int__"):
+        __int__ = _delegate("__int__")
 
 
 class ImageFileDirectory_v2(MutableMapping):
@@ -1804,7 +1807,7 @@ def _save(im, fp, filename):
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if not Image.core.libtiff_support_custom_tags:
+                if not getattr(Image.core, "libtiff_support_custom_tags", False):
                     continue
 
                 if tag in ifd.tagtype:

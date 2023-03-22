@@ -173,6 +173,10 @@ def _save(im, fp, filename, save_all=False):
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
+            elif im.mode == "RGBA":
+                filter = "JPXDecode"
+                colorspace = PdfParser.PdfName("DeviceRGB")
+                procset = "ImageC"  # color images
             elif im.mode == "CMYK":
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceCMYK")
@@ -199,6 +203,8 @@ def _save(im, fp, filename, save_all=False):
                 )
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
+            elif filter == "JPXDecode":
+                Image.SAVE["JPEG2000"](im, op, filename)
             elif filter == "FlateDecode":
                 ImageFile._save(im, op, [("zip", (0, 0) + im.size, 0, im.mode)])
             elif filter == "RunLengthDecode":

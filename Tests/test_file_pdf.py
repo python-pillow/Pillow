@@ -8,7 +8,7 @@ import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version
+from .helper import hopper, mark_if_feature_version, skip_unless_feature
 
 
 def helper_save_as_pdf(tmp_path, mode, **kwargs):
@@ -40,6 +40,11 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
 @pytest.mark.parametrize("mode", ("L", "P", "RGB", "CMYK"))
 def test_save(tmp_path, mode):
     helper_save_as_pdf(tmp_path, mode)
+
+
+@skip_unless_feature("jpg_2000")
+def test_save_rgba(tmp_path):
+    helper_save_as_pdf(tmp_path, "RGBA")
 
 
 def test_monochrome(tmp_path):
