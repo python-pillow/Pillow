@@ -351,10 +351,12 @@ def _save(im, fp, filename):
     cinema_mode = info.get("cinema_mode", "no")
     mct = info.get("mct", 0)
     signed = info.get("signed", False)
-    fd = -1
     comment = info.get("comment")
+    if isinstance(comment, str):
+        comment = comment.encode()
     add_plt = info.get("add_plt", False)
 
+    fd = -1
     if hasattr(fp, "fileno"):
         try:
             fd = fp.fileno()
