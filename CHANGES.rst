@@ -28,6 +28,9 @@ since Pillow 4.3.0.
 - Fix for CVE-2021-23437
   [rickprice]
 
+- Fix for CVE-2020-10379
+  [rickprice]
+
 6.2.2.3 (2023-02-23)
 ------------------
 
