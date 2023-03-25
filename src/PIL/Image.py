@@ -686,11 +686,7 @@ class Image:
     @property
     def __array_interface__(self):
         # numpy array interface support
-        new = {}
-        shape, typestr = _conv_type_shape(self)
-        new["shape"] = shape
-        new["typestr"] = typestr
-        new["version"] = 3
+        new = {"version": 3}
         try:
             if self.mode == "1":
                 # Binary images need to be extended from bits to bytes
@@ -709,6 +705,7 @@ class Image:
                     if parse_version(numpy.__version__) < parse_version("1.23"):
                         warnings.warn(e)
             raise
+        new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
     def __getstate__(self):
