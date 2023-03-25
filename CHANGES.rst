@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Load before getting size in __array_interface__ #7034
+  [radarhere]
+
+- Support creating BGR;15, BGR;16 and BGR;24 images, but drop support for BGR;32 #7010
+  [radarhere]
+
 - Consider transparency when applying APNG blend mask #7018
   [radarhere]
 
