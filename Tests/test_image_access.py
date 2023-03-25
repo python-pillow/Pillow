@@ -353,8 +353,8 @@ class TestCffi(AccessTest):
 
 
 class TestImagePutPixelError(AccessTest):
-    IMAGE_MODES1 = ["L", "LA", "RGB", "RGBA"]
-    IMAGE_MODES2 = ["I", "I;16", "BGR;15"]
+    IMAGE_MODES1 = ["LA", "RGB", "RGBA", "BGR;15"]
+    IMAGE_MODES2 = ["L", "I", "I;16"]
     INVALID_TYPES = ["foo", 1.0, None]
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1)
@@ -369,6 +369,11 @@ class TestImagePutPixelError(AccessTest):
         (
             ("L", (0, 2), "color must be int or single-element tuple"),
             ("LA", (0, 3), "color must be int, or tuple of one or two elements"),
+            (
+                "BGR;15",
+                (0, 2),
+                "color must be int, or tuple of one or three elements",
+            ),
             (
                 "RGB",
                 (0, 2, 5),
@@ -396,11 +401,6 @@ class TestImagePutPixelError(AccessTest):
         im = hopper(mode)
         with pytest.raises(OverflowError):
             im.putpixel((0, 0), 2**80)
-
-    def test_putpixel_unrecognized_mode(self):
-        im = hopper("BGR;15")
-        with pytest.raises(ValueError, match="unrecognized image mode"):
-            im.putpixel((0, 0), 0)
 
 
 class TestEmbeddable:

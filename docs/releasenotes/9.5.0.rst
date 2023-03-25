@@ -70,9 +70,18 @@ Added support for saving PDFs in RGBA mode
 
 Using the JPXDecode filter, PDFs can now be saved in RGBA mode.
 
-
 Improved I;16N support
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Support has been added for I;16N access, packing and unpacking. Conversion to
 and from L mode has also been added.
+
+BGR;* modes
+^^^^^^^^^^^
+
+It is now possible to create new BGR;15, BGR;16 and BGR;24 images. Conversely, BGR;32
+has been removed from ImageMode and its associated methods, dropping the little support
+Pillow had for the mode.
+
+With that, all modes listed under :ref:`concept-modes` can now be used to create a new
+image.

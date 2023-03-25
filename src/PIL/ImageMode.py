@@ -58,10 +58,9 @@ def getmode(mode):
             "HSV": ("RGB", "L", ("H", "S", "V"), "|u1"),
             # extra experimental modes
             "RGBa": ("RGB", "L", ("R", "G", "B", "a"), "|u1"),
-            "BGR;15": ("RGB", "L", ("B", "G", "R"), endian + "u2"),
-            "BGR;16": ("RGB", "L", ("B", "G", "R"), endian + "u2"),
-            "BGR;24": ("RGB", "L", ("B", "G", "R"), endian + "u3"),
-            "BGR;32": ("RGB", "L", ("B", "G", "R"), endian + "u4"),
+            "BGR;15": ("RGB", "L", ("B", "G", "R"), "|u1"),
+            "BGR;16": ("RGB", "L", ("B", "G", "R"), "|u1"),
+            "BGR;24": ("RGB", "L", ("B", "G", "R"), "|u1"),
             "LA": ("L", "L", ("L", "A"), "|u1"),
             "La": ("L", "L", ("L", "a"), "|u1"),
             "PA": ("RGB", "L", ("P", "A"), "|u1"),
