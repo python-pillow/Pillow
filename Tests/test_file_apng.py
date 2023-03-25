@@ -163,6 +163,12 @@ def test_apng_blend():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+def test_apng_blend_transparency():
+    with Image.open("Tests/images/blend_transparency.png") as im:
+        im.seek(1)
+        assert im.getpixel((0, 0)) == (255, 0, 0)
+
+
 def test_apng_chunk_order():
     with Image.open("Tests/images/apng/fctl_actl.png") as im:
         im.seek(im.n_frames - 1)

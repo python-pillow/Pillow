@@ -5,6 +5,24 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Consider transparency when applying APNG blend mask #7018
+  [radarhere]
+
+- Round duration when saving animated WebP images #6996
+  [radarhere]
+
+- Added reading of JPEG2000 comments #6909
+  [radarhere]
+
+- Decrement reference count #7003
+  [radarhere, nulano]
+
+- Allow libtiff_support_custom_tags to be missing #7020
+  [radarhere]
+
+- Improved I;16N support #6834
+  [radarhere]
+
 - Added QOI reading #6852
   [radarhere, hugovk]
 

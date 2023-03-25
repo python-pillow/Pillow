@@ -218,6 +218,8 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 self._size, self.mode, self.custom_mimetype, dpi = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
+                if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):
+                    self._parse_comment()
             else:
                 msg = "not a JPEG 2000 file"
                 raise SyntaxError(msg)
@@ -253,6 +255,28 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 (self.codec, self._reduce, self.layers, fd, length),
             )
         ]
+
+    def _parse_comment(self):
+        hdr = self.fp.read(2)
+        length = struct.unpack(">H", hdr)[0]
+        self.fp.seek(length - 2, os.SEEK_CUR)
+
+        while True:
+            marker = self.fp.read(2)
+            if not marker:
+                break
+            typ = marker[1]
+            if typ in (0x90, 0xD9):
+                # Start of tile or end of codestream
+                break
+            hdr = self.fp.read(2)
+            length = struct.unpack(">H", hdr)[0]
+            if typ == 0x64:
+                # Comment
+                self.info["comment"] = self.fp.read(length - 2)[2:]
+                break
+            else:
+                self.fp.seek(length - 2, os.SEEK_CUR)
 
     @property
     def reduce(self):

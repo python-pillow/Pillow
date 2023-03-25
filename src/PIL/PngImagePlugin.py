@@ -1003,9 +1003,13 @@ class PngImageFile(ImageFile.ImageFile):
         else:
             if self._prev_im and self.blend_op == Blend.OP_OVER:
                 updated = self._crop(self.im, self.dispose_extent)
-                self._prev_im.paste(
-                    updated, self.dispose_extent, updated.convert("RGBA")
-                )
+                if self.im.mode == "RGB" and "transparency" in self.info:
+                    mask = updated.convert_transparent(
+                        "RGBA", self.info["transparency"]
+                    )
+                else:
+                    mask = updated.convert("RGBA")
+                self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
                 if self.pyaccess:
                     self.pyaccess = None

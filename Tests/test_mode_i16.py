@@ -88,10 +88,7 @@ def test_tobytes():
 def test_convert():
     im = original.copy()
 
-    verify(im.convert("I;16"))
-    verify(im.convert("I;16").convert("L"))
-    verify(im.convert("I;16").convert("I"))
-
-    verify(im.convert("I;16B"))
-    verify(im.convert("I;16B").convert("L"))
-    verify(im.convert("I;16B").convert("I"))
+    for mode in ("I;16", "I;16B", "I;16N"):
+        verify(im.convert(mode))
+        verify(im.convert(mode).convert("L"))
+        verify(im.convert(mode).convert("I"))

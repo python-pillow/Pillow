@@ -13,7 +13,7 @@
 
 /* use make_hash.py from the pillow-scripts repository to calculate these values */
 #define ACCESS_TABLE_SIZE 27
-#define ACCESS_TABLE_HASH 3078
+#define ACCESS_TABLE_HASH 33051
 
 static struct ImagingAccessInstance access_table[ACCESS_TABLE_SIZE];
 
@@ -90,6 +90,12 @@ get_pixel_16B(Imaging im, int x, int y, void *color) {
     UINT16 out = in[1] + (in[0] << 8);
     memcpy(color, &out, sizeof(out));
 #endif
+}
+
+static void
+get_pixel_16(Imaging im, int x, int y, void *color) {
+    UINT8 *in = (UINT8 *)&im->image[y][x + x];
+    memcpy(color, in, sizeof(UINT16));
 }
 
 static void
@@ -186,6 +192,7 @@ ImagingAccessInit() {
     ADD("I;16", get_pixel_16L, put_pixel_16L);
     ADD("I;16L", get_pixel_16L, put_pixel_16L);
     ADD("I;16B", get_pixel_16B, put_pixel_16B);
+    ADD("I;16N", get_pixel_16, put_pixel_16L);
     ADD("I;32L", get_pixel_32L, put_pixel_32L);
     ADD("I;32B", get_pixel_32B, put_pixel_32B);
     ADD("F", get_pixel_32, put_pixel_32);
