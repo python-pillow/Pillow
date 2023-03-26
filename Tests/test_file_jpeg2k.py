@@ -372,6 +372,20 @@ def test_comment():
             pass
 
 
+def test_save_comment():
+    for comment in ("Created by Pillow", b"Created by Pillow"):
+        out = BytesIO()
+        test_card.save(out, "JPEG2000", comment=comment)
+        out.seek(0)
+
+        with Image.open(out) as im:
+            assert im.info["comment"] == b"Created by Pillow"
+
+    too_long_comment = " " * 65531
+    with pytest.raises(ValueError):
+        test_card.save(out, "JPEG2000", comment=too_long_comment)
+
+
 @pytest.mark.parametrize(
     "test_file",
     [
@@ -389,20 +403,6 @@ def test_crashes(test_file):
                 im.load()
             except OSError:
                 pass
-
-
-def test_custom_comment():
-    output_stream = BytesIO()
-    unique_comment = "This is a unique comment, which should be found below"
-    test_card.save(output_stream, "JPEG2000", comment=unique_comment)
-    output_stream.seek(0)
-    data = output_stream.read()
-    # Lazy method to determine if the comment is in the image generated
-    assert bytes(unique_comment, "utf-8") in data
-
-    too_long_comment = " " * 65532
-    with pytest.raises(ValueError):
-        test_card.save(output_stream, "JPEG2000", comment=too_long_comment)
 
 
 @skip_unless_feature_version("jpg_2000", "2.4.0")

@@ -1215,11 +1215,12 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     int sgnd = 0;
     Py_ssize_t fd = -1;
     char *comment = NULL;
+    Py_ssize_t comment_size;
     int add_plt = 0;
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbbnzp",
+            "ss|OOOsOnOOOssbbnz#p",
             &mode,
             &format,
             &offset,
@@ -1237,6 +1238,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             &sgnd,
             &fd,
             &comment,
+            &comment_size,
             &add_plt)) {
         return NULL;
     }
@@ -1319,9 +1321,9 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
         }
     }
 
-    if (comment != NULL && strlen(comment) > 0) {
+    if (comment && comment_size > 0) {
         /* Size is stored as as an uint16, subtract 4 bytes for the header */
-        if (strlen(comment) >= 65531) {
+        if (comment_size >= 65531) {
             PyErr_SetString(
                 PyExc_ValueError,
                 "JPEG 2000 comment is too long");
@@ -1329,15 +1331,14 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             return NULL;
         }
 
-        context->comment = strdup(comment);
-
-        if (context->comment == NULL) {
-            PyErr_SetString(
-                PyExc_MemoryError,
-                "Couldn't allocate memory for JPEG 2000 comment");
+        char *p = malloc(comment_size + 1);
+        if (!p) {
             Py_DECREF(encoder);
-            return NULL;
+            return ImagingError_MemoryError();
         }
+        memcpy(p, comment, comment_size);
+        p[comment_size] = '\0';
+        context->comment = p;
     }
 
     if (quality_layers && PySequence_Check(quality_layers)) {
