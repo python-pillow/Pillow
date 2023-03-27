@@ -595,7 +595,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     .. versionadded:: 9.5.0
 
-**add_plt**
+**plt**
     If ``True`` then include a PLT (packet length, tile-part header) marker
     segment in the produced file.
     The default is to not include it.
