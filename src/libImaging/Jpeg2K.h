@@ -101,7 +101,7 @@ typedef struct {
     char *comment;
 
     /* Include PLT marker segment */
-    int add_plt;
+    int plt;
 
 } JPEG2KENCODESTATE;
 

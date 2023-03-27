@@ -409,7 +409,7 @@ def test_crashes(test_file):
 def test_plt_marker():
     # Search the start of the codesteam for the PLT box (id 0xFF58)
     out = BytesIO()
-    test_card.save(out, "JPEG2000", no_jp2=True, add_plt=True)
+    test_card.save(out, "JPEG2000", no_jp2=True, plt=True)
     out.seek(0)
     while True:
         box_bytes = out.read(2)

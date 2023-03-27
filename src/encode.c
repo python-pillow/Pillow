@@ -1216,7 +1216,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     Py_ssize_t fd = -1;
     char *comment = NULL;
     Py_ssize_t comment_size;
-    int add_plt = 0;
+    int plt = 0;
 
     if (!PyArg_ParseTuple(
             args,
@@ -1239,7 +1239,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             &fd,
             &comment,
             &comment_size,
-            &add_plt)) {
+            &plt)) {
         return NULL;
     }
 
@@ -1358,7 +1358,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     context->cinema_mode = cine_mode;
     context->mct = mct;
     context->sgnd = sgnd;
-    context->add_plt = add_plt;
+    context->plt = plt;
 
     return (PyObject *)encoder;
 }

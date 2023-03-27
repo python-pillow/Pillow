@@ -354,7 +354,7 @@ def _save(im, fp, filename):
     comment = info.get("comment")
     if isinstance(comment, str):
         comment = comment.encode()
-    add_plt = info.get("add_plt", False)
+    plt = info.get("plt", False)
 
     fd = -1
     if hasattr(fp, "fileno"):
@@ -379,7 +379,7 @@ def _save(im, fp, filename):
         signed,
         fd,
         comment,
-        add_plt,
+        plt,
     )
 
     ImageFile._save(im, fp, [("jpeg2k", (0, 0) + im.size, 0, kind)])
