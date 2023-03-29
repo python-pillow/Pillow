@@ -1762,6 +1762,7 @@ static struct {
     {"I;16", "I;16", 16, copy2},
     {"I;16B", "I;16B", 16, copy2},
     {"I;16L", "I;16L", 16, copy2},
+    {"I;16N", "I;16N", 16, copy2},
 
     {"I;16", "I;16N", 16, unpackI16N_I16},   // LibTiff native->image endian.
     {"I;16L", "I;16N", 16, unpackI16N_I16},  // LibTiff native->image endian.

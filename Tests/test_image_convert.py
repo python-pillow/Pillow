@@ -254,17 +254,6 @@ def test_p2pa_palette():
     assert im_pa.getpalette() == im.getpalette()
 
 
-@pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
-def test_rgb_lab(mode):
-    im = Image.new(mode, (1, 1))
-    converted_im = im.convert("LAB")
-    assert converted_im.getpixel((0, 0)) == (0, 128, 128)
-
-    im = Image.new("LAB", (1, 1), (255, 0, 0))
-    converted_im = im.convert(mode)
-    assert converted_im.getpixel((0, 0))[:3] == (0, 255, 255)
-
-
 def test_matrix_illegal_conversion():
     # Arrange
     im = hopper("CMYK")

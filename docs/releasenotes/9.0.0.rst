@@ -43,7 +43,7 @@ FreeType 2.7
 Support for FreeType 2.7 has been removed; FreeType 2.8 is the minimum supported.
 
 We recommend upgrading to at least `FreeType`_ 2.10.4, which fixed a severe
-vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 
 .. _FreeType: https://freetype.org/
 
@@ -119,7 +119,7 @@ Google's `OSS-Fuzz`_ project for finding this issue.
 Restrict builtins available to ImageMath.eval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:cve:`CVE-2022-22817`: To limit :py:class:`PIL.ImageMath` to working with images, Pillow
+:cve:`2022-22817`: To limit :py:class:`PIL.ImageMath` to working with images, Pillow
 will now restrict the builtins available to :py:meth:`PIL.ImageMath.eval`. This will
 help prevent problems arising if users evaluate arbitrary expressions, such as
 ``ImageMath.eval("exec(exit())")``.
@@ -127,7 +127,7 @@ help prevent problems arising if users evaluate arbitrary expressions, such as
 Fixed ImagePath.Path array handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:cve:`CVE-2022-22815` (:cwe:`CWE-126`) and :cve:`CVE-2022-22816` (:cwe:`CWE-665`) were
+:cve:`2022-22815` (:cwe:`126`) and :cve:`2022-22816` (:cwe:`665`) were
 found when initializing ``ImagePath.Path``.
 
 .. _OSS-Fuzz: https://github.com/google/oss-fuzz

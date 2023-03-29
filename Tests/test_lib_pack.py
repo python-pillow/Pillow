@@ -207,6 +207,9 @@ class TestLibPack:
                 0x01000083,
             )
 
+    def test_I16(self):
+        self.assert_pack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+
     def test_F_float(self):
         self.assert_pack("F", "F;32F", 4, 1.539989614439558e-36, 4.063216068939723e-34)
 
@@ -761,10 +764,12 @@ class TestLibUnpack:
             self.assert_unpack("I;16", "I;16N", 2, 0x0201, 0x0403, 0x0605)
             self.assert_unpack("I;16B", "I;16N", 2, 0x0201, 0x0403, 0x0605)
             self.assert_unpack("I;16L", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+            self.assert_unpack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
         else:
             self.assert_unpack("I;16", "I;16N", 2, 0x0102, 0x0304, 0x0506)
             self.assert_unpack("I;16B", "I;16N", 2, 0x0102, 0x0304, 0x0506)
             self.assert_unpack("I;16L", "I;16N", 2, 0x0102, 0x0304, 0x0506)
+            self.assert_unpack("I;16N", "I;16N", 2, 0x0102, 0x0304, 0x0506)
 
     def test_CMYK16(self):
         self.assert_unpack("CMYK", "CMYK;16L", 8, (2, 4, 6, 8), (10, 12, 14, 16))

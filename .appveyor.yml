@@ -27,8 +27,8 @@ install:
 - mv c:\pillow-depends-main c:\pillow-depends
 - xcopy /S /Y c:\test-images-main\* c:\pillow\tests\images
 - 7z x ..\pillow-depends\nasm-2.15.05-win64.zip -oc:\
-- ..\pillow-depends\gs1000w32.exe /S
-- path c:\nasm-2.15.05;C:\Program Files (x86)\gs\gs10.0.0\bin;%PATH%
+- choco install ghostscript --version=10.0.0.20230317
+- path c:\nasm-2.15.05;C:\Program Files\gs\gs10.00.0\bin;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |
         c:\python37\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\

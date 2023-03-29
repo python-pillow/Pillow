@@ -59,6 +59,7 @@ _plugins = [
     "PngImagePlugin",
     "PpmImagePlugin",
     "PsdImagePlugin",
+    "QoiImagePlugin",
     "SgiImagePlugin",
     "SpiderImagePlugin",
     "SunImagePlugin",

@@ -36,7 +36,8 @@ def test_unclosed_file():
         im = Image.open(static_test_file)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():

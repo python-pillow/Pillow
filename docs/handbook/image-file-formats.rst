@@ -589,6 +589,19 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     .. versionadded:: 9.1.0
 
+**comment**
+    Adds a custom comment to the file, replacing the default
+    "Created by OpenJPEG version" comment.
+
+    .. versionadded:: 9.5.0
+
+**plt**
+    If ``True`` and OpenJPEG 2.4.0 or later is available, then include a PLT
+    (packet length, tile-part header) marker in the produced file.
+    Defaults to ``False``.
+
+    .. versionadded:: 9.5.0
+
 .. note::
 
    To enable JPEG 2000 support, you need to build and install the OpenJPEG
@@ -1457,8 +1470,13 @@ PDF
 ^^^
 
 Pillow can write PDF (Acrobat) images. Such images are written as binary PDF 1.4
-files, using either JPEG or HEX encoding depending on the image mode (and
-whether JPEG support is available or not).
+files. Different encoding methods are used, depending on the image mode.
+
+* 1 mode images are saved using TIFF encoding, or JPEG encoding if libtiff support is
+  unavailable
+* L, RGB and CMYK mode images use JPEG encoding
+* P mode images use HEX encoding
+* RGBA mode images use JPEG2000 encoding
 
 .. _pdf-saving:
 
@@ -1543,6 +1561,13 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     file, this will default to the current time.
 
     .. versionadded:: 5.3.0
+
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow identifies and reads images in Quite OK Image format.
 
 XV Thumbnails
 ^^^^^^^^^^^^^

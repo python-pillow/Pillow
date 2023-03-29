@@ -131,7 +131,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     } else if (strcmp(mode, "BGR;15") == 0) {
         /* EXPERIMENTAL */
         /* 15-bit reversed true colour */
-        im->bands = 1;
+        im->bands = 3;
         im->pixelsize = 2;
         im->linesize = (xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
@@ -139,7 +139,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     } else if (strcmp(mode, "BGR;16") == 0) {
         /* EXPERIMENTAL */
         /* 16-bit reversed true colour */
-        im->bands = 1;
+        im->bands = 3;
         im->pixelsize = 2;
         im->linesize = (xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
@@ -147,17 +147,9 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     } else if (strcmp(mode, "BGR;24") == 0) {
         /* EXPERIMENTAL */
         /* 24-bit reversed true colour */
-        im->bands = 1;
+        im->bands = 3;
         im->pixelsize = 3;
         im->linesize = (xsize * 3 + 3) & -4;
-        im->type = IMAGING_TYPE_SPECIAL;
-
-    } else if (strcmp(mode, "BGR;32") == 0) {
-        /* EXPERIMENTAL */
-        /* 32-bit reversed true colour */
-        im->bands = 1;
-        im->pixelsize = 4;
-        im->linesize = (xsize * 4 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
     } else if (strcmp(mode, "RGBX") == 0) {
