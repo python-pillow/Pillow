@@ -411,29 +411,30 @@ def test_crashes(test_file):
 
 @skip_unless_feature_version("jpg_2000", "2.4.0")
 def test_plt_marker():
-    # Search the start of the codesteam for the PLT box (id 0xFF58)
+    # Search the start of the codesteam for PLT
     out = BytesIO()
     test_card.save(out, "JPEG2000", no_jp2=True, plt=True)
     out.seek(0)
     while True:
-        box_bytes = out.read(2)
-        if not box_bytes:
+        marker = out.read(2)
+        if not marker:
             # End of steam encountered and no PLT or SOD
             break
 
-        jp2_boxid = _binary.i16be(box_bytes)
+        jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:
-            # No length specifier for main header
+            # SOC has no length
             continue
         elif jp2_boxid == 0xFF58:
-            # This is the PLT box we're looking for
+            # PLT
             return
         elif jp2_boxid == 0xFF93:
-            # SOD box encountered and no PLT, so it wasn't found
+            # SOD without finding PLT first
             break
 
-        jp2_boxlength = _binary.i16be(out.read(2))
-        out.seek(jp2_boxlength - 2, os.SEEK_CUR)
+        hdr = out.read(2)
+        length = _binary.i16be(hdr)
+        out.seek(length - 2, os.SEEK_CUR)
 
-    # The PLT box wasn't found
+    # PLT wasn't found
     raise ValueError
