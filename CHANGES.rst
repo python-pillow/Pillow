@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Support custom comments and PLT markers when saving JPEG2000 images #6903
+  [joshware, radarhere, hugovk]
+
 - Load before getting size in __array_interface__ #7034
   [radarhere]
 
