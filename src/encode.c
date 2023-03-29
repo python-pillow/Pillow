@@ -1214,7 +1214,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     char mct = 0;
     int sgnd = 0;
     Py_ssize_t fd = -1;
-    char *comment = NULL;
+    char *comment;
     Py_ssize_t comment_size;
     int plt = 0;
 
@@ -1323,7 +1323,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 
     if (comment && comment_size > 0) {
         /* Size is stored as as an uint16, subtract 4 bytes for the header */
-        if (comment_size >= 65531) {
+        if (comment_size >= 65532) {
             PyErr_SetString(
                 PyExc_ValueError,
                 "JPEG 2000 comment is too long");

@@ -376,14 +376,18 @@ def test_save_comment():
     for comment in ("Created by Pillow", b"Created by Pillow"):
         out = BytesIO()
         test_card.save(out, "JPEG2000", comment=comment)
-        out.seek(0)
 
         with Image.open(out) as im:
             assert im.info["comment"] == b"Created by Pillow"
 
-    too_long_comment = " " * 65531
+    out = BytesIO()
+    long_comment = b" " * 65531
+    test_card.save(out, "JPEG2000", comment=long_comment)
+    with Image.open(out) as im:
+        assert im.info["comment"] == long_comment
+
     with pytest.raises(ValueError):
-        test_card.save(out, "JPEG2000", comment=too_long_comment)
+        test_card.save(out, "JPEG2000", comment=long_comment + b" ")
 
 
 @pytest.mark.parametrize(

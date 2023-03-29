@@ -503,7 +503,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     /* Enabling PLT markers only supported in OpenJPEG 2.4.0 and up */
 #if ((OPJ_VERSION_MAJOR == 2 && OPJ_VERSION_MINOR >= 4) || OPJ_VERSION_MAJOR > 2)
     if (context->plt) {
-        const char * plt_option[2] = {"PLT=YES", NULL};
+        const char *plt_option[2] = {"PLT=YES", NULL};
         opj_encoder_set_extra_options(codec, plt_option);
     }
 #endif
