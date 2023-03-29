@@ -589,6 +589,19 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     .. versionadded:: 9.1.0
 
+**comment**
+    Adds a custom comment to the file, replacing the default
+    "Created by OpenJPEG version" comment.
+
+    .. versionadded:: 9.5.0
+
+**plt**
+    If ``True`` and OpenJPEG 2.4.0 or later is available, then include a PLT
+    (packet length, tile-part header) marker in the produced file.
+    Defaults to ``False``.
+
+    .. versionadded:: 9.5.0
+
 .. note::
 
    To enable JPEG 2000 support, you need to build and install the OpenJPEG

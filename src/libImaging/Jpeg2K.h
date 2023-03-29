@@ -97,6 +97,12 @@ typedef struct {
     /* PRIVATE CONTEXT (set by decoder) */
     const char *error_msg;
 
+    /* Custom comment */
+    char *comment;
+
+    /* Include PLT marker segment */
+    int plt;
+
 } JPEG2KENCODESTATE;
 
 /*

@@ -17,7 +17,7 @@ import io
 import os
 import struct
 
-from . import Image, ImageFile
+from . import Image, ImageFile, _binary
 
 
 class BoxReader:
@@ -99,7 +99,7 @@ def _parse_codestream(fp):
     count from the SIZ marker segment, returning a PIL (size, mode) tuple."""
 
     hdr = fp.read(2)
-    lsiz = struct.unpack(">H", hdr)[0]
+    lsiz = _binary.i16be(hdr)
     siz = hdr + fp.read(lsiz - 2)
     lsiz, rsiz, xsiz, ysiz, xosiz, yosiz, _, _, _, _, csiz = struct.unpack_from(
         ">HHIIIIIIIIH", siz
@@ -258,7 +258,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
     def _parse_comment(self):
         hdr = self.fp.read(2)
-        length = struct.unpack(">H", hdr)[0]
+        length = _binary.i16be(hdr)
         self.fp.seek(length - 2, os.SEEK_CUR)
 
         while True:
@@ -270,7 +270,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 # Start of tile or end of codestream
                 break
             hdr = self.fp.read(2)
-            length = struct.unpack(">H", hdr)[0]
+            length = _binary.i16be(hdr)
             if typ == 0x64:
                 # Comment
                 self.info["comment"] = self.fp.read(length - 2)[2:]
@@ -351,8 +351,12 @@ def _save(im, fp, filename):
     cinema_mode = info.get("cinema_mode", "no")
     mct = info.get("mct", 0)
     signed = info.get("signed", False)
-    fd = -1
+    comment = info.get("comment")
+    if isinstance(comment, str):
+        comment = comment.encode()
+    plt = info.get("plt", False)
 
+    fd = -1
     if hasattr(fp, "fileno"):
         try:
             fd = fp.fileno()
@@ -374,6 +378,8 @@ def _save(im, fp, filename):
         mct,
         signed,
         fd,
+        comment,
+        plt,
     )
 
     ImageFile._save(im, fp, [("jpeg2k", (0, 0) + im.size, 0, kind)])

@@ -48,11 +48,16 @@ Added ``corners`` argument to ``ImageDraw.rounded_rectangle()``
 ``corners``. This a tuple of Booleans, specifying whether to round each corner,
 ``(top_left, top_right, bottom_right, bottom_left)``.
 
-Reading JPEG comments
-^^^^^^^^^^^^^^^^^^^^^
+JPEG2000 comments and PLT marker
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When opening a JPEG2000 image, the comment may now be read into
-:py:attr:`~PIL.Image.Image.info`.
+:py:attr:`~PIL.Image.Image.info`. The ``comment`` keyword argument can be used
+to save it back again.
+
+If OpenJPEG 2.4.0 or later is available and the ``plt`` keyword argument
+is present and true when saving JPEG2000 images, tell the encoder to generate
+PLT markers.
 
 Security
 ========
