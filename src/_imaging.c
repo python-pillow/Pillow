@@ -1250,6 +1250,7 @@ _histogram(ImagingObject *self, PyObject *args) {
     /* Build an integer list containing the histogram */
     list = PyList_New(h->bands * 256);
     if (list == NULL) {
+        ImagingHistogramDelete(h);
         return NULL;
     }
     for (i = 0; i < h->bands * 256; i++) {
@@ -2158,6 +2159,7 @@ _getcolors(ImagingObject *self, PyObject *args) {
     } else {
         out = PyList_New(colors);
         if (out == NULL) {
+            free(items);
             return NULL;
         }
         for (i = 0; i < colors; i++) {
