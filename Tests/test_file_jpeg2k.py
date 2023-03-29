@@ -418,8 +418,7 @@ def test_plt_marker():
     while True:
         marker = out.read(2)
         if not marker:
-            # End of steam encountered and no PLT or SOD
-            break
+            assert False, "End of stream without PLT"
 
         jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:
@@ -429,12 +428,8 @@ def test_plt_marker():
             # PLT
             return
         elif jp2_boxid == 0xFF93:
-            # SOD without finding PLT first
-            break
+            assert False, "SOD without finding PLT first"
 
         hdr = out.read(2)
         length = _binary.i16be(hdr)
         out.seek(length - 2, os.SEEK_CUR)
-
-    # PLT wasn't found
-    raise ValueError
