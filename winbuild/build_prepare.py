@@ -1,3 +1,4 @@
+import argparse
 import os
 import platform
 import re
@@ -55,24 +56,28 @@ def cmd_nmake(makefile=None, target="", params=None):
     )
 
 
-def cmd_cmake(params=None, file="."):
-    if params is None:
-        params = ""
-    elif isinstance(params, (list, tuple)):
-        params = " ".join(params)
-    else:
-        params = str(params)
-    return " ".join(
-        [
-            "{cmake}",
-            "-DCMAKE_VERBOSE_MAKEFILE=ON",
-            "-DCMAKE_RULE_MESSAGES:BOOL=OFF",
-            "-DCMAKE_BUILD_TYPE=Release",
-            f"{params}",
-            '-G "NMake Makefiles"',
-            f'"{file}"',
-        ]
-    )
+def cmds_cmake(target, *params):
+    if not isinstance(target, str):
+        target = " ".join(target)
+
+    return [
+        " ".join(
+            [
+                "{cmake}",
+                "-DCMAKE_BUILD_TYPE=Release",
+                "-DCMAKE_VERBOSE_MAKEFILE=ON",
+                "-DCMAKE_RULE_MESSAGES:BOOL=OFF",  # for NMake
+                "-DCMAKE_C_COMPILER=cl.exe",  # for Ninja
+                "-DCMAKE_CXX_COMPILER=cl.exe",  # for Ninja
+                "-DCMAKE_C_FLAGS=-nologo",
+                "-DCMAKE_CXX_FLAGS=-nologo",
+                *params,
+                '-G "{cmake_generator}"',
+                ".",
+            ]
+        ),
+        f"{{cmake}} --build . --clean-first --parallel --target {target}",
+    ]
 
 
 def cmd_msbuild(
@@ -118,19 +123,14 @@ deps = {
             ".+(libjpeg-turbo Licenses\n======================\n\n.+)$"
         ),
         "build": [
-            cmd_cmake(
-                [
-                    "-DENABLE_SHARED:BOOL=FALSE",
-                    "-DWITH_JPEG8:BOOL=TRUE",
-                    "-DWITH_CRT_DLL:BOOL=TRUE",
-                ]
+            *cmds_cmake(
+                ("jpeg-static", "cjpeg-static", "djpeg-static"),
+                "-DENABLE_SHARED:BOOL=FALSE",
+                "-DWITH_JPEG8:BOOL=TRUE",
+                "-DWITH_CRT_DLL:BOOL=TRUE",
             ),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="jpeg-static"),
             cmd_copy("jpeg-static.lib", "libjpeg.lib"),
-            cmd_nmake(target="cjpeg-static"),
             cmd_copy("cjpeg-static.exe", "cjpeg.exe"),
-            cmd_nmake(target="djpeg-static"),
             cmd_copy("djpeg-static.exe", "djpeg.exe"),
         ],
         "headers": ["j*.h"],
@@ -156,25 +156,13 @@ deps = {
         "filename": "xz-5.4.2.tar.gz",
         "dir": "xz-5.4.2",
         "license": "COPYING",
-        "patch": {
-            r"src\liblzma\api\lzma.h": {
-                "#ifndef LZMA_API_IMPORT": "#ifndef LZMA_API_IMPORT\n#define LZMA_API_STATIC",  # noqa: E501
-            },
-            r"windows\vs2019\liblzma.vcxproj": {
-                # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
-                # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
-            },
-        },
         "build": [
-            cmd_msbuild(r"windows\vs2019\liblzma.vcxproj", "Release", "Clean"),
-            cmd_msbuild(r"windows\vs2019\liblzma.vcxproj", "Release", "Build"),
+            *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_mkdir(r"{inc_dir}\lzma"),
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],
         "headers": [r"src\liblzma\api\lzma.h"],
-        "libs": [r"windows\vs2019\Release\{msbuild_arch}\liblzma\liblzma.lib"],
+        "libs": [r"liblzma.lib"],
     },
     "libwebp": {
         "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.0.tar.gz",
@@ -215,9 +203,11 @@ deps = {
             },
         },
         "build": [
-            cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="tiff"),
+            *cmds_cmake(
+                "tiff",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+                '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
+            )
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
@@ -229,10 +219,7 @@ deps = {
         "dir": "lpng1639",
         "license": "LICENSE",
         "build": [
-            # lint: do not inline
-            cmd_cmake(("-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF")),
-            cmd_nmake(target="clean"),
-            cmd_nmake(),
+            *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
             cmd_copy("libpng16_static.lib", "libpng16.lib"),
         ],
         "headers": [r"png*.h"],
@@ -244,10 +231,7 @@ deps = {
         "dir": "brotli-1.0.9",
         "license": "LICENSE",
         "build": [
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="brotlicommon-static"),
-            cmd_nmake(target="brotlidec-static"),
+            *cmds_cmake(("brotlicommon-static", "brotlidec-static")),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
@@ -325,9 +309,9 @@ deps = {
             }
         },
         "build": [
-            cmd_cmake(("-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="openjp2"),
+            *cmds_cmake(
+                "openjp2", "-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF"
+            ),
             cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
             cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.0"),
         ],
@@ -346,10 +330,7 @@ deps = {
             }
         },
         "build": [
-            # lint: do not inline
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="imagequant_a"),
+            *cmds_cmake("imagequant_a"),
             cmd_copy("imagequant_a.lib", "imagequant.lib"),
         ],
         "headers": [r"*.h"],
@@ -361,10 +342,11 @@ deps = {
         "dir": "harfbuzz-7.1.0",
         "license": "COPYING",
         "build": [
-            cmd_set("CXXFLAGS", "-d2FH4-"),
-            cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="harfbuzz"),
+            *cmds_cmake(
+                "harfbuzz",
+                "-DHB_HAVE_FREETYPE:BOOL=TRUE",
+                '-DCMAKE_CXX_FLAGS="-nologo -d2FH4-"',
+            ),
         ],
         "headers": [r"src\*.h"],
         "libs": [r"*.lib"],
@@ -377,9 +359,7 @@ deps = {
         "build": [
             cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.12-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="fribidi"),
+            *cmds_cmake("fribidi"),
         ],
         "bins": [r"*.dll"],
     },
@@ -455,7 +435,7 @@ def extract_dep(url, filename):
     import urllib.request
     import zipfile
 
-    file = os.path.join(depends_dir, filename)
+    file = os.path.join(args.depends_dir, filename)
     if not os.path.exists(file):
         ex = None
         for i in range(3):
@@ -496,12 +476,12 @@ def extract_dep(url, filename):
 
 
 def write_script(name, lines):
-    name = os.path.join(build_dir, name)
+    name = os.path.join(args.build_dir, name)
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
     with open(name, "w", newline="") as f:
         f.write(os.linesep.join(lines))
-    if verbose:
+    if args.verbose:
         for line in lines:
             print("    " + line)
 
@@ -570,11 +550,14 @@ def build_dep(name):
 def build_dep_all():
     lines = ["@echo on"]
     for dep_name in deps:
+        print()
         if dep_name in disabled:
+            print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name)
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+    print()
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)
 
@@ -593,56 +576,91 @@ def build_pillow():
 
 
 if __name__ == "__main__":
-    # winbuild directory
     winbuild_dir = os.path.dirname(os.path.realpath(__file__))
+    pillow_dir = os.path.realpath(os.path.join(winbuild_dir, ".."))
 
-    verbose = False
-    disabled = []
-    depends_dir = os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends"))
-    python_dir = os.environ.get("PYTHON")
-    python_exe = os.environ.get("EXECUTABLE", "python.exe")
-    architecture = os.environ.get(
-        "ARCHITECTURE",
-        "ARM64"
-        if platform.machine() == "ARM64"
-        else ("x86" if struct.calcsize("P") == 4 else "x64"),
+    parser = argparse.ArgumentParser(
+        prog="winbuild\\build_prepare.py",
+        description="Download dependencies and generate build scripts for Pillow.",
+        epilog="""Arguments can also be supplied using the environment variables
+                  PILLOW_BUILD, PILLOW_DEPS, ARCHITECTURE, PYTHON, EXECUTABLE.
+                  See winbuild\\build.rst for more information.""",
     )
-    build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
-    sources_dir = ""
-    for arg in sys.argv[1:]:
-        if arg == "-v":
-            verbose = True
-        elif arg == "--no-imagequant":
-            disabled += ["libimagequant"]
-        elif arg == "--no-raqm" or arg == "--no-fribidi":
-            disabled += ["fribidi"]
-        elif arg.startswith("--depends="):
-            depends_dir = arg[10:]
-        elif arg.startswith("--python="):
-            python_dir = arg[9:]
-        elif arg.startswith("--executable="):
-            python_exe = arg[13:]
-        elif arg.startswith("--architecture="):
-            architecture = arg[15:]
-        elif arg.startswith("--dir="):
-            build_dir = arg[6:]
-        elif arg == "--srcdir":
-            sources_dir = os.path.sep + "src"
-        else:
-            msg = "Unknown parameter: " + arg
-            raise ValueError(msg)
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="print generated scripts"
+    )
+    parser.add_argument(
+        "-d",
+        "--dir",
+        "--build-dir",
+        dest="build_dir",
+        metavar="PILLOW_BUILD",
+        default=os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build")),
+        help="build directory (default: 'winbuild\\build')",
+    )
+    parser.add_argument(
+        "--depends",
+        dest="depends_dir",
+        metavar="PILLOW_DEPS",
+        default=os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends")),
+        help="directory used to store cached dependencies "
+        "(default: 'winbuild\\depends')",
+    )
+    parser.add_argument(
+        "--architecture",
+        choices=architectures,
+        default=os.environ.get(
+            "ARCHITECTURE",
+            (
+                "ARM64"
+                if platform.machine() == "ARM64"
+                else ("x86" if struct.calcsize("P") == 4 else "x64")
+            ),
+        ),
+        help="build architecture (default: same as host Python)",
+    )
+    parser.add_argument(
+        "--python",
+        dest="python_dir",
+        metavar="PYTHON",
+        default=os.environ.get("PYTHON"),
+        help="Python install directory (default: use host Python)",
+    )
+    parser.add_argument(
+        "--executable",
+        dest="python_exe",
+        metavar="EXECUTABLE",
+        default=os.environ.get("EXECUTABLE", "python.exe"),
+        help="Python executable (default: use host Python)",
+    )
+    parser.add_argument(
+        "--nmake",
+        dest="cmake_generator",
+        action="store_const",
+        const="NMake Makefiles",
+        default="Ninja",
+        help="build dependencies using NMake instead of Ninja",
+    )
+    parser.add_argument(
+        "--no-imagequant",
+        action="store_true",
+        help="skip GPL-licensed optional dependency libimagequant",
+    )
+    parser.add_argument(
+        "--no-fribidi",
+        "--no-raqm",
+        action="store_true",
+        help="skip LGPL-licensed optional dependency FriBiDi",
+    )
+    args = parser.parse_args()
 
-    # dependency cache directory
-    os.makedirs(depends_dir, exist_ok=True)
-    print("Caching dependencies in:", depends_dir)
+    arch_prefs = architectures[args.architecture]
+    print("Target architecture:", args.architecture)
 
-    if python_dir is None:
-        python_dir = os.path.dirname(os.path.realpath(sys.executable))
-        python_exe = os.path.basename(sys.executable)
-    print("Target Python:", os.path.join(python_dir, python_exe))
-
-    arch_prefs = architectures[architecture]
-    print("Target Architecture:", architecture)
+    if args.python_dir is None:
+        args.python_dir = os.path.dirname(os.path.realpath(sys.executable))
+        args.python_exe = os.path.basename(sys.executable)
+    print("Target Python:", os.path.join(args.python_dir, args.python_exe))
 
     msvs = find_msvs()
     if msvs is None:
@@ -650,35 +668,47 @@ if __name__ == "__main__":
         raise RuntimeError(msg)
     print("Found Visual Studio at:", msvs["vs_dir"])
 
-    print("Using output directory:", build_dir)
+    # dependency cache directory
+    args.depends_dir = os.path.abspath(args.depends_dir)
+    os.makedirs(args.depends_dir, exist_ok=True)
+    print("Caching dependencies in:", args.depends_dir)
+
+    args.build_dir = os.path.abspath(args.build_dir)
+    print("Using output directory:", args.build_dir)
 
     # build directory for *.h files
-    inc_dir = os.path.join(build_dir, "inc")
+    inc_dir = os.path.join(args.build_dir, "inc")
     # build directory for *.lib files
-    lib_dir = os.path.join(build_dir, "lib")
+    lib_dir = os.path.join(args.build_dir, "lib")
     # build directory for *.bin files
-    bin_dir = os.path.join(build_dir, "bin")
+    bin_dir = os.path.join(args.build_dir, "bin")
     # directory for storing project files
-    sources_dir = build_dir + sources_dir
+    sources_dir = os.path.join(args.build_dir, "src")
     # copy dependency licenses to this directory
-    license_dir = os.path.join(build_dir, "license")
+    license_dir = os.path.join(args.build_dir, "license")
 
-    shutil.rmtree(build_dir, ignore_errors=True)
-    os.makedirs(build_dir, exist_ok=False)
+    shutil.rmtree(args.build_dir, ignore_errors=True)
+    os.makedirs(args.build_dir, exist_ok=False)
     for path in [inc_dir, lib_dir, bin_dir, sources_dir, license_dir]:
         os.makedirs(path, exist_ok=True)
 
+    disabled = []
+    if args.no_imagequant:
+        disabled += ["libimagequant"]
+    if args.no_fribidi:
+        disabled += ["fribidi"]
+
     prefs = {
         # Python paths / preferences
-        "python_dir": python_dir,
-        "python_exe": python_exe,
-        "architecture": architecture,
+        "python_dir": args.python_dir,
+        "python_exe": args.python_exe,
+        "architecture": args.architecture,
         **arch_prefs,
         # Pillow paths
-        "pillow_dir": os.path.realpath(os.path.join(winbuild_dir, "..")),
+        "pillow_dir": pillow_dir,
         "winbuild_dir": winbuild_dir,
         # Build paths
-        "build_dir": build_dir,
+        "build_dir": args.build_dir,
         "inc_dir": inc_dir,
         "lib_dir": lib_dir,
         "bin_dir": bin_dir,
@@ -687,6 +717,7 @@ if __name__ == "__main__":
         # Compilers / Tools
         **msvs,
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
+        "cmake_generator": args.cmake_generator,
         # TODO find NASM automatically
         # script header
         "header": sum([header, msvs["header"], ["@echo on"]], []),
@@ -699,4 +730,6 @@ if __name__ == "__main__":
 
     write_script(".gitignore", ["*"])
     build_dep_all()
+    if args.verbose:
+        print()
     build_pillow()

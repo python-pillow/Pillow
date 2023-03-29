@@ -97,7 +97,7 @@ jobs:
     - name: Prepare build
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: |
-        & python.exe winbuild\build_prepare.py -v --python=$env:pythonLocation --srcdir
+        & python.exe winbuild\build_prepare.py -v --python $env:pythonLocation
       shell: pwsh
 
     - name: Build dependencies / libjpeg-turbo
