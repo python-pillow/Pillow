@@ -80,16 +80,6 @@ A number of constants have been deprecated and will be removed in Pillow 10.0.0
     was reversed in Pillow 9.4.0 and those constants will now remain available.
     See :ref:`restored-image-constants`
 
-PSFile
-~~~~~~
-
-.. deprecated:: 9.4.0
-
-The :py:class:`~PIL.EpsImagePlugin.PSFile` class has been deprecated and will
-be removed in Pillow 11 (2024-10-15). This class was only made as a helper to
-be used internally, so there is no replacement. If you need this functionality
-though, it is a very short class that can easily be recreated in your own code.
-
 =====================================================  ============================================================
 Deprecated                                             Use instead
 =====================================================  ============================================================
@@ -216,6 +206,16 @@ Use instead::
 
     left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
     width, height = right - left, bottom - top
+
+PSFile
+~~~~~~
+
+.. deprecated:: 9.5.0
+
+The :py:class:`~PIL.EpsImagePlugin.PSFile` class has been deprecated and will
+be removed in Pillow 11 (2024-10-15). This class was only made as a helper to
+be used internally, so there is no replacement. If you need this functionality
+though, it is a very short class that can easily be recreated in your own code.
 
 Removed features
 ----------------
