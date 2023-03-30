@@ -5,6 +5,9 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Removed absolute path to ldconfig #7044
+  [radarhere]
+
 - Support custom comments and PLT markers when saving JPEG2000 images #6903
   [joshware, radarhere, hugovk]
 
