@@ -1114,7 +1114,7 @@ font_getvarnames(FontObject *self) {
 
 static PyObject *
 font_getvaraxes(FontObject *self) {
-    int error, failed = 0;
+    int error;
     FT_UInt i, j, num_axis, name_count;
     FT_MM_Var *master;
     FT_Var_Axis axis;
@@ -1137,46 +1137,35 @@ font_getvaraxes(FontObject *self) {
 
         list_axis = PyDict_New();
         if (list_axis == NULL) {
-            failed = 1;
-        } else {
-            PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
-            PyDict_SetItemString(list_axis, "minimum", minimum ? minimum : Py_None);
-            Py_XDECREF(minimum);
-
-            PyObject *def = PyLong_FromLong(axis.def / 65536);
-            PyDict_SetItemString(list_axis, "default", def ? def : Py_None);
-            Py_XDECREF(def);
-
-            PyObject *maximum = PyLong_FromLong(axis.maximum / 65536);
-            PyDict_SetItemString(list_axis, "maximum", maximum ? maximum : Py_None);
-            Py_XDECREF(maximum);
-
-            for (j = 0; j < name_count; j++) {
-                error = FT_Get_Sfnt_Name(self->face, j, &name);
-                if (error) {
-                    Py_DECREF(list_axis);
-                    failed = 1;
-                    break;
-                }
-
-                if (name.name_id == axis.strid) {
-                    axis_name = Py_BuildValue("y#", name.string, name.string_len);
-                    PyDict_SetItemString(list_axis, "name", axis_name ? axis_name : Py_None);
-                    Py_XDECREF(axis_name);
-                    break;
-                }
-            }
-        }
-        if (failed) {
-            for (j = 0; j < i; j++) {
-                list_axis = PyList_GetItem(list_axes, j);
-                Py_DECREF(list_axis);
-            }
             Py_DECREF(list_axes);
+            return NULL;
+        }
+        PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
+        PyDict_SetItemString(list_axis, "minimum", minimum ? minimum : Py_None);
+        Py_XDECREF(minimum);
+
+        PyObject *def = PyLong_FromLong(axis.def / 65536);
+        PyDict_SetItemString(list_axis, "default", def ? def : Py_None);
+        Py_XDECREF(def);
+
+        PyObject *maximum = PyLong_FromLong(axis.maximum / 65536);
+        PyDict_SetItemString(list_axis, "maximum", maximum ? maximum : Py_None);
+        Py_XDECREF(maximum);
+
+        for (j = 0; j < name_count; j++) {
+            error = FT_Get_Sfnt_Name(self->face, j, &name);
             if (error) {
+                Py_DECREF(list_axis);
+                Py_DECREF(list_axes);
                 return geterror(error);
             }
-            return NULL;
+
+            if (name.name_id == axis.strid) {
+                axis_name = Py_BuildValue("y#", name.string, name.string_len);
+                PyDict_SetItemString(list_axis, "name", axis_name ? axis_name : Py_None);
+                Py_XDECREF(axis_name);
+                break;
+            }
         }
 
         PyList_SetItem(list_axes, i, list_axis);
