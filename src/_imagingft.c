@@ -1083,6 +1083,7 @@ font_getvarnames(FontObject *self) {
     num_namedstyles = master->num_namedstyles;
     list_names = PyList_New(num_namedstyles);
     if (list_names == NULL) {
+        FT_Done_MM_Var(library, master);
         return NULL;
     }
 
@@ -1091,6 +1092,7 @@ font_getvarnames(FontObject *self) {
         error = FT_Get_Sfnt_Name(self->face, i, &name);
         if (error) {
             Py_DECREF(list_names);
+            FT_Done_MM_Var(library, master);
             return geterror(error);
         }
 
@@ -1130,6 +1132,7 @@ font_getvaraxes(FontObject *self) {
 
     list_axes = PyList_New(num_axis);
     if (list_axes == NULL) {
+        FT_Done_MM_Var(library, master);
         return NULL;
     }
     for (i = 0; i < num_axis; i++) {
@@ -1138,6 +1141,7 @@ font_getvaraxes(FontObject *self) {
         list_axis = PyDict_New();
         if (list_axis == NULL) {
             Py_DECREF(list_axes);
+            FT_Done_MM_Var(library, master);
             return NULL;
         }
         PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
@@ -1157,6 +1161,7 @@ font_getvaraxes(FontObject *self) {
             if (error) {
                 Py_DECREF(list_axis);
                 Py_DECREF(list_axes);
+                FT_Done_MM_Var(library, master);
                 return geterror(error);
             }
 
