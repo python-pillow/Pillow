@@ -54,17 +54,12 @@ def __getattr__(name):
     raise AttributeError(msg)
 
 
-class _ImagingFtNotInstalled:
-    # module placeholder
-    def __getattr__(self, id):
-        msg = "The _imagingft C module is not installed"
-        raise ImportError(msg)
-
-
 try:
     from . import _imagingft as core
-except ImportError:
-    core = _ImagingFtNotInstalled()
+except ImportError as ex:
+    from ._util import DeferredError
+
+    core = DeferredError(ex)
 
 
 _UNSPECIFIED = object()
