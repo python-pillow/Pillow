@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-6.2.2.4 (date TBD)
+6.2.2.4 (2023-03-29)
 ------------------
 
 - Use more specific regex chars to prevent ReDoS. CVE-2021-25292
