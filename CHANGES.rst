@@ -2,6 +2,13 @@
 Changelog (Pillow)
 ==================
 
+6.2.2.5 (date TBD)
+------------------
+
+- Fix CVE-2020-35654
+[rickprice]
+
+
 6.2.2.4 (2023-03-29)
 ------------------
 
@@ -14,8 +21,10 @@ since Pillow 4.3.0.
 
 - Fix CVE-2021-27921
   [rickprice]
+
 - Fix CVE-2021-27922
   [rickprice]
+
 - Fix CVE-2021-27923
   [rickprice]
 

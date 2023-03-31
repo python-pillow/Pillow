@@ -1,0 +1,11 @@
+6.2.2.4
+-------
+
+Security
+========
+
+This release addresses several critical CVEs.
+
+:cve:`CVE-2020-35654`: In Pillow before 8.1.0, TiffDecode has a heap-based buffer overflow when decoding crafted YCbCr files because of certain interpretation conflicts with LibTIFF in RGBA mode.
+
+
