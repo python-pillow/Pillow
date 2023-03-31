@@ -1082,11 +1082,17 @@ font_getvarnames(FontObject *self) {
 
     num_namedstyles = master->num_namedstyles;
     list_names = PyList_New(num_namedstyles);
+    if (list_names == NULL) {
+        FT_Done_MM_Var(library, master);
+        return NULL;
+    }
 
     name_count = FT_Get_Sfnt_Name_Count(self->face);
     for (i = 0; i < name_count; i++) {
         error = FT_Get_Sfnt_Name(self->face, i, &name);
         if (error) {
+            Py_DECREF(list_names);
+            FT_Done_MM_Var(library, master);
             return geterror(error);
         }
 
@@ -1125,10 +1131,19 @@ font_getvaraxes(FontObject *self) {
     name_count = FT_Get_Sfnt_Name_Count(self->face);
 
     list_axes = PyList_New(num_axis);
+    if (list_axes == NULL) {
+        FT_Done_MM_Var(library, master);
+        return NULL;
+    }
     for (i = 0; i < num_axis; i++) {
         axis = master->axis[i];
 
         list_axis = PyDict_New();
+        if (list_axis == NULL) {
+            Py_DECREF(list_axes);
+            FT_Done_MM_Var(library, master);
+            return NULL;
+        }
         PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
         PyDict_SetItemString(list_axis, "minimum", minimum ? minimum : Py_None);
         Py_XDECREF(minimum);
@@ -1144,6 +1159,9 @@ font_getvaraxes(FontObject *self) {
         for (j = 0; j < name_count; j++) {
             error = FT_Get_Sfnt_Name(self->face, j, &name);
             if (error) {
+                Py_DECREF(list_axis);
+                Py_DECREF(list_axes);
+                FT_Done_MM_Var(library, master);
                 return geterror(error);
             }
 

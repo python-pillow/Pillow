@@ -1285,6 +1285,10 @@ _histogram(ImagingObject *self, PyObject *args) {
 
     /* Build an integer list containing the histogram */
     list = PyList_New(h->bands * 256);
+    if (list == NULL) {
+        ImagingHistogramDelete(h);
+        return NULL;
+    }
     for (i = 0; i < h->bands * 256; i++) {
         PyObject *item;
         item = PyLong_FromLong(h->histogram[i]);
@@ -2190,6 +2194,10 @@ _getcolors(ImagingObject *self, PyObject *args) {
         Py_INCREF(out);
     } else {
         out = PyList_New(colors);
+        if (out == NULL) {
+            free(items);
+            return NULL;
+        }
         for (i = 0; i < colors; i++) {
             ImagingColorItem *v = &items[i];
             PyObject *item = Py_BuildValue(
@@ -4361,6 +4369,7 @@ PyInit__imaging(void) {
     m = PyModule_Create(&module_def);
 
     if (setup_module(m) < 0) {
+        Py_DECREF(m);
         return NULL;
     }
 

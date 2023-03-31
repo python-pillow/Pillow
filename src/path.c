@@ -439,6 +439,9 @@ path_tolist(PyPathObject *self, PyObject *args) {
 
     if (flat) {
         list = PyList_New(self->count * 2);
+        if (list == NULL) {
+            return NULL;
+        }
         for (i = 0; i < self->count * 2; i++) {
             PyObject *item;
             item = PyFloat_FromDouble(self->xy[i]);
@@ -449,6 +452,9 @@ path_tolist(PyPathObject *self, PyObject *args) {
         }
     } else {
         list = PyList_New(self->count);
+        if (list == NULL) {
+            return NULL;
+        }
         for (i = 0; i < self->count; i++) {
             PyObject *item;
             item = Py_BuildValue("dd", self->xy[i + i], self->xy[i + i + 1]);
