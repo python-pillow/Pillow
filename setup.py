@@ -273,9 +273,7 @@ def _pkg_config(name):
             )[::2][1:]
             cflags = re.split(
                 r"(^|\s+)-I",
-                subprocess.check_output(command_cflags, stderr=stderr)
-                .decode("utf8")
-                .strip(),
+                subprocess.check_output(command_cflags).decode("utf8").strip(),
             )[::2][1:]
             return libs, cflags
         except Exception:
