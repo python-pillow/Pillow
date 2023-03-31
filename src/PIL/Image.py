@@ -3041,6 +3041,10 @@ def fromarray(obj, mode=None):
     If ``obj`` is not contiguous, then the ``tobytes`` method is called
     and :py:func:`~PIL.Image.frombuffer` is used.
 
+    In the case of NumPy, be aware that Pillow modes do not always correspond
+    to NumPy dtypes. Pillow modes only offer 1-bit pixels, 8-bit pixels,
+    32-signed integer pixels and 32-bit floating point pixels.
+
     Pillow images can also be converted to arrays::
 
       from PIL import Image
