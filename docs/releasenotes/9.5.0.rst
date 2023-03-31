@@ -72,9 +72,17 @@ data to populate those resources.
 PpmImagePlugin might hold onto the last data read for a pixel value in case the
 pixel value has not been finished yet. However, that data was not being cleared
 afterwards, meaning that infinite data could be available to fill any image
-size.
+size. This has been present since Pillow 9.2.0.
 
 That data is now cleared after use.
+
+Saving TIFF tag ImageSourceData
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If Pillow incorrectly saved the TIFF tag ImageSourceData as ASCII instead of
+UNDEFINED, a segmentation fault was triggered.
+
+The correct tag type will now be used by default instead.
 
 Other Changes
 =============
