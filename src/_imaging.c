@@ -502,7 +502,7 @@ getink(PyObject *color, Imaging im, char *ink) {
        be cast to either UINT8 or INT32 */
 
     int rIsInt = 0;
-    int tupleSize;
+    int tupleSize = 0;
     if (PyTuple_Check(color)) {
         tupleSize = PyTuple_GET_SIZE(color);
         if (tupleSize == 1) {
