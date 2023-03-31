@@ -62,10 +62,19 @@ PLT markers.
 Security
 ========
 
-TODO
-^^^^
+Clear PPM half token after use
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Image files that are small on disk are often prevented from expanding to be
+big images consuming a large amount of resources simply because they lack the
+data to populate those resources.
+
+PpmImagePlugin might hold onto the last data read for a pixel value in case the
+pixel value has not been finished yet. However, that data was not being cleared
+afterwards, meaning that infinite data could be available to fill any image
+size.
+
+That data is now cleared after use.
 
 Other Changes
 =============
