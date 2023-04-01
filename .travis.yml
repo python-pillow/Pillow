@@ -13,16 +13,6 @@ services: docker
 
 jobs:
   include:
-    - name: "3.7 Focal manylinux2014 aarch64"
-      arch: arm64
-      env:
-        - MB_ML_VER=2014
-        - MB_PYTHON_VERSION=3.7
-    - name: "3.7 Focal manylinux_2_28 aarch64"
-      arch: arm64
-      env:
-        - MB_ML_VER="_2_28"
-        - MB_PYTHON_VERSION=3.7
     - name: "3.8 Focal manylinux2014 aarch64"
       os: linux
       arch: arm64
