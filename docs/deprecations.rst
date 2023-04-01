@@ -135,19 +135,6 @@ PhotoImage.paste box parameter
 
 The ``box`` parameter is unused. It will be removed in Pillow 10.0.0 (2023-07-01).
 
-PyQt5 and PySide2
-~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-`Qt 5 reached end-of-life <https://www.qt.io/blog/qt-5.15-released>`_ on 2020-12-08 for
-open-source users (and will reach EOL on 2023-12-08 for commercial licence holders).
-
-Support for PyQt5 and PySide2 has been deprecated from ``ImageQt`` and will be removed
-in Pillow 10 (2023-07-01). Upgrade to
-`PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
-`PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
-
 Image.coerce_e
 ~~~~~~~~~~~~~~
 
@@ -222,6 +209,19 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+PyQt5 and PySide2
+~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+`Qt 5 reached end-of-life <https://www.qt.io/blog/qt-5.15-released>`_ on 2020-12-08 for
+open-source users (and will reach EOL on 2023-12-08 for commercial licence holders).
+
+Support for PyQt5 and PySide2 has been removed from ``ImageQt``. Upgrade to
+`PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
+`PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
 
 PILLOW_VERSION constant
 ~~~~~~~~~~~~~~~~~~~~~~~

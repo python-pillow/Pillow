@@ -67,7 +67,7 @@ jobs:
             python3${{ matrix.python-minor-version }}-numpy
             python3${{ matrix.python-minor-version }}-sip
             python3${{ matrix.python-minor-version }}-tkinter
-            qt5-devel-tools
+            qt6-devel-tools
             wget
             xorg-server-extra
             zlib-devel
