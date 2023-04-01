@@ -5,6 +5,12 @@ Changelog (Pillow)
 9.5.0 (unreleased)
 ------------------
 
+- Added ImageSourceData to TAGS_V2 #7053
+  [radarhere]
+
+- Clear PPM half token after use #7052
+  [radarhere]
+
 - Removed absolute path to ldconfig #7044
   [radarhere]
 
