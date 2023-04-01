@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-9.5.0 (unreleased)
+9.5.0 (2023-04-01)
 ------------------
 
 - Added ImageSourceData to TAGS_V2 #7053
