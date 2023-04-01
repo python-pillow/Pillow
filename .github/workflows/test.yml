@@ -36,10 +36,9 @@ jobs:
           "3.10",
           "3.9",
           "3.8",
-          "3.7",
         ]
         include:
-        - python-version: "3.7"
+        - python-version: "3.9"
           PYTHONOPTIMIZE: 1
           REVERSE: "--reverse"
         - python-version: "3.8"
