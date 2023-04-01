@@ -50,7 +50,7 @@ def deprecate(
     elif when == 11:
         removed = "Pillow 11 (2024-10-15)"
     else:
-        msg = f"Unknown removal version, update {__name__}?"
+        msg = f"Unknown removal version: {when}. Update {__name__}?"
         raise ValueError(msg)
 
     if replacement and action:

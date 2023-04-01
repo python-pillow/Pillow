@@ -29,7 +29,7 @@ def test_version(version, expected):
 
 
 def test_unknown_version():
-    expected = r"Unknown removal version, update PIL\._deprecate\?"
+    expected = r"Unknown removal version: 12345. Update PIL\._deprecate\?"
     with pytest.raises(ValueError, match=expected):
         _deprecate.deprecate("Old thing", 12345, "new thing")
 
