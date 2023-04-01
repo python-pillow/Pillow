@@ -668,6 +668,16 @@ class TestFileLibTiff(LibTiffTestCase):
             assert reloaded.tag_v2[530] == (1, 1)
             assert reloaded.tag_v2[532] == (0, 255, 128, 255, 128, 255)
 
+    def test_exif_ifd(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/tiff_adobe_deflate.tif") as im:
+            assert im.tag_v2[34665] == 125456
+            im.save(outfile)
+
+        with Image.open(outfile) as reloaded:
+            if Image.core.libtiff_support_custom_tags:
+                assert reloaded.tag_v2[34665] == 125456
+
     def test_crashing_metadata(self, tmp_path):
         # issue 1597
         with Image.open("Tests/images/rdf.tif") as im:

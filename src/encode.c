@@ -904,7 +904,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     &encoder->state, (ttag_t)key_int, (UINT16)PyLong_AsLong(value));
             } else if (type == TIFF_LONG) {
                 status = ImagingLibTiffSetField(
-                    &encoder->state, (ttag_t)key_int, (UINT32)PyLong_AsLong(value));
+                    &encoder->state, (ttag_t)key_int, PyLong_AsLongLong(value));
             } else if (type == TIFF_SSHORT) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (INT16)PyLong_AsLong(value));
