@@ -33,12 +33,6 @@
 #include FT_COLOR_H
 #endif
 
-#define KEEP_PY_UNICODE
-
-#if !defined(FT_LOAD_TARGET_MONO)
-#define FT_LOAD_TARGET_MONO FT_LOAD_MONOCHROME
-#endif
-
 /* -------------------------------------------------------------------- */
 /* error table */
 
@@ -420,11 +414,9 @@ text_layout_fallback(
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
-#ifdef FT_LOAD_COLOR
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-#endif
     for (i = 0; font_getchar(string, i, &ch); i++) {
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
@@ -581,11 +573,9 @@ font_getsize(FontObject *self, PyObject *args) {
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
-#ifdef FT_LOAD_COLOR
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-#endif
 
     /*
      * text bounds are given by:
@@ -844,11 +834,9 @@ font_render(FontObject *self, PyObject *args) {
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
-#ifdef FT_LOAD_COLOR
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-#endif
 
     /*
      * calculate x_min and y_max
@@ -958,13 +946,11 @@ font_render(FontObject *self, PyObject *args) {
                 /* bitmap is now FT_PIXEL_MODE_GRAY, fall through */
             case FT_PIXEL_MODE_GRAY:
                 break;
-#ifdef FT_LOAD_COLOR
             case FT_PIXEL_MODE_BGRA:
                 if (color) {
                     break;
                 }
                 /* we didn't ask for color, fall through to default */
-#endif
             default:
                 PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
                 goto glyph_error;
@@ -995,7 +981,6 @@ font_render(FontObject *self, PyObject *args) {
                 } else {
                     target = im->image8[yy] + xx;
                 }
-#ifdef FT_LOAD_COLOR
                 if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
                     /* paste color glyph */
                     for (k = x0; k < x1; k++) {
@@ -1010,9 +995,7 @@ font_render(FontObject *self, PyObject *args) {
                             target[k * 4 + 3] = source[k * 4 + 3];
                         }
                     }
-                } else
-#endif
-                    if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+                } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
                     if (color) {
                         unsigned char *ink = (unsigned char *)&foreground_ink;
                         for (k = x0; k < x1; k++) {
