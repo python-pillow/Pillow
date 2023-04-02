@@ -12,14 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-Image.coerce_e
-~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-This undocumented method has been deprecated and will be removed in Pillow 10
-(2023-07-01).
-
 .. _Font size and offset methods:
 
 Font size and offset methods
@@ -221,6 +213,14 @@ open-source users (and will reach EOL on 2023-12-08 for commercial licence holde
 Support for PyQt5 and PySide2 has been removed from ``ImageQt``. Upgrade to
 `PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
 `PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
+
+Image.coerce_e
+~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+This undocumented method has been removed.
 
 PILLOW_VERSION constant
 ~~~~~~~~~~~~~~~~~~~~~~~
