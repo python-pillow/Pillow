@@ -12,15 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-FitsStubImagePlugin
-~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.1.0
-
-The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be removed in
-Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
-:mod:`~PIL.FitsImagePlugin` instead.
-
 FreeTypeFont.getmask2 fill parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -206,6 +197,15 @@ Removed                                                Use instead
 ``PngImagePlugin.APNG_BLEND_OP_SOURCE``                ``PngImagePlugin.Blend.OP_SOURCE``
 ``PngImagePlugin.APNG_BLEND_OP_OVER``                  ``PngImagePlugin.Blend.OP_OVER``
 =====================================================  ============================================================
+
+FitsStubImagePlugin
+~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.1.0
+.. versionremoved:: 10.0.0
+
+The stub image plugin ``FitsStubImagePlugin`` has been removed.
+FITS images can be read without a handler through :mod:`~PIL.FitsImagePlugin` instead.
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~
