@@ -12,17 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-ImagePalette size parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 8.4.0
-
-The ``size`` parameter will be removed in Pillow 10.0.0 (2023-07-01).
-
-Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
-default, and the size parameter could be used to override that. Pillow 8.3.0 removed
-the default required length, also removing the need for the size parameter.
-
 ImageShow.Viewer.show_file file argument
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -208,6 +197,16 @@ JpegImagePlugin.convert_dict_qtables
 
 Since deprecation in Pillow 8.3.0, the ``convert_dict_qtables`` method no longer
 performed any operations on the data given to it, and has been removed.
+
+ImagePalette size parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 8.4.0
+.. versionremoved:: 10.0.0
+
+Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
+default, and the ``size`` parameter could be used to override that. Pillow 8.3.0
+removed the default required length, also removing the need for the ``size`` parameter.
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~
