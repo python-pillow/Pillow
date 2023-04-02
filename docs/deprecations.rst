@@ -12,13 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-PhotoImage.paste box parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-The ``box`` parameter is unused. It will be removed in Pillow 10.0.0 (2023-07-01).
-
 Image.coerce_e
 ~~~~~~~~~~~~~~
 
@@ -207,6 +200,14 @@ FreeTypeFont.getmask2 fill parameter
 
 The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has been
 removed.
+
+PhotoImage.paste box parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+The ``box`` parameter was unused and has been removed.
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~
