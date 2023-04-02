@@ -59,22 +59,6 @@ from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
-
-def __getattr__(name):
-    old_resampling = {
-        "LINEAR": "BILINEAR",
-        "CUBIC": "BICUBIC",
-        "ANTIALIAS": "LANCZOS",
-    }
-    if name in old_resampling:
-        deprecate(
-            name, 10, f"{old_resampling[name]} or Resampling.{old_resampling[name]}"
-        )
-        return Resampling[old_resampling[name]]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
-
-
 logger = logging.getLogger(__name__)
 
 

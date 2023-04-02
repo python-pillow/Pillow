@@ -45,7 +45,6 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
-from ._deprecate import deprecate
 
 logger = logging.getLogger(__name__)
 
@@ -129,17 +128,6 @@ class Blend(IntEnum):
     This frame should be alpha composited with the previous output image contents.
     See :ref:`Saving APNG sequences<apng-saving>`.
     """
-
-
-def __getattr__(name):
-    for enum, prefix in {Disposal: "APNG_DISPOSE_", Blend: "APNG_BLEND_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
 
 
 def _safe_zlib_decompress(s):

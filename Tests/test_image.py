@@ -930,13 +930,6 @@ class TestImage:
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
     def test_constants(self):
-        with pytest.warns(DeprecationWarning):
-            assert Image.LINEAR == Image.Resampling.BILINEAR
-        with pytest.warns(DeprecationWarning):
-            assert Image.CUBIC == Image.Resampling.BICUBIC
-        with pytest.warns(DeprecationWarning):
-            assert Image.ANTIALIAS == Image.Resampling.LANCZOS
-
         for enum in (
             Image.Transpose,
             Image.Transform,

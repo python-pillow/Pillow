@@ -1130,12 +1130,3 @@ def test_raqm_missing_warning(monkeypatch):
         "Raqm layout was requested, but Raqm is not available. "
         "Falling back to basic layout."
     )
-
-
-def test_constants_deprecation():
-    for enum, prefix in {
-        ImageFont.Layout: "LAYOUT_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(ImageFont, prefix + name) == enum[name]

@@ -12,51 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-Constants
-~~~~~~~~~
-
-.. deprecated:: 9.1.0
-
-A number of constants have been deprecated and will be removed in Pillow 10.0.0
-(2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
-
-.. note::
-
-    Additional ``Image`` constants were deprecated in Pillow 9.1.0, but that
-    was reversed in Pillow 9.4.0 and those constants will now remain available.
-    See :ref:`restored-image-constants`
-
-=====================================================  ============================================================
-Deprecated                                             Use instead
-=====================================================  ============================================================
-``Image.LINEAR``                                       ``Image.BILINEAR`` or ``Image.Resampling.BILINEAR``
-``Image.CUBIC``                                        ``Image.BICUBIC`` or ``Image.Resampling.BICUBIC``
-``Image.ANTIALIAS``                                    ``Image.LANCZOS`` or ``Image.Resampling.LANCZOS``
-``ImageCms.INTENT_PERCEPTUAL``                         ``ImageCms.Intent.PERCEPTUAL``
-``ImageCms.INTENT_RELATIVE_COLORMETRIC``               ``ImageCms.Intent.RELATIVE_COLORMETRIC``
-``ImageCms.INTENT_SATURATION``                         ``ImageCms.Intent.SATURATION``
-``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``              ``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``
-``ImageCms.DIRECTION_INPUT``                           ``ImageCms.Direction.INPUT``
-``ImageCms.DIRECTION_OUTPUT``                          ``ImageCms.Direction.OUTPUT``
-``ImageCms.DIRECTION_PROOF``                           ``ImageCms.Direction.PROOF``
-``ImageFont.LAYOUT_BASIC``                             ``ImageFont.Layout.BASIC``
-``ImageFont.LAYOUT_RAQM``                              ``ImageFont.Layout.RAQM``
-``BlpImagePlugin.BLP_FORMAT_JPEG``                     ``BlpImagePlugin.Format.JPEG``
-``BlpImagePlugin.BLP_ENCODING_UNCOMPRESSED``           ``BlpImagePlugin.Encoding.UNCOMPRESSED``
-``BlpImagePlugin.BLP_ENCODING_DXT``                    ``BlpImagePlugin.Encoding.DXT``
-``BlpImagePlugin.BLP_ENCODING_UNCOMPRESSED_RAW_RGBA``  ``BlpImagePlugin.Encoding.UNCOMPRESSED_RAW_RGBA``
-``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT1``             ``BlpImagePlugin.AlphaEncoding.DXT1``
-``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT3``             ``BlpImagePlugin.AlphaEncoding.DXT3``
-``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT5``             ``BlpImagePlugin.AlphaEncoding.DXT5``
-``FtexImagePlugin.FORMAT_DXT1``                        ``FtexImagePlugin.Format.DXT1``
-``FtexImagePlugin.FORMAT_UNCOMPRESSED``                ``FtexImagePlugin.Format.UNCOMPRESSED``
-``PngImagePlugin.APNG_DISPOSE_OP_NONE``                ``PngImagePlugin.Disposal.OP_NONE``
-``PngImagePlugin.APNG_DISPOSE_OP_BACKGROUND``          ``PngImagePlugin.Disposal.OP_BACKGROUND``
-``PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS``            ``PngImagePlugin.Disposal.OP_PREVIOUS``
-``PngImagePlugin.APNG_BLEND_OP_SOURCE``                ``PngImagePlugin.Blend.OP_SOURCE``
-``PngImagePlugin.APNG_BLEND_OP_OVER``                  ``PngImagePlugin.Blend.OP_OVER``
-=====================================================  ============================================================
-
 FitsStubImagePlugin
 ~~~~~~~~~~~~~~~~~~~
 
@@ -205,6 +160,52 @@ The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
 removed and replaced by ``path``.
 
 In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
+
+Constants
+~~~~~~~~~
+
+.. deprecated:: 9.1.0
+.. versionremoved:: 10.0.0
+
+A number of constants have been removed.
+Instead, ``enum.IntEnum`` classes have been added.
+
+.. note::
+
+    Additional ``Image`` constants were deprecated in Pillow 9.1.0, but that
+    was reversed in Pillow 9.4.0 and those constants will now remain available.
+    See :ref:`restored-image-constants`
+
+=====================================================  ============================================================
+Removed                                                Use instead
+=====================================================  ============================================================
+``Image.LINEAR``                                       ``Image.BILINEAR`` or ``Image.Resampling.BILINEAR``
+``Image.CUBIC``                                        ``Image.BICUBIC`` or ``Image.Resampling.BICUBIC``
+``Image.ANTIALIAS``                                    ``Image.LANCZOS`` or ``Image.Resampling.LANCZOS``
+``ImageCms.INTENT_PERCEPTUAL``                         ``ImageCms.Intent.PERCEPTUAL``
+``ImageCms.INTENT_RELATIVE_COLORMETRIC``               ``ImageCms.Intent.RELATIVE_COLORMETRIC``
+``ImageCms.INTENT_SATURATION``                         ``ImageCms.Intent.SATURATION``
+``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``              ``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``
+``ImageCms.DIRECTION_INPUT``                           ``ImageCms.Direction.INPUT``
+``ImageCms.DIRECTION_OUTPUT``                          ``ImageCms.Direction.OUTPUT``
+``ImageCms.DIRECTION_PROOF``                           ``ImageCms.Direction.PROOF``
+``ImageFont.LAYOUT_BASIC``                             ``ImageFont.Layout.BASIC``
+``ImageFont.LAYOUT_RAQM``                              ``ImageFont.Layout.RAQM``
+``BlpImagePlugin.BLP_FORMAT_JPEG``                     ``BlpImagePlugin.Format.JPEG``
+``BlpImagePlugin.BLP_ENCODING_UNCOMPRESSED``           ``BlpImagePlugin.Encoding.UNCOMPRESSED``
+``BlpImagePlugin.BLP_ENCODING_DXT``                    ``BlpImagePlugin.Encoding.DXT``
+``BlpImagePlugin.BLP_ENCODING_UNCOMPRESSED_RAW_RGBA``  ``BlpImagePlugin.Encoding.UNCOMPRESSED_RAW_RGBA``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT1``             ``BlpImagePlugin.AlphaEncoding.DXT1``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT3``             ``BlpImagePlugin.AlphaEncoding.DXT3``
+``BlpImagePlugin.BLP_ALPHA_ENCODING_DXT5``             ``BlpImagePlugin.AlphaEncoding.DXT5``
+``FtexImagePlugin.FORMAT_DXT1``                        ``FtexImagePlugin.Format.DXT1``
+``FtexImagePlugin.FORMAT_UNCOMPRESSED``                ``FtexImagePlugin.Format.UNCOMPRESSED``
+``PngImagePlugin.APNG_DISPOSE_OP_NONE``                ``PngImagePlugin.Disposal.OP_NONE``
+``PngImagePlugin.APNG_DISPOSE_OP_BACKGROUND``          ``PngImagePlugin.Disposal.OP_BACKGROUND``
+``PngImagePlugin.APNG_DISPOSE_OP_PREVIOUS``            ``PngImagePlugin.Disposal.OP_PREVIOUS``
+``PngImagePlugin.APNG_BLEND_OP_SOURCE``                ``PngImagePlugin.Blend.OP_SOURCE``
+``PngImagePlugin.APNG_BLEND_OP_OVER``                  ``PngImagePlugin.Blend.OP_OVER``
+=====================================================  ============================================================
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~
