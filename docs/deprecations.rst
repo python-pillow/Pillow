@@ -12,19 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-ImageShow.Viewer.show_file file argument
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.1.0
-
-The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
-deprecated and will be removed in Pillow 10.0.0 (2023-07-01). It has been replaced by
-``path``.
-
-In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
-``viewer.show_file(file="test.jpg")`` will raise a deprecation warning, and suggest
-``viewer.show_file(path="test.jpg")`` instead.
-
 Constants
 ~~~~~~~~~
 
@@ -207,6 +194,17 @@ ImagePalette size parameter
 Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
 default, and the ``size`` parameter could be used to override that. Pillow 8.3.0
 removed the default required length, also removing the need for the ``size`` parameter.
+
+ImageShow.Viewer.show_file file argument
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.1.0
+.. versionremoved:: 10.0.0
+
+The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
+removed and replaced by ``path``.
+
+In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~
