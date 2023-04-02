@@ -12,14 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-Tk/Tcl 8.4
-~~~~~~~~~~
-
-.. deprecated:: 8.2.0
-
-Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
-when Tk/Tcl 8.5 will be the minimum supported.
-
 Categories
 ~~~~~~~~~~
 
@@ -209,6 +201,14 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+Tk/Tcl 8.4
+~~~~~~~~~~
+
+.. deprecated:: 8.2.0
+.. versionremoved:: 10.0.0
+
+Support for Tk/Tcl 8.4 was removed in Pillow 10.0.0 (2023-07-01).
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~
