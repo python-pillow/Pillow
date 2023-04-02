@@ -51,9 +51,6 @@ except ImportError as ex:
     core = DeferredError(ex)
 
 
-_UNSPECIFIED = object()
-
-
 # FIXME: add support for pilfont2 format (see FontFile.py)
 
 # --------------------------------------------------------------------
@@ -654,7 +651,6 @@ class FreeTypeFont:
         self,
         text,
         mode="",
-        fill=_UNSPECIFIED,
         direction=None,
         features=None,
         language=None,
@@ -679,12 +675,6 @@ class FreeTypeFont:
                      C-level implementations.
 
                      .. versionadded:: 1.1.5
-
-        :param fill: Optional fill function. By default, an internal Pillow function
-                     will be used.
-
-                     Deprecated. This parameter will be removed in Pillow 10
-                     (2023-07-01).
 
         :param direction: Direction of the text. It can be 'rtl' (right to
                           left), 'ltr' (left to right) or 'ttb' (top to bottom).
@@ -738,10 +728,6 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
-        if fill is _UNSPECIFIED:
-            fill = Image.core.fill
-        else:
-            deprecate("fill", 10)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
@@ -750,7 +736,7 @@ class FreeTypeFont:
         size = tuple(math.ceil(size[i] + stroke_width * 2 + start[i]) for i in range(2))
         offset = offset[0] - stroke_width, offset[1] - stroke_width
         Image._decompression_bomb_check(size)
-        im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
+        im = Image.core.fill("RGBA" if mode == "RGBA" else "L", size, 0)
         if min(size):
             self.font.render(
                 text,

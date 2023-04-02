@@ -12,14 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-FreeTypeFont.getmask2 fill parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has been
-deprecated and will be removed in Pillow 10 (2023-07-01).
-
 PhotoImage.paste box parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -206,6 +198,15 @@ FitsStubImagePlugin
 
 The stub image plugin ``FitsStubImagePlugin`` has been removed.
 FITS images can be read without a handler through :mod:`~PIL.FitsImagePlugin` instead.
+
+FreeTypeFont.getmask2 fill parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has been
+removed.
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~

@@ -1083,14 +1083,6 @@ def test_woff2(layout_engine):
     assert_image_similar_tofile(im, "Tests/images/test_woff2.png", 5)
 
 
-def test_fill_deprecation(font):
-    with pytest.warns(DeprecationWarning):
-        font.getmask2("Hello world", fill=Image.core.fill)
-    with pytest.warns(DeprecationWarning):
-        with pytest.raises(TypeError):
-            font.getmask2("Hello world", fill=None)
-
-
 def test_render_mono_size():
     # issue 4177
 
