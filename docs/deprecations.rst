@@ -12,18 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-Categories
-~~~~~~~~~~
-
-.. deprecated:: 8.2.0
-
-``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
-along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
-``Image.CONTAINER`` attributes.
-
-To determine if an image has multiple frames or not,
-``getattr(im, "is_animated", False)`` can be used instead.
-
 JpegImagePlugin.convert_dict_qtables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -209,6 +197,18 @@ Tk/Tcl 8.4
 .. versionremoved:: 10.0.0
 
 Support for Tk/Tcl 8.4 was removed in Pillow 10.0.0 (2023-07-01).
+
+Categories
+~~~~~~~~~~
+
+.. deprecated:: 8.2.0
+.. versionremoved:: 10.0.0
+
+``im.category`` was removed along with the related ``Image.NORMAL``,
+``Image.SEQUENCE`` and ``Image.CONTAINER`` attributes.
+
+To determine if an image has multiple frames or not,
+``getattr(im, "is_animated", False)`` can be used instead.
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~

@@ -61,10 +61,6 @@ from ._util import DeferredError, is_path
 
 
 def __getattr__(name):
-    categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
-    if name in categories:
-        deprecate("Image categories", 10, "is_animated", plural=True)
-        return categories[name]
     old_resampling = {
         "LINEAR": "BILINEAR",
         "CUBIC": "BICUBIC",
@@ -520,12 +516,6 @@ class Image:
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
-
-    def __getattr__(self, name):
-        if name == "category":
-            deprecate("Image categories", 10, "is_animated", plural=True)
-            return self._category
-        raise AttributeError(name)
 
     @property
     def width(self):

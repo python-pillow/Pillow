@@ -929,17 +929,6 @@ class TestImage:
             im.apply_transparency()
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
-    def test_categories_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            assert hopper().category == 0
-
-        with pytest.warns(DeprecationWarning):
-            assert Image.NORMAL == 0
-        with pytest.warns(DeprecationWarning):
-            assert Image.SEQUENCE == 1
-        with pytest.warns(DeprecationWarning):
-            assert Image.CONTAINER == 2
-
     def test_constants(self):
         with pytest.warns(DeprecationWarning):
             assert Image.LINEAR == Image.Resampling.BILINEAR
