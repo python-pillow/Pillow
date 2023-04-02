@@ -12,16 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-JpegImagePlugin.convert_dict_qtables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 8.3.0
-
-JPEG ``quantization`` is now automatically converted, but still returned as a
-dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
-performs any operations on the data given to it, has been deprecated and will be
-removed in Pillow 10.0.0 (2023-07-01).
-
 ImagePalette size parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -209,6 +199,15 @@ Categories
 
 To determine if an image has multiple frames or not,
 ``getattr(im, "is_animated", False)`` can be used instead.
+
+JpegImagePlugin.convert_dict_qtables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 8.3.0
+.. versionremoved:: 10.0.0
+
+Since deprecation in Pillow 8.3.0, the ``convert_dict_qtables`` method no longer
+performed any operations on the data given to it, and has been removed.
 
 PyQt5 and PySide2
 ~~~~~~~~~~~~~~~~~
