@@ -3,7 +3,7 @@ repos:
     rev: 23.1.0
     hooks:
       - id: black
-        args: [--target-version=py37]
+        args: [--target-version=py38]
         # Only .py files, until https://github.com/psf/black/issues/402 resolved
         files: \.py$
         types: []
