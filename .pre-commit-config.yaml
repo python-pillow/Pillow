@@ -29,7 +29,7 @@ repos:
     rev: v1.5.1
     hooks:
       - id: remove-tabs
-        exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.opt$)
+        exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
 
   - repo: https://github.com/PyCQA/flake8
     rev: 6.0.0
