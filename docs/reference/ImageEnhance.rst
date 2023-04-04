@@ -59,15 +59,17 @@ method:
     This class can be used to control the contrast of an image, similar to the
     contrast control on a TV set. An
     :ref:`enhancement factor <enhancement-factor>` of 0.0 gives a solid grey
-    image. A factor of 1.0 gives the original image.
+    image, a factor of 1.0 gives the original image, and greater values
+    increase the contrast of the image.
 
 .. py:class:: Brightness(image)
 
     Adjust image brightness.
 
     This class can be used to control the brightness of an image. An
-    :ref:`enhancement factor <enhancement-factor>` of 0.0 gives a black image.
-    A factor of 1.0 gives the original image.
+    :ref:`enhancement factor <enhancement-factor>` of 0.0 gives a black image,
+    a factor of 1.0 gives the original image, and greater values increase the
+    brightness of the image.
 
 .. py:class:: Sharpness(image)
 
