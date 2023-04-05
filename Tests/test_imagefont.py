@@ -306,7 +306,10 @@ def test_rotated_transposed_font(font, orientation):
     bbox_b = draw.textbbox((20, 20), word)
 
     # Check (w,h) of box a is (h,w) of box b
-    assert (bbox_a[2] - bbox_a[0], bbox_a[3] - bbox_a[1]) == (
+    assert (
+        bbox_a[2] - bbox_a[0],
+        bbox_a[3] - bbox_a[1],
+    ) == (
         bbox_b[3] - bbox_b[1],
         bbox_b[2] - bbox_b[0],
     )
@@ -349,7 +352,10 @@ def test_unrotated_transposed_font(font, orientation):
     length_b = draw.textlength(word)
 
     # Check boxes a and b are same size
-    assert (bbox_a[2] - bbox_a[0], bbox_a[3] - bbox_a[1]) == (
+    assert (
+        bbox_a[2] - bbox_a[0],
+        bbox_a[3] - bbox_a[1],
+    ) == (
         bbox_b[2] - bbox_b[0],
         bbox_b[3] - bbox_b[1],
     )
