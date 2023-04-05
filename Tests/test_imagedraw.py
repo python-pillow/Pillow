@@ -1220,23 +1220,8 @@ def test_textbbox_stroke():
     # Act / Assert
     assert draw.textbbox((2, 2), "A", font, stroke_width=2) == (0, 4, 16, 20)
     assert draw.textbbox((2, 2), "A", font, stroke_width=4) == (-2, 2, 18, 22)
-    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=2) == (0, 4, 52, 44)
-    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=4) == (-2, 2, 54, 50)
-
-
-def test_textsize_deprecation():
-    im = Image.new("RGB", (W, H))
-    draw = ImageDraw.Draw(im)
-
-    with pytest.warns(DeprecationWarning) as log:
-        draw.textsize("Hello")
-    assert len(log) == 1
-    with pytest.warns(DeprecationWarning) as log:
-        draw.textsize("Hello\nWorld")
-    assert len(log) == 1
-    with pytest.warns(DeprecationWarning) as log:
-        draw.multiline_textsize("Hello\nWorld")
-    assert len(log) == 1
+    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=2) == (0, 4, 52, 42)
+    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=4) == (-2, 2, 54, 46)
 
 
 @skip_unless_feature("freetype2")

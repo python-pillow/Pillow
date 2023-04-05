@@ -14,55 +14,6 @@ a ``DeprecationWarning`` is issued.
 
 .. _Font size and offset methods:
 
-Font size and offset methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-Several functions for computing the size and offset of rendered text
-have been deprecated and will be removed in Pillow 10 (2023-07-01):
-
-=========================================================================== =============================================================================================================
-Deprecated                                                                  Use instead
-=========================================================================== =============================================================================================================
-:py:meth:`.FreeTypeFont.getsize` and :py:meth:`.FreeTypeFont.getoffset`     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
-:py:meth:`.FreeTypeFont.getsize_multiline`                                  :py:meth:`.ImageDraw.multiline_textbbox`
-:py:meth:`.ImageFont.getsize`                                               :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
-:py:meth:`.TransposedFont.getsize`                                          :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
-:py:meth:`.ImageDraw.textsize` and :py:meth:`.ImageDraw.multiline_textsize` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
-:py:meth:`.ImageDraw2.Draw.textsize`                                        :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
-=========================================================================== =============================================================================================================
-
-Previous code::
-
-    from PIL import Image, ImageDraw, ImageFont
-
-    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
-    width, height = font.getsize("Hello world")
-    left, top = font.getoffset("Hello world")
-
-    im = Image.new("RGB", (100, 100))
-    draw = ImageDraw.Draw(im)
-    width, height = draw.textsize("Hello world")
-
-    width, height = font.getsize_multiline("Hello\nworld")
-    width, height = draw.multiline_textsize("Hello\nworld")
-
-Use instead::
-
-    from PIL import Image, ImageDraw, ImageFont
-
-    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
-    left, top, right, bottom = font.getbbox("Hello world")
-    width, height = right - left, bottom - top
-
-    im = Image.new("RGB", (100, 100))
-    draw = ImageDraw.Draw(im)
-    width = draw.textlength("Hello world")
-
-    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
-    width, height = right - left, bottom - top
-
 PSFile
 ~~~~~~
 
@@ -183,6 +134,55 @@ FitsStubImagePlugin
 
 The stub image plugin ``FitsStubImagePlugin`` has been removed.
 FITS images can be read without a handler through :mod:`~PIL.FitsImagePlugin` instead.
+
+Font size and offset methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+Several functions for computing the size and offset of rendered text have been removed:
+
+=============================================================== =============================================================================================================
+Removed                                                         Use instead
+=============================================================== =============================================================================================================
+``FreeTypeFont.getsize()`` and ``FreeTypeFont.getoffset()``     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
+``FreeTypeFont.getsize_multiline()``                            :py:meth:`.ImageDraw.multiline_textbbox`
+``ImageFont.getsize()``                                         :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
+``TransposedFont.getsize()``                                    :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
+``ImageDraw.textsize()`` and ``ImageDraw.multiline_textsize()`` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
+``ImageDraw2.Draw.textsize()``                                  :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
+=============================================================== =============================================================================================================
+
+Previous code::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+    width, height = font.getsize("Hello world")
+    left, top = font.getoffset("Hello world")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width, height = draw.textsize("Hello world")
+
+    width, height = font.getsize_multiline("Hello\nworld")
+    width, height = draw.multiline_textsize("Hello\nworld")
+
+Use instead::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+    left, top, right, bottom = font.getbbox("Hello world")
+    width, height = right - left, bottom - top
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width = draw.textlength("Hello world")
+
+    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
+    width, height = right - left, bottom - top
 
 FreeTypeFont.getmask2 fill parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -171,22 +171,6 @@ def test_text():
 
 
 @skip_unless_feature("freetype2")
-def test_textsize():
-    # Arrange
-    im = Image.new("RGB", (W, H))
-    draw = ImageDraw2.Draw(im)
-    font = ImageDraw2.Font("white", FONT_PATH)
-
-    # Act
-    with pytest.warns(DeprecationWarning) as log:
-        size = draw.textsize("ImageDraw2", font)
-    assert len(log) == 1
-
-    # Assert
-    assert size[1] == 12
-
-
-@skip_unless_feature("freetype2")
 def test_textsize_empty_string():
     # Arrange
     im = Image.new("RGB", (W, H))

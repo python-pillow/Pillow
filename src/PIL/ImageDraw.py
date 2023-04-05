@@ -32,10 +32,8 @@
 
 import math
 import numbers
-import warnings
 
 from . import Image, ImageColor
-from ._deprecate import deprecate
 
 """
 A simple 2D drawing interface for PIL images.
@@ -433,17 +431,7 @@ class ImageDraw:
         return text.split(split_character)
 
     def _multiline_spacing(self, font, spacing, stroke_width):
-        # this can be replaced with self.textbbox(...)[3] when textsize is removed
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            return (
-                self.textsize(
-                    "A",
-                    font=font,
-                    stroke_width=stroke_width,
-                )[1]
-                + spacing
-            )
+        return self.textbbox((0, 0), "A", font, stroke_width=stroke_width)[3] + spacing
 
     def text(
         self,
@@ -645,72 +633,6 @@ class ImageDraw:
             )
             top += line_spacing
 
-    def textsize(
-        self,
-        text,
-        font=None,
-        spacing=4,
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-    ):
-        """Get the size of a given string, in pixels."""
-        deprecate("textsize", 10, "textbbox or textlength")
-        if self._multiline_check(text):
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", category=DeprecationWarning)
-                return self.multiline_textsize(
-                    text,
-                    font,
-                    spacing,
-                    direction,
-                    features,
-                    language,
-                    stroke_width,
-                )
-
-        if font is None:
-            font = self.getfont()
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            return font.getsize(
-                text,
-                direction,
-                features,
-                language,
-                stroke_width,
-            )
-
-    def multiline_textsize(
-        self,
-        text,
-        font=None,
-        spacing=4,
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-    ):
-        deprecate("multiline_textsize", 10, "multiline_textbbox")
-        max_width = 0
-        lines = self._multiline_split(text)
-        line_spacing = self._multiline_spacing(font, spacing, stroke_width)
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            for line in lines:
-                line_width, line_height = self.textsize(
-                    line,
-                    font,
-                    spacing,
-                    direction,
-                    features,
-                    language,
-                    stroke_width,
-                )
-                max_width = max(max_width, line_width)
-        return max_width, len(lines) * line_spacing - spacing
-
     def textlength(
         self,
         text,
@@ -731,22 +653,7 @@ class ImageDraw:
         if font is None:
             font = self.getfont()
         mode = "RGBA" if embedded_color else self.fontmode
-        try:
-            return font.getlength(text, mode, direction, features, language)
-        except AttributeError:
-            deprecate("textlength support for fonts without getlength", 10)
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", category=DeprecationWarning)
-                size = self.textsize(
-                    text,
-                    font,
-                    direction=direction,
-                    features=features,
-                    language=language,
-                )
-            if direction == "ttb":
-                return size[1]
-            return size[0]
+        return font.getlength(text, mode, direction, features, language)
 
     def textbbox(
         self,
