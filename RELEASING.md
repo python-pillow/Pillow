@@ -11,7 +11,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Develop and prepare release in `main` branch.
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `main` branch.
 * [ ] Check that all of the wheel builds [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels) pass the tests in Travis CI and GitHub Actions.
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
+* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
@@ -31,7 +31,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   python3 -m twine upload dist/Pillow-5.2.0*
   ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/),
+* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/),
       increment and append `.dev0` to version identifier in `src/PIL/_version.py` and then:
   ```bash
   git push --all
@@ -51,7 +51,7 @@ Released as needed for security, installation or critical bug fixes.
 
 
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in release branch e.g. `5.2.x`.
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
+* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
   ```bash
