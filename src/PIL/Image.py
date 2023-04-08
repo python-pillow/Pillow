@@ -487,7 +487,6 @@ class Image:
         self._size = (0, 0)
         self.palette = None
         self.info = {}
-        self._category = 0
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
@@ -604,7 +603,6 @@ class Image:
             and self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
-            and self._category == other._category
             and self.getpalette() == other.getpalette()
             and self.tobytes() == other.tobytes()
         )
