@@ -18,7 +18,6 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   ```bash
   git branch 5.2.x
   git tag 5.2.0
-  git push --all
   git push --tags
   ```
 * [ ] Create and check source distribution:
@@ -32,8 +31,11 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   python3 -m twine upload dist/Pillow-5.2.0*
   ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), increment and append `.dev0` to version identifier in `src/PIL/_version.py`
-
+* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/),
+      increment and append `.dev0` to version identifier in `src/PIL/_version.py` and then:
+  ```bash
+  git push --all
+   ```
 ## Point Release
 
 Released as needed for security, installation or critical bug fixes.
