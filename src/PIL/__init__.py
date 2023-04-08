@@ -31,7 +31,6 @@ _plugins = [
     "DdsImagePlugin",
     "EpsImagePlugin",
     "FitsImagePlugin",
-    "FitsStubImagePlugin",
     "FliImagePlugin",
     "FpxImagePlugin",
     "FtexImagePlugin",

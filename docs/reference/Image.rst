@@ -412,18 +412,6 @@ See :ref:`concept-filters` for details.
     :undoc-members:
     :noindex:
 
-Some deprecated filters are also available under the following names:
-
-.. data:: NONE
-    :noindex:
-    :value: Resampling.NEAREST
-.. data:: LINEAR
-    :value: Resampling.BILINEAR
-.. data:: CUBIC
-    :value: Resampling.BICUBIC
-.. data:: ANTIALIAS
-    :value: Resampling.LANCZOS
-
 Dither modes
 ^^^^^^^^^^^^
 

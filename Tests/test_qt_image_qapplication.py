@@ -1,10 +1,6 @@
-import warnings
-
 import pytest
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", category=DeprecationWarning)
-    from PIL import ImageQt
+from PIL import ImageQt
 
 from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
@@ -19,14 +15,6 @@ if ImageQt.qt_is_installed:
         from PySide6.QtCore import QPoint
         from PySide6.QtGui import QImage, QPainter, QRegion
         from PySide6.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
-    elif ImageQt.qt_version == "5":
-        from PyQt5.QtCore import QPoint
-        from PyQt5.QtGui import QImage, QPainter, QRegion
-        from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
-    elif ImageQt.qt_version == "side2":
-        from PySide2.QtCore import QPoint
-        from PySide2.QtGui import QImage, QPainter, QRegion
-        from PySide2.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
 
     class Example(QWidget):
         def __init__(self):

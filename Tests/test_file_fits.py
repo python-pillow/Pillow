@@ -2,7 +2,7 @@ from io import BytesIO
 
 import pytest
 
-from PIL import FitsImagePlugin, FitsStubImagePlugin, Image
+from PIL import FitsImagePlugin, Image
 
 from .helper import assert_image_equal, hopper
 
@@ -48,39 +48,3 @@ def test_comment():
     image_data = b"SIMPLE  =                    T / comment string"
     with pytest.raises(OSError):
         FitsImagePlugin.FitsImageFile(BytesIO(image_data))
-
-
-def test_stub_deprecated():
-    class Handler:
-        opened = False
-        loaded = False
-
-        def open(self, im):
-            self.opened = True
-
-        def load(self, im):
-            self.loaded = True
-            im.fp.close()
-            return Image.new("RGB", (1, 1))
-
-    handler = Handler()
-    with pytest.warns(DeprecationWarning):
-        FitsStubImagePlugin.register_handler(handler)
-
-    with Image.open(TEST_FILE) as im:
-        assert im.format == "FITS"
-        assert im.size == (128, 128)
-        assert im.mode == "L"
-
-        assert handler.opened
-        assert not handler.loaded
-
-        im.load()
-        assert handler.loaded
-
-    FitsStubImagePlugin._handler = None
-    Image.register_open(
-        FitsImagePlugin.FitsImageFile.format,
-        FitsImagePlugin.FitsImageFile,
-        FitsImagePlugin._accept,
-    )
