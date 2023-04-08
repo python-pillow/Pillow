@@ -97,11 +97,7 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Binary Distributions
 
-### Windows
-* [ ] Download the artifacts from the [GitHub Actions "Test Windows" workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml)
-  and copy into `dist/`
-
-### Mac and Linux
+### macOS and Linux
 * [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):
   ```bash
   git clone https://github.com/python-pillow/pillow-wheels
@@ -109,6 +105,10 @@ Released as needed privately to individual vendors for critical security-related
   ./update-pillow-tag.sh [[release tag]]
   ```
 * [ ] Download wheels from the [Pillow Wheel Builder release](https://github.com/python-pillow/pillow-wheels/releases)
+  and copy into `dist/`
+
+### Windows
+* [ ] Download the artifacts from the [GitHub Actions "Test Windows" workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml)
   and copy into `dist/`
 
 ## Publicize Release
