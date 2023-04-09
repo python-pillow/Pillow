@@ -47,16 +47,12 @@ Released as needed for security, installation or critical bug fixes.
   git checkout -t remotes/origin/5.2.x
   ```
 * [ ] Cherry pick individual commits from `main` branch to release branch e.g. `5.2.x`, then `git push`.
-
-
-
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in release branch e.g. `5.2.x`.
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
   ```bash
   git tag 5.2.1
-  git push
   git push --tags
   ```
 * [ ] Create and check source distribution:
@@ -69,7 +65,10 @@ Released as needed for security, installation or critical bug fixes.
   python3 -m twine check --strict dist/*
   python3 -m twine upload dist/Pillow-5.2.1*
   ```
-* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
+* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases) and then:
+  ```bash
+  git push
+  ```
 
 ## Embargoed Release
 
@@ -85,7 +84,6 @@ Released as needed privately to individual vendors for critical security-related
   ```bash
   git checkout 2.5.x
   git tag 2.5.3
-  git push origin 2.5.x
   git push origin --tags
   ```
 * [ ] Create and check source distribution:
@@ -93,7 +91,10 @@ Released as needed privately to individual vendors for critical security-related
   make sdist
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
-* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
+* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases) and then:
+  ```bash
+  git push origin 2.5.x
+  ```
 
 ## Binary Distributions
 
