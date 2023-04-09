@@ -112,7 +112,7 @@ Released as needed privately to individual vendors for critical security-related
 
 ### Windows
 * [ ] Download the artifacts from the [GitHub Actions "Test Windows" workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml)
-  and copy into `dist/`For example using [GitHub CLI](https://github.com/cli/cli):
+  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli):
   ```bash
   gh run download --dir dist
   # select dist-x.y.z
