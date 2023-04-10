@@ -1220,8 +1220,8 @@ def test_textbbox_stroke():
     # Act / Assert
     assert draw.textbbox((2, 2), "A", font, stroke_width=2) == (0, 4, 16, 20)
     assert draw.textbbox((2, 2), "A", font, stroke_width=4) == (-2, 2, 18, 22)
-    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=2) == (0, 4, 52, 42)
-    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=4) == (-2, 2, 54, 46)
+    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=2) == (0, 4, 52, 44)
+    assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=4) == (-2, 2, 54, 50)
 
 
 @skip_unless_feature("freetype2")
