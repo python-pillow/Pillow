@@ -34,7 +34,6 @@ from enum import IntEnum
 from io import BytesIO
 
 from . import Image
-from ._deprecate import deprecate
 from ._util import is_directory, is_path
 
 
@@ -119,23 +118,6 @@ class ImageFont:
         image.load()
 
         self.font = Image.core.font(image.im, data)
-
-    def getsize(self, text, *args, **kwargs):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text.
-
-        :param text: Text to measure.
-
-        :return: (width, height)
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        return self.font.getsize(text)
 
     def getmask(self, text, mode="", *args, **kwargs):
         """
@@ -397,165 +379,6 @@ class FreeTypeFont:
         left, top = offset[0] - stroke_width, offset[1] - stroke_width
         width, height = size[0] + 2 * stroke_width, size[1] + 2 * stroke_width
         return left, top, left + width, top + height
-
-    def getsize(
-        self,
-        text,
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-    ):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`getlength()` to measure the offset of following text with
-        1/64 pixel precision.
-        Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text if rendered in font with
-        provided direction, features, and language.
-
-        .. note:: For historical reasons this function measures text height from
-            the ascender line instead of the top, see :ref:`text-anchors`.
-            If you wish to measure text height from the top, it is recommended
-            to use the bottom value of :meth:`getbbox` with ``anchor='lt'`` instead.
-
-        :param text: Text to measure.
-
-        :param direction: Direction of the text. It can be 'rtl' (right to
-                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
-                          Requires libraqm.
-
-                          .. versionadded:: 4.2.0
-
-        :param features: A list of OpenType font features to be used during text
-                         layout. This is usually used to turn on optional
-                         font features that are not enabled by default,
-                         for example 'dlig' or 'ss01', but can be also
-                         used to turn off default font features for
-                         example '-liga' to disable ligatures or '-kern'
-                         to disable kerning.  To get all supported
-                         features, see
-                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
-                         Requires libraqm.
-
-                         .. versionadded:: 4.2.0
-
-        :param language: Language of the text. Different languages may use
-                         different glyph shapes or ligatures. This parameter tells
-                         the font which language the text is in, and to apply the
-                         correct substitutions as appropriate, if available.
-                         It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`_
-                         Requires libraqm.
-
-                         .. versionadded:: 6.0.0
-
-        :param stroke_width: The width of the text stroke.
-
-                         .. versionadded:: 6.2.0
-
-        :return: (width, height)
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        # vertical offset is added for historical reasons
-        # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
-        size, offset = self.font.getsize(text, "L", direction, features, language)
-        return (
-            size[0] + stroke_width * 2,
-            size[1] + stroke_width * 2 + offset[1],
-        )
-
-    def getsize_multiline(
-        self,
-        text,
-        direction=None,
-        spacing=4,
-        features=None,
-        language=None,
-        stroke_width=0,
-    ):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text if rendered in font
-        with provided direction, features, and language, while respecting
-        newline characters.
-
-        :param text: Text to measure.
-
-        :param direction: Direction of the text. It can be 'rtl' (right to
-                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
-                          Requires libraqm.
-
-        :param spacing: The vertical gap between lines, defaulting to 4 pixels.
-
-        :param features: A list of OpenType font features to be used during text
-                         layout. This is usually used to turn on optional
-                         font features that are not enabled by default,
-                         for example 'dlig' or 'ss01', but can be also
-                         used to turn off default font features for
-                         example '-liga' to disable ligatures or '-kern'
-                         to disable kerning.  To get all supported
-                         features, see
-                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
-                         Requires libraqm.
-
-        :param language: Language of the text. Different languages may use
-                         different glyph shapes or ligatures. This parameter tells
-                         the font which language the text is in, and to apply the
-                         correct substitutions as appropriate, if available.
-                         It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`_
-                         Requires libraqm.
-
-                         .. versionadded:: 6.0.0
-
-        :param stroke_width: The width of the text stroke.
-
-                         .. versionadded:: 6.2.0
-
-        :return: (width, height)
-        """
-        deprecate("getsize_multiline", 10, "ImageDraw.multiline_textbbox")
-        max_width = 0
-        lines = self._multiline_split(text)
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
-            for line in lines:
-                line_width, line_height = self.getsize(
-                    line, direction, features, language, stroke_width
-                )
-                max_width = max(max_width, line_width)
-
-        return max_width, len(lines) * line_spacing - spacing
-
-    def getoffset(self, text):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns the offset of given text. This is the gap between the
-        starting coordinate and the first marking. Note that this gap is
-        included in the result of :py:func:`~PIL.ImageFont.FreeTypeFont.getsize`.
-
-        :param text: Text to measure.
-
-        :return: A tuple of the x and y offset
-        """
-        deprecate("getoffset", 10, "getbbox")
-        return self.font.getsize(text)[1]
 
     def getmask(
         self,
@@ -850,22 +673,6 @@ class TransposedFont:
         """
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
-
-    def getsize(self, text, *args, **kwargs):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            w, h = self.font.getsize(text)
-        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
-            return h, w
-        return w, h
 
     def getmask(self, text, mode="", *args, **kwargs):
         im = self.font.getmask(text, mode, *args, **kwargs)

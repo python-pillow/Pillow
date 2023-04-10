@@ -45,8 +45,6 @@ def deprecate(
     elif when <= int(__version__.split(".")[0]):
         msg = f"{deprecated} {is_} deprecated and should be removed."
         raise RuntimeError(msg)
-    elif when == 10:
-        removed = "Pillow 10 (2023-07-01)"
     elif when == 11:
         removed = "Pillow 11 (2024-10-15)"
     else:
