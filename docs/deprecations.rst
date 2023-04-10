@@ -12,8 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
-.. _Font size and offset methods:
-
 PSFile
 ~~~~~~
 
