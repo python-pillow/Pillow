@@ -5,7 +5,7 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
-- Remove deprecations for Pillow 10.0.0 #7059
+- Remove deprecations for Pillow 10.0.0 #7059, #7080
   [hugovk, radarhere]
 
 - Drop support for soon-EOL Python 3.7 #7058
