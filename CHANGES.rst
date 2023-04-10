@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Fix CVE-2020-35654
 [rickprice]
 
+- Catch TiffDecode heap-based buffer overflow. CVE 2021-25289
+  Add test files that show the CVE was fixed
+  [rickprice]
 
 6.2.2.4 (2023-03-29)
 ------------------
