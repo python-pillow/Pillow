@@ -655,13 +655,3 @@ def test_different_modes_in_later_frames(mode, tmp_path):
     im.save(test_file, save_all=True, append_images=[Image.new(mode, (1, 1))])
     with Image.open(test_file) as reloaded:
         assert reloaded.mode == mode
-
-
-def test_constants_deprecation():
-    for enum, prefix in {
-        PngImagePlugin.Disposal: "APNG_DISPOSE_",
-        PngImagePlugin.Blend: "APNG_BLEND_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(PngImagePlugin, prefix + name) == enum[name]

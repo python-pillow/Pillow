@@ -2,12 +2,9 @@ import warnings
 
 import pytest
 
+from PIL import ImageQt
+
 from .helper import assert_image_similar, hopper
-
-with warnings.catch_warnings() as w:
-    warnings.simplefilter("ignore", category=DeprecationWarning)
-    from PIL import ImageQt
-
 
 pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
@@ -26,10 +23,6 @@ def test_rgb():
         from PyQt6.QtGui import qRgb
     elif ImageQt.qt_version == "side6":
         from PySide6.QtGui import qRgb
-    elif ImageQt.qt_version == "5":
-        from PyQt5.QtGui import qRgb
-    elif ImageQt.qt_version == "side2":
-        from PySide2.QtGui import qRgb
 
     assert qRgb(0, 0, 0) == qRgba(0, 0, 0, 255)
 

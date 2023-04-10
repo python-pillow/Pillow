@@ -1083,14 +1083,6 @@ def test_woff2(layout_engine):
     assert_image_similar_tofile(im, "Tests/images/test_woff2.png", 5)
 
 
-def test_fill_deprecation(font):
-    with pytest.warns(DeprecationWarning):
-        font.getmask2("Hello world", fill=Image.core.fill)
-    with pytest.warns(DeprecationWarning):
-        with pytest.raises(TypeError):
-            font.getmask2("Hello world", fill=None)
-
-
 def test_render_mono_size():
     # issue 4177
 
@@ -1130,12 +1122,3 @@ def test_raqm_missing_warning(monkeypatch):
         "Raqm layout was requested, but Raqm is not available. "
         "Falling back to basic layout."
     )
-
-
-def test_constants_deprecation():
-    for enum, prefix in {
-        ImageFont.Layout: "LAYOUT_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(ImageFont, prefix + name) == enum[name]

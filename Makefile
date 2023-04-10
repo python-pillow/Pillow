@@ -78,6 +78,7 @@ debug:
 
 .PHONY: release-test
 release-test:
+	python3 Tests/check_release_notes.py
 	python3 -m pip install -e .[tests]
 	python3 selftest.py
 	python3 -m pytest Tests

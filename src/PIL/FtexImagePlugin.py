@@ -56,7 +56,6 @@ from enum import IntEnum
 from io import BytesIO
 
 from . import Image, ImageFile
-from ._deprecate import deprecate
 
 MAGIC = b"FTEX"
 
@@ -64,17 +63,6 @@ MAGIC = b"FTEX"
 class Format(IntEnum):
     DXT1 = 0
     UNCOMPRESSED = 1
-
-
-def __getattr__(name):
-    for enum, prefix in {Format: "FORMAT_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
 
 
 class FtexImageFile(ImageFile.ImageFile):

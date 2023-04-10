@@ -636,12 +636,6 @@ class TestFileJpeg:
             assert max(im2.quantization[0]) <= 255
             assert max(im2.quantization[1]) <= 255
 
-    def test_convert_dict_qtables_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            qtable = {0: [1, 2, 3, 4]}
-            qtable2 = JpegImagePlugin.convert_dict_qtables(qtable)
-            assert qtable == qtable2
-
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
