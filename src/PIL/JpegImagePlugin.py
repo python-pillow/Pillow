@@ -46,7 +46,6 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
-from ._deprecate import deprecate
 from .JpegPresets import presets
 
 #
@@ -610,11 +609,6 @@ samplings = {
     (2, 2, 1, 1, 1, 1): 2,
 }
 # fmt: on
-
-
-def convert_dict_qtables(qtables):
-    deprecate("convert_dict_qtables", 10, action="Conversion is no longer needed")
-    return qtables
 
 
 def get_sampling(im):

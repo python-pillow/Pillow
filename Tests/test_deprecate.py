@@ -7,11 +7,6 @@ from PIL import _deprecate
     "version, expected",
     [
         (
-            10,
-            "Old thing is deprecated and will be removed in Pillow 10 "
-            r"\(2023-07-01\)\. Use new thing instead\.",
-        ),
-        (
             11,
             "Old thing is deprecated and will be removed in Pillow 11 "
             r"\(2024-10-15\)\. Use new thing instead\.",
@@ -57,18 +52,18 @@ def test_old_version(deprecated, plural, expected):
 
 def test_plural():
     expected = (
-        r"Old things are deprecated and will be removed in Pillow 10 \(2023-07-01\)\. "
+        r"Old things are deprecated and will be removed in Pillow 11 \(2024-10-15\)\. "
         r"Use new thing instead\."
     )
     with pytest.warns(DeprecationWarning, match=expected):
-        _deprecate.deprecate("Old things", 10, "new thing", plural=True)
+        _deprecate.deprecate("Old things", 11, "new thing", plural=True)
 
 
 def test_replacement_and_action():
     expected = "Use only one of 'replacement' and 'action'"
     with pytest.raises(ValueError, match=expected):
         _deprecate.deprecate(
-            "Old thing", 10, replacement="new thing", action="Upgrade to new thing"
+            "Old thing", 11, replacement="new thing", action="Upgrade to new thing"
         )
 
 
@@ -81,16 +76,16 @@ def test_replacement_and_action():
 )
 def test_action(action):
     expected = (
-        r"Old thing is deprecated and will be removed in Pillow 10 \(2023-07-01\)\. "
+        r"Old thing is deprecated and will be removed in Pillow 11 \(2024-10-15\)\. "
         r"Upgrade to new thing\."
     )
     with pytest.warns(DeprecationWarning, match=expected):
-        _deprecate.deprecate("Old thing", 10, action=action)
+        _deprecate.deprecate("Old thing", 11, action=action)
 
 
 def test_no_replacement_or_action():
     expected = (
-        r"Old thing is deprecated and will be removed in Pillow 10 \(2023-07-01\)"
+        r"Old thing is deprecated and will be removed in Pillow 11 \(2024-10-15\)"
     )
     with pytest.warns(DeprecationWarning, match=expected):
-        _deprecate.deprecate("Old thing", 10)
+        _deprecate.deprecate("Old thing", 11)

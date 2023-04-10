@@ -78,6 +78,7 @@ debug:
 
 .PHONY: release-test
 release-test:
+	python3 Tests/check_release_notes.py
 	python3 -m pip install -e .[tests]
 	python3 selftest.py
 	python3 -m pytest Tests
@@ -123,5 +124,5 @@ lint:
 lint-fix:
 	python3 -c "import black" > /dev/null 2>&1 || python3 -m pip install black
 	python3 -c "import isort" > /dev/null 2>&1 || python3 -m pip install isort
-	python3 -m black --target-version py37 .
+	python3 -m black --target-version py38 .
 	python3 -m isort .

@@ -20,8 +20,6 @@ from enum import IntEnum
 
 from PIL import Image
 
-from ._deprecate import deprecate
-
 try:
     from PIL import _imagingcms
 except ImportError as ex:
@@ -115,17 +113,6 @@ class Direction(IntEnum):
     INPUT = 0
     OUTPUT = 1
     PROOF = 2
-
-
-def __getattr__(name):
-    for enum, prefix in {Intent: "INTENT_", Direction: "DIRECTION_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
 
 
 #

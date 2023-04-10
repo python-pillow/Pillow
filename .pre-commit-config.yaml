@@ -1,9 +1,9 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
-        args: [--target-version=py37]
+        args: [--target-version=py38]
         # Only .py files, until https://github.com/psf/black/issues/402 resolved
         files: \.py$
         types: []
@@ -14,7 +14,7 @@ repos:
       - id: isort
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.4
+    rev: 1.7.5
     hooks:
     - id: bandit
       args: [--severity-level=high]
@@ -26,10 +26,10 @@ repos:
       - id: yesqa
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.4.2
+    rev: v1.5.1
     hooks:
       - id: remove-tabs
-        exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.opt$)
+        exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
 
   - repo: https://github.com/PyCQA/flake8
     rev: 6.0.0
@@ -57,7 +57,7 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: 0.6.1
+    rev: 1.0.0
     hooks:
       - id: tox-ini-fmt
 

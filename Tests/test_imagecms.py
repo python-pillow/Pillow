@@ -617,16 +617,6 @@ def test_auxiliary_channels_isolated():
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 
-def test_constants_deprecation():
-    for enum, prefix in {
-        ImageCms.Intent: "INTENT_",
-        ImageCms.Direction: "DIRECTION_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(ImageCms, prefix + name) == enum[name]
-
-
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
 def test_rgb_lab(mode):
     im = Image.new(mode, (1, 1))

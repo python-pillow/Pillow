@@ -8,7 +8,7 @@ JpegImagePlugin.convert_dict_qtables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 JPEG ``quantization`` is now automatically converted, but still returned as a
-dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
+dictionary. The ``convert_dict_qtables`` method no longer
 performs any operations on the data given to it, has been deprecated and will be
 removed in Pillow 10.0.0 (2023-07-01).
 
