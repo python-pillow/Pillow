@@ -106,7 +106,7 @@ Released as needed privately to individual vendors for critical security-related
   ./update-pillow-tag.sh [[release tag]]
   ```
 * [ ] Download wheels from the [Pillow Wheel Builder release](https://github.com/python-pillow/pillow-wheels/releases)
-  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli):
+  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli) from the main repo:
   ```bash
   gh release download --dir dist --pattern "*.whl" --repo python-pillow/pillow-wheels
   ```
