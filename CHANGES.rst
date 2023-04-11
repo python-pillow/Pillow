@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Fixed type handling for include and lib directories #7069
+  [adisbladis, radarhere]
+
 - Remove deprecations for Pillow 10.0.0 #7059, #7080
   [hugovk, radarhere]
 
