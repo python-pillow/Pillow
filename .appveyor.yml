@@ -52,8 +52,9 @@ test_script:
 #- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
 
 after_test:
-- python -m pip install codecov
-- codecov --file coverage.xml --name %PYTHON% --flags AppVeyor
+- curl -Os https://uploader.codecov.io/latest/windows/codecov.exe
+- chmod +x codecov
+- .\codecov.exe --file coverage.xml --name %PYTHON% --flags AppVeyor
 
 matrix:
   fast_finish: true
