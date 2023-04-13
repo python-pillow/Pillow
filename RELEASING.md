@@ -11,14 +11,13 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Develop and prepare release in `main` branch.
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `main` branch.
 * [ ] Check that all of the wheel builds [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels) pass the tests in Travis CI and GitHub Actions.
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
+* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
   ```bash
   git branch 5.2.x
   git tag 5.2.0
-  git push --all
   git push --tags
   ```
 * [ ] Create and check source distribution:
@@ -32,8 +31,11 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   python3 -m twine upload dist/Pillow-5.2.0*
   ```
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), increment and append `.dev0` to version identifier in `src/PIL/_version.py`
-
+* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/),
+      increment and append `.dev0` to version identifier in `src/PIL/_version.py` and then:
+  ```bash
+  git push --all
+   ```
 ## Point Release
 
 Released as needed for security, installation or critical bug fixes.
@@ -45,16 +47,12 @@ Released as needed for security, installation or critical bug fixes.
   git checkout -t remotes/origin/5.2.x
   ```
 * [ ] Cherry pick individual commits from `main` branch to release branch e.g. `5.2.x`, then `git push`.
-
-
-
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in release branch e.g. `5.2.x`.
-* [ ] In compliance with [PEP 440](https://www.python.org/dev/peps/pep-0440/), update version identifier in `src/PIL/_version.py`
+* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
   ```bash
   git tag 5.2.1
-  git push
   git push --tags
   ```
 * [ ] Create and check source distribution:
@@ -67,7 +65,10 @@ Released as needed for security, installation or critical bug fixes.
   python3 -m twine check --strict dist/*
   python3 -m twine upload dist/Pillow-5.2.1*
   ```
-* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
+* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases) and then:
+  ```bash
+  git push
+  ```
 
 ## Embargoed Release
 
@@ -83,7 +84,6 @@ Released as needed privately to individual vendors for critical security-related
   ```bash
   git checkout 2.5.x
   git tag 2.5.3
-  git push origin 2.5.x
   git push origin --tags
   ```
 * [ ] Create and check source distribution:
@@ -91,15 +91,14 @@ Released as needed privately to individual vendors for critical security-related
   make sdist
   ```
 * [ ] Create [binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#binary-distributions)
-* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
+* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases) and then:
+  ```bash
+  git push origin 2.5.x
+  ```
 
 ## Binary Distributions
 
-### Windows
-* [ ] Download the artifacts from the [GitHub Actions "Test Windows" workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml)
-  and copy into `dist/`
-
-### Mac and Linux
+### macOS and Linux
 * [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):
   ```bash
   git clone https://github.com/python-pillow/pillow-wheels
@@ -107,7 +106,18 @@ Released as needed privately to individual vendors for critical security-related
   ./update-pillow-tag.sh [[release tag]]
   ```
 * [ ] Download wheels from the [Pillow Wheel Builder release](https://github.com/python-pillow/pillow-wheels/releases)
-  and copy into `dist/`
+  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli) from the main repo:
+  ```bash
+  gh release download --dir dist --pattern "*.whl" --repo python-pillow/pillow-wheels
+  ```
+
+### Windows
+* [ ] Download the artifacts from the [GitHub Actions "Test Windows" workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml)
+  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli):
+  ```bash
+  gh run download --dir dist
+  # select dist-x.y.z
+  ```
 
 ## Publicize Release
 

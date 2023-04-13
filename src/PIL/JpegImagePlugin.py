@@ -46,7 +46,6 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
-from ._deprecate import deprecate
 from .JpegPresets import presets
 
 #
@@ -612,11 +611,6 @@ samplings = {
 # fmt: on
 
 
-def convert_dict_qtables(qtables):
-    deprecate("convert_dict_qtables", 10, action="Conversion is no longer needed")
-    return qtables
-
-
 def get_sampling(im):
     # There's no subsampling when images have only 1 layer
     # (grayscale images) or when they are CMYK (4 layers),
@@ -730,10 +724,10 @@ def _save(im, fp, filename):
 
     extra = info.get("extra", b"")
 
+    MAX_BYTES_IN_MARKER = 65533
     icc_profile = info.get("icc_profile")
     if icc_profile:
         ICC_OVERHEAD_LEN = 14
-        MAX_BYTES_IN_MARKER = 65533
         MAX_DATA_BYTES_IN_MARKER = MAX_BYTES_IN_MARKER - ICC_OVERHEAD_LEN
         markers = []
         while icc_profile:
@@ -764,6 +758,9 @@ def _save(im, fp, filename):
     exif = info.get("exif", b"")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
+    if len(exif) > MAX_BYTES_IN_MARKER:
+        msg = "EXIF data is too long"
+        raise ValueError(msg)
 
     # get keyword arguments
     im.encoderconfig = (

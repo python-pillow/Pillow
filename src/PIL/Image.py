@@ -56,28 +56,7 @@ from . import (
     _plugins,
 )
 from ._binary import i32le, o32be, o32le
-from ._deprecate import deprecate
 from ._util import DeferredError, is_path
-
-
-def __getattr__(name):
-    categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
-    if name in categories:
-        deprecate("Image categories", 10, "is_animated", plural=True)
-        return categories[name]
-    old_resampling = {
-        "LINEAR": "BILINEAR",
-        "CUBIC": "BICUBIC",
-        "ANTIALIAS": "LANCZOS",
-    }
-    if name in old_resampling:
-        deprecate(
-            name, 10, f"{old_resampling[name]} or Resampling.{old_resampling[name]}"
-        )
-        return Resampling[old_resampling[name]]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
-
 
 logger = logging.getLogger(__name__)
 
@@ -441,26 +420,18 @@ def _getencoder(mode, encoder_name, args, extra=()):
 # Simple expression analyzer
 
 
-def coerce_e(value):
-    deprecate("coerce_e", 10)
-    return value if isinstance(value, _E) else _E(1, value)
-
-
-# _E(scale, offset) represents the affine transformation scale * x + offset.
-# The "data" field is named for compatibility with the old implementation,
-# and should be renamed once coerce_e is removed.
 class _E:
-    def __init__(self, scale, data):
+    def __init__(self, scale, offset):
         self.scale = scale
-        self.data = data
+        self.offset = offset
 
     def __neg__(self):
-        return _E(-self.scale, -self.data)
+        return _E(-self.scale, -self.offset)
 
     def __add__(self, other):
         if isinstance(other, _E):
-            return _E(self.scale + other.scale, self.data + other.data)
-        return _E(self.scale, self.data + other)
+            return _E(self.scale + other.scale, self.offset + other.offset)
+        return _E(self.scale, self.offset + other)
 
     __radd__ = __add__
 
@@ -473,19 +444,19 @@ class _E:
     def __mul__(self, other):
         if isinstance(other, _E):
             return NotImplemented
-        return _E(self.scale * other, self.data * other)
+        return _E(self.scale * other, self.offset * other)
 
     __rmul__ = __mul__
 
     def __truediv__(self, other):
         if isinstance(other, _E):
             return NotImplemented
-        return _E(self.scale / other, self.data / other)
+        return _E(self.scale / other, self.offset / other)
 
 
 def _getscaleoffset(expr):
     a = expr(_E(1, 0))
-    return (a.scale, a.data) if isinstance(a, _E) else (0, a)
+    return (a.scale, a.offset) if isinstance(a, _E) else (0, a)
 
 
 # --------------------------------------------------------------------
@@ -516,16 +487,9 @@ class Image:
         self._size = (0, 0)
         self.palette = None
         self.info = {}
-        self._category = 0
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
-
-    def __getattr__(self, name):
-        if name == "category":
-            deprecate("Image categories", 10, "is_animated", plural=True)
-            return self._category
-        raise AttributeError(name)
 
     @property
     def width(self):
@@ -639,7 +603,6 @@ class Image:
             and self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
-            and self._category == other._category
             and self.getpalette() == other.getpalette()
             and self.tobytes() == other.tobytes()
         )
@@ -686,11 +649,7 @@ class Image:
     @property
     def __array_interface__(self):
         # numpy array interface support
-        new = {}
-        shape, typestr = _conv_type_shape(self)
-        new["shape"] = shape
-        new["typestr"] = typestr
-        new["version"] = 3
+        new = {"version": 3}
         try:
             if self.mode == "1":
                 # Binary images need to be extended from bits to bytes
@@ -709,6 +668,7 @@ class Image:
                     if parse_version(numpy.__version__) < parse_version("1.23"):
                         warnings.warn(e)
             raise
+        new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
     def __getstate__(self):
@@ -765,17 +725,17 @@ class Image:
 
         bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
 
-        data = []
+        output = []
         while True:
-            l, s, d = e.encode(bufsize)
-            data.append(d)
-            if s:
+            bytes_consumed, errcode, data = e.encode(bufsize)
+            output.append(data)
+            if errcode:
                 break
-        if s < 0:
-            msg = f"encoder error {s} in tobytes"
+        if errcode < 0:
+            msg = f"encoder error {errcode} in tobytes"
             raise RuntimeError(msg)
 
-        return b"".join(data)
+        return b"".join(output)
 
     def tobitmap(self, name="image"):
         """
@@ -1432,6 +1392,11 @@ class Image:
             return {get_name(root.tag): get_value(root)}
 
     def getexif(self):
+        """
+        Gets EXIF data from the image.
+
+        :returns: an :py:class:`~PIL.Image.Exif` object.
+        """
         if self._exif is None:
             self._exif = Exif()
             self._exif._loaded = False
@@ -3029,21 +2994,29 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 def fromarray(obj, mode=None):
     """
     Creates an image memory from an object exporting the array interface
-    (using the buffer protocol).
+    (using the buffer protocol)::
+
+      from PIL import Image
+      import numpy as np
+      a = np.zeros((5, 5))
+      im = Image.fromarray(a)
 
     If ``obj`` is not contiguous, then the ``tobytes`` method is called
     and :py:func:`~PIL.Image.frombuffer` is used.
 
-    If you have an image in NumPy::
+    In the case of NumPy, be aware that Pillow modes do not always correspond
+    to NumPy dtypes. Pillow modes only offer 1-bit pixels, 8-bit pixels,
+    32-bit signed integer pixels, and 32-bit floating point pixels.
+
+    Pillow images can also be converted to arrays::
 
       from PIL import Image
       import numpy as np
       im = Image.open("hopper.jpg")
       a = np.asarray(im)
 
-    Then this can be used to convert it to a Pillow image::
-
-      im = Image.fromarray(a)
+    When converting Pillow images to arrays however, only pixel values are
+    transferred. This means that P and PA mode images will lose their palette.
 
     :param obj: Object with array interface
     :param mode: Optional mode to use when reading ``obj``. Will be determined from
@@ -3601,6 +3574,39 @@ atexit.register(core.clear_cache)
 
 
 class Exif(MutableMapping):
+    """
+    This class provides read and write access to EXIF image data::
+
+      from PIL import Image
+      im = Image.open("exif.png")
+      exif = im.getexif()  # Returns an instance of this class
+
+    Information can be read and written, iterated over or deleted::
+
+      print(exif[274])  # 1
+      exif[274] = 2
+      for k, v in exif.items():
+        print("Tag", k, "Value", v)  # Tag 274 Value 2
+      del exif[274]
+
+    To access information beyond IFD0, :py:meth:`~PIL.Image.Exif.get_ifd`
+    returns a dictionary::
+
+      from PIL import ExifTags
+      im = Image.open("exif_gps.jpg")
+      exif = im.getexif()
+      gps_ifd = exif.get_ifd(ExifTags.IFD.GPSInfo)
+      print(gps_ifd)
+
+    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.Makernote``,
+    ``ExifTags.IFD.Interop`` and ``ExifTags.IFD.IFD1``.
+
+    :py:mod:`~PIL.ExifTags` also has enum classes to provide names for data::
+
+      print(exif[ExifTags.Base.Software])  # PIL
+      print(gps_ifd[ExifTags.GPS.GPSDateStamp])  # 1999:99:99 99:99:99
+    """
+
     endian = None
     bigtiff = False
 

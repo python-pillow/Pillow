@@ -251,6 +251,10 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
 static const char *must_be_sequence = "argument must be a sequence";
 static const char *must_be_two_coordinates =
     "coordinate list must contain exactly 2 coordinates";
+static const char *incorrectly_ordered_x_coordinate =
+    "x1 must be greater than or equal to x0";
+static const char *incorrectly_ordered_y_coordinate =
+    "y1 must be greater than or equal to y0";
 static const char *wrong_mode = "unrecognized image mode";
 static const char *wrong_raw_mode = "unrecognized raw mode";
 static const char *outside_image = "image index out of range";
@@ -487,7 +491,7 @@ getink(PyObject *color, Imaging im, char *ink) {
     int g = 0, b = 0, a = 0;
     double f = 0;
     /* Windows 64 bit longs are 32 bits, and 0xFFFFFFFF (white) is a
-       python long (not int) that raises an overflow error when trying
+       Python long (not int) that raises an overflow error when trying
        to return it into a 32 bit C long
     */
     PY_LONG_LONG r = 0;
@@ -498,7 +502,8 @@ getink(PyObject *color, Imaging im, char *ink) {
        be cast to either UINT8 or INT32 */
 
     int rIsInt = 0;
-    if (PyTuple_Check(color) && PyTuple_GET_SIZE(color) == 1) {
+    int tupleSize = PyTuple_Check(color) ? PyTuple_GET_SIZE(color) : -1;
+    if (tupleSize == 1) {
         color = PyTuple_GetItem(color, 0);
     }
     if (im->type == IMAGING_TYPE_UINT8 || im->type == IMAGING_TYPE_INT32 ||
@@ -509,14 +514,12 @@ getink(PyObject *color, Imaging im, char *ink) {
                 return NULL;
             }
             rIsInt = 1;
-        } else if (im->type == IMAGING_TYPE_UINT8) {
-            if (!PyTuple_Check(color)) {
-                PyErr_SetString(PyExc_TypeError, "color must be int or tuple");
-                return NULL;
-            }
-        } else {
+        } else if (im->bands == 1) {
             PyErr_SetString(
                 PyExc_TypeError, "color must be int or single-element tuple");
+            return NULL;
+        } else if (tupleSize == -1) {
+            PyErr_SetString(PyExc_TypeError, "color must be int or tuple");
             return NULL;
         }
     }
@@ -527,7 +530,7 @@ getink(PyObject *color, Imaging im, char *ink) {
             if (im->bands == 1) {
                 /* unsigned integer, single layer */
                 if (rIsInt != 1) {
-                    if (PyTuple_GET_SIZE(color) != 1) {
+                    if (tupleSize != 1) {
                         PyErr_SetString(PyExc_TypeError, "color must be int or single-element tuple");
                         return NULL;
                     } else if (!PyArg_ParseTuple(color, "L", &r)) {
@@ -537,7 +540,6 @@ getink(PyObject *color, Imaging im, char *ink) {
                 ink[0] = (char)CLIP8(r);
                 ink[1] = ink[2] = ink[3] = 0;
             } else {
-                a = 255;
                 if (rIsInt) {
                     /* compatibility: ABGR */
                     a = (UINT8)(r >> 24);
@@ -545,7 +547,7 @@ getink(PyObject *color, Imaging im, char *ink) {
                     g = (UINT8)(r >> 8);
                     r = (UINT8)r;
                 } else {
-                    int tupleSize = PyTuple_GET_SIZE(color);
+                    a = 255;
                     if (im->bands == 2) {
                         if (tupleSize != 1 && tupleSize != 2) {
                             PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or two elements");
@@ -589,6 +591,41 @@ getink(PyObject *color, Imaging im, char *ink) {
                 ink[1] = (UINT8)(r >> 8);
                 ink[2] = ink[3] = 0;
                 return ink;
+            } else {
+                if (rIsInt) {
+                    b = (UINT8)(r >> 16);
+                    g = (UINT8)(r >> 8);
+                    r = (UINT8)r;
+                } else if (tupleSize != 3) {
+                    PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or three elements");
+                    return NULL;
+                } else if (!PyArg_ParseTuple(color, "Lii", &r, &g, &b)) {
+                    return NULL;
+                }
+                if (!strcmp(im->mode, "BGR;15")) {
+                    UINT16 v = ((((UINT16)r) << 7) & 0x7c00) +
+                               ((((UINT16)g) << 2) & 0x03e0) +
+                               ((((UINT16)b) >> 3) & 0x001f);
+
+                    ink[0] = (UINT8)v;
+                    ink[1] = (UINT8)(v >> 8);
+                    ink[2] = ink[3] = 0;
+                    return ink;
+                } else if (!strcmp(im->mode, "BGR;16")) {
+                    UINT16 v = ((((UINT16)r) << 8) & 0xf800) +
+                               ((((UINT16)g) << 3) & 0x07e0) +
+                               ((((UINT16)b) >> 3) & 0x001f);
+                    ink[0] = (UINT8)v;
+                    ink[1] = (UINT8)(v >> 8);
+                    ink[2] = ink[3] = 0;
+                    return ink;
+                } else if (!strcmp(im->mode, "BGR;24")) {
+                    ink[0] = (UINT8)b;
+                    ink[1] = (UINT8)g;
+                    ink[2] = (UINT8)r;
+                    ink[3] = 0;
+                    return ink;
+                }
             }
     }
 
@@ -1245,6 +1282,10 @@ _histogram(ImagingObject *self, PyObject *args) {
 
     /* Build an integer list containing the histogram */
     list = PyList_New(h->bands * 256);
+    if (list == NULL) {
+        ImagingHistogramDelete(h);
+        return NULL;
+    }
     for (i = 0; i < h->bands * 256; i++) {
         PyObject *item;
         item = PyLong_FromLong(h->histogram[i]);
@@ -2150,6 +2191,10 @@ _getcolors(ImagingObject *self, PyObject *args) {
         Py_INCREF(out);
     } else {
         out = PyList_New(colors);
+        if (out == NULL) {
+            free(items);
+            return NULL;
+        }
         for (i = 0; i < colors; i++) {
             ImagingColorItem *v = &items[i];
             PyObject *item = Py_BuildValue(
@@ -2805,6 +2850,16 @@ _draw_arc(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawArc(
         self->image->image,
@@ -2886,6 +2941,16 @@ _draw_chord(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawChord(
         self->image->image,
@@ -2929,6 +2994,16 @@ _draw_ellipse(ImagingDrawObject *self, PyObject *args) {
     }
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
+        return NULL;
+    }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -3101,6 +3176,16 @@ _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
         free(xy);
         return NULL;
     }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
+        free(xy);
+        return NULL;
+    }
 
     n = ImagingDrawPieslice(
         self->image->image,
@@ -3194,6 +3279,16 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
     }
     if (n != 2) {
         PyErr_SetString(PyExc_TypeError, must_be_two_coordinates);
+        free(xy);
+        return NULL;
+    }
+    if (xy[2] < xy[0]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_x_coordinate);
+        free(xy);
+        return NULL;
+    }
+    if (xy[3] < xy[1]) {
+        PyErr_SetString(PyExc_ValueError, incorrectly_ordered_y_coordinate);
         free(xy);
         return NULL;
     }
@@ -3756,6 +3851,7 @@ static PyTypeObject PixelAccess_Type = {
 static PyObject *
 _get_stats(PyObject *self, PyObject *args) {
     PyObject *d;
+    PyObject *v;
     ImagingMemoryArena arena = &ImagingDefaultArena;
 
     if (!PyArg_ParseTuple(args, ":get_stats")) {
@@ -3766,15 +3862,29 @@ _get_stats(PyObject *self, PyObject *args) {
     if (!d) {
         return NULL;
     }
-    PyDict_SetItemString(d, "new_count", PyLong_FromLong(arena->stats_new_count));
-    PyDict_SetItemString(
-        d, "allocated_blocks", PyLong_FromLong(arena->stats_allocated_blocks));
-    PyDict_SetItemString(
-        d, "reused_blocks", PyLong_FromLong(arena->stats_reused_blocks));
-    PyDict_SetItemString(
-        d, "reallocated_blocks", PyLong_FromLong(arena->stats_reallocated_blocks));
-    PyDict_SetItemString(d, "freed_blocks", PyLong_FromLong(arena->stats_freed_blocks));
-    PyDict_SetItemString(d, "blocks_cached", PyLong_FromLong(arena->blocks_cached));
+    v = PyLong_FromLong(arena->stats_new_count);
+    PyDict_SetItemString(d, "new_count", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->stats_allocated_blocks);
+    PyDict_SetItemString(d, "allocated_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->stats_reused_blocks);
+    PyDict_SetItemString(d, "reused_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->stats_reallocated_blocks);
+    PyDict_SetItemString(d, "reallocated_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->stats_freed_blocks);
+    PyDict_SetItemString(d, "freed_blocks", v ? v : Py_None);
+    Py_XDECREF(v);
+
+    v = PyLong_FromLong(arena->blocks_cached);
+    PyDict_SetItemString(d, "blocks_cached", v ? v : Py_None);
+    Py_XDECREF(v);
     return d;
 }
 
@@ -3984,8 +4094,6 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args);
 extern PyObject *
-PyImaging_ListWindowsWin32(PyObject *self, PyObject *args);
-extern PyObject *
 PyImaging_EventLoopWin32(PyObject *self, PyObject *args);
 extern PyObject *
 PyImaging_DrawWmf(PyObject *self, PyObject *args);
@@ -4069,7 +4177,6 @@ static PyMethodDef functions[] = {
     {"grabclipboard_win32", (PyCFunction)PyImaging_GrabClipboardWin32, METH_VARARGS},
     {"createwindow", (PyCFunction)PyImaging_CreateWindowWin32, METH_VARARGS},
     {"eventloop", (PyCFunction)PyImaging_EventLoopWin32, METH_VARARGS},
-    {"listwindows", (PyCFunction)PyImaging_ListWindowsWin32, METH_VARARGS},
     {"drawwmf", (PyCFunction)PyImaging_DrawWmf, METH_VARARGS},
 #endif
 #ifdef HAVE_XCB
@@ -4146,28 +4253,33 @@ setup_module(PyObject *m) {
 #ifdef HAVE_LIBJPEG
     {
         extern const char *ImagingJpegVersion(void);
-        PyDict_SetItemString(
-            d, "jpeglib_version", PyUnicode_FromString(ImagingJpegVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingJpegVersion());
+        PyDict_SetItemString(d, "jpeglib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
 #ifdef HAVE_OPENJPEG
     {
         extern const char *ImagingJpeg2KVersion(void);
-        PyDict_SetItemString(
-            d, "jp2klib_version", PyUnicode_FromString(ImagingJpeg2KVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingJpeg2KVersion());
+        PyDict_SetItemString(d, "jp2klib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
     PyObject *have_libjpegturbo;
 #ifdef LIBJPEG_TURBO_VERSION
     have_libjpegturbo = Py_True;
+    {
 #define tostr1(a) #a
 #define tostr(a) tostr1(a)
-    PyDict_SetItemString(
-        d, "libjpeg_turbo_version", PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION)));
+        PyObject *v = PyUnicode_FromString(tostr(LIBJPEG_TURBO_VERSION));
+        PyDict_SetItemString(d, "libjpeg_turbo_version", v ? v : Py_None);
+        Py_XDECREF(v);
 #undef tostr
 #undef tostr1
+    }
 #else
     have_libjpegturbo = Py_False;
 #endif
@@ -4179,8 +4291,9 @@ setup_module(PyObject *m) {
     have_libimagequant = Py_True;
     {
         extern const char *ImagingImageQuantVersion(void);
-        PyDict_SetItemString(
-            d, "imagequant_version", PyUnicode_FromString(ImagingImageQuantVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingImageQuantVersion());
+        PyDict_SetItemString(d, "imagequant_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #else
     have_libimagequant = Py_False;
@@ -4197,16 +4310,18 @@ setup_module(PyObject *m) {
     PyModule_AddIntConstant(m, "FIXED", Z_FIXED);
     {
         extern const char *ImagingZipVersion(void);
-        PyDict_SetItemString(
-            d, "zlib_version", PyUnicode_FromString(ImagingZipVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingZipVersion());
+        PyDict_SetItemString(d, "zlib_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 #endif
 
 #ifdef HAVE_LIBTIFF
     {
         extern const char *ImagingTiffVersion(void);
-        PyDict_SetItemString(
-            d, "libtiff_version", PyUnicode_FromString(ImagingTiffVersion()));
+        PyObject *v = PyUnicode_FromString(ImagingTiffVersion());
+        PyDict_SetItemString(d, "libtiff_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
         // Test for libtiff 4.0 or later, excluding libtiff 3.9.6 and 3.9.7
         PyObject *support_custom_tags;
@@ -4229,7 +4344,9 @@ setup_module(PyObject *m) {
     Py_INCREF(have_xcb);
     PyModule_AddObject(m, "HAVE_XCB", have_xcb);
 
-    PyDict_SetItemString(d, "PILLOW_VERSION", PyUnicode_FromString(version));
+    PyObject *pillow_version = PyUnicode_FromString(version);
+    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None);
+    Py_XDECREF(pillow_version);
 
     return 0;
 }
@@ -4249,6 +4366,7 @@ PyInit__imaging(void) {
     m = PyModule_Create(&module_def);
 
     if (setup_module(m) < 0) {
+        Py_DECREF(m);
         return NULL;
     }
 

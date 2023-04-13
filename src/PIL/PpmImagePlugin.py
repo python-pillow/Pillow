@@ -237,6 +237,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
             if half_token:
                 block = half_token + block  # stitch half_token to new block
+                half_token = False
 
             tokens = block.split()
 

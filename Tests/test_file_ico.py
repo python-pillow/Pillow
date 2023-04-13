@@ -212,11 +212,9 @@ def test_save_append_images(tmp_path):
 def test_unexpected_size():
     # This image has been manually hexedited to state that it is 16x32
     # while the image within is still 16x16
-    def open():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/hopper_unexpected.ico") as im:
             assert im.size == (16, 16)
-
-    pytest.warns(UserWarning, open)
 
 
 def test_draw_reloaded(tmp_path):

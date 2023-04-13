@@ -1,0 +1,55 @@
+name: Docs
+
+on:
+  push:
+    paths:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  pull_request:
+    paths:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    name: Docs
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+        cache: pip
+        cache-dependency-path: ".ci/*.sh"
+
+    - name: Build system information
+      run: python3 .github/workflows/system-info.py
+
+    - name: Install Linux dependencies
+      run: |
+        .ci/install.sh
+      env:
+        GHA_PYTHON_VERSION: "3.x"
+
+    - name: Build
+      run: |
+        .ci/build.sh
+
+    - name: Docs
+      run: |
+        make doccheck

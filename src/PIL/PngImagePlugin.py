@@ -45,7 +45,6 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
-from ._deprecate import deprecate
 
 logger = logging.getLogger(__name__)
 
@@ -129,17 +128,6 @@ class Blend(IntEnum):
     This frame should be alpha composited with the previous output image contents.
     See :ref:`Saving APNG sequences<apng-saving>`.
     """
-
-
-def __getattr__(name):
-    for enum, prefix in {Disposal: "APNG_DISPOSE_", Blend: "APNG_BLEND_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
 
 
 def _safe_zlib_decompress(s):
@@ -1003,9 +991,13 @@ class PngImageFile(ImageFile.ImageFile):
         else:
             if self._prev_im and self.blend_op == Blend.OP_OVER:
                 updated = self._crop(self.im, self.dispose_extent)
-                self._prev_im.paste(
-                    updated, self.dispose_extent, updated.convert("RGBA")
-                )
+                if self.im.mode == "RGB" and "transparency" in self.info:
+                    mask = updated.convert_transparent(
+                        "RGBA", self.info["transparency"]
+                    )
+                else:
+                    mask = updated.convert("RGBA")
+                self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
                 if self.pyaccess:
                     self.pyaccess = None

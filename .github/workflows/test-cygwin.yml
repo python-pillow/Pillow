@@ -1,6 +1,15 @@
 name: Test Cygwin
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -58,8 +67,7 @@ jobs:
             python3${{ matrix.python-minor-version }}-numpy
             python3${{ matrix.python-minor-version }}-sip
             python3${{ matrix.python-minor-version }}-tkinter
-            qt5-devel-tools
-            subversion
+            wget
             xorg-server-extra
             zlib-devel
 

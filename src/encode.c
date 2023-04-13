@@ -904,7 +904,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     &encoder->state, (ttag_t)key_int, (UINT16)PyLong_AsLong(value));
             } else if (type == TIFF_LONG) {
                 status = ImagingLibTiffSetField(
-                    &encoder->state, (ttag_t)key_int, (UINT32)PyLong_AsLong(value));
+                    &encoder->state, (ttag_t)key_int, PyLong_AsLongLong(value));
             } else if (type == TIFF_SSHORT) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (INT16)PyLong_AsLong(value));
@@ -1214,10 +1214,13 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     char mct = 0;
     int sgnd = 0;
     Py_ssize_t fd = -1;
+    char *comment;
+    Py_ssize_t comment_size;
+    int plt = 0;
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbbn",
+            "ss|OOOsOnOOOssbbnz#p",
             &mode,
             &format,
             &offset,
@@ -1233,7 +1236,10 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             &cinema_mode,
             &mct,
             &sgnd,
-            &fd)) {
+            &fd,
+            &comment,
+            &comment_size,
+            &plt)) {
         return NULL;
     }
 
@@ -1315,6 +1321,26 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
         }
     }
 
+    if (comment && comment_size > 0) {
+        /* Size is stored as as an uint16, subtract 4 bytes for the header */
+        if (comment_size >= 65532) {
+            PyErr_SetString(
+                PyExc_ValueError,
+                "JPEG 2000 comment is too long");
+            Py_DECREF(encoder);
+            return NULL;
+        }
+
+        char *p = malloc(comment_size + 1);
+        if (!p) {
+            Py_DECREF(encoder);
+            return ImagingError_MemoryError();
+        }
+        memcpy(p, comment, comment_size);
+        p[comment_size] = '\0';
+        context->comment = p;
+    }
+
     if (quality_layers && PySequence_Check(quality_layers)) {
         context->quality_is_in_db = strcmp(quality_mode, "dB") == 0;
         context->quality_layers = quality_layers;
@@ -1332,6 +1358,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     context->cinema_mode = cine_mode;
     context->mct = mct;
     context->sgnd = sgnd;
+    context->plt = plt;
 
     return (PyObject *)encoder;
 }

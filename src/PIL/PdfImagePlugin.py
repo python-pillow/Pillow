@@ -53,7 +53,12 @@ def _save(im, fp, filename, save_all=False):
     else:
         existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="w+b")
 
-    resolution = im.encoderinfo.get("resolution", 72.0)
+    dpi = im.encoderinfo.get("dpi")
+    if dpi:
+        x_resolution = dpi[0]
+        y_resolution = dpi[1]
+    else:
+        x_resolution = y_resolution = im.encoderinfo.get("resolution", 72.0)
 
     info = {
         "title": None
@@ -168,6 +173,10 @@ def _save(im, fp, filename, save_all=False):
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
+            elif im.mode == "RGBA":
+                filter = "JPXDecode"
+                colorspace = PdfParser.PdfName("DeviceRGB")
+                procset = "ImageC"  # color images
             elif im.mode == "CMYK":
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceCMYK")
@@ -194,6 +203,8 @@ def _save(im, fp, filename, save_all=False):
                 )
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
+            elif filter == "JPXDecode":
+                Image.SAVE["JPEG2000"](im, op, filename)
             elif filter == "FlateDecode":
                 ImageFile._save(im, op, [("zip", (0, 0) + im.size, 0, im.mode)])
             elif filter == "RunLengthDecode":
@@ -214,8 +225,8 @@ def _save(im, fp, filename, save_all=False):
                 stream=stream,
                 Type=PdfParser.PdfName("XObject"),
                 Subtype=PdfParser.PdfName("Image"),
-                Width=width,  # * 72.0 / resolution,
-                Height=height,  # * 72.0 / resolution,
+                Width=width,  # * 72.0 / x_resolution,
+                Height=height,  # * 72.0 / y_resolution,
                 Filter=filter,
                 BitsPerComponent=bits,
                 Decode=decode,
@@ -235,8 +246,8 @@ def _save(im, fp, filename, save_all=False):
                 MediaBox=[
                     0,
                     0,
-                    width * 72.0 / resolution,
-                    height * 72.0 / resolution,
+                    width * 72.0 / x_resolution,
+                    height * 72.0 / y_resolution,
                 ],
                 Contents=contents_refs[page_number],
             )
@@ -245,8 +256,8 @@ def _save(im, fp, filename, save_all=False):
             # page contents
 
             page_contents = b"q %f 0 0 %f 0 0 cm /image Do Q\n" % (
-                width * 72.0 / resolution,
-                height * 72.0 / resolution,
+                width * 72.0 / x_resolution,
+                height * 72.0 / y_resolution,
             )
 
             existing_pdf.write_obj(contents_refs[page_number], stream=page_contents)

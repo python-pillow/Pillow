@@ -166,14 +166,14 @@ def _find_library_dirs_ldconfig():
 
         # Assuming GLIBC's ldconfig (with option -p)
         # Alpine Linux uses musl that can't print cache
-        args = ["/sbin/ldconfig", "-p"]
+        args = ["ldconfig", "-p"]
         expr = rf".*\({abi_type}.*\) => (.*)"
         env = dict(os.environ)
         env["LC_ALL"] = "C"
         env["LANG"] = "C"
 
     elif sys.platform.startswith("freebsd"):
-        args = ["/sbin/ldconfig", "-r"]
+        args = ["ldconfig", "-r"]
         expr = r".* => (.*)"
         env = {}
 
@@ -242,7 +242,9 @@ def _find_include_dir(self, dirname, include):
             return subdir
 
 
-def _cmd_exists(cmd):
+def _cmd_exists(cmd: str) -> bool:
+    if "PATH" not in os.environ:
+        return False
     return any(
         os.access(os.path.join(path, cmd), os.X_OK)
         for path in os.environ["PATH"].split(os.pathsep)
@@ -271,9 +273,7 @@ def _pkg_config(name):
             )[::2][1:]
             cflags = re.split(
                 r"(^|\s+)-I",
-                subprocess.check_output(command_cflags, stderr=stderr)
-                .decode("utf8")
-                .strip(),
+                subprocess.check_output(command_cflags).decode("utf8").strip(),
             )[::2][1:]
             return libs, cflags
         except Exception:
@@ -473,9 +473,13 @@ class pil_build_ext(build_ext):
                 lib_root = include_root = root
 
             if lib_root is not None:
+                if not isinstance(lib_root, (tuple, list)):
+                    lib_root = (lib_root,)
                 for lib_dir in lib_root:
                     _add_directory(library_dirs, lib_dir)
             if include_root is not None:
+                if not isinstance(include_root, (tuple, list)):
+                    include_root = (include_root,)
                 for include_dir in include_root:
                     _add_directory(include_dirs, include_dir)
 
@@ -570,9 +574,7 @@ class pil_build_ext(build_ext):
         ):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
-            if sys.platform.startswith("linux") and os.environ.get(
-                "ANDROID_ROOT", None
-            ):
+            if sys.platform.startswith("linux") and os.environ.get("ANDROID_ROOT"):
                 # termux support for android.
                 # system libraries (zlib) are installed in /system/lib
                 # headers are at $PREFIX/include
@@ -683,10 +685,6 @@ class pil_build_ext(build_ext):
                 # Add the directory to the include path so we can include
                 # <openjpeg.h> rather than having to cope with the versioned
                 # include path
-                # FIXME (melvyn-sopacua):
-                # At this point it's possible that best_path is already in
-                # self.compiler.include_dirs. Should investigate how that is
-                # possible.
                 _add_directory(self.compiler.include_dirs, best_path, 0)
                 feature.jpeg2000 = "openjp2"
                 feature.openjpeg_version = ".".join(str(x) for x in best_version)

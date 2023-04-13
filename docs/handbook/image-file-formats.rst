@@ -589,6 +589,19 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     .. versionadded:: 9.1.0
 
+**comment**
+    Adds a custom comment to the file, replacing the default
+    "Created by OpenJPEG version" comment.
+
+    .. versionadded:: 9.5.0
+
+**plt**
+    If ``True`` and OpenJPEG 2.4.0 or later is available, then include a PLT
+    (packet length, tile-part header) marker in the produced file.
+    Defaults to ``False``.
+
+    .. versionadded:: 9.5.0
+
 .. note::
 
    To enable JPEG 2000 support, you need to build and install the OpenJPEG
@@ -1104,7 +1117,7 @@ using the general tags available through tiffinfo.
     Either an integer or a float.
 
 **dpi**
-    A tuple of (x_resolution, y_resolution), with inches as the resolution
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
     unit. For consistency with other image formats, the x and y resolutions
     of the dpi will be rounded to the nearest integer.
 
@@ -1126,7 +1139,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present and true, instructs the WebP writer to use lossless compression.
 
 **quality**
-    Integer, 1-100, Defaults to 80. For lossy, 0 gives the smallest
+    Integer, 0-100, Defaults to 80. For lossy, 0 gives the smallest
     size and 100 the largest. For lossless, this parameter is the amount
     of effort put into the compression: 0 is the fastest, but gives larger
     files compared to the slowest, but best, 100.
@@ -1145,6 +1158,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **exif**
     The exif data to include in the saved file. Only supported if
+    the system WebP library was built with webpmux support.
+
+**xmp**
+    The XMP data to include in the saved file. Only supported if
     the system WebP library was built with webpmux support.
 
 Saving sequences
@@ -1389,9 +1406,7 @@ WMF, EMF
 Pillow can identify WMF and EMF files.
 
 On Windows, it can read WMF and EMF files. By default, it will load the image
-at 72 dpi. To load it at another resolution:
-
-.. code-block:: python
+at 72 dpi. To load it at another resolution::
 
     from PIL import Image
 
@@ -1400,9 +1415,7 @@ at 72 dpi. To load it at another resolution:
 
 To add other read or write support, use
 :py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
-handler.
-
-.. code-block:: python
+handler. ::
 
     from PIL import Image
     from PIL import WmfImagePlugin
@@ -1457,8 +1470,13 @@ PDF
 ^^^
 
 Pillow can write PDF (Acrobat) images. Such images are written as binary PDF 1.4
-files, using either JPEG or HEX encoding depending on the image mode (and
-whether JPEG support is available or not).
+files. Different encoding methods are used, depending on the image mode.
+
+* 1 mode images are saved using TIFF encoding, or JPEG encoding if libtiff support is
+  unavailable
+* L, RGB and CMYK mode images use JPEG encoding
+* P mode images use HEX encoding
+* RGBA mode images use JPEG2000 encoding
 
 .. _pdf-saving:
 
@@ -1492,6 +1510,11 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     Image resolution in DPI. This, together with the number of pixels in the
     image, will determine the physical dimensions of the page that will be
     saved in the PDF.
+
+**dpi**
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
+    unit. If both the ``resolution`` parameter and the ``dpi`` parameter are
+    present, ``resolution`` will be ignored.
 
 **title**
     The document’s title. If not appending to an existing PDF file, this will
@@ -1538,6 +1561,13 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     file, this will default to the current time.
 
     .. versionadded:: 5.3.0
+
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow identifies and reads images in Quite OK Image format.
 
 XV Thumbnails
 ^^^^^^^^^^^^^

@@ -2,7 +2,7 @@ import os.path
 
 import pytest
 
-from PIL import Image, ImageDraw, ImageDraw2
+from PIL import Image, ImageDraw, ImageDraw2, features
 
 from .helper import (
     assert_image_equal,
@@ -173,19 +173,18 @@ def test_text():
 
 
 @skip_unless_feature("freetype2")
-def test_textsize():
+def test_textbbox():
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
     font = ImageDraw2.Font("white", FONT_PATH)
 
     # Act
-    with pytest.warns(DeprecationWarning) as log:
-        size = draw.textsize("ImageDraw2", font)
-    assert len(log) == 1
+    bbox = draw.textbbox((0, 0), "ImageDraw2", font)
 
     # Assert
-    assert size[1] == 12
+    right = 72 if features.check_feature("raqm") else 70
+    assert bbox == (0, 2, right, 12)
 
 
 @skip_unless_feature("freetype2")

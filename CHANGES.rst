@@ -2,8 +2,98 @@
 Changelog (Pillow)
 ==================
 
-9.5.0 (unreleased)
+10.0.0 (unreleased)
+-------------------
+
+- Fixed type handling for include and lib directories #7069
+  [adisbladis, radarhere]
+
+- Remove deprecations for Pillow 10.0.0 #7059, #7080
+  [hugovk, radarhere]
+
+- Drop support for soon-EOL Python 3.7 #7058
+  [hugovk, radarhere]
+
+9.5.0 (2023-04-01)
 ------------------
+
+- Added ImageSourceData to TAGS_V2 #7053
+  [radarhere]
+
+- Clear PPM half token after use #7052
+  [radarhere]
+
+- Removed absolute path to ldconfig #7044
+  [radarhere]
+
+- Support custom comments and PLT markers when saving JPEG2000 images #6903
+  [joshware, radarhere, hugovk]
+
+- Load before getting size in __array_interface__ #7034
+  [radarhere]
+
+- Support creating BGR;15, BGR;16 and BGR;24 images, but drop support for BGR;32 #7010
+  [radarhere]
+
+- Consider transparency when applying APNG blend mask #7018
+  [radarhere]
+
+- Round duration when saving animated WebP images #6996
+  [radarhere]
+
+- Added reading of JPEG2000 comments #6909
+  [radarhere]
+
+- Decrement reference count #7003
+  [radarhere, nulano]
+
+- Allow libtiff_support_custom_tags to be missing #7020
+  [radarhere]
+
+- Improved I;16N support #6834
+  [radarhere]
+
+- Added QOI reading #6852
+  [radarhere, hugovk]
+
+- Added saving RGBA images as PDFs #6925
+  [radarhere]
+
+- Do not raise an error if os.environ does not contain PATH #6935
+  [radarhere, hugovk]
+
+- Close OleFileIO instance when closing or exiting FPX or MIC #7005
+  [radarhere]
+
+- Added __int__ to IFDRational for Python >= 3.11 #6998
+  [radarhere]
+
+- Added memoryview support to Dib.frombytes() #6988
+  [radarhere, nulano]
+
+- Close file pointer copy in the libtiff encoder if still open #6986
+  [fcarron, radarhere]
+
+- Raise an error if ImageDraw co-ordinates are incorrectly ordered #6978
+  [radarhere]
+
+- Added "corners" argument to ImageDraw rounded_rectangle() #6954
+  [radarhere]
+
+- Added memoryview support to frombytes() #6974
+  [radarhere]
+
+- Allow comments in FITS images #6973
+  [radarhere]
+
+- Support saving PDF with different X and Y resolutions #6961
+  [jvanderneutstulen, radarhere, hugovk]
+
+- Fixed writing int as UNDEFINED tag #6950
+  [radarhere]
+
+- Raise an error if EXIF data is too long when saving JPEG #6939
+  [radarhere]
 
 - Handle more than one directory returned by pkg-config #6896
   [sebastic, radarhere]

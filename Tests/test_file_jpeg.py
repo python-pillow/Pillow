@@ -270,7 +270,10 @@ class TestFileJpeg:
         # https://github.com/python-pillow/Pillow/issues/148
         f = str(tmp_path / "temp.jpg")
         im = hopper()
-        im.save(f, "JPEG", quality=90, exif=b"1" * 65532)
+        im.save(f, "JPEG", quality=90, exif=b"1" * 65533)
+
+        with pytest.raises(ValueError):
+            im.save(f, "JPEG", quality=90, exif=b"1" * 65534)
 
     def test_exif_typeerror(self):
         with Image.open("Tests/images/exif_typeerror.jpg") as im:
@@ -445,7 +448,7 @@ class TestFileJpeg:
             ims = im.get_child_images()
 
         assert len(ims) == 1
-        assert_image_equal_tofile(ims[0], "Tests/images/flower_thumbnail.png")
+        assert_image_similar_tofile(ims[0], "Tests/images/flower_thumbnail.png", 2.1)
 
     def test_mp(self):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
@@ -632,12 +635,6 @@ class TestFileJpeg:
             assert len(im2.quantization) == 2
             assert max(im2.quantization[0]) <= 255
             assert max(im2.quantization[1]) <= 255
-
-    def test_convert_dict_qtables_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            qtable = {0: [1, 2, 3, 4]}
-            qtable2 = JpegImagePlugin.convert_dict_qtables(qtable)
-            assert qtable == qtable2
 
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):

@@ -374,7 +374,13 @@ def ellipse_various_sizes_helper(filled):
     for w in ellipse_sizes:
         y = 1
         for h in ellipse_sizes:
-            border = [x, y, x + w - 1, y + h - 1]
+            x1 = x + w
+            if w:
+                x1 -= 1
+            y1 = y + h
+            if h:
+                y1 -= 1
+            border = [x, y, x1, y1]
             if filled:
                 draw.ellipse(border, fill="white")
             else:
@@ -763,6 +769,36 @@ def test_rounded_rectangle(xy):
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rounded_rectangle.png")
 
 
+@pytest.mark.parametrize("top_left", (True, False))
+@pytest.mark.parametrize("top_right", (True, False))
+@pytest.mark.parametrize("bottom_right", (True, False))
+@pytest.mark.parametrize("bottom_left", (True, False))
+def test_rounded_rectangle_corners(top_left, top_right, bottom_right, bottom_left):
+    corners = (top_left, top_right, bottom_right, bottom_left)
+
+    # Arrange
+    im = Image.new("RGB", (200, 200))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.rounded_rectangle(
+        (10, 20, 190, 180), 30, fill="red", outline="green", width=5, corners=corners
+    )
+
+    # Assert
+    suffix = "".join(
+        (
+            ("y" if top_left else "n"),
+            ("y" if top_right else "n"),
+            ("y" if bottom_right else "n"),
+            ("y" if bottom_left else "n"),
+        )
+    )
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rounded_rectangle_corners_" + suffix + ".png"
+    )
+
+
 @pytest.mark.parametrize(
     "xy, radius, type",
     [
@@ -934,9 +970,6 @@ def test_square():
     img, draw = create_base_image_draw((10, 10))
     draw.rectangle((2, 2, 7, 7), BLACK)
     assert_image_equal_tofile(img, expected, "square as normal rectangle failed")
-    img, draw = create_base_image_draw((10, 10))
-    draw.rectangle((7, 7, 2, 2), BLACK)
-    assert_image_equal_tofile(img, expected, "square as inverted rectangle failed")
 
 
 def test_triangle_right():
@@ -1223,21 +1256,6 @@ def test_textbbox_stroke():
     assert draw.textbbox((2, 2), "ABC\nAaaa", font, stroke_width=4) == (-2, 2, 54, 50)
 
 
-def test_textsize_deprecation():
-    im = Image.new("RGB", (W, H))
-    draw = ImageDraw.Draw(im)
-
-    with pytest.warns(DeprecationWarning) as log:
-        draw.textsize("Hello")
-    assert len(log) == 1
-    with pytest.warns(DeprecationWarning) as log:
-        draw.textsize("Hello\nWorld")
-    assert len(log) == 1
-    with pytest.warns(DeprecationWarning) as log:
-        draw.multiline_textsize("Hello\nWorld")
-    assert len(log) == 1
-
-
 @skip_unless_feature("freetype2")
 def test_stroke():
     for suffix, stroke_fill in {"same": None, "different": "#0f0"}.items():
@@ -1502,3 +1520,21 @@ def test_polygon2():
     draw.polygon([(18, 30), (19, 31), (18, 30), (85, 30), (60, 72)], "red")
     expected = "Tests/images/imagedraw_outline_polygon_RGB.png"
     assert_image_similar_tofile(im, expected, 1)
+
+
+@pytest.mark.parametrize("xy", ((1, 1, 0, 1), (1, 1, 1, 0)))
+def test_incorrectly_ordered_coordinates(xy):
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im)
+    with pytest.raises(ValueError):
+        draw.arc(xy, 10, 260)
+    with pytest.raises(ValueError):
+        draw.chord(xy, 10, 260)
+    with pytest.raises(ValueError):
+        draw.ellipse(xy)
+    with pytest.raises(ValueError):
+        draw.pieslice(xy, 10, 260)
+    with pytest.raises(ValueError):
+        draw.rectangle(xy)
+    with pytest.raises(ValueError):
+        draw.rounded_rectangle(xy)

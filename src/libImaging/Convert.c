@@ -990,6 +990,13 @@ static struct {
     {"I;16L", "L", I16L_L},
     {"L", "I;16B", L_I16B},
     {"I;16B", "L", I16B_L},
+#ifdef WORDS_BIGENDIAN
+    {"L", "I;16N", L_I16B},
+    {"I;16N", "L", I16B_L},
+#else
+    {"L", "I;16N", L_I16L},
+    {"I;16N", "L", I16L_L},
+#endif
 
     {"I;16", "F", I16L_F},
     {"I;16L", "F", I16L_F},

@@ -36,7 +36,8 @@ def test_unclosed_file():
         im = Image.open(TEST_GIF)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():
@@ -1087,7 +1088,8 @@ def test_rgb_transparency(tmp_path):
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = b""
     ims = [Image.new("RGB", (1, 1))]
-    pytest.warns(UserWarning, im.save, out, save_all=True, append_images=ims)
+    with pytest.warns(UserWarning):
+        im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reloaded:
         assert "transparency" not in reloaded.info

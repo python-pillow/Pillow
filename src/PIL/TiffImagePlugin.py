@@ -425,6 +425,9 @@ class IFDRational(Rational):
     __ceil__ = _delegate("__ceil__")
     __floor__ = _delegate("__floor__")
     __round__ = _delegate("__round__")
+    # Python >= 3.11
+    if hasattr(Fraction, "__int__"):
+        __int__ = _delegate("__int__")
 
 
 class ImageFileDirectory_v2(MutableMapping):
@@ -764,6 +767,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_writer(7)
     def write_undefined(self, value):
+        if isinstance(value, int):
+            value = str(value).encode("ascii", "replace")
         return value
 
     @_register_loader(10, 8)
@@ -1802,7 +1807,7 @@ def _save(im, fp, filename):
             # Custom items are supported for int, float, unicode, string and byte
             # values. Other types and tuples require a tagtype.
             if tag not in TiffTags.LIBTIFF_CORE:
-                if not Image.core.libtiff_support_custom_tags:
+                if not getattr(Image.core, "libtiff_support_custom_tags", False):
                     continue
 
                 if tag in ifd.tagtype:
@@ -1843,13 +1848,18 @@ def _save(im, fp, filename):
         e.setimage(im.im, (0, 0) + im.size)
         while True:
             # undone, change to self.decodermaxblock:
-            l, s, d = e.encode(16 * 1024)
+            errcode, data = e.encode(16 * 1024)[1:]
             if not _fp:
-                fp.write(d)
-            if s:
+                fp.write(data)
+            if errcode:
                 break
-        if s < 0:
-            msg = f"encoder error {s} when writing image file"
+        if _fp:
+            try:
+                os.close(_fp)
+            except OSError:
+                pass
+        if errcode < 0:
+            msg = f"encoder error {errcode} when writing image file"
             raise OSError(msg)
 
     else:

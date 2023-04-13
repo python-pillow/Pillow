@@ -8,7 +8,7 @@ import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version
+from .helper import hopper, mark_if_feature_version, skip_unless_feature
 
 
 def helper_save_as_pdf(tmp_path, mode, **kwargs):
@@ -40,6 +40,11 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
 @pytest.mark.parametrize("mode", ("L", "P", "RGB", "CMYK"))
 def test_save(tmp_path, mode):
     helper_save_as_pdf(tmp_path, mode)
+
+
+@skip_unless_feature("jpg_2000")
+def test_save_rgba(tmp_path):
+    helper_save_as_pdf(tmp_path, "RGBA")
 
 
 def test_monochrome(tmp_path):
@@ -78,6 +83,34 @@ def test_resolution(tmp_path):
         float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
     )
     assert size == (61.44, 61.44)
+
+
+@pytest.mark.parametrize(
+    "params",
+    (
+        {"dpi": (75, 150)},
+        {"dpi": (75, 150), "resolution": 200},
+    ),
+)
+def test_dpi(params, tmp_path):
+    im = hopper()
+
+    outfile = str(tmp_path / "temp.pdf")
+    im.save(outfile, **params)
+
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+
+    size = tuple(
+        float(d)
+        for d in contents.split(b"stream\nq ")[1].split(b" 0 0 cm")[0].split(b" 0 0 ")
+    )
+    assert size == (122.88, 61.44)
+
+    size = tuple(
+        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+    )
+    assert size == (122.88, 61.44)
 
 
 @mark_if_feature_version(
