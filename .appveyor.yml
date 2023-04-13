@@ -53,7 +53,6 @@ test_script:
 
 after_test:
 - curl -Os https://uploader.codecov.io/latest/windows/codecov.exe
-- chmod +x codecov
 - .\codecov.exe --file coverage.xml --name %PYTHON% --flags AppVeyor
 
 matrix:
