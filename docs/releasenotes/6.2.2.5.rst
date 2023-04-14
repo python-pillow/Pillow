@@ -10,3 +10,7 @@ This release addresses several critical CVEs.
 
 :cve:`CVE-2021-25289`: Catch TiffDecode heap-based buffer overflow. Add test files that show the CVE was fixed
 
+:cve:`CVE-2022-22815`: Fixed ImagePath.Path array handling
+
+:cve:`CVE-2022-22816`: Fixed ImagePath.Path array handling
+
