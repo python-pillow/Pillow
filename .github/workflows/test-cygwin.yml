@@ -84,6 +84,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-
 
+      - name: Select Python version
+        run: |
+          ln -sf c:/cygwin/bin/python3.${{ matrix.python-minor-version }} c:/cygwin/bin/python3
+
       - name: Build system information
         run: |
           dash.exe -c "python3 .github/workflows/system-info.py"
