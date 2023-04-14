@@ -2,6 +2,8 @@ import sys
 import zlib
 from io import BytesIO
 
+import pytest
+
 from PIL import Image, ImageFile, PngImagePlugin
 from PIL._util import py3
 
@@ -107,7 +109,9 @@ class TestFilePng(PillowTestCase):
         # file was checked into Subversion as a text file.
 
         test_file = "Tests/images/broken.png"
-        self.assertRaises(IOError, Image.open, test_file)
+        with pytest.raises(OSError):
+            with Image.open(test_file):
+                pass
 
     def test_bad_text(self):
         # Make sure PIL can read malformed tEXt chunks (@PIL152)
@@ -477,7 +481,9 @@ class TestFilePng(PillowTestCase):
             data = b"\x89" + fd.read()
 
         pngfile = BytesIO(data)
-        self.assertRaises(IOError, Image.open, pngfile)
+        with pytest.raises(OSError):
+            with Image.open(pngfile):
+                pass
 
     def test_trns_rgb(self):
         # Check writing and reading of tRNS chunks for RGB images.

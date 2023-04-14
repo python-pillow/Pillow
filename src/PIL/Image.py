@@ -37,7 +37,7 @@ import warnings
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION is deprecated and will be removed in Pillow 7.0.0.
 # Use __version__ instead.
-from . import PILLOW_VERSION, ImageMode, TiffTags, __version__, _plugins
+from . import PILLOW_VERSION, ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i8, i32le
 from ._util import deferred_error, isPath, isStringType, py3
 
@@ -2815,7 +2815,9 @@ def open(fp, mode="r"):
         fp.close()
     for message in accept_warnings:
         warnings.warn(message)
-    raise IOError("cannot identify image file %r" % (filename if filename else fp))
+    raise UnidentifiedImageError(
+        "cannot identify image file %r" % (filename if filename else fp)
+    )
 
 
 #

@@ -8,12 +8,15 @@ Changelog (Pillow)
 - Fix CVE-2020-35654
 [rickprice]
 
-- Catch TiffDecode heap-based buffer overflow. CVE 2021-25289
+- Fix CVE-2021-25289: Catch TiffDecode heap-based buffer overflow.
   Add test files that show the CVE was fixed
   [rickprice]
 
 - Fix CVE-2022-22815, CVE-2022-22816
   Fixed ImagePath.Path array handling
+  [rickprice]
+
+- Fix CVE-2021-28675: Fix DOS in PsdImagePlugin
   [rickprice]
 
 6.2.2.4 (2023-03-29)

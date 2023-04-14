@@ -11,6 +11,13 @@ This release addresses several critical CVEs.
 :cve:`CVE-2021-25289`: Catch TiffDecode heap-based buffer overflow. Add test files that show the CVE was fixed
 
 :cve:`CVE-2022-22815`: Fixed ImagePath.Path array handling
+:cve:`CVE-2021-28675`: Fix DOS in PsdImagePlugin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* :py:class:`.PsdImagePlugin.PsdImageFile` did not sanity check the number of input
+  layers with regard to the size of the data block, this could lead to a
+  denial-of-service on :py:meth:`~PIL.Image.open` prior to
+  :py:meth:`~PIL.Image.Image.load`.
+* This dates to the PIL fork.
 
 :cve:`CVE-2022-22816`: Fixed ImagePath.Path array handling
 
