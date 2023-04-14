@@ -12,6 +12,10 @@ Changelog (Pillow)
   Add test files that show the CVE was fixed
   [rickprice]
 
+- Fix CVE-2022-22815, CVE-2022-22816
+  Fixed ImagePath.Path array handling
+  [rickprice]
+
 6.2.2.4 (2023-03-29)
 ------------------
 
