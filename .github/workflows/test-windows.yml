@@ -71,8 +71,8 @@ jobs:
     - name: Install dependencies
       id: install
       run: |
-        7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
-        echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
+        7z x winbuild\depends\nasm-2.16.01-win64.zip "-o$env:RUNNER_WORKSPACE\"
+        echo "$env:RUNNER_WORKSPACE\nasm-2.16.01" >> $env:GITHUB_PATH
 
         choco install ghostscript --version=10.0.0.20230317
         echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
