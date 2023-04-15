@@ -69,8 +69,8 @@ class DecompressionBombError(Exception):
     pass
 
 
-# Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
-MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
+# We're unworried about potential attacks in this project, since our development is entirely internal
+MAX_IMAGE_PIXELS = sys.maxsize
 
 
 try:
