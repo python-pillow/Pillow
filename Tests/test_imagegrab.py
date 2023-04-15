@@ -98,3 +98,22 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
 
         im = ImageGrab.grabclipboard()
         assert_image_equal_tofile(im, "Tests/images/hopper.png")
+
+    @pytest.mark.skipif(
+        (
+            sys.platform != "linux"
+            or not all(shutil.which(cmd) for cmd in ["wl-paste", "wl-copy"])
+        ),
+        reason="Linux with wl-clipboard only",
+    )
+    @pytest.mark.parametrize(
+        "image_path", ["Tests/images/hopper.gif", "Tests/images/hopper.png"]
+    )
+    def test_grabclipboard_wl_clipboard(self, image_path):
+        with open(image_path, mode="rb") as raw_image:
+            try:
+                subprocess.call(["wl-copy"], stdin=raw_image)
+                im = ImageGrab.grabclipboard()
+                assert_image_equal_tofile(im, image_path)
+            except OSError as e:
+                pytest.skip(str(e))
