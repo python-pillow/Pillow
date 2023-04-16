@@ -21,7 +21,7 @@ import functools
 import operator
 import re
 
-from . import Image, ImagePalette
+from . import ExifTags, Image, ImagePalette
 
 #
 # helpers
@@ -589,7 +589,7 @@ def exif_transpose(image, inPlace=False):
         image will be returned.
     """
     image_exif = image.getexif()
-    orientation = image_exif.get(0x0112)
+    orientation = image_exif.get(ExifTags.Base.Orientation)
     method = {
         2: Image.Transpose.FLIP_LEFT_RIGHT,
         3: Image.Transpose.ROTATE_180,
@@ -608,8 +608,8 @@ def exif_transpose(image, inPlace=False):
         exif_image = image if inPlace else transposed_image
 
         exif = exif_image.getexif()
-        if 0x0112 in exif:
-            del exif[0x0112]
+        if ExifTags.Base.Orientation in exif:
+            del exif[ExifTags.Base.Orientation]
             if "exif" in exif_image.info:
                 exif_image.info["exif"] = exif.tobytes()
             elif "Raw profile type exif" in exif_image.info:
