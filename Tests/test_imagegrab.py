@@ -111,9 +111,6 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
     )
     def test_grabclipboard_wl_clipboard(self, image_path):
         with open(image_path, mode="rb") as raw_image:
-            try:
-                subprocess.call(["wl-copy"], stdin=raw_image)
-                im = ImageGrab.grabclipboard()
-                assert_image_equal_tofile(im, image_path)
-            except OSError as e:
-                pytest.skip(str(e))
+            subprocess.call(["wl-copy"], stdin=raw_image)
+            im = ImageGrab.grabclipboard()
+            assert_image_equal_tofile(im, image_path)
