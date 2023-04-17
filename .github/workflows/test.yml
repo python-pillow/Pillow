@@ -84,7 +84,15 @@ jobs:
           python3 -m pip install pytest-reverse
         fi
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-          xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+          export XDG_RUNTIME_DIR="/tmp/headless-sway"
+          export SWAYSOCK="$XDG_RUNTIME_DIR/sway.sock"
+          export WLR_BACKENDS=headless
+          export WLR_LIBINPUT_NO_DEVICES=1
+          mkdir "$XDG_RUNTIME_DIR"
+          xvfb-run -s '-screen 0 1024x768x24'\
+                  sway -V -d -c /dev/null&
+          export WAYLAND_DISPLAY=wayland-1
+          .ci/test.sh
         else
           .ci/test.sh
         fi
