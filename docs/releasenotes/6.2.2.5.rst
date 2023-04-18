@@ -21,3 +21,4 @@ This release addresses several critical CVEs.
 
 :cve:`CVE-2022-22816`: Fixed ImagePath.Path array handling
 
+:cve:`CVE-2020-10994`: In libImaging/Jpeg2KDecode.c in Pillow before 7.1.0, there are multiple out-of-bounds reads via a crafted JP2 file.

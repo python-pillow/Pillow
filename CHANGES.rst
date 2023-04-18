@@ -19,6 +19,9 @@ Changelog (Pillow)
 - Fix CVE-2021-28675: Fix DOS in PsdImagePlugin
   [rickprice]
 
+- Fix CVE-2020-10994: In libImaging/Jpeg2KDecode.c in Pillow before 7.1.0, there are multiple out-of-bounds reads via a crafted JP2 file.
+  [rickprice]
+
 6.2.2.4 (2023-03-29)
 ------------------
 
