@@ -61,10 +61,13 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
-        elif shutil.which("gnome-screenshot"):
+        elif shutil.which("gnome-screenshot") or shutil.which("scrot"):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
-            subprocess.call(["gnome-screenshot", "-f", filepath])
+            if shutil.which("scrot"):  # use scrot when have
+                subprocess.call([shutil.which("scrot"), "-z", "--overwrite", filepath])
+            else:
+                subprocess.call([shutil.which("gnome-screenshot"), "-f", filepath])
             im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
