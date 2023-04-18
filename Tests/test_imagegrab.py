@@ -106,11 +106,10 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
         ),
         reason="Linux with wl-clipboard only",
     )
-    @pytest.mark.parametrize(
-        "image_path", ["Tests/images/hopper.gif", "Tests/images/hopper.png"]
-    )
-    def test_grabclipboard_wl_clipboard(self, image_path):
-        with open(image_path, mode="rb") as raw_image:
-            subprocess.call(["wl-copy"], stdin=raw_image)
+    @pytest.mark.parametrize("ext", ("gif", "png", "ico"))
+    def test_grabclipboard_wl_clipboard(self, ext):
+        image_path = "Tests/images/hopper." + ext
+        with open(image_path, "rb") as fp:
+            subprocess.call(["wl-copy"], stdin=fp)
             im = ImageGrab.grabclipboard()
             assert_image_equal_tofile(im, image_path)
