@@ -64,7 +64,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
         elif shutil.which("gnome-screenshot") or shutil.which("scrot"):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
-            if shutil.which("scrot"):  # use scrot when have
+            if shutil.which("scrot"):  # prefer scrot, as it is less intrusive
                 subprocess.call([shutil.which("scrot"), "-z", "--overwrite", filepath])
             else:
                 subprocess.call([shutil.which("gnome-screenshot"), "-f", filepath])
