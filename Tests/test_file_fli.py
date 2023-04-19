@@ -46,7 +46,8 @@ class TestFileFli(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, FliImagePlugin.FliImageFile, invalid_file)
+        self.assertRaises(
+            SyntaxError, FliImagePlugin.FliImageFile, invalid_file)
 
     def test_n_frames(self):
         im = Image.open(static_test_file)
@@ -96,3 +97,13 @@ class TestFileFli(PillowTestCase):
 
         expected = Image.open("Tests/images/a_fli.png")
         self.assert_image_equal(im, expected)
+
+    def test_timeouts(self):
+        for test_file in [
+            "Tests/images/timeout-9139147ce93e20eb14088fe238e541443ffd64b3.fli",
+            "Tests/images/timeout-bff0a9dc7243a8e6ede2408d2ffa6a9964698b87.fli",
+        ]:
+            with open(test_file, "rb") as f:
+                with Image.open(f) as im:
+                    with self.assertRaises(OSError):
+                        im.load()

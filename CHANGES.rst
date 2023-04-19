@@ -27,6 +27,10 @@ Changelog (Pillow)
   combination of \r and \n as line endings.
   [rickprice]
 
+- Fix CVE-2021-28676: FliDecode did not properly check that the block advance
+  was non-zero, potentally leading to an infinite loop on load.
+  [rickprice]
+
 6.2.2.4 (2023-03-29)
 ------------------
 
