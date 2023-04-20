@@ -957,14 +957,11 @@ class PdfParser:
                 check_format_condition(m, "xref entry not found")
                 offset = m.end()
                 is_free = m.group(3) == b"f"
-                generation = int(m.group(2))
                 if not is_free:
+                    generation = int(m.group(2))
                     new_entry = (int(m.group(1)), generation)
-                    check_format_condition(
-                        i not in self.xref_table or self.xref_table[i] == new_entry,
-                        "xref entry duplicated (and not identical)",
-                    )
-                    self.xref_table[i] = new_entry
+                    if i not in self.xref_table:
+                        self.xref_table[i] = new_entry
         return offset
 
     def read_indirect(self, ref, max_nesting=-1):
