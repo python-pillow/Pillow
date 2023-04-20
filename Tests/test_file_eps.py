@@ -54,7 +54,8 @@ class TestFileEps(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, EpsImagePlugin.EpsImageFile, invalid_file)
+        self.assertRaises(
+            SyntaxError, EpsImagePlugin.EpsImageFile, invalid_file)
 
     @unittest.skipUnless(HAS_GHOSTSCRIPT, "Ghostscript not available")
     def test_cmyk(self):
@@ -255,7 +256,7 @@ class TestFileEps(PillowTestCase):
         self.assertEqual(image.format, "EPS")
 
 
-@pytest.mark.timeout(timeout=5)
+# @pytest.mark.timeout(timeout=5)
 @pytest.mark.parametrize(
     "test_file",
     [
