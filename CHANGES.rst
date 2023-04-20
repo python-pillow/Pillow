@@ -22,6 +22,11 @@ Changelog (Pillow)
 - Fix CVE-2020-10994: In libImaging/Jpeg2KDecode.c in Pillow before 7.1.0, there are multiple out-of-bounds reads via a crafted JP2 file.
   [rickprice]
 
+- Fix CVE-2021-28677: An issue was discovered in Pillow before 8.2.0. For EPS
+  data, the readline implementation used in EPSImageFile has to deal with any
+  combination of \r and \n as line endings.
+  [rickprice]
+
 6.2.2.4 (2023-03-29)
 ------------------
 

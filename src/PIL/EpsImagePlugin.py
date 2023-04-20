@@ -183,12 +183,12 @@ class PSFile(object):
         self.fp.seek(offset, whence)
 
     def readline(self):
-        s = self.char or b""
+        s = [self.char or b""]
         self.char = None
 
         c = self.fp.read(1)
-        while c not in b"\r\n":
-            s = s + c
+        while (c not in b"\r\n") and len(c):
+            s.append(c)
             c = self.fp.read(1)
 
         self.char = self.fp.read(1)
@@ -196,7 +196,7 @@ class PSFile(object):
         if self.char in b"\r\n":
             self.char = None
 
-        return s.decode("latin-1")
+        return b"".join(s).decode("latin-1")
 
 
 def _accept(prefix):
