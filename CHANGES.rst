@@ -27,6 +27,9 @@ Changelog (Pillow)
   combination of \r and \n as line endings.
   [rickprice]
 
+- Fix CVE-2022-45199: Pillow before 9.3.0 allows denial of service via SAMPLESPERPIXEL.
+  [rickprice]
+
 - Fix CVE-2021-28676: FliDecode did not properly check that the block advance
   was non-zero, potentally leading to an infinite loop on load.
   [rickprice]
