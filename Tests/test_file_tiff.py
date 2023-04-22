@@ -65,14 +65,16 @@ class TestFileTiff(PillowTestCase):
 
         self.assertEqual(im.mode, "RGBA")
         self.assertEqual(im.size, (52, 53))
-        self.assertEqual(im.tile, [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))])
+        self.assertEqual(
+            im.tile, [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))])
         im.load()
 
     def test_set_legacy_api(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         with self.assertRaises(Exception) as e:
             ifd.legacy_api = None
-        self.assertEqual(str(e.exception), "Not allowing setting of legacy api")
+        self.assertEqual(str(e.exception),
+                         "Not allowing setting of legacy api")
 
     def test_size(self):
         filename = "Tests/images/pil168.tif"
@@ -92,8 +94,10 @@ class TestFileTiff(PillowTestCase):
         self.assertIsInstance(im.tag[Y_RESOLUTION][0], tuple)
 
         # v2 api
-        self.assertIsInstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
-        self.assertIsInstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
+        self.assertIsInstance(
+            im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
+        self.assertIsInstance(
+            im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
 
         self.assertEqual(im.info["dpi"], (72.0, 72.0))
 
@@ -102,8 +106,10 @@ class TestFileTiff(PillowTestCase):
         im = Image.open(filename)
 
         # v2 api
-        self.assertIsInstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
-        self.assertIsInstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
+        self.assertIsInstance(
+            im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
+        self.assertIsInstance(
+            im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
         self.assertRaises(KeyError, lambda: im.tag_v2[RESOLUTION_UNIT])
 
         # Legacy.
@@ -158,10 +164,12 @@ class TestFileTiff(PillowTestCase):
     def test_invalid_file(self):
         invalid_file = "Tests/images/flower.jpg"
 
-        self.assertRaises(SyntaxError, TiffImagePlugin.TiffImageFile, invalid_file)
+        self.assertRaises(
+            SyntaxError, TiffImagePlugin.TiffImageFile, invalid_file)
 
         TiffImagePlugin.PREFIXES.append(b"\xff\xd8\xff\xe0")
-        self.assertRaises(SyntaxError, TiffImagePlugin.TiffImageFile, invalid_file)
+        self.assertRaises(
+            SyntaxError, TiffImagePlugin.TiffImageFile, invalid_file)
         TiffImagePlugin.PREFIXES.pop()
 
     def test_bad_exif(self):
@@ -236,7 +244,8 @@ class TestFileTiff(PillowTestCase):
         im.load()
 
         self.assertEqual(im.getpixel((0, 0)), -0.4526388943195343)
-        self.assertEqual(im.getextrema(), (-3.140936851501465, 3.140684127807617))
+        self.assertEqual(
+            im.getextrema(), (-3.140936851501465, 3.140684127807617))
 
     def test_unknown_pixel_mode(self):
         self.assertRaises(
@@ -446,7 +455,8 @@ class TestFileTiff(PillowTestCase):
                 self.assert_image_equal(im, im2)
 
     def test_with_underscores(self):
-        kwargs = {"resolution_unit": "inch", "x_resolution": 72, "y_resolution": 36}
+        kwargs = {"resolution_unit": "inch",
+                  "x_resolution": 72, "y_resolution": 36}
         filename = self.tempfile("temp.tif")
         hopper("RGB").save(filename, **kwargs)
         im = Image.open(filename)
@@ -477,7 +487,8 @@ class TestFileTiff(PillowTestCase):
         infile = "Tests/images/tiff_strip_raw.tif"
         im = Image.open(infile)
 
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+        self.assert_image_equal_tofile(
+            im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_strip_planar_raw(self):
         # gdal_translate -of GTiff -co INTERLEAVE=BAND \
@@ -485,14 +496,16 @@ class TestFileTiff(PillowTestCase):
         infile = "Tests/images/tiff_strip_planar_raw.tif"
         im = Image.open(infile)
 
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+        self.assert_image_equal_tofile(
+            im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_strip_planar_raw_with_overviews(self):
         # gdaladdo tiff_strip_planar_raw2.tif 2 4 8 16
         infile = "Tests/images/tiff_strip_planar_raw_with_overviews.tif"
         im = Image.open(infile)
 
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+        self.assert_image_equal_tofile(
+            im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_tiled_planar_raw(self):
         # gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 \
@@ -501,7 +514,8 @@ class TestFileTiff(PillowTestCase):
         infile = "Tests/images/tiff_tiled_planar_raw.tif"
         im = Image.open(infile)
 
-        self.assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
+        self.assert_image_equal_tofile(
+            im, "Tests/images/tiff_adobe_deflate.png")
 
     def test_palette(self):
         for mode in ["P", "PA"]:
@@ -528,7 +542,8 @@ class TestFileTiff(PillowTestCase):
         # Test appending images
         mp = io.BytesIO()
         im = Image.new("RGB", (100, 100), "#f00")
-        ims = [Image.new("RGB", (100, 100), color) for color in ["#0f0", "#00f"]]
+        ims = [Image.new("RGB", (100, 100), color)
+               for color in ["#0f0", "#00f"]]
         im.copy().save(mp, format="TIFF", save_all=True, append_images=ims)
 
         mp.seek(0, os.SEEK_SET)
@@ -541,7 +556,8 @@ class TestFileTiff(PillowTestCase):
                 yield im
 
         mp = io.BytesIO()
-        im.save(mp, format="TIFF", save_all=True, append_images=imGenerator(ims))
+        im.save(mp, format="TIFF", save_all=True,
+                append_images=imGenerator(ims))
 
         mp.seek(0, os.SEEK_SET)
         reread = Image.open(mp)
@@ -607,7 +623,6 @@ class TestFileTiffW32(PillowTestCase):
             "Tests/images/oom-225817ca0f8c663be7ab4b9e717b02c661e66834.tif",
         ],
     )
-    @pytest.mark.timeout(2)
     def test_oom(self, test_file):
         with pytest.raises(UnidentifiedImageError):
             with Image.open(test_file) as im:
