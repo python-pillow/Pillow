@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Load before getting size in __getstate__ #7105
+  [bigcat88, radarhere]
+
 - Fixed type handling for include and lib directories #7069
   [adisbladis, radarhere]
 
