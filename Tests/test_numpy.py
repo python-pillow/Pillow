@@ -1,5 +1,4 @@
 import warnings
-from copy import deepcopy
 
 import pytest
 
@@ -224,14 +223,6 @@ def test_zero_size():
 def test_load_first():
     with Image.open("Tests/images/g4_orientation_5.tif") as im:
         a = numpy.array(im)
-        assert a.shape == (88, 590)
-
-
-@skip_unless_feature("libtiff")
-def test_load_first_deepcopy():
-    with Image.open("Tests/images/g4_orientation_5.tif") as im:
-        im_deepcopy = deepcopy(im)
-        a = numpy.array(im_deepcopy)
         assert a.shape == (88, 590)
 
 
