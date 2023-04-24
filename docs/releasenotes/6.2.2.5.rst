@@ -13,7 +13,6 @@ This release addresses several critical CVEs.
 :cve:`CVE-2022-22815`: Fixed ImagePath.Path array handling
 
 :cve:`CVE-2021-28675`: Fix DOS in PsdImagePlugin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * :py:class:`.PsdImagePlugin.PsdImageFile` did not sanity check the number of input
   layers with regard to the size of the data block, this could lead to a
@@ -25,17 +24,8 @@ This release addresses several critical CVEs.
 
 :cve:`CVE-2020-10994`: In libImaging/Jpeg2KDecode.c in Pillow before 7.1.0, there are multiple out-of-bounds reads via a crafted JP2 file.
 
-:cve:`CVE-2021-28676``: FliDecode did not properly check that the block advance was non-zero,
- potentally leading to an infinite loop on load.
+:cve:`CVE-2021-28676``: FliDecode did not properly check that the block advance was non-zero, potentally leading to an infinite loop on load.
 
-:cve:`CVE-2021-28677`: An issue was discovered in Pillow before 8.2.0. For EPS
-                       data, the readline implementation used in EPSImageFile
-                       has to deal with any combination of \r and \n as line
-                       endings. It used an accidentally quadratic method of
-                       accumulating lines while looking for a line ending. A
-                       malicious EPS file could use this to perform a DoS of
-                       Pillow in the open phase, before an image was accepted
-                       for opening.
+:cve:`CVE-2021-28677`: An issue was discovered in Pillow before 8.2.0. For EPS data, the readline implementation used in EPSImageFile has to deal with any combination of \r and \n as line endings. It used an accidentally quadratic method of accumulating lines while looking for a line ending. A malicious EPS file could use this to perform a DoS of Pillow in the open phase, before an image was accepted for opening.
 
-:cve: `CVE-2022-45199`: Pillow before 9.3.0 allows denial of service via SAMPLESPERPIXEL.
-
+:cve:`CVE-2022-45199`: Pillow before 9.3.0 allows denial of service via SAMPLESPERPIXEL.
