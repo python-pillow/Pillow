@@ -141,8 +141,11 @@ def grabclipboard():
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
             raise NotImplementedError(msg)
         fh, filepath = tempfile.mkstemp()
-        subprocess.call(args, stdout=fh)
+        err = subprocess.run(args, stdout=fh, stderr=subprocess.PIPE).stderr
         os.close(fh)
+        if err:
+            msg = f"{args[0]} error: {err.strip().decode()}"
+            raise ChildProcessError(msg)
         im = Image.open(filepath)
         im.load()
         os.unlink(filepath)
