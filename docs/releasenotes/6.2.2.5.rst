@@ -37,3 +37,5 @@ This release addresses several critical CVEs.
                        Pillow in the open phase, before an image was accepted
                        for opening.
 
+:cve: `CVE-2022-45199`: Pillow before 9.3.0 allows denial of service via SAMPLESPERPIXEL.
+

@@ -2,7 +2,9 @@ import logging
 import sys
 from io import BytesIO
 
-from PIL import Image, TiffImagePlugin
+import pytest
+
+from PIL import Image, ImageFile, TiffImagePlugin, UnidentifiedImageError
 from PIL._util import py3
 from PIL.TiffImagePlugin import RESOLUTION_UNIT, X_RESOLUTION, Y_RESOLUTION
 
@@ -13,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 class TestFileTiff(PillowTestCase):
     def test_sanity(self):
-
         filename = self.tempfile("temp.tif")
 
         hopper("RGB").save(filename)
@@ -223,8 +224,8 @@ class TestFileTiff(PillowTestCase):
         self.assertEqual(im.getpixel((0, 1)), 0)
 
     def test_12bit_rawmode(self):
-        """ Are we generating the same interpretation
-        of the image as Imagemagick is? """
+        """Are we generating the same interpretation
+        of the image as Imagemagick is?"""
 
         im = Image.open("Tests/images/12bit.cropped.tif")
 
@@ -615,6 +616,17 @@ class TestFileTiffW32(PillowTestCase):
     def test_fd_leak(self):
         tmpfile = self.tempfile("temp.tif")
         import os
+
+    @pytest.mark.parametrize(
+        "test_file",
+        [
+            "Tests/images/oom-225817ca0f8c663be7ab4b9e717b02c661e66834.tif",
+        ],
+    )
+    def test_oom(self, test_file):
+        with pytest.raises(UnidentifiedImageError):
+            with Image.open(test_file) as im:
+                pass
 
         # this is an mmaped file.
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
