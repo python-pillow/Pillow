@@ -61,7 +61,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
-        elif shutil.which("gnome-screenshot") or shutil.which("scrot"):
+        elif shutil.which("scrot") or shutil.which("gnome-screenshot"):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             if shutil.which("scrot"):  # prefer scrot, as it is less intrusive
