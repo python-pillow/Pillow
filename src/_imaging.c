@@ -2163,12 +2163,12 @@ static PyObject *
 _getbbox(ImagingObject *self, PyObject *args) {
     int bbox[4];
 
-    int consider_alpha = 1;
-    if (!PyArg_ParseTuple(args, "|i", &consider_alpha)) {
+    int alpha_only = 1;
+    if (!PyArg_ParseTuple(args, "|i", &alpha_only)) {
         return NULL;
     }
 
-    if (!ImagingGetBBox(self->image, bbox, consider_alpha)) {
+    if (!ImagingGetBBox(self->image, bbox, alpha_only)) {
         Py_INCREF(Py_None);
         return Py_None;
     }

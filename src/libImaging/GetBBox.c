@@ -19,7 +19,7 @@
 #include "Imaging.h"
 
 int
-ImagingGetBBox(Imaging im, int bbox[4], int consider_alpha) {
+ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
     /* Get the bounding box for any non-zero data in the image.*/
 
     int x, y;
@@ -58,7 +58,7 @@ ImagingGetBBox(Imaging im, int bbox[4], int consider_alpha) {
         INT32 mask = 0xffffffff;
         if (im->bands == 3) {
             ((UINT8 *)&mask)[3] = 0;
-        } else if (consider_alpha && (
+        } else if (alpha_only && (
             strcmp(im->mode, "RGBa") == 0 || strcmp(im->mode, "RGBA") == 0 ||
             strcmp(im->mode, "La") == 0 || strcmp(im->mode, "LA") == 0 ||
             strcmp(im->mode, "PA") == 0
