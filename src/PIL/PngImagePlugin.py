@@ -1138,9 +1138,9 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                 else:
                     base_im = previous["im"]
                 delta = ImageChops.subtract_modulo(
-                    im_frame.convert("RGB"), base_im.convert("RGB")
+                    im_frame.convert("RGBA"), base_im.convert("RGBA")
                 )
-                bbox = delta.getbbox()
+                bbox = delta.im.getbbox(False)
                 if (
                     not bbox
                     and prev_disposal == encoderinfo.get("disposal")

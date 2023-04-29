@@ -374,6 +374,20 @@ def test_apng_save(tmp_path):
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+def test_apng_save_alpha(tmp_path):
+    test_file = str(tmp_path / "temp.png")
+
+    im = Image.new("RGBA", (1, 1), (255, 0, 0, 255))
+    im2 = Image.new("RGBA", (1, 1), (255, 0, 0, 127))
+    im.save(test_file, save_all=True, append_images=[im2])
+
+    with Image.open(test_file) as reloaded:
+        assert reloaded.getpixel((0, 0)) == (255, 0, 0, 255)
+
+        reloaded.seek(1)
+        assert reloaded.getpixel((0, 0)) == (255, 0, 0, 127)
+
+
 def test_apng_save_split_fdat(tmp_path):
     # test to make sure we do not generate sequence errors when writing
     # frames with image data spanning multiple fdAT chunks (in this case
