@@ -116,7 +116,9 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     int error = 0;
 
     char *filename = NULL;
-    Py_ssize_t size;
+    float size;
+    FT_Size_RequestRec req;
+    FT_Long width;
     Py_ssize_t index = 0;
     Py_ssize_t layout_engine = 0;
     unsigned char *encoding;
@@ -133,7 +135,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etn|nsy#n",
+            "etf|nsy#n",
             kwlist,
             Py_FileSystemDefaultEncoding,
             &filename,
@@ -179,7 +181,13 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     }
 
     if (!error) {
-        error = FT_Set_Pixel_Sizes(self->face, 0, size);
+        width = size * 64;
+        req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
+        req.width = width;
+        req.height = width;
+        req.horiResolution = 0;
+        req.vertResolution = 0;
+        error = FT_Request_Size(self->face, &req);
     }
 
     if (!error && encoding && strlen((char *)encoding) == 4) {
