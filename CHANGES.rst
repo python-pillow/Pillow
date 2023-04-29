@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Support float font sizes #7107
+  [radarhere]
+
+- Use later value for duplicate xref entries in PdfParser #7102
+  [radarhere]
+
 - Load before getting size in __getstate__ #7105
   [bigcat88, radarhere]
 
