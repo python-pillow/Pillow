@@ -1,3 +1,5 @@
+import pytest
+
 from PIL import Image
 
 from .helper import hopper
@@ -38,3 +40,16 @@ def test_bbox():
         for color in ((0, 0), (127, 0), (255, 0)):
             im = Image.new(mode, (100, 100), color)
             check(im, (255, 255))
+
+
+@pytest.mark.parametrize("mode", ("RGBA", "RGBa", "La", "LA", "PA"))
+def test_bbox_alpha_only_false(mode):
+    im = Image.new(mode, (100, 100))
+    assert im.getbbox(False) is None
+
+    fill_color = [1] * Image.getmodebands(mode)
+    fill_color[-1] = 0
+    im.paste(tuple(fill_color), (25, 25, 75, 75))
+    assert im.getbbox(False) == (25, 25, 75, 75)
+
+    assert im.getbbox() is None
