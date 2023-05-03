@@ -198,6 +198,12 @@ class TestFileTiff:
         with pytest.raises(OSError):
             im.save(outfile)
 
+    def test_8bit_s(self):
+        with Image.open("Tests/images/8bit.s.tif") as im:
+            im.load()
+            assert im.mode == "L"
+            assert im.getpixel((50, 50)) == 184
+
     def test_little_endian(self):
         with Image.open("Tests/images/16bit.cropped.tif") as im:
             assert im.getpixel((0, 0)) == 480
