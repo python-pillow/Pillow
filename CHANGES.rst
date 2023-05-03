@@ -5,6 +5,18 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Added width argument to ImageDraw regular_polygon #7132
+  [radarhere]
+
+- Support I mode for ImageFilter.BuiltinFilter #7108
+  [radarhere]
+
+- Raise error from stderr of Linux ImageGrab.grabclipboard() command #7112
+  [radarhere]
+
+- Added unpacker from I;16B to I;16 #7125
+  [radarhere]
+
 - Support float font sizes #7107
   [radarhere]
 
