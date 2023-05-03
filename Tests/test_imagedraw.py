@@ -1347,20 +1347,20 @@ def test_same_color_outline():
 
 
 @pytest.mark.parametrize(
-    "n_sides, rotation, polygon_name",
-    [(4, 0, "square"), (8, 0, "regular_octagon"), (4, 45, "square")],
+    "n_sides, polygon_name, args",
+    [
+        (4, "square", {}),
+        (8, "regular_octagon", {}),
+        (4, "square_rotate_45", {"rotation": 45}),
+        (3, "triangle_width", {"width": 5, "outline": "yellow"}),
+    ],
 )
-def test_draw_regular_polygon(n_sides, rotation, polygon_name):
+def test_draw_regular_polygon(n_sides, polygon_name, args):
     im = Image.new("RGBA", size=(W, H), color=(255, 0, 0, 0))
-    filename_base = f"Tests/images/imagedraw_{polygon_name}"
-    filename = (
-        f"{filename_base}.png"
-        if rotation == 0
-        else f"{filename_base}_rotate_{rotation}.png"
-    )
+    filename = f"Tests/images/imagedraw_{polygon_name}.png"
     draw = ImageDraw.Draw(im)
     bounding_circle = ((W // 2, H // 2), 25)
-    draw.regular_polygon(bounding_circle, n_sides, rotation=rotation, fill="red")
+    draw.regular_polygon(bounding_circle, n_sides, fill="red", **args)
     assert_image_equal_tofile(im, filename)
 
 
