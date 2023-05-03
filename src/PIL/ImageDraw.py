@@ -279,11 +279,11 @@ class ImageDraw:
                 self.im.paste(im.im, (0, 0) + im.size, mask.im)
 
     def regular_polygon(
-        self, bounding_circle, n_sides, rotation=0, fill=None, outline=None
+        self, bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1
     ):
         """Draw a regular polygon."""
         xy = _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
-        self.polygon(xy, fill, outline)
+        self.polygon(xy, fill, outline, width)
 
     def rectangle(self, xy, fill=None, outline=None, width=1):
         """Draw a rectangle."""
