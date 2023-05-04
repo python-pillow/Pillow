@@ -159,7 +159,8 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Support reading signed 8-bit TIFF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+TIFF images with signed integer data, 8 bits per sample and a photometric
+interpretaton of BlackIsZero can now be read.
