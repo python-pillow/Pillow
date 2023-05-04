@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Support reading signed 8-bit TIFF images #7111
+  [radarhere]
+
 - Added width argument to ImageDraw regular_polygon #7132
   [radarhere]
 
