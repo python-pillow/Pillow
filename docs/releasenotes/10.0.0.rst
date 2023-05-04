@@ -135,10 +135,11 @@ TODO
 API Changes
 ===========
 
-TODO
-^^^^
+Added line width parameter to ImageDraw regular_polygon
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+An optional line ``width`` parameter has been added to
+``ImageDraw.Draw.regular_polygon``.
 
 API Additions
 =============
