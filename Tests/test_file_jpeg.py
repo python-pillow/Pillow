@@ -922,6 +922,19 @@ class TestFileJpeg:
             im.load()
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
+    def test_repr_jpg(self):
+        im = hopper()
+
+        with Image.open(BytesIO(im._repr_jpg_())) as repr_jpg:
+            assert repr_jpg.format == "JPEG"
+            assert_image_equal(im, repr_jpg)
+
+    def test_repr_jpg_error(self):
+        im = hopper("F")
+
+        with pytest.raises(ValueError):
+            im._repr_jpg_()
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")

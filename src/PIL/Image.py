@@ -633,18 +633,35 @@ class Image:
             )
         )
 
-    def _repr_png_(self):
+    def _repr_image(self, format):
         """iPython display hook support
 
+        :param format: Image format.
         :returns: png version of the image as bytes
         """
         b = io.BytesIO()
         try:
-            self.save(b, "PNG")
+            self.save(b, format)
         except Exception as e:
-            msg = "Could not save to PNG for display"
+            msg = f"Could not save to {format} for display"
             raise ValueError(msg) from e
         return b.getvalue()
+
+    def _repr_png_(self):
+        """iPython display hook support for PNG format.
+
+        :returns: png version of the image as bytes
+        """
+        return self._repr_image("PNG")
+
+    def _repr_jpg_(self):
+        """iPython display hook support for JPEG format.
+
+        :returns: jpg version of the image as bytes
+        """
+        return self._repr_image("JPEG")
+
+    _repr_jpeg_ = _repr_jpg_
 
     @property
     def __array_interface__(self):
