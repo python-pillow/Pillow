@@ -4,13 +4,21 @@ from io import BytesIO
 
 import pytest
 
-from PIL import Image, ImageFile, Jpeg2KImagePlugin, UnidentifiedImageError, features
+from PIL import (
+    Image,
+    ImageFile,
+    Jpeg2KImagePlugin,
+    UnidentifiedImageError,
+    _binary,
+    features,
+)
 
 from .helper import (
     assert_image_equal,
     assert_image_similar,
     assert_image_similar_tofile,
     skip_unless_feature,
+    skip_unless_feature_version,
 )
 
 EXTRA_DIR = "Tests/images/jpeg2000"
@@ -270,7 +278,6 @@ def test_rgba():
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
         with Image.open("Tests/images/rgb_trns_ycbc.jp2") as jp2:
-
             # Act
             j2k.load()
             jp2.load()
@@ -354,6 +361,35 @@ def test_subsampling_decode(name):
         assert_image_similar(im, expected, epsilon)
 
 
+def test_comment():
+    with Image.open("Tests/images/comment.jp2") as im:
+        assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
+
+    # Test an image that is truncated partway through a codestream
+    with open("Tests/images/comment.jp2", "rb") as fp:
+        b = BytesIO(fp.read(130))
+        with Image.open(b) as im:
+            pass
+
+
+def test_save_comment():
+    for comment in ("Created by Pillow", b"Created by Pillow"):
+        out = BytesIO()
+        test_card.save(out, "JPEG2000", comment=comment)
+
+        with Image.open(out) as im:
+            assert im.info["comment"] == b"Created by Pillow"
+
+    out = BytesIO()
+    long_comment = b" " * 65531
+    test_card.save(out, "JPEG2000", comment=long_comment)
+    with Image.open(out) as im:
+        assert im.info["comment"] == long_comment
+
+    with pytest.raises(ValueError):
+        test_card.save(out, "JPEG2000", comment=long_comment + b" ")
+
+
 @pytest.mark.parametrize(
     "test_file",
     [
@@ -371,3 +407,29 @@ def test_crashes(test_file):
                 im.load()
             except OSError:
                 pass
+
+
+@skip_unless_feature_version("jpg_2000", "2.4.0")
+def test_plt_marker():
+    # Search the start of the codesteam for PLT
+    out = BytesIO()
+    test_card.save(out, "JPEG2000", no_jp2=True, plt=True)
+    out.seek(0)
+    while True:
+        marker = out.read(2)
+        if not marker:
+            assert False, "End of stream without PLT"
+
+        jp2_boxid = _binary.i16be(marker)
+        if jp2_boxid == 0xFF4F:
+            # SOC has no length
+            continue
+        elif jp2_boxid == 0xFF58:
+            # PLT
+            return
+        elif jp2_boxid == 0xFF93:
+            assert False, "SOD without finding PLT first"
+
+        hdr = out.read(2)
+        length = _binary.i16be(hdr)
+        out.seek(length - 2, os.SEEK_CUR)

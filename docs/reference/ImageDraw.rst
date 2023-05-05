@@ -16,7 +16,7 @@ For a more advanced drawing library for PIL, see the `aggdraw module`_.
 Example: Draw a gray cross over an image
 ----------------------------------------
 
-.. code-block:: python
+::
 
     import sys
     from PIL import Image, ImageDraw
@@ -78,7 +78,7 @@ libraries, and may not available in all PIL builds.
 Example: Draw Partial Opacity Text
 ----------------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -105,7 +105,7 @@ Example: Draw Partial Opacity Text
 Example: Draw Multiline Text
 ----------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -296,7 +296,7 @@ Methods
     :param width: The line width, in pixels.
 
 
-.. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None)
+.. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1)
 
     Draws a regular polygon inscribed in ``bounding_circle``,
     with ``n_sides``, and rotation of ``rotation`` degrees.
@@ -311,6 +311,7 @@ Methods
         (e.g. ``rotation=90``, applies a 90 degree rotation).
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
+    :param width: The line width, in pixels.
 
 
 .. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1)
@@ -318,10 +319,10 @@ Methods
     Draws a rectangle.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The bounding box
-            is inclusive of both endpoints.
-    :param outline: Color to use for the outline.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and
+            ``y1 >= y0``. The bounding box is inclusive of both endpoints.
     :param fill: Color to use for the fill.
+    :param outline: Color to use for the outline.
     :param width: The line width, in pixels.
 
         .. versionadded:: 5.3.0
@@ -331,12 +332,14 @@ Methods
     Draws a rounded rectangle.
 
     :param xy: Two points to define the bounding box. Sequence of either
-            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``. The bounding box
-            is inclusive of both endpoints.
+            ``[(x0, y0), (x1, y1)]`` or ``[x0, y0, x1, y1]``, where ``x1 >= x0`` and
+            ``y1 >= y0``. The bounding box is inclusive of both endpoints.
     :param radius: Radius of the corners.
-    :param outline: Color to use for the outline.
     :param fill: Color to use for the fill.
+    :param outline: Color to use for the outline.
     :param width: The line width, in pixels.
+    :param corners: A tuple of whether to round each corner,
+                    ``(top_left, top_right, bottom_right, bottom_left)``.
 
     .. versionadded:: 8.2.0
 
@@ -472,116 +475,6 @@ Methods
 
                      .. versionadded:: 8.0.0
 
-.. py:method:: ImageDraw.textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
-
-    .. deprecated:: 9.2.0
-
-    See :ref:`deprecations <Font size and offset methods>` for more information.
-
-    Use :py:meth:`textlength()` to measure the offset of following text with
-    1/64 pixel precision.
-    Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
-
-    Return the size of the given string, in pixels.
-
-    .. note:: For historical reasons this function measures text height from
-        the ascender line instead of the top, see :ref:`text-anchors`.
-        If you wish to measure text height from the top, it is recommended
-        to use :meth:`textbbox` with ``anchor='lt'`` instead.
-
-    :param text: Text to be measured. If it contains any newline characters,
-                 the text is passed on to :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`.
-    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
-    :param spacing: If the text is passed on to
-                    :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textsize`,
-                    the number of pixels between lines.
-    :param direction: Direction of the text. It can be ``"rtl"`` (right to
-                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
-                      Requires libraqm.
-
-                      .. versionadded:: 4.2.0
-    :param features: A list of OpenType font features to be used during text
-                     layout. This is usually used to turn on optional
-                     font features that are not enabled by default,
-                     for example ``"dlig"`` or ``"ss01"``, but can be also
-                     used to turn off default font features, for
-                     example ``"-liga"`` to disable ligatures or ``"-kern"``
-                     to disable kerning.  To get all supported
-                     features, see `OpenType docs`_.
-                     Requires libraqm.
-
-                     .. versionadded:: 4.2.0
-    :param language: Language of the text. Different languages may use
-                     different glyph shapes or ligatures. This parameter tells
-                     the font which language the text is in, and to apply the
-                     correct substitutions as appropriate, if available.
-                     It should be a `BCP 47 language code`_.
-                     Requires libraqm.
-
-                     .. versionadded:: 6.0.0
-
-    :param stroke_width: The width of the text stroke.
-
-                     .. versionadded:: 6.2.0
-
-    :return: (width, height)
-
-.. py:method:: ImageDraw.multiline_textsize(text, font=None, spacing=4, direction=None, features=None, language=None, stroke_width=0)
-
-    .. deprecated:: 9.2.0
-
-    See :ref:`deprecations <Font size and offset methods>` for more information.
-
-    Use :py:meth:`.multiline_textbbox` instead.
-
-    Return the size of the given string, in pixels.
-
-    Use :py:meth:`textlength()` to measure the offset of following text with
-    1/64 pixel precision.
-    Use :py:meth:`textbbox()` to get the exact bounding box based on an anchor.
-
-    .. note:: For historical reasons this function measures text height as the
-        distance between the top ascender line and bottom descender line,
-        not the top and bottom of the text, see :ref:`text-anchors`.
-        If you wish to measure text height from the top to the bottom of text,
-        it is recommended to use :meth:`multiline_textbbox` instead.
-
-    :param text: Text to be measured.
-    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
-    :param spacing: The number of pixels between lines.
-    :param direction: Direction of the text. It can be ``"rtl"`` (right to
-                      left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
-                      Requires libraqm.
-
-                      .. versionadded:: 4.2.0
-
-    :param features: A list of OpenType font features to be used during text
-                     layout. This is usually used to turn on optional
-                     font features that are not enabled by default,
-                     for example ``"dlig"`` or ``"ss01"``, but can be also
-                     used to turn off default font features, for
-                     example ``"-liga"`` to disable ligatures or ``"-kern"``
-                     to disable kerning.  To get all supported
-                     features, see `OpenType docs`_.
-                     Requires libraqm.
-
-                     .. versionadded:: 4.2.0
-
-    :param language: Language of the text. Different languages may use
-                     different glyph shapes or ligatures. This parameter tells
-                     the font which language the text is in, and to apply the
-                     correct substitutions as appropriate, if available.
-                     It should be a `BCP 47 language code`_.
-                     Requires libraqm.
-
-                     .. versionadded:: 6.0.0
-
-    :param stroke_width: The width of the text stroke.
-
-                     .. versionadded:: 6.2.0
-
-    :return: (width, height)
-
 .. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None, embedded_color=False)
 
     Returns length (in pixels with 1/64 precision) of given text when rendered
@@ -597,18 +490,14 @@ Methods
     string due to kerning. If you need to adjust for kerning, include the following
     character and subtract its length.
 
-    For example, instead of
-
-    .. code-block:: python
+    For example, instead of ::
 
         hello = draw.textlength("Hello", font)
         world = draw.textlength("World", font)
         hello_world = hello + world  # not adjusted for kerning
         assert hello_world == draw.textlength("HelloWorld", font)  # may fail
 
-    use
-
-    .. code-block:: python
+    use ::
 
         hello = draw.textlength("HelloW", font) - draw.textlength(
             "W", font
@@ -617,9 +506,7 @@ Methods
         hello_world = hello + world  # adjusted for kerning
         assert hello_world == draw.textlength("HelloWorld", font)  # True
 
-    or disable kerning with (requires libraqm)
-
-    .. code-block:: python
+    or disable kerning with (requires libraqm) ::
 
         hello = draw.textlength("Hello", font, features=["-kern"])
         world = draw.textlength("World", font, features=["-kern"])

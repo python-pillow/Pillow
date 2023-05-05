@@ -68,6 +68,18 @@ Install Pillow with :command:`pip`::
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow
 
+    While we provide binaries for both x86-64 and arm64, we do not provide universal2
+    binaries. However, it is simple to combine our current binaries to create one::
+
+        python3 -m pip download --only-binary=:all: --platform macosx_10_10_x86_64 Pillow
+        python3 -m pip download --only-binary=:all: --platform macosx_11_0_arm64 Pillow
+        python3 -m pip install delocate
+
+    Then, with the names of the downloaded wheels, use Python to combine them::
+
+        from delocate.fuse import fuse_wheels
+        fuse_wheels('Pillow-9.4.0-2-cp39-cp39-macosx_10_10_x86_64.whl', 'Pillow-9.4.0-cp39-cp39-macosx_11_0_arm64.whl', 'Pillow-9.4.0-cp39-cp39-macosx_11_0_universal2.whl')
+
 .. tab:: Windows
 
     We provide Pillow binaries for Windows compiled for the matrix of
@@ -150,7 +162,7 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.14**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.15**.
 
 * **libwebp** provides the WebP format.
 
@@ -169,7 +181,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.0.4**
+  * Pillow has been tested with libimagequant **2.6-4.2**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -186,8 +198,8 @@ Many of Pillow's features require external libraries:
   * Pillow wheels since version 8.2.0 include a modified version of libraqm that
     loads libfribidi at runtime if it is installed.
     On Windows this requires compiling FriBiDi and installing ``fribidi.dll``
-    into a directory listed in the `Dynamic-Link Library Search Order (Microsoft Docs)
-    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-desktop-applications>`_
+    into a directory listed in the `Dynamic-link library search order (Microsoft Learn)
+    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-unpackaged-apps>`_
     (``fribidi-0.dll`` or ``libfribidi-0.dll`` are also detected).
     See `Build Options`_ to see how to build this version.
   * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
@@ -369,21 +381,21 @@ Build Options
   available, as many as are present.
 
 * Build flags: ``--disable-zlib``, ``--disable-jpeg``,
-  ``--disable-tiff``, ``--disable-freetype``, ``--disable-lcms``,
-  ``--disable-webp``, ``--disable-webpmux``, ``--disable-jpeg2000``,
-  ``--disable-imagequant``, ``--disable-xcb``.
+  ``--disable-tiff``, ``--disable-freetype``, ``--disable-raqm``,
+  ``--disable-lcms``, ``--disable-webp``, ``--disable-webpmux``,
+  ``--disable-jpeg2000``, ``--disable-imagequant``, ``--disable-xcb``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
 * Build flags: ``--enable-zlib``, ``--enable-jpeg``,
-  ``--enable-tiff``, ``--enable-freetype``, ``--enable-lcms``,
-  ``--enable-webp``, ``--enable-webpmux``, ``--enable-jpeg2000``,
-  ``--enable-imagequant``, ``--enable-xcb``.
+  ``--enable-tiff``, ``--enable-freetype``, ``--enable-raqm``,
+  ``--enable-lcms``, ``--enable-webp``, ``--enable-webpmux``,
+  ``--enable-jpeg2000``, ``--enable-imagequant``, ``--enable-xcb``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
 
-* Build flags: ``--vendor-raqm --vendor-fribidi``
+* Build flags: ``--vendor-raqm``, ``--vendor-fribidi``.
   These flags are used to compile a modified version of libraqm and
   a shim that dynamically loads libfribidi at runtime. These are
   used to compile the standard Pillow wheels. Compiling libraqm requires
@@ -422,7 +434,9 @@ These platforms are built and tested for every change.
 +==================================+============================+=====================+
 | Alpine                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Amazon Linux 2                   | 3.7                        | x86-64              |
+| Amazon Linux 2                   | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Amazon Linux 2023                | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Arch                             | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
@@ -432,31 +446,29 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | CentOS Stream 9                  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Debian 10 Buster                 | 3.7                        | x86                 |
-+----------------------------------+----------------------------+---------------------+
 | Debian 11 Bullseye               | 3.9                        | x86                 |
-+----------------------------------+----------------------------+---------------------+
-| Fedora 36                        | 3.10                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Fedora 37                        | 3.11                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
+| Fedora 38                        | 3.11                       | x86-64              |
++----------------------------------+----------------------------+---------------------+
 | Gentoo                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
-|                                  | PyPy3                      |                     |
+| macOS 12 Monterey                | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
+|                                  | 3.12, PyPy3                |                     |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 18.04 LTS (Bionic)  | 3.9                        | x86-64              |
+| Ubuntu Linux 20.04 LTS (Focal)   | 3.8                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 20.04 LTS (Focal)   | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
-|                                  | PyPy3                      |                     |
+| Ubuntu Linux 22.04 LTS (Jammy)   | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
+|                                  | 3.12, PyPy3                |                     |
+|                                  +----------------------------+---------------------+
+|                                  | 3.10                       | arm64v8, ppc64le,   |
+|                                  |                            | s390x               |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 22.04 LTS (Jammy)   | 3.10                       | arm64v8, ppc64le,   |
-|                                  |                            | s390x, x86-64       |
+| Windows Server 2016              | 3.8                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Windows Server 2016              | 3.7                        | x86-64              |
-+----------------------------------+----------------------------+---------------------+
-| Windows Server 2022              | 3.7, 3.8, 3.9, 3.10, 3.11, | x86, x86-64         |
-|                                  | PyPy3                      |                     |
+| Windows Server 2022              | 3.8, 3.9, 3.10, 3.11,      | x86, x86-64         |
+|                                  | 3.12, PyPy3                |                     |
 |                                  +----------------------------+---------------------+
 |                                  | 3.9 (MinGW)                | x86, x86-64         |
 |                                  +----------------------------+---------------------+
@@ -478,13 +490,13 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
 |                                  | | versions                | | Pillow version | | processors |
 +==================================+===========================+==================+==============+
-| macOS 13 Ventura                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
+| macOS 13 Ventura                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.5.0            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
 |                                  +---------------------------+------------------+--------------+
-|                                  | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |x86-64        |
+|                                  | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.4.0            |x86-64        |
 |                                  +---------------------------+------------------+              |
 |                                  | 3.6                       | 8.4.0            |              |
 +----------------------------------+---------------------------+------------------+--------------+

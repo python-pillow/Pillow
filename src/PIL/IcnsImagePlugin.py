@@ -135,7 +135,6 @@ def read_png_or_jpeg2000(fobj, start_length, size):
 
 
 class IcnsFile:
-
     SIZES = {
         (512, 512, 2): [(b"ic10", read_png_or_jpeg2000)],
         (512, 512, 1): [(b"ic09", read_png_or_jpeg2000)],
@@ -189,7 +188,7 @@ class IcnsFile:
     def itersizes(self):
         sizes = []
         for size, fmts in self.SIZES.items():
-            for (fmt, reader) in fmts:
+            for fmt, reader in fmts:
                 if fmt in self.dct:
                     sizes.append(size)
                     break

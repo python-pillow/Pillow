@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_deep_equal, assert_image, hopper
+from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
 
 numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
@@ -219,6 +219,13 @@ def test_zero_size():
     assert im.size == (0, 0)
 
 
+@skip_unless_feature("libtiff")
+def test_load_first():
+    with Image.open("Tests/images/g4_orientation_5.tif") as im:
+        a = numpy.array(im)
+        assert a.shape == (88, 590)
+
+
 def test_bool():
     # https://github.com/python-pillow/Pillow/issues/2044
     a = numpy.zeros((10, 2), dtype=bool)
@@ -235,7 +242,6 @@ def test_no_resource_warning_for_numpy_array():
 
     test_file = "Tests/images/hopper.png"
     with Image.open(test_file) as im:
-
         # Act/Assert
         with warnings.catch_warnings():
             array(im)

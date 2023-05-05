@@ -33,12 +33,6 @@
 #include FT_COLOR_H
 #endif
 
-#define KEEP_PY_UNICODE
-
-#if !defined(FT_LOAD_TARGET_MONO)
-#define FT_LOAD_TARGET_MONO FT_LOAD_MONOCHROME
-#endif
-
 /* -------------------------------------------------------------------- */
 /* error table */
 
@@ -122,7 +116,9 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     int error = 0;
 
     char *filename = NULL;
-    Py_ssize_t size;
+    float size;
+    FT_Size_RequestRec req;
+    FT_Long width;
     Py_ssize_t index = 0;
     Py_ssize_t layout_engine = 0;
     unsigned char *encoding;
@@ -139,7 +135,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etn|nsy#n",
+            "etf|nsy#n",
             kwlist,
             Py_FileSystemDefaultEncoding,
             &filename,
@@ -185,7 +181,13 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     }
 
     if (!error) {
-        error = FT_Set_Pixel_Sizes(self->face, 0, size);
+        width = size * 64;
+        req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
+        req.width = width;
+        req.height = width;
+        req.horiResolution = 0;
+        req.vertResolution = 0;
+        error = FT_Request_Size(self->face, &req);
     }
 
     if (!error && encoding && strlen((char *)encoding) == 4) {
@@ -420,11 +422,9 @@ text_layout_fallback(
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
-#ifdef FT_LOAD_COLOR
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-#endif
     for (i = 0; font_getchar(string, i, &ch); i++) {
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
@@ -581,11 +581,9 @@ font_getsize(FontObject *self, PyObject *args) {
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
-#ifdef FT_LOAD_COLOR
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-#endif
 
     /*
      * text bounds are given by:
@@ -844,11 +842,9 @@ font_render(FontObject *self, PyObject *args) {
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
-#ifdef FT_LOAD_COLOR
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-#endif
 
     /*
      * calculate x_min and y_max
@@ -958,13 +954,11 @@ font_render(FontObject *self, PyObject *args) {
                 /* bitmap is now FT_PIXEL_MODE_GRAY, fall through */
             case FT_PIXEL_MODE_GRAY:
                 break;
-#ifdef FT_LOAD_COLOR
             case FT_PIXEL_MODE_BGRA:
                 if (color) {
                     break;
                 }
                 /* we didn't ask for color, fall through to default */
-#endif
             default:
                 PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
                 goto glyph_error;
@@ -995,7 +989,6 @@ font_render(FontObject *self, PyObject *args) {
                 } else {
                     target = im->image8[yy] + xx;
                 }
-#ifdef FT_LOAD_COLOR
                 if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
                     /* paste color glyph */
                     for (k = x0; k < x1; k++) {
@@ -1010,9 +1003,7 @@ font_render(FontObject *self, PyObject *args) {
                             target[k * 4 + 3] = source[k * 4 + 3];
                         }
                     }
-                } else
-#endif
-                    if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+                } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
                     if (color) {
                         unsigned char *ink = (unsigned char *)&foreground_ink;
                         for (k = x0; k < x1; k++) {
@@ -1082,11 +1073,17 @@ font_getvarnames(FontObject *self) {
 
     num_namedstyles = master->num_namedstyles;
     list_names = PyList_New(num_namedstyles);
+    if (list_names == NULL) {
+        FT_Done_MM_Var(library, master);
+        return NULL;
+    }
 
     name_count = FT_Get_Sfnt_Name_Count(self->face);
     for (i = 0; i < name_count; i++) {
         error = FT_Get_Sfnt_Name(self->face, i, &name);
         if (error) {
+            Py_DECREF(list_names);
+            FT_Done_MM_Var(library, master);
             return geterror(error);
         }
 
@@ -1125,25 +1122,44 @@ font_getvaraxes(FontObject *self) {
     name_count = FT_Get_Sfnt_Name_Count(self->face);
 
     list_axes = PyList_New(num_axis);
+    if (list_axes == NULL) {
+        FT_Done_MM_Var(library, master);
+        return NULL;
+    }
     for (i = 0; i < num_axis; i++) {
         axis = master->axis[i];
 
         list_axis = PyDict_New();
-        PyDict_SetItemString(
-            list_axis, "minimum", PyLong_FromLong(axis.minimum / 65536));
-        PyDict_SetItemString(list_axis, "default", PyLong_FromLong(axis.def / 65536));
-        PyDict_SetItemString(
-            list_axis, "maximum", PyLong_FromLong(axis.maximum / 65536));
+        if (list_axis == NULL) {
+            Py_DECREF(list_axes);
+            FT_Done_MM_Var(library, master);
+            return NULL;
+        }
+        PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
+        PyDict_SetItemString(list_axis, "minimum", minimum ? minimum : Py_None);
+        Py_XDECREF(minimum);
+
+        PyObject *def = PyLong_FromLong(axis.def / 65536);
+        PyDict_SetItemString(list_axis, "default", def ? def : Py_None);
+        Py_XDECREF(def);
+
+        PyObject *maximum = PyLong_FromLong(axis.maximum / 65536);
+        PyDict_SetItemString(list_axis, "maximum", maximum ? maximum : Py_None);
+        Py_XDECREF(maximum);
 
         for (j = 0; j < name_count; j++) {
             error = FT_Get_Sfnt_Name(self->face, j, &name);
             if (error) {
+                Py_DECREF(list_axis);
+                Py_DECREF(list_axes);
+                FT_Done_MM_Var(library, master);
                 return geterror(error);
             }
 
             if (name.name_id == axis.strid) {
                 axis_name = Py_BuildValue("y#", name.string, name.string_len);
-                PyDict_SetItemString(list_axis, "name", axis_name);
+                PyDict_SetItemString(list_axis, "name", axis_name ? axis_name : Py_None);
+                Py_XDECREF(axis_name);
                 break;
             }
         }
@@ -1358,7 +1374,8 @@ setup_module(PyObject *m) {
     FT_Library_Version(library, &major, &minor, &patch);
 
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
-    PyDict_SetItemString(d, "freetype2_version", v);
+    PyDict_SetItemString(d, "freetype2_version", v ? v : Py_None);
+    Py_XDECREF(v);
 
 #ifdef HAVE_RAQM
 #if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)
@@ -1376,35 +1393,34 @@ setup_module(PyObject *m) {
     PyDict_SetItemString(d, "HAVE_RAQM", v);
     PyDict_SetItemString(d, "HAVE_FRIBIDI", v);
     PyDict_SetItemString(d, "HAVE_HARFBUZZ", v);
+    Py_DECREF(v);
     if (have_raqm) {
+        v = NULL;
 #ifdef RAQM_VERSION_MAJOR
         v = PyUnicode_FromString(raqm_version_string());
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "raqm_version", v);
+        PyDict_SetItemString(d, "raqm_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
+        v = NULL;
 #ifdef FRIBIDI_MAJOR_VERSION
         {
             const char *a = strchr(fribidi_version_info, ')');
             const char *b = strchr(fribidi_version_info, '\n');
             if (a && b && a + 2 < b) {
                 v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
-            } else {
-                v = Py_None;
             }
         }
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "fribidi_version", v);
+        PyDict_SetItemString(d, "fribidi_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
+        v = NULL;
 #ifdef HB_VERSION_STRING
         v = PyUnicode_FromString(hb_version_string());
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "harfbuzz_version", v);
+        PyDict_SetItemString(d, "harfbuzz_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 
     return 0;

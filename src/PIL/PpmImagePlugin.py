@@ -51,7 +51,6 @@ def _accept(prefix):
 
 
 class PpmImageFile(ImageFile.ImageFile):
-
     format = "PPM"
     format_description = "Pbmplus image"
 
@@ -238,6 +237,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
             if half_token:
                 block = half_token + block  # stitch half_token to new block
+                half_token = False
 
             tokens = block.split()
 

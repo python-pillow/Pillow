@@ -195,20 +195,21 @@ _releasedc(ImagingDisplayObject *display, PyObject *args) {
 
 static PyObject *
 _frombytes(ImagingDisplayObject *display, PyObject *args) {
-    char *ptr;
-    Py_ssize_t bytes;
+    Py_buffer buffer;
 
-    if (!PyArg_ParseTuple(args, "y#:frombytes", &ptr, &bytes)) {
+    if (!PyArg_ParseTuple(args, "y*:frombytes", &buffer)) {
         return NULL;
     }
 
-    if (display->dib->ysize * display->dib->linesize != bytes) {
+    if (display->dib->ysize * display->dib->linesize != buffer.len) {
+        PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "wrong size");
         return NULL;
     }
 
-    memcpy(display->dib->bits, ptr, bytes);
+    memcpy(display->dib->bits, buffer.buf, buffer.len);
 
+    PyBuffer_Release(&buffer);
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -419,79 +420,6 @@ error:
     DeleteDC(screen);
 
     return NULL;
-}
-
-static BOOL CALLBACK
-list_windows_callback(HWND hwnd, LPARAM lParam) {
-    PyObject *window_list = (PyObject *)lParam;
-    PyObject *item;
-    PyObject *title;
-    RECT inner, outer;
-    int title_size;
-    int status;
-
-    /* get window title */
-    title_size = GetWindowTextLength(hwnd);
-    if (title_size > 0) {
-        title = PyUnicode_FromStringAndSize(NULL, title_size);
-        if (title) {
-            GetWindowTextW(hwnd, PyUnicode_AS_UNICODE(title), title_size + 1);
-        }
-    } else {
-        title = PyUnicode_FromString("");
-    }
-    if (!title) {
-        return 0;
-    }
-
-    /* get bounding boxes */
-    GetClientRect(hwnd, &inner);
-    GetWindowRect(hwnd, &outer);
-
-    item = Py_BuildValue(
-        F_HANDLE "N(iiii)(iiii)",
-        hwnd,
-        title,
-        inner.left,
-        inner.top,
-        inner.right,
-        inner.bottom,
-        outer.left,
-        outer.top,
-        outer.right,
-        outer.bottom);
-    if (!item) {
-        return 0;
-    }
-
-    status = PyList_Append(window_list, item);
-
-    Py_DECREF(item);
-
-    if (status < 0) {
-        return 0;
-    }
-
-    return 1;
-}
-
-PyObject *
-PyImaging_ListWindowsWin32(PyObject *self, PyObject *args) {
-    PyObject *window_list;
-
-    window_list = PyList_New(0);
-    if (!window_list) {
-        return NULL;
-    }
-
-    EnumWindows(list_windows_callback, (LPARAM)window_list);
-
-    if (PyErr_Occurred()) {
-        Py_DECREF(window_list);
-        return NULL;
-    }
-
-    return window_list;
 }
 
 /* -------------------------------------------------------------------- */

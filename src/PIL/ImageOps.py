@@ -205,7 +205,6 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
 
     # Create the mapping (2-color)
     if mid is None:
-
         range_map = range(0, whitepoint - blackpoint)
 
         for i in range_map:
@@ -215,7 +214,6 @@ def colorize(image, black, white, mid=None, blackpoint=0, whitepoint=255, midpoi
 
     # Create the mapping (3-color)
     else:
-
         range_map1 = range(0, midpoint - blackpoint)
         range_map2 = range(0, whitepoint - midpoint)
 
@@ -248,7 +246,8 @@ def contain(image, size, method=Image.Resampling.BICUBIC):
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: Resampling method to use. Default is
-                   :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
+                   :py:attr:`~PIL.Image.Resampling.BICUBIC`.
+                   See :ref:`concept-filters`.
     :return: An image.
     """
 
@@ -276,7 +275,8 @@ def pad(image, size, method=Image.Resampling.BICUBIC, color=None, centering=(0.5
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: Resampling method to use. Default is
-                   :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
+                   :py:attr:`~PIL.Image.Resampling.BICUBIC`.
+                   See :ref:`concept-filters`.
     :param color: The background color of the padded image.
     :param centering: Control the position of the original image within the
                       padded version.
@@ -328,7 +328,8 @@ def scale(image, factor, resample=Image.Resampling.BICUBIC):
     :param image: The image to rescale.
     :param factor: The expansion factor, as a float.
     :param resample: Resampling method to use. Default is
-                     :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
+                     :py:attr:`~PIL.Image.Resampling.BICUBIC`.
+                     See :ref:`concept-filters`.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
     if factor == 1:
@@ -425,7 +426,8 @@ def fit(image, size, method=Image.Resampling.BICUBIC, bleed=0.0, centering=(0.5,
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: Resampling method to use. Default is
-                   :py:attr:`PIL.Image.BICUBIC`. See :ref:`concept-filters`.
+                   :py:attr:`~PIL.Image.Resampling.BICUBIC`.
+                   See :ref:`concept-filters`.
     :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
                   one percent). The default value is 0 (no border).

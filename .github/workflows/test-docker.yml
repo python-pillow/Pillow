@@ -1,6 +1,15 @@
 name: Test Docker
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,16 +33,15 @@ jobs:
           # Then run the remainder
           alpine,
           amazon-2-amd64,
+          amazon-2023-amd64,
           arch,
           centos-7-amd64,
           centos-stream-8-amd64,
           centos-stream-9-amd64,
-          debian-10-buster-x86,
           debian-11-bullseye-x86,
-          fedora-36-amd64,
           fedora-37-amd64,
+          fedora-38-amd64,
           gentoo,
-          ubuntu-18.04-bionic-amd64,
           ubuntu-20.04-focal-amd64,
           ubuntu-22.04-jammy-amd64,
         ]
@@ -87,6 +95,7 @@ jobs:
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
+        gcov: true
 
   success:
     permissions:

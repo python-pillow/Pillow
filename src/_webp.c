@@ -949,20 +949,14 @@ addAnimFlagToModule(PyObject *m) {
 
 void
 addTransparencyFlagToModule(PyObject *m) {
-    PyModule_AddObject(
-        m, "HAVE_TRANSPARENCY", PyBool_FromLong(!WebPDecoderBuggyAlpha()));
+    PyObject *have_transparency = PyBool_FromLong(!WebPDecoderBuggyAlpha());
+    if (PyModule_AddObject(m, "HAVE_TRANSPARENCY", have_transparency)) {
+        Py_DECREF(have_transparency);
+    }
 }
 
 static int
 setup_module(PyObject *m) {
-    PyObject *d = PyModule_GetDict(m);
-    addMuxFlagToModule(m);
-    addAnimFlagToModule(m);
-    addTransparencyFlagToModule(m);
-
-    PyDict_SetItemString(
-        d, "webpdecoder_version", PyUnicode_FromString(WebPDecoderVersion_str()));
-
 #ifdef HAVE_WEBPANIM
     /* Ready object types */
     if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
@@ -970,6 +964,15 @@ setup_module(PyObject *m) {
         return -1;
     }
 #endif
+    PyObject *d = PyModule_GetDict(m);
+    addMuxFlagToModule(m);
+    addAnimFlagToModule(m);
+    addTransparencyFlagToModule(m);
+
+    PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
+    PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
+    Py_XDECREF(v);
+
     return 0;
 }
 
@@ -987,6 +990,7 @@ PyInit__webp(void) {
 
     m = PyModule_Create(&module_def);
     if (setup_module(m) < 0) {
+        Py_DECREF(m);
         return NULL;
     }
 

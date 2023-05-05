@@ -1,6 +1,6 @@
 import pytest
 
-from PIL import BlpImagePlugin, Image
+from PIL import Image
 
 from .helper import (
     assert_image_equal,
@@ -72,14 +72,3 @@ def test_crashes(test_file):
         with Image.open(f) as im:
             with pytest.raises(OSError):
                 im.load()
-
-
-def test_constants_deprecation():
-    for enum, prefix in {
-        BlpImagePlugin.Format: "BLP_FORMAT_",
-        BlpImagePlugin.Encoding: "BLP_ENCODING_",
-        BlpImagePlugin.AlphaEncoding: "BLP_ALPHA_ENCODING_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(BlpImagePlugin, prefix + name) == enum[name]

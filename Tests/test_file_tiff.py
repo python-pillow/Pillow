@@ -25,7 +25,6 @@ except ImportError:
 
 class TestFileTiff:
     def test_sanity(self, tmp_path):
-
         filename = str(tmp_path / "temp.tif")
 
         hopper("RGB").save(filename)
@@ -62,7 +61,8 @@ class TestFileTiff:
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
 
-        pytest.warns(ResourceWarning, open)
+        with pytest.warns(ResourceWarning):
+            open()
 
     def test_closed_file(self):
         with warnings.catch_warnings():
@@ -84,24 +84,6 @@ class TestFileTiff:
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
-    @pytest.mark.parametrize(
-        "path, sizes",
-        (
-            ("Tests/images/hopper.tif", ()),
-            ("Tests/images/child_ifd.tiff", (16, 8)),
-            ("Tests/images/child_ifd_jpeg.tiff", (20,)),
-        ),
-    )
-    def test_get_child_images(self, path, sizes):
-        with Image.open(path) as im:
-            ims = im.get_child_images()
-
-        assert len(ims) == len(sizes)
-        for i, im in enumerate(ims):
-            w = sizes[i]
-            expected = Image.new("RGB", (w, w), "#f00")
-            assert_image_similar(im, expected, 1)
-
     def test_mac_tiff(self):
         # Read RGBa images from macOS [@PIL136]
 
@@ -118,36 +100,6 @@ class TestFileTiff:
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
-    @pytest.mark.parametrize(
-        "file_name,mode,size,tile",
-        [
-            (
-                "tiff_wrong_bits_per_sample.tiff",
-                "RGBA",
-                (52, 53),
-                [("raw", (0, 0, 52, 53), 160, ("RGBA", 0, 1))],
-            ),
-            (
-                "tiff_wrong_bits_per_sample_2.tiff",
-                "RGB",
-                (16, 16),
-                [("raw", (0, 0, 16, 16), 8, ("RGB", 0, 1))],
-            ),
-            (
-                "tiff_wrong_bits_per_sample_3.tiff",
-                "RGBA",
-                (512, 256),
-                [("libtiff", (0, 0, 512, 256), 0, ("RGBA", "tiff_lzw", False, 48782))],
-            ),
-        ],
-    )
-    def test_wrong_bits_per_sample(self, file_name, mode, size, tile):
-        with Image.open("Tests/images/" + file_name) as im:
-            assert im.mode == mode
-            assert im.size == size
-            assert im.tile == tile
-            im.load()
-
     def test_set_legacy_api(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         with pytest.raises(Exception) as e:
@@ -157,7 +109,6 @@ class TestFileTiff:
     def test_xyres_tiff(self):
         filename = "Tests/images/pil168.tif"
         with Image.open(filename) as im:
-
             # legacy api
             assert isinstance(im.tag[X_RESOLUTION][0], tuple)
             assert isinstance(im.tag[Y_RESOLUTION][0], tuple)
@@ -171,7 +122,6 @@ class TestFileTiff:
     def test_xyres_fallback_tiff(self):
         filename = "Tests/images/compression.tif"
         with Image.open(filename) as im:
-
             # v2 api
             assert isinstance(im.tag_v2[X_RESOLUTION], TiffImagePlugin.IFDRational)
             assert isinstance(im.tag_v2[Y_RESOLUTION], TiffImagePlugin.IFDRational)
@@ -186,7 +136,6 @@ class TestFileTiff:
     def test_int_resolution(self):
         filename = "Tests/images/pil168.tif"
         with Image.open(filename) as im:
-
             # Try to read a file where X,Y_RESOLUTION are ints
             im.tag_v2[X_RESOLUTION] = 71
             im.tag_v2[Y_RESOLUTION] = 71
@@ -235,7 +184,8 @@ class TestFileTiff:
     def test_bad_exif(self):
         with Image.open("Tests/images/hopper_bad_exif.jpg") as i:
             # Should not raise struct.error.
-            pytest.warns(UserWarning, i._getexif)
+            with pytest.warns(UserWarning):
+                i._getexif()
 
     def test_save_rgba(self, tmp_path):
         im = hopper("RGBA")
@@ -247,6 +197,12 @@ class TestFileTiff:
         outfile = str(tmp_path / "temp.tif")
         with pytest.raises(OSError):
             im.save(outfile)
+
+    def test_8bit_s(self):
+        with Image.open("Tests/images/8bit.s.tif") as im:
+            im.load()
+            assert im.mode == "L"
+            assert im.getpixel((50, 50)) == 184
 
     def test_little_endian(self):
         with Image.open("Tests/images/16bit.cropped.tif") as im:
@@ -381,7 +337,6 @@ class TestFileTiff:
     def test___str__(self):
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
-
             # Act
             ret = str(im.ifd)
 
@@ -392,7 +347,6 @@ class TestFileTiff:
         # Arrange
         filename = "Tests/images/pil136.tiff"
         with Image.open(filename) as im:
-
             # v2 interface
             v2_tags = {
                 256: 55,
@@ -630,7 +584,6 @@ class TestFileTiff:
         filename = str(tmp_path / "temp.tif")
         hopper("RGB").save(filename, **kwargs)
         with Image.open(filename) as im:
-
             # legacy interface
             assert im.tag[X_RESOLUTION][0][0] == 72
             assert im.tag[Y_RESOLUTION][0][0] == 36

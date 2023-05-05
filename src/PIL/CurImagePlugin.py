@@ -32,12 +32,10 @@ def _accept(prefix):
 
 
 class CurImageFile(BmpImagePlugin.BmpImageFile):
-
     format = "CUR"
     format_description = "Windows Cursor"
 
     def _open(self):
-
         offset = self.fp.tell()
 
         # check magic

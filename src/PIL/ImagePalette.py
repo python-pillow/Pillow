@@ -19,7 +19,6 @@
 import array
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
-from ._deprecate import deprecate
 
 
 class ImagePalette:
@@ -34,16 +33,11 @@ class ImagePalette:
         Defaults to an empty palette.
     """
 
-    def __init__(self, mode="RGB", palette=None, size=0):
+    def __init__(self, mode="RGB", palette=None):
         self.mode = mode
         self.rawmode = None  # if set, palette contains raw data
         self.palette = palette or bytearray()
         self.dirty = None
-        if size != 0:
-            deprecate("The size parameter", 10, None)
-            if size != len(self.palette):
-                msg = "wrong palette size"
-                raise ValueError(msg)
 
     @property
     def palette(self):
@@ -248,11 +242,9 @@ def wedge(mode="RGB"):
 
 
 def load(filename):
-
     # FIXME: supports GIMP gradients only
 
     with open(filename, "rb") as fp:
-
         for paletteHandler in [
             GimpPaletteFile.GimpPaletteFile,
             GimpGradientFile.GimpGradientFile,

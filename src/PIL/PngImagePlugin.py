@@ -45,7 +45,6 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
-from ._deprecate import deprecate
 
 logger = logging.getLogger(__name__)
 
@@ -131,17 +130,6 @@ class Blend(IntEnum):
     """
 
 
-def __getattr__(name):
-    for enum, prefix in {Disposal: "APNG_DISPOSE_", Blend: "APNG_BLEND_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
-
-
 def _safe_zlib_decompress(s):
     dobj = zlib.decompressobj()
     plaintext = dobj.decompress(s, MAX_TEXT_CHUNK)
@@ -161,7 +149,6 @@ def _crc32(data, seed=0):
 
 class ChunkStream:
     def __init__(self, fp):
-
         self.fp = fp
         self.queue = []
 
@@ -195,7 +182,6 @@ class ChunkStream:
         self.queue = self.fp = None
 
     def push(self, cid, pos, length):
-
         self.queue.append((cid, pos, length))
 
     def call(self, cid, pos, length):
@@ -230,7 +216,6 @@ class ChunkStream:
         self.fp.read(4)
 
     def verify(self, endchunk=b"IEND"):
-
         # Simple approach; just calculate checksum for all remaining
         # blocks.  Must be called directly after open.
 
@@ -397,7 +382,6 @@ class PngStream(ChunkStream):
         self._seq_num = self.rewind_state["seq_num"]
 
     def chunk_iCCP(self, pos, length):
-
         # ICC profile
         s = ImageFile._safe_read(self.fp, length)
         # according to PNG spec, the iCCP chunk contains:
@@ -425,7 +409,6 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_IHDR(self, pos, length):
-
         # image header
         s = ImageFile._safe_read(self.fp, length)
         if length < 13:
@@ -446,7 +429,6 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_IDAT(self, pos, length):
-
         # image data
         if "bbox" in self.im_info:
             tile = [("zip", self.im_info["bbox"], pos, self.im_rawmode)]
@@ -459,12 +441,10 @@ class PngStream(ChunkStream):
         raise EOFError
 
     def chunk_IEND(self, pos, length):
-
         # end of PNG image
         raise EOFError
 
     def chunk_PLTE(self, pos, length):
-
         # palette
         s = ImageFile._safe_read(self.fp, length)
         if self.im_mode == "P":
@@ -472,7 +452,6 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_tRNS(self, pos, length):
-
         # transparency
         s = ImageFile._safe_read(self.fp, length)
         if self.im_mode == "P":
@@ -524,7 +503,6 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_pHYs(self, pos, length):
-
         # pixels per unit
         s = ImageFile._safe_read(self.fp, length)
         if length < 9:
@@ -542,7 +520,6 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_tEXt(self, pos, length):
-
         # text
         s = ImageFile._safe_read(self.fp, length)
         try:
@@ -562,7 +539,6 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_zTXt(self, pos, length):
-
         # compressed text
         s = ImageFile._safe_read(self.fp, length)
         try:
@@ -597,7 +573,6 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_iTXt(self, pos, length):
-
         # international text
         r = s = ImageFile._safe_read(self.fp, length)
         try:
@@ -721,12 +696,10 @@ def _accept(prefix):
 
 
 class PngImageFile(ImageFile.ImageFile):
-
     format = "PNG"
     format_description = "Portable network graphics"
 
     def _open(self):
-
         if not _accept(self.fp.read(8)):
             msg = "not a PNG file"
             raise SyntaxError(msg)
@@ -740,7 +713,6 @@ class PngImageFile(ImageFile.ImageFile):
         self.png = PngStream(self.fp)
 
         while True:
-
             #
             # get next chunk
 
@@ -1019,9 +991,13 @@ class PngImageFile(ImageFile.ImageFile):
         else:
             if self._prev_im and self.blend_op == Blend.OP_OVER:
                 updated = self._crop(self.im, self.dispose_extent)
-                self._prev_im.paste(
-                    updated, self.dispose_extent, updated.convert("RGBA")
-                )
+                if self.im.mode == "RGB" and "transparency" in self.info:
+                    mask = updated.convert_transparent(
+                        "RGBA", self.info["transparency"]
+                    )
+                else:
+                    mask = updated.convert("RGBA")
+                self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
                 if self.pyaccess:
                     self.pyaccess = None
@@ -1264,7 +1240,6 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
         mode = im.mode
 
     if mode == "P":
-
         #
         # attempt to minimize storage requirements for palette images
         if "bits" in im.encoderinfo:

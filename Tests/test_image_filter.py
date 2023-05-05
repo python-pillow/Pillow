@@ -24,20 +24,22 @@ from .helper import assert_image_equal, hopper
         ImageFilter.ModeFilter,
         ImageFilter.GaussianBlur,
         ImageFilter.GaussianBlur(5),
+        ImageFilter.BoxBlur(0),
         ImageFilter.BoxBlur(5),
         ImageFilter.UnsharpMask,
         ImageFilter.UnsharpMask(10),
     ),
 )
-@pytest.mark.parametrize("mode", ("L", "RGB", "CMYK"))
+@pytest.mark.parametrize("mode", ("L", "I", "RGB", "CMYK"))
 def test_sanity(filter_to_apply, mode):
     im = hopper(mode)
-    out = im.filter(filter_to_apply)
-    assert out.mode == im.mode
-    assert out.size == im.size
+    if mode != "I" or isinstance(filter_to_apply, ImageFilter.BuiltinFilter):
+        out = im.filter(filter_to_apply)
+        assert out.mode == im.mode
+        assert out.size == im.size
 
 
-@pytest.mark.parametrize("mode", ("L", "RGB", "CMYK"))
+@pytest.mark.parametrize("mode", ("L", "I", "RGB", "CMYK"))
 def test_sanity_error(mode):
     with pytest.raises(TypeError):
         im = hopper(mode)
@@ -129,10 +131,12 @@ def test_kernel_not_enough_coefficients():
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "CMYK"))
+@pytest.mark.parametrize("mode", ("L", "LA", "I", "RGB", "CMYK"))
 def test_consistency_3x3(mode):
     with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open("Tests/images/hopper_emboss.bmp") as reference:
+        reference_name = "hopper_emboss"
+        reference_name += "_I.png" if mode == "I" else ".bmp"
+        with Image.open("Tests/images/" + reference_name) as reference:
             kernel = ImageFilter.Kernel(
                 (3, 3),
                 # fmt: off
@@ -145,16 +149,20 @@ def test_consistency_3x3(mode):
             source = source.split() * 2
             reference = reference.split() * 2
 
-            assert_image_equal(
-                Image.merge(mode, source[: len(mode)]).filter(kernel),
-                Image.merge(mode, reference[: len(mode)]),
-            )
+            if mode == "I":
+                source = source[0].convert(mode)
+            else:
+                source = Image.merge(mode, source[: len(mode)])
+            reference = Image.merge(mode, reference[: len(mode)])
+            assert_image_equal(source.filter(kernel), reference)
 
 
-@pytest.mark.parametrize("mode", ("L", "LA", "RGB", "CMYK"))
+@pytest.mark.parametrize("mode", ("L", "LA", "I", "RGB", "CMYK"))
 def test_consistency_5x5(mode):
     with Image.open("Tests/images/hopper.bmp") as source:
-        with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
+        reference_name = "hopper_emboss_more"
+        reference_name += "_I.png" if mode == "I" else ".bmp"
+        with Image.open("Tests/images/" + reference_name) as reference:
             kernel = ImageFilter.Kernel(
                 (5, 5),
                 # fmt: off
@@ -169,7 +177,20 @@ def test_consistency_5x5(mode):
             source = source.split() * 2
             reference = reference.split() * 2
 
-            assert_image_equal(
-                Image.merge(mode, source[: len(mode)]).filter(kernel),
-                Image.merge(mode, reference[: len(mode)]),
-            )
+            if mode == "I":
+                source = source[0].convert(mode)
+            else:
+                source = Image.merge(mode, source[: len(mode)])
+            reference = Image.merge(mode, reference[: len(mode)])
+            assert_image_equal(source.filter(kernel), reference)
+
+
+def test_invalid_box_blur_filter():
+    with pytest.raises(ValueError):
+        ImageFilter.BoxBlur(-2)
+
+    im = hopper()
+    box_blur_filter = ImageFilter.BoxBlur(2)
+    box_blur_filter.radius = -2
+    with pytest.raises(ValueError):
+        im.filter(box_blur_filter)

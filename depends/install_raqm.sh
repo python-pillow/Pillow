@@ -2,7 +2,7 @@
 # install raqm
 
 
-archive=libraqm-0.9.0
+archive=libraqm-0.10.1
 
 ./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/main/$archive.tar.gz
 

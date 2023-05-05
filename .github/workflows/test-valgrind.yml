@@ -5,10 +5,12 @@ name: Test Valgrind
 on:
   push:
     paths:
+      - ".github/workflows/test-valgrind.yml"
       - "**.c"
       - "**.h"
   pull_request:
     paths:
+      - ".github/workflows/test-valgrind.yml"
       - "**.c"
       - "**.h"
   workflow_dispatch:
@@ -16,7 +18,7 @@ on:
 permissions:
   contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 

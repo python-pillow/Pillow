@@ -1,6 +1,15 @@
 name: Test Windows
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12-dev"]
         architecture: ["x86", "x64"]
         include:
           # PyPy 7.3.4+ only ships 64-bit binaries for Windows
@@ -38,6 +47,12 @@ jobs:
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
+    - name: Checkout extra test images
+      uses: actions/checkout@v3
+      with:
+        repository: python-pillow/test-images
+        path: Tests\test-images
+
     # sets env: pythonLocation
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -56,13 +71,14 @@ jobs:
     - name: Install dependencies
       id: install
       run: |
-        7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
-        echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
+        7z x winbuild\depends\nasm-2.16.01-win64.zip "-o$env:RUNNER_WORKSPACE\"
+        echo "$env:RUNNER_WORKSPACE\nasm-2.16.01" >> $env:GITHUB_PATH
 
-        winbuild\depends\gs1000w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs10.0.0\bin" >> $env:GITHUB_PATH
+        choco install ghostscript --version=10.0.0.20230317
+        echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
 
-        xcopy /S /Y winbuild\depends\test_images\* Tests\images\
+        # Install extra test images
+        xcopy /S /Y Tests\test-images\* Tests\images
 
         # make cache key depend on VS version
         & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
@@ -81,7 +97,7 @@ jobs:
     - name: Prepare build
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: |
-        & python.exe winbuild\build_prepare.py -v --python=$env:pythonLocation --srcdir
+        & python.exe winbuild\build_prepare.py -v --python $env:pythonLocation
       shell: pwsh
 
     - name: Build dependencies / libjpeg-turbo

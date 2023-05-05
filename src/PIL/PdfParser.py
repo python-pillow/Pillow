@@ -328,9 +328,7 @@ def pdf_repr(x):
         return b"null"
     elif isinstance(x, (PdfName, PdfDict, PdfArray, PdfBinary)):
         return bytes(x)
-    elif isinstance(x, int):
-        return str(x).encode("us-ascii")
-    elif isinstance(x, float):
+    elif isinstance(x, (int, float)):
         return str(x).encode("us-ascii")
     elif isinstance(x, time.struct_time):
         return b"(D:" + time.strftime("%Y%m%d%H%M%SZ", x).encode("us-ascii") + b")"
@@ -959,14 +957,11 @@ class PdfParser:
                 check_format_condition(m, "xref entry not found")
                 offset = m.end()
                 is_free = m.group(3) == b"f"
-                generation = int(m.group(2))
                 if not is_free:
+                    generation = int(m.group(2))
                     new_entry = (int(m.group(1)), generation)
-                    check_format_condition(
-                        i not in self.xref_table or self.xref_table[i] == new_entry,
-                        "xref entry duplicated (and not identical)",
-                    )
-                    self.xref_table[i] = new_entry
+                    if i not in self.xref_table:
+                        self.xref_table[i] = new_entry
         return offset
 
     def read_indirect(self, ref, max_nesting=-1):

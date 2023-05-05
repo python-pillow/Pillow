@@ -48,6 +48,9 @@ class TestImage:
             "RGBX",
             "RGBA",
             "RGBa",
+            "BGR;15",
+            "BGR;16",
+            "BGR;24",
             "CMYK",
             "YCbCr",
             "LAB",
@@ -57,9 +60,7 @@ class TestImage:
     def test_image_modes_success(self, mode):
         Image.new(mode, (1, 1))
 
-    @pytest.mark.parametrize(
-        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24", "BGR;32")
-    )
+    @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode):
         with pytest.raises(ValueError) as e:
             Image.new(mode, (1, 1))
@@ -69,7 +70,6 @@ class TestImage:
         assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
-
         im = Image.new("L", (100, 100))
         assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
         assert im.mode == "L"
@@ -397,6 +397,17 @@ class TestImage:
             source.alpha_composite(over, (0, 0), 0)
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
+
+    def test_register_open_duplicates(self):
+        # Arrange
+        factory, accept = Image.OPEN["JPEG"]
+        id_length = len(Image.ID)
+
+        # Act
+        Image.register_open("JPEG", factory, accept)
+
+        # Assert
+        assert len(Image.ID) == id_length
 
     def test_registered_extensions_uninitialized(self):
         # Arrange
@@ -918,25 +929,7 @@ class TestImage:
             im.apply_transparency()
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
-    def test_categories_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            assert hopper().category == 0
-
-        with pytest.warns(DeprecationWarning):
-            assert Image.NORMAL == 0
-        with pytest.warns(DeprecationWarning):
-            assert Image.SEQUENCE == 1
-        with pytest.warns(DeprecationWarning):
-            assert Image.CONTAINER == 2
-
     def test_constants(self):
-        with pytest.warns(DeprecationWarning):
-            assert Image.LINEAR == Image.Resampling.BILINEAR
-        with pytest.warns(DeprecationWarning):
-            assert Image.CUBIC == Image.Resampling.BICUBIC
-        with pytest.warns(DeprecationWarning):
-            assert Image.ANTIALIAS == Image.Resampling.LANCZOS
-
         for enum in (
             Image.Transpose,
             Image.Transform,
@@ -996,7 +989,6 @@ def mock_encode(*args):
 
 class TestRegistry:
     def test_encode_registry(self):
-
         Image.register_encoder("MOCK", mock_encode)
         assert "MOCK" in Image.ENCODERS
 

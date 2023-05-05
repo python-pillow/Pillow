@@ -1,6 +1,6 @@
 /*
  * Copyright © 2015 Information Technology Authority (ITA) <foss@ita.gov.om>
- * Copyright © 2016-2022 Khaled Hosny <khaled@aliftype.com>
+ * Copyright © 2016-2023 Khaled Hosny <khaled@aliftype.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -118,6 +118,10 @@ RAQM_API bool
 raqm_set_text_utf8 (raqm_t     *rq,
                     const char *text,
                     size_t      len);
+RAQM_API bool
+raqm_set_text_utf16 (raqm_t     *rq,
+                    const uint16_t *text,
+                    size_t      len);
 
 RAQM_API bool
 raqm_set_par_direction (raqm_t          *rq,
@@ -153,6 +157,17 @@ raqm_set_freetype_load_flags_range (raqm_t *rq,
                                     int     flags,
                                     size_t  start,
                                     size_t  len);
+
+RAQM_API bool
+raqm_set_letter_spacing_range(raqm_t *rq,
+                              int    spacing,
+                              size_t start,
+                              size_t len);
+RAQM_API bool
+raqm_set_word_spacing_range(raqm_t *rq,
+                            int    spacing,
+                            size_t start,
+                            size_t len);
 
 RAQM_API bool
 raqm_set_invisible_glyph (raqm_t *rq,
