@@ -15,8 +15,9 @@ or the clipboard to a PIL image memory.
     returned as an "RGBA" on macOS, or an "RGB" image otherwise.
     If the bounding box is omitted, the entire screen is copied.
 
-    On Linux, if ``xdisplay`` is ``None`` then ``gnome-screenshot`` will be used if it
-    is installed. To capture the default X11 display instead, pass ``xdisplay=""``.
+    On Linux, if X11 is in use and Pillow was built with XCB support, libxcb will be
+    used. Otherwise, if no ``xdisplay`` has been specified, ``gnome-screenshot`` will
+    be used if it is installed.
 
     .. versionadded:: 1.1.3 (Windows), 3.0.0 (macOS), 7.1.0 (Linux)
 
