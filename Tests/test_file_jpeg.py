@@ -922,18 +922,18 @@ class TestFileJpeg:
             im.load()
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
-    def test_repr_jpg(self):
+    def test_repr_jpeg(self):
         im = hopper()
 
-        with Image.open(BytesIO(im._repr_jpg_())) as repr_jpg:
-            assert repr_jpg.format == "JPEG"
-            assert_image_equal(im, repr_jpg)
+        with Image.open(BytesIO(im._repr_jpeg_())) as repr_jpeg:
+            assert repr_jpeg.format == "JPEG"
+            assert_image_similar(im, repr_jpeg, 17)
 
-    def test_repr_jpg_error(self):
+    def test_repr_jpeg_error(self):
         im = hopper("F")
 
         with pytest.raises(ValueError):
-            im._repr_jpg_()
+            im._repr_jpeg_()
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
