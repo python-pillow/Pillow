@@ -1,6 +1,6 @@
 /*
  * Copyright © 2015 Information Technology Authority (ITA) <foss@ita.gov.om>
- * Copyright © 2016-2022 Khaled Hosny <khaled@aliftype.com>
+ * Copyright © 2016-2023 Khaled Hosny <khaled@aliftype.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to

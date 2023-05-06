@@ -296,7 +296,7 @@ Methods
     :param width: The line width, in pixels.
 
 
-.. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None)
+.. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1)
 
     Draws a regular polygon inscribed in ``bounding_circle``,
     with ``n_sides``, and rotation of ``rotation`` degrees.
@@ -311,6 +311,7 @@ Methods
         (e.g. ``rotation=90``, applies a 90 degree rotation).
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
+    :param width: The line width, in pixels.
 
 
 .. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1)

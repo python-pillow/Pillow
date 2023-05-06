@@ -1,5 +1,7 @@
 version: 2
 
+formats: all
+
 build:
   os: ubuntu-22.04
   tools:

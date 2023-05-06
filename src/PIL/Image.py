@@ -672,7 +672,8 @@ class Image:
         return new
 
     def __getstate__(self):
-        return [self.info, self.mode, self.size, self.getpalette(), self.tobytes()]
+        im_data = self.tobytes()  # load image first
+        return [self.info, self.mode, self.size, self.getpalette(), im_data]
 
     def __setstate__(self, state):
         Image.__init__(self)

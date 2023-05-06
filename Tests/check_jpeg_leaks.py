@@ -75,48 +75,45 @@ post-patch:
 """
 
 
-def test_qtables_leak():
-    im = hopper("RGB")
+standard_l_qtable = (
+    # fmt: off
+    16, 11, 10, 16,  24,  40,  51,  61,
+    12, 12, 14, 19,  26,  58,  60,  55,
+    14, 13, 16, 24,  40,  57,  69,  56,
+    14, 17, 22, 29,  51,  87,  80,  62,
+    18, 22, 37, 56,  68, 109, 103,  77,
+    24, 35, 55, 64,  81, 104, 113,  92,
+    49, 64, 78, 87, 103, 121, 120, 101,
+    72, 92, 95, 98, 112, 100, 103,  99,
+    # fmt: on
+)
 
-    standard_l_qtable = [
-        int(s)
-        for s in """
-        16  11  10  16  24  40  51  61
-        12  12  14  19  26  58  60  55
-        14  13  16  24  40  57  69  56
-        14  17  22  29  51  87  80  62
-        18  22  37  56  68 109 103  77
-        24  35  55  64  81 104 113  92
-        49  64  78  87 103 121 120 101
-        72  92  95  98 112 100 103  99
-        """.split(
-            None
-        )
-    ]
+standard_chrominance_qtable = (
+    # fmt: off
+    17, 18, 24, 47, 99, 99, 99, 99,
+    18, 21, 26, 66, 99, 99, 99, 99,
+    24, 26, 56, 99, 99, 99, 99, 99,
+    47, 66, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99,
+    # fmt: on
+)
 
-    standard_chrominance_qtable = [
-        int(s)
-        for s in """
-        17  18  24  47  99  99  99  99
-        18  21  26  66  99  99  99  99
-        24  26  56  99  99  99  99  99
-        47  66  99  99  99  99  99  99
-        99  99  99  99  99  99  99  99
-        99  99  99  99  99  99  99  99
-        99  99  99  99  99  99  99  99
-        99  99  99  99  99  99  99  99
-        """.split(
-            None
-        )
-    ]
 
-    for qtables in (
+@pytest.mark.parametrize(
+    "qtables",
+    (
         (standard_l_qtable, standard_chrominance_qtable),
         [standard_l_qtable, standard_chrominance_qtable],
-    ):
-        for _ in range(iterations):
-            test_output = BytesIO()
-            im.save(test_output, "JPEG", qtables=qtables)
+    ),
+)
+def test_qtables_leak(qtables):
+    im = hopper("RGB")
+    for _ in range(iterations):
+        test_output = BytesIO()
+        im.save(test_output, "JPEG", qtables=qtables)
 
 
 def test_exif_leak():

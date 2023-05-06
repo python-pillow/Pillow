@@ -185,12 +185,8 @@ class ImageCmsProfile:
     def _set(self, profile, filename=None):
         self.profile = profile
         self.filename = filename
-        if profile:
-            self.product_name = None  # profile.product_name
-            self.product_info = None  # profile.product_info
-        else:
-            self.product_name = None
-            self.product_info = None
+        self.product_name = None  # profile.product_name
+        self.product_info = None  # profile.product_info
 
     def tobytes(self):
         """
