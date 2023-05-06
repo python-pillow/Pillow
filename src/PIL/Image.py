@@ -633,17 +633,17 @@ class Image:
             )
         )
 
-    def _repr_image(self, format):
+    def _repr_image(self, image_format):
         """iPython display hook support
 
-        :param format: Image format.
+        :param image_format: Image format.
         :returns: image as bytes, saved into the given format.
         """
         b = io.BytesIO()
         try:
-            self.save(b, format)
+            self.save(b, image_format)
         except Exception as e:
-            msg = f"Could not save to {format} for display"
+            msg = f"Could not save to {image_format} for display"
             raise ValueError(msg) from e
         return b.getvalue()
 
