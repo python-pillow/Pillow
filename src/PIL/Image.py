@@ -637,7 +637,7 @@ class Image:
         """iPython display hook support
 
         :param format: Image format.
-        :returns: png version of the image as bytes
+        :returns: image as bytes, saved into the given format.
         """
         b = io.BytesIO()
         try:
