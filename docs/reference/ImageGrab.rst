@@ -15,8 +15,9 @@ or the clipboard to a PIL image memory.
     returned as an "RGBA" on macOS, or an "RGB" image otherwise.
     If the bounding box is omitted, the entire screen is copied.
 
-    On Linux, if ``xdisplay`` is ``None`` then ``gnome-screenshot`` will be used if it
-    is installed. To capture the default X11 display instead, pass ``xdisplay=""``.
+    On Linux, if ``xdisplay`` is ``None`` and the default X11 display does not return
+    a snapshot of the screen, ``gnome-screenshot`` will be used as fallback if it is
+    installed. To disable this behaviour, pass ``xdisplay=""`` instead.
 
     .. versionadded:: 1.1.3 (Windows), 3.0.0 (macOS), 7.1.0 (Linux)
 
