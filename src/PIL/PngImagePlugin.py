@@ -1146,11 +1146,14 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                     and prev_disposal == encoderinfo.get("disposal")
                     and prev_blend == encoderinfo.get("blend")
                 ):
-                    if isinstance(duration, (list, tuple)):
-                        previous["encoderinfo"]["duration"] += encoderinfo["duration"]
+                    previous["encoderinfo"]["duration"] += encoderinfo.get(
+                        "duration", duration
+                    )
                     continue
             else:
                 bbox = None
+            if "duration" not in encoderinfo:
+                encoderinfo["duration"] = duration
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
 
     # animation control
@@ -1175,7 +1178,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
             im_frame = im_frame.crop(bbox)
         size = im_frame.size
         encoderinfo = frame_data["encoderinfo"]
-        frame_duration = int(round(encoderinfo.get("duration", duration)))
+        frame_duration = int(round(encoderinfo["duration"]))
         frame_disposal = encoderinfo.get("disposal", disposal)
         frame_blend = encoderinfo.get("blend", blend)
         # frame control
