@@ -96,8 +96,8 @@ corners; the centre of a pixel addressed as (0, 0) actually lies at (0.5, 0.5).
 
 Coordinates are usually passed to the library as 2-tuples (x, y). Rectangles
 are represented as 4-tuples, with the upper left corner given first. For
-example, a rectangle covering all of an 800x600 pixel image is written as (0,
-0, 800, 600).
+example, a rectangle covering all of a 2x2 pixel image is written as (0, 0, 1,
+1).
 
 Palette
 -------
