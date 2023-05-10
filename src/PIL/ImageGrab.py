@@ -71,7 +71,11 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             im = im.crop(bbox)
         return im
     except OSError:
-        if xdisplay is None and shutil.which("gnome-screenshot"):
+        if (
+            xdisplay is None
+            and sys.platform not in ("darwin", "win32")
+            and shutil.which("gnome-screenshot")
+        ):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             subprocess.call(["gnome-screenshot", "-f", filepath])
