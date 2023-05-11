@@ -66,10 +66,6 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             msg = "Pillow was built without XCB support"
             raise OSError(msg)
         size, data = Image.core.grabscreen_x11(xdisplay)
-        im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
-        if bbox:
-            im = im.crop(bbox)
-        return im
     except OSError:
         if (
             xdisplay is None
@@ -89,6 +85,11 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             return im
         else:
             raise
+    else:
+        im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
+        if bbox:
+            im = im.crop(bbox)
+        return im
 
 
 def grabclipboard():
