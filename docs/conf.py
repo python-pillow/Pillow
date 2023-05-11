@@ -317,6 +317,17 @@ def setup(app):
     app.add_css_file("css/dark.css")
 
 
+linkcheck_allowed_redirects = {
+    r"https://bestpractices.coreinfrastructure.org/projects/6331": r"https://bestpractices.coreinfrastructure.org/en/.*",  # noqa: E501
+    r"https://badges.gitter.im/python-pillow/Pillow.svg": r"https://badges.gitter.im/repo.svg",  # noqa: E501
+    r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",  # noqa: E501
+    r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",  # noqa: E501
+    r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
+    r"https://tidelift.com/badges/package/pypi/Pillow?.*": r"https://img.shields.io/badge/.*",  # noqa: E501
+    r"https://zenodo.org/badge/17549/python-pillow/Pillow.svg": r"https://zenodo.org/badge/doi/[\.0-9]+/zenodo.[0-9]+.svg",  # noqa: E501
+    r"https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow": r"https://zenodo.org/record/[0-9]+",  # noqa: E501
+}
+
 # sphinx.ext.extlinks
 # This config is a dictionary of external sites,
 # mapping unique short aliases to a base URL and a prefix.
