@@ -654,14 +654,12 @@ class Image:
         """
         return self._repr_image("PNG")
 
-    def _repr_jpg_(self):
+    def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
 
         :returns: jpg version of the image as bytes
         """
         return self._repr_image("JPEG")
-
-    _repr_jpeg_ = _repr_jpg_
 
     @property
     def __array_interface__(self):
