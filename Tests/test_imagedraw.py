@@ -839,7 +839,9 @@ def test_rounded_rectangle_zero_radius(bbox):
     "xy, suffix",
     [
         ((20, 10, 80, 90), "x"),
+        ((20, 10, 81, 90), "x_odd"),
         ((10, 20, 90, 80), "y"),
+        ((10, 20, 90, 81), "y_odd"),
         ((20, 20, 80, 80), "both"),
     ],
 )
