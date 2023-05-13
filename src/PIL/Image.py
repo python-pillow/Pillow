@@ -634,8 +634,7 @@ class Image:
         )
 
     def _repr_image(self, image_format):
-        """iPython display hook support
-
+        """Helper function for iPython display hook
         :param image_format: Image format.
         :returns: image as bytes, saved into the given format.
         """
@@ -657,7 +656,7 @@ class Image:
     def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
 
-        :returns: jpg version of the image as bytes
+        :returns: jpeg version of the image as bytes
         """
         return self._repr_image("JPEG")
 
