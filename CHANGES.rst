@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Fixed joined corners for ImageDraw rounded_rectangle() odd dimensions #7151
+  [radarhere]
+
 - Support reading signed 8-bit TIFF images #7111
   [radarhere]
 
