@@ -634,7 +634,8 @@ class Image:
         )
 
     def _repr_image(self, image_format):
-        """Helper function for iPython display hook
+        """Helper function for iPython display hook.
+
         :param image_format: Image format.
         :returns: image as bytes, saved into the given format.
         """
@@ -1122,7 +1123,6 @@ class Image:
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
            (default).
         :returns: A new image
-
         """
 
         self.load()
