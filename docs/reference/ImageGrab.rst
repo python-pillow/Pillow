@@ -39,9 +39,11 @@ or the clipboard to a PIL image memory.
 
 .. py:function:: grabclipboard()
 
-    Take a snapshot of the clipboard image, if any. Only macOS and Windows are currently supported.
+    Take a snapshot of the clipboard image, if any.
 
-    .. versionadded:: 1.1.4 (Windows), 3.3.0 (macOS)
+    On Linux, ``wl-paste`` or ``xclip`` is required.
+
+    .. versionadded:: 1.1.4 (Windows), 3.3.0 (macOS), 9.4.0 (Linux)
 
     :return: On Windows, an image, a list of filenames,
              or None if the clipboard does not contain image data or filenames.
@@ -49,3 +51,5 @@ or the clipboard to a PIL image memory.
 
              On Mac, an image,
              or None if the clipboard does not contain image data.
+
+             On Linux, an image.
