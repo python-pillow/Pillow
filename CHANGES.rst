@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Prefer screenshots using XCB over gnome-screenshot #7143
+  [nulano, radarhere]
+
 - Fixed joined corners for ImageDraw rounded_rectangle() odd dimensions #7151
   [radarhere]
 
