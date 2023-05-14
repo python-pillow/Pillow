@@ -160,6 +160,18 @@ TODO
 Other Changes
 =============
 
+Support display_jpeg() in IPython
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In addition to ``display()`` and ``display_png``, ``display_jpeg()`` can now
+also be used to display images in IPython::
+
+    from PIL import Image
+    from IPython.display import display_jpeg
+
+    im = Image.new("RGB", (100, 100), (255, 0, 0))
+    display_jpeg(im)
+
 Support reading signed 8-bit TIFF images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
