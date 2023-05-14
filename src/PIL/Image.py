@@ -650,14 +650,14 @@ class Image:
     def _repr_png_(self):
         """iPython display hook support for PNG format.
 
-        :returns: png version of the image as bytes
+        :returns: PNG version of the image as bytes
         """
         return self._repr_image("PNG")
 
     def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
 
-        :returns: jpeg version of the image as bytes
+        :returns: JPEG version of the image as bytes
         """
         return self._repr_image("JPEG")
 
