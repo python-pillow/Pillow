@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Use "/sbin/ldconfig" if ldconfig is not found #7068
+  [radarhere]
+
 - Prefer screenshots using XCB over gnome-screenshot #7143
   [nulano, radarhere]
 
