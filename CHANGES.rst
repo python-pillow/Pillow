@@ -5,7 +5,7 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
-- Added `_repr_jpeg_` for IPython display_jpeg #7135
+- Added _repr_jpeg_() for IPython display_jpeg #7135
   [n3011, radarhere, nulano]
 
 - Use "/sbin/ldconfig" if ldconfig is not found #7068
