@@ -37,7 +37,7 @@
 #undef WIN32
 #endif
 
-#else /* WIN */
+#else /* not WIN */
 /* For System that are not Windows, we'll need to define these. */
 /* We have to define them instead of using typedef because the JPEG lib also
    defines their own types with the same names, so we need to be able to undef
@@ -58,7 +58,7 @@
 #define UINT64 uint64_t
 #endif
 
-#else /* C99+ */
+#else /* < C99 */
 
 #define INT8 signed char
 
@@ -95,9 +95,9 @@
 #define UINT64 unsigned INT64
 #endif
 
-#endif /* C99+ */
+#endif /* < C99 */
 
-#endif /* WIN */
+#endif /* not WIN */
 
 /* assume IEEE; tweak if necessary (patches are welcome) */
 #define FLOAT16 UINT16
