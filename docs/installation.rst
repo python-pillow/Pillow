@@ -380,40 +380,40 @@ Build Options
   using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
   available, as many as are present.
 
-* Build flags: ``--disable-zlib``, ``--disable-jpeg``,
-  ``--disable-tiff``, ``--disable-freetype``, ``--disable-raqm``,
-  ``--disable-lcms``, ``--disable-webp``, ``--disable-webpmux``,
-  ``--disable-jpeg2000``, ``--disable-imagequant``, ``--disable-xcb``.
+* Config settings: ``-C disable=zlib``, ``-C disable=jpeg``,
+  ``-C disable=tiff``, ``-C disable=freetype``, ``-C disable=raqm``,
+  ``-C disable=lcms``, ``-C disable=webp``, ``-C disable=webpmux``,
+  ``-C disable=jpeg2000``, ``-C disable=imagequant``, ``-C disable=xcb``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
-* Build flags: ``--enable-zlib``, ``--enable-jpeg``,
-  ``--enable-tiff``, ``--enable-freetype``, ``--enable-raqm``,
-  ``--enable-lcms``, ``--enable-webp``, ``--enable-webpmux``,
-  ``--enable-jpeg2000``, ``--enable-imagequant``, ``--enable-xcb``.
+* Config settings: ``-C enable=zlib``, ``-C enable=jpeg``,
+  ``-C enable=tiff``, ``-C enable=freetype``, ``-C enable=raqm``,
+  ``-C enable=lcms``, ``-C enable=webp``, ``-C enable=webpmux``,
+  ``-C enable=jpeg2000``, ``-C enable=imagequant``, ``-C enable=xcb``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
 
-* Build flags: ``--vendor-raqm``, ``--vendor-fribidi``.
+* Config settings: ``-C vendor=raqm``, ``-C vendor=fribidi``.
   These flags are used to compile a modified version of libraqm and
   a shim that dynamically loads libfribidi at runtime. These are
   used to compile the standard Pillow wheels. Compiling libraqm requires
   a C99-compliant compiler.
 
-* Build flag: ``--disable-platform-guessing``. Skips all of the
+* Build flag: ``-C disable=platform-guessing``. Skips all of the
   platform dependent guessing of include and library directories for
   automated build systems that configure the proper paths in the
   environment variables (e.g. Buildroot).
 
-* Build flag: ``--debug``. Adds a debugging flag to the include and
+* Build flag: ``-C debug=true``. Adds a debugging flag to the include and
   library search process to dump all paths searched for and found to
   stdout.
 
 
 Sample usage::
 
-    python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
+    python3 -m pip install --upgrade Pillow -C enable=[feature]
 
 Platform Support
 ----------------
