@@ -181,7 +181,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.1.1**
+  * Pillow has been tested with libimagequant **2.6-4.2**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -448,16 +448,14 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | Debian 11 Bullseye               | 3.9                        | x86                 |
 +----------------------------------+----------------------------+---------------------+
-| Fedora 36                        | 3.10                       | x86-64              |
-+----------------------------------+----------------------------+---------------------+
 | Fedora 37                        | 3.11                       | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Fedora 38                        | 3.11                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Gentoo                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | macOS 12 Monterey                | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
 |                                  | 3.12, PyPy3                |                     |
-+----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 18.04 LTS (Bionic)  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Ubuntu Linux 20.04 LTS (Focal)   | 3.8                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
@@ -492,7 +490,7 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
 |                                  | | versions                | | Pillow version | | processors |
 +==================================+===========================+==================+==============+
-| macOS 13 Ventura                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.4.0            |arm           |
+| macOS 13 Ventura                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.5.0            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+

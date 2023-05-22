@@ -279,11 +279,11 @@ class ImageDraw:
                 self.im.paste(im.im, (0, 0) + im.size, mask.im)
 
     def regular_polygon(
-        self, bounding_circle, n_sides, rotation=0, fill=None, outline=None
+        self, bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1
     ):
         """Draw a regular polygon."""
         xy = _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
-        self.polygon(xy, fill, outline)
+        self.polygon(xy, fill, outline, width)
 
     def rectangle(self, xy, fill=None, outline=None, width=1):
         """Draw a rectangle."""
@@ -314,11 +314,11 @@ class ImageDraw:
 
         full_x, full_y = False, False
         if all(corners):
-            full_x = d >= x1 - x0
+            full_x = d >= x1 - x0 - 1
             if full_x:
                 # The two left and two right corners are joined
                 d = x1 - x0
-            full_y = d >= y1 - y0
+            full_y = d >= y1 - y0 - 1
             if full_y:
                 # The two top and two bottom corners are joined
                 d = y1 - y0

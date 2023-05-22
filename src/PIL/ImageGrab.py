@@ -61,7 +61,17 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
-        elif shutil.which("gnome-screenshot"):
+    try:
+        if not Image.core.HAVE_XCB:
+            msg = "Pillow was built without XCB support"
+            raise OSError(msg)
+        size, data = Image.core.grabscreen_x11(xdisplay)
+    except OSError:
+        if (
+            xdisplay is None
+            and sys.platform not in ("darwin", "win32")
+            and shutil.which("gnome-screenshot")
+        ):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             subprocess.call(["gnome-screenshot", "-f", filepath])
@@ -73,15 +83,13 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 im.close()
                 return im_cropped
             return im
-    # use xdisplay=None for default display on non-win32/macOS systems
-    if not Image.core.HAVE_XCB:
-        msg = "Pillow was built without XCB support"
-        raise OSError(msg)
-    size, data = Image.core.grabscreen_x11(xdisplay)
-    im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
-    if bbox:
-        im = im.crop(bbox)
-    return im
+        else:
+            raise
+    else:
+        im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
+        if bbox:
+            im = im.crop(bbox)
+        return im
 
 
 def grabclipboard():
@@ -156,8 +164,11 @@ def grabclipboard():
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
             raise NotImplementedError(msg)
         fh, filepath = tempfile.mkstemp()
-        subprocess.call(args, stdout=fh)
+        err = subprocess.run(args, stdout=fh, stderr=subprocess.PIPE).stderr
         os.close(fh)
+        if err:
+            msg = f"{args[0]} error: {err.strip().decode()}"
+            raise ChildProcessError(msg)
         im = Image.open(filepath)
         im.load()
         os.unlink(filepath)

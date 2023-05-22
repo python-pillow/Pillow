@@ -48,7 +48,7 @@ vector data. Path objects can be passed to the methods on the
 
     Maps the path through a function.
 
-.. py:method:: PIL.ImagePath.Path.tolist(flat=0)
+.. py:method:: PIL.ImagePath.Path.tolist(flat=False)
 
     Converts the path to a Python list [(x, y), …].
 

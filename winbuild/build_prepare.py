@@ -337,9 +337,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/7.1.0.zip",
-        "filename": "harfbuzz-7.1.0.zip",
-        "dir": "harfbuzz-7.1.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/7.3.0.zip",
+        "filename": "harfbuzz-7.3.0.zip",
+        "dir": "harfbuzz-7.3.0",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -352,12 +352,12 @@ deps = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.12.zip",
-        "filename": "fribidi-1.0.12.zip",
-        "dir": "fribidi-1.0.12",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.13.zip",
+        "filename": "fribidi-1.0.13.zip",
+        "dir": "fribidi-1.0.13",
         "license": "COPYING",
         "build": [
-            cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.12-COPYING"),
+            cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.13-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             *cmds_cmake("fribidi"),
         ],

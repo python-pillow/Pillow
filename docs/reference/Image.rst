@@ -439,7 +439,7 @@ Used to specify the dithering method to use for the
 Palettes
 ^^^^^^^^
 
-Used to specify the pallete to use for the :meth:`~Image.convert` method.
+Used to specify the palette to use for the :meth:`~Image.convert` method.
 
 .. autoclass:: Palette
     :members:
