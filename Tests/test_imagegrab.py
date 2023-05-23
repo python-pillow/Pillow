@@ -102,7 +102,7 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
     @pytest.mark.skipif(
         (
             sys.platform != "linux"
-            or not all(shutil.which(cmd) for cmd in ["wl-paste", "wl-copy"])
+            or not all(shutil.which(cmd) for cmd in ("wl-paste", "wl-copy"))
         ),
         reason="Linux with wl-clipboard only",
     )
@@ -111,5 +111,5 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
         image_path = "Tests/images/hopper." + ext
         with open(image_path, "rb") as fp:
             subprocess.call(["wl-copy"], stdin=fp)
-            im = ImageGrab.grabclipboard()
-            assert_image_equal_tofile(im, image_path)
+        im = ImageGrab.grabclipboard()
+        assert_image_equal_tofile(im, image_path)
