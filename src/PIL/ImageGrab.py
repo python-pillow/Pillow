@@ -147,15 +147,12 @@ def grabclipboard():
             clipboard_mimetypes = output.splitlines()
 
             def find_mimetype():
-                for mime in Image.MIME.values():
-                    if mime in clipboard_mimetypes:
-                        return mime
+                if "image/png" in clipboard_mimetypes:
+                    return "image/png"
+                if clipboard_mimetypes:
+                    return clipboard_mimetypes[0]
 
-            Image.preinit()
             mimetype = find_mimetype()
-            if not mimetype:
-                Image.init()
-                mimetype = find_mimetype()
             if mimetype:
                 args.extend(["-t", mimetype])
         elif shutil.which("xclip"):
