@@ -879,7 +879,7 @@ def _get_palette_bytes(im):
     :param im: Image object
     :returns: Bytes, len<=768 suitable for inclusion in gif header
     """
-    return im.palette.palette
+    return im.palette.palette if im.palette else b""
 
 
 def _get_background(im, info_background):
