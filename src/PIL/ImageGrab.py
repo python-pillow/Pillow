@@ -142,17 +142,16 @@ def grabclipboard():
         return None
     else:
         if shutil.which("wl-paste"):
-            args = ["wl-paste"]
             output = subprocess.check_output(["wl-paste", "-l"]).decode()
-            clipboard_mimetypes = output.splitlines()
+            mimetypes = output.splitlines()
+            if "image/png" in mimetypes:
+                mimetype = "image/png"
+            elif mimetypes:
+                mimetype = mimetypes[0]
+            else:
+                mimetype = None
 
-            def find_mimetype():
-                if "image/png" in clipboard_mimetypes:
-                    return "image/png"
-                if clipboard_mimetypes:
-                    return clipboard_mimetypes[0]
-
-            mimetype = find_mimetype()
+            args = ["wl-paste"]
             if mimetype:
                 args.extend(["-t", mimetype])
         elif shutil.which("xclip"):
