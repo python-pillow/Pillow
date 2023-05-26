@@ -102,7 +102,7 @@ class TestFilePng:
 
     def test_putpalette(self):
         valid_file = "Tests/images/FudanPed00003_mask.png"
-        with pytest.raises(ValueError) as err:
+        with pytest.raises(ValueError):
             mask = Image.open(valid_file)
             mask.putpalette(
                 [
