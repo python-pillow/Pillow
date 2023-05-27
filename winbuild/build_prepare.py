@@ -569,6 +569,7 @@ def build_pillow():
         *prefs["header"],
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
         cmd_set("py_vcruntime_redist", "true"),  # always use /MD, never /MT
+        r'"{python_dir}\{python_exe}" -m pip install --upgrade pip',
         r'"{python_dir}\{python_exe}" -m pip install . '
         r'--global-option="--vendor-raqm" '
         r'--global-option="--vendor-fribidi" '
