@@ -20,6 +20,7 @@ environment:
 
 install:
 - '%PYTHON%\%EXECUTABLE% --version'
+- '%PYTHON%\%EXECUTABLE% -m pip install --upgrade pip'
 - curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
 - curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
 - 7z x pillow-depends.zip -oc:\
