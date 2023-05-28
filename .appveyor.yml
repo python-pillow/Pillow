@@ -72,7 +72,7 @@ before_deploy:
   - cd c:\pillow
   - '%PYTHON%\%EXECUTABLE% -m pip install wheel'
   - cd c:\pillow\winbuild\
-  - c:\pillow\winbuild\build\build_pillow.cmd bdist_wheel
+  - c:\pillow\winbuild\build\build_pillow.cmd --global-option="bdist_wheel"
   - cd c:\pillow
   - ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 

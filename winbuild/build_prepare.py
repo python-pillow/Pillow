@@ -572,7 +572,7 @@ def build_pillow():
         r'"{python_dir}\{python_exe}" -m pip install . '
         r'--global-option="--vendor-raqm" '
         r'--global-option="--vendor-fribidi" '
-        r'--global-option="%*"',
+        r"%*",
     ]
 
     write_script("build_pillow.cmd", lines)

@@ -166,8 +166,8 @@ jobs:
     - name: Build Pillow
       run: |
         $FLAGS=""
-        if ('${{ github.event_name }}' -ne 'pull_request') { $FLAGS="--disable-imagequant" }
-        & winbuild\build\build_pillow.cmd $FLAGS install
+        if ('${{ github.event_name }}' -ne 'pull_request') { $FLAGS='--global-option="--disable-imagequant"' }
+        & winbuild\build\build_pillow.cmd $FLAGS --global-option="install"
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
@@ -231,7 +231,7 @@ jobs:
           )
         )
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo dist=dist-%%a >> %GITHUB_OUTPUT%
-        winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
+        winbuild\\build\\build_pillow.cmd --global-option="--disable-imagequant" --global-option="bdist_wheel"
       shell: cmd
 
     - name: Upload wheel
