@@ -132,6 +132,27 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         return NULL;
     }
 
+#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    if (!PyArg_ParseTupleAndKeywords(
+            args,
+            kw,
+            "etf|nsy#n",
+            kwlist,
+            config.filesystem_encoding,
+            &filename,
+            &size,
+            &index,
+            &encoding,
+            &font_bytes,
+            &font_bytes_size,
+            &layout_engine)) {
+        PyConfig_Clear(&config);
+        return NULL;
+    }
+    PyConfig_Clear(&config);
+#else
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
@@ -147,6 +168,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
             &layout_engine)) {
         return NULL;
     }
+#endif
 
     self = PyObject_New(FontObject, &Font_Type);
     if (!self) {
