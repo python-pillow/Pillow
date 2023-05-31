@@ -141,7 +141,11 @@ function run_tests_in_repo {
 
 EXP_CODECS="jpg jpg_2000 libtiff zlib"
 EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux xcb"
+if ([ -n "$IS_MACOS" ] && [[ "$MB_PYTHON_VERSION" == 3.12 ]]); then
+    EXP_FEATURES="libjpeg_turbo transp_webp webp_anim webp_mux xcb"
+else
+    EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux xcb"
+fi
 
 function run_tests {
     if [ -n "$IS_MACOS" ]; then
@@ -156,7 +160,7 @@ function run_tests {
         if [[ "$MB_PYTHON_VERSION" != 3.11 ]]; then
             python3 -m pip install numpy==1.21
         fi
-    elif [ -z "$IS_ALPINE" ]; then
+    elif [ -z "$IS_ALPINE" ] && [[ "$MB_PYTHON_VERSION" != 3.12 ]]; then
         python3 -m pip install numpy
     fi
 
