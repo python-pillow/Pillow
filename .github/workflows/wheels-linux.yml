@@ -28,6 +28,7 @@ jobs:
           "3.9",
           "3.10",
           "3.11",
+          "3.12",
         ]
         platform: [ "i686", "x86_64" ]
         mb-ml-libc: [ "manylinux" ]
@@ -35,6 +36,8 @@ jobs:
         exclude:
           - platform: "i686"
             mb-ml-ver: "_2_28"
+          - platform: "i686"
+            python: "3.12"
         include:
           - python: "3.8"
             platform: "x86_64"
@@ -49,6 +52,10 @@ jobs:
             mb-ml-libc: "musllinux"
             mb-ml-ver: "_1_1"
           - python: "3.11"
+            platform: "x86_64"
+            mb-ml-libc: "musllinux"
+            mb-ml-ver: "_1_1"
+          - python: "3.12"
             platform: "x86_64"
             mb-ml-libc: "musllinux"
             mb-ml-ver: "_1_1"
