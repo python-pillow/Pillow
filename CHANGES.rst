@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Improved wl-paste mimetype handling in ImageGrab #7094
+  [rrcgat, radarhere]
+
 - Added _repr_jpeg_() for IPython display_jpeg #7135
   [n3011, radarhere, nulano]
 
