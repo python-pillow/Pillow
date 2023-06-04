@@ -380,28 +380,28 @@ Build Options
   using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
   available, as many as are present.
 
-* Config settings: ``-C disable=zlib``, ``-C disable=jpeg``,
-  ``-C disable=tiff``, ``-C disable=freetype``, ``-C disable=raqm``,
-  ``-C disable=lcms``, ``-C disable=webp``, ``-C disable=webpmux``,
-  ``-C disable=jpeg2000``, ``-C disable=imagequant``, ``-C disable=xcb``.
+* Config settings: ``-C zlib=disable``, ``-C jpeg=disable``,
+  ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,
+  ``-C lcms=disable``, ``-C webp=disable``, ``-C webpmux=disable``,
+  ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
-* Config settings: ``-C enable=zlib``, ``-C enable=jpeg``,
-  ``-C enable=tiff``, ``-C enable=freetype``, ``-C enable=raqm``,
-  ``-C enable=lcms``, ``-C enable=webp``, ``-C enable=webpmux``,
-  ``-C enable=jpeg2000``, ``-C enable=imagequant``, ``-C enable=xcb``.
+* Config settings: ``-C zlib=enable``, ``-C jpeg=enable``,
+  ``-C tiff=enable``, ``-C freetype=enable``, ``-C raqm=enable``,
+  ``-C lcms=enable``, ``-C webp=enable``, ``-C webpmux=enable``,
+  ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
 
-* Config settings: ``-C vendor=raqm``, ``-C vendor=fribidi``.
+* Config settings: ``-C raqm=vendor``, ``-C fribidi=vendor``.
   These flags are used to compile a modified version of libraqm and
   a shim that dynamically loads libfribidi at runtime. These are
   used to compile the standard Pillow wheels. Compiling libraqm requires
   a C99-compliant compiler.
 
-* Build flag: ``-C disable=platform-guessing``. Skips all of the
+* Build flag: ``-C platform-guessing=disable``. Skips all of the
   platform dependent guessing of include and library directories for
   automated build systems that configure the proper paths in the
   environment variables (e.g. Buildroot).
@@ -413,7 +413,7 @@ Build Options
 
 Sample usage::
 
-    python3 -m pip install --upgrade Pillow -C enable=[feature]
+    python3 -m pip install --upgrade Pillow -C [feature]=enable
 
 Platform Support
 ----------------

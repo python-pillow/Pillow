@@ -7,14 +7,37 @@ from setuptools.build_meta import _BuildMetaBackend
 class _CustomBuildMetaBackend(_BuildMetaBackend):
     def run_setup(self, setup_script="setup.py"):
         if self.config_settings:
-            flags = []
-            for key in ("enable", "disable", "vendor"):
+
+            def config_has(key, value):
                 settings = self.config_settings.get(key)
                 if settings:
                     if not isinstance(settings, list):
                         settings = [settings]
-                    for value in settings:
-                        flags.append("--" + key + "-" + value)
+                    return value in settings
+
+            flags = []
+            for dependency in (
+                "zlib",
+                "jpeg",
+                "tiff",
+                "freetype",
+                "raqm",
+                "lcms",
+                "webp",
+                "webpmux",
+                "jpeg2000",
+                "imagequant",
+                "xcb",
+            ):
+                if config_has(dependency, "enable"):
+                    flags.append("--enable-" + dependency)
+                elif config_has(dependency, "disable"):
+                    flags.append("--disable-" + dependency)
+            for dependency in ("raqm", "fribidi"):
+                if config_has(dependency, "vendor"):
+                    flags.append("--vendor-" + dependency)
+            if self.config_settings.get("platform-guessing") == "disable":
+                flags.append("--disable-platform-guessing")
             if self.config_settings.get("debug") == "true":
                 flags.append("--debug")
             if flags:
