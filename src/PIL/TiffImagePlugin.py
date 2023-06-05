@@ -1253,9 +1253,8 @@ class TiffImageFile(ImageFile.ImageFile):
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
         # into a string in python.
-        # libtiff closes the file descriptor, so pass in a dup.
         try:
-            fp = hasattr(self.fp, "fileno") and os.dup(self.fp.fileno())
+            fp = hasattr(self.fp, "fileno") and self.fp.fileno()
             # flush the file descriptor, prevents error on pypy 2.4+
             # should also eliminate the need for fp.tell
             # in _seek
@@ -1305,18 +1304,11 @@ class TiffImageFile(ImageFile.ImageFile):
             # UNDONE -- so much for that buffer size thing.
             n, err = decoder.decode(self.fp.read())
 
-        if fp:
-            try:
-                os.close(fp)
-            except OSError:
-                pass
-
         self.tile = []
         self.readonly = 0
 
         self.load_end()
 
-        # libtiff closed the fp in a, we need to close self.fp, if possible
         if close_self_fp:
             self.fp.close()
             self.fp = None  # might be shared

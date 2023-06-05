@@ -720,7 +720,11 @@ ImagingLibTiffDecode(
     }
 
  decode_err:
-    TIFFClose(tiff);
+    if (clientstate->fp) {
+        TIFFCleanup(tiff);
+    } else {
+        TIFFClose(tiff);
+    }
     TRACE(("Done Decoding, Returning \n"));
     // Returning -1 here to force ImageFile.load to break, rather than
     // even think about looping back around.
