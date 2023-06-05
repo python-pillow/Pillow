@@ -281,6 +281,13 @@ class TestImageResize:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
+    def test_bicubic_f_clipping(self):
+        im = Image.new("F", (1, 2))
+        im.putpixel((0, 1), 1)
+
+        im = im.resize((1, 3), Image.BICUBIC)
+        assert im.getpixel((0, 0)) >= 0
+
     @pytest.mark.parametrize(
         "mode", ("1", "P", "I;16", "I;16L", "I;16B", "BGR;15", "BGR;16")
     )

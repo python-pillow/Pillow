@@ -535,6 +535,9 @@ ImagingResampleVertical_32bpc(
                     for (y = 0; y < ymax; y++) {
                         ss += IMAGING_PIXEL_F(imIn, xx, y + ymin) * k[y];
                     }
+                    if (ss < 0) {
+                        ss = 0;
+                    }
                     IMAGING_PIXEL_F(imOut, xx, yy) = ss;
                 }
             }
