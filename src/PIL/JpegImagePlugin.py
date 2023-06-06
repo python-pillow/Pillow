@@ -457,6 +457,11 @@ class JpegImageFile(ImageFile.ImageFile):
         if os.path.exists(self.filename):
             subprocess.check_call(["djpeg", "-outfile", path, self.filename])
         else:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+
             msg = "Invalid Filename"
             raise ValueError(msg)
 
