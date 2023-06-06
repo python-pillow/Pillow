@@ -633,18 +633,33 @@ class Image:
             )
         )
 
-    def _repr_png_(self):
-        """iPython display hook support
+    def _repr_image(self, image_format):
+        """Helper function for iPython display hook.
 
-        :returns: png version of the image as bytes
+        :param image_format: Image format.
+        :returns: image as bytes, saved into the given format.
         """
         b = io.BytesIO()
         try:
-            self.save(b, "PNG")
+            self.save(b, image_format)
         except Exception as e:
-            msg = "Could not save to PNG for display"
+            msg = f"Could not save to {image_format} for display"
             raise ValueError(msg) from e
         return b.getvalue()
+
+    def _repr_png_(self):
+        """iPython display hook support for PNG format.
+
+        :returns: PNG version of the image as bytes
+        """
+        return self._repr_image("PNG")
+
+    def _repr_jpeg_(self):
+        """iPython display hook support for JPEG format.
+
+        :returns: JPEG version of the image as bytes
+        """
+        return self._repr_image("JPEG")
 
     @property
     def __array_interface__(self):
@@ -1108,7 +1123,6 @@ class Image:
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
            (default).
         :returns: A new image
-
         """
 
         self.load()

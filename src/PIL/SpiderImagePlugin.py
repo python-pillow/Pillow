@@ -36,7 +36,7 @@ import os
 import struct
 import sys
 
-from PIL import Image, ImageFile
+from . import Image, ImageFile
 
 
 def isInt(f):
@@ -191,7 +191,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     # returns a ImageTk.PhotoImage object, after rescaling to 0..255
     def tkPhotoImage(self):
-        from PIL import ImageTk
+        from . import ImageTk
 
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
 

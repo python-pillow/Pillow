@@ -243,6 +243,7 @@ Methods
 .. py:method:: ImageDraw.line(xy, fill=None, width=0, joint=None)
 
     Draws a line between the coordinates in the ``xy`` list.
+    The coordinate pixels are included in the drawn line.
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.
@@ -287,7 +288,7 @@ Methods
 
     The polygon outline consists of straight lines between the given
     coordinates, plus a straight line between the last and the first
-    coordinate.
+    coordinate. The coordinate pixels are included in the drawn polygon.
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.

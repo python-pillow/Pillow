@@ -314,11 +314,11 @@ class ImageDraw:
 
         full_x, full_y = False, False
         if all(corners):
-            full_x = d >= x1 - x0
+            full_x = d >= x1 - x0 - 1
             if full_x:
                 # The two left and two right corners are joined
                 d = x1 - x0
-            full_y = d >= y1 - y0
+            full_y = d >= y1 - y0 - 1
             if full_y:
                 # The two top and two bottom corners are joined
                 d = y1 - y0

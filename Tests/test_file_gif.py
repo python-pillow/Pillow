@@ -252,6 +252,19 @@ def test_roundtrip_save_all(tmp_path):
         assert reread.n_frames == 5
 
 
+def test_roundtrip_save_all_1(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("1", (1, 1))
+    im2 = Image.new("1", (1, 1), 1)
+    im.save(out, save_all=True, append_images=[im2])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.getpixel((0, 0)) == 0
+
+        reloaded.seek(1)
+        assert reloaded.getpixel((0, 0)) == 255
+
+
 @pytest.mark.parametrize(
     "path, mode",
     (

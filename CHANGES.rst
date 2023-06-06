@@ -5,6 +5,21 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Improved wl-paste mimetype handling in ImageGrab #7094
+  [rrcgat, radarhere]
+
+- Added _repr_jpeg_() for IPython display_jpeg #7135
+  [n3011, radarhere, nulano]
+
+- Use "/sbin/ldconfig" if ldconfig is not found #7068
+  [radarhere]
+
+- Prefer screenshots using XCB over gnome-screenshot #7143
+  [nulano, radarhere]
+
+- Fixed joined corners for ImageDraw rounded_rectangle() odd dimensions #7151
+  [radarhere]
+
 - Support reading signed 8-bit TIFF images #7111
   [radarhere]
 

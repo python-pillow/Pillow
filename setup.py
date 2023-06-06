@@ -10,6 +10,7 @@
 
 import os
 import re
+import shutil
 import struct
 import subprocess
 import sys
@@ -150,6 +151,7 @@ def _dbg(s, tp=None):
 def _find_library_dirs_ldconfig():
     # Based on ctypes.util from Python 2
 
+    ldconfig = "ldconfig" if shutil.which("ldconfig") else "/sbin/ldconfig"
     if sys.platform.startswith("linux") or sys.platform.startswith("gnu"):
         if struct.calcsize("l") == 4:
             machine = os.uname()[4] + "-32"
@@ -166,14 +168,14 @@ def _find_library_dirs_ldconfig():
 
         # Assuming GLIBC's ldconfig (with option -p)
         # Alpine Linux uses musl that can't print cache
-        args = ["ldconfig", "-p"]
+        args = [ldconfig, "-p"]
         expr = rf".*\({abi_type}.*\) => (.*)"
         env = dict(os.environ)
         env["LC_ALL"] = "C"
         env["LANG"] = "C"
 
     elif sys.platform.startswith("freebsd"):
-        args = ["ldconfig", "-r"]
+        args = [ldconfig, "-r"]
         expr = r".* => (.*)"
         env = {}
 
