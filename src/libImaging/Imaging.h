@@ -290,7 +290,7 @@ ImagingConvertTransparent(Imaging im, const char *mode, int r, int g, int b);
 extern Imaging
 ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging
-ImagingExpand(Imaging im, int x, int y, int mode);
+ImagingExpand(Imaging im, int x, int y);
 extern Imaging
 ImagingFill(Imaging im, const void *ink);
 extern int
