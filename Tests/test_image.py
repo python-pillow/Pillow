@@ -1051,8 +1051,11 @@ class TestImageBytes:
         name for name, num_bands, pixelsize in image_modes if "BGR" not in name
     ]
 
-    # make this bigger if necessary
-    sample_bytes = bytes(range(16))
+    sample_bytes = bytes(
+        range(
+            2 * 2 * max(pixelsize for mode, num_bands, pixelsize in image_modes_not_bgr)
+        )
+    )
 
     @pytest.mark.parametrize("mode", image_mode_names_not_bgr)
     def test_roundtrip_bytes_constructor(self, mode):
