@@ -254,9 +254,7 @@ text_layout_raqm(
     const char *dir,
     PyObject *features,
     const char *lang,
-    GlyphInfo **glyph_info,
-    int mask,
-    int color) {
+    GlyphInfo **glyph_info) {
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
     raqm_glyph_t *glyphs = NULL;
@@ -493,7 +491,7 @@ text_layout(
 #ifdef HAVE_RAQM
     if (have_raqm && self->layout_engine == LAYOUT_RAQM) {
         count = text_layout_raqm(
-            string, self, dir, features, lang, glyph_info,  mask, color);
+            string, self, dir, features, lang, glyph_info);
     } else
 #endif
     {
