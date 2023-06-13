@@ -463,6 +463,11 @@ def test_default_font():
     assert_image_equal_tofile(im, "Tests/images/default_font.png")
 
 
+@pytest.mark.parametrize("mode", (None, "1", "RGBA"))
+def test_getbbox(font, mode):
+    assert (0, 4, 12, 16) == font.getbbox("A", mode)
+
+
 def test_getbbox_empty(font):
     # issue #2614, should not crash.
     assert (0, 0, 0, 0) == font.getbbox("")
