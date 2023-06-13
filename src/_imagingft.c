@@ -189,7 +189,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         /* Don't free this before FT_Done_Face */
         self->font_bytes = PyMem_Malloc(font_bytes_size);
         if (!self->font_bytes) {
-            error = 65;  // Out of Memory in Freetype.
+            error = FT_Err_Out_Of_Memory;
         }
         if (!error) {
             memcpy(self->font_bytes, font_bytes, (size_t)font_bytes_size);
