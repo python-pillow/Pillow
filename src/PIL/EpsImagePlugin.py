@@ -361,7 +361,6 @@ class EpsImageFile(ImageFile.ImageFile):
         check_required_header_comments()
 
         if not self._size:
-            self._size = 1, 1  # errors if this isn't set. why (1,1)?
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
 
