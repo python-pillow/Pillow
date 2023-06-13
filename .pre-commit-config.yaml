@@ -4,9 +4,6 @@ repos:
     hooks:
       - id: black
         args: [--target-version=py38]
-        # Only .py files, until https://github.com/psf/black/issues/402 resolved
-        files: \.py$
-        types: []
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
@@ -57,7 +54,7 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: 1.0.0
+    rev: 1.3.0
     hooks:
       - id: tox-ini-fmt
 

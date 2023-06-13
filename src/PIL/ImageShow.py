@@ -17,7 +17,7 @@ import subprocess
 import sys
 from shlex import quote
 
-from PIL import Image
+from . import Image
 
 _viewers = []
 

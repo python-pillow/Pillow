@@ -15,7 +15,7 @@ open-source users (and will reach EOL on 2023-12-08 for commercial licence holde
 Support for PyQt5 and PySide2 has been deprecated from ``ImageQt`` and will be removed
 in Pillow 10 (2023-07-01). Upgrade to
 `PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
-`PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
+`PySide6 <https://doc.qt.io/qtforpython-6/>`_ instead.
 
 FreeTypeFont.getmask2 fill parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

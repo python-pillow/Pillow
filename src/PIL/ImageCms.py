@@ -18,10 +18,10 @@
 import sys
 from enum import IntEnum
 
-from PIL import Image
+from . import Image
 
 try:
-    from PIL import _imagingcms
+    from . import _imagingcms
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
@@ -185,12 +185,8 @@ class ImageCmsProfile:
     def _set(self, profile, filename=None):
         self.profile = profile
         self.filename = filename
-        if profile:
-            self.product_name = None  # profile.product_name
-            self.product_info = None  # profile.product_info
-        else:
-            self.product_name = None
-            self.product_info = None
+        self.product_name = None  # profile.product_name
+        self.product_info = None  # profile.product_info
 
     def tobytes(self):
         """
@@ -275,7 +271,7 @@ def get_display_profile(handle=None):
     if sys.platform != "win32":
         return None
 
-    from PIL import ImageWin
+    from . import ImageWin
 
     if isinstance(handle, ImageWin.HDC):
         profile = core.get_display_profile_win32(handle, 1)

@@ -191,6 +191,16 @@ def test_getlength(
         assert length == length_raqm
 
 
+def test_float_size():
+    lengths = []
+    for size in (48, 48.5, 49):
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", size, layout_engine=layout_engine
+        )
+        lengths.append(f.getlength("text"))
+    assert lengths[0] != lengths[1] != lengths[2]
+
+
 def test_render_multiline(font):
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
@@ -451,6 +461,11 @@ def test_default_font():
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/default_font.png")
+
+
+@pytest.mark.parametrize("mode", (None, "1", "RGBA"))
+def test_getbbox(font, mode):
+    assert (0, 4, 12, 16) == font.getbbox("A", mode)
 
 
 def test_getbbox_empty(font):

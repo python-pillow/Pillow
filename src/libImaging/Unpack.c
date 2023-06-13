@@ -1149,6 +1149,16 @@ unpackI16N_I16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 static void
+unpackI16B_I16(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[1];
+        out[1] = in[0];
+        in += 2;
+        out += 2;
+    }
+}
+static void
 unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     for (i = 0; i < pixels; i++) {
@@ -1542,10 +1552,12 @@ static struct {
     {"P", "P;4L", 4, unpackP4L},
     {"P", "P", 8, copy1},
     {"P", "P;R", 8, unpackLR},
+    {"P", "L", 8, copy1},
 
     /* palette w. alpha */
     {"PA", "PA", 16, unpackLA},
     {"PA", "PA;L", 16, unpackLAL},
+    {"PA", "LA", 16, unpackLA},
 
     /* true colour */
     {"RGB", "RGB", 24, ImagingUnpackRGB},
@@ -1764,6 +1776,7 @@ static struct {
     {"I;16L", "I;16L", 16, copy2},
     {"I;16N", "I;16N", 16, copy2},
 
+    {"I;16", "I;16B", 16, unpackI16B_I16},
     {"I;16", "I;16N", 16, unpackI16N_I16},   // LibTiff native->image endian.
     {"I;16L", "I;16N", 16, unpackI16N_I16},  // LibTiff native->image endian.
     {"I;16B", "I;16N", 16, unpackI16N_I16B},

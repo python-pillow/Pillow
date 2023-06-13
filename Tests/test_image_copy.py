@@ -4,7 +4,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import hopper
+from .helper import hopper, skip_unless_feature
 
 
 @pytest.mark.parametrize("mode", ("1", "P", "L", "RGB", "I", "F"))
@@ -42,3 +42,10 @@ def test_copy_zero():
     out = im.copy()
     assert out.mode == im.mode
     assert out.size == im.size
+
+
+@skip_unless_feature("libtiff")
+def test_deepcopy():
+    with Image.open("Tests/images/g4_orientation_5.tif") as im:
+        out = copy.deepcopy(im)
+    assert out.size == (590, 88)

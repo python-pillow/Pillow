@@ -281,7 +281,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     int ret = -1;
 
     unsigned prec = 8;
-    unsigned bpp = 8;
     unsigned _overflow_scale_factor;
 
     stream = opj_stream_create(BUFFER_SIZE, OPJ_FALSE);
@@ -313,7 +312,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         color_space = OPJ_CLRSPC_GRAY;
         pack = j2k_pack_i16;
         prec = 16;
-        bpp = 12;
     } else if (strcmp(im->mode, "LA") == 0) {
         components = 2;
         color_space = OPJ_CLRSPC_GRAY;
@@ -342,7 +340,6 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         image_params[n].h = im->ysize;
         image_params[n].x0 = image_params[n].y0 = 0;
         image_params[n].prec = prec;
-        image_params[n].bpp = bpp;
         image_params[n].sgnd = context->sgnd == 0 ? 0 : 1;
     }
 
@@ -467,7 +464,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     }
 
     if (!context->num_resolutions) {
-        while (tile_width < (1 << (params.numresolution - 1U)) || tile_height < (1 << (params.numresolution - 1U))) {
+        while (tile_width < (1U << (params.numresolution - 1U)) || tile_height < (1U << (params.numresolution - 1U))) {
             params.numresolution -= 1;
         }
     }

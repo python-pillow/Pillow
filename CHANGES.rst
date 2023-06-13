@@ -5,6 +5,66 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Fixed combining single duration across duplicate APNG frames #7146
+  [radarhere]
+
+- Remove temporary file when error is raised #7148
+  [radarhere]
+
+- Do not use temporary file when grabbing clipboard on Linux #7200
+  [radarhere]
+
+- If the clipboard fails to open on Windows, wait and try again #7141
+  [radarhere]
+
+- Fixed saving multiple 1 mode frames to GIF #7181
+  [radarhere]
+
+- Replaced absolute PIL import with relative import #7173
+  [radarhere]
+
+- Replaced deprecated Py_FileSystemDefaultEncoding for Python >= 3.12 #7192
+  [radarhere]
+
+- Improved wl-paste mimetype handling in ImageGrab #7094
+  [rrcgat, radarhere]
+
+- Added _repr_jpeg_() for IPython display_jpeg #7135
+  [n3011, radarhere, nulano]
+
+- Use "/sbin/ldconfig" if ldconfig is not found #7068
+  [radarhere]
+
+- Prefer screenshots using XCB over gnome-screenshot #7143
+  [nulano, radarhere]
+
+- Fixed joined corners for ImageDraw rounded_rectangle() odd dimensions #7151
+  [radarhere]
+
+- Support reading signed 8-bit TIFF images #7111
+  [radarhere]
+
+- Added width argument to ImageDraw regular_polygon #7132
+  [radarhere]
+
+- Support I mode for ImageFilter.BuiltinFilter #7108
+  [radarhere]
+
+- Raise error from stderr of Linux ImageGrab.grabclipboard() command #7112
+  [radarhere]
+
+- Added unpacker from I;16B to I;16 #7125
+  [radarhere]
+
+- Support float font sizes #7107
+  [radarhere]
+
+- Use later value for duplicate xref entries in PdfParser #7102
+  [radarhere]
+
+- Load before getting size in __getstate__ #7105
+  [bigcat88, radarhere]
+
 - Fixed type handling for include and lib directories #7069
   [adisbladis, radarhere]
 
