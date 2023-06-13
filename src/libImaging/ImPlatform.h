@@ -58,12 +58,6 @@
 #error Cannot find required 32-bit integer type
 #endif
 
-#if SIZEOF_LONG == 8
-#define INT64 long
-#elif SIZEOF_LONG_LONG == 8
-#define INT64 long
-#endif
-
 #define INT8 signed char
 #define UINT8 unsigned char
 
