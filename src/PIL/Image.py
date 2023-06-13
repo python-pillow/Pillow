@@ -1731,7 +1731,7 @@ class Image:
         if not isinstance(dest, (list, tuple)):
             msg = "Destination must be a tuple"
             raise ValueError(msg)
-        if not len(source) in (2, 4):
+        if len(source) not in (2, 4):
             msg = "Source must be a 2 or 4-tuple"
             raise ValueError(msg)
         if not len(dest) == 2:
