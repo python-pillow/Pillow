@@ -49,7 +49,7 @@ clip32(float in) {
 }
 
 Imaging
-ImagingExpand(Imaging imIn, int xmargin, int ymargin, int mode) {
+ImagingExpand(Imaging imIn, int xmargin, int ymargin) {
     Imaging imOut;
     int x, y;
     ImagingSectionCookie cookie;

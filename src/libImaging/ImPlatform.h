@@ -53,10 +53,6 @@
 #define UINT16 uint16_t
 #define INT32 int32_t
 #define UINT32 uint32_t
-#ifdef INT64_MAX
-#define INT64 int64_t
-#define UINT64 uint64_t
-#endif
 
 #else /* < C99 */
 
@@ -80,20 +76,9 @@
 #error Cannot find required 32-bit integer type
 #endif
 
-#if SIZEOF_LONG == 8
-#define INT64 long
-#elif SIZEOF_LONG_LONG == 8
-#define INT64 long long
-#else
-#warning Cannot find required 64-bit integer type
-#endif
-
 #define UINT8 unsigned char
 #define UINT16 unsigned INT16
 #define UINT32 unsigned INT32
-#ifdef INT64
-#define UINT64 unsigned INT64
-#endif
 
 #endif /* < C99 */
 

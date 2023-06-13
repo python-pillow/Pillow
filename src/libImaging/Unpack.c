@@ -1552,10 +1552,12 @@ static struct {
     {"P", "P;4L", 4, unpackP4L},
     {"P", "P", 8, copy1},
     {"P", "P;R", 8, unpackLR},
+    {"P", "L", 8, copy1},
 
     /* palette w. alpha */
     {"PA", "PA", 16, unpackLA},
     {"PA", "PA;L", 16, unpackLAL},
+    {"PA", "LA", 16, unpackLA},
 
     /* true colour */
     {"RGB", "RGB", 24, ImagingUnpackRGB},

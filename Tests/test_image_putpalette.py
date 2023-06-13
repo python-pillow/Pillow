@@ -32,6 +32,14 @@ def test_putpalette():
     with pytest.raises(ValueError):
         palette("YCbCr")
 
+    with Image.open("Tests/images/hopper_gray.jpg") as im:
+        assert im.mode == "L"
+        im.putpalette(list(range(256)) * 3)
+
+    with Image.open("Tests/images/la.tga") as im:
+        assert im.mode == "LA"
+        im.putpalette(list(range(256)) * 3)
+
 
 def test_imagepalette():
     im = hopper("P")

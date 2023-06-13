@@ -1027,12 +1027,11 @@ _crop(ImagingObject *self, PyObject *args) {
 static PyObject *
 _expand_image(ImagingObject *self, PyObject *args) {
     int x, y;
-    int mode = 0;
-    if (!PyArg_ParseTuple(args, "ii|i", &x, &y, &mode)) {
+    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingExpand(self->image, x, y, mode));
+    return PyImagingNew(ImagingExpand(self->image, x, y));
 }
 
 static PyObject *

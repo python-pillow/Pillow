@@ -134,6 +134,13 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
 
     if gs_windows_binary is not None:
         if not gs_windows_binary:
+            try:
+                os.unlink(outfile)
+                if infile_temp:
+                    os.unlink(infile_temp)
+            except OSError:
+                pass
+
             msg = "Unable to locate Ghostscript on paths"
             raise OSError(msg)
         command[0] = gs_windows_binary
@@ -354,7 +361,6 @@ class EpsImageFile(ImageFile.ImageFile):
         check_required_header_comments()
 
         if not self._size:
-            self._size = 1, 1  # errors if this isn't set. why (1,1)?
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
 
