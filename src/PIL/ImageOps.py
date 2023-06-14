@@ -576,13 +576,13 @@ def solarize(image, threshold=128):
     return _lut(image, lut)
 
 
-def exif_transpose(image, inPlace=False):
+def exif_transpose(image, *, inPlace=False):
     """
     If an image has an EXIF Orientation tag, other than 1, transpose the image
     accordingly, and remove the orientation data.
 
     :param image: The image to transpose.
-    :param inPlace: Boolean.
+    :param inPlace: Boolean. Keyword-only argument.
         If ``True``, the original image is modified in-place, and ``None`` is returned.
         If ``False`` (default), a new :py:class:`~PIL.Image.Image` object is returned
         with the transposition applied. If there is no transposition, a copy of the
