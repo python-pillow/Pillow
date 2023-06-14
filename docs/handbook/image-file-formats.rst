@@ -1380,6 +1380,12 @@ PSD
 
 Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow identifies and reads images in Quite OK Image format.
 
 SUN
 ^^^
@@ -1561,13 +1567,6 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     file, this will default to the current time.
 
     .. versionadded:: 5.3.0
-
-QOI
-^^^
-
-.. versionadded:: 9.5.0
-
-Pillow identifies and reads images in Quite OK Image format.
 
 XV Thumbnails
 ^^^^^^^^^^^^^
