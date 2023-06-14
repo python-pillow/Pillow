@@ -404,13 +404,13 @@ def test_exif_transpose():
     assert 0x0112 not in transposed_im.getexif()
 
 
-def test_exif_transpose_inplace():
+def test_exif_transpose_in_place():
     with Image.open("Tests/images/orientation_rectangle.jpg") as im:
         assert im.size == (2, 1)
         assert im.getexif()[0x0112] == 8
         expected = im.rotate(90, expand=True)
 
-        ImageOps.exif_transpose(im, inPlace=True)
+        ImageOps.exif_transpose(im, in_place=True)
         assert im.size == (1, 2)
         assert 0x0112 not in im.getexif()
         assert_image_equal(im, expected)
