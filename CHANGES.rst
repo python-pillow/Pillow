@@ -5,6 +5,15 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Added in_place argument to ImageOps.exif_transpose() #7092
+  [radarhere]
+
+- Fixed calling putpalette() on L and LA images before load() #7187
+  [radarhere]
+
+- Fixed saving TIFF multiframe images with LONG8 tag types #7078
+  [radarhere]
+
 - Fixed combining single duration across duplicate APNG frames #7146
   [radarhere]
 
