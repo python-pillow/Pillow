@@ -45,11 +45,11 @@ def test_bbox():
 @pytest.mark.parametrize("mode", ("RGBA", "RGBa", "La", "LA", "PA"))
 def test_bbox_alpha_only_false(mode):
     im = Image.new(mode, (100, 100))
-    assert im.getbbox(False) is None
+    assert im.getbbox(alpha_only=False) is None
 
     fill_color = [1] * Image.getmodebands(mode)
     fill_color[-1] = 0
     im.paste(tuple(fill_color), (25, 25, 75, 75))
-    assert im.getbbox(False) == (25, 25, 75, 75)
+    assert im.getbbox(alpha_only=False) == (25, 25, 75, 75)
 
     assert im.getbbox() is None
