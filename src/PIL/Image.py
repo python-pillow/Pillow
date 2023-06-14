@@ -1279,7 +1279,7 @@ class Image:
         """
         return ImageMode.getmode(self.mode).bands
 
-    def getbbox(self, alpha_only=True):
+    def getbbox(self, *, alpha_only=True):
         """
         Calculates the bounding box of the non-zero regions in the
         image.
