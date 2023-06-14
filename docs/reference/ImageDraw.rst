@@ -328,7 +328,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1, corners=None)
 
     Draws a rounded rectangle.
 
@@ -341,6 +341,7 @@ Methods
     :param width: The line width, in pixels.
     :param corners: A tuple of whether to round each corner,
                     ``(top_left, top_right, bottom_right, bottom_left)``.
+                    Keyword-only argument.
 
     .. versionadded:: 8.2.0
 
