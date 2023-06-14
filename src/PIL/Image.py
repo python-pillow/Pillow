@@ -1301,6 +1301,7 @@ class Image:
         :param alpha_only: Optional flag, defaulting to ``True``.
            If ``True`` and the image has an alpha channel, trim transparent pixels.
            Otherwise, trim pixels when all channels are zero.
+           Keyword-only argument.
         :returns: The bounding box is returned as a 4-tuple defining the
            left, upper, right, and lower pixel coordinate. See
            :ref:`coordinate-system`. If the image is completely empty, this
