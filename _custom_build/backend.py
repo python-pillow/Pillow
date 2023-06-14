@@ -1,10 +1,12 @@
 import sys
 
 from setuptools.build_meta import *  # noqa: F401, F403
-from setuptools.build_meta import _BuildMetaBackend
+from setuptools.build_meta import build_wheel
+
+backend_class = build_wheel.__self__.__class__
 
 
-class _CustomBuildMetaBackend(_BuildMetaBackend):
+class _CustomBuildMetaBackend(backend_class):
     def run_setup(self, setup_script="setup.py"):
         if self.config_settings:
 
