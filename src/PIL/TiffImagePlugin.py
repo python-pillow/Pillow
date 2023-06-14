@@ -1894,6 +1894,10 @@ class AppendingTiffWriter:
         8,  # srational
         4,  # float
         8,  # double
+        4,  # ifd
+        2,  # unicode
+        4,  # complex
+        8,  # long8
     ]
 
     #    StripOffsets = 273

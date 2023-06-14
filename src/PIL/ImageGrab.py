@@ -15,6 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import io
 import os
 import shutil
 import subprocess
@@ -128,8 +129,6 @@ def grabclipboard():
                 files = data[o:].decode("mbcs").split("\0")
             return files[: files.index("")]
         if isinstance(data, bytes):
-            import io
-
             data = io.BytesIO(data)
             if fmt == "png":
                 from . import PngImagePlugin
@@ -142,19 +141,29 @@ def grabclipboard():
         return None
     else:
         if shutil.which("wl-paste"):
+            output = subprocess.check_output(["wl-paste", "-l"]).decode()
+            mimetypes = output.splitlines()
+            if "image/png" in mimetypes:
+                mimetype = "image/png"
+            elif mimetypes:
+                mimetype = mimetypes[0]
+            else:
+                mimetype = None
+
             args = ["wl-paste"]
+            if mimetype:
+                args.extend(["-t", mimetype])
         elif shutil.which("xclip"):
             args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
         else:
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
             raise NotImplementedError(msg)
-        fh, filepath = tempfile.mkstemp()
-        err = subprocess.run(args, stdout=fh, stderr=subprocess.PIPE).stderr
-        os.close(fh)
+        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        err = p.stderr
         if err:
             msg = f"{args[0]} error: {err.strip().decode()}"
             raise ChildProcessError(msg)
-        im = Image.open(filepath)
+        data = io.BytesIO(p.stdout)
+        im = Image.open(data)
         im.load()
-        os.unlink(filepath)
         return im

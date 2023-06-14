@@ -437,8 +437,14 @@ PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
     LPCSTR format_names[] = {"DIB", "DIB", "file", "png", NULL};
 
     if (!OpenClipboard(NULL)) {
-        PyErr_SetString(PyExc_OSError, "failed to open clipboard");
-        return NULL;
+        // Maybe the clipboard is temporarily in use by another process.
+        // Wait and try again
+        Sleep(500);
+
+        if (!OpenClipboard(NULL)) {
+            PyErr_SetString(PyExc_OSError, "failed to open clipboard");
+            return NULL;
+        }
     }
 
     // find best format as set by clipboard owner

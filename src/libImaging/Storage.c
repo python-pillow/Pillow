@@ -37,8 +37,6 @@
 #include "Imaging.h"
 #include <string.h>
 
-int ImagingNewCount = 0;
-
 /* --------------------------------------------------------------------
  * Standard image object.
  */
