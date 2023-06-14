@@ -15,6 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
+import io
 import os
 import shutil
 import subprocess
@@ -61,7 +62,17 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
-        elif shutil.which("gnome-screenshot"):
+    try:
+        if not Image.core.HAVE_XCB:
+            msg = "Pillow was built without XCB support"
+            raise OSError(msg)
+        size, data = Image.core.grabscreen_x11(xdisplay)
+    except OSError:
+        if (
+            xdisplay is None
+            and sys.platform not in ("darwin", "win32")
+            and shutil.which("gnome-screenshot")
+        ):
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             subprocess.call(["gnome-screenshot", "-f", filepath])
@@ -73,15 +84,13 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 im.close()
                 return im_cropped
             return im
-    # use xdisplay=None for default display on non-win32/macOS systems
-    if not Image.core.HAVE_XCB:
-        msg = "Pillow was built without XCB support"
-        raise OSError(msg)
-    size, data = Image.core.grabscreen_x11(xdisplay)
-    im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
-    if bbox:
-        im = im.crop(bbox)
-    return im
+        else:
+            raise
+    else:
+        im = Image.frombytes("RGB", size, data, "raw", "BGRX", size[0] * 4, 1)
+        if bbox:
+            im = im.crop(bbox)
+        return im
 
 
 def grabclipboard():
@@ -120,8 +129,6 @@ def grabclipboard():
                 files = data[o:].decode("mbcs").split("\0")
             return files[: files.index("")]
         if isinstance(data, bytes):
-            import io
-
             data = io.BytesIO(data)
             if fmt == "png":
                 from . import PngImagePlugin
@@ -134,16 +141,29 @@ def grabclipboard():
         return None
     else:
         if shutil.which("wl-paste"):
+            output = subprocess.check_output(["wl-paste", "-l"]).decode()
+            mimetypes = output.splitlines()
+            if "image/png" in mimetypes:
+                mimetype = "image/png"
+            elif mimetypes:
+                mimetype = mimetypes[0]
+            else:
+                mimetype = None
+
             args = ["wl-paste"]
+            if mimetype:
+                args.extend(["-t", mimetype])
         elif shutil.which("xclip"):
             args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
         else:
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
             raise NotImplementedError(msg)
-        fh, filepath = tempfile.mkstemp()
-        subprocess.call(args, stdout=fh)
-        os.close(fh)
-        im = Image.open(filepath)
+        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        err = p.stderr
+        if err:
+            msg = f"{args[0]} error: {err.strip().decode()}"
+            raise ChildProcessError(msg)
+        data = io.BytesIO(p.stdout)
+        im = Image.open(data)
         im.load()
-        os.unlink(filepath)
         return im

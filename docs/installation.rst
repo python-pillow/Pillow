@@ -181,7 +181,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.1.1**
+  * Pillow has been tested with libimagequant **2.6-4.2**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -447,6 +447,8 @@ These platforms are built and tested for every change.
 | CentOS Stream 9                  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Debian 11 Bullseye               | 3.9                        | x86                 |
++----------------------------------+----------------------------+---------------------+
+| Debian 12 Bookworm               | 3.11                       | x86                 |
 +----------------------------------+----------------------------+---------------------+
 | Fedora 37                        | 3.11                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+

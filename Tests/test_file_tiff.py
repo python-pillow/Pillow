@@ -96,9 +96,16 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_bigtiff(self):
+    def test_bigtiff(self, tmp_path):
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
+
+        with Image.open("Tests/images/hopper_bigtiff.tif") as im:
+            # multistrip support not yet implemented
+            del im.tag_v2[273]
+
+            outfile = str(tmp_path / "temp.tif")
+            im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
     def test_set_legacy_api(self):
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
@@ -197,6 +204,12 @@ class TestFileTiff:
         outfile = str(tmp_path / "temp.tif")
         with pytest.raises(OSError):
             im.save(outfile)
+
+    def test_8bit_s(self):
+        with Image.open("Tests/images/8bit.s.tif") as im:
+            im.load()
+            assert im.mode == "L"
+            assert im.getpixel((50, 50)) == 184
 
     def test_little_endian(self):
         with Image.open("Tests/images/16bit.cropped.tif") as im:

@@ -243,6 +243,7 @@ Methods
 .. py:method:: ImageDraw.line(xy, fill=None, width=0, joint=None)
 
     Draws a line between the coordinates in the ``xy`` list.
+    The coordinate pixels are included in the drawn line.
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.
@@ -287,7 +288,7 @@ Methods
 
     The polygon outline consists of straight lines between the given
     coordinates, plus a straight line between the last and the first
-    coordinate.
+    coordinate. The coordinate pixels are included in the drawn polygon.
 
     :param xy: Sequence of either 2-tuples like ``[(x, y), (x, y), ...]`` or
                numeric values like ``[x, y, x, y, ...]``.
@@ -296,7 +297,7 @@ Methods
     :param width: The line width, in pixels.
 
 
-.. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None)
+.. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1)
 
     Draws a regular polygon inscribed in ``bounding_circle``,
     with ``n_sides``, and rotation of ``rotation`` degrees.
@@ -311,6 +312,7 @@ Methods
         (e.g. ``rotation=90``, applies a 90 degree rotation).
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
+    :param width: The line width, in pixels.
 
 
 .. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1)

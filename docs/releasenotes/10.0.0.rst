@@ -117,7 +117,7 @@ open-source users (and will reach EOL on 2023-12-08 for commercial licence holde
 
 Support for PyQt5 and PySide2 has been removed from ``ImageQt``. Upgrade to
 `PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
-`PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
+`PySide6 <https://doc.qt.io/qtforpython-6/>`_ instead.
 
 Image.coerce_e
 ^^^^^^^^^^^^^^
@@ -135,10 +135,11 @@ TODO
 API Changes
 ===========
 
-TODO
-^^^^
+Added line width parameter to ImageDraw regular_polygon
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+An optional line ``width`` parameter has been added to
+``ImageDraw.Draw.regular_polygon``.
 
 API Additions
 =============
@@ -159,7 +160,20 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Support display_jpeg() in IPython
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+In addition to ``display()`` and ``display_png``, ``display_jpeg()`` can now
+also be used to display images in IPython::
+
+    from PIL import Image
+    from IPython.display import display_jpeg
+
+    im = Image.new("RGB", (100, 100), (255, 0, 0))
+    display_jpeg(im)
+
+Support reading signed 8-bit TIFF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TIFF images with signed integer data, 8 bits per sample and a photometric
+interpretaton of BlackIsZero can now be read.
