@@ -904,7 +904,8 @@ font_render(FontObject *self, PyObject *args) {
     if (stroke_width) {
         error = FT_Stroker_New(library, &stroker);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         FT_Stroker_Set(
@@ -927,7 +928,8 @@ font_render(FontObject *self, PyObject *args) {
         error =
             FT_Load_Glyph(self->face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         glyph_slot = self->face->glyph;
@@ -958,7 +960,8 @@ font_render(FontObject *self, PyObject *args) {
 
         error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         glyph_slot = self->face->glyph;
@@ -972,7 +975,8 @@ font_render(FontObject *self, PyObject *args) {
                 error = FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, &origin, 1);
             }
             if (error) {
-                return geterror(error);
+                geterror(error);
+                goto glyph_error;
             }
 
             bitmap_glyph = (FT_BitmapGlyph)glyph;
@@ -1114,6 +1118,12 @@ font_render(FontObject *self, PyObject *args) {
     return Py_BuildValue("O(ii)(ii)", image, width, height, x_offset, y_offset);
 
 glyph_error:
+    if (im->destroy) {
+        im->destroy(im);
+    }
+    if (im->image) {
+        free(im->image);
+    }
     if (stroker != NULL) {
         FT_Done_Glyph(glyph);
     }
