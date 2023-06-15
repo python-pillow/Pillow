@@ -254,6 +254,7 @@ class D3DFMT(IntEnum):
     DXT5 = i32(b"DXT5")
     DX10 = i32(b"DX10")
     BC5S = i32(b"BC5S")
+    BC5U = i32(b"BC5U")
     ATI1 = i32(b"ATI1")
     ATI2 = i32(b"ATI2")
     MULTI2_ARGB8 = i32(b"MET1")
@@ -325,7 +326,8 @@ class DdsImageFile(ImageFile.ImageFile):
             try:
                 fourcc = D3DFMT(fourcc_)
             except ValueError:
-                raise NotImplementedError(f"Unimplemented pixel format {repr(fourcc_)}")
+                msg = f"Unimplemented pixel format {repr(fourcc_)}"
+                raise NotImplementedError(msg)
             if fourcc == D3DFMT.DXT1:
                 self.mode = "RGBA"
                 self.pixel_format = "DXT1"
@@ -345,6 +347,10 @@ class DdsImageFile(ImageFile.ImageFile):
             elif fourcc == D3DFMT.BC5S:
                 self.mode = "RGB"
                 self.pixel_format = "BC5S"
+                tile = Image.Tile("bcn", extents, data_offs, (5, self.pixel_format))
+            elif fourcc == D3DFMT.BC5U:
+                self.mode = "RGB"
+                self.pixel_format = "BC5U"
                 tile = Image.Tile("bcn", extents, data_offs, (5, self.pixel_format))
             elif fourcc == D3DFMT.ATI2:
                 self.mode = "RGB"
@@ -407,7 +413,8 @@ class DdsImageFile(ImageFile.ImageFile):
 
 def _save(im, fp, filename):
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
-        raise OSError(f"cannot write mode {im.mode} as DDS")
+        msg = f"cannot write mode {im.mode} as DDS"
+        raise OSError(msg)
 
     pixel_flags = DDPF.RGB
     if im.mode == "RGB":
