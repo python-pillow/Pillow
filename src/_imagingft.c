@@ -887,6 +887,10 @@ font_render(FontObject *self, PyObject *args) {
     }
 
     image = PyObject_CallFunction(fill, "s(ii)", strcmp(mode, "RGBA") == 0 ? "RGBA" : "L", width, height);
+    if (image == NULL) {
+        PyMem_Del(glyph_info);
+        return NULL;
+    }
     id = PyLong_AsSsize_t(PyObject_GetAttrString(image, "id"));
     im = (Imaging)id;
 
