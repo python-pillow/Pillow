@@ -536,9 +536,7 @@ def _encode_tile(im, fp, tile: List[Image.Tile], bufsize, fh, exc=None):
                 if exc:
                     # compress to Python file-compatible object
                     while True:
-                        errcode, data = encoder.encode(
-                            bufsize
-                        )[1:]
+                        errcode, data = encoder.encode(bufsize)[1:]
                         fp.write(data)
                         if errcode:
                             break
