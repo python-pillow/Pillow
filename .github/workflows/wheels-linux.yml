@@ -22,8 +22,8 @@ jobs:
       fail-fast: false
       matrix:
         python: [
-          "pypy3.8-7.3.11",
-          "pypy3.9-7.3.11",
+          "pypy3.9-7.3.12",
+          "pypy3.10-7.3.12",
           "3.8",
           "3.9",
           "3.10",
