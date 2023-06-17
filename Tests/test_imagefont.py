@@ -1042,6 +1042,7 @@ def test_render_mono_size():
     "test_file",
     [
         "Tests/fonts/oom-e8e927ba6c0d38274a37c1567560eb33baf74627.ttf",
+        "Tests/fonts/oom-4da0210eb7081b0bf15bf16cc4c52ce02c1e1bbc.ttf",
     ],
 )
 def test_oom(test_file):

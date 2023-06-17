@@ -880,7 +880,7 @@ font_render(FontObject *self, PyObject *args) {
     width += stroke_width * 2 + ceil(x_start);
     height += stroke_width * 2 + ceil(y_start);
     if (max_image_pixels != Py_None) {
-        if (width * height > PyLong_AsLong(max_image_pixels) * 2) {
+        if ((long long)width * height > PyLong_AsLong(max_image_pixels) * 2) {
             PyMem_Del(glyph_info);
             return Py_BuildValue("O(ii)(ii)", Py_None, width, height, 0, 0);
         }
