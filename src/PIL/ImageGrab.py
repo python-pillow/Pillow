@@ -102,7 +102,7 @@ def grabclipboard():
             + filepath
             + '" with write permission)',
             "try",
-            "    write (the clipboard as JPEG picture) to theFile",
+            "    write (the clipboard as «class PNGf») to theFile",
             "end try",
             "close access theFile",
         ]
