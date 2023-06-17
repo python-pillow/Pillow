@@ -95,7 +95,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
 
 def grabclipboard():
     if sys.platform == "darwin":
-        fh, filepath = tempfile.mkstemp(".jpg")
+        fh, filepath = tempfile.mkstemp(".png")
         os.close(fh)
         commands = [
             'set theFile to (open for access POSIX file "'
