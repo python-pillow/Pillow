@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Changed grabclipboard() to use PNG instead of JPG compression on macOS #7219
+  [abey79]
+
 - Added in_place argument to ImageOps.exif_transpose() #7092
   [radarhere]
 
