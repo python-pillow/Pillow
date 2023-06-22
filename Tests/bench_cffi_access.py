@@ -27,25 +27,19 @@ def timer(func, label, *args):
     for x in range(iterations):
         func(*args)
         if time.time() - starttime > 10:
-            print(
-                "{}: breaking at {} iterations, {:.6f}s per iteration".format(
-                    label, x + 1, (time.time() - starttime) / (x + 1.0)
-                )
-            )
             break
-    if x == iterations - 1:
-        endtime = time.time()
-        print(
-            "{}: {:.4f}s total, {:.6f}s per iteration".format(
-                label, endtime - starttime, (endtime - starttime) / (x + 1.0)
-            )
+    endtime = time.time()
+    print(
+        "{}: completed {} iterations in {:.4f}s, {:.6f}s per iteration".format(
+            label, x + 1, endtime - starttime, (endtime - starttime) / (x + 1.0)
         )
+    )
 
 
 def test_direct():
     im = hopper()
     im.load()
-    # im = Image.new( "RGB", (2000, 2000), (1, 3, 2))
+    # im = Image.new("RGB", (2000, 2000), (1, 3, 2))
     caccess = im.im.pixel_access(False)
     access = PyAccess.new(im, False)
 
