@@ -2882,7 +2882,7 @@ def new(mode, size, color=0):
     :param color: What color to use for the image.  Default is black.
        If given, this should be a single integer or floating point value
        for single-band modes, and a tuple for multi-band modes (one value
-       per band).  When creating RGB images, you can also use color
+       per band).  When creating RGB or HSV images, you can also use color
        strings as supported by the ImageColor module.  If the color is
        None, the image is not initialised.
     :returns: An :py:class:`~PIL.Image.Image` object.
