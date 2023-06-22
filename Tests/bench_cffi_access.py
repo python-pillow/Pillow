@@ -28,7 +28,7 @@ def timer(func, label, *args):
         func(*args)
         if time.time() - starttime > 10:
             print(
-                "{}: breaking at {} iterations, {:.6f} per iteration".format(
+                "{}: breaking at {} iterations, {:.6f}s per iteration".format(
                     label, x + 1, (time.time() - starttime) / (x + 1.0)
                 )
             )
@@ -36,7 +36,7 @@ def timer(func, label, *args):
     if x == iterations - 1:
         endtime = time.time()
         print(
-            "{}: {:.4f} s  {:.6f} per iteration".format(
+            "{}: {:.4f}s total, {:.6f}s per iteration".format(
                 label, endtime - starttime, (endtime - starttime) / (x + 1.0)
             )
         )
