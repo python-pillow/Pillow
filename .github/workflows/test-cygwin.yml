@@ -104,7 +104,7 @@ jobs:
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
         run: |
-          SETUPTOOLS_USE_DISTUTILS=stdlib .ci/build.sh
+          .ci/build.sh
 
       - name: Test
         run: |
