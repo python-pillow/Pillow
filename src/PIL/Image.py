@@ -2451,7 +2451,7 @@ class Image:
         The image is first saved to a temporary file. By default, it will be in
         PNG format.
 
-        On Unix, the image is then opened using the **display**, **eog** or
+        On Unix, the image is then opened using the **xdg-open**, **display**, **gm**, **eog** or
         **xv** utility, depending on which one can be found.
 
         On macOS, the image is opened with the native Preview application.
