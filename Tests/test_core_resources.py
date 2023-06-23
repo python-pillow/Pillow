@@ -1,5 +1,3 @@
-import sys
-
 import pytest
 
 from PIL import Image
@@ -110,9 +108,6 @@ class TestCoreMemory:
 
         with pytest.raises(ValueError):
             Image.core.set_blocks_max(-1)
-        if sys.maxsize < 2**32:
-            with pytest.raises(ValueError):
-                Image.core.set_blocks_max(2**29)
 
     @pytest.mark.skipif(is_pypy(), reason="Images not collected")
     def test_set_blocks_max_stats(self):

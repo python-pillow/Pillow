@@ -10,8 +10,8 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/Python311
-    ARCHITECTURE: x86
+  - PYTHON: C:/Python311-x64
+    ARCHITECTURE: x64
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
   - PYTHON: C:/Python38-x64
     ARCHITECTURE: x64
