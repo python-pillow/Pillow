@@ -4,6 +4,11 @@
 Backwards Incompatible Changes
 ==============================
 
+32-bit support
+^^^^^^^^^^^^^^
+
+32-bit architecture is no longer supported and 32-bit wheels are no longer provided.
+
 Categories
 ^^^^^^^^^^
 

@@ -152,16 +152,13 @@ def _find_library_dirs_ldconfig():
 
     ldconfig = "ldconfig" if shutil.which("ldconfig") else "/sbin/ldconfig"
     if sys.platform.startswith("linux") or sys.platform.startswith("gnu"):
-        if struct.calcsize("l") == 4:
-            machine = os.uname()[4] + "-32"
-        else:
-            machine = os.uname()[4] + "-64"
+        machine = os.uname()[4]
         mach_map = {
-            "x86_64-64": "libc6,x86-64",
-            "ppc64-64": "libc6,64bit",
-            "sparc64-64": "libc6,64bit",
-            "s390x-64": "libc6,64bit",
-            "ia64-64": "libc6,IA-64",
+            "x86_64": "libc6,x86-64",
+            "ppc64": "libc6,64bit",
+            "sparc64": "libc6,64bit",
+            "s390x": "libc6,64bit",
+            "ia64": "libc6,IA-64",
         }
         abi_type = mach_map.get(machine, "libc6")
 
@@ -583,10 +580,7 @@ class pil_build_ext(build_ext):
                 # user libs are at $PREFIX/lib
                 _add_directory(
                     library_dirs,
-                    os.path.join(
-                        os.environ["ANDROID_ROOT"],
-                        "lib" if struct.calcsize("l") == 4 else "lib64",
-                    ),
+                    os.path.join(os.environ["ANDROID_ROOT"], "lib64"),
                 )
 
         elif sys.platform.startswith("netbsd"):
