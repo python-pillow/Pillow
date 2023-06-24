@@ -5,7 +5,6 @@ import re
 import shutil
 import struct
 import subprocess
-import sys
 
 
 def cmd_cd(path):
@@ -490,7 +489,7 @@ def build_env():
         cmd_set("INCLIB", "{lib_dir}"),
         cmd_set("LIB", "{lib_dir}"),
         cmd_append("PATH", "{bin_dir}"),
-        f"call {{vcvarsall}} {{vcvars_arch}}",
+        "call {vcvarsall} {vcvars_arch}",
         cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
         cmd_set("py_vcruntime_redist", "true"),  # always use /MD, never /MT
         ":end",
@@ -536,7 +535,7 @@ def build_dep(name):
 
     banner = f"Building {name} ({dir})"
     lines = [
-        rf'call "{{build_dir}}\build_env.cmd"',
+        r'call "{build_dir}\build_env.cmd"',
         "@echo " + ("=" * 70),
         f"@echo ==== {banner:<60} ====",
         "@echo " + ("=" * 70),
