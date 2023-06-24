@@ -103,13 +103,6 @@ architectures = {
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
-header = [
-    cmd_set("INCLUDE", "{inc_dir}"),
-    cmd_set("INCLIB", "{lib_dir}"),
-    cmd_set("LIB", "{lib_dir}"),
-    cmd_append("PATH", "{bin_dir}"),
-]
-
 # dependencies, listed in order of compilation
 deps = {
     "libjpeg": {
@@ -401,23 +394,12 @@ def find_msvs():
         print("Visual Studio seems to be missing C compiler")
         return None
 
-    vs = {
-        "header": [],
-        # nmake selected by vcvarsall
-        "nmake": "nmake.exe",
-        "vs_dir": vspath,
-    }
-
     # vs2017
     msbuild = os.path.join(vspath, "MSBuild", "15.0", "Bin", "MSBuild.exe")
-    if os.path.isfile(msbuild):
-        vs["msbuild"] = f'"{msbuild}"'
-    else:
+    if not os.path.isfile(msbuild):
         # vs2019
         msbuild = os.path.join(vspath, "MSBuild", "Current", "Bin", "MSBuild.exe")
-        if os.path.isfile(msbuild):
-            vs["msbuild"] = f'"{msbuild}"'
-        else:
+        if not os.path.isfile(msbuild):
             print("Visual Studio MSBuild not found")
             return None
 
@@ -425,9 +407,13 @@ def find_msvs():
     if not os.path.isfile(vcvarsall):
         print("Visual Studio vcvarsall not found")
         return None
-    vs["header"].append(f'call "{vcvarsall}" {{vcvars_arch}}')
 
-    return vs
+    return {
+        "vs_dir": vspath,
+        "msbuild": f'"{msbuild}"',
+        "vcvarsall": f'"{vcvarsall}"',
+        "nmake": "nmake.exe",  # nmake selected by vcvarsall
+    }
 
 
 def extract_dep(url, filename):
@@ -497,6 +483,22 @@ def get_footer(dep):
     return lines
 
 
+def build_env():
+    lines = [
+        "if defined DISTUTILS_USE_SDK goto end",
+        cmd_set("INCLUDE", "{inc_dir}"),
+        cmd_set("INCLIB", "{lib_dir}"),
+        cmd_set("LIB", "{lib_dir}"),
+        cmd_append("PATH", "{bin_dir}"),
+        f"call {{vcvarsall}} {{vcvars_arch}}",
+        cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
+        cmd_set("py_vcruntime_redist", "true"),  # always use /MD, never /MT
+        ":end",
+        "@echo on",
+    ]
+    write_script("build_env.cmd", lines)
+
+
 def build_dep(name):
     dep = deps[name]
     dir = dep["dir"]
@@ -534,11 +536,11 @@ def build_dep(name):
 
     banner = f"Building {name} ({dir})"
     lines = [
+        rf'call "{{build_dir}}\build_env.cmd"',
         "@echo " + ("=" * 70),
         f"@echo ==== {banner:<60} ====",
         "@echo " + ("=" * 70),
-        "cd /D %s" % os.path.join(sources_dir, dir),
-        *prefs["header"],
+        cmd_cd(os.path.join(sources_dir, dir)),
         *dep.get("build", []),
         *get_footer(dep),
     ]
@@ -548,7 +550,7 @@ def build_dep(name):
 
 
 def build_dep_all():
-    lines = ["@echo on"]
+    lines = [r'call "{build_dir}\build_env.cmd"']
     for dep_name in deps:
         print()
         if dep_name in disabled:
@@ -562,32 +564,16 @@ def build_dep_all():
     write_script("build_dep_all.cmd", lines)
 
 
-def build_pillow():
-    lines = [
-        "@echo ---- Building Pillow (build_ext %*) ----",
-        cmd_cd("{pillow_dir}"),
-        *prefs["header"],
-        cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
-        cmd_set("py_vcruntime_redist", "true"),  # always use /MD, never /MT
-        r'"{python_dir}\{python_exe}" -m pip install . '
-        r'--global-option="--vendor-raqm" '
-        r'--global-option="--vendor-fribidi" '
-        r"%*",
-    ]
-
-    write_script("build_pillow.cmd", lines)
-
-
 if __name__ == "__main__":
     winbuild_dir = os.path.dirname(os.path.realpath(__file__))
     pillow_dir = os.path.realpath(os.path.join(winbuild_dir, ".."))
 
     parser = argparse.ArgumentParser(
         prog="winbuild\\build_prepare.py",
-        description="Download dependencies and generate build scripts for Pillow.",
+        description="Download and generate build scripts for Pillow dependencies.",
         epilog="""Arguments can also be supplied using the environment variables
-                  PILLOW_BUILD, PILLOW_DEPS, ARCHITECTURE, PYTHON, EXECUTABLE.
-                  See winbuild\\build.rst for more information.""",
+                  PILLOW_BUILD, PILLOW_DEPS, ARCHITECTURE. See winbuild\\build.rst
+                  for more information.""",
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="print generated scripts"
@@ -623,20 +609,6 @@ if __name__ == "__main__":
         help="build architecture (default: same as host Python)",
     )
     parser.add_argument(
-        "--python",
-        dest="python_dir",
-        metavar="PYTHON",
-        default=os.environ.get("PYTHON"),
-        help="Python install directory (default: use host Python)",
-    )
-    parser.add_argument(
-        "--executable",
-        dest="python_exe",
-        metavar="EXECUTABLE",
-        default=os.environ.get("EXECUTABLE", "python.exe"),
-        help="Python executable (default: use host Python)",
-    )
-    parser.add_argument(
         "--nmake",
         dest="cmake_generator",
         action="store_const",
@@ -659,11 +631,6 @@ if __name__ == "__main__":
 
     arch_prefs = architectures[args.architecture]
     print("Target architecture:", args.architecture)
-
-    if args.python_dir is None:
-        args.python_dir = os.path.dirname(os.path.realpath(sys.executable))
-        args.python_exe = os.path.basename(sys.executable)
-    print("Target Python:", os.path.join(args.python_dir, args.python_exe))
 
     msvs = find_msvs()
     if msvs is None:
@@ -702,9 +669,6 @@ if __name__ == "__main__":
         disabled += ["fribidi"]
 
     prefs = {
-        # Python paths / preferences
-        "python_dir": args.python_dir,
-        "python_exe": args.python_exe,
         "architecture": args.architecture,
         **arch_prefs,
         # Pillow paths
@@ -722,8 +686,6 @@ if __name__ == "__main__":
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
         "cmake_generator": args.cmake_generator,
         # TODO find NASM automatically
-        # script header
-        "header": sum([header, msvs["header"], ["@echo on"]], []),
     }
 
     for k, v in deps.items():
@@ -732,7 +694,5 @@ if __name__ == "__main__":
     print()
 
     write_script(".gitignore", ["*"])
+    build_env()
     build_dep_all()
-    if args.verbose:
-        print()
-    build_pillow()

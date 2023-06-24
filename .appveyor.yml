@@ -38,10 +38,9 @@ install:
 - path C:\pillow\winbuild\build\bin;%PATH%
 
 build_script:
-- ps: |
-        c:\pillow\winbuild\build\build_pillow.cmd install
-        $host.SetShouldExit(0)
 - cd c:\pillow
+- winbuild\build\build_env.cmd
+- '%PYTHON%\%EXECUTABLE% -m pip install -v -C raqm=vendor -C fribidi=vendor .'
 - '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
 test_script:
@@ -63,18 +62,15 @@ cache:
 - '%LOCALAPPDATA%\pip\Cache'
 
 artifacts:
-- path: pillow\dist\*.egg
+- path: pillow\*.egg
   name: egg
-- path: pillow\dist\*.wheel
+- path: pillow\*.whl
   name: wheel
 
 before_deploy:
   - cd c:\pillow
-  - '%PYTHON%\%EXECUTABLE% -m pip install wheel'
-  - cd c:\pillow\winbuild\
-  - c:\pillow\winbuild\build\build_pillow.cmd --global-option="bdist_wheel"
-  - cd c:\pillow
-  - ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+  - '%PYTHON%\%EXECUTABLE% -m pip wheel -v -C raqm=vendor -C fribidi=vendor .'
+  - ps: Get-ChildItem .\*.whl | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
 deploy:
   provider: S3
