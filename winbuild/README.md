@@ -18,12 +18,12 @@ The following is a simplified version of the script used on AppVeyor:
 ```
 set PYTHON=C:\Python38\bin
 cd /D C:\Pillow\winbuild
-C:\Python39\bin\python.exe build_prepare.py -v --depends=C:\pillow-depends
+%PYTHON%\python.exe build_prepare.py -v --depends=C:\pillow-depends
 build\build_dep_all.cmd
-build\build_pillow.cmd install
 cd ..
+%PYTHON%\python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor .
 path C:\Pillow\winbuild\build\bin;%PATH%
 %PYTHON%\python.exe selftest.py
 %PYTHON%\python.exe -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
-build\build_pillow.cmd bdist_wheel
+%PYTHON%\python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .
 ```
