@@ -5,8 +5,11 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Fixed finding dependencies on Cygwin #7175
+  [radarhere]
+
 - Changed grabclipboard() to use PNG instead of JPG compression on macOS #7219
-  [abey79]
+  [abey79, radarhere]
 
 - Added in_place argument to ImageOps.exif_transpose() #7092
   [radarhere]
