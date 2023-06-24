@@ -24,18 +24,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12-dev"]
-        architecture: ["x86", "x64"]
-        include:
-          # PyPy 7.3.4+ only ships 64-bit binaries for Windows
-          - python-version: "pypy3.9"
-            architecture: "x64"
-          - python-version: "pypy3.10"
-            architecture: "x64"
+        python-version: ["pypy3.10", "pypy3.9", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
 
     timeout-minutes: 30
 
-    name: Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+    name: Python ${{ matrix.python-version }}
 
     steps:
     - name: Checkout Pillow
@@ -58,7 +51,6 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        architecture: ${{ matrix.architecture }}
         cache: pip
         cache-dependency-path: ".github/workflows/test-windows.yml"
 
@@ -206,14 +198,14 @@ jobs:
       with:
         file: ./coverage.xml
         flags: GHA_Windows
-        name: ${{ runner.os }} Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+        name: ${{ runner.os }} Python ${{ matrix.python-version }}
 
     - name: Build wheel
       id: wheel
       if: "github.event_name != 'pull_request'"
       run: |
-        mkdir fribidi\${{ matrix.architecture }}
-        copy winbuild\build\bin\fribidi* fribidi\${{ matrix.architecture }}
+        mkdir fribidi
+        copy winbuild\build\bin\fribidi* fribidi
         setlocal EnableDelayedExpansion
         for %%f in (winbuild\build\license\*) do (
           set x=%%~nf
