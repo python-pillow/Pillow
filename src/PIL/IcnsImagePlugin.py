@@ -22,11 +22,11 @@ import os
 import struct
 import sys
 
-from PIL import Image, ImageFile, PngImagePlugin, features
+from . import Image, ImageFile, PngImagePlugin, features
 
 enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
-    from PIL import Jpeg2KImagePlugin
+    from . import Jpeg2KImagePlugin
 
 MAGIC = b"icns"
 HEADERSIZE = 8

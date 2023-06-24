@@ -46,17 +46,12 @@ help:
 	@echo "  docserve           run an HTTP server on the docs directory"
 	@echo "  html               make HTML docs"
 	@echo "  htmlview           open the index page built by the html target in your browser"
-	@echo "  inplace            make inplace extension"
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
 	@echo "  lint               run the lint checks"
 	@echo "  lint-fix           run Black and isort to (mostly) fix lint issues"
 	@echo "  release-test       run code and package tests before release"
 	@echo "  test               run tests on installed Pillow"
-
-.PHONY: inplace
-inplace: clean
-	python3 -m pip install -e --global-option="build_ext" --global-option="--inplace" .
 
 .PHONY: install
 install:
@@ -65,7 +60,7 @@ install:
 
 .PHONY: install-coverage
 install-coverage:
-	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install --global-option="build_ext" .
+	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install .
 	python3 selftest.py
 
 .PHONY: debug
@@ -74,7 +69,7 @@ debug:
 # for our stuff, kills optimization, and redirects to dev null so we
 # see any build failures.
 	make clean > /dev/null
-	CFLAGS='-g -O0' python3 -m pip -v install --global-option="build_ext" . > /dev/null
+	CFLAGS='-g -O0' python3 -m pip -v install . > /dev/null
 
 .PHONY: release-test
 release-test:

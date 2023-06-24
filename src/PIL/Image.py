@@ -1254,7 +1254,7 @@ class Image:
         if ymargin is None:
             ymargin = xmargin
         self.load()
-        return self._new(self.im.expand(xmargin, ymargin, 0))
+        return self._new(self.im.expand(xmargin, ymargin))
 
     def filter(self, filter):
         """
@@ -1433,12 +1433,12 @@ class Image:
             self._exif.load(exif_info)
 
         # XMP tags
-        if 0x0112 not in self._exif:
+        if ExifTags.Base.Orientation not in self._exif:
             xmp_tags = self.info.get("XML:com.adobe.xmp")
             if xmp_tags:
                 match = re.search(r'tiff:Orientation(="|>)([0-9])', xmp_tags)
                 if match:
-                    self._exif[0x0112] = int(match[2])
+                    self._exif[ExifTags.Base.Orientation] = int(match[2])
 
         return self._exif
 
@@ -1731,7 +1731,7 @@ class Image:
         if not isinstance(dest, (list, tuple)):
             msg = "Destination must be a tuple"
             raise ValueError(msg)
-        if not len(source) in (2, 4):
+        if len(source) not in (2, 4):
             msg = "Source must be a 2 or 4-tuple"
             raise ValueError(msg)
         if not len(dest) == 2:
@@ -2451,8 +2451,8 @@ class Image:
         The image is first saved to a temporary file. By default, it will be in
         PNG format.
 
-        On Unix, the image is then opened using the **display**, **eog** or
-        **xv** utility, depending on which one can be found.
+        On Unix, the image is then opened using the **xdg-open**, **display**,
+        **gm**, **eog** or **xv** utility, depending on which one can be found.
 
         On macOS, the image is opened with the native Preview application.
 

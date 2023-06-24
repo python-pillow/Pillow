@@ -26,7 +26,6 @@
 #
 
 import base64
-import math
 import os
 import sys
 import warnings
@@ -225,10 +224,6 @@ class FreeTypeFont:
     def __setstate__(self, state):
         path, size, index, encoding, layout_engine = state
         self.__init__(path, size, index, encoding, layout_engine)
-
-    def _multiline_split(self, text):
-        split_character = "\n" if isinstance(text, str) else b"\n"
-        return text.split(split_character)
 
     def getname(self):
         """
@@ -551,28 +546,23 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
-        size, offset = self.font.getsize(
-            text, mode, direction, features, language, anchor
-        )
         if start is None:
             start = (0, 0)
-        size = tuple(math.ceil(size[i] + stroke_width * 2 + start[i]) for i in range(2))
-        offset = offset[0] - stroke_width, offset[1] - stroke_width
+        im, size, offset = self.font.render(
+            text,
+            Image.core.fill,
+            mode,
+            direction,
+            features,
+            language,
+            stroke_width,
+            anchor,
+            ink,
+            start[0],
+            start[1],
+            Image.MAX_IMAGE_PIXELS,
+        )
         Image._decompression_bomb_check(size)
-        im = Image.core.fill("RGBA" if mode == "RGBA" else "L", size, 0)
-        if min(size):
-            self.font.render(
-                text,
-                im.id,
-                mode,
-                direction,
-                features,
-                language,
-                stroke_width,
-                ink,
-                start[0],
-                start[1],
-            )
         return im, offset
 
     def font_variant(

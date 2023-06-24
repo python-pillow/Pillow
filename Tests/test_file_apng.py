@@ -447,6 +447,17 @@ def test_apng_save_duration_loop(tmp_path):
         assert im.info.get("duration") == 750
 
 
+def test_apng_save_duplicate_duration(tmp_path):
+    test_file = str(tmp_path / "temp.png")
+    frame = Image.new("RGB", (1, 1))
+
+    # Test a single duration is correctly combined across duplicate frames
+    frame.save(test_file, save_all=True, append_images=[frame, frame], duration=500)
+    with Image.open(test_file) as im:
+        assert im.n_frames == 1
+        assert im.info.get("duration") == 1500
+
+
 def test_apng_save_disposal(tmp_path):
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)

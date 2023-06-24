@@ -515,6 +515,7 @@ class pil_build_ext(build_ext):
 
         elif sys.platform == "cygwin":
             # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
+            self.compiler.shared_lib_extension = ".dll.a"
             _add_directory(
                 library_dirs,
                 os.path.join(

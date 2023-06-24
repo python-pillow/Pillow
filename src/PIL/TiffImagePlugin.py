@@ -49,7 +49,7 @@ from collections.abc import MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
 
-from . import Image, ImageFile, ImageOps, ImagePalette, TiffTags
+from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
@@ -1185,7 +1185,7 @@ class TiffImageFile(ImageFile.ImageFile):
         :returns: Photoshop "Image Resource Blocks" in a dictionary.
         """
         blocks = {}
-        val = self.tag_v2.get(0x8649)
+        val = self.tag_v2.get(ExifTags.Base.ImageResources)
         if val:
             while val[:4] == b"8BIM":
                 id = i16(val[4:6])
@@ -1550,7 +1550,7 @@ class TiffImageFile(ImageFile.ImageFile):
             palette = [o8(b // 256) for b in self.tag_v2[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", b"".join(palette))
 
-        self._tile_orientation = self.tag_v2.get(0x0112)
+        self._tile_orientation = self.tag_v2.get(ExifTags.Base.Orientation)
 
 
 #
@@ -1894,6 +1894,10 @@ class AppendingTiffWriter:
         8,  # srational
         4,  # float
         8,  # double
+        4,  # ifd
+        2,  # unicode
+        4,  # complex
+        8,  # long8
     ]
 
     #    StripOffsets = 273

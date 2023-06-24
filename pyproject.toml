@@ -1,5 +1,4 @@
 [build-system]
-build-backend = "setuptools.build_meta"
-requires = [
-  "setuptools>=67.8",
-]
+requires = ["setuptools >= 67.8", "wheel"]
+build-backend = "backend"
+backend-path = ["_custom_build"]

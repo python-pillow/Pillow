@@ -5,6 +5,42 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Fixed finding dependencies on Cygwin #7175
+  [radarhere]
+
+- Changed grabclipboard() to use PNG instead of JPG compression on macOS #7219
+  [abey79, radarhere]
+
+- Added in_place argument to ImageOps.exif_transpose() #7092
+  [radarhere]
+
+- Fixed calling putpalette() on L and LA images before load() #7187
+  [radarhere]
+
+- Fixed saving TIFF multiframe images with LONG8 tag types #7078
+  [radarhere]
+
+- Fixed combining single duration across duplicate APNG frames #7146
+  [radarhere]
+
+- Remove temporary file when error is raised #7148
+  [radarhere]
+
+- Do not use temporary file when grabbing clipboard on Linux #7200
+  [radarhere]
+
+- If the clipboard fails to open on Windows, wait and try again #7141
+  [radarhere]
+
+- Fixed saving multiple 1 mode frames to GIF #7181
+  [radarhere]
+
+- Replaced absolute PIL import with relative import #7173
+  [radarhere]
+
+- Replaced deprecated Py_FileSystemDefaultEncoding for Python >= 3.12 #7192
+  [radarhere]
+
 - Improved wl-paste mimetype handling in ImageGrab #7094
   [rrcgat, radarhere]
 

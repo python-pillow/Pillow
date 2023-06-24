@@ -47,7 +47,7 @@ class GdImageFile(ImageFile.ImageFile):
         # Header
         s = self.fp.read(1037)
 
-        if not i16(s) in [65534, 65535]:
+        if i16(s) not in [65534, 65535]:
             msg = "Not a valid GD 2.x .gd file"
             raise SyntaxError(msg)
 

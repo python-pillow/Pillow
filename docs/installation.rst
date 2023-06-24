@@ -312,6 +312,11 @@ Many of Pillow's features require external libraries:
             mingw-w64-x86_64-libimagequant \
             mingw-w64-x86_64-libraqm
 
+    https://www.msys2.org/docs/python/ states that setuptools >= 60 does not work with
+    MSYS2. To workaround this, before installing Pillow you must run::
+
+        export SETUPTOOLS_USE_DISTUTILS=stdlib
+
 .. tab:: FreeBSD
 
     .. Note:: Only FreeBSD 10 and 11 tested
@@ -380,40 +385,40 @@ Build Options
   using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
   available, as many as are present.
 
-* Build flags: ``--disable-zlib``, ``--disable-jpeg``,
-  ``--disable-tiff``, ``--disable-freetype``, ``--disable-raqm``,
-  ``--disable-lcms``, ``--disable-webp``, ``--disable-webpmux``,
-  ``--disable-jpeg2000``, ``--disable-imagequant``, ``--disable-xcb``.
+* Config settings: ``-C zlib=disable``, ``-C jpeg=disable``,
+  ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,
+  ``-C lcms=disable``, ``-C webp=disable``, ``-C webpmux=disable``,
+  ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
-* Build flags: ``--enable-zlib``, ``--enable-jpeg``,
-  ``--enable-tiff``, ``--enable-freetype``, ``--enable-raqm``,
-  ``--enable-lcms``, ``--enable-webp``, ``--enable-webpmux``,
-  ``--enable-jpeg2000``, ``--enable-imagequant``, ``--enable-xcb``.
+* Config settings: ``-C zlib=enable``, ``-C jpeg=enable``,
+  ``-C tiff=enable``, ``-C freetype=enable``, ``-C raqm=enable``,
+  ``-C lcms=enable``, ``-C webp=enable``, ``-C webpmux=enable``,
+  ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
 
-* Build flags: ``--vendor-raqm``, ``--vendor-fribidi``.
+* Config settings: ``-C raqm=vendor``, ``-C fribidi=vendor``.
   These flags are used to compile a modified version of libraqm and
   a shim that dynamically loads libfribidi at runtime. These are
   used to compile the standard Pillow wheels. Compiling libraqm requires
   a C99-compliant compiler.
 
-* Build flag: ``--disable-platform-guessing``. Skips all of the
+* Build flag: ``-C platform-guessing=disable``. Skips all of the
   platform dependent guessing of include and library directories for
   automated build systems that configure the proper paths in the
   environment variables (e.g. Buildroot).
 
-* Build flag: ``--debug``. Adds a debugging flag to the include and
+* Build flag: ``-C debug=true``. Adds a debugging flag to the include and
   library search process to dump all paths searched for and found to
   stdout.
 
 
 Sample usage::
 
-    python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
+    python3 -m pip install --upgrade Pillow -C [feature]=enable
 
 Platform Support
 ----------------
@@ -447,6 +452,8 @@ These platforms are built and tested for every change.
 | CentOS Stream 9                  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Debian 11 Bullseye               | 3.9                        | x86                 |
++----------------------------------+----------------------------+---------------------+
+| Debian 12 Bookworm               | 3.11                       | x86                 |
 +----------------------------------+----------------------------+---------------------+
 | Fedora 37                        | 3.11                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
