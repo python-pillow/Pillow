@@ -137,7 +137,6 @@ class RequiredDependencyException(Exception):
 
 
 PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
-PLATFORM_PYPY = hasattr(sys, "pypy_version_info")
 
 
 def _dbg(s, tp=None):
