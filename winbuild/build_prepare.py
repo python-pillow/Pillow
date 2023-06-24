@@ -237,9 +237,9 @@ deps = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz",  # noqa: E501
-        "filename": "freetype-2.13.0.tar.gz",
-        "dir": "freetype-2.13.0",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.1.tar.gz",  # noqa: E501
+        "filename": "freetype-2.13.1.tar.gz",
+        "dir": "freetype-2.13.1",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
