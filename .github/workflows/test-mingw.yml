@@ -30,7 +30,7 @@ jobs:
       CHERE_INVOKING: 1
 
     timeout-minutes: 30
-    name: "MSYS2 MinGW"
+    name: "MinGW"
 
     steps:
       - name: Checkout Pillow
