@@ -87,9 +87,9 @@ Building Pillow
 ---------------
 
 Once the dependencies are built, run
-``winbuild\build\build_pillow.cmd install`` to build and install
+``winbuild\build\build_pillow.cmd --global-option="install"`` to build and install
 Pillow for the selected version of Python.
-``winbuild\build\build_pillow.cmd bdist_wheel`` will build wheels
+``winbuild\build\build_pillow.cmd --global-option="bdist_wheel"`` will build wheels
 instead of installing Pillow.
 
 You can also use ``winbuild\build\build_pillow.cmd --inplace develop`` to build
@@ -114,9 +114,9 @@ The following is a simplified version of the script used on AppVeyor::
     cd /D C:\Pillow\winbuild
     C:\Python39\bin\python.exe build_prepare.py -v --depends C:\pillow-depends
     build\build_dep_all.cmd
-    build\build_pillow.cmd install
+    build\build_pillow.cmd --global-option="install"
     cd ..
     path C:\Pillow\winbuild\build\bin;%PATH%
     %PYTHON%\python.exe selftest.py
     %PYTHON%\python.exe -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
-    build\build_pillow.cmd bdist_wheel
+    build\build_pillow.cmd --global-option="bdist_wheel"
