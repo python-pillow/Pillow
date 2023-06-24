@@ -156,11 +156,7 @@ function run_tests {
         apt-get update
         apt-get install -y curl libfribidi0 unzip
     fi
-    if [[ $(uname -m) == "i686" ]]; then
-        if [[ "$MB_PYTHON_VERSION" != 3.11 ]]; then
-            python3 -m pip install numpy==1.21
-        fi
-    elif [ -z "$IS_ALPINE" ] && [[ "$MB_PYTHON_VERSION" != 3.12 ]]; then
+    if [ -z "$IS_ALPINE" ] && [[ "$MB_PYTHON_VERSION" != 3.12 ]]; then
         python3 -m pip install numpy
     fi
 
