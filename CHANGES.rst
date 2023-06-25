@@ -5,6 +5,15 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Removed support for 32-bit #7228
+  [radarhere, hugovk]
+
+- Use --config-settings instead of deprecated --global-option #7171
+  [radarhere]
+
+- Better C integer definitions #6645
+  [Yay295, hugovk]
+
 - Fixed finding dependencies on Cygwin #7175
   [radarhere]
 
