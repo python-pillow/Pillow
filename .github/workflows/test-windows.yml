@@ -57,8 +57,8 @@ jobs:
     - name: Print build system information
       run: python3 .github/workflows/system-info.py
 
-    - name: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
-      run: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
+    - name: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml
+      run: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml
 
     - name: Install dependencies
       id: install
