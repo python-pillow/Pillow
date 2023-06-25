@@ -31,6 +31,6 @@ cd C:\pillow
 & python -VV
 & python -m ensurepip
 & python -m pip install pytest pytest-timeout
-& python -m pip install "dist\$(Get-ChildItem dist\*.whl -Name)"
+& python -m pip install "$(Get-ChildItem *.whl -Name)"
 & python -m pytest -vx Tests\check_wheel.py Tests
 if ((Test-Path -LiteralPath variable:\LASTEXITCODE)) { exit $LASTEXITCODE }
