@@ -92,3 +92,13 @@ jobs:
           file: ./coverage.xml
           flags: GHA_Windows
           name: MSYS2 ${{ matrix.msystem }}
+
+  success:
+    permissions:
+      contents: none
+    needs: build
+    runs-on: ubuntu-latest
+    name: MSYS2 Test Successful
+    steps:
+      - name: Success
+        run: echo MSYS2 Test Successful
