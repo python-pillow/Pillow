@@ -1,4 +1,4 @@
-param ([string]$python,[string]$arch)
+param ([string]$python)
 $ErrorActionPreference  = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 if ($python -like "pypy*") {
@@ -10,8 +10,7 @@ if ($python -like "pypy*") {
     tar -xf 'pypy.zip'
     mv pypy*-win64 C:\Python
 } else {
-    $suffix = if ($arch -eq "x64") {"-amd64"} else {""}
-    $url = 'https://www.python.org/ftp/python/{0}.0/python-{0}.0{1}.exe' -f ($python, $suffix)
+    $url = 'https://www.python.org/ftp/python/{0}.0/python-{0}.0-amd64.exe' -f $python
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest -Uri $url -OutFile 'setup.exe'
     Start-Process setup.exe -Wait -NoNewWindow -PassThru -ArgumentList @(
