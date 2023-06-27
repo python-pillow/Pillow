@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from PIL import Image
@@ -15,6 +17,9 @@ np = pytest.importorskip("numpy", reason="NumPy not installed")
 
 YDIM = 32769
 XDIM = 48000
+
+
+pytestmark = pytest.mark.skipif(sys.maxsize <= 2**32, reason="requires 64-bit system")
 
 
 def _write_png(tmp_path, xdim, ydim):
