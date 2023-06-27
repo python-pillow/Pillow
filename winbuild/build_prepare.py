@@ -186,9 +186,9 @@ deps = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.5.0.tar.gz",
-        "filename": "tiff-4.5.0.tar.gz",
-        "dir": "tiff-4.5.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.5.1.tar.gz",
+        "filename": "tiff-4.5.1.tar.gz",
+        "dir": "tiff-4.5.1",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
@@ -198,6 +198,12 @@ deps = {
             r"libtiff\tif_webp.c": {
                 # link against webp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "webp.lib")',  # noqa: E501
+            },
+            r"test/CMakeLists.txt": {
+                "add_executable(test_write_read_tags ../placeholder.h)": "",
+                "target_sources(test_write_read_tags PRIVATE test_write_read_tags.c)": "",  # noqa: E501
+                "target_link_libraries(test_write_read_tags PRIVATE tiff)": "",
+                "list(APPEND simple_tests test_write_read_tags)": "",
             },
         },
         "build": [
