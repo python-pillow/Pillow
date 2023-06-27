@@ -199,7 +199,7 @@ deps = {
                 # link against webp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "webp.lib")',  # noqa: E501
             },
-            r"test/CMakeLists.txt": {
+            r"test\CMakeLists.txt": {
                 "add_executable(test_write_read_tags ../placeholder.h)": "",
                 "target_sources(test_write_read_tags PRIVATE test_write_read_tags.c)": "",  # noqa: E501
                 "target_link_libraries(test_write_read_tags PRIVATE tiff)": "",
