@@ -285,8 +285,11 @@ Many of Pillow's features require external libraries:
 
 .. tab:: Windows using MSYS2/MinGW
 
-    To build Pillow using MSYS2, make sure you run the **MSYS2 MinGW 64-bit** console,
-    *not* **MSYS2** directly.
+    To build Pillow using MSYS2, make sure you run the **MSYS2 MinGW 32-bit** or
+    **MSYS2 MinGW 64-bit** console, *not* **MSYS2** directly.
+
+    The following instructions target the 64-bit build, for 32-bit
+    replace all occurrences of ``mingw-w64-x86_64-`` with ``mingw-w64-i686-``.
 
     Make sure you have Python and GCC installed::
 
@@ -335,6 +338,8 @@ Many of Pillow's features require external libraries:
 
         pkg install -y python ndk-sysroot clang make \
             libjpeg-turbo
+
+    This has been tested within the Termux app on ChromeOS, on x86.
 
 Installing
 ^^^^^^^^^^

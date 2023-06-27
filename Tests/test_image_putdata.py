@@ -38,7 +38,10 @@ def test_long_integers():
     assert put(0xFFFFFFFF) == (255, 255, 255, 255)
     assert put(-1) == (255, 255, 255, 255)
     assert put(-1) == (255, 255, 255, 255)
-    assert put(sys.maxsize) == (255, 255, 255, 255)
+    if sys.maxsize > 2**32:
+        assert put(sys.maxsize) == (255, 255, 255, 255)
+    else:
+        assert put(sys.maxsize) == (255, 255, 255, 127)
 
 
 def test_pypy_performance():

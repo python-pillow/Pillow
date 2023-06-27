@@ -4,11 +4,6 @@
 Backwards Incompatible Changes
 ==============================
 
-32-bit support
-^^^^^^^^^^^^^^
-
-32-bit architecture is no longer supported and 32-bit wheels are no longer provided.
-
 Categories
 ^^^^^^^^^^
 
@@ -129,14 +124,6 @@ Image.coerce_e
 
 This undocumented method has been removed.
 
-Deprecations
-============
-
-TODO
-^^^^
-
-TODO
-
 API Changes
 ===========
 
@@ -164,6 +151,11 @@ TODO
 
 Other Changes
 =============
+
+32-bit wheels
+^^^^^^^^^^^^^
+
+32-bit wheels are no longer provided.
 
 Support display_jpeg() in IPython
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
