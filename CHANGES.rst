@@ -5,8 +5,8 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
-- Removed support for 32-bit #7228
-  [radarhere, hugovk]
+- Limit size even if one dimension is zero in decompression bomb check #7235
+  [radarhere]
 
 - Use --config-settings instead of deprecated --global-option #7171
   [radarhere]
