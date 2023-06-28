@@ -22,6 +22,15 @@ be removed in Pillow 11 (2024-10-15). This class was only made as a helper to
 be used internally, so there is no replacement. If you need this functionality
 though, it is a very short class that can easily be recreated in your own code.
 
+PyAccess
+~~~~~~~~
+
+.. deprecated:: 10.0.0
+
+Since Pillow's C API is now faster than PyAccess on PyPy,
+:py:mod:`~PIL.PyAccess` has been deprecated and will be removed in Pillow
+11.0.0 (2024-10-15).
+
 Removed features
 ----------------
 

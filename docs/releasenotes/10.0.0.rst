@@ -124,6 +124,16 @@ Image.coerce_e
 
 This undocumented method has been removed.
 
+Deprecations
+============
+
+PyAccess
+^^^^^^^^
+
+Since Pillow's C API is now faster than PyAccess on PyPy,
+:py:mod:`~PIL.PyAccess` has been deprecated and will be removed in Pillow
+11.0.0 (2024-10-15).
+
 API Changes
 ===========
 
