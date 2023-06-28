@@ -107,8 +107,7 @@ except ImportError as v:
     raise
 
 
-# works everywhere, win for pypy, not cpython
-USE_CFFI_ACCESS = hasattr(sys, "pypy_version_info")
+USE_CFFI_ACCESS = False
 try:
     import cffi
 except ImportError:
