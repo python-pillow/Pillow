@@ -29,7 +29,7 @@ PyAccess
 
 Since Pillow's C API is now faster than PyAccess on PyPy,
 :py:mod:`~PIL.PyAccess` has been deprecated and will be removed in Pillow
-11.0.0 (2024-10-15).
+11.0.0 (2024-10-15). Pillow's C API will now be used by default on PyPy instead.
 
 Removed features
 ----------------
