@@ -64,6 +64,15 @@ class TestDecompressionBomb:
             with pytest.raises(Image.DecompressionBombError):
                 im.seek(1)
 
+    def test_exception_gif_zero_width(self):
+        # Set limit to trigger exception on the test file
+        Image.MAX_IMAGE_PIXELS = 4 * 64 * 128
+        assert Image.MAX_IMAGE_PIXELS == 4 * 64 * 128
+
+        with pytest.raises(Image.DecompressionBombError):
+            with Image.open("Tests/images/zero_width.gif"):
+                pass
+
     def test_exception_bmp(self):
         with pytest.raises(Image.DecompressionBombError):
             with Image.open("Tests/images/bmp/b/reallybig.bmp"):

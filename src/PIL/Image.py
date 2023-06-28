@@ -3141,7 +3141,7 @@ def _decompression_bomb_check(size):
     if MAX_IMAGE_PIXELS is None:
         return
 
-    pixels = size[0] * size[1]
+    pixels = max(1, size[0]) * max(1, size[1])
 
     if pixels > 2 * MAX_IMAGE_PIXELS:
         msg = (
