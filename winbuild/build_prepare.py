@@ -3,6 +3,7 @@ import os
 import platform
 import re
 import shutil
+import struct
 import subprocess
 
 
@@ -96,6 +97,7 @@ def cmd_msbuild(
 SF_PROJECTS = "https://sourceforge.net/projects"
 
 architectures = {
+    "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
@@ -227,9 +229,9 @@ deps = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz",  # noqa: E501
-        "filename": "freetype-2.13.0.tar.gz",
-        "dir": "freetype-2.13.0",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.1.tar.gz",  # noqa: E501
+        "filename": "freetype-2.13.1.tar.gz",
+        "dir": "freetype-2.13.1",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -597,7 +599,11 @@ if __name__ == "__main__":
         choices=architectures,
         default=os.environ.get(
             "ARCHITECTURE",
-            "ARM64" if platform.machine() == "ARM64" else "x64",
+            (
+                "ARM64"
+                if platform.machine() == "ARM64"
+                else ("x86" if struct.calcsize("P") == 4 else "x64")
+            ),
         ),
         help="build architecture (default: same as host Python)",
     )
