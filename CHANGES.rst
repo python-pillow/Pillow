@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Do not use CFFI access by default on PyPy #7236
+  [radarhere]
+
 - Limit size even if one dimension is zero in decompression bomb check #7235
   [radarhere]
 
