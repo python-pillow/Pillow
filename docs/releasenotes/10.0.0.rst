@@ -157,10 +157,15 @@ TODO
 Security
 ========
 
-TODO
-^^^^
+Limit size even if one dimension is zero
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When performing decompression bomb checks, Pillow did not reject images with
+excessive width and zero height, or zero width and excessive height. That has
+now been fixed.
+
+This effectively dates to the PIL fork, since problem images would still have
+been processed before Pillow started checking for decompression bombs.
 
 Other Changes
 =============
