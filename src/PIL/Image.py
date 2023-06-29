@@ -3170,7 +3170,8 @@ def open(fp, mode="r", formats=None):
     :param fp: A filename (string), pathlib.Path object or a file object.
        The file object must implement ``file.read``,
        ``file.seek``, and ``file.tell`` methods,
-       and be opened in binary mode.
+       and be opened in binary mode. The file object will also seek to zero
+       before reading.
     :param mode: The mode.  If given, this argument must be "r".
     :param formats: A list or tuple of formats to attempt to load the file in.
        This can be used to restrict the set of formats checked.
