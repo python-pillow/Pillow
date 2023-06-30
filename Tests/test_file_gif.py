@@ -1130,6 +1130,18 @@ def test_bbox(tmp_path):
         assert reread.n_frames == 2
 
 
+def test_bbox_alpha(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("RGBA", (1, 2), (255, 0, 0, 255))
+    im.putpixel((0, 1), (255, 0, 0, 0))
+    im2 = Image.new("RGBA", (1, 2), (255, 0, 0, 0))
+    im.save(out, save_all=True, append_images=[im2])
+
+    with Image.open(out) as reread:
+        assert reread.n_frames == 2
+
+
 def test_palette_save_L(tmp_path):
     # Generate an L mode image with a separate palette
 

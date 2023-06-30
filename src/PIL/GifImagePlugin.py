@@ -569,9 +569,9 @@ def _getbbox(base_im, im_frame):
         delta = ImageChops.subtract_modulo(im_frame, base_im)
     else:
         delta = ImageChops.subtract_modulo(
-            im_frame.convert("RGB"), base_im.convert("RGB")
+            im_frame.convert("RGBA"), base_im.convert("RGBA")
         )
-    return delta.getbbox()
+    return delta.getbbox(alpha_only=False)
 
 
 def _write_multiple_frames(im, fp, palette):

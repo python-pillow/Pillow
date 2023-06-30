@@ -2159,9 +2159,15 @@ _isblock(ImagingObject *self) {
 }
 
 static PyObject *
-_getbbox(ImagingObject *self) {
+_getbbox(ImagingObject *self, PyObject *args) {
     int bbox[4];
-    if (!ImagingGetBBox(self->image, bbox)) {
+
+    int alpha_only = 1;
+    if (!PyArg_ParseTuple(args, "|i", &alpha_only)) {
+        return NULL;
+    }
+
+    if (!ImagingGetBBox(self->image, bbox, alpha_only)) {
         Py_INCREF(Py_None);
         return Py_None;
     }
@@ -3573,7 +3579,7 @@ static struct PyMethodDef methods[] = {
 
     {"isblock", (PyCFunction)_isblock, METH_NOARGS},
 
-    {"getbbox", (PyCFunction)_getbbox, METH_NOARGS},
+    {"getbbox", (PyCFunction)_getbbox, METH_VARARGS},
     {"getcolors", (PyCFunction)_getcolors, METH_VARARGS},
     {"getextrema", (PyCFunction)_getextrema, METH_NOARGS},
     {"getprojection", (PyCFunction)_getprojection, METH_NOARGS},
