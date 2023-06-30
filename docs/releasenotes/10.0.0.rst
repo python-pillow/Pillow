@@ -149,10 +149,13 @@ An optional line ``width`` parameter has been added to
 API Additions
 =============
 
-TODO
-^^^^
+Added ``alpha_only`` argument to ``getbbox()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`~PIL.Image.Image.getbbox` now accepts a keyword argument of
+``alpha_only``. This is an optional flag, defaulting to ``True``. If ``True``
+and the image has an alpha channel, trim transparent pixels. Otherwise, trim
+pixels when all channels are zero.
 
 Security
 ========
