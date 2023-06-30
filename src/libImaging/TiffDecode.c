@@ -720,7 +720,16 @@ ImagingLibTiffDecode(
     }
 
  decode_err:
-    TIFFClose(tiff);
+    // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
+    if (clientstate->fp) {
+        // Pillow will manage the closing of the file rather than libtiff
+        // So only call TIFFCleanup
+        TIFFCleanup(tiff);
+    } else {
+        // When tif_closeproc refers to our custom _tiffCloseProc though,
+        // that is fine, as it does not close the file
+        TIFFClose(tiff);
+    }
     TRACE(("Done Decoding, Returning \n"));
     // Returning -1 here to force ImageFile.load to break, rather than
     // even think about looping back around.
