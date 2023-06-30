@@ -46,12 +46,23 @@ repos:
     hooks:
       - id: check-merge-conflict
       - id: check-json
+      - id: check-toml
       - id: check-yaml
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
     rev: v0.6.7
     hooks:
       - id: sphinx-lint
+
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: 0.12.1
+    hooks:
+      - id: pyproject-fmt
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.13
+    hooks:
+      - id: validate-pyproject
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
     rev: 1.3.0
