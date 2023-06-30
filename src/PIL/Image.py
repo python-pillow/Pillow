@@ -632,7 +632,7 @@ class Image:
             )
         )
 
-    def _repr_image(self, image_format):
+    def _repr_image(self, image_format, **kwargs):
         """Helper function for iPython display hook.
 
         :param image_format: Image format.
@@ -640,7 +640,7 @@ class Image:
         """
         b = io.BytesIO()
         try:
-            self.save(b, image_format)
+            self.save(b, image_format, **kwargs)
         except Exception as e:
             msg = f"Could not save to {image_format} for display"
             raise ValueError(msg) from e
@@ -651,7 +651,7 @@ class Image:
 
         :returns: PNG version of the image as bytes
         """
-        return self._repr_image("PNG")
+        return self._repr_image("PNG", compress_level=1)
 
     def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
