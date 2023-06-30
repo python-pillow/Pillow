@@ -125,3 +125,34 @@ known-first-party = ["PIL"]
 [tool.pytest.ini_options]
 addopts = "-ra --color=yes"
 testpaths = ["Tests"]
+
+[tool.mypy]
+python_version = "3.8"
+pretty = true
+disallow_any_generics = true
+enable_error_code = "ignore-without-code"
+extra_checks = true
+follow_imports = "silent"
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_ignores = true
+exclude = [
+  '^src/PIL/_tkinter_finder.py$',
+  '^src/PIL/DdsImagePlugin.py$',
+  '^src/PIL/FpxImagePlugin.py$',
+  '^src/PIL/Image.py$',
+  '^src/PIL/ImageCms.py$',
+  '^src/PIL/ImageFile.py$',
+  '^src/PIL/ImageFont.py$',
+  '^src/PIL/ImageMath.py$',
+  '^src/PIL/ImageMorph.py$',
+  '^src/PIL/ImageQt.py$',
+  '^src/PIL/ImageShow.py$',
+  '^src/PIL/ImImagePlugin.py$',
+  '^src/PIL/MicImagePlugin.py$',
+  '^src/PIL/PdfParser.py$',
+  '^src/PIL/PyAccess.py$',
+  '^src/PIL/TiffImagePlugin.py$',
+  '^src/PIL/TiffTags.py$',
+  '^src/PIL/WebPImagePlugin.py$',
+]
