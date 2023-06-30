@@ -1040,21 +1040,21 @@ def test_render_mono_size():
 
 def test_too_many_characters(font):
     with pytest.raises(ValueError):
-        font.getlength("A" * 1000001)
+        font.getlength("A" * 1_000_001)
     with pytest.raises(ValueError):
-        font.getbbox("A" * 1000001)
+        font.getbbox("A" * 1_000_001)
     with pytest.raises(ValueError):
-        font.getmask2("A" * 1000001)
+        font.getmask2("A" * 1_000_001)
 
     transposed_font = ImageFont.TransposedFont(font)
     with pytest.raises(ValueError):
-        transposed_font.getlength("A" * 1000001)
+        transposed_font.getlength("A" * 1_000_001)
 
     default_font = ImageFont.load_default()
     with pytest.raises(ValueError):
-        default_font.getlength("A" * 1000001)
+        default_font.getlength("A" * 1_000_001)
     with pytest.raises(ValueError):
-        default_font.getbbox("A" * 1000001)
+        default_font.getbbox("A" * 1_000_001)
 
 
 @pytest.mark.parametrize(

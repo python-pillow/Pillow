@@ -41,7 +41,7 @@ class Layout(IntEnum):
     RAQM = 1
 
 
-MAX_STRING_LENGTH = 1000000
+MAX_STRING_LENGTH = 1_000_000
 
 
 try:
