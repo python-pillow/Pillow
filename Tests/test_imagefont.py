@@ -1038,6 +1038,25 @@ def test_render_mono_size():
     assert_image_equal_tofile(im, "Tests/images/text_mono.gif")
 
 
+def test_too_many_characters(font):
+    with pytest.raises(ValueError):
+        font.getlength("A" * 1000001)
+    with pytest.raises(ValueError):
+        font.getbbox("A" * 1000001)
+    with pytest.raises(ValueError):
+        font.getmask2("A" * 1000001)
+
+    transposed_font = ImageFont.TransposedFont(font)
+    with pytest.raises(ValueError):
+        transposed_font.getlength("A" * 1000001)
+
+    default_font = ImageFont.load_default()
+    with pytest.raises(ValueError):
+        default_font.getlength("A" * 1000001)
+    with pytest.raises(ValueError):
+        default_font.getbbox("A" * 1000001)
+
+
 @pytest.mark.parametrize(
     "test_file",
     [
