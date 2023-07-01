@@ -882,7 +882,7 @@ font_render(FontObject *self, PyObject *args) {
     if (max_image_pixels != Py_None) {
         if ((long long)(width > 1 ? width : 1) * (height > 1 ? height : 1) > PyLong_AsLongLong(max_image_pixels) * 2) {
             PyMem_Del(glyph_info);
-            return Py_BuildValue("O(ii)(ii)", Py_None, width, height, 0, 0);
+            return Py_BuildValue("(ii)(ii)", width, height, 0, 0);
         }
     }
 
@@ -898,7 +898,7 @@ font_render(FontObject *self, PyObject *args) {
     y_offset -= stroke_width;
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
-        return Py_BuildValue("O(ii)(ii)", image, width, height, x_offset, y_offset);
+        return Py_BuildValue("(ii)(ii)", width, height, x_offset, y_offset);
     }
 
     if (stroke_width) {
@@ -1113,9 +1113,10 @@ font_render(FontObject *self, PyObject *args) {
     if (bitmap_converted_ready) {
         FT_Bitmap_Done(library, &bitmap_converted);
     }
+    Py_DECREF(image);
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
-    return Py_BuildValue("O(ii)(ii)", image, width, height, x_offset, y_offset);
+    return Py_BuildValue("(ii)(ii)", width, height, x_offset, y_offset);
 
 glyph_error:
     if (im->destroy) {
