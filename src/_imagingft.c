@@ -815,7 +815,6 @@ font_render(FontObject *self, PyObject *args) {
     float y_start = 0;
     int width, height, x_offset, y_offset;
     int horizontal_dir; /* is primary axis horizontal? */
-    PyObject *max_image_pixels = Py_None;
 
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
@@ -833,8 +832,7 @@ font_render(FontObject *self, PyObject *args) {
             &anchor,
             &foreground_ink_long,
             &x_start,
-            &y_start,
-            &max_image_pixels)) {
+            &y_start)) {
         return NULL;
     }
 
@@ -879,15 +877,11 @@ font_render(FontObject *self, PyObject *args) {
 
     width += stroke_width * 2 + ceil(x_start);
     height += stroke_width * 2 + ceil(y_start);
-    if (max_image_pixels != Py_None) {
-        if ((long long)(width > 1 ? width : 1) * (height > 1 ? height : 1) > PyLong_AsLongLong(max_image_pixels) * 2) {
-            PyMem_Del(glyph_info);
-            return Py_BuildValue("(ii)(ii)", width, height, 0, 0);
-        }
-    }
-
     image = PyObject_CallFunction(fill, "s(ii)", strcmp(mode, "RGBA") == 0 ? "RGBA" : "L", width, height);
-    if (image == NULL) {
+    if (image == Py_None) {
+        PyMem_Del(glyph_info);
+        return Py_BuildValue("ii", 0, 0);
+    } else if (image == NULL) {
         PyMem_Del(glyph_info);
         return NULL;
     }
@@ -898,7 +892,7 @@ font_render(FontObject *self, PyObject *args) {
     y_offset -= stroke_width;
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
-        return Py_BuildValue("(ii)(ii)", width, height, x_offset, y_offset);
+        return Py_BuildValue("ii", x_offset, y_offset);
     }
 
     if (stroke_width) {
@@ -1116,7 +1110,7 @@ font_render(FontObject *self, PyObject *args) {
     Py_DECREF(image);
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
-    return Py_BuildValue("(ii)(ii)", width, height, x_offset, y_offset);
+    return Py_BuildValue("ii", x_offset, y_offset);
 
 glyph_error:
     if (im->destroy) {
