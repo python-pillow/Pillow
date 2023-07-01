@@ -562,9 +562,17 @@ class FreeTypeFont:
         _string_length_check(text)
         if start is None:
             start = (0, 0)
-        im, size, offset = self.font.render(
+        im = None
+
+        def fill(mode, size):
+            nonlocal im
+
+            im = Image.core.fill(mode, size)
+            return im
+
+        size, offset = self.font.render(
             text,
-            Image.core.fill,
+            fill,
             mode,
             direction,
             features,
