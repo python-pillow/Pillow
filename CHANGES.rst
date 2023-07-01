@@ -5,6 +5,24 @@ Changelog (Pillow)
 10.0.0 (unreleased)
 -------------------
 
+- Added ImageFont.MAX_STRING_LENGTH #7244
+  [radarhere, hugovk]
+
+- Fix Windows build with pyproject.toml #7230
+  [hugovk, nulano, radarhere]
+
+- Do not close provided file handles with libtiff #7199
+  [radarhere]
+
+- Convert to HSV if mode is HSV in getcolor() #7226
+  [radarhere]
+
+- Added alpha_only argument to getbbox() #7123
+  [radarhere. hugovk]
+
+- Prioritise speed in _repr_png_ #7242
+  [radarhere]
+
 - Do not use CFFI access by default on PyPy #7236
   [radarhere]
 
