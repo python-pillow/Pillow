@@ -2,8 +2,11 @@
 Changelog (Pillow)
 ==================
 
-10.0.0 (unreleased)
+10.0.0 (2023-07-01)
 -------------------
+
+- Fixed deallocating mask images #7246
+  [radarhere]
 
 - Added ImageFont.MAX_STRING_LENGTH #7244
   [radarhere, hugovk]
