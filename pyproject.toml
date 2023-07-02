@@ -2,7 +2,6 @@
 build-backend = "backend"
 requires = [
   "setuptools>=67.8",
-  "wheel",
 ]
 backend-path = [
   "_custom_build",
