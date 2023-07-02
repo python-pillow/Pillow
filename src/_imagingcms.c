@@ -1421,19 +1421,19 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     {NULL}};
 
 static PyTypeObject CmsProfile_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PIL._imagingcms.CmsProfile", /*tp_name */
-    sizeof(CmsProfileObject),
-    0, /*tp_basicsize, tp_itemsize */
+    PyVarObject_HEAD_INIT(NULL, 0) "PIL._imagingcms.CmsProfile", /*tp_name*/
+    sizeof(CmsProfileObject),                                    /*tp_basicsize*/
+    0,                                                           /*tp_itemsize*/
     /* methods */
     (destructor)cms_profile_dealloc, /*tp_dealloc*/
-    0,                               /*tp_print*/
+    0,                               /*tp_vectorcall_offset*/
     0,                               /*tp_getattr*/
     0,                               /*tp_setattr*/
-    0,                               /*tp_compare*/
+    0,                               /*tp_as_async*/
     0,                               /*tp_repr*/
-    0,                               /*tp_as_number */
-    0,                               /*tp_as_sequence */
-    0,                               /*tp_as_mapping */
+    0,                               /*tp_as_number*/
+    0,                               /*tp_as_sequence*/
+    0,                               /*tp_as_mapping*/
     0,                               /*tp_hash*/
     0,                               /*tp_call*/
     0,                               /*tp_str*/
@@ -1473,19 +1473,19 @@ static struct PyGetSetDef cms_transform_getsetters[] = {
     {NULL}};
 
 static PyTypeObject CmsTransform_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "CmsTransform",
-    sizeof(CmsTransformObject),
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0) "CmsTransform", /*tp_name*/
+    sizeof(CmsTransformObject),                    /*tp_basicsize*/
+    0,                                             /*tp_itemsize*/
     /* methods */
     (destructor)cms_transform_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_print*/
+    0,                                 /*tp_vectorcall_offset*/
     0,                                 /*tp_getattr*/
     0,                                 /*tp_setattr*/
-    0,                                 /*tp_compare*/
+    0,                                 /*tp_as_async*/
     0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number */
-    0,                                 /*tp_as_sequence */
-    0,                                 /*tp_as_mapping */
+    0,                                 /*tp_as_number*/
+    0,                                 /*tp_as_sequence*/
+    0,                                 /*tp_as_mapping*/
     0,                                 /*tp_hash*/
     0,                                 /*tp_call*/
     0,                                 /*tp_str*/
