@@ -3725,18 +3725,18 @@ static PySequenceMethods image_as_sequence = {
 
 static PyTypeObject Imaging_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingCore", /*tp_name*/
-    sizeof(ImagingObject),                        /*tp_size*/
+    sizeof(ImagingObject),                        /*tp_basicsize*/
     0,                                            /*tp_itemsize*/
     /* methods */
     (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_print*/
+    0,                    /*tp_vectorcall_offset*/
     0,                    /*tp_getattr*/
     0,                    /*tp_setattr*/
-    0,                    /*tp_compare*/
+    0,                    /*tp_as_async*/
     0,                    /*tp_repr*/
-    0,                    /*tp_as_number */
-    &image_as_sequence,   /*tp_as_sequence */
-    0,                    /*tp_as_mapping */
+    0,                    /*tp_as_number*/
+    &image_as_sequence,   /*tp_as_sequence*/
+    0,                    /*tp_as_mapping*/
     0,                    /*tp_hash*/
     0,                    /*tp_call*/
     0,                    /*tp_str*/
@@ -3760,18 +3760,18 @@ static PyTypeObject Imaging_Type = {
 
 static PyTypeObject ImagingFont_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingFont", /*tp_name*/
-    sizeof(ImagingFontObject),                    /*tp_size*/
+    sizeof(ImagingFontObject),                    /*tp_basicsize*/
     0,                                            /*tp_itemsize*/
     /* methods */
     (destructor)_font_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
+    0,                         /*tp_vectorcall_offset*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
+    0,                         /*tp_as_async*/
     0,                         /*tp_repr*/
-    0,                         /*tp_as_number */
-    0,                         /*tp_as_sequence */
-    0,                         /*tp_as_mapping */
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
     0,                         /*tp_hash*/
     0,                         /*tp_call*/
     0,                         /*tp_str*/
@@ -3793,18 +3793,18 @@ static PyTypeObject ImagingFont_Type = {
 
 static PyTypeObject ImagingDraw_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingDraw", /*tp_name*/
-    sizeof(ImagingDrawObject),                    /*tp_size*/
+    sizeof(ImagingDrawObject),                    /*tp_basicsize*/
     0,                                            /*tp_itemsize*/
     /* methods */
     (destructor)_draw_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
+    0,                         /*tp_vectorcall_offset*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
+    0,                         /*tp_as_async*/
     0,                         /*tp_repr*/
-    0,                         /*tp_as_number */
-    0,                         /*tp_as_sequence */
-    0,                         /*tp_as_mapping */
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
     0,                         /*tp_hash*/
     0,                         /*tp_call*/
     0,                         /*tp_str*/
@@ -3835,19 +3835,19 @@ static PyMappingMethods pixel_access_as_mapping = {
 /* type description */
 
 static PyTypeObject PixelAccess_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PixelAccess",
-    sizeof(PixelAccessObject),
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0) "PixelAccess", /*tp_name*/
+    sizeof(PixelAccessObject),                    /*tp_basicsize*/
+    0,                                            /*tp_itemsize*/
     /* methods */
     (destructor)pixel_access_dealloc, /*tp_dealloc*/
-    0,                                /*tp_print*/
+    0,                                /*tp_vectorcall_offset*/
     0,                                /*tp_getattr*/
     0,                                /*tp_setattr*/
-    0,                                /*tp_compare*/
+    0,                                /*tp_as_async*/
     0,                                /*tp_repr*/
-    0,                                /*tp_as_number */
-    0,                                /*tp_as_sequence */
-    &pixel_access_as_mapping,         /*tp_as_mapping */
+    0,                                /*tp_as_number*/
+    0,                                /*tp_as_sequence*/
+    &pixel_access_as_mapping,         /*tp_as_mapping*/
     0                                 /*tp_hash*/
 };
 

@@ -1401,19 +1401,19 @@ static struct PyGetSetDef font_getsetters[] = {
     {NULL}};
 
 static PyTypeObject Font_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "Font",
-    sizeof(FontObject),
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0) "Font", /*tp_name*/
+    sizeof(FontObject),                    /*tp_basicsize*/
+    0,                                     /*tp_itemsize*/
     /* methods */
-    (destructor)font_dealloc, /* tp_dealloc */
-    0,                        /* tp_print */
+    (destructor)font_dealloc, /*tp_dealloc*/
+    0,                        /*tp_vectorcall_offset*/
     0,                        /*tp_getattr*/
     0,                        /*tp_setattr*/
-    0,                        /*tp_compare*/
+    0,                        /*tp_as_async*/
     0,                        /*tp_repr*/
-    0,                        /*tp_as_number */
-    0,                        /*tp_as_sequence */
-    0,                        /*tp_as_mapping */
+    0,                        /*tp_as_number*/
+    0,                        /*tp_as_sequence*/
+    0,                        /*tp_as_mapping*/
     0,                        /*tp_hash*/
     0,                        /*tp_call*/
     0,                        /*tp_str*/
