@@ -3789,6 +3789,155 @@ static PySequenceMethods image_as_sequence = {
     (ssizessizeobjargproc)NULL, /*sq_ass_slice*/
 };
 
+/*
+Returns 0 if all of the pixels are the same, otherwise 1.
+Skips unused bytes based on the given mode.
+*/
+static int
+_compare_pixels(
+    const char *mode,
+    const int ysize,
+    const int linesize,
+    const UINT8 **pixels_a,
+    const UINT8 **pixels_b
+) {
+    // Fortunately, all of the modes that have extra bytes in their pixels
+    // use four bytes for their pixels.
+    UINT32 mask = 0xffffffff;
+    if (
+        !strcmp(mode, "RGB") || !strcmp(mode, "YCbCr") ||
+        !strcmp(mode, "HSV") || !strcmp(mode, "LAB")
+    ) {
+        // These modes have three channels in four bytes,
+        // so we have to ignore the last byte.
+#ifdef WORDS_BIGENDIAN
+        mask = 0xffffff00;
+#else
+        mask = 0x00ffffff;
+#endif
+    } else if (!strcmp(mode, "LA") || !strcmp(mode, "La") || !strcmp(mode, "PA")) {
+        // These modes have two channels in four bytes,
+        // so we have to ignore the middle two bytes.
+        mask = 0xff0000ff;
+    }
+
+    PyErr_Format(PyExc_Exception, "mode mask : %s 0x%08x", mode, mask);
+
+    if (mask == 0xffffffff) {
+        // If we aren't masking anything we can use memcmp.
+        for (int y = 0; y < ysize; y++) {
+            if (memcmp(pixels_a[y], pixels_b[y], linesize)) {
+                return 1;
+            }
+        }
+    } else {
+        const int xsize = linesize / 4;
+        for (int y = 0; y < ysize; y++) {
+            UINT32 *line_a = (UINT32 *)pixels_a[y];
+            UINT32 *line_b = (UINT32 *)pixels_b[y];
+            for (int x = 0; x < xsize; x++, line_a++, line_b++) {
+                if ((*line_a & mask) != (*line_b & mask)) {
+                    PyErr_Format(
+                        PyExc_Exception,
+                        "line %i index %i value a b mask : 0x%08x 0x%08x 0x%08x",
+                        y,
+                        x,
+                        *line_a,
+                        *line_b,
+                        mask
+                    );
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+static PyObject *
+image_richcompare(const ImagingObject *self, const PyObject *other, const int op) {
+    if (op != Py_EQ && op != Py_NE) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+
+    // If the other object is not an ImagingObject.
+    if (!PyImaging_Check(other)) {
+        return op == Py_EQ ? Py_False : Py_True;
+    }
+
+    const Imaging img_a = self->image;
+    const Imaging img_b = ((ImagingObject *)other)->image;
+
+    PyErr_Format(
+        PyExc_Exception,
+        "a mode, b mode, diff : %s %s %i",
+        img_a->mode,
+        img_b->mode,
+        strcmp(img_a->mode, img_a->mode)
+    );
+
+    if (
+        strcmp(img_a->mode, img_b->mode)
+        || img_a->xsize != img_b->xsize
+        || img_a->ysize != img_b->ysize
+    ) {
+        return op == Py_EQ ? Py_False : Py_True;
+    }
+
+    const ImagingPalette palette_a = img_a->palette;
+    const ImagingPalette palette_b = img_b->palette;
+    if (palette_a || palette_b) {
+        PyErr_Format(
+            PyExc_Exception,
+            "pa mode, pb mode, diff : %s %s %i",
+            palette_a->mode,
+            palette_b->mode,
+            strcmp(palette_a->mode, palette_b->mode)
+        );
+
+        const UINT8 *palette_a_data = palette_a->palette;
+        const UINT8 *palette_b_data = palette_b->palette;
+        const UINT8 **palette_a_data_ptr = &palette_a_data;
+        const UINT8 **palette_b_data_ptr = &palette_b_data;
+        if (
+            !palette_a || !palette_b
+            || palette_a->size != palette_b->size
+            || strcmp(palette_a->mode, palette_b->mode)
+            || _compare_pixels(
+                palette_a->mode,
+                1,
+                palette_a->size * 4,
+                palette_a_data_ptr,
+                palette_b_data_ptr
+            )
+        ) {
+            return op == Py_EQ ? Py_False : Py_True;
+        }
+    }
+
+    PyErr_Format(
+        PyExc_Exception,
+        "linesize a b : %i %i",
+        img_a->linesize,
+        img_b->linesize
+    );
+
+    if (_compare_pixels(
+            img_a->mode,
+            img_a->ysize,
+            img_a->linesize,
+            (const UINT8 **)img_a->image,
+            (const UINT8 **)img_b->image
+        )
+    ) {
+        PyErr_Clear();
+        return op == Py_EQ ? Py_False : Py_True;
+    } else {
+        PyErr_Clear();
+        return op == Py_EQ ? Py_True : Py_False;
+    }
+}
+
 /* type description */
 
 static PyTypeObject Imaging_Type = {
@@ -3796,32 +3945,32 @@ static PyTypeObject Imaging_Type = {
     sizeof(ImagingObject),                        /*tp_basicsize*/
     0,                                            /*tp_itemsize*/
     /* methods */
-    (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_vectorcall_offset*/
-    0,                    /*tp_getattr*/
-    0,                    /*tp_setattr*/
-    0,                    /*tp_as_async*/
-    0,                    /*tp_repr*/
-    0,                    /*tp_as_number*/
-    &image_as_sequence,   /*tp_as_sequence*/
-    0,                    /*tp_as_mapping*/
-    0,                    /*tp_hash*/
-    0,                    /*tp_call*/
-    0,                    /*tp_str*/
-    0,                    /*tp_getattro*/
-    0,                    /*tp_setattro*/
-    0,                    /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,   /*tp_flags*/
-    0,                    /*tp_doc*/
-    0,                    /*tp_traverse*/
-    0,                    /*tp_clear*/
-    0,                    /*tp_richcompare*/
-    0,                    /*tp_weaklistoffset*/
-    0,                    /*tp_iter*/
-    0,                    /*tp_iternext*/
-    methods,              /*tp_methods*/
-    0,                    /*tp_members*/
-    getsetters,           /*tp_getset*/
+    (destructor)_dealloc,           /*tp_dealloc*/
+    0,                              /*tp_vectorcall_offset*/
+    0,                              /*tp_getattr*/
+    0,                              /*tp_setattr*/
+    0,                              /*tp_as_async*/
+    0,                              /*tp_repr*/
+    0,                              /*tp_as_number*/
+    &image_as_sequence,             /*tp_as_sequence*/
+    0,                              /*tp_as_mapping*/
+    0,                              /*tp_hash*/
+    0,                              /*tp_call*/
+    0,                              /*tp_str*/
+    0,                              /*tp_getattro*/
+    0,                              /*tp_setattro*/
+    0,                              /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,             /*tp_flags*/
+    0,                              /*tp_doc*/
+    0,                              /*tp_traverse*/
+    0,                              /*tp_clear*/
+    (richcmpfunc)image_richcompare, /*tp_richcompare*/
+    0,                              /*tp_weaklistoffset*/
+    0,                              /*tp_iter*/
+    0,                              /*tp_iternext*/
+    methods,                        /*tp_methods*/
+    0,                              /*tp_members*/
+    getsetters,                     /*tp_getset*/
 };
 
 static PyTypeObject ImagingFont_Type = {
