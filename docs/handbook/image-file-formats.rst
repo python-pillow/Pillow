@@ -1404,7 +1404,7 @@ the open function in the :py:mod:`~PIL.WalImageFile` module to read files in
 this format.
 
 By default, a Quake2 standard palette is attached to the texture. To override
-the palette, use the putpalette method.
+the palette, use the :py:func:`PIL.Image.Image.putpalette()` method.
 
 WMF, EMF
 ^^^^^^^^
