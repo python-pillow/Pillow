@@ -662,7 +662,7 @@ class Image:
         :returns: JPEG version of the image as bytes
         """
         try:
-            self._repr_image("JPEG")
+            return self._repr_image("JPEG")
         except Exception:
             return None
 
