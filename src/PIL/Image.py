@@ -651,14 +651,20 @@ class Image:
 
         :returns: PNG version of the image as bytes
         """
-        return self._repr_image("PNG", compress_level=1)
+        try:
+            return self._repr_image("PNG", compress_level=1)
+        except Exception:
+            return None
 
     def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
 
         :returns: JPEG version of the image as bytes
         """
-        return self._repr_image("JPEG")
+        try:
+            self._repr_image("JPEG")
+        except Exception:
+            return None
 
     @property
     def __array_interface__(self):
