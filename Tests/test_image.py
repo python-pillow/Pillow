@@ -168,6 +168,21 @@ class TestImage:
             assert im2.size == (1500, 1500)
             assert_image_equal(im.resize(im2.size), im2)
 
+        # make sure common modes get converted without a warning
+        im = Image.new("LAB", (100, 100))
+        with pytest.warns(None) as record:
+            bundle = im._repr_mimebundle_()
+        assert len(record) == 0
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+            assert_image_equal(im.convert("RGB"), im2)
+
+        im = Image.new("HSV", (100, 100))
+        with pytest.warns(None) as record:
+            bundle = im._repr_mimebundle_()
+        assert len(record) == 0
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+            assert_image_equal(im.convert("RGB"), im2)
+
     def test_open_formats(self):
         PNGFILE = "Tests/images/hopper.png"
         JPGFILE = "Tests/images/hopper.jpg"
