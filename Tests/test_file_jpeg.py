@@ -930,10 +930,8 @@ class TestFileJpeg:
             assert_image_similar(im, repr_jpeg, 17)
 
     def test_repr_jpeg_error(self):
-        im = hopper("F")
-
-        with pytest.raises(ValueError):
-            im._repr_jpeg_()
+        im = hopper("BGR;24")
+        assert im._repr_jpeg_() is None
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
