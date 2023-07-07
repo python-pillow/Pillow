@@ -106,65 +106,65 @@ class TestImage:
         assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
 
     def test_repr_mimebundle(self):
-        im = Image.new('L', (100, 100))
+        im = Image.new("L", (100, 100))
 
         # blank image should be most efficiently encoded as PNG
         bundle = im._repr_mimebundle_()
-        with Image.open(io.BytesIO(bundle['image/png'])) as im2:
-            assert im2.format == 'PNG'
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+            assert im2.format == "PNG"
             assert_image_equal(im, im2)
 
         # include pointless restriction
-        bundle = im._repr_mimebundle_(exclude=['test/plain'])
-        with Image.open(io.BytesIO(bundle['image/png'])) as im2:
-            assert im2.format == 'PNG'
+        bundle = im._repr_mimebundle_(exclude=["test/plain"])
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+            assert im2.format == "PNG"
             assert_image_equal(im, im2)
 
-        bundle = im._repr_mimebundle_(include=['image/png'])
-        with Image.open(io.BytesIO(bundle['image/png'])) as im2:
-            assert im2.format == 'PNG'
+        bundle = im._repr_mimebundle_(include=["image/png"])
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+            assert im2.format == "PNG"
             assert_image_equal(im, im2)
 
         # force jpeg to be selected
-        bundle = im._repr_mimebundle_(include=['image/jpeg'])
-        with Image.open(io.BytesIO(bundle['image/jpeg'])) as im2:
-            assert im2.format == 'JPEG'
+        bundle = im._repr_mimebundle_(include=["image/jpeg"])
+        with Image.open(io.BytesIO(bundle["image/jpeg"])) as im2:
+            assert im2.format == "JPEG"
             assert_image_equal(im, im2, 17)
 
         # force jpeg to be selected in a different way
-        bundle = im._repr_mimebundle_(exclude=['image/png'])
-        with Image.open(io.BytesIO(bundle['image/jpeg'])) as im2:
-            assert im2.format == 'JPEG'
+        bundle = im._repr_mimebundle_(exclude=["image/png"])
+        with Image.open(io.BytesIO(bundle["image/jpeg"])) as im2:
+            assert im2.format == "JPEG"
             assert_image_equal(im, im2, 17)
 
         # make sure higher bit depths get converted down to 8BPC with warnings
-        high = Image.new('I;16', (100, 100))
+        high = Image.new("I;16", (100, 100))
         with pytest.warns(UserWarning):
             bundle = high._repr_mimebundle_()
-        with Image.open(io.BytesIO(bundle['image/png'])) as im2:
-            assert im2.format == 'PNG'
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+            assert im2.format == "PNG"
             assert_image_equal(im, im2)
 
-        high = Image.new('F', (100, 100))
+        high = Image.new("F", (100, 100))
         with pytest.warns(UserWarning):
             bundle = high._repr_mimebundle_()
-        with Image.open(io.BytesIO(bundle['image/png'])) as im2:
-            assert im2.format == 'PNG'
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+            assert im2.format == "PNG"
             assert_image_equal(im, im2)
 
-        high = Image.new('I', (100, 100))
+        high = Image.new("I", (100, 100))
         with pytest.warns(UserWarning):
             bundle = high._repr_mimebundle_()
-        with Image.open(io.BytesIO(bundle['image/png'])) as im2:
-            assert im2.format == 'PNG'
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+            assert im2.format == "PNG"
             assert_image_equal(im, im2)
 
         # make sure large image gets scaled down with a warning
-        im = Image.new('L', [3000, 3000])
+        im = Image.new("L", [3000, 3000])
         with pytest.warns(UserWarning):
             bundle = im._repr_mimebundle_()
 
-        with Image.open(io.BytesIO(bundle['image/png'])) as im2:
+        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
             assert im2.size == (1500, 1500)
             assert_image_equal(im.resize(im2.size), im2)
 

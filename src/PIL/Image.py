@@ -462,38 +462,43 @@ def _getscaleoffset(expr):
 
 
 _IPYTHON_MODE_MAP = {
-    'La': 'LA',
-    'LAB': 'RGB',
-    'HSV': 'RGB',
-    'RGBX': 'RGB',
-    'RGBa': 'RGBA',
+    "La": "LA",
+    "LAB": "RGB",
+    "HSV": "RGB",
+    "RGBX": "RGB",
+    "RGBa": "RGBA",
 }
 
 _VALID_MODES_FOR_FORMAT = {
-    'JPEG': {'L', 'RGB', 'YCbCr', 'CMYK'},
-    'PNG': {'1', 'P', 'L', 'RGB', 'RGBA', 'LA', 'PA'},
+    "JPEG": {"L", "RGB", "YCbCr", "CMYK"},
+    "PNG": {"1", "P", "L", "RGB", "RGBA", "LA", "PA"},
 }
+
 
 def _to_ipython_image(image):
     """Simplify image to something suitable for display in IPython/Jupyter.
     Notably, convert to 8BPC and rescale by some integer factor.
     """
-    if image.mode in {'I', 'F'}:
-        warnings.warn("image mode doesn't have well defined min/max value, using extrema")
+    if image.mode in {"I", "F"}:
+        warnings.warn(
+            "image mode doesn't have well defined min/max value, using extrema"
+        )
         # linearly transform extrema to fit in [0, 255]
         # this should have a similar result as Image.histogram
         lo, hi = image.getextrema()
         scale = 256 / (hi - lo) if lo != hi else 1
-        image = image.point(lambda e: (e - lo) * scale).convert('L')
-    elif image.mode == 'I;16':
+        image = image.point(lambda e: (e - lo) * scale).convert("L")
+    elif image.mode == "I;16":
         warnings.warn("converting 16BPC image to 8BPC for display in IPython/Jupyter")
         # linearly transform max down to 255
-        image = image.point(lambda e: e / 256).convert('L')
+        image = image.point(lambda e: e / 256).convert("L")
 
     # shrink large images so they don't take too long to transfer/render
     factor = max(image.size) // IPYTHON_RESIZE_THRESHOLD
     if factor > 1:
-        warnings.warn("scaling large image down to improve performance in IPython/Jupyter")
+        warnings.warn(
+            "scaling large image down to improve performance in IPython/Jupyter"
+        )
         image = image.reduce(factor)
 
     # process remaining modes into things supported by writers
@@ -501,6 +506,7 @@ def _to_ipython_image(image):
         image = image.convert(_IPYTHON_MODE_MAP[image.mode])
 
     return image
+
 
 def _encode_ipython_image(image, image_format):
     """Encode specfied image into something IPython/Jupyter supports.
@@ -706,8 +712,8 @@ class Image:
                 return None
             return _encode_ipython_image(image, image_format)
 
-        jpeg = encode('image/jpeg', 'JPEG')
-        png = encode('image/png', 'PNG')
+        jpeg = encode("image/jpeg", "JPEG")
+        png = encode("image/png", "PNG")
 
         # prefer lossless format if it's not significantly larger
         if jpeg and png:
@@ -718,8 +724,8 @@ class Image:
                 png = None
 
         return {
-            'image/jpeg': jpeg,
-            'image/png': png,
+            "image/jpeg": jpeg,
+            "image/png": png,
         }
 
     def _repr_png_(self):
@@ -727,14 +733,14 @@ class Image:
 
         :returns: PNG version of the image as bytes
         """
-        return _encode_ipython_image(_to_ipython_image(self), 'PNG')
+        return _encode_ipython_image(_to_ipython_image(self), "PNG")
 
     def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
 
         :returns: JPEG version of the image as bytes
         """
-        return _encode_ipython_image(_to_ipython_image(self), 'JPEG')
+        return _encode_ipython_image(_to_ipython_image(self), "JPEG")
 
     @property
     def __array_interface__(self):
