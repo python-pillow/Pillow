@@ -72,6 +72,9 @@ class DecompressionBombError(Exception):
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
 MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
 
+# resize images much bigger than this when returning to IPython
+IPYTHON_RESIZE_THRESHOLD = 1200
+
 
 try:
     # If the _imaging C module is not present, Pillow will not load.
@@ -458,6 +461,63 @@ def _getscaleoffset(expr):
     return (a.scale, a.offset) if isinstance(a, _E) else (0, a)
 
 
+_IPYTHON_MODE_MAP = {
+    'La': 'LA',
+    'LAB': 'RGB',
+    'HSV': 'RGB',
+    'RGBX': 'RGB',
+    'RGBa': 'RGBA',
+}
+
+_VALID_MODES_FOR_FORMAT = {
+    'JPEG': {'L', 'RGB', 'YCbCr', 'CMYK'},
+    'PNG': {'1', 'P', 'L', 'RGB', 'RGBA', 'LA', 'PA'},
+}
+
+def _to_ipython_image(image):
+    """Simplify image to something suitable for display in IPython/Jupyter.
+    Notably, convert to 8BPC and rescale by some integer factor.
+    """
+    if image.mode in {'I', 'F'}:
+        warnings.warn("image mode doesn't have well defined min/max value, using extrema")
+        # linearly transform extrema to fit in [0, 255]
+        # this should have a similar result as Image.histogram
+        lo, hi = image.getextrema()
+        scale = 256 / (hi - lo) if lo != hi else 1
+        image = image.point(lambda e: (e - lo) * scale).convert('L')
+    elif image.mode == 'I;16':
+        warnings.warn("converting 16BPC image to 8BPC for display in IPython/Jupyter")
+        # linearly transform max down to 255
+        image = image.point(lambda e: e / 256).convert('L')
+
+    # shrink large images so they don't take too long to transfer/render
+    factor = max(image.size) // IPYTHON_RESIZE_THRESHOLD
+    if factor > 1:
+        warnings.warn("scaling large image down to improve performance in IPython/Jupyter")
+        image = image.reduce(factor)
+
+    # process remaining modes into things supported by writers
+    if image.mode in _IPYTHON_MODE_MAP:
+        image = image.convert(_IPYTHON_MODE_MAP[image.mode])
+
+    return image
+
+def _encode_ipython_image(image, image_format):
+    """Encode specfied image into something IPython/Jupyter supports.
+
+    :returns: bytes when valid, None when this is not valid
+    """
+    if image.mode not in _VALID_MODES_FOR_FORMAT.get(image_format, ()):
+        return None
+    b = io.BytesIO()
+    try:
+        image.save(b, image_format)
+    except Exception as e:
+        warnings.warn(f"failed to encode image as {image_format}")
+        return None
+    return b.getvalue()
+
+
 # --------------------------------------------------------------------
 # Implementation wrapper
 
@@ -632,33 +692,49 @@ class Image:
             )
         )
 
-    def _repr_image(self, image_format, **kwargs):
-        """Helper function for iPython display hook.
+    def _repr_mimebundle_(self, include=None, exclude=None, **kwargs):
+        """iPython display hook that returns JPEG or PNG image as appropriate.
 
-        :param image_format: Image format.
-        :returns: image as bytes, saved into the given format.
+        :returns: iPython mimebundle
         """
-        b = io.BytesIO()
-        try:
-            self.save(b, image_format, **kwargs)
-        except Exception as e:
-            msg = f"Could not save to {image_format} for display"
-            raise ValueError(msg) from e
-        return b.getvalue()
+        image = _to_ipython_image(self)
+
+        def encode(mimetype, image_format):
+            if include is not None and mimetype not in include:
+                return None
+            if exclude is not None and mimetype in exclude:
+                return None
+            return _encode_ipython_image(image, image_format)
+
+        jpeg = encode('image/jpeg', 'JPEG')
+        png = encode('image/png', 'PNG')
+
+        # prefer lossless format if it's not significantly larger
+        if jpeg and png:
+            # 1.125 and 2**18 used as they have nice binary representations
+            if len(png) < len(jpeg) * 1.125 + 2**18:
+                jpeg = None
+            else:
+                png = None
+
+        return {
+            'image/jpeg': jpeg,
+            'image/png': png,
+        }
 
     def _repr_png_(self):
         """iPython display hook support for PNG format.
 
         :returns: PNG version of the image as bytes
         """
-        return self._repr_image("PNG", compress_level=1)
+        return _encode_ipython_image(_to_ipython_image(self), 'PNG')
 
     def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
 
         :returns: JPEG version of the image as bytes
         """
-        return self._repr_image("JPEG")
+        return _encode_ipython_image(_to_ipython_image(self), 'JPEG')
 
     @property
     def __array_interface__(self):
