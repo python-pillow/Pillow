@@ -519,7 +519,7 @@ def _encode_ipython_image(image, image_format):
     try:
         image.save(b, image_format)
     except Exception as e:
-        warnings.warn(f"failed to encode image as {image_format}")
+        warnings.warn(f"failed to encode image as {image_format}: {e}")
         return None
     return b.getvalue()
 
