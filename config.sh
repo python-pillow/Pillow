@@ -93,6 +93,9 @@ function pre_build {
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
+    if [[ -n "$IS_MACOS" ]]; then
+        CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
+    fi
     build_libwebp
     CFLAGS=$ORIGINAL_CFLAGS
 
