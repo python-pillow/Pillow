@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+10.1.0 (unreleased)
+-------------------
+
+- Fix missing symbols when libtiff depends on libjpeg #7270
+  [heitbaum]
+
 10.0.0 (2023-07-01)
 -------------------
 
