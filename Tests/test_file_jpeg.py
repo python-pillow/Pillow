@@ -898,6 +898,14 @@ class TestFileJpeg:
             with Image.open("Tests/images/hopper.jpg") as im:
                 assert im.getxmp() == {}
 
+    def test_getxmp_padded(self):
+        with Image.open("Tests/images/xmp_padded.jpg") as im:
+            if ElementTree is None:
+                with pytest.warns(UserWarning):
+                    assert im.getxmp() == {}
+            else:
+                assert im.getxmp() == {"xmpmeta": None}
+
     @pytest.mark.timeout(timeout=1)
     def test_eof(self):
         # Even though this decoder never says that it is finished

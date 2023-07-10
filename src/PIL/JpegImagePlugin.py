@@ -496,7 +496,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         for segment, content in self.applist:
             if segment == "APP1":
-                marker, xmp_tags = content.rsplit(b"\x00", 1)
+                marker, xmp_tags = content.split(b"\x00")[:2]
                 if marker == b"http://ns.adobe.com/xap/1.0/":
                     return self._getxmp(xmp_tags)
         return {}
