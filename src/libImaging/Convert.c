@@ -119,8 +119,8 @@ lA2la(UINT8 *out, const UINT8 *in, int xsize) {
         alpha = in[3];
         pixel = MULDIV255(in[0], alpha, tmp);
         *out++ = (UINT8)pixel;
-        *out++ = (UINT8)pixel;
-        *out++ = (UINT8)pixel;
+        *out++ = 0;
+        *out++ = 0;
         *out++ = (UINT8)alpha;
     }
 }
@@ -139,8 +139,8 @@ la2lA(UINT8 *out, const UINT8 *in, int xsize) {
             pixel = CLIP8((255 * in[0]) / alpha);
         }
         *out++ = (UINT8)pixel;
-        *out++ = (UINT8)pixel;
-        *out++ = (UINT8)pixel;
+        *out++ = 0;
+        *out++ = 0;
         *out++ = (UINT8)alpha;
     }
 }
@@ -151,8 +151,8 @@ l2la(UINT8 *out, const UINT8 *in, int xsize) {
     for (x = 0; x < xsize; x++) {
         UINT8 v = *in++;
         *out++ = v;
-        *out++ = v;
-        *out++ = v;
+        *out++ = 0;
+        *out++ = 0;
         *out++ = 255;
     }
 }
@@ -236,7 +236,8 @@ rgb2la(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-        out[0] = out[1] = out[2] = L24(in) >> 16;
+        out[0] = L24(in) >> 16;
+        out[1] = out[2] = 0;
         out[3] = 255;
     }
 }
@@ -428,7 +429,8 @@ rgba2la(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
         /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
-        out[0] = out[1] = out[2] = L24(in) >> 16;
+        out[0] = L24(in) >> 16;
+        out[1] = out[2] = 0;
         out[3] = in[3];
     }
 }
@@ -767,7 +769,8 @@ static void
 ycbcr2la(UINT8 *out, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
-        out[0] = out[1] = out[2] = in[0];
+        out[0] = in[0];
+        out[1] = out[2] = 0;
         out[3] = 255;
     }
 }
@@ -1061,8 +1064,8 @@ p2pa(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     for (x = 0; x < xsize; x++, in++) {
         const UINT8 *rgba = &palette->palette[in[0] * 4];
         *out++ = in[0];
-        *out++ = in[0];
-        *out++ = in[0];
+        *out++ = 0;
+        *out++ = 0;
         *out++ = rgb == 0 ? 255 : rgba[3];
     }
 }
@@ -1073,7 +1076,8 @@ p2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, out += 4) {
         const UINT8 *rgba = &palette->palette[*in++ * 4];
-        out[0] = out[1] = out[2] = L24(rgba) >> 16;
+        out[0] = L24(rgba) >> 16;
+        out[1] = out[2] = 0;
         out[3] = rgba[3];
     }
 }
@@ -1083,7 +1087,8 @@ pa2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
     /* FIXME: precalculate greyscale palette? */
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
-        out[0] = out[1] = out[2] = L24(&palette->palette[in[0] * 4]) >> 16;
+        out[0] = L24(&palette->palette[in[0] * 4]) >> 16;
+        out[1] = out[2] = 0;
         out[3] = in[3];
     }
 }
