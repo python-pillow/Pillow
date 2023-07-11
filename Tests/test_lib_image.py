@@ -72,3 +72,24 @@ def test_not_equal(mode):
     img_b = Image.frombytes(mode, (2, 2), data_b)
     assert img_a.tobytes() != img_b.tobytes()
     assert img_a.im != img_b.im
+
+
+@pytest.mark.parametrize("mode", ("RGB", "YCbCr", "HSV", "LAB"))
+def test_equal_three_channels_four_bytes(mode):
+    # The "A" and "B" values in LAB images are signed values from -128 to 127,
+    # but we store them as unsigned values from 0 to 255, so we need to use
+    # slightly different input bytes for LAB to get the same output.
+    img_a = Image.new(mode, (1, 1), 0x00B3B231 if mode == "LAB" else 0x00333231)
+    img_b = Image.new(mode, (1, 1), 0xFFB3B231 if mode == "LAB" else 0xFF333231)
+    assert img_a.tobytes() == b"123"
+    assert img_b.tobytes() == b"123"
+    assert img_a.im == img_b.im
+
+
+@pytest.mark.parametrize("mode", ("LA", "La", "PA"))
+def test_equal_two_channels_four_bytes(mode):
+    img_a = Image.new(mode, (1, 1), 0x32000031)
+    img_b = Image.new(mode, (1, 1), 0x32FFFF31)
+    assert img_a.tobytes() == b"12"
+    assert img_b.tobytes() == b"12"
+    assert img_a.im == img_b.im
