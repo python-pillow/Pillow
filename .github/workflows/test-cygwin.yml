@@ -96,11 +96,6 @@ jobs:
         run: |
           bash.exe .ci/install.sh
 
-      - name: Install a different NumPy
-        shell: dash.exe -l "{0}"
-        run: |
-          python3 -m pip install -U numpy
-
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
         run: |
