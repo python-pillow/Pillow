@@ -138,50 +138,52 @@ class TestImage:
             assert_image_equal(im, im2, 17)
 
         # make sure higher bit depths get converted down to 8BPC with warnings
-        high = Image.new("I;16", (100, 100))
-        with pytest.warns(UserWarning):
-            bundle = high._repr_mimebundle_()
+        high = Image.new("I;16", (100, 100), 65535)
+        bundle = high._repr_mimebundle_()
         with Image.open(io.BytesIO(bundle["image/png"])) as im2:
             assert im2.format == "PNG"
-            assert_image_equal(im, im2)
+            assert_image_equal(high.convert("I"), im2)
 
         high = Image.new("F", (100, 100))
-        with pytest.warns(UserWarning):
-            bundle = high._repr_mimebundle_()
-        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
-            assert im2.format == "PNG"
-            assert_image_equal(im, im2)
+        bundle = high._repr_mimebundle_()
+        assert bundle["image/jpeg"] is None and bundle["image/png"] is None
 
         high = Image.new("I", (100, 100))
-        with pytest.warns(UserWarning):
-            bundle = high._repr_mimebundle_()
+        bundle = high._repr_mimebundle_()
         with Image.open(io.BytesIO(bundle["image/png"])) as im2:
             assert im2.format == "PNG"
-            assert_image_equal(im, im2)
+            assert_image_equal(high, im2)
 
-        # make sure large image gets scaled down with a warning
-        im = Image.new("L", [3000, 3000])
-        with pytest.warns(UserWarning):
-            bundle = im._repr_mimebundle_()
+    def test_repr_mimebundle_hooks(self):
+        previous = Image._to_ipython_image
+        try:
+            Image.use_display_hook_features("auto")
 
-        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
-            assert im2.size == (1500, 1500)
-            assert_image_equal(im.resize(im2.size), im2)
+            # fmake sure large image gets scaled down with a warning
+            im = Image.new("L", [3000, 3000])
+            with pytest.warns(UserWarning):
+                bundle = im._repr_mimebundle_()
 
-        # make sure common modes get converted without a warning
-        im = Image.new("LAB", (100, 100))
-        with pytest.warns(None) as record:
-            bundle = im._repr_mimebundle_()
-        assert len(record) == 0
-        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
-            assert_image_equal(im.convert("RGB"), im2)
+            with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+                assert im2.size == (1500, 1500)
+                assert_image_equal(im.resize(im2.size), im2)
 
-        im = Image.new("HSV", (100, 100))
-        with pytest.warns(None) as record:
-            bundle = im._repr_mimebundle_()
-        assert len(record) == 0
-        with Image.open(io.BytesIO(bundle["image/png"])) as im2:
-            assert_image_equal(im.convert("RGB"), im2)
+            # make sure common modes get converted without a warning
+            im = Image.new("LAB", (100, 100))
+            with pytest.warns(None) as record:
+                bundle = im._repr_mimebundle_()
+            assert len(record) == 0
+            with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+                assert_image_equal(im.convert("RGB"), im2)
+
+            im = Image.new("HSV", (100, 100))
+            with pytest.warns(None) as record:
+                bundle = im._repr_mimebundle_()
+            assert len(record) == 0
+            with Image.open(io.BytesIO(bundle["image/png"])) as im2:
+                assert_image_equal(im.convert("RGB"), im2)
+        finally:
+            Image._to_ipython_image = previous
 
     def test_open_formats(self):
         PNGFILE = "Tests/images/hopper.png"

@@ -471,41 +471,157 @@ _IPYTHON_MODE_MAP = {
 
 _VALID_MODES_FOR_FORMAT = {
     "JPEG": {"L", "RGB", "YCbCr", "CMYK"},
-    "PNG": {"1", "P", "L", "RGB", "RGBA", "LA", "PA"},
+    "PNG": {"1", "P", "L", "RGB", "RGBA", "LA", "PA", "I", "I;16"},
 }
 
 
 def _to_ipython_image(image):
-    """Simplify image to something suitable for display in IPython/Jupyter.
-    Notably, convert to 8BPC and rescale by some integer factor.
+    """Transform image to something suitable for display in IPython/Jupyter.
+
+    See use_display_hook_features.
     """
-    if image.mode in {"I", "F"}:
-        warnings.warn(
-            "image mode doesn't have well defined min/max value, using extrema"
-        )
+    return image
+
+
+def use_display_hook_features(
+    default=None,
+    *,
+    I_mode=None,
+    F_mode=None,
+    I16_mode=None,
+    resize_threshold=None,
+    mode_map=None,
+):
+    """Set IPython/Jupyter display hook up based on parameters.
+
+    :param default: setting to use when unspecified
+    :param I_mode: what to do with I mode images
+    :param F_mode: what to do with F mode images
+    :param I16_mode: what to do with F mode images
+    :param resize_threshold: images with width or height much
+       larger than this will be resized
+    :param mode_map: a dictionary like _IPYTHON_MODE_MAP
+
+    when modes are set luminance values will be linearly rescaled such that;
+      'extrema': darkest value to black, brightest to white
+      'scale max': 0 value to black, brightest to white
+      'unit': 0 to black, 1 to white
+      'assume i16': 0 to black, 2^16-1 to white
+      'assume i32': 0 to black, 2^32-1 to white
+
+    All parameters can be specified as 'auto', which will cause the following
+    settings to be used:
+      I_mode, F_mode = 'scale_max'
+      I16_mode = 'assume i16'
+      resize_threshold = IPYTHON_RESIZE_THRESHOLD
+      mode_map = _IPYTHON_MODE_MAP
+    """
+
+    def identity(image):
+        "leave the image as is"
+        return image
+
+    def extrema_to_L(image):
         # linearly transform extrema to fit in [0, 255]
         # this should have a similar result as Image.histogram
         lo, hi = image.getextrema()
-        scale = 256 / (hi - lo) if lo != hi else 1
-        image = image.point(lambda e: (e - lo) * scale).convert("L")
-    elif image.mode == "I;16":
-        warnings.warn("converting 16BPC image to 8BPC for display in IPython/Jupyter")
-        # linearly transform max down to 255
-        image = image.point(lambda e: e / 256).convert("L")
-
-    # shrink large images so they don't take too long to transfer/render
-    factor = max(image.size) // IPYTHON_RESIZE_THRESHOLD
-    if factor > 1:
         warnings.warn(
-            "scaling large image down to improve performance in IPython/Jupyter"
+            f"converting image to 8BPC using black={lo}, white={hi} for display"
         )
-        image = image.reduce(factor)
+        scale = 256 / (hi - lo) if lo != hi else 1
+        return image.point(lambda e: (e - lo) * scale).convert("L")
 
-    # process remaining modes into things supported by writers
-    if image.mode in _IPYTHON_MODE_MAP:
-        image = image.convert(_IPYTHON_MODE_MAP[image.mode])
+    def scale_max_to_L(image):
+        _, hi = image.getextrema()
+        warnings.warn(f"converting image to 8BPC using black=0, white={hi} for display")
+        if hi > 0:
+            scale = 256 / hi
+            return image.point(lambda e: e * scale).convert("L")
+        return image
 
-    return image
+    def unit_to_L(image):
+        warnings.warn("converting 8BPC for display, with range [0, 1]")
+        return image.point(lambda e: e * 255).convert("L")
+
+    def I16_to_L(image):
+        warnings.warn("converting 16BPC image to 8BPC for display")
+        # linearly transform max down to 255
+        return image.point(lambda e: e / 256).convert("L")
+
+    def I32_to_L(image):
+        warnings.warn("converting 32BPC image to 8BPC for display")
+        return image.point(lambda e: e / 2**24).convert("L")
+
+    def hook_for_mode(value, auto):
+        if value is None:
+            return identity
+        if value in "auto":
+            return auto
+        if value == "extrema":
+            return extrema_to_L
+        if value == "scale max":
+            return scale_max_to_L
+        if value == "unit":
+            return unit_to_L
+        if value == "assume i16":
+            return I16_to_L
+        if value == "assume i32":
+            return I32_to_L
+        assert isinstance(value, Callable)
+        return value
+
+    def threshold_resize(image):
+        # smaller images are quicker to process
+        factor = max(image.size) // resize_threshold
+        if factor > 1:
+            warnings.warn(
+                "scaling large image down to improve performance in IPython/Jupyter"
+            )
+            return image.reduce(factor)
+        return image
+
+    # decode arguments
+    handle_I = hook_for_mode(I_mode or default, scale_max_to_L)
+    handle_F = hook_for_mode(F_mode or default, scale_max_to_L)
+    handle_I16 = hook_for_mode(I16_mode or default, I16_to_L)
+
+    resize_threshold = resize_threshold or default
+    if resize_threshold is None:
+        resize_image = identity
+    else:
+        if resize_threshold == "auto":
+            resize_threshold = IPYTHON_RESIZE_THRESHOLD
+        assert isinstance(resize_threshold, int)
+        resize_image = threshold_resize
+
+    mode_map = mode_map or default
+    if mode_map == "auto":
+        mode_map = _IPYTHON_MODE_MAP
+    elif mode_map is None:
+        mode_map = {}
+    else:
+        assert isinstance(mode_map, dict)
+
+    # define our hook
+    def fn(image):
+        if image.mode == "I":
+            image = handle_I(image)
+        elif image.mode == "F":
+            image = handle_F(image)
+        elif image.mode == "I;16":
+            image = handle_I16(image)
+
+        image = resize_image(image)
+
+        # process remaining modes into things supported by writers
+        if image.mode in mode_map:
+            image = image.convert(mode_map[image.mode])
+
+        return image
+
+    # install it
+    global _to_ipython_image
+    _to_ipython_image = fn
 
 
 def _encode_ipython_image(image, image_format):
