@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Do not use transparency when saving GIF if it has been removed when normalizing mode #7284
+  [radarhere]
+
 - Fix missing symbols when libtiff depends on libjpeg #7270
   [heitbaum]
 
