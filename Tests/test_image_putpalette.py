@@ -84,3 +84,9 @@ def test_rgba_palette(mode, palette):
     im.putpalette(palette, mode)
     assert im.getpalette() == [1, 2, 3]
     assert im.palette.colors == {(1, 2, 3, 4): 0}
+
+
+def test_undefined_palette_index():
+    im = Image.new("P", (1, 1), 3)
+    im.putpalette((1, 2, 3))
+    assert im.convert("RGB").getpixel((0, 0)) == (0, 0, 0)
