@@ -39,7 +39,6 @@ ImagingPaletteNew(const char *mode) {
     strncpy(palette->mode, mode, IMAGING_MODE_LENGTH - 1);
     palette->mode[IMAGING_MODE_LENGTH - 1] = 0;
 
-    /* Initialize to ramp */
     palette->size = 0;
     for (i = 0; i < 256; i++) {
         palette->palette[i * 4 + 3] = 255; /* opaque */
