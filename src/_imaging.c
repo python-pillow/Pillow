@@ -1676,12 +1676,11 @@ _quantize(ImagingObject *self, PyObject *args) {
 static PyObject *
 _putpalette(ImagingObject *self, PyObject *args) {
     ImagingShuffler unpack;
-    int i, bits;
+    int bits;
 
     char *rawmode, *palette_mode;
     UINT8 *palette;
     Py_ssize_t palettesize;
-    ImagingPalette im_palette;
     if (!PyArg_ParseTuple(args, "sy#", &rawmode, &palette, &palettesize)) {
         return NULL;
     }
@@ -1708,16 +1707,10 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     strcpy(self->image->mode, strlen(self->image->mode) == 2 ? "PA" : "P");
 
-    im_palette = ImagingPaletteNew(palette_mode);
-    self->image->palette = im_palette;
+    self->image->palette = ImagingPaletteNew(palette_mode);
 
-    im_palette->size = palettesize * 8 / bits;
-    unpack(im_palette->palette, palette, im_palette->size);
-    for (i=im_palette->size; i<256; i++) {
-        im_palette->palette[i * 4] = 0;
-        im_palette->palette[i * 4 + 1] = 0;
-        im_palette->palette[i * 4 + 2] = 0;
-    }
+    self->image->palette->size = palettesize * 8 / bits;
+    unpack(self->image->palette->palette, palette, self->image->palette->size);
 
     Py_INCREF(Py_None);
     return Py_None;
