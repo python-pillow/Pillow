@@ -43,8 +43,9 @@ def test_save(tmp_path, mode):
 
 
 @skip_unless_feature("jpg_2000")
-def test_save_rgba(tmp_path):
-    helper_save_as_pdf(tmp_path, "RGBA")
+@pytest.mark.parametrize("mode", ("LA", "RGBA"))
+def test_save_alpha(tmp_path, mode):
+    helper_save_as_pdf(tmp_path, mode)
 
 
 def test_monochrome(tmp_path):
@@ -57,8 +58,8 @@ def test_monochrome(tmp_path):
 
 
 def test_unsupported_mode(tmp_path):
-    im = hopper("LA")
-    outfile = str(tmp_path / "temp_LA.pdf")
+    im = hopper("PA")
+    outfile = str(tmp_path / "temp_PA.pdf")
 
     with pytest.raises(ValueError):
         im.save(outfile)
