@@ -274,17 +274,15 @@ def test_sgnd(tmp_path):
         assert reloaded_signed.getpixel((0, 0)) == 128
 
 
-def test_rgba():
+@pytest.mark.parametrize("ext", (".j2k", ".jp2"))
+def test_rgba(ext):
     # Arrange
-    with Image.open("Tests/images/rgb_trns_ycbc.j2k") as j2k:
-        with Image.open("Tests/images/rgb_trns_ycbc.jp2") as jp2:
-            # Act
-            j2k.load()
-            jp2.load()
+    with Image.open("Tests/images/rgb_trns_ycbc" + ext) as im:
+        # Act
+        im.load()
 
-            # Assert
-            assert j2k.mode == "RGBA"
-            assert jp2.mode == "RGBA"
+        # Assert
+        assert im.mode == "RGBA"
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
