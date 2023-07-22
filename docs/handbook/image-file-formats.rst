@@ -861,6 +861,10 @@ PPM
 Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
 ``RGB`` data.
 
+"Raw" (P4 to P6) formats can be read, and are used when writing.
+
+Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+
 SGI
 ^^^
 
