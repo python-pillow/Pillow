@@ -641,9 +641,8 @@ class Image:
         b = io.BytesIO()
         try:
             self.save(b, image_format, **kwargs)
-        except Exception as e:
-            msg = f"Could not save to {image_format} for display"
-            raise ValueError(msg) from e
+        except Exception:
+            return None
         return b.getvalue()
 
     def _repr_png_(self):
@@ -651,20 +650,14 @@ class Image:
 
         :returns: PNG version of the image as bytes
         """
-        try:
-            return self._repr_image("PNG", compress_level=1)
-        except Exception:
-            return None
+        return self._repr_image("PNG", compress_level=1)
 
     def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
 
         :returns: JPEG version of the image as bytes
         """
-        try:
-            return self._repr_image("JPEG")
-        except Exception:
-            return None
+        return self._repr_image("JPEG")
 
     @property
     def __array_interface__(self):
