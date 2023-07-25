@@ -318,7 +318,7 @@ class FreeTypeFont:
                          <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
-        :return: Width for horizontal, height for vertical text.
+        :return: Either width for horizontal text, or height for vertical text.
         """
         _string_length_check(text)
         return self.font.getlength(text, mode, direction, features, language) / 64
