@@ -538,7 +538,7 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
-    :return: Width for horizontal, height for vertical text.
+    :return: Either width for horizontal text, or height for vertical text.
 
 .. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
 
