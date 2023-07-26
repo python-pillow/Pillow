@@ -130,9 +130,16 @@ class TestImageGetPixel(AccessTest):
         bands = Image.getmodebands(mode)
         if bands == 1:
             return 1
+        if mode in ("BGR;15", "BGR;16"):
+            # These modes have less than 8 bits per band
+            # So (1, 2, 3) cannot be roundtripped
+            return (16, 32, 49)
         return tuple(range(1, bands + 1))
 
     def check(self, mode, expected_color=None):
+        if self._need_cffi_access and mode.startswith("BGR;"):
+            pytest.skip("Support not added to deprecated module for BGR;* modes")
+
         if not expected_color:
             expected_color = self.color(mode)
 
@@ -203,6 +210,9 @@ class TestImageGetPixel(AccessTest):
             "F",
             "P",
             "PA",
+            "BGR;15",
+            "BGR;16",
+            "BGR;24",
             "RGB",
             "RGBA",
             "RGBX",
