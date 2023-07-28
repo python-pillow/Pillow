@@ -43,7 +43,7 @@ class WebPImageFile(ImageFile.ImageFile):
     def _open(self):
         if not _webp.HAVE_WEBPANIM:
             # Legacy mode
-            data, width, height, self.mode, icc_profile, exif = _webp.WebPDecode(
+            data, width, height, self._mode, icc_profile, exif = _webp.WebPDecode(
                 self.fp.read()
             )
             if icc_profile:
@@ -74,7 +74,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
         self.n_frames = frame_count
         self.is_animated = self.n_frames > 1
-        self.mode = "RGB" if mode == "RGBX" else mode
+        self._mode = "RGB" if mode == "RGBX" else mode
         self.rawmode = mode
         self.tile = []
 

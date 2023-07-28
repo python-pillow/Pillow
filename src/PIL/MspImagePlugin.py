@@ -62,7 +62,7 @@ class MspImageFile(ImageFile.ImageFile):
             msg = "bad MSP checksum"
             raise SyntaxError(msg)
 
-        self.mode = "1"
+        self._mode = "1"
         self._size = i16(s, 4), i16(s, 6)
 
         if s[:4] == b"DanM":

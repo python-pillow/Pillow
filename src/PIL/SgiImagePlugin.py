@@ -94,7 +94,7 @@ class SgiImageFile(ImageFile.ImageFile):
             raise ValueError(msg)
 
         self._size = xsize, ysize
-        self.mode = rawmode.split(";")[0]
+        self._mode = rawmode.split(";")[0]
         if self.mode == "RGB":
             self.custom_mimetype = "image/rgb"
 

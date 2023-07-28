@@ -77,7 +77,7 @@ class FtexImageFile(ImageFile.ImageFile):
         self._size = struct.unpack("<2i", self.fp.read(8))
         mipmap_count, format_count = struct.unpack("<2i", self.fp.read(8))
 
-        self.mode = "RGB"
+        self._mode = "RGB"
 
         # Only support single-format files.
         # I don't know of any multi-format file.
@@ -90,7 +90,7 @@ class FtexImageFile(ImageFile.ImageFile):
         data = self.fp.read(mipmap_size)
 
         if format == Format.DXT1:
-            self.mode = "RGBA"
+            self._mode = "RGBA"
             self.tile = [("bcn", (0, 0) + self.size, 0, 1)]
         elif format == Format.UNCOMPRESSED:
             self.tile = [("raw", (0, 0) + self.size, 0, ("RGB", 0, 1))]

@@ -227,7 +227,7 @@ class EpsImageFile(ImageFile.ImageFile):
         # go to offset - start of "%!PS"
         self.fp.seek(offset)
 
-        self.mode = "RGB"
+        self._mode = "RGB"
         self._size = None
 
         byte_arr = bytearray(255)
@@ -344,10 +344,10 @@ class EpsImageFile(ImageFile.ImageFile):
                 ]
 
                 if bit_depth == 1:
-                    self.mode = "1"
+                    self._mode = "1"
                 elif bit_depth == 8:
                     try:
-                        self.mode = self.mode_map[mode_id]
+                        self._mode = self.mode_map[mode_id]
                     except ValueError:
                         break
                 else:
@@ -391,7 +391,7 @@ class EpsImageFile(ImageFile.ImageFile):
         # Load EPS via Ghostscript
         if self.tile:
             self.im = Ghostscript(self.tile, self.size, self.fp, scale, transparency)
-            self.mode = self.im.mode
+            self._mode = self.im.mode
             self._size = self.im.size
             self.tile = []
         return Image.Image.load(self)

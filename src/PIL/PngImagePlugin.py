@@ -737,7 +737,7 @@ class PngImageFile(ImageFile.ImageFile):
         # difficult to break if things go wrong in the decoder...
         # (believe me, I've tried ;-)
 
-        self.mode = self.png.im_mode
+        self._mode = self.png.im_mode
         self._size = self.png.im_size
         self.info = self.png.im_info
         self._text = None

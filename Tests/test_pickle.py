@@ -75,13 +75,13 @@ def test_pickle_la_mode_with_palette(tmp_path):
 
     # Act / Assert
     for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-        im.mode = "LA"
+        im._mode = "LA"
         with open(filename, "wb") as f:
             pickle.dump(im, f, protocol)
         with open(filename, "rb") as f:
             loaded_im = pickle.load(f)
 
-        im.mode = "PA"
+        im._mode = "PA"
         assert im == loaded_im
 
 

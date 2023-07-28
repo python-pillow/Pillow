@@ -1409,7 +1409,7 @@ class TiffImageFile(ImageFile.ImageFile):
         )
         logger.debug(f"format key: {key}")
         try:
-            self.mode, rawmode = OPEN_INFO[key]
+            self._mode, rawmode = OPEN_INFO[key]
         except KeyError as e:
             logger.debug("- unsupported format")
             msg = "unknown pixel mode"
@@ -1461,7 +1461,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # this should always work, since all the
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
-                self.mode, rawmode = OPEN_INFO[key]
+                self._mode, rawmode = OPEN_INFO[key]
             # libtiff always returns the bytes in native order.
             # we're expecting image byte order. So, if the rawmode
             # contains I;16, we need to convert from native to image

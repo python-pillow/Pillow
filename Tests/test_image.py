@@ -135,6 +135,12 @@ class TestImage:
         with pytest.raises(AttributeError):
             im.size = (3, 4)
 
+    def test_set_mode(self):
+        im = Image.new("RGB", (1, 1))
+
+        with pytest.raises(AttributeError):
+            im.mode = "P"
+
     def test_invalid_image(self):
         im = io.BytesIO(b"")
         with pytest.raises(UnidentifiedImageError):

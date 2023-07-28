@@ -106,7 +106,7 @@ class FpxImageFile(ImageFile.ImageFile):
             # note: for now, we ignore the "uncalibrated" flag
             colors.append(i32(s, 8 + i * 4) & 0x7FFFFFFF)
 
-        self.mode, self.rawmode = MODES[tuple(colors)]
+        self._mode, self.rawmode = MODES[tuple(colors)]
 
         # load JPEG tables, if any
         self.jpeg = {}

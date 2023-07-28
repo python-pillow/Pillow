@@ -482,7 +482,7 @@ class Image:
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
         self.im = None
-        self.mode = ""
+        self._mode = ""
         self._size = (0, 0)
         self.palette = None
         self.info = {}
@@ -502,10 +502,14 @@ class Image:
     def size(self):
         return self._size
 
+    @property
+    def mode(self):
+        return self._mode
+
     def _new(self, im):
         new = Image()
         new.im = im
-        new.mode = im.mode
+        new._mode = im.mode
         new._size = im.size
         if im.mode in ("P", "PA"):
             if self.palette:
@@ -693,7 +697,7 @@ class Image:
         Image.__init__(self)
         info, mode, size, palette, data = state
         self.info = info
-        self.mode = mode
+        self._mode = mode
         self._size = size
         self.im = core.new(mode, size)
         if mode in ("L", "LA", "P", "PA") and palette:
@@ -1840,7 +1844,7 @@ class Image:
                         raise ValueError from e  # sanity check
                     self.im = im
                 self.pyaccess = None
-                self.mode = self.im.mode
+                self._mode = self.im.mode
             except KeyError as e:
                 msg = "illegal image mode"
                 raise ValueError(msg) from e
@@ -1918,7 +1922,7 @@ class Image:
             if not isinstance(data, bytes):
                 data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
-        self.mode = "PA" if "A" in self.mode else "P"
+        self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
         self.palette.mode = "RGB"
         self.load()  # install new palette
@@ -2026,7 +2030,7 @@ class Image:
         mapping_palette = bytearray(new_positions)
 
         m_im = self.copy()
-        m_im.mode = "P"
+        m_im._mode = "P"
 
         m_im.palette = ImagePalette.ImagePalette(
             palette_mode, palette=mapping_palette * bands
@@ -2601,7 +2605,7 @@ class Image:
 
             self.im = im.im
             self._size = size
-            self.mode = self.im.mode
+            self._mode = self.im.mode
 
         self.readonly = 0
         self.pyaccess = None

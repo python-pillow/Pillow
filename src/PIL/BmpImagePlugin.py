@@ -163,7 +163,7 @@ class BmpImageFile(ImageFile.ImageFile):
             offset += 4 * file_info["colors"]
 
         # ---------------------- Check bit depth for unusual unsupported values
-        self.mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
+        self._mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
         if self.mode is None:
             msg = f"Unsupported BMP pixel depth ({file_info['bits']})"
             raise OSError(msg)
@@ -200,7 +200,7 @@ class BmpImageFile(ImageFile.ImageFile):
                     and file_info["rgba_mask"] in SUPPORTED[file_info["bits"]]
                 ):
                     raw_mode = MASK_MODES[(file_info["bits"], file_info["rgba_mask"])]
-                    self.mode = "RGBA" if "A" in raw_mode else self.mode
+                    self._mode = "RGBA" if "A" in raw_mode else self.mode
                 elif (
                     file_info["bits"] in (24, 16)
                     and file_info["rgb_mask"] in SUPPORTED[file_info["bits"]]
@@ -214,7 +214,7 @@ class BmpImageFile(ImageFile.ImageFile):
                 raise OSError(msg)
         elif file_info["compression"] == self.RAW:
             if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
-                raw_mode, self.mode = "BGRA", "RGBA"
+                raw_mode, self._mode = "BGRA", "RGBA"
         elif file_info["compression"] in (self.RLE8, self.RLE4):
             decoder_name = "bmp_rle"
         else:
@@ -245,10 +245,10 @@ class BmpImageFile(ImageFile.ImageFile):
 
                 # ------- If all colors are grey, white or black, ditch palette
                 if greyscale:
-                    self.mode = "1" if file_info["colors"] == 2 else "L"
+                    self._mode = "1" if file_info["colors"] == 2 else "L"
                     raw_mode = self.mode
                 else:
-                    self.mode = "P"
+                    self._mode = "P"
                     self.palette = ImagePalette.raw(
                         "BGRX" if padding == 4 else "BGR", palette
                     )

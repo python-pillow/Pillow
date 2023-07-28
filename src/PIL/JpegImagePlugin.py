@@ -208,11 +208,11 @@ def SOF(self, marker):
 
     self.layers = s[5]
     if self.layers == 1:
-        self.mode = "L"
+        self._mode = "L"
     elif self.layers == 3:
-        self.mode = "RGB"
+        self._mode = "RGB"
     elif self.layers == 4:
-        self.mode = "CMYK"
+        self._mode = "CMYK"
     else:
         msg = f"cannot handle {self.layers}-layer images"
         raise SyntaxError(msg)
@@ -426,7 +426,7 @@ class JpegImageFile(ImageFile.ImageFile):
         original_size = self.size
 
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
-            self.mode = mode
+            self._mode = mode
             a = mode, ""
 
         if size:
@@ -475,7 +475,7 @@ class JpegImageFile(ImageFile.ImageFile):
             except OSError:
                 pass
 
-        self.mode = self.im.mode
+        self._mode = self.im.mode
         self._size = self.im.size
 
         self.tile = []
