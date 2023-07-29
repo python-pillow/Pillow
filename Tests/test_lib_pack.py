@@ -340,6 +340,10 @@ class TestLibUnpack:
             self.assert_unpack("RGB", "G;16N", 2, (0, 1, 0), (0, 3, 0), (0, 5, 0))
             self.assert_unpack("RGB", "B;16N", 2, (0, 0, 1), (0, 0, 3), (0, 0, 5))
 
+        self.assert_unpack(
+            "RGB", "CMYK", 4, (250, 249, 248), (242, 241, 240), (234, 233, 233)
+        )
+
     def test_RGBA(self):
         self.assert_unpack("RGBA", "LA", 2, (1, 1, 1, 2), (3, 3, 3, 4), (5, 5, 5, 6))
         self.assert_unpack(

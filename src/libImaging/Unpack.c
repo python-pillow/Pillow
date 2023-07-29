@@ -813,6 +813,20 @@ ImagingUnpackXBGR(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
+static void
+cmyk2rgb(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i, nk, tmp;
+    for (i = 0; i < pixels; i++) {
+        nk = 255 - in[3];
+        _out[0] = CLIP8(nk - MULDIV255(in[0], nk, tmp));
+        _out[1] = CLIP8(nk - MULDIV255(in[1], nk, tmp));
+        _out[2] = CLIP8(nk - MULDIV255(in[2], nk, tmp));
+        _out[3] = 255;
+        _out += 4;
+        in += 4;
+    }
+}
+
 /* Unpack to "RGBA" image */
 
 static void
@@ -1589,6 +1603,7 @@ static struct {
     {"RGB", "R;16B", 16, band016B},
     {"RGB", "G;16B", 16, band116B},
     {"RGB", "B;16B", 16, band216B},
+    {"RGB", "CMYK", 32, cmyk2rgb},
 
     /* true colour w. alpha */
     {"RGBA", "LA", 16, unpackRGBALA},
