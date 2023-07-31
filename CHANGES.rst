@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Changed Image mode property to be read-only by default #7307
+  [radarhere]
+
 - Silence exceptions in _repr_jpeg_ and _repr_png_ #7266
   [mtreinish, radarhere]
 
