@@ -74,6 +74,9 @@ class WebPImageFile(ImageFile.ImageFile):
         self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
         self.n_frames = frame_count
         self.is_animated = self.n_frames > 1
+        _,ts=self._decoder.get_next()
+        if ts:
+            self.info["duration"]=ts
         self._mode = "RGB" if mode == "RGBX" else mode
         self.rawmode = mode
         self.tile = []
