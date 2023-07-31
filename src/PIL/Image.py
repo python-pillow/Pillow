@@ -641,9 +641,8 @@ class Image:
         b = io.BytesIO()
         try:
             self.save(b, image_format, **kwargs)
-        except Exception as e:
-            msg = f"Could not save to {image_format} for display"
-            raise ValueError(msg) from e
+        except Exception:
+            return None
         return b.getvalue()
 
     def _repr_png_(self):
