@@ -79,7 +79,7 @@ class PsdImageFile(ImageFile.ImageFile):
             mode = "RGBA"
             channels = 4
 
-        self.mode = mode
+        self._mode = mode
         self._size = i32(s, 18), i32(s, 14)
 
         #
@@ -146,7 +146,7 @@ class PsdImageFile(ImageFile.ImageFile):
         # seek to given layer (1..max)
         try:
             name, mode, bbox, tile = self.layers[layer - 1]
-            self.mode = mode
+            self._mode = mode
             self.tile = tile
             self.frame = layer
             self.fp = self._fp

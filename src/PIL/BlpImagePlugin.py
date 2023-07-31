@@ -266,7 +266,7 @@ class BlpImageFile(ImageFile.ImageFile):
             msg = f"Bad BLP magic {repr(self.magic)}"
             raise BLPFormatError(msg)
 
-        self.mode = "RGBA" if self._blp_alpha_depth else "RGB"
+        self._mode = "RGBA" if self._blp_alpha_depth else "RGB"
         self.tile = [(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
 
 

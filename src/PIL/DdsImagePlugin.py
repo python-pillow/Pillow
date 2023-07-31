@@ -128,7 +128,7 @@ class DdsImageFile(ImageFile.ImageFile):
 
         flags, height, width = struct.unpack("<3I", header.read(12))
         self._size = (width, height)
-        self.mode = "RGBA"
+        self._mode = "RGBA"
 
         pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
         struct.unpack("<11I", header.read(44))  # reserved
@@ -141,9 +141,9 @@ class DdsImageFile(ImageFile.ImageFile):
         if pfflags & DDPF_LUMINANCE:
             # Texture contains uncompressed L or LA data
             if pfflags & DDPF_ALPHAPIXELS:
-                self.mode = "LA"
+                self._mode = "LA"
             else:
-                self.mode = "L"
+                self._mode = "L"
 
             self.tile = [("raw", (0, 0) + self.size, 0, (self.mode, 0, 1))]
         elif pfflags & DDPF_RGB:
@@ -153,7 +153,7 @@ class DdsImageFile(ImageFile.ImageFile):
             if pfflags & DDPF_ALPHAPIXELS:
                 rawmode += masks[0xFF000000]
             else:
-                self.mode = "RGB"
+                self._mode = "RGB"
             rawmode += masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
 
             self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
@@ -172,15 +172,15 @@ class DdsImageFile(ImageFile.ImageFile):
             elif fourcc == b"ATI1":
                 self.pixel_format = "BC4"
                 n = 4
-                self.mode = "L"
+                self._mode = "L"
             elif fourcc == b"ATI2":
                 self.pixel_format = "BC5"
                 n = 5
-                self.mode = "RGB"
+                self._mode = "RGB"
             elif fourcc == b"BC5S":
                 self.pixel_format = "BC5S"
                 n = 5
-                self.mode = "RGB"
+                self._mode = "RGB"
             elif fourcc == b"DX10":
                 data_start += 20
                 # ignoring flags which pertain to volume textures and cubemaps
@@ -189,19 +189,19 @@ class DdsImageFile(ImageFile.ImageFile):
                 if dxgi_format in (DXGI_FORMAT_BC5_TYPELESS, DXGI_FORMAT_BC5_UNORM):
                     self.pixel_format = "BC5"
                     n = 5
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                 elif dxgi_format == DXGI_FORMAT_BC5_SNORM:
                     self.pixel_format = "BC5S"
                     n = 5
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                 elif dxgi_format == DXGI_FORMAT_BC6H_UF16:
                     self.pixel_format = "BC6H"
                     n = 6
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                 elif dxgi_format == DXGI_FORMAT_BC6H_SF16:
                     self.pixel_format = "BC6HS"
                     n = 6
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                 elif dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):
                     self.pixel_format = "BC7"
                     n = 7

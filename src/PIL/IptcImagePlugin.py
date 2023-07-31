@@ -109,11 +109,11 @@ class IptcImageFile(ImageFile.ImageFile):
         else:
             id = 0
         if layers == 1 and not component:
-            self.mode = "L"
+            self._mode = "L"
         elif layers == 3 and component:
-            self.mode = "RGB"[id]
+            self._mode = "RGB"[id]
         elif layers == 4 and component:
-            self.mode = "CMYK"[id]
+            self._mode = "CMYK"[id]
 
         # size
         self._size = self.getint((3, 20)), self.getint((3, 30))
