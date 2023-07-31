@@ -1086,6 +1086,21 @@ def test_transparent_optimize(tmp_path):
         assert reloaded.info["transparency"] == reloaded.getpixel((252, 0))
 
 
+def test_removed_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("RGB", (256, 1))
+
+    for x in range(256):
+        im.putpixel((x, 0), (x, 0, 0))
+
+    im.info["transparency"] = (255, 255, 255)
+    with pytest.warns(UserWarning):
+        im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert "transparency" not in reloaded.info
+
+
 def test_rgb_transparency(tmp_path):
     out = str(tmp_path / "temp.gif")
 

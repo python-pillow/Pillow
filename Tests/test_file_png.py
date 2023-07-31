@@ -532,7 +532,7 @@ class TestFilePng:
             assert repr_png.format == "PNG"
             assert_image_equal(im, repr_png)
 
-    def test_repr_png_error(self):
+    def test_repr_png_error_returns_none(self):
         im = hopper("BGR;24")
         assert im._repr_png_() is None
 

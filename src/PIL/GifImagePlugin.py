@@ -683,11 +683,7 @@ def get_interlace(im):
 def _write_local_header(fp, im, offset, flags):
     transparent_color_exists = False
     try:
-        if "transparency" in im.encoderinfo:
-            transparency = im.encoderinfo["transparency"]
-        else:
-            transparency = im.info["transparency"]
-        transparency = int(transparency)
+        transparency = int(im.encoderinfo["transparency"])
     except (KeyError, ValueError):
         pass
     else:

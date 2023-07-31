@@ -2,6 +2,18 @@
 Changelog (Pillow)
 ==================
 
+10.1.0 (unreleased)
+-------------------
+
+- Silence exceptions in _repr_jpeg_ and _repr_png_ #7266
+  [mtreinish, radarhere]
+
+- Do not use transparency when saving GIF if it has been removed when normalizing mode #7284
+  [radarhere]
+
+- Fix missing symbols when libtiff depends on libjpeg #7270
+  [heitbaum]
+
 10.0.0 (2023-07-01)
 -------------------
 

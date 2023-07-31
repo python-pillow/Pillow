@@ -929,7 +929,7 @@ class TestFileJpeg:
             assert repr_jpeg.format == "JPEG"
             assert_image_similar(im, repr_jpeg, 17)
 
-    def test_repr_jpeg_error(self):
+    def test_repr_jpeg_error_returns_none(self):
         im = hopper("BGR;24")
         assert im._repr_jpeg_() is None
 
