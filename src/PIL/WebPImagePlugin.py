@@ -93,7 +93,7 @@ class WebPImageFile(ImageFile.ImageFile):
             self.info["xmp"] = xmp
 
         # Initialize seek state
-        self._reset(reset=False)
+        self._reset(reset=True)
 
     def _getexif(self):
         if "exif" not in self.info:
