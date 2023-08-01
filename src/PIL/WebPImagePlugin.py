@@ -93,7 +93,7 @@ class WebPImageFile(ImageFile.ImageFile):
             self.info["xmp"] = xmp
 
         # Initialize seek state
-        self._reset(reset=True)
+        self._reset()
 
     def _getexif(self):
         if "exif" not in self.info:
@@ -116,9 +116,8 @@ class WebPImageFile(ImageFile.ImageFile):
         # Set logical frame to requested position
         self.__logical_frame = frame
 
-    def _reset(self, reset=True):
-        if reset:
-            self._decoder.reset()
+    def _reset(self):
+        self._decoder.reset()
         self.__physical_frame = 0
         self.__loaded = -1
         self.__timestamp = 0
