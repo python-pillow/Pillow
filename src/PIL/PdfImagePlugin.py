@@ -128,6 +128,7 @@ def _save(im, fp, filename, save_all=False):
             bits = 8
             params = None
             decode = None
+            smaskindata = 0
 
             #
             # Get image characteristics
@@ -177,6 +178,7 @@ def _save(im, fp, filename, save_all=False):
                 filter = "JPXDecode"
                 colorspace = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
+                smaskindata = 1
             elif im.mode == "CMYK":
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceCMYK")
@@ -232,6 +234,7 @@ def _save(im, fp, filename, save_all=False):
                 Decode=decode,
                 DecodeParms=params,
                 ColorSpace=colorspace,
+                SMaskInData=smaskindata,
             )
 
             #
