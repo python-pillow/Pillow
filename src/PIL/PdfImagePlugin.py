@@ -152,17 +152,17 @@ def _save(im, fp, filename, save_all=False):
                     )
                 else:
                     filter = "DCTDecode"
-                colorspace = PdfParser.PdfName("DeviceGray")
+                dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "L":
                 filter = "DCTDecode"
                 # params = f"<< /Predictor 15 /Columns {width-2} >>"
-                colorspace = PdfParser.PdfName("DeviceGray")
+                dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "P":
                 filter = "ASCIIHexDecode"
                 palette = im.getpalette()
-                colorspace = [
+                dict_obj["ColorSpace"] = [
                     PdfParser.PdfName("Indexed"),
                     PdfParser.PdfName("DeviceRGB"),
                     255,
@@ -171,16 +171,15 @@ def _save(im, fp, filename, save_all=False):
                 procset = "ImageI"  # indexed color
             elif im.mode == "RGB":
                 filter = "DCTDecode"
-                colorspace = PdfParser.PdfName("DeviceRGB")
+                dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
             elif im.mode == "RGBA":
                 filter = "JPXDecode"
-                colorspace = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
                 dict_obj["SMaskInData"] = 1
             elif im.mode == "CMYK":
                 filter = "DCTDecode"
-                colorspace = PdfParser.PdfName("DeviceCMYK")
+                dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceCMYK")
                 procset = "ImageC"  # color images
                 decode = [1, 0, 1, 0, 1, 0, 1, 0]
             else:
@@ -232,7 +231,6 @@ def _save(im, fp, filename, save_all=False):
                 Filter=filter,
                 Decode=decode,
                 DecodeParms=params,
-                ColorSpace=colorspace,
                 **dict_obj,
             )
 
