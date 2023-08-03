@@ -125,20 +125,19 @@ def _save(im, fp, filename, save_all=False):
             # (packbits) or LZWDecode (tiff/lzw compression).  Note that
             # PDF 1.2 also supports Flatedecode (zip compression).
 
-            bits = 8
             params = None
             decode = None
-            smaskindata = 0
 
             #
             # Get image characteristics
 
             width, height = im.size
 
+            dict_obj = {"BitsPerComponent": 8}
             if im.mode == "1":
                 if features.check("libtiff"):
                     filter = "CCITTFaxDecode"
-                    bits = 1
+                    dict_obj["BitsPerComponent"] = 1
                     params = PdfParser.PdfArray(
                         [
                             PdfParser.PdfDict(
@@ -178,7 +177,7 @@ def _save(im, fp, filename, save_all=False):
                 filter = "JPXDecode"
                 colorspace = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
-                smaskindata = 1
+                dict_obj["SMaskInData"] = 1
             elif im.mode == "CMYK":
                 filter = "DCTDecode"
                 colorspace = PdfParser.PdfName("DeviceCMYK")
@@ -206,6 +205,7 @@ def _save(im, fp, filename, save_all=False):
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
             elif filter == "JPXDecode":
+                del dict_obj["BitsPerComponent"]
                 Image.SAVE["JPEG2000"](im, op, filename)
             elif filter == "FlateDecode":
                 ImageFile._save(im, op, [("zip", (0, 0) + im.size, 0, im.mode)])
@@ -230,11 +230,10 @@ def _save(im, fp, filename, save_all=False):
                 Width=width,  # * 72.0 / x_resolution,
                 Height=height,  # * 72.0 / y_resolution,
                 Filter=filter,
-                BitsPerComponent=bits,
                 Decode=decode,
                 DecodeParms=params,
                 ColorSpace=colorspace,
-                SMaskInData=smaskindata,
+                **dict_obj,
             )
 
             #
