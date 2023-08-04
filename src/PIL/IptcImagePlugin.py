@@ -58,7 +58,7 @@ class IptcImageFile(ImageFile.ImageFile):
         #
         # get a IPTC field header
         s = self.fp.read(5)
-        if not len(s):
+        if not s.strip(b"\x00"):
             return None, 0
 
         tag = s[1], s[2]

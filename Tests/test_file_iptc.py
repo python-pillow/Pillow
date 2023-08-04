@@ -30,6 +30,19 @@ def test_getiptcinfo_jpg_found():
     assert iptc[(2, 101)] == b"Hungary"
 
 
+def test_getiptcinfo_zero_padding():
+    # Arrange
+    with Image.open(TEST_FILE) as im:
+        im.info["photoshop"][0x0404] += b"\x00\x00\x00"
+
+        # Act
+        iptc = IptcImagePlugin.getiptcinfo(im)
+
+    # Assert
+    assert isinstance(iptc, dict)
+    assert len(iptc) == 3
+
+
 def test_getiptcinfo_tiff_none():
     # Arrange
     with Image.open("Tests/images/hopper.tif") as im:
