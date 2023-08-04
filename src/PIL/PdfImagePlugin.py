@@ -164,6 +164,7 @@ def _save(im, fp, filename, save_all=False):
                 # params = f"<< /Predictor 15 /Columns {width-2} >>"
                 colorspace = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
+                dict_obj["SMaskInData"] = 1
             elif im.mode == "P":
                 filter = "ASCIIHexDecode"
                 palette = im.getpalette()
