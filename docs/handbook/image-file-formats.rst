@@ -1486,7 +1486,7 @@ files. Different encoding methods are used, depending on the image mode.
   unavailable
 * L, RGB and CMYK mode images use JPEG encoding
 * P mode images use HEX encoding
-* RGBA mode images use JPEG2000 encoding
+* LA and RGBA mode images use JPEG2000 encoding
 
 .. _pdf-saving:
 
