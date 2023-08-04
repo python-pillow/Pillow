@@ -125,7 +125,6 @@ def _save(im, fp, filename, save_all=False):
             # (packbits) or LZWDecode (tiff/lzw compression).  Note that
             # PDF 1.2 also supports Flatedecode (zip compression).
 
-            bits = 8
             params = None
             decode = None
 
@@ -134,10 +133,11 @@ def _save(im, fp, filename, save_all=False):
 
             width, height = im.size
 
+            dict_obj = {"BitsPerComponent": 8}
             if im.mode == "1":
                 if features.check("libtiff"):
                     filter = "CCITTFaxDecode"
-                    bits = 1
+                    dict_obj["BitsPerComponent"] = 1
                     params = PdfParser.PdfArray(
                         [
                             PdfParser.PdfDict(
@@ -152,17 +152,17 @@ def _save(im, fp, filename, save_all=False):
                     )
                 else:
                     filter = "DCTDecode"
-                colorspace = PdfParser.PdfName("DeviceGray")
+                dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "L":
                 filter = "DCTDecode"
                 # params = f"<< /Predictor 15 /Columns {width-2} >>"
-                colorspace = PdfParser.PdfName("DeviceGray")
+                dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceGray")
                 procset = "ImageB"  # grayscale
             elif im.mode == "P":
                 filter = "ASCIIHexDecode"
                 palette = im.getpalette()
-                colorspace = [
+                dict_obj["ColorSpace"] = [
                     PdfParser.PdfName("Indexed"),
                     PdfParser.PdfName("DeviceRGB"),
                     255,
@@ -171,15 +171,15 @@ def _save(im, fp, filename, save_all=False):
                 procset = "ImageI"  # indexed color
             elif im.mode == "RGB":
                 filter = "DCTDecode"
-                colorspace = PdfParser.PdfName("DeviceRGB")
+                dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
             elif im.mode == "RGBA":
                 filter = "JPXDecode"
-                colorspace = PdfParser.PdfName("DeviceRGB")
                 procset = "ImageC"  # color images
+                dict_obj["SMaskInData"] = 1
             elif im.mode == "CMYK":
                 filter = "DCTDecode"
-                colorspace = PdfParser.PdfName("DeviceCMYK")
+                dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceCMYK")
                 procset = "ImageC"  # color images
                 decode = [1, 0, 1, 0, 1, 0, 1, 0]
             else:
@@ -204,6 +204,7 @@ def _save(im, fp, filename, save_all=False):
             elif filter == "DCTDecode":
                 Image.SAVE["JPEG"](im, op, filename)
             elif filter == "JPXDecode":
+                del dict_obj["BitsPerComponent"]
                 Image.SAVE["JPEG2000"](im, op, filename)
             elif filter == "FlateDecode":
                 ImageFile._save(im, op, [("zip", (0, 0) + im.size, 0, im.mode)])
@@ -228,10 +229,9 @@ def _save(im, fp, filename, save_all=False):
                 Width=width,  # * 72.0 / x_resolution,
                 Height=height,  # * 72.0 / y_resolution,
                 Filter=filter,
-                BitsPerComponent=bits,
                 Decode=decode,
                 DecodeParms=params,
-                ColorSpace=colorspace,
+                **dict_obj,
             )
 
             #
