@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Added saving LA images as PDFs #7299
+  [radarhere]
+
+- Set SMaskInData to 1 for PDFs with alpha #7316, #7317
+  [radarhere]
+
 - Changed Image mode property to be read-only by default #7307
   [radarhere]
 
