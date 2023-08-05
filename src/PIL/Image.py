@@ -492,7 +492,10 @@ class Image:
         self._exif = None
 
     def _use_im_values(self):
-        ''' Whether or not to try using values from self.im in addition to the values in this class. '''
+        """
+        Whether or not to try using values from self.im
+        in addition to the values in this class.
+        """
         return self.im is not None
 
     @property
