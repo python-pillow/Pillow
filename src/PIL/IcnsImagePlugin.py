@@ -261,11 +261,7 @@ class IcnsImageFile(ImageFile.ImageFile):
             self.best_size[1] * self.best_size[2],
         )
 
-    @property
-    def size(self):
-        return self._size
-
-    @size.setter
+    @Image.Image.size.setter
     def size(self, value):
         info_size = value
         if info_size not in self.info["sizes"] and len(info_size) == 2:
@@ -283,7 +279,10 @@ class IcnsImageFile(ImageFile.ImageFile):
         if info_size not in self.info["sizes"]:
             msg = "This is not one of the allowed sizes of this image"
             raise ValueError(msg)
-        self._size = value
+        if value != self.size:
+            self.im = None
+            self.pyaccess = None
+            self._size = value
 
     def load(self):
         if len(self.size) == 3:
@@ -306,7 +305,7 @@ class IcnsImageFile(ImageFile.ImageFile):
 
         self.im = im.im
         self._mode = im.mode
-        self.size = im.size
+        self._size = im.size
 
         return px
 

@@ -480,15 +480,20 @@ class Image:
 
     def __init__(self):
         # FIXME: take "new" parameters / other image?
-        # FIXME: turn mode and size into delegating properties?
         self.im = None
-        self._mode = ""
-        self._size = (0, 0)
+        # do not directly change __mode; use _mode instead
+        self.__mode = ""
+        # do not directly change __size; use _size instead
+        self.__size = (0, 0)
         self.palette = None
         self.info = {}
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
+
+    def _use_im_values(self):
+        ''' Whether or not to try using values from self.im in addition to the values in this class. '''
+        return self.im is not None
 
     @property
     def width(self):
@@ -503,8 +508,34 @@ class Image:
         return self._size
 
     @property
+    def _size(self):
+        if self._use_im_values():
+            return self.im.size
+        return self.__size
+
+    @_size.setter
+    def _size(self, value):
+        # set im.size first in case it raises an excepton
+        if self._use_im_values():
+            self.im.size = value
+        self.__size = value
+
+    @property
     def mode(self):
         return self._mode
+
+    @property
+    def _mode(self):
+        if self._use_im_values():
+            return self.im.mode
+        return self.__mode
+
+    @_mode.setter
+    def _mode(self, value):
+        # set im.mode first in case it raises an excepton
+        if self._use_im_values():
+            self.im.mode = value
+        self.__mode = value
 
     def _new(self, im):
         new = Image()

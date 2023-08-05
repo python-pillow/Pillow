@@ -3646,9 +3646,47 @@ _getattr_mode(ImagingObject *self, void *closure) {
     return PyUnicode_FromString(self->image->mode);
 }
 
+static int
+_setattr_mode(ImagingObject *self, PyObject *value, void *closure) {
+    if (value == NULL) {
+        self->image->mode[0] = '\0';
+        return 0;
+    }
+
+    const char *mode = PyUnicode_AsUTF8(value);
+    if (mode == NULL) {
+        return -1;
+    }
+    if (strlen(mode) >= IMAGING_MODE_LENGTH) {
+        PyErr_SetString(PyExc_ValueError, "given mode name is too long");
+        return -1;
+    }
+
+    strcpy(self->image->mode, mode);
+    return 0;
+}
+
 static PyObject *
 _getattr_size(ImagingObject *self, void *closure) {
     return Py_BuildValue("ii", self->image->xsize, self->image->ysize);
+}
+
+static int
+_setattr_size(ImagingObject *self, PyObject *value, void *closure) {
+    if (value == NULL) {
+        self->image->xsize = 0;
+        self->image->ysize = 0;
+        return 0;
+    }
+
+    int xsize, ysize;
+    if (!PyArg_ParseTuple(value, "ii", &xsize, &ysize)) {
+        return -1;
+    }
+
+    self->image->xsize = xsize;
+    self->image->ysize = ysize;
+    return 0;
 }
 
 static PyObject *
@@ -3679,13 +3717,14 @@ _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
 };
 
 static struct PyGetSetDef getsetters[] = {
-    {"mode", (getter)_getattr_mode},
-    {"size", (getter)_getattr_size},
+    {"mode", (getter)_getattr_mode, (setter)_setattr_mode},
+    {"size", (getter)_getattr_size, (setter)_setattr_size},
     {"bands", (getter)_getattr_bands},
     {"id", (getter)_getattr_id},
     {"ptr", (getter)_getattr_ptr},
     {"unsafe_ptrs", (getter)_getattr_unsafe_ptrs},
-    {NULL}};
+    {NULL}
+};
 
 /* basic sequence semantics */
 

@@ -662,7 +662,7 @@ class TestImage:
         blank_pa.palette = None
 
         def _make_new(base_image, im, palette_result=None):
-            new_im = base_image._new(im)
+            new_im = base_image._new(im.im)
             assert new_im.mode == im.mode
             assert new_im.size == im.size
             assert new_im.info == base_image.info

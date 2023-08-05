@@ -139,6 +139,9 @@ class ImageFile(Image.Image):
         if self.format is not None:
             return Image.MIME.get(self.format.upper())
 
+    def _use_im_values(self):
+        return self.tile is None and self.im is not None
+
     def __setstate__(self, state):
         self.tile = []
         super().__setstate__(state)

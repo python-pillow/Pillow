@@ -310,36 +310,36 @@ class IcoImageFile(ImageFile.ImageFile):
         self.size = self.ico.entry[0]["dim"]
         self.load()
 
-    @property
-    def size(self):
-        return self._size
-
-    @size.setter
+    @Image.Image.size.setter
     def size(self, value):
         if value not in self.info["sizes"]:
             msg = "This is not one of the allowed sizes of this image"
             raise ValueError(msg)
-        self._size = value
+        if value != self.size:
+            self.im = None
+            self.pyaccess = None
+            self._size = value
 
     def load(self):
         if self.im is not None and self.im.size == self.size:
             # Already loaded
             return Image.Image.load(self)
-        im = self.ico.getimage(self.size)
+        size_to_load = self.size
+        im = self.ico.getimage(size_to_load)
         # if tile is PNG, it won't really be loaded yet
         im.load()
         self.im = im.im
         self.pyaccess = None
         self._mode = im.mode
-        if im.size != self.size:
+        if im.size != size_to_load:
             warnings.warn("Image was not the expected size")
 
-            index = self.ico.getentryindex(self.size)
+            index = self.ico.getentryindex(size_to_load)
             sizes = list(self.info["sizes"])
             sizes[index] = im.size
             self.info["sizes"] = set(sizes)
 
-            self.size = im.size
+            self._size = im.size
 
     def load_seek(self):
         # Flag the ImageFile.Parser so that it

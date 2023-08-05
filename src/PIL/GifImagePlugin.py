@@ -328,8 +328,8 @@ class GifImageFile(ImageFile.ImageFile):
                         self._mode = "RGBA"
                         del self.info["transparency"]
                     else:
-                        self._mode = "RGB"
                         self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
+                        self._mode = "RGB"
 
         def _rgb(color):
             if self._frame_palette:
