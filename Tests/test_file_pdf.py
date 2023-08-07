@@ -48,6 +48,22 @@ def test_save_alpha(tmp_path, mode):
     helper_save_as_pdf(tmp_path, mode)
 
 
+def test_p_alpha(tmp_path):
+    # Arrange
+    outfile = str(tmp_path / "temp.pdf")
+    with Image.open("Tests/images/pil123p.png") as im:
+        assert im.mode == "P"
+        assert isinstance(im.info["transparency"], bytes)
+
+        # Act
+        im.save(outfile)
+
+    # Assert
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+    assert b"SMask" in contents
+
+
 def test_monochrome(tmp_path):
     # Arrange
     mode = "1"

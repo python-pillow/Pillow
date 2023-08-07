@@ -100,6 +100,13 @@ def _write_image(im, filename, existing_pdf, image_refs):
             PdfParser.PdfBinary(palette),
         ]
         procset = "ImageI"  # indexed color
+
+        if "transparency" in im.info:
+            smask = im.convert("LA").getchannel("A")
+            smask.encoderinfo = {}
+
+            image_ref = _write_image(smask, filename, existing_pdf, image_refs)[0]
+            dict_obj["SMask"] = image_ref
     elif im.mode == "RGB":
         filter = "DCTDecode"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceRGB")
@@ -130,7 +137,7 @@ def _write_image(im, filename, existing_pdf, image_refs):
             "TIFF",
             compression="group4",
             # use a single strip
-            strip_size=math.ceil(im.width / 8) * im.height,
+            strip_size=math.ceil(width / 8) * height,
         )
     elif filter == "DCTDecode":
         Image.SAVE["JPEG"](im, op, filename)
@@ -152,8 +159,9 @@ def _write_image(im, filename, existing_pdf, image_refs):
     else:
         filter = PdfParser.PdfName(filter)
 
+    image_ref = image_refs.pop(0)
     existing_pdf.write_obj(
-        image_refs[page_number],
+        image_ref,
         stream=stream,
         Type=PdfParser.PdfName("XObject"),
         Subtype=PdfParser.PdfName("Image"),
@@ -165,7 +173,7 @@ def _write_image(im, filename, existing_pdf, image_refs):
         **dict_obj,
     )
 
-    return procset
+    return image_ref, procset
 
 
 def _save(im, fp, filename, save_all=False):
@@ -231,6 +239,9 @@ def _save(im, fp, filename, save_all=False):
         number_of_pages += im_number_of_pages
         for i in range(im_number_of_pages):
             image_refs.append(existing_pdf.next_object_id(0))
+            if im.mode == "P" and "transparency" in im.info:
+                image_refs.append(existing_pdf.next_object_id(0))
+
             page_refs.append(existing_pdf.next_object_id(0))
             contents_refs.append(existing_pdf.next_object_id(0))
             existing_pdf.pages.append(page_refs[-1])
@@ -243,7 +254,7 @@ def _save(im, fp, filename, save_all=False):
     for im_sequence in ims:
         im_pages = ImageSequence.Iterator(im_sequence) if save_all else [im_sequence]
         for im in im_pages:
-            procset = _write_image(im, filename, existing_pdfs, image_refs)
+            image_ref, procset = _write_image(im, filename, existing_pdf, image_refs)
 
             #
             # page
@@ -252,7 +263,7 @@ def _save(im, fp, filename, save_all=False):
                 page_refs[page_number],
                 Resources=PdfParser.PdfDict(
                     ProcSet=[PdfParser.PdfName("PDF"), PdfParser.PdfName(procset)],
-                    XObject=PdfParser.PdfDict(image=image_refs[page_number]),
+                    XObject=PdfParser.PdfDict(image=image_ref),
                 ),
                 MediaBox=[
                     0,
