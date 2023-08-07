@@ -518,7 +518,7 @@ class Image:
 
     @_size.setter
     def _size(self, value):
-        # set im.size first in case it raises an excepton
+        # set im.size first in case it raises an exception
         if self._use_im_values():
             self.im.size = value
         self.__size = value
@@ -535,7 +535,7 @@ class Image:
 
     @_mode.setter
     def _mode(self, value):
-        # set im.mode first in case it raises an excepton
+        # set im.mode first in case it raises an exception
         if self._use_im_values():
             self.im.mode = value
         self.__mode = value
