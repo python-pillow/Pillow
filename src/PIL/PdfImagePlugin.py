@@ -144,10 +144,6 @@ def _write_image(im, filename, existing_pdf, image_refs):
     elif filter == "JPXDecode":
         del dict_obj["BitsPerComponent"]
         Image.SAVE["JPEG2000"](im, op, filename)
-    elif filter == "FlateDecode":
-        ImageFile._save(im, op, [("zip", (0, 0) + im.size, 0, im.mode)])
-    elif filter == "RunLengthDecode":
-        ImageFile._save(im, op, [("packbits", (0, 0) + im.size, 0, im.mode)])
     else:
         msg = f"unsupported PDF filter ({filter})"
         raise ValueError(msg)
