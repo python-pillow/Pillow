@@ -61,7 +61,7 @@ def test_p_alpha(tmp_path):
     # Assert
     with open(outfile, "rb") as fp:
         contents = fp.read()
-    assert b"SMask" in contents
+    assert b"\n/SMask " in contents
 
 
 def test_monochrome(tmp_path):
