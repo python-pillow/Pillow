@@ -114,7 +114,7 @@ class PcxImageFile(ImageFile.ImageFile):
         # Don't trust the passed in stride.
         # Calculate the approximate position for ourselves.
         # CVE-2020-35653
-        stride = (self._size[0] * bits + 7) // 8
+        stride = (self.size[0] * bits + 7) // 8
 
         # While the specification states that this must be even,
         # not all images follow this

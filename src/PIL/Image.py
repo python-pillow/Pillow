@@ -508,37 +508,31 @@ class Image:
 
     @property
     def size(self):
-        return self._size
-
-    @property
-    def _size(self):
         if self._use_im_values():
             return self.im.size
         return self.__size
 
-    @_size.setter
     def _size(self, value):
         # set im.size first in case it raises an exception
         if self._use_im_values():
             self.im.size = value
         self.__size = value
 
-    @property
-    def mode(self):
-        return self._mode
+    _size = property(fset=_size)
 
     @property
-    def _mode(self):
+    def mode(self):
         if self._use_im_values():
             return self.im.mode
         return self.__mode
 
-    @_mode.setter
     def _mode(self, value):
         # set im.mode first in case it raises an exception
         if self._use_im_values():
             self.im.mode = value
         self.__mode = value
+
+    _mode = property(fset=_mode)
 
     def _new(self, im):
         new = Image()

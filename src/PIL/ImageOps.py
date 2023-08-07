@@ -604,7 +604,7 @@ def exif_transpose(image, *, in_place=False):
         if in_place:
             image.im = transposed_image.im
             image.pyaccess = None
-            image._size = transposed_image._size
+            image._size = transposed_image.size
         exif_image = image if in_place else transposed_image
 
         exif = exif_image.getexif()
