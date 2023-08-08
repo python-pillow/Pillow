@@ -247,7 +247,7 @@ def eval(expression, _dict={}, **kw):
 
     def scan(code):
         for const in code.co_consts:
-            if type(const) == type(compiled_code):
+            if type(const) is type(compiled_code):
                 scan(const)
 
         for name in code.co_names:
