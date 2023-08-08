@@ -661,15 +661,15 @@ class TestImage:
         blank_p.palette = None
         blank_pa.palette = None
 
-        def _make_new(base_image, im, palette_result=None):
-            new_im = base_image._new(im)
-            assert new_im.mode == im.mode
-            assert new_im.size == im.size
-            assert new_im.info == base_image.info
+        def _make_new(base_image, image, palette_result=None):
+            new_image = base_image._new(image.im)
+            assert new_image.mode == image.mode
+            assert new_image.size == image.size
+            assert new_image.info == base_image.info
             if palette_result is not None:
-                assert new_im.palette.tobytes() == palette_result.tobytes()
+                assert new_image.palette.tobytes() == palette_result.tobytes()
             else:
-                assert new_im.palette is None
+                assert new_image.palette is None
 
         _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
         _make_new(im_p, im, None)
