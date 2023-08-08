@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Fixed transparency when saving P mode images to PDF #7323
+  [radarhere]
+
 - Added saving LA images as PDFs #7299
   [radarhere]
 
