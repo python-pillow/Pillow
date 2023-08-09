@@ -875,6 +875,14 @@ def test_identical_frames_to_single_frame(duration, tmp_path):
         assert reread.info["duration"] == 8500
 
 
+def test_loop_none(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("L", (100, 100), "#000")
+    im.save(out, loop=None)
+    with Image.open(out) as reread:
+        assert "loop" not in reread.info
+
+
 def test_number_of_loops(tmp_path):
     number_of_loops = 2
 
