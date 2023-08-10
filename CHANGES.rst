@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Allow "loop=None" when saving GIF images #7329
+  [radarhere]
+
 - Fixed transparency when saving P mode images to PDF #7323
   [radarhere]
 
