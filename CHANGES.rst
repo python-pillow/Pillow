@@ -5,6 +5,18 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Allow "loop=None" when saving GIF images #7329
+  [radarhere]
+
+- Fixed transparency when saving P mode images to PDF #7323
+  [radarhere]
+
+- Added saving LA images as PDFs #7299
+  [radarhere]
+
+- Set SMaskInData to 1 for PDFs with alpha #7316, #7317
+  [radarhere]
+
 - Changed Image mode property to be read-only by default #7307
   [radarhere]
 

@@ -253,7 +253,7 @@ their :py:attr:`~PIL.Image.Image.info` values.
 
 **loop**
     Integer number of times the GIF should loop. 0 means that it will loop
-    forever. By default, the image will not loop.
+    forever. If omitted or ``None``, the image will not loop.
 
 **comment**
     A comment about the image.
