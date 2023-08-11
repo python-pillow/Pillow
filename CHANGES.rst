@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Read WebP duration after opening #7311
+  [k128, radarhere]
+
 - Allow "loop=None" when saving GIF images #7329
   [radarhere]
 
