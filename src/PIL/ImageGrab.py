@@ -140,7 +140,24 @@ def grabclipboard():
                 return BmpImagePlugin.DibImageFile(data)
         return None
     else:
-        if shutil.which("wl-paste"):
+        if shutil.which("loginctl"):
+            try:
+                loginctl = subprocess.check_output("loginctl").decode().split("\n")
+            except subprocess.CalledProcessError:
+                loginctl = None
+        else:
+            loginctl =  None
+
+        if loginctl is not None:
+            username = subprocess.check_output("whoami").decode().strip("\n")
+            sessionid = [line.split()[0] for line in loginctl if username in line.split()][0]
+            sessiontype = subprocess.check_output(
+                ["loginctl", "show-session", sessionid, "-p", "Type"]
+                ).decode().strip("\n").split("=")[1]
+        else: # Session type check failed
+            sessiontype = None
+
+        if shutil.which("wl-paste") and ((sessiontype == "wayland") or (sessiontype is None)):
             output = subprocess.check_output(["wl-paste", "-l"]).decode()
             mimetypes = output.splitlines()
             if "image/png" in mimetypes:
@@ -153,11 +170,12 @@ def grabclipboard():
             args = ["wl-paste"]
             if mimetype:
                 args.extend(["-t", mimetype])
-        elif shutil.which("xclip"):
+        elif shutil.which("xclip") and ((sessiontype == "x11") or (sessiontype is None)):
             args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
         else:
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
             raise NotImplementedError(msg)
+
         p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         err = p.stderr
         if err:
