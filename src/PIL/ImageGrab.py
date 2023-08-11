@@ -149,7 +149,7 @@ def grabclipboard():
             loginctl = None
 
         if loginctl is not None:
-            username = subprocess.check_output("whoami").decode().strip("\n")
+            username = os.getlogin()
             sessionid = [
                 line.split()[0] for line in loginctl if username in line.split()
             ][0]
