@@ -141,13 +141,13 @@ def grabclipboard():
         return None
     else:
         if os.getenv("WAYLAND_DISPLAY"):
-            sessiontype = "wayland"
+            session_type = "wayland"
         elif os.getenv("DISPLAY"):
-            sessiontype = "x11"
+            session_type = "x11"
         else:  # Session type check failed
-            sessiontype = None
+            session_type = None
 
-        if shutil.which("wl-paste") and sessiontype in ["wayland", None]:
+        if shutil.which("wl-paste") and session_type in ["wayland", None]:
             output = subprocess.check_output(["wl-paste", "-l"]).decode()
             mimetypes = output.splitlines()
             if "image/png" in mimetypes:
@@ -160,7 +160,7 @@ def grabclipboard():
             args = ["wl-paste"]
             if mimetype:
                 args.extend(["-t", mimetype])
-        elif shutil.which("xclip") and sessiontype in ["x11", None]:
+        elif shutil.which("xclip") and session_type in ["x11", None]:
             args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
         else:
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
