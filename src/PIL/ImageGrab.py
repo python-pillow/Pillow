@@ -140,27 +140,10 @@ def grabclipboard():
                 return BmpImagePlugin.DibImageFile(data)
         return None
     else:
-        if shutil.which("loginctl"):
-            try:
-                loginctl = subprocess.check_output("loginctl").decode().split("\n")
-            except subprocess.CalledProcessError:
-                loginctl = None
-        else:
-            loginctl = None
-
-        if loginctl is not None:
-            username = os.getlogin()
-            sessionid = [
-                line.split()[0] for line in loginctl if username in line.split()
-            ][0]
-            sessiontype = (
-                subprocess.check_output(
-                    ["loginctl", "show-session", sessionid, "-p", "Type"]
-                )
-                .decode()
-                .strip("\n")
-                .split("=")[1]
-            )
+        if os.getenv("WAYLAND_DISPLAY"):
+            sessiontype = "wayland"
+        elif os.getenv("DISPLAY"):
+            sessiontype = "x11"
         else:  # Session type check failed
             sessiontype = None
 
