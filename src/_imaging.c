@@ -1075,9 +1075,9 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
-    float radius = 0;
+    float xradius, yradius;
     int passes = 3;
-    if (!PyArg_ParseTuple(args, "f|i", &radius, &passes)) {
+    if (!PyArg_ParseTuple(args, "(ff)|i", &xradius, &yradius, &passes)) {
         return NULL;
     }
 
@@ -1087,7 +1087,7 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!ImagingGaussianBlur(imOut, imIn, radius, passes)) {
+    if (!ImagingGaussianBlur(imOut, imIn, xradius, yradius, passes)) {
         ImagingDelete(imOut);
         return NULL;
     }
@@ -2131,9 +2131,9 @@ _box_blur(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
-    float radius;
+    float xradius, yradius;
     int n = 1;
-    if (!PyArg_ParseTuple(args, "f|i", &radius, &n)) {
+    if (!PyArg_ParseTuple(args, "(ff)|i", &xradius, &yradius, &n)) {
         return NULL;
     }
 
@@ -2143,7 +2143,7 @@ _box_blur(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!ImagingBoxBlur(imOut, imIn, radius, n)) {
+    if (!ImagingBoxBlur(imOut, imIn, xradius, yradius, n)) {
         ImagingDelete(imOut);
         return NULL;
     }

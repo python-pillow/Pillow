@@ -309,7 +309,7 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging
-ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius, int passes);
+ImagingGaussianBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int passes);
 extern Imaging
 ImagingGetBand(Imaging im, int band);
 extern Imaging
@@ -376,7 +376,7 @@ ImagingTransform(
 extern Imaging
 ImagingUnsharpMask(Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging
-ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);
+ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n);
 extern Imaging
 ImagingColorLUT3D_linear(
     Imaging imOut,
