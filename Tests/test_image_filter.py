@@ -23,6 +23,7 @@ from .helper import assert_image_equal, hopper
         ImageFilter.MinFilter,
         ImageFilter.ModeFilter,
         ImageFilter.GaussianBlur,
+        ImageFilter.GaussianBlur(0),
         ImageFilter.GaussianBlur(5),
         ImageFilter.GaussianBlur((2, 5)),
         ImageFilter.BoxBlur(0),

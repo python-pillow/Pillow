@@ -170,6 +170,8 @@ class GaussianBlur(MultibandFilter):
         xy = self.radius
         if not isinstance(xy, (tuple, list)):
             xy = (xy, xy)
+        if xy == (0, 0):
+            return image.copy()
         return image.gaussian_blur(xy)
 
 
@@ -202,6 +204,8 @@ class BoxBlur(MultibandFilter):
         xy = self.radius
         if not isinstance(xy, (tuple, list)):
             xy = (xy, xy)
+        if xy == (0, 0):
+            return image.copy()
         return image.box_blur(xy)
 
 

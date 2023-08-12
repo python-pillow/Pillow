@@ -258,29 +258,39 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
         return ImagingError_ModeError();
     }
 
-    imTransposed = ImagingNewDirty(imIn->mode, imIn->ysize, imIn->xsize);
-    if (!imTransposed) {
-        return NULL;
-    }
-
     /* Apply blur in one dimension.
        Use imOut as a destination at first pass,
        then use imOut as a source too. */
-    ImagingHorizontalBoxBlur(imOut, imIn, xradius);
-    for (i = 1; i < n; i++) {
-        ImagingHorizontalBoxBlur(imOut, imOut, xradius);
-    }
-    /* Transpose result for blur in another direction. */
-    ImagingTranspose(imTransposed, imOut);
 
-    /* Reuse imTransposed as a source and destination there. */
-    for (i = 0; i < n; i++) {
-        ImagingHorizontalBoxBlur(imTransposed, imTransposed, yradius);
+    if (xradius != 0) {
+        ImagingHorizontalBoxBlur(imOut, imIn, xradius);
+        for (i = 1; i < n; i++) {
+            ImagingHorizontalBoxBlur(imOut, imOut, xradius);
+        }
     }
-    /* Restore original orientation. */
-    ImagingTranspose(imOut, imTransposed);
+    if (yradius != 0) {
+        imTransposed = ImagingNewDirty(imIn->mode, imIn->ysize, imIn->xsize);
+        if (!imTransposed) {
+            return NULL;
+        }
 
-    ImagingDelete(imTransposed);
+        /* Transpose result for blur in another direction. */
+        ImagingTranspose(imTransposed, xradius == 0 ? imIn : imOut);
+
+        /* Reuse imTransposed as a source and destination there. */
+        for (i = 0; i < n; i++) {
+            ImagingHorizontalBoxBlur(imTransposed, imTransposed, yradius);
+        }
+        /* Restore original orientation. */
+        ImagingTranspose(imOut, imTransposed);
+
+        ImagingDelete(imTransposed);
+    }
+    if (xradius == 0 && yradius == 0) {
+        if (!ImagingCopy2(imOut, imIn)) {
+            return NULL;
+        }
+    }
 
     return imOut;
 }
