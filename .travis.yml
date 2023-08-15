@@ -3,7 +3,7 @@ env:
       - REPO_DIR=Pillow
       - BUILD_COMMIT=HEAD
       - PLAT=aarch64
-      - TEST_DEPENDS="pytest pytest-timeout"
+      - TEST_DEPENDS="pytest-timeout"
 
 language: python
 # Default Python version is usually 3.6
