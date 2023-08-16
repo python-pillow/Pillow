@@ -117,10 +117,7 @@ before_install:
 install:
     # Maybe get and clean and patch source
     - clean_code
-    - libc=${MB_ML_LIBC:-manylinux}
-    - docker_image="quay.io/pypa/${MB_ML_LIBC:-manylinux}${MB_ML_VER}_${PLAT}"
-    - retry docker pull $docker_image
-    - docker run --rm -e BUILD_COMMANDS="build_wheel" -e PYTHON_VERSION="$MB_PYTHON_VERSION" -e MB_PYTHON_VERSION="$MB_PYTHON_VERSION" -e BUILD_COMMIT="HEAD" -e REPO_DIR="$REPO_DIR" -e PLAT="$PLAT" -e MB_ML_VER="$MB_ML_VER" -e MB_ML_LIBC="$libc" -v $PWD:/io -v $HOME:/parent-home $docker_image /io/$MULTIBUILD_DIR/docker_build_wrap.sh
+    - build_multilinux aarch64 build_wheel
     - ls -l "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/"
 
 script:
