@@ -18,7 +18,7 @@ else
     GIFLIB_VERSION=5.2.1
 fi
 if [[ -n "$IS_MACOS" ]] || [[ "$MB_ML_VER" != 2014 ]]; then
-    ZLIB_VERSION=1.2.13
+    ZLIB_VERSION=1.3
 else
     ZLIB_VERSION=1.2.8
 fi
