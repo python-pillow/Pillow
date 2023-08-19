@@ -797,10 +797,14 @@ def _save(im, fp, filename):
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]
-
-    # The EXIF info needs to be written as one block, + APP1, + one spare byte.
-    # Ensure that our buffer is big enough. Same with the icc_profile block.
-    bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
+        if exif:
+            bufsize += len(exif) + 5
+        if extra:
+            bufsize += len(extra) + 1
+    else:
+        # The EXIF info needs to be written as one block, + APP1, + one spare byte.
+        # Ensure that our buffer is big enough. Same with the icc_profile block.
+        bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
 
     ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
 
