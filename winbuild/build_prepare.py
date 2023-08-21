@@ -130,9 +130,9 @@ deps = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "https://zlib.net/zlib1213.zip",
-        "filename": "zlib1213.zip",
-        "dir": "zlib-1.2.13",
+        "url": "https://zlib.net/zlib13.zip",
+        "filename": "zlib13.zip",
+        "dir": "zlib-1.3",
         "license": "README",
         "license_pattern": "Copyright notice:\n\n(.+)$",
         "build": [
@@ -335,9 +335,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.0.0.zip",
-        "filename": "harfbuzz-8.0.0.zip",
-        "dir": "harfbuzz-8.0.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.1.1.zip",
+        "filename": "harfbuzz-8.1.1.zip",
+        "dir": "harfbuzz-8.1.1",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
