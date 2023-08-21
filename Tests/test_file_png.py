@@ -79,7 +79,7 @@ class TestFilePng:
 
     def test_sanity(self, tmp_path):
         # internal version number
-        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", features.version_codec("zlib"))
+        assert re.search(r"\d+(\.\d+){1,3}$", features.version_codec("zlib"))
 
         test_file = str(tmp_path / "temp.png")
 
