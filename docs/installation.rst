@@ -83,10 +83,9 @@ Install Pillow with :command:`pip`::
 .. tab:: Windows
 
     We provide Pillow binaries for Windows compiled for the matrix of
-    supported Pythons in both 32 and 64-bit versions in the wheel format.
-    These binaries include support for all optional libraries except
-    libimagequant and libxcb. Raqm support requires
-    FriBiDi to be installed separately::
+    supported Pythons in 64-bit versions in the wheel format. These binaries include
+    support for all optional libraries except libimagequant and libxcb. Raqm support
+    requires FriBiDi to be installed separately::
 
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow

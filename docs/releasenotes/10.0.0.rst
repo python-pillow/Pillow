@@ -206,4 +206,4 @@ Support reading signed 8-bit TIFF images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TIFF images with signed integer data, 8 bits per sample and a photometric
-interpretaton of BlackIsZero can now be read.
+interpretation of BlackIsZero can now be read.

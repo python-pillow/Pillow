@@ -912,7 +912,7 @@ def _get_global_header(im, info):
         info
         and (
             "transparency" in info
-            or "loop" in info
+            or info.get("loop") is not None
             or info.get("duration")
             or info.get("comment")
         )
@@ -937,7 +937,7 @@ def _get_global_header(im, info):
         # Global Color Table
         _get_header_palette(palette_bytes),
     ]
-    if "loop" in info:
+    if info.get("loop") is not None:
         header.append(
             b"!"
             + o8(255)  # extension intro
