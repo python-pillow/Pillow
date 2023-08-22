@@ -1,5 +1,5 @@
 import sys
-from io import StringIO
+from io import BytesIO, StringIO
 
 from PIL import Image, IptcImagePlugin
 
@@ -28,6 +28,23 @@ def test_getiptcinfo_jpg_found():
     assert isinstance(iptc, dict)
     assert iptc[(2, 90)] == b"Budapest"
     assert iptc[(2, 101)] == b"Hungary"
+
+
+def test_getiptcinfo_fotostation():
+    # Arrange
+    with open(TEST_FILE, "rb") as fp:
+        data = bytearray(fp.read())
+    data[86] = 240
+    f = BytesIO(data)
+    with Image.open(f) as im:
+        # Act
+        iptc = IptcImagePlugin.getiptcinfo(im)
+
+    # Assert
+    for tag in iptc.keys():
+        if tag[0] == 240:
+            return
+    assert False, "FotoStation tag not found"
 
 
 def test_getiptcinfo_zero_padding():
