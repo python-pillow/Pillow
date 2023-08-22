@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Added session type check for Linux in ImageGrab.grabclipboard() #7332
+  [TheNooB2706, radarhere, hugovk]
+
 - Read WebP duration after opening #7311
   [k128, radarhere]
 
