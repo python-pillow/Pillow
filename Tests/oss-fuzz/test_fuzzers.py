@@ -6,6 +6,7 @@ import packaging
 import pytest
 
 from PIL import Image, features
+from Tests.helper import skip_unless_feature
 
 if sys.platform.startswith("win32"):
     pytest.skip("Fuzzer is linux only", allow_module_level=True)
@@ -48,6 +49,7 @@ def test_fuzz_images(path):
         fuzzers.disable_decompressionbomb_error()
 
 
+@skip_unless_feature("freetype2")
 @pytest.mark.parametrize(
     "path", subprocess.check_output("find Tests/fonts -type f", shell=True).split(b"\n")
 )
