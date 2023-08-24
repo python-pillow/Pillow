@@ -1326,6 +1326,7 @@ def test_stroke_multiline():
     assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_multiline.png", 3.3)
 
 
+@skip_unless_feature("freetype2")
 def test_setting_default_font():
     # Arrange
     im = Image.new("RGB", (100, 250))

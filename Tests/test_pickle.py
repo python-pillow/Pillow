@@ -112,6 +112,7 @@ def helper_assert_pickled_font_images(font1, font2):
     assert_image_equal(im1, im2)
 
 
+@skip_unless_feature("freetype2")
 @pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
 def test_pickle_font_string(protocol):
     # Arrange
@@ -125,6 +126,7 @@ def test_pickle_font_string(protocol):
     helper_assert_pickled_font_images(font, unpickled_font)
 
 
+@skip_unless_feature("freetype2")
 @pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
 def test_pickle_font_file(tmp_path, protocol):
     # Arrange
