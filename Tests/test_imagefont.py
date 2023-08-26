@@ -459,6 +459,9 @@ def test_default_font():
     default_font = ImageFont.load_default()
     draw.text((10, 10), txt, font=default_font)
 
+    larger_default_font = ImageFont.load_default(size=14)
+    draw.text((10, 60), txt, font=larger_default_font)
+
     # Assert
     assert_image_equal_tofile(im, "Tests/images/default_font_freetype.png")
 

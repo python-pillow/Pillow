@@ -2,6 +2,8 @@ import pytest
 
 from PIL import Image, ImageDraw, ImageFont, features
 
+from .helper import assert_image_equal_tofile
+
 pytestmark = pytest.mark.skipif(
     features.check_module("freetype2"),
     reason="PILfont superseded if FreeType is supported",
@@ -20,6 +22,11 @@ def test_default_font():
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/default_font.png")
+
+
+def test_size_without_freetype():
+    with pytest.raises(ImportError):
+        ImageFont.load_default(size=14)
 
 
 def test_unicode():

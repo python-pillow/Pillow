@@ -855,7 +855,7 @@ def load_path(filename):
     raise OSError(msg)
 
 
-def load_default():
+def load_default(size=None):
     """If FreeType support is available, load a version of Aileron Regular,
     https://dotcolon.net/font/aileron, with a more limited character set.
 
@@ -865,7 +865,7 @@ def load_default():
 
     :return: A font object.
     """
-    if core.__class__.__name__ == "module":
+    if core.__class__.__name__ == "module" or size is not None:
         f = truetype(
             BytesIO(
                 base64.b64decode(
@@ -1093,6 +1093,7 @@ AAAAAAQAAAADa3tfFAAAAANAan9kAAAAA4QodoQ==
 """
                 )
             ),
+            10 if size is None else size,
             layout_engine=Layout.BASIC,
         )
     else:
