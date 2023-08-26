@@ -1341,7 +1341,7 @@ def test_setting_default_font():
         assert draw.getfont() == font
     finally:
         ImageDraw.ImageDraw.font = None
-        assert isinstance(draw.getfont(), ImageFont.ImageFont)
+        assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
 
 
 @pytest.mark.parametrize("bbox", BBOX)
