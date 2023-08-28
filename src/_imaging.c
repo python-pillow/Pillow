@@ -1146,11 +1146,15 @@ static inline int
 _getxy(PyObject *xy, int *x, int *y) {
     PyObject *value;
 
-    if (!PyTuple_Check(xy) || PyTuple_GET_SIZE(xy) != 2) {
+    int tuple = PyTuple_Check(xy);
+    if (
+      !(tuple && PyTuple_GET_SIZE(xy) == 2) &&
+      !(PyList_Check(xy) && PyList_GET_SIZE(xy) == 2)
+    ) {
         goto badarg;
     }
 
-    value = PyTuple_GET_ITEM(xy, 0);
+    value = tuple ? PyTuple_GET_ITEM(xy, 0) : PyList_GET_ITEM(xy, 0);
     if (PyLong_Check(value)) {
         *x = PyLong_AS_LONG(value);
     } else if (PyFloat_Check(value)) {
@@ -1164,7 +1168,7 @@ _getxy(PyObject *xy, int *x, int *y) {
         }
     }
 
-    value = PyTuple_GET_ITEM(xy, 1);
+    value = tuple ? PyTuple_GET_ITEM(xy, 1) : PyList_GET_ITEM(xy, 1);
     if (PyLong_Check(value)) {
         *y = PyLong_AS_LONG(value);
     } else if (PyFloat_Check(value)) {
