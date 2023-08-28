@@ -8,6 +8,9 @@ Changelog (Pillow)
 - Allow GaussianBlur and BoxBlur to accept a sequence of x and y radii #7336
   [radarhere]
 
+- Expand JPEG buffer size when saving optimized or progressive #7345
+  [radarhere]
+
 - Added session type check for Linux in ImageGrab.grabclipboard() #7332
   [TheNooB2706, radarhere, hugovk]
 
