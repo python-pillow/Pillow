@@ -1565,9 +1565,7 @@ class Image:
         self.load()
         if self.pyaccess:
             return self.pyaccess.getpixel(xy)
-        if isinstance(xy, list):
-            xy = tuple(xy)
-        return self.im.getpixel(xy)
+        return self.im.getpixel(tuple(xy))
 
     def getprojection(self):
         """
