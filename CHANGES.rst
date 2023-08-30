@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Allow getpixel() to accept a list #7355
+  [radarhere, homm]
+
 - Allow GaussianBlur and BoxBlur to accept a sequence of x and y radii #7336
   [radarhere]
 
