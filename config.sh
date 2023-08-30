@@ -71,7 +71,7 @@ function pre_build {
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2022.2 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
-        build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
+        build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
         cp venv/share/pkgconfig/xcb-proto.pc venv/lib/pkgconfig/xcb-proto.pc
     else
         sed s/\${pc_sysrootdir\}// /usr/local/share/pkgconfig/xcb-proto.pc > /usr/local/lib/pkgconfig/xcb-proto.pc
