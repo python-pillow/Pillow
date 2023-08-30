@@ -2,7 +2,7 @@ import pytest
 
 from PIL import Image, QoiImagePlugin
 
-from .helper import assert_image_equal_tofile, assert_image_similar_tofile
+from .helper import assert_image_equal_tofile
 
 
 def test_sanity():
@@ -18,7 +18,7 @@ def test_sanity():
         assert im.size == (162, 150)
         assert im.format == "QOI"
 
-        assert_image_similar_tofile(im, "Tests/images/pil123rgba.png", 0.03)
+        assert_image_equal_tofile(im, "Tests/images/pil123rgba.png")
 
 
 def test_invalid_file():
