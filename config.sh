@@ -67,7 +67,7 @@ function pre_build {
         BUILD_PREFIX=`dirname $(dirname $(which python))`
         PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
     fi
-    build_simple xcb-proto 1.15.2 https://xcb.freedesktop.org/dist
+    build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2023.2 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
