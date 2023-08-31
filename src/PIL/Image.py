@@ -3000,7 +3000,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
         if args == ():
             args = mode, 0, 1
         if args[0] in _MAPMODES:
-            im = new(mode, (1, 1))
+            im = new(mode, (0, 0))
             im = im._new(core.map_buffer(data, size, decoder_name, 0, args))
             if mode == "P":
                 from . import ImagePalette
