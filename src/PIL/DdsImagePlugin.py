@@ -173,7 +173,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.pixel_format = "BC4"
                 n = 4
                 self._mode = "L"
-            elif fourcc == b"ATI2":
+            elif fourcc in (b"ATI2", b"BC5U"):
                 self.pixel_format = "BC5"
                 n = 5
                 self._mode = "RGB"
