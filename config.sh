@@ -25,7 +25,7 @@ fi
 LIBWEBP_VERSION=1.3.1
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.15
-BROTLI_VERSION=1.0.9
+BROTLI_VERSION=1.1.0
 
 if [[ -n "$IS_MACOS" ]] && [[ "$PLAT" == "x86_64" ]]; then
     function build_openjpeg {
