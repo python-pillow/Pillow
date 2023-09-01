@@ -24,7 +24,7 @@ else
 fi
 LIBWEBP_VERSION=1.3.1
 BZIP2_VERSION=1.0.8
-LIBXCB_VERSION=1.15
+LIBXCB_VERSION=1.16
 BROTLI_VERSION=1.1.0
 
 if [[ -n "$IS_MACOS" ]] && [[ "$PLAT" == "x86_64" ]]; then
@@ -67,16 +67,16 @@ function pre_build {
         BUILD_PREFIX=`dirname $(dirname $(which python))`
         PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
     fi
-    build_simple xcb-proto 1.15.2 https://xcb.freedesktop.org/dist
+    build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
-        build_simple xorgproto 2022.2 https://www.x.org/pub/individual/proto
+        build_simple xorgproto 2023.2 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
-        build_simple libpthread-stubs 0.4 https://xcb.freedesktop.org/dist
+        build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
         cp venv/share/pkgconfig/xcb-proto.pc venv/lib/pkgconfig/xcb-proto.pc
     else
         sed s/\${pc_sysrootdir\}// /usr/local/share/pkgconfig/xcb-proto.pc > /usr/local/lib/pkgconfig/xcb-proto.pc
     fi
-    build_simple libxcb $LIBXCB_VERSION https://xcb.freedesktop.org/dist
+    build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
     if [ -n "$IS_MACOS" ]; then
         BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
