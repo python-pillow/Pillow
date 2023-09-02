@@ -2,8 +2,233 @@
 Changelog (Pillow)
 ==================
 
-9.5.0 (unreleased)
+10.1.0 (unreleased)
+-------------------
+
+- Allow getpixel() to accept a list #7355
+  [radarhere, homm]
+
+- Allow GaussianBlur and BoxBlur to accept a sequence of x and y radii #7336
+  [radarhere]
+
+- Expand JPEG buffer size when saving optimized or progressive #7345
+  [radarhere]
+
+- Added session type check for Linux in ImageGrab.grabclipboard() #7332
+  [TheNooB2706, radarhere, hugovk]
+
+- Read WebP duration after opening #7311
+  [k128, radarhere]
+
+- Allow "loop=None" when saving GIF images #7329
+  [radarhere]
+
+- Fixed transparency when saving P mode images to PDF #7323
+  [radarhere]
+
+- Added saving LA images as PDFs #7299
+  [radarhere]
+
+- Set SMaskInData to 1 for PDFs with alpha #7316, #7317
+  [radarhere]
+
+- Changed Image mode property to be read-only by default #7307
+  [radarhere]
+
+- Silence exceptions in _repr_jpeg_ and _repr_png_ #7266
+  [mtreinish, radarhere]
+
+- Do not use transparency when saving GIF if it has been removed when normalizing mode #7284
+  [radarhere]
+
+- Fix missing symbols when libtiff depends on libjpeg #7270
+  [heitbaum]
+
+10.0.0 (2023-07-01)
+-------------------
+
+- Fixed deallocating mask images #7246
+  [radarhere]
+
+- Added ImageFont.MAX_STRING_LENGTH #7244
+  [radarhere, hugovk]
+
+- Fix Windows build with pyproject.toml #7230
+  [hugovk, nulano, radarhere]
+
+- Do not close provided file handles with libtiff #7199
+  [radarhere]
+
+- Convert to HSV if mode is HSV in getcolor() #7226
+  [radarhere]
+
+- Added alpha_only argument to getbbox() #7123
+  [radarhere. hugovk]
+
+- Prioritise speed in _repr_png_ #7242
+  [radarhere]
+
+- Do not use CFFI access by default on PyPy #7236
+  [radarhere]
+
+- Limit size even if one dimension is zero in decompression bomb check #7235
+  [radarhere]
+
+- Use --config-settings instead of deprecated --global-option #7171
+  [radarhere]
+
+- Better C integer definitions #6645
+  [Yay295, hugovk]
+
+- Fixed finding dependencies on Cygwin #7175
+  [radarhere]
+
+- Changed grabclipboard() to use PNG instead of JPG compression on macOS #7219
+  [abey79, radarhere]
+
+- Added in_place argument to ImageOps.exif_transpose() #7092
+  [radarhere]
+
+- Fixed calling putpalette() on L and LA images before load() #7187
+  [radarhere]
+
+- Fixed saving TIFF multiframe images with LONG8 tag types #7078
+  [radarhere]
+
+- Fixed combining single duration across duplicate APNG frames #7146
+  [radarhere]
+
+- Remove temporary file when error is raised #7148
+  [radarhere]
+
+- Do not use temporary file when grabbing clipboard on Linux #7200
+  [radarhere]
+
+- If the clipboard fails to open on Windows, wait and try again #7141
+  [radarhere]
+
+- Fixed saving multiple 1 mode frames to GIF #7181
+  [radarhere]
+
+- Replaced absolute PIL import with relative import #7173
+  [radarhere]
+
+- Replaced deprecated Py_FileSystemDefaultEncoding for Python >= 3.12 #7192
+  [radarhere]
+
+- Improved wl-paste mimetype handling in ImageGrab #7094
+  [rrcgat, radarhere]
+
+- Added _repr_jpeg_() for IPython display_jpeg #7135
+  [n3011, radarhere, nulano]
+
+- Use "/sbin/ldconfig" if ldconfig is not found #7068
+  [radarhere]
+
+- Prefer screenshots using XCB over gnome-screenshot #7143
+  [nulano, radarhere]
+
+- Fixed joined corners for ImageDraw rounded_rectangle() odd dimensions #7151
+  [radarhere]
+
+- Support reading signed 8-bit TIFF images #7111
+  [radarhere]
+
+- Added width argument to ImageDraw regular_polygon #7132
+  [radarhere]
+
+- Support I mode for ImageFilter.BuiltinFilter #7108
+  [radarhere]
+
+- Raise error from stderr of Linux ImageGrab.grabclipboard() command #7112
+  [radarhere]
+
+- Added unpacker from I;16B to I;16 #7125
+  [radarhere]
+
+- Support float font sizes #7107
+  [radarhere]
+
+- Use later value for duplicate xref entries in PdfParser #7102
+  [radarhere]
+
+- Load before getting size in __getstate__ #7105
+  [bigcat88, radarhere]
+
+- Fixed type handling for include and lib directories #7069
+  [adisbladis, radarhere]
+
+- Remove deprecations for Pillow 10.0.0 #7059, #7080
+  [hugovk, radarhere]
+
+- Drop support for soon-EOL Python 3.7 #7058
+  [hugovk, radarhere]
+
+9.5.0 (2023-04-01)
 ------------------
+
+- Added ImageSourceData to TAGS_V2 #7053
+  [radarhere]
+
+- Clear PPM half token after use #7052
+  [radarhere]
+
+- Removed absolute path to ldconfig #7044
+  [radarhere]
+
+- Support custom comments and PLT markers when saving JPEG2000 images #6903
+  [joshware, radarhere, hugovk]
+
+- Load before getting size in __array_interface__ #7034
+  [radarhere]
+
+- Support creating BGR;15, BGR;16 and BGR;24 images, but drop support for BGR;32 #7010
+  [radarhere]
+
+- Consider transparency when applying APNG blend mask #7018
+  [radarhere]
+
+- Round duration when saving animated WebP images #6996
+  [radarhere]
+
+- Added reading of JPEG2000 comments #6909
+  [radarhere]
+
+- Decrement reference count #7003
+  [radarhere, nulano]
+
+- Allow libtiff_support_custom_tags to be missing #7020
+  [radarhere]
+
+- Improved I;16N support #6834
+  [radarhere]
+
+- Added QOI reading #6852
+  [radarhere, hugovk]
+
+- Added saving RGBA images as PDFs #6925
+  [radarhere]
+
+- Do not raise an error if os.environ does not contain PATH #6935
+  [radarhere, hugovk]
+
+- Close OleFileIO instance when closing or exiting FPX or MIC #7005
+  [radarhere]
+
+- Added __int__ to IFDRational for Python >= 3.11 #6998
+  [radarhere]
+
+- Added memoryview support to Dib.frombytes() #6988
+  [radarhere, nulano]
+
+- Close file pointer copy in the libtiff encoder if still open #6986
+  [fcarron, radarhere]
+
+- Raise an error if ImageDraw co-ordinates are incorrectly ordered #6978
+  [radarhere]
+
+- Added "corners" argument to ImageDraw rounded_rectangle() #6954
+  [radarhere]
 
 - Added memoryview support to frombytes() #6974
   [radarhere]

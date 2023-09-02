@@ -17,9 +17,7 @@ Open, rotate, and display an image (using the default viewer)
 
 The following script loads an image, rotates it 45 degrees, and displays it
 using an external viewer (usually xv on Unix, and the Paint program on
-Windows).
-
-.. code-block:: python
+Windows). ::
 
     from PIL import Image
     with Image.open("hopper.jpg") as im:
@@ -29,9 +27,7 @@ Create thumbnails
 ^^^^^^^^^^^^^^^^^
 
 The following script creates nice thumbnails of all JPEG images in the
-current directory preserving aspect ratios with 128x128 max resolution.
-
-.. code-block:: python
+current directory preserving aspect ratios with 128x128 max resolution. ::
 
     from PIL import Image
     import glob, os
@@ -127,9 +123,7 @@ methods. Unless otherwise stated, all methods return a new instance of the
 .. automethod:: PIL.Image.Image.convert
 
 The following example converts an RGB image (linearly calibrated according to
-ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
-
-.. code-block:: python
+ITU-R 709, using the D65 luminant) to the CIE XYZ color space::
 
     rgb2xyz = (
         0.412453, 0.357580, 0.180423, 0,
@@ -140,9 +134,7 @@ ITU-R 709, using the D65 luminant) to the CIE XYZ color space:
 .. automethod:: PIL.Image.Image.copy
 .. automethod:: PIL.Image.Image.crop
 
-This crops the input image with the provided coordinates:
-
-.. code-block:: python
+This crops the input image with the provided coordinates::
 
     from PIL import Image
 
@@ -162,9 +154,7 @@ This crops the input image with the provided coordinates:
 .. automethod:: PIL.Image.Image.entropy
 .. automethod:: PIL.Image.Image.filter
 
-This blurs the input image using a filter from the ``ImageFilter`` module:
-
-.. code-block:: python
+This blurs the input image using a filter from the ``ImageFilter`` module::
 
     from PIL import Image, ImageFilter
 
@@ -176,9 +166,7 @@ This blurs the input image using a filter from the ``ImageFilter`` module:
 .. automethod:: PIL.Image.Image.frombytes
 .. automethod:: PIL.Image.Image.getbands
 
-This helps to get the bands of the input image:
-
-.. code-block:: python
+This helps to get the bands of the input image::
 
     from PIL import Image
 
@@ -187,9 +175,7 @@ This helps to get the bands of the input image:
 
 .. automethod:: PIL.Image.Image.getbbox
 
-This helps to get the bounding box coordinates of the input image:
-
-.. code-block:: python
+This helps to get the bounding box coordinates of the input image::
 
     from PIL import Image
 
@@ -217,9 +203,7 @@ This helps to get the bounding box coordinates of the input image:
 .. automethod:: PIL.Image.Image.remap_palette
 .. automethod:: PIL.Image.Image.resize
 
-This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``:
-
-.. code-block:: python
+This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``::
 
     from PIL import Image
 
@@ -231,9 +215,7 @@ This resizes the given image from ``(width, height)`` to ``(width/2, height/2)``
 
 .. automethod:: PIL.Image.Image.rotate
 
-This rotates the input image by ``theta`` degrees counter clockwise:
-
-.. code-block:: python
+This rotates the input image by ``theta`` degrees counter clockwise::
 
     from PIL import Image
 
@@ -256,9 +238,7 @@ This rotates the input image by ``theta`` degrees counter clockwise:
 .. automethod:: PIL.Image.Image.transpose
 
 This flips the input image by using the :data:`Transpose.FLIP_LEFT_RIGHT`
-method.
-
-.. code-block:: python
+method. ::
 
     from PIL import Image
 
@@ -432,18 +412,6 @@ See :ref:`concept-filters` for details.
     :undoc-members:
     :noindex:
 
-Some deprecated filters are also available under the following names:
-
-.. data:: NONE
-    :noindex:
-    :value: Resampling.NEAREST
-.. data:: LINEAR
-    :value: Resampling.BILINEAR
-.. data:: CUBIC
-    :value: Resampling.BICUBIC
-.. data:: ANTIALIAS
-    :value: Resampling.LANCZOS
-
 Dither modes
 ^^^^^^^^^^^^
 
@@ -471,7 +439,7 @@ Used to specify the dithering method to use for the
 Palettes
 ^^^^^^^^
 
-Used to specify the pallete to use for the :meth:`~Image.convert` method.
+Used to specify the palette to use for the :meth:`~Image.convert` method.
 
 .. autoclass:: Palette
     :members:

@@ -26,7 +26,6 @@
 #
 
 import base64
-import math
 import os
 import sys
 import warnings
@@ -34,7 +33,6 @@ from enum import IntEnum
 from io import BytesIO
 
 from . import Image
-from ._deprecate import deprecate
 from ._util import is_directory, is_path
 
 
@@ -43,31 +41,21 @@ class Layout(IntEnum):
     RAQM = 1
 
 
-def __getattr__(name):
-    for enum, prefix in {Layout: "LAYOUT_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
-
-
-class _ImagingFtNotInstalled:
-    # module placeholder
-    def __getattr__(self, id):
-        msg = "The _imagingft C module is not installed"
-        raise ImportError(msg)
+MAX_STRING_LENGTH = 1_000_000
 
 
 try:
     from . import _imagingft as core
-except ImportError:
-    core = _ImagingFtNotInstalled()
+except ImportError as ex:
+    from ._util import DeferredError
+
+    core = DeferredError(ex)
 
 
-_UNSPECIFIED = object()
+def _string_length_check(text):
+    if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
+        msg = "too many characters in string"
+        raise ValueError(msg)
 
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
@@ -139,23 +127,6 @@ class ImageFont:
 
         self.font = Image.core.font(image.im, data)
 
-    def getsize(self, text, *args, **kwargs):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text.
-
-        :param text: Text to measure.
-
-        :return: (width, height)
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        return self.font.getsize(text)
-
     def getmask(self, text, mode="", *args, **kwargs):
         """
         Create a bitmap for the text.
@@ -190,6 +161,7 @@ class ImageFont:
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
+        _string_length_check(text)
         width, height = self.font.getsize(text)
         return 0, 0, width, height
 
@@ -200,6 +172,7 @@ class ImageFont:
 
         .. versionadded:: 9.2.0
         """
+        _string_length_check(text)
         width, height = self.font.getsize(text)
         return width
 
@@ -263,10 +236,6 @@ class FreeTypeFont:
         path, size, index, encoding, layout_engine = state
         self.__init__(path, size, index, encoding, layout_engine)
 
-    def _multiline_split(self, text):
-        split_character = "\n" if isinstance(text, str) else b"\n"
-        return text.split(split_character)
-
     def getname(self):
         """
         :return: A tuple of the font family (e.g. Helvetica) and the font style
@@ -297,27 +266,21 @@ class FreeTypeFont:
         string due to kerning. If you need to adjust for kerning, include the following
         character and subtract its length.
 
-        For example, instead of
-
-        .. code-block:: python
+        For example, instead of ::
 
           hello = font.getlength("Hello")
           world = font.getlength("World")
           hello_world = hello + world  # not adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # may fail
 
-        use
-
-        .. code-block:: python
+        use ::
 
           hello = font.getlength("HelloW") - font.getlength("W")  # adjusted for kerning
           world = font.getlength("World")
           hello_world = hello + world  # adjusted for kerning
           assert hello_world == font.getlength("HelloWorld")  # True
 
-        or disable kerning with (requires libraqm)
-
-        .. code-block:: python
+        or disable kerning with (requires libraqm) ::
 
           hello = draw.textlength("Hello", font, features=["-kern"])
           world = draw.textlength("World", font, features=["-kern"])
@@ -355,8 +318,9 @@ class FreeTypeFont:
                          <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
-        :return: Width for horizontal, height for vertical text.
+        :return: Either width for horizontal text, or height for vertical text.
         """
+        _string_length_check(text)
         return self.font.getlength(text, mode, direction, features, language) / 64
 
     def getbbox(
@@ -416,171 +380,13 @@ class FreeTypeFont:
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
+        _string_length_check(text)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
         left, top = offset[0] - stroke_width, offset[1] - stroke_width
         width, height = size[0] + 2 * stroke_width, size[1] + 2 * stroke_width
         return left, top, left + width, top + height
-
-    def getsize(
-        self,
-        text,
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-    ):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`getlength()` to measure the offset of following text with
-        1/64 pixel precision.
-        Use :py:meth:`getbbox()` to get the exact bounding box based on an anchor.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text if rendered in font with
-        provided direction, features, and language.
-
-        .. note:: For historical reasons this function measures text height from
-            the ascender line instead of the top, see :ref:`text-anchors`.
-            If you wish to measure text height from the top, it is recommended
-            to use the bottom value of :meth:`getbbox` with ``anchor='lt'`` instead.
-
-        :param text: Text to measure.
-
-        :param direction: Direction of the text. It can be 'rtl' (right to
-                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
-                          Requires libraqm.
-
-                          .. versionadded:: 4.2.0
-
-        :param features: A list of OpenType font features to be used during text
-                         layout. This is usually used to turn on optional
-                         font features that are not enabled by default,
-                         for example 'dlig' or 'ss01', but can be also
-                         used to turn off default font features for
-                         example '-liga' to disable ligatures or '-kern'
-                         to disable kerning.  To get all supported
-                         features, see
-                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
-                         Requires libraqm.
-
-                         .. versionadded:: 4.2.0
-
-        :param language: Language of the text. Different languages may use
-                         different glyph shapes or ligatures. This parameter tells
-                         the font which language the text is in, and to apply the
-                         correct substitutions as appropriate, if available.
-                         It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`_
-                         Requires libraqm.
-
-                         .. versionadded:: 6.0.0
-
-        :param stroke_width: The width of the text stroke.
-
-                         .. versionadded:: 6.2.0
-
-        :return: (width, height)
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        # vertical offset is added for historical reasons
-        # see https://github.com/python-pillow/Pillow/pull/4910#discussion_r486682929
-        size, offset = self.font.getsize(text, "L", direction, features, language)
-        return (
-            size[0] + stroke_width * 2,
-            size[1] + stroke_width * 2 + offset[1],
-        )
-
-    def getsize_multiline(
-        self,
-        text,
-        direction=None,
-        spacing=4,
-        features=None,
-        language=None,
-        stroke_width=0,
-    ):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.ImageDraw.multiline_textbbox` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns width and height (in pixels) of given text if rendered in font
-        with provided direction, features, and language, while respecting
-        newline characters.
-
-        :param text: Text to measure.
-
-        :param direction: Direction of the text. It can be 'rtl' (right to
-                          left), 'ltr' (left to right) or 'ttb' (top to bottom).
-                          Requires libraqm.
-
-        :param spacing: The vertical gap between lines, defaulting to 4 pixels.
-
-        :param features: A list of OpenType font features to be used during text
-                         layout. This is usually used to turn on optional
-                         font features that are not enabled by default,
-                         for example 'dlig' or 'ss01', but can be also
-                         used to turn off default font features for
-                         example '-liga' to disable ligatures or '-kern'
-                         to disable kerning.  To get all supported
-                         features, see
-                         https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist
-                         Requires libraqm.
-
-        :param language: Language of the text. Different languages may use
-                         different glyph shapes or ligatures. This parameter tells
-                         the font which language the text is in, and to apply the
-                         correct substitutions as appropriate, if available.
-                         It should be a `BCP 47 language code
-                         <https://www.w3.org/International/articles/language-tags/>`_
-                         Requires libraqm.
-
-                         .. versionadded:: 6.0.0
-
-        :param stroke_width: The width of the text stroke.
-
-                         .. versionadded:: 6.2.0
-
-        :return: (width, height)
-        """
-        deprecate("getsize_multiline", 10, "ImageDraw.multiline_textbbox")
-        max_width = 0
-        lines = self._multiline_split(text)
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            line_spacing = self.getsize("A", stroke_width=stroke_width)[1] + spacing
-            for line in lines:
-                line_width, line_height = self.getsize(
-                    line, direction, features, language, stroke_width
-                )
-                max_width = max(max_width, line_width)
-
-        return max_width, len(lines) * line_spacing - spacing
-
-    def getoffset(self, text):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-
-        Returns the offset of given text. This is the gap between the
-        starting coordinate and the first marking. Note that this gap is
-        included in the result of :py:func:`~PIL.ImageFont.FreeTypeFont.getsize`.
-
-        :param text: Text to measure.
-
-        :return: A tuple of the x and y offset
-        """
-        deprecate("getoffset", 10, "getbbox")
-        return self.font.getsize(text)[1]
 
     def getmask(
         self,
@@ -676,7 +482,6 @@ class FreeTypeFont:
         self,
         text,
         mode="",
-        fill=_UNSPECIFIED,
         direction=None,
         features=None,
         language=None,
@@ -701,12 +506,6 @@ class FreeTypeFont:
                      C-level implementations.
 
                      .. versionadded:: 1.1.5
-
-        :param fill: Optional fill function. By default, an internal Pillow function
-                     will be used.
-
-                     Deprecated. This parameter will be removed in Pillow 10
-                     (2023-07-01).
 
         :param direction: Direction of the text. It can be 'rtl' (right to
                           left), 'ltr' (left to right) or 'ttb' (top to bottom).
@@ -760,31 +559,32 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
-        if fill is _UNSPECIFIED:
-            fill = Image.core.fill
-        else:
-            deprecate("fill", 10)
-        size, offset = self.font.getsize(
-            text, mode, direction, features, language, anchor
-        )
+        _string_length_check(text)
         if start is None:
             start = (0, 0)
-        size = tuple(math.ceil(size[i] + stroke_width * 2 + start[i]) for i in range(2))
-        offset = offset[0] - stroke_width, offset[1] - stroke_width
-        Image._decompression_bomb_check(size)
-        im = fill("RGBA" if mode == "RGBA" else "L", size, 0)
-        self.font.render(
+        im = None
+
+        def fill(mode, size):
+            nonlocal im
+
+            im = Image.core.fill(mode, size)
+            return im
+
+        size, offset = self.font.render(
             text,
-            im.id,
+            fill,
             mode,
             direction,
             features,
             language,
             stroke_width,
+            anchor,
             ink,
             start[0],
             start[1],
+            Image.MAX_IMAGE_PIXELS,
         )
+        Image._decompression_bomb_check(size)
         return im, offset
 
     def font_variant(
@@ -886,22 +686,6 @@ class TransposedFont:
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
 
-    def getsize(self, text, *args, **kwargs):
-        """
-        .. deprecated:: 9.2.0
-
-        Use :py:meth:`.getbbox` or :py:meth:`.getlength` instead.
-
-        See :ref:`deprecations <Font size and offset methods>` for more information.
-        """
-        deprecate("getsize", 10, "getbbox or getlength")
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            w, h = self.font.getsize(text)
-        if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
-            return h, w
-        return w, h
-
     def getmask(self, text, mode="", *args, **kwargs):
         im = self.font.getmask(text, mode, *args, **kwargs)
         if self.orientation is not None:
@@ -922,6 +706,7 @@ class TransposedFont:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
+        _string_length_check(text)
         return self.font.getlength(text, *args, **kwargs)
 
 
@@ -1018,7 +803,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            lindirs = os.environ.get("XDG_DATA_DIRS")
             if not lindirs:
                 # According to the freedesktop spec, XDG_DATA_DIRS should
                 # default to /usr/share

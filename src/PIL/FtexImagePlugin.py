@@ -56,7 +56,6 @@ from enum import IntEnum
 from io import BytesIO
 
 from . import Image, ImageFile
-from ._deprecate import deprecate
 
 MAGIC = b"FTEX"
 
@@ -64,17 +63,6 @@ MAGIC = b"FTEX"
 class Format(IntEnum):
     DXT1 = 0
     UNCOMPRESSED = 1
-
-
-def __getattr__(name):
-    for enum, prefix in {Format: "FORMAT_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
 
 
 class FtexImageFile(ImageFile.ImageFile):
@@ -89,7 +77,7 @@ class FtexImageFile(ImageFile.ImageFile):
         self._size = struct.unpack("<2i", self.fp.read(8))
         mipmap_count, format_count = struct.unpack("<2i", self.fp.read(8))
 
-        self.mode = "RGB"
+        self._mode = "RGB"
 
         # Only support single-format files.
         # I don't know of any multi-format file.
@@ -102,7 +90,7 @@ class FtexImageFile(ImageFile.ImageFile):
         data = self.fp.read(mipmap_size)
 
         if format == Format.DXT1:
-            self.mode = "RGBA"
+            self._mode = "RGBA"
             self.tile = [("bcn", (0, 0) + self.size, 0, 1)]
         elif format == Format.UNCOMPRESSED:
             self.tile = [("raw", (0, 0) + self.size, 0, ("RGB", 0, 1))]

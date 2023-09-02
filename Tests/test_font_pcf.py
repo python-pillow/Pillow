@@ -82,9 +82,6 @@ def test_textsize(request, tmp_path):
         assert dy == 20
         assert dx in (0, 10)
         assert font.getlength(chr(i)) == dx
-        with pytest.warns(DeprecationWarning) as log:
-            assert font.getsize(chr(i)) == (dx, dy)
-        assert len(log) == 1
     for i in range(len(message)):
         msg = message[: i + 1]
         assert font.getlength(msg) == len(msg) * 10

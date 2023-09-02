@@ -330,7 +330,7 @@ class IcoImageFile(ImageFile.ImageFile):
         im.load()
         self.im = im.im
         self.pyaccess = None
-        self.mode = im.mode
+        self._mode = im.mode
         if im.size != self.size:
             warnings.warn("Image was not the expected size")
 

@@ -43,7 +43,7 @@ class WebPImageFile(ImageFile.ImageFile):
     def _open(self):
         if not _webp.HAVE_WEBPANIM:
             # Legacy mode
-            data, width, height, self.mode, icc_profile, exif = _webp.WebPDecode(
+            data, width, height, self._mode, icc_profile, exif = _webp.WebPDecode(
                 self.fp.read()
             )
             if icc_profile:
@@ -74,7 +74,10 @@ class WebPImageFile(ImageFile.ImageFile):
         self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
         self.n_frames = frame_count
         self.is_animated = self.n_frames > 1
-        self.mode = "RGB" if mode == "RGBX" else mode
+        ret = self._decoder.get_next()
+        if ret is not None:
+            self.info["duration"] = ret[1]
+        self._mode = "RGB" if mode == "RGBX" else mode
         self.rawmode = mode
         self.tile = []
 
@@ -90,7 +93,7 @@ class WebPImageFile(ImageFile.ImageFile):
             self.info["xmp"] = xmp
 
         # Initialize seek state
-        self._reset(reset=False)
+        self._reset()
 
     def _getexif(self):
         if "exif" not in self.info:
@@ -113,9 +116,8 @@ class WebPImageFile(ImageFile.ImageFile):
         # Set logical frame to requested position
         self.__logical_frame = frame
 
-    def _reset(self, reset=True):
-        if reset:
-            self._decoder.reset()
+    def _reset(self):
+        self._decoder.reset()
         self.__physical_frame = 0
         self.__loaded = -1
         self.__timestamp = 0
@@ -285,7 +287,7 @@ def _save_all(im, fp, filename):
                 # Append the frame to the animation encoder
                 enc.add(
                     frame.tobytes("raw", rawmode),
-                    timestamp,
+                    round(timestamp),
                     frame.size[0],
                     frame.size[1],
                     rawmode,
@@ -305,7 +307,7 @@ def _save_all(im, fp, filename):
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, timestamp, 0, 0, "", lossless, quality, 0)
+    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, 0)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)

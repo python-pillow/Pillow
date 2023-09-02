@@ -28,11 +28,11 @@ needs_sphinx = "2.4"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_inline_tabs",
-    "sphinx_issues",
     "sphinx_removed_in",
     "sphinxext.opengraph",
 ]
@@ -317,8 +317,28 @@ def setup(app):
     app.add_css_file("css/dark.css")
 
 
-# GitHub repo for sphinx-issues
-issues_github_path = "python-pillow/Pillow"
+linkcheck_allowed_redirects = {
+    r"https://bestpractices.coreinfrastructure.org/projects/6331": r"https://bestpractices.coreinfrastructure.org/en/.*",  # noqa: E501
+    r"https://badges.gitter.im/python-pillow/Pillow.svg": r"https://badges.gitter.im/repo.svg",  # noqa: E501
+    r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",  # noqa: E501
+    r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",  # noqa: E501
+    r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
+    r"https://tidelift.com/badges/package/pypi/Pillow?.*": r"https://img.shields.io/badge/.*",  # noqa: E501
+    r"https://zenodo.org/badge/17549/python-pillow/Pillow.svg": r"https://zenodo.org/badge/doi/[\.0-9]+/zenodo.[0-9]+.svg",  # noqa: E501
+    r"https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow": r"https://zenodo.org/record/[0-9]+",  # noqa: E501
+}
+
+# sphinx.ext.extlinks
+# This config is a dictionary of external sites,
+# mapping unique short aliases to a base URL and a prefix.
+# https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+_repo = "https://github.com/python-pillow/Pillow/"
+extlinks = {
+    "cve": ("https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-%s", "CVE-%s"),
+    "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
+    "issue": (_repo + "issues/%s", "#%s"),
+    "pr": (_repo + "pull/%s", "#%s"),
+}
 
 # sphinxext.opengraph
 ogp_image = (

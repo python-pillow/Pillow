@@ -16,9 +16,15 @@ coverage:
 	python3 -m coverage report
 
 .PHONY: doc
-doc:
+.PHONY: html
+doc html:
 	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
 	$(MAKE) -C docs html
+
+.PHONY: htmlview
+htmlview:
+	python3 -c "import PIL" > /dev/null 2>&1 || python3 -m pip install .
+	$(MAKE) -C docs htmlview
 
 .PHONY: doccheck
 doccheck:
@@ -38,18 +44,14 @@ help:
 	@echo "  coverage           run coverage test (in progress)"
 	@echo "  doc                make HTML docs"
 	@echo "  docserve           run an HTTP server on the docs directory"
-	@echo "  html               to make standalone HTML files"
-	@echo "  inplace            make inplace extension"
+	@echo "  html               make HTML docs"
+	@echo "  htmlview           open the index page built by the html target in your browser"
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
 	@echo "  lint               run the lint checks"
 	@echo "  lint-fix           run Black and isort to (mostly) fix lint issues"
 	@echo "  release-test       run code and package tests before release"
 	@echo "  test               run tests on installed Pillow"
-
-.PHONY: inplace
-inplace: clean
-	python3 -m pip install -e --global-option="build_ext" --global-option="--inplace" .
 
 .PHONY: install
 install:
@@ -58,7 +60,7 @@ install:
 
 .PHONY: install-coverage
 install-coverage:
-	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install --global-option="build_ext" .
+	CFLAGS="-coverage -Werror=implicit-function-declaration" python3 -m pip -v install .
 	python3 selftest.py
 
 .PHONY: debug
@@ -67,10 +69,11 @@ debug:
 # for our stuff, kills optimization, and redirects to dev null so we
 # see any build failures.
 	make clean > /dev/null
-	CFLAGS='-g -O0' python3 -m pip -v install --global-option="build_ext" . > /dev/null
+	CFLAGS='-g -O0' python3 -m pip -v install . > /dev/null
 
 .PHONY: release-test
 release-test:
+	python3 Tests/check_release_notes.py
 	python3 -m pip install -e .[tests]
 	python3 selftest.py
 	python3 -m pytest Tests
@@ -116,5 +119,5 @@ lint:
 lint-fix:
 	python3 -c "import black" > /dev/null 2>&1 || python3 -m pip install black
 	python3 -c "import isort" > /dev/null 2>&1 || python3 -m pip install isort
-	python3 -m black --target-version py37 .
+	python3 -m black --target-version py38 .
 	python3 -m isort .

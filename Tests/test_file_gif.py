@@ -36,7 +36,8 @@ def test_unclosed_file():
         im = Image.open(TEST_GIF)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():
@@ -249,6 +250,19 @@ def test_roundtrip_save_all(tmp_path):
 
     with Image.open(out) as reread:
         assert reread.n_frames == 5
+
+
+def test_roundtrip_save_all_1(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("1", (1, 1))
+    im2 = Image.new("1", (1, 1), 1)
+    im.save(out, save_all=True, append_images=[im2])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.getpixel((0, 0)) == 0
+
+        reloaded.seek(1)
+        assert reloaded.getpixel((0, 0)) == 255
 
 
 @pytest.mark.parametrize(
@@ -861,6 +875,14 @@ def test_identical_frames_to_single_frame(duration, tmp_path):
         assert reread.info["duration"] == 8500
 
 
+def test_loop_none(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("L", (100, 100), "#000")
+    im.save(out, loop=None)
+    with Image.open(out) as reread:
+        assert "loop" not in reread.info
+
+
 def test_number_of_loops(tmp_path):
     number_of_loops = 2
 
@@ -1072,6 +1094,21 @@ def test_transparent_optimize(tmp_path):
         assert reloaded.info["transparency"] == reloaded.getpixel((252, 0))
 
 
+def test_removed_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("RGB", (256, 1))
+
+    for x in range(256):
+        im.putpixel((x, 0), (x, 0, 0))
+
+    im.info["transparency"] = (255, 255, 255)
+    with pytest.warns(UserWarning):
+        im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert "transparency" not in reloaded.info
+
+
 def test_rgb_transparency(tmp_path):
     out = str(tmp_path / "temp.gif")
 
@@ -1087,7 +1124,8 @@ def test_rgb_transparency(tmp_path):
     im = Image.new("RGB", (1, 1))
     im.info["transparency"] = b""
     ims = [Image.new("RGB", (1, 1))]
-    pytest.warns(UserWarning, im.save, out, save_all=True, append_images=ims)
+    with pytest.warns(UserWarning):
+        im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reloaded:
         assert "transparency" not in reloaded.info
@@ -1110,6 +1148,18 @@ def test_bbox(tmp_path):
     im = Image.new("RGB", (100, 100), "#fff")
     ims = [Image.new("RGB", (100, 100), "#000")]
     im.save(out, save_all=True, append_images=ims)
+
+    with Image.open(out) as reread:
+        assert reread.n_frames == 2
+
+
+def test_bbox_alpha(tmp_path):
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("RGBA", (1, 2), (255, 0, 0, 255))
+    im.putpixel((0, 1), (255, 0, 0, 0))
+    im2 = Image.new("RGBA", (1, 2), (255, 0, 0, 0))
+    im.save(out, save_all=True, append_images=[im2])
 
     with Image.open(out) as reread:
         assert reread.n_frames == 2

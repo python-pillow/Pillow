@@ -193,6 +193,10 @@ def test_rounding_errors():
     Image.new("LA", (1, 1), "white")
 
 
+def test_color_hsv():
+    assert (170, 255, 255) == ImageColor.getcolor("hsv(240, 100%, 100%)", "HSV")
+
+
 def test_color_too_long():
     # Arrange
     color_too_long = "hsl(" + "1" * 40 + "," + "1" * 40 + "%," + "1" * 40 + "%)"

@@ -46,7 +46,6 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
-from ._deprecate import deprecate
 from .JpegPresets import presets
 
 #
@@ -209,11 +208,11 @@ def SOF(self, marker):
 
     self.layers = s[5]
     if self.layers == 1:
-        self.mode = "L"
+        self._mode = "L"
     elif self.layers == 3:
-        self.mode = "RGB"
+        self._mode = "RGB"
     elif self.layers == 4:
-        self.mode = "CMYK"
+        self._mode = "CMYK"
     else:
         msg = f"cannot handle {self.layers}-layer images"
         raise SyntaxError(msg)
@@ -427,7 +426,7 @@ class JpegImageFile(ImageFile.ImageFile):
         original_size = self.size
 
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
-            self.mode = mode
+            self._mode = mode
             a = mode, ""
 
         if size:
@@ -458,6 +457,11 @@ class JpegImageFile(ImageFile.ImageFile):
         if os.path.exists(self.filename):
             subprocess.check_call(["djpeg", "-outfile", path, self.filename])
         else:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+
             msg = "Invalid Filename"
             raise ValueError(msg)
 
@@ -471,7 +475,7 @@ class JpegImageFile(ImageFile.ImageFile):
             except OSError:
                 pass
 
-        self.mode = self.im.mode
+        self._mode = self.im.mode
         self._size = self.im.size
 
         self.tile = []
@@ -610,11 +614,6 @@ samplings = {
     (2, 2, 1, 1, 1, 1): 2,
 }
 # fmt: on
-
-
-def convert_dict_qtables(qtables):
-    deprecate("convert_dict_qtables", 10, action="Conversion is no longer needed")
-    return qtables
 
 
 def get_sampling(im):
@@ -798,10 +797,14 @@ def _save(im, fp, filename):
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]
-
-    # The EXIF info needs to be written as one block, + APP1, + one spare byte.
-    # Ensure that our buffer is big enough. Same with the icc_profile block.
-    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(exif) + 5, len(extra) + 1)
+        if exif:
+            bufsize += len(exif) + 5
+        if extra:
+            bufsize += len(extra) + 1
+    else:
+        # The EXIF info needs to be written as one block, + APP1, + one spare byte.
+        # Ensure that our buffer is big enough. Same with the icc_profile block.
+        bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
 
     ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
 

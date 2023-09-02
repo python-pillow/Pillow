@@ -24,7 +24,7 @@ def check_module(feature):
     :returns: ``True`` if available, ``False`` otherwise.
     :raises ValueError: If the module is not defined in this version of Pillow.
     """
-    if not (feature in modules):
+    if feature not in modules:
         msg = f"Unknown module {feature}"
         raise ValueError(msg)
 
@@ -33,7 +33,10 @@ def check_module(feature):
     try:
         __import__(module)
         return True
-    except ImportError:
+    except ModuleNotFoundError:
+        return False
+    except ImportError as ex:
+        warnings.warn(str(ex))
         return False
 
 
@@ -145,7 +148,10 @@ def check_feature(feature):
     try:
         imported_module = __import__(module, fromlist=["PIL"])
         return getattr(imported_module, flag)
-    except ImportError:
+    except ModuleNotFoundError:
+        return None
+    except ImportError as ex:
+        warnings.warn(str(ex))
         return None
 
 

@@ -1,6 +1,6 @@
 /*
  * Copyright © 2015 Information Technology Authority (ITA) <foss@ita.gov.om>
- * Copyright © 2016-2022 Khaled Hosny <khaled@aliftype.com>
+ * Copyright © 2016-2023 Khaled Hosny <khaled@aliftype.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -1432,7 +1432,7 @@ raqm_get_glyphs (raqm_t *rq,
  *
  * Since: 0.8
  */
-RAQM_API raqm_direction_t
+raqm_direction_t
 raqm_get_par_resolved_direction (raqm_t *rq)
 {
   if (!rq)
@@ -1455,7 +1455,7 @@ raqm_get_par_resolved_direction (raqm_t *rq)
  *
  * Since: 0.8
  */
-RAQM_API raqm_direction_t
+raqm_direction_t
 raqm_get_direction_at_index (raqm_t *rq,
                              size_t index)
 {
@@ -2021,6 +2021,22 @@ _get_pair_index (const uint32_t ch)
 #define STACK_IS_EMPTY(script)     ((script)->size <= 0)
 #define IS_OPEN(pair_index)        (((pair_index) & 1) == 0)
 
+static hb_script_t
+_raqm_unicode_script (hb_codepoint_t u)
+{
+  static hb_unicode_funcs_t* unicode_funcs;
+
+  unicode_funcs = hb_unicode_funcs_get_default ();
+
+  /* Make combining marks inherit the script of their bases, regardless of
+   * their own script.
+   */
+  if (hb_unicode_general_category (unicode_funcs, u) == HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)
+    return HB_SCRIPT_INHERITED;
+
+  return hb_unicode_script (unicode_funcs, u);
+}
+
 /* Resolve the script for each character in the input string, if the character
  * script is common or inherited it takes the script of the character before it
  * except paired characters which we try to make them use the same script. We
@@ -2033,10 +2049,9 @@ _raqm_resolve_scripts (raqm_t *rq)
   int last_set_index = -1;
   hb_script_t last_script = HB_SCRIPT_INVALID;
   _raqm_stack_t *stack = NULL;
-  hb_unicode_funcs_t* unicode_funcs = hb_unicode_funcs_get_default ();
 
   for (size_t i = 0; i < rq->text_len; ++i)
-    rq->text_info[i].script = hb_unicode_script (unicode_funcs, rq->text[i]);
+    rq->text_info[i].script = _raqm_unicode_script (rq->text[i]);
 
 #ifdef RAQM_TESTING
   RAQM_TEST ("Before script detection:\n");

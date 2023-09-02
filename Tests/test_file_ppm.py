@@ -256,6 +256,16 @@ def test_truncated_file(tmp_path):
             im.load()
 
 
+def test_not_enough_image_data(tmp_path):
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "wb") as f:
+        f.write(b"P2 1 2 255 255")
+
+    with Image.open(path) as im:
+        with pytest.raises(ValueError):
+            im.load()
+
+
 @pytest.mark.parametrize("maxval", (b"0", b"65536"))
 def test_invalid_maxval(maxval, tmp_path):
     path = str(tmp_path / "temp.ppm")

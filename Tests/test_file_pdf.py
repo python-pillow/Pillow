@@ -8,7 +8,7 @@ import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version
+from .helper import hopper, mark_if_feature_version, skip_unless_feature
 
 
 def helper_save_as_pdf(tmp_path, mode, **kwargs):
@@ -42,6 +42,28 @@ def test_save(tmp_path, mode):
     helper_save_as_pdf(tmp_path, mode)
 
 
+@skip_unless_feature("jpg_2000")
+@pytest.mark.parametrize("mode", ("LA", "RGBA"))
+def test_save_alpha(tmp_path, mode):
+    helper_save_as_pdf(tmp_path, mode)
+
+
+def test_p_alpha(tmp_path):
+    # Arrange
+    outfile = str(tmp_path / "temp.pdf")
+    with Image.open("Tests/images/pil123p.png") as im:
+        assert im.mode == "P"
+        assert isinstance(im.info["transparency"], bytes)
+
+        # Act
+        im.save(outfile)
+
+    # Assert
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+    assert b"\n/SMask " in contents
+
+
 def test_monochrome(tmp_path):
     # Arrange
     mode = "1"
@@ -52,8 +74,8 @@ def test_monochrome(tmp_path):
 
 
 def test_unsupported_mode(tmp_path):
-    im = hopper("LA")
-    outfile = str(tmp_path / "temp_LA.pdf")
+    im = hopper("PA")
+    outfile = str(tmp_path / "temp_PA.pdf")
 
     with pytest.raises(ValueError):
         im.save(outfile)

@@ -1,6 +1,15 @@
 name: Test Windows
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,18 +24,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
-        architecture: ["x86", "x64"]
-        include:
-          # PyPy 7.3.4+ only ships 64-bit binaries for Windows
-          - python-version: "pypy3.8"
-            architecture: "x64"
-          - python-version: "pypy3.9"
-            architecture: "x64"
+        python-version: ["pypy3.10", "pypy3.9", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
 
     timeout-minutes: 30
 
-    name: Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+    name: Python ${{ matrix.python-version }}
 
     steps:
     - name: Checkout Pillow
@@ -49,24 +51,23 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        architecture: ${{ matrix.architecture }}
         cache: pip
         cache-dependency-path: ".github/workflows/test-windows.yml"
 
     - name: Print build system information
       run: python3 .github/workflows/system-info.py
 
-    - name: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
-      run: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
+    - name: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml
+      run: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml
 
     - name: Install dependencies
       id: install
       run: |
-        7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
-        echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
+        7z x winbuild\depends\nasm-2.16.01-win64.zip "-o$env:RUNNER_WORKSPACE\"
+        echo "$env:RUNNER_WORKSPACE\nasm-2.16.01" >> $env:GITHUB_PATH
 
-        winbuild\depends\gs1000w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs10.0.0\bin" >> $env:GITHUB_PATH
+        choco install ghostscript --version=10.0.0.20230317
+        echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
         xcopy /S /Y Tests\test-images\* Tests\images
@@ -88,7 +89,7 @@ jobs:
     - name: Prepare build
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: |
-        & python.exe winbuild\build_prepare.py -v --python=$env:pythonLocation --srcdir
+        & python.exe winbuild\build_prepare.py -v
       shell: pwsh
 
     - name: Build dependencies / libjpeg-turbo
@@ -156,9 +157,9 @@ jobs:
 
     - name: Build Pillow
       run: |
-        $FLAGS=""
-        if ('${{ github.event_name }}' -ne 'pull_request') { $FLAGS="--disable-imagequant" }
-        & winbuild\build\build_pillow.cmd $FLAGS install
+        $FLAGS="-C raqm=vendor -C fribidi=vendor"
+        if ('${{ github.event_name }}' -ne 'pull_request') { $FLAGS+=" -C imagequant=disable" }
+        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS ."
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
@@ -197,14 +198,14 @@ jobs:
       with:
         file: ./coverage.xml
         flags: GHA_Windows
-        name: ${{ runner.os }} Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+        name: ${{ runner.os }} Python ${{ matrix.python-version }}
 
     - name: Build wheel
       id: wheel
       if: "github.event_name != 'pull_request'"
       run: |
-        mkdir fribidi\${{ matrix.architecture }}
-        copy winbuild\build\bin\fribidi* fribidi\${{ matrix.architecture }}
+        mkdir fribidi
+        copy winbuild\build\bin\fribidi* fribidi
         setlocal EnableDelayedExpansion
         for %%f in (winbuild\build\license\*) do (
           set x=%%~nf
@@ -222,7 +223,8 @@ jobs:
           )
         )
         for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo dist=dist-%%a >> %GITHUB_OUTPUT%
-        winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
+        call winbuild\\build\\build_env.cmd
+        %pythonLocation%\python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor -C imagequant=disable .
       shell: cmd
 
     - name: Upload wheel
@@ -230,7 +232,7 @@ jobs:
       if: "github.event_name != 'pull_request'"
       with:
         name: ${{ steps.wheel.outputs.dist }}
-        path: dist\*.whl
+        path: "*.whl"
 
     - name: Upload fribidi.dll
       if: "github.event_name != 'pull_request' && matrix.python-version == 3.11"

@@ -17,9 +17,7 @@ import subprocess
 import sys
 from shlex import quote
 
-from PIL import Image
-
-from ._deprecate import deprecate
+from . import Image
 
 _viewers = []
 
@@ -111,21 +109,10 @@ class Viewer:
         """Display the given image."""
         return self.show_file(self.save_image(image), **options)
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path, **options):
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
-        instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
         os.system(self.get_command(path, **options))  # nosec
         return 1
 
@@ -164,21 +151,10 @@ class MacViewer(Viewer):
         command = f"({command} {quote(file)}; sleep 20; rm -f {quote(file)})&"
         return command
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path, **options):
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
-        instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
         subprocess.call(["open", "-a", "Preview.app", path])
         executable = sys.executable or shutil.which("python3")
         if executable:
@@ -215,21 +191,10 @@ class XDGViewer(UnixViewer):
         command = executable = "xdg-open"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path, **options):
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and will be removed in Pillow 10.0.0 (2023-07-01). ``path`` should be used
-        instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
         subprocess.Popen(["xdg-open", path])
         return 1
 
@@ -246,20 +211,10 @@ class DisplayViewer(UnixViewer):
             command += f" -title {quote(title)}"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path, **options):
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
         args = ["display"]
         title = options.get("title")
         if title:
@@ -278,20 +233,10 @@ class GmDisplayViewer(UnixViewer):
         command = "gm display"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path, **options):
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
         subprocess.Popen(["gm", "display", path])
         return 1
 
@@ -304,20 +249,10 @@ class EogViewer(UnixViewer):
         command = "eog -n"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path, **options):
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
         subprocess.Popen(["eog", "-n", path])
         return 1
 
@@ -336,20 +271,10 @@ class XVViewer(UnixViewer):
             command += f" -name {quote(title)}"
         return command, executable
 
-    def show_file(self, path=None, **options):
+    def show_file(self, path, **options):
         """
         Display given file.
-
-        Before Pillow 9.1.0, the first argument was ``file``. This is now deprecated,
-        and ``path`` should be used instead.
         """
-        if path is None:
-            if "file" in options:
-                deprecate("The 'file' argument", 10, "'path'")
-                path = options.pop("file")
-            else:
-                msg = "Missing required argument: 'path'"
-                raise TypeError(msg)
         args = ["xv"]
         title = options.get("title")
         if title:

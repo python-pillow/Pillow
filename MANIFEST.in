@@ -15,6 +15,7 @@ graft src
 graft depends
 graft winbuild
 graft docs
+graft _custom_build
 
 # build/src control detritus
 exclude .appveyor.yml

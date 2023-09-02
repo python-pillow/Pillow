@@ -62,7 +62,6 @@ Pillow also provides limited support for a few additional modes, including:
     * ``BGR;15`` (15-bit reversed true colour)
     * ``BGR;16`` (16-bit reversed true colour)
     * ``BGR;24`` (24-bit reversed true colour)
-    * ``BGR;32`` (32-bit reversed true colour)
 
 Premultiplied alpha is where the values for each other channel have been
 multiplied by the alpha. For example, an RGBA pixel of ``(10, 20, 30, 127)``
@@ -96,9 +95,8 @@ in the upper left corner. Note that the coordinates refer to the implied pixel
 corners; the centre of a pixel addressed as (0, 0) actually lies at (0.5, 0.5).
 
 Coordinates are usually passed to the library as 2-tuples (x, y). Rectangles
-are represented as 4-tuples, with the upper left corner given first. For
-example, a rectangle covering all of an 800x600 pixel image is written as (0,
-0, 800, 600).
+are represented as 4-tuples, (x1, y1, x2, y2), with the upper left corner given
+first.
 
 Palette
 -------

@@ -12,22 +12,50 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a ``DeprecationWarning`` is issued.
 
+PSFile
+~~~~~~
+
+.. deprecated:: 9.5.0
+
+The :py:class:`~PIL.EpsImagePlugin.PSFile` class has been deprecated and will
+be removed in Pillow 11 (2024-10-15). This class was only made as a helper to
+be used internally, so there is no replacement. If you need this functionality
+though, it is a very short class that can easily be recreated in your own code.
+
+PyAccess and Image.USE_CFFI_ACCESS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.0.0
+
+Since Pillow's C API is now faster than PyAccess on PyPy,
+:py:mod:`~PIL.PyAccess` has been deprecated and will be removed in Pillow
+11.0.0 (2024-10-15). Pillow's C API will now be used by default on PyPy instead.
+
+``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, is
+similarly deprecated.
+
+Removed features
+----------------
+
+Deprecated features are only removed in major releases after an appropriate
+period of deprecation has passed.
+
 Tk/Tcl 8.4
 ~~~~~~~~~~
 
 .. deprecated:: 8.2.0
+.. versionremoved:: 10.0.0
 
-Support for Tk/Tcl 8.4 is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
-when Tk/Tcl 8.5 will be the minimum supported.
+Support for Tk/Tcl 8.4 was removed in Pillow 10.0.0 (2023-07-01).
 
 Categories
 ~~~~~~~~~~
 
 .. deprecated:: 8.2.0
+.. versionremoved:: 10.0.0
 
-``im.category`` is deprecated and will be removed in Pillow 10.0.0 (2023-07-01),
-along with the related ``Image.NORMAL``, ``Image.SEQUENCE`` and
-``Image.CONTAINER`` attributes.
+``im.category`` was removed along with the related ``Image.NORMAL``,
+``Image.SEQUENCE`` and ``Image.CONTAINER`` attributes.
 
 To determine if an image has multiple frames or not,
 ``getattr(im, "is_animated", False)`` can be used instead.
@@ -36,43 +64,40 @@ JpegImagePlugin.convert_dict_qtables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 8.3.0
+.. versionremoved:: 10.0.0
 
-JPEG ``quantization`` is now automatically converted, but still returned as a
-dictionary. The :py:attr:`~PIL.JpegImagePlugin.convert_dict_qtables` method no longer
-performs any operations on the data given to it, has been deprecated and will be
-removed in Pillow 10.0.0 (2023-07-01).
+Since deprecation in Pillow 8.3.0, the ``convert_dict_qtables`` method no longer
+performed any operations on the data given to it, and has been removed.
 
 ImagePalette size parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 8.4.0
-
-The ``size`` parameter will be removed in Pillow 10.0.0 (2023-07-01).
+.. versionremoved:: 10.0.0
 
 Before Pillow 8.3.0, ``ImagePalette`` required palette data of particular lengths by
-default, and the size parameter could be used to override that. Pillow 8.3.0 removed
-the default required length, also removing the need for the size parameter.
+default, and the ``size`` parameter could be used to override that. Pillow 8.3.0
+removed the default required length, also removing the need for the ``size`` parameter.
 
 ImageShow.Viewer.show_file file argument
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 9.1.0
+.. versionremoved:: 10.0.0
 
 The ``file`` argument in :py:meth:`~PIL.ImageShow.Viewer.show_file()` has been
-deprecated and will be removed in Pillow 10.0.0 (2023-07-01). It has been replaced by
-``path``.
+removed and replaced by ``path``.
 
 In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
-``viewer.show_file(file="test.jpg")`` will raise a deprecation warning, and suggest
-``viewer.show_file(path="test.jpg")`` instead.
 
 Constants
 ~~~~~~~~~
 
 .. deprecated:: 9.1.0
+.. versionremoved:: 10.0.0
 
-A number of constants have been deprecated and will be removed in Pillow 10.0.0
-(2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
+A number of constants have been removed.
+Instead, ``enum.IntEnum`` classes have been added.
 
 .. note::
 
@@ -81,7 +106,7 @@ A number of constants have been deprecated and will be removed in Pillow 10.0.0
     See :ref:`restored-image-constants`
 
 =====================================================  ============================================================
-Deprecated                                             Use instead
+Removed                                                Use instead
 =====================================================  ============================================================
 ``Image.LINEAR``                                       ``Image.BILINEAR`` or ``Image.Resampling.BILINEAR``
 ``Image.CUBIC``                                        ``Image.BICUBIC`` or ``Image.Resampling.BICUBIC``
@@ -115,71 +140,31 @@ FitsStubImagePlugin
 ~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 9.1.0
+.. versionremoved:: 10.0.0
 
-The stub image plugin ``FitsStubImagePlugin`` has been deprecated and will be removed in
-Pillow 10.0.0 (2023-07-01). FITS images can be read without a handler through
-:mod:`~PIL.FitsImagePlugin` instead.
-
-FreeTypeFont.getmask2 fill parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has been
-deprecated and will be removed in Pillow 10 (2023-07-01).
-
-PhotoImage.paste box parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-The ``box`` parameter is unused. It will be removed in Pillow 10.0.0 (2023-07-01).
-
-PyQt5 and PySide2
-~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-`Qt 5 reached end-of-life <https://www.qt.io/blog/qt-5.15-released>`_ on 2020-12-08 for
-open-source users (and will reach EOL on 2023-12-08 for commercial licence holders).
-
-Support for PyQt5 and PySide2 has been deprecated from ``ImageQt`` and will be removed
-in Pillow 10 (2023-07-01). Upgrade to
-`PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
-`PySide6 <https://doc.qt.io/qtforpython/>`_ instead.
-
-Image.coerce_e
-~~~~~~~~~~~~~~
-
-.. deprecated:: 9.2.0
-
-This undocumented method has been deprecated and will be removed in Pillow 10
-(2023-07-01).
-
-.. _Font size and offset methods:
+The stub image plugin ``FitsStubImagePlugin`` has been removed.
+FITS images can be read without a handler through :mod:`~PIL.FitsImagePlugin` instead.
 
 Font size and offset methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
 
-Several functions for computing the size and offset of rendered text
-have been deprecated and will be removed in Pillow 10 (2023-07-01):
+Several functions for computing the size and offset of rendered text have been removed:
 
-=========================================================================== =============================================================================================================
-Deprecated                                                                  Use instead
-=========================================================================== =============================================================================================================
-:py:meth:`.FreeTypeFont.getsize` and :py:meth:`.FreeTypeFont.getoffset`     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
-:py:meth:`.FreeTypeFont.getsize_multiline`                                  :py:meth:`.ImageDraw.multiline_textbbox`
-:py:meth:`.ImageFont.getsize`                                               :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
-:py:meth:`.TransposedFont.getsize`                                          :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
-:py:meth:`.ImageDraw.textsize` and :py:meth:`.ImageDraw.multiline_textsize` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
-:py:meth:`.ImageDraw2.Draw.textsize`                                        :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
-=========================================================================== =============================================================================================================
+=============================================================== =============================================================================================================
+Removed                                                         Use instead
+=============================================================== =============================================================================================================
+``FreeTypeFont.getsize()`` and ``FreeTypeFont.getoffset()``     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
+``FreeTypeFont.getsize_multiline()``                            :py:meth:`.ImageDraw.multiline_textbbox`
+``ImageFont.getsize()``                                         :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
+``TransposedFont.getsize()``                                    :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
+``ImageDraw.textsize()`` and ``ImageDraw.multiline_textsize()`` :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.textlength` and :py:meth:`.ImageDraw.multiline_textbbox`
+``ImageDraw2.Draw.textsize()``                                  :py:meth:`.ImageDraw2.Draw.textbbox` and :py:meth:`.ImageDraw2.Draw.textlength`
+=============================================================== =============================================================================================================
 
-Previous code:
-
-.. code-block:: python
+Previous code::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -194,9 +179,7 @@ Previous code:
     width, height = font.getsize_multiline("Hello\nworld")
     width, height = draw.multiline_textsize("Hello\nworld")
 
-Use instead:
-
-.. code-block:: python
+Use instead::
 
     from PIL import Image, ImageDraw, ImageFont
 
@@ -211,11 +194,43 @@ Use instead:
     left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
     width, height = right - left, bottom - top
 
-Removed features
-----------------
+FreeTypeFont.getmask2 fill parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Deprecated features are only removed in major releases after an appropriate
-period of deprecation has passed.
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has been
+removed.
+
+PhotoImage.paste box parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+The ``box`` parameter was unused and has been removed.
+
+PyQt5 and PySide2
+~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+`Qt 5 reached end-of-life <https://www.qt.io/blog/qt-5.15-released>`_ on 2020-12-08 for
+open-source users (and will reach EOL on 2023-12-08 for commercial licence holders).
+
+Support for PyQt5 and PySide2 has been removed from ``ImageQt``. Upgrade to
+`PyQt6 <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`_ or
+`PySide6 <https://doc.qt.io/qtforpython-6/>`_ instead.
+
+Image.coerce_e
+~~~~~~~~~~~~~~
+
+.. deprecated:: 9.2.0
+.. versionremoved:: 10.0.0
+
+This undocumented method has been removed.
 
 PILLOW_VERSION constant
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -265,7 +280,7 @@ FreeType 2.7
 Support for FreeType 2.7 has been removed.
 
 We recommend upgrading to at least `FreeType`_ 2.10.4, which fixed a severe
-vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 
 .. _FreeType: https://freetype.org/
 
@@ -336,16 +351,12 @@ Implicitly closing the image's underlying file in ``Image.__del__`` has been rem
 Use a context manager or call ``Image.close()`` instead to close the file in a
 deterministic way.
 
-Previous method:
-
-.. code-block:: python
+Previous method::
 
     im = Image.open("hopper.png")
     im.save("out.jpg")
 
-Use instead:
-
-.. code-block:: python
+Use instead::
 
     with Image.open("hopper.png") as im:
         im.save("out.jpg")

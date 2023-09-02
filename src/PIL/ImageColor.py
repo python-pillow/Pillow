@@ -122,9 +122,11 @@ def getrgb(color):
 
 def getcolor(color, mode):
     """
-    Same as :py:func:`~PIL.ImageColor.getrgb`, but converts the RGB value to a
-    greyscale value if ``mode`` is not color or a palette image. If the string
-    cannot be parsed, this function raises a :py:exc:`ValueError` exception.
+    Same as :py:func:`~PIL.ImageColor.getrgb` for most modes. However, if
+    ``mode`` is HSV, converts the RGB value to a HSV value, or if ``mode`` is
+    not color or a palette image, converts the RGB value to a greyscale value.
+    If the string cannot be parsed, this function raises a :py:exc:`ValueError`
+    exception.
 
     .. versionadded:: 1.1.4
 
@@ -137,7 +139,13 @@ def getcolor(color, mode):
     if len(color) == 4:
         color, alpha = color[:3], color[3]
 
-    if Image.getmodebase(mode) == "L":
+    if mode == "HSV":
+        from colorsys import rgb_to_hsv
+
+        r, g, b = color
+        h, s, v = rgb_to_hsv(r / 255, g / 255, b / 255)
+        return int(h * 255), int(s * 255), int(v * 255)
+    elif Image.getmodebase(mode) == "L":
         r, g, b = color
         # ITU-R Recommendation 601-2 for nonlinear RGB
         # scaled to 24 bits to match the convert's implementation.

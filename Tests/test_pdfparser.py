@@ -117,3 +117,9 @@ def test_pdf_repr():
     assert pdf_repr(b"a)/b\\(c") == rb"(a\)/b\\\(c)"
     assert pdf_repr([123, True, {"a": PdfName(b"b")}]) == b"[ 123 true <<\n/a /b\n>> ]"
     assert pdf_repr(PdfBinary(b"\x90\x1F\xA0")) == b"<901FA0>"
+
+
+def test_duplicate_xref_entry():
+    pdf = PdfParser("Tests/images/duplicate_xref_entry.pdf")
+    assert pdf.xref_table.existing_entries[6][0] == 1197
+    pdf.close()

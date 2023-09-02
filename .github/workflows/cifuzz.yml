@@ -3,10 +3,12 @@ name: CIFuzz
 on:
   push:
     paths:
+      - ".github/workflows/cifuzz.yml"
       - "**.c"
       - "**.h"
   pull_request:
     paths:
+      - ".github/workflows/cifuzz.yml"
       - "**.c"
       - "**.h"
   workflow_dispatch:
@@ -14,7 +16,7 @@ on:
 permissions:
   contents: read
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 

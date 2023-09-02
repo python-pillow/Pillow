@@ -195,20 +195,21 @@ _releasedc(ImagingDisplayObject *display, PyObject *args) {
 
 static PyObject *
 _frombytes(ImagingDisplayObject *display, PyObject *args) {
-    char *ptr;
-    Py_ssize_t bytes;
+    Py_buffer buffer;
 
-    if (!PyArg_ParseTuple(args, "y#:frombytes", &ptr, &bytes)) {
+    if (!PyArg_ParseTuple(args, "y*:frombytes", &buffer)) {
         return NULL;
     }
 
-    if (display->dib->ysize * display->dib->linesize != bytes) {
+    if (display->dib->ysize * display->dib->linesize != buffer.len) {
+        PyBuffer_Release(&buffer);
         PyErr_SetString(PyExc_ValueError, "wrong size");
         return NULL;
     }
 
-    memcpy(display->dib->bits, ptr, bytes);
+    memcpy(display->dib->bits, buffer.buf, buffer.len);
 
+    PyBuffer_Release(&buffer);
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -250,18 +251,18 @@ static struct PyGetSetDef getsetters[] = {
 
 static PyTypeObject ImagingDisplayType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingDisplay", /*tp_name*/
-    sizeof(ImagingDisplayObject),                    /*tp_size*/
+    sizeof(ImagingDisplayObject),                    /*tp_basicsize*/
     0,                                               /*tp_itemsize*/
     /* methods */
     (destructor)_delete, /*tp_dealloc*/
-    0,                   /*tp_print*/
+    0,                   /*tp_vectorcall_offset*/
     0,                   /*tp_getattr*/
     0,                   /*tp_setattr*/
-    0,                   /*tp_compare*/
+    0,                   /*tp_as_async*/
     0,                   /*tp_repr*/
-    0,                   /*tp_as_number */
-    0,                   /*tp_as_sequence */
-    0,                   /*tp_as_mapping */
+    0,                   /*tp_as_number*/
+    0,                   /*tp_as_sequence*/
+    0,                   /*tp_as_mapping*/
     0,                   /*tp_hash*/
     0,                   /*tp_call*/
     0,                   /*tp_str*/
@@ -436,8 +437,14 @@ PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
     LPCSTR format_names[] = {"DIB", "DIB", "file", "png", NULL};
 
     if (!OpenClipboard(NULL)) {
-        PyErr_SetString(PyExc_OSError, "failed to open clipboard");
-        return NULL;
+        // Maybe the clipboard is temporarily in use by another process.
+        // Wait and try again
+        Sleep(500);
+
+        if (!OpenClipboard(NULL)) {
+            PyErr_SetString(PyExc_OSError, "failed to open clipboard");
+            return NULL;
+        }
     }
 
     // find best format as set by clipboard owner

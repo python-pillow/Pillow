@@ -18,12 +18,10 @@
 import sys
 from enum import IntEnum
 
-from PIL import Image
-
-from ._deprecate import deprecate
+from . import Image
 
 try:
-    from PIL import _imagingcms
+    from . import _imagingcms
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
@@ -117,17 +115,6 @@ class Direction(IntEnum):
     PROOF = 2
 
 
-def __getattr__(name):
-    for enum, prefix in {Intent: "INTENT_", Direction: "DIRECTION_"}.items():
-        if name.startswith(prefix):
-            name = name[len(prefix) :]
-            if name in enum.__members__:
-                deprecate(f"{prefix}{name}", 10, f"{enum.__name__}.{name}")
-                return enum[name]
-    msg = f"module '{__name__}' has no attribute '{name}'"
-    raise AttributeError(msg)
-
-
 #
 # flags
 
@@ -198,12 +185,8 @@ class ImageCmsProfile:
     def _set(self, profile, filename=None):
         self.profile = profile
         self.filename = filename
-        if profile:
-            self.product_name = None  # profile.product_name
-            self.product_info = None  # profile.product_info
-        else:
-            self.product_name = None
-            self.product_info = None
+        self.product_name = None  # profile.product_name
+        self.product_info = None  # profile.product_info
 
     def tobytes(self):
         """
@@ -288,7 +271,7 @@ def get_display_profile(handle=None):
     if sys.platform != "win32":
         return None
 
-    from PIL import ImageWin
+    from . import ImageWin
 
     if isinstance(handle, ImageWin.HDC):
         profile = core.get_display_profile_win32(handle, 1)

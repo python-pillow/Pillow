@@ -66,9 +66,6 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         self._n_frames = len(self.images)
         self.is_animated = self._n_frames > 1
 
-        if len(self.images) > 1:
-            self._category = Image.CONTAINER
-
         self.seek(0)
 
     def seek(self, frame):
@@ -88,6 +85,14 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
     def tell(self):
         return self.frame
+
+    def close(self):
+        self.ole.close()
+        super().close()
+
+    def __exit__(self, *args):
+        self.ole.close()
+        super().__exit__()
 
 
 #

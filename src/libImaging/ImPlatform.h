@@ -25,7 +25,7 @@
 #endif
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) /* WIN */
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -37,15 +37,33 @@
 #undef WIN32
 #endif
 
-#else
+#else /* not WIN */
 /* For System that are not Windows, we'll need to define these. */
+/* We have to define them instead of using typedef because the JPEG lib also
+   defines their own types with the same names, so we need to be able to undef
+   ours before including the JPEG code. */
+
+#if __STDC_VERSION__ >= 199901L /* C99+ */
+
+#include <stdint.h>
+
+#define INT8 int8_t
+#define UINT8 uint8_t
+#define INT16 int16_t
+#define UINT16 uint16_t
+#define INT32 int32_t
+#define UINT32 uint32_t
+
+#else /* < C99 */
+
+#define INT8 signed char
 
 #if SIZEOF_SHORT == 2
 #define INT16 short
 #elif SIZEOF_INT == 2
 #define INT16 int
 #else
-#define INT16 short /* most things works just fine anyway... */
+#error Cannot find required 16-bit integer type
 #endif
 
 #if SIZEOF_SHORT == 4
@@ -58,19 +76,13 @@
 #error Cannot find required 32-bit integer type
 #endif
 
-#if SIZEOF_LONG == 8
-#define INT64 long
-#elif SIZEOF_LONG_LONG == 8
-#define INT64 long
-#endif
-
-#define INT8 signed char
 #define UINT8 unsigned char
-
 #define UINT16 unsigned INT16
 #define UINT32 unsigned INT32
 
-#endif
+#endif /* < C99 */
+
+#endif /* not WIN */
 
 /* assume IEEE; tweak if necessary (patches are welcome) */
 #define FLOAT16 UINT16

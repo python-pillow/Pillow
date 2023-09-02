@@ -48,6 +48,9 @@ class TestImage:
             "RGBX",
             "RGBA",
             "RGBa",
+            "BGR;15",
+            "BGR;16",
+            "BGR;24",
             "CMYK",
             "YCbCr",
             "LAB",
@@ -57,9 +60,7 @@ class TestImage:
     def test_image_modes_success(self, mode):
         Image.new(mode, (1, 1))
 
-    @pytest.mark.parametrize(
-        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24", "BGR;32")
-    )
+    @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode):
         with pytest.raises(ValueError) as e:
             Image.new(mode, (1, 1))
@@ -133,6 +134,12 @@ class TestImage:
 
         with pytest.raises(AttributeError):
             im.size = (3, 4)
+
+    def test_set_mode(self):
+        im = Image.new("RGB", (1, 1))
+
+        with pytest.raises(AttributeError):
+            im.mode = "P"
 
     def test_invalid_image(self):
         im = io.BytesIO(b"")
@@ -654,15 +661,15 @@ class TestImage:
         blank_p.palette = None
         blank_pa.palette = None
 
-        def _make_new(base_image, im, palette_result=None):
-            new_im = base_image._new(im)
-            assert new_im.mode == im.mode
-            assert new_im.size == im.size
-            assert new_im.info == base_image.info
+        def _make_new(base_image, image, palette_result=None):
+            new_image = base_image._new(image.im)
+            assert new_image.mode == image.mode
+            assert new_image.size == image.size
+            assert new_image.info == base_image.info
             if palette_result is not None:
-                assert new_im.palette.tobytes() == palette_result.tobytes()
+                assert new_image.palette.tobytes() == palette_result.tobytes()
             else:
-                assert new_im.palette is None
+                assert new_image.palette is None
 
         _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
         _make_new(im_p, im, None)
@@ -928,25 +935,7 @@ class TestImage:
             im.apply_transparency()
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
-    def test_categories_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            assert hopper().category == 0
-
-        with pytest.warns(DeprecationWarning):
-            assert Image.NORMAL == 0
-        with pytest.warns(DeprecationWarning):
-            assert Image.SEQUENCE == 1
-        with pytest.warns(DeprecationWarning):
-            assert Image.CONTAINER == 2
-
     def test_constants(self):
-        with pytest.warns(DeprecationWarning):
-            assert Image.LINEAR == Image.Resampling.BILINEAR
-        with pytest.warns(DeprecationWarning):
-            assert Image.CUBIC == Image.Resampling.BICUBIC
-        with pytest.warns(DeprecationWarning):
-            assert Image.ANTIALIAS == Image.Resampling.LANCZOS
-
         for enum in (
             Image.Transpose,
             Image.Transform,

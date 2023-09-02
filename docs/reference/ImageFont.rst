@@ -18,10 +18,19 @@ OpenType fonts (as well as other font formats supported by the FreeType
 library). For earlier versions, TrueType support is only available as part of
 the imToolkit package.
 
+.. warning::
+    To protect against potential DOS attacks when using arbitrary strings as
+    text input, Pillow will raise a ``ValueError`` if the number of characters
+    is over a certain limit, :py:data:`MAX_STRING_LENGTH`.
+
+    This threshold can be changed by setting
+    :py:data:`MAX_STRING_LENGTH`. It can be disabled by setting
+    ``ImageFont.MAX_STRING_LENGTH = None``.
+
 Example
 -------
 
-.. code-block:: python
+::
 
     from PIL import ImageFont, ImageDraw
 
@@ -73,3 +82,12 @@ Constants
 
     Requires Raqm, you can check support using
     :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
+
+Constants
+---------
+
+.. data:: MAX_STRING_LENGTH
+
+    Set to 1,000,000, to protect against potential DOS attacks. Pillow will
+    raise a ``ValueError`` if the number of characters is over this limit. The
+    check can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.

@@ -106,7 +106,7 @@ class FpxImageFile(ImageFile.ImageFile):
             # note: for now, we ignore the "uncalibrated" flag
             colors.append(i32(s, 8 + i * 4) & 0x7FFFFFFF)
 
-        self.mode, self.rawmode = MODES[tuple(colors)]
+        self._mode, self.rawmode = MODES[tuple(colors)]
 
         # load JPEG tables, if any
         self.jpeg = {}
@@ -234,6 +234,14 @@ class FpxImageFile(ImageFile.ImageFile):
             self.fp = self.ole.openstream(self.stream[:2] + ["Subimage 0000 Data"])
 
         return ImageFile.ImageFile.load(self)
+
+    def close(self):
+        self.ole.close()
+        super().close()
+
+    def __exit__(self, *args):
+        self.ole.close()
+        super().__exit__()
 
 
 #

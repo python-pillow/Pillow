@@ -195,6 +195,7 @@ TAGS_V2 = {
     34675: ("ICCProfile", UNDEFINED, 1),
     34853: ("GPSInfoIFD", LONG, 1),
     36864: ("ExifVersion", UNDEFINED, 1),
+    37724: ("ImageSourceData", UNDEFINED, 1),
     40965: ("InteroperabilityIFD", LONG, 1),
     41730: ("CFAPattern", UNDEFINED, 1),
     # MPInfo
