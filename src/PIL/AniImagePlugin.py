@@ -423,7 +423,7 @@ class AniImageFile(ImageFile.ImageFile):
         self.info["sizes"] = im.info["sizes"]
         self.info["hotspots"] = im.info["hotspots"]
         self.im = im.im
-        self.mode = im.mode
+        self._mode = im.mode
 
     def seek(self, frame):
         if frame > self.info["frames"] - 1 or frame < 0:
