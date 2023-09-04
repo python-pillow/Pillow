@@ -55,7 +55,7 @@ class QoiDecoder(ImageFile.PyDecoder):
         while len(data) < self.state.xsize * self.state.ysize * bands:
             byte = self.fd.read(1)[0]
             if byte == 0b11111110:  # QOI_OP_RGB
-                value = self.fd.read(3) + o8(255)
+                value = self.fd.read(3) + self._previous_pixel[3:]
             elif byte == 0b11111111:  # QOI_OP_RGBA
                 value = self.fd.read(4)
             else:
