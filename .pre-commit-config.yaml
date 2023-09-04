@@ -23,7 +23,7 @@ repos:
       - id: yesqa
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.3
+    rev: v1.5.4
     hooks:
       - id: remove-tabs
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
@@ -50,17 +50,17 @@ repos:
       - id: check-yaml
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
-    rev: v0.6.7
+    rev: v0.6.8
     hooks:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: 0.13.0
+    rev: 1.1.0
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.13
+    rev: v0.14
     hooks:
       - id: validate-pyproject
 
