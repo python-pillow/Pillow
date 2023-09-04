@@ -32,16 +32,16 @@ jobs:
 
     steps:
     - name: Checkout Pillow
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Checkout cached dependencies
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
     - name: Checkout extra test images
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: python-pillow/test-images
         path: Tests\test-images
