@@ -42,7 +42,7 @@ jobs:
       MB_PYTHON_VERSION: ${{ matrix.python }}
       TRAVIS_OS_NAME: "osx"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - uses: actions/setup-python@v4
