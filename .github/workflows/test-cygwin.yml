@@ -36,7 +36,7 @@ jobs:
           git config --global core.autocrlf input
 
       - name: Checkout Pillow
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@v4

@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout Pillow
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up shell
         run: echo "C:\msys64\usr\bin\" >> $env:GITHUB_PATH
