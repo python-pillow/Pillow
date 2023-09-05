@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Use previous pixel alpha for QOI_OP_RGB #7357
+  [radarhere]
+
+- Added BC5U reading #7358
+  [radarhere]
+
 - Allow getpixel() to accept a list #7355
   [radarhere, homm]
 
