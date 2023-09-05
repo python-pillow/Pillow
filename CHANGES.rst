@@ -5777,8 +5777,8 @@ http://svn.effbot.org/public/pil/
   a polyline, independent of line angle.
 
 - Fixed bearing calculation and clipping in the ImageFont truetype
-  renderer; this could lead to clipped text, or crashes in the low-
-  level _imagingft module.  (based on input from Adam Twardoch and
+  renderer; this could lead to clipped text, or crashes in the low-level
+  _imagingft module.  (based on input from Adam Twardoch and
   others).
 
 - Added ImageQt wrapper module, for converting PIL Image objects to
@@ -5859,8 +5859,7 @@ http://svn.effbot.org/public/pil/
 1.1.5c2 and 1.1.5 final
 -----------------------
 
-- Added experimental PERSPECTIVE transform method (from Jeff Breiden-
-  bach).
+- Added experimental PERSPECTIVE transform method (from Jeff Breidenbach).
 
 1.1.5c1
 -------
@@ -5932,8 +5931,8 @@ http://svn.effbot.org/public/pil/
 
 - Fixed BILINEAR/BICUBIC/ANTIALIAS filtering for mode "LA".
 
-- Added "getcolors()" method.  This is similar to the existing histo-
-  gram method, but looks at color values instead of individual layers,
+- Added "getcolors()" method.  This is similar to the existing histogram
+  method, but looks at color values instead of individual layers,
   and returns an unsorted list of (count, color) tuples.
 
   By default, the method returns None if finds more than 256 colors.
@@ -6149,8 +6148,8 @@ http://svn.effbot.org/public/pil/
 
 - Added limited support for "bitfield compression" in BMP files
   and DIB buffers, for 15-bit, 16-bit, and 32-bit images.  This
-  also fixes a problem with ImageGrab module when copying screen-
-  dumps from the clipboard on 15/16/32-bit displays.
+  also fixes a problem with ImageGrab module when copying screendumps
+  from the clipboard on 15/16/32-bit displays.
 
 - Added experimental WAL (Quake 2 textures) loader.  To use this
   loader, import WalImageFile and call the "open" method in that
@@ -6261,8 +6260,8 @@ http://svn.effbot.org/public/pil/
 1.1.3 final
 -----------
 
-- Made setup.py look for old versions of zlib.  For some back-
-  ground, see: https://zlib.net/advisory-2002-03-11.txt
+- Made setup.py look for old versions of zlib.  For some background,
+  see: https://zlib.net/advisory-2002-03-11.txt
 
 1.1.3c2
 -------
@@ -6453,8 +6452,8 @@ http://svn.effbot.org/public/pil/
   supports all major PIL image modes (including F and I).
 
 - The ImageFile module now includes a Parser class, which can
-  be used to incrementally decode an image file (while down-
-  loading it from the net, for example).  See the handbook for
+  be used to incrementally decode an image file (while downloading
+  it from the net, for example).  See the handbook for
   details.
 
 - "show" now converts non-standard modes to "L" or "RGB" (as
@@ -6592,8 +6591,8 @@ http://svn.effbot.org/public/pil/
 
 - The Image "transform" method now supports Image.QUAD transforms.
   The data argument is an 8-tuple giving the upper left, lower
-  left, lower right, and upper right corner of the source quadri-
-  lateral.  Also added Image.MESH transform which takes a list
+  left, lower right, and upper right corner of the source quadrilateral.
+  Also added Image.MESH transform which takes a list
   of quadrilaterals.
 
 - The Image "resize", "rotate", and "transform" methods now support
@@ -6818,8 +6817,8 @@ The test suite includes 400 individual tests.
   neither "short", "int" nor "long" are 32-bit wide.
 
 - Added file= and data= keyword arguments to PhotoImage and BitmapImage.
-  This allows you to use them as drop-in replacements for the corre-
-  sponding Tkinter classes.
+  This allows you to use them as drop-in replacements for the corresponding
+  Tkinter classes.
 
 - Removed bogus references to the crack coder (ImagingCrack).
 
