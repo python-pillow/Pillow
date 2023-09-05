@@ -1363,6 +1363,100 @@ class Image:
             return self.im.getband(band)
         return self.im  # could be abused
 
+    def getdominantcolors(self, numcolors=3, maxiter=50, threshold=1, quality=1.0):
+        """
+        Returns a list of dominant colors in an image using k-means
+        clustering.
+
+        :param numcolors: Number of dominant colors to search for.
+        The default number is 3.
+        :param maxiter: Maximum number of iterations to run the
+        algorithm.  The default limit is 50.
+        :param threshold: Early stopping condition for the algorithm.
+        Higher values correspond with increased color differences. The
+        default is set to 1 (corresponding to 1 pixel difference).
+        :param quality: Used for scaling an image to speed up calculations.
+        The default value is 1.0.
+        :returns: An unsorted list of pixel values.
+        """
+
+        # Checking if # of pixels is greater than a 1080p image.
+        if quality >= 1.0 and self.width * self.height >= 2073600:
+            recommended_quality = 300000 / self.width * self.height
+            message = "Lower quality recommended: {:.4}".format(recommended_quality)
+            warnings.warn(message)
+        elif quality != 1.0:
+            self.thumbnail((quality * self.width, quality * self.height))
+
+        channels = self.im.bands
+        if channels not in (1, 3, 4):
+            raise ValueError("Unsupported image mode")
+
+        def euclidean(p1, p2):
+            if channels == 1:
+                return (p1 - p2) ** 2
+            return sum([(p1[i] - p2[i]) ** 2 for i in range(channels)])
+
+        pixels_and_counts = []
+        for count, color in self.getcolors(self.width * self.height):
+            pixels_and_counts.append((color, count))
+
+        centroids = []
+        for i in range(numcolors):
+            # Formatted as (pixel_cluster, center)
+            centroids.append(([pixels_and_counts[i]], pixels_and_counts[i][0]))
+
+        # Begin k-means clustering
+        for iter in range(maxiter):
+            cluster = {}
+            for i in range(numcolors):
+                cluster[i] = []
+
+            # Calculates all pixel distances from each center to add to the cluster
+            for pixel in pixels_and_counts:
+                smallest_distance = float("Inf")
+
+                for i in range(numcolors):
+                    distance = euclidean(pixel[0], centroids[i][1])
+                    if distance < smallest_distance:
+                        smallest_distance = distance
+                        idx = i
+
+                cluster[idx].append(pixel)
+
+            # Adjusting the center of each cluster
+            difference = 0
+            for i in range(numcolors):
+                previous = centroids[i][1]
+                count_sum = 0
+
+                if channels == 1:
+                    pixel_sum = 0.0
+                    for pixel in cluster[i]:
+                        count_sum += pixel[1]
+                        pixel_sum += pixel[0] * pixel[1]
+                    current = pixel_sum / count_sum
+                else:
+                    pixel_sum = [0.0 for i in range(channels)]
+                    for pixel in cluster[i]:
+                        count_sum += pixel[1]
+                        for channel in range(channels):
+                            pixel_sum[channel] += pixel[0][channel] * pixel[1]
+                    current = [(channel_sum / count_sum) for channel_sum in pixel_sum]
+
+                centroids[i] = (cluster[i], current)
+                difference = max(difference, euclidean(previous, current))
+
+            if difference < threshold:
+                break
+
+        if self.mode == "F":
+            return [center[1] for center in centroids]
+        elif self.mode in ("I", "L", "P"):
+            return [int(center[1]) for center in centroids]
+        else:
+            return [tuple(map(int, center[1])) for center in centroids]
+
     def getextrema(self):
         """
         Gets the minimum and maximum pixel values for each band in
