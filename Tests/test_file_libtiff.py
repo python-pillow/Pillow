@@ -8,7 +8,7 @@ from collections import namedtuple
 
 import pytest
 
-from PIL import Image, ImageFilter, TiffImagePlugin, TiffTags, features
+from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
 from PIL.TiffImagePlugin import SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
@@ -1036,6 +1036,14 @@ class TestFileLibTiff(LibTiffTestCase):
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
                     im.load()
+
+                    assert_image_similar(base_im, im, 0.7)
+
+    def test_exif_transpose(self):
+        with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
+            for i in range(2, 9):
+                with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
+                    im = ImageOps.exif_transpose(im)
 
                     assert_image_similar(base_im, im, 0.7)
 
