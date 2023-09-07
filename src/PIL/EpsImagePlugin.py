@@ -233,7 +233,9 @@ class EpsImageFile(ImageFile.ImageFile):
         byte_arr = bytearray(255)
         bytes_mv = memoryview(byte_arr)
         bytes_read = 0
-        reading_comments = True
+        reading_header_comments = True
+        reading_trailer_comments = False
+        trailer_reached = False
 
         def check_required_header_comments():
             if "PS-Adobe" not in self.info:
@@ -265,9 +267,9 @@ class EpsImageFile(ImageFile.ImageFile):
                         msg = "not an EPS file"
                         raise SyntaxError(msg)
                     else:
-                        if reading_comments:
+                        if reading_header_comments:
                             check_required_header_comments()
-                            reading_comments = False
+                            reading_header_comments = False
                         # reset bytes_read so we can keep reading
                         # data until the end of the line
                         bytes_read = 0
@@ -275,7 +277,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 bytes_read += 1
                 continue
 
-            if reading_comments:
+            if reading_header_comments:
                 # Load EPS header
 
                 # if this line doesn't start with a "%",
@@ -283,7 +285,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 # then we've reached the end of the header/comments
                 if byte_arr[0] != ord("%") or bytes_mv[:13] == b"%%EndComments":
                     check_required_header_comments()
-                    reading_comments = False
+                    reading_header_comments = False
                     continue
 
                 s = str(bytes_mv[:bytes_read], "latin-1")
@@ -298,17 +300,10 @@ class EpsImageFile(ImageFile.ImageFile):
                     k, v = m.group(1, 2)
                     self.info[k] = v
                     if k == "BoundingBox":
-                        try:
-                            # Note: The DSC spec says that BoundingBox
-                            # fields should be integers, but some drivers
-                            # put floating point values there anyway.
-                            box = [int(float(i)) for i in v.split()]
-                            self._size = box[2] - box[0], box[3] - box[1]
-                            self.tile = [
-                                ("eps", (0, 0) + self.size, offset, (length, box))
-                            ]
-                        except Exception:
-                            pass
+                        if v == "(atend)":
+                            reading_trailer_comments = True
+                        else:
+                            self._read_boundary_box(v, offset, length)
                 else:
                     m = field.match(s)
                     if m:
@@ -355,7 +350,32 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 self._size = columns, rows
                 return
+            elif trailer_reached and reading_trailer_comments:
+                # Load EPS trailer
 
+                # if this line starts with "%%EOF",
+                # then we've reached the end of the trailer
+                if bytes_mv[:5] == b"%%EOF":
+                    reading_trailer_comments = False
+                    continue
+
+                s = str(bytes_mv[:bytes_read], "latin-1")
+
+                try:
+                    m = split.match(s)
+                except re.error as e:
+                    msg = "not an EPS file"
+                    raise SyntaxError(msg) from e
+
+                if m:
+                    k, v = m.group(1, 2)
+                    self.info[k] = v
+                    if k == "BoundingBox":
+                        if not self._size:
+                            self._read_boundary_box(v, offset, length)
+
+            if bytes_mv[:9] == b"%%Trailer":
+                trailer_reached = True
             bytes_read = 0
 
         check_required_header_comments()
@@ -387,6 +407,19 @@ class EpsImageFile(ImageFile.ImageFile):
 
         return length, offset
 
+    def _read_boundary_box(self, v, offset, length):
+        try:
+            # Note: The DSC spec says that BoundingBox
+            # fields should be integers, but some drivers
+            # put floating point values there anyway.
+            box = [int(float(i)) for i in v.split()]
+            self._size = box[2] - box[0], box[3] - box[1]
+            self.tile = [
+                ("eps", (0, 0) + self.size, offset, (length, box))
+            ]
+        except Exception:
+            pass
+
     def load(self, scale=1, transparency=False):
         # Load EPS via Ghostscript
         if self.tile:
@@ -400,6 +433,7 @@ class EpsImageFile(ImageFile.ImageFile):
         # we can't incrementally load, so force ImageFile.parser to
         # use our custom load method by defining this method.
         pass
+
 
 
 # --------------------------------------------------------------------
