@@ -414,9 +414,7 @@ class EpsImageFile(ImageFile.ImageFile):
             # put floating point values there anyway.
             box = [int(float(i)) for i in v.split()]
             self._size = box[2] - box[0], box[3] - box[1]
-            self.tile = [
-                ("eps", (0, 0) + self.size, offset, (length, box))
-            ]
+            self.tile = [("eps", (0, 0) + self.size, offset, (length, box))]
         except Exception:
             pass
 
@@ -433,7 +431,6 @@ class EpsImageFile(ImageFile.ImageFile):
         # we can't incrementally load, so force ImageFile.parser to
         # use our custom load method by defining this method.
         pass
-
 
 
 # --------------------------------------------------------------------
