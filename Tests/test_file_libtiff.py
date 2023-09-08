@@ -1035,7 +1035,10 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
+                    assert 274 in im.tag_v2
+
                     im.load()
+                    assert 274 not in im.tag_v2
 
                     assert_image_similar(base_im, im, 0.7)
 

@@ -611,6 +611,10 @@ def exif_transpose(image, *, in_place=False):
         exif = exif_image.getexif()
         if ExifTags.Base.Orientation in exif:
             del exif[ExifTags.Base.Orientation]
+            if in_place and ExifTags.Base.Orientation in getattr(
+                exif_image, "tag_v2", {}
+            ):
+                del exif_image.tag_v2[ExifTags.Base.Orientation]
             if "exif" in exif_image.info:
                 exif_image.info["exif"] = exif.tobytes()
             elif "Raw profile type exif" in exif_image.info:
