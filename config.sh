@@ -157,6 +157,7 @@ function run_tests {
     if [ -z "$IS_ALPINE" ] && [[ "$MB_PYTHON_VERSION" != 3.12 ]]; then
         python3 -m pip install numpy
     fi
+    python3 -m pip install defusedxml olefile pyroma
 
     curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
     untar pillow-test-images.zip
