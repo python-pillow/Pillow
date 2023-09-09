@@ -126,7 +126,7 @@ def assert_image_similar(a, b, epsilon, msg=None):
         if HAS_UPLOADER:
             try:
                 url = test_image_results.upload(a, b)
-                logger.error("URL for test images: %s", url)
+                logger.exception("URL for test images: %s", url)
             except Exception:
                 pass
         raise e
