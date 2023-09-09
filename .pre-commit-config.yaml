@@ -56,6 +56,8 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
         exclude: ^Tests/images/
+      - id: trailing-whitespace
+        exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
     rev: v0.6.8
