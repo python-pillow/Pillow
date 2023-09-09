@@ -54,6 +54,8 @@ repos:
       - id: check-json
       - id: check-toml
       - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: ^Tests/images/
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
     rev: v0.6.8
