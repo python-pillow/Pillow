@@ -1220,6 +1220,8 @@ class TiffImageFile(ImageFile.ImageFile):
                 exif.get_ifd(key)
 
         ImageOps.exif_transpose(self, in_place=True)
+        if ExifTags.Base.Orientation in self.tag_v2:
+            del self.tag_v2[ExifTags.Base.Orientation]
 
     def _load_libtiff(self):
         """Overload method triggered when we detect a compressed tiff
