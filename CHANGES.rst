@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Prevent TIFF orientation from being applied more than once #7383
+  [radarhere]
+
 - Use previous pixel alpha for QOI_OP_RGB #7357
   [radarhere]
 
