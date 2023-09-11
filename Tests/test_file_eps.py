@@ -406,14 +406,10 @@ def test_timeout(test_file):
                 pass
 
 
-@pytest.mark.parametrize(
-    ("trailer_image_file", "header_image_file"),
-    [("Tests/images/zero_bb_trailer.eps", FILE1)],
-)
-def test_boundary_box_in_trailer(trailer_image_file, header_image_file):
-    # Check whether boundary boxes which are specified in the trailer are parsed
-    # just like boundary boxes specified in the header
-    with Image.open(trailer_image_file) as trailer_image, Image.open(
-        header_image_file
+def test_boundary_box_in_trailer():
+    # Check whether boundary boxes are parsed in the same way
+    # when specified in the header or the trailer
+    with Image.open("Tests/images/zero_bb_trailer.eps") as trailer_image, Image.open(
+        FILE1
     ) as header_image:
         assert trailer_image.size == header_image.size
