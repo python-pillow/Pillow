@@ -38,7 +38,14 @@ split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
 
 gs_windows_binary = None
-if sys.platform.startswith("win"):
+
+
+def _get_windows_binary():
+    global gs_windows_binary
+    if gs_windows_binary is not None:
+        return gs_windows_binary
+    if not sys.platform.startswith("win"):
+        return
     import shutil
 
     for binary in ("gswin32c", "gswin64c", "gs"):
@@ -47,19 +54,19 @@ if sys.platform.startswith("win"):
             break
     else:
         gs_windows_binary = False
+    return gs_windows_binary
 
 
 def has_ghostscript():
-    if gs_windows_binary:
+    gs_windows_binary = _get_windows_binary()
+    if gs_windows_binary is not None:
+        return gs_windows_binary is not False
+    try:
+        subprocess.check_call(["gs", "--version"], stdout=subprocess.DEVNULL)
         return True
-    if not sys.platform.startswith("win"):
-        try:
-            subprocess.check_call(["gs", "--version"], stdout=subprocess.DEVNULL)
-            return True
-        except OSError:
-            # No Ghostscript
-            pass
-    return False
+    except OSError:
+        # No Ghostscript
+        return False
 
 
 def Ghostscript(tile, size, fp, scale=1, transparency=False):
@@ -132,17 +139,18 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
         "showpage",
     ]
 
-    if gs_windows_binary is not None:
-        if not gs_windows_binary:
-            try:
-                os.unlink(outfile)
-                if infile_temp:
-                    os.unlink(infile_temp)
-            except OSError:
-                pass
+    gs_windows_binary = _get_windows_binary()
+    if gs_windows_binary is False:
+        try:
+            os.unlink(outfile)
+            if infile_temp:
+                os.unlink(infile_temp)
+        except OSError:
+            pass
 
-            msg = "Unable to locate Ghostscript on paths"
-            raise OSError(msg)
+        msg = "Unable to locate Ghostscript on paths"
+        raise OSError(msg)
+    elif gs_windows_binary is not None:
         command[0] = gs_windows_binary
 
     # push data through Ghostscript
