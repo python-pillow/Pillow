@@ -88,8 +88,14 @@ in ``L``, ``RGB`` and ``CMYK`` modes.
 Loading
 ~~~~~~~
 
+To use Ghostscript, Pillow searches for the "gs" executable. On Windows, it
+also searches for "gswin32c" and "gswin64c". If you would like to customise
+this behaviour, ``EpsImagePlugin.gs_binary = "gswin64"`` will set the name of
+the executable to use. ``EpsImagePlugin.gs_binary = False`` will prevent
+Ghostscript from being used altogether.
+
 If Ghostscript is available, you can call the :py:meth:`~PIL.Image.Image.load`
-method with the following parameters to affect how Ghostscript renders the EPS
+method with the following parameters to affect how Ghostscript renders the EPS.
 
 **scale**
     Affects the scale of the resultant rasterized image. If the EPS suggests
