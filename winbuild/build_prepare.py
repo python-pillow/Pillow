@@ -157,9 +157,9 @@ deps = {
         "libs": [r"liblzma.lib"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.1.tar.gz",
-        "filename": "libwebp-1.3.1.tar.gz",
-        "dir": "libwebp-1.3.1",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.2.tar.gz",
+        "filename": "libwebp-1.3.2.tar.gz",
+        "dir": "libwebp-1.3.2",
         "license": "COPYING",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
