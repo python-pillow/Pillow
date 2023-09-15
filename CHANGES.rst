@@ -2,6 +2,15 @@
 Changelog (Pillow)
 ==================
 
+10.0.1 (2023-09-15)
+-------------------
+
+- Updated zlib to 1.3 #7344
+  [radarhere]
+
+- Updated libwebp to 1.3.2 #7395
+  [radarhere]
+
 10.0.0 (2023-07-01)
 -------------------
 
