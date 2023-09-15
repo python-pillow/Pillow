@@ -298,7 +298,11 @@ _initialized = 0
 
 
 def preinit():
-    """Explicitly load standard file format drivers."""
+    """
+    Explicitly loads BMP, GIF, JPEG, PPM and PPM file format drivers.
+
+    It is called when opening or saving images.
+    """
 
     global _initialized
     if _initialized >= 1:
@@ -334,11 +338,6 @@ def preinit():
         assert PngImagePlugin
     except ImportError:
         pass
-    # try:
-    #     import TiffImagePlugin
-    #     assert TiffImagePlugin
-    # except ImportError:
-    #     pass
 
     _initialized = 1
 
@@ -347,6 +346,9 @@ def init():
     """
     Explicitly initializes the Python Imaging Library. This function
     loads all available file format drivers.
+
+    It is called when opening or saving images if :py:meth:`~preinit()` is
+    insufficient, and by :py:meth:`~PIL.features.pilinfo`.
     """
 
     global _initialized
