@@ -154,7 +154,7 @@ function run_tests {
         apt-get update
         apt-get install -y curl libfribidi0 unzip
     fi
-    if [ -z "$IS_ALPINE" ] && [[ "$MB_PYTHON_VERSION" != 3.12 ]]; then
+    if [ -z "$IS_ALPINE" ]; then
         python3 -m pip install numpy
     fi
     python3 -m pip install defusedxml olefile pyroma
