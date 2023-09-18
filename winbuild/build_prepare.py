@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import os
 import platform
@@ -7,36 +9,40 @@ import struct
 import subprocess
 
 
-def cmd_cd(path):
+def cmd_cd(path: str) -> str:
     return f"cd /D {path}"
 
 
-def cmd_set(name, value):
+def cmd_set(name: str, value: str) -> str:
     return f"set {name}={value}"
 
 
-def cmd_append(name, value):
+def cmd_append(name: str, value: str) -> str:
     op = "path " if name == "PATH" else f"set {name}="
     return op + f"%{name}%;{value}"
 
 
-def cmd_copy(src, tgt):
+def cmd_copy(src: str, tgt: str) -> str:
     return f'copy /Y /B "{src}" "{tgt}"'
 
 
-def cmd_xcopy(src, tgt):
+def cmd_xcopy(src: str, tgt: str) -> str:
     return f'xcopy /Y /E "{src}" "{tgt}"'
 
 
-def cmd_mkdir(path):
+def cmd_mkdir(path: str) -> str:
     return f'mkdir "{path}"'
 
 
-def cmd_rmdir(path):
+def cmd_rmdir(path: str) -> str:
     return f'rmdir /S /Q "{path}"'
 
 
-def cmd_nmake(makefile=None, target="", params=None):
+def cmd_nmake(
+    makefile: str | None = None,
+    target: str = "",
+    params: str | list[str] | tuple[str, ...] = None,
+) -> str:
     if params is None:
         params = ""
     elif isinstance(params, (list, tuple)):
@@ -55,7 +61,7 @@ def cmd_nmake(makefile=None, target="", params=None):
     )
 
 
-def cmds_cmake(target, *params):
+def cmds_cmake(target: str | tuple[str, ...] | list[str], *params) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
 
@@ -80,8 +86,11 @@ def cmds_cmake(target, *params):
 
 
 def cmd_msbuild(
-    file, configuration="Release", target="Build", platform="{msbuild_arch}"
-):
+    file: str,
+    configuration: str = "Release",
+    target: str = "Build",
+    platform: str = "{msbuild_arch}",
+) -> str:
     return " ".join(
         [
             "{msbuild}",
@@ -365,7 +374,7 @@ deps = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_msvs():
+def find_msvs() -> dict[str, str] | None:
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
@@ -482,7 +491,7 @@ def extract_dep(url: str, filename: str) -> None:
         raise RuntimeError(msg)
 
 
-def write_script(name, lines):
+def write_script(name: str, lines: list[str]) -> None:
     name = os.path.join(args.build_dir, name)
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
@@ -493,7 +502,7 @@ def write_script(name, lines):
             print("    " + line)
 
 
-def get_footer(dep):
+def get_footer(dep: dict) -> list[str]:
     lines = []
     for out in dep.get("headers", []):
         lines.append(cmd_copy(out, "{inc_dir}"))
@@ -504,7 +513,7 @@ def get_footer(dep):
     return lines
 
 
-def build_env():
+def build_env() -> None:
     lines = [
         "if defined DISTUTILS_USE_SDK goto end",
         cmd_set("INCLUDE", "{inc_dir}"),
@@ -520,7 +529,7 @@ def build_env():
     write_script("build_env.cmd", lines)
 
 
-def build_dep(name):
+def build_dep(name: str) -> str:
     dep = deps[name]
     dir = dep["dir"]
     file = f"build_dep_{name}.cmd"
@@ -570,7 +579,7 @@ def build_dep(name):
     return file
 
 
-def build_dep_all():
+def build_dep_all() -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
     for dep_name in deps:
         print()
