@@ -148,13 +148,14 @@ EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux
 function run_tests {
     if [ -n "$IS_MACOS" ]; then
         brew install fribidi
+        export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
     elif [ -n "$IS_ALPINE" ]; then
         apk add curl fribidi
     else
         apt-get update
-        apt-get install -y curl libfribidi0 unzip
+        apt-get install -y curl libfribidi0 libopenblas-dev pkg-config unzip
     fi
-    if [ -z "$IS_ALPINE" ] && [[ "$MB_PYTHON_VERSION" != 3.12 ]]; then
+    if [ -z "$IS_ALPINE" ]; then
         python3 -m pip install numpy
     fi
     python3 -m pip install defusedxml olefile pyroma
