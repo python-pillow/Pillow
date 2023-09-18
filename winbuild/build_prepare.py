@@ -421,25 +421,41 @@ def find_msvs():
     }
 
 
-def extract_dep(url, filename):
-    import tarfile
+def download_dep(url: str, file: str) -> None:
     import urllib.request
+
+    ex = None
+    for i in range(3):
+        try:
+            print(f"Fetching {url} (attempt {i + 1})...")
+            content = urllib.request.urlopen(url).read()
+            with open(file, "wb") as f:
+                f.write(content)
+            break
+        except urllib.error.URLError as e:
+            ex = e
+
+    if ex:
+        raise RuntimeError(ex)
+
+
+def extract_dep(url: str, filename: str) -> None:
+    import tarfile
     import zipfile
 
     file = os.path.join(args.depends_dir, filename)
     if not os.path.exists(file):
-        ex = None
-        for i in range(3):
-            try:
-                print("Fetching %s (attempt %d)..." % (url, i + 1))
-                content = urllib.request.urlopen(url).read()
-                with open(file, "wb") as f:
-                    f.write(content)
-                break
-            except urllib.error.URLError as e:
-                ex = e
-        else:
-            raise RuntimeError(ex)
+        # First try our mirror
+        mirror_url = (
+            f"https://raw.githubusercontent.com/"
+            f"python-pillow/pillow-depends/main/{filename}"
+        )
+        try:
+            download_dep(mirror_url, file)
+        except RuntimeError as exc:
+            # Otherwise try upstream
+            print(exc)
+            download_dep(url, file)
 
     print("Extracting " + filename)
     sources_dir_abs = os.path.abspath(sources_dir)
