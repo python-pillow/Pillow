@@ -148,6 +148,7 @@ EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux
 function run_tests {
     if [ -n "$IS_MACOS" ]; then
         brew install fribidi
+        export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
     elif [ -n "$IS_ALPINE" ]; then
         apk add curl fribidi
     else
