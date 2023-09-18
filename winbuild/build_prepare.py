@@ -105,14 +105,14 @@ def cmd_msbuild(
 
 SF_PROJECTS = "https://sourceforge.net/projects"
 
-architectures = {
+ARCHITECTURES = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
 # dependencies, listed in order of compilation
-deps = {
+DEPS = {
     "libjpeg": {
         "url": SF_PROJECTS
         + "/libjpeg-turbo/files/3.0.0/libjpeg-turbo-3.0.0.tar.gz/download",
@@ -530,7 +530,7 @@ def build_env() -> None:
 
 
 def build_dep(name: str) -> str:
-    dep = deps[name]
+    dep = DEPS[name]
     dir = dep["dir"]
     file = f"build_dep_{name}.cmd"
 
@@ -581,7 +581,7 @@ def build_dep(name: str) -> str:
 
 def build_dep_all() -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
-    for dep_name in deps:
+    for dep_name in DEPS:
         print()
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
@@ -627,7 +627,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--architecture",
-        choices=architectures,
+        choices=ARCHITECTURES,
         default=os.environ.get(
             "ARCHITECTURE",
             (
@@ -659,7 +659,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    arch_prefs = architectures[args.architecture]
+    arch_prefs = ARCHITECTURES[args.architecture]
     print("Target architecture:", args.architecture)
 
     msvs = find_msvs()
@@ -718,7 +718,7 @@ if __name__ == "__main__":
         # TODO find NASM automatically
     }
 
-    for k, v in deps.items():
+    for k, v in DEPS.items():
         prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()
