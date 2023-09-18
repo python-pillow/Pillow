@@ -152,7 +152,7 @@ function run_tests {
         apk add curl fribidi
     else
         apt-get update
-        apt-get install -y curl libfribidi0 unzip
+        apt-get install -y curl libfribidi0 libopenblas-dev pkg-config unzip
     fi
     if [ -z "$IS_ALPINE" ]; then
         python3 -m pip install numpy
