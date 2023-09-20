@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Fixed bug when reading BC5S DDS images #7401
+  [radarhere]
+
 - Prevent TIFF orientation from being applied more than once #7383
   [radarhere]
 
