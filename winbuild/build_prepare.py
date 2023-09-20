@@ -443,8 +443,7 @@ def download_dep(url: str, file: str) -> None:
             break
         except urllib.error.URLError as e:
             ex = e
-
-    if ex:
+    else:
         raise RuntimeError(ex)
 
 
