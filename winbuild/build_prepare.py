@@ -41,14 +41,9 @@ def cmd_rmdir(path: str) -> str:
 def cmd_nmake(
     makefile: str | None = None,
     target: str = "",
-    params: str | list[str] | tuple[str, ...] = None,
+    params: list[str] | None = None,
 ) -> str:
-    if params is None:
-        params = ""
-    elif isinstance(params, (list, tuple)):
-        params = " ".join(params)
-    else:
-        params = str(params)
+    params = "" if params is None else " ".join(params)
 
     return " ".join(
         [
