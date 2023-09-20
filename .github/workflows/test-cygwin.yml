@@ -102,10 +102,10 @@ jobs:
         run: |
           bash.exe .ci/install.sh
 
-      - name: Install latest NumPy
+      - name: Upgrade NumPy
         shell: dash.exe -l "{0}"
         run: |
-          python3 -m pip install -U numpy
+          python3 -m pip install -U "numpy<1.26"
 
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
