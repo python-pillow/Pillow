@@ -854,7 +854,7 @@ decode_bcn(
             int sign = strcmp(pixel_format, "BC5S") == 0 ? 1 : 0;
             while (bytes >= 16) {
                 rgba col[16];
-                memset(col, 0, 16 * sizeof(col[0]));
+                memset(col, sign ? 128 : 0, 16 * sizeof(col[0]));
                 decode_bc5_block(col, ptr, sign);
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;
