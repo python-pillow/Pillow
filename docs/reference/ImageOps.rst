@@ -13,6 +13,7 @@ only work on L and RGB images.
 .. autofunction:: autocontrast
 .. autofunction:: colorize
 .. autofunction:: contain
+.. autofunction:: cover
 .. autofunction:: pad
 .. autofunction:: crop
 .. autofunction:: scale
