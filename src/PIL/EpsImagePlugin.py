@@ -367,10 +367,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 # Load EPS trailer
 
                 # if this line starts with "%%EOF",
-                # then we've reached the end of the trailer
+                # then we've reached the end of the file
                 if bytes_mv[:5] == b"%%EOF":
-                    reading_trailer_comments = False
-                    continue
+                    break
 
                 s = str(bytes_mv[:bytes_read], "latin-1")
                 _read_comment(s)
