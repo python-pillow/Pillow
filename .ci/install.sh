@@ -23,7 +23,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
                              ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
                              cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
-                             sway wl-clipboard
+                             sway wl-clipboard libopenblas-dev
 fi
 
 python3 -m pip install --upgrade pip
@@ -38,8 +38,7 @@ python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 
 if [[ $(uname) != CYGWIN* ]]; then
-    # TODO Remove condition when NumPy supports 3.12
-    if ! [ "$GHA_PYTHON_VERSION" == "3.12-dev" ]; then python3 -m pip install numpy ; fi
+    python3 -m pip install numpy
 
     # PyQt6 doesn't support PyPy3
     if [[ $GHA_PYTHON_VERSION == 3.* ]]; then

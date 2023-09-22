@@ -118,8 +118,8 @@ decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o, int sign) {
     if (sign == 1) {
         bc5s_alpha b;
         memcpy(&b, src, sizeof(bc5s_alpha));
-        a0 = (b.a0 + 255) / 2;
-        a1 = (b.a1 + 255) / 2;
+        a0 = b.a0 + 128;
+        a1 = b.a1 + 128;
         lut1 = b.lut[0] | (b.lut[1] << 8) | (b.lut[2] << 16);
         lut2 = b.lut[3] | (b.lut[4] << 8) | (b.lut[5] << 16);
     } else {

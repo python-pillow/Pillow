@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Fixed bug when reading BC5S DDS images #7401
+  [radarhere]
+
+- Prevent TIFF orientation from being applied more than once #7383
+  [radarhere]
+
 - Use previous pixel alpha for QOI_OP_RGB #7357
   [radarhere]
 
@@ -49,6 +55,15 @@ Changelog (Pillow)
 
 - Fix missing symbols when libtiff depends on libjpeg #7270
   [heitbaum]
+
+10.0.1 (2023-09-15)
+-------------------
+
+- Updated libwebp to 1.3.2 #7395
+  [radarhere]
+
+- Updated zlib to 1.3 #7344
+  [radarhere]
 
 10.0.0 (2023-07-01)
 -------------------
