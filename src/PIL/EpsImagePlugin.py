@@ -245,6 +245,34 @@ class EpsImageFile(ImageFile.ImageFile):
                 msg = 'EPS header missing "%%BoundingBox" comment'
                 raise SyntaxError(msg)
 
+        def _read_comment(s):
+            nonlocal reading_trailer_comments
+            try:
+                m = split.match(s)
+            except re.error as e:
+                msg = "not an EPS file"
+                raise SyntaxError(msg) from e
+
+            if m:
+                k, v = m.group(1, 2)
+                self.info[k] = v
+                if k == "BoundingBox":
+                    if v == "(atend)":
+                        reading_trailer_comments = True
+                    elif not self._size:
+                        try:
+                            # Note: The DSC spec says that BoundingBox
+                            # fields should be integers, but some drivers
+                            # put floating point values there anyway.
+                            box = [int(float(i)) for i in v.split()]
+                            self._size = box[2] - box[0], box[3] - box[1]
+                            self.tile = [
+                                ("eps", (0, 0) + self.size, offset, (length, box))
+                            ]
+                        except Exception:
+                            pass
+                return True
+
         while True:
             byte = self.fp.read(1)
             if byte == b"":
@@ -289,22 +317,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     continue
 
                 s = str(bytes_mv[:bytes_read], "latin-1")
-
-                try:
-                    m = split.match(s)
-                except re.error as e:
-                    msg = "not an EPS file"
-                    raise SyntaxError(msg) from e
-
-                if m:
-                    k, v = m.group(1, 2)
-                    self.info[k] = v
-                    if k == "BoundingBox":
-                        if v == "(atend)":
-                            reading_trailer_comments = True
-                        else:
-                            self._read_boundary_box(v, offset, length)
-                else:
+                if not _read_comment(s):
                     m = field.match(s)
                     if m:
                         k = m.group(1)
@@ -360,19 +373,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     continue
 
                 s = str(bytes_mv[:bytes_read], "latin-1")
-
-                try:
-                    m = split.match(s)
-                except re.error as e:
-                    msg = "not an EPS file"
-                    raise SyntaxError(msg) from e
-
-                if m:
-                    k, v = m.group(1, 2)
-                    self.info[k] = v
-                    if k == "BoundingBox":
-                        if not self._size:
-                            self._read_boundary_box(v, offset, length)
+                _read_comment(s)
 
             if bytes_mv[:9] == b"%%Trailer":
                 trailer_reached = True
@@ -406,17 +407,6 @@ class EpsImageFile(ImageFile.ImageFile):
             raise SyntaxError(msg)
 
         return length, offset
-
-    def _read_boundary_box(self, v, offset, length):
-        try:
-            # Note: The DSC spec says that BoundingBox
-            # fields should be integers, but some drivers
-            # put floating point values there anyway.
-            box = [int(float(i)) for i in v.split()]
-            self._size = box[2] - box[0], box[3] - box[1]
-            self.tile = [("eps", (0, 0) + self.size, offset, (length, box))]
-        except Exception:
-            pass
 
     def load(self, scale=1, transparency=False):
         # Load EPS via Ghostscript
