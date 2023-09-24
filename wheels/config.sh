@@ -119,9 +119,9 @@ function pre_build {
     fi
 
     # Append licenses
-    for filename in dependency_licenses/*; do
-      echo -e "\n\n----\n\n$(basename $filename | cut -f 1 -d '.')\n" | cat >> Pillow/LICENSE
-      cat $filename >> Pillow/LICENSE
+    for filename in wheels/dependency_licenses/*; do
+      echo -e "\n\n----\n\n$(basename $filename | cut -f 1 -d '.')\n" | cat >> LICENSE
+      cat $filename >> LICENSE
     done
 }
 
@@ -130,7 +130,7 @@ function pip_wheel_cmd {
     if [ -z "$IS_MACOS" ]; then
         CFLAGS="$CFLAGS --std=c99"  # for Raqm
     fi
-    pip wheel $(pip_opts) \
+    python3 -m pip wheel $(pip_opts) \
         -C raqm=enable -C raqm=vendor -C fribidi=vendor \
         -w $abs_wheelhouse --no-deps .
 }
@@ -138,7 +138,7 @@ function pip_wheel_cmd {
 function run_tests_in_repo {
     # Run Pillow tests from within source repo
     python3 selftest.py
-    pytest
+    python3 -m pytest
 }
 
 EXP_CODECS="jpg jpg_2000 libtiff zlib"
@@ -162,10 +162,10 @@ function run_tests {
 
     curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
     untar pillow-test-images.zip
-    mv test-images-main/* ../Pillow/Tests/images
+    mv test-images-main/* ../Tests/images
 
     # Runs tests on installed distribution from an empty directory
-    (cd ../Pillow && run_tests_in_repo)
+    (cd .. && run_tests_in_repo)
     # Test against expected codecs, modules and features
     local ret=0
     local codecs=$(python3 -c 'from PIL.features import *; print(" ".join(sorted(get_supported_codecs())))')

@@ -1,9 +1,11 @@
+if: tag IS present
+
 env:
   global:
-      - REPO_DIR=Pillow
-      - BUILD_COMMIT=HEAD
+      - CONFIG_PATH=wheels/config.sh
+      - REPO_DIR=.
       - PLAT=aarch64
-      - TEST_DEPENDS="pytest-timeout"
+      - TEST_DEPENDS=pytest-timeout
 
 language: python
 # Default Python version is usually 3.6
@@ -110,13 +112,11 @@ jobs:
         - MB_PYTHON_VERSION=3.12
 
 before_install:
-    - source multibuild/common_utils.sh
-    - source multibuild/travis_steps.sh
+    - source wheels/multibuild/common_utils.sh
+    - source wheels/multibuild/travis_steps.sh
     - before_install
 
 install:
-    # Maybe get and clean and patch source
-    - clean_code
     - build_multilinux aarch64 build_wheel
     - ls -l "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/"
 
@@ -130,6 +130,6 @@ deploy:
   file_glob: true
   file: "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/*.whl"
   on:
-    repo: python-pillow/pillow-wheels
+    repo: python-pillow/Pillow
     tags: true
   skip_cleanup: true

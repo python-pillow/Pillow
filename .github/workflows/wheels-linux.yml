@@ -3,15 +3,13 @@ name: Build Linux wheels
 on:
   workflow_call:
     inputs:
-      build-commit:
-        required: true
-        type: string
       artifacts-name:
         required: true
         type: string
 
 env:
-  REPO_DIR: Pillow
+  CONFIG_PATH: "wheels/config.sh"
+  REPO_DIR: "."
   TEST_DEPENDS: "pytest pytest-timeout"
 
 jobs:
@@ -49,7 +47,6 @@ jobs:
             mb-ml-libc: "musllinux"
             mb-ml-ver: "_1_1"
     env:
-      BUILD_COMMIT: ${{ inputs.build-commit }}
       MB_PYTHON_VERSION: ${{ matrix.python }}
       MB_ML_LIBC: ${{ matrix.mb-ml-libc }}
       MB_ML_VER: ${{ matrix.mb-ml-ver }}
@@ -61,7 +58,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: Build Wheel
-        run: .github/workflows/build.sh
+        run: .github/workflows/wheels-build.sh
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.artifacts-name }}

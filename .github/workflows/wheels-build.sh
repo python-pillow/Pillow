@@ -21,14 +21,13 @@ if [[ "$MB_PYTHON_VERSION" == pypy3* ]]; then
 fi
 
 echo "::group::Install a virtualenv"
-  source multibuild/common_utils.sh
-  source multibuild/travis_steps.sh
+  source wheels/multibuild/common_utils.sh
+  source wheels/multibuild/travis_steps.sh
   python3 -m pip install virtualenv
   before_install
 echo "::endgroup::"
 
 echo "::group::Build wheel"
-  clean_code
   build_wheel
   ls -l "${GITHUB_WORKSPACE}/${WHEEL_SDIR}/"
 echo "::endgroup::"

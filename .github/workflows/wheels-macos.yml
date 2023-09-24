@@ -3,15 +3,13 @@ name: Build macOS wheels
 on:
   workflow_call:
     inputs:
-      build-commit:
-        required: true
-        type: string
       artifacts-name:
         required: true
         type: string
 
 env:
-  REPO_DIR: Pillow
+  CONFIG_PATH: "wheels/config.sh"
+  REPO_DIR: "."
   TEST_DEPENDS: "pytest pytest-timeout"
 
 jobs:
@@ -37,7 +35,6 @@ jobs:
           - python: "pypy3.10-7.3.12"
             platform: "arm64"
     env:
-      BUILD_COMMIT: ${{ inputs.build-commit }}
       PLAT: ${{ matrix.platform }}
       MB_PYTHON_VERSION: ${{ matrix.python }}
       TRAVIS_OS_NAME: "osx"
@@ -49,7 +46,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: Build Wheel
-        run: .github/workflows/build.sh
+        run: .github/workflows/wheels-build.sh
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.artifacts-name }}
