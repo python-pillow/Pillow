@@ -1,0 +1,57 @@
+name: Wheels
+
+on: [push, pull_request, workflow_dispatch]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    uses: ./.github/workflows/wheels-macos.yml
+    with:
+      build-commit: "HEAD"
+      artifacts-name: "wheels"
+
+  linux:
+    uses: ./.github/workflows/wheels-linux.yml
+    with:
+      build-commit: "HEAD"
+      artifacts-name: "wheels"
+
+  macos-latest:
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    uses: ./.github/workflows/wheels-macos.yml
+    with:
+      build-commit: "main"
+      artifacts-name: "wheels-latest"
+
+  linux-latest:
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    uses: ./.github/workflows/wheels-linux.yml
+    with:
+      build-commit: "main"
+      artifacts-name: "wheels-latest"
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: "startsWith(github.ref, 'refs/tags/')"
+    needs: [macos, linux]
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: wheels
+      - name: Upload Release
+        uses: fnkr/github-action-ghr@v1.3
+        env:
+          GHR_PATH: .
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  success:
+    needs: [macos, linux, macos-latest, linux-latest]
+    runs-on: ubuntu-latest
+    name: Wheels Successful
+    steps:
+      - name: Success
+        run: echo Wheels Successful
