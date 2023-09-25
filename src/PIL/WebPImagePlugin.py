@@ -332,12 +332,7 @@ def _save(im, fp, filename):
     exact = 1 if im.encoderinfo.get("exact") else 0
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:
-        alpha = (
-            "A" in im.mode
-            or "a" in im.mode
-            or (im.mode == "P" and "transparency" in im.info)
-        )
-        im = im.convert("RGBA" if alpha else "RGB")
+        im = im.convert("RGBA" if im.has_transparency_data() else "RGB")
 
     data = _webp.WebPEncode(
         im.tobytes(),
