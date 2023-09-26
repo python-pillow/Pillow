@@ -1531,7 +1531,7 @@ class Image:
             rawmode = mode
         return list(self.im.getpalette(mode, rawmode))
 
-    def has_transparency_data(self):
+    def has_transparency_data(self) -> bool:
         """
         Determine if an image has transparency data, whether in the form of an
         alpha channel, a palette with an alpha channel, or a "transparency" key
