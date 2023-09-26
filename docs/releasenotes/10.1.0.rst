@@ -32,10 +32,11 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+ImageOps.cover
+^^^^^^^^^^^^^^
 
-TODO
+Returns a resized version of the image, so that the requested size is covered,
+while maintaining the original aspect ratio.
 
 Security
 ========
