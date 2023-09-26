@@ -1544,7 +1544,7 @@ class Image:
         """
         return (
             self.mode in ("LA", "La", "PA", "RGBA", "RGBa")
-            or (self.mode == "P" and self.palette.mode == "RGBA")
+            or (self.mode == "P" and self.palette.mode.endswith("A"))
             or "transparency" in self.info
         )
 
