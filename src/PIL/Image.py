@@ -1531,6 +1531,7 @@ class Image:
             rawmode = mode
         return list(self.im.getpalette(mode, rawmode))
 
+    @property
     def has_transparency_data(self) -> bool:
         """
         Determine if an image has transparency data, whether in the form of an
