@@ -25,6 +25,8 @@ only work on L and RGB images.
 .. autofunction:: solarize
 .. autofunction:: exif_transpose
 
+.. _relative-resize:
+
 Resize relative to a given size
 -------------------------------
 
