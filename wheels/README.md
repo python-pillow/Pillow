@@ -28,4 +28,4 @@ Wheels are
 [GitHub Actions artifacts created for tags, relevant changes or manual builds](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml).
 
 Windows wheels are not created here. Instead, they are
-[GitHub Actions artifacts created on each run of the Pillow repository](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml?query=branch%3Amain).
+[GitHub Actions artifacts created on each run of the Windows workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml?query=branch%3Amain).
