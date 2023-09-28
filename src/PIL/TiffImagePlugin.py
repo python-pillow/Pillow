@@ -823,7 +823,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 try:
                     unit_size, handler = self._load_dispatch[typ]
                 except KeyError:
-                    logger.debug(msg + f" - unsupported type {typ}")
+                    logger.debug("%s - unsupported type %s", msg, typ)
                     continue  # ignore unsupported type
                 size = count * unit_size
                 if size > (8 if self._bigtiff else 4):
@@ -880,7 +880,7 @@ class ImageFileDirectory_v2(MutableMapping):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
             typ = self.tagtype.get(tag)
-            logger.debug(f"Tag {tag}, Type: {typ}, Value: {repr(value)}")
+            logger.debug("Tag %s, Type: %s, Value: %s", tag, typ, repr(value))
             is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
             if is_ifd:
                 if self._endian == "<":
@@ -929,7 +929,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
-            logger.debug(f"{tag} {typ} {count} {repr(value)} {repr(data)}")
+            logger.debug("%s %s %s %s %s", tag, typ, count, repr(value), repr(data))
             result += self._pack("HHL4s", tag, typ, count, value)
 
         # -- overwrite here for multi-page --
@@ -1098,8 +1098,8 @@ class TiffImageFile(ImageFile.ImageFile):
         self._n_frames = None
 
         logger.debug("*** TiffImageFile._open ***")
-        logger.debug(f"- __first: {self.__first}")
-        logger.debug(f"- ifh: {repr(ifh)}")  # Use repr to avoid str(bytes)
+        logger.debug("- __first: %s", self.__first)
+        logger.debug("- ifh: %s", repr(ifh))  # Use repr to avoid str(bytes)
 
         # and load the first frame
         self._seek(0)
@@ -1137,12 +1137,15 @@ class TiffImageFile(ImageFile.ImageFile):
                 msg = "no more images in TIFF file"
                 raise EOFError(msg)
             logger.debug(
-                f"Seeking to frame {frame}, on frame {self.__frame}, "
-                f"__next {self.__next}, location: {self.fp.tell()}"
+                "Seeking to frame %s, on frame %s, __next %s, location: %s",
+                frame,
+                self.__frame,
+                self.__next,
+                self.fp.tell(),
             )
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
-            logger.debug("Loading tags, location: %s" % self.fp.tell())
+            logger.debug("Loading tags, location: %s", self.fp.tell())
             self.tag_v2.load(self.fp)
             if self.tag_v2.next in self._frame_pos:
                 # This IFD has already been processed
@@ -1330,18 +1333,18 @@ class TiffImageFile(ImageFile.ImageFile):
         fillorder = self.tag_v2.get(FILLORDER, 1)
 
         logger.debug("*** Summary ***")
-        logger.debug(f"- compression: {self._compression}")
-        logger.debug(f"- photometric_interpretation: {photo}")
-        logger.debug(f"- planar_configuration: {self._planar_configuration}")
-        logger.debug(f"- fill_order: {fillorder}")
-        logger.debug(f"- YCbCr subsampling: {self.tag.get(YCBCRSUBSAMPLING)}")
+        logger.debug("- compression: %s", self._compression)
+        logger.debug("- photometric_interpretation: %s", photo)
+        logger.debug("- planar_configuration: %s", self._planar_configuration)
+        logger.debug("- fill_order: %s", fillorder)
+        logger.debug("- YCbCr subsampling: %s", self.tag.get(YCBCRSUBSAMPLING))
 
         # size
         xsize = int(self.tag_v2.get(IMAGEWIDTH))
         ysize = int(self.tag_v2.get(IMAGELENGTH))
         self._size = xsize, ysize
 
-        logger.debug(f"- size: {self.size}")
+        logger.debug("- size: %s", self.size)
 
         sample_format = self.tag_v2.get(SAMPLEFORMAT, (1,))
         if len(sample_format) > 1 and max(sample_format) == min(sample_format) == 1:
@@ -1397,7 +1400,7 @@ class TiffImageFile(ImageFile.ImageFile):
             bps_tuple,
             extra_tuple,
         )
-        logger.debug(f"format key: {key}")
+        logger.debug("format key: %s", key)
         try:
             self._mode, rawmode = OPEN_INFO[key]
         except KeyError as e:
@@ -1405,8 +1408,8 @@ class TiffImageFile(ImageFile.ImageFile):
             msg = "unknown pixel mode"
             raise SyntaxError(msg) from e
 
-        logger.debug(f"- raw mode: {rawmode}")
-        logger.debug(f"- pil mode: {self.mode}")
+        logger.debug("- raw mode: %s", rawmode)
+        logger.debug("- pil mode: %s", self.mode)
 
         self.info["compression"] = self._compression
 
@@ -1447,7 +1450,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if fillorder == 2:
                 # Replace fillorder with fillorder=1
                 key = key[:3] + (1,) + key[4:]
-                logger.debug(f"format key: {key}")
+                logger.debug("format key: %s", key)
                 # this should always work, since all the
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
@@ -1610,7 +1613,7 @@ def _save(im, fp, filename):
             info = exif
     else:
         info = {}
-    logger.debug("Tiffinfo Keys: %s" % list(info))
+    logger.debug("Tiffinfo Keys: %s", list(info))
     if isinstance(info, ImageFileDirectory_v1):
         info = info.to_v2()
     for key in info:
@@ -1743,7 +1746,7 @@ def _save(im, fp, filename):
             ifd[JPEGQUALITY] = quality
 
         logger.debug("Saving using libtiff encoder")
-        logger.debug("Items: %s" % sorted(ifd.items()))
+        logger.debug("Items: %s", sorted(ifd.items()))
         _fp = 0
         if hasattr(fp, "fileno"):
             try:
@@ -1811,7 +1814,7 @@ def _save(im, fp, filename):
         if SAMPLEFORMAT in atts and len(atts[SAMPLEFORMAT]) == 1:
             atts[SAMPLEFORMAT] = atts[SAMPLEFORMAT][0]
 
-        logger.debug("Converted items: %s" % sorted(atts.items()))
+        logger.debug("Converted items: %s", sorted(atts.items()))
 
         # libtiff always expects the bytes in native order.
         # we're storing image byte order. So, if the rawmode
