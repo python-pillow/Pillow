@@ -22,6 +22,7 @@
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
 
 
+import os
 import warnings
 from io import BytesIO
 from math import ceil, log
@@ -347,6 +348,85 @@ class IcoImageFile(ImageFile.ImageFile):
         pass
 
 
+def _ico1_accept(prefix):
+    return prefix[:2] == b"\1\0"
+
+
+class Ico1ImageFile(ImageFile.ImageFile):
+    format = "ICO1"
+    format_description = "Windows 1.0 Icon"
+
+    def _open(self):
+        if not _ico1_accept(self.fp.read(2)):
+            msg = "not an ICO1 file"
+            raise SyntaxError(msg)
+
+        self.fp.seek(4, os.SEEK_CUR)
+        width = i16(self.fp.read(2))
+        height = i16(self.fp.read(2))
+        self._size = (width, height)
+        self._mode = "LA"
+
+        self.tile = [("ico1", (0, 0) + self.size, 14, None)]
+
+
+class Ico1Decoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer):
+        data = bytearray()
+        bitmapLength = self.state.xsize * self.state.ysize // 8
+        firstBitmap = self.fd.read(bitmapLength)
+        secondBitmap = self.fd.read(bitmapLength)
+        for i, byte in enumerate(firstBitmap):
+            secondByte = byte ^ secondBitmap[i]
+            for j in reversed(range(8)):
+                first = byte >> j & 1
+                second = secondByte >> j & 1
+                data += b"\x00" if (first == second) else b"\xff"
+                data += b"\x00" if first else b"\xff"
+        self.set_as_raw(bytes(data))
+        return -1, 0
+
+
+class Ico1Encoder(ImageFile.PyEncoder):
+    _pushes_fd = True
+
+    def encode(self, bufsize):
+        firstBitmap = bytearray()
+        secondBitmap = bytearray()
+        w, h = self.im.size
+        for y in range(h):
+            for x in range(w):
+                l, a = self.im.getpixel((x, y))
+                if x % 8 == 0:
+                    firstBitmap += b"\x00"
+                    secondBitmap += b"\xff"
+                if not a:
+                    firstBitmap[-1] ^= 1 << (7 - x % 8)
+                if not l:
+                    secondBitmap[-1] ^= 1 << (7 - x % 8)
+        data = firstBitmap + secondBitmap
+        return len(data), 0, data
+
+
+def _ico1_save(im, fp, filename):
+    if im.mode != "LA":
+        msg = f"cannot write {im.mode} as ICO1"
+        raise OSError(msg)
+
+    fp.write(
+        o16(1)  # device-independent format
+        + o32(0)  # not used
+        + o16(im.size[0])  # width in pixels
+        + o16(im.size[1])  # height in pixels
+        + o16(im.size[0] // 8)  # width in bytes
+        + o16(0)  # not used
+    )
+
+    ImageFile._save(im, fp, [("ico1", (0, 0) + im.size, 0, None)])
+
+
 #
 # --------------------------------------------------------------------
 
@@ -356,3 +436,9 @@ Image.register_save(IcoImageFile.format, _save)
 Image.register_extension(IcoImageFile.format, ".ico")
 
 Image.register_mime(IcoImageFile.format, "image/x-icon")
+
+Image.register_open(Ico1ImageFile.format, Ico1ImageFile, _ico1_accept)
+Image.register_save(Ico1ImageFile.format, _ico1_save)
+
+Image.register_decoder("ico1", Ico1Decoder)
+Image.register_encoder("ico1", Ico1Encoder)

@@ -342,6 +342,23 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 
     .. versionadded:: 8.3.0
 
+ICO1
+^^^^
+
+Pillow also reads and writes device-independent Windows 1.0 icons.
+
+.. versionadded:: 10.1.0
+
+.. _ico1-saving:
+
+Saving
+~~~~~~
+
+Since the .ico extension is already used for the ICO format, when saving a
+Windows 1.0 icon the output format must be specified explicitly::
+
+    im.save("newimage.ico", format="ICO1")
+
 IM
 ^^
 
@@ -446,7 +463,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If this parameter is not provided, the image will be saved with no profile
     attached. To preserve the existing profile::
 
-        im.save(filename, 'jpeg', icc_profile=im.info.get('icc_profile'))
+        im.save(filename, "jpeg", icc_profile=im.info.get("icc_profile"))
 
 **exif**
     If present, the image will be stored with the provided raw EXIF data.
@@ -910,7 +927,7 @@ Saving
 The extension of SPIDER files may be any 3 alphanumeric characters. Therefore
 the output format must be specified explicitly::
 
-    im.save('newimage.spi', format='SPIDER')
+    im.save("newimage.spi", format="SPIDER")
 
 For more information about the SPIDER image processing package, see
 https://github.com/spider-em/SPIDER
