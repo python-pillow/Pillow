@@ -8,7 +8,7 @@ on:
 permissions:
   issues: write
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 

@@ -339,9 +339,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 # data start identifier (the image data follows after a single line
                 #   consisting only of this quoted value)
                 image_data_values = byte_arr[11:bytes_read].split(None, 7)
-                columns, rows, bit_depth, mode_id = [
+                columns, rows, bit_depth, mode_id = (
                     int(value) for value in image_data_values[:4]
-                ]
+                )
 
                 if bit_depth == 1:
                     self._mode = "1"

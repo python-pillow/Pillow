@@ -166,7 +166,7 @@ def grabclipboard():
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
             raise NotImplementedError(msg)
 
-        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.run(args, capture_output=True)
         err = p.stderr
         if err:
             msg = f"{args[0]} error: {err.strip().decode()}"
