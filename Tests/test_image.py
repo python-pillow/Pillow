@@ -906,6 +906,31 @@ class TestImage:
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
 
+    def test_has_transparency_data(self):
+        for mode in ("1", "L", "P", "RGB"):
+            im = Image.new(mode, (1, 1))
+            assert not im.has_transparency_data
+
+        for mode in ("LA", "La", "PA", "RGBA", "RGBa"):
+            im = Image.new(mode, (1, 1))
+            assert im.has_transparency_data
+
+        # P mode with "transparency" info
+        with Image.open("Tests/images/first_frame_transparency.gif") as im:
+            assert "transparency" in im.info
+            assert im.has_transparency_data
+
+        # RGB mode with "transparency" info
+        with Image.open("Tests/images/rgb_trns.png") as im:
+            assert "transparency" in im.info
+            assert im.has_transparency_data
+
+        # P mode with RGBA palette
+        im = Image.new("RGBA", (1, 1)).convert("P")
+        assert im.mode == "P"
+        assert im.palette.mode == "RGBA"
+        assert im.has_transparency_data
+
     def test_apply_transparency(self):
         im = Image.new("P", (1, 1))
         im.putpalette((0, 0, 0, 1, 1, 1))
