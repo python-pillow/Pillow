@@ -54,7 +54,7 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Added support for DDS 8-bit color indexed images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Support has been added to read PALETTEINDEXED8 DDS files as P mode images.

@@ -63,8 +63,35 @@ DDS
 ^^^
 
 DDS is a popular container texture format used in video games and natively supported
-by DirectX. Uncompressed RGB and RGBA can be read, and (since 8.3.0) written. DXT1,
-DXT3 (since 3.4.0) and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+by DirectX.
+
+DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+
+.. versionadded:: 3.4.0
+   DXT3 images can be read in ``RGB`` mode and DX10 images can be read in
+   ``RGB`` and ``RGBA`` mode.
+
+.. versionadded:: 6.0.0
+   Uncompressed ``RGBA`` images can be read.
+
+
+.. versionadded:: 8.3.0
+   BC5S images can be opened in ``RGB`` mode, and uncompressed ``RGB`` images
+   can be read. Uncompressed data can also be saved to image files.
+
+
+.. versionadded:: 9.3.0
+   ATI1 images can be opened in ``L`` mode and ATI2 images can be opened in
+   ``RGB`` mode.
+
+.. versionadded:: 9.4.0
+   Uncompressed ``L`` ("luminance") and ``LA`` images can be opened and saved.
+
+
+.. versionadded:: 10.1.0
+   BC5U can be read in ``RGB`` mode, and 8-bit color indexed images can be read
+   in ``P`` mode.
+
 
 DIB
 ^^^
