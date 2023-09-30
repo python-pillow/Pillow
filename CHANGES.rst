@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Added reading 8-bit color DDS images #7426
+  [radarhere]
+
 - Added has_transparency_data #7420
   [radarhere, hugovk]
 
