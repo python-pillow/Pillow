@@ -195,7 +195,6 @@ This helps to get the bounding box coordinates of the input image::
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
-.. autoproperty:: PIL.Image.Image.has_transparency_data
 .. automethod:: PIL.Image.Image.histogram
 .. automethod:: PIL.Image.Image.paste
 .. automethod:: PIL.Image.Image.point
@@ -351,6 +350,8 @@ Instances of the :py:class:`Image` class have the following attributes:
     aware of in an image regardless of its format.
 
     .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
+
+.. autoattribute:: PIL.Image.Image.has_transparency_data
 
 Classes
 -------

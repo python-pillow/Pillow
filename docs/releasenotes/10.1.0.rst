@@ -32,10 +32,16 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+has_transparency_data
+^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Images now have :py:attr:`~PIL.Image.Image.has_transparency_data` to indicate
+whether the image has transparency data, whether in the form of an alpha
+channel, a palette with an alpha channel, or a "transparency" key in the
+:py:attr:`~PIL.Image.Image.info` dictionary.
+
+Even if this attribute is true, the image might still appear solid, if all of
+the values shown within are opaque.
 
 Security
 ========
