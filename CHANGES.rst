@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Added has_transparency_data #7420
+  [radarhere, hugovk]
+
 - Fixed bug when reading BC5S DDS images #7401
   [radarhere]
 
