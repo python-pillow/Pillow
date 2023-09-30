@@ -1,3 +1,4 @@
+#!/bin/bash
 
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
   # webp, zstd, xz, libtiff, libxcb cause a conflict with building webp, libtiff, libxcb
