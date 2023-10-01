@@ -229,10 +229,20 @@ def test_draw_reloaded(tmp_path):
         assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")
 
 
-def test_ico1_open():
-    with Image.open("Tests/images/ico1.ico") as im:
+@pytest.mark.parametrize(
+    "test_image_path",
+    (
+        "Tests/images/ico1device_independent.ico",
+        "Tests/images/ico1device_dependent.ico",
+        "Tests/images/ico1both.ico",
+    ),
+)
+def test_ico1_open(test_image_path):
+    with Image.open(test_image_path) as im:
         assert_image_equal_tofile(im, "Tests/images/ico1.png")
 
+
+def test_ico1_invalid_file():
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
             IcoImagePlugin.Ico1ImageFile(fp)

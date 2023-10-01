@@ -345,7 +345,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 ICO1
 ^^^^
 
-Pillow also reads and writes device-independent Windows 1.0 icons.
+Pillow also reads Windows 1.0 icons in all three formats ("Device-Independent",
+"Device-Dependent" and "Both"), and writes them in "Device-Independent" format.
 
 .. versionadded:: 10.1.0
 

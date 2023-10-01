@@ -349,7 +349,7 @@ class IcoImageFile(ImageFile.ImageFile):
 
 
 def _ico1_accept(prefix):
-    return prefix[:2] == b"\1\0"
+    return prefix[0] == 1 and prefix[1] in (0, 1, 2)
 
 
 class Ico1ImageFile(ImageFile.ImageFile):
