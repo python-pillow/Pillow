@@ -673,7 +673,7 @@ def test_save_all_progress():
         progress.append((filename, frame_number, n_frames))
 
     Image.new("RGB", (1, 1)).save(out, "PNG", save_all=True, progress=callback)
-    assert progress == [(None, 1, 1)]
+    assert progress == [(0, 1, 1)]
 
     out = BytesIO()
     progress = []
@@ -685,13 +685,13 @@ def test_save_all_progress():
             )
 
     assert progress == [
-        ("Tests/images/apng/single_frame.png", 1, 7),
-        ("Tests/images/apng/single_frame.png", 2, 7),
-        ("Tests/images/apng/delay.png", 3, 7),
-        ("Tests/images/apng/delay.png", 4, 7),
-        ("Tests/images/apng/delay.png", 5, 7),
-        ("Tests/images/apng/delay.png", 6, 7),
-        ("Tests/images/apng/delay.png", 7, 7),
+        (0, 1, 7),
+        (1, 2, 7),
+        (2, 3, 7),
+        (2, 4, 7),
+        (2, 5, 7),
+        (2, 6, 7),
+        (2, 7, 7),
     ]
 
 

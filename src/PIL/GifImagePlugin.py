@@ -587,7 +587,7 @@ def _write_multiple_frames(im, fp, palette):
     im_frames = []
     frame_count = 0
     background_im = None
-    for imSequence in imSequences:
+    for i, imSequence in enumerate(imSequences):
         for im_frame in ImageSequence.Iterator(imSequence):
             # a copy is required here since seek can still mutate the image
             im_frame = _normalize_mode(im_frame.copy())
@@ -618,9 +618,7 @@ def _write_multiple_frames(im, fp, palette):
                     if encoderinfo.get("duration"):
                         previous["encoderinfo"]["duration"] += encoderinfo["duration"]
                     if progress:
-                        progress(
-                            getattr(imSequence, "filename", None), frame_count, n_frames
-                        )
+                        progress(i, frame_count, n_frames)
                     continue
                 if encoderinfo.get("disposal") == 2:
                     if background_im is None:
@@ -635,7 +633,7 @@ def _write_multiple_frames(im, fp, palette):
                 bbox = None
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
             if progress:
-                progress(getattr(imSequence, "filename", None), frame_count, n_frames)
+                progress(i, frame_count, n_frames)
 
     if len(im_frames) > 1:
         for frame_data in im_frames:

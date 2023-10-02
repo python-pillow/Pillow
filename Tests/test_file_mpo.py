@@ -288,7 +288,7 @@ def test_save_all_progress():
         progress.append((filename, frame_number, n_frames))
 
     Image.new("RGB", (1, 1)).save(out, "MPO", save_all=True, progress=callback)
-    assert progress == [(None, 1, 1)]
+    assert progress == [(0, 1, 1)]
 
     out = BytesIO()
     progress = []
@@ -298,8 +298,8 @@ def test_save_all_progress():
             im.save(out, "MPO", save_all=True, append_images=[im2], progress=callback)
 
     assert progress == [
-        ("Tests/images/sugarshack.mpo", 1, 4),
-        ("Tests/images/sugarshack.mpo", 2, 4),
-        ("Tests/images/frozenpond.mpo", 3, 4),
-        ("Tests/images/frozenpond.mpo", 4, 4),
+        (0, 1, 4),
+        (0, 2, 4),
+        (1, 3, 4),
+        (1, 4, 4),
     ]

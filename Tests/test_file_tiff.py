@@ -696,7 +696,7 @@ class TestFileTiff:
             progress.append((filename, frame_number, n_frames))
 
         Image.new("RGB", (1, 1)).save(out, "TIFF", save_all=True, progress=callback)
-        assert progress == [(None, 1, 1)]
+        assert progress == [(0, 1, 1)]
 
         out = BytesIO()
         progress = []
@@ -708,10 +708,10 @@ class TestFileTiff:
                 )
 
         assert progress == [
-            ("Tests/images/hopper.tif", 1, 4),
-            ("Tests/images/multipage.tiff", 2, 4),
-            ("Tests/images/multipage.tiff", 3, 4),
-            ("Tests/images/multipage.tiff", 4, 4),
+            (0, 1, 4),
+            (1, 2, 4),
+            (1, 3, 4),
+            (1, 4, 4),
         ]
 
     def test_saving_icc_profile(self, tmp_path):

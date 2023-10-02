@@ -51,7 +51,7 @@ def _save_all(im, fp, filename):
         if not animated:
             _save(im, fp, filename)
             if progress:
-                progress(getattr(im, "filename", None), 1, 1)
+                progress(0, 1, 1)
             return
 
     mpf_offset = 28
@@ -62,7 +62,7 @@ def _save_all(im, fp, filename):
         n_frames = 0
         for imSequence in imSequences:
             n_frames += getattr(imSequence, "n_frames", 1)
-    for imSequence in imSequences:
+    for i, imSequence in enumerate(imSequences):
         for im_frame in ImageSequence.Iterator(imSequence):
             if not offsets:
                 # APP2 marker
@@ -83,7 +83,7 @@ def _save_all(im, fp, filename):
                 offsets.append(fp.tell() - offsets[-1])
             if progress:
                 frame_number += 1
-                progress(getattr(imSequence, "filename", None), frame_number, n_frames)
+                progress(i, frame_number, n_frames)
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"

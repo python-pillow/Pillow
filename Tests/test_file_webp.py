@@ -131,7 +131,7 @@ class TestFileWebp:
             progress.append((filename, frame_number, n_frames))
 
         Image.new("RGB", (1, 1)).save(out, "WEBP", save_all=True, progress=callback)
-        assert progress == [(None, 1, 1)]
+        assert progress == [(0, 1, 1)]
 
         out = BytesIO()
         progress = []
@@ -142,8 +142,8 @@ class TestFileWebp:
 
         expected = []
         for i in range(42):
-            expected.append(("Tests/images/iss634.webp", i + 1, 43))
-        expected.append((None, 43, 43))
+            expected.append((0, i + 1, 43))
+        expected.append((1, 43, 43))
         assert progress == expected
 
     def test_icc_profile(self, tmp_path):

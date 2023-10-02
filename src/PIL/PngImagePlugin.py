@@ -1104,7 +1104,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
 
     im_frames = []
     frame_count = 0
-    for imSequence in imSequences:
+    for i, imSequence in enumerate(imSequences):
         for im_frame in ImageSequence.Iterator(imSequence):
             if im_frame.mode == rawmode:
                 im_frame = im_frame.copy()
@@ -1155,9 +1155,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                         "duration", duration
                     )
                     if progress:
-                        progress(
-                            getattr(imSequence, "filename", None), frame_count, n_frames
-                        )
+                        progress(i, frame_count, n_frames)
                     continue
             else:
                 bbox = None
@@ -1165,7 +1163,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                 encoderinfo["duration"] = duration
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
             if progress:
-                progress(getattr(imSequence, "filename", None), frame_count, n_frames)
+                progress(i, frame_count, n_frames)
 
     # animation control
     chunk(

@@ -2122,7 +2122,7 @@ def _save_all(im, fp, filename):
     if not hasattr(im, "n_frames") and not append_images:
         _save(im, fp, filename)
         if progress:
-            progress(getattr(im, "filename", None), 1, 1)
+            progress(0, 1, 1)
         return
 
     cur_idx = im.tell()
@@ -2134,7 +2134,7 @@ def _save_all(im, fp, filename):
             n_frames += getattr(ims, "n_frames", 1)
     try:
         with AppendingTiffWriter(fp) as tf:
-            for ims in imSequences:
+            for i, ims in enumerate(imSequences):
                 ims.encoderinfo = encoderinfo
                 ims.encoderconfig = encoderconfig
                 if not hasattr(ims, "n_frames"):
@@ -2148,7 +2148,7 @@ def _save_all(im, fp, filename):
                     _save(ims, tf, filename)
                     if progress:
                         frame_number += 1
-                        progress(getattr(ims, "filename", None), frame_number, n_frames)
+                        progress(i, frame_number, n_frames)
 
                     tf.newFrame()
     finally:
