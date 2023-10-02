@@ -2117,14 +2117,24 @@ class AppendingTiffWriter:
 def _save_all(im, fp, filename):
     encoderinfo = im.encoderinfo.copy()
     encoderconfig = im.encoderconfig
+    progress = encoderinfo.get("progress")
     append_images = list(encoderinfo.get("append_images", []))
     if not hasattr(im, "n_frames") and not append_images:
-        return _save(im, fp, filename)
+        _save(im, fp, filename)
+        if progress:
+            progress(getattr(im, "filename", None), 1, 1)
+        return
 
     cur_idx = im.tell()
+    imSequences = [im] + append_images
+    if progress:
+        frame_number = 0
+        n_frames = 0
+        for ims in imSequences:
+            n_frames += getattr(ims, "n_frames", 1)
     try:
         with AppendingTiffWriter(fp) as tf:
-            for ims in [im] + append_images:
+            for ims in imSequences:
                 ims.encoderinfo = encoderinfo
                 ims.encoderconfig = encoderconfig
                 if not hasattr(ims, "n_frames"):
@@ -2136,6 +2146,10 @@ def _save_all(im, fp, filename):
                     ims.seek(idx)
                     ims.load()
                     _save(ims, tf, filename)
+                    if progress:
+                        frame_number += 1
+                        progress(getattr(ims, "filename", None), frame_number, n_frames)
+
                     tf.newFrame()
     finally:
         im.seek(cur_idx)

@@ -1,7 +1,7 @@
-import io
 import re
 import sys
 import warnings
+from io import BytesIO
 
 import pytest
 
@@ -102,10 +102,10 @@ class TestFileWebp:
     def test_write_method(self, tmp_path):
         self._roundtrip(tmp_path, self.rgb_mode, 12.0, {"method": 6})
 
-        buffer_no_args = io.BytesIO()
+        buffer_no_args = BytesIO()
         hopper().save(buffer_no_args, format="WEBP")
 
-        buffer_method = io.BytesIO()
+        buffer_method = BytesIO()
         hopper().save(buffer_method, format="WEBP", method=6)
         assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
@@ -121,6 +121,30 @@ class TestFileWebp:
 
             reloaded.seek(1)
             assert_image_similar(im2, reloaded, 1)
+
+    @skip_unless_feature("webp_anim")
+    def test_save_all_progress(self):
+        out = BytesIO()
+        progress = []
+
+        def callback(filename, frame_number, n_frames):
+            progress.append((filename, frame_number, n_frames))
+
+        Image.new("RGB", (1, 1)).save(out, "WEBP", save_all=True, progress=callback)
+        assert progress == [(None, 1, 1)]
+
+        out = BytesIO()
+        progress = []
+
+        with Image.open("Tests/images/iss634.webp") as im:
+            im2 = Image.new("RGB", im.size)
+            im.save(out, "WEBP", save_all=True, append_images=[im2], progress=callback)
+
+        expected = []
+        for i in range(42):
+            expected.append(("Tests/images/iss634.webp", i + 1, 43))
+        expected.append((None, 43, 43))
+        assert progress == expected
 
     def test_icc_profile(self, tmp_path):
         self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})

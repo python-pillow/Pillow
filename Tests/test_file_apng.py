@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
@@ -661,6 +663,36 @@ def test_apng_save_blend(tmp_path):
     with Image.open(test_file) as im:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+
+
+def test_save_all_progress():
+    out = BytesIO()
+    progress = []
+
+    def callback(filename, frame_number, n_frames):
+        progress.append((filename, frame_number, n_frames))
+
+    Image.new("RGB", (1, 1)).save(out, "PNG", save_all=True, progress=callback)
+    assert progress == [(None, 1, 1)]
+
+    out = BytesIO()
+    progress = []
+
+    with Image.open("Tests/images/apng/single_frame.png") as im:
+        with Image.open("Tests/images/apng/delay.png") as im2:
+            im.save(
+                out, "PNG", save_all=True, append_images=[im, im2], progress=callback
+            )
+
+    assert progress == [
+        ("Tests/images/apng/single_frame.png", 1, 7),
+        ("Tests/images/apng/single_frame.png", 2, 7),
+        ("Tests/images/apng/delay.png", 3, 7),
+        ("Tests/images/apng/delay.png", 4, 7),
+        ("Tests/images/apng/delay.png", 5, 7),
+        ("Tests/images/apng/delay.png", 6, 7),
+        ("Tests/images/apng/delay.png", 7, 7),
+    ]
 
 
 def test_seek_after_close():

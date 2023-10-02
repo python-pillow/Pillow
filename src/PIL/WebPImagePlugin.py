@@ -177,6 +177,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
 def _save_all(im, fp, filename):
     encoderinfo = im.encoderinfo.copy()
+    progress = encoderinfo.get("progress")
     append_images = list(encoderinfo.get("append_images", []))
 
     # If total frame count is 1, then save using the legacy API, which
@@ -186,6 +187,8 @@ def _save_all(im, fp, filename):
         total += getattr(ims, "n_frames", 1)
     if total == 1:
         _save(im, fp, filename)
+        if progress:
+            progress(getattr(im, "filename", None), 1, 1)
         return
 
     background = (0, 0, 0, 0)
@@ -300,6 +303,8 @@ def _save_all(im, fp, filename):
                 else:
                     timestamp += duration
                 frame_idx += 1
+                if progress:
+                    progress(getattr(ims, "filename", None), frame_idx, total)
 
     finally:
         im.seek(cur_idx)

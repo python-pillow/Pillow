@@ -1,8 +1,8 @@
-import io
 import os
 import os.path
 import tempfile
 import time
+from io import BytesIO
 
 import pytest
 
@@ -169,6 +169,31 @@ def test_save_all(tmp_path):
     assert os.path.getsize(outfile) > 0
 
 
+def test_save_all_progress():
+    out = BytesIO()
+    progress = []
+
+    def callback(filename, frame_number, n_frames):
+        progress.append((filename, frame_number, n_frames))
+
+    Image.new("RGB", (1, 1)).save(out, "PDF", save_all=True, progress=callback)
+    assert progress == [(None, 1, 1)]
+
+    out = BytesIO()
+    progress = []
+
+    with Image.open("Tests/images/sugarshack.mpo") as im:
+        with Image.open("Tests/images/frozenpond.mpo") as im2:
+            im.save(out, "PDF", save_all=True, append_images=[im2], progress=callback)
+
+    assert progress == [
+        ("Tests/images/sugarshack.mpo", 1, 4),
+        ("Tests/images/sugarshack.mpo", 2, 4),
+        ("Tests/images/frozenpond.mpo", 3, 4),
+        ("Tests/images/frozenpond.mpo", 4, 4),
+    ]
+
+
 def test_multiframe_normal_save(tmp_path):
     # Test saving a multiframe image without save_all
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
@@ -323,12 +348,12 @@ def test_pdf_info(tmp_path):
 
 def test_pdf_append_to_bytesio():
     im = hopper("RGB")
-    f = io.BytesIO()
+    f = BytesIO()
     im.save(f, format="PDF")
     initial_size = len(f.getvalue())
     assert initial_size > 0
     im = hopper("P")
-    f = io.BytesIO(f.getvalue())
+    f = BytesIO(f.getvalue())
     im.save(f, format="PDF", append=True)
     assert len(f.getvalue()) > initial_size
 

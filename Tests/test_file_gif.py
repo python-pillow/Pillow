@@ -265,6 +265,29 @@ def test_roundtrip_save_all_1(tmp_path):
         assert reloaded.getpixel((0, 0)) == 255
 
 
+def test_save_all_progress():
+    out = BytesIO()
+    progress = []
+
+    def callback(filename, frame_number, n_frames):
+        progress.append((filename, frame_number, n_frames))
+
+    Image.new("RGB", (1, 1)).save(out, "GIF", save_all=True, progress=callback)
+    assert progress == [(None, 1, 1)]
+
+    out = BytesIO()
+    progress = []
+
+    with Image.open("Tests/images/hopper.gif") as im:
+        with Image.open("Tests/images/chi.gif") as im2:
+            im.save(out, "GIF", save_all=True, append_images=[im2], progress=callback)
+
+    expected = [("Tests/images/hopper.gif", 1, 32)]
+    for i in range(31):
+        expected.append(("Tests/images/chi.gif", i + 2, 32))
+    assert progress == expected
+
+
 @pytest.mark.parametrize(
     "path, mode",
     (

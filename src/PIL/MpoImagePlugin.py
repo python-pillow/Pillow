@@ -18,7 +18,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-import itertools
 import os
 import struct
 
@@ -42,6 +41,7 @@ def _save(im, fp, filename):
 
 
 def _save_all(im, fp, filename):
+    progress = im.encoderinfo.get("progress")
     append_images = im.encoderinfo.get("append_images", [])
     if not append_images:
         try:
@@ -50,11 +50,19 @@ def _save_all(im, fp, filename):
             animated = False
         if not animated:
             _save(im, fp, filename)
+            if progress:
+                progress(getattr(im, "filename", None), 1, 1)
             return
 
     mpf_offset = 28
     offsets = []
-    for imSequence in itertools.chain([im], append_images):
+    imSequences = [im] + list(append_images)
+    if progress:
+        frame_number = 0
+        n_frames = 0
+        for imSequence in imSequences:
+            n_frames += getattr(imSequence, "n_frames", 1)
+    for imSequence in imSequences:
         for im_frame in ImageSequence.Iterator(imSequence):
             if not offsets:
                 # APP2 marker
@@ -73,6 +81,9 @@ def _save_all(im, fp, filename):
             else:
                 im_frame.save(fp, "JPEG")
                 offsets.append(fp.tell() - offsets[-1])
+            if progress:
+                frame_number += 1
+                progress(getattr(imSequence, "filename", None), frame_number, n_frames)
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"

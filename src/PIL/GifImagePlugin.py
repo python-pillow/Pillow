@@ -24,7 +24,6 @@
 # See the README file for information on usage and redistribution.
 #
 
-import itertools
 import math
 import os
 import subprocess
@@ -578,10 +577,17 @@ def _write_multiple_frames(im, fp, palette):
     duration = im.encoderinfo.get("duration")
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
+    progress = im.encoderinfo.get("progress")
+    imSequences = [im] + list(im.encoderinfo.get("append_images", []))
+    if progress:
+        n_frames = 0
+        for imSequence in imSequences:
+            n_frames += getattr(imSequence, "n_frames", 1)
+
     im_frames = []
     frame_count = 0
     background_im = None
-    for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
+    for imSequence in imSequences:
         for im_frame in ImageSequence.Iterator(imSequence):
             # a copy is required here since seek can still mutate the image
             im_frame = _normalize_mode(im_frame.copy())
@@ -611,6 +617,10 @@ def _write_multiple_frames(im, fp, palette):
                     # This frame is identical to the previous frame
                     if encoderinfo.get("duration"):
                         previous["encoderinfo"]["duration"] += encoderinfo["duration"]
+                    if progress:
+                        progress(
+                            getattr(imSequence, "filename", None), frame_count, n_frames
+                        )
                     continue
                 if encoderinfo.get("disposal") == 2:
                     if background_im is None:
@@ -624,6 +634,8 @@ def _write_multiple_frames(im, fp, palette):
             else:
                 bbox = None
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
+            if progress:
+                progress(getattr(imSequence, "filename", None), frame_count, n_frames)
 
     if len(im_frames) > 1:
         for frame_data in im_frames:

@@ -658,7 +658,7 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
-    def test_tiff_save_all(self):
+    def test_save_all(self):
         mp = BytesIO()
         with Image.open("Tests/images/multipage.tiff") as im:
             im.save(mp, format="tiff", save_all=True)
@@ -687,6 +687,32 @@ class TestFileTiff:
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
             assert reread.n_frames == 3
+
+    def test_save_all_progress(self):
+        out = BytesIO()
+        progress = []
+
+        def callback(filename, frame_number, n_frames):
+            progress.append((filename, frame_number, n_frames))
+
+        Image.new("RGB", (1, 1)).save(out, "TIFF", save_all=True, progress=callback)
+        assert progress == [(None, 1, 1)]
+
+        out = BytesIO()
+        progress = []
+
+        with Image.open("Tests/images/hopper.tif") as im:
+            with Image.open("Tests/images/multipage.tiff") as im2:
+                im.save(
+                    out, "TIFF", save_all=True, append_images=[im2], progress=callback
+                )
+
+        assert progress == [
+            ("Tests/images/hopper.tif", 1, 4),
+            ("Tests/images/multipage.tiff", 2, 4),
+            ("Tests/images/multipage.tiff", 3, 4),
+            ("Tests/images/multipage.tiff", 4, 4),
+        ]
 
     def test_saving_icc_profile(self, tmp_path):
         # Tests saving TIFF with icc_profile set.
