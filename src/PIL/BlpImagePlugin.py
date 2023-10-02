@@ -442,7 +442,7 @@ class BLPEncoder(ImageFile.PyEncoder):
         return len(data), 0, data
 
 
-def _save(im, fp, filename, save_all=False):
+def _save(im, fp, filename):
     if im.mode != "P":
         msg = "Unsupported BLP image mode"
         raise ValueError(msg)
