@@ -1104,10 +1104,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
             if im_frame.mode == rawmode:
                 im_frame = im_frame.copy()
             else:
-                if rawmode == "P":
-                    im_frame = im_frame.convert(rawmode, palette=im.palette)
-                else:
-                    im_frame = im_frame.convert(rawmode)
+                im_frame = im_frame.convert(rawmode)
             encoderinfo = im.encoderinfo.copy()
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
