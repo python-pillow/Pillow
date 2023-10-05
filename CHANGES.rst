@@ -5,6 +5,21 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Corrected drawing I;16 points and writing I;16 text #7257
+  [radarhere]
+
+- Set blue channel to 128 for BC5S #7413
+  [radarhere]
+
+- Increase flexibility when reading IPTC fields #7319
+  [radarhere]
+
+- Set C palette to be empty by default #7289
+  [radarhere]
+
+- Added gs_binary to control Ghostscript use on all platforms #7392
+  [radarhere]
+
 - Read bounding box information from the trailer of EPS files if specified #7382
   [nopperl, radarhere]
 
