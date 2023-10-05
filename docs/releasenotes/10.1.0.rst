@@ -48,7 +48,8 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Support reading signed 8-bit YCbCr TIFF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+TIFF images with unsigned integer data, 8 bits per sample and a photometric
+interpretation of YCbCr can now be read.
