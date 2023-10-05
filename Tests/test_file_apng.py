@@ -669,11 +669,18 @@ def test_save_all_progress():
     out = BytesIO()
     progress = []
 
-    def callback(filename, frame_number, n_frames):
-        progress.append((filename, frame_number, n_frames))
+    def callback(state):
+        progress.append(state)
 
     Image.new("RGB", (1, 1)).save(out, "PNG", save_all=True, progress=callback)
-    assert progress == [(0, 1, 1)]
+    assert progress == [
+        {
+            "image_index": 0,
+            "image_filename": None,
+            "completed_frames": 1,
+            "total_frames": 1,
+        }
+    ]
 
     out = BytesIO()
     progress = []
@@ -685,13 +692,48 @@ def test_save_all_progress():
             )
 
     assert progress == [
-        (0, 1, 7),
-        (1, 2, 7),
-        (2, 3, 7),
-        (2, 4, 7),
-        (2, 5, 7),
-        (2, 6, 7),
-        (2, 7, 7),
+        {
+            "image_index": 0,
+            "image_filename": "Tests/images/apng/single_frame.png",
+            "completed_frames": 1,
+            "total_frames": 7,
+        },
+        {
+            "image_index": 1,
+            "image_filename": "Tests/images/apng/single_frame.png",
+            "completed_frames": 2,
+            "total_frames": 7,
+        },
+        {
+            "image_index": 2,
+            "image_filename": "Tests/images/apng/delay.png",
+            "completed_frames": 3,
+            "total_frames": 7,
+        },
+        {
+            "image_index": 2,
+            "image_filename": "Tests/images/apng/delay.png",
+            "completed_frames": 4,
+            "total_frames": 7,
+        },
+        {
+            "image_index": 2,
+            "image_filename": "Tests/images/apng/delay.png",
+            "completed_frames": 5,
+            "total_frames": 7,
+        },
+        {
+            "image_index": 2,
+            "image_filename": "Tests/images/apng/delay.png",
+            "completed_frames": 6,
+            "total_frames": 7,
+        },
+        {
+            "image_index": 2,
+            "image_filename": "Tests/images/apng/delay.png",
+            "completed_frames": 7,
+            "total_frames": 7,
+        },
     ]
 
 

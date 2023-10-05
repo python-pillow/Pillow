@@ -269,11 +269,18 @@ def test_save_all_progress():
     out = BytesIO()
     progress = []
 
-    def callback(filename, frame_number, n_frames):
-        progress.append((filename, frame_number, n_frames))
+    def callback(state):
+        progress.append(state)
 
     Image.new("RGB", (1, 1)).save(out, "GIF", save_all=True, progress=callback)
-    assert progress == [(0, 1, 1)]
+    assert progress == [
+        {
+            "image_index": 0,
+            "image_filename": None,
+            "completed_frames": 1,
+            "total_frames": 1,
+        }
+    ]
 
     out = BytesIO()
     progress = []
@@ -282,9 +289,23 @@ def test_save_all_progress():
         with Image.open("Tests/images/chi.gif") as im2:
             im.save(out, "GIF", save_all=True, append_images=[im2], progress=callback)
 
-    expected = [(0, 1, 32)]
+    expected = [
+        {
+            "image_index": 0,
+            "image_filename": "Tests/images/hopper.gif",
+            "completed_frames": 1,
+            "total_frames": 32,
+        }
+    ]
     for i in range(31):
-        expected.append((1, i + 2, 32))
+        expected.append(
+            {
+                "image_index": 1,
+                "image_filename": "Tests/images/chi.gif",
+                "completed_frames": i + 2,
+                "total_frames": 32,
+            }
+        )
     assert progress == expected
 
 

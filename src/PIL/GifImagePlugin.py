@@ -618,7 +618,14 @@ def _write_multiple_frames(im, fp, palette):
                     if encoderinfo.get("duration"):
                         previous["encoderinfo"]["duration"] += encoderinfo["duration"]
                     if progress:
-                        progress(i, frame_count, n_frames)
+                        progress(
+                            {
+                                "image_index": i,
+                                "image_filename": getattr(imSequence, "filename", None),
+                                "completed_frames": frame_count,
+                                "total_frames": n_frames,
+                            }
+                        )
                     continue
                 if encoderinfo.get("disposal") == 2:
                     if background_im is None:
@@ -633,7 +640,14 @@ def _write_multiple_frames(im, fp, palette):
                 bbox = None
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
             if progress:
-                progress(i, frame_count, n_frames)
+                progress(
+                    {
+                        "image_index": i,
+                        "image_filename": getattr(imSequence, "filename", None),
+                        "completed_frames": frame_count,
+                        "total_frames": n_frames,
+                    }
+                )
 
     if len(im_frames) > 1:
         for frame_data in im_frames:

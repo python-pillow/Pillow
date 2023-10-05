@@ -51,7 +51,14 @@ def _save_all(im, fp, filename):
         if not animated:
             _save(im, fp, filename)
             if progress:
-                progress(0, 1, 1)
+                progress(
+                    {
+                        "image_index": 0,
+                        "image_filename": getattr(im, "filename", None),
+                        "completed_frames": 1,
+                        "total_frames": 1,
+                    }
+                )
             return
 
     mpf_offset = 28
@@ -83,7 +90,14 @@ def _save_all(im, fp, filename):
                 offsets.append(fp.tell() - offsets[-1])
             if progress:
                 frame_number += 1
-                progress(i, frame_number, n_frames)
+                progress(
+                    {
+                        "image_index": i,
+                        "image_filename": getattr(imSequence, "filename", None),
+                        "completed_frames": frame_number,
+                        "total_frames": n_frames,
+                    }
+                )
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
     ifd[0xB000] = b"0100"

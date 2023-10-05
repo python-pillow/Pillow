@@ -127,11 +127,18 @@ class TestFileWebp:
         out = BytesIO()
         progress = []
 
-        def callback(filename, frame_number, n_frames):
-            progress.append((filename, frame_number, n_frames))
+        def callback(state):
+            progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "WEBP", save_all=True, progress=callback)
-        assert progress == [(0, 1, 1)]
+        assert progress == [
+            {
+                "image_index": 0,
+                "image_filename": None,
+                "completed_frames": 1,
+                "total_frames": 1,
+            }
+        ]
 
         out = BytesIO()
         progress = []
@@ -142,8 +149,22 @@ class TestFileWebp:
 
         expected = []
         for i in range(42):
-            expected.append((0, i + 1, 43))
-        expected.append((1, 43, 43))
+            expected.append(
+                {
+                    "image_index": 0,
+                    "image_filename": "Tests/images/iss634.webp",
+                    "completed_frames": i + 1,
+                    "total_frames": 43,
+                }
+            )
+        expected.append(
+            {
+                "image_index": 1,
+                "image_filename": None,
+                "completed_frames": 43,
+                "total_frames": 43,
+            }
+        )
         assert progress == expected
 
     def test_icc_profile(self, tmp_path):

@@ -1155,7 +1155,14 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                         "duration", duration
                     )
                     if progress:
-                        progress(i, frame_count, n_frames)
+                        progress(
+                            {
+                                "image_index": i,
+                                "image_filename": getattr(imSequence, "filename", None),
+                                "completed_frames": frame_count,
+                                "total_frames": n_frames,
+                            }
+                        )
                     continue
             else:
                 bbox = None
@@ -1163,7 +1170,14 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                 encoderinfo["duration"] = duration
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
             if progress:
-                progress(i, frame_count, n_frames)
+                progress(
+                    {
+                        "image_index": i,
+                        "image_filename": getattr(imSequence, "filename", None),
+                        "completed_frames": frame_count,
+                        "total_frames": n_frames,
+                    }
+                )
 
     # animation control
     chunk(

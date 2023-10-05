@@ -283,7 +283,14 @@ def _save(im, fp, filename, save_all=False):
 
             page_number += 1
             if progress:
-                progress(i, page_number, number_of_pages)
+                progress(
+                    {
+                        "image_index": i,
+                        "image_filename": getattr(im_sequence, "filename", None),
+                        "completed_frames": page_number,
+                        "total_frames": number_of_pages,
+                    }
+                )
 
     #
     # trailer

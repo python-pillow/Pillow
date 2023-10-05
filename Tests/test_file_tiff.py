@@ -692,11 +692,18 @@ class TestFileTiff:
         out = BytesIO()
         progress = []
 
-        def callback(filename, frame_number, n_frames):
-            progress.append((filename, frame_number, n_frames))
+        def callback(state):
+            progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "TIFF", save_all=True, progress=callback)
-        assert progress == [(0, 1, 1)]
+        assert progress == [
+            {
+                "image_index": 0,
+                "image_filename": None,
+                "completed_frames": 1,
+                "total_frames": 1,
+            }
+        ]
 
         out = BytesIO()
         progress = []
@@ -708,10 +715,30 @@ class TestFileTiff:
                 )
 
         assert progress == [
-            (0, 1, 4),
-            (1, 2, 4),
-            (1, 3, 4),
-            (1, 4, 4),
+            {
+                "image_index": 0,
+                "image_filename": "Tests/images/hopper.tif",
+                "completed_frames": 1,
+                "total_frames": 4,
+            },
+            {
+                "image_index": 1,
+                "image_filename": "Tests/images/multipage.tiff",
+                "completed_frames": 2,
+                "total_frames": 4,
+            },
+            {
+                "image_index": 1,
+                "image_filename": "Tests/images/multipage.tiff",
+                "completed_frames": 3,
+                "total_frames": 4,
+            },
+            {
+                "image_index": 1,
+                "image_filename": "Tests/images/multipage.tiff",
+                "completed_frames": 4,
+                "total_frames": 4,
+            },
         ]
 
     def test_saving_icc_profile(self, tmp_path):
