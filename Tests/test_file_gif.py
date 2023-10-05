@@ -205,14 +205,14 @@ def test_optimize_full_l():
 
 
 def test_optimize_if_palette_can_be_reduced_by_half():
-    with Image.open("Tests/images/test.colors.gif") as im:
-        # Reduce dimensions because original is too big for _get_optimize()
-        im = im.resize((591, 443))
-    im_rgb = im.convert("RGB")
+    im = Image.new("P", (8, 1))
+    im.palette = ImagePalette.raw("RGB", bytes((0, 0, 0) * 150))
+    for i in range(8):
+        im.putpixel((i, 0), (i + 1, 0, 0))
 
     for optimize, colors in ((False, 256), (True, 8)):
         out = BytesIO()
-        im_rgb.save(out, "GIF", optimize=optimize)
+        im.save(out, "GIF", optimize=optimize)
         with Image.open(out) as reloaded:
             assert len(reloaded.palette.palette) // 3 == colors
 
@@ -1180,18 +1180,17 @@ def test_palette_save_L(tmp_path):
 
 
 def test_palette_save_P(tmp_path):
-    # Pass in a different palette, then construct what the image would look like.
-    # Forcing a non-straight grayscale palette.
-
-    im = hopper("P")
-    palette = bytes(255 - i // 3 for i in range(768))
+    im = Image.new("P", (1, 2))
+    im.putpixel((0, 1), 1)
 
     out = str(tmp_path / "temp.gif")
-    im.save(out, palette=palette)
+    im.save(out, palette=bytes((1, 2, 3, 4, 5, 6)))
 
     with Image.open(out) as reloaded:
-        im.putpalette(palette)
-        assert_image_equal(reloaded, im)
+        reloaded_rgb = reloaded.convert("RGB")
+
+        assert reloaded_rgb.getpixel((0, 0)) == (1, 2, 3)
+        assert reloaded_rgb.getpixel((0, 1)) == (4, 5, 6)
 
 
 def test_palette_save_duplicate_entries(tmp_path):

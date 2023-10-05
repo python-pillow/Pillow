@@ -638,8 +638,8 @@ class TestImage:
                 im.remap_palette(None)
 
     def test_remap_palette_transparency(self):
-        im = Image.new("P", (1, 2))
-        im.putpixel((0, 1), 1)
+        im = Image.new("P", (1, 2), (0, 0, 0))
+        im.putpixel((0, 1), (255, 0, 0))
         im.info["transparency"] = 0
 
         im_remapped = im.remap_palette([1, 0])
