@@ -475,8 +475,10 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
         case IMAGING_TYPE_FLOAT32:
             return PyFloat_FromDouble(pixel.f);
         case IMAGING_TYPE_SPECIAL:
-            if (strncmp(im->mode, "I;16", 4) == 0) {
+            if (im->bands == 1) {
                 return PyLong_FromLong(pixel.h);
+            } else {
+                return Py_BuildValue("BBB", pixel.b[0], pixel.b[1], pixel.b[2]);
             }
             break;
     }
@@ -599,7 +601,7 @@ getink(PyObject *color, Imaging im, char *ink) {
                 } else if (tupleSize != 3) {
                     PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or three elements");
                     return NULL;
-                } else if (!PyArg_ParseTuple(color, "Lii", &r, &g, &b)) {
+                } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
                     return NULL;
                 }
                 if (!strcmp(im->mode, "BGR;15")) {
@@ -1571,21 +1573,46 @@ if (PySequence_Check(op)) { \
                 PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
-            int endian = strncmp(image->mode, "I;16", 4) == 0 ? (strcmp(image->mode, "I;16B") == 0 ? 2 : 1) : 0;
             double value;
-            for (i = x = y = 0; i < n; i++) {
-                set_value_to_item(seq, i);
-                if (scale != 1.0 || offset != 0.0) {
-                    value = value * scale + offset;
+            if (image->bands == 1) {
+                int bigendian;
+                if (image->type == IMAGING_TYPE_SPECIAL) {
+                    // I;16*
+                    bigendian = strcmp(image->mode, "I;16B") == 0;
                 }
-                if (endian == 0) {
-                    image->image8[y][x] = (UINT8)CLIP8(value);
-                } else {
-                    image->image8[y][x * 2 + (endian == 2 ? 1 : 0)] = CLIP8((int)value % 256);
-                    image->image8[y][x * 2 + (endian == 2 ? 0 : 1)] = CLIP8((int)value >> 8);
+                for (i = x = y = 0; i < n; i++) {
+                    set_value_to_item(seq, i);
+                    if (scale != 1.0 || offset != 0.0) {
+                        value = value * scale + offset;
+                    }
+                    if (image->type == IMAGING_TYPE_SPECIAL) {
+                        image->image8[y][x * 2 + (bigendian ? 1 : 0)] = CLIP8((int)value % 256);
+                        image->image8[y][x * 2 + (bigendian ? 0 : 1)] = CLIP8((int)value >> 8);
+                    } else {
+                        image->image8[y][x] = (UINT8)CLIP8(value);
+                    }
+                    if (++x >= (int)image->xsize) {
+                        x = 0, y++;
+                    }
                 }
-                if (++x >= (int)image->xsize) {
-                    x = 0, y++;
+            } else {
+                // BGR;*
+                int b;
+                for (i = x = y = 0; i < n; i++) {
+                    char ink[4];
+
+                    op = PySequence_Fast_GET_ITEM(seq, i);
+                    if (!op || !getink(op, image, ink)) {
+                        Py_DECREF(seq);
+                        return NULL;
+                    }
+                    /* FIXME: what about scale and offset? */
+                    for (b = 0; b < image->pixelsize; b++) {
+                        image->image8[y][x * image->pixelsize + b] = ink[b];
+                    }
+                    if (++x >= (int)image->xsize) {
+                        x = 0, y++;
+                    }
                 }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
