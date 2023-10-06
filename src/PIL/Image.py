@@ -1385,7 +1385,7 @@ class Image:
 
     def _getxmp(self, xmp_tags):
         def get_name(tag):
-            return tag.split("}")[1]
+            return re.sub("^{[^}]+}", "", tag)
 
         def get_value(element):
             value = {get_name(k): v for k, v in element.attrib.items()}
