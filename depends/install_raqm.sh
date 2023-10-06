@@ -11,4 +11,3 @@ pushd $archive
 meson build --prefix=/usr && sudo ninja -C build install
 
 popd
-

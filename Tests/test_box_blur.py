@@ -22,7 +22,7 @@ def test_imageops_box_blur():
 
 
 def box_blur(image, radius=1, n=1):
-    return image._new(image.im.box_blur(radius, n))
+    return image._new(image.im.box_blur((radius, radius), n))
 
 
 def assert_image(im, data, delta=0):

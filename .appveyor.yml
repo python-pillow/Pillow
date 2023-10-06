@@ -21,13 +21,11 @@ environment:
 install:
 - '%PYTHON%\%EXECUTABLE% --version'
 - '%PYTHON%\%EXECUTABLE% -m pip install --upgrade pip'
-- curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
 - curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
-- 7z x pillow-depends.zip -oc:\
 - 7z x pillow-test-images.zip -oc:\
-- mv c:\pillow-depends-main c:\pillow-depends
 - xcopy /S /Y c:\test-images-main\* c:\pillow\tests\images
-- 7z x ..\pillow-depends\nasm-2.16.01-win64.zip -oc:\
+- curl -fsSL -o nasm-win64.zip https://raw.githubusercontent.com/python-pillow/pillow-depends/main/nasm-2.16.01-win64.zip
+- 7z x nasm-win64.zip -oc:\
 - choco install ghostscript --version=10.0.0.20230317
 - path c:\nasm-2.16.01;C:\Program Files\gs\gs10.00.0\bin;%PATH%
 - cd c:\pillow\winbuild\

@@ -56,7 +56,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.is_animated = self.n_frames > 1
 
         # image characteristics
-        self.mode = "P"
+        self._mode = "P"
         self._size = i16(s, 8), i16(s, 10)
 
         # animation speed

@@ -737,7 +737,7 @@ class PngImageFile(ImageFile.ImageFile):
         # difficult to break if things go wrong in the decoder...
         # (believe me, I've tried ;-)
 
-        self.mode = self.png.im_mode
+        self._mode = self.png.im_mode
         self._size = self.png.im_size
         self.info = self.png.im_info
         self._text = None
@@ -1042,6 +1042,7 @@ _OUTMODES = {
     "LA": ("LA", b"\x08\x04"),
     "I": ("I;16B", b"\x10\x00"),
     "I;16": ("I;16B", b"\x10\x00"),
+    "I;16B": ("I;16B", b"\x10\x00"),
     "P;1": ("P;1", b"\x01\x03"),
     "P;2": ("P;2", b"\x02\x03"),
     "P;4": ("P;4", b"\x04\x03"),

@@ -89,7 +89,7 @@ class ImtImageFile(ImageFile.ImageFile):
                     ysize = int(v)
                     self._size = xsize, ysize
                 elif k == b"pixel" and v == b"n8":
-                    self.mode = "L"
+                    self._mode = "L"
 
 
 #

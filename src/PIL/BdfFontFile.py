@@ -68,11 +68,11 @@ def bdf_char(f):
     # followed by the width in x (BBw), height in y (BBh),
     # and x and y displacement (BBxoff0, BByoff0)
     # of the lower left corner from the origin of the character.
-    width, height, x_disp, y_disp = [int(p) for p in props["BBX"].split()]
+    width, height, x_disp, y_disp = (int(p) for p in props["BBX"].split())
 
     # The word DWIDTH
     # followed by the width in x and y of the character in device pixels.
-    dwx, dwy = [int(p) for p in props["DWIDTH"].split()]
+    dwx, dwy = (int(p) for p in props["DWIDTH"].split())
 
     bbox = (
         (dwx, dwy),

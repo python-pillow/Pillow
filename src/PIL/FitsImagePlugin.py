@@ -51,14 +51,14 @@ class FitsImageFile(ImageFile.ImageFile):
 
         number_of_bits = int(headers[b"BITPIX"])
         if number_of_bits == 8:
-            self.mode = "L"
+            self._mode = "L"
         elif number_of_bits == 16:
-            self.mode = "I"
+            self._mode = "I"
             # rawmode = "I;16S"
         elif number_of_bits == 32:
-            self.mode = "I"
+            self._mode = "I"
         elif number_of_bits in (-32, -64):
-            self.mode = "F"
+            self._mode = "F"
             # rawmode = "F" if number_of_bits == -32 else "F;64F"
 
         offset = math.ceil(self.fp.tell() / 2880) * 2880

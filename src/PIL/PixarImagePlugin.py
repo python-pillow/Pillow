@@ -54,7 +54,7 @@ class PixarImageFile(ImageFile.ImageFile):
         mode = i16(s, 424), i16(s, 426)
 
         if mode == (14, 2):
-            self.mode = "RGB"
+            self._mode = "RGB"
         # FIXME: to be continued...
 
         # create tile descriptor (assuming "dumped")

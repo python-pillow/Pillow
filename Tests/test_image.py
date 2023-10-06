@@ -135,6 +135,12 @@ class TestImage:
         with pytest.raises(AttributeError):
             im.size = (3, 4)
 
+    def test_set_mode(self):
+        im = Image.new("RGB", (1, 1))
+
+        with pytest.raises(AttributeError):
+            im.mode = "P"
+
     def test_invalid_image(self):
         im = io.BytesIO(b"")
         with pytest.raises(UnidentifiedImageError):
@@ -632,8 +638,8 @@ class TestImage:
                 im.remap_palette(None)
 
     def test_remap_palette_transparency(self):
-        im = Image.new("P", (1, 2))
-        im.putpixel((0, 1), 1)
+        im = Image.new("P", (1, 2), (0, 0, 0))
+        im.putpixel((0, 1), (255, 0, 0))
         im.info["transparency"] = 0
 
         im_remapped = im.remap_palette([1, 0])
@@ -655,15 +661,15 @@ class TestImage:
         blank_p.palette = None
         blank_pa.palette = None
 
-        def _make_new(base_image, im, palette_result=None):
-            new_im = base_image._new(im)
-            assert new_im.mode == im.mode
-            assert new_im.size == im.size
-            assert new_im.info == base_image.info
+        def _make_new(base_image, image, palette_result=None):
+            new_image = base_image._new(image.im)
+            assert new_image.mode == image.mode
+            assert new_image.size == image.size
+            assert new_image.info == base_image.info
             if palette_result is not None:
-                assert new_im.palette.tobytes() == palette_result.tobytes()
+                assert new_image.palette.tobytes() == palette_result.tobytes()
             else:
-                assert new_im.palette is None
+                assert new_image.palette is None
 
         _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
         _make_new(im_p, im, None)
@@ -899,6 +905,31 @@ class TestImage:
     def test_zero_tobytes(self, size):
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
+
+    def test_has_transparency_data(self):
+        for mode in ("1", "L", "P", "RGB"):
+            im = Image.new(mode, (1, 1))
+            assert not im.has_transparency_data
+
+        for mode in ("LA", "La", "PA", "RGBA", "RGBa"):
+            im = Image.new(mode, (1, 1))
+            assert im.has_transparency_data
+
+        # P mode with "transparency" info
+        with Image.open("Tests/images/first_frame_transparency.gif") as im:
+            assert "transparency" in im.info
+            assert im.has_transparency_data
+
+        # RGB mode with "transparency" info
+        with Image.open("Tests/images/rgb_trns.png") as im:
+            assert "transparency" in im.info
+            assert im.has_transparency_data
+
+        # P mode with RGBA palette
+        im = Image.new("RGBA", (1, 1)).convert("P")
+        assert im.mode == "P"
+        assert im.palette.mode == "RGBA"
+        assert im.has_transparency_data
 
     def test_apply_transparency(self):
         im = Image.new("P", (1, 1))

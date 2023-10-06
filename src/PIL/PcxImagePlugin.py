@@ -108,7 +108,7 @@ class PcxImageFile(ImageFile.ImageFile):
             msg = "unknown PCX mode"
             raise OSError(msg)
 
-        self.mode = mode
+        self._mode = mode
         self._size = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
         # Don't trust the passed in stride.

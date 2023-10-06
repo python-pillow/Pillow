@@ -157,7 +157,8 @@ class GaussianBlur(MultibandFilter):
     approximates a Gaussian kernel. For details on accuracy see
     <https://www.mia.uni-saarland.de/Publications/gwosdek-ssvm11.pdf>
 
-    :param radius: Standard deviation of the Gaussian kernel.
+    :param radius: Standard deviation of the Gaussian kernel. Either a sequence of two
+                   numbers for x and y, or a single number for both.
     """
 
     name = "GaussianBlur"
@@ -166,7 +167,12 @@ class GaussianBlur(MultibandFilter):
         self.radius = radius
 
     def filter(self, image):
-        return image.gaussian_blur(self.radius)
+        xy = self.radius
+        if not isinstance(xy, (tuple, list)):
+            xy = (xy, xy)
+        if xy == (0, 0):
+            return image.copy()
+        return image.gaussian_blur(xy)
 
 
 class BoxBlur(MultibandFilter):
@@ -176,21 +182,31 @@ class BoxBlur(MultibandFilter):
     which runs in linear time relative to the size of the image
     for any radius value.
 
-    :param radius: Size of the box in one direction. Radius 0 does not blur,
-                   returns an identical image. Radius 1 takes 1 pixel
-                   in each direction, i.e. 9 pixels in total.
+    :param radius: Size of the box in a direction. Either a sequence of two numbers for
+                   x and y, or a single number for both.
+
+                   Radius 0 does not blur, returns an identical image.
+                   Radius 1 takes 1 pixel in each direction, i.e. 9 pixels in total.
     """
 
     name = "BoxBlur"
 
     def __init__(self, radius):
-        if radius < 0:
+        xy = radius
+        if not isinstance(xy, (tuple, list)):
+            xy = (xy, xy)
+        if xy[0] < 0 or xy[1] < 0:
             msg = "radius must be >= 0"
             raise ValueError(msg)
         self.radius = radius
 
     def filter(self, image):
-        return image.box_blur(self.radius)
+        xy = self.radius
+        if not isinstance(xy, (tuple, list)):
+            xy = (xy, xy)
+        if xy == (0, 0):
+            return image.copy()
+        return image.box_blur(xy)
 
 
 class UnsharpMask(MultibandFilter):

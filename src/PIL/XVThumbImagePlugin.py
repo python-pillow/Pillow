@@ -65,7 +65,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         # parse header line (already read)
         s = s.strip().split()
 
-        self.mode = "P"
+        self._mode = "P"
         self._size = int(s[0]), int(s[1])
 
         self.palette = ImagePalette.raw("RGB", PALETTE)

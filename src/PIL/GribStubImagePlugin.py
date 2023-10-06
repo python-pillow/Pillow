@@ -46,7 +46,7 @@ class GribStubImageFile(ImageFile.StubImageFile):
         self.fp.seek(offset)
 
         # make something up
-        self.mode = "F"
+        self._mode = "F"
         self._size = 1, 1
 
         loader = self._load()

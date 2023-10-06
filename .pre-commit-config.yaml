@@ -1,6 +1,12 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: 23.3.0
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.13.0
+    hooks:
+      - id: pyupgrade
+        args: [--py38-plus]
+
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 23.9.1
     hooks:
       - id: black
         args: [--target-version=py38]
@@ -23,17 +29,17 @@ repos:
       - id: yesqa
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.1
+    rev: v1.5.4
     hooks:
       - id: remove-tabs
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         additional_dependencies:
-          [flake8-2020, flake8-errmsg, flake8-implicit-str-concat]
+          [flake8-2020, flake8-errmsg, flake8-implicit-str-concat, flake8-logging]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -44,23 +50,28 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
+      - id: check-executables-have-shebangs
       - id: check-merge-conflict
       - id: check-json
       - id: check-toml
       - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: ^Tests/images/
+      - id: trailing-whitespace
+        exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
-    rev: v0.6.7
+    rev: v0.6.8
     hooks:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: 0.12.1
+    rev: 1.2.0
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.13
+    rev: v0.14
     hooks:
       - id: validate-pyproject
 

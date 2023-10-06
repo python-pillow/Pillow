@@ -42,7 +42,7 @@ if hasattr(Image.core, "drawwmf"):
 
     class WmfHandler:
         def open(self, im):
-            im.mode = "RGB"
+            im._mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
 
         def load(self, im):
@@ -139,7 +139,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             msg = "Unsupported file format"
             raise SyntaxError(msg)
 
-        self.mode = "RGB"
+        self._mode = "RGB"
         self._size = size
 
         loader = self._load()
