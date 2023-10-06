@@ -351,6 +351,8 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
 
+.. autoattribute:: PIL.Image.Image.has_transparency_data
+
 Classes
 -------
 

@@ -8,4 +8,3 @@ Fixed Windows PyPy Build
 
 A change in the 4.2.0 cycle broke the Windows PyPy build. This has
 been fixed, and PyPy is now part of the Windows CI matrix.
-

@@ -20,5 +20,3 @@ CPython 3.6.1 to not work on installations of C-Python 3.6.0. This fix
 undefines PySlice_GetIndicesEx if it exists to restore compatibility
 with both 3.6.0 and 3.6.1. See https://bugs.python.org/issue29943 for
 more details.
-
-
