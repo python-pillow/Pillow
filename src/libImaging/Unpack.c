@@ -31,6 +31,7 @@
  */
 
 #include "Imaging.h"
+#include "Convert.h"
 
 #define R 0
 #define G 1
@@ -810,20 +811,6 @@ ImagingUnpackXBGR(UINT8 *_out, const UINT8 *in, int pixels) {
         memcpy(_out, &iv, sizeof(iv));
         in += 4;
         _out += 4;
-    }
-}
-
-static void
-cmyk2rgb(UINT8 *_out, const UINT8 *in, int pixels) {
-    int i, nk, tmp;
-    for (i = 0; i < pixels; i++) {
-        nk = 255 - in[3];
-        _out[0] = CLIP8(nk - MULDIV255(in[0], nk, tmp));
-        _out[1] = CLIP8(nk - MULDIV255(in[1], nk, tmp));
-        _out[2] = CLIP8(nk - MULDIV255(in[2], nk, tmp));
-        _out[3] = 255;
-        _out += 4;
-        in += 4;
     }
 }
 
