@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Support BGR;15, BGR;16 and BGR;24 access, unpacking and putdata #7303
+  [radarhere]
+
 - Added CMYK to RGB unpacker #7310
   [radarhere]
 
