@@ -5,6 +5,15 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Added CMYK to RGB unpacker #7310
+  [radarhere]
+
+- Improved flexibility of XMP parsing #7274
+  [radarhere]
+
+- Support reading 8-bit YCbCr TIFF images #7415
+  [radarhere]
+
 - Allow saving I;16B images as PNG #7302
   [radarhere]
 
