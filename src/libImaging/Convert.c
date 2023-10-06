@@ -564,7 +564,7 @@ rgb2cmyk(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
-static void
+void
 cmyk2rgb(UINT8 *out, const UINT8 *in, int xsize) {
     int x, nk, tmp;
     for (x = 0; x < xsize; x++) {
