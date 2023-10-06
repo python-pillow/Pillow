@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Allow saving I;16B images as PNG #7302
+  [radarhere]
+
 - Corrected drawing I;16 points and writing I;16 text #7257
   [radarhere]
 
