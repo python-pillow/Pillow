@@ -588,6 +588,7 @@ def exif_transpose(image, *, in_place=False):
         with the transposition applied. If there is no transposition, a copy of the
         image will be returned.
     """
+    image.load()
     image_exif = image.getexif()
     orientation = image_exif.get(ExifTags.Base.Orientation)
     method = {

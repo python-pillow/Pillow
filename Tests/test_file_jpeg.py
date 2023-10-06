@@ -214,12 +214,19 @@ class TestFileJpeg:
             # Should not raise OSError for image with icc larger than image size.
             im.save(
                 f,
-                format="JPEG",
                 progressive=True,
                 quality=95,
                 icc_profile=icc_profile,
                 optimize=True,
             )
+
+        with Image.open("Tests/images/flower2.jpg") as im:
+            f = str(tmp_path / "temp2.jpg")
+            im.save(f, progressive=True, quality=94, icc_profile=b" " * 53955)
+
+        with Image.open("Tests/images/flower2.jpg") as im:
+            f = str(tmp_path / "temp3.jpg")
+            im.save(f, progressive=True, quality=94, exif=b" " * 43668)
 
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
@@ -945,11 +952,10 @@ class TestFileJpeg:
             assert repr_jpeg.format == "JPEG"
             assert_image_similar(im, repr_jpeg, 17)
 
-    def test_repr_jpeg_error(self):
+    def test_repr_jpeg_error_returns_none(self):
         im = hopper("F")
 
-        with pytest.raises(ValueError):
-            im._repr_jpeg_()
+        assert im._repr_jpeg_() is None
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

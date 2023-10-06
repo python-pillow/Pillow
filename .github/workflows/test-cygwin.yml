@@ -4,11 +4,19 @@ on:
   push:
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   pull_request:
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   workflow_dispatch:
 
 permissions:
@@ -36,7 +44,7 @@ jobs:
           git config --global core.autocrlf input
 
       - name: Checkout Pillow
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@v4
@@ -76,17 +84,23 @@ jobs:
         with:
           dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
 
+      - name: Select Python version
+        run: |
+          ln -sf c:/cygwin/bin/python3.${{ matrix.python-minor-version }} c:/cygwin/bin/python3
+
+      - name: Get latest NumPy version
+        id: latest-numpy
+        shell: bash.exe -eo pipefail -o igncr "{0}"
+        run: |
+          python3 -m pip list --outdated | grep numpy | sed -r 's/ +/ /g' | cut -d ' ' -f 3 | sed 's/^/version=/' >> $GITHUB_OUTPUT
+
       - name: pip cache
         uses: actions/cache@v3
         with:
           path: 'C:\cygwin\home\runneradmin\.cache\pip'
-          key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-${{ hashFiles('.ci/install.sh') }}
+          key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
-            ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-
-
-      - name: Select Python version
-        run: |
-          ln -sf c:/cygwin/bin/python3.${{ matrix.python-minor-version }} c:/cygwin/bin/python3
+            ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-
 
       - name: Build system information
         run: |
@@ -96,10 +110,10 @@ jobs:
         run: |
           bash.exe .ci/install.sh
 
-      - name: Install a different NumPy
+      - name: Upgrade NumPy
         shell: dash.exe -l "{0}"
         run: |
-          python3 -m pip install -U numpy
+          python3 -m pip install -U "numpy<1.26"
 
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"

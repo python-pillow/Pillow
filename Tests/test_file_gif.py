@@ -205,14 +205,14 @@ def test_optimize_full_l():
 
 
 def test_optimize_if_palette_can_be_reduced_by_half():
-    with Image.open("Tests/images/test.colors.gif") as im:
-        # Reduce dimensions because original is too big for _get_optimize()
-        im = im.resize((591, 443))
-    im_rgb = im.convert("RGB")
+    im = Image.new("P", (8, 1))
+    im.palette = ImagePalette.raw("RGB", bytes((0, 0, 0) * 150))
+    for i in range(8):
+        im.putpixel((i, 0), (i + 1, 0, 0))
 
     for optimize, colors in ((False, 256), (True, 8)):
         out = BytesIO()
-        im_rgb.save(out, "GIF", optimize=optimize)
+        im.save(out, "GIF", optimize=optimize)
         with Image.open(out) as reloaded:
             assert len(reloaded.palette.palette) // 3 == colors
 
@@ -875,6 +875,14 @@ def test_identical_frames_to_single_frame(duration, tmp_path):
         assert reread.info["duration"] == 8500
 
 
+def test_loop_none(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("L", (100, 100), "#000")
+    im.save(out, loop=None)
+    with Image.open(out) as reread:
+        assert "loop" not in reread.info
+
+
 def test_number_of_loops(tmp_path):
     number_of_loops = 2
 
@@ -1086,6 +1094,21 @@ def test_transparent_optimize(tmp_path):
         assert reloaded.info["transparency"] == reloaded.getpixel((252, 0))
 
 
+def test_removed_transparency(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("RGB", (256, 1))
+
+    for x in range(256):
+        im.putpixel((x, 0), (x, 0, 0))
+
+    im.info["transparency"] = (255, 255, 255)
+    with pytest.warns(UserWarning):
+        im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert "transparency" not in reloaded.info
+
+
 def test_rgb_transparency(tmp_path):
     out = str(tmp_path / "temp.gif")
 
@@ -1157,18 +1180,17 @@ def test_palette_save_L(tmp_path):
 
 
 def test_palette_save_P(tmp_path):
-    # Pass in a different palette, then construct what the image would look like.
-    # Forcing a non-straight grayscale palette.
-
-    im = hopper("P")
-    palette = bytes(255 - i // 3 for i in range(768))
+    im = Image.new("P", (1, 2))
+    im.putpixel((0, 1), 1)
 
     out = str(tmp_path / "temp.gif")
-    im.save(out, palette=palette)
+    im.save(out, palette=bytes((1, 2, 3, 4, 5, 6)))
 
     with Image.open(out) as reloaded:
-        im.putpalette(palette)
-        assert_image_equal(reloaded, im)
+        reloaded_rgb = reloaded.convert("RGB")
+
+        assert reloaded_rgb.getpixel((0, 0)) == (1, 2, 3)
+        assert reloaded_rgb.getpixel((0, 1)) == (4, 5, 6)
 
 
 def test_palette_save_duplicate_entries(tmp_path):

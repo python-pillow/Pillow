@@ -37,7 +37,7 @@ jobs:
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py

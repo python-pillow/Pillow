@@ -230,14 +230,14 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
 }
 
 Imaging
-ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n) {
+ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n) {
     int i;
     Imaging imTransposed;
 
     if (n < 1) {
         return ImagingError_ValueError("number of passes must be greater than zero");
     }
-    if (radius < 0) {
+    if (xradius < 0 || yradius < 0) {
         return ImagingError_ValueError("radius must be >= 0");
     }
 
@@ -258,35 +258,45 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n) {
         return ImagingError_ModeError();
     }
 
-    imTransposed = ImagingNewDirty(imIn->mode, imIn->ysize, imIn->xsize);
-    if (!imTransposed) {
-        return NULL;
-    }
-
     /* Apply blur in one dimension.
        Use imOut as a destination at first pass,
        then use imOut as a source too. */
-    ImagingHorizontalBoxBlur(imOut, imIn, radius);
-    for (i = 1; i < n; i++) {
-        ImagingHorizontalBoxBlur(imOut, imOut, radius);
-    }
-    /* Transpose result for blur in another direction. */
-    ImagingTranspose(imTransposed, imOut);
 
-    /* Reuse imTransposed as a source and destination there. */
-    for (i = 0; i < n; i++) {
-        ImagingHorizontalBoxBlur(imTransposed, imTransposed, radius);
+    if (xradius != 0) {
+        ImagingHorizontalBoxBlur(imOut, imIn, xradius);
+        for (i = 1; i < n; i++) {
+            ImagingHorizontalBoxBlur(imOut, imOut, xradius);
+        }
     }
-    /* Restore original orientation. */
-    ImagingTranspose(imOut, imTransposed);
+    if (yradius != 0) {
+        imTransposed = ImagingNewDirty(imIn->mode, imIn->ysize, imIn->xsize);
+        if (!imTransposed) {
+            return NULL;
+        }
 
-    ImagingDelete(imTransposed);
+        /* Transpose result for blur in another direction. */
+        ImagingTranspose(imTransposed, xradius == 0 ? imIn : imOut);
+
+        /* Reuse imTransposed as a source and destination there. */
+        for (i = 0; i < n; i++) {
+            ImagingHorizontalBoxBlur(imTransposed, imTransposed, yradius);
+        }
+        /* Restore original orientation. */
+        ImagingTranspose(imOut, imTransposed);
+
+        ImagingDelete(imTransposed);
+    }
+    if (xradius == 0 && yradius == 0) {
+        if (!ImagingCopy2(imOut, imIn)) {
+            return NULL;
+        }
+    }
 
     return imOut;
 }
 
-Imaging
-ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius, int passes) {
+static float
+_gaussian_blur_radius(float radius, int passes) {
     float sigma2, L, l, a;
 
     sigma2 = radius * radius / passes;
@@ -299,5 +309,16 @@ ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius, int passes) {
     a = (2 * l + 1) * (l * (l + 1) - 3 * sigma2);
     a /= 6 * (sigma2 - (l + 1) * (l + 1));
 
-    return ImagingBoxBlur(imOut, imIn, l + a, passes);
+    return l + a;
+}
+
+Imaging
+ImagingGaussianBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int passes) {
+    return ImagingBoxBlur(
+      imOut,
+      imIn,
+      _gaussian_blur_radius(xradius, passes),
+      _gaussian_blur_radius(yradius, passes),
+      passes
+    );
 }

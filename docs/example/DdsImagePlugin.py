@@ -225,7 +225,7 @@ class DdsImageFile(ImageFile.ImageFile):
 
         flags, height, width = struct.unpack("<3I", header.read(12))
         self._size = (width, height)
-        self.mode = "RGBA"
+        self._mode = "RGBA"
 
         pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
         struct.unpack("<11I", header.read(44))  # reserved

@@ -39,7 +39,7 @@ TIFF_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 12):
+if sys.platform == "win32" and sys.version_info >= (3, 13):
     import atexit
 
     atexit.register(

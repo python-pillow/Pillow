@@ -318,7 +318,7 @@ class FreeTypeFont:
                          <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
-        :return: Width for horizontal, height for vertical text.
+        :return: Either width for horizontal text, or height for vertical text.
         """
         _string_length_check(text)
         return self.font.getlength(text, mode, direction, features, language) / 64
@@ -563,14 +563,21 @@ class FreeTypeFont:
         if start is None:
             start = (0, 0)
         im = None
+        size = None
 
-        def fill(mode, size):
-            nonlocal im
+        def fill(mode, im_size):
+            nonlocal im, size
+
+            size = im_size
+            if Image.MAX_IMAGE_PIXELS is not None:
+                pixels = max(1, size[0]) * max(1, size[1])
+                if pixels > 2 * Image.MAX_IMAGE_PIXELS:
+                    return
 
             im = Image.core.fill(mode, size)
             return im
 
-        size, offset = self.font.render(
+        offset = self.font.render(
             text,
             fill,
             mode,
@@ -582,7 +589,6 @@ class FreeTypeFont:
             ink,
             start[0],
             start[1],
-            Image.MAX_IMAGE_PIXELS,
         )
         Image._decompression_bomb_check(size)
         return im, offset

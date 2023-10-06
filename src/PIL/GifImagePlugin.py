@@ -304,11 +304,11 @@ class GifImageFile(ImageFile.ImageFile):
         if frame == 0:
             if self._frame_palette:
                 if LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
-                    self.mode = "RGBA" if frame_transparency is not None else "RGB"
+                    self._mode = "RGBA" if frame_transparency is not None else "RGB"
                 else:
-                    self.mode = "P"
+                    self._mode = "P"
             else:
-                self.mode = "L"
+                self._mode = "L"
 
             if not palette and self.global_palette:
                 from copy import copy
@@ -325,10 +325,10 @@ class GifImageFile(ImageFile.ImageFile):
                     if "transparency" in self.info:
                         self.im.putpalettealpha(self.info["transparency"], 0)
                         self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
-                        self.mode = "RGBA"
+                        self._mode = "RGBA"
                         del self.info["transparency"]
                     else:
-                        self.mode = "RGB"
+                        self._mode = "RGB"
                         self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
 
         def _rgb(color):
@@ -424,7 +424,7 @@ class GifImageFile(ImageFile.ImageFile):
                 self.im.putpalette(*self._frame_palette.getdata())
             else:
                 self.im = None
-        self.mode = temp_mode
+        self._mode = temp_mode
         self._frame_palette = None
 
         super().load_prepare()
@@ -434,9 +434,9 @@ class GifImageFile(ImageFile.ImageFile):
             if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
                 if self._frame_transparency is not None:
                     self.im.putpalettealpha(self._frame_transparency, 0)
-                    self.mode = "RGBA"
+                    self._mode = "RGBA"
                 else:
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                 self.im = self.im.convert(self.mode, Image.Dither.FLOYDSTEINBERG)
             return
         if not self._prev_im:
@@ -449,7 +449,7 @@ class GifImageFile(ImageFile.ImageFile):
         frame_im = self._crop(frame_im, self.dispose_extent)
 
         self.im = self._prev_im
-        self.mode = self.im.mode
+        self._mode = self.im.mode
         if frame_im.mode == "RGBA":
             self.im.paste(frame_im, self.dispose_extent, frame_im)
         else:
@@ -683,11 +683,7 @@ def get_interlace(im):
 def _write_local_header(fp, im, offset, flags):
     transparent_color_exists = False
     try:
-        if "transparency" in im.encoderinfo:
-            transparency = im.encoderinfo["transparency"]
-        else:
-            transparency = im.info["transparency"]
-        transparency = int(transparency)
+        transparency = int(im.encoderinfo["transparency"])
     except (KeyError, ValueError):
         pass
     else:
@@ -916,7 +912,7 @@ def _get_global_header(im, info):
         info
         and (
             "transparency" in info
-            or "loop" in info
+            or info.get("loop") is not None
             or info.get("duration")
             or info.get("comment")
         )
@@ -941,7 +937,7 @@ def _get_global_header(im, info):
         # Global Color Table
         _get_header_palette(palette_bytes),
     ]
-    if "loop" in info:
+    if info.get("loop") is not None:
         header.append(
             b"!"
             + o8(255)  # extension intro
