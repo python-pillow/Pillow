@@ -193,32 +193,20 @@ def test_save_all_progress():
         with Image.open("Tests/images/frozenpond.mpo") as im2:
             im.save(out, "PDF", save_all=True, append_images=[im2], progress=callback)
 
-    assert progress == [
-        {
-            "image_index": 0,
-            "image_filename": "Tests/images/sugarshack.mpo",
-            "completed_frames": 1,
-            "total_frames": 4,
-        },
-        {
-            "image_index": 0,
-            "image_filename": "Tests/images/sugarshack.mpo",
-            "completed_frames": 2,
-            "total_frames": 4,
-        },
-        {
-            "image_index": 1,
-            "image_filename": "Tests/images/frozenpond.mpo",
-            "completed_frames": 3,
-            "total_frames": 4,
-        },
-        {
-            "image_index": 1,
-            "image_filename": "Tests/images/frozenpond.mpo",
-            "completed_frames": 4,
-            "total_frames": 4,
-        },
-    ]
+    expected = []
+    for i, filename in enumerate(
+        ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
+    ):
+        for j in range(2):
+            expected.append(
+                {
+                    "image_index": i,
+                    "image_filename": filename,
+                    "completed_frames": i * 2 + j + 1,
+                    "total_frames": 4,
+                }
+            )
+    assert progress == expected
 
 
 def test_multiframe_normal_save(tmp_path):

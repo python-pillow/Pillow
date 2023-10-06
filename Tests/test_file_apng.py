@@ -691,50 +691,26 @@ def test_save_all_progress():
                 out, "PNG", save_all=True, append_images=[im, im2], progress=callback
             )
 
-    assert progress == [
-        {
-            "image_index": 0,
-            "image_filename": "Tests/images/apng/single_frame.png",
-            "completed_frames": 1,
-            "total_frames": 7,
-        },
-        {
-            "image_index": 1,
-            "image_filename": "Tests/images/apng/single_frame.png",
-            "completed_frames": 2,
-            "total_frames": 7,
-        },
-        {
-            "image_index": 2,
-            "image_filename": "Tests/images/apng/delay.png",
-            "completed_frames": 3,
-            "total_frames": 7,
-        },
-        {
-            "image_index": 2,
-            "image_filename": "Tests/images/apng/delay.png",
-            "completed_frames": 4,
-            "total_frames": 7,
-        },
-        {
-            "image_index": 2,
-            "image_filename": "Tests/images/apng/delay.png",
-            "completed_frames": 5,
-            "total_frames": 7,
-        },
-        {
-            "image_index": 2,
-            "image_filename": "Tests/images/apng/delay.png",
-            "completed_frames": 6,
-            "total_frames": 7,
-        },
-        {
-            "image_index": 2,
-            "image_filename": "Tests/images/apng/delay.png",
-            "completed_frames": 7,
-            "total_frames": 7,
-        },
-    ]
+    expected = []
+    for i in range(2):
+        expected.append(
+            {
+                "image_index": i,
+                "image_filename": "Tests/images/apng/single_frame.png",
+                "completed_frames": i + 1,
+                "total_frames": 7,
+            }
+        )
+    for i in range(5):
+        expected.append(
+            {
+                "image_index": 2,
+                "image_filename": "Tests/images/apng/delay.png",
+                "completed_frames": i + 3,
+                "total_frames": 7,
+            }
+        )
+    assert progress == expected
 
 
 def test_seek_after_close():

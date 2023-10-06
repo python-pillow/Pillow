@@ -577,12 +577,12 @@ def _write_multiple_frames(im, fp, palette):
     duration = im.encoderinfo.get("duration")
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
-    progress = im.encoderinfo.get("progress")
     imSequences = [im] + list(im.encoderinfo.get("append_images", []))
+    progress = im.encoderinfo.get("progress")
     if progress:
-        n_frames = 0
+        total = 0
         for imSequence in imSequences:
-            n_frames += getattr(imSequence, "n_frames", 1)
+            total += getattr(imSequence, "n_frames", 1)
 
     im_frames = []
     frame_count = 0
@@ -618,14 +618,7 @@ def _write_multiple_frames(im, fp, palette):
                     if encoderinfo.get("duration"):
                         previous["encoderinfo"]["duration"] += encoderinfo["duration"]
                     if progress:
-                        progress(
-                            {
-                                "image_index": i,
-                                "image_filename": getattr(imSequence, "filename", None),
-                                "completed_frames": frame_count,
-                                "total_frames": n_frames,
-                            }
-                        )
+                        im._save_all_progress(imSequence, i, frame_count, total)
                     continue
                 if encoderinfo.get("disposal") == 2:
                     if background_im is None:
@@ -640,14 +633,7 @@ def _write_multiple_frames(im, fp, palette):
                 bbox = None
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
             if progress:
-                progress(
-                    {
-                        "image_index": i,
-                        "image_filename": getattr(imSequence, "filename", None),
-                        "completed_frames": frame_count,
-                        "total_frames": n_frames,
-                    }
-                )
+                im._save_all_progress(imSequence, i, frame_count, total)
 
     if len(im_frames) > 1:
         for frame_data in im_frames:

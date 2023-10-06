@@ -714,32 +714,24 @@ class TestFileTiff:
                     out, "TIFF", save_all=True, append_images=[im2], progress=callback
                 )
 
-        assert progress == [
+        expected = [
             {
                 "image_index": 0,
                 "image_filename": "Tests/images/hopper.tif",
                 "completed_frames": 1,
                 "total_frames": 4,
-            },
-            {
-                "image_index": 1,
-                "image_filename": "Tests/images/multipage.tiff",
-                "completed_frames": 2,
-                "total_frames": 4,
-            },
-            {
-                "image_index": 1,
-                "image_filename": "Tests/images/multipage.tiff",
-                "completed_frames": 3,
-                "total_frames": 4,
-            },
-            {
-                "image_index": 1,
-                "image_filename": "Tests/images/multipage.tiff",
-                "completed_frames": 4,
-                "total_frames": 4,
-            },
+            }
         ]
+        for i in range(3):
+            expected.append(
+                {
+                    "image_index": 1,
+                    "image_filename": "Tests/images/multipage.tiff",
+                    "completed_frames": i + 2,
+                    "total_frames": 4,
+                }
+            )
+        assert progress == expected
 
     def test_saving_icc_profile(self, tmp_path):
         # Tests saving TIFF with icc_profile set.
