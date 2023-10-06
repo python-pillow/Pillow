@@ -223,6 +223,10 @@ class TestImageGetPixel(AccessTest):
     def test_basic(self, mode):
         self.check(mode)
 
+    def test_list(self):
+        im = hopper()
+        assert im.getpixel([0, 0]) == (20, 20, 70)
+
     @pytest.mark.parametrize("mode", ("I;16", "I;16B"))
     @pytest.mark.parametrize(
         "expected_color", (2**15 - 1, 2**15, 2**15 + 1, 2**16 - 1)

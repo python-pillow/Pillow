@@ -340,6 +340,10 @@ class TestLibUnpack:
             self.assert_unpack("RGB", "G;16N", 2, (0, 1, 0), (0, 3, 0), (0, 5, 0))
             self.assert_unpack("RGB", "B;16N", 2, (0, 0, 1), (0, 0, 3), (0, 0, 5))
 
+        self.assert_unpack(
+            "RGB", "CMYK", 4, (250, 249, 248), (242, 241, 240), (234, 233, 233)
+        )
+
     def test_BGR(self):
         self.assert_unpack("BGR;15", "BGR;15", 3, (8, 131, 0), (24, 0, 8), (41, 131, 8))
         self.assert_unpack(

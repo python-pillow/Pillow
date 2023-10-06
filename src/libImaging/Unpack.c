@@ -31,6 +31,7 @@
  */
 
 #include "Imaging.h"
+#include "Convert.h"
 
 #define R 0
 #define G 1
@@ -1595,6 +1596,7 @@ static struct {
     {"RGB", "R;16B", 16, band016B},
     {"RGB", "G;16B", 16, band116B},
     {"RGB", "B;16B", 16, band216B},
+    {"RGB", "CMYK", 32, cmyk2rgb},
 
     {"BGR;15", "BGR;15", 16, copy2},
     {"BGR;16", "BGR;16", 16, copy2},

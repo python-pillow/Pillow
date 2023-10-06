@@ -208,14 +208,14 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         sig = self.fp.read(4)
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
-            self._size, self.mode = _parse_codestream(self.fp)
+            self._size, self._mode = _parse_codestream(self.fp)
         else:
             sig = sig + self.fp.read(8)
 
             if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
                 self.codec = "jp2"
                 header = _parse_jp2_header(self.fp)
-                self._size, self.mode, self.custom_mimetype, dpi = header
+                self._size, self._mode, self.custom_mimetype, dpi = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
                 if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):

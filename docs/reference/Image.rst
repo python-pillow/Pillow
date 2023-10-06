@@ -93,10 +93,14 @@ Generating images
 Registering plugins
 ^^^^^^^^^^^^^^^^^^^
 
+.. autofunction:: preinit
+.. autofunction:: init
+
 .. note::
 
-    These functions are for use by plugin authors. Application authors can
-    ignore them.
+    These functions are for use by plugin authors. They are called when a
+    plugin is loaded as part of :py:meth:`~preinit()` or :py:meth:`~init()`.
+    Application authors can ignore them.
 
 .. autofunction:: register_open
 .. autofunction:: register_mime
@@ -346,6 +350,8 @@ Instances of the :py:class:`Image` class have the following attributes:
     aware of in an image regardless of its format.
 
     .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
+
+.. autoattribute:: PIL.Image.Image.has_transparency_data
 
 Classes
 -------

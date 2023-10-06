@@ -1,0 +1,42 @@
+name: Wheels
+
+on:
+  push:
+    paths:
+      - ".github/workflows/wheels*.yml"
+      - "wheels/*"
+    tags:
+      - "*"
+  pull_request:
+    paths:
+      - ".github/workflows/wheels*.yml"
+      - "wheels/*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    uses: ./.github/workflows/wheels-macos.yml
+    with:
+      artifacts-name: "wheels"
+
+  linux:
+    uses: ./.github/workflows/wheels-linux.yml
+    with:
+      artifacts-name: "wheels"
+
+  success:
+    permissions:
+      contents: none
+    needs: [macos, linux]
+    runs-on: ubuntu-latest
+    name: Wheels Successful
+    steps:
+      - name: Success
+        run: echo Wheels Successful

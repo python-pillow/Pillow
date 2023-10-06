@@ -214,12 +214,19 @@ class TestFileJpeg:
             # Should not raise OSError for image with icc larger than image size.
             im.save(
                 f,
-                format="JPEG",
                 progressive=True,
                 quality=95,
                 icc_profile=icc_profile,
                 optimize=True,
             )
+
+        with Image.open("Tests/images/flower2.jpg") as im:
+            f = str(tmp_path / "temp2.jpg")
+            im.save(f, progressive=True, quality=94, icc_profile=b" " * 53955)
+
+        with Image.open("Tests/images/flower2.jpg") as im:
+            f = str(tmp_path / "temp3.jpg")
+            im.save(f, progressive=True, quality=94, exif=b" " * 43668)
 
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
@@ -875,7 +882,10 @@ class TestFileJpeg:
     def test_getxmp(self):
         with Image.open("Tests/images/xmp_test.jpg") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()
@@ -897,6 +907,28 @@ class TestFileJpeg:
         if ElementTree is not None:
             with Image.open("Tests/images/hopper.jpg") as im:
                 assert im.getxmp() == {}
+
+    def test_getxmp_no_prefix(self):
+        with Image.open("Tests/images/xmp_no_prefix.jpg") as im:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im.getxmp() == {}
+            else:
+                assert im.getxmp() == {"xmpmeta": {"key": "value"}}
+
+    def test_getxmp_padded(self):
+        with Image.open("Tests/images/xmp_padded.jpg") as im:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im.getxmp() == {}
+            else:
+                assert im.getxmp() == {"xmpmeta": None}
 
     @pytest.mark.timeout(timeout=1)
     def test_eof(self):
@@ -929,11 +961,10 @@ class TestFileJpeg:
             assert repr_jpeg.format == "JPEG"
             assert_image_similar(im, repr_jpeg, 17)
 
-    def test_repr_jpeg_error(self):
+    def test_repr_jpeg_error_returns_none(self):
         im = hopper("F")
 
-        with pytest.raises(ValueError):
-            im._repr_jpeg_()
+        assert im._repr_jpeg_() is None
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

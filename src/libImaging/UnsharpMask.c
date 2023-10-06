@@ -36,7 +36,7 @@ ImagingUnsharpMask(
 
     /* First, do a gaussian blur on the image, putting results in imOut
        temporarily. All format checks are in gaussian blur. */
-    result = ImagingGaussianBlur(imOut, imIn, radius, 3);
+    result = ImagingGaussianBlur(imOut, imIn, radius, radius, 3);
     if (!result) {
         return NULL;
     }

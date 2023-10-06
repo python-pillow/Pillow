@@ -208,11 +208,11 @@ def SOF(self, marker):
 
     self.layers = s[5]
     if self.layers == 1:
-        self.mode = "L"
+        self._mode = "L"
     elif self.layers == 3:
-        self.mode = "RGB"
+        self._mode = "RGB"
     elif self.layers == 4:
-        self.mode = "CMYK"
+        self._mode = "CMYK"
     else:
         msg = f"cannot handle {self.layers}-layer images"
         raise SyntaxError(msg)
@@ -426,7 +426,7 @@ class JpegImageFile(ImageFile.ImageFile):
         original_size = self.size
 
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
-            self.mode = mode
+            self._mode = mode
             a = mode, ""
 
         if size:
@@ -475,7 +475,7 @@ class JpegImageFile(ImageFile.ImageFile):
             except OSError:
                 pass
 
-        self.mode = self.im.mode
+        self._mode = self.im.mode
         self._size = self.im.size
 
         self.tile = []
@@ -496,7 +496,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         for segment, content in self.applist:
             if segment == "APP1":
-                marker, xmp_tags = content.rsplit(b"\x00", 1)
+                marker, xmp_tags = content.split(b"\x00")[:2]
                 if marker == b"http://ns.adobe.com/xap/1.0/":
                     return self._getxmp(xmp_tags)
         return {}
@@ -797,10 +797,14 @@ def _save(im, fp, filename):
             bufsize = 2 * im.size[0] * im.size[1]
         else:
             bufsize = im.size[0] * im.size[1]
-
-    # The EXIF info needs to be written as one block, + APP1, + one spare byte.
-    # Ensure that our buffer is big enough. Same with the icc_profile block.
-    bufsize = max(ImageFile.MAXBLOCK, bufsize, len(exif) + 5, len(extra) + 1)
+        if exif:
+            bufsize += len(exif) + 5
+        if extra:
+            bufsize += len(extra) + 1
+    else:
+        # The EXIF info needs to be written as one block, + APP1, + one spare byte.
+        # Ensure that our buffer is big enough. Same with the icc_profile block.
+        bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
 
     ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
 

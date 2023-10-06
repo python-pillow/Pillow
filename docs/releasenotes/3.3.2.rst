@@ -34,7 +34,3 @@ image size can lead to a smaller allocation than expected, leading to
 arbitrary writes.
 
 This issue was found by Cris Neckar at Divergent Security.
-
-
-
-

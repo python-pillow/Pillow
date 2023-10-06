@@ -1,0 +1,135 @@
+if: tag IS present
+
+env:
+  global:
+      - CONFIG_PATH=wheels/config.sh
+      - REPO_DIR=.
+      - PLAT=aarch64
+      - TEST_DEPENDS=pytest-timeout
+
+language: python
+# Default Python version is usually 3.6
+python: "3.11"
+dist: focal
+services: docker
+
+jobs:
+  include:
+    - name: "3.8 Focal manylinux2014 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.8
+    - name: "3.8 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_2_28"
+        - MB_PYTHON_VERSION=3.8
+    - name: "3.8 musllinux_1_1 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_1_1"
+        - MB_ML_LIBC="musllinux"
+        - MB_PYTHON_VERSION=3.8
+    - name: "3.9 Focal manylinux2014 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.9
+    - name: "3.9 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_2_28"
+        - MB_PYTHON_VERSION=3.9
+    - name: "3.9 musllinux_1_1 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_1_1"
+        - MB_ML_LIBC="musllinux"
+        - MB_PYTHON_VERSION=3.9
+    - name: "3.10 Focal manylinux2014 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.10
+    - name: "3.10 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_2_28"
+        - MB_PYTHON_VERSION=3.10
+    - name: "3.10 musllinux_1_1 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_1_1"
+        - MB_ML_LIBC="musllinux"
+        - MB_PYTHON_VERSION=3.10
+    - name: "3.11 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.11
+    - name: "3.11 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_2_28"
+        - MB_PYTHON_VERSION=3.11
+    - name: "3.11 musllinux_1_1 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_1_1"
+        - MB_ML_LIBC="musllinux"
+        - MB_PYTHON_VERSION=3.11
+    - name: "3.12 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER=2014
+        - MB_PYTHON_VERSION=3.12
+    - name: "3.12 Focal manylinux_2_28 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_2_28"
+        - MB_PYTHON_VERSION=3.12
+    - name: "3.12 musllinux_1_1 aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - MB_ML_VER="_1_1"
+        - MB_ML_LIBC="musllinux"
+        - MB_PYTHON_VERSION=3.12
+
+before_install:
+    - source wheels/multibuild/common_utils.sh
+    - source wheels/multibuild/travis_steps.sh
+    - before_install
+
+install:
+    - build_multilinux aarch64 build_wheel
+    - ls -l "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/"
+
+script:
+    - install_run
+
+# Upload wheels to GitHub Releases
+deploy:
+  provider: releases
+  api_key: $GITHUB_RELEASE_TOKEN
+  file_glob: true
+  file: "${TRAVIS_BUILD_DIR}/${WHEEL_SDIR}/*.whl"
+  on:
+    repo: python-pillow/Pillow
+    tags: true
+  skip_cleanup: true
