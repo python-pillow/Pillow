@@ -882,7 +882,10 @@ class TestFileJpeg:
     def test_getxmp(self):
         with Image.open("Tests/images/xmp_test.jpg") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()
@@ -908,7 +911,10 @@ class TestFileJpeg:
     def test_getxmp_no_prefix(self):
         with Image.open("Tests/images/xmp_no_prefix.jpg") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 assert im.getxmp() == {"xmpmeta": {"key": "value"}}
@@ -916,7 +922,10 @@ class TestFileJpeg:
     def test_getxmp_padded(self):
         with Image.open("Tests/images/xmp_padded.jpg") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 assert im.getxmp() == {"xmpmeta": None}
