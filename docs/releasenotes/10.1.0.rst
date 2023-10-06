@@ -58,3 +58,9 @@ Added support for DDS 8-bit color indexed images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Support has been added to read PALETTEINDEXED8 DDS files as P mode images.
+
+Support reading signed 8-bit YCbCr TIFF images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TIFF images with unsigned integer data, 8 bits per sample and a photometric
+interpretation of YCbCr can now be read.
