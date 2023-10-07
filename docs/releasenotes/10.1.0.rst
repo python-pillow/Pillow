@@ -71,10 +71,11 @@ TODO
 Other Changes
 =============
 
-Added support for DDS 8-bit color indexed images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Added support for DDS BC5U and 8-bit color indexed images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Support has been added to read PALETTEINDEXED8 DDS files as P mode images.
+Support has been added to read BC5U DDS files as RGB images, and
+PALETTEINDEXED8 DDS files as P mode images.
 
 Support reading signed 8-bit YCbCr TIFF images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
