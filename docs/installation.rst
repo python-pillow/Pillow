@@ -82,6 +82,8 @@ Install Pillow with :command:`pip`::
 
 .. tab:: Windows
 
+    .. warning:: Pillow > 9.5.0 no longer includes 32-bit wheels.
+
     We provide Pillow binaries for Windows compiled for the matrix of
     supported Pythons in 64-bit versions in the wheel format. These binaries include
     support for all optional libraries except libimagequant and libxcb. Raqm support
