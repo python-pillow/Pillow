@@ -318,7 +318,7 @@ def setup(app):
 
 
 linkcheck_allowed_redirects = {
-    r"https://bestpractices.coreinfrastructure.org/projects/6331": r"https://bestpractices.coreinfrastructure.org/en/.*",  # noqa: E501
+    r"https://www.bestpractices.dev/projects/6331": r"https://www.bestpractices.dev/en/.*",  # noqa: E501
     r"https://badges.gitter.im/python-pillow/Pillow.svg": r"https://badges.gitter.im/repo.svg",  # noqa: E501
     r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",  # noqa: E501
     r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",  # noqa: E501

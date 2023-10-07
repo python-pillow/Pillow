@@ -74,9 +74,9 @@ As of 2019, Pillow development is
             <a href="https://pypi.org/project/Pillow/"><img
                 alt="Number of PyPI downloads"
                 src="https://img.shields.io/pypi/dm/pillow.svg"></a>
-            <a href="https://bestpractices.coreinfrastructure.org/projects/6331"><img
+            <a href="https://www.bestpractices.dev/projects/6331"><img
                 alt="OpenSSF Best Practices"
-                src="https://bestpractices.coreinfrastructure.org/projects/6331/badge"></a>
+                src="https://www.bestpractices.dev/projects/6331/badge"></a>
         </td>
     </tr>
     <tr>
