@@ -1,4 +1,4 @@
-if: tag IS present
+if: tag IS present OR type = api
 
 env:
   global:
