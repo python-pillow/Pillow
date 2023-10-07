@@ -1575,7 +1575,10 @@ if (PySequence_Check(op)) { \
             }
             double value;
             if (image->bands == 1) {
-                int bigendian = image->type == IMAGING_TYPE_SPECIAL && strcmp(image->mode, "I;16B") == 0;
+                int bigendian = 0;
+                if (image->type == IMAGING_TYPE_SPECIAL) {
+                    bigendian = strcmp(image->mode, "I;16B") == 0;
+                }
                 for (i = x = y = 0; i < n; i++) {
                     set_value_to_item(seq, i);
                     if (scale != 1.0 || offset != 0.0) {
