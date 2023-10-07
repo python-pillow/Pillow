@@ -24,10 +24,16 @@ TODO
 API Changes
 ===========
 
-TODO
-^^^^
+Accept a list in getpixel()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+py:meth:`~PIL.Image.Image.getpixel` now accepts a list of coordinates, as well
+as a tuple. ::
+
+    from PIL import Image
+    im = Image.new("RGB", (1, 1))
+    im.getpixel((0, 0))
+    im.getpixel([0, 0])
 
 API Additions
 =============
