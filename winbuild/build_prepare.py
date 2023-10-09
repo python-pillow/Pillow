@@ -233,7 +233,7 @@ DEPS = {
         "dir": "brotli-1.1.0",
         "license": "LICENSE",
         "build": [
-            *cmds_cmake(("brotlicommon", "brotlidec")),
+            *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
