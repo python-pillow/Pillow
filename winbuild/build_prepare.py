@@ -184,9 +184,9 @@ DEPS = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.5.1.tar.gz",
-        "filename": "tiff-4.5.1.tar.gz",
-        "dir": "tiff-4.5.1",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
+        "filename": "tiff-4.6.0.tar.gz",
+        "dir": "tiff-4.6.0",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
