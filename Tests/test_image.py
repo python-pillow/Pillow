@@ -94,6 +94,18 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    def test_direct(self):
+        # Test that a directly instantiated Image()
+        # is given a core image during load()
+        im = Image.Image()
+        assert im.im is None
+
+        im.load()
+        assert im.im is not None
+
+        # Test equality
+        assert Image.Image() == Image.Image()
+
     def test_repr_pretty(self):
         class Pretty:
             def text(self, text):

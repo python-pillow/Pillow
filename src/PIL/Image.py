@@ -826,6 +826,10 @@ class Image:
         :returns: An image access object.
         :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
         """
+        if self._mode == "":
+            # This image was instantiated directly
+            self._mode = "1"
+            self.im = core.new(self.mode, self.size)
         if self.im is not None and self.palette and self.palette.dirty:
             # realize palette
             mode, arr = self.palette.getdata()
