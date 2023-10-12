@@ -449,35 +449,53 @@ class DdsImageFile(ImageFile.ImageFile):
                 # ignoring flags which pertain to volume textures and cubemaps
                 (dxgi_format,) = struct.unpack("<I", self.fp.read(4))
                 self.fp.read(16)
-                if dxgi_format in (DXGI_FORMAT.BC1_UNORM, DXGI_FORMAT.BC1_UNORM_SRGB, DXGI_FORMAT.BC1_TYPELESS):
+                if dxgi_format in (
+                    DXGI_FORMAT.BC1_UNORM,
+                    DXGI_FORMAT.BC1_UNORM_SRGB,
+                    DXGI_FORMAT.BC1_TYPELESS,
+                ):
                     self.mode = "RGBA"
                     self.pixel_format = "BC1"
-                    tile = Image._Tile("bcn", extents, data_offs, (1, self.pixel_format))
+                    tile = Image._Tile(
+                        "bcn", extents, data_offs, (1, self.pixel_format)
+                    )
                 elif dxgi_format in (DXGI_FORMAT.BC5_TYPELESS, DXGI_FORMAT.BC5_UNORM):
                     self.mode = "RGB"
                     self.pixel_format = "BC5"
-                    tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
+                    tile = Image._Tile(
+                        "bcn", extents, data_offs, (5, self.pixel_format)
+                    )
                 elif dxgi_format == DXGI_FORMAT.BC5_SNORM:
                     self.mode = "RGB"
                     self.pixel_format = "BC5S"
-                    tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
+                    tile = Image._Tile(
+                        "bcn", extents, data_offs, (5, self.pixel_format)
+                    )
                 elif dxgi_format == DXGI_FORMAT.BC6H_UF16:
                     self.mode = "RGB"
                     self.pixel_format = "BC6H"
-                    tile = Image._Tile("bcn", extents, data_offs, (6, self.pixel_format))
+                    tile = Image._Tile(
+                        "bcn", extents, data_offs, (6, self.pixel_format)
+                    )
                 elif dxgi_format == DXGI_FORMAT.BC6H_SF16:
                     self.mode = "RGB"
                     self.pixel_format = "BC6HS"
-                    tile = Image._Tile("bcn", extents, data_offs, (6, self.pixel_format))
+                    tile = Image._Tile(
+                        "bcn", extents, data_offs, (6, self.pixel_format)
+                    )
                 elif dxgi_format in (DXGI_FORMAT.BC7_TYPELESS, DXGI_FORMAT.BC7_UNORM):
                     self.mode = "RGBA"
                     self.pixel_format = "BC7"
-                    tile = Image._Tile("bcn", extents, data_offs, (7, self.pixel_format))
+                    tile = Image._Tile(
+                        "bcn", extents, data_offs, (7, self.pixel_format)
+                    )
                 elif dxgi_format == DXGI_FORMAT.BC7_UNORM_SRGB:
                     self.mode = "RGBA"
                     self.pixel_format = "BC7"
                     self.info["gamma"] = 1 / 2.2
-                    tile = Image._Tile("bcn", extents, data_offs, (7, self.pixel_format))
+                    tile = Image._Tile(
+                        "bcn", extents, data_offs, (7, self.pixel_format)
+                    )
                 elif dxgi_format in (
                     DXGI_FORMAT.R8G8B8A8_TYPELESS,
                     DXGI_FORMAT.R8G8B8A8_UNORM,
