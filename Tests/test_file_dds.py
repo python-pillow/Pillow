@@ -10,8 +10,8 @@ from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
 TEST_FILE_DXT5 = "Tests/images/dxt5-argb-8bbp-interpolatedalpha_MipMaps-1.dds"
-TEST_FILE_ATI1 = "Tests/images/ati1.dds"
-TEST_FILE_ATI2 = "Tests/images/ati2.dds"
+TEST_FILE_ATI1 = "Tests/images/mode-ati1.dds"
+TEST_FILE_ATI2 = "Tests/images/mode-ati2.dds"
 TEST_FILE_DX10_BC5_TYPELESS = "Tests/images/bc5_typeless.dds"
 TEST_FILE_DX10_BC5_UNORM = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC5_SNORM = "Tests/images/bc5_snorm.dds"
@@ -314,10 +314,10 @@ def test_save_unsupported_mode(tmp_path):
 @pytest.mark.parametrize(
     ("mode", "test_file"),
     (
-        ("L", "Tests/images/l.dds"),
-        ("LA", "Tests/images/la.dds"),
-        ("RGB", "Tests/images/rgb.dds"),
-        ("RGBA", "Tests/images/rgba.dds"),
+        ("L", "Tests/images/mode-l.dds"),
+        ("LA", "Tests/images/mode-la.dds"),
+        ("RGB", "Tests/images/mode-rgb.dds"),
+        ("RGBA", "Tests/images/mode-rgba.dds"),
     ),
 )
 def test_open(mode, test_file):
@@ -333,7 +333,7 @@ def test_open(mode, test_file):
         ("LA", "Tests/images/uncompressed_la.png"),
         ("RGB", "Tests/images/hopper.png"),
         ("RGBA", "Tests/images/pil123rgba.png"),
-        ("L", "Tests/images/ati1.dds"),
+        ("L", "Tests/images/mode-ati1.dds"),
     ],
 )
 def test_save(mode, test_file, tmp_path):

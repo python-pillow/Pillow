@@ -38,7 +38,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from pathlib import Path
-from typing import List, NamedTuple, Tuple
+from typing import NamedTuple
 
 try:
     import defusedxml.ElementTree as ElementTree
@@ -207,15 +207,13 @@ if hasattr(core, "DEFAULT_STRATEGY"):
     RLE = core.RLE
     FIXED = core.FIXED
 
-Tile = NamedTuple(
-    "Tile",
-    [
-        ("encoder_name", str),
-        ("extents", Tuple[int, int, int, int]),
-        ("offset", int),
-        ("tile_args", Tuple),
-    ],
-)
+
+class _Tile(NamedTuple):
+    encoder_name: str
+    extents: tuple[int, int, int, int]
+    offset: int
+    tile_args: tuple
+
 
 # --------------------------------------------------------------------
 # Registries
@@ -702,7 +700,7 @@ class Image:
 
     def __setstate__(self, state):
         Image.__init__(self)
-        self.tile: List[Tile] = []
+        self.tile: list[_Tile] = []
         info, mode, size, palette, data = state
         self.info = info
         self.mode = mode

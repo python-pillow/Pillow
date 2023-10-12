@@ -26,12 +26,12 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 import itertools
 import struct
 import sys
-from typing import List
 
 from . import Image
 from ._util import is_path
@@ -522,7 +522,7 @@ def _save(im, fp, tile, bufsize=0):
         fp.flush()
 
 
-def _encode_tile(im, fp, tile: List[Image.Tile], bufsize, fh, exc=None):
+def _encode_tile(im, fp, tile: list[Image._Tile], bufsize, fh, exc=None):
     for encoder_name, extents, offset, tile_args in tile:
         if offset > 0:
             fp.seek(offset)

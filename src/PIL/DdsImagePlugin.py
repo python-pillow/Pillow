@@ -253,11 +253,88 @@ class D3DFMT(IntEnum):
     DXT4 = i32(b"DXT4")
     DXT5 = i32(b"DXT5")
     DX10 = i32(b"DX10")
+    BC4S = i32(b"BC4S")
+    BC4U = i32(b"BC4U")
     BC5S = i32(b"BC5S")
     BC5U = i32(b"BC5U")
     ATI1 = i32(b"ATI1")
     ATI2 = i32(b"ATI2")
     MULTI2_ARGB8 = i32(b"MET1")
+
+
+# Backward compat layer
+DDSD_CAPS = DDSD.CAPS
+DDSD_HEIGHT = DDSD.HEIGHT
+DDSD_WIDTH = DDSD.WIDTH
+DDSD_PITCH = DDSD.PITCH
+DDSD_PIXELFORMAT = DDSD.PIXELFORMAT
+DDSD_MIPMAPCOUNT = DDSD.MIPMAPCOUNT
+DDSD_LINEARSIZE = DDSD.LINEARSIZE
+DDSD_DEPTH = DDSD.DEPTH
+
+DDSCAPS_COMPLEX = DDSCAPS.COMPLEX
+DDSCAPS_TEXTURE = DDSCAPS.TEXTURE
+DDSCAPS_MIPMAP = DDSCAPS.MIPMAP
+
+DDSCAPS2_CUBEMAP = DDSCAPS2.CUBEMAP
+DDSCAPS2_CUBEMAP_POSITIVEX = DDSCAPS2.CUBEMAP_POSITIVEX
+DDSCAPS2_CUBEMAP_NEGATIVEX = DDSCAPS2.CUBEMAP_NEGATIVEX
+DDSCAPS2_CUBEMAP_POSITIVEY = DDSCAPS2.CUBEMAP_POSITIVEY
+DDSCAPS2_CUBEMAP_NEGATIVEY = DDSCAPS2.CUBEMAP_NEGATIVEY
+DDSCAPS2_CUBEMAP_POSITIVEZ = DDSCAPS2.CUBEMAP_POSITIVEZ
+DDSCAPS2_CUBEMAP_NEGATIVEZ = DDSCAPS2.CUBEMAP_NEGATIVEZ
+DDSCAPS2_VOLUME = DDSCAPS2.VOLUME
+
+DDPF_ALPHAPIXELS = DDPF.ALPHAPIXELS
+DDPF_ALPHA = DDPF.ALPHA
+DDPF_FOURCC = DDPF.FOURCC
+DDPF_PALETTEINDEXED8 = DDPF.PALETTEINDEXED8
+DDPF_RGB = DDPF.RGB
+DDPF_LUMINANCE = DDPF.LUMINANCE
+
+DDS_FOURCC = DDPF_FOURCC
+DDS_RGB = DDPF_RGB
+DDS_RGBA = DDPF_RGB | DDPF_ALPHAPIXELS
+DDS_LUMINANCE = DDPF_LUMINANCE
+DDS_LUMINANCEA = DDPF_LUMINANCE | DDPF_ALPHAPIXELS
+DDS_ALPHA = DDPF_ALPHA
+DDS_PAL8 = DDPF_PALETTEINDEXED8
+
+DDS_HEADER_FLAGS_TEXTURE = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT
+DDS_HEADER_FLAGS_MIPMAP = DDSD_MIPMAPCOUNT
+DDS_HEADER_FLAGS_VOLUME = DDSD_DEPTH
+DDS_HEADER_FLAGS_PITCH = DDSD_PITCH
+DDS_HEADER_FLAGS_LINEARSIZE = DDSD_LINEARSIZE
+
+DDS_HEIGHT = DDSD_HEIGHT
+DDS_WIDTH = DDSD_WIDTH
+
+DDS_SURFACE_FLAGS_TEXTURE = DDSCAPS_TEXTURE
+DDS_SURFACE_FLAGS_MIPMAP = DDSCAPS_COMPLEX | DDSCAPS_MIPMAP
+DDS_SURFACE_FLAGS_CUBEMAP = DDSCAPS_COMPLEX
+
+DDS_CUBEMAP_POSITIVEX = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEX
+DDS_CUBEMAP_NEGATIVEX = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEX
+DDS_CUBEMAP_POSITIVEY = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEY
+DDS_CUBEMAP_NEGATIVEY = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEY
+DDS_CUBEMAP_POSITIVEZ = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEZ
+DDS_CUBEMAP_NEGATIVEZ = DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEZ
+
+DXT1_FOURCC = D3DFMT.DXT1
+DXT3_FOURCC = D3DFMT.DXT3
+DXT5_FOURCC = D3DFMT.DXT5
+
+DXGI_FORMAT_R8G8B8A8_TYPELESS = DXGI_FORMAT.R8G8B8A8_TYPELESS
+DXGI_FORMAT_R8G8B8A8_UNORM = DXGI_FORMAT.R8G8B8A8_UNORM
+DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = DXGI_FORMAT.R8G8B8A8_UNORM_SRGB
+DXGI_FORMAT_BC5_TYPELESS = DXGI_FORMAT.BC5_TYPELESS
+DXGI_FORMAT_BC5_UNORM = DXGI_FORMAT.BC5_UNORM
+DXGI_FORMAT_BC5_SNORM = DXGI_FORMAT.BC5_SNORM
+DXGI_FORMAT_BC6H_UF16 = DXGI_FORMAT.BC6H_UF16
+DXGI_FORMAT_BC6H_SF16 = DXGI_FORMAT.BC6H_SF16
+DXGI_FORMAT_BC7_TYPELESS = DXGI_FORMAT.BC7_TYPELESS
+DXGI_FORMAT_BC7_UNORM = DXGI_FORMAT.BC7_UNORM
+DXGI_FORMAT_BC7_UNORM_SRGB = DXGI_FORMAT.BC7_UNORM_SRGB
 
 
 class DdsImageFile(ImageFile.ImageFile):
@@ -311,6 +388,13 @@ class DdsImageFile(ImageFile.ImageFile):
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
                 raise OSError(msg)
+        elif pfflags & DDPF.ALPHA:
+            if bitcount == 8:
+                self.mode = "L"
+                self.tile = [("raw", extents, 0, ("L", 0, 1))]
+            else:
+                msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
+                raise OSError(msg)
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self.mode = "L"
@@ -331,68 +415,72 @@ class DdsImageFile(ImageFile.ImageFile):
             if fourcc == D3DFMT.DXT1:
                 self.mode = "RGBA"
                 self.pixel_format = "DXT1"
-                tile = Image.Tile("bcn", extents, data_offs, (1, self.pixel_format))
+                tile = Image._Tile("bcn", extents, data_offs, (1, self.pixel_format))
             elif fourcc == D3DFMT.DXT3:
                 self.mode = "RGBA"
                 self.pixel_format = "DXT3"
-                tile = Image.Tile("bcn", extents, data_offs, (2, self.pixel_format))
+                tile = Image._Tile("bcn", extents, data_offs, (2, self.pixel_format))
             elif fourcc == D3DFMT.DXT5:
                 self.mode = "RGBA"
                 self.pixel_format = "DXT5"
-                tile = Image.Tile("bcn", extents, data_offs, (3, self.pixel_format))
-            elif fourcc == D3DFMT.ATI1:
+                tile = Image._Tile("bcn", extents, data_offs, (3, self.pixel_format))
+            elif fourcc == D3DFMT.ATI1 or fourcc == D3DFMT.BC4U:
                 self.mode = "L"
                 self.pixel_format = "BC4"
-                tile = Image.Tile("bcn", extents, data_offs, (4, self.pixel_format))
+                tile = Image._Tile("bcn", extents, data_offs, (4, self.pixel_format))
             elif fourcc == D3DFMT.BC5S:
                 self.mode = "RGB"
                 self.pixel_format = "BC5S"
-                tile = Image.Tile("bcn", extents, data_offs, (5, self.pixel_format))
+                tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
             elif fourcc == D3DFMT.BC5U:
                 self.mode = "RGB"
                 self.pixel_format = "BC5U"
-                tile = Image.Tile("bcn", extents, data_offs, (5, self.pixel_format))
+                tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
             elif fourcc == D3DFMT.ATI2:
                 self.mode = "RGB"
                 self.pixel_format = "BC5"
-                tile = Image.Tile("bcn", extents, data_offs, (5, self.pixel_format))
+                tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
             elif fourcc == D3DFMT.DX10:
                 data_offs += 20
                 # ignoring flags which pertain to volume textures and cubemaps
                 (dxgi_format,) = struct.unpack("<I", self.fp.read(4))
                 self.fp.read(16)
-                if dxgi_format in (DXGI_FORMAT.BC5_TYPELESS, DXGI_FORMAT.BC5_UNORM):
+                if dxgi_format in (DXGI_FORMAT.BC1_UNORM, DXGI_FORMAT.BC1_UNORM_SRGB, DXGI_FORMAT.BC1_TYPELESS):
+                    self.mode = "RGBA"
+                    self.pixel_format = "BC1"
+                    tile = Image._Tile("bcn", extents, data_offs, (1, self.pixel_format))
+                elif dxgi_format in (DXGI_FORMAT.BC5_TYPELESS, DXGI_FORMAT.BC5_UNORM):
                     self.mode = "RGB"
                     self.pixel_format = "BC5"
-                    tile = Image.Tile("bcn", extents, data_offs, (5, self.pixel_format))
+                    tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
                 elif dxgi_format == DXGI_FORMAT.BC5_SNORM:
                     self.mode = "RGB"
                     self.pixel_format = "BC5S"
-                    tile = Image.Tile("bcn", extents, data_offs, (5, self.pixel_format))
+                    tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
                 elif dxgi_format == DXGI_FORMAT.BC6H_UF16:
                     self.mode = "RGB"
                     self.pixel_format = "BC6H"
-                    tile = Image.Tile("bcn", extents, data_offs, (6, self.pixel_format))
+                    tile = Image._Tile("bcn", extents, data_offs, (6, self.pixel_format))
                 elif dxgi_format == DXGI_FORMAT.BC6H_SF16:
                     self.mode = "RGB"
                     self.pixel_format = "BC6HS"
-                    tile = Image.Tile("bcn", extents, data_offs, (6, self.pixel_format))
+                    tile = Image._Tile("bcn", extents, data_offs, (6, self.pixel_format))
                 elif dxgi_format in (DXGI_FORMAT.BC7_TYPELESS, DXGI_FORMAT.BC7_UNORM):
                     self.mode = "RGBA"
                     self.pixel_format = "BC7"
-                    tile = Image.Tile("bcn", extents, data_offs, (7, self.pixel_format))
+                    tile = Image._Tile("bcn", extents, data_offs, (7, self.pixel_format))
                 elif dxgi_format == DXGI_FORMAT.BC7_UNORM_SRGB:
                     self.mode = "RGBA"
                     self.pixel_format = "BC7"
                     self.info["gamma"] = 1 / 2.2
-                    tile = Image.Tile("bcn", extents, data_offs, (7, self.pixel_format))
+                    tile = Image._Tile("bcn", extents, data_offs, (7, self.pixel_format))
                 elif dxgi_format in (
                     DXGI_FORMAT.R8G8B8A8_TYPELESS,
                     DXGI_FORMAT.R8G8B8A8_UNORM,
                     DXGI_FORMAT.R8G8B8A8_UNORM_SRGB,
                 ):
                     self.mode = "RGBA"
-                    tile = Image.Tile("raw", extents, 0, ("RGBA", 0, 1))
+                    tile = Image._Tile("raw", extents, 0, ("RGBA", 0, 1))
                     if dxgi_format == DXGI_FORMAT.R8G8B8A8_UNORM_SRGB:
                         self.info["gamma"] = 1 / 2.2
                 else:
@@ -457,7 +545,7 @@ def _save(im, fp, filename):
         + struct.pack("<IIIII", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
     mode = "LA" if im.mode == "LA" else im.mode[::-1]
-    ImageFile._save(im, fp, [Image.Tile("raw", (0, 0) + im.size, 0, (mode, 0, 1))])
+    ImageFile._save(im, fp, [Image._Tile("raw", (0, 0) + im.size, 0, (mode, 0, 1))])
 
 
 def _accept(prefix):
