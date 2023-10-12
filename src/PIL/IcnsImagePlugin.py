@@ -253,7 +253,7 @@ class IcnsImageFile(ImageFile.ImageFile):
 
     def _open(self):
         self.icns = IcnsFile(self.fp)
-        self.mode = "RGBA"
+        self._mode = "RGBA"
         self.info["sizes"] = self.icns.itersizes()
         self.best_size = self.icns.bestsize()
         self.size = (
@@ -305,7 +305,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         px = im.load()
 
         self.im = im.im
-        self.mode = im.mode
+        self._mode = im.mode
         self.size = im.size
 
         return px

@@ -127,10 +127,15 @@ This undocumented method has been removed.
 Deprecations
 ============
 
-TODO
-^^^^
+PyAccess and Image.USE_CFFI_ACCESS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Since Pillow's C API is now faster than PyAccess on PyPy,
+:py:mod:`~PIL.PyAccess` has been deprecated and will be removed in Pillow
+11.0.0 (2024-10-15). Pillow's C API will now be used by default on PyPy instead.
+
+``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, is
+similarly deprecated.
 
 API Changes
 ===========
@@ -144,21 +149,46 @@ An optional line ``width`` parameter has been added to
 API Additions
 =============
 
-TODO
-^^^^
+Added ``alpha_only`` argument to ``getbbox()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`~PIL.Image.Image.getbbox` now accepts a keyword argument of
+``alpha_only``. This is an optional flag, defaulting to ``True``. If ``True``
+and the image has an alpha channel, trim transparent pixels. Otherwise, trim
+pixels when all channels are zero.
 
 Security
 ========
 
-TODO
-^^^^
+Limit size even if one dimension is zero
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When performing decompression bomb checks, Pillow did not reject images with
+excessive width and zero height, or zero width and excessive height. That has
+now been fixed.
+
+This effectively dates to the PIL fork, since problem images would still have
+been processed before Pillow started checking for decompression bombs.
+
+Added ImageFont.MAX_STRING_LENGTH
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using arbitrary strings as text
+input, Pillow will now raise a ``ValueError`` if the number of characters
+passed into ImageFont methods is over a certain limit,
+:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`.
+
+This threshold can be changed by setting
+:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It can be disabled by setting
+``ImageFont.MAX_STRING_LENGTH = None``.
 
 Other Changes
 =============
+
+32-bit wheels
+^^^^^^^^^^^^^
+
+32-bit wheels are no longer provided.
 
 Support display_jpeg() in IPython
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -176,4 +206,4 @@ Support reading signed 8-bit TIFF images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TIFF images with signed integer data, 8 bits per sample and a photometric
-interpretaton of BlackIsZero can now be read.
+interpretation of BlackIsZero can now be read.

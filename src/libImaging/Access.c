@@ -12,8 +12,8 @@
 #include "Imaging.h"
 
 /* use make_hash.py from the pillow-scripts repository to calculate these values */
-#define ACCESS_TABLE_SIZE 27
-#define ACCESS_TABLE_HASH 33051
+#define ACCESS_TABLE_SIZE 35
+#define ACCESS_TABLE_HASH 8940
 
 static struct ImagingAccessInstance access_table[ACCESS_TABLE_SIZE];
 
@@ -46,22 +46,11 @@ add_item(const char *mode) {
 /* fetch individual pixel */
 
 static void
-get_pixel(Imaging im, int x, int y, void *color) {
+get_pixel_32_2bands(Imaging im, int x, int y, void *color) {
     char *out = color;
-
-    /* generic pixel access*/
-
-    if (im->image8) {
-        out[0] = im->image8[y][x];
-    } else {
-        UINT8 *p = (UINT8 *)&im->image32[y][x];
-        if (im->type == IMAGING_TYPE_UINT8 && im->bands == 2) {
-            out[0] = p[0];
-            out[1] = p[3];
-            return;
-        }
-        memcpy(out, p, im->pixelsize);
-    }
+    UINT8 *p = (UINT8 *)&im->image32[y][x];
+    out[0] = p[0];
+    out[1] = p[3];
 }
 
 static void
@@ -99,6 +88,31 @@ get_pixel_16(Imaging im, int x, int y, void *color) {
 }
 
 static void
+get_pixel_BGR15(Imaging im, int x, int y, void *color) {
+    UINT8 *in = (UINT8 *)&im->image8[y][x * 2];
+    UINT16 pixel = in[0] + (in[1] << 8);
+    char *out = color;
+    out[0] = (pixel & 31) * 255 / 31;
+    out[1] = ((pixel >> 5) & 31) * 255 / 31;
+    out[2] = ((pixel >> 10) & 31) * 255 / 31;
+}
+
+static void
+get_pixel_BGR16(Imaging im, int x, int y, void *color) {
+    UINT8 *in = (UINT8 *)&im->image8[y][x * 2];
+    UINT16 pixel = in[0] + (in[1] << 8);
+    char *out = color;
+    out[0] = (pixel & 31) * 255 / 31;
+    out[1] = ((pixel >> 5) & 63) * 255 / 63;
+    out[2] = ((pixel >> 11) & 31) * 255 / 31;
+}
+
+static void
+get_pixel_BGR24(Imaging im, int x, int y, void *color) {
+    memcpy(color, &im->image8[y][x * 3], sizeof(UINT8) * 3);
+}
+
+static void
 get_pixel_32(Imaging im, int x, int y, void *color) {
     memcpy(color, &im->image32[y][x], sizeof(INT32));
 }
@@ -128,15 +142,6 @@ get_pixel_32B(Imaging im, int x, int y, void *color) {
 /* store individual pixel */
 
 static void
-put_pixel(Imaging im, int x, int y, const void *color) {
-    if (im->image8) {
-        im->image8[y][x] = *((UINT8 *)color);
-    } else {
-        memcpy(&im->image32[y][x], color, sizeof(INT32));
-    }
-}
-
-static void
 put_pixel_8(Imaging im, int x, int y, const void *color) {
     im->image8[y][x] = *((UINT8 *)color);
 }
@@ -152,6 +157,16 @@ put_pixel_16B(Imaging im, int x, int y, const void *color) {
     UINT8 *out = (UINT8 *)&im->image8[y][x + x];
     out[0] = in[1];
     out[1] = in[0];
+}
+
+static void
+put_pixel_BGR1516(Imaging im, int x, int y, const void *color) {
+    memcpy(&im->image8[y][x * 2], color, 2);
+}
+
+static void
+put_pixel_BGR24(Imaging im, int x, int y, const void *color) {
+    memcpy(&im->image8[y][x * 3], color, 3);
 }
 
 static void
@@ -186,8 +201,8 @@ ImagingAccessInit() {
     /* populate access table */
     ADD("1", get_pixel_8, put_pixel_8);
     ADD("L", get_pixel_8, put_pixel_8);
-    ADD("LA", get_pixel, put_pixel);
-    ADD("La", get_pixel, put_pixel);
+    ADD("LA", get_pixel_32_2bands, put_pixel_32);
+    ADD("La", get_pixel_32_2bands, put_pixel_32);
     ADD("I", get_pixel_32, put_pixel_32);
     ADD("I;16", get_pixel_16L, put_pixel_16L);
     ADD("I;16L", get_pixel_16L, put_pixel_16L);
@@ -197,7 +212,10 @@ ImagingAccessInit() {
     ADD("I;32B", get_pixel_32B, put_pixel_32B);
     ADD("F", get_pixel_32, put_pixel_32);
     ADD("P", get_pixel_8, put_pixel_8);
-    ADD("PA", get_pixel, put_pixel);
+    ADD("PA", get_pixel_32_2bands, put_pixel_32);
+    ADD("BGR;15", get_pixel_BGR15, put_pixel_BGR1516);
+    ADD("BGR;16", get_pixel_BGR16, put_pixel_BGR1516);
+    ADD("BGR;24", get_pixel_BGR24, put_pixel_BGR24);
     ADD("RGB", get_pixel_32, put_pixel_32);
     ADD("RGBA", get_pixel_32, put_pixel_32);
     ADD("RGBa", get_pixel_32, put_pixel_32);

@@ -586,6 +586,18 @@ def test_point(points):
     assert_image_equal_tofile(im, "Tests/images/imagedraw_point.png")
 
 
+def test_point_I16():
+    # Arrange
+    im = Image.new("I;16", (1, 1))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.point((0, 0), fill=0x1234)
+
+    # Assert
+    assert im.getpixel((0, 0)) == 0x1234
+
+
 @pytest.mark.parametrize("points", POINTS)
 def test_polygon(points):
     # Arrange
@@ -732,7 +744,7 @@ def test_rectangle_I16(bbox):
     draw = ImageDraw.Draw(im)
 
     # Act
-    draw.rectangle(bbox, fill="black", outline="green")
+    draw.rectangle(bbox, outline=0xFFFF)
 
     # Assert
     assert_image_equal_tofile(im.convert("I"), "Tests/images/imagedraw_rectangle_I.png")
@@ -1326,6 +1338,7 @@ def test_stroke_multiline():
     assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_multiline.png", 3.3)
 
 
+@skip_unless_feature("freetype2")
 def test_setting_default_font():
     # Arrange
     im = Image.new("RGB", (100, 250))

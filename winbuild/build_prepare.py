@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import os
 import platform
@@ -5,45 +7,43 @@ import re
 import shutil
 import struct
 import subprocess
-import sys
 
 
-def cmd_cd(path):
+def cmd_cd(path: str) -> str:
     return f"cd /D {path}"
 
 
-def cmd_set(name, value):
+def cmd_set(name: str, value: str) -> str:
     return f"set {name}={value}"
 
 
-def cmd_append(name, value):
+def cmd_append(name: str, value: str) -> str:
     op = "path " if name == "PATH" else f"set {name}="
     return op + f"%{name}%;{value}"
 
 
-def cmd_copy(src, tgt):
+def cmd_copy(src: str, tgt: str) -> str:
     return f'copy /Y /B "{src}" "{tgt}"'
 
 
-def cmd_xcopy(src, tgt):
+def cmd_xcopy(src: str, tgt: str) -> str:
     return f'xcopy /Y /E "{src}" "{tgt}"'
 
 
-def cmd_mkdir(path):
+def cmd_mkdir(path: str) -> str:
     return f'mkdir "{path}"'
 
 
-def cmd_rmdir(path):
+def cmd_rmdir(path: str) -> str:
     return f'rmdir /S /Q "{path}"'
 
 
-def cmd_nmake(makefile=None, target="", params=None):
-    if params is None:
-        params = ""
-    elif isinstance(params, (list, tuple)):
-        params = " ".join(params)
-    else:
-        params = str(params)
+def cmd_nmake(
+    makefile: str | None = None,
+    target: str = "",
+    params: list[str] | None = None,
+) -> str:
+    params = "" if params is None else " ".join(params)
 
     return " ".join(
         [
@@ -56,7 +56,7 @@ def cmd_nmake(makefile=None, target="", params=None):
     )
 
 
-def cmds_cmake(target, *params):
+def cmds_cmake(target: str | tuple[str, ...] | list[str], *params) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
 
@@ -81,8 +81,11 @@ def cmds_cmake(target, *params):
 
 
 def cmd_msbuild(
-    file, configuration="Release", target="Build", platform="{msbuild_arch}"
-):
+    file: str,
+    configuration: str = "Release",
+    target: str = "Build",
+    platform: str = "{msbuild_arch}",
+) -> str:
     return " ".join(
         [
             "{msbuild}",
@@ -97,26 +100,19 @@ def cmd_msbuild(
 
 SF_PROJECTS = "https://sourceforge.net/projects"
 
-architectures = {
+ARCHITECTURES = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
-header = [
-    cmd_set("INCLUDE", "{inc_dir}"),
-    cmd_set("INCLIB", "{lib_dir}"),
-    cmd_set("LIB", "{lib_dir}"),
-    cmd_append("PATH", "{bin_dir}"),
-]
-
 # dependencies, listed in order of compilation
-deps = {
+DEPS = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/2.1.5.1/libjpeg-turbo-2.1.5.1.tar.gz/download",
-        "filename": "libjpeg-turbo-2.1.5.1.tar.gz",
-        "dir": "libjpeg-turbo-2.1.5.1",
+        + "/libjpeg-turbo/files/3.0.0/libjpeg-turbo-3.0.0.tar.gz/download",
+        "filename": "libjpeg-turbo-3.0.0.tar.gz",
+        "dir": "libjpeg-turbo-3.0.0",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
@@ -138,9 +134,9 @@ deps = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "https://zlib.net/zlib1213.zip",
-        "filename": "zlib1213.zip",
-        "dir": "zlib-1.2.13",
+        "url": "https://zlib.net/zlib13.zip",
+        "filename": "zlib13.zip",
+        "dir": "zlib-1.3",
         "license": "README",
         "license_pattern": "Copyright notice:\n\n(.+)$",
         "build": [
@@ -152,9 +148,9 @@ deps = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.3.tar.gz/download",
-        "filename": "xz-5.4.3.tar.gz",
-        "dir": "xz-5.4.3",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.4.tar.gz/download",
+        "filename": "xz-5.4.4.tar.gz",
+        "dir": "xz-5.4.4",
         "license": "COPYING",
         "build": [
             *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -165,9 +161,9 @@ deps = {
         "libs": [r"liblzma.lib"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.0.tar.gz",
-        "filename": "libwebp-1.3.0.tar.gz",
-        "dir": "libwebp-1.3.0",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.2.tar.gz",
+        "filename": "libwebp-1.3.2.tar.gz",
+        "dir": "libwebp-1.3.2",
         "license": "COPYING",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
@@ -188,9 +184,9 @@ deps = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.5.0.tar.gz",
-        "filename": "tiff-4.5.0.tar.gz",
-        "dir": "tiff-4.5.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
+        "filename": "tiff-4.6.0.tar.gz",
+        "dir": "tiff-4.6.0",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
@@ -200,6 +196,12 @@ deps = {
             r"libtiff\tif_webp.c": {
                 # link against webp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "webp.lib")',  # noqa: E501
+            },
+            r"test\CMakeLists.txt": {
+                "add_executable(test_write_read_tags ../placeholder.h)": "",
+                "target_sources(test_write_read_tags PRIVATE test_write_read_tags.c)": "",  # noqa: E501
+                "target_link_libraries(test_write_read_tags PRIVATE tiff)": "",
+                "list(APPEND simple_tests test_write_read_tags)": "",
             },
         },
         "build": [
@@ -226,20 +228,20 @@ deps = {
         "libs": [r"libpng16.lib"],
     },
     "brotli": {
-        "url": "https://github.com/google/brotli/archive/refs/tags/v1.0.9.tar.gz",
-        "filename": "brotli-1.0.9.tar.gz",
-        "dir": "brotli-1.0.9",
+        "url": "https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz",
+        "filename": "brotli-1.1.0.tar.gz",
+        "dir": "brotli-1.1.0",
         "license": "LICENSE",
         "build": [
-            *cmds_cmake(("brotlicommon-static", "brotlidec-static")),
+            *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz",  # noqa: E501
-        "filename": "freetype-2.13.0.tar.gz",
-        "dir": "freetype-2.13.0",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",  # noqa: E501
+        "filename": "freetype-2.13.2.tar.gz",
+        "dir": "freetype-2.13.2",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -252,7 +254,7 @@ deps = {
                 "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_SYSTEM_ZLIB;FT_CONFIG_OPTION_USE_PNG;FT_CONFIG_OPTION_USE_HARFBUZZ;FT_CONFIG_OPTION_USE_BROTLI</UserDefines>",  # noqa: E501
                 "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src;{inc_dir}</UserIncludeDirectories>",  # noqa: E501
                 "<UserLibraryDirectories></UserLibraryDirectories>": "<UserLibraryDirectories>{lib_dir}</UserLibraryDirectories>",  # noqa: E501
-                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon-static.lib;brotlidec-static.lib</UserDependencies>",  # noqa: E501
+                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon.lib;brotlidec.lib</UserDependencies>",  # noqa: E501
             },
             r"src/autofit/afshaper.c": {
                 # link against harfbuzz.lib
@@ -337,9 +339,9 @@ deps = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/7.3.0.zip",
-        "filename": "harfbuzz-7.3.0.zip",
-        "dir": "harfbuzz-7.3.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.2.1.zip",
+        "filename": "harfbuzz-8.2.1.zip",
+        "dir": "harfbuzz-8.2.1",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -367,7 +369,7 @@ deps = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_msvs():
+def find_msvs() -> dict[str, str] | None:
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
@@ -401,23 +403,12 @@ def find_msvs():
         print("Visual Studio seems to be missing C compiler")
         return None
 
-    vs = {
-        "header": [],
-        # nmake selected by vcvarsall
-        "nmake": "nmake.exe",
-        "vs_dir": vspath,
-    }
-
     # vs2017
     msbuild = os.path.join(vspath, "MSBuild", "15.0", "Bin", "MSBuild.exe")
-    if os.path.isfile(msbuild):
-        vs["msbuild"] = f'"{msbuild}"'
-    else:
+    if not os.path.isfile(msbuild):
         # vs2019
         msbuild = os.path.join(vspath, "MSBuild", "Current", "Bin", "MSBuild.exe")
-        if os.path.isfile(msbuild):
-            vs["msbuild"] = f'"{msbuild}"'
-        else:
+        if not os.path.isfile(msbuild):
             print("Visual Studio MSBuild not found")
             return None
 
@@ -425,30 +416,49 @@ def find_msvs():
     if not os.path.isfile(vcvarsall):
         print("Visual Studio vcvarsall not found")
         return None
-    vs["header"].append(f'call "{vcvarsall}" {{vcvars_arch}}')
 
-    return vs
+    return {
+        "vs_dir": vspath,
+        "msbuild": f'"{msbuild}"',
+        "vcvarsall": f'"{vcvarsall}"',
+        "nmake": "nmake.exe",  # nmake selected by vcvarsall
+    }
 
 
-def extract_dep(url, filename):
-    import tarfile
+def download_dep(url: str, file: str) -> None:
     import urllib.request
+
+    ex = None
+    for i in range(3):
+        try:
+            print(f"Fetching {url} (attempt {i + 1})...")
+            content = urllib.request.urlopen(url).read()
+            with open(file, "wb") as f:
+                f.write(content)
+            break
+        except urllib.error.URLError as e:
+            ex = e
+    else:
+        raise RuntimeError(ex)
+
+
+def extract_dep(url: str, filename: str) -> None:
+    import tarfile
     import zipfile
 
     file = os.path.join(args.depends_dir, filename)
     if not os.path.exists(file):
-        ex = None
-        for i in range(3):
-            try:
-                print("Fetching %s (attempt %d)..." % (url, i + 1))
-                content = urllib.request.urlopen(url).read()
-                with open(file, "wb") as f:
-                    f.write(content)
-                break
-            except urllib.error.URLError as e:
-                ex = e
-        else:
-            raise RuntimeError(ex)
+        # First try our mirror
+        mirror_url = (
+            f"https://raw.githubusercontent.com/"
+            f"python-pillow/pillow-depends/main/{filename}"
+        )
+        try:
+            download_dep(mirror_url, file)
+        except RuntimeError as exc:
+            # Otherwise try upstream
+            print(exc)
+            download_dep(url, file)
 
     print("Extracting " + filename)
     sources_dir_abs = os.path.abspath(sources_dir)
@@ -475,7 +485,7 @@ def extract_dep(url, filename):
         raise RuntimeError(msg)
 
 
-def write_script(name, lines):
+def write_script(name: str, lines: list[str]) -> None:
     name = os.path.join(args.build_dir, name)
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
@@ -486,7 +496,7 @@ def write_script(name, lines):
             print("    " + line)
 
 
-def get_footer(dep):
+def get_footer(dep: dict) -> list[str]:
     lines = []
     for out in dep.get("headers", []):
         lines.append(cmd_copy(out, "{inc_dir}"))
@@ -497,8 +507,24 @@ def get_footer(dep):
     return lines
 
 
-def build_dep(name):
-    dep = deps[name]
+def build_env() -> None:
+    lines = [
+        "if defined DISTUTILS_USE_SDK goto end",
+        cmd_set("INCLUDE", "{inc_dir}"),
+        cmd_set("INCLIB", "{lib_dir}"),
+        cmd_set("LIB", "{lib_dir}"),
+        cmd_append("PATH", "{bin_dir}"),
+        "call {vcvarsall} {vcvars_arch}",
+        cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
+        cmd_set("py_vcruntime_redist", "true"),  # always use /MD, never /MT
+        ":end",
+        "@echo on",
+    ]
+    write_script("build_env.cmd", lines)
+
+
+def build_dep(name: str) -> str:
+    dep = DEPS[name]
     dir = dep["dir"]
     file = f"build_dep_{name}.cmd"
 
@@ -534,11 +560,11 @@ def build_dep(name):
 
     banner = f"Building {name} ({dir})"
     lines = [
+        r'call "{build_dir}\build_env.cmd"',
         "@echo " + ("=" * 70),
         f"@echo ==== {banner:<60} ====",
         "@echo " + ("=" * 70),
-        "cd /D %s" % os.path.join(sources_dir, dir),
-        *prefs["header"],
+        cmd_cd(os.path.join(sources_dir, dir)),
         *dep.get("build", []),
         *get_footer(dep),
     ]
@@ -547,9 +573,9 @@ def build_dep(name):
     return file
 
 
-def build_dep_all():
-    lines = ["@echo on"]
-    for dep_name in deps:
+def build_dep_all() -> None:
+    lines = [r'call "{build_dir}\build_env.cmd"']
+    for dep_name in DEPS:
         print()
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
@@ -562,29 +588,16 @@ def build_dep_all():
     write_script("build_dep_all.cmd", lines)
 
 
-def build_pillow():
-    lines = [
-        "@echo ---- Building Pillow (build_ext %*) ----",
-        cmd_cd("{pillow_dir}"),
-        *prefs["header"],
-        cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
-        cmd_set("py_vcruntime_redist", "true"),  # always use /MD, never /MT
-        r'"{python_dir}\{python_exe}" setup.py build_ext --vendor-raqm --vendor-fribidi %*',  # noqa: E501
-    ]
-
-    write_script("build_pillow.cmd", lines)
-
-
 if __name__ == "__main__":
     winbuild_dir = os.path.dirname(os.path.realpath(__file__))
     pillow_dir = os.path.realpath(os.path.join(winbuild_dir, ".."))
 
     parser = argparse.ArgumentParser(
         prog="winbuild\\build_prepare.py",
-        description="Download dependencies and generate build scripts for Pillow.",
+        description="Download and generate build scripts for Pillow dependencies.",
         epilog="""Arguments can also be supplied using the environment variables
-                  PILLOW_BUILD, PILLOW_DEPS, ARCHITECTURE, PYTHON, EXECUTABLE.
-                  See winbuild\\build.rst for more information.""",
+                  PILLOW_BUILD, PILLOW_DEPS, ARCHITECTURE. See winbuild\\build.rst
+                  for more information.""",
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="print generated scripts"
@@ -608,7 +621,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--architecture",
-        choices=architectures,
+        choices=ARCHITECTURES,
         default=os.environ.get(
             "ARCHITECTURE",
             (
@@ -618,20 +631,6 @@ if __name__ == "__main__":
             ),
         ),
         help="build architecture (default: same as host Python)",
-    )
-    parser.add_argument(
-        "--python",
-        dest="python_dir",
-        metavar="PYTHON",
-        default=os.environ.get("PYTHON"),
-        help="Python install directory (default: use host Python)",
-    )
-    parser.add_argument(
-        "--executable",
-        dest="python_exe",
-        metavar="EXECUTABLE",
-        default=os.environ.get("EXECUTABLE", "python.exe"),
-        help="Python executable (default: use host Python)",
     )
     parser.add_argument(
         "--nmake",
@@ -654,13 +653,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    arch_prefs = architectures[args.architecture]
+    arch_prefs = ARCHITECTURES[args.architecture]
     print("Target architecture:", args.architecture)
-
-    if args.python_dir is None:
-        args.python_dir = os.path.dirname(os.path.realpath(sys.executable))
-        args.python_exe = os.path.basename(sys.executable)
-    print("Target Python:", os.path.join(args.python_dir, args.python_exe))
 
     msvs = find_msvs()
     if msvs is None:
@@ -699,9 +693,6 @@ if __name__ == "__main__":
         disabled += ["fribidi"]
 
     prefs = {
-        # Python paths / preferences
-        "python_dir": args.python_dir,
-        "python_exe": args.python_exe,
         "architecture": args.architecture,
         **arch_prefs,
         # Pillow paths
@@ -719,17 +710,13 @@ if __name__ == "__main__":
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
         "cmake_generator": args.cmake_generator,
         # TODO find NASM automatically
-        # script header
-        "header": sum([header, msvs["header"], ["@echo on"]], []),
     }
 
-    for k, v in deps.items():
+    for k, v in DEPS.items():
         prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()
 
     write_script(".gitignore", ["*"])
+    build_env()
     build_dep_all()
-    if args.verbose:
-        print()
-    build_pillow()

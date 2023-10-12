@@ -815,7 +815,6 @@ font_render(FontObject *self, PyObject *args) {
     float y_start = 0;
     int width, height, x_offset, y_offset;
     int horizontal_dir; /* is primary axis horizontal? */
-    PyObject *max_image_pixels = Py_None;
 
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
@@ -833,8 +832,7 @@ font_render(FontObject *self, PyObject *args) {
             &anchor,
             &foreground_ink_long,
             &x_start,
-            &y_start,
-            &max_image_pixels)) {
+            &y_start)) {
         return NULL;
     }
 
@@ -879,14 +877,14 @@ font_render(FontObject *self, PyObject *args) {
 
     width += stroke_width * 2 + ceil(x_start);
     height += stroke_width * 2 + ceil(y_start);
-    if (max_image_pixels != Py_None) {
-        if (width * height > PyLong_AsLong(max_image_pixels) * 2) {
-            PyMem_Del(glyph_info);
-            return Py_BuildValue("O(ii)(ii)", Py_None, width, height, 0, 0);
-        }
-    }
-
     image = PyObject_CallFunction(fill, "s(ii)", strcmp(mode, "RGBA") == 0 ? "RGBA" : "L", width, height);
+    if (image == Py_None) {
+        PyMem_Del(glyph_info);
+        return Py_BuildValue("ii", 0, 0);
+    } else if (image == NULL) {
+        PyMem_Del(glyph_info);
+        return NULL;
+    }
     id = PyLong_AsSsize_t(PyObject_GetAttrString(image, "id"));
     im = (Imaging)id;
 
@@ -894,13 +892,14 @@ font_render(FontObject *self, PyObject *args) {
     y_offset -= stroke_width;
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
-        return Py_BuildValue("O(ii)(ii)", image, width, height, x_offset, y_offset);
+        return Py_BuildValue("ii", x_offset, y_offset);
     }
 
     if (stroke_width) {
         error = FT_Stroker_New(library, &stroker);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         FT_Stroker_Set(
@@ -923,7 +922,8 @@ font_render(FontObject *self, PyObject *args) {
         error =
             FT_Load_Glyph(self->face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         glyph_slot = self->face->glyph;
@@ -954,7 +954,8 @@ font_render(FontObject *self, PyObject *args) {
 
         error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         glyph_slot = self->face->glyph;
@@ -968,7 +969,8 @@ font_render(FontObject *self, PyObject *args) {
                 error = FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, &origin, 1);
             }
             if (error) {
-                return geterror(error);
+                geterror(error);
+                goto glyph_error;
             }
 
             bitmap_glyph = (FT_BitmapGlyph)glyph;
@@ -1105,11 +1107,18 @@ font_render(FontObject *self, PyObject *args) {
     if (bitmap_converted_ready) {
         FT_Bitmap_Done(library, &bitmap_converted);
     }
+    Py_DECREF(image);
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
-    return Py_BuildValue("O(ii)(ii)", image, width, height, x_offset, y_offset);
+    return Py_BuildValue("ii", x_offset, y_offset);
 
 glyph_error:
+    if (im->destroy) {
+        im->destroy(im);
+    }
+    if (im->image) {
+        free(im->image);
+    }
     if (stroker != NULL) {
         FT_Done_Glyph(glyph);
     }
@@ -1386,19 +1395,19 @@ static struct PyGetSetDef font_getsetters[] = {
     {NULL}};
 
 static PyTypeObject Font_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "Font",
-    sizeof(FontObject),
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0) "Font", /*tp_name*/
+    sizeof(FontObject),                    /*tp_basicsize*/
+    0,                                     /*tp_itemsize*/
     /* methods */
-    (destructor)font_dealloc, /* tp_dealloc */
-    0,                        /* tp_print */
+    (destructor)font_dealloc, /*tp_dealloc*/
+    0,                        /*tp_vectorcall_offset*/
     0,                        /*tp_getattr*/
     0,                        /*tp_setattr*/
-    0,                        /*tp_compare*/
+    0,                        /*tp_as_async*/
     0,                        /*tp_repr*/
-    0,                        /*tp_as_number */
-    0,                        /*tp_as_sequence */
-    0,                        /*tp_as_mapping */
+    0,                        /*tp_as_number*/
+    0,                        /*tp_as_sequence*/
+    0,                        /*tp_as_mapping*/
     0,                        /*tp_hash*/
     0,                        /*tp_call*/
     0,                        /*tp_str*/

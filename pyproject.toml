@@ -1,0 +1,8 @@
+[build-system]
+build-backend = "backend"
+requires = [
+  "setuptools>=67.8",
+]
+backend-path = [
+  "_custom_build",
+]

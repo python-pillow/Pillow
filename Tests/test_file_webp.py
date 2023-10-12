@@ -235,3 +235,13 @@ class TestFileWebp:
         with Image.open(out_webp) as reloaded:
             reloaded.load()
             assert reloaded.info["duration"] == 1000
+
+    def test_roundtrip_rgba_palette(self, tmp_path):
+        temp_file = str(tmp_path / "temp.webp")
+        im = Image.new("RGBA", (1, 1)).convert("P")
+        assert im.mode == "P"
+        assert im.palette.mode == "RGBA"
+        im.save(temp_file)
+
+        with Image.open(temp_file) as im:
+            assert im.getpixel((0, 0)) == (0, 0, 0, 0)

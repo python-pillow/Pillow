@@ -73,9 +73,9 @@ class GbrImageFile(ImageFile.ImageFile):
         comment = self.fp.read(comment_length)[:-1]
 
         if color_depth == 1:
-            self.mode = "L"
+            self._mode = "L"
         else:
-            self.mode = "RGBA"
+            self._mode = "RGBA"
 
         self._size = width, height
 

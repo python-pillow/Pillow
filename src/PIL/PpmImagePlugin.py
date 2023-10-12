@@ -116,18 +116,18 @@ class PpmImageFile(ImageFile.ImageFile):
             elif ix == 1:  # token is the y size
                 ysize = token
                 if mode == "1":
-                    self.mode = "1"
+                    self._mode = "1"
                     rawmode = "1;I"
                     break
                 else:
-                    self.mode = rawmode = mode
+                    self._mode = rawmode = mode
             elif ix == 2:  # token is maxval
                 maxval = token
                 if not 0 < maxval < 65536:
                     msg = "maxval must be greater than 0 and less than 65536"
                     raise ValueError(msg)
                 if maxval > 255 and mode == "L":
-                    self.mode = "I"
+                    self._mode = "I"
 
                 if decoder_name != "ppm_plain":
                     # If maxval matches a bit depth, use the raw decoder directly

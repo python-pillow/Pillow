@@ -487,18 +487,18 @@ static struct PyMethodDef _anim_encoder_methods[] = {
 // WebPAnimEncoder type definition
 static PyTypeObject WebPAnimEncoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimEncoder", /*tp_name */
-    sizeof(WebPAnimEncoderObject),                    /*tp_size */
+    sizeof(WebPAnimEncoderObject),                    /*tp_basicsize */
     0,                                                /*tp_itemsize */
     /* methods */
     (destructor)_anim_encoder_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_print*/
+    0,                                 /*tp_vectorcall_offset*/
     0,                                 /*tp_getattr*/
     0,                                 /*tp_setattr*/
-    0,                                 /*tp_compare*/
+    0,                                 /*tp_as_async*/
     0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number */
-    0,                                 /*tp_as_sequence */
-    0,                                 /*tp_as_mapping */
+    0,                                 /*tp_as_number*/
+    0,                                 /*tp_as_sequence*/
+    0,                                 /*tp_as_mapping*/
     0,                                 /*tp_hash*/
     0,                                 /*tp_call*/
     0,                                 /*tp_str*/
@@ -530,18 +530,18 @@ static struct PyMethodDef _anim_decoder_methods[] = {
 // WebPAnimDecoder type definition
 static PyTypeObject WebPAnimDecoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimDecoder", /*tp_name */
-    sizeof(WebPAnimDecoderObject),                    /*tp_size */
+    sizeof(WebPAnimDecoderObject),                    /*tp_basicsize */
     0,                                                /*tp_itemsize */
     /* methods */
     (destructor)_anim_decoder_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_print*/
+    0,                                 /*tp_vectorcall_offset*/
     0,                                 /*tp_getattr*/
     0,                                 /*tp_setattr*/
-    0,                                 /*tp_compare*/
+    0,                                 /*tp_as_async*/
     0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number */
-    0,                                 /*tp_as_sequence */
-    0,                                 /*tp_as_mapping */
+    0,                                 /*tp_as_number*/
+    0,                                 /*tp_as_sequence*/
+    0,                                 /*tp_as_mapping*/
     0,                                 /*tp_hash*/
     0,                                 /*tp_call*/
     0,                                 /*tp_str*/

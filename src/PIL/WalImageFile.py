@@ -32,7 +32,7 @@ class WalImageFile(ImageFile.ImageFile):
     format_description = "Quake2 Texture"
 
     def _open(self):
-        self.mode = "P"
+        self._mode = "P"
 
         # read header fields
         header = self.fp.read(32 + 24 + 32 + 12)

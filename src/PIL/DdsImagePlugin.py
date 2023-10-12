@@ -13,7 +13,7 @@ import io
 import struct
 from enum import IntEnum, IntFlag
 
-from . import Image, ImageFile
+from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
 from ._binary import o32le as o32
 
@@ -405,6 +405,10 @@ class DdsImageFile(ImageFile.ImageFile):
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
                 raise OSError(msg)
+        elif pfflags & DDPF_PALETTEINDEXED8:
+            self._mode = "P"
+            self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
+            self.tile = [("raw", (0, 0) + self.size, 0, "L")]
         elif pfflags & DDPF.FOURCC:
             data_offs = header_size + 4
             try:

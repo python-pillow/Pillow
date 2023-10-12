@@ -41,12 +41,21 @@ class Layout(IntEnum):
     RAQM = 1
 
 
+MAX_STRING_LENGTH = 1_000_000
+
+
 try:
     from . import _imagingft as core
 except ImportError as ex:
     from ._util import DeferredError
 
     core = DeferredError(ex)
+
+
+def _string_length_check(text):
+    if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
+        msg = "too many characters in string"
+        raise ValueError(msg)
 
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
@@ -152,6 +161,7 @@ class ImageFont:
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
+        _string_length_check(text)
         width, height = self.font.getsize(text)
         return 0, 0, width, height
 
@@ -162,6 +172,7 @@ class ImageFont:
 
         .. versionadded:: 9.2.0
         """
+        _string_length_check(text)
         width, height = self.font.getsize(text)
         return width
 
@@ -307,8 +318,9 @@ class FreeTypeFont:
                          <https://www.w3.org/International/articles/language-tags/>`_
                          Requires libraqm.
 
-        :return: Width for horizontal, height for vertical text.
+        :return: Either width for horizontal text, or height for vertical text.
         """
+        _string_length_check(text)
         return self.font.getlength(text, mode, direction, features, language) / 64
 
     def getbbox(
@@ -368,6 +380,7 @@ class FreeTypeFont:
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
+        _string_length_check(text)
         size, offset = self.font.getsize(
             text, mode, direction, features, language, anchor
         )
@@ -546,11 +559,27 @@ class FreeTypeFont:
                  :py:mod:`PIL.Image.core` interface module, and the text offset, the
                  gap between the starting coordinate and the first marking
         """
+        _string_length_check(text)
         if start is None:
             start = (0, 0)
-        im, size, offset = self.font.render(
+        im = None
+        size = None
+
+        def fill(mode, im_size):
+            nonlocal im, size
+
+            size = im_size
+            if Image.MAX_IMAGE_PIXELS is not None:
+                pixels = max(1, size[0]) * max(1, size[1])
+                if pixels > 2 * Image.MAX_IMAGE_PIXELS:
+                    return
+
+            im = Image.core.fill(mode, size)
+            return im
+
+        offset = self.font.render(
             text,
-            Image.core.fill,
+            fill,
             mode,
             direction,
             features,
@@ -560,7 +589,6 @@ class FreeTypeFont:
             ink,
             start[0],
             start[1],
-            Image.MAX_IMAGE_PIXELS,
         )
         Image._decompression_bomb_check(size)
         return im, offset
@@ -684,6 +712,7 @@ class TransposedFont:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
+        _string_length_check(text)
         return self.font.getlength(text, *args, **kwargs)
 
 

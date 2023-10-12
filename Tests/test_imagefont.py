@@ -141,7 +141,9 @@ def test_I16(font):
     draw = ImageDraw.Draw(im)
 
     txt = "Hello World!"
-    draw.text((10, 10), txt, font=font)
+    draw.text((10, 10), txt, fill=0xFFFE, font=font)
+
+    assert im.getpixel((12, 14)) == 0xFFFE
 
     target = "Tests/images/transparent_background_text_L.png"
     assert_image_similar_tofile(im.convert("L"), target, 0.01)
@@ -1038,10 +1040,30 @@ def test_render_mono_size():
     assert_image_equal_tofile(im, "Tests/images/text_mono.gif")
 
 
+def test_too_many_characters(font):
+    with pytest.raises(ValueError):
+        font.getlength("A" * 1_000_001)
+    with pytest.raises(ValueError):
+        font.getbbox("A" * 1_000_001)
+    with pytest.raises(ValueError):
+        font.getmask2("A" * 1_000_001)
+
+    transposed_font = ImageFont.TransposedFont(font)
+    with pytest.raises(ValueError):
+        transposed_font.getlength("A" * 1_000_001)
+
+    default_font = ImageFont.load_default()
+    with pytest.raises(ValueError):
+        default_font.getlength("A" * 1_000_001)
+    with pytest.raises(ValueError):
+        default_font.getbbox("A" * 1_000_001)
+
+
 @pytest.mark.parametrize(
     "test_file",
     [
         "Tests/fonts/oom-e8e927ba6c0d38274a37c1567560eb33baf74627.ttf",
+        "Tests/fonts/oom-4da0210eb7081b0bf15bf16cc4c52ce02c1e1bbc.ttf",
     ],
 )
 def test_oom(test_file):

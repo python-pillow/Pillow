@@ -95,14 +95,14 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
 
 def grabclipboard():
     if sys.platform == "darwin":
-        fh, filepath = tempfile.mkstemp(".jpg")
+        fh, filepath = tempfile.mkstemp(".png")
         os.close(fh)
         commands = [
             'set theFile to (open for access POSIX file "'
             + filepath
             + '" with write permission)',
             "try",
-            "    write (the clipboard as JPEG picture) to theFile",
+            "    write (the clipboard as «class PNGf») to theFile",
             "end try",
             "close access theFile",
         ]
@@ -140,7 +140,14 @@ def grabclipboard():
                 return BmpImagePlugin.DibImageFile(data)
         return None
     else:
-        if shutil.which("wl-paste"):
+        if os.getenv("WAYLAND_DISPLAY"):
+            session_type = "wayland"
+        elif os.getenv("DISPLAY"):
+            session_type = "x11"
+        else:  # Session type check failed
+            session_type = None
+
+        if shutil.which("wl-paste") and session_type in ("wayland", None):
             output = subprocess.check_output(["wl-paste", "-l"]).decode()
             mimetypes = output.splitlines()
             if "image/png" in mimetypes:
@@ -153,12 +160,13 @@ def grabclipboard():
             args = ["wl-paste"]
             if mimetype:
                 args.extend(["-t", mimetype])
-        elif shutil.which("xclip"):
+        elif shutil.which("xclip") and session_type in ("x11", None):
             args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
         else:
             msg = "wl-paste or xclip is required for ImageGrab.grabclipboard() on Linux"
             raise NotImplementedError(msg)
-        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        p = subprocess.run(args, capture_output=True)
         err = p.stderr
         if err:
             msg = f"{args[0]} error: {err.strip().decode()}"

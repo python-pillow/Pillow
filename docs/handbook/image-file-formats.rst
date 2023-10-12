@@ -63,8 +63,35 @@ DDS
 ^^^
 
 DDS is a popular container texture format used in video games and natively supported
-by DirectX. Uncompressed RGB and RGBA can be read, and (since 8.3.0) written. DXT1,
-DXT3 (since 3.4.0) and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+by DirectX.
+
+DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+
+.. versionadded:: 3.4.0
+   DXT3 images can be read in ``RGB`` mode and DX10 images can be read in
+   ``RGB`` and ``RGBA`` mode.
+
+.. versionadded:: 6.0.0
+   Uncompressed ``RGBA`` images can be read.
+
+
+.. versionadded:: 8.3.0
+   BC5S images can be opened in ``RGB`` mode, and uncompressed ``RGB`` images
+   can be read. Uncompressed data can also be saved to image files.
+
+
+.. versionadded:: 9.3.0
+   ATI1 images can be opened in ``L`` mode and ATI2 images can be opened in
+   ``RGB`` mode.
+
+.. versionadded:: 9.4.0
+   Uncompressed ``L`` ("luminance") and ``LA`` images can be opened and saved.
+
+
+.. versionadded:: 10.1.0
+   BC5U can be read in ``RGB`` mode, and 8-bit color indexed images can be read
+   in ``P`` mode.
+
 
 DIB
 ^^^
@@ -88,8 +115,13 @@ in ``L``, ``RGB`` and ``CMYK`` modes.
 Loading
 ~~~~~~~
 
+To use Ghostscript, Pillow searches for the "gs" executable. On Windows, it
+also searches for "gswin32c" and "gswin64c". To customise this behaviour,
+``EpsImagePlugin.gs_binary = "gswin64"`` will set the name of the executable to
+use. ``EpsImagePlugin.gs_binary = False`` will prevent Ghostscript use.
+
 If Ghostscript is available, you can call the :py:meth:`~PIL.Image.Image.load`
-method with the following parameters to affect how Ghostscript renders the EPS
+method with the following parameters to affect how Ghostscript renders the EPS.
 
 **scale**
     Affects the scale of the resultant rasterized image. If the EPS suggests
@@ -253,7 +285,7 @@ their :py:attr:`~PIL.Image.Image.info` values.
 
 **loop**
     Integer number of times the GIF should loop. 0 means that it will loop
-    forever. By default, the image will not loop.
+    forever. If omitted or ``None``, the image will not loop.
 
 **comment**
     A comment about the image.
@@ -861,6 +893,10 @@ PPM
 Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
 ``RGB`` data.
 
+"Raw" (P4 to P6) formats can be read, and are used when writing.
+
+Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+
 SGI
 ^^^
 
@@ -1404,7 +1440,7 @@ the open function in the :py:mod:`~PIL.WalImageFile` module to read files in
 this format.
 
 By default, a Quake2 standard palette is attached to the texture. To override
-the palette, use the putpalette method.
+the palette, use the :py:func:`PIL.Image.Image.putpalette()` method.
 
 WMF, EMF
 ^^^^^^^^
@@ -1482,7 +1518,7 @@ files. Different encoding methods are used, depending on the image mode.
   unavailable
 * L, RGB and CMYK mode images use JPEG encoding
 * P mode images use HEX encoding
-* RGBA mode images use JPEG2000 encoding
+* LA and RGBA mode images use JPEG2000 encoding
 
 .. _pdf-saving:
 

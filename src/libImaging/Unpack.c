@@ -31,6 +31,7 @@
  */
 
 #include "Imaging.h"
+#include "Convert.h"
 
 #define R 0
 #define G 1
@@ -1239,6 +1240,12 @@ copy2(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
+copy3(UINT8 *out, const UINT8 *in, int pixels) {
+    /* BGR;24 */
+    memcpy(out, in, pixels * 3);
+}
+
+static void
 copy4(UINT8 *out, const UINT8 *in, int pixels) {
     /* RGBA, CMYK quadruples */
     memcpy(out, in, 4 * pixels);
@@ -1589,6 +1596,11 @@ static struct {
     {"RGB", "R;16B", 16, band016B},
     {"RGB", "G;16B", 16, band116B},
     {"RGB", "B;16B", 16, band216B},
+    {"RGB", "CMYK", 32, cmyk2rgb},
+
+    {"BGR;15", "BGR;15", 16, copy2},
+    {"BGR;16", "BGR;16", 16, copy2},
+    {"BGR;24", "BGR;24", 24, copy3},
 
     /* true colour w. alpha */
     {"RGBA", "LA", 16, unpackRGBALA},

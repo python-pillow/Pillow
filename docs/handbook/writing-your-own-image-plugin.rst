@@ -72,11 +72,11 @@ true color.
             # mode setting
             bits = int(header[3])
             if bits == 1:
-                self.mode = "1"
+                self._mode = "1"
             elif bits == 8:
-                self.mode = "L"
+                self._mode = "L"
             elif bits == 24:
-                self.mode = "RGB"
+                self._mode = "RGB"
             else:
                 msg = "unknown number of bits"
                 raise SyntaxError(msg)

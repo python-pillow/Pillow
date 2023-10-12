@@ -108,8 +108,7 @@ except ImportError as v:
     raise
 
 
-# works everywhere, win for pypy, not cpython
-USE_CFFI_ACCESS = hasattr(sys, "pypy_version_info")
+USE_CFFI_ACCESS = False
 try:
     import cffi
 except ImportError:
@@ -307,7 +306,11 @@ _initialized = 0
 
 
 def preinit():
-    """Explicitly load standard file format drivers."""
+    """
+    Explicitly loads BMP, GIF, JPEG, PPM and PPM file format drivers.
+
+    It is called when opening or saving images.
+    """
 
     global _initialized
     if _initialized >= 1:
@@ -343,11 +346,6 @@ def preinit():
         assert PngImagePlugin
     except ImportError:
         pass
-    # try:
-    #     import TiffImagePlugin
-    #     assert TiffImagePlugin
-    # except ImportError:
-    #     pass
 
     _initialized = 1
 
@@ -356,6 +354,9 @@ def init():
     """
     Explicitly initializes the Python Imaging Library. This function
     loads all available file format drivers.
+
+    It is called when opening or saving images if :py:meth:`~preinit()` is
+    insufficient, and by :py:meth:`~PIL.features.pilinfo`.
     """
 
     global _initialized
@@ -491,7 +492,7 @@ class Image:
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
         self.im = None
-        self.mode = ""
+        self._mode = ""
         self._size = (0, 0)
         self.palette = None
         self.info = {}
@@ -511,10 +512,14 @@ class Image:
     def size(self):
         return self._size
 
+    @property
+    def mode(self):
+        return self._mode
+
     def _new(self, im):
         new = Image()
         new.im = im
-        new.mode = im.mode
+        new._mode = im.mode
         new._size = im.size
         if im.mode in ("P", "PA"):
             if self.palette:
@@ -641,7 +646,7 @@ class Image:
             )
         )
 
-    def _repr_image(self, image_format):
+    def _repr_image(self, image_format, **kwargs):
         """Helper function for iPython display hook.
 
         :param image_format: Image format.
@@ -649,10 +654,9 @@ class Image:
         """
         b = io.BytesIO()
         try:
-            self.save(b, image_format)
-        except Exception as e:
-            msg = f"Could not save to {image_format} for display"
-            raise ValueError(msg) from e
+            self.save(b, image_format, **kwargs)
+        except Exception:
+            return None
         return b.getvalue()
 
     def _repr_png_(self):
@@ -660,7 +664,7 @@ class Image:
 
         :returns: PNG version of the image as bytes
         """
-        return self._repr_image("PNG")
+        return self._repr_image("PNG", compress_level=1)
 
     def _repr_jpeg_(self):
         """iPython display hook support for JPEG format.
@@ -703,7 +707,7 @@ class Image:
         self.tile: list[_Tile] = []
         info, mode, size, palette, data = state
         self.info = info
-        self.mode = mode
+        self._mode = mode
         self._size = size
         self.im = core.new(mode, size)
         if mode in ("L", "LA", "P", "PA") and palette:
@@ -920,7 +924,7 @@ class Image:
 
         self.load()
 
-        has_transparency = self.info.get("transparency") is not None
+        has_transparency = "transparency" in self.info
         if not mode and self.mode == "P":
             # determine default mode
             if self.palette:
@@ -1079,7 +1083,7 @@ class Image:
         if mode == "P" and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
-            new_im.palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
+            new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
         if delete_trns:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
             del new_im.info["transparency"]
@@ -1302,11 +1306,15 @@ class Image:
         """
         return ImageMode.getmode(self.mode).bands
 
-    def getbbox(self):
+    def getbbox(self, *, alpha_only=True):
         """
         Calculates the bounding box of the non-zero regions in the
         image.
 
+        :param alpha_only: Optional flag, defaulting to ``True``.
+           If ``True`` and the image has an alpha channel, trim transparent pixels.
+           Otherwise, trim pixels when all channels are zero.
+           Keyword-only argument.
         :returns: The bounding box is returned as a 4-tuple defining the
            left, upper, right, and lower pixel coordinate. See
            :ref:`coordinate-system`. If the image is completely empty, this
@@ -1315,7 +1323,7 @@ class Image:
         """
 
         self.load()
-        return self.im.getbbox()
+        return self.im.getbbox(alpha_only)
 
     def getcolors(self, maxcolors=256):
         """
@@ -1386,7 +1394,7 @@ class Image:
 
     def _getxmp(self, xmp_tags):
         def get_name(tag):
-            return tag.split("}")[1]
+            return re.sub("^{[^}]+}", "", tag)
 
         def get_value(element):
             value = {get_name(k): v for k, v in element.attrib.items()}
@@ -1532,6 +1540,24 @@ class Image:
             rawmode = mode
         return list(self.im.getpalette(mode, rawmode))
 
+    @property
+    def has_transparency_data(self) -> bool:
+        """
+        Determine if an image has transparency data, whether in the form of an
+        alpha channel, a palette with an alpha channel, or a "transparency" key
+        in the info dictionary.
+
+        Note the image might still appear solid, if all of the values shown
+        within are opaque.
+
+        :returns: A boolean.
+        """
+        return (
+            self.mode in ("LA", "La", "PA", "RGBA", "RGBa")
+            or (self.mode == "P" and self.palette.mode.endswith("A"))
+            or "transparency" in self.info
+        )
+
     def apply_transparency(self):
         """
         If a P mode image has a "transparency" key in the info dictionary,
@@ -1568,7 +1594,7 @@ class Image:
         self.load()
         if self.pyaccess:
             return self.pyaccess.getpixel(xy)
-        return self.im.getpixel(xy)
+        return self.im.getpixel(tuple(xy))
 
     def getprojection(self):
         """
@@ -1846,7 +1872,7 @@ class Image:
                         raise ValueError from e  # sanity check
                     self.im = im
                 self.pyaccess = None
-                self.mode = self.im.mode
+                self._mode = self.im.mode
             except KeyError as e:
                 msg = "illegal image mode"
                 raise ValueError(msg) from e
@@ -1924,7 +1950,7 @@ class Image:
             if not isinstance(data, bytes):
                 data = bytes(data)
             palette = ImagePalette.raw(rawmode, data)
-        self.mode = "PA" if "A" in self.mode else "P"
+        self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
         self.palette.mode = "RGB"
         self.load()  # install new palette
@@ -2032,7 +2058,7 @@ class Image:
         mapping_palette = bytearray(new_positions)
 
         m_im = self.copy()
-        m_im.mode = "P"
+        m_im._mode = "P"
 
         m_im.palette = ImagePalette.ImagePalette(
             palette_mode, palette=mapping_palette * bands
@@ -2460,8 +2486,8 @@ class Image:
         The image is first saved to a temporary file. By default, it will be in
         PNG format.
 
-        On Unix, the image is then opened using the **display**, **eog** or
-        **xv** utility, depending on which one can be found.
+        On Unix, the image is then opened using the **xdg-open**, **display**,
+        **gm**, **eog** or **xv** utility, depending on which one can be found.
 
         On macOS, the image is opened with the native Preview application.
 
@@ -2607,7 +2633,7 @@ class Image:
 
             self.im = im.im
             self._size = size
-            self.mode = self.im.mode
+            self._mode = self.im.mode
 
         self.readonly = 0
         self.pyaccess = None
@@ -2891,7 +2917,7 @@ def new(mode, size, color=0):
     :param color: What color to use for the image.  Default is black.
        If given, this should be a single integer or floating point value
        for single-band modes, and a tuple for multi-band modes (one value
-       per band).  When creating RGB images, you can also use color
+       per band).  When creating RGB or HSV images, you can also use color
        strings as supported by the ImageColor module.  If the color is
        None, the image is not initialised.
     :returns: An :py:class:`~PIL.Image.Image` object.
@@ -3003,7 +3029,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
         if args == ():
             args = mode, 0, 1
         if args[0] in _MAPMODES:
-            im = new(mode, (1, 1))
+            im = new(mode, (0, 0))
             im = im._new(core.map_buffer(data, size, decoder_name, 0, args))
             if mode == "P":
                 from . import ImagePalette
@@ -3150,7 +3176,7 @@ def _decompression_bomb_check(size):
     if MAX_IMAGE_PIXELS is None:
         return
 
-    pixels = size[0] * size[1]
+    pixels = max(1, size[0]) * max(1, size[1])
 
     if pixels > 2 * MAX_IMAGE_PIXELS:
         msg = (
@@ -3180,7 +3206,8 @@ def open(fp, mode="r", formats=None):
     :param fp: A filename (string), pathlib.Path object or a file object.
        The file object must implement ``file.read``,
        ``file.seek``, and ``file.tell`` methods,
-       and be opened in binary mode.
+       and be opened in binary mode. The file object will also seek to zero
+       before reading.
     :param mode: The mode.  If given, this argument must be "r".
     :param formats: A list or tuple of formats to attempt to load the file in.
        This can be used to restrict the set of formats checked.
@@ -3409,8 +3436,12 @@ def register_open(id, factory, accept=None):
 
 def register_mime(id, mimetype):
     """
-    Registers an image MIME type.  This function should not be used
-    in application code.
+    Registers an image MIME type by populating ``Image.MIME``. This function
+    should not be used in application code.
+
+    ``Image.MIME`` provides a mapping from image format identifiers to mime
+    formats, but :py:meth:`~PIL.ImageFile.ImageFile.get_format_mimetype` can
+    provide a different result for specific images.
 
     :param id: An image format identifier.
     :param mimetype: The image MIME type for this format.

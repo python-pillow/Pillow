@@ -22,6 +22,8 @@
 import logging
 import sys
 
+from ._deprecate import deprecate
+
 try:
     from cffi import FFI
 
@@ -47,6 +49,7 @@ logger = logging.getLogger(__name__)
 
 class PyAccess:
     def __init__(self, img, readonly=False):
+        deprecate("PyAccess", 11)
         vals = dict(img.im.unsafe_ptrs)
         self.readonly = readonly
         self.image8 = ffi.cast("unsigned char **", vals["image8"])

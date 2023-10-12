@@ -490,6 +490,8 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
 
     if (strcmp(im->mode, "RGBA") == 0) {
         image->comps[3].alpha = 1;
+    } else if (strcmp(im->mode, "LA") == 0) {
+        image->comps[1].alpha = 1;
     }
 
     opj_set_error_handler(codec, j2k_error, context);

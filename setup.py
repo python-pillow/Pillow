@@ -39,7 +39,7 @@ TIFF_ROOT = None
 ZLIB_ROOT = None
 FUZZING_BUILD = "LIB_FUZZING_ENGINE" in os.environ
 
-if sys.platform == "win32" and sys.version_info >= (3, 12):
+if sys.platform == "win32" and sys.version_info >= (3, 13):
     import atexit
 
     atexit.register(
@@ -137,7 +137,6 @@ class RequiredDependencyException(Exception):
 
 
 PLATFORM_MINGW = os.name == "nt" and "GCC" in sys.version
-PLATFORM_PYPY = hasattr(sys, "pypy_version_info")
 
 
 def _dbg(s, tp=None):
@@ -515,6 +514,7 @@ class pil_build_ext(build_ext):
 
         elif sys.platform == "cygwin":
             # pythonX.Y.dll.a is in the /usr/lib/pythonX.Y/config directory
+            self.compiler.shared_lib_extension = ".dll.a"
             _add_directory(
                 library_dirs,
                 os.path.join(
@@ -816,6 +816,15 @@ class pil_build_ext(build_ext):
 
         libs = self.add_imaging_libs.split()
         defs = []
+        if feature.tiff:
+            libs.append(feature.tiff)
+            defs.append(("HAVE_LIBTIFF", None))
+            if sys.platform == "win32":
+                # This define needs to be defined if-and-only-if it was defined
+                # when compiling LibTIFF. LibTIFF doesn't expose it in `tiffconf.h`,
+                # so we have to guess; by default it is defined in all Windows builds.
+                # See #4237, #5243, #5359 for more information.
+                defs.append(("USE_WIN32_FILEIO", None))
         if feature.jpeg:
             libs.append(feature.jpeg)
             defs.append(("HAVE_LIBJPEG", None))
@@ -830,15 +839,6 @@ class pil_build_ext(build_ext):
         if feature.imagequant:
             libs.append(feature.imagequant)
             defs.append(("HAVE_LIBIMAGEQUANT", None))
-        if feature.tiff:
-            libs.append(feature.tiff)
-            defs.append(("HAVE_LIBTIFF", None))
-            if sys.platform == "win32":
-                # This define needs to be defined if-and-only-if it was defined
-                # when compiling LibTIFF. LibTIFF doesn't expose it in `tiffconf.h`,
-                # so we have to guess; by default it is defined in all Windows builds.
-                # See #4237, #5243, #5359 for more information.
-                defs.append(("USE_WIN32_FILEIO", None))
         if feature.xcb:
             libs.append(feature.xcb)
             defs.append(("HAVE_XCB", None))
@@ -847,14 +847,7 @@ class pil_build_ext(build_ext):
         if struct.unpack("h", b"\0\1")[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
-        if (
-            sys.platform == "win32"
-            and sys.version_info < (3, 9)
-            and not (PLATFORM_PYPY or PLATFORM_MINGW)
-        ):
-            defs.append(("PILLOW_VERSION", f'"\\"{PILLOW_VERSION}\\""'))
-        else:
-            defs.append(("PILLOW_VERSION", f'"{PILLOW_VERSION}"'))
+        defs.append(("PILLOW_VERSION", f'"{PILLOW_VERSION}"'))
 
         self._update_extension("PIL._imaging", libs, defs)
 

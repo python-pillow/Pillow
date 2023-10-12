@@ -51,7 +51,7 @@ class GdImageFile(ImageFile.ImageFile):
             msg = "Not a valid GD 2.x .gd file"
             raise SyntaxError(msg)
 
-        self.mode = "L"  # FIXME: "P"
+        self._mode = "L"  # FIXME: "P"
         self._size = i16(s, 2), i16(s, 4)
 
         true_color = s[6]

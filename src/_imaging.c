@@ -475,8 +475,10 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
         case IMAGING_TYPE_FLOAT32:
             return PyFloat_FromDouble(pixel.f);
         case IMAGING_TYPE_SPECIAL:
-            if (strncmp(im->mode, "I;16", 4) == 0) {
+            if (im->bands == 1) {
                 return PyLong_FromLong(pixel.h);
+            } else {
+                return Py_BuildValue("BBB", pixel.b[0], pixel.b[1], pixel.b[2]);
             }
             break;
     }
@@ -599,7 +601,7 @@ getink(PyObject *color, Imaging im, char *ink) {
                 } else if (tupleSize != 3) {
                     PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or three elements");
                     return NULL;
-                } else if (!PyArg_ParseTuple(color, "Lii", &r, &g, &b)) {
+                } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
                     return NULL;
                 }
                 if (!strcmp(im->mode, "BGR;15")) {
@@ -1075,9 +1077,9 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
-    float radius = 0;
+    float xradius, yradius;
     int passes = 3;
-    if (!PyArg_ParseTuple(args, "f|i", &radius, &passes)) {
+    if (!PyArg_ParseTuple(args, "(ff)|i", &xradius, &yradius, &passes)) {
         return NULL;
     }
 
@@ -1087,7 +1089,7 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!ImagingGaussianBlur(imOut, imIn, radius, passes)) {
+    if (!ImagingGaussianBlur(imOut, imIn, xradius, yradius, passes)) {
         ImagingDelete(imOut);
         return NULL;
     }
@@ -1571,21 +1573,46 @@ if (PySequence_Check(op)) { \
                 PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
-            int endian = strncmp(image->mode, "I;16", 4) == 0 ? (strcmp(image->mode, "I;16B") == 0 ? 2 : 1) : 0;
             double value;
-            for (i = x = y = 0; i < n; i++) {
-                set_value_to_item(seq, i);
-                if (scale != 1.0 || offset != 0.0) {
-                    value = value * scale + offset;
+            if (image->bands == 1) {
+                int bigendian;
+                if (image->type == IMAGING_TYPE_SPECIAL) {
+                    // I;16*
+                    bigendian = strcmp(image->mode, "I;16B") == 0;
                 }
-                if (endian == 0) {
-                    image->image8[y][x] = (UINT8)CLIP8(value);
-                } else {
-                    image->image8[y][x * 2 + (endian == 2 ? 1 : 0)] = CLIP8((int)value % 256);
-                    image->image8[y][x * 2 + (endian == 2 ? 0 : 1)] = CLIP8((int)value >> 8);
+                for (i = x = y = 0; i < n; i++) {
+                    set_value_to_item(seq, i);
+                    if (scale != 1.0 || offset != 0.0) {
+                        value = value * scale + offset;
+                    }
+                    if (image->type == IMAGING_TYPE_SPECIAL) {
+                        image->image8[y][x * 2 + (bigendian ? 1 : 0)] = CLIP8((int)value % 256);
+                        image->image8[y][x * 2 + (bigendian ? 0 : 1)] = CLIP8((int)value >> 8);
+                    } else {
+                        image->image8[y][x] = (UINT8)CLIP8(value);
+                    }
+                    if (++x >= (int)image->xsize) {
+                        x = 0, y++;
+                    }
                 }
-                if (++x >= (int)image->xsize) {
-                    x = 0, y++;
+            } else {
+                // BGR;*
+                int b;
+                for (i = x = y = 0; i < n; i++) {
+                    char ink[4];
+
+                    op = PySequence_Fast_GET_ITEM(seq, i);
+                    if (!op || !getink(op, image, ink)) {
+                        Py_DECREF(seq);
+                        return NULL;
+                    }
+                    /* FIXME: what about scale and offset? */
+                    for (b = 0; b < image->pixelsize; b++) {
+                        image->image8[y][x * image->pixelsize + b] = ink[b];
+                    }
+                    if (++x >= (int)image->xsize) {
+                        x = 0, y++;
+                    }
                 }
             }
             PyErr_Clear(); /* Avoid weird exceptions */
@@ -2131,9 +2158,9 @@ _box_blur(ImagingObject *self, PyObject *args) {
     Imaging imIn;
     Imaging imOut;
 
-    float radius;
+    float xradius, yradius;
     int n = 1;
-    if (!PyArg_ParseTuple(args, "f|i", &radius, &n)) {
+    if (!PyArg_ParseTuple(args, "(ff)|i", &xradius, &yradius, &n)) {
         return NULL;
     }
 
@@ -2143,7 +2170,7 @@ _box_blur(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!ImagingBoxBlur(imOut, imIn, radius, n)) {
+    if (!ImagingBoxBlur(imOut, imIn, xradius, yradius, n)) {
         ImagingDelete(imOut);
         return NULL;
     }
@@ -2159,9 +2186,15 @@ _isblock(ImagingObject *self) {
 }
 
 static PyObject *
-_getbbox(ImagingObject *self) {
+_getbbox(ImagingObject *self, PyObject *args) {
     int bbox[4];
-    if (!ImagingGetBBox(self->image, bbox)) {
+
+    int alpha_only = 1;
+    if (!PyArg_ParseTuple(args, "|i", &alpha_only)) {
+        return NULL;
+    }
+
+    if (!ImagingGetBBox(self->image, bbox, alpha_only)) {
         Py_INCREF(Py_None);
         return Py_None;
     }
@@ -3573,7 +3606,7 @@ static struct PyMethodDef methods[] = {
 
     {"isblock", (PyCFunction)_isblock, METH_NOARGS},
 
-    {"getbbox", (PyCFunction)_getbbox, METH_NOARGS},
+    {"getbbox", (PyCFunction)_getbbox, METH_VARARGS},
     {"getcolors", (PyCFunction)_getcolors, METH_VARARGS},
     {"getextrema", (PyCFunction)_getextrema, METH_NOARGS},
     {"getprojection", (PyCFunction)_getprojection, METH_NOARGS},
@@ -3719,18 +3752,18 @@ static PySequenceMethods image_as_sequence = {
 
 static PyTypeObject Imaging_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingCore", /*tp_name*/
-    sizeof(ImagingObject),                        /*tp_size*/
+    sizeof(ImagingObject),                        /*tp_basicsize*/
     0,                                            /*tp_itemsize*/
     /* methods */
     (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_print*/
+    0,                    /*tp_vectorcall_offset*/
     0,                    /*tp_getattr*/
     0,                    /*tp_setattr*/
-    0,                    /*tp_compare*/
+    0,                    /*tp_as_async*/
     0,                    /*tp_repr*/
-    0,                    /*tp_as_number */
-    &image_as_sequence,   /*tp_as_sequence */
-    0,                    /*tp_as_mapping */
+    0,                    /*tp_as_number*/
+    &image_as_sequence,   /*tp_as_sequence*/
+    0,                    /*tp_as_mapping*/
     0,                    /*tp_hash*/
     0,                    /*tp_call*/
     0,                    /*tp_str*/
@@ -3754,18 +3787,18 @@ static PyTypeObject Imaging_Type = {
 
 static PyTypeObject ImagingFont_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingFont", /*tp_name*/
-    sizeof(ImagingFontObject),                    /*tp_size*/
+    sizeof(ImagingFontObject),                    /*tp_basicsize*/
     0,                                            /*tp_itemsize*/
     /* methods */
     (destructor)_font_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
+    0,                         /*tp_vectorcall_offset*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
+    0,                         /*tp_as_async*/
     0,                         /*tp_repr*/
-    0,                         /*tp_as_number */
-    0,                         /*tp_as_sequence */
-    0,                         /*tp_as_mapping */
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
     0,                         /*tp_hash*/
     0,                         /*tp_call*/
     0,                         /*tp_str*/
@@ -3787,18 +3820,18 @@ static PyTypeObject ImagingFont_Type = {
 
 static PyTypeObject ImagingDraw_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingDraw", /*tp_name*/
-    sizeof(ImagingDrawObject),                    /*tp_size*/
+    sizeof(ImagingDrawObject),                    /*tp_basicsize*/
     0,                                            /*tp_itemsize*/
     /* methods */
     (destructor)_draw_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
+    0,                         /*tp_vectorcall_offset*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
+    0,                         /*tp_as_async*/
     0,                         /*tp_repr*/
-    0,                         /*tp_as_number */
-    0,                         /*tp_as_sequence */
-    0,                         /*tp_as_mapping */
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
     0,                         /*tp_hash*/
     0,                         /*tp_call*/
     0,                         /*tp_str*/
@@ -3829,19 +3862,19 @@ static PyMappingMethods pixel_access_as_mapping = {
 /* type description */
 
 static PyTypeObject PixelAccess_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PixelAccess",
-    sizeof(PixelAccessObject),
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0) "PixelAccess", /*tp_name*/
+    sizeof(PixelAccessObject),                    /*tp_basicsize*/
+    0,                                            /*tp_itemsize*/
     /* methods */
     (destructor)pixel_access_dealloc, /*tp_dealloc*/
-    0,                                /*tp_print*/
+    0,                                /*tp_vectorcall_offset*/
     0,                                /*tp_getattr*/
     0,                                /*tp_setattr*/
-    0,                                /*tp_compare*/
+    0,                                /*tp_as_async*/
     0,                                /*tp_repr*/
-    0,                                /*tp_as_number */
-    0,                                /*tp_as_sequence */
-    &pixel_access_as_mapping,         /*tp_as_mapping */
+    0,                                /*tp_as_number*/
+    0,                                /*tp_as_sequence*/
+    &pixel_access_as_mapping,         /*tp_as_mapping*/
     0                                 /*tp_hash*/
 };
 

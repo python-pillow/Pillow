@@ -4,11 +4,19 @@ on:
   push:
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   pull_request:
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   workflow_dispatch:
 
 permissions:
@@ -38,8 +46,9 @@ jobs:
           centos-7-amd64,
           centos-stream-8-amd64,
           centos-stream-9-amd64,
-          debian-11-bullseye-x86,
+          debian-11-bullseye-amd64,
           debian-12-bookworm-x86,
+          debian-12-bookworm-amd64,
           fedora-37-amd64,
           fedora-38-amd64,
           gentoo,
@@ -58,7 +67,7 @@ jobs:
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
