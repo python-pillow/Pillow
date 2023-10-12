@@ -374,10 +374,10 @@ class DdsImageFile(ImageFile.ImageFile):
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             if bitcount == 24:
                 rawmode = masks[0x00FF0000] + masks[0x0000FF00] + masks[0x000000FF]
-                self.mode = "RGB"
+                self._mode = "RGB"
                 self.tile = [("raw", extents, 0, (rawmode[::-1], 0, 1))]
             elif bitcount == 32 and pfflags & DDPF.ALPHAPIXELS:
-                self.mode = "RGBA"
+                self._mode = "RGBA"
                 rawmode = (
                     masks[0xFF000000]
                     + masks[0x00FF0000]
@@ -390,17 +390,17 @@ class DdsImageFile(ImageFile.ImageFile):
                 raise OSError(msg)
         elif pfflags & DDPF.ALPHA:
             if bitcount == 8:
-                self.mode = "L"
+                self._mode = "L"
                 self.tile = [("raw", extents, 0, ("L", 0, 1))]
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
                 raise OSError(msg)
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
-                self.mode = "L"
+                self._mode = "L"
                 self.tile = [("raw", extents, 0, ("L", 0, 1))]
             elif bitcount == 16 and pfflags & DDPF.ALPHAPIXELS:
-                self.mode = "LA"
+                self._mode = "LA"
                 self.tile = [("raw", extents, 0, ("LA", 0, 1))]
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
@@ -417,31 +417,31 @@ class DdsImageFile(ImageFile.ImageFile):
                 msg = f"Unimplemented pixel format {repr(fourcc_)}"
                 raise NotImplementedError(msg)
             if fourcc == D3DFMT.DXT1:
-                self.mode = "RGBA"
+                self._mode = "RGBA"
                 self.pixel_format = "DXT1"
                 tile = Image._Tile("bcn", extents, data_offs, (1, self.pixel_format))
             elif fourcc == D3DFMT.DXT3:
-                self.mode = "RGBA"
+                self._mode = "RGBA"
                 self.pixel_format = "DXT3"
                 tile = Image._Tile("bcn", extents, data_offs, (2, self.pixel_format))
             elif fourcc == D3DFMT.DXT5:
-                self.mode = "RGBA"
+                self._mode = "RGBA"
                 self.pixel_format = "DXT5"
                 tile = Image._Tile("bcn", extents, data_offs, (3, self.pixel_format))
             elif fourcc == D3DFMT.ATI1 or fourcc == D3DFMT.BC4U:
-                self.mode = "L"
+                self._mode = "L"
                 self.pixel_format = "BC4"
                 tile = Image._Tile("bcn", extents, data_offs, (4, self.pixel_format))
             elif fourcc == D3DFMT.BC5S:
-                self.mode = "RGB"
+                self._mode = "RGB"
                 self.pixel_format = "BC5S"
                 tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
             elif fourcc == D3DFMT.BC5U:
-                self.mode = "RGB"
+                self._mode = "RGB"
                 self.pixel_format = "BC5U"
                 tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
             elif fourcc == D3DFMT.ATI2:
-                self.mode = "RGB"
+                self._mode = "RGB"
                 self.pixel_format = "BC5"
                 tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
             elif fourcc == D3DFMT.DX10:
@@ -454,43 +454,43 @@ class DdsImageFile(ImageFile.ImageFile):
                     DXGI_FORMAT.BC1_UNORM_SRGB,
                     DXGI_FORMAT.BC1_TYPELESS,
                 ):
-                    self.mode = "RGBA"
+                    self._mode = "RGBA"
                     self.pixel_format = "BC1"
                     tile = Image._Tile(
                         "bcn", extents, data_offs, (1, self.pixel_format)
                     )
                 elif dxgi_format in (DXGI_FORMAT.BC5_TYPELESS, DXGI_FORMAT.BC5_UNORM):
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                     self.pixel_format = "BC5"
                     tile = Image._Tile(
                         "bcn", extents, data_offs, (5, self.pixel_format)
                     )
                 elif dxgi_format == DXGI_FORMAT.BC5_SNORM:
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                     self.pixel_format = "BC5S"
                     tile = Image._Tile(
                         "bcn", extents, data_offs, (5, self.pixel_format)
                     )
                 elif dxgi_format == DXGI_FORMAT.BC6H_UF16:
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                     self.pixel_format = "BC6H"
                     tile = Image._Tile(
                         "bcn", extents, data_offs, (6, self.pixel_format)
                     )
                 elif dxgi_format == DXGI_FORMAT.BC6H_SF16:
-                    self.mode = "RGB"
+                    self._mode = "RGB"
                     self.pixel_format = "BC6HS"
                     tile = Image._Tile(
                         "bcn", extents, data_offs, (6, self.pixel_format)
                     )
                 elif dxgi_format in (DXGI_FORMAT.BC7_TYPELESS, DXGI_FORMAT.BC7_UNORM):
-                    self.mode = "RGBA"
+                    self._mode = "RGBA"
                     self.pixel_format = "BC7"
                     tile = Image._Tile(
                         "bcn", extents, data_offs, (7, self.pixel_format)
                     )
                 elif dxgi_format == DXGI_FORMAT.BC7_UNORM_SRGB:
-                    self.mode = "RGBA"
+                    self._mode = "RGBA"
                     self.pixel_format = "BC7"
                     self.info["gamma"] = 1 / 2.2
                     tile = Image._Tile(
@@ -501,7 +501,7 @@ class DdsImageFile(ImageFile.ImageFile):
                     DXGI_FORMAT.R8G8B8A8_UNORM,
                     DXGI_FORMAT.R8G8B8A8_UNORM_SRGB,
                 ):
-                    self.mode = "RGBA"
+                    self._mode = "RGBA"
                     tile = Image._Tile("raw", extents, 0, ("RGBA", 0, 1))
                     if dxgi_format == DXGI_FORMAT.R8G8B8A8_UNORM_SRGB:
                         self.info["gamma"] = 1 / 2.2
