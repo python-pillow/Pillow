@@ -933,9 +933,9 @@ class Image:
                 msg = "illegal conversion"
                 raise ValueError(msg)
             im = self.im.convert_matrix(mode, matrix)
-            new = self._new(im)
+            new_im = self._new(im)
             if has_transparency and self.im.bands == 3:
-                transparency = new.info["transparency"]
+                transparency = new_im.info["transparency"]
 
                 def convert_transparency(m, v):
                     v = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
@@ -948,8 +948,8 @@ class Image:
                         convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
                         for i in range(0, len(transparency))
                     )
-                new.info["transparency"] = transparency
-            return new
+                new_im.info["transparency"] = transparency
+            return new_im
 
         if mode == "P" and self.mode == "RGBA":
             return self.quantize(colors)
@@ -980,7 +980,7 @@ class Image:
                 else:
                     # get the new transparency color.
                     # use existing conversions
-                    trns_im = Image()._new(core.new(self.mode, (1, 1)))
+                    trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
@@ -1021,23 +1021,25 @@ class Image:
 
         if mode == "P" and palette == Palette.ADAPTIVE:
             im = self.im.quantize(colors)
-            new = self._new(im)
+            new_im = self._new(im)
             from . import ImagePalette
 
-            new.palette = ImagePalette.ImagePalette("RGB", new.im.getpalette("RGB"))
+            new_im.palette = ImagePalette.ImagePalette(
+                "RGB", new_im.im.getpalette("RGB")
+            )
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
                 # The transparency would be totally off in that case.
-                del new.info["transparency"]
+                del new_im.info["transparency"]
             if trns is not None:
                 try:
-                    new.info["transparency"] = new.palette.getcolor(trns, new)
+                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
                 except Exception:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
-                    del new.info["transparency"]
+                    del new_im.info["transparency"]
                     warnings.warn("Couldn't allocate palette entry for transparency")
-            return new
+            return new_im
 
         if "LAB" in (self.mode, mode):
             other_mode = mode if self.mode == "LAB" else self.mode
