@@ -3751,6 +3751,7 @@ class Exif(MutableMapping):
             self.endian = self._info._endian
         if offset is None:
             offset = self._info.next
+        self.fp.tell()
         self.fp.seek(offset)
         self._info.load(self.fp)
 
