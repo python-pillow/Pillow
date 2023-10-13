@@ -41,6 +41,15 @@ to be specified, rather than a single number for both dimensions. ::
 API Additions
 =============
 
+ImageOps.cover
+^^^^^^^^^^^^^^
+
+Returns a resized version of the image, so that the requested size is covered,
+while maintaining the original aspect ratio.
+
+See :ref:`relative-resize` for a comparison between this and similar ``ImageOps``
+methods.
+
 EpsImagePlugin.gs_binary
 ^^^^^^^^^^^^^^^^^^^^^^^^
 

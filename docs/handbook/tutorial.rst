@@ -268,6 +268,37 @@ true, to provide for the same changes to the image's size.
 A more general form of image transformations can be carried out via the
 :py:meth:`~PIL.Image.Image.transform` method.
 
+Relative resizing
+^^^^^^^^^^^^^^^^^
+
+Instead of calculating the size of the new image when resizing, you can also
+choose to resize relative to a given size.
+
+::
+
+    from PIL import Image, ImageOps
+    size = (100, 150)
+    with Image.open("Tests/images/hopper.png") as im:
+        ImageOps.contain(im, size).save("imageops_contain.png")
+        ImageOps.cover(im, size).save("imageops_cover.png")
+        ImageOps.fit(im, size).save("imageops_fit.png")
+        ImageOps.pad(im, size, color="#f00").save("imageops_pad.png")
+
+        # thumbnail() can also be used,
+        # but will modify the image object in place
+        im.thumbnail(size)
+        im.save("imageops_thumbnail.png")
+
++----------------+-------------------------------------------+--------------------------------------------+------------------------------------------+----------------------------------------+----------------------------------------+
+|                | :py:meth:`~PIL.Image.Image.thumbnail`     | :py:meth:`~PIL.ImageOps.contain`           | :py:meth:`~PIL.ImageOps.cover`           | :py:meth:`~PIL.ImageOps.fit`           | :py:meth:`~PIL.ImageOps.pad`           |
++================+===========================================+============================================+==========================================+========================================+========================================+
+|Given size      | ``(150, 100)``                            | ``(150, 100)``                             | ``(150, 150)``                           | ``(150, 100)``                         | ``(150, 100)``                         |
++----------------+-------------------------------------------+--------------------------------------------+------------------------------------------+----------------------------------------+----------------------------------------+
+|Resulting image | .. image:: ../example/image_thumbnail.png | .. image:: ../example/imageops_contain.png | .. image:: ../example/imageops_cover.png | .. image:: ../example/imageops_fit.png | .. image:: ../example/imageops_pad.png |
++----------------+-------------------------------------------+--------------------------------------------+------------------------------------------+----------------------------------------+----------------------------------------+
+|Resulting size  | ``100×100``                               | ``100×100``                                | ``150×150``                              | ``150×100``                            | ``150×100``                            |
++----------------+-------------------------------------------+--------------------------------------------+------------------------------------------+----------------------------------------+----------------------------------------+
+
 .. _color-transforms:
 
 Color transforms
