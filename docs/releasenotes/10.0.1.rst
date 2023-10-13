@@ -1,0 +1,14 @@
+10.0.1
+------
+
+Security
+========
+
+This release addresses :cve:`2023-4863`, by providing an updated install script and
+updated wheels to include libwebp 1.3.2, preventing a potential heap buffer overflow
+in WebP.
+
+Updated tests to pass with latest zlib version
+==============================================
+
+The release of zlib 1.3 caused one of the tests in the Pillow test suite to fail.

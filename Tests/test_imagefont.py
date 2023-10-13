@@ -141,7 +141,9 @@ def test_I16(font):
     draw = ImageDraw.Draw(im)
 
     txt = "Hello World!"
-    draw.text((10, 10), txt, font=font)
+    draw.text((10, 10), txt, fill=0xFFFE, font=font)
+
+    assert im.getpixel((12, 14)) == 0xFFFE
 
     target = "Tests/images/transparent_background_text_L.png"
     assert_image_similar_tofile(im.convert("L"), target, 0.01)

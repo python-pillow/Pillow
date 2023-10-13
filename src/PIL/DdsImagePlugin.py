@@ -13,7 +13,7 @@ Full text of the CC0 license:
 import struct
 from io import BytesIO
 
-from . import Image, ImageFile
+from . import Image, ImageFile, ImagePalette
 from ._binary import o32le as o32
 
 # Magic ("DDS ")
@@ -157,6 +157,10 @@ class DdsImageFile(ImageFile.ImageFile):
             rawmode += masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
 
             self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
+        elif pfflags & DDPF_PALETTEINDEXED8:
+            self._mode = "P"
+            self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
+            self.tile = [("raw", (0, 0) + self.size, 0, "L")]
         else:
             data_start = header_size + 4
             n = 0
@@ -173,7 +177,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.pixel_format = "BC4"
                 n = 4
                 self._mode = "L"
-            elif fourcc == b"ATI2":
+            elif fourcc in (b"ATI2", b"BC5U"):
                 self.pixel_format = "BC5"
                 n = 5
                 self._mode = "RGB"

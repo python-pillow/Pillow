@@ -10,7 +10,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/3154
 * [ ] Develop and prepare release in `main` branch.
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `main` branch.
-* [ ] Check that all of the wheel builds [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels) pass the tests in Travis CI and GitHub Actions.
+* [ ] Check that all of the wheel builds pass the tests in the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml) and [Travis CI](https://app.travis-ci.com/github/python-pillow/pillow) jobs by manually triggering them.
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
@@ -99,17 +99,14 @@ Released as needed privately to individual vendors for critical security-related
 ## Binary Distributions
 
 ### macOS and Linux
-* [ ] Use the [Pillow Wheel Builder](https://github.com/python-pillow/pillow-wheels):
+* [ ] Download wheels from the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
+  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli):
   ```bash
-  git clone https://github.com/python-pillow/pillow-wheels
-  cd pillow-wheels
-  ./update-pillow-tag.sh [[release tag]]
+  gh run download --dir dist
+  # select dist-x.y.z
   ```
-* [ ] Download wheels from the [Pillow Wheel Builder release](https://github.com/python-pillow/pillow-wheels/releases)
-  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli) from the main repo:
-  ```bash
-  gh release download --dir dist --pattern "*.whl" --repo python-pillow/pillow-wheels
-  ```
+* [ ] Download the Linux aarch64 wheels created by Travis CI from [GitHub releases](https://github.com/python-pillow/Pillow/releases)
+  and copy into `dist`.
 
 ### Windows
 * [ ] Download the artifacts from the [GitHub Actions "Test Windows" workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml)

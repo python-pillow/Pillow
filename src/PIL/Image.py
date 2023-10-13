@@ -298,7 +298,11 @@ _initialized = 0
 
 
 def preinit():
-    """Explicitly load standard file format drivers."""
+    """
+    Explicitly loads BMP, GIF, JPEG, PPM and PPM file format drivers.
+
+    It is called when opening or saving images.
+    """
 
     global _initialized
     if _initialized >= 1:
@@ -334,11 +338,6 @@ def preinit():
         assert PngImagePlugin
     except ImportError:
         pass
-    # try:
-    #     import TiffImagePlugin
-    #     assert TiffImagePlugin
-    # except ImportError:
-    #     pass
 
     _initialized = 1
 
@@ -347,6 +346,9 @@ def init():
     """
     Explicitly initializes the Python Imaging Library. This function
     loads all available file format drivers.
+
+    It is called when opening or saving images if :py:meth:`~preinit()` is
+    insufficient, and by :py:meth:`~PIL.features.pilinfo`.
     """
 
     global _initialized
@@ -913,7 +915,7 @@ class Image:
 
         self.load()
 
-        has_transparency = self.info.get("transparency") is not None
+        has_transparency = "transparency" in self.info
         if not mode and self.mode == "P":
             # determine default mode
             if self.palette:
@@ -931,9 +933,9 @@ class Image:
                 msg = "illegal conversion"
                 raise ValueError(msg)
             im = self.im.convert_matrix(mode, matrix)
-            new = self._new(im)
+            new_im = self._new(im)
             if has_transparency and self.im.bands == 3:
-                transparency = new.info["transparency"]
+                transparency = new_im.info["transparency"]
 
                 def convert_transparency(m, v):
                     v = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
@@ -946,8 +948,8 @@ class Image:
                         convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
                         for i in range(0, len(transparency))
                     )
-                new.info["transparency"] = transparency
-            return new
+                new_im.info["transparency"] = transparency
+            return new_im
 
         if mode == "P" and self.mode == "RGBA":
             return self.quantize(colors)
@@ -978,7 +980,7 @@ class Image:
                 else:
                     # get the new transparency color.
                     # use existing conversions
-                    trns_im = Image()._new(core.new(self.mode, (1, 1)))
+                    trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
@@ -1019,23 +1021,25 @@ class Image:
 
         if mode == "P" and palette == Palette.ADAPTIVE:
             im = self.im.quantize(colors)
-            new = self._new(im)
+            new_im = self._new(im)
             from . import ImagePalette
 
-            new.palette = ImagePalette.ImagePalette("RGB", new.im.getpalette("RGB"))
+            new_im.palette = ImagePalette.ImagePalette(
+                "RGB", new_im.im.getpalette("RGB")
+            )
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
                 # The transparency would be totally off in that case.
-                del new.info["transparency"]
+                del new_im.info["transparency"]
             if trns is not None:
                 try:
-                    new.info["transparency"] = new.palette.getcolor(trns, new)
+                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
                 except Exception:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
-                    del new.info["transparency"]
+                    del new_im.info["transparency"]
                     warnings.warn("Couldn't allocate palette entry for transparency")
-            return new
+            return new_im
 
         if "LAB" in (self.mode, mode):
             other_mode = mode if self.mode == "LAB" else self.mode
@@ -1072,7 +1076,7 @@ class Image:
         if mode == "P" and palette != Palette.ADAPTIVE:
             from . import ImagePalette
 
-            new_im.palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
+            new_im.palette = ImagePalette.ImagePalette("RGB", im.getpalette("RGB"))
         if delete_trns:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
             del new_im.info["transparency"]
@@ -1383,7 +1387,7 @@ class Image:
 
     def _getxmp(self, xmp_tags):
         def get_name(tag):
-            return tag.split("}")[1]
+            return re.sub("^{[^}]+}", "", tag)
 
         def get_value(element):
             value = {get_name(k): v for k, v in element.attrib.items()}
@@ -1529,6 +1533,24 @@ class Image:
             rawmode = mode
         return list(self.im.getpalette(mode, rawmode))
 
+    @property
+    def has_transparency_data(self) -> bool:
+        """
+        Determine if an image has transparency data, whether in the form of an
+        alpha channel, a palette with an alpha channel, or a "transparency" key
+        in the info dictionary.
+
+        Note the image might still appear solid, if all of the values shown
+        within are opaque.
+
+        :returns: A boolean.
+        """
+        return (
+            self.mode in ("LA", "La", "PA", "RGBA", "RGBa")
+            or (self.mode == "P" and self.palette.mode.endswith("A"))
+            or "transparency" in self.info
+        )
+
     def apply_transparency(self):
         """
         If a P mode image has a "transparency" key in the info dictionary,
@@ -1565,7 +1587,7 @@ class Image:
         self.load()
         if self.pyaccess:
             return self.pyaccess.getpixel(xy)
-        return self.im.getpixel(xy)
+        return self.im.getpixel(tuple(xy))
 
     def getprojection(self):
         """
@@ -3000,7 +3022,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
         if args == ():
             args = mode, 0, 1
         if args[0] in _MAPMODES:
-            im = new(mode, (1, 1))
+            im = new(mode, (0, 0))
             im = im._new(core.map_buffer(data, size, decoder_name, 0, args))
             if mode == "P":
                 from . import ImagePalette
@@ -3407,8 +3429,12 @@ def register_open(id, factory, accept=None):
 
 def register_mime(id, mimetype):
     """
-    Registers an image MIME type.  This function should not be used
-    in application code.
+    Registers an image MIME type by populating ``Image.MIME``. This function
+    should not be used in application code.
+
+    ``Image.MIME`` provides a mapping from image format identifiers to mime
+    formats, but :py:meth:`~PIL.ImageFile.ImageFile.get_format_mimetype` can
+    provide a different result for specific images.
 
     :param id: An image format identifier.
     :param mimetype: The image MIME type for this format.
@@ -3725,6 +3751,7 @@ class Exif(MutableMapping):
             self.endian = self._info._endian
         if offset is None:
             offset = self._info.next
+        self.fp.tell()
         self.fp.seek(offset)
         self._info.load(self.fp)
 

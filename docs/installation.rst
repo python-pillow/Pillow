@@ -82,6 +82,8 @@ Install Pillow with :command:`pip`::
 
 .. tab:: Windows
 
+    .. warning:: Pillow > 9.5.0 no longer includes 32-bit wheels.
+
     We provide Pillow binaries for Windows compiled for the matrix of
     supported Pythons in 64-bit versions in the wheel format. These binaries include
     support for all optional libraries except libimagequant and libxcb. Raqm support
@@ -154,7 +156,7 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.5.1**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.6.0**
 
 * **libfreetype** provides type related services
 
@@ -180,7 +182,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.2**
+  * Pillow has been tested with libimagequant **2.6-4.2.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -498,11 +500,13 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
 |                                  | | versions                | | Pillow version | | processors |
 +==================================+===========================+==================+==============+
-| macOS 13 Ventura                 | 3.8, 3.9, 3.10, 3.11      | 10.0.0           |arm           |
-|                                  +---------------------------+------------------+              |
-|                                  | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.5.0            |              |
+| macOS 14 Sonoma                  | 3.8, 3.9, 3.10, 3.11      | 10.0.1           |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
-| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
+| macOS 13 Ventura                 | 3.8, 3.9, 3.10, 3.11      | 10.0.1           |arm           |
+|                                  +---------------------------+------------------+              |
+|                                  | 3.7                       | 9.5.0            |              |
++----------------------------------+---------------------------+------------------+--------------+
+| macOS 12 Monterey                | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
 +----------------------------------+---------------------------+------------------+--------------+
 | macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
 |                                  +---------------------------+------------------+--------------+

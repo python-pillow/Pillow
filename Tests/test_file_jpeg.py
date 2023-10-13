@@ -767,6 +767,13 @@ class TestFileJpeg:
             # This should return the default
             assert im.info.get("dpi") == (72, 72)
 
+    def test_dpi_exif_truncated(self):
+        # Arrange
+        with Image.open("Tests/images/truncated_exif_dpi.jpg") as im:
+            # Act / Assert
+            # This should return the default
+            assert im.info.get("dpi") == (72, 72)
+
     def test_no_dpi_in_exif(self):
         # Arrange
         # This is photoshop-200dpi.jpg with resolution removed from EXIF:
@@ -882,7 +889,10 @@ class TestFileJpeg:
     def test_getxmp(self):
         with Image.open("Tests/images/xmp_test.jpg") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()
@@ -904,6 +914,28 @@ class TestFileJpeg:
         if ElementTree is not None:
             with Image.open("Tests/images/hopper.jpg") as im:
                 assert im.getxmp() == {}
+
+    def test_getxmp_no_prefix(self):
+        with Image.open("Tests/images/xmp_no_prefix.jpg") as im:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im.getxmp() == {}
+            else:
+                assert im.getxmp() == {"xmpmeta": {"key": "value"}}
+
+    def test_getxmp_padded(self):
+        with Image.open("Tests/images/xmp_padded.jpg") as im:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im.getxmp() == {}
+            else:
+                assert im.getxmp() == {"xmpmeta": None}
 
     @pytest.mark.timeout(timeout=1)
     def test_eof(self):

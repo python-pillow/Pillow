@@ -673,10 +673,16 @@ def test_seek_after_close():
 
 
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
-def test_different_modes_in_later_frames(mode, tmp_path):
+@pytest.mark.parametrize("default_image", (True, False))
+def test_different_modes_in_later_frames(mode, default_image, tmp_path):
     test_file = str(tmp_path / "temp.png")
 
     im = Image.new("L", (1, 1))
-    im.save(test_file, save_all=True, append_images=[Image.new(mode, (1, 1))])
+    im.save(
+        test_file,
+        save_all=True,
+        default_image=default_image,
+        append_images=[Image.new(mode, (1, 1))],
+    )
     with Image.open(test_file) as reloaded:
         assert reloaded.mode == mode

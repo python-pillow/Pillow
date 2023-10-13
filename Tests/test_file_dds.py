@@ -16,6 +16,7 @@ TEST_FILE_DX10_BC5_TYPELESS = "Tests/images/bc5_typeless.dds"
 TEST_FILE_DX10_BC5_UNORM = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC5_SNORM = "Tests/images/bc5_snorm.dds"
 TEST_FILE_BC5S = "Tests/images/bc5s.dds"
+TEST_FILE_BC5U = "Tests/images/bc5u.dds"
 TEST_FILE_BC6H = "Tests/images/bc6h.dds"
 TEST_FILE_BC6HS = "Tests/images/bc6h_sf.dds"
 TEST_FILE_DX10_BC7 = "Tests/images/bc7-argb-8bpp_MipMaps-1.dds"
@@ -81,10 +82,18 @@ def test_sanity_ati1():
         assert_image_equal_tofile(im, TEST_FILE_ATI1.replace(".dds", ".png"))
 
 
-def test_sanity_ati2():
-    """Check ATI2 images can be opened"""
+@pytest.mark.parametrize(
+    "image_path",
+    (
+        TEST_FILE_ATI2,
+        # hexeditted to use BC5U FourCC
+        TEST_FILE_BC5U,
+    ),
+)
+def test_sanity_ati2_bc5u(image_path):
+    """Check ATI2 and BC5U images can be opened"""
 
-    with Image.open(TEST_FILE_ATI2) as im:
+    with Image.open(image_path) as im:
         im.load()
 
         assert im.format == "DDS"
@@ -287,6 +296,11 @@ def test_dxt5_colorblock_alpha_issue_4142():
         assert px[0] != 0
         assert px[1] != 0
         assert px[2] != 0
+
+
+def test_palette():
+    with Image.open("Tests/images/palette.dds") as im:
+        assert_image_equal_tofile(im, "Tests/images/transparent.gif")
 
 
 def test_unimplemented_pixel_format():
