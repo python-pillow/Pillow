@@ -514,23 +514,22 @@ class Image:
         self._exif = None
 
     @classmethod
-    def _init(cls):
+    def _init(cls, im):
         self = cls.__new__(cls)
         self._prepare()
+        self.im = im
+        self._mode = im.mode
+        self._size = im.size
+        if im.mode in ("P", "PA"):
+            from . import ImagePalette
+
+            self.palette = ImagePalette.ImagePalette()
         return self
 
     def _new(self, im):
-        new = Image._init()
-        new.im = im
-        new._mode = im.mode
-        new._size = im.size
-        if im.mode in ("P", "PA"):
-            if self.palette:
-                new.palette = self.palette.copy()
-            else:
-                from . import ImagePalette
-
-                new.palette = ImagePalette.ImagePalette()
+        new = Image._init(im)
+        if im.mode in ("P", "PA") and self.palette:
+            new.palette = self.palette.copy()
         new.info = self.info.copy()
         return new
 
@@ -2887,7 +2886,7 @@ class ImageTransformHandler:
 def _wedge():
     """Create greyscale wedge (for debugging only)"""
 
-    return Image._init()._new(core.wedge("L"))
+    return Image._init(core.wedge("L"))
 
 
 def _check_size(size):
@@ -2931,7 +2930,7 @@ def new(mode, size, color=0):
 
     if color is None:
         # don't initialize
-        return Image._init()._new(core.new(mode, size))
+        return Image._init(core.new(mode, size))
 
     if isinstance(color, str):
         # css3-style specifier
@@ -2940,14 +2939,17 @@ def new(mode, size, color=0):
 
         color = ImageColor.getcolor(color, mode)
 
-    im = Image._init()
+    rgb_color = None
     if mode == "P" and isinstance(color, (list, tuple)) and len(color) in [3, 4]:
         # RGB or RGBA value for a P image
-        from . import ImagePalette
+        rgb_color = color
 
-        im.palette = ImagePalette.ImagePalette()
-        color = im.palette.getcolor(color)
-    return im._new(core.fill(mode, size, color))
+        # This will be the first color allocated to the palette
+        color = 0
+    im = Image._init(core.fill(mode, size, color))
+    if rgb_color:
+        im.palette.getcolor(rgb_color)
+    return im
 
 
 def frombytes(mode, size, data, decoder_name="raw", *args):
@@ -3560,7 +3562,7 @@ def effect_mandelbrot(size, extent, quality):
        (x0, y0, x1, y1).
     :param quality: Quality.
     """
-    return Image._init()._new(core.effect_mandelbrot(size, extent, quality))
+    return Image._init(core.effect_mandelbrot(size, extent, quality))
 
 
 def effect_noise(size, sigma):
@@ -3571,7 +3573,7 @@ def effect_noise(size, sigma):
        (width, height).
     :param sigma: Standard deviation of noise.
     """
-    return Image._init()._new(core.effect_noise(size, sigma))
+    return Image._init(core.effect_noise(size, sigma))
 
 
 def linear_gradient(mode):
@@ -3580,7 +3582,7 @@ def linear_gradient(mode):
 
     :param mode: Input mode.
     """
-    return Image._init()._new(core.linear_gradient(mode))
+    return Image._init(core.linear_gradient(mode))
 
 
 def radial_gradient(mode):
@@ -3589,7 +3591,7 @@ def radial_gradient(mode):
 
     :param mode: Input mode.
     """
-    return Image._init()._new(core.radial_gradient(mode))
+    return Image._init(core.radial_gradient(mode))
 
 
 # --------------------------------------------------------------------
