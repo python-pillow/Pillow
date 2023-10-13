@@ -76,6 +76,15 @@ def test_mode_F():
     assert list(im.getdata()) == target
 
 
+@pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
+def test_mode_BGR(mode):
+    data = [(16, 32, 49), (32, 32, 98)]
+    im = Image.new(mode, (1, 2))
+    im.putdata(data)
+
+    assert list(im.getdata()) == data
+
+
 def test_array_B():
     # shouldn't segfault
     # see https://github.com/python-pillow/Pillow/issues/1008

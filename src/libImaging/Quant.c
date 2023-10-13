@@ -1825,6 +1825,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
         free(newData);
 
+        imOut->palette->size = (int)paletteLength;
         pp = imOut->palette->palette;
 
         for (i = j = 0; i < (int)paletteLength; i++) {
@@ -1832,16 +1833,9 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
             *pp++ = palette[i].c.g;
             *pp++ = palette[i].c.b;
             if (withAlpha) {
-                *pp++ = palette[i].c.a;
-            } else {
-                *pp++ = 255;
+                *pp = palette[i].c.a;
             }
-        }
-        for (; i < 256; i++) {
-            *pp++ = 0;
-            *pp++ = 0;
-            *pp++ = 0;
-            *pp++ = 255;
+            pp++;
         }
 
         if (withAlpha) {

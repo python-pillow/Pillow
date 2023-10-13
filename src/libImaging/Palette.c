@@ -39,11 +39,8 @@ ImagingPaletteNew(const char *mode) {
     strncpy(palette->mode, mode, IMAGING_MODE_LENGTH - 1);
     palette->mode[IMAGING_MODE_LENGTH - 1] = 0;
 
-    /* Initialize to ramp */
-    palette->size = 256;
+    palette->size = 0;
     for (i = 0; i < 256; i++) {
-        palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
-            palette->palette[i * 4 + 2] = (UINT8)i;
         palette->palette[i * 4 + 3] = 255; /* opaque */
     }
 
@@ -62,16 +59,10 @@ ImagingPaletteNewBrowser(void) {
         return NULL;
     }
 
-    /* Blank out unused entries */
     /* FIXME: Add 10-level windows palette here? */
 
-    for (i = 0; i < 10; i++) {
-        palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
-            palette->palette[i * 4 + 2] = 0;
-    }
-
     /* Simple 6x6x6 colour cube */
-
+    i = 10;
     for (b = 0; b < 256; b += 51) {
         for (g = 0; g < 256; g += 51) {
             for (r = 0; r < 256; r += 51) {
@@ -82,14 +73,9 @@ ImagingPaletteNewBrowser(void) {
             }
         }
     }
+    palette->size = i;
 
-    /* Blank out unused entries */
     /* FIXME: add 30-level greyscale wedge here? */
-
-    for (; i < 256; i++) {
-        palette->palette[i * 4 + 0] = palette->palette[i * 4 + 1] =
-            palette->palette[i * 4 + 2] = 0;
-    }
 
     return palette;
 }

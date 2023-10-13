@@ -41,6 +41,7 @@
 #define FLOOR(v) ((v) >= 0.0 ? (int)(v) : (int)floor(v))
 
 #define INK8(ink) (*(UINT8 *)ink)
+#define INK16(ink) (*(UINT16 *)ink)
 
 /*
  * Rounds around zero (up=away from zero, down=towards zero)
@@ -68,8 +69,13 @@ static inline void
 point8(Imaging im, int x, int y, int ink) {
     if (x >= 0 && x < im->xsize && y >= 0 && y < im->ysize) {
         if (strncmp(im->mode, "I;16", 4) == 0) {
-            im->image8[y][x * 2] = (UINT8)ink;
+#ifdef WORDS_BIGENDIAN
+            im->image8[y][x * 2] = (UINT8)(ink >> 8);
             im->image8[y][x * 2 + 1] = (UINT8)ink;
+#else
+            im->image8[y][x * 2] = (UINT8)ink;
+            im->image8[y][x * 2 + 1] = (UINT8)(ink >> 8);
+#endif
         } else {
             im->image8[y][x] = (UINT8)ink;
         }
@@ -631,13 +637,17 @@ DRAW draw32rgba = {point32rgba, hline32rgba, line32rgba, polygon32rgba};
 /* Interface                                                            */
 /* -------------------------------------------------------------------- */
 
-#define DRAWINIT()                           \
-    if (im->image8) {                        \
-        draw = &draw8;                       \
-        ink = INK8(ink_);                    \
-    } else {                                 \
-        draw = (op) ? &draw32rgba : &draw32; \
-        memcpy(&ink, ink_, sizeof(ink));     \
+#define DRAWINIT()                               \
+    if (im->image8) {                            \
+        draw = &draw8;                           \
+        if (strncmp(im->mode, "I;16", 4) == 0) { \
+            ink = INK16(ink_);                   \
+        } else {                                 \
+            ink = INK8(ink_);                    \
+        }                                        \
+    } else {                                     \
+        draw = (op) ? &draw32rgba : &draw32;     \
+        memcpy(&ink, ink_, sizeof(ink));         \
     }
 
 int

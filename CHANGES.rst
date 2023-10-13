@@ -5,6 +5,45 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Support BGR;15, BGR;16 and BGR;24 access, unpacking and putdata #7303
+  [radarhere]
+
+- Added CMYK to RGB unpacker #7310
+  [radarhere]
+
+- Improved flexibility of XMP parsing #7274
+  [radarhere]
+
+- Support reading 8-bit YCbCr TIFF images #7415
+  [radarhere]
+
+- Allow saving I;16B images as PNG #7302
+  [radarhere]
+
+- Corrected drawing I;16 points and writing I;16 text #7257
+  [radarhere]
+
+- Set blue channel to 128 for BC5S #7413
+  [radarhere]
+
+- Increase flexibility when reading IPTC fields #7319
+  [radarhere]
+
+- Set C palette to be empty by default #7289
+  [radarhere]
+
+- Added gs_binary to control Ghostscript use on all platforms #7392
+  [radarhere]
+
+- Read bounding box information from the trailer of EPS files if specified #7382
+  [nopperl, radarhere]
+
+- Added reading 8-bit color DDS images #7426
+  [radarhere]
+
+- Added has_transparency_data #7420
+  [radarhere, hugovk]
+
 - Fixed bug when reading BC5S DDS images #7401
   [radarhere]
 

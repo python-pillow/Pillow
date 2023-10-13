@@ -298,6 +298,11 @@ def test_dxt5_colorblock_alpha_issue_4142():
         assert px[2] != 0
 
 
+def test_palette():
+    with Image.open("Tests/images/palette.dds") as im:
+        assert_image_equal_tofile(im, "Tests/images/transparent.gif")
+
+
 def test_unimplemented_pixel_format():
     with pytest.raises(NotImplementedError):
         with Image.open("Tests/images/unimplemented_pixel_format.dds"):

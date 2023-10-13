@@ -564,7 +564,7 @@ rgb2cmyk(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
-static void
+void
 cmyk2rgb(UINT8 *out, const UINT8 *in, int xsize) {
     int x, nk, tmp;
     for (x = 0; x < xsize; x++) {
@@ -1295,7 +1295,6 @@ topalette(
     int alpha;
     int x, y;
     ImagingPalette palette = inpalette;
-    ;
 
     /* Map L or RGB/RGBX/RGBA to palette image */
     if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0) {
@@ -1307,7 +1306,14 @@ topalette(
     if (palette == NULL) {
         /* FIXME: make user configurable */
         if (imIn->bands == 1) {
-            palette = ImagingPaletteNew("RGB"); /* Initialised to grey ramp */
+            palette = ImagingPaletteNew("RGB");
+
+            palette->size = 256;
+            int i;
+            for (i = 0; i < 256; i++) {
+                palette->palette[i * 4] = palette->palette[i * 4 + 1] =
+                    palette->palette[i * 4 + 2] = (UINT8)i;
+            }
         } else {
             palette = ImagingPaletteNewBrowser(); /* Standard colour cube */
         }
