@@ -481,16 +481,11 @@ class Image:
     _close_exclusive_fp_after_loading = True
 
     def __init__(self):
-        # FIXME: take "new" parameters / other image?
-        # FIXME: turn mode and size into delegating properties?
-        self.im = None
-        self._mode = ""
-        self._size = (0, 0)
-        self.palette = None
-        self.info = {}
-        self.readonly = 0
-        self.pyaccess = None
-        self._exif = None
+        msg = (
+            "Images should not be instantiated directly. "
+            "Use the module new() function instead."
+        )
+        raise TypeError(msg)
 
     @property
     def width(self):
@@ -508,8 +503,24 @@ class Image:
     def mode(self):
         return self._mode
 
+    def _prepare(self):
+        self.im = None
+        self._mode = ""
+        self._size = (0, 0)
+        self.palette = None
+        self.info = {}
+        self.readonly = 0
+        self.pyaccess = None
+        self._exif = None
+
+    @classmethod
+    def _init(cls):
+        self = cls.__new__(cls)
+        self._prepare()
+        return self
+
     def _new(self, im):
-        new = Image()
+        new = Image._init()
         new.im = im
         new._mode = im.mode
         new._size = im.size
@@ -695,7 +706,7 @@ class Image:
         return [self.info, self.mode, self.size, self.getpalette(), im_data]
 
     def __setstate__(self, state):
-        Image.__init__(self)
+        self._prepare()
         info, mode, size, palette, data = state
         self.info = info
         self._mode = mode
@@ -980,7 +991,7 @@ class Image:
                 else:
                     # get the new transparency color.
                     # use existing conversions
-                    trns_im = Image()._new(core.new(self.mode, (1, 1)))
+                    trns_im = Image._init()._new(core.new(self.mode, (1, 1)))
                     if self.mode == "P":
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
@@ -2874,7 +2885,7 @@ class ImageTransformHandler:
 def _wedge():
     """Create greyscale wedge (for debugging only)"""
 
-    return Image()._new(core.wedge("L"))
+    return Image._init()._new(core.wedge("L"))
 
 
 def _check_size(size):
@@ -2918,7 +2929,7 @@ def new(mode, size, color=0):
 
     if color is None:
         # don't initialize
-        return Image()._new(core.new(mode, size))
+        return Image._init()._new(core.new(mode, size))
 
     if isinstance(color, str):
         # css3-style specifier
@@ -2927,7 +2938,7 @@ def new(mode, size, color=0):
 
         color = ImageColor.getcolor(color, mode)
 
-    im = Image()
+    im = Image._init()
     if mode == "P" and isinstance(color, (list, tuple)) and len(color) in [3, 4]:
         # RGB or RGBA value for a P image
         from . import ImagePalette
@@ -3547,7 +3558,7 @@ def effect_mandelbrot(size, extent, quality):
        (x0, y0, x1, y1).
     :param quality: Quality.
     """
-    return Image()._new(core.effect_mandelbrot(size, extent, quality))
+    return Image._init()._new(core.effect_mandelbrot(size, extent, quality))
 
 
 def effect_noise(size, sigma):
@@ -3558,7 +3569,7 @@ def effect_noise(size, sigma):
        (width, height).
     :param sigma: Standard deviation of noise.
     """
-    return Image()._new(core.effect_noise(size, sigma))
+    return Image._init()._new(core.effect_noise(size, sigma))
 
 
 def linear_gradient(mode):
@@ -3567,7 +3578,7 @@ def linear_gradient(mode):
 
     :param mode: Input mode.
     """
-    return Image()._new(core.linear_gradient(mode))
+    return Image._init()._new(core.linear_gradient(mode))
 
 
 def radial_gradient(mode):
@@ -3576,7 +3587,7 @@ def radial_gradient(mode):
 
     :param mode: Input mode.
     """
-    return Image()._new(core.radial_gradient(mode))
+    return Image._init()._new(core.radial_gradient(mode))
 
 
 # --------------------------------------------------------------------
