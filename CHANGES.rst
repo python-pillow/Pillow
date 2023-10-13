@@ -5,6 +5,15 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Added ImageOps cover method #7412
+  [radarhere, hugovk]
+
+- Catch struct.error from truncated EXIF when reading JPEG DPI #7458
+  [radarhere]
+
+- Consider default image when selecting mode for PNG save_all #7437
+  [radarhere]
+
 - Support BGR;15, BGR;16 and BGR;24 access, unpacking and putdata #7303
   [radarhere]
 
