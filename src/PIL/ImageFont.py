@@ -869,6 +869,10 @@ def load_default(size=None):
 
     .. versionadded:: 1.1.4
 
+    :param size: The font size of Aileron Regular.
+
+        .. versionadded:: 10.1.0
+
     :return: A font object.
     """
     if core.__class__.__name__ == "module" or size is not None:

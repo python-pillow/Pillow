@@ -41,15 +41,6 @@ to be specified, rather than a single number for both dimensions. ::
 API Additions
 =============
 
-ImageOps.cover
-^^^^^^^^^^^^^^
-
-Returns a resized version of the image, so that the requested size is covered,
-while maintaining the original aspect ratio.
-
-See :ref:`relative-resize` for a comparison between this and similar ``ImageOps``
-methods.
-
 EpsImagePlugin.gs_binary
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -68,6 +59,33 @@ channel, a palette with an alpha channel, or a "transparency" key in the
 
 Even if this attribute is true, the image might still appear solid, if all of
 the values shown within are opaque.
+
+ImageOps.cover
+^^^^^^^^^^^^^^
+
+Returns a resized version of the image, so that the requested size is covered,
+while maintaining the original aspect ratio.
+
+See :ref:`relative-resize` for a comparison between this and similar ``ImageOps``
+methods.
+
+size and font_size arguments when using default font
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow has had a "better than nothing" default font, which can only be drawn at
+one font size. Now, if FreeType support is available, a version of
+`Aileron Regular <https://dotcolon.net/font/aileron>`_ is loaded, which can be
+drawn at chosen font sizes.
+
+The following ``size`` and ``font_size`` arguments can now be used to specify a
+font size for this new builtin font::
+
+    ImageFont.load_default(size=24)
+    draw.text((0, 0), "test", font_size=24)
+    draw.textlength((0, 0), "test", font_size=24)
+    draw.textbbox((0, 0), "test", font_size=24)
+    draw.multiline_text((0, 0), "test", font_size=24)
+    draw.multiline_textbbox((0, 0), "test", font_size=24)
 
 Other Changes
 =============
