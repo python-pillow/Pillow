@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Fixed invalid argument warning #7442
+  [radarhere]
+
 - Added ImageOps cover method #7412
   [radarhere, hugovk]
 
