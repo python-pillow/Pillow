@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.1.0 (unreleased)
 -------------------
 
+- Added TrueType default font to allow for different sizes #7354
+  [radarhere]
+
 - Fixed invalid argument warning #7442
   [radarhere]
 
