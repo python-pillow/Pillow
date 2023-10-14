@@ -1,8 +1,9 @@
+import contextlib
 import os.path
 
 import pytest
 
-from PIL import Image, ImageColor, ImageDraw, ImageFont
+from PIL import Image, ImageColor, ImageDraw, ImageFont, features
 
 from .helper import (
     assert_image_equal,
@@ -1353,7 +1354,33 @@ def test_setting_default_font():
         assert draw.getfont() == font
     finally:
         ImageDraw.ImageDraw.font = None
-        assert isinstance(draw.getfont(), ImageFont.ImageFont)
+        assert isinstance(draw.getfont(), ImageFont.load_default().__class__)
+
+
+def test_default_font_size():
+    freetype_support = features.check_module("freetype2")
+    text = "Default font at a specific size."
+
+    im = Image.new("RGB", (220, 25))
+    draw = ImageDraw.Draw(im)
+    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+        draw.text((0, 0), text, font_size=16)
+        assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
+
+    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+        assert draw.textlength(text, font_size=16) == 216
+
+    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+        assert draw.textbbox((0, 0), text, font_size=16) == (0, 3, 216, 19)
+
+    im = Image.new("RGB", (220, 25))
+    draw = ImageDraw.Draw(im)
+    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+        draw.multiline_text((0, 0), text, font_size=16)
+        assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
+
+    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+        assert draw.multiline_textbbox((0, 0), text, font_size=16) == (0, 3, 216, 19)
 
 
 @pytest.mark.parametrize("bbox", BBOX)
