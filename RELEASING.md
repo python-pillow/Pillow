@@ -103,7 +103,7 @@ Released as needed privately to individual vendors for critical security-related
   and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli):
   ```bash
   gh run download --dir dist
-  # select dist-x.y.z
+  # select wheels
   ```
 * [ ] Download the Linux aarch64 wheels created by Travis CI from [GitHub releases](https://github.com/python-pillow/Pillow/releases)
   and copy into `dist`.
