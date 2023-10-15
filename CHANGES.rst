@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-10.1.0 (unreleased)
+10.1.0 (2023-10-15)
 -------------------
 
 - Added TrueType default font to allow for different sizes #7354
