@@ -2,6 +2,8 @@ name: Test Cygwin
 
 on:
   push:
+    branches:
+      - "**"
     paths-ignore:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
