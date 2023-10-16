@@ -91,8 +91,8 @@ Python 3.12
 ^^^^^^^^^^^
 
 Pillow 10.0.0 had wheels built against Python 3.12 beta, available as a preview to help
-others prepare for 3.12, and ensure Pillow can be used immediately on release day of
-3.12.0 final (2023-10-02, :pep:`693`).
+others prepare for 3.12, and to ensure Pillow could be used immediately at the release
+of 3.12.0 final (2023-10-02, :pep:`693`).
 
 Pillow 10.1.0 now officially supports Python 3.12.
 
