@@ -523,10 +523,10 @@ def _save(im, fp, tile, bufsize=0):
 
 
 def _encode_tile(im, fp, tile: list[Image._Tile], bufsize, fh, exc=None):
-    for encoder_name, extents, offset, tile_args in tile:
+    for encoder_name, extents, offset, args in tile:
         if offset > 0:
             fp.seek(offset)
-        encoder = Image._getencoder(im.mode, encoder_name, tile_args, im.encoderconfig)
+        encoder = Image._getencoder(im.mode, encoder_name, args, im.encoderconfig)
         try:
             encoder.setimage(im.im, extents)
             if encoder.pushes_fd:
