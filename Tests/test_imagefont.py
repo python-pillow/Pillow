@@ -453,7 +453,7 @@ def test_load_non_font_bytes():
 
 def test_default_font():
     # Arrange
-    txt = 'This is a "better than nothing" default font.'
+    txt = "This is a default font using FreeType support."
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
 
@@ -461,8 +461,11 @@ def test_default_font():
     default_font = ImageFont.load_default()
     draw.text((10, 10), txt, font=default_font)
 
+    larger_default_font = ImageFont.load_default(size=14)
+    draw.text((10, 60), txt, font=larger_default_font)
+
     # Assert
-    assert_image_equal_tofile(im, "Tests/images/default_font.png")
+    assert_image_equal_tofile(im, "Tests/images/default_font_freetype.png")
 
 
 @pytest.mark.parametrize("mode", (None, "1", "RGBA"))
@@ -483,14 +486,6 @@ def test_render_empty(font):
     # should not crash here.
     draw.text((10, 10), "", font=font)
     assert_image_equal(im, target)
-
-
-def test_unicode_pilfont():
-    # should not segfault, should return UnicodeDecodeError
-    # issue #2826
-    font = ImageFont.load_default()
-    with pytest.raises(UnicodeEncodeError):
-        font.getbbox("’")
 
 
 def test_unicode_extended(layout_engine):
@@ -720,14 +715,6 @@ def test_variation_set_by_axes(font):
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     font.set_variation_by_axes([100])
     _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
-
-
-def test_textbbox_non_freetypefont():
-    im = Image.new("RGB", (200, 200))
-    d = ImageDraw.Draw(im)
-    default_font = ImageFont.load_default()
-    assert d.textlength("test", font=default_font) == 24
-    assert d.textbbox((0, 0), "test", font=default_font) == (0, 0, 24, 11)
 
 
 @pytest.mark.parametrize(

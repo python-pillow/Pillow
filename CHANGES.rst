@@ -2,8 +2,23 @@
 Changelog (Pillow)
 ==================
 
-10.1.0 (unreleased)
+10.1.0 (2023-10-15)
 -------------------
+
+- Added TrueType default font to allow for different sizes #7354
+  [radarhere]
+
+- Fixed invalid argument warning #7442
+  [radarhere]
+
+- Added ImageOps cover method #7412
+  [radarhere, hugovk]
+
+- Catch struct.error from truncated EXIF when reading JPEG DPI #7458
+  [radarhere]
+
+- Consider default image when selecting mode for PNG save_all #7437
+  [radarhere]
 
 - Support BGR;15, BGR;16 and BGR;24 access, unpacking and putdata #7303
   [radarhere]

@@ -1,9 +1,11 @@
 name: Test Valgrind
 
-# like the docker tests, but running valgrind only on *.c/*.h changes.
+# like the Docker tests, but running valgrind only on *.c/*.h changes.
 
 on:
   push:
+    branches:
+      - "**"
     paths:
       - ".github/workflows/test-valgrind.yml"
       - "**.c"

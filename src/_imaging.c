@@ -1575,7 +1575,7 @@ if (PySequence_Check(op)) { \
             }
             double value;
             if (image->bands == 1) {
-                int bigendian;
+                int bigendian = 0;
                 if (image->type == IMAGING_TYPE_SPECIAL) {
                     // I;16*
                     bigendian = strcmp(image->mode, "I;16B") == 0;
