@@ -337,16 +337,14 @@ class DdsImageFile(ImageFile.ImageFile):
             raise OSError(msg)
         header = io.BytesIO(header_bytes)
 
-        flags_, height, width = struct.unpack("<3I", header.read(12))
-        flags = DDSD(flags_)
+        flags, height, width = struct.unpack("<3I", header.read(12))
         self._size = (width, height)
 
         pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
         struct.unpack("<11I", header.read(44))  # reserved
 
         # pixel format
-        pfsize, pfflags_, fourcc_, bitcount = struct.unpack("<4I", header.read(16))
-        pfflags = DDPF(pfflags_)
+        pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header.read(16))
         masks = struct.unpack("<4I", header.read(16))
         if flags & DDSD.CAPS:
             header.seek(20, io.SEEK_CUR)
@@ -368,14 +366,14 @@ class DdsImageFile(ImageFile.ImageFile):
                 )
                 self.tile = [("raw", extents, 0, (rawmode[::-1], 0, 1))]
             else:
-                msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
+                msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
         elif pfflags & DDPF.ALPHA:
             if bitcount == 8:
                 self._mode = "L"
                 self.tile = [("raw", extents, 0, ("L", 0, 1))]
             else:
-                msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
+                msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
@@ -385,7 +383,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self._mode = "LA"
                 self.tile = [("raw", extents, 0, ("LA", 0, 1))]
             else:
-                msg = f"Unsupported bitcount {bitcount} for {pfflags_}"
+                msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
         elif pfflags & DDPF.PALETTEINDEXED8:
             self._mode = "P"
@@ -393,11 +391,6 @@ class DdsImageFile(ImageFile.ImageFile):
             self.tile = [("raw", (0, 0) + self.size, 0, "L")]
         elif pfflags & DDPF.FOURCC:
             data_offs = header_size + 4
-            try:
-                fourcc = D3DFMT(fourcc_)
-            except ValueError:
-                msg = f"Unimplemented pixel format {repr(fourcc_)}"
-                raise NotImplementedError(msg)
             if fourcc == D3DFMT.DXT1:
                 self._mode = "RGBA"
                 self.pixel_format = "DXT1"
@@ -491,12 +484,12 @@ class DdsImageFile(ImageFile.ImageFile):
                     msg = f"Unimplemented DXGI format {dxgi_format}"
                     raise NotImplementedError(msg)
             else:
-                msg = f"Unimplemented pixel format {repr(fourcc_)}"
+                msg = f"Unimplemented pixel format {repr(fourcc)}"
                 raise NotImplementedError(msg)
 
             self.tile = [tile]
         else:
-            msg = f"Unknown pixel format flags {repr(pfflags_)}"
+            msg = f"Unknown pixel format flags {repr(pfflags)}"
             raise NotImplementedError(msg)
 
     def load_seek(self, pos):
