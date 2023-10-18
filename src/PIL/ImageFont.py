@@ -1107,12 +1107,21 @@ AAAAAAQAAAADa3tfFAAAAANAan9kAAAAA4QodoQ==
             layout_engine=Layout.BASIC,
         )
     else:
-        f = ImageFont()
-        f._load_pilfont_data(
-            # courB08
-            BytesIO(
-                base64.b64decode(
-                    b"""
+        f = load_pilfont()
+    return f
+
+
+def load_pilfont():
+    """Load a "better than nothing" font.
+
+    :return: A font object.
+    """
+    f = ImageFont()
+    f._load_pilfont_data(
+        # courB08
+        BytesIO(
+            base64.b64decode(
+                b"""
 UElMZm9udAo7Ozs7OzsxMDsKREFUQQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -1205,12 +1214,12 @@ pQAKAKwAEgAGAAD////4AAYAAACsAAoAswASAAYAAP////gABgAAALMACgC6ABIABgAA////+QAG
 AAAAugAKAMEAEQAGAAD////4AAYAAgDBAAoAyAAUAAYAAP////kABQACAMgACgDOABMABgAA////
 +QAGAAIAzgAKANUAEw==
 """
-                )
-            ),
-            Image.open(
-                BytesIO(
-                    base64.b64decode(
-                        b"""
+            )
+        ),
+        Image.open(
+            BytesIO(
+                base64.b64decode(
+                    b"""
 iVBORw0KGgoAAAANSUhEUgAAAx4AAAAUAQAAAAArMtZoAAAEwElEQVR4nABlAJr/AHVE4czCI/4u
 Mc4b7vuds/xzjz5/3/7u/n9vMe7vnfH/9++vPn/xyf5zhxzjt8GHw8+2d83u8x27199/nxuQ6Od9
 M43/5z2I+9n9ZtmDBwMQECDRQw/eQIQohJXxpBCNVE6QCCAAAAD//wBlAJr/AgALyj1t/wINwq0g
@@ -1235,8 +1244,8 @@ AAD//2Ji2FrkY3iYpYC5qDeGgeEMAwPDvwQBBoYvcTwOVLMEAAAA//9isDBgkP///0EOg9z35v//
 Gc/eeW7BwPj5+QGZhANUswMAAAD//2JgqGBgYGBgqEMXlvhMPUsAAAAA//8iYDd1AAAAAP//AwDR
 w7IkEbzhVQAAAABJRU5ErkJggg==
 """
-                    )
                 )
-            ),
-        )
+            )
+        ),
+    )
     return f
