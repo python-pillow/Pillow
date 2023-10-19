@@ -200,8 +200,8 @@ class ImageFile(Image.Image):
                     with open(self.filename) as fp:
                         self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
                     if offset + self.size[1] * args[1] > self.map.size():
-                        # buffer is not large enough
-                        raise OSError
+                        msg = "buffer is not large enough"
+                        raise OSError(msg)
                     self.im = Image.core.map_buffer(
                         self.map, self.size, decoder_name, offset, args
                     )
@@ -690,7 +690,8 @@ class PyDecoder(PyCodec):
             If finished with decoding return -1 for the bytes consumed.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """
-        raise NotImplementedError()
+        msg = "unavailable in base decoder"
+        raise NotImplementedError(msg)
 
     def set_as_raw(self, data, rawmode=None):
         """
@@ -739,7 +740,8 @@ class PyEncoder(PyCodec):
             If finished with encoding return 1 for the error code.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """
-        raise NotImplementedError()
+        msg = "unavailable in base encoder"
+        raise NotImplementedError(msg)
 
     def encode_to_pyfd(self):
         """

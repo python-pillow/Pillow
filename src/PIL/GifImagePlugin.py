@@ -183,7 +183,8 @@ class GifImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(1)
         if not s or s == b";":
-            raise EOFError
+            msg = "no more images in GIF file"
+            raise EOFError(msg)
 
         palette = None
 
@@ -288,7 +289,8 @@ class GifImageFile(ImageFile.ImageFile):
 
         if interlace is None:
             # self._fp = None
-            raise EOFError
+            msg = "image not found in GIF frame"
+            raise EOFError(msg)
 
         self.__frame = frame
         if not update_image:

@@ -27,7 +27,7 @@ def open_with_magick(magick, tmp_path, f):
         magick + [f, outfile], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
     )
     if rc:
-        raise OSError
+        assert False
     return Image.open(outfile)
 
 
