@@ -438,11 +438,12 @@ class PngStream(ChunkStream):
             tile = [("zip", (0, 0) + self.im_size, pos, self.im_rawmode)]
         self.im_tile = tile
         self.im_idat = length
-        raise EOFError
+        msg = "image data found"
+        raise EOFError(msg)
 
     def chunk_IEND(self, pos, length):
-        # end of PNG image
-        raise EOFError
+        msg = "end of PNG image"
+        raise EOFError(msg)
 
     def chunk_PLTE(self, pos, length):
         # palette
@@ -891,7 +892,8 @@ class PngImageFile(ImageFile.ImageFile):
             self.dispose_extent = self.info.get("bbox")
 
             if not self.tile:
-                raise EOFError
+                msg = "image not found in APNG frame"
+                raise EOFError(msg)
 
         # setup frame disposal (actual disposal done when needed in the next _seek())
         if self._prev_im is None and self.dispose_op == Disposal.OP_PREVIOUS:
