@@ -45,7 +45,7 @@ Example
 The following plugin supports a simple format, which has a 128-byte header
 consisting of the words “SPAM” followed by the width, height, and pixel size in
 bits. The header fields are separated by spaces. The image data follows
-directly after the header, and can be either bi-level, greyscale, or 24-bit
+directly after the header, and can be either bi-level, grayscale, or 24-bit
 true color.
 
 **SpamImagePlugin.py**::
@@ -211,9 +211,9 @@ table describes some commonly used **raw modes**:
 | ``1;R``   | | 1-bit reversed bilevel, stored with the leftmost pixel in the   |
 |           | | least significant bit. 0 means black, 1 means white.            |
 +-----------+-------------------------------------------------------------------+
-| ``L``     | 8-bit greyscale. 0 means black, 255 means white.                  |
+| ``L``     | 8-bit grayscale. 0 means black, 255 means white.                  |
 +-----------+-------------------------------------------------------------------+
-| ``L;I``   | 8-bit inverted greyscale. 0 means white, 255 means black.         |
+| ``L;I``   | 8-bit inverted grayscale. 0 means white, 255 means black.         |
 +-----------+-------------------------------------------------------------------+
 | ``P``     | 8-bit palette-mapped image.                                       |
 +-----------+-------------------------------------------------------------------+

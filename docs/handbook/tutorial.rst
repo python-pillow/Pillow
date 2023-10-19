@@ -26,7 +26,7 @@ image. If the image was not read from a file, it is set to None. The size
 attribute is a 2-tuple containing width and height (in pixels). The
 :py:attr:`~PIL.Image.Image.mode` attribute defines the number and names of the
 bands in the image, and also the pixel type and depth. Common modes are “L”
-(luminance) for greyscale images, “RGB” for true color images, and “CMYK” for
+(luminance) for grayscale images, “RGB” for true color images, and “CMYK” for
 pre-press images.
 
 If the file cannot be opened, an :py:exc:`OSError` exception is raised.
@@ -599,7 +599,7 @@ Controlling the decoder
 Some decoders allow you to manipulate the image while reading it from a file.
 This can often be used to speed up decoding when creating thumbnails (when
 speed is usually more important than quality) and printing to a monochrome
-laser printer (when only a greyscale version of the image is needed).
+laser printer (when only a grayscale version of the image is needed).
 
 The :py:meth:`~PIL.Image.Image.draft` method manipulates an opened but not yet
 loaded image so it as closely as possible matches the given mode and size. This

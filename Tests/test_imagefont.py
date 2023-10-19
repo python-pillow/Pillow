@@ -303,8 +303,8 @@ def test_multiline_spacing(font):
     "orientation", (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270)
 )
 def test_rotated_transposed_font(font, orientation):
-    img_grey = Image.new("L", (100, 100))
-    draw = ImageDraw.Draw(img_grey)
+    img_gray = Image.new("L", (100, 100))
+    draw = ImageDraw.Draw(img_gray)
     word = "testing"
 
     transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
@@ -344,8 +344,8 @@ def test_rotated_transposed_font(font, orientation):
     ),
 )
 def test_unrotated_transposed_font(font, orientation):
-    img_grey = Image.new("L", (100, 100))
-    draw = ImageDraw.Draw(img_grey)
+    img_gray = Image.new("L", (100, 100))
+    draw = ImageDraw.Draw(img_gray)
     word = "testing"
 
     transposed_font = ImageFont.TransposedFont(font, orientation=orientation)

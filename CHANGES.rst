@@ -2191,7 +2191,7 @@ Changelog (Pillow)
 - Cache EXIF information #3498
   [Glandos]
 
-- Added transparency for all PNG greyscale modes #3744
+- Added transparency for all PNG grayscale modes #3744
   [radarhere]
 
 - Fix deprecation warnings in Python 3.8 #3749
@@ -4693,7 +4693,7 @@ Changelog (Pillow)
 - Fix Bicubic interpolation #970
   [homm]
 
-- Support for 4-bit greyscale TIFF images #980
+- Support for 4-bit grayscale TIFF images #980
   [hugovk]
 
 - Updated manifest #957
@@ -6768,7 +6768,7 @@ The test suite includes 750 individual tests.
 
 - You can now convert directly between all modes supported by
   PIL.  When converting colour images to "P", PIL defaults to
-  a "web" palette and dithering.  When converting greyscale
+  a "web" palette and dithering.  When converting grayscale
   images to "1", PIL uses a thresholding and dithering.
 
 - Added a "dither" option to "convert".  By default, "convert"
@@ -6846,13 +6846,13 @@ The test suite includes 530 individual tests.
 - Fixed "paste" to allow a mask also for mode "F" images.
 
 - The BMP driver now saves mode "1" images.  When loading images, the mode
-  is set to "L" for 8-bit files with greyscale palettes, and to "P" for
+  is set to "L" for 8-bit files with grayscale palettes, and to "P" for
   other 8-bit files.
 
 - The IM driver now reads and saves "1" images (file modes "0 1" or "L 1").
 
 - The JPEG and GIF drivers now saves "1" images.  For JPEG, the image
-  is saved as 8-bit greyscale (it will load as mode "L").  For GIF, the
+  is saved as 8-bit grayscale (it will load as mode "L").  For GIF, the
   image will be loaded as a "P" image.
 
 - Fixed a potential buffer overrun in the GIF encoder.
@@ -7156,7 +7156,7 @@ The test suite includes 400 individual tests.
   drawing capabilities can be used to render vector and metafile
   formats.
 
-- Added restricted drivers for images from Image Tools (greyscale
+- Added restricted drivers for images from Image Tools (grayscale
   only) and LabEye/IFUNC (common interchange modes only).
 
 - Some minor improvements to the sample scripts provided in the

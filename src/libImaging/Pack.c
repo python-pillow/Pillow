@@ -549,16 +549,16 @@ static struct {
     {"1", "1;IR", 1, pack1IR},
     {"1", "L", 8, pack1L},
 
-    /* greyscale */
+    /* grayscale */
     {"L", "L", 8, copy1},
     {"L", "L;16", 16, packL16},
     {"L", "L;16B", 16, packL16B},
 
-    /* greyscale w. alpha */
+    /* grayscale w. alpha */
     {"LA", "LA", 16, packLA},
     {"LA", "LA;L", 16, packLAL},
 
-    /* greyscale w. alpha premultiplied */
+    /* grayscale w. alpha premultiplied */
     {"La", "La", 16, packLA},
 
     /* palette */

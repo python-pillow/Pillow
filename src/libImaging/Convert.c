@@ -1013,7 +1013,7 @@ static struct {
 static void
 p2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++) {
         *out++ = (L(&palette->palette[in[x] * 4]) >= 128000) ? 255 : 0;
     }
@@ -1022,7 +1022,7 @@ p2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
         *out++ = (L(&palette->palette[in[0] * 4]) >= 128000) ? 255 : 0;
     }
@@ -1031,7 +1031,7 @@ pa2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 p2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++) {
         *out++ = L24(&palette->palette[in[x] * 4]) >> 16;
     }
@@ -1040,7 +1040,7 @@ p2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
         *out++ = L24(&palette->palette[in[0] * 4]) >> 16;
     }
@@ -1070,7 +1070,7 @@ p2pa(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 p2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, out += 4) {
         const UINT8 *rgba = &palette->palette[*in++ * 4];
         out[0] = out[1] = out[2] = L24(rgba) >> 16;
@@ -1081,7 +1081,7 @@ p2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
         out[0] = out[1] = out[2] = L24(&palette->palette[in[0] * 4]) >> 16;
         out[3] = in[3];
@@ -1335,9 +1335,9 @@ topalette(
     imOut->palette = ImagingPaletteDuplicate(palette);
 
     if (imIn->bands == 1) {
-        /* greyscale image */
+        /* grayscale image */
 
-        /* Greyscale palette: copy data as is */
+        /* Grayscale palette: copy data as is */
         ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
             if (alpha) {

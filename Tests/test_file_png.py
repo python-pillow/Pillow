@@ -297,7 +297,7 @@ class TestFilePng:
         assert_image(im, "RGBA", (10, 10))
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
-    def test_save_greyscale_transparency(self, tmp_path):
+    def test_save_grayscale_transparency(self, tmp_path):
         for mode, num_transparent in {"1": 1994, "L": 559, "I": 559}.items():
             in_file = "Tests/images/" + mode.lower() + "_trns.png"
             with Image.open(in_file) as im:

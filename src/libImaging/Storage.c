@@ -80,18 +80,18 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->palette = ImagingPaletteNew("RGB");
 
     } else if (strcmp(mode, "L") == 0) {
-        /* 8-bit greyscale (luminance) images */
+        /* 8-bit grayscale (luminance) images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
 
     } else if (strcmp(mode, "LA") == 0) {
-        /* 8-bit greyscale (luminance) with alpha */
+        /* 8-bit grayscale (luminance) with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
 
     } else if (strcmp(mode, "La") == 0) {
-        /* 8-bit greyscale (luminance) with premultiplied alpha */
+        /* 8-bit grayscale (luminance) with premultiplied alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;

@@ -75,7 +75,7 @@ ImagingPaletteNewBrowser(void) {
     }
     palette->size = i;
 
-    /* FIXME: add 30-level greyscale wedge here? */
+    /* FIXME: add 30-level grayscale wedge here? */
 
     return palette;
 }

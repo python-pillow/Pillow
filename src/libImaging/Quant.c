@@ -1697,7 +1697,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
        image data? */
 
     if (!strcmp(im->mode, "L")) {
-        /* greyscale */
+        /* grayscale */
 
         /* FIXME: converting a "L" image to "P" with 256 colors
            should be done by a simple copy... */
