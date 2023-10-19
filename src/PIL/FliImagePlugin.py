@@ -150,7 +150,8 @@ class FliImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(4)
         if not s:
-            raise EOFError
+            msg = "missing frame size"
+            raise EOFError(msg)
 
         framesize = i32(s)
 
