@@ -110,9 +110,9 @@ ARCHITECTURES = {
 DEPS = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/3.0.0/libjpeg-turbo-3.0.0.tar.gz/download",
-        "filename": "libjpeg-turbo-3.0.0.tar.gz",
-        "dir": "libjpeg-turbo-3.0.0",
+        + "/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz/download",
+        "filename": "libjpeg-turbo-3.0.1.tar.gz",
+        "dir": "libjpeg-turbo-3.0.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
