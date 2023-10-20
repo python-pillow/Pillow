@@ -231,13 +231,13 @@ def test_apng_mode():
         assert im.getpixel((0, 0)) == (0, 0, 128, 191)
         assert im.getpixel((64, 32)) == (0, 0, 128, 191)
 
-    with Image.open("Tests/images/apng/mode_greyscale.png") as im:
+    with Image.open("Tests/images/apng/mode_grayscale.png") as im:
         assert im.mode == "L"
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == 128
         assert im.getpixel((64, 32)) == 255
 
-    with Image.open("Tests/images/apng/mode_greyscale_alpha.png") as im:
+    with Image.open("Tests/images/apng/mode_grayscale_alpha.png") as im:
         assert im.mode == "LA"
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (128, 191)

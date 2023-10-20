@@ -56,7 +56,7 @@ _MAGIC = b"\211PNG\r\n\032\n"
 
 _MODES = {
     # supported bits/color combinations, and corresponding modes/rawmodes
-    # Greyscale
+    # Grayscale
     (1, 0): ("1", "1"),
     (2, 0): ("L", "L;2"),
     (4, 0): ("L", "L;4"),
@@ -70,7 +70,7 @@ _MODES = {
     (2, 3): ("P", "P;2"),
     (4, 3): ("P", "P;4"),
     (8, 3): ("P", "P"),
-    # Greyscale with alpha
+    # Grayscale with alpha
     (8, 4): ("LA", "LA"),
     (16, 4): ("RGBA", "LA;16B"),  # LA;16B->LA not yet available
     # Truecolour with alpha
