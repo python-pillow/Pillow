@@ -111,6 +111,11 @@ def test_rgba():
         assert_image_equal_tofile(im, "Tests/images/imagedraw_square.png")
 
 
+def test_layer_skip():
+    with Image.open("Tests/images/five_channels.psd") as im:
+        assert im.n_frames == 1
+
+
 def test_icc_profile():
     with Image.open(test_file) as im:
         assert "icc_profile" in im.info
