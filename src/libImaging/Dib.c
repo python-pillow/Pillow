@@ -142,9 +142,9 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
         GetSystemPaletteEntries(dib->dc, 0, 256, pal->palPalEntry);
 
         if (strcmp(mode, "L") == 0) {
-            /* Greyscale DIB.  Fill all 236 slots with a greyscale ramp
+            /* Grayscale DIB.  Fill all 236 slots with a grayscale ramp
              * (this is usually overkill on Windows since VGA only offers
-             * 6 bits greyscale resolution).  Ignore the slots already
+             * 6 bits grayscale resolution).  Ignore the slots already
              * allocated by Windows */
 
             i = 10;
@@ -160,7 +160,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
 #ifdef CUBE216
 
             /* Colour DIB.  Create a 6x6x6 colour cube (216 entries) and
-             * add 20 extra greylevels for best result with greyscale
+             * add 20 extra graylevels for best result with grayscale
              * images. */
 
             i = 10;

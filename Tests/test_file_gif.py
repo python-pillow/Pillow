@@ -590,7 +590,7 @@ def test_save_dispose(tmp_path):
 def test_dispose2_palette(tmp_path):
     out = str(tmp_path / "temp.gif")
 
-    # Four colors: white, grey, black, red
+    # Four colors: white, gray, black, red
     circles = [(255, 255, 255), (153, 153, 153), (0, 0, 0), (255, 0, 0)]
 
     im_list = []

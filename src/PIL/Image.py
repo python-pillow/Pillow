@@ -888,12 +888,12 @@ class Image:
         "L", "RGB" and "CMYK". The ``matrix`` argument only supports "L"
         and "RGB".
 
-        When translating a color image to greyscale (mode "L"),
+        When translating a color image to grayscale (mode "L"),
         the library uses the ITU-R 601-2 luma transform::
 
             L = R * 299/1000 + G * 587/1000 + B * 114/1000
 
-        The default method of converting a greyscale ("L") or "RGB"
+        The default method of converting a grayscale ("L") or "RGB"
         image into a bilevel (mode "1") image uses Floyd-Steinberg
         dither to approximate the original image luminosity levels. If
         dither is ``None``, all values larger than 127 are set to 255 (white),
@@ -943,9 +943,9 @@ class Image:
                 msg = "illegal conversion"
                 raise ValueError(msg)
             im = self.im.convert_matrix(mode, matrix)
-            new = self._new(im)
+            new_im = self._new(im)
             if has_transparency and self.im.bands == 3:
-                transparency = new.info["transparency"]
+                transparency = new_im.info["transparency"]
 
                 def convert_transparency(m, v):
                     v = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * 0.5
@@ -958,8 +958,8 @@ class Image:
                         convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
                         for i in range(0, len(transparency))
                     )
-                new.info["transparency"] = transparency
-            return new
+                new_im.info["transparency"] = transparency
+            return new_im
 
         if mode == "P" and self.mode == "RGBA":
             return self.quantize(colors)
@@ -990,7 +990,7 @@ class Image:
                 else:
                     # get the new transparency color.
                     # use existing conversions
-                    trns_im = Image()._new(core.new(self.mode, (1, 1)))
+                    trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
@@ -1031,23 +1031,25 @@ class Image:
 
         if mode == "P" and palette == Palette.ADAPTIVE:
             im = self.im.quantize(colors)
-            new = self._new(im)
+            new_im = self._new(im)
             from . import ImagePalette
 
-            new.palette = ImagePalette.ImagePalette("RGB", new.im.getpalette("RGB"))
+            new_im.palette = ImagePalette.ImagePalette(
+                "RGB", new_im.im.getpalette("RGB")
+            )
             if delete_trns:
                 # This could possibly happen if we requantize to fewer colors.
                 # The transparency would be totally off in that case.
-                del new.info["transparency"]
+                del new_im.info["transparency"]
             if trns is not None:
                 try:
-                    new.info["transparency"] = new.palette.getcolor(trns, new)
+                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
                 except Exception:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
-                    del new.info["transparency"]
+                    del new_im.info["transparency"]
                     warnings.warn("Couldn't allocate palette entry for transparency")
-            return new
+            return new_im
 
         if "LAB" in (self.mode, mode):
             other_mode = mode if self.mode == "LAB" else self.mode
@@ -1246,7 +1248,7 @@ class Image:
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
         size. For example, you can use this method to convert a color
-        JPEG to greyscale while loading it.
+        JPEG to grayscale while loading it.
 
         If any changes are made, returns a tuple with the chosen ``mode`` and
         ``box`` with coordinates of the original image within the altered one.
@@ -1618,13 +1620,13 @@ class Image:
         than one band, the histograms for all bands are concatenated (for
         example, the histogram for an "RGB" image contains 768 values).
 
-        A bilevel image (mode "1") is treated as a greyscale ("L") image
+        A bilevel image (mode "1") is treated as a grayscale ("L") image
         by this method.
 
         If a mask is provided, the method returns a histogram for those
         parts of the image where the mask image is non-zero. The mask
         image must have the same size as the image, and be either a
-        bi-level image (mode "1") or a greyscale image ("L").
+        bi-level image (mode "1") or a grayscale image ("L").
 
         :param mask: An optional mask.
         :param extrema: An optional tuple of manually-specified extrema.
@@ -1644,13 +1646,13 @@ class Image:
         """
         Calculates and returns the entropy for the image.
 
-        A bilevel image (mode "1") is treated as a greyscale ("L")
+        A bilevel image (mode "1") is treated as a grayscale ("L")
         image by this method.
 
         If a mask is provided, the method employs the histogram for
         those parts of the image where the mask image is non-zero.
         The mask image must have the same size as the image, and be
-        either a bi-level image (mode "1") or a greyscale image ("L").
+        either a bi-level image (mode "1") or a grayscale image ("L").
 
         :param mask: An optional mask.
         :param extrema: An optional tuple of manually-specified extrema.
@@ -1870,7 +1872,8 @@ class Image:
                     # do things the hard way
                     im = self.im.convert(mode)
                     if im.mode not in ("LA", "PA", "RGBA"):
-                        raise ValueError from e  # sanity check
+                        msg = "alpha channel could not be added"
+                        raise ValueError(msg) from e  # sanity check
                     self.im = im
                 self.pyaccess = None
                 self._mode = self.im.mode
@@ -2475,7 +2478,8 @@ class Image:
 
         # overridden by file handlers
         if frame != 0:
-            raise EOFError
+            msg = "no more images in file"
+            raise EOFError(msg)
 
     def show(self, title=None):
         """
@@ -2882,7 +2886,7 @@ class ImageTransformHandler:
 
 
 def _wedge():
-    """Create greyscale wedge (for debugging only)"""
+    """Create grayscale wedge (for debugging only)"""
 
     return Image()._new(core.wedge("L"))
 
@@ -3759,6 +3763,7 @@ class Exif(MutableMapping):
             self.endian = self._info._endian
         if offset is None:
             offset = self._info.next
+        self.fp.tell()
         self.fp.seek(offset)
         self._info.load(self.fp)
 

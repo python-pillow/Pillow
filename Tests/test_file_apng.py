@@ -231,13 +231,13 @@ def test_apng_mode():
         assert im.getpixel((0, 0)) == (0, 0, 128, 191)
         assert im.getpixel((64, 32)) == (0, 0, 128, 191)
 
-    with Image.open("Tests/images/apng/mode_greyscale.png") as im:
+    with Image.open("Tests/images/apng/mode_grayscale.png") as im:
         assert im.mode == "L"
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == 128
         assert im.getpixel((64, 32)) == 255
 
-    with Image.open("Tests/images/apng/mode_greyscale_alpha.png") as im:
+    with Image.open("Tests/images/apng/mode_grayscale_alpha.png") as im:
         assert im.mode == "LA"
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (128, 191)
@@ -673,10 +673,16 @@ def test_seek_after_close():
 
 
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
-def test_different_modes_in_later_frames(mode, tmp_path):
+@pytest.mark.parametrize("default_image", (True, False))
+def test_different_modes_in_later_frames(mode, default_image, tmp_path):
     test_file = str(tmp_path / "temp.png")
 
     im = Image.new("L", (1, 1))
-    im.save(test_file, save_all=True, append_images=[Image.new(mode, (1, 1))])
+    im.save(
+        test_file,
+        save_all=True,
+        default_image=default_image,
+        append_images=[Image.new(mode, (1, 1))],
+    )
     with Image.open(test_file) as reloaded:
         assert reloaded.mode == mode

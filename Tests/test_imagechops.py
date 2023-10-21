@@ -10,7 +10,7 @@ GREEN = (0, 255, 0)
 ORANGE = (255, 128, 0)
 WHITE = (255, 255, 255)
 
-GREY = 128
+GRAY = 128
 
 
 def test_sanity():
@@ -121,12 +121,12 @@ def test_constant():
     im = Image.new("RGB", (20, 10))
 
     # Act
-    new = ImageChops.constant(im, GREY)
+    new = ImageChops.constant(im, GRAY)
 
     # Assert
     assert new.size == im.size
-    assert new.getpixel((0, 0)) == GREY
-    assert new.getpixel((19, 9)) == GREY
+    assert new.getpixel((0, 0)) == GRAY
+    assert new.getpixel((19, 9)) == GRAY
 
 
 def test_darker_image():
