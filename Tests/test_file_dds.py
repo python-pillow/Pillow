@@ -10,8 +10,8 @@ from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 TEST_FILE_DXT1 = "Tests/images/dxt1-rgb-4bbp-noalpha_MipMaps-1.dds"
 TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
 TEST_FILE_DXT5 = "Tests/images/dxt5-argb-8bbp-interpolatedalpha_MipMaps-1.dds"
-TEST_FILE_ATI1 = "Tests/images/mode-ati1.dds"
-TEST_FILE_ATI2 = "Tests/images/mode-ati2.dds"
+TEST_FILE_ATI1 = "Tests/images/ati1.dds"
+TEST_FILE_ATI2 = "Tests/images/ati2.dds"
 TEST_FILE_DX10_BC5_TYPELESS = "Tests/images/bc5_typeless.dds"
 TEST_FILE_DX10_BC5_UNORM = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC5_SNORM = "Tests/images/bc5_snorm.dds"
@@ -347,7 +347,7 @@ def test_open(mode, test_file):
         ("LA", "Tests/images/uncompressed_la.png"),
         ("RGB", "Tests/images/hopper.png"),
         ("RGBA", "Tests/images/pil123rgba.png"),
-        ("L", "Tests/images/mode-ati1.dds"),
+        ("L", TEST_FILE_ATI1),
     ],
 )
 def test_save(mode, test_file, tmp_path):
