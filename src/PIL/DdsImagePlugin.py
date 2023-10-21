@@ -348,14 +348,14 @@ class DdsImageFile(ImageFile.ImageFile):
         masks = struct.unpack("<4I", header.read(16))
         if flags & DDSD.CAPS:
             header.seek(20, io.SEEK_CUR)
-        extents = (0, 0) + self.size
+        n = 0
+        rawmode = None
         if pfflags & DDPF.RGB:
             # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             if bitcount == 24:
-                rawmode = masks[0x00FF0000] + masks[0x0000FF00] + masks[0x000000FF]
                 self._mode = "RGB"
-                self.tile = [("raw", extents, 0, (rawmode[::-1], 0, 1))]
+                rawmode = masks[0x00FF0000] + masks[0x0000FF00] + masks[0x000000FF]
             elif bitcount == 32 and pfflags & DDPF.ALPHAPIXELS:
                 self._mode = "RGBA"
                 rawmode = (
@@ -364,31 +364,27 @@ class DdsImageFile(ImageFile.ImageFile):
                     + masks[0x0000FF00]
                     + masks[0x000000FF]
                 )
-                self.tile = [("raw", extents, 0, (rawmode[::-1], 0, 1))]
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
+            rawmode = rawmode[::-1]
         elif pfflags & DDPF.ALPHA:
             if bitcount == 8:
                 self._mode = "L"
-                self.tile = [("raw", extents, 0, ("L", 0, 1))]
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self._mode = "L"
-                self.tile = [("raw", extents, 0, ("L", 0, 1))]
             elif bitcount == 16 and pfflags & DDPF.ALPHAPIXELS:
                 self._mode = "LA"
-                self.tile = [("raw", extents, 0, ("LA", 0, 1))]
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
         elif pfflags & DDPF.PALETTEINDEXED8:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
-            self.tile = [("raw", (0, 0) + self.size, 0, "L")]
         elif pfflags & DDPF.FOURCC:
             data_offs = header_size + 4
             if fourcc == D3DFMT.DXT1:
@@ -444,36 +440,39 @@ class DdsImageFile(ImageFile.ImageFile):
                     self._mode = "RGB"
                     self.pixel_format = "BC6HS"
                     n = 6
-                elif dxgi_format in (DXGI_FORMAT.BC7_TYPELESS, DXGI_FORMAT.BC7_UNORM):
+                elif dxgi_format in (
+                    DXGI_FORMAT.BC7_TYPELESS,
+                    DXGI_FORMAT.BC7_UNORM,
+                    DXGI_FORMAT.BC7_UNORM_SRGB,
+                ):
                     self._mode = "RGBA"
                     self.pixel_format = "BC7"
                     n = 7
-                elif dxgi_format == DXGI_FORMAT.BC7_UNORM_SRGB:
-                    self._mode = "RGBA"
-                    self.pixel_format = "BC7"
-                    self.info["gamma"] = 1 / 2.2
-                    n = 7
+                    if dxgi_format == DXGI_FORMAT.BC7_UNORM_SRGB:
+                        self.info["gamma"] = 1 / 2.2
                 elif dxgi_format in (
                     DXGI_FORMAT.R8G8B8A8_TYPELESS,
                     DXGI_FORMAT.R8G8B8A8_UNORM,
                     DXGI_FORMAT.R8G8B8A8_UNORM_SRGB,
                 ):
                     self._mode = "RGBA"
-                    self.tile = [Image._Tile("raw", extents, 0, ("RGBA", 0, 1))]
                     if dxgi_format == DXGI_FORMAT.R8G8B8A8_UNORM_SRGB:
                         self.info["gamma"] = 1 / 2.2
-                    return
                 else:
                     msg = f"Unimplemented DXGI format {dxgi_format}"
                     raise NotImplementedError(msg)
             else:
                 msg = f"Unimplemented pixel format {repr(fourcc)}"
                 raise NotImplementedError(msg)
+        else:
+            msg = f"Unknown pixel format flags {pfflags}"
+            raise NotImplementedError(msg)
 
+        extents = (0, 0) + self.size
+        if n:
             self.tile = [Image._Tile("bcn", extents, data_offs, (n, self.pixel_format))]
         else:
-            msg = f"Unknown pixel format flags {repr(pfflags)}"
-            raise NotImplementedError(msg)
+            self.tile = [Image._Tile("raw", extents, 0, rawmode or self.mode)]
 
     def load_seek(self, pos):
         pass
@@ -484,21 +483,25 @@ def _save(im, fp, filename):
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)
 
-    if im.mode == "RGBA":
-        pixel_flags = DDPF.RGB | DDPF.ALPHAPIXELS
-        rgba_mask = (0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000)
-
-        r, g, b, a = im.split()
-        im = Image.merge("RGBA", (a, r, g, b))
-    elif im.mode == "RGB":
-        pixel_flags = DDPF.RGB
-        rgba_mask = (0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000)
-    elif im.mode == "LA":
-        pixel_flags = DDPF.LUMINANCE | DDPF.ALPHAPIXELS
-        rgba_mask = (0x000000FF, 0x000000FF, 0x000000FF, 0x0000FF00)
-    else:  # im.mode == "L"
+    alpha = im.mode[-1] == "A"
+    if im.mode[0] == "L":
         pixel_flags = DDPF.LUMINANCE
-        rgba_mask = (0xFF000000, 0xFF000000, 0xFF000000, 0x00000000)
+        rawmode = im.mode
+        if alpha:
+            rgba_mask = [0x000000FF, 0x000000FF, 0x000000FF]
+        else:
+            rgba_mask = [0xFF000000, 0xFF000000, 0xFF000000]
+    else:
+        pixel_flags = DDPF.RGB
+        rawmode = im.mode[::-1]
+        rgba_mask = [0x00FF0000, 0x0000FF00, 0x000000FF]
+
+        if alpha:
+            r, g, b, a = im.split()
+            im = Image.merge("RGBA", (a, r, g, b))
+    if alpha:
+        pixel_flags |= DDPF.ALPHAPIXELS
+    rgba_mask.append(0xFF000000 if alpha else 0)
 
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PITCH | DDSD.PIXELFORMAT
     bit_count = len(im.getbands()) * 8
@@ -522,7 +525,6 @@ def _save(im, fp, filename):
         + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
         + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    rawmode = "LA" if im.mode == "LA" else im.mode[::-1]
     ImageFile._save(im, fp, [Image._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
 
