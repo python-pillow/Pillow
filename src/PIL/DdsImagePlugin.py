@@ -348,14 +348,14 @@ class DdsImageFile(ImageFile.ImageFile):
         masks = struct.unpack("<4I", header.read(16))
         if flags & DDSD.CAPS:
             header.seek(20, io.SEEK_CUR)
-        extents = (0, 0) + self.size
+        n = 0
+        rawmode = None
         if pfflags & DDPF.RGB:
             # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             if bitcount == 24:
-                rawmode = masks[0x00FF0000] + masks[0x0000FF00] + masks[0x000000FF]
                 self._mode = "RGB"
-                self.tile = [("raw", extents, 0, (rawmode[::-1], 0, 1))]
+                rawmode = masks[0x00FF0000] + masks[0x0000FF00] + masks[0x000000FF]
             elif bitcount == 32 and pfflags & DDPF.ALPHAPIXELS:
                 self._mode = "RGBA"
                 rawmode = (
@@ -364,61 +364,53 @@ class DdsImageFile(ImageFile.ImageFile):
                     + masks[0x0000FF00]
                     + masks[0x000000FF]
                 )
-                self.tile = [("raw", extents, 0, (rawmode[::-1], 0, 1))]
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
+            rawmode = rawmode[::-1]
         elif pfflags & DDPF.ALPHA:
             if bitcount == 8:
                 self._mode = "L"
-                self.tile = [("raw", extents, 0, ("L", 0, 1))]
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self._mode = "L"
-                self.tile = [("raw", extents, 0, ("L", 0, 1))]
             elif bitcount == 16 and pfflags & DDPF.ALPHAPIXELS:
                 self._mode = "LA"
-                self.tile = [("raw", extents, 0, ("LA", 0, 1))]
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
         elif pfflags & DDPF.PALETTEINDEXED8:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
-            self.tile = [("raw", (0, 0) + self.size, 0, "L")]
         elif pfflags & DDPF.FOURCC:
             data_offs = header_size + 4
             if fourcc == D3DFMT.DXT1:
                 self._mode = "RGBA"
                 self.pixel_format = "DXT1"
-                tile = Image._Tile("bcn", extents, data_offs, (1, self.pixel_format))
+                n = 1
             elif fourcc == D3DFMT.DXT3:
                 self._mode = "RGBA"
                 self.pixel_format = "DXT3"
-                tile = Image._Tile("bcn", extents, data_offs, (2, self.pixel_format))
+                n = 2
             elif fourcc == D3DFMT.DXT5:
                 self._mode = "RGBA"
                 self.pixel_format = "DXT5"
-                tile = Image._Tile("bcn", extents, data_offs, (3, self.pixel_format))
-            elif fourcc == D3DFMT.ATI1 or fourcc == D3DFMT.BC4U:
+                n = 3
+            elif fourcc in (D3DFMT.BC4U, D3DFMT.ATI1):
                 self._mode = "L"
                 self.pixel_format = "BC4"
-                tile = Image._Tile("bcn", extents, data_offs, (4, self.pixel_format))
+                n = 4
             elif fourcc == D3DFMT.BC5S:
                 self._mode = "RGB"
                 self.pixel_format = "BC5S"
-                tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
-            elif fourcc == D3DFMT.BC5U:
-                self._mode = "RGB"
-                self.pixel_format = "BC5U"
-                tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
-            elif fourcc == D3DFMT.ATI2:
+                n = 5
+            elif fourcc in (D3DFMT.BC5U, D3DFMT.ATI2):
                 self._mode = "RGB"
                 self.pixel_format = "BC5"
-                tile = Image._Tile("bcn", extents, data_offs, (5, self.pixel_format))
+                n = 5
             elif fourcc == D3DFMT.DX10:
                 data_offs += 20
                 # ignoring flags which pertain to volume textures and cubemaps
@@ -431,53 +423,39 @@ class DdsImageFile(ImageFile.ImageFile):
                 ):
                     self._mode = "RGBA"
                     self.pixel_format = "BC1"
-                    tile = Image._Tile(
-                        "bcn", extents, data_offs, (1, self.pixel_format)
-                    )
+                    n = 1
                 elif dxgi_format in (DXGI_FORMAT.BC5_TYPELESS, DXGI_FORMAT.BC5_UNORM):
                     self._mode = "RGB"
                     self.pixel_format = "BC5"
-                    tile = Image._Tile(
-                        "bcn", extents, data_offs, (5, self.pixel_format)
-                    )
+                    n = 5
                 elif dxgi_format == DXGI_FORMAT.BC5_SNORM:
                     self._mode = "RGB"
                     self.pixel_format = "BC5S"
-                    tile = Image._Tile(
-                        "bcn", extents, data_offs, (5, self.pixel_format)
-                    )
+                    n = 5
                 elif dxgi_format == DXGI_FORMAT.BC6H_UF16:
                     self._mode = "RGB"
                     self.pixel_format = "BC6H"
-                    tile = Image._Tile(
-                        "bcn", extents, data_offs, (6, self.pixel_format)
-                    )
+                    n = 6
                 elif dxgi_format == DXGI_FORMAT.BC6H_SF16:
                     self._mode = "RGB"
                     self.pixel_format = "BC6HS"
-                    tile = Image._Tile(
-                        "bcn", extents, data_offs, (6, self.pixel_format)
-                    )
-                elif dxgi_format in (DXGI_FORMAT.BC7_TYPELESS, DXGI_FORMAT.BC7_UNORM):
+                    n = 6
+                elif dxgi_format in (
+                    DXGI_FORMAT.BC7_TYPELESS,
+                    DXGI_FORMAT.BC7_UNORM,
+                    DXGI_FORMAT.BC7_UNORM_SRGB,
+                ):
                     self._mode = "RGBA"
                     self.pixel_format = "BC7"
-                    tile = Image._Tile(
-                        "bcn", extents, data_offs, (7, self.pixel_format)
-                    )
-                elif dxgi_format == DXGI_FORMAT.BC7_UNORM_SRGB:
-                    self._mode = "RGBA"
-                    self.pixel_format = "BC7"
-                    self.info["gamma"] = 1 / 2.2
-                    tile = Image._Tile(
-                        "bcn", extents, data_offs, (7, self.pixel_format)
-                    )
+                    n = 7
+                    if dxgi_format == DXGI_FORMAT.BC7_UNORM_SRGB:
+                        self.info["gamma"] = 1 / 2.2
                 elif dxgi_format in (
                     DXGI_FORMAT.R8G8B8A8_TYPELESS,
                     DXGI_FORMAT.R8G8B8A8_UNORM,
                     DXGI_FORMAT.R8G8B8A8_UNORM_SRGB,
                 ):
                     self._mode = "RGBA"
-                    tile = Image._Tile("raw", extents, 0, ("RGBA", 0, 1))
                     if dxgi_format == DXGI_FORMAT.R8G8B8A8_UNORM_SRGB:
                         self.info["gamma"] = 1 / 2.2
                 else:
@@ -486,11 +464,15 @@ class DdsImageFile(ImageFile.ImageFile):
             else:
                 msg = f"Unimplemented pixel format {repr(fourcc)}"
                 raise NotImplementedError(msg)
-
-            self.tile = [tile]
         else:
-            msg = f"Unknown pixel format flags {repr(pfflags)}"
+            msg = f"Unknown pixel format flags {pfflags}"
             raise NotImplementedError(msg)
+
+        extents = (0, 0) + self.size
+        if n:
+            self.tile = [Image._Tile("bcn", extents, data_offs, (n, self.pixel_format))]
+        else:
+            self.tile = [Image._Tile("raw", extents, 0, rawmode or self.mode)]
 
     def load_seek(self, pos):
         pass
@@ -501,32 +483,34 @@ def _save(im, fp, filename):
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)
 
-    pixel_flags = DDPF.RGB
-    if im.mode == "RGB":
-        rgba_mask = struct.pack("<4I", 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000)
-        bit_count = 24
-    elif im.mode == "RGBA":
-        pixel_flags |= DDPF.ALPHAPIXELS
-        rgba_mask = struct.pack("<4I", 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000)
-        bit_count = 32
-        r, g, b, a = im.split()
-        im = Image.merge("RGBA", (a, r, g, b))
-    elif im.mode == "LA":
-        pixel_flags = DDPF.LUMINANCE | DDPF.ALPHAPIXELS
-        rgba_mask = struct.pack("<4I", 0x000000FF, 0x000000FF, 0x000000FF, 0x0000FF00)
-        bit_count = 16
-    else:  # im.mode == "L"
+    alpha = im.mode[-1] == "A"
+    if im.mode[0] == "L":
         pixel_flags = DDPF.LUMINANCE
-        rgba_mask = struct.pack("<4I", 0xFF000000, 0xFF000000, 0xFF000000, 0x00000000)
-        bit_count = 8
+        rawmode = im.mode
+        if alpha:
+            rgba_mask = [0x000000FF, 0x000000FF, 0x000000FF]
+        else:
+            rgba_mask = [0xFF000000, 0xFF000000, 0xFF000000]
+    else:
+        pixel_flags = DDPF.RGB
+        rawmode = im.mode[::-1]
+        rgba_mask = [0x00FF0000, 0x0000FF00, 0x000000FF]
+
+        if alpha:
+            r, g, b, a = im.split()
+            im = Image.merge("RGBA", (a, r, g, b))
+    if alpha:
+        pixel_flags |= DDPF.ALPHAPIXELS
+    rgba_mask.append(0xFF000000 if alpha else 0)
 
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PITCH | DDSD.PIXELFORMAT
-
+    bit_count = len(im.getbands()) * 8
     stride = (im.width * bit_count + 7) // 8
+
     fp.write(
         o32(DDS_MAGIC)
         + struct.pack(
-            "<IIIIIII",
+            "<7I",
             124,  # header size
             flags,  # flags
             im.height,
@@ -537,12 +521,11 @@ def _save(im, fp, filename):
         )
         + struct.pack("11I", *((0,) * 11))  # reserved
         # pfsize, pfflags, fourcc, bitcount
-        + struct.pack("<IIII", 32, pixel_flags, 0, bit_count)
-        + rgba_mask  # dwRGBABitMask
-        + struct.pack("<IIIII", DDSCAPS.TEXTURE, 0, 0, 0, 0)
+        + struct.pack("<4I", 32, pixel_flags, 0, bit_count)
+        + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
+        + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    mode = "LA" if im.mode == "LA" else im.mode[::-1]
-    ImageFile._save(im, fp, [Image._Tile("raw", (0, 0) + im.size, 0, (mode, 0, 1))])
+    ImageFile._save(im, fp, [Image._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
 
 def _accept(prefix):
