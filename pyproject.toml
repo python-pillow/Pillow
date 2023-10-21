@@ -6,3 +6,10 @@ requires = [
 backend-path = [
   "_custom_build",
 ]
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "-ra --color=yes"
+testpaths = ["Tests"]
