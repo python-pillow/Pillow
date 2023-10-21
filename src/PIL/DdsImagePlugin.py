@@ -403,7 +403,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self._mode = "RGBA"
                 self.pixel_format = "DXT5"
                 n = 3
-            elif fourcc == D3DFMT.ATI1 or fourcc == D3DFMT.BC4U:
+            elif fourcc in (D3DFMT.BC4U, D3DFMT.ATI1):
                 self._mode = "L"
                 self.pixel_format = "BC4"
                 n = 4
@@ -411,11 +411,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self._mode = "RGB"
                 self.pixel_format = "BC5S"
                 n = 5
-            elif fourcc == D3DFMT.BC5U:
-                self._mode = "RGB"
-                self.pixel_format = "BC5U"
-                n = 5
-            elif fourcc == D3DFMT.ATI2:
+            elif fourcc in (D3DFMT.BC5U, D3DFMT.ATI2):
                 self._mode = "RGB"
                 self.pixel_format = "BC5"
                 n = 5
@@ -488,32 +484,30 @@ def _save(im, fp, filename):
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)
 
-    pixel_flags = DDPF.RGB
-    if im.mode == "RGB":
-        rgba_mask = struct.pack("<4I", 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000)
-        bit_count = 24
-    elif im.mode == "RGBA":
-        pixel_flags |= DDPF.ALPHAPIXELS
-        rgba_mask = struct.pack("<4I", 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000)
-        bit_count = 32
+    if im.mode == "RGBA":
+        pixel_flags = DDPF.RGB | DDPF.ALPHAPIXELS
+        rgba_mask = (0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000)
+
         r, g, b, a = im.split()
         im = Image.merge("RGBA", (a, r, g, b))
+    elif im.mode == "RGB":
+        pixel_flags = DDPF.RGB
+        rgba_mask = (0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000)
     elif im.mode == "LA":
         pixel_flags = DDPF.LUMINANCE | DDPF.ALPHAPIXELS
-        rgba_mask = struct.pack("<4I", 0x000000FF, 0x000000FF, 0x000000FF, 0x0000FF00)
-        bit_count = 16
+        rgba_mask = (0x000000FF, 0x000000FF, 0x000000FF, 0x0000FF00)
     else:  # im.mode == "L"
         pixel_flags = DDPF.LUMINANCE
-        rgba_mask = struct.pack("<4I", 0xFF000000, 0xFF000000, 0xFF000000, 0x00000000)
-        bit_count = 8
+        rgba_mask = (0xFF000000, 0xFF000000, 0xFF000000, 0x00000000)
 
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PITCH | DDSD.PIXELFORMAT
-
+    bit_count = len(im.getbands()) * 8
     stride = (im.width * bit_count + 7) // 8
+
     fp.write(
         o32(DDS_MAGIC)
         + struct.pack(
-            "<IIIIIII",
+            "<7I",
             124,  # header size
             flags,  # flags
             im.height,
@@ -524,12 +518,12 @@ def _save(im, fp, filename):
         )
         + struct.pack("11I", *((0,) * 11))  # reserved
         # pfsize, pfflags, fourcc, bitcount
-        + struct.pack("<IIII", 32, pixel_flags, 0, bit_count)
-        + rgba_mask  # dwRGBABitMask
-        + struct.pack("<IIIII", DDSCAPS.TEXTURE, 0, 0, 0, 0)
+        + struct.pack("<4I", 32, pixel_flags, 0, bit_count)
+        + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
+        + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    mode = "LA" if im.mode == "LA" else im.mode[::-1]
-    ImageFile._save(im, fp, [Image._Tile("raw", (0, 0) + im.size, 0, (mode, 0, 1))])
+    rawmode = "LA" if im.mode == "LA" else im.mode[::-1]
+    ImageFile._save(im, fp, [Image._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
 
 def _accept(prefix):
