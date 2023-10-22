@@ -74,6 +74,9 @@ packages = ["PIL"]
 include-package-data = true
 package-dir = {"" = "src"}
 
+[tool.setuptools.dynamic]
+version = {attr = "PIL.__version__"}
+
 [tool.isort]
 profile = "black"
 

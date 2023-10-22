@@ -986,7 +986,6 @@ ext_modules = [
 
 try:
     setup(
-        version=PILLOW_VERSION,
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
         zip_safe=not (debug_build() or PLATFORM_MINGW),
