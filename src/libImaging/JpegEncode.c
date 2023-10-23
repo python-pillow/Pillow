@@ -210,6 +210,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             context->cinfo.smoothing_factor = context->smooth;
             context->cinfo.optimize_coding = (boolean)context->optimize;
+            context->cinfo.restart_interval = context->restart_marker_blocks;
+            context->cinfo.restart_in_rows = context->restart_marker_rows;
             if (context->xdpi > 0 && context->ydpi > 0) {
                 context->cinfo.write_JFIF_header = TRUE;
                 context->cinfo.density_unit = 1; /* dots per inch */
