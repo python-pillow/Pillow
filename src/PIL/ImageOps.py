@@ -56,7 +56,7 @@ def _lut(image, lut):
             lut = lut + lut + lut
         return image.point(lut)
     else:
-        msg = "not supported for image mode " + image.mode
+        msg = f"not supported for mode {image.mode}"
         raise OSError(msg)
 
 
