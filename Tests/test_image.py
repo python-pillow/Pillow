@@ -910,6 +910,9 @@ class TestImage:
     def test_zero_frombytes(self, size):
         Image.frombytes("RGB", size, b"")
 
+        im = Image.new("RGB", size)
+        im.frombytes(b"")
+
     def test_has_transparency_data(self):
         for mode in ("1", "L", "P", "RGB"):
             im = Image.new(mode, (1, 1))

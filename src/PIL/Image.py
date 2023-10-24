@@ -791,6 +791,9 @@ class Image:
         but loads data into this image instead of creating a new image object.
         """
 
+        if self.width == 0 or self.height == 0:
+            return
+
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
             args = args[0]
