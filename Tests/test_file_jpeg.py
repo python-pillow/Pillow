@@ -141,6 +141,16 @@ class TestFileJpeg:
             )
             assert k > 0.9
 
+    def test_rgb(self):
+        def getchannels(im):
+            return tuple(v[0] for v in im.layer)
+
+        im = self.roundtrip(hopper())
+        assert getchannels(im) == (1, 2, 3)
+        im = self.roundtrip(hopper(), keep_rgb=True)
+        assert getchannels(im) == (ord("R"), ord("G"), ord("B"))
+        assert_image_similar(hopper(), im, 12)
+
     @pytest.mark.parametrize(
         "test_image_path",
         [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
@@ -444,6 +454,10 @@ class TestFileJpeg:
 
         with pytest.raises(TypeError):
             self.roundtrip(hopper(), subsampling="1:1:1")
+
+        # RGB colorspace, no subsampling by default
+        im = self.roundtrip(hopper(), subsampling=3, keep_rgb=True)
+        assert getsampling(im) == (1, 1, 1, 1, 1, 1)
 
     def test_exif(self):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:

@@ -781,6 +781,7 @@ def _save(im, fp, filename):
         progressive,
         info.get("smooth", 0),
         optimize,
+        info.get("keep_rgb", False),
         info.get("streamtype", 0),
         dpi[0],
         dpi[1],

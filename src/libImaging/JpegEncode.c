@@ -137,6 +137,20 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             /* Compressor configuration */
             jpeg_set_defaults(&context->cinfo);
 
+            /* Prevent RGB -> YCbCr conversion */
+            if (context->keep_rgb) {
+                switch (context->cinfo.in_color_space) {
+                    case JCS_RGB:
+#ifdef JCS_EXTENSIONS
+                    case JCS_EXT_RGBX:
+#endif
+                        jpeg_set_colorspace(&context->cinfo, JCS_RGB);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             /* Use custom quantization tables */
             if (context->qtables) {
                 int i;
