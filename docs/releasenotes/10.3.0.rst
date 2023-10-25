@@ -26,10 +26,12 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+JPEG app segments
+^^^^^^^^^^^^^^^^^
 
-TODO
+When saving JPEG files, ``no_default_app_segments`` can now be set to ``True`` to store
+the image without default JFIF and Adobe application segments.  The JFIF segment will
+still be stored if ``dpi`` is also specified.
 
 Security
 ========

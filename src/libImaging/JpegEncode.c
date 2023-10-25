@@ -161,6 +161,13 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 }
             }
 
+            /* Disable app markers if the colorspace enabled them.
+               xdpi/ydpi will still override this. */
+            if (context->no_default_app_segments) {
+                context->cinfo.write_JFIF_header = FALSE;
+                context->cinfo.write_Adobe_marker = FALSE;
+            }
+
             /* Use custom quantization tables */
             if (context->qtables) {
                 int i;
