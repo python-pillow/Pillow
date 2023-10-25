@@ -340,6 +340,12 @@ def test_open(mode, test_file):
         assert_image_equal_tofile(im, test_file.replace(".dds", ".png"))
 
 
+def test_open_rgb8():
+    with Image.open("Tests/images/rgb8.dds") as im:
+        assert im.mode == "L"
+        assert_image_equal_tofile(im, "Tests/images/mode-l.png")
+
+
 @pytest.mark.parametrize(
     ("mode", "test_file"),
     [
