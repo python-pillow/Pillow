@@ -368,12 +368,6 @@ class DdsImageFile(ImageFile.ImageFile):
                 msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
             rawmode = rawmode[::-1]
-        elif pfflags & DDPF.ALPHA:
-            if bitcount == 8:
-                self._mode = "L"
-            else:
-                msg = f"Unsupported bitcount {bitcount} for {pfflags}"
-                raise OSError(msg)
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self._mode = "L"
