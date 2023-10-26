@@ -46,6 +46,16 @@ if [[ $(uname) != CYGWIN* ]]; then
         python3 -m pip install pyqt6
     fi
 
+    # Pyroma uses non-isolated build and fails with old setuptools
+    if [[
+        $GHA_PYTHON_VERSION == pypy3.9
+        || $GHA_PYTHON_VERSION == 3.8
+        || $GHA_PYTHON_VERSION == 3.9
+    ]]; then
+        # To match pyproject.toml
+        python3 -m pip install "setuptools>=67.8"
+    fi
+
     # webp
     pushd depends && ./install_webp.sh && popd
 

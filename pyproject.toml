@@ -6,3 +6,80 @@ requires = [
 backend-path = [
   "_custom_build",
 ]
+
+[project]
+name = "pillow"
+description = "Python Imaging Library (Fork)"
+readme = "README.md"
+keywords = [
+  "Imaging",
+]
+license = {text = "HPND"}
+authors = [{name = "Jeffrey A. Clark (Alex)", email = "aclark@aclark.net"}]
+requires-python = ">=3.8"
+classifiers = [
+  "Development Status :: 6 - Mature",
+  "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+  "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+  "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+  "Topic :: Multimedia :: Graphics :: Viewers",
+]
+dynamic = [
+  "version",
+]
+[project.optional-dependencies]
+docs = [
+  "furo",
+  "olefile",
+  "sphinx>=2.4",
+  "sphinx-copybutton",
+  "sphinx-inline-tabs",
+  "sphinx-removed-in",
+  "sphinxext-opengraph",
+]
+tests = [
+  "check-manifest",
+  "coverage",
+  "defusedxml",
+  "markdown2",
+  "olefile",
+  "packaging",
+  "pyroma",
+  "pytest",
+  "pytest-cov",
+  "pytest-timeout",
+]
+[project.urls]
+Changelog = "https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst"
+Documentation = "https://pillow.readthedocs.io"
+Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
+Homepage = "https://python-pillow.org"
+Mastodon = "https://fosstodon.org/@pillow"
+"Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
+Source = "https://github.com/python-pillow/Pillow"
+Twitter = "https://twitter.com/PythonPillow"
+
+[tool.setuptools]
+packages = ["PIL"]
+include-package-data = true
+package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+version = {attr = "PIL.__version__"}
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "-ra --color=yes"
+testpaths = ["Tests"]

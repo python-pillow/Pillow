@@ -356,7 +356,7 @@ for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
 additional configuration should be required. If they are installed in
 a non-standard location, you may need to configure setuptools to use
 those locations by editing :file:`setup.py` or
-:file:`setup.cfg`, or by adding environment variables on the command
+:file:`pyproject.toml`, or by adding environment variables on the command
 line::
 
     CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow --no-binary :all:
