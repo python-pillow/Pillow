@@ -433,6 +433,12 @@ def test_exif_transpose_in_place():
         assert_image_equal(im, expected)
 
 
+def test_autocontrast_unsupported_mode():
+    im = Image.new("RGBA", (1, 1))
+    with pytest.raises(OSError):
+        ImageOps.autocontrast(im)
+
+
 def test_autocontrast_cutoff():
     # Test the cutoff argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
