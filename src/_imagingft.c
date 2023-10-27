@@ -1062,7 +1062,7 @@ font_render(FontObject *self, PyObject *args) {
                         float src_alpha = (float) source[k * 4 + 3] / 255.0;
                         float dst_alpha = (float) target[k * 4 + 3] / 255.0;
                         float out_alpha = src_alpha + dst_alpha * (1.0 - src_alpha);
-                        
+
                         /* unpremultiply BGRa to RGBA */
                         int src_red = source[k * 4 + 0];
                         int src_grn = source[k * 4 + 1];
