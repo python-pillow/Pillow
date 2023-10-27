@@ -1059,16 +1059,25 @@ font_render(FontObject *self, PyObject *args) {
                 if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
                     /* paste color glyph */
                     for (k = x0; k < x1; k++) {
-                        if (target[k * 4 + 3] < source[k * 4 + 3]) {
-                            /* unpremultiply BGRa to RGBA */
-                            target[k * 4 + 0] = CLIP8(
-                                (255 * (int)source[k * 4 + 2]) / source[k * 4 + 3]);
-                            target[k * 4 + 1] = CLIP8(
-                                (255 * (int)source[k * 4 + 1]) / source[k * 4 + 3]);
-                            target[k * 4 + 2] = CLIP8(
-                                (255 * (int)source[k * 4 + 0]) / source[k * 4 + 3]);
-                            target[k * 4 + 3] = source[k * 4 + 3];
-                        }
+                        float src_alpha = (float) source[k * 4 + 3] / 255.0;
+                        float dst_alpha = (float) target[k * 4 + 3] / 255.0;
+                        float out_alpha = src_alpha + dst_alpha * (1.0 - src_alpha);
+                        
+                        /* unpremultiply BGRa to RGBA */
+                        int src_red = source[k * 4 + 0];
+                        int src_grn = source[k * 4 + 1];
+                        int src_blu = source[k * 4 + 2];
+
+                        int dst_blu = target[k * 4 + 0];
+                        int dst_grn = target[k * 4 + 1];
+                        int dst_red = target[k * 4 + 2];
+
+                        /* blend color values */
+                        target[k * 4 + 0] = CLIP8((src_blu * src_alpha + dst_blu * dst_alpha * (1.0 - src_alpha)) / out_alpha);
+                        target[k * 4 + 1] = CLIP8((src_grn * src_alpha + dst_grn * dst_alpha * (1.0 - src_alpha)) / out_alpha);
+                        target[k * 4 + 2] = CLIP8((src_red * src_alpha + dst_red * dst_alpha * (1.0 - src_alpha)) / out_alpha);
+
+                        target[k * 4 + 3] = CLIP8(out_alpha * 255.0);
                     }
                 } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
                     if (color) {
