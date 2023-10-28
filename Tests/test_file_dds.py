@@ -306,8 +306,19 @@ def test_palette():
 @pytest.mark.parametrize(
     "test_file",
     (
-        "Tests/images/unknown_fourcc.dds",
-        "Tests/images/unimplemented_fourcc.dds",
+        "Tests/images/unsupported_bitcount_rgb.dds",
+        "Tests/images/unsupported_bitcount_luminance.dds",
+    ),
+)
+def test_unsupported_bitcount(test_file):
+    with pytest.raises(OSError):
+        with Image.open(test_file):
+            pass
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    (
         "Tests/images/unimplemented_dxgi_format.dds",
         "Tests/images/unimplemented_pfflags.dds",
     ),
