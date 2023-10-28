@@ -346,8 +346,6 @@ class DdsImageFile(ImageFile.ImageFile):
         # pixel format
         pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header.read(16))
         masks = struct.unpack("<4I", header.read(16))
-        if flags & DDSD.CAPS:
-            header.seek(20, io.SEEK_CUR)
         n = 0
         rawmode = None
         if pfflags & DDPF.RGB:
