@@ -239,7 +239,7 @@ def eval(expression, _dict={}, **kw):
     args = ops.copy()
     args.update(_dict)
     args.update(kw)
-    for k, v in list(args.items()):
+    for k, v in args.items():
         if hasattr(v, "im"):
             args[k] = _Operand(v)
 
