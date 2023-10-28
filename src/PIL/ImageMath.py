@@ -234,13 +234,14 @@ def eval(expression, _dict={}, **kw):
 
     # build execution namespace
     args = ops.copy()
-    args.update(_dict)
-    args.update(kw)
-    for k, v in args.items():
-        if '__' in k or hasattr(__builtins__, k):
+    for k in list(_dict.keys()) + list(kw.keys()):
+        if "__" in k or hasattr(__builtins__, k):
             msg = f"'{k}' not allowed"
             raise ValueError(msg)
 
+    args.update(_dict)
+    args.update(kw)
+    for k, v in args.items():
         if hasattr(v, "im"):
             args[k] = _Operand(v)
 

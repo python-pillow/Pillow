@@ -64,6 +64,11 @@ def test_prevent_exec(expression):
         ImageMath.eval(expression)
 
 
+def test_prevent_double_underscores():
+    with pytest.raises(ValueError):
+        ImageMath.eval("1", {"__": None})
+
+
 def test_logical():
     assert pixel(ImageMath.eval("not A", images)) == 0
     assert pixel(ImageMath.eval("A and B", images)) == "L 2"
