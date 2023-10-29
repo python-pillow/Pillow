@@ -9,8 +9,8 @@ env:
 
 language: python
 # Default Python version is usually 3.6
-python: "3.11"
-dist: focal
+python: "3.12"
+dist: jammy
 services: docker
 
 jobs:
