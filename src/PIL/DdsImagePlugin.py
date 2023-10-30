@@ -263,7 +263,7 @@ class D3DFMT(IntEnum):
     MULTI2_ARGB8 = i32(b"MET1")
 
 
-# Backward compat layer
+# Backward compatibility layer
 module = sys.modules[__name__]
 for item in DDSD:
     setattr(module, "DDSD_" + item.name, item.value)
