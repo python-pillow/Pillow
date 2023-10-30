@@ -392,7 +392,7 @@ if __name__ == "__main__":
         imf = IcnsImageFile(fp)
         for size in imf.info["sizes"]:
             imf.size = size
-            imf.save("out-%s-%s-%s.png" % size)
+            imf.save("out-%s-%s-%s.png" % size)  # noqa: UP031
         with Image.open(sys.argv[1]) as im:
             im.save("out.png")
         if sys.platform == "windows":
