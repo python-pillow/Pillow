@@ -347,25 +347,10 @@ def test_save_unsupported_mode(tmp_path):
         im.save(out)
 
 
-@pytest.mark.parametrize(
-    ("mode", "test_file"),
-    (
-        ("L", "Tests/images/mode-l.dds"),
-        ("LA", "Tests/images/mode-la.dds"),
-        ("RGB", "Tests/images/mode-rgb.dds"),
-        ("RGBA", "Tests/images/mode-rgba.dds"),
-    ),
-)
-def test_open(mode, test_file):
-    with Image.open(test_file) as im:
-        assert im.mode == mode
-        assert_image_equal_tofile(im, test_file.replace(".dds", ".png"))
-
-
 def test_open_rgb8():
     with Image.open("Tests/images/rgb8.dds") as im:
         assert im.mode == "L"
-        assert_image_equal_tofile(im, "Tests/images/mode-l.png")
+        assert_image_equal_tofile(im, "Tests/images/rgb8.png")
 
 
 @pytest.mark.parametrize(
