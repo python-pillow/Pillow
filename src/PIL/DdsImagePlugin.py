@@ -346,31 +346,24 @@ class DdsImageFile(ImageFile.ImageFile):
         # pixel format
         pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header.read(16))
         masks = struct.unpack("<4I", header.read(16))
-        if flags & DDSD.CAPS:
-            header.seek(20, io.SEEK_CUR)
         n = 0
         rawmode = None
         if pfflags & DDPF.RGB:
             # Texture contains uncompressed RGB data
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
-            if bitcount == 24:
+            if bitcount == 8:
+                self._mode = "L"
+            elif bitcount == 24:
                 self._mode = "RGB"
-                rawmode = masks[0x00FF0000] + masks[0x0000FF00] + masks[0x000000FF]
+                rawmode = masks[0x000000FF] + masks[0x0000FF00] + masks[0x00FF0000]
             elif bitcount == 32 and pfflags & DDPF.ALPHAPIXELS:
                 self._mode = "RGBA"
                 rawmode = (
-                    masks[0xFF000000]
-                    + masks[0x00FF0000]
+                    masks[0x000000FF]
                     + masks[0x0000FF00]
-                    + masks[0x000000FF]
+                    + masks[0x00FF0000]
+                    + masks[0xFF000000]
                 )
-            else:
-                msg = f"Unsupported bitcount {bitcount} for {pfflags}"
-                raise OSError(msg)
-            rawmode = rawmode[::-1]
-        elif pfflags & DDPF.ALPHA:
-            if bitcount == 8:
-                self._mode = "L"
             else:
                 msg = f"Unsupported bitcount {bitcount} for {pfflags}"
                 raise OSError(msg)
@@ -418,7 +411,6 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.fp.read(16)
                 if dxgi_format in (
                     DXGI_FORMAT.BC1_UNORM,
-                    DXGI_FORMAT.BC1_UNORM_SRGB,
                     DXGI_FORMAT.BC1_TYPELESS,
                 ):
                     self._mode = "RGBA"
