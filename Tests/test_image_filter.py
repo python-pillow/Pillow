@@ -140,15 +140,14 @@ def test_consistency_3x3(mode):
         reference_name = "hopper_emboss"
         reference_name += "_I.png" if mode == "I" else ".bmp"
         with Image.open("Tests/images/" + reference_name) as reference:
-            kernel = ImageFilter.Kernel(
-                (3, 3),
-                # fmt: off
-                (-1, -1,  0,
-                 -1,  0,  1,
-                 0,   1,  1),
-                # fmt: on
-                0.3,
+            # fmt: off
+            kern = (
+                -1, -1, 0,
+                -1,  0, 1,
+                 0,  1, 1,
             )
+            # fmt: on
+            kernel = ImageFilter.Kernel((3, 3), kern, 0.3)
             source = source.split() * 2
             reference = reference.split() * 2
 
@@ -166,17 +165,16 @@ def test_consistency_5x5(mode):
         reference_name = "hopper_emboss_more"
         reference_name += "_I.png" if mode == "I" else ".bmp"
         with Image.open("Tests/images/" + reference_name) as reference:
-            kernel = ImageFilter.Kernel(
-                (5, 5),
-                # fmt: off
-                (-1, -1, -1, -1,  0,
+            # fmt: off
+            kern = (
+                 -1, -1, -1, -1,  0,
                  -1, -1, -1,  0,  1,
                  -1, -1,  0,  1,  1,
                  -1,  0,  1,  1,  1,
-                 0,   1,  1,  1,  1),
-                # fmt: on
-                0.3,
+                 0,   1,  1,  1,  1,
             )
+            # fmt: on
+            kernel = ImageFilter.Kernel((5, 5), kern, 0.3)
             source = source.split() * 2
             reference = reference.split() * 2
 
