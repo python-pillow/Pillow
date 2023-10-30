@@ -338,6 +338,7 @@ extlinks = {
     "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
     "issue": (_repo + "issues/%s", "#%s"),
     "pr": (_repo + "pull/%s", "#%s"),
+    "pypi": ("https://pypi.org/project/%s/", "%s"),
 }
 
 # sphinxext.opengraph

@@ -1296,7 +1296,7 @@ Pillow reads Kodak FlashPix files. In the current version, only the highest
 resolution image is read from the file, and the viewing transform is not taken
 into account.
 
-To enable FPX support, you must install olefile.
+To enable FPX support, you must install :pypi:`olefile`.
 
 .. note::
 
@@ -1374,7 +1374,7 @@ the first sprite in the file is loaded. You can use :py:meth:`~PIL.Image.Image.s
 
 Note that there may be an embedded gamma of 2.2 in MIC files.
 
-To enable MIC support, you must install olefile.
+To enable MIC support, you must install :pypi:`olefile`.
 
 MPO
 ^^^
