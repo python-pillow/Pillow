@@ -17,7 +17,10 @@ class TestTTypeFontLeak(PillowLeakTestCase):
         draw = ImageDraw.ImageDraw(im)
         self._test_leak(
             lambda: draw.text(
-                (0, 0), "some text " * 1024, font=font, fill="black"  # ~10k
+                (0, 0),
+                "some text " * 1024,  # ~10k
+                font=font,
+                fill="black",
             )
         )
 

@@ -113,13 +113,15 @@ class IndirectObjectDef(IndirectReference):
 
 class XrefTable:
     def __init__(self) -> None:
-        self.existing_entries: dict[int, tuple[int, int]] = (
-            {}
-        )  # object ID => (offset, generation)
-        self.new_entries: dict[int, tuple[int, int]] = (
-            {}
-        )  # object ID => (offset, generation)
-        self.deleted_entries = {0: 65536}  # object ID => generation
+        # object ID => (offset, generation)
+        self.existing_entries: dict[int, tuple[int, int]] = {}
+
+        # object ID => (offset, generation)
+        self.new_entries: dict[int, tuple[int, int]] = {}
+
+        # object ID => generation
+        self.deleted_entries = {0: 65536}
+
         self.reading_finished = False
 
     def __setitem__(self, key: int, value: tuple[int, int]) -> None:

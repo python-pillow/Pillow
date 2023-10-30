@@ -698,7 +698,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     def validate_qtables(
         qtables: (
             str | tuple[list[int], ...] | list[list[int]] | dict[int, list[int]] | None
-        )
+        ),
     ) -> list[list[int]] | None:
         if qtables is None:
             return qtables

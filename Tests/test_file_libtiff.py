@@ -313,7 +313,7 @@ class TestFileLibTiff(LibTiffTestCase):
         }
 
         def check_tags(
-            tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str]
+            tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str],
         ) -> None:
             im = hopper()
 
@@ -626,7 +626,6 @@ class TestFileLibTiff(LibTiffTestCase):
         # Act
         monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open(test_file) as im:
-
             # Assert
             assert im.size == (128, 128)
             assert im.mode == "L"
