@@ -149,15 +149,15 @@ def test_kernel_not_enough_coefficients() -> None:
 def test_consistency_3x3(mode: str) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss.bmp") as reference:
+            # fmt: off
             kernel = ImageFilter.Kernel(
                 (3, 3),
-                # fmt: off
                 (-1, -1,  0,
                  -1,  0,  1,
                  0,   1,  1),
-                # fmt: on
                 0.3,
             )
+                # fmt: on
             assert_image_equal(source.filter(kernel), reference)
 
 
@@ -165,17 +165,17 @@ def test_consistency_3x3(mode: str) -> None:
 def test_consistency_5x5(mode: str) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
+            # fmt: off
             kernel = ImageFilter.Kernel(
                 (5, 5),
-                # fmt: off
                 (-1, -1, -1, -1,  0,
                  -1, -1, -1,  0,  1,
                  -1, -1,  0,  1,  1,
                  -1,  0,  1,  1,  1,
                  0,   1,  1,  1,  1),
-                # fmt: on
                 0.3,
             )
+            # fmt: on
             assert_image_equal(source.filter(kernel), reference)
 
 
