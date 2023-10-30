@@ -52,7 +52,6 @@ if sys.platform == "win32" and sys.version_info >= (3, 13):
         )
     )
 
-
 _IMAGING = ("decode", "encode", "map", "display", "outline", "path")
 
 _LIB_IMAGING = (
@@ -418,11 +417,11 @@ class pil_build_ext(build_ext):
             )
         except Exception:
             sdk_path = None
-        if (
-            not sdk_path
-            or sdk_path == "/Applications/Xcode.app/Contents/Developer"
+        xcode_sdk_path = (
+            "/Applications/Xcode.app/Contents/Developer"
             "/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-        ):
+        )
+        if not sdk_path or sdk_path == xcode_sdk_path:
             commandlinetools_sdk_path = (
                 "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
             )

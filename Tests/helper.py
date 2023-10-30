@@ -119,8 +119,8 @@ def assert_image_similar(a, b, epsilon, msg=None):
     ave_diff = diff / (a.size[0] * a.size[1])
     try:
         assert epsilon >= ave_diff, (
-            (msg or "")
-            + f" average pixel value difference {ave_diff:.4f} > epsilon {epsilon:.4f}"
+            f"{msg or ""} average pixel value difference "
+            f"{ave_diff:.4f} > epsilon {epsilon:.4f}"
         )
     except Exception as e:
         if HAS_UPLOADER:
