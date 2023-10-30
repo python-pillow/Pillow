@@ -17,6 +17,7 @@ TEST_FILE_DX10_BC5_UNORM = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC5_SNORM = "Tests/images/bc5_snorm.dds"
 TEST_FILE_DX10_BC1 = "Tests/images/bc1.dds"
 TEST_FILE_DX10_BC1_TYPELESS = "Tests/images/bc1_typeless.dds"
+TEST_FILE_BC4U = "Tests/images/bc4u.dds"
 TEST_FILE_BC5S = "Tests/images/bc5s.dds"
 TEST_FILE_BC5U = "Tests/images/bc5u.dds"
 TEST_FILE_BC6H = "Tests/images/bc6h.dds"
@@ -80,10 +81,18 @@ def test_sanity_dxt5():
     assert_image_equal_tofile(im, TEST_FILE_DXT5.replace(".dds", ".png"))
 
 
-def test_sanity_ati1():
+@pytest.mark.parametrize(
+    "image_path",
+    (
+        TEST_FILE_ATI1,
+        # hexeditted to use BC4U FourCC
+        TEST_FILE_BC4U,
+    ),
+)
+def test_sanity_ati1_bc4u(image_path):
     """Check ATI1 images can be opened"""
 
-    with Image.open(TEST_FILE_ATI1) as im:
+    with Image.open(image_path) as im:
         im.load()
 
         assert im.format == "DDS"
@@ -208,12 +217,6 @@ def test_dx10_r8g8b8a8_unorm_srgb():
         assert_image_equal_tofile(
             im, TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB.replace(".dds", ".png")
         )
-
-
-def test_unimplemented_dxgi_format():
-    with pytest.raises(NotImplementedError):
-        with Image.open("Tests/images/unimplemented_dxgi_format.dds"):
-            pass
 
 
 @pytest.mark.parametrize(
