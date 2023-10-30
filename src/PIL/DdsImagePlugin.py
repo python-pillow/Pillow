@@ -345,11 +345,11 @@ class DdsImageFile(ImageFile.ImageFile):
 
         # pixel format
         pfsize, pfflags, fourcc, bitcount = struct.unpack("<4I", header.read(16))
-        masks = struct.unpack("<4I", header.read(16))
         n = 0
         rawmode = None
         if pfflags & DDPF.RGB:
             # Texture contains uncompressed RGB data
+            masks = struct.unpack("<4I", header.read(16))
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
             if bitcount == 8:
                 self._mode = "L"
