@@ -411,7 +411,6 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.fp.read(16)
                 if dxgi_format in (
                     DXGI_FORMAT.BC1_UNORM,
-                    DXGI_FORMAT.BC1_UNORM_SRGB,
                     DXGI_FORMAT.BC1_TYPELESS,
                 ):
                     self._mode = "RGBA"

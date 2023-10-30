@@ -15,6 +15,8 @@ TEST_FILE_ATI2 = "Tests/images/ati2.dds"
 TEST_FILE_DX10_BC5_TYPELESS = "Tests/images/bc5_typeless.dds"
 TEST_FILE_DX10_BC5_UNORM = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC5_SNORM = "Tests/images/bc5_snorm.dds"
+TEST_FILE_DX10_BC1 = "Tests/images/bc1.dds"
+TEST_FILE_DX10_BC1_TYPELESS = "Tests/images/bc1_typeless.dds"
 TEST_FILE_BC5S = "Tests/images/bc5s.dds"
 TEST_FILE_BC5U = "Tests/images/bc5u.dds"
 TEST_FILE_BC6H = "Tests/images/bc6h.dds"
@@ -29,11 +31,20 @@ TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/hopper.dds"
 TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 
 
-def test_sanity_dxt1():
+@pytest.mark.parametrize(
+    "image_path",
+    (
+        TEST_FILE_DXT1,
+        # hexeditted to use DX10 FourCC
+        TEST_FILE_DX10_BC1,
+        TEST_FILE_DX10_BC1_TYPELESS,
+    ),
+)
+def test_sanity_bc1(image_path):
     """Check DXT1 images can be opened"""
     with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
         target = target.convert("RGBA")
-    with Image.open(TEST_FILE_DXT1) as im:
+    with Image.open(image_path) as im:
         im.load()
 
         assert im.format == "DDS"
