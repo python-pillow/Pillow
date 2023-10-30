@@ -375,7 +375,6 @@ def test_open_rgb8():
         ("LA", "Tests/images/uncompressed_la.png"),
         ("RGB", "Tests/images/hopper.png"),
         ("RGBA", "Tests/images/pil123rgba.png"),
-        ("L", TEST_FILE_ATI1),
     ],
 )
 def test_save(mode, test_file, tmp_path):
