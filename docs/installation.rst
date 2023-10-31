@@ -42,8 +42,7 @@ Install Pillow with :command:`pip`::
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
-:pypi:`olefile` can additionally be installed to allow Pillow to read FPX and
-MIC images::
+Optionally, install :pypi:`olefile` for Pillow to read FPX and MIC images::
 
     python3 -m pip install --upgrade olefile
 
