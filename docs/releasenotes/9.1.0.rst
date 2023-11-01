@@ -8,14 +8,14 @@ Raise an error when performing a negative crop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Performing a negative crop on an image previously just returned a ``(0, 0)`` image. Now
-it will raise a ``ValueError``, to help reduce confusion if a user has unintentionally
+it will raise a :py:exc:`ValueError`, to help reduce confusion if a user has unintentionally
 provided the wrong arguments.
 
 Added specific error if path coordinate type is incorrect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Rather than returning a ``SystemError``, passing the incorrect types of coordinates into
-a path will now raise a more specific ``ValueError``, with the message "incorrect
+Rather than returning a :py:exc:`SystemError`, passing the incorrect types of coordinates into
+a path will now raise a more specific :py:exc:`ValueError`, with the message "incorrect
 coordinate type".
 
 Replace requirements.txt with extras

@@ -103,7 +103,7 @@ ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some attributes in ``ImageCms.CmsProfile`` have been deprecated since Pillow 3.2.0. From
-6.0.0, they issue a ``DeprecationWarning``:
+6.0.0, they issue a :py:exc:`DeprecationWarning`:
 
 ========================  ===============================
 Deprecated                Use instead

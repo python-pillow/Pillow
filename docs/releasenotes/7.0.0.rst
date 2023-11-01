@@ -85,7 +85,7 @@ Custom unidentified image error
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow will now throw a custom ``UnidentifiedImageError`` when an image cannot be
-identified. For backwards compatibility, this will inherit from ``OSError``.
+identified. For backwards compatibility, this will inherit from :py:exc:`OSError`.
 
 New argument ``reducing_gap`` for Image.resize() and Image.thumbnail() methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
