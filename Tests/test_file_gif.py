@@ -1142,6 +1142,12 @@ def test_rgba_transparency(tmp_path):
         assert_image_equal(hopper("P").convert("RGB"), reloaded)
 
 
+def test_background_outside_palettte(tmp_path):
+    with Image.open("Tests/images/background_outside_palette.gif") as im:
+        im.seek(1)
+        assert im.info["background"] == 255
+
+
 def test_bbox(tmp_path):
     out = str(tmp_path / "temp.gif")
 
