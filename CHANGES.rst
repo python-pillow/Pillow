@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+10.2.0 (unreleased)
+-------------------
+
+- Fixed frombytes() for images with a zero dimension #7493
+  [radarhere]
+
 10.1.0 (2023-10-15)
 -------------------
 

@@ -42,6 +42,11 @@ Install Pillow with :command:`pip`::
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
+Optionally, install :pypi:`defusedxml` for Pillow to read XMP data,
+and :pypi:`olefile` for Pillow to read FPX and MIC images::
+
+    python3 -m pip install --upgrade defusedxml olefile
+
 
 .. tab:: Linux
 
@@ -456,8 +461,6 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | Debian 12 Bookworm               | 3.11                       | x86, x86-64         |
 +----------------------------------+----------------------------+---------------------+
-| Fedora 37                        | 3.11                       | x86-64              |
-+----------------------------------+----------------------------+---------------------+
 | Fedora 38                        | 3.11                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Gentoo                           | 3.9                        | x86-64              |
@@ -478,7 +481,7 @@ These platforms are built and tested for every change.
 | Windows Server 2022              | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
 |                                  | 3.12, PyPy3                |                     |
 |                                  +----------------------------+---------------------+
-|                                  | 3.11                       | x86                 |
+|                                  | 3.12                       | x86                 |
 |                                  +----------------------------+---------------------+
 |                                  | 3.9 (MinGW)                | x86-64              |
 |                                  +----------------------------+---------------------+

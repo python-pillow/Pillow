@@ -906,6 +906,13 @@ class TestImage:
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
 
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero_frombytes(self, size):
+        Image.frombytes("RGB", size, b"")
+
+        im = Image.new("RGB", size)
+        im.frombytes(b"")
+
     def test_has_transparency_data(self):
         for mode in ("1", "L", "P", "RGB"):
             im = Image.new(mode, (1, 1))
