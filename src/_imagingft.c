@@ -1049,6 +1049,7 @@ font_render(FontObject *self, PyObject *args) {
                 int k;
                 unsigned char v;
                 unsigned char *target;
+                unsigned int tmp;
                 if (color) {
                     /* target[RGB] returns the color, target[A] returns the mask */
                     /* target bands get split again in ImageDraw.text */
@@ -1059,25 +1060,33 @@ font_render(FontObject *self, PyObject *args) {
                 if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
                     /* paste color glyph */
                     for (k = x0; k < x1; k++) {
-                        float src_alpha = (float) source[k * 4 + 3] / 255.0;
-                        float dst_alpha = (float) target[k * 4 + 3] / 255.0;
-                        float out_alpha = src_alpha + dst_alpha * (1.0 - src_alpha);
-                        
-                        /* unpremultiply BGRa to RGBA */
-                        int src_red = source[k * 4 + 0];
-                        int src_grn = source[k * 4 + 1];
-                        int src_blu = source[k * 4 + 2];
+                        int src_alpha = source[k * 4 + 3];
 
-                        int dst_blu = target[k * 4 + 0];
-                        int dst_grn = target[k * 4 + 1];
-                        int dst_red = target[k * 4 + 2];
+                        /* paste only if source has data */
+                        if (src_alpha > 0) {
+                            /* unpremultiply RGBA */
+                            int src_red = CLIP8((255 * (int)source[k * 4 + 0]) / src_alpha);
+                            int src_grn = CLIP8((255 * (int)source[k * 4 + 1]) / src_alpha);
+                            int src_blu = CLIP8((255 * (int)source[k * 4 + 2]) / src_alpha);
 
-                        /* blend color values */
-                        target[k * 4 + 0] = CLIP8((src_blu * src_alpha + dst_blu * dst_alpha * (1.0 - src_alpha)) / out_alpha);
-                        target[k * 4 + 1] = CLIP8((src_grn * src_alpha + dst_grn * dst_alpha * (1.0 - src_alpha)) / out_alpha);
-                        target[k * 4 + 2] = CLIP8((src_red * src_alpha + dst_red * dst_alpha * (1.0 - src_alpha)) / out_alpha);
+                            /* blend required if target has data */
+                            if (target[k * 4 + 3] > 0) {
+                                /* blend colors to BGRa */
+                                target[k * 4 + 0] = BLEND(src_alpha, target[k * 4 + 0], src_blu, tmp);
+                                target[k * 4 + 1] = BLEND(src_alpha, target[k * 4 + 1], src_grn, tmp);
+                                target[k * 4 + 2] = BLEND(src_alpha, target[k * 4 + 2], src_red, tmp);
 
-                        target[k * 4 + 3] = CLIP8(out_alpha * 255.0);
+                                /* blend alpha */
+                                int out_alpha = CLIP8(src_alpha + MULDIV255(target[k * 4 + 3], (255 - src_alpha), tmp));
+                                target[k * 4 + 3] = out_alpha;
+                            } else {
+                                /* paste source directly to BGRa */
+                                target[k * 4 + 0] = src_blu;
+                                target[k * 4 + 1] = src_grn;
+                                target[k * 4 + 2] = src_red;
+                                target[k * 4 + 3] = src_alpha;
+                            }
+                        }
                     }
                 } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
                     if (color) {
