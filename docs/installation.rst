@@ -42,6 +42,11 @@ Install Pillow with :command:`pip`::
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
+Optionally, install :pypi:`defusedxml` for Pillow to read XMP data,
+and :pypi:`olefile` for Pillow to read FPX and MIC images::
+
+    python3 -m pip install --upgrade defusedxml olefile
+
 
 .. tab:: Linux
 
