@@ -856,7 +856,14 @@ def test_identical_frames(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "duration", ([1000, 1500, 2000, 4000], (1000, 1500, 2000, 4000), 8500)
+    "duration",
+    (
+        [1000, 1500, 2000],
+        (1000, 1500, 2000),
+        # One more duration than the number of frames
+        [1000, 1500, 2000, 4000],
+        1500,
+    ),
 )
 def test_identical_frames_to_single_frame(duration, tmp_path):
     out = str(tmp_path / "temp.gif")
@@ -872,7 +879,7 @@ def test_identical_frames_to_single_frame(duration, tmp_path):
         assert reread.n_frames == 1
 
         # Assert that the new duration is the total of the identical frames
-        assert reread.info["duration"] == 8500
+        assert reread.info["duration"] == 4500
 
 
 def test_loop_none(tmp_path):
