@@ -22,9 +22,10 @@ Catch OSError when checking if destination is sys.stdout
 ========================================================
 
 In 8.3.0, a check to see if the destination was ``sys.stdout`` when saving an image was
-updated. This lead to an OSError being raised if the environment restricted access.
+updated. This lead to an :py:exc:`OSError` being raised if the environment restricted
+access.
 
-The OSError is now silently caught.
+The :py:exc:`OSError` is now silently caught.
 
 Fixed removing orientation in ImageOps.exif_transpose
 =====================================================
@@ -34,7 +35,7 @@ original image EXIF data was not modified, and the orientation was only removed 
 the modified copy.
 
 However, for certain images the orientation was already missing from the modified
-image, leading to a KeyError.
+image, leading to a :py:exc:`KeyError`.
 
 This error has been resolved, and the copying of metadata to the modified image
 improved.
