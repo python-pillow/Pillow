@@ -239,7 +239,7 @@ DEPS = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",  # noqa: E501
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",
         "filename": "freetype-2.13.2.tar.gz",
         "dir": "freetype-2.13.2",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
@@ -321,7 +321,7 @@ DEPS = {
     },
     "libimagequant": {
         # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "license": "COPYRIGHT",
