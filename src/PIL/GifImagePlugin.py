@@ -281,14 +281,9 @@ class GifImageFile(ImageFile.ImageFile):
                 bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
                 break
-
-            else:
-                pass
-                # raise OSError, "illegal GIF tag `%x`" % s[0]
             s = None
 
         if interlace is None:
-            # self._fp = None
             msg = "image not found in GIF frame"
             raise EOFError(msg)
 

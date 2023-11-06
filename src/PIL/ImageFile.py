@@ -430,7 +430,6 @@ class Parser:
                 with io.BytesIO(self.data) as fp:
                     im = Image.open(fp)
             except OSError:
-                # traceback.print_exc()
                 pass  # not enough data
             else:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")

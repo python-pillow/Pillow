@@ -83,16 +83,6 @@ def fromqimage(im):
 
 def fromqpixmap(im):
     return fromqimage(im)
-    # buffer = QBuffer()
-    # buffer.open(QIODevice.ReadWrite)
-    # # im.save(buffer)
-    # # What if png doesn't support some image features like animation?
-    # im.save(buffer, 'ppm')
-    # bytes_io = BytesIO()
-    # bytes_io.write(buffer.data())
-    # buffer.close()
-    # bytes_io.seek(0)
-    # return Image.open(bytes_io)
 
 
 def align8to32(bytes, width, mode):
@@ -208,9 +198,5 @@ def toqimage(im):
 
 
 def toqpixmap(im):
-    # # This doesn't work. For now using a dumb approach.
-    # im_data = _toqclass_helper(im)
-    # result = QPixmap(im_data["size"][0], im_data["size"][1])
-    # result.loadFromData(im_data["data"])
     qimage = toqimage(im)
     return QPixmap.fromImage(qimage)

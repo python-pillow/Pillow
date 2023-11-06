@@ -77,8 +77,6 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
 
     # Hack to support hi-res rendering
     scale = int(scale) or 1
-    # orig_size = size
-    # orig_bbox = bbox
     size = (size[0] * scale, size[1] * scale)
     # resolution is dependent on bbox and size
     res = (
