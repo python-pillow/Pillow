@@ -65,7 +65,6 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         self.tile[0] = d, (0, 0) + self.size, o, a
 
 
-
 #
 # --------------------------------------------------------------------
 
