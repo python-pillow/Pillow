@@ -81,6 +81,7 @@ version = {attr = "PIL.__version__"}
 target-version = "py38"
 line-length = 88
 select = [
+  "C4", # flake8-comprehensions
   "E", # pycodestyle errors
   "EM", # flake8-errmsg
   "F", # pyflakes errors

@@ -471,7 +471,7 @@ def extract_dep(url: str, filename: str) -> None:
                     msg = "Attempted Path Traversal in Zip File"
                     raise RuntimeError(msg)
             zf.extractall(sources_dir)
-    elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
+    elif filename.endswith((".tar.gz", ".tgz")):
         with tarfile.open(file, "r:gz") as tgz:
             for member in tgz.getnames():
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))

@@ -427,7 +427,7 @@ def _populate():
 
         TAGS_V2[k] = TagInfo(k, *v)
 
-    for group, tags in TAGS_V2_GROUPS.items():
+    for tags in TAGS_V2_GROUPS.values():
         for k, v in tags.items():
             tags[k] = TagInfo(k, *v)
 
