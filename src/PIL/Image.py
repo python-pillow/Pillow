@@ -3100,7 +3100,8 @@ def fromarray(obj, mode=None):
         try:
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError as e:
-            msg = "Cannot handle this data type: %s, %s" % typekey  # noqa: UP031
+            typ_shape, typ_type = typekey
+            msg = f"Cannot handle this data type: {typ_shape}, {typ_type}"
             raise TypeError(msg) from e
     else:
         rawmode = mode
