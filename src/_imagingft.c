@@ -1080,7 +1080,7 @@ font_render(FontObject *self, PyObject *args) {
                                 int out_alpha = CLIP8(src_alpha + MULDIV255(target[k * 4 + 3], (255 - src_alpha), tmp));
                                 target[k * 4 + 3] = out_alpha;
                             } else {
-                                /* paste source directly to BGRa */
+                                /* paste unpremultiplied RGBA values */
                                 target[k * 4 + 0] = src_blu;
                                 target[k * 4 + 1] = src_grn;
                                 target[k * 4 + 2] = src_red;
