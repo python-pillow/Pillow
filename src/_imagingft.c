@@ -1092,19 +1092,26 @@ font_render(FontObject *self, PyObject *args) {
                     if (color) {
                         unsigned char *ink = (unsigned char *)&foreground_ink;
                         for (k = x0; k < x1; k++) {
-                            v = source[k] * convert_scale;
-                            if (target[k * 4 + 3] < v) {
-                                target[k * 4 + 0] = ink[0];
-                                target[k * 4 + 1] = ink[1];
-                                target[k * 4 + 2] = ink[2];
-                                target[k * 4 + 3] = v;
+                            int src_alpha = source[k] * convert_scale;
+                            if (src_alpha > 0) {
+                                if (target[k * 4 + 3] > 0) {
+                                    target[k * 4 + 0] = BLEND(src_alpha, target[k * 4 + 0], ink[0], tmp);
+                                    target[k * 4 + 1] = BLEND(src_alpha, target[k * 4 + 1], ink[1], tmp);
+                                    target[k * 4 + 2] = BLEND(src_alpha, target[k * 4 + 2], ink[2], tmp);
+                                    target[k * 4 + 3] = CLIP8(src_alpha + MULDIV255(target[k * 4 + 3], (255 - src_alpha), tmp));
+                                } else {
+                                    target[k * 4 + 0] = ink[0];
+                                    target[k * 4 + 1] = ink[1];
+                                    target[k * 4 + 2] = ink[2];
+                                    target[k * 4 + 3] = src_alpha;
+                                }
                             }
                         }
                     } else {
                         for (k = x0; k < x1; k++) {
-                            v = source[k] * convert_scale;
-                            if (target[k] < v) {
-                                target[k] = v;
+                            int src_alpha = source[k] * convert_scale;
+                            if (src_alpha > 0) {
+                                target[k] = target[k] > 0 ? CLIP8(src_alpha + MULDIV255(target[k], (255 - src_alpha), tmp)) : src_alpha;
                             }
                         }
                     }
