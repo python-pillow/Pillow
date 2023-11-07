@@ -122,7 +122,7 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
         gs_binary,
         "-q",  # quiet mode
         "-g%dx%d" % size,  # set output geometry (pixels)
-        "-r%fx%f" % res,  # set input DPI (dots per inch)
+        "-r%fx%f" % res,  # set input DPI (dots per inch)  # noqa: UP031
         "-dBATCH",  # exit after processing
         "-dNOPAUSE",  # don't pause between pages
         "-dSAFER",  # safe mode

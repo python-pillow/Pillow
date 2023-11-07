@@ -19,7 +19,7 @@ Deprecation Warning when Saving JPEGs
 
 JPEG images cannot contain an alpha channel. Pillow prior to 3.4.0
 silently drops the alpha channel. With this release Pillow will now
-issue a ``DeprecationWarning`` when attempting to save a ``RGBA`` mode
+issue a :py:exc:`DeprecationWarning` when attempting to save a ``RGBA`` mode
 image as a JPEG. This will become an error in Pillow 4.2.
 
 New DDS Decoders
