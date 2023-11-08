@@ -12,11 +12,11 @@
 
 #include "Imaging.h"
 
-#ifndef _UNISTD_H
+#ifdef HAVE_LIBTIFF
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h> /* lseek */
 #endif
-
-#ifdef HAVE_LIBTIFF
 
 #ifndef uint
 #define uint uint32
