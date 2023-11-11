@@ -5,7 +5,7 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
-- Implement `streamtype=1` option for tables-only JPEG encoding #7491
+- Implement ``streamtype=1`` option for tables-only JPEG encoding #7491
   [bgilbert, radarhere]
 
 - If save_all PNG only has one frame, do not create animated image #7522
