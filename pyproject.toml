@@ -78,7 +78,6 @@ package-dir = {"" = "src"}
 version = {attr = "PIL.__version__"}
 
 [tool.ruff]
-target-version = "py38"
 line-length = 88
 select = [
   "E", # pycodestyle errors
