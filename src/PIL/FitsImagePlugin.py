@@ -54,12 +54,10 @@ class FitsImageFile(ImageFile.ImageFile):
             self._mode = "L"
         elif number_of_bits == 16:
             self._mode = "I"
-            # rawmode = "I;16S"
         elif number_of_bits == 32:
             self._mode = "I"
         elif number_of_bits in (-32, -64):
             self._mode = "F"
-            # rawmode = "F" if number_of_bits == -32 else "F;64F"
 
         offset = math.ceil(self.fp.tell() / 2880) * 2880
         self.tile = [("raw", (0, 0) + self.size, offset, (self.mode, 0, -1))]

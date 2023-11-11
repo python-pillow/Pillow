@@ -33,9 +33,6 @@ from . import (
 from ._binary import i16be as i16
 from ._binary import o32le
 
-# def _accept(prefix):
-#     return JpegImagePlugin._accept(prefix)
-
 
 def _save(im, fp, filename):
     JpegImagePlugin._save(im, fp, filename)

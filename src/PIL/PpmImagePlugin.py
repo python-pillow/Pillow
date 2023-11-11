@@ -328,9 +328,6 @@ def _save(im, fp, filename):
             fp.write(b"65535\n")
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
-    # ALTERNATIVE: save via builtin debug function
-    # im._dump(filename)
-
 
 #
 # --------------------------------------------------------------------

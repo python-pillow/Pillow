@@ -1885,13 +1885,14 @@ class AppendingTiffWriter:
         8,  # long8
     ]
 
-    #    StripOffsets = 273
-    #    FreeOffsets = 288
-    #    TileOffsets = 324
-    #    JPEGQTables = 519
-    #    JPEGDCTables = 520
-    #    JPEGACTables = 521
-    Tags = {273, 288, 324, 519, 520, 521}
+    Tags = {
+        273,  # StripOffsets
+        288,  # FreeOffsets
+        324,  # TileOffsets
+        519,  # JPEGQTables
+        520,  # JPEGDCTables
+        521,  # JPEGACTables
+    }
 
     def __init__(self, fn, new=False):
         if hasattr(fn, "read"):
@@ -1941,8 +1942,6 @@ class AppendingTiffWriter:
 
         iimm = self.f.read(4)
         if not iimm:
-            # msg = "nothing written into new page"
-            # raise RuntimeError(msg)
             # Make it easy to finish a frame without committing to a new one.
             return
 

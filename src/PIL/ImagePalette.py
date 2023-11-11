@@ -257,8 +257,6 @@ def load(filename):
                 if lut:
                     break
             except (SyntaxError, ValueError):
-                # import traceback
-                # traceback.print_exc()
                 pass
         else:
             msg = "cannot load palette"
