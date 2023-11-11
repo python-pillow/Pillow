@@ -961,6 +961,28 @@ class TestFileJpeg:
             im.load()
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
+    def test_separate_tables(self):
+        im = hopper()
+        data = []  # [interchange, tables-only, image-only]
+        for streamtype in range(3):
+            out = BytesIO()
+            im.save(out, format="JPEG", streamtype=streamtype)
+            data.append(out.getvalue())
+
+        # SOI, EOI
+        for marker in b"\xff\xd8", b"\xff\xd9":
+            assert marker in data[1] and marker in data[2]
+        # DHT, DQT
+        for marker in b"\xff\xc4", b"\xff\xdb":
+            assert marker in data[1] and marker not in data[2]
+        # SOF0, SOS, APP0 (JFIF header)
+        for marker in b"\xff\xc0", b"\xff\xda", b"\xff\xe0":
+            assert marker not in data[1] and marker in data[2]
+
+        with Image.open(BytesIO(data[0])) as interchange_im:
+            with Image.open(BytesIO(data[1] + data[2])) as combined_im:
+                assert_image_equal(interchange_im, combined_im)
+
     def test_repr_jpeg(self):
         im = hopper()
 

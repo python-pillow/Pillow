@@ -148,9 +148,9 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.4.tar.gz/download",
-        "filename": "xz-5.4.4.tar.gz",
-        "dir": "xz-5.4.4",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.5.tar.gz/download",
+        "filename": "xz-5.4.5.tar.gz",
+        "dir": "xz-5.4.5",
         "license": "COPYING",
         "build": [
             *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),

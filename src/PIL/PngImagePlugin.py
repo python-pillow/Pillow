@@ -1156,6 +1156,9 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                 encoderinfo["duration"] = duration
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
 
+    if len(im_frames) == 1 and not default_image:
+        return im_frames[0]["im"]
+
     # animation control
     chunk(
         fp,
@@ -1391,8 +1394,10 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
         chunk(fp, b"eXIf", exif)
 
     if save_all:
-        _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
-    else:
+        im = _write_multiple_frames(
+            im, fp, chunk, rawmode, default_image, append_images
+        )
+    if im:
         ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
 
     if info:
