@@ -999,7 +999,7 @@ class TestImage:
         with Image.open(os.path.join("Tests/images", path)) as im:
             try:
                 im.load()
-                assert False
+                pytest.fail()
             except OSError as e:
                 buffer_overrun = str(e) == "buffer overrun when reading image file"
                 truncated = "image file is truncated" in str(e)
@@ -1010,7 +1010,7 @@ class TestImage:
         with Image.open("Tests/images/fli_overrun2.bin") as im:
             try:
                 im.seek(1)
-                assert False
+                pytest.fail()
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
 
