@@ -95,7 +95,7 @@ def assert_image_equal(a, b, msg=None):
             except Exception:
                 pass
 
-        assert False, msg or "got different content"
+        pytest.fail(msg or "got different content")
 
 
 def assert_image_equal_tofile(a, filename, msg=None, mode=None):
