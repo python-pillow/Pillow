@@ -20,21 +20,43 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   macos:
     uses: ./.github/workflows/wheels-macos.yml
     with:
-      artifacts-name: "wheels"
+      artifacts-name: "dist"
 
   linux:
     uses: ./.github/workflows/wheels-linux.yml
     with:
-      artifacts-name: "wheels"
+      artifacts-name: "dist"
+
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+        cache: pip
+        cache-dependency-path: "Makefile"
+
+    - run: make sdist
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/*.tar.gz
 
   success:
     permissions:
       contents: none
-    needs: [macos, linux]
+    needs: [macos, linux, sdist]
     runs-on: ubuntu-latest
     name: Wheels Successful
     steps:
