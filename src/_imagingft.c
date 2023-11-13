@@ -885,7 +885,9 @@ font_render(FontObject *self, PyObject *args) {
         PyMem_Del(glyph_info);
         return NULL;
     }
-    id = PyLong_AsSsize_t(PyObject_GetAttrString(image, "id"));
+    PyObject *imageId = PyObject_GetAttrString(image, "id");
+    id = PyLong_AsSsize_t(imageId);
+    Py_XDECREF(imageId);
     im = (Imaging)id;
 
     x_offset -= stroke_width;
