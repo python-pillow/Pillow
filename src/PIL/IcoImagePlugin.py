@@ -375,14 +375,14 @@ class Ico1Decoder(ImageFile.PyDecoder):
 
     def decode(self, buffer):
         data = bytearray()
-        bitmapLength = self.state.xsize * self.state.ysize // 8
-        firstBitmap = self.fd.read(bitmapLength)
-        secondBitmap = self.fd.read(bitmapLength)
-        for i, byte in enumerate(firstBitmap):
-            secondByte = byte ^ secondBitmap[i]
+        bitmap_length = self.state.xsize * self.state.ysize // 8
+        first_bitmap = self.fd.read(bitmap_length)
+        second_bitmap = self.fd.read(bitmap_length)
+        for i, byte in enumerate(first_bitmap):
+            second_byte = byte ^ second_bitmap[i]
             for j in reversed(range(8)):
                 first = byte >> j & 1
-                second = secondByte >> j & 1
+                second = second_byte >> j & 1
                 data += b"\x00" if (first == second) else b"\xff"
                 data += b"\x00" if first else b"\xff"
         self.set_as_raw(bytes(data))
@@ -393,20 +393,20 @@ class Ico1Encoder(ImageFile.PyEncoder):
     _pushes_fd = True
 
     def encode(self, bufsize):
-        firstBitmap = bytearray()
-        secondBitmap = bytearray()
+        first_bitmap = bytearray()
+        second_bitmap = bytearray()
         w, h = self.im.size
         for y in range(h):
             for x in range(w):
                 l, a = self.im.getpixel((x, y))
                 if x % 8 == 0:
-                    firstBitmap += b"\x00"
-                    secondBitmap += b"\xff"
+                    first_bitmap += b"\x00"
+                    second_bitmap += b"\xff"
                 if not a:
-                    firstBitmap[-1] ^= 1 << (7 - x % 8)
+                    first_bitmap[-1] ^= 1 << (7 - x % 8)
                 if not l:
-                    secondBitmap[-1] ^= 1 << (7 - x % 8)
-        data = firstBitmap + secondBitmap
+                    second_bitmap[-1] ^= 1 << (7 - x % 8)
+        data = first_bitmap + second_bitmap
         return len(data), 0, data
 
 
