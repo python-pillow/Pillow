@@ -494,6 +494,18 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     If absent, the setting will be determined by libjpeg or libjpeg-turbo.
 
+**restart_marker_blocks**
+    If present, emit a restart marker whenever the specified number of MCU
+    blocks has been produced.
+
+    .. versionadded:: 10.2.0
+
+**restart_marker_rows**
+    If present, emit a restart marker whenever the specified number of MCU
+    rows has been produced.
+
+    .. versionadded:: 10.2.0
+
 **qtables**
     If present, sets the qtables for the encoder. This is listed as an
     advanced option for wizards in the JPEG documentation. Use with

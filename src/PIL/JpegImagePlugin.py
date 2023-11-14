@@ -787,6 +787,8 @@ def _save(im, fp, filename):
         dpi[0],
         dpi[1],
         subsampling,
+        info.get("restart_marker_blocks", 0),
+        info.get("restart_marker_rows", 0),
         qtables,
         comment,
         extra,
