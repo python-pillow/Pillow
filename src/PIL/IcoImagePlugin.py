@@ -396,13 +396,13 @@ class Ico1Encoder(ImageFile.PyEncoder):
         w, h = self.im.size
         for y in range(h):
             for x in range(w):
-                l, a = self.im.getpixel((x, y))
+                l_channel, a_channel = self.im.getpixel((x, y))
                 if x % 8 == 0:
                     first_bitmap += b"\x00"
                     second_bitmap += b"\xff"
-                if not a:
+                if not a_channel:
                     first_bitmap[-1] ^= 1 << (7 - x % 8)
-                if not l:
+                if not l_channel:
                     second_bitmap[-1] ^= 1 << (7 - x % 8)
         data = first_bitmap + second_bitmap
         return len(data), 0, data
