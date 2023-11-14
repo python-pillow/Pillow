@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Allow configuring JPEG restart marker interval on save #7488
+  [bgilbert, radarhere]
+
+- Decrement reference count for PyObject #7549
+  [radarhere]
+
 - Implement ``streamtype=1`` option for tables-only JPEG encoding #7491
   [bgilbert, radarhere]
 
