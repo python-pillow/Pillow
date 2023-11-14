@@ -1,5 +1,16 @@
+#!/bin/bash
 # Define custom utilities
 # Test for macOS with [ -n "$IS_MACOS" ]
+if [ -z "$IS_MACOS" ]; then
+    export MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
+    export MB_ML_VER=${AUDITWHEEL_POLICY:9}
+fi
+export PLAT=$CIBW_ARCHS
+source wheels/multibuild/common_utils.sh
+source wheels/multibuild/library_builders.sh
+if [ -z "$IS_MACOS" ]; then
+    source wheels/multibuild/manylinux_utils.sh
+fi
 
 ARCHIVE_SDIR=pillow-depends-main
 
@@ -27,9 +38,9 @@ BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.16
 BROTLI_VERSION=1.1.0
 
-if [[ -n "$IS_MACOS" ]] && [[ "$PLAT" == "x86_64" ]]; then
+if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "x86_64" ]]; then
     function build_openjpeg {
-        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz)
+        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz openjpeg-2.5.0.tar.gz)
         (cd $out_dir \
             && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
             && make install)
@@ -39,7 +50,7 @@ fi
 
 function build_brotli {
     local cmake=$(get_modern_cmake)
-    local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz)
+    local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-1.1.0.tar.gz)
     (cd $out_dir \
         && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
         && make install)
@@ -49,12 +60,7 @@ function build_brotli {
     fi
 }
 
-function pre_build {
-    # Any stuff that you need to do before you start building the wheels
-    # Runs in the root directory of this repository.
-    curl -fsSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
-    untar pillow-depends-main.zip
-
+function build {
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
@@ -114,74 +120,36 @@ function pre_build {
     fi
     build_simple harfbuzz $HARFBUZZ_VERSION https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION tar.xz --with-freetype=yes --with-glib=no
     if [ -z "$IS_MACOS" ]; then
-        export FREETYPE_LIBS=''
-        export FREETYPE_CFLAGS=''
+        export FREETYPE_LIBS=""
+        export FREETYPE_CFLAGS=""
     fi
-
-    # Append licenses
-    for filename in wheels/dependency_licenses/*; do
-      echo -e "\n\n----\n\n$(basename $filename | cut -f 1 -d '.')\n" | cat >> LICENSE
-      cat $filename >> LICENSE
-    done
 }
 
-function pip_wheel_cmd {
-    local abs_wheelhouse=$1
-    if [ -z "$IS_MACOS" ]; then
-        CFLAGS="$CFLAGS --std=c99"  # for Raqm
-    fi
-    python3 -m pip wheel $(pip_opts) \
-        -C raqm=enable -C raqm=vendor -C fribidi=vendor \
-        -w $abs_wheelhouse --no-deps .
-}
+# Any stuff that you need to do before you start building the wheels
+# Runs in the root directory of this repository.
+curl -fsSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
+untar pillow-depends-main.zip
 
-function run_tests_in_repo {
-    # Run Pillow tests from within source repo
-    python3 selftest.py
-    python3 -m pytest
-}
+if [[ -n "$IS_MACOS" ]]; then
+  # webp, zstd, xz, libtiff, libxcb cause a conflict with building webp, libtiff, libxcb
+  # libxdmcp causes an issue on macOS < 11
+  # curl from brew requires zstd, use system curl
+  # if php is installed, brew tries to reinstall these after installing openblas
+  # remove cairo to fix building harfbuzz on arm64
+  # remove lcms2 and libpng to fix building openjpeg on arm64
+  brew remove --ignore-dependencies webp zstd xz libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript
 
-EXP_CODECS="jpg jpg_2000 libtiff zlib"
-EXP_MODULES="freetype2 littlecms2 pil tkinter webp"
-EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux xcb"
+  brew install pkg-config
 
-function run_tests {
-    if [ -n "$IS_MACOS" ]; then
-        brew install fribidi
-        export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
-    elif [ -n "$IS_ALPINE" ]; then
-        apk add curl fribidi
-    else
-        apt-get update
-        apt-get install -y curl libfribidi0 libopenblas-dev pkg-config unzip
-    fi
-    if [ -z "$IS_ALPINE" ]; then
-        python3 -m pip install numpy
-    fi
-    python3 -m pip install defusedxml olefile pyroma
+  if [[ "$CIBW_ARCHS" != "arm64" ]]; then
+    export MACOSX_DEPLOYMENT_TARGET="10.10"
+  fi
+fi
 
-    curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
-    untar pillow-test-images.zip
-    mv test-images-main/* ../Tests/images
+wrap_wheel_builder build
 
-    # Runs tests on installed distribution from an empty directory
-    (cd .. && run_tests_in_repo)
-    # Test against expected codecs, modules and features
-    local ret=0
-    local codecs=$(python3 -c 'from PIL.features import *; print(" ".join(sorted(get_supported_codecs())))')
-    if [ "$codecs" != "$EXP_CODECS" ]; then
-        echo "Codecs should be: '$EXP_CODECS'; but are '$codecs'"
-        ret=1
-    fi
-    local modules=$(python3 -c 'from PIL.features import *; print(" ".join(sorted(get_supported_modules())))')
-    if [ "$modules" != "$EXP_MODULES" ]; then
-        echo "Modules should be: '$EXP_MODULES'; but are '$modules'"
-        ret=1
-    fi
-    local features=$(python3 -c 'from PIL.features import *; print(" ".join(sorted(get_supported_features())))')
-    if [ "$features" != "$EXP_FEATURES" ]; then
-        echo "Features should be: '$EXP_FEATURES'; but are '$features'"
-        ret=1
-    fi
-    return $ret
-}
+# Append licenses
+for filename in wheels/dependency_licenses/*; do
+  echo -e "\n\n----\n\n$(basename $filename | cut -f 1 -d '.')\n" | cat >> LICENSE
+  cat $filename >> LICENSE
+done
