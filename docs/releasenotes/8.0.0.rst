@@ -168,7 +168,7 @@ offset.
 Error for large BMP files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Previously, if a BMP file was too large, an ``OSError`` would be raised. Now,
+Previously, if a BMP file was too large, an :py:exc:`OSError` would be raised. Now,
 ``DecompressionBombError`` is used instead, as Pillow already uses for other formats.
 
 Dark theme for docs

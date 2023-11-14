@@ -110,9 +110,9 @@ ARCHITECTURES = {
 DEPS = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/3.0.0/libjpeg-turbo-3.0.0.tar.gz/download",
-        "filename": "libjpeg-turbo-3.0.0.tar.gz",
-        "dir": "libjpeg-turbo-3.0.0",
+        + "/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz/download",
+        "filename": "libjpeg-turbo-3.0.1.tar.gz",
+        "dir": "libjpeg-turbo-3.0.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
@@ -148,9 +148,9 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.4.tar.gz/download",
-        "filename": "xz-5.4.4.tar.gz",
-        "dir": "xz-5.4.4",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.5.tar.gz/download",
+        "filename": "xz-5.4.5.tar.gz",
+        "dir": "xz-5.4.5",
         "license": "COPYING",
         "build": [
             *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -184,9 +184,9 @@ DEPS = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.5.1.tar.gz",
-        "filename": "tiff-4.5.1.tar.gz",
-        "dir": "tiff-4.5.1",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
+        "filename": "tiff-4.6.0.tar.gz",
+        "dir": "tiff-4.6.0",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
@@ -213,7 +213,6 @@ DEPS = {
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
-        # "bins": [r"libtiff\*.dll"],
     },
     "libpng": {
         "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.39/lpng1639.zip/download",
@@ -228,18 +227,18 @@ DEPS = {
         "libs": [r"libpng16.lib"],
     },
     "brotli": {
-        "url": "https://github.com/google/brotli/archive/refs/tags/v1.0.9.tar.gz",
-        "filename": "brotli-1.0.9.tar.gz",
-        "dir": "brotli-1.0.9",
+        "url": "https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz",
+        "filename": "brotli-1.1.0.tar.gz",
+        "dir": "brotli-1.1.0",
         "license": "LICENSE",
         "build": [
-            *cmds_cmake(("brotlicommon-static", "brotlidec-static")),
+            *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",  # noqa: E501
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",
         "filename": "freetype-2.13.2.tar.gz",
         "dir": "freetype-2.13.2",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
@@ -254,7 +253,7 @@ DEPS = {
                 "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_SYSTEM_ZLIB;FT_CONFIG_OPTION_USE_PNG;FT_CONFIG_OPTION_USE_HARFBUZZ;FT_CONFIG_OPTION_USE_BROTLI</UserDefines>",  # noqa: E501
                 "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src;{inc_dir}</UserIncludeDirectories>",  # noqa: E501
                 "<UserLibraryDirectories></UserLibraryDirectories>": "<UserLibraryDirectories>{lib_dir}</UserLibraryDirectories>",  # noqa: E501
-                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon-static.lib;brotlidec-static.lib</UserDependencies>",  # noqa: E501
+                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon.lib;brotlidec.lib</UserDependencies>",  # noqa: E501
             },
             r"src/autofit/afshaper.c": {
                 # link against harfbuzz.lib
@@ -272,7 +271,6 @@ DEPS = {
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
-        # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
         "url": SF_PROJECTS + "/lcms/files/lcms/2.15/lcms2-2.15.tar.gz/download",
@@ -321,7 +319,7 @@ DEPS = {
     },
     "libimagequant": {
         # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "license": "COPYRIGHT",
@@ -339,9 +337,9 @@ DEPS = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.2.0.zip",
-        "filename": "harfbuzz-8.2.0.zip",
-        "dir": "harfbuzz-8.2.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.2.1.zip",
+        "filename": "harfbuzz-8.2.1.zip",
+        "dir": "harfbuzz-8.2.1",
         "license": "COPYING",
         "build": [
             *cmds_cmake(

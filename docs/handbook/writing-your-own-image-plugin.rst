@@ -26,14 +26,14 @@ Pillow decodes files in two stages:
    it.
 
 An image plugin should contain a format handler derived from the
-:py:class:`PIL.ImageFile.ImageFile` base class. This class should
-provide an ``_open`` method, which reads the file header and
-sets up at least the :py:attr:`~PIL.Image.Image.mode` and
-:py:attr:`~PIL.Image.Image.size` attributes. To be able to load the
-file, the method must also create a list of ``tile`` descriptors,
-which contain a decoder name, extents of the tile, and
-any decoder-specific data. The format handler class must be explicitly
-registered, via a call to the :py:mod:`~PIL.Image` module.
+:py:class:`PIL.ImageFile.ImageFile` base class. This class should provide an
+``_open`` method, which reads the file header and set at least the internal
+``_size`` and ``_mode`` attributes so that :py:attr:`~PIL.Image.Image.mode` and
+:py:attr:`~PIL.Image.Image.size` are populated. To be able to load the file,
+the method must also create a list of ``tile`` descriptors, which contain a
+decoder name, extents of the tile, and any decoder-specific data. The format
+handler class must be explicitly registered, via a call to the
+:py:mod:`~PIL.Image` module.
 
 .. note:: For performance reasons, it is important that the
   ``_open`` method quickly rejects files that do not have the
@@ -45,7 +45,7 @@ Example
 The following plugin supports a simple format, which has a 128-byte header
 consisting of the words “SPAM” followed by the width, height, and pixel size in
 bits. The header fields are separated by spaces. The image data follows
-directly after the header, and can be either bi-level, greyscale, or 24-bit
+directly after the header, and can be either bi-level, grayscale, or 24-bit
 true color.
 
 **SpamImagePlugin.py**::
@@ -96,13 +96,13 @@ true color.
     )
 
 
-The format handler must always set the
-:py:attr:`~PIL.Image.Image.size` and :py:attr:`~PIL.Image.Image.mode`
-attributes. If these are not set, the file cannot be opened. To
-simplify the plugin, the calling code considers exceptions like
-:py:exc:`SyntaxError`, :py:exc:`KeyError`, :py:exc:`IndexError`,
-:py:exc:`EOFError` and :py:exc:`struct.error` as a failure to identify
-the file.
+The format handler must always set the internal ``_size`` and ``_mode``
+attributes so that :py:attr:`~PIL.Image.Image.size` and
+:py:attr:`~PIL.Image.Image.mode` are populated. If these are not set, the file
+cannot be opened. To simplify the plugin, the calling code considers exceptions
+like :py:exc:`SyntaxError`, :py:exc:`KeyError`, :py:exc:`IndexError`,
+:py:exc:`EOFError` and :py:exc:`struct.error` as a failure to identify the
+file.
 
 Note that the image plugin must be explicitly registered using
 :py:func:`PIL.Image.register_open`. Although not required, it is also a good
@@ -211,9 +211,9 @@ table describes some commonly used **raw modes**:
 | ``1;R``   | | 1-bit reversed bilevel, stored with the leftmost pixel in the   |
 |           | | least significant bit. 0 means black, 1 means white.            |
 +-----------+-------------------------------------------------------------------+
-| ``L``     | 8-bit greyscale. 0 means black, 255 means white.                  |
+| ``L``     | 8-bit grayscale. 0 means black, 255 means white.                  |
 +-----------+-------------------------------------------------------------------+
-| ``L;I``   | 8-bit inverted greyscale. 0 means white, 255 means black.         |
+| ``L;I``   | 8-bit inverted grayscale. 0 means white, 255 means black.         |
 +-----------+-------------------------------------------------------------------+
 | ``P``     | 8-bit palette-mapped image.                                       |
 +-----------+-------------------------------------------------------------------+

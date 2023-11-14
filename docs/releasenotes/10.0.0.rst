@@ -173,8 +173,8 @@ been processed before Pillow started checking for decompression bombs.
 Added ImageFont.MAX_STRING_LENGTH
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To protect against potential DOS attacks when using arbitrary strings as text
-input, Pillow will now raise a ``ValueError`` if the number of characters
+:cve:`2023-44271`: To protect against potential DOS attacks when using arbitrary strings as text
+input, Pillow will now raise a :py:exc:`ValueError` if the number of characters
 passed into ImageFont methods is over a certain limit,
 :py:data:`PIL.ImageFont.MAX_STRING_LENGTH`.
 

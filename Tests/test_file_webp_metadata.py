@@ -118,7 +118,10 @@ def test_getxmp():
 
     with Image.open("Tests/images/flower2.webp") as im:
         if ElementTree is None:
-            with pytest.warns(UserWarning):
+            with pytest.warns(
+                UserWarning,
+                match="XMP data cannot be read without defusedxml dependency",
+            ):
                 assert im.getxmp() == {}
         else:
             assert (

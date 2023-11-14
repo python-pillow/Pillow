@@ -19,7 +19,7 @@ from . import Image
 
 
 def constant(image, value):
-    """Fill a channel with a given grey level.
+    """Fill a channel with a given gray level.
 
     :rtype: :py:class:`~PIL.Image.Image`
     """

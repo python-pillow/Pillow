@@ -2,8 +2,74 @@
 Changelog (Pillow)
 ==================
 
-10.1.0 (unreleased)
+10.2.0 (unreleased)
 -------------------
+
+- Implement ``streamtype=1`` option for tables-only JPEG encoding #7491
+  [bgilbert, radarhere]
+
+- If save_all PNG only has one frame, do not create animated image #7522
+  [radarhere]
+
+- Fixed frombytes() for images with a zero dimension #7493
+  [radarhere]
+
+10.1.0 (2023-10-15)
+-------------------
+
+- Added TrueType default font to allow for different sizes #7354
+  [radarhere]
+
+- Fixed invalid argument warning #7442
+  [radarhere]
+
+- Added ImageOps cover method #7412
+  [radarhere, hugovk]
+
+- Catch struct.error from truncated EXIF when reading JPEG DPI #7458
+  [radarhere]
+
+- Consider default image when selecting mode for PNG save_all #7437
+  [radarhere]
+
+- Support BGR;15, BGR;16 and BGR;24 access, unpacking and putdata #7303
+  [radarhere]
+
+- Added CMYK to RGB unpacker #7310
+  [radarhere]
+
+- Improved flexibility of XMP parsing #7274
+  [radarhere]
+
+- Support reading 8-bit YCbCr TIFF images #7415
+  [radarhere]
+
+- Allow saving I;16B images as PNG #7302
+  [radarhere]
+
+- Corrected drawing I;16 points and writing I;16 text #7257
+  [radarhere]
+
+- Set blue channel to 128 for BC5S #7413
+  [radarhere]
+
+- Increase flexibility when reading IPTC fields #7319
+  [radarhere]
+
+- Set C palette to be empty by default #7289
+  [radarhere]
+
+- Added gs_binary to control Ghostscript use on all platforms #7392
+  [radarhere]
+
+- Read bounding box information from the trailer of EPS files if specified #7382
+  [nopperl, radarhere]
+
+- Added reading 8-bit color DDS images #7426
+  [radarhere]
+
+- Added has_transparency_data #7420
+  [radarhere, hugovk]
 
 - Fixed bug when reading BC5S DDS images #7401
   [radarhere]
@@ -2137,7 +2203,7 @@ Changelog (Pillow)
 - Cache EXIF information #3498
   [Glandos]
 
-- Added transparency for all PNG greyscale modes #3744
+- Added transparency for all PNG grayscale modes #3744
   [radarhere]
 
 - Fix deprecation warnings in Python 3.8 #3749
@@ -4639,7 +4705,7 @@ Changelog (Pillow)
 - Fix Bicubic interpolation #970
   [homm]
 
-- Support for 4-bit greyscale TIFF images #980
+- Support for 4-bit grayscale TIFF images #980
   [hugovk]
 
 - Updated manifest #957
@@ -6714,7 +6780,7 @@ The test suite includes 750 individual tests.
 
 - You can now convert directly between all modes supported by
   PIL.  When converting colour images to "P", PIL defaults to
-  a "web" palette and dithering.  When converting greyscale
+  a "web" palette and dithering.  When converting grayscale
   images to "1", PIL uses a thresholding and dithering.
 
 - Added a "dither" option to "convert".  By default, "convert"
@@ -6792,13 +6858,13 @@ The test suite includes 530 individual tests.
 - Fixed "paste" to allow a mask also for mode "F" images.
 
 - The BMP driver now saves mode "1" images.  When loading images, the mode
-  is set to "L" for 8-bit files with greyscale palettes, and to "P" for
+  is set to "L" for 8-bit files with grayscale palettes, and to "P" for
   other 8-bit files.
 
 - The IM driver now reads and saves "1" images (file modes "0 1" or "L 1").
 
 - The JPEG and GIF drivers now saves "1" images.  For JPEG, the image
-  is saved as 8-bit greyscale (it will load as mode "L").  For GIF, the
+  is saved as 8-bit grayscale (it will load as mode "L").  For GIF, the
   image will be loaded as a "P" image.
 
 - Fixed a potential buffer overrun in the GIF encoder.
@@ -7102,7 +7168,7 @@ The test suite includes 400 individual tests.
   drawing capabilities can be used to render vector and metafile
   formats.
 
-- Added restricted drivers for images from Image Tools (greyscale
+- Added restricted drivers for images from Image Tools (grayscale
   only) and LabEye/IFUNC (common interchange modes only).
 
 - Some minor improvements to the sample scripts provided in the

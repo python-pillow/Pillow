@@ -56,7 +56,7 @@ def _lut(image, lut):
             lut = lut + lut + lut
         return image.point(lut)
     else:
-        msg = "not supported for this image mode"
+        msg = f"not supported for mode {image.mode}"
         raise OSError(msg)
 
 
@@ -242,7 +242,7 @@ def contain(image, size, method=Image.Resampling.BICUBIC):
     Returns a resized version of the image, set to the maximum width and height
     within the requested size, while maintaining the original aspect ratio.
 
-    :param image: The image to resize and crop.
+    :param image: The image to resize.
     :param size: The requested output size in pixels, given as a
                  (width, height) tuple.
     :param method: Resampling method to use. Default is
@@ -256,6 +256,35 @@ def contain(image, size, method=Image.Resampling.BICUBIC):
 
     if im_ratio != dest_ratio:
         if im_ratio > dest_ratio:
+            new_height = round(image.height / image.width * size[0])
+            if new_height != size[1]:
+                size = (size[0], new_height)
+        else:
+            new_width = round(image.width / image.height * size[1])
+            if new_width != size[0]:
+                size = (new_width, size[1])
+    return image.resize(size, resample=method)
+
+
+def cover(image, size, method=Image.Resampling.BICUBIC):
+    """
+    Returns a resized version of the image, so that the requested size is
+    covered, while maintaining the original aspect ratio.
+
+    :param image: The image to resize.
+    :param size: The requested output size in pixels, given as a
+                 (width, height) tuple.
+    :param method: Resampling method to use. Default is
+                   :py:attr:`~PIL.Image.Resampling.BICUBIC`.
+                   See :ref:`concept-filters`.
+    :return: An image.
+    """
+
+    im_ratio = image.width / image.height
+    dest_ratio = size[0] / size[1]
+
+    if im_ratio != dest_ratio:
+        if im_ratio < dest_ratio:
             new_height = round(image.height / image.width * size[0])
             if new_height != size[1]:
                 size = (size[0], new_height)
@@ -564,7 +593,7 @@ def solarize(image, threshold=128):
     Invert all pixel values above a threshold.
 
     :param image: The image to solarize.
-    :param threshold: All pixels above this greyscale level are inverted.
+    :param threshold: All pixels above this grayscale level are inverted.
     :return: An image.
     """
     lut = []

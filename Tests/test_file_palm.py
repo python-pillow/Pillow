@@ -26,8 +26,7 @@ def open_with_magick(magick, tmp_path, f):
     rc = subprocess.call(
         magick + [f, outfile], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
     )
-    if rc:
-        raise OSError
+    assert not rc
     return Image.open(outfile)
 
 

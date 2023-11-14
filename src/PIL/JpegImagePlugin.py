@@ -165,16 +165,25 @@ def APP(self, marker):
             except TypeError:
                 dpi = x_resolution
             if math.isnan(dpi):
-                raise ValueError
+                msg = "DPI is not a number"
+                raise ValueError(msg)
             if resolution_unit == 3:  # cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
             self.info["dpi"] = dpi, dpi
-        except (TypeError, KeyError, SyntaxError, ValueError, ZeroDivisionError):
-            # SyntaxError for invalid/unreadable EXIF
+        except (
+            struct.error,
+            KeyError,
+            SyntaxError,
+            TypeError,
+            ValueError,
+            ZeroDivisionError,
+        ):
+            # struct.error for truncated EXIF
             # KeyError for dpi not included
-            # ZeroDivisionError for invalid dpi rational value
+            # SyntaxError for invalid/unreadable EXIF
             # ValueError or TypeError for dpi being an invalid float
+            # ZeroDivisionError for invalid dpi rational value
             self.info["dpi"] = 72, 72
 
 
@@ -496,7 +505,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         for segment, content in self.applist:
             if segment == "APP1":
-                marker, xmp_tags = content.rsplit(b"\x00", 1)
+                marker, xmp_tags = content.split(b"\x00")[:2]
                 if marker == b"http://ns.adobe.com/xap/1.0/":
                     return self._getxmp(xmp_tags)
         return {}
@@ -711,7 +720,8 @@ def _save(im, fp, filename):
             for idx, table in enumerate(qtables):
                 try:
                     if len(table) != 64:
-                        raise TypeError
+                        msg = "Invalid quantization table"
+                        raise TypeError(msg)
                     table = array.array("H", table)
                 except TypeError as e:
                     msg = "Invalid quantization table"

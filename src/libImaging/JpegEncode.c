@@ -218,9 +218,9 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             switch (context->streamtype) {
                 case 1:
-                    /* tables only -- not yet implemented */
-                    state->errcode = IMAGING_CODEC_CONFIG;
-                    return -1;
+                    /* tables only */
+                    jpeg_write_tables(&context->cinfo);
+                    goto cleanup;
                 case 2:
                     /* image only */
                     jpeg_suppress_tables(&context->cinfo, TRUE);
@@ -316,6 +316,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             jpeg_finish_compress(&context->cinfo);
 
+cleanup:
             /* Clean up */
             if (context->comment) {
                 free(context->comment);

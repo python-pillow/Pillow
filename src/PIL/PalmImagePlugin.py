@@ -124,7 +124,7 @@ def _save(im, fp, filename):
         if im.encoderinfo.get("bpp") in (1, 2, 4):
             # this is 8-bit grayscale, so we shift it to get the high-order bits,
             # and invert it because
-            # Palm does greyscale from white (0) to black (1)
+            # Palm does grayscale from white (0) to black (1)
             bpp = im.encoderinfo["bpp"]
             im = im.point(
                 lambda x, shift=8 - bpp, maxval=(1 << bpp) - 1: maxval - (x >> shift)

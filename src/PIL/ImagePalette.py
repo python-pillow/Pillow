@@ -205,7 +205,8 @@ def make_linear_lut(black, white):
         for i in range(256):
             lut.append(white * i // 255)
     else:
-        raise NotImplementedError  # FIXME
+        msg = "unavailable when black is non-zero"
+        raise NotImplementedError(msg)  # FIXME
     return lut
 
 
@@ -256,8 +257,6 @@ def load(filename):
                 if lut:
                     break
             except (SyntaxError, ValueError):
-                # import traceback
-                # traceback.print_exc()
                 pass
         else:
             msg = "cannot load palette"

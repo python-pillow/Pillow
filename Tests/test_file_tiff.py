@@ -734,7 +734,10 @@ class TestFileTiff:
     def test_getxmp(self):
         with Image.open("Tests/images/lab.tif") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()

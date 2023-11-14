@@ -113,6 +113,15 @@ class ImageDraw:
             self.font = ImageFont.load_default()
         return self.font
 
+    def _getfont(self, font_size):
+        if font_size is not None:
+            from . import ImageFont
+
+            font = ImageFont.load_default(font_size)
+        else:
+            font = self.getfont()
+        return font
+
     def _getink(self, ink, fill=None):
         if ink is None and fill is None:
             if self.fill:
@@ -456,6 +465,13 @@ class ImageDraw:
         **kwargs,
     ):
         """Draw text."""
+        if embedded_color and self.mode not in ("RGB", "RGBA"):
+            msg = "Embedded color supported only in RGB and RGBA modes"
+            raise ValueError(msg)
+
+        if font is None:
+            font = self._getfont(kwargs.get("font_size"))
+
         if self._multiline_check(text):
             return self.multiline_text(
                 xy,
@@ -472,13 +488,6 @@ class ImageDraw:
                 stroke_fill,
                 embedded_color,
             )
-
-        if embedded_color and self.mode not in ("RGB", "RGBA"):
-            msg = "Embedded color supported only in RGB and RGBA modes"
-            raise ValueError(msg)
-
-        if font is None:
-            font = self.getfont()
 
         def getink(fill):
             ink, fill = self._getink(fill)
@@ -570,6 +579,8 @@ class ImageDraw:
         stroke_width=0,
         stroke_fill=None,
         embedded_color=False,
+        *,
+        font_size=None,
     ):
         if direction == "ttb":
             msg = "ttb direction is unsupported for multiline text"
@@ -583,6 +594,9 @@ class ImageDraw:
         elif anchor[1] in "tb":
             msg = "anchor not supported for multiline text"
             raise ValueError(msg)
+
+        if font is None:
+            font = self._getfont(font_size)
 
         widths = []
         max_width = 0
@@ -645,6 +659,8 @@ class ImageDraw:
         features=None,
         language=None,
         embedded_color=False,
+        *,
+        font_size=None,
     ):
         """Get the length of a given string, in pixels with 1/64 precision."""
         if self._multiline_check(text):
@@ -655,7 +671,7 @@ class ImageDraw:
             raise ValueError(msg)
 
         if font is None:
-            font = self.getfont()
+            font = self._getfont(font_size)
         mode = "RGBA" if embedded_color else self.fontmode
         return font.getlength(text, mode, direction, features, language)
 
@@ -672,11 +688,16 @@ class ImageDraw:
         language=None,
         stroke_width=0,
         embedded_color=False,
+        *,
+        font_size=None,
     ):
         """Get the bounding box of a given string, in pixels."""
         if embedded_color and self.mode not in ("RGB", "RGBA"):
             msg = "Embedded color supported only in RGB and RGBA modes"
             raise ValueError(msg)
+
+        if font is None:
+            font = self._getfont(font_size)
 
         if self._multiline_check(text):
             return self.multiline_textbbox(
@@ -693,8 +714,6 @@ class ImageDraw:
                 embedded_color,
             )
 
-        if font is None:
-            font = self.getfont()
         mode = "RGBA" if embedded_color else self.fontmode
         bbox = font.getbbox(
             text, mode, direction, features, language, stroke_width, anchor
@@ -714,6 +733,8 @@ class ImageDraw:
         language=None,
         stroke_width=0,
         embedded_color=False,
+        *,
+        font_size=None,
     ):
         if direction == "ttb":
             msg = "ttb direction is unsupported for multiline text"
@@ -727,6 +748,9 @@ class ImageDraw:
         elif anchor[1] in "tb":
             msg = "anchor not supported for multiline text"
             raise ValueError(msg)
+
+        if font is None:
+            font = self._getfont(font_size)
 
         widths = []
         max_width = 0

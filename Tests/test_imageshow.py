@@ -85,7 +85,7 @@ def test_ipythonviewer():
             test_viewer = viewer
             break
     else:
-        assert False
+        pytest.fail()
 
     im = hopper()
     assert test_viewer.show(im) == 1
