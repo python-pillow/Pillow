@@ -49,13 +49,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
       - name: Build wheels
-        run: |
-          python3 -m pip install cibuildwheel
-          python3 -m cibuildwheel --output-dir wheelhouse
+        uses: pypa/cibuildwheel@v2.16.2
+        with:
+          output-dir: wheelhouse
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
           CIBW_BUILD: ${{ matrix.build }}
