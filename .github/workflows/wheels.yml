@@ -34,9 +34,11 @@ jobs:
           - name: "macOS x86_64"
             os: macos-latest
             archs: x86_64
+            macosx_deployment_target: "10.10"
           - name: "macOS arm64"
             os: macos-latest
             archs: arm64
+            macosx_deployment_target: "11.0"
           - name: "manylinux2014 and musllinux x86_64"
             os: ubuntu-latest
             archs: x86_64
@@ -61,6 +63,7 @@ jobs:
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_TEST_SKIP: "*-macosx_arm64"
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
       - uses: actions/upload-artifact@v3
         with:

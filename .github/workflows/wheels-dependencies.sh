@@ -144,10 +144,6 @@ if [[ -n "$IS_MACOS" ]]; then
   brew remove --ignore-dependencies webp zstd xz libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript
 
   brew install pkg-config
-
-  if [[ "$CIBW_ARCHS" != "arm64" ]]; then
-    export MACOSX_DEPLOYMENT_TARGET="10.10"
-  fi
 fi
 
 wrap_wheel_builder build
