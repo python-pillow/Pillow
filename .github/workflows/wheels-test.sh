@@ -11,7 +11,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 elif [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
     apk add curl fribidi
 else
-    yum install -y fribidi openblas-devel pkgconfig
+    yum install -y fribidi
 fi
 if [ "${AUDITWHEEL_POLICY::9}" != "musllinux" ]; then
     python3 -m pip install numpy
