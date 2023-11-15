@@ -586,14 +586,19 @@ def build_dep(name: str) -> str:
 
 def build_dep_all() -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
+    gha_groups = "GITHUB_ACTIONS" in os.environ
     for dep_name in DEPS:
         print()
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name)
+        if gha_groups:
+            lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+        if gha_groups:
+            lines.append("@echo ::endgroup::")
     print()
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)
