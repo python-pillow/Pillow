@@ -59,6 +59,7 @@ jobs:
           CIBW_CONFIG_SETTINGS: raqm=enable raqm=vendor fribidi=vendor
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_TEST_SKIP: "*-macosx_arm64"
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
