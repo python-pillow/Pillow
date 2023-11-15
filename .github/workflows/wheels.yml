@@ -62,6 +62,7 @@ jobs:
           CIBW_CONFIG_SETTINGS: raqm=enable raqm=vendor fribidi=vendor
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_SKIP: pp38-*
           CIBW_TEST_SKIP: "*-macosx_arm64"
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
