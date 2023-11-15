@@ -82,9 +82,6 @@ before-all = ".github/workflows/wheels-dependencies.sh"
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
-[tool.cibuildwheel.linux]
-environment = { CFLAGS="--std=c99" }
-
 [tool.ruff]
 line-length = 88
 select = [

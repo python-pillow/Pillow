@@ -8,12 +8,12 @@ EXP_FEATURES="fribidi harfbuzz libjpeg_turbo raqm transp_webp webp_anim webp_mux
 if [[ "$OSTYPE" == "darwin"* ]]; then
     brew install fribidi
     export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
-elif [ "${AUDITWHEEL_POLICY:9}" == "musllinux" ]; then
+elif [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
     apk add curl fribidi
 else
     yum install -y fribidi openblas-devel pkgconfig
 fi
-if [ "${AUDITWHEEL_POLICY:9}" != "musllinux" ]; then
+if [ "${AUDITWHEEL_POLICY::9}" != "musllinux" ]; then
     python3 -m pip install numpy
 fi
 
