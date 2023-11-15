@@ -67,7 +67,7 @@ function build {
     fi
     build_new_zlib
 
-    if [ -n "$IS_MACOS" ]; then
+    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
         ORIGINAL_BUILD_PREFIX=$BUILD_PREFIX
         ORIGINAL_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
         BUILD_PREFIX=`dirname $(dirname $(which python))`
@@ -75,15 +75,19 @@ function build {
     fi
     build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
-        build_simple xorgproto 2023.2 https://www.x.org/pub/individual/proto
-        build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
-        build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
-        cp venv/share/pkgconfig/xcb-proto.pc venv/lib/pkgconfig/xcb-proto.pc
+        if [[ "$CIBW_ARCHS" == "arm64" ]]; then
+            build_simple xorgproto 2023.2 https://www.x.org/pub/individual/proto
+            build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
+            build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
+            if [ -f /Library/Frameworks/Python.framework/Versions/Current/share/pkgconfig/xcb-proto.pc ]; then
+                cp /Library/Frameworks/Python.framework/Versions/Current/share/pkgconfig/xcb-proto.pc /Library/Frameworks/Python.framework/Versions/Current/lib/pkgconfig/xcb-proto.pc
+            fi
+        fi
     else
         sed s/\${pc_sysrootdir\}// /usr/local/share/pkgconfig/xcb-proto.pc > /usr/local/lib/pkgconfig/xcb-proto.pc
     fi
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
-    if [ -n "$IS_MACOS" ]; then
+    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
         BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
         PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
     fi
