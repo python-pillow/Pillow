@@ -4,6 +4,7 @@ env:
   global:
     - CIBW_ARCHS=aarch64
     - CIBW_CONFIG_SETTINGS="raqm=enable raqm=vendor fribidi=vendor"
+    - CIBW_SKIP=pp38-*
 
 language: python
 # Default Python version is usually 3.6
