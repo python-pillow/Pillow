@@ -3,6 +3,7 @@ if: tag IS present OR type = api
 env:
   global:
     - CIBW_ARCHS=aarch64
+    - CIBW_CONFIG_SETTINGS="raqm=enable raqm=vendor fribidi=vendor"
 
 language: python
 # Default Python version is usually 3.6
@@ -12,19 +13,28 @@ services: docker
 
 jobs:
   include:
-    - name: "manylinux2014 and musllinux aarch64"
+    - name: "manylinux2014 aarch64"
       os: linux
       arch: arm64
+      env:
+        - CIBW_BUILD="*manylinux*"
+        - CIBW_MANYLINUX_AARCH64_IMAGE=manylinux2014
+        - CIBW_MANYLINUX_PYPY_AARCH64_IMAGE=manylinux2014
     - name: "manylinux_2_28 aarch64"
       os: linux
       arch: arm64
       env:
-        - CIBW_BUILD: "*manylinux*"
-        - CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
-        - CIBW_MANYLINUX_PYPY_X86_64_IMAGE: "manylinux_2_28"
+        - CIBW_BUILD="*manylinux*"
+        - CIBW_MANYLINUX_AARCH64_IMAGE=manylinux_2_28
+        - CIBW_MANYLINUX_PYPY_AARCH64_IMAGE=manylinux_2_28
+    - name: "musllinux aarch64"
+      os: linux
+      arch: arm64
+      env:
+        - CIBW_BUILD="*musllinux*"
 
 install:
-    - python3 -m pip install cibuildwheel
+    - python3 -m pip install cibuildwheel==2.16.2
 
 script:
     - python3 -m cibuildwheel --output-dir wheelhouse
