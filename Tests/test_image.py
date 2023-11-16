@@ -1,4 +1,5 @@
 import io
+import logging
 import os
 import shutil
 import sys
@@ -1014,18 +1015,13 @@ class TestImage:
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
 
-    @pytest.fixture(scope="function")
-    def inject_caplog(self, caplog):
-        self._caplog = caplog
-
-    @pytest.mark.usefixtures("inject_caplog")
-    def test_close_graceful(self):
+    def test_close_graceful(self, caplog):
         with Image.open("Tests/images/hopper.jpg") as im:
             copy = im.copy()
-            im.close()
-            copy.close()
-
-            assert len(self._caplog.records) == 0
+            with caplog.at_level(logging.DEBUG):
+                im.close()
+                copy.close()
+            assert len(caplog.records) == 0
             assert im.fp is None
 
 
