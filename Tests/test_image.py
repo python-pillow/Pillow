@@ -1027,7 +1027,6 @@ class TestImage:
 
             assert len(self._caplog.records) == 0
             assert im.fp is None
-            assert copy.fp is None
 
 
 class MockEncoder:

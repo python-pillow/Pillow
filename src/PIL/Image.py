@@ -549,17 +549,17 @@ class Image:
         :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
         more information.
         """
-        try:
-            if hasattr(self, "fp"):
+        if hasattr(self, "fp"):
+            try:
                 if getattr(self, "_fp", False):
                     if self._fp != self.fp:
                         self._fp.close()
                     self._fp = DeferredError(ValueError("Operation on closed image"))
                 if self.fp:
                     self.fp.close()
-            self.fp = None
-        except Exception as msg:
-            logger.debug("Error closing: %s", msg)
+                self.fp = None
+            except Exception as msg:
+                logger.debug("Error closing: %s", msg)
 
         if getattr(self, "map", None):
             self.map = None
