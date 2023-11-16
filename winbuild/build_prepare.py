@@ -118,6 +118,12 @@ DEPS = {
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
             ".+(libjpeg-turbo Licenses\n======================\n\n.+)$"
         ),
+        "patch": {
+            r"CMakeLists.txt": {
+                # libjpeg-turbo does not detect MSVC x86_arm64 cross-compiler correctly
+                'if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")': "if({architecture} STREQUAL ARM64)",  # noqa: E501
+            },
+        },
         "build": [
             *cmds_cmake(
                 ("jpeg-static", "cjpeg-static", "djpeg-static"),
@@ -327,6 +333,8 @@ DEPS = {
             "CMakeLists.txt": {
                 "if(OPENMP_FOUND)": "if(false)",
                 "install": "#install",
+                # libimagequant does not detect MSVC x86_arm64 cross-compiler correctly
+                "if(${{CMAKE_SYSTEM_PROCESSOR}} STREQUAL ARM64)": "if({architecture} STREQUAL ARM64)",  # noqa: E501
             }
         },
         "build": [
@@ -367,11 +375,16 @@ DEPS = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_msvs() -> dict[str, str] | None:
+def find_msvs(architecture) -> dict[str, str] | None:
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
         return None
+
+    if architecture == "ARM64":
+        tools = "Microsoft.VisualStudio.Component.VC.Tools.ARM64"
+    else:
+        tools = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
 
     try:
         vspath = (
@@ -383,7 +396,7 @@ def find_msvs() -> dict[str, str] | None:
                     "-latest",
                     "-prerelease",
                     "-requires",
-                    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                    tools,
                     "-property",
                     "installationPath",
                     "-products",
@@ -654,7 +667,7 @@ if __name__ == "__main__":
     arch_prefs = ARCHITECTURES[args.architecture]
     print("Target architecture:", args.architecture)
 
-    msvs = find_msvs()
+    msvs = find_msvs(args.architecture)
     if msvs is None:
         msg = "Visual Studio not found. Please install Visual Studio 2017 or newer."
         raise RuntimeError(msg)
@@ -688,6 +701,11 @@ if __name__ == "__main__":
     if args.no_imagequant:
         disabled += ["libimagequant"]
     if args.no_fribidi:
+        disabled += ["fribidi"]
+    elif args.architecture == "ARM64" and platform.machine() != "ARM64":
+        import warnings
+
+        warnings.warn("Cross-compiling FriBiDi is currently not supported, disabling")
         disabled += ["fribidi"]
 
     prefs = {
