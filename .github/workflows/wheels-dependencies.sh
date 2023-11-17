@@ -61,18 +61,15 @@ function build_brotli {
 }
 
 function build {
+    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
+        export BUILD_PREFIX="/usr/local"
+    fi
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
     build_new_zlib
 
-    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
-        ORIGINAL_BUILD_PREFIX=$BUILD_PREFIX
-        ORIGINAL_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
-        BUILD_PREFIX=`dirname $(dirname $(which python))`
-        PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig"
-    fi
     build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
         if [[ "$CIBW_ARCHS" == "arm64" ]]; then
@@ -87,18 +84,16 @@ function build {
         sed s/\${pc_sysrootdir\}// /usr/local/share/pkgconfig/xcb-proto.pc > /usr/local/lib/pkgconfig/xcb-proto.pc
     fi
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
-    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
-        BUILD_PREFIX=$ORIGINAL_BUILD_PREFIX
-        PKG_CONFIG_PATH=$ORIGINAL_PKG_CONFIG_PATH
-    fi
 
     build_libjpeg_turbo
-    if [[ -n "$IS_MACOS" ]]; then
-        rm /usr/local/lib/libjpeg.dylib
-    fi
     build_tiff
     build_libpng
     build_lcms2
+    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
+        for dylib in libjpeg.dylib libtiff.dylib liblcms2.dylib; do
+            cp $BUILD_PREFIX/lib/$dylib /opt/arm64-builds/lib
+        done
+    fi
     build_openjpeg
 
     ORIGINAL_CFLAGS=$CFLAGS
@@ -135,13 +130,12 @@ curl -fsSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-de
 untar pillow-depends-main.zip
 
 if [[ -n "$IS_MACOS" ]]; then
-  # webp, zstd, xz, libtiff, libxcb cause a conflict with building webp, libtiff, libxcb
+  # webp, libtiff, libxcb cause a conflict with building webp, libtiff, libxcb
   # libxdmcp causes an issue on macOS < 11
-  # curl from brew requires zstd, use system curl
   # if php is installed, brew tries to reinstall these after installing openblas
   # remove cairo to fix building harfbuzz on arm64
   # remove lcms2 and libpng to fix building openjpeg on arm64
-  brew remove --ignore-dependencies webp zstd xz libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript
+  brew remove --ignore-dependencies webp libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript
 
   brew install pkg-config
 fi
