@@ -135,7 +135,9 @@ if [[ -n "$IS_MACOS" ]]; then
   # if php is installed, brew tries to reinstall these after installing openblas
   # remove cairo to fix building harfbuzz on arm64
   # remove lcms2 and libpng to fix building openjpeg on arm64
-  brew remove --ignore-dependencies webp libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript
+  # remove zstd to avoid inclusion on x86_64
+  # curl from brew requires zstd, use system curl
+  brew remove --ignore-dependencies webp libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript zstd
 
   brew install pkg-config
 fi
