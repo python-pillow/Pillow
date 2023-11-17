@@ -375,7 +375,7 @@ DEPS = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_msvs(architecture) -> dict[str, str] | None:
+def find_msvs(architecture: str) -> dict[str, str] | None:
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
