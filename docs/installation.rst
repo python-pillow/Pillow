@@ -176,8 +176,6 @@ Many of Pillow's features require external libraries:
     transparent WebP files. Versions **0.3.0** and above support
     transparency.
 
-* **tcl/tk** provides support for tkinter bitmap and photo images.
-
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
@@ -211,6 +209,11 @@ Many of Pillow's features require external libraries:
   * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
 
 * **libxcb** provides X11 screengrab support.
+
+* Before Pillow 3.3.0, **tcl/tk** was required when building, to later provide
+    support for tkinter bitmap and photo images. Now, Pillow contains small
+    tk/tcl header excerpts, and uses Python's tkinter module at runtime if it is
+    installed.
 
 .. tab:: Linux
 
