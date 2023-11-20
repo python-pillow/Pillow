@@ -210,11 +210,6 @@ Many of Pillow's features require external libraries:
 
 * **libxcb** provides X11 screengrab support.
 
-* Before Pillow 3.3.0, **tcl/tk** was required when building, to later provide
-    support for tkinter bitmap and photo images. Now, Pillow contains small
-    tk/tcl header excerpts, and uses Python's tkinter module at runtime if it is
-    installed.
-
 .. tab:: Linux
 
     If you didn't build Python from source, make sure you have Python's
