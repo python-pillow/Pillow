@@ -47,6 +47,9 @@ docs = [
   "sphinx-removed-in",
   "sphinxext-opengraph",
 ]
+fpx_mic = [
+  "olefile",
+]
 tests = [
   "check-manifest",
   "coverage",
@@ -58,6 +61,9 @@ tests = [
   "pytest",
   "pytest-cov",
   "pytest-timeout",
+]
+xmp = [
+  "defusedxml",
 ]
 [project.urls]
 Changelog = "https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst"
