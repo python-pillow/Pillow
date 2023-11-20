@@ -47,7 +47,10 @@ docs = [
   "sphinx-removed-in",
   "sphinxext-opengraph",
 ]
-fpx_mic = [
+fpx = [
+  "olefile",
+]
+mic = [
   "olefile",
 ]
 tests = [
