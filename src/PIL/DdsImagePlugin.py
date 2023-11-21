@@ -379,7 +379,7 @@ class DdsImageFile(ImageFile.ImageFile):
             self._mode = "P"
             self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
         elif pfflags & DDPF.FOURCC:
-            data_offs = header_size + 4
+            offset = header_size + 4
             if fourcc == D3DFMT.DXT1:
                 self._mode = "RGBA"
                 self.pixel_format = "DXT1"
@@ -405,7 +405,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.pixel_format = "BC5"
                 n = 5
             elif fourcc == D3DFMT.DX10:
-                data_offs += 20
+                offset += 20
                 # ignoring flags which pertain to volume textures and cubemaps
                 (dxgi_format,) = struct.unpack("<I", self.fp.read(4))
                 self.fp.read(16)
@@ -462,7 +462,7 @@ class DdsImageFile(ImageFile.ImageFile):
 
         extents = (0, 0) + self.size
         if n:
-            self.tile = [Image._Tile("bcn", extents, data_offs, (n, self.pixel_format))]
+            self.tile = [Image._Tile("bcn", extents, offset, (n, self.pixel_format))]
         else:
             self.tile = [Image._Tile("raw", extents, 0, rawmode or self.mode)]
 
