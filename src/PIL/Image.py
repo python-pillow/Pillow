@@ -212,7 +212,7 @@ class _Tile(NamedTuple):
     encoder_name: str
     extents: tuple[int, int, int, int]
     offset: int
-    args: tuple
+    args: tuple | str | None
 
 
 # --------------------------------------------------------------------
