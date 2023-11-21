@@ -187,6 +187,8 @@ class ImageFile(Image.Image):
         if use_mmap:
             # try memory mapping
             decoder_name, extents, offset, args = self.tile[0]
+            if isinstance(args, str):
+                args = (args, 0, 1)
             if (
                 decoder_name == "raw"
                 and len(args) >= 3
