@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- If absent, do not try to close fp when closing image #7557
+  [RaphaelVRossi, radarhere]
+
 - Allow configuring JPEG restart marker interval on save #7488
   [bgilbert, radarhere]
 
