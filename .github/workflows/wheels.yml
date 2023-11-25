@@ -24,15 +24,52 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  macos:
-    uses: ./.github/workflows/wheels-macos.yml
-    with:
-      artifacts-name: "dist"
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "macOS x86_64"
+            os: macos-latest
+            archs: x86_64
+            macosx_deployment_target: "10.10"
+          - name: "macOS arm64"
+            os: macos-latest
+            archs: arm64
+            macosx_deployment_target: "11.0"
+          - name: "manylinux2014 and musllinux x86_64"
+            os: ubuntu-latest
+            archs: x86_64
+          - name: "manylinux_2_28 x86_64"
+            os: ubuntu-latest
+            archs: x86_64
+            build: "*manylinux*"
+            manylinux: "manylinux_2_28"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-  linux:
-    uses: ./.github/workflows/wheels-linux.yml
-    with:
-      artifacts-name: "dist"
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        with:
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS: ${{ matrix.archs }}
+          CIBW_BUILD: ${{ matrix.build }}
+          CIBW_CONFIG_SETTINGS: raqm=enable raqm=vendor fribidi=vendor
+          CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_SKIP: pp38-*
+          CIBW_TEST_SKIP: "*-macosx_arm64"
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: ./wheelhouse/*.whl
 
   sdist:
     runs-on: ubuntu-latest
@@ -56,7 +93,7 @@ jobs:
   success:
     permissions:
       contents: none
-    needs: [macos, linux, sdist]
+    needs: [build, sdist]
     runs-on: ubuntu-latest
     name: Wheels Successful
     steps:

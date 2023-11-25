@@ -77,6 +77,11 @@ package-dir = {"" = "src"}
 [tool.setuptools.dynamic]
 version = {attr = "PIL.__version__"}
 
+[tool.cibuildwheel]
+before-all = ".github/workflows/wheels-dependencies.sh"
+test-command = "cd {project} && .github/workflows/wheels-test.sh"
+test-extras = "tests"
+
 [tool.ruff]
 line-length = 88
 select = [
