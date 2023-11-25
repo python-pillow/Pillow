@@ -266,12 +266,13 @@ following options are available::
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
 **optimize**
-    Whether to attempt to compress the palette by eliminating unused colors.
+    Whether to attempt to compress the palette by eliminating unused colors
+    (this is only useful if the palette can be compressed to the next smaller
+    power of 2 elements) and whether to mark all pixels that are not new in the
+    next frame as transparent.
+
     This is attempted by default, unless a palette is specified as an option or
     as part of the first image's :py:attr:`~PIL.Image.Image.info` dictionary.
-
-    This is only useful if the palette can be compressed to the next smaller
-    power of 2 elements.
 
 Note that if the image you are saving comes from an existing GIF, it may have
 the following properties in its :py:attr:`~PIL.Image.Image.info` dictionary.

@@ -217,6 +217,27 @@ def test_optimize_if_palette_can_be_reduced_by_half():
             assert len(reloaded.palette.palette) // 3 == colors
 
 
+def test_full_palette_second_frame(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("P", (1, 256))
+
+    full_palette_im = Image.new("P", (1, 256))
+    for i in range(256):
+        full_palette_im.putpixel((0, i), i)
+    full_palette_im.palette = ImagePalette.ImagePalette(
+        "RGB", bytearray(i // 3 for i in range(768))
+    )
+    full_palette_im.palette.dirty = 1
+
+    im.save(out, save_all=True, append_images=[full_palette_im])
+
+    with Image.open(out) as reloaded:
+        reloaded.seek(1)
+
+        for i in range(256):
+            reloaded.getpixel((0, i)) == i
+
+
 def test_roundtrip(tmp_path):
     out = str(tmp_path / "temp.gif")
     im = hopper()
