@@ -3,7 +3,6 @@ if: tag IS present OR type = api
 env:
   global:
     - CIBW_ARCHS=aarch64
-    - CIBW_CONFIG_SETTINGS="raqm=enable raqm=vendor fribidi=vendor"
     - CIBW_SKIP=pp38-*
 
 language: python
