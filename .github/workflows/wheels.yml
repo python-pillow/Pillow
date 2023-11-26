@@ -111,9 +111,6 @@ jobs:
           choco install nasm --no-progress
           echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-          choco install ghostscript --version=10.0.0.20230317 --no-progress
-          echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
-
           # Install extra test images
           xcopy /S /Y Tests\test-images\* Tests\images
 
@@ -160,10 +157,25 @@ jobs:
             powershell C:\pillow\.github\workflows\wheels-test.ps1 %CD%\..\venv-test
         shell: cmd
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: ./wheelhouse/*.whl
+
+      - name: Prepare to upload FriBiDi
+        if: "matrix.arch != 'ARM64'"
+        run: |
+          mkdir fribidi\${{ matrix.arch }}
+          copy winbuild\build\bin\fribidi* fribidi\${{ matrix.arch }}
+        shell: cmd
+
+      - name: Upload fribidi.dll
+        if: "matrix.arch != 'ARM64'"
+        uses: actions/upload-artifact@v3
+        with:
+          name: fribidi
+          path: fribidi\*
 
   sdist:
     runs-on: ubuntu-latest
