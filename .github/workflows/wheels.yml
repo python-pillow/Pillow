@@ -152,6 +152,7 @@ jobs:
           CIBW_CONFIG_SETTINGS: raqm=enable raqm=vendor fribidi=vendor
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: >-
+            reg.exe add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe" /v "GlobalFlag" /t REG_SZ /d "0x02000000" /f &&
             cd /d {project} &&
             python.exe selftest.py &&
             python.exe -m pytest -vx -W always Tests
