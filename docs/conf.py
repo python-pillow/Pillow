@@ -166,6 +166,10 @@ html_static_path = ["resources"]
 # directly to the root of the documentation.
 # html_extra_path = []
 
+html_js_files = [
+    "js/activate_tab.js",
+]
+
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
 # html_last_updated_fmt = '%b %d, %Y'
