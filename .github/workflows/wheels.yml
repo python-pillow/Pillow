@@ -104,7 +104,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.x"
 
       - name: Prepare for build
         run: |
@@ -147,14 +147,13 @@ jobs:
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
           CIBW_TEST_SKIP: "*-win_arm64"
-          CIBW_TEST_COMMAND: >-
-            docker run --rm
+          CIBW_TEST_COMMAND: 'docker run --rm
             -v {project}:C:\pillow
             -v C:\cibw:C:\cibw
             -v %CD%\..\venv-test:%CD%\..\venv-test
             -e CI -e GITHUB_ACTIONS
             mcr.microsoft.com/windows/servercore:ltsc2022
-            powershell C:\pillow\.github\workflows\wheels-test.ps1 %CD%\..\venv-test
+            powershell C:\pillow\.github\workflows\wheels-test.ps1 %CD%\..\venv-test'
         shell: cmd
 
       - name: Upload wheels

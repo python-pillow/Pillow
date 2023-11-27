@@ -263,7 +263,7 @@ def djpeg_available():
         try:
             subprocess.check_call(["djpeg", "-version"])
             return True
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError:  # pragma: no cover
             return False
 
 
@@ -272,7 +272,7 @@ def cjpeg_available():
         try:
             subprocess.check_call(["cjpeg", "-version"])
             return True
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError:  # pragma: no cover
             return False
 
 
