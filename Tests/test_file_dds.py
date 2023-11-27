@@ -26,6 +26,7 @@ TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB = "Tests/images/DXGI_FORMAT_R8G8B8A8_UNORM_SR
 TEST_FILE_UNCOMPRESSED_L = "Tests/images/uncompressed_l.dds"
 TEST_FILE_UNCOMPRESSED_L_WITH_ALPHA = "Tests/images/uncompressed_la.dds"
 TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/hopper.dds"
+TEST_FILE_UNCOMPRESSED_BGR15 = "Tests/images/bgr15.dds"
 TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 
 
@@ -211,6 +212,7 @@ def test_unimplemented_dxgi_format():
         ("L", (128, 128), TEST_FILE_UNCOMPRESSED_L),
         ("LA", (128, 128), TEST_FILE_UNCOMPRESSED_L_WITH_ALPHA),
         ("RGB", (128, 128), TEST_FILE_UNCOMPRESSED_RGB),
+        ("RGB", (128, 128), TEST_FILE_UNCOMPRESSED_BGR15),
         ("RGBA", (800, 600), TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA),
     ],
 )

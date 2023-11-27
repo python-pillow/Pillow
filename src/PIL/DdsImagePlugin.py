@@ -148,15 +148,17 @@ class DdsImageFile(ImageFile.ImageFile):
             self.tile = [("raw", (0, 0) + self.size, 0, (self.mode, 0, 1))]
         elif pfflags & DDPF_RGB:
             # Texture contains uncompressed RGB data
-            masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
-            rawmode = ""
-            if pfflags & DDPF_ALPHAPIXELS:
-                rawmode += masks[0xFF000000]
-            else:
+            if not pfflags & DDPF_ALPHAPIXELS:
                 self._mode = "RGB"
-            rawmode += masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
+            if masks[:3] == (31744, 992, 31) and self.mode == "RGB":
+                rawmode = "BGR;15"
+            else:
+                masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
+                rawmode = masks[0xFF] + masks[0xFF00] + masks[0xFF0000]
+                if self.mode == "RGBA":
+                    rawmode += masks[0xFF000000]
 
-            self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
+            self.tile = [("raw", (0, 0) + self.size, 0, (rawmode, 0, 1))]
         elif pfflags & DDPF_PALETTEINDEXED8:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
