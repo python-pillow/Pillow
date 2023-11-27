@@ -27,7 +27,7 @@ function activateTab(tabName) {
   const labels = document.querySelectorAll(".tab-label");
 
   labels.forEach((label) => {
-    if (label.textContent.includes(tabName)) {
+    if (label.textContent == tabName) {
       // Find the associated input element using the 'for' attribute
       const tabInputId = label.getAttribute("for");
       const tabInput = document.getElementById(tabInputId);
