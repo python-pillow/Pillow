@@ -31,6 +31,7 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
+from pathlib import Path
 
 from . import Image
 from ._util import is_directory, is_path
@@ -213,6 +214,8 @@ class FreeTypeFont:
             )
 
         if is_path(font):
+            if isinstance(font, Path):
+                font = str(font)
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
