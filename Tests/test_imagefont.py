@@ -862,7 +862,7 @@ def test_bitmap_blend(layout_engine, embedded_color):
         "Tests/fonts/EBDTTestFont.ttf", size=64, layout_engine=layout_engine
     )
 
-    im = Image.new("RGB", (128, 96), "white")
+    im = Image.new("RGBA", (128, 96), "white")
     d = ImageDraw.Draw(im)
     d.text((16, 16), "AA", font=font, embedded_color=embedded_color, fill="#8E2F52")
 
