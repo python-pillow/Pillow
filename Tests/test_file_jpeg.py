@@ -145,11 +145,13 @@ class TestFileJpeg:
         def getchannels(im):
             return tuple(v[0] for v in im.layer)
 
-        im = self.roundtrip(hopper())
-        assert getchannels(im) == (1, 2, 3)
-        im = self.roundtrip(hopper(), keep_rgb=True)
-        assert getchannels(im) == (ord("R"), ord("G"), ord("B"))
-        assert_image_similar(hopper(), im, 12)
+        im = hopper()
+        im_ycbcr = self.roundtrip(im)
+        assert getchannels(im_ycbcr) == (1, 2, 3)
+
+        im_rgb = self.roundtrip(im, keep_rgb=True)
+        assert getchannels(im_rgb) == (ord("R"), ord("G"), ord("B"))
+        assert_image_similar(im, im_rgb, 12)
 
     @pytest.mark.parametrize(
         "test_image_path",
@@ -434,30 +436,25 @@ class TestFileJpeg:
         # experimental API
         im = self.roundtrip(hopper(), subsampling=-1)  # default
         assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling=0)  # 4:4:4
-        assert getsampling(im) == (1, 1, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling=1)  # 4:2:2
-        assert getsampling(im) == (2, 1, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling=2)  # 4:2:0
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
+        for subsampling in (0, "4:4:4"):
+            im = self.roundtrip(hopper(), subsampling=subsampling)
+            assert getsampling(im) == (1, 1, 1, 1, 1, 1)
+        for subsampling in (1, "4:2:2"):
+            im = self.roundtrip(hopper(), subsampling=subsampling)
+            assert getsampling(im) == (2, 1, 1, 1, 1, 1)
+        for subsampling in (2, "4:2:0", "4:1:1"):
+            im = self.roundtrip(hopper(), subsampling=subsampling)
+            assert getsampling(im) == (2, 2, 1, 1, 1, 1)
+
         im = self.roundtrip(hopper(), subsampling=3)  # default (undefined)
         assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-
-        im = self.roundtrip(hopper(), subsampling="4:4:4")
-        assert getsampling(im) == (1, 1, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling="4:2:2")
-        assert getsampling(im) == (2, 1, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling="4:2:0")
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling="4:1:1")
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-
-        with pytest.raises(TypeError):
-            self.roundtrip(hopper(), subsampling="1:1:1")
 
         # RGB colorspace, no subsampling by default
         im = self.roundtrip(hopper(), subsampling=3, keep_rgb=True)
         assert getsampling(im) == (1, 1, 1, 1, 1, 1)
+
+        with pytest.raises(TypeError):
+            self.roundtrip(hopper(), subsampling="1:1:1")
 
     def test_exif(self):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
