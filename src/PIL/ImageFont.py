@@ -25,6 +25,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import annotations
+
 import base64
 import os
 import sys
@@ -186,7 +188,14 @@ class ImageFont:
 class FreeTypeFont:
     """FreeType font wrapper (requires _imagingft service)"""
 
-    def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
+    def __init__(
+        self,
+        font: bytes | str | Path | None = None,
+        size: float = 10,
+        index: int = 0,
+        encoding: str = "",
+        layout_engine: int = None,
+    ) -> None:
         # FIXME: use service provider instead
 
         self.path = font
