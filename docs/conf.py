@@ -166,6 +166,8 @@ html_static_path = ["resources"]
 # directly to the root of the documentation.
 # html_extra_path = []
 
+html_css_files = ["css/dark.css"]
+
 html_js_files = [
     "js/activate_tab.js",
 ]
@@ -315,10 +317,6 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
-
-
-def setup(app):
-    app.add_css_file("css/dark.css")
 
 
 linkcheck_allowed_redirects = {
