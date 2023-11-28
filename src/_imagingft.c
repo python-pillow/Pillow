@@ -1065,21 +1065,21 @@ font_render(FontObject *self, PyObject *args) {
                         if (src_alpha > 0) {
                             /* unpremultiply BGRa */
                             int src_red = CLIP8((255 * (int)source[k * 4 + 2]) / src_alpha);
-                            int src_grn = CLIP8((255 * (int)source[k * 4 + 1]) / src_alpha);
-                            int src_blu = CLIP8((255 * (int)source[k * 4 + 0]) / src_alpha);
+                            int src_green = CLIP8((255 * (int)source[k * 4 + 1]) / src_alpha);
+                            int src_blue = CLIP8((255 * (int)source[k * 4 + 0]) / src_alpha);
 
                             /* blend required if target has data */
                             if (target[k * 4 + 3] > 0) {
                                 /* blend RGBA colors */
                                 target[k * 4 + 0] = BLEND(src_alpha, target[k * 4 + 0], src_red, tmp);
-                                target[k * 4 + 1] = BLEND(src_alpha, target[k * 4 + 1], src_grn, tmp);
-                                target[k * 4 + 2] = BLEND(src_alpha, target[k * 4 + 2], src_blu, tmp);
+                                target[k * 4 + 1] = BLEND(src_alpha, target[k * 4 + 1], src_green, tmp);
+                                target[k * 4 + 2] = BLEND(src_alpha, target[k * 4 + 2], src_blue, tmp);
                                 target[k * 4 + 3] = CLIP8(src_alpha + MULDIV255(target[k * 4 + 3], (255 - src_alpha), tmp));
                             } else {
                                 /* paste unpremultiplied RGBA values */
                                 target[k * 4 + 0] = src_red;
-                                target[k * 4 + 1] = src_grn;
-                                target[k * 4 + 2] = src_blu;
+                                target[k * 4 + 1] = src_green;
+                                target[k * 4 + 2] = src_blue;
                                 target[k * 4 + 3] = src_alpha;
                             }
                         }
