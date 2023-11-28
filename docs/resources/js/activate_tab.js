@@ -23,7 +23,7 @@ function getOS() {
 }
 
 function activateTab(tabName) {
-  // Find all label elements containing the specified tab name
+  // Find all label elements with the specified tab name
   const labels = document.querySelectorAll(".tab-label");
 
   labels.forEach((label) => {
