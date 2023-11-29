@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Raise ValueError when TrueType font size is not greater than zero #7584
+  [akx, radarhere]
+
 - If absent, do not try to close fp when closing image #7557
   [RaphaelVRossi, radarhere]
 
