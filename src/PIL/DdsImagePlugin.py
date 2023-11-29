@@ -137,7 +137,6 @@ class DdsImageFile(ImageFile.ImageFile):
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
         fourcc = header.read(4)
         (bitcount,) = struct.unpack("<I", header.read(4))
-        masks = struct.unpack("<4I", header.read(16))
         if pfflags & DDPF_LUMINANCE:
             # Texture contains uncompressed L or LA data
             if pfflags & DDPF_ALPHAPIXELS:
@@ -150,12 +149,33 @@ class DdsImageFile(ImageFile.ImageFile):
             # Texture contains uncompressed RGB data
             if not pfflags & DDPF_ALPHAPIXELS:
                 self._mode = "RGB"
-            if masks[:3] == (31744, 992, 31) and self.mode == "RGB":
-                rawmode = "BGR;15"
+
+            # Each channel is derived using a mask of the pixel values
+            masks = {
+                mask: "RGB"[i]
+                for i, mask in enumerate(struct.unpack("<3I", header.read(12)))
+            }
+            if self.mode == "RGB" and all(
+                mask in (0b0000000000011111, 0b0000001111100000, 0b0111110000000000)
+                for mask in masks
+            ):
+                # Each mask uses 5 bits
+                rawmode = (
+                    masks[0b0000000000011111]
+                    + masks[0b0000001111100000]
+                    + masks[0b0111110000000000]
+                    + ";15"
+                )
             else:
-                masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
-                rawmode = masks[0xFF] + masks[0xFF00] + masks[0xFF0000]
+                # Try 8 bits for each mask
                 if self.mode == "RGBA":
+                    # The fourth mask, alpha,
+                    # is only valid when the correct flags are present
+                    a_mask = struct.unpack("<I", header.read(4))[0]
+                    masks[a_mask] = "A"
+
+                rawmode = masks[0xFF] + masks[0xFF00] + masks[0xFF0000]
+                if 0xFF000000 in masks:
                     rawmode += masks[0xFF000000]
 
             self.tile = [("raw", (0, 0) + self.size, 0, (rawmode, 0, 1))]
