@@ -1071,3 +1071,9 @@ def test_raqm_missing_warning(monkeypatch):
         "Raqm layout was requested, but Raqm is not available. "
         "Falling back to basic layout."
     )
+
+
+@pytest.mark.parametrize("size", [-1, 0])
+def test_invalid_truetype_sizes_raise_valueerror(layout_engine, size):
+    with pytest.raises(ValueError):
+        ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)
