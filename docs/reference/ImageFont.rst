@@ -70,21 +70,20 @@ Methods
 Constants
 ---------
 
-.. data:: PIL.ImageFont.Layout.BASIC
+.. class:: Layout
 
-    Use basic text layout for TrueType font.
-    Advanced features such as text direction are not supported.
+    .. py:attribute:: BASIC
 
-.. data:: PIL.ImageFont.Layout.RAQM
+        Use basic text layout for TrueType font.
+        Advanced features such as text direction are not supported.
 
-    Use Raqm text layout for TrueType font.
-    Advanced features are supported.
+    .. py:attribute:: RAQM
 
-    Requires Raqm, you can check support using
-    :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
+        Use Raqm text layout for TrueType font.
+        Advanced features are supported.
 
-Constants
----------
+        Requires Raqm, you can check support using
+        :py:func:`PIL.features.check_feature` with ``feature="raqm"``.
 
 .. data:: MAX_STRING_LENGTH
 
