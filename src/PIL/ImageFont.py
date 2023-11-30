@@ -194,7 +194,7 @@ class FreeTypeFont:
         size: float = 10,
         index: int = 0,
         encoding: str = "",
-        layout_engine: int | None = None,
+        layout_engine: Layout | None = None,
     ) -> None:
         # FIXME: use service provider instead
 
