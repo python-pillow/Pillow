@@ -1,4 +1,3 @@
-import importlib.util
 import sys
 
 from PIL import features
@@ -8,7 +7,11 @@ def test_wheel_modules():
     expected_modules = {"pil", "tkinter", "freetype2", "littlecms2", "webp"}
 
     # tkinter is not available in cibuildwheel installed CPython on Windows
-    if not importlib.util.find_spec("tkinter"):
+    try:
+        import tkinter
+
+        assert tkinter
+    except ImportError:
         expected_modules.remove("tkinter")
 
     assert set(features.get_supported_modules()) == expected_modules
