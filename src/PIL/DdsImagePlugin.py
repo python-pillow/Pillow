@@ -14,6 +14,7 @@ import struct
 from io import BytesIO
 
 from . import Image, ImageFile, ImagePalette
+from ._binary import o8
 from ._binary import o32le as o32
 
 # Magic ("DDS ")
@@ -137,7 +138,6 @@ class DdsImageFile(ImageFile.ImageFile):
         pfsize, pfflags = struct.unpack("<2I", header.read(8))
         fourcc = header.read(4)
         (bitcount,) = struct.unpack("<I", header.read(4))
-        masks = struct.unpack("<4I", header.read(16))
         if pfflags & DDPF_LUMINANCE:
             # Texture contains uncompressed L or LA data
             if pfflags & DDPF_ALPHAPIXELS:
@@ -148,15 +148,16 @@ class DdsImageFile(ImageFile.ImageFile):
             self.tile = [("raw", (0, 0) + self.size, 0, (self.mode, 0, 1))]
         elif pfflags & DDPF_RGB:
             # Texture contains uncompressed RGB data
-            masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
-            rawmode = ""
             if pfflags & DDPF_ALPHAPIXELS:
-                rawmode += masks[0xFF000000]
+                mask_count = 4
             else:
                 self._mode = "RGB"
-            rawmode += masks[0xFF0000] + masks[0xFF00] + masks[0xFF]
+                mask_count = 3
 
-            self.tile = [("raw", (0, 0) + self.size, 0, (rawmode[::-1], 0, 1))]
+            masks = struct.unpack(
+                "<" + str(mask_count) + "I", header.read(mask_count * 4)
+            )
+            self.tile = [("dds_rgb", (0, 0) + self.size, 0, (bitcount, masks))]
         elif pfflags & DDPF_PALETTEINDEXED8:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
@@ -237,6 +238,40 @@ class DdsImageFile(ImageFile.ImageFile):
         pass
 
 
+class DdsRgbDecoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer):
+        bitcount, masks = self.args
+
+        # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
+        # Calculate how many zeros each mask is padded with
+        mask_offsets = []
+        # And the maximum value of each channel without the padding
+        mask_totals = []
+        for mask in masks:
+            offset = 0
+            if mask != 0:
+                while mask >> (offset + 1) << (offset + 1) == mask:
+                    offset += 1
+            mask_offsets.append(offset)
+            mask_totals.append(mask >> offset)
+
+        data = bytearray()
+        bytecount = bitcount // 8
+        while len(data) < self.state.xsize * self.state.ysize * len(masks):
+            value = self.fd.read(bytecount)
+            int_value = sum(value[i] << i * 8 for i in range(bytecount))
+            for i, mask in enumerate(masks):
+                masked_value = int_value & mask
+                # Remove the zero padding, and scale it to 8 bits
+                data += o8(
+                    int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
+                )
+        self.set_as_raw(bytes(data))
+        return -1, 0
+
+
 def _save(im, fp, filename):
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
         msg = f"cannot write mode {im.mode} as DDS"
@@ -291,5 +326,6 @@ def _accept(prefix):
 
 
 Image.register_open(DdsImageFile.format, DdsImageFile, _accept)
+Image.register_decoder("dds_rgb", DdsRgbDecoder)
 Image.register_save(DdsImageFile.format, _save)
 Image.register_extension(DdsImageFile.format, ".dds")
