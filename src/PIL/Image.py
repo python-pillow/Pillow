@@ -23,7 +23,6 @@
 #
 # See the README file for information on usage and redistribution.
 #
-from __future__ import annotations
 
 import atexit
 import builtins
@@ -39,7 +38,6 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from pathlib import Path
-from typing import NamedTuple
 
 try:
     from defusedxml import ElementTree
@@ -206,13 +204,6 @@ if hasattr(core, "DEFAULT_STRATEGY"):
     HUFFMAN_ONLY = core.HUFFMAN_ONLY
     RLE = core.RLE
     FIXED = core.FIXED
-
-
-class _Tile(NamedTuple):
-    encoder_name: str
-    extents: tuple[int, int, int, int]
-    offset: int
-    args: tuple | str | None
 
 
 # --------------------------------------------------------------------
@@ -706,7 +697,6 @@ class Image:
 
     def __setstate__(self, state):
         Image.__init__(self)
-        self.tile: list[_Tile] = []
         info, mode, size, palette, data = state
         self.info = info
         self._mode = mode

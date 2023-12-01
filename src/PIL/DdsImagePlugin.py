@@ -9,6 +9,7 @@ The contents of this file are hereby released in the public domain (CC0)
 Full text of the CC0 license:
   https://creativecommons.org/publicdomain/zero/1.0/
 """
+
 import io
 import struct
 import sys
@@ -460,9 +461,11 @@ class DdsImageFile(ImageFile.ImageFile):
 
         extents = (0, 0) + self.size
         if n:
-            self.tile = [Image._Tile("bcn", extents, offset, (n, self.pixel_format))]
+            self.tile = [
+                ImageFile._Tile("bcn", extents, offset, (n, self.pixel_format))
+            ]
         else:
-            self.tile = [Image._Tile("raw", extents, 0, rawmode or self.mode)]
+            self.tile = [ImageFile._Tile("raw", extents, 0, rawmode or self.mode)]
 
     def load_seek(self, pos):
         pass
@@ -494,8 +497,8 @@ def _save(im, fp, filename):
     rgba_mask.append(0xFF000000 if alpha else 0)
 
     flags = DDSD.CAPS | DDSD.HEIGHT | DDSD.WIDTH | DDSD.PITCH | DDSD.PIXELFORMAT
-    bit_count = len(im.getbands()) * 8
-    stride = (im.width * bit_count + 7) // 8
+    bitcount = len(im.getbands()) * 8
+    pitch = (im.width * bitcount + 7) // 8
 
     fp.write(
         o32(DDS_MAGIC)
@@ -505,17 +508,19 @@ def _save(im, fp, filename):
             flags,  # flags
             im.height,
             im.width,
-            stride,  # pitch
+            pitch,
             0,  # depth
             0,  # mipmaps
         )
         + struct.pack("11I", *((0,) * 11))  # reserved
         # pfsize, pfflags, fourcc, bitcount
-        + struct.pack("<4I", 32, pixel_flags, 0, bit_count)
+        + struct.pack("<4I", 32, pixel_flags, 0, bitcount)
         + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
         + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    ImageFile._save(im, fp, [Image._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))]
+    )
 
 
 def _accept(prefix):
