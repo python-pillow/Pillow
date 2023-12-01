@@ -69,7 +69,7 @@ class Stat:
 
         v = []
         for i in range(0, len(self.h), 256):
-            v.append(minmax(self.h[i:i+256]))
+            v.append(minmax(self.h[i : i + 256]))
         return v
 
     def _getcount(self):
