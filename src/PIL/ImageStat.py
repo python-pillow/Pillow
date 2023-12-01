@@ -67,7 +67,7 @@ class Stat:
     def _getcount(self):
         """Get total number of pixels in each layer"""
 
-        return [sum(self.h[i: i + 256]) for i in range(0, len(self.h), 256)]
+        return [sum(self.h[i : i + 256]) for i in range(0, len(self.h), 256)]
 
     def _getsum(self):
         """Get sum of all pixels in each layer"""
