@@ -864,7 +864,7 @@ def test_bitmap_blend(layout_engine, embedded_color):
 
     im = Image.new("RGBA", (128, 96), "white")
     d = ImageDraw.Draw(im)
-    d.text((16, 16), "AA", font=font, embedded_color=embedded_color, fill="#8E2F52")
+    d.text((16, 16), "AA", font=font, fill="#8E2F52", embedded_color=embedded_color)
 
     assert_image_equal_tofile(im, "Tests/images/bitmap_font_blend.png")
 
