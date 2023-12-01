@@ -351,9 +351,7 @@ class DdsImageFile(ImageFile.ImageFile):
             # Texture contains uncompressed RGB data
             masks = struct.unpack("<4I", header.read(16))
             masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
-            if bitcount == 8:
-                self._mode = "L"
-            elif bitcount == 24:
+            if bitcount == 24:
                 self._mode = "RGB"
                 rawmode = masks[0x000000FF] + masks[0x0000FF00] + masks[0x00FF0000]
             elif bitcount == 32 and pfflags & DDPF.ALPHAPIXELS:
