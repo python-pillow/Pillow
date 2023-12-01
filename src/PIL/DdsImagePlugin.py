@@ -154,9 +154,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 self._mode = "RGB"
                 mask_count = 3
 
-            masks = struct.unpack(
-                "<" + str(mask_count) + "I", header.read(mask_count * 4)
-            )
+            masks = struct.unpack(f"<{mask_count}I", header.read(mask_count * 4))
             self.tile = [("dds_rgb", (0, 0) + self.size, 0, (bitcount, masks))]
         elif pfflags & DDPF_PALETTEINDEXED8:
             self._mode = "P"
