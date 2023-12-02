@@ -94,7 +94,6 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Source and Binary Distributions
 
-### macOS and Linux
 * [ ] Download sdist and wheels from the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
   and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli):
   ```bash
@@ -103,14 +102,6 @@ Released as needed privately to individual vendors for critical security-related
   ```
 * [ ] Download the Linux aarch64 wheels created by Travis CI from [GitHub releases](https://github.com/python-pillow/Pillow/releases)
   and copy into `dist`.
-
-### Windows
-* [ ] Download the artifacts from the [GitHub Actions "Test Windows" workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml)
-  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli):
-  ```bash
-  gh run download --dir dist
-  # select dist-x.y.z
-  ```
 
 ## Publicize Release
 
