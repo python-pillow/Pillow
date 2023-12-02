@@ -227,6 +227,7 @@ class FpxImageFile(ImageFile.ImageFile):
                     break  # isn't really required
 
         self.stream = stream
+        self._fp = self.fp
         self.fp = None
 
     def load(self):

@@ -45,7 +45,7 @@ def test_direct():
 
     assert caccess[(0, 0)] == access[(0, 0)]
 
-    print("Size: %sx%s" % im.size)
+    print(f"Size: {im.width}x{im.height}")
     timer(iterate_get, "PyAccess - get", im.size, access)
     timer(iterate_set, "PyAccess - set", im.size, access)
     timer(iterate_get, "C-api - get", im.size, caccess)

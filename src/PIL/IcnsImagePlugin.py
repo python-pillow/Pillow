@@ -391,8 +391,8 @@ if __name__ == "__main__":
     with open(sys.argv[1], "rb") as fp:
         imf = IcnsImageFile(fp)
         for size in imf.info["sizes"]:
-            imf.size = size
-            imf.save("out-%s-%s-%s.png" % size)
+            width, height, scale = imf.size = size
+            imf.save(f"out-{width}-{height}-{scale}.png")
         with Image.open(sys.argv[1]) as im:
             im.save("out.png")
         if sys.platform == "windows":

@@ -2,6 +2,30 @@
 Changelog (Pillow)
 ==================
 
+10.2.0 (unreleased)
+-------------------
+
+- Raise ValueError when TrueType font size is not greater than zero #7584
+  [akx, radarhere]
+
+- If absent, do not try to close fp when closing image #7557
+  [RaphaelVRossi, radarhere]
+
+- Allow configuring JPEG restart marker interval on save #7488
+  [bgilbert, radarhere]
+
+- Decrement reference count for PyObject #7549
+  [radarhere]
+
+- Implement ``streamtype=1`` option for tables-only JPEG encoding #7491
+  [bgilbert, radarhere]
+
+- If save_all PNG only has one frame, do not create animated image #7522
+  [radarhere]
+
+- Fixed frombytes() for images with a zero dimension #7493
+  [radarhere]
+
 10.1.0 (2023-10-15)
 -------------------
 

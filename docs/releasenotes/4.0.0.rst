@@ -17,8 +17,8 @@ Pillow 4.0 supports Python 3.6.
 OleFileIO.py
 ============
 
-OleFileIO.py has been removed as a vendored file and is now installed
-from the upstream olefile pypi package. All internal dependencies are
+``OleFileIO.py`` has been removed as a vendored file and is now installed
+from the upstream :pypi:`olefile` PyPI package. All internal dependencies are
 redirected to the olefile package. Direct accesses to
 ``PIL.OlefileIO`` raises a deprecation warning, then patches the
 upstream olefile into ``sys.modules`` in its place.

@@ -921,7 +921,7 @@ def floodfill(image, xy, value, border=None, thresh=0):
                     if border is None:
                         fill = _color_diff(p, background) <= thresh
                     else:
-                        fill = p != value and p != border
+                        fill = p not in (value, border)
                     if fill:
                         pixel[s, t] = value
                         new_edge.add((s, t))

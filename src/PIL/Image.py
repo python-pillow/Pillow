@@ -42,7 +42,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 try:
-    import defusedxml.ElementTree as ElementTree
+    from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
 
@@ -558,16 +558,17 @@ class Image:
         :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
         more information.
         """
-        try:
-            if getattr(self, "_fp", False):
-                if self._fp != self.fp:
-                    self._fp.close()
-                self._fp = DeferredError(ValueError("Operation on closed image"))
-            if self.fp:
-                self.fp.close()
-            self.fp = None
-        except Exception as msg:
-            logger.debug("Error closing: %s", msg)
+        if hasattr(self, "fp"):
+            try:
+                if getattr(self, "_fp", False):
+                    if self._fp != self.fp:
+                        self._fp.close()
+                    self._fp = DeferredError(ValueError("Operation on closed image"))
+                if self.fp:
+                    self.fp.close()
+                self.fp = None
+            except Exception as msg:
+                logger.debug("Error closing: %s", msg)
 
         if getattr(self, "map", None):
             self.map = None
@@ -800,6 +801,9 @@ class Image:
         This method is similar to the :py:func:`~PIL.Image.frombytes` function,
         but loads data into this image instead of creating a new image object.
         """
+
+        if self.width == 0 or self.height == 0:
+            return
 
         # may pass tuple instead of argument list
         if len(args) == 1 and isinstance(args[0], tuple):
@@ -1166,7 +1170,7 @@ class Image:
             if palette.mode != "P":
                 msg = "bad mode for palette image"
                 raise ValueError(msg)
-            if self.mode != "RGB" and self.mode != "L":
+            if self.mode not in {"RGB", "L"}:
                 msg = "only RGB or L mode images can be quantized to a palette"
                 raise ValueError(msg)
             im = self.im.convert("P", dither, palette.im)
@@ -2977,15 +2981,16 @@ def frombytes(mode, size, data, decoder_name="raw", *args):
 
     _check_size(size)
 
-    # may pass tuple instead of argument list
-    if len(args) == 1 and isinstance(args[0], tuple):
-        args = args[0]
-
-    if decoder_name == "raw" and args == ():
-        args = mode
-
     im = new(mode, size)
-    im.frombytes(data, decoder_name, args)
+    if im.width != 0 and im.height != 0:
+        # may pass tuple instead of argument list
+        if len(args) == 1 and isinstance(args[0], tuple):
+            args = args[0]
+
+        if decoder_name == "raw" and args == ():
+            args = mode
+
+        im.frombytes(data, decoder_name, args)
     return im
 
 
@@ -3106,7 +3111,8 @@ def fromarray(obj, mode=None):
         try:
             mode, rawmode = _fromarray_typemap[typekey]
         except KeyError as e:
-            msg = "Cannot handle this data type: %s, %s" % typekey
+            typekey_shape, typestr = typekey
+            msg = f"Cannot handle this data type: {typekey_shape}, {typestr}"
             raise TypeError(msg) from e
     else:
         rawmode = mode

@@ -788,7 +788,12 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      .. versionadded:: 4.2.0
     :return: A font object.
     :exception OSError: If the file could not be read.
+    :exception ValueError: If the font size is not greater than zero.
     """
+
+    if size <= 0:
+        msg = "font size must be greater than 0"
+        raise ValueError(msg)
 
     def freetype(font):
         return FreeTypeFont(font, size, index, encoding, layout_engine)

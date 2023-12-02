@@ -14,6 +14,10 @@
 
 #ifdef HAVE_LIBTIFF
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h> /* lseek */
+#endif
+
 #ifndef uint
 #define uint uint32
 #endif
