@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Fixed closing file pointer with olefile 0.47 #7594
+  [radarhere]
+
 - Raise ValueError when TrueType font size is not greater than zero #7584
   [akx, radarhere]
 
