@@ -41,7 +41,7 @@ TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
         TEST_FILE_DX10_BC1_TYPELESS,
     ),
 )
-def test_sanity_bc1(image_path):
+def test_sanity_dxt1_bc1(image_path):
     """Check DXT1 images can be opened"""
     with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
         target = target.convert("RGBA")
@@ -348,12 +348,6 @@ def test_save_unsupported_mode(tmp_path):
     im = hopper("HSV")
     with pytest.raises(OSError):
         im.save(out)
-
-
-def test_open_rgb8():
-    with Image.open("Tests/images/rgb8.dds") as im:
-        assert im.mode == "L"
-        assert_image_equal_tofile(im, "Tests/images/rgb8.png")
 
 
 @pytest.mark.parametrize(

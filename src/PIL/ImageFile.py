@@ -32,6 +32,7 @@ import io
 import itertools
 import struct
 import sys
+from typing import NamedTuple
 
 from . import Image
 from ._util import is_path
@@ -76,6 +77,13 @@ def raise_oserror(error):
 def _tilesort(t):
     # sort on offset
     return t[2]
+
+
+class _Tile(NamedTuple):
+    encoder_name: str
+    extents: tuple[int, int, int, int]
+    offset: int
+    args: tuple | str | None
 
 
 #
@@ -521,7 +529,7 @@ def _save(im, fp, tile, bufsize=0):
         fp.flush()
 
 
-def _encode_tile(im, fp, tile: list[Image._Tile], bufsize, fh, exc=None):
+def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
     for encoder_name, extents, offset, args in tile:
         if offset > 0:
             fp.seek(offset)
