@@ -9,7 +9,6 @@ repos:
     rev: 23.10.1
     hooks:
       - id: black
-        args: [--target-version=py38]
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.5

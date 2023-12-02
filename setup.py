@@ -440,17 +440,17 @@ class pil_build_ext(build_ext):
 
         #
         # add configured kits
-        for root_name, lib_name in dict(
-            JPEG_ROOT="libjpeg",
-            JPEG2K_ROOT="libopenjp2",
-            TIFF_ROOT=("libtiff-5", "libtiff-4"),
-            ZLIB_ROOT="zlib",
-            FREETYPE_ROOT="freetype2",
-            HARFBUZZ_ROOT="harfbuzz",
-            FRIBIDI_ROOT="fribidi",
-            LCMS_ROOT="lcms2",
-            IMAGEQUANT_ROOT="libimagequant",
-        ).items():
+        for root_name, lib_name in {
+            "JPEG_ROOT": "libjpeg",
+            "JPEG2K_ROOT": "libopenjp2",
+            "TIFF_ROOT": ("libtiff-5", "libtiff-4"),
+            "ZLIB_ROOT": "zlib",
+            "FREETYPE_ROOT": "freetype2",
+            "HARFBUZZ_ROOT": "harfbuzz",
+            "FRIBIDI_ROOT": "fribidi",
+            "LCMS_ROOT": "lcms2",
+            "IMAGEQUANT_ROOT": "libimagequant",
+        }.items():
             root = globals()[root_name]
 
             if root is None and root_name in os.environ:

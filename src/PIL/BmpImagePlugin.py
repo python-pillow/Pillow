@@ -396,7 +396,7 @@ def _save(im, fp, filename, bitmap_header=True):
     dpi = info.get("dpi", (96, 96))
 
     # 1 meter == 39.3701 inches
-    ppm = tuple(map(lambda x: int(x * 39.3701 + 0.5), dpi))
+    ppm = tuple(int(x * 39.3701 + 0.5) for x in dpi)
 
     stride = ((im.size[0] * bits + 7) // 8 + 3) & (~3)
     header = 40  # or 64 for OS/2 version 2

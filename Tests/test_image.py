@@ -1,4 +1,5 @@
 import io
+import logging
 import os
 import shutil
 import sys
@@ -999,7 +1000,7 @@ class TestImage:
         with Image.open(os.path.join("Tests/images", path)) as im:
             try:
                 im.load()
-                assert False
+                pytest.fail()
             except OSError as e:
                 buffer_overrun = str(e) == "buffer overrun when reading image file"
                 truncated = "image file is truncated" in str(e)
@@ -1010,9 +1011,18 @@ class TestImage:
         with Image.open("Tests/images/fli_overrun2.bin") as im:
             try:
                 im.seek(1)
-                assert False
+                pytest.fail()
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
+
+    def test_close_graceful(self, caplog):
+        with Image.open("Tests/images/hopper.jpg") as im:
+            copy = im.copy()
+            with caplog.at_level(logging.DEBUG):
+                im.close()
+                copy.close()
+            assert len(caplog.records) == 0
+            assert im.fp is None
 
 
 class MockEncoder:

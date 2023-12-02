@@ -643,6 +643,23 @@ class TestFileJpeg:
             assert max(im2.quantization[0]) <= 255
             assert max(im2.quantization[1]) <= 255
 
+    @pytest.mark.parametrize(
+        "blocks, rows, markers",
+        ((0, 0, 0), (1, 0, 15), (3, 0, 5), (8, 0, 1), (0, 1, 3), (0, 2, 1)),
+    )
+    def test_restart_markers(self, blocks, rows, markers):
+        im = Image.new("RGB", (32, 32))  # 16 MCUs
+        out = BytesIO()
+        im.save(
+            out,
+            format="JPEG",
+            restart_marker_blocks=blocks,
+            restart_marker_rows=rows,
+            # force 8x8 pixel MCUs
+            subsampling=0,
+        )
+        assert len(re.findall(b"\xff[\xd0-\xd7]", out.getvalue())) == markers
+
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):
         with Image.open(TEST_FILE) as img:
@@ -960,6 +977,28 @@ class TestFileJpeg:
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             im.load()
             ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+    def test_separate_tables(self):
+        im = hopper()
+        data = []  # [interchange, tables-only, image-only]
+        for streamtype in range(3):
+            out = BytesIO()
+            im.save(out, format="JPEG", streamtype=streamtype)
+            data.append(out.getvalue())
+
+        # SOI, EOI
+        for marker in b"\xff\xd8", b"\xff\xd9":
+            assert marker in data[1] and marker in data[2]
+        # DHT, DQT
+        for marker in b"\xff\xc4", b"\xff\xdb":
+            assert marker in data[1] and marker not in data[2]
+        # SOF0, SOS, APP0 (JFIF header)
+        for marker in b"\xff\xc0", b"\xff\xda", b"\xff\xe0":
+            assert marker not in data[1] and marker in data[2]
+
+        with Image.open(BytesIO(data[0])) as interchange_im:
+            with Image.open(BytesIO(data[1] + data[2])) as combined_im:
+                assert_image_equal(interchange_im, combined_im)
 
     def test_repr_jpeg(self):
         im = hopper()

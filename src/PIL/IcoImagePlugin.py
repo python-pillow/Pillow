@@ -174,9 +174,7 @@ class IcoFile:
 
         self.entry = sorted(self.entry, key=lambda x: x["color_depth"])
         # ICO images are usually squares
-        # self.entry = sorted(self.entry, key=lambda x: x['width'])
-        self.entry = sorted(self.entry, key=lambda x: x["square"])
-        self.entry.reverse()
+        self.entry = sorted(self.entry, key=lambda x: x["square"], reverse=True)
 
     def sizes(self):
         """

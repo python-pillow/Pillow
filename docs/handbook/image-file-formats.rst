@@ -266,9 +266,12 @@ following options are available::
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
 **optimize**
-    If present and true, attempt to compress the palette by
-    eliminating unused colors. This is only useful if the palette can
-    be compressed to the next smaller power of 2 elements.
+    Whether to attempt to compress the palette by eliminating unused colors.
+    This is attempted by default, unless a palette is specified as an option or
+    as part of the first image's :py:attr:`~PIL.Image.Image.info` dictionary.
+
+    This is only useful if the palette can be compressed to the next smaller
+    power of 2 elements.
 
 Note that if the image you are saving comes from an existing GIF, it may have
 the following properties in its :py:attr:`~PIL.Image.Image.info` dictionary.
@@ -493,6 +496,18 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     * ``2``: equivalent to ``4:2:0``
 
     If absent, the setting will be determined by libjpeg or libjpeg-turbo.
+
+**restart_marker_blocks**
+    If present, emit a restart marker whenever the specified number of MCU
+    blocks has been produced.
+
+    .. versionadded:: 10.2.0
+
+**restart_marker_rows**
+    If present, emit a restart marker whenever the specified number of MCU
+    rows has been produced.
+
+    .. versionadded:: 10.2.0
 
 **qtables**
     If present, sets the qtables for the encoder. This is listed as an
