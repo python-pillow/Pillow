@@ -42,7 +42,7 @@ TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
     ),
 )
 def test_sanity_dxt1_bc1(image_path):
-    """Check DXT1 images can be opened"""
+    """Check DXT1 and BC1 images can be opened"""
     with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
         target = target.convert("RGBA")
     with Image.open(image_path) as im:
@@ -90,7 +90,7 @@ def test_sanity_dxt5():
     ),
 )
 def test_sanity_ati1_bc4u(image_path):
-    """Check ATI1 images can be opened"""
+    """Check ATI1 and BC4U images can be opened"""
 
     with Image.open(image_path) as im:
         im.load()
