@@ -3,7 +3,6 @@ if: tag IS present OR type = api
 env:
   global:
     - CIBW_ARCHS=aarch64
-    - CIBW_CONFIG_SETTINGS="raqm=enable raqm=vendor fribidi=vendor"
     - CIBW_SKIP=pp38-*
 
 language: python
@@ -35,7 +34,7 @@ jobs:
         - CIBW_BUILD="*musllinux*"
 
 install:
-    - python3 -m pip install cibuildwheel==2.16.2
+    - python3 -m pip install -r .ci/requirements-cibw.txt
 
 script:
     - python3 -m cibuildwheel --output-dir wheelhouse

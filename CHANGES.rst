@@ -5,6 +5,15 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Correct PDF palette size when saving #7555
+  [radarhere]
+
+- Fixed closing file pointer with olefile 0.47 #7594
+  [radarhere]
+
+- Raise ValueError when TrueType font size is not greater than zero #7584, #7587
+  [akx, radarhere]
+
 - If absent, do not try to close fp when closing image #7557
   [RaphaelVRossi, radarhere]
 

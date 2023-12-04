@@ -40,7 +40,7 @@ from enum import IntEnum
 from pathlib import Path
 
 try:
-    import defusedxml.ElementTree as ElementTree
+    from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
 
@@ -1160,7 +1160,7 @@ class Image:
             if palette.mode != "P":
                 msg = "bad mode for palette image"
                 raise ValueError(msg)
-            if self.mode != "RGB" and self.mode != "L":
+            if self.mode not in {"RGB", "L"}:
                 msg = "only RGB or L mode images can be quantized to a palette"
                 raise ValueError(msg)
             im = self.im.convert("P", dither, palette.im)

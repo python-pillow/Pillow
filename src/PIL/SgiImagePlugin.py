@@ -123,7 +123,7 @@ class SgiImageFile(ImageFile.ImageFile):
 
 
 def _save(im, fp, filename):
-    if im.mode != "RGB" and im.mode != "RGBA" and im.mode != "L":
+    if im.mode not in {"RGB", "RGBA", "L"}:
         msg = "Unsupported SGI image mode"
         raise ValueError(msg)
 
@@ -155,7 +155,7 @@ def _save(im, fp, filename):
     # Z Dimension: Number of channels
     z = len(im.mode)
 
-    if dim == 1 or dim == 2:
+    if dim in {1, 2}:
         z = 1
 
     # assert we've got the right number of bands.
