@@ -447,9 +447,15 @@ class TestFileJpeg:
             im = self.roundtrip(hopper(), subsampling=subsampling)
             assert getsampling(im) == (2, 2, 1, 1, 1, 1)
 
-        # RGB colorspace, no subsampling by default
-        im = self.roundtrip(hopper(), keep_rgb=True)
-        assert getsampling(im) == (1, 1, 1, 1, 1, 1)
+        # RGB colorspace
+        for subsampling in (-1, 0, "4:4:4"):
+            # "4:4:4" doesn't really make sense for RGB, but the conversion
+            # to an integer happens at a higher level
+            im = self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling)
+            assert getsampling(im) == (1, 1, 1, 1, 1, 1)
+        for subsampling in (1, "4:2:2", 2, "4:2:0", 3):
+            with pytest.raises(OSError):
+                self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling)
 
         with pytest.raises(TypeError):
             self.roundtrip(hopper(), subsampling="1:1:1")

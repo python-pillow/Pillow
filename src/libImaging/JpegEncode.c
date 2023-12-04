@@ -144,6 +144,16 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 #ifdef JCS_EXTENSIONS
                     case JCS_EXT_RGBX:
 #endif
+                        switch (context->subsampling) {
+                            case -1:  /* Default */
+                            case 0:   /* No subsampling */
+                                break;
+                            default:
+                                /* Would subsample the green and blue
+                                   channels, which doesn't make sense */
+                                state->errcode = IMAGING_CODEC_CONFIG;
+                                return -1;
+                        }
                         jpeg_set_colorspace(&context->cinfo, JCS_RGB);
                         break;
                     default:

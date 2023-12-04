@@ -491,6 +491,9 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If this option is present and true, those images will be stored as RGB
     instead.
 
+    When this option is enabled, attempting to chroma-subsample RGB images
+    with the ``subsampling`` option will raise an :py:exc:`OSError`.
+
     .. versionadded:: 10.2.0
 
 **subsampling**
