@@ -521,6 +521,19 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     .. versionadded:: 2.5.0
 
+**streamtype**
+    Allows storing images without quantization and Huffman tables, or with
+    these tables but without image data.  This is useful for container formats
+    or network protocols that handle tables separately and share them between
+    images.
+
+    * ``0`` (default): interchange datastream, with tables and image data
+    * ``1``: abbreviated table specification (tables-only) datastream
+
+      .. versionadded:: 10.2.0
+
+    * ``2``: abbreviated image (image-only) datastream
+
 **comment**
     A comment about the image.
 
