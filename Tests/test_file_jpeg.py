@@ -434,8 +434,9 @@ class TestFileJpeg:
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
 
         # experimental API
-        im = self.roundtrip(hopper(), subsampling=-1)  # default
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
+        for subsampling in (-1, 3):  # (default, invalid)
+            im = self.roundtrip(hopper(), subsampling=subsampling)
+            assert getsampling(im) == (2, 2, 1, 1, 1, 1)
         for subsampling in (0, "4:4:4"):
             im = self.roundtrip(hopper(), subsampling=subsampling)
             assert getsampling(im) == (1, 1, 1, 1, 1, 1)
@@ -446,11 +447,8 @@ class TestFileJpeg:
             im = self.roundtrip(hopper(), subsampling=subsampling)
             assert getsampling(im) == (2, 2, 1, 1, 1, 1)
 
-        im = self.roundtrip(hopper(), subsampling=3)  # default (undefined)
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-
         # RGB colorspace, no subsampling by default
-        im = self.roundtrip(hopper(), subsampling=3, keep_rgb=True)
+        im = self.roundtrip(hopper(), keep_rgb=True)
         assert getsampling(im) == (1, 1, 1, 1, 1, 1)
 
         with pytest.raises(TypeError):
