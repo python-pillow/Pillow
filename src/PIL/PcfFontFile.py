@@ -129,7 +129,7 @@ class PcfFontFile(FontFile.FontFile):
         nprops = i32(fp.read(4))
 
         # read property description
-        p = [(i32(fp.read(4)), i8(fp.read(1)), i32(fp.read(4))) for i in range(nprops)]
+        p = [(i32(fp.read(4)), i8(fp.read(1)), i32(fp.read(4))) for _ in range(nprops)]
 
         if nprops & 3:
             fp.seek(4 - (nprops & 3), io.SEEK_CUR)  # pad

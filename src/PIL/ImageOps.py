@@ -557,7 +557,7 @@ def invert(image):
     :param image: The image to invert.
     :return: An image.
     """
-    lut = [255 - i for i in range(256)]
+    lut = list(range(255, -1, -1))
     return image.point(lut) if image.mode == "1" else _lut(image, lut)
 
 
