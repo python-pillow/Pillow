@@ -96,7 +96,7 @@ def _write_image(im, filename, existing_pdf, image_refs):
         dict_obj["ColorSpace"] = [
             PdfParser.PdfName("Indexed"),
             PdfParser.PdfName("DeviceRGB"),
-            255,
+            len(palette) // 3 - 1,
             PdfParser.PdfBinary(palette),
         ]
         procset = "ImageI"  # indexed color
