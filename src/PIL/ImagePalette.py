@@ -220,7 +220,7 @@ def negative(mode="RGB"):
 def random(mode="RGB"):
     from random import randint
 
-    palette = [randint(0, 255) for i in range(256 * len(mode))]
+    palette = [randint(0, 255) for _ in range(256 * len(mode))]
     return ImagePalette(mode, palette)
 
 
