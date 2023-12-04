@@ -93,6 +93,8 @@ def test_dx10_bc4():
         assert im.mode == "L"
         assert im.size == (64, 64)
 
+        assert_image_equal_tofile(im, TEST_FILE_DX10_BC4_UNORM.replace(".dds", ".png"))
+
 
 @pytest.mark.parametrize(
     "image_path",
