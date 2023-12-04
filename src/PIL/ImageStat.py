@@ -62,10 +62,7 @@ class Stat:
                 if histogram[i]:
                     res_max = i
                     break
-            if res_max >= res_min:
-                return res_min, res_max
-            else:
-                return (255, 0)
+            return res_min, res_max
 
         v = []
         for i in range(0, len(self.h), 256):
