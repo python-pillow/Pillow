@@ -34,6 +34,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from pathlib import Path
+from typing import IO
 
 from . import Image
 from ._util import is_directory, is_path
@@ -190,7 +191,7 @@ class FreeTypeFont:
 
     def __init__(
         self,
-        font: bytes | str | Path | None = None,
+        font: bytes | str | Path | IO | None = None,
         size: float = 10,
         index: int = 0,
         encoding: str = "",
