@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Optimized ImageStat.Stat.count #7599
+  [florath]
+
 - Correct PDF palette size when saving #7555
   [radarhere]
 
