@@ -77,3 +77,9 @@ Calculating the :py:attr:`~PIL.ImageStat.Stat.count` and
 :py:attr:`~PIL.ImageStat.Stat.extrema` statistics is now faster. After the
 histogram is created in ``st = ImageStat.Stat(im)``, ``st.count`` is 3x as fast
 on average and ``st.extrema`` is 12x as fast on average.
+
+Encoder errors now report error detail as string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:exc:`OSError` exceptions from image encoders now include a textual description of
+the error instead of a numeric error code.

@@ -63,15 +63,19 @@ Dict of known error codes returned from :meth:`.PyDecoder.decode`,
 # Helpers
 
 
-def raise_oserror(error):
+def _get_oserror(error, *, encoder):
     try:
         msg = Image.core.getcodecstatus(error)
     except AttributeError:
         msg = ERRORS.get(error)
     if not msg:
-        msg = f"decoder error {error}"
-    msg += " when reading image file"
-    raise OSError(msg)
+        msg = f"{'encoder' if encoder else 'decoder'} error {error}"
+    msg += f" when {'writing' if encoder else 'reading'} image file"
+    return OSError(msg)
+
+
+def raise_oserror(error):
+    raise _get_oserror(error, encoder=False)
 
 
 def _tilesort(t):
@@ -551,8 +555,7 @@ def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
                     # slight speedup: compress to real file object
                     errcode = encoder.encode_to_file(fh, bufsize)
             if errcode < 0:
-                msg = f"encoder error {errcode} when writing image file"
-                raise OSError(msg) from exc
+                raise _get_oserror(errcode, encoder=True) from exc
         finally:
             encoder.cleanup()
 
