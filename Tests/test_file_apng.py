@@ -356,9 +356,7 @@ def test_apng_save(tmp_path):
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
     with Image.open("Tests/images/apng/single_frame_default.png") as im:
-        frames = []
-        for frame_im in ImageSequence.Iterator(im):
-            frames.append(frame_im.copy())
+        frames = [frame_im.copy() for frame_im in ImageSequence.Iterator(im)]
         frames[0].save(
             test_file, save_all=True, default_image=True, append_images=frames[1:]
         )
