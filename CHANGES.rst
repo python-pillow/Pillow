@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Added support for reading DX10 BC4 DDS images #7603
+  [sambvfx, radarhere]
+
 - Optimized ImageStat.Stat.count #7599
   [florath]
 
