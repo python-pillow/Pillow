@@ -1,0 +1,54 @@
+10.2.0
+------
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Added DdsImagePlugin enums
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``DDSD``, ``DDSCAPS``, ``DDSCAPS2``, ``DDPF``, ``DXGI_FORMAT`` and ``D3DFMT``
+enums have been added to DdsImagePlugin.
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+Added DDS BC4U and DX10 BC1 and BC4 reading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added to read the BC4U format of DDS images.
+
+Support has also been added to read DX10 BC1 and BC4, whether UNORM or
+TYPELESS.
