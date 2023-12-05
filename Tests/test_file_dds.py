@@ -12,6 +12,8 @@ TEST_FILE_DXT3 = "Tests/images/dxt3-argb-8bbp-explicitalpha_MipMaps-1.dds"
 TEST_FILE_DXT5 = "Tests/images/dxt5-argb-8bbp-interpolatedalpha_MipMaps-1.dds"
 TEST_FILE_ATI1 = "Tests/images/ati1.dds"
 TEST_FILE_ATI2 = "Tests/images/ati2.dds"
+TEST_FILE_DX10_BC4_TYPELESS = "Tests/images/bc4_typeless.dds"
+TEST_FILE_DX10_BC4_UNORM = "Tests/images/bc4_unorm.dds"
 TEST_FILE_DX10_BC5_TYPELESS = "Tests/images/bc5_typeless.dds"
 TEST_FILE_DX10_BC5_UNORM = "Tests/images/bc5_unorm.dds"
 TEST_FILE_DX10_BC5_SNORM = "Tests/images/bc5_snorm.dds"
@@ -80,6 +82,27 @@ def test_sanity_ati1():
         assert im.size == (64, 64)
 
         assert_image_equal_tofile(im, TEST_FILE_ATI1.replace(".dds", ".png"))
+
+
+@pytest.mark.parametrize(
+    "image_path",
+    (
+        TEST_FILE_DX10_BC4_UNORM,
+        # hexeditted to be typeless
+        TEST_FILE_DX10_BC4_TYPELESS,
+    ),
+)
+def test_dx10_bc4(image_path):
+    """Check DX10 BC4 images can be opened"""
+
+    with Image.open(image_path) as im:
+        im.load()
+
+        assert im.format == "DDS"
+        assert im.mode == "L"
+        assert im.size == (64, 64)
+
+        assert_image_equal_tofile(im, TEST_FILE_DX10_BC4_UNORM.replace(".dds", ".png"))
 
 
 @pytest.mark.parametrize(

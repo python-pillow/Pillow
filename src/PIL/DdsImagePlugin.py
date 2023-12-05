@@ -98,6 +98,8 @@ DXT5_FOURCC = 0x35545844
 DXGI_FORMAT_R8G8B8A8_TYPELESS = 27
 DXGI_FORMAT_R8G8B8A8_UNORM = 28
 DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29
+DXGI_FORMAT_BC4_TYPELESS = 79
+DXGI_FORMAT_BC4_UNORM = 80
 DXGI_FORMAT_BC5_TYPELESS = 82
 DXGI_FORMAT_BC5_UNORM = 83
 DXGI_FORMAT_BC5_SNORM = 84
@@ -190,7 +192,11 @@ class DdsImageFile(ImageFile.ImageFile):
                 # ignoring flags which pertain to volume textures and cubemaps
                 (dxgi_format,) = struct.unpack("<I", self.fp.read(4))
                 self.fp.read(16)
-                if dxgi_format in (DXGI_FORMAT_BC5_TYPELESS, DXGI_FORMAT_BC5_UNORM):
+                if dxgi_format in (DXGI_FORMAT_BC4_TYPELESS, DXGI_FORMAT_BC4_UNORM):
+                    self.pixel_format = "BC4"
+                    n = 4
+                    self._mode = "L"
+                elif dxgi_format in (DXGI_FORMAT_BC5_TYPELESS, DXGI_FORMAT_BC5_UNORM):
                     self.pixel_format = "BC5"
                     n = 5
                     self._mode = "RGB"
