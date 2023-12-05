@@ -171,7 +171,7 @@ class DXGI_FORMAT(IntEnum):
     NV12 = 103
     P010 = 104
     P016 = 105
-    _420_OPAQUE = 106
+    OPAQUE_420 = 106
     YUY2 = 107
     Y210 = 108
     Y216 = 109
