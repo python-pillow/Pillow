@@ -415,6 +415,10 @@ class DdsImageFile(ImageFile.ImageFile):
                     self._mode = "RGBA"
                     self.pixel_format = "BC1"
                     n = 1
+                elif dxgi_format in (DXGI_FORMAT.BC4_TYPELESS, DXGI_FORMAT.BC4_UNORM):
+                    self._mode = "L"
+                    self.pixel_format = "BC4"
+                    n = 4
                 elif dxgi_format in (DXGI_FORMAT.BC5_TYPELESS, DXGI_FORMAT.BC5_UNORM):
                     self._mode = "RGB"
                     self.pixel_format = "BC5"
