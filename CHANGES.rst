@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Optimize ImageStat.Stat.extrema #7593
+  [florath, radarhere]
+
 - Handle pathlib.Path in FreeTypeFont #7578
   [radarhere, hugovk, nulano]
 
