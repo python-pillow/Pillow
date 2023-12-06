@@ -31,9 +31,9 @@ API Additions
 Added DdsImagePlugin enums
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:py:class:`PIL.DdsImagePlugin.DDSD`, :py:class:`PIL.DdsImagePlugin.DDSCAPS`,
-:py:class:`PIL.DdsImagePlugin.DDSCAPS2`, :py:class:`PIL.DdsImagePlugin.DDPF`,
-:py:class:`PIL.DdsImagePlugin.DXGI_FORMAT` and :py:class:`PIL.DdsImagePlugin.D3DFMT`
+:py:class:`~PIL.DdsImagePlugin.DDSD`, :py:class:`~PIL.DdsImagePlugin.DDSCAPS`,
+:py:class:`~PIL.DdsImagePlugin.DDSCAPS2`, :py:class:`~PIL.DdsImagePlugin.DDPF`,
+:py:class:`~PIL.DdsImagePlugin.DXGI_FORMAT` and :py:class:`~PIL.DdsImagePlugin.D3DFMT`
 enums have been added to :py:class:`PIL.DdsImagePlugin`.
 
 Security
