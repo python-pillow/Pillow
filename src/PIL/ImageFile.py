@@ -26,11 +26,13 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 import itertools
 import struct
 import sys
+from typing import NamedTuple
 
 from . import Image
 from ._util import is_path
@@ -75,6 +77,13 @@ def raise_oserror(error):
 def _tilesort(t):
     # sort on offset
     return t[2]
+
+
+class _Tile(NamedTuple):
+    encoder_name: str
+    extents: tuple[int, int, int, int]
+    offset: int
+    args: tuple | str | None
 
 
 #
@@ -520,13 +529,13 @@ def _save(im, fp, tile, bufsize=0):
         fp.flush()
 
 
-def _encode_tile(im, fp, tile, bufsize, fh, exc=None):
-    for e, b, o, a in tile:
-        if o > 0:
-            fp.seek(o)
-        encoder = Image._getencoder(im.mode, e, a, im.encoderconfig)
+def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
+    for encoder_name, extents, offset, args in tile:
+        if offset > 0:
+            fp.seek(offset)
+        encoder = Image._getencoder(im.mode, encoder_name, args, im.encoderconfig)
         try:
-            encoder.setimage(im.im, b)
+            encoder.setimage(im.im, extents)
             if encoder.pushes_fd:
                 encoder.setfd(fp)
                 errcode = encoder.encode_to_pyfd()[1]

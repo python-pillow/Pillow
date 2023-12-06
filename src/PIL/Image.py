@@ -40,7 +40,7 @@ from enum import IntEnum
 from pathlib import Path
 
 try:
-    import defusedxml.ElementTree as ElementTree
+    from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
 
@@ -1160,7 +1160,7 @@ class Image:
             if palette.mode != "P":
                 msg = "bad mode for palette image"
                 raise ValueError(msg)
-            if self.mode != "RGB" and self.mode != "L":
+            if self.mode not in {"RGB", "L"}:
                 msg = "only RGB or L mode images can be quantized to a palette"
                 raise ValueError(msg)
             im = self.im.convert("P", dither, palette.im)
@@ -1288,9 +1288,9 @@ class Image:
         if self.im.bands == 1 or multiband:
             return self._new(filter.filter(self.im))
 
-        ims = []
-        for c in range(self.im.bands):
-            ims.append(self._new(filter.filter(self.im.getband(c))))
+        ims = [
+            self._new(filter.filter(self.im.getband(c))) for c in range(self.im.bands)
+        ]
         return merge(self.mode, ims)
 
     def getbands(self):
@@ -1339,10 +1339,7 @@ class Image:
         self.load()
         if self.mode in ("1", "L", "P"):
             h = self.im.histogram()
-            out = []
-            for i in range(256):
-                if h[i]:
-                    out.append((h[i], i))
+            out = [(h[i], i) for i in range(256) if h[i]]
             if len(out) > maxcolors:
                 return None
             return out
@@ -1383,10 +1380,7 @@ class Image:
 
         self.load()
         if self.im.bands > 1:
-            extrema = []
-            for i in range(self.im.bands):
-                extrema.append(self.im.getband(i).getextrema())
-            return tuple(extrema)
+            return tuple(self.im.getband(i).getextrema() for i in range(self.im.bands))
         return self.im.getextrema()
 
     def _getxmp(self, xmp_tags):

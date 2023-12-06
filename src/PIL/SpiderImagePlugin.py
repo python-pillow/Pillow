@@ -238,9 +238,7 @@ def makeSpiderHeader(im):
     if nvalues < 23:
         return []
 
-    hdr = []
-    for i in range(nvalues):
-        hdr.append(0.0)
+    hdr = [0.0] * nvalues
 
     # NB these are Fortran indices
     hdr[1] = 1.0  # nslice (=1 for an image)

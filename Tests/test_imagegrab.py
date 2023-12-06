@@ -12,6 +12,10 @@ from .helper import assert_image_equal_tofile, skip_unless_feature
 
 class TestImageGrab:
     @pytest.mark.skipif(
+        os.environ.get("USERNAME") == "ContainerAdministrator",
+        reason="can't grab screen when running in Docker",
+    )
+    @pytest.mark.skipif(
         sys.platform not in ("win32", "darwin"), reason="requires Windows or macOS"
     )
     def test_grab(self):

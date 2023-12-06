@@ -279,10 +279,10 @@ DEPS = {
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.15/lcms2-2.15.tar.gz/download",
-        "filename": "lcms2-2.15.tar.gz",
-        "dir": "lcms2-2.15",
-        "license": "COPYING",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.16/lcms2-2.16.tar.gz/download",
+        "filename": "lcms2-2.16.tar.gz",
+        "dir": "lcms2-2.16",
+        "license": "LICENSE",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
@@ -345,9 +345,9 @@ DEPS = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.2.1.zip",
-        "filename": "harfbuzz-8.2.1.zip",
-        "dir": "harfbuzz-8.2.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.3.0.zip",
+        "filename": "harfbuzz-8.3.0.zip",
+        "dir": "harfbuzz-8.3.0",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -482,7 +482,7 @@ def extract_dep(url: str, filename: str) -> None:
                     msg = "Attempted Path Traversal in Zip File"
                     raise RuntimeError(msg)
             zf.extractall(sources_dir)
-    elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
+    elif filename.endswith((".tar.gz", ".tgz")):
         with tarfile.open(file, "r:gz") as tgz:
             for member in tgz.getnames():
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
@@ -586,14 +586,19 @@ def build_dep(name: str) -> str:
 
 def build_dep_all() -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
+    gha_groups = "GITHUB_ACTIONS" in os.environ
     for dep_name in DEPS:
         print()
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name)
+        if gha_groups:
+            lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+        if gha_groups:
+            lines.append("@echo ::endgroup::")
     print()
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)

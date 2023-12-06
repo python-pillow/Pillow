@@ -233,9 +233,7 @@ def SOF(self, marker):
         # fixup icc profile
         self.icclist.sort()  # sort by sequence number
         if self.icclist[0][13] == len(self.icclist):
-            profile = []
-            for p in self.icclist:
-                profile.append(p[14:])
+            profile = [p[14:] for p in self.icclist]
             icc_profile = b"".join(profile)
         else:
             icc_profile = None  # wrong number of fragments
@@ -397,7 +395,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
-            elif i == 0 or i == 0xFFFF:
+            elif i in {0, 0xFFFF}:
                 # padded marker or junk; move on
                 s = b"\xff"
             elif i == 0xFF00:  # Skip extraneous data (escaped 0xFF)

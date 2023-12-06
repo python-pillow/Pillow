@@ -4,6 +4,7 @@ import re
 import shutil
 import sys
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from packaging.version import parse as parse_version
@@ -76,8 +77,9 @@ def _render(font, layout_engine):
     return img
 
 
-def test_font_with_name(layout_engine):
-    _render(FONT_PATH, layout_engine)
+@pytest.mark.parametrize("font", (FONT_PATH, Path(FONT_PATH)))
+def test_font_with_name(layout_engine, font):
+    _render(font, layout_engine)
 
 
 def test_font_with_filelike(layout_engine):

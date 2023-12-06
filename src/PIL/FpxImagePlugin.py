@@ -97,16 +97,15 @@ class FpxImageFile(ImageFile.ImageFile):
 
         s = prop[0x2000002 | id]
 
-        colors = []
         bands = i32(s, 4)
         if bands > 4:
             msg = "Invalid number of bands"
             raise OSError(msg)
-        for i in range(bands):
-            # note: for now, we ignore the "uncalibrated" flag
-            colors.append(i32(s, 8 + i * 4) & 0x7FFFFFFF)
 
-        self._mode, self.rawmode = MODES[tuple(colors)]
+        # note: for now, we ignore the "uncalibrated" flag
+        colors = tuple(i32(s, 8 + i * 4) & 0x7FFFFFFF for i in range(bands))
+
+        self._mode, self.rawmode = MODES[colors]
 
         # load JPEG tables, if any
         self.jpeg = {}
@@ -227,6 +226,7 @@ class FpxImageFile(ImageFile.ImageFile):
                     break  # isn't really required
 
         self.stream = stream
+        self._fp = self.fp
         self.fp = None
 
     def load(self):

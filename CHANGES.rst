@@ -5,7 +5,25 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
-- Raise ValueError when TrueType font size is not greater than zero #7584
+- Optimize ImageStat.Stat.extrema #7593
+  [florath, radarhere]
+
+- Handle pathlib.Path in FreeTypeFont #7578
+  [radarhere, hugovk, nulano]
+
+- Added support for reading DX10 BC4 DDS images #7603
+  [sambvfx, radarhere]
+
+- Optimized ImageStat.Stat.count #7599
+  [florath]
+
+- Correct PDF palette size when saving #7555
+  [radarhere]
+
+- Fixed closing file pointer with olefile 0.47 #7594
+  [radarhere]
+
+- Raise ValueError when TrueType font size is not greater than zero #7584, #7587
   [akx, radarhere]
 
 - If absent, do not try to close fp when closing image #7557
