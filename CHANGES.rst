@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Support reading BC4U and DX10 BC1 images #6486
+  [REDxEYE, radarhere, hugovk]
+
 - Optimize ImageStat.Stat.extrema #7593
   [florath, radarhere]
 
