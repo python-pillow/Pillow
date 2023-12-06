@@ -16,8 +16,8 @@ import sys
 from enum import IntEnum, IntFlag
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import o8
 from ._binary import i32le as i32
+from ._binary import o8
 from ._binary import o32le as o32
 
 # Magic ("DDS ")
