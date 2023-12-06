@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Handle pathlib.Path in FreeTypeFont #7578
+  [radarhere, hugovk, nulano]
+
 - Added support for reading DX10 BC4 DDS images #7603
   [sambvfx, radarhere]
 
