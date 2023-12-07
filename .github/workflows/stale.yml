@@ -20,7 +20,7 @@ jobs:
 
     steps:
     - name: "Check issues"
-      uses: actions/stale@v8
+      uses: actions/stale@v9
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         only-labels: "Awaiting OP Action"
