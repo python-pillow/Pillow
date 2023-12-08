@@ -20,10 +20,12 @@ TODO
 API Changes
 ===========
 
-TODO
-^^^^
+Zero or negative font size error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When creating a :py:class:`~PIL.ImageFont.FreeTypeFont` instance, either directly or
+through :py:func:`~PIL.ImageFont.truetype`, if the font size is zero or less, a
+:py:exc:`ValueError` will now be raised.
 
 API Additions
 =============
@@ -35,6 +37,19 @@ Added DdsImagePlugin enums
 :py:class:`~PIL.DdsImagePlugin.DDSCAPS2`, :py:class:`~PIL.DdsImagePlugin.DDPF`,
 :py:class:`~PIL.DdsImagePlugin.DXGI_FORMAT` and :py:class:`~PIL.DdsImagePlugin.D3DFMT`
 enums have been added to :py:class:`PIL.DdsImagePlugin`.
+
+JPEG restart marker interval
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``restart_marker_blocks`` and ``restart_marker_rows`` can now
+be used to emit restart markers whenever the specified number of MCU blocks or rows
+have been produced.
+
+JPEG tables-only streamtype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``streamtype`` can now be set to 1, for tables-only. This will
+output only the quantization and Huffman tables for the image.
 
 Security
 ========
