@@ -20,10 +20,12 @@ TODO
 API Changes
 ===========
 
-TODO
-^^^^
+Zero or negative font size error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When creating a :py:class:`~PIL.ImageFont.FreeTypeFont` instance, either directly or
+through :py:func:`~PIL.ImageFont.truetype`, if the font size is not greater than zero, a
+:py:exc:`ValueError` will now be raised.
 
 API Additions
 =============
