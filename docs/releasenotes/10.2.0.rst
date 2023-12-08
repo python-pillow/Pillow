@@ -38,6 +38,12 @@ Added DdsImagePlugin enums
 :py:class:`~PIL.DdsImagePlugin.DXGI_FORMAT` and :py:class:`~PIL.DdsImagePlugin.D3DFMT`
 enums have been added to :py:class:`PIL.DdsImagePlugin`.
 
+JPEG tables-only streamtype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``streamtype`` can now be set to 1, for tables-only. This will
+output only the quantization and Huffman tables for the image.
+
 Security
 ========
 
