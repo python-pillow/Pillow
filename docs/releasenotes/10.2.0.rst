@@ -24,7 +24,7 @@ Zero or negative font size error
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When creating a :py:class:`~PIL.ImageFont.FreeTypeFont` instance, either directly or
-through :py:func:`~PIL.ImageFont.truetype`, if the font size is not greater than zero, a
+through :py:func:`~PIL.ImageFont.truetype`, if the font size is zero or less, a
 :py:exc:`ValueError` will now be raised.
 
 API Additions
