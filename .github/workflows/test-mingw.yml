@@ -2,13 +2,23 @@ name: Test MinGW
 
 on:
   push:
+    branches:
+      - "**"
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   pull_request:
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   workflow_dispatch:
 
 permissions:
@@ -34,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout Pillow
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up shell
         run: echo "C:\msys64\usr\bin\" >> $env:GITHUB_PATH

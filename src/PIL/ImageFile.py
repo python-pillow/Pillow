@@ -26,11 +26,13 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 import itertools
 import struct
 import sys
+from typing import NamedTuple
 
 from . import Image
 from ._util import is_path
@@ -75,6 +77,13 @@ def raise_oserror(error):
 def _tilesort(t):
     # sort on offset
     return t[2]
+
+
+class _Tile(NamedTuple):
+    encoder_name: str
+    extents: tuple[int, int, int, int]
+    offset: int
+    args: tuple | str | None
 
 
 #
@@ -200,8 +209,8 @@ class ImageFile(Image.Image):
                     with open(self.filename) as fp:
                         self.map = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
                     if offset + self.size[1] * args[1] > self.map.size():
-                        # buffer is not large enough
-                        raise OSError
+                        msg = "buffer is not large enough"
+                        raise OSError(msg)
                     self.im = Image.core.map_buffer(
                         self.map, self.size, decoder_name, offset, args
                     )
@@ -430,7 +439,6 @@ class Parser:
                 with io.BytesIO(self.data) as fp:
                     im = Image.open(fp)
             except OSError:
-                # traceback.print_exc()
                 pass  # not enough data
             else:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
@@ -521,13 +529,13 @@ def _save(im, fp, tile, bufsize=0):
         fp.flush()
 
 
-def _encode_tile(im, fp, tile, bufsize, fh, exc=None):
-    for e, b, o, a in tile:
-        if o > 0:
-            fp.seek(o)
-        encoder = Image._getencoder(im.mode, e, a, im.encoderconfig)
+def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
+    for encoder_name, extents, offset, args in tile:
+        if offset > 0:
+            fp.seek(offset)
+        encoder = Image._getencoder(im.mode, encoder_name, args, im.encoderconfig)
         try:
-            encoder.setimage(im.im, b)
+            encoder.setimage(im.im, extents)
             if encoder.pushes_fd:
                 encoder.setfd(fp)
                 errcode = encoder.encode_to_pyfd()[1]
@@ -690,7 +698,8 @@ class PyDecoder(PyCodec):
             If finished with decoding return -1 for the bytes consumed.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """
-        raise NotImplementedError()
+        msg = "unavailable in base decoder"
+        raise NotImplementedError(msg)
 
     def set_as_raw(self, data, rawmode=None):
         """
@@ -739,7 +748,8 @@ class PyEncoder(PyCodec):
             If finished with encoding return 1 for the error code.
             Err codes are from :data:`.ImageFile.ERRORS`.
         """
-        raise NotImplementedError()
+        msg = "unavailable in base encoder"
+        raise NotImplementedError(msg)
 
     def encode_to_pyfd(self):
         """

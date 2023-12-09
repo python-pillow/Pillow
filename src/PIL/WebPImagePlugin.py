@@ -74,9 +74,6 @@ class WebPImageFile(ImageFile.ImageFile):
         self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
         self.n_frames = frame_count
         self.is_animated = self.n_frames > 1
-        ret = self._decoder.get_next()
-        if ret is not None:
-            self.info["duration"] = ret[1]
         self._mode = "RGB" if mode == "RGBX" else mode
         self.rawmode = mode
         self.tile = []
@@ -93,7 +90,7 @@ class WebPImageFile(ImageFile.ImageFile):
             self.info["xmp"] = xmp
 
         # Initialize seek state
-        self._reset()
+        self._reset(reset=False)
 
     def _getexif(self):
         if "exif" not in self.info:
@@ -116,8 +113,9 @@ class WebPImageFile(ImageFile.ImageFile):
         # Set logical frame to requested position
         self.__logical_frame = frame
 
-    def _reset(self):
-        self._decoder.reset()
+    def _reset(self, reset=True):
+        if reset:
+            self._decoder.reset()
         self.__physical_frame = 0
         self.__loaded = -1
         self.__timestamp = 0
@@ -332,12 +330,7 @@ def _save(im, fp, filename):
     exact = 1 if im.encoderinfo.get("exact") else 0
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:
-        alpha = (
-            "A" in im.mode
-            or "a" in im.mode
-            or (im.mode == "P" and "transparency" in im.info)
-        )
-        im = im.convert("RGBA" if alpha else "RGB")
+        im = im.convert("RGBA" if im.has_transparency_data else "RGB")
 
     data = _webp.WebPEncode(
         im.tobytes(),

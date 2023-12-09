@@ -231,13 +231,13 @@ def test_apng_mode():
         assert im.getpixel((0, 0)) == (0, 0, 128, 191)
         assert im.getpixel((64, 32)) == (0, 0, 128, 191)
 
-    with Image.open("Tests/images/apng/mode_greyscale.png") as im:
+    with Image.open("Tests/images/apng/mode_grayscale.png") as im:
         assert im.mode == "L"
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == 128
         assert im.getpixel((64, 32)) == 255
 
-    with Image.open("Tests/images/apng/mode_greyscale_alpha.png") as im:
+    with Image.open("Tests/images/apng/mode_grayscale_alpha.png") as im:
         assert im.mode == "LA"
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (128, 191)
@@ -350,15 +350,13 @@ def test_apng_save(tmp_path):
         im.load()
         assert not im.is_animated
         assert im.n_frames == 1
-        assert im.get_format_mimetype() == "image/apng"
+        assert im.get_format_mimetype() == "image/png"
         assert im.info.get("default_image") is None
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
     with Image.open("Tests/images/apng/single_frame_default.png") as im:
-        frames = []
-        for frame_im in ImageSequence.Iterator(im):
-            frames.append(frame_im.copy())
+        frames = [frame_im.copy() for frame_im in ImageSequence.Iterator(im)]
         frames[0].save(
             test_file, save_all=True, default_image=True, append_images=frames[1:]
         )
@@ -450,26 +448,29 @@ def test_apng_save_duration_loop(tmp_path):
         test_file, save_all=True, append_images=[frame, frame], duration=[500, 100, 150]
     )
     with Image.open(test_file) as im:
-        im.load()
         assert im.n_frames == 1
-        assert im.info.get("duration") == 750
+        assert "duration" not in im.info
+
+    different_frame = Image.new("RGBA", (128, 64))
+    frame.save(
+        test_file,
+        save_all=True,
+        append_images=[frame, different_frame],
+        duration=[500, 100, 150],
+    )
+    with Image.open(test_file) as im:
+        assert im.n_frames == 2
+        assert im.info["duration"] == 600
+
+        im.seek(1)
+        assert im.info["duration"] == 150
 
     # test info duration
-    frame.info["duration"] = 750
-    frame.save(test_file, save_all=True)
+    frame.info["duration"] = 300
+    frame.save(test_file, save_all=True, append_images=[frame, different_frame])
     with Image.open(test_file) as im:
-        assert im.info.get("duration") == 750
-
-
-def test_apng_save_duplicate_duration(tmp_path):
-    test_file = str(tmp_path / "temp.png")
-    frame = Image.new("RGB", (1, 1))
-
-    # Test a single duration is correctly combined across duplicate frames
-    frame.save(test_file, save_all=True, append_images=[frame, frame], duration=500)
-    with Image.open(test_file) as im:
-        assert im.n_frames == 1
-        assert im.info.get("duration") == 1500
+        assert im.n_frames == 2
+        assert im.info["duration"] == 600
 
 
 def test_apng_save_disposal(tmp_path):
@@ -673,10 +674,17 @@ def test_seek_after_close():
 
 
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
-def test_different_modes_in_later_frames(mode, tmp_path):
+@pytest.mark.parametrize("default_image", (True, False))
+@pytest.mark.parametrize("duplicate", (True, False))
+def test_different_modes_in_later_frames(mode, default_image, duplicate, tmp_path):
     test_file = str(tmp_path / "temp.png")
 
     im = Image.new("L", (1, 1))
-    im.save(test_file, save_all=True, append_images=[Image.new(mode, (1, 1))])
+    im.save(
+        test_file,
+        save_all=True,
+        default_image=default_image,
+        append_images=[im.convert(mode) if duplicate else Image.new(mode, (1, 1), 1)],
+    )
     with Image.open(test_file) as reloaded:
         assert reloaded.mode == mode

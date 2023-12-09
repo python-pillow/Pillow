@@ -31,6 +31,7 @@
  */
 
 #include "Imaging.h"
+#include "Convert.h"
 
 #define R 0
 #define G 1
@@ -818,7 +819,7 @@ ImagingUnpackXBGR(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* greyscale with alpha */
+    /* grayscale with alpha */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[1]);
         memcpy(_out, &iv, sizeof(iv));
@@ -830,7 +831,7 @@ unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackRGBALA16B(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* 16-bit greyscale with alpha, big-endian */
+    /* 16-bit grayscale with alpha, big-endian */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[2]);
         memcpy(_out, &iv, sizeof(iv));
@@ -1107,7 +1108,7 @@ unpackCMYKI(UINT8 *_out, const UINT8 *in, int pixels) {
 /* There are two representations of LAB images for whatever precision:
    L: Uint (in PS, it's 0-100)
    A: Int (in ps, -128 .. 128, or elsewhere 0..255, with 128 as middle.
-           Channels in PS display a 0 value as middle grey,
+           Channels in PS display a 0 value as middle gray,
            LCMS appears to use 128 as the 0 value for these channels)
    B: Int (as above)
 
@@ -1171,7 +1172,7 @@ unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
 
 static void
 unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels) {
-    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs.
+    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer grayscale tiffs.
 
         According to the TIFF spec:
 
@@ -1236,6 +1237,12 @@ static void
 copy2(UINT8 *out, const UINT8 *in, int pixels) {
     /* I;16 */
     memcpy(out, in, pixels * 2);
+}
+
+static void
+copy3(UINT8 *out, const UINT8 *in, int pixels) {
+    /* BGR;24 */
+    memcpy(out, in, pixels * 3);
 }
 
 static void
@@ -1520,7 +1527,7 @@ static struct {
     {"1", "1;IR", 1, unpack1IR},
     {"1", "1;8", 8, unpack18},
 
-    /* greyscale */
+    /* grayscale */
     {"L", "L;2", 2, unpackL2},
     {"L", "L;2I", 2, unpackL2I},
     {"L", "L;2R", 2, unpackL2R},
@@ -1537,11 +1544,11 @@ static struct {
     {"L", "L;16", 16, unpackL16},
     {"L", "L;16B", 16, unpackL16B},
 
-    /* greyscale w. alpha */
+    /* grayscale w. alpha */
     {"LA", "LA", 16, unpackLA},
     {"LA", "LA;L", 16, unpackLAL},
 
-    /* greyscale w. alpha premultiplied */
+    /* grayscale w. alpha premultiplied */
     {"La", "La", 16, unpackLA},
 
     /* palette */
@@ -1589,6 +1596,11 @@ static struct {
     {"RGB", "R;16B", 16, band016B},
     {"RGB", "G;16B", 16, band116B},
     {"RGB", "B;16B", 16, band216B},
+    {"RGB", "CMYK", 32, cmyk2rgb},
+
+    {"BGR;15", "BGR;15", 16, copy2},
+    {"BGR;16", "BGR;16", 16, copy2},
+    {"BGR;24", "BGR;24", 24, copy3},
 
     /* true colour w. alpha */
     {"RGBA", "LA", 16, unpackRGBALA},

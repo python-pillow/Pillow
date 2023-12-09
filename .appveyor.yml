@@ -10,7 +10,7 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/Python311
+  - PYTHON: C:/Python312
     ARCHITECTURE: x86
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
   - PYTHON: C:/Python38-x64
@@ -21,13 +21,11 @@ environment:
 install:
 - '%PYTHON%\%EXECUTABLE% --version'
 - '%PYTHON%\%EXECUTABLE% -m pip install --upgrade pip'
-- curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
 - curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
-- 7z x pillow-depends.zip -oc:\
 - 7z x pillow-test-images.zip -oc:\
-- mv c:\pillow-depends-main c:\pillow-depends
 - xcopy /S /Y c:\test-images-main\* c:\pillow\tests\images
-- 7z x ..\pillow-depends\nasm-2.16.01-win64.zip -oc:\
+- curl -fsSL -o nasm-win64.zip https://raw.githubusercontent.com/python-pillow/pillow-depends/main/nasm-2.16.01-win64.zip
+- 7z x nasm-win64.zip -oc:\
 - choco install ghostscript --version=10.0.0.20230317
 - path c:\nasm-2.16.01;C:\Program Files\gs\gs10.00.0\bin;%PATH%
 - cd c:\pillow\winbuild\
@@ -45,7 +43,7 @@ build_script:
 
 test_script:
 - cd c:\pillow
-- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov pytest-timeout'
+- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov pytest-timeout defusedxml numpy olefile pyroma'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
 - '%PYTHON%\%EXECUTABLE% -c "from PIL import Image"'
 - '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'

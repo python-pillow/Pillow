@@ -2,8 +2,119 @@
 Changelog (Pillow)
 ==================
 
-10.1.0 (unreleased)
+10.2.0 (unreleased)
 -------------------
+
+- Support reading BC4U and DX10 BC1 images #6486
+  [REDxEYE, radarhere, hugovk]
+
+- Optimize ImageStat.Stat.extrema #7593
+  [florath, radarhere]
+
+- Handle pathlib.Path in FreeTypeFont #7578
+  [radarhere, hugovk, nulano]
+
+- Added support for reading DX10 BC4 DDS images #7603
+  [sambvfx, radarhere]
+
+- Optimized ImageStat.Stat.count #7599
+  [florath]
+
+- Correct PDF palette size when saving #7555
+  [radarhere]
+
+- Fixed closing file pointer with olefile 0.47 #7594
+  [radarhere]
+
+- Raise ValueError when TrueType font size is not greater than zero #7584, #7587
+  [akx, radarhere]
+
+- If absent, do not try to close fp when closing image #7557
+  [RaphaelVRossi, radarhere]
+
+- Allow configuring JPEG restart marker interval on save #7488
+  [bgilbert, radarhere]
+
+- Decrement reference count for PyObject #7549
+  [radarhere]
+
+- Implement ``streamtype=1`` option for tables-only JPEG encoding #7491
+  [bgilbert, radarhere]
+
+- If save_all PNG only has one frame, do not create animated image #7522
+  [radarhere]
+
+- Fixed frombytes() for images with a zero dimension #7493
+  [radarhere]
+
+10.1.0 (2023-10-15)
+-------------------
+
+- Added TrueType default font to allow for different sizes #7354
+  [radarhere]
+
+- Fixed invalid argument warning #7442
+  [radarhere]
+
+- Added ImageOps cover method #7412
+  [radarhere, hugovk]
+
+- Catch struct.error from truncated EXIF when reading JPEG DPI #7458
+  [radarhere]
+
+- Consider default image when selecting mode for PNG save_all #7437
+  [radarhere]
+
+- Support BGR;15, BGR;16 and BGR;24 access, unpacking and putdata #7303
+  [radarhere]
+
+- Added CMYK to RGB unpacker #7310
+  [radarhere]
+
+- Improved flexibility of XMP parsing #7274
+  [radarhere]
+
+- Support reading 8-bit YCbCr TIFF images #7415
+  [radarhere]
+
+- Allow saving I;16B images as PNG #7302
+  [radarhere]
+
+- Corrected drawing I;16 points and writing I;16 text #7257
+  [radarhere]
+
+- Set blue channel to 128 for BC5S #7413
+  [radarhere]
+
+- Increase flexibility when reading IPTC fields #7319
+  [radarhere]
+
+- Set C palette to be empty by default #7289
+  [radarhere]
+
+- Added gs_binary to control Ghostscript use on all platforms #7392
+  [radarhere]
+
+- Read bounding box information from the trailer of EPS files if specified #7382
+  [nopperl, radarhere]
+
+- Added reading 8-bit color DDS images #7426
+  [radarhere]
+
+- Added has_transparency_data #7420
+  [radarhere, hugovk]
+
+- Fixed bug when reading BC5S DDS images #7401
+  [radarhere]
+
+- Prevent TIFF orientation from being applied more than once #7383
+  [radarhere]
+
+- Use previous pixel alpha for QOI_OP_RGB #7357
+  [radarhere]
+
+- Added BC5U reading #7358
+  [radarhere]
 
 - Allow getpixel() to accept a list #7355
   [radarhere, homm]
@@ -16,9 +127,6 @@ Changelog (Pillow)
 
 - Added session type check for Linux in ImageGrab.grabclipboard() #7332
   [TheNooB2706, radarhere, hugovk]
-
-- Read WebP duration after opening #7311
-  [k128, radarhere]
 
 - Allow "loop=None" when saving GIF images #7329
   [radarhere]
@@ -43,6 +151,15 @@ Changelog (Pillow)
 
 - Fix missing symbols when libtiff depends on libjpeg #7270
   [heitbaum]
+
+10.0.1 (2023-09-15)
+-------------------
+
+- Updated libwebp to 1.3.2 #7395
+  [radarhere]
+
+- Updated zlib to 1.3 #7344
+  [radarhere]
 
 10.0.0 (2023-07-01)
 -------------------
@@ -2119,7 +2236,7 @@ Changelog (Pillow)
 - Cache EXIF information #3498
   [Glandos]
 
-- Added transparency for all PNG greyscale modes #3744
+- Added transparency for all PNG grayscale modes #3744
   [radarhere]
 
 - Fix deprecation warnings in Python 3.8 #3749
@@ -4621,7 +4738,7 @@ Changelog (Pillow)
 - Fix Bicubic interpolation #970
   [homm]
 
-- Support for 4-bit greyscale TIFF images #980
+- Support for 4-bit grayscale TIFF images #980
   [hugovk]
 
 - Updated manifest #957
@@ -5771,8 +5888,8 @@ http://svn.effbot.org/public/pil/
   a polyline, independent of line angle.
 
 - Fixed bearing calculation and clipping in the ImageFont truetype
-  renderer; this could lead to clipped text, or crashes in the low-
-  level _imagingft module.  (based on input from Adam Twardoch and
+  renderer; this could lead to clipped text, or crashes in the low-level
+  _imagingft module.  (based on input from Adam Twardoch and
   others).
 
 - Added ImageQt wrapper module, for converting PIL Image objects to
@@ -5853,8 +5970,7 @@ http://svn.effbot.org/public/pil/
 1.1.5c2 and 1.1.5 final
 -----------------------
 
-- Added experimental PERSPECTIVE transform method (from Jeff Breiden-
-  bach).
+- Added experimental PERSPECTIVE transform method (from Jeff Breidenbach).
 
 1.1.5c1
 -------
@@ -5926,8 +6042,8 @@ http://svn.effbot.org/public/pil/
 
 - Fixed BILINEAR/BICUBIC/ANTIALIAS filtering for mode "LA".
 
-- Added "getcolors()" method.  This is similar to the existing histo-
-  gram method, but looks at color values instead of individual layers,
+- Added "getcolors()" method.  This is similar to the existing histogram
+  method, but looks at color values instead of individual layers,
   and returns an unsorted list of (count, color) tuples.
 
   By default, the method returns None if finds more than 256 colors.
@@ -6143,8 +6259,8 @@ http://svn.effbot.org/public/pil/
 
 - Added limited support for "bitfield compression" in BMP files
   and DIB buffers, for 15-bit, 16-bit, and 32-bit images.  This
-  also fixes a problem with ImageGrab module when copying screen-
-  dumps from the clipboard on 15/16/32-bit displays.
+  also fixes a problem with ImageGrab module when copying screendumps
+  from the clipboard on 15/16/32-bit displays.
 
 - Added experimental WAL (Quake 2 textures) loader.  To use this
   loader, import WalImageFile and call the "open" method in that
@@ -6255,8 +6371,8 @@ http://svn.effbot.org/public/pil/
 1.1.3 final
 -----------
 
-- Made setup.py look for old versions of zlib.  For some back-
-  ground, see: https://zlib.net/advisory-2002-03-11.txt
+- Made setup.py look for old versions of zlib.  For some background,
+  see: https://zlib.net/advisory-2002-03-11.txt
 
 1.1.3c2
 -------
@@ -6447,8 +6563,8 @@ http://svn.effbot.org/public/pil/
   supports all major PIL image modes (including F and I).
 
 - The ImageFile module now includes a Parser class, which can
-  be used to incrementally decode an image file (while down-
-  loading it from the net, for example).  See the handbook for
+  be used to incrementally decode an image file (while downloading
+  it from the net, for example).  See the handbook for
   details.
 
 - "show" now converts non-standard modes to "L" or "RGB" (as
@@ -6586,8 +6702,8 @@ http://svn.effbot.org/public/pil/
 
 - The Image "transform" method now supports Image.QUAD transforms.
   The data argument is an 8-tuple giving the upper left, lower
-  left, lower right, and upper right corner of the source quadri-
-  lateral.  Also added Image.MESH transform which takes a list
+  left, lower right, and upper right corner of the source quadrilateral.
+  Also added Image.MESH transform which takes a list
   of quadrilaterals.
 
 - The Image "resize", "rotate", and "transform" methods now support
@@ -6697,7 +6813,7 @@ The test suite includes 750 individual tests.
 
 - You can now convert directly between all modes supported by
   PIL.  When converting colour images to "P", PIL defaults to
-  a "web" palette and dithering.  When converting greyscale
+  a "web" palette and dithering.  When converting grayscale
   images to "1", PIL uses a thresholding and dithering.
 
 - Added a "dither" option to "convert".  By default, "convert"
@@ -6775,13 +6891,13 @@ The test suite includes 530 individual tests.
 - Fixed "paste" to allow a mask also for mode "F" images.
 
 - The BMP driver now saves mode "1" images.  When loading images, the mode
-  is set to "L" for 8-bit files with greyscale palettes, and to "P" for
+  is set to "L" for 8-bit files with grayscale palettes, and to "P" for
   other 8-bit files.
 
 - The IM driver now reads and saves "1" images (file modes "0 1" or "L 1").
 
 - The JPEG and GIF drivers now saves "1" images.  For JPEG, the image
-  is saved as 8-bit greyscale (it will load as mode "L").  For GIF, the
+  is saved as 8-bit grayscale (it will load as mode "L").  For GIF, the
   image will be loaded as a "P" image.
 
 - Fixed a potential buffer overrun in the GIF encoder.
@@ -6812,8 +6928,8 @@ The test suite includes 400 individual tests.
   neither "short", "int" nor "long" are 32-bit wide.
 
 - Added file= and data= keyword arguments to PhotoImage and BitmapImage.
-  This allows you to use them as drop-in replacements for the corre-
-  sponding Tkinter classes.
+  This allows you to use them as drop-in replacements for the corresponding
+  Tkinter classes.
 
 - Removed bogus references to the crack coder (ImagingCrack).
 
@@ -7085,7 +7201,7 @@ The test suite includes 400 individual tests.
   drawing capabilities can be used to render vector and metafile
   formats.
 
-- Added restricted drivers for images from Image Tools (greyscale
+- Added restricted drivers for images from Image Tools (grayscale
   only) and LabEye/IFUNC (common interchange modes only).
 
 - Some minor improvements to the sample scripts provided in the

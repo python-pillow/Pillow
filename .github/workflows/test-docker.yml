@@ -2,13 +2,23 @@ name: Test Docker
 
 on:
   push:
+    branches:
+      - "**"
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   pull_request:
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   workflow_dispatch:
 
 permissions:
@@ -41,8 +51,8 @@ jobs:
           debian-11-bullseye-amd64,
           debian-12-bookworm-x86,
           debian-12-bookworm-amd64,
-          fedora-37-amd64,
           fedora-38-amd64,
+          fedora-39-amd64,
           gentoo,
           ubuntu-20.04-focal-amd64,
           ubuntu-22.04-jammy-amd64,
@@ -59,7 +69,7 @@ jobs:
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py

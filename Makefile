@@ -49,7 +49,7 @@ help:
 	@echo "  install            make and install"
 	@echo "  install-coverage   make and install with C coverage"
 	@echo "  lint               run the lint checks"
-	@echo "  lint-fix           run Black and isort to (mostly) fix lint issues"
+	@echo "  lint-fix           run Ruff to (mostly) fix lint issues"
 	@echo "  release-test       run code and package tests before release"
 	@echo "  test               run tests on installed Pillow"
 
@@ -118,6 +118,6 @@ lint:
 .PHONY: lint-fix
 lint-fix:
 	python3 -c "import black" > /dev/null 2>&1 || python3 -m pip install black
-	python3 -c "import isort" > /dev/null 2>&1 || python3 -m pip install isort
-	python3 -m black --target-version py38 .
-	python3 -m isort .
+	python3 -m black .
+	python3 -c "import ruff" > /dev/null 2>&1 || python3 -m pip install ruff
+	python3 -m ruff --fix .

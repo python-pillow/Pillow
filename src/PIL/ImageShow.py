@@ -99,7 +99,8 @@ class Viewer:
         Returns the command used to display the file.
         Not implemented in the base class.
         """
-        raise NotImplementedError
+        msg = "unavailable in base viewer"
+        raise NotImplementedError(msg)
 
     def save_image(self, image):
         """Save to temporary file and return filename."""

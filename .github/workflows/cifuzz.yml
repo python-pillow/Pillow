@@ -2,6 +2,8 @@ name: CIFuzz
 
 on:
   push:
+    branches:
+      - "**"
     paths:
       - ".github/workflows/cifuzz.yml"
       - "**.c"

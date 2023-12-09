@@ -29,10 +29,10 @@ API Additions
 Image.entropy
 ^^^^^^^^^^^^^
 Calculates and returns the entropy for the image. A bilevel image (mode "1") is treated
-as a greyscale ("L") image by this method.  If a mask is provided, the method employs
+as a grayscale ("L") image by this method.  If a mask is provided, the method employs
 the histogram for those parts of the image where the mask image is non-zero. The mask
 image must have the same size as the image, and be either a bi-level image (mode "1") or
-a greyscale image ("L").
+a grayscale image ("L").
 
 ImageGrab.grab
 ^^^^^^^^^^^^^^
@@ -58,7 +58,7 @@ file. ``ImageFont.FreeTypeFont`` has four new methods,
 :py:meth:`PIL.ImageFont.FreeTypeFont.set_variation_by_name` for using named styles, and
 :py:meth:`PIL.ImageFont.FreeTypeFont.get_variation_axes` and
 :py:meth:`PIL.ImageFont.FreeTypeFont.set_variation_by_axes` for using font axes
-instead. An ``IOError`` will be raised if the font is not a variation font. FreeType
+instead. An :py:exc:`IOError` will be raised if the font is not a variation font. FreeType
 2.9.1 or greater is required.
 
 Other Changes

@@ -129,9 +129,8 @@ class PcfFontFile(FontFile.FontFile):
         nprops = i32(fp.read(4))
 
         # read property description
-        p = []
-        for i in range(nprops):
-            p.append((i32(fp.read(4)), i8(fp.read(1)), i32(fp.read(4))))
+        p = [(i32(fp.read(4)), i8(fp.read(1)), i32(fp.read(4))) for _ in range(nprops)]
+
         if nprops & 3:
             fp.seek(4 - (nprops & 3), io.SEEK_CUR)  # pad
 
@@ -186,8 +185,6 @@ class PcfFontFile(FontFile.FontFile):
         #
         # bitmap data
 
-        bitmaps = []
-
         fp, format, i16, i32 = self._getformat(PCF_BITMAPS)
 
         nbitmaps = i32(fp.read(4))
@@ -196,13 +193,9 @@ class PcfFontFile(FontFile.FontFile):
             msg = "Wrong number of bitmaps"
             raise OSError(msg)
 
-        offsets = []
-        for i in range(nbitmaps):
-            offsets.append(i32(fp.read(4)))
+        offsets = [i32(fp.read(4)) for _ in range(nbitmaps)]
 
-        bitmap_sizes = []
-        for i in range(4):
-            bitmap_sizes.append(i32(fp.read(4)))
+        bitmap_sizes = [i32(fp.read(4)) for _ in range(4)]
 
         # byteorder = format & 4  # non-zero => MSB
         bitorder = format & 8  # non-zero => MSB
@@ -218,6 +211,7 @@ class PcfFontFile(FontFile.FontFile):
         if bitorder:
             mode = "1"
 
+        bitmaps = []
         for i in range(nbitmaps):
             xsize, ysize = metrics[i][:2]
             b, e = offsets[i : i + 2]

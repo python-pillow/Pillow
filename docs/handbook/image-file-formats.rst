@@ -63,8 +63,35 @@ DDS
 ^^^
 
 DDS is a popular container texture format used in video games and natively supported
-by DirectX. Uncompressed RGB and RGBA can be read, and (since 8.3.0) written. DXT1,
-DXT3 (since 3.4.0) and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+by DirectX.
+
+DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+
+.. versionadded:: 3.4.0
+   DXT3 images can be read in ``RGB`` mode and DX10 images can be read in
+   ``RGB`` and ``RGBA`` mode.
+
+.. versionadded:: 6.0.0
+   Uncompressed ``RGBA`` images can be read.
+
+
+.. versionadded:: 8.3.0
+   BC5S images can be opened in ``RGB`` mode, and uncompressed ``RGB`` images
+   can be read. Uncompressed data can also be saved to image files.
+
+
+.. versionadded:: 9.3.0
+   ATI1 images can be opened in ``L`` mode and ATI2 images can be opened in
+   ``RGB`` mode.
+
+.. versionadded:: 9.4.0
+   Uncompressed ``L`` ("luminance") and ``LA`` images can be opened and saved.
+
+
+.. versionadded:: 10.1.0
+   BC5U can be read in ``RGB`` mode, and 8-bit color indexed images can be read
+   in ``P`` mode.
+
 
 DIB
 ^^^
@@ -88,8 +115,13 @@ in ``L``, ``RGB`` and ``CMYK`` modes.
 Loading
 ~~~~~~~
 
+To use Ghostscript, Pillow searches for the "gs" executable. On Windows, it
+also searches for "gswin32c" and "gswin64c". To customise this behaviour,
+``EpsImagePlugin.gs_binary = "gswin64"`` will set the name of the executable to
+use. ``EpsImagePlugin.gs_binary = False`` will prevent Ghostscript use.
+
 If Ghostscript is available, you can call the :py:meth:`~PIL.Image.Image.load`
-method with the following parameters to affect how Ghostscript renders the EPS
+method with the following parameters to affect how Ghostscript renders the EPS.
 
 **scale**
     Affects the scale of the resultant rasterized image. If the EPS suggests
@@ -234,9 +266,12 @@ following options are available::
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
 **optimize**
-    If present and true, attempt to compress the palette by
-    eliminating unused colors. This is only useful if the palette can
-    be compressed to the next smaller power of 2 elements.
+    Whether to attempt to compress the palette by eliminating unused colors.
+    This is attempted by default, unless a palette is specified as an option or
+    as part of the first image's :py:attr:`~PIL.Image.Image.info` dictionary.
+
+    This is only useful if the palette can be compressed to the next smaller
+    power of 2 elements.
 
 Note that if the image you are saving comes from an existing GIF, it may have
 the following properties in its :py:attr:`~PIL.Image.Image.info` dictionary.
@@ -462,6 +497,18 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     If absent, the setting will be determined by libjpeg or libjpeg-turbo.
 
+**restart_marker_blocks**
+    If present, emit a restart marker whenever the specified number of MCU
+    blocks has been produced.
+
+    .. versionadded:: 10.2.0
+
+**restart_marker_rows**
+    If present, emit a restart marker whenever the specified number of MCU
+    rows has been produced.
+
+    .. versionadded:: 10.2.0
+
 **qtables**
     If present, sets the qtables for the encoder. This is listed as an
     advanced option for wizards in the JPEG documentation. Use with
@@ -473,6 +520,19 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
        between 2 and 4 tables.
 
     .. versionadded:: 2.5.0
+
+**streamtype**
+    Allows storing images without quantization and Huffman tables, or with
+    these tables but without image data.  This is useful for container formats
+    or network protocols that handle tables separately and share them between
+    images.
+
+    * ``0`` (default): interchange datastream, with tables and image data
+    * ``1``: abbreviated table specification (tables-only) datastream
+
+      .. versionadded:: 10.2.0
+
+    * ``2``: abbreviated image (image-only) datastream
 
 **comment**
     A comment about the image.
@@ -1264,6 +1324,8 @@ Pillow reads Kodak FlashPix files. In the current version, only the highest
 resolution image is read from the file, and the viewing transform is not taken
 into account.
 
+To enable FPX support, you must install :pypi:`olefile`.
+
 .. note::
 
     To enable full FlashPix support, you need to build and install the IJG JPEG
@@ -1339,6 +1401,8 @@ the first sprite in the file is loaded. You can use :py:meth:`~PIL.Image.Image.s
 :py:meth:`~PIL.Image.Image.tell` to read other sprites from the file.
 
 Note that there may be an embedded gamma of 2.2 in MIC files.
+
+To enable MIC support, you must install :pypi:`olefile`.
 
 MPO
 ^^^
