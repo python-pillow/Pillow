@@ -1,17 +1,22 @@
 from PIL import Image, ImageDraw
 
+
 class GradationFilter:
     def __init__(self, image_path):
         self.original_image = Image.open(image_path)
 
     def apply_gradation_filter(self, start_color, end_color, input_alpha=0.5):
-        alpha_mask = self.original_image.convert("L").point(lambda x: 0 if x == 0 else 255)
+        alpha_mask = self.original_image.convert("L").point(
+            lambda x: 0 if x == 0 else 255
+        )
         self.original_image.putalpha(alpha_mask)
 
         width, height = self.original_image.size
         grad_image = self.visual_gradation(width, height, start_color, end_color)
 
-        result_image = Image.alpha_composite(Image.new("RGBA", self.original_image.size, (0, 0, 0, 0)), grad_image)
+        result_image = Image.alpha_composite(
+            Image.new("RGBA", self.original_image.size, (0, 0, 0, 0)), grad_image
+        )
         result_image.paste(self.original_image, (0, 0), self.original_image)
 
         return result_image
@@ -30,11 +35,12 @@ class GradationFilter:
 
     @staticmethod
     def hex_to_rgb(hex_color):
-        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+
 
 try:
     image_path = "Gradation/60D2151A-A12A-4F89-9D79-D7FD5DBEA4C4.png"
-    
+
     gradation_filter = GradationFilter(image_path)
 
     start_color_input = input("Enter start color (hex): ")
@@ -46,7 +52,7 @@ try:
     filtered_image = gradation_filter.apply_gradation_filter(start_color, end_color)
     filtered_image.show()
 
-except IOError:
+except OSError:
     print("Error: Not a PNG file.")
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
