@@ -345,7 +345,7 @@ class AniFile:
             raise SyntaxError(msg)
 
         if self.seq is None:
-            self.seq = [i for i in range(self.anih["nFrames"])]
+            self.seq = list(range(self.anih["nFrames"]))
 
         if self.rate is None:
             self.rate = [self.anih["iDispRate"] for i in range(self.anih["nFrames"])]
