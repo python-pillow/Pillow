@@ -35,6 +35,7 @@ import sys
 from typing import NamedTuple
 
 from . import Image
+from ._deprecate import deprecate
 from ._util import is_path
 
 MAXBLOCK = 65536
@@ -75,6 +76,12 @@ def _get_oserror(error, *, encoder):
 
 
 def raise_oserror(error):
+    deprecate(
+        "raise_oserror",
+        12,
+        action="It is only useful for translating error codes returned by a codec's "
+        "decode() method, which ImageFile already does automatically.",
+    )
     raise _get_oserror(error, encoder=False)
 
 
@@ -298,7 +305,7 @@ class ImageFile(Image.Image):
 
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
-            raise_oserror(err_code)
+            raise _get_oserror(err_code, encoder=False)
 
         return Image.Image.load(self)
 
@@ -425,7 +432,7 @@ class Parser:
                 if e < 0:
                     # decoding error
                     self.image = None
-                    raise_oserror(e)
+                    raise _get_oserror(e, encoder=False)
                 else:
                     # end of image
                     return
