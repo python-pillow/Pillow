@@ -392,8 +392,9 @@ class FreeTypeFont:
         :param stroke_width: The width of the text stroke.
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
@@ -466,8 +467,9 @@ class FreeTypeFont:
                          .. versionadded:: 6.2.0
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
                          .. versionadded:: 8.0.0
 
@@ -558,8 +560,9 @@ class FreeTypeFont:
                          .. versionadded:: 6.2.0
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
                          .. versionadded:: 8.0.0
 
