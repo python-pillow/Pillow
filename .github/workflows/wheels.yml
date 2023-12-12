@@ -116,10 +116,7 @@ jobs:
 
           & python.exe -m pip install -r .ci/requirements-cibw.txt
 
-          # Cannot cross-compile FriBiDi (only used for tests)
-          $FLAGS = ("--no-imagequant", "--architecture=${{ matrix.arch }}")
-          if ('${{ matrix.arch }}' -eq 'ARM64') { $FLAGS += "--no-fribidi" }
-          & python.exe winbuild\build_prepare.py -v @FLAGS
+          & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.arch }}
         shell: pwsh
 
       - name: Build wheels
@@ -163,14 +160,12 @@ jobs:
           path: ./wheelhouse/*.whl
 
       - name: Prepare to upload FriBiDi
-        if: "matrix.arch != 'ARM64'"
         run: |
           mkdir fribidi\${{ matrix.arch }}
           copy winbuild\build\bin\fribidi* fribidi\${{ matrix.arch }}
         shell: cmd
 
       - name: Upload fribidi.dll
-        if: "matrix.arch != 'ARM64'"
         uses: actions/upload-artifact@v3
         with:
           name: fribidi
