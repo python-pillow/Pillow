@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Translate encoder error codes to strings; deprecate ``ImageFile.raise_oserror()`` #7609
+  [bgilbert, radarhere]
+
 - Support reading BC4U and DX10 BC1 images #6486
   [REDxEYE, radarhere, hugovk]
 
