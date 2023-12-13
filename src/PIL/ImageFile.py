@@ -35,6 +35,7 @@ import sys
 from typing import NamedTuple
 
 from . import Image
+from ._deprecate import deprecate
 from ._util import is_path
 
 MAXBLOCK = 65536
@@ -63,15 +64,25 @@ Dict of known error codes returned from :meth:`.PyDecoder.decode`,
 # Helpers
 
 
-def raise_oserror(error):
+def _get_oserror(error, *, encoder):
     try:
         msg = Image.core.getcodecstatus(error)
     except AttributeError:
         msg = ERRORS.get(error)
     if not msg:
-        msg = f"decoder error {error}"
-    msg += " when reading image file"
-    raise OSError(msg)
+        msg = f"{'encoder' if encoder else 'decoder'} error {error}"
+    msg += f" when {'writing' if encoder else 'reading'} image file"
+    return OSError(msg)
+
+
+def raise_oserror(error):
+    deprecate(
+        "raise_oserror",
+        12,
+        action="It is only useful for translating error codes returned by a codec's "
+        "decode() method, which ImageFile already does automatically.",
+    )
+    raise _get_oserror(error, encoder=False)
 
 
 def _tilesort(t):
@@ -294,7 +305,7 @@ class ImageFile(Image.Image):
 
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:
             # still raised if decoder fails to return anything
-            raise_oserror(err_code)
+            raise _get_oserror(err_code, encoder=False)
 
         return Image.Image.load(self)
 
@@ -421,7 +432,7 @@ class Parser:
                 if e < 0:
                     # decoding error
                     self.image = None
-                    raise_oserror(e)
+                    raise _get_oserror(e, encoder=False)
                 else:
                     # end of image
                     return
@@ -551,8 +562,7 @@ def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
                     # slight speedup: compress to real file object
                     errcode = encoder.encode_to_file(fh, bufsize)
             if errcode < 0:
-                msg = f"encoder error {errcode} when writing image file"
-                raise OSError(msg) from exc
+                raise _get_oserror(errcode, encoder=True) from exc
         finally:
             encoder.cleanup()
 

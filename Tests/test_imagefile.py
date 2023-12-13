@@ -115,8 +115,9 @@ class TestImageFile:
         assert_image_equal(im1, im2)
 
     def test_raise_oserror(self):
-        with pytest.raises(OSError):
-            ImageFile.raise_oserror(1)
+        with pytest.warns(DeprecationWarning):
+            with pytest.raises(OSError):
+                ImageFile.raise_oserror(1)
 
     def test_raise_typeerror(self):
         with pytest.raises(TypeError):

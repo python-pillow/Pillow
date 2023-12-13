@@ -12,6 +12,14 @@ TODO
 Deprecations
 ============
 
+ImageFile.raise_oserror
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageFile.raise_oserror()`` has been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). The function is undocumented and is only useful for translating
+error codes returned by a codec's ``decode()`` method, which ImageFile already does
+automatically.
+
 TODO
 ^^^^
 
@@ -77,3 +85,9 @@ Calculating the :py:attr:`~PIL.ImageStat.Stat.count` and
 :py:attr:`~PIL.ImageStat.Stat.extrema` statistics is now faster. After the
 histogram is created in ``st = ImageStat.Stat(im)``, ``st.count`` is 3x as fast
 on average and ``st.extrema`` is 12x as fast on average.
+
+Encoder errors now report error detail as string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:exc:`OSError` exceptions from image encoders now include a textual description of
+the error instead of a numeric error code.
