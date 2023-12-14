@@ -194,13 +194,3 @@ jobs:
       with:
         name: dist
         path: dist/*.tar.gz
-
-  success:
-    permissions:
-      contents: none
-    needs: [build, windows, sdist]
-    runs-on: ubuntu-latest
-    name: Wheels Successful
-    steps:
-      - name: Success
-        run: echo Wheels Successful
