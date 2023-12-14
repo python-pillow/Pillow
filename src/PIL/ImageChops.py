@@ -291,7 +291,7 @@ def composite(
     return Image.composite(image1, image2, mask)
 
 
-def offset(image: Image.Image, xoffset: int, yoffset: int = None) -> Image.Image:
+def offset(image: Image.Image, xoffset: int, yoffset: int | None = None) -> Image.Image:
     """Returns a copy of the image where data has been offset by the given
     distances. Data wraps around the edges. If ``yoffset`` is omitted, it
     is assumed to be equal to ``xoffset``.
