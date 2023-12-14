@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Import plugins relative to the module #7576
+  [deliangyang, jaxx0n]
+
 - Translate encoder error codes to strings; deprecate ``ImageFile.raise_oserror()`` #7609
   [bgilbert, radarhere]
 
