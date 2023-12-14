@@ -206,5 +206,5 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Publish package distributions to PyPI
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
