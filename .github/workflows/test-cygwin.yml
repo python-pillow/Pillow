@@ -132,7 +132,7 @@ jobs:
           dash.exe -c "mkdir -p Tests/errors"
 
       - name: Upload errors
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: errors
