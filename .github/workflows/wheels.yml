@@ -75,7 +75,7 @@ jobs:
           CIBW_TEST_SKIP: "*-macosx_arm64"
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: ./wheelhouse/*.whl
@@ -157,7 +157,7 @@ jobs:
         shell: cmd
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: ./wheelhouse/*.whl
@@ -171,7 +171,7 @@ jobs:
 
       - name: Upload fribidi.dll
         if: "matrix.arch != 'ARM64'"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: fribidi
           path: fribidi\*
@@ -190,7 +190,7 @@ jobs:
 
     - run: make sdist
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: dist
         path: dist/*.tar.gz
