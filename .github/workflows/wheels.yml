@@ -201,7 +201,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Upload release to PyPI
     environment:
-      name: pypi
+      name: release-pypi
       url: https://pypi.org/p/Pillow
     permissions:
       id-token: write
