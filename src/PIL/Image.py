@@ -23,6 +23,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import atexit
 import builtins
@@ -81,7 +82,10 @@ try:
     # and should be considered private and subject to change.
     from . import _imaging as core
 
-    if __version__ != getattr(core, "PILLOW_VERSION", None):
+    # if __version__ != getattr(core, "PILLOW_VERSION", None):
+    if not hasattr(core, "PILLOW_VERSION") or re.sub(
+        "dev[0-9]+", "dev0", __version__
+    ) != re.sub("dev[0-9]+", "dev0", core.PILLOW_VERSION):
         msg = (
             "The _imaging extension was built for another version of Pillow or PIL:\n"
             f"Core version: {getattr(core, 'PILLOW_VERSION', None)}\n"

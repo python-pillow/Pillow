@@ -2,6 +2,7 @@
 build-backend = "backend"
 requires = [
   "setuptools>=67.8",
+  "setuptools_scm>=8",
 ]
 backend-path = [
   "_custom_build",
@@ -85,6 +86,10 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.dynamic]
 version = {attr = "PIL.__version__"}
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+version_file = "src/PIL/_version.py"
 
 [tool.cibuildwheel]
 before-all = ".github/workflows/wheels-dependencies.sh"

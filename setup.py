@@ -7,6 +7,7 @@
 # Final rating: 10/10
 # Your cheese is so fresh most people think it's a cream: Mascarpone
 # ------------------------------
+from __future__ import annotations
 
 import os
 import re
@@ -27,7 +28,6 @@ def get_version():
     return locals()["__version__"]
 
 
-PILLOW_VERSION = get_version()
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
 FRIBIDI_ROOT = None
@@ -44,7 +44,7 @@ if sys.platform == "win32" and sys.version_info >= (3, 13):
 
     atexit.register(
         lambda: warnings.warn(
-            f"Pillow {PILLOW_VERSION} does not support Python "
+            f"Pillow {get_version()} does not support Python "
             f"{sys.version_info.major}.{sys.version_info.minor} and does not provide "
             "prebuilt Windows binaries. We do not recommend building from source on "
             "Windows.",
@@ -847,7 +847,7 @@ class pil_build_ext(build_ext):
         if struct.unpack("h", b"\0\1")[0] == 1:
             defs.append(("WORDS_BIGENDIAN", None))
 
-        defs.append(("PILLOW_VERSION", f'"{PILLOW_VERSION}"'))
+        defs.append(("PILLOW_VERSION", f'"{get_version()}"'))
 
         self._update_extension("PIL._imaging", libs, defs)
 
@@ -912,7 +912,7 @@ class pil_build_ext(build_ext):
         print("-" * 68)
         print("PIL SETUP SUMMARY")
         print("-" * 68)
-        print(f"version      Pillow {PILLOW_VERSION}")
+        print(f"version      Pillow {get_version()}")
         v = sys.version.split("[")
         print(f"platform     {sys.platform} {v[0].strip()}")
         for v in v[1:]:
