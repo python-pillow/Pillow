@@ -41,6 +41,8 @@ jobs:
     steps:
     - name: Checkout Pillow
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Checkout cached dependencies
       uses: actions/checkout@v4

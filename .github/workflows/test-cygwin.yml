@@ -47,6 +47,8 @@ jobs:
 
       - name: Checkout Pillow
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@v4
