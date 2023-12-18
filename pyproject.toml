@@ -94,7 +94,6 @@ test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
 [tool.ruff]
-line-length = 88
 select = [
   "C4", # flake8-comprehensions
   "E", # pycodestyle errors
