@@ -24,6 +24,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import annotations
+
 import atexit
 import builtins
 import io
@@ -477,8 +479,8 @@ class Image:
     * :py:func:`~PIL.Image.frombytes`
     """
 
-    format = None
-    format_description = None
+    format: str | None = None
+    format_description: str | None = None
     _close_exclusive_fp_after_loading = True
 
     def __init__(self):
