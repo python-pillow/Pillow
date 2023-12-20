@@ -76,7 +76,7 @@ def cmds_cmake(
                 *params,
                 '-G "{cmake_generator}"',
                 f'-B "{build_dir}"',
-                f"-S .",
+                "-S .",
             ]
         ),
         f'{{cmake}} --build "{build_dir}" --clean-first --parallel --target {target}',
