@@ -159,17 +159,11 @@ jobs:
           name: dist
           path: ./wheelhouse/*.whl
 
-      - name: Prepare to upload FriBiDi
-        run: |
-          mkdir fribidi\${{ matrix.arch }}
-          copy winbuild\build\bin\fribidi* fribidi\${{ matrix.arch }}
-        shell: cmd
-
       - name: Upload fribidi.dll
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: fribidi
-          path: fribidi\*
+          name: fribidi-windows-${{ matrix.arch }}
+          path: winbuild\build\bin\fribidi*
 
   sdist:
     runs-on: ubuntu-latest
