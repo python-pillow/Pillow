@@ -168,6 +168,9 @@ class WebPImageFile(ImageFile.ImageFile):
 
         return super().load()
 
+    def load_seek(self, pos):
+        pass
+
     def tell(self):
         if not _webp.HAVE_WEBPANIM:
             return super().tell()
