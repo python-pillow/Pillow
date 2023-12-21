@@ -330,6 +330,8 @@ class GifImageFile(ImageFile.ImageFile):
 
         def _rgb(color):
             if self._frame_palette:
+                if color * 3 + 3 > len(self._frame_palette.palette):
+                    color = 0
                 color = tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
             else:
                 color = (color, color, color)
