@@ -30,7 +30,15 @@ import os
 import subprocess
 from enum import IntEnum
 
-from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
+from . import (
+    Image,
+    ImageChops,
+    ImageFile,
+    ImageMath,
+    ImageOps,
+    ImagePalette,
+    ImageSequence,
+)
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
@@ -536,7 +544,15 @@ def _normalize_palette(im, palette, info):
     else:
         used_palette_colors = _get_optimize(im, info)
         if used_palette_colors is not None:
-            return im.remap_palette(used_palette_colors, source_palette)
+            im = im.remap_palette(used_palette_colors, source_palette)
+            if "transparency" in info:
+                try:
+                    info["transparency"] = used_palette_colors.index(
+                        info["transparency"]
+                    )
+                except ValueError:
+                    del info["transparency"]
+            return im
 
     im.palette.palette = source_palette
     return im
@@ -564,13 +580,11 @@ def _write_single_frame(im, fp, palette):
 
 
 def _getbbox(base_im, im_frame):
-    if _get_palette_bytes(im_frame) == _get_palette_bytes(base_im):
-        delta = ImageChops.subtract_modulo(im_frame, base_im)
-    else:
-        delta = ImageChops.subtract_modulo(
-            im_frame.convert("RGBA"), base_im.convert("RGBA")
-        )
-    return delta.getbbox(alpha_only=False)
+    if _get_palette_bytes(im_frame) != _get_palette_bytes(base_im):
+        im_frame = im_frame.convert("RGBA")
+        base_im = base_im.convert("RGBA")
+    delta = ImageChops.subtract_modulo(im_frame, base_im)
+    return delta, delta.getbbox(alpha_only=False)
 
 
 def _write_multiple_frames(im, fp, palette):
@@ -578,6 +592,7 @@ def _write_multiple_frames(im, fp, palette):
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
     im_frames = []
+    previous_im = None
     frame_count = 0
     background_im = None
     for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
@@ -591,9 +606,9 @@ def _write_multiple_frames(im, fp, palette):
                     im.encoderinfo.setdefault(k, v)
 
             encoderinfo = im.encoderinfo.copy()
-            im_frame = _normalize_palette(im_frame, palette, encoderinfo)
             if "transparency" in im_frame.info:
                 encoderinfo.setdefault("transparency", im_frame.info["transparency"])
+            im_frame = _normalize_palette(im_frame, palette, encoderinfo)
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
             elif duration is None and "duration" in im_frame.info:
@@ -602,14 +617,16 @@ def _write_multiple_frames(im, fp, palette):
                 encoderinfo["disposal"] = disposal[frame_count]
             frame_count += 1
 
+            diff_frame = None
             if im_frames:
                 # delta frame
-                previous = im_frames[-1]
-                bbox = _getbbox(previous["im"], im_frame)
+                delta, bbox = _getbbox(previous_im, im_frame)
                 if not bbox:
                     # This frame is identical to the previous frame
                     if encoderinfo.get("duration"):
-                        previous["encoderinfo"]["duration"] += encoderinfo["duration"]
+                        im_frames[-1]["encoderinfo"]["duration"] += encoderinfo[
+                            "duration"
+                        ]
                     continue
                 if encoderinfo.get("disposal") == 2:
                     if background_im is None:
@@ -619,10 +636,44 @@ def _write_multiple_frames(im, fp, palette):
                         background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
                         background_im.putpalette(im_frames[0]["im"].palette)
-                    bbox = _getbbox(background_im, im_frame)
+                    delta, bbox = _getbbox(background_im, im_frame)
+                if encoderinfo.get("optimize") and im_frame.mode != "1":
+                    if "transparency" not in encoderinfo:
+                        try:
+                            encoderinfo[
+                                "transparency"
+                            ] = im_frame.palette._new_color_index(im_frame)
+                        except ValueError:
+                            pass
+                    if "transparency" in encoderinfo:
+                        # When the delta is zero, fill the image with transparency
+                        diff_frame = im_frame.copy()
+                        fill = Image.new(
+                            "P", diff_frame.size, encoderinfo["transparency"]
+                        )
+                        if delta.mode == "RGBA":
+                            r, g, b, a = delta.split()
+                            mask = ImageMath.eval(
+                                "convert(max(max(max(r, g), b), a) * 255, '1')",
+                                r=r,
+                                g=g,
+                                b=b,
+                                a=a,
+                            )
+                        else:
+                            if delta.mode == "P":
+                                # Convert to L without considering palette
+                                delta_l = Image.new("L", delta.size)
+                                delta_l.putdata(delta.getdata())
+                                delta = delta_l
+                            mask = ImageMath.eval("convert(im * 255, '1')", im=delta)
+                        diff_frame.paste(fill, mask=ImageOps.invert(mask))
             else:
                 bbox = None
-            im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
+            previous_im = im_frame
+            im_frames.append(
+                {"im": diff_frame or im_frame, "bbox": bbox, "encoderinfo": encoderinfo}
+            )
 
     if len(im_frames) == 1:
         if "duration" in im.encoderinfo:
@@ -680,22 +731,10 @@ def get_interlace(im):
 
 
 def _write_local_header(fp, im, offset, flags):
-    transparent_color_exists = False
     try:
-        transparency = int(im.encoderinfo["transparency"])
-    except (KeyError, ValueError):
-        pass
-    else:
-        # optimize the block away if transparent color is not used
-        transparent_color_exists = True
-
-        used_palette_colors = _get_optimize(im, im.encoderinfo)
-        if used_palette_colors is not None:
-            # adjust the transparency index after optimize
-            try:
-                transparency = used_palette_colors.index(transparency)
-            except ValueError:
-                transparent_color_exists = False
+        transparency = im.encoderinfo["transparency"]
+    except KeyError:
+        transparency = None
 
     if "duration" in im.encoderinfo:
         duration = int(im.encoderinfo["duration"] / 10)
@@ -704,11 +743,9 @@ def _write_local_header(fp, im, offset, flags):
 
     disposal = int(im.encoderinfo.get("disposal", 0))
 
-    if transparent_color_exists or duration != 0 or disposal:
-        packed_flag = 1 if transparent_color_exists else 0
+    if transparency is not None or duration != 0 or disposal:
+        packed_flag = 1 if transparency is not None else 0
         packed_flag |= disposal << 2
-        if not transparent_color_exists:
-            transparency = 0
 
         fp.write(
             b"!"
@@ -716,7 +753,7 @@ def _write_local_header(fp, im, offset, flags):
             + o8(4)  # length
             + o8(packed_flag)  # packed fields
             + o16(duration)  # duration
-            + o8(transparency)  # transparency index
+            + o8(transparency or 0)  # transparency index
             + o8(0)
         )
 
@@ -804,7 +841,7 @@ def _get_optimize(im, info):
     :param info: encoderinfo
     :returns: list of indexes of palette entries in use, or None
     """
-    if im.mode in ("P", "L") and info and info.get("optimize", 0):
+    if im.mode in ("P", "L") and info and info.get("optimize"):
         # Potentially expensive operation.
 
         # The palette saves 3 bytes per color not used, but palette
