@@ -120,6 +120,7 @@ extend-ignore = [
 
 [tool.ruff.isort]
 known-first-party = ["PIL"]
+required-imports = ["from __future__ import annotations"]
 
 [tool.pytest.ini_options]
 addopts = "-ra --color=yes"
