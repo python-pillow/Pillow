@@ -624,28 +624,28 @@ def _write_multiple_frames(im, fp, palette):
                 bbox = None
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
 
-    if len(im_frames) > 1:
-        for frame_data in im_frames:
-            im_frame = frame_data["im"]
-            if not frame_data["bbox"]:
-                # global header
-                for s in _get_global_header(im_frame, frame_data["encoderinfo"]):
-                    fp.write(s)
-                offset = (0, 0)
-            else:
-                # compress difference
-                if not palette:
-                    frame_data["encoderinfo"]["include_color_table"] = True
+    if len(im_frames) == 1:
+        if "duration" in im.encoderinfo:
+            # Since multiple frames will not be written, use the combined duration
+            im.encoderinfo["duration"] = im_frames[0]["encoderinfo"]["duration"]
+        return
 
-                im_frame = im_frame.crop(frame_data["bbox"])
-                offset = frame_data["bbox"][:2]
-            _write_frame_data(fp, im_frame, offset, frame_data["encoderinfo"])
-        return True
-    elif "duration" in im.encoderinfo and isinstance(
-        im.encoderinfo["duration"], (list, tuple)
-    ):
-        # Since multiple frames will not be written, add together the frame durations
-        im.encoderinfo["duration"] = sum(im.encoderinfo["duration"])
+    for frame_data in im_frames:
+        im_frame = frame_data["im"]
+        if not frame_data["bbox"]:
+            # global header
+            for s in _get_global_header(im_frame, frame_data["encoderinfo"]):
+                fp.write(s)
+            offset = (0, 0)
+        else:
+            # compress difference
+            if not palette:
+                frame_data["encoderinfo"]["include_color_table"] = True
+
+            im_frame = im_frame.crop(frame_data["bbox"])
+            offset = frame_data["bbox"][:2]
+        _write_frame_data(fp, im_frame, offset, frame_data["encoderinfo"])
+    return True
 
 
 def _save_all(im, fp, filename):
