@@ -18,6 +18,7 @@
 #    * Fill.c uses the integer form, but it's still going to use the old
 #      Access.c implementation.
 #
+from __future__ import annotations
 
 import logging
 import sys

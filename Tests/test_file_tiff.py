@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import warnings
 from io import BytesIO

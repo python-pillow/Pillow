@@ -6,6 +6,8 @@ This sort of info is missing from GitHub Actions.
 Requested here:
 https://github.com/actions/virtual-environments/issues/79
 """
+from __future__ import annotations
+
 import os
 import platform
 import sys
