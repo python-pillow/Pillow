@@ -110,14 +110,20 @@ ARCHITECTURES = {
 DEPS = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/3.0.0/libjpeg-turbo-3.0.0.tar.gz/download",
-        "filename": "libjpeg-turbo-3.0.0.tar.gz",
-        "dir": "libjpeg-turbo-3.0.0",
+        + "/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz/download",
+        "filename": "libjpeg-turbo-3.0.1.tar.gz",
+        "dir": "libjpeg-turbo-3.0.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
             ".+(libjpeg-turbo Licenses\n======================\n\n.+)$"
         ),
+        "patch": {
+            r"CMakeLists.txt": {
+                # libjpeg-turbo does not detect MSVC x86_arm64 cross-compiler correctly
+                'if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")': "if({architecture} STREQUAL ARM64)",  # noqa: E501
+            },
+        },
         "build": [
             *cmds_cmake(
                 ("jpeg-static", "cjpeg-static", "djpeg-static"),
@@ -148,9 +154,9 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.4.tar.gz/download",
-        "filename": "xz-5.4.4.tar.gz",
-        "dir": "xz-5.4.4",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.5.tar.gz/download",
+        "filename": "xz-5.4.5.tar.gz",
+        "dir": "xz-5.4.5",
         "license": "COPYING",
         "build": [
             *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -184,9 +190,9 @@ DEPS = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.5.1.tar.gz",
-        "filename": "tiff-4.5.1.tar.gz",
-        "dir": "tiff-4.5.1",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
+        "filename": "tiff-4.6.0.tar.gz",
+        "dir": "tiff-4.6.0",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
@@ -213,7 +219,6 @@ DEPS = {
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
-        # "bins": [r"libtiff\*.dll"],
     },
     "libpng": {
         "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.39/lpng1639.zip/download",
@@ -228,18 +233,18 @@ DEPS = {
         "libs": [r"libpng16.lib"],
     },
     "brotli": {
-        "url": "https://github.com/google/brotli/archive/refs/tags/v1.0.9.tar.gz",
-        "filename": "brotli-1.0.9.tar.gz",
-        "dir": "brotli-1.0.9",
+        "url": "https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz",
+        "filename": "brotli-1.1.0.tar.gz",
+        "dir": "brotli-1.1.0",
         "license": "LICENSE",
         "build": [
-            *cmds_cmake(("brotlicommon-static", "brotlidec-static")),
+            *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",  # noqa: E501
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",
         "filename": "freetype-2.13.2.tar.gz",
         "dir": "freetype-2.13.2",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
@@ -254,7 +259,7 @@ DEPS = {
                 "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_SYSTEM_ZLIB;FT_CONFIG_OPTION_USE_PNG;FT_CONFIG_OPTION_USE_HARFBUZZ;FT_CONFIG_OPTION_USE_BROTLI</UserDefines>",  # noqa: E501
                 "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src;{inc_dir}</UserIncludeDirectories>",  # noqa: E501
                 "<UserLibraryDirectories></UserLibraryDirectories>": "<UserLibraryDirectories>{lib_dir}</UserLibraryDirectories>",  # noqa: E501
-                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon-static.lib;brotlidec-static.lib</UserDependencies>",  # noqa: E501
+                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon.lib;brotlidec.lib</UserDependencies>",  # noqa: E501
             },
             r"src/autofit/afshaper.c": {
                 # link against harfbuzz.lib
@@ -272,13 +277,12 @@ DEPS = {
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
-        # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.15/lcms2-2.15.tar.gz/download",
-        "filename": "lcms2-2.15.tar.gz",
-        "dir": "lcms2-2.15",
-        "license": "COPYING",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.16/lcms2-2.16.tar.gz/download",
+        "filename": "lcms2-2.16.tar.gz",
+        "dir": "lcms2-2.16",
+        "license": "LICENSE",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
@@ -321,7 +325,7 @@ DEPS = {
     },
     "libimagequant": {
         # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "license": "COPYRIGHT",
@@ -329,6 +333,8 @@ DEPS = {
             "CMakeLists.txt": {
                 "if(OPENMP_FOUND)": "if(false)",
                 "install": "#install",
+                # libimagequant does not detect MSVC x86_arm64 cross-compiler correctly
+                "if(${{CMAKE_SYSTEM_PROCESSOR}} STREQUAL ARM64)": "if({architecture} STREQUAL ARM64)",  # noqa: E501
             }
         },
         "build": [
@@ -339,9 +345,9 @@ DEPS = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.2.0.zip",
-        "filename": "harfbuzz-8.2.0.zip",
-        "dir": "harfbuzz-8.2.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.3.0.zip",
+        "filename": "harfbuzz-8.3.0.zip",
+        "dir": "harfbuzz-8.3.0",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -369,11 +375,16 @@ DEPS = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_msvs() -> dict[str, str] | None:
+def find_msvs(architecture: str) -> dict[str, str] | None:
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
         return None
+
+    if architecture == "ARM64":
+        tools = "Microsoft.VisualStudio.Component.VC.Tools.ARM64"
+    else:
+        tools = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
 
     try:
         vspath = (
@@ -385,7 +396,7 @@ def find_msvs() -> dict[str, str] | None:
                     "-latest",
                     "-prerelease",
                     "-requires",
-                    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                    tools,
                     "-property",
                     "installationPath",
                     "-products",
@@ -471,7 +482,7 @@ def extract_dep(url: str, filename: str) -> None:
                     msg = "Attempted Path Traversal in Zip File"
                     raise RuntimeError(msg)
             zf.extractall(sources_dir)
-    elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
+    elif filename.endswith((".tar.gz", ".tgz")):
         with tarfile.open(file, "r:gz") as tgz:
             for member in tgz.getnames():
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
@@ -575,14 +586,19 @@ def build_dep(name: str) -> str:
 
 def build_dep_all() -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
+    gha_groups = "GITHUB_ACTIONS" in os.environ
     for dep_name in DEPS:
         print()
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name)
+        if gha_groups:
+            lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+        if gha_groups:
+            lines.append("@echo ::endgroup::")
     print()
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)
@@ -656,7 +672,7 @@ if __name__ == "__main__":
     arch_prefs = ARCHITECTURES[args.architecture]
     print("Target architecture:", args.architecture)
 
-    msvs = find_msvs()
+    msvs = find_msvs(args.architecture)
     if msvs is None:
         msg = "Visual Studio not found. Please install Visual Studio 2017 or newer."
         raise RuntimeError(msg)
@@ -690,6 +706,11 @@ if __name__ == "__main__":
     if args.no_imagequant:
         disabled += ["libimagequant"]
     if args.no_fribidi:
+        disabled += ["fribidi"]
+    elif args.architecture == "ARM64" and platform.machine() != "ARM64":
+        import warnings
+
+        warnings.warn("Cross-compiling FriBiDi is currently not supported, disabling")
         disabled += ["fribidi"]
 
     prefs = {

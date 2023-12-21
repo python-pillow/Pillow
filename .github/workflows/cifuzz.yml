@@ -2,6 +2,8 @@ name: CIFuzz
 
 on:
   push:
+    branches:
+      - "**"
     paths:
       - ".github/workflows/cifuzz.yml"
       - "**.c"
@@ -40,13 +42,13 @@ jobs:
         language: python
         dry-run: false
     - name: Upload New Crash
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure() && steps.build.outcome == 'success'
       with:
         name: artifacts
         path: ./out/artifacts
     - name: Upload Legacy Crash
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: steps.run.outcome == 'success'
       with:
         name: crash

@@ -2,13 +2,23 @@ name: Test
 
 on:
   push:
+    branches:
+      - "**"
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   pull_request:
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
       - "docs/**"
+      - "wheels/**"
   workflow_dispatch:
 
 permissions:
@@ -31,7 +41,8 @@ jobs:
         python-version: [
           "pypy3.10",
           "pypy3.9",
-          "3.12-dev",
+          "3.13",
+          "3.12",
           "3.11",
           "3.10",
           "3.9",
@@ -51,9 +62,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
         cache: pip
         cache-dependency-path: ".ci/*.sh"
 
@@ -100,7 +112,7 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: errors

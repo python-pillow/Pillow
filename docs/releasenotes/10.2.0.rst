@@ -1,0 +1,93 @@
+10.2.0
+------
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+TODO
+
+Deprecations
+============
+
+ImageFile.raise_oserror
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageFile.raise_oserror()`` has been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). The function is undocumented and is only useful for translating
+error codes returned by a codec's ``decode()`` method, which ImageFile already does
+automatically.
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+Zero or negative font size error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When creating a :py:class:`~PIL.ImageFont.FreeTypeFont` instance, either directly or
+through :py:func:`~PIL.ImageFont.truetype`, if the font size is zero or less, a
+:py:exc:`ValueError` will now be raised.
+
+API Additions
+=============
+
+Added DdsImagePlugin enums
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.DdsImagePlugin.DDSD`, :py:class:`~PIL.DdsImagePlugin.DDSCAPS`,
+:py:class:`~PIL.DdsImagePlugin.DDSCAPS2`, :py:class:`~PIL.DdsImagePlugin.DDPF`,
+:py:class:`~PIL.DdsImagePlugin.DXGI_FORMAT` and :py:class:`~PIL.DdsImagePlugin.D3DFMT`
+enums have been added to :py:class:`PIL.DdsImagePlugin`.
+
+JPEG restart marker interval
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``restart_marker_blocks`` and ``restart_marker_rows`` can now
+be used to emit restart markers whenever the specified number of MCU blocks or rows
+have been produced.
+
+JPEG tables-only streamtype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``streamtype`` can now be set to 1, for tables-only. This will
+output only the quantization and Huffman tables for the image.
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+Added DDS BC4U and DX10 BC1 and BC4 reading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added to read the BC4U format of DDS images.
+
+Support has also been added to read DX10 BC1 and BC4, whether UNORM or
+TYPELESS.
+
+Optimized ImageStat.Stat count and extrema
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Calculating the :py:attr:`~PIL.ImageStat.Stat.count` and
+:py:attr:`~PIL.ImageStat.Stat.extrema` statistics is now faster. After the
+histogram is created in ``st = ImageStat.Stat(im)``, ``st.count`` is 3x as fast
+on average and ``st.extrema`` is 12x as fast on average.
+
+Encoder errors now report error detail as string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:exc:`OSError` exceptions from image encoders now include a textual description of
+the error instead of a numeric error code.

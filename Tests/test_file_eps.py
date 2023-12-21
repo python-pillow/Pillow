@@ -8,6 +8,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    is_win32,
     mark_if_feature_version,
     skip_unless_feature,
 )
@@ -96,6 +97,20 @@ def test_load():
 
         # Test again now that it has already been loaded once
         assert im.load()[0, 0] == (255, 255, 255)
+
+
+def test_binary():
+    if HAS_GHOSTSCRIPT:
+        assert EpsImagePlugin.gs_binary is not None
+    else:
+        assert EpsImagePlugin.gs_binary is False
+
+    if not is_win32():
+        assert EpsImagePlugin.gs_windows_binary is None
+    elif not HAS_GHOSTSCRIPT:
+        assert EpsImagePlugin.gs_windows_binary is False
+    else:
+        assert EpsImagePlugin.gs_windows_binary is not None
 
 
 def test_invalid_file():

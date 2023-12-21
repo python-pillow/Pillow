@@ -1045,6 +1045,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     Py_ssize_t streamtype = 0; /* 0=interchange, 1=tables only, 2=image only */
     Py_ssize_t xdpi = 0, ydpi = 0;
     Py_ssize_t subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
+    Py_ssize_t restart_marker_blocks = 0;
+    Py_ssize_t restart_marker_rows = 0;
     PyObject *qtables = NULL;
     unsigned int *qarrays = NULL;
     int qtablesLen = 0;
@@ -1057,7 +1059,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|nnnnnnnnOz#y#y#",
+            "ss|nnnnnnnnnnOz#y#y#",
             &mode,
             &rawmode,
             &quality,
@@ -1068,6 +1070,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
             &xdpi,
             &ydpi,
             &subsampling,
+            &restart_marker_blocks,
+            &restart_marker_rows,
             &qtables,
             &comment,
             &comment_size,
@@ -1156,6 +1160,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     ((JPEGENCODERSTATE *)encoder->state.context)->streamtype = streamtype;
     ((JPEGENCODERSTATE *)encoder->state.context)->xdpi = xdpi;
     ((JPEGENCODERSTATE *)encoder->state.context)->ydpi = ydpi;
+    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_blocks = restart_marker_blocks;
+    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_rows = restart_marker_rows;
     ((JPEGENCODERSTATE *)encoder->state.context)->comment = comment;
     ((JPEGENCODERSTATE *)encoder->state.context)->comment_size = comment_size;
     ((JPEGENCODERSTATE *)encoder->state.context)->extra = extra;

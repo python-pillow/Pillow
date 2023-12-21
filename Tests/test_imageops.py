@@ -39,6 +39,9 @@ def test_sanity():
     ImageOps.contain(hopper("L"), (128, 128))
     ImageOps.contain(hopper("RGB"), (128, 128))
 
+    ImageOps.cover(hopper("L"), (128, 128))
+    ImageOps.cover(hopper("RGB"), (128, 128))
+
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
 
@@ -117,6 +120,20 @@ def test_contain_round():
     im = Image.new("1", (63, 43), 1)
     new_im = ImageOps.contain(im, (7, 5))
     assert new_im.height == 5
+
+
+@pytest.mark.parametrize(
+    "image_name, expected_size",
+    (
+        ("colr_bungee.png", (1024, 256)),  # landscape
+        ("imagedraw_stroke_multiline.png", (256, 640)),  # portrait
+        ("hopper.png", (256, 256)),  # square
+    ),
+)
+def test_cover(image_name, expected_size):
+    with Image.open("Tests/images/" + image_name) as im:
+        new_im = ImageOps.cover(im, (256, 256))
+        assert new_im.size == expected_size
 
 
 def test_pad():
@@ -414,6 +431,12 @@ def test_exif_transpose_in_place():
         assert im.size == (1, 2)
         assert 0x0112 not in im.getexif()
         assert_image_equal(im, expected)
+
+
+def test_autocontrast_unsupported_mode():
+    im = Image.new("RGBA", (1, 1))
+    with pytest.raises(OSError):
+        ImageOps.autocontrast(im)
 
 
 def test_autocontrast_cutoff():

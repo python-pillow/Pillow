@@ -92,11 +92,11 @@ class TestFilePng:
             assert im.format == "PNG"
             assert im.get_format_mimetype() == "image/png"
 
-        for mode in ["1", "L", "P", "RGB", "I", "I;16"]:
+        for mode in ["1", "L", "P", "RGB", "I", "I;16", "I;16B"]:
             im = hopper(mode)
             im.save(test_file)
             with Image.open(test_file) as reloaded:
-                if mode == "I;16":
+                if mode in ("I;16", "I;16B"):
                     reloaded = reloaded.convert(mode)
                 assert_image_equal(reloaded, im)
 
@@ -297,7 +297,7 @@ class TestFilePng:
         assert_image(im, "RGBA", (10, 10))
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
-    def test_save_greyscale_transparency(self, tmp_path):
+    def test_save_grayscale_transparency(self, tmp_path):
         for mode, num_transparent in {"1": 1994, "L": 559, "I": 559}.items():
             in_file = "Tests/images/" + mode.lower() + "_trns.png"
             with Image.open(in_file) as im:
@@ -665,7 +665,10 @@ class TestFilePng:
     def test_getxmp(self):
         with Image.open("Tests/images/color_snakes.png") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()

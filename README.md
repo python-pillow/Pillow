@@ -45,12 +45,12 @@ As of 2019, Pillow development is
             <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
                 alt="AppVeyor CI build status (Windows)"
                 src="https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build"></a>
-            <a href="https://github.com/python-pillow/pillow-wheels/actions"><img
-                alt="GitHub Actions wheels build status (Wheels)"
-                src="https://github.com/python-pillow/pillow-wheels/workflows/Wheels/badge.svg"></a>
-            <a href="https://app.travis-ci.com/github/python-pillow/pillow-wheels"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml"><img
+                alt="GitHub Actions build status (Wheels)"
+                src="https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg"></a>
+            <a href="https://app.travis-ci.com/github/python-pillow/Pillow"><img
                 alt="Travis CI wheels build status (aarch64)"
-                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg?label=aarch64%20wheels"></a>
+                src="https://img.shields.io/travis/com/python-pillow/Pillow/main.svg?label=aarch64%20wheels"></a>
             <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
@@ -74,9 +74,9 @@ As of 2019, Pillow development is
             <a href="https://pypi.org/project/Pillow/"><img
                 alt="Number of PyPI downloads"
                 src="https://img.shields.io/pypi/dm/pillow.svg"></a>
-            <a href="https://bestpractices.coreinfrastructure.org/projects/6331"><img
+            <a href="https://www.bestpractices.dev/projects/6331"><img
                 alt="OpenSSF Best Practices"
-                src="https://bestpractices.coreinfrastructure.org/projects/6331/badge"></a>
+                src="https://www.bestpractices.dev/projects/6331/badge"></a>
         </td>
     </tr>
     <tr>

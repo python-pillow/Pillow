@@ -334,10 +334,7 @@ def _save(im, fp, filename):
     if quality_layers is not None and not (
         isinstance(quality_layers, (list, tuple))
         and all(
-            [
-                isinstance(quality_layer, (int, float))
-                for quality_layer in quality_layers
-            ]
+            isinstance(quality_layer, (int, float)) for quality_layer in quality_layers
         )
     ):
         msg = "quality_layers must be a sequence of numbers"

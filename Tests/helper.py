@@ -5,6 +5,7 @@ Helper functions.
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import sysconfig
 import tempfile
@@ -95,7 +96,7 @@ def assert_image_equal(a, b, msg=None):
             except Exception:
                 pass
 
-        assert False, msg or "got different content"
+        pytest.fail(msg or "got different content")
 
 
 def assert_image_equal_tofile(a, filename, msg=None, mode=None):
@@ -258,11 +259,21 @@ def hopper(mode=None, cache={}):
 
 
 def djpeg_available():
-    return bool(shutil.which("djpeg"))
+    if shutil.which("djpeg"):
+        try:
+            subprocess.check_call(["djpeg", "-version"])
+            return True
+        except subprocess.CalledProcessError:  # pragma: no cover
+            return False
 
 
 def cjpeg_available():
-    return bool(shutil.which("cjpeg"))
+    if shutil.which("cjpeg"):
+        try:
+            subprocess.check_call(["cjpeg", "-version"])
+            return True
+        except subprocess.CalledProcessError:  # pragma: no cover
+            return False
 
 
 def netpbm_available():

@@ -2,6 +2,9 @@ name: Lint
 
 on: [push, pull_request, workflow_dispatch]
 
+env:
+  FORCE_COLOR: 1
+
 permissions:
   contents: read
 
@@ -28,7 +31,7 @@ jobs:
           lint-pre-commit-
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.x"
         cache: pip
@@ -46,3 +49,6 @@ jobs:
       run: tox -e lint
       env:
         PRE_COMMIT_COLOR: always
+
+    - name: Mypy
+      run: tox -e mypy

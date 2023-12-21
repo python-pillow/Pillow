@@ -37,33 +37,39 @@ from ._deprecate import deprecate
 split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
 
+gs_binary = None
 gs_windows_binary = None
-if sys.platform.startswith("win"):
-    import shutil
-
-    for binary in ("gswin32c", "gswin64c", "gs"):
-        if shutil.which(binary) is not None:
-            gs_windows_binary = binary
-            break
-    else:
-        gs_windows_binary = False
 
 
 def has_ghostscript():
-    if gs_windows_binary:
-        return True
-    if not sys.platform.startswith("win"):
-        try:
-            subprocess.check_call(["gs", "--version"], stdout=subprocess.DEVNULL)
-            return True
-        except OSError:
-            # No Ghostscript
-            pass
-    return False
+    global gs_binary, gs_windows_binary
+    if gs_binary is None:
+        if sys.platform.startswith("win"):
+            if gs_windows_binary is None:
+                import shutil
+
+                for binary in ("gswin32c", "gswin64c", "gs"):
+                    if shutil.which(binary) is not None:
+                        gs_windows_binary = binary
+                        break
+                else:
+                    gs_windows_binary = False
+            gs_binary = gs_windows_binary
+        else:
+            try:
+                subprocess.check_call(["gs", "--version"], stdout=subprocess.DEVNULL)
+                gs_binary = "gs"
+            except OSError:
+                gs_binary = False
+    return gs_binary is not False
 
 
 def Ghostscript(tile, size, fp, scale=1, transparency=False):
     """Render an image using Ghostscript"""
+    global gs_binary
+    if not has_ghostscript():
+        msg = "Unable to locate Ghostscript on paths"
+        raise OSError(msg)
 
     # Unpack decoder tile
     decoder, tile, offset, data = tile[0]
@@ -71,14 +77,11 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
 
     # Hack to support hi-res rendering
     scale = int(scale) or 1
-    # orig_size = size
-    # orig_bbox = bbox
-    size = (size[0] * scale, size[1] * scale)
+    width = size[0] * scale
+    height = size[1] * scale
     # resolution is dependent on bbox and size
-    res = (
-        72.0 * size[0] / (bbox[2] - bbox[0]),
-        72.0 * size[1] / (bbox[3] - bbox[1]),
-    )
+    res_x = 72.0 * width / (bbox[2] - bbox[0])
+    res_y = 72.0 * height / (bbox[3] - bbox[1])
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
@@ -113,10 +116,10 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
 
     # Build Ghostscript command
     command = [
-        "gs",
+        gs_binary,
         "-q",  # quiet mode
-        "-g%dx%d" % size,  # set output geometry (pixels)
-        "-r%fx%f" % res,  # set input DPI (dots per inch)
+        f"-g{width:d}x{height:d}",  # set output geometry (pixels)
+        f"-r{res_x:f}x{res_y:f}",  # set input DPI (dots per inch)
         "-dBATCH",  # exit after processing
         "-dNOPAUSE",  # don't pause between pages
         "-dSAFER",  # safe mode
@@ -131,19 +134,6 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
         "-c",
         "showpage",
     ]
-
-    if gs_windows_binary is not None:
-        if not gs_windows_binary:
-            try:
-                os.unlink(outfile)
-                if infile_temp:
-                    os.unlink(infile_temp)
-            except OSError:
-                pass
-
-            msg = "Unable to locate Ghostscript on paths"
-            raise OSError(msg)
-        command[0] = gs_windows_binary
 
     # push data through Ghostscript
     try:
