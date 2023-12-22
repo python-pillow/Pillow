@@ -6,6 +6,7 @@
 ##
 # Image plugin for Palm pixmap images (output only).
 ##
+from __future__ import annotations
 
 from . import Image, ImageFile
 from ._binary import o8
