@@ -22,6 +22,7 @@ and has been tested with a few sample files found using google.
     is not registered for use with :py:func:`PIL.Image.open()`.
     To open a WAL file, use the :py:func:`PIL.WalImageFile.open()` function instead.
 """
+from __future__ import annotations
 
 from . import Image, ImageFile
 from ._binary import i32le as i32

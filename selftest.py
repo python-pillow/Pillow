@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # minimal sanity check
+from __future__ import annotations
 
 import sys
 

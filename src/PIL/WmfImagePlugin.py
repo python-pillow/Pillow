@@ -18,6 +18,7 @@
 # https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-WMF/[MS-WMF].pdf
 # http://wvware.sourceforge.net/caolan/index.html
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
+from __future__ import annotations
 
 from . import Image, ImageFile
 from ._binary import i16le as word

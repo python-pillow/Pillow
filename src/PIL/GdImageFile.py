@@ -25,7 +25,7 @@
     implementation is provided for convenience and demonstrational
     purposes only.
 """
-
+from __future__ import annotations
 
 from . import ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i16be as i16

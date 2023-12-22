@@ -19,6 +19,7 @@
 ##
 # Image plugin for PDF images (output only).
 ##
+from __future__ import annotations
 
 import io
 import math

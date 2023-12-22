@@ -20,7 +20,7 @@
 # Icon format references:
 #   * https://en.wikipedia.org/wiki/ICO_(file_format)
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
-
+from __future__ import annotations
 
 import warnings
 from io import BytesIO

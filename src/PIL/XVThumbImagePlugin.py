@@ -16,6 +16,7 @@
 # To do:
 # FIXME: make save work (this requires quantization support)
 #
+from __future__ import annotations
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import o8
