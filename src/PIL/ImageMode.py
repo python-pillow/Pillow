@@ -26,9 +26,9 @@ class ModeDescriptor:
     def __init__(
         self,
         mode: str,
-        bands: str | tuple[str, ...],
+        bands: tuple[str, ...],
         basemode: str,
-        basetype: str | tuple[str, ...],
+        basetype: str,
         typestr: str,
     ) -> None:
         self.mode = mode
