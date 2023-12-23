@@ -23,18 +23,25 @@ _modes = None
 class ModeDescriptor:
     """Wrapper for mode strings."""
 
-    def __init__(self, mode, bands, basemode, basetype, typestr):
+    def __init__(
+        self,
+        mode: str,
+        bands: tuple[str, ...],
+        basemode: str,
+        basetype: str,
+        typestr: str,
+    ) -> None:
         self.mode = mode
         self.bands = bands
         self.basemode = basemode
         self.basetype = basetype
         self.typestr = typestr
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.mode
 
 
-def getmode(mode):
+def getmode(mode: str) -> ModeDescriptor:
     """Gets a mode descriptor for the given mode."""
     global _modes
     if not _modes:
