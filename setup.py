@@ -28,6 +28,9 @@ def get_version():
     return locals()["__version__"]
 
 
+configuration = {}
+
+
 PILLOW_VERSION = get_version()
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
@@ -334,15 +337,24 @@ class pil_build_ext(build_ext):
         + [("add-imaging-libs=", None, "Add libs to _imaging build")]
     )
 
+    @staticmethod
+    def check_configuration(option, value):
+        return True if configuration.get(option) == value else None
+
     def initialize_options(self):
-        self.disable_platform_guessing = None
+        self.disable_platform_guessing = self.check_configuration(
+            "platform-guessing", "disable"
+        )
         self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
-            setattr(self, f"disable_{x}", None)
-            setattr(self, f"enable_{x}", None)
+            setattr(self, f"disable_{x}", self.check_configuration(x, "disable"))
+            setattr(self, f"enable_{x}", self.check_configuration(x, "enable"))
         for x in ("raqm", "fribidi"):
-            setattr(self, f"vendor_{x}", None)
+            setattr(self, f"vendor_{x}", self.check_configuration(x, "vendor"))
+        if self.check_configuration("debug", "true"):
+            self.debug = True
+        self.parallel = configuration.get("parallel")
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -390,6 +402,9 @@ class pil_build_ext(build_ext):
                     raise ValueError(msg)
                 _dbg("Using vendored version of %s", x)
                 self.feature.vendor.add(x)
+                if x == "raqm":
+                    _dbg("--vendor-raqm implies --enable-raqm")
+                    self.feature.required.add(x)
 
     def _update_extension(self, name, libraries, define_macros=None, sources=None):
         for extension in self.extensions:
@@ -984,6 +999,17 @@ ext_modules = [
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
+
+
+# parse configuration from _custom_build/backend.py
+while len(sys.argv[1]) >= 2 and sys.argv[1].startswith("--pillow-configuration="):
+    _, key, value = sys.argv[1].split("=", 2)
+    old = configuration.get(key)
+    if old is not None:
+        msg = f"Conflicting options: '-C {key}={old}' and '-C {key}={value}'"
+        raise ValueError(msg)
+    configuration[key] = value
+    del sys.argv[1]
 
 try:
     setup(
