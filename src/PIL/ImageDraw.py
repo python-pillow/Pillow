@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import math
 import numbers
+import struct
 
 from . import Image, ImageColor
 
@@ -543,7 +544,8 @@ class ImageDraw:
                 # font.getmask2(mode="RGBA") returns color in RGB bands and mask in A
                 # extract mask and set text alpha
                 color, mask = mask, mask.getband(3)
-                color.fillband(3, (ink >> 24) & 0xFF)
+                ink_alpha = struct.pack("i", ink)[3]
+                color.fillband(3, ink_alpha)
                 x, y = coord
                 self.im.paste(color, (x, y, x + mask.size[0], y + mask.size[1]), mask)
             else:
