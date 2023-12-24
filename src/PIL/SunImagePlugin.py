@@ -15,7 +15,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32be as i32

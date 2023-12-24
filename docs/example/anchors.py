@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from PIL import Image, ImageDraw, ImageFont
 
 font = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 16)

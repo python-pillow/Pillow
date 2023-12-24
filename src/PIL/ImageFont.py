@@ -392,8 +392,9 @@ class FreeTypeFont:
         :param stroke_width: The width of the text stroke.
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
@@ -466,8 +467,9 @@ class FreeTypeFont:
                          .. versionadded:: 6.2.0
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
                          .. versionadded:: 8.0.0
 
@@ -558,8 +560,9 @@ class FreeTypeFont:
                          .. versionadded:: 6.2.0
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
                          .. versionadded:: 8.0.0
 
@@ -582,16 +585,16 @@ class FreeTypeFont:
         im = None
         size = None
 
-        def fill(mode, im_size):
+        def fill(width, height):
             nonlocal im, size
 
-            size = im_size
+            size = (width, height)
             if Image.MAX_IMAGE_PIXELS is not None:
-                pixels = max(1, size[0]) * max(1, size[1])
+                pixels = max(1, width) * max(1, height)
                 if pixels > 2 * Image.MAX_IMAGE_PIXELS:
                     return
 
-            im = Image.core.fill(mode, size)
+            im = Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
             return im
 
         offset = self.font.render(
@@ -729,7 +732,6 @@ class TransposedFont:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
-        _string_length_check(text)
         return self.font.getlength(text, *args, **kwargs)
 
 

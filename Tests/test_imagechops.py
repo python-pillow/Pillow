@@ -1,3 +1,4 @@
+from __future__ import annotations
 from PIL import Image, ImageChops
 
 from .helper import assert_image_equal, hopper

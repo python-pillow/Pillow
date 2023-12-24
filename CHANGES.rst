@@ -5,6 +5,30 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Fix incorrect color blending for overlapping glyphs #7497
+  [ZachNagengast, nulano, radarhere]
+
+- Attempt memory mapping when tile args is a string #7565
+  [radarhere]
+
+- Fill identical pixels with transparency in subsequent frames when saving GIF #7568
+  [radarhere]
+
+- Corrected duration when combining multiple GIF frames into single frame #7521
+  [radarhere]
+
+- Handle disposing GIF background from outside palette #7515
+  [radarhere]
+
+- Seek past the data when skipping a PSD layer #7483
+  [radarhere]
+
+- Import plugins relative to the module #7576
+  [deliangyang, jaxx0n]
+
+- Translate encoder error codes to strings; deprecate ``ImageFile.raise_oserror()`` #7609
+  [bgilbert, radarhere]
+
 - Support reading BC4U and DX10 BC1 images #6486
   [REDxEYE, radarhere, hugovk]
 

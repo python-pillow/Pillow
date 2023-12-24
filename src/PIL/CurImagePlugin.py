@@ -15,6 +15,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 from io import BytesIO
 
 from . import BmpImagePlugin, IcoImagePlugin, Image, ImageFile

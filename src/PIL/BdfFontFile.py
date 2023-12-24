@@ -20,7 +20,7 @@
 """
 Parse X Bitmap Distribution Format (BDF)
 """
-
+from __future__ import annotations
 
 from . import FontFile, Image
 

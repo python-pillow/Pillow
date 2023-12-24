@@ -14,14 +14,11 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import builtins
 
 from . import Image, _imagingmath
-
-
-def _isconstant(v):
-    return isinstance(v, (int, float))
 
 
 class _Operand:
@@ -43,7 +40,7 @@ class _Operand:
                 raise ValueError(msg)
         else:
             # argument was a constant
-            if _isconstant(im1) and self.im.mode in ("1", "L", "I"):
+            if isinstance(im1, (int, float)) and self.im.mode in ("1", "L", "I"):
                 return Image.new("I", self.im.size, im1)
             else:
                 return Image.new("F", self.im.size, im1)

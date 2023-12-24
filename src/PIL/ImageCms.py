@@ -14,6 +14,7 @@
 
 # See the README file for information on usage and redistribution.  See
 # below for the original description.
+from __future__ import annotations
 
 import sys
 from enum import IntEnum

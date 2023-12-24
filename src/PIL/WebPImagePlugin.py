@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from io import BytesIO
 
 from . import Image, ImageFile
@@ -167,6 +169,9 @@ class WebPImageFile(ImageFile.ImageFile):
                 self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
 
         return super().load()
+
+    def load_seek(self, pos):
+        pass
 
     def tell(self):
         if not _webp.HAVE_WEBPANIM:

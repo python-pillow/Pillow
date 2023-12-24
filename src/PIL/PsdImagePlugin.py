@@ -15,6 +15,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 
@@ -186,6 +187,9 @@ def _layerinfo(fp, ct_bytes):
         ct_types = i16(read(2))
         types = list(range(ct_types))
         if len(types) > 4:
+            fp.seek(len(types) * 6 + 12, io.SEEK_CUR)
+            size = i32(read(4))
+            fp.seek(size, io.SEEK_CUR)
             continue
 
         for _ in types:

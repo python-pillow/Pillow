@@ -34,6 +34,16 @@ Since Pillow's C API is now faster than PyAccess on PyPy,
 ``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, is
 similarly deprecated.
 
+ImageFile.raise_oserror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.2.0
+
+``ImageFile.raise_oserror()`` has been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). The function is undocumented and is only useful for translating
+error codes returned by a codec's ``decode()`` method, which ImageFile already does
+automatically.
+
 Removed features
 ----------------
 

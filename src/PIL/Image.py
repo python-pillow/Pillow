@@ -24,6 +24,8 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import annotations
+
 import atexit
 import builtins
 import io
@@ -355,10 +357,11 @@ def init():
     if _initialized >= 2:
         return 0
 
+    parent_name = __name__.rpartition(".")[0]
     for plugin in _plugins:
         try:
             logger.debug("Importing %s", plugin)
-            __import__(f"PIL.{plugin}", globals(), locals(), [])
+            __import__(f"{parent_name}.{plugin}", globals(), locals(), [])
         except ImportError as e:
             logger.debug("Image: failed to import %s: %s", plugin, e)
 
@@ -476,8 +479,8 @@ class Image:
     * :py:func:`~PIL.Image.frombytes`
     """
 
-    format = None
-    format_description = None
+    format: str | None = None
+    format_description: str | None = None
     _close_exclusive_fp_after_loading = True
 
     def __init__(self):

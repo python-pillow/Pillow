@@ -1,5 +1,6 @@
 # Tests potential DOS of IcnsImagePlugin with 0 length block.
 # Run from anywhere that PIL is importable.
+from __future__ import annotations
 
 from io import BytesIO
 
