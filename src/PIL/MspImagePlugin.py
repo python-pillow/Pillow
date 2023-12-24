@@ -22,6 +22,7 @@
 # Figure 206. Windows Paint Version 2: "LinS" Format. Used in Windows V2.03
 #
 # See also: https://www.fileformat.info/format/mspaint/egff.htm
+from __future__ import annotations
 
 import io
 import struct

@@ -877,7 +877,7 @@ font_render(FontObject *self, PyObject *args) {
 
     width += stroke_width * 2 + ceil(x_start);
     height += stroke_width * 2 + ceil(y_start);
-    image = PyObject_CallFunction(fill, "s(ii)", strcmp(mode, "RGBA") == 0 ? "RGBA" : "L", width, height);
+    image = PyObject_CallFunction(fill, "ii", width, height);
     if (image == Py_None) {
         PyMem_Del(glyph_info);
         return Py_BuildValue("ii", 0, 0);

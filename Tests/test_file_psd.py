@@ -1,3 +1,4 @@
+from __future__ import annotations
 import warnings
 
 import pytest
@@ -109,6 +110,11 @@ def test_open_after_exclusive_load():
 def test_rgba():
     with Image.open("Tests/images/rgba.psd") as im:
         assert_image_equal_tofile(im, "Tests/images/imagedraw_square.png")
+
+
+def test_layer_skip():
+    with Image.open("Tests/images/five_channels.psd") as im:
+        assert im.n_frames == 1
 
 
 def test_icc_profile():

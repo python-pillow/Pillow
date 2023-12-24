@@ -16,6 +16,7 @@
 # This module provides constants and clear-text names for various
 # well-known TIFF tags.
 ##
+from __future__ import annotations
 
 from collections import namedtuple
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import time
 
 from PIL import PyAccess

@@ -32,6 +32,8 @@
 # Details about the Spider image format:
 # https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
+from __future__ import annotations
+
 import os
 import struct
 import sys

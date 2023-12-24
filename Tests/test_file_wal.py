@@ -1,3 +1,4 @@
+from __future__ import annotations
 from PIL import WalImageFile
 
 from .helper import assert_image_equal_tofile

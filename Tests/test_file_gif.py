@@ -1,3 +1,4 @@
+from __future__ import annotations
 import warnings
 from io import BytesIO
 
@@ -215,6 +216,27 @@ def test_optimize_if_palette_can_be_reduced_by_half():
         im.save(out, "GIF", optimize=optimize)
         with Image.open(out) as reloaded:
             assert len(reloaded.palette.palette) // 3 == colors
+
+
+def test_full_palette_second_frame(tmp_path):
+    out = str(tmp_path / "temp.gif")
+    im = Image.new("P", (1, 256))
+
+    full_palette_im = Image.new("P", (1, 256))
+    for i in range(256):
+        full_palette_im.putpixel((0, i), i)
+    full_palette_im.palette = ImagePalette.ImagePalette(
+        "RGB", bytearray(i // 3 for i in range(768))
+    )
+    full_palette_im.palette.dirty = 1
+
+    im.save(out, save_all=True, append_images=[full_palette_im])
+
+    with Image.open(out) as reloaded:
+        reloaded.seek(1)
+
+        for i in range(256):
+            reloaded.getpixel((0, i)) == i
 
 
 def test_roundtrip(tmp_path):
@@ -856,7 +878,14 @@ def test_identical_frames(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "duration", ([1000, 1500, 2000, 4000], (1000, 1500, 2000, 4000), 8500)
+    "duration",
+    (
+        [1000, 1500, 2000],
+        (1000, 1500, 2000),
+        # One more duration than the number of frames
+        [1000, 1500, 2000, 4000],
+        1500,
+    ),
 )
 def test_identical_frames_to_single_frame(duration, tmp_path):
     out = str(tmp_path / "temp.gif")
@@ -872,7 +901,7 @@ def test_identical_frames_to_single_frame(duration, tmp_path):
         assert reread.n_frames == 1
 
         # Assert that the new duration is the total of the identical frames
-        assert reread.info["duration"] == 8500
+        assert reread.info["duration"] == 4500
 
 
 def test_loop_none(tmp_path):
@@ -1140,6 +1169,12 @@ def test_rgba_transparency(tmp_path):
     with Image.open(out) as reloaded:
         reloaded.seek(1)
         assert_image_equal(hopper("P").convert("RGB"), reloaded)
+
+
+def test_background_outside_palettte(tmp_path):
+    with Image.open("Tests/images/background_outside_palette.gif") as im:
+        im.seek(1)
+        assert im.info["background"] == 255
 
 
 def test_bbox(tmp_path):
