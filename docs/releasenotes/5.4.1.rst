@@ -15,7 +15,7 @@ PNG: Handle IDAT chunks after image end
 
 Some PNG images have multiple IDAT chunks. In some cases, Pillow will stop
 reading image data before the IDAT chunks finish. A regression caused an
-``EOFError`` exception when previously there was none. This is now fixed, and
+:py:exc:`EOFError` exception when previously there was none. This is now fixed, and
 file reading continues in case there are subsequent text chunks.
 
 PNG: MIME type
@@ -30,7 +30,7 @@ File closing
 ^^^^^^^^^^^^
 
 A regression caused an unsupported image file to report a
-``ValueError: seek of closed file`` exception instead of an ``OSError``. This
+``ValueError: seek of closed file`` exception instead of an :py:exc:`OSError`. This
 has been fixed by ensuring that image plugins only close their internal ``__fp``
 if they are not the same as ``ImageFile``'s ``fp``, allowing each to manage their own
 file pointers.

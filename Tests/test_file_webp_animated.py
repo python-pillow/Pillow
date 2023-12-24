@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 from packaging.version import parse as parse_version
 
@@ -132,6 +133,18 @@ def test_timestamp_and_duration(tmp_path):
             assert im.info["duration"] == durations[frame]
             assert im.info["timestamp"] == ts
             ts += durations[frame]
+
+
+def test_float_duration(tmp_path):
+    temp_file = str(tmp_path / "temp.webp")
+    with Image.open("Tests/images/iss634.apng") as im:
+        assert im.info["duration"] == 70.0
+
+        im.save(temp_file, save_all=True)
+
+    with Image.open(temp_file) as reloaded:
+        reloaded.load()
+        assert reloaded.info["duration"] == 70
 
 
 def test_seeking(tmp_path):

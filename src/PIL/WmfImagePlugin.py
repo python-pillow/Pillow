@@ -18,6 +18,7 @@
 # https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-WMF/[MS-WMF].pdf
 # http://wvware.sourceforge.net/caolan/index.html
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
+from __future__ import annotations
 
 from . import Image, ImageFile
 from ._binary import i16le as word
@@ -42,7 +43,7 @@ if hasattr(Image.core, "drawwmf"):
 
     class WmfHandler:
         def open(self, im):
-            im.mode = "RGB"
+            im._mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
 
         def load(self, im):
@@ -75,7 +76,6 @@ def _accept(prefix):
 
 
 class WmfStubImageFile(ImageFile.StubImageFile):
-
     format = "WMF"
     format_description = "Windows Metafile"
 
@@ -86,7 +86,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         s = self.fp.read(80)
 
         if s[:6] == b"\xd7\xcd\xc6\x9a\x00\x00":
-
             # placeable windows metafile
 
             # get units per inch
@@ -109,7 +108,8 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":
-                raise SyntaxError("Unsupported WMF file format")
+                msg = "Unsupported WMF file format"
+                raise SyntaxError(msg)
 
         elif s[:4] == b"\x01\x00\x00\x00" and s[40:44] == b" EMF":
             # enhanced metafile
@@ -137,9 +137,10 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 self.info["dpi"] = xdpi, ydpi
 
         else:
-            raise SyntaxError("Unsupported file format")
+            msg = "Unsupported file format"
+            raise SyntaxError(msg)
 
-        self.mode = "RGB"
+        self._mode = "RGB"
         self._size = size
 
         loader = self._load()
@@ -162,7 +163,8 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr(_handler, "save"):
-        raise OSError("WMF save handler not installed")
+        msg = "WMF save handler not installed"
+        raise OSError(msg)
     _handler.save(im, fp, filename)
 
 

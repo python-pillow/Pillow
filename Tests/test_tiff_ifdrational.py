@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fractions import Fraction
 
 from PIL import Image, TiffImagePlugin, features
@@ -7,7 +8,6 @@ from .helper import hopper
 
 
 def _test_equal(num, denom, target):
-
     t = IFDRational(num, denom)
 
     assert target == t
@@ -15,7 +15,6 @@ def _test_equal(num, denom, target):
 
 
 def test_sanity():
-
     _test_equal(1, 1, 1)
     _test_equal(1, 1, Fraction(1, 1))
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import re
 import warnings
@@ -57,7 +58,6 @@ class TestFileJpeg:
         return Image.frombytes(mode, size, os.urandom(size[0] * size[1] * len(mode)))
 
     def test_sanity(self):
-
         # internal version number
         assert re.search(r"\d+\.\d+$", features.version_codec("jpg"))
 
@@ -215,12 +215,19 @@ class TestFileJpeg:
             # Should not raise OSError for image with icc larger than image size.
             im.save(
                 f,
-                format="JPEG",
                 progressive=True,
                 quality=95,
                 icc_profile=icc_profile,
                 optimize=True,
             )
+
+        with Image.open("Tests/images/flower2.jpg") as im:
+            f = str(tmp_path / "temp2.jpg")
+            im.save(f, progressive=True, quality=94, icc_profile=b" " * 53955)
+
+        with Image.open("Tests/images/flower2.jpg") as im:
+            f = str(tmp_path / "temp3.jpg")
+            im.save(f, progressive=True, quality=94, exif=b" " * 43668)
 
     def test_optimize(self):
         im1 = self.roundtrip(hopper())
@@ -271,7 +278,10 @@ class TestFileJpeg:
         # https://github.com/python-pillow/Pillow/issues/148
         f = str(tmp_path / "temp.jpg")
         im = hopper()
-        im.save(f, "JPEG", quality=90, exif=b"1" * 65532)
+        im.save(f, "JPEG", quality=90, exif=b"1" * 65533)
+
+        with pytest.raises(ValueError):
+            im.save(f, "JPEG", quality=90, exif=b"1" * 65534)
 
     def test_exif_typeerror(self):
         with Image.open("Tests/images/exif_typeerror.jpg") as im:
@@ -368,7 +378,6 @@ class TestFileJpeg:
 
     def test_exif_gps_typeerror(self):
         with Image.open("Tests/images/exif_gps_typeerror.jpg") as im:
-
             # Should not raise a TypeError
             im._getexif()
 
@@ -447,7 +456,7 @@ class TestFileJpeg:
             ims = im.get_child_images()
 
         assert len(ims) == 1
-        assert_image_equal_tofile(ims[0], "Tests/images/flower_thumbnail.png")
+        assert_image_similar_tofile(ims[0], "Tests/images/flower_thumbnail.png", 2.1)
 
     def test_mp(self):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
@@ -635,11 +644,22 @@ class TestFileJpeg:
             assert max(im2.quantization[0]) <= 255
             assert max(im2.quantization[1]) <= 255
 
-    def test_convert_dict_qtables_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            qtable = {0: [1, 2, 3, 4]}
-            qtable2 = JpegImagePlugin.convert_dict_qtables(qtable)
-            assert qtable == qtable2
+    @pytest.mark.parametrize(
+        "blocks, rows, markers",
+        ((0, 0, 0), (1, 0, 15), (3, 0, 5), (8, 0, 1), (0, 1, 3), (0, 2, 1)),
+    )
+    def test_restart_markers(self, blocks, rows, markers):
+        im = Image.new("RGB", (32, 32))  # 16 MCUs
+        out = BytesIO()
+        im.save(
+            out,
+            format="JPEG",
+            restart_marker_blocks=blocks,
+            restart_marker_rows=rows,
+            # force 8x8 pixel MCUs
+            subsampling=0,
+        )
+        assert len(re.findall(b"\xff[\xd0-\xd7]", out.getvalue())) == markers
 
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self):
@@ -682,7 +702,6 @@ class TestFileJpeg:
         # Shouldn't raise error
         fn = "Tests/images/sugarshack_bad_mpo_header.jpg"
         with pytest.warns(UserWarning, Image.open, fn) as im:
-
             # Assert
             assert im.format == "JPEG"
 
@@ -704,7 +723,6 @@ class TestFileJpeg:
         # Arrange
         outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/hopper.tif") as im:
-
             # Act
             im.save(outfile, "JPEG", dpi=im.info["dpi"])
 
@@ -731,7 +749,6 @@ class TestFileJpeg:
         # This Photoshop CC 2017 image has DPI in EXIF not metadata
         # EXIF XResolution is (2000000, 10000)
         with Image.open("Tests/images/photoshop-200dpi.jpg") as im:
-
             # Act / Assert
             assert im.info.get("dpi") == (200, 200)
 
@@ -740,7 +757,6 @@ class TestFileJpeg:
         # This image has DPI in EXIF not metadata
         # EXIF XResolution is 72
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:
-
             # Act / Assert
             assert im.info.get("dpi") == (72, 72)
 
@@ -749,7 +765,6 @@ class TestFileJpeg:
         # This is photoshop-200dpi.jpg with EXIF resolution unit set to cm:
         # exiftool -exif:ResolutionUnit=cm photoshop-200dpi.jpg
         with Image.open("Tests/images/exif-200dpcm.jpg") as im:
-
             # Act / Assert
             assert im.info.get("dpi") == (508, 508)
 
@@ -758,7 +773,6 @@ class TestFileJpeg:
         # This is photoshop-200dpi.jpg with EXIF resolution set to 0/0:
         # exiftool -XResolution=0/0 -YResolution=0/0 photoshop-200dpi.jpg
         with Image.open("Tests/images/exif-dpi-zerodivision.jpg") as im:
-
             # Act / Assert
             # This should return the default, and not raise a ZeroDivisionError
             assert im.info.get("dpi") == (72, 72)
@@ -767,7 +781,13 @@ class TestFileJpeg:
         # Arrange
         # 0x011A tag in this exif contains string '300300\x02'
         with Image.open("Tests/images/broken_exif_dpi.jpg") as im:
+            # Act / Assert
+            # This should return the default
+            assert im.info.get("dpi") == (72, 72)
 
+    def test_dpi_exif_truncated(self):
+        # Arrange
+        with Image.open("Tests/images/truncated_exif_dpi.jpg") as im:
             # Act / Assert
             # This should return the default
             assert im.info.get("dpi") == (72, 72)
@@ -777,7 +797,6 @@ class TestFileJpeg:
         # This is photoshop-200dpi.jpg with resolution removed from EXIF:
         # exiftool "-*resolution*"= photoshop-200dpi.jpg
         with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:
-
             # Act / Assert
             # "When the image resolution is unknown, 72 [dpi] is designated."
             # https://exiv2.org/tags.html
@@ -787,7 +806,6 @@ class TestFileJpeg:
         # This is no-dpi-in-exif with the tiff header of the exif block
         # hexedited from MM * to FF FF FF FF
         with Image.open("Tests/images/invalid-exif.jpg") as im:
-
             # This should return the default, and not a SyntaxError or
             # OSError for unidentified image.
             assert im.info.get("dpi") == (72, 72)
@@ -810,7 +828,6 @@ class TestFileJpeg:
     def test_invalid_exif_x_resolution(self):
         # When no x or y resolution is defined in EXIF
         with Image.open("Tests/images/invalid-exif-without-x-resolution.jpg") as im:
-
             # This should return the default, and not a ValueError or
             # OSError for an unidentified image.
             assert im.info.get("dpi") == (72, 72)
@@ -820,7 +837,6 @@ class TestFileJpeg:
         # This image has been manually hexedited to have an IFD offset of 10,
         # in contrast to normal 8
         with Image.open("Tests/images/exif-ifd-offset.jpg") as im:
-
             # Act / Assert
             assert im._getexif()[306] == "2017:03:13 23:03:09"
 
@@ -891,7 +907,10 @@ class TestFileJpeg:
     def test_getxmp(self):
         with Image.open("Tests/images/xmp_test.jpg") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()
@@ -913,6 +932,28 @@ class TestFileJpeg:
         if ElementTree is not None:
             with Image.open("Tests/images/hopper.jpg") as im:
                 assert im.getxmp() == {}
+
+    def test_getxmp_no_prefix(self):
+        with Image.open("Tests/images/xmp_no_prefix.jpg") as im:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im.getxmp() == {}
+            else:
+                assert im.getxmp() == {"xmpmeta": {"key": "value"}}
+
+    def test_getxmp_padded(self):
+        with Image.open("Tests/images/xmp_padded.jpg") as im:
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    assert im.getxmp() == {}
+            else:
+                assert im.getxmp() == {"xmpmeta": None}
 
     @pytest.mark.timeout(timeout=1)
     def test_eof(self):
@@ -937,6 +978,40 @@ class TestFileJpeg:
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             im.load()
             ImageFile.LOAD_TRUNCATED_IMAGES = False
+
+    def test_separate_tables(self):
+        im = hopper()
+        data = []  # [interchange, tables-only, image-only]
+        for streamtype in range(3):
+            out = BytesIO()
+            im.save(out, format="JPEG", streamtype=streamtype)
+            data.append(out.getvalue())
+
+        # SOI, EOI
+        for marker in b"\xff\xd8", b"\xff\xd9":
+            assert marker in data[1] and marker in data[2]
+        # DHT, DQT
+        for marker in b"\xff\xc4", b"\xff\xdb":
+            assert marker in data[1] and marker not in data[2]
+        # SOF0, SOS, APP0 (JFIF header)
+        for marker in b"\xff\xc0", b"\xff\xda", b"\xff\xe0":
+            assert marker not in data[1] and marker in data[2]
+
+        with Image.open(BytesIO(data[0])) as interchange_im:
+            with Image.open(BytesIO(data[1] + data[2])) as combined_im:
+                assert_image_equal(interchange_im, combined_im)
+
+    def test_repr_jpeg(self):
+        im = hopper()
+
+        with Image.open(BytesIO(im._repr_jpeg_())) as repr_jpeg:
+            assert repr_jpeg.format == "JPEG"
+            assert_image_similar(im, repr_jpeg, 17)
+
+    def test_repr_jpeg_error_returns_none(self):
+        im = hopper("F")
+
+        assert im._repr_jpeg_() is None
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

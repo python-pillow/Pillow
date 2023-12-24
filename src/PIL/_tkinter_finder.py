@@ -1,10 +1,10 @@
 """ Find compiled module linking to Tcl / Tk libraries
 """
+from __future__ import annotations
+
 import sys
 import tkinter
 from tkinter import _tkinter as tk
-
-from ._deprecate import deprecate
 
 try:
     if hasattr(sys, "pypy_find_executable"):
@@ -17,7 +17,3 @@ except AttributeError:
     TKINTER_LIB = None
 
 tk_version = str(tkinter.TkVersion)
-if tk_version == "8.4":
-    deprecate(
-        "Support for Tk/Tcl 8.4", 10, action="Please upgrade to Tk/Tcl 8.5 or newer"
-    )

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from io import BytesIO
 
 import pytest
@@ -44,7 +45,6 @@ def test_open():
 
     # Act
     with Image.open(filename) as im:
-
         # Assert
         assert im.mode == "1"
         assert im.size == (128, 128)
@@ -57,7 +57,6 @@ def test_open_filename_with_underscore():
 
     # Act
     with Image.open(filename) as im:
-
         # Assert
         assert im.mode == "1"
         assert im.size == (128, 128)

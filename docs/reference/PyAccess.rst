@@ -17,9 +17,7 @@ The :py:mod:`~PIL.PyAccess` module provides a CFFI/Python implementation of the 
 Example
 -------
 
-The following script loads an image, accesses one pixel from it, then changes it.
-
-.. code-block:: python
+The following script loads an image, accesses one pixel from it, then changes it. ::
 
     from PIL import Image
 
@@ -34,9 +32,7 @@ Results in the following::
     (23, 24, 68)
     (0, 0, 0)
 
-Access using negative indexes is also possible.
-
-.. code-block:: python
+Access using negative indexes is also possible. ::
 
     px[-1, -1] = (0, 0, 0)
     print(px[-1, -1])

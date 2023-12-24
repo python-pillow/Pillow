@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import calendar
 import codecs
 import collections
@@ -82,7 +84,7 @@ class IndirectReference(
     collections.namedtuple("IndirectReferenceTuple", ["object_id", "generation"])
 ):
     def __str__(self):
-        return "%s %s R" % self
+        return f"{self.object_id} {self.generation} R"
 
     def __bytes__(self):
         return self.__str__().encode("us-ascii")
@@ -103,7 +105,7 @@ class IndirectReference(
 
 class IndirectObjectDef(IndirectReference):
     def __str__(self):
-        return "%s %s obj" % self
+        return f"{self.object_id} {self.generation} obj"
 
 
 class XrefTable:
@@ -138,9 +140,10 @@ class XrefTable:
         elif key in self.deleted_entries:
             generation = self.deleted_entries[key]
         else:
-            raise IndexError(
+            msg = (
                 "object ID " + str(key) + " cannot be deleted because it doesn't exist"
             )
+            raise IndexError(msg)
 
     def __contains__(self, key):
         return key in self.existing_entries or key in self.new_entries
@@ -314,9 +317,8 @@ class PdfStream:
                 expected_length = self.dictionary.Length
             return zlib.decompress(self.buf, bufsize=int(expected_length))
         else:
-            raise NotImplementedError(
-                f"stream filter {repr(self.dictionary.Filter)} unknown/unsupported"
-            )
+            msg = f"stream filter {repr(self.dictionary.Filter)} unknown/unsupported"
+            raise NotImplementedError(msg)
 
 
 def pdf_repr(x):
@@ -328,9 +330,7 @@ def pdf_repr(x):
         return b"null"
     elif isinstance(x, (PdfName, PdfDict, PdfArray, PdfBinary)):
         return bytes(x)
-    elif isinstance(x, int):
-        return str(x).encode("us-ascii")
-    elif isinstance(x, float):
+    elif isinstance(x, (int, float)):
         return str(x).encode("us-ascii")
     elif isinstance(x, time.struct_time):
         return b"(D:" + time.strftime("%Y%m%d%H%M%SZ", x).encode("us-ascii") + b")"
@@ -358,7 +358,8 @@ class PdfParser:
 
     def __init__(self, filename=None, f=None, buf=None, start_offset=0, mode="rb"):
         if buf and f:
-            raise RuntimeError("specify buf or f or filename, but not both buf and f")
+            msg = "specify buf or f or filename, but not both buf and f"
+            raise RuntimeError(msg)
         self.filename = filename
         self.buf = buf
         self.f = f
@@ -816,10 +817,10 @@ class PdfParser:
                 try:
                     stream_len = int(result[b"Length"])
                 except (TypeError, KeyError, ValueError) as e:
-                    raise PdfFormatError(
-                        "bad or missing Length in stream dict (%r)"
-                        % result.get(b"Length", None)
-                    ) from e
+                    msg = "bad or missing Length in stream dict (%r)" % result.get(
+                        b"Length", None
+                    )
+                    raise PdfFormatError(msg) from e
                 stream_data = data[m.end() : m.end() + stream_len]
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m, "stream end not found")
@@ -873,7 +874,8 @@ class PdfParser:
         if m:
             return cls.get_literal_string(data, m.end())
         # return None, offset  # fallback (only for debugging)
-        raise PdfFormatError("unrecognized object: " + repr(data[offset : offset + 32]))
+        msg = "unrecognized object: " + repr(data[offset : offset + 32])
+        raise PdfFormatError(msg)
 
     re_lit_str_token = re.compile(
         rb"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))"
@@ -920,7 +922,8 @@ class PdfParser:
                 result.extend(b")")
                 nesting_depth -= 1
             offset = m.end()
-        raise PdfFormatError("unfinished literal string")
+        msg = "unfinished literal string"
+        raise PdfFormatError(msg)
 
     re_xref_section_start = re.compile(whitespace_optional + rb"xref" + newline)
     re_xref_subsection_start = re.compile(
@@ -956,14 +959,11 @@ class PdfParser:
                 check_format_condition(m, "xref entry not found")
                 offset = m.end()
                 is_free = m.group(3) == b"f"
-                generation = int(m.group(2))
                 if not is_free:
+                    generation = int(m.group(2))
                     new_entry = (int(m.group(1)), generation)
-                    check_format_condition(
-                        i not in self.xref_table or self.xref_table[i] == new_entry,
-                        "xref entry duplicated (and not identical)",
-                    )
-                    self.xref_table[i] = new_entry
+                    if i not in self.xref_table:
+                        self.xref_table[i] = new_entry
         return offset
 
     def read_indirect(self, ref, max_nesting=-1):

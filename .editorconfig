@@ -13,11 +13,7 @@ indent_style = space
 
 trim_trailing_whitespace = true
 
-[*.rst]
-# Four-space indentation
-indent_size = 4
-
-[*.yml]
+[*.{toml,yml}]
 # Two-space indentation
 indent_size = 2
 

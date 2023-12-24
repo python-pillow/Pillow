@@ -10,6 +10,7 @@
 # the output should be empty. There may be Python issues
 # in the valgrind especially if run in a debug Python
 # version.
+from __future__ import annotations
 
 import pytest
 

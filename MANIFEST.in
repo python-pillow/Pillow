@@ -5,8 +5,10 @@ include *.md
 include *.py
 include *.rst
 include *.sh
+include *.toml
 include *.txt
 include *.yaml
+include .flake8
 include LICENSE
 include Makefile
 include tox.ini
@@ -15,6 +17,7 @@ graft src
 graft depends
 graft winbuild
 graft docs
+graft _custom_build
 
 # build/src control detritus
 exclude .appveyor.yml
@@ -28,3 +31,4 @@ global-exclude .git*
 global-exclude *.pyc
 global-exclude *.so
 prune .ci
+prune wheels

@@ -8,6 +8,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import math
 
@@ -19,7 +20,6 @@ def _accept(prefix):
 
 
 class FitsImageFile(ImageFile.ImageFile):
-
     format = "FITS"
     format_description = "FITS"
 
@@ -28,20 +28,23 @@ class FitsImageFile(ImageFile.ImageFile):
         while True:
             header = self.fp.read(80)
             if not header:
-                raise OSError("Truncated FITS file")
+                msg = "Truncated FITS file"
+                raise OSError(msg)
             keyword = header[:8].strip()
             if keyword == b"END":
                 break
-            value = header[8:].strip()
+            value = header[8:].split(b"/")[0].strip()
             if value.startswith(b"="):
                 value = value[1:].strip()
             if not headers and (not _accept(keyword) or value != b"T"):
-                raise SyntaxError("Not a FITS file")
+                msg = "Not a FITS file"
+                raise SyntaxError(msg)
             headers[keyword] = value
 
         naxis = int(headers[b"NAXIS"])
         if naxis == 0:
-            raise ValueError("No image data")
+            msg = "No image data"
+            raise ValueError(msg)
         elif naxis == 1:
             self._size = 1, int(headers[b"NAXIS1"])
         else:
@@ -49,15 +52,13 @@ class FitsImageFile(ImageFile.ImageFile):
 
         number_of_bits = int(headers[b"BITPIX"])
         if number_of_bits == 8:
-            self.mode = "L"
+            self._mode = "L"
         elif number_of_bits == 16:
-            self.mode = "I"
-            # rawmode = "I;16S"
+            self._mode = "I"
         elif number_of_bits == 32:
-            self.mode = "I"
+            self._mode = "I"
         elif number_of_bits in (-32, -64):
-            self.mode = "F"
-            # rawmode = "F" if number_of_bits == -32 else "F;64F"
+            self._mode = "F"
 
         offset = math.ceil(self.fp.tell() / 2880) * 2880
         self.tile = [("raw", (0, 0) + self.size, offset, (self.mode, 0, -1))]

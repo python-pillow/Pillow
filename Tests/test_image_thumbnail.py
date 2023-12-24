@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image
@@ -147,7 +148,7 @@ def test_reducing_gap_values():
 
     ref = hopper()
     ref.thumbnail((18, 18), Image.Resampling.BICUBIC, reducing_gap=None)
-    with pytest.raises(AssertionError):
+    with pytest.raises(pytest.fail.Exception):
         assert_image_equal(ref, im)
 
     assert_image_similar(ref, im, 3.5)

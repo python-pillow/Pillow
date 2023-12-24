@@ -6,8 +6,8 @@
 
 ## Python Imaging Library (Fork)
 
-Pillow is the friendly PIL fork by [Alex Clark and
-Contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
+Pillow is the friendly PIL fork by [Jeffrey A. Clark (Alex) and
+contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
 PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
 As of 2019, Pillow development is
 [supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise).
@@ -45,12 +45,12 @@ As of 2019, Pillow development is
             <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
                 alt="AppVeyor CI build status (Windows)"
                 src="https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build"></a>
-            <a href="https://github.com/python-pillow/pillow-wheels/actions"><img
-                alt="GitHub Actions wheels build status (Wheels)"
-                src="https://github.com/python-pillow/pillow-wheels/workflows/Wheels/badge.svg"></a>
-            <a href="https://app.travis-ci.com/github/python-pillow/pillow-wheels"><img
+            <a href="https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml"><img
+                alt="GitHub Actions build status (Wheels)"
+                src="https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg"></a>
+            <a href="https://app.travis-ci.com/github/python-pillow/Pillow"><img
                 alt="Travis CI wheels build status (aarch64)"
-                src="https://img.shields.io/travis/com/python-pillow/pillow-wheels/main.svg?label=aarch64%20wheels"></a>
+                src="https://img.shields.io/travis/com/python-pillow/Pillow/main.svg?label=aarch64%20wheels"></a>
             <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
@@ -74,9 +74,9 @@ As of 2019, Pillow development is
             <a href="https://pypi.org/project/Pillow/"><img
                 alt="Number of PyPI downloads"
                 src="https://img.shields.io/pypi/dm/pillow.svg"></a>
-            <a href="https://bestpractices.coreinfrastructure.org/projects/6331"><img
+            <a href="https://www.bestpractices.dev/projects/6331"><img
                 alt="OpenSSF Best Practices"
-                src="https://bestpractices.coreinfrastructure.org/projects/6331/badge"></a>
+                src="https://www.bestpractices.dev/projects/6331/badge"></a>
         </td>
     </tr>
     <tr>
@@ -88,6 +88,10 @@ As of 2019, Pillow development is
             <a href="https://twitter.com/PythonPillow"><img
                 alt="Follow on https://twitter.com/PythonPillow"
                 src="https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg"></a>
+            <a href="https://fosstodon.org/@pillow"><img
+                alt="Follow on https://fosstodon.org/@pillow"
+                src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"
+                rel="me"></a>
         </td>
     </tr>
 </table>

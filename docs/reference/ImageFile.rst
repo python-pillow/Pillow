@@ -15,7 +15,7 @@ and **xmllib** modules.
 Example: Parse an image
 -----------------------
 
-.. code-block:: python
+::
 
     from PIL import ImageFile
 

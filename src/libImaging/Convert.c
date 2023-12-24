@@ -479,6 +479,25 @@ rgba2rgbA(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
+static void
+rgba2rgb_(UINT8 *out, const UINT8 *in, int xsize) {
+    int x;
+    unsigned int alpha;
+    for (x = 0; x < xsize; x++, in += 4) {
+        alpha = in[3];
+        if (alpha == 255 || alpha == 0) {
+            *out++ = in[0];
+            *out++ = in[1];
+            *out++ = in[2];
+        } else {
+            *out++ = CLIP8((255 * in[0]) / alpha);
+            *out++ = CLIP8((255 * in[1]) / alpha);
+            *out++ = CLIP8((255 * in[2]) / alpha);
+        }
+        *out++ = 255;
+    }
+}
+
 /*
  * Conversion of RGB + single transparent color to RGBA,
  * where any pixel that matches the color will have the
@@ -545,7 +564,7 @@ rgb2cmyk(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
-static void
+void
 cmyk2rgb(UINT8 *out, const UINT8 *in, int xsize) {
     int x, nk, tmp;
     for (x = 0; x < xsize; x++) {
@@ -934,6 +953,7 @@ static struct {
     {"RGBA", "HSV", rgb2hsv},
 
     {"RGBa", "RGBA", rgba2rgbA},
+    {"RGBa", "RGB", rgba2rgb_},
 
     {"RGBX", "1", rgb2bit},
     {"RGBX", "L", rgb2l},
@@ -970,6 +990,13 @@ static struct {
     {"I;16L", "L", I16L_L},
     {"L", "I;16B", L_I16B},
     {"I;16B", "L", I16B_L},
+#ifdef WORDS_BIGENDIAN
+    {"L", "I;16N", L_I16B},
+    {"I;16N", "L", I16B_L},
+#else
+    {"L", "I;16N", L_I16L},
+    {"I;16N", "L", I16L_L},
+#endif
 
     {"I;16", "F", I16L_F},
     {"I;16L", "F", I16L_F},
@@ -986,7 +1013,7 @@ static struct {
 static void
 p2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++) {
         *out++ = (L(&palette->palette[in[x] * 4]) >= 128000) ? 255 : 0;
     }
@@ -995,7 +1022,7 @@ p2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
         *out++ = (L(&palette->palette[in[0] * 4]) >= 128000) ? 255 : 0;
     }
@@ -1004,7 +1031,7 @@ pa2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 p2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++) {
         *out++ = L24(&palette->palette[in[x] * 4]) >> 16;
     }
@@ -1013,7 +1040,7 @@ p2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
         *out++ = L24(&palette->palette[in[0] * 4]) >> 16;
     }
@@ -1043,7 +1070,7 @@ p2pa(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 p2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, out += 4) {
         const UINT8 *rgba = &palette->palette[*in++ * 4];
         out[0] = out[1] = out[2] = L24(rgba) >> 16;
@@ -1054,7 +1081,7 @@ p2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
         out[0] = out[1] = out[2] = L24(&palette->palette[in[0] * 4]) >> 16;
         out[3] = in[3];
@@ -1268,7 +1295,6 @@ topalette(
     int alpha;
     int x, y;
     ImagingPalette palette = inpalette;
-    ;
 
     /* Map L or RGB/RGBX/RGBA to palette image */
     if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0) {
@@ -1280,7 +1306,14 @@ topalette(
     if (palette == NULL) {
         /* FIXME: make user configurable */
         if (imIn->bands == 1) {
-            palette = ImagingPaletteNew("RGB"); /* Initialised to grey ramp */
+            palette = ImagingPaletteNew("RGB");
+
+            palette->size = 256;
+            int i;
+            for (i = 0; i < 256; i++) {
+                palette->palette[i * 4] = palette->palette[i * 4 + 1] =
+                    palette->palette[i * 4 + 2] = (UINT8)i;
+            }
         } else {
             palette = ImagingPaletteNewBrowser(); /* Standard colour cube */
         }
@@ -1302,9 +1335,9 @@ topalette(
     imOut->palette = ImagingPaletteDuplicate(palette);
 
     if (imIn->bands == 1) {
-        /* greyscale image */
+        /* grayscale image */
 
-        /* Greyscale palette: copy data as is */
+        /* Grayscale palette: copy data as is */
         ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
             if (alpha) {

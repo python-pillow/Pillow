@@ -14,6 +14,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import os
 
@@ -40,24 +41,23 @@ def _accept(prefix):
 
 
 class FliImageFile(ImageFile.ImageFile):
-
     format = "FLI"
     format_description = "Autodesk FLI/FLC Animation"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # HEAD
         s = self.fp.read(128)
         if not (_accept(s) and s[20:22] == b"\x00\x00"):
-            raise SyntaxError("not an FLI/FLC file")
+            msg = "not an FLI/FLC file"
+            raise SyntaxError(msg)
 
         # frames
         self.n_frames = i16(s, 6)
         self.is_animated = self.n_frames > 1
 
         # image characteristics
-        self.mode = "P"
+        self._mode = "P"
         self._size = i16(s, 8), i16(s, 10)
 
         # animation speed
@@ -141,7 +141,8 @@ class FliImageFile(ImageFile.ImageFile):
             self.load()
 
         if frame != self.__frame + 1:
-            raise ValueError(f"cannot seek to frame {frame}")
+            msg = f"cannot seek to frame {frame}"
+            raise ValueError(msg)
         self.__frame = frame
 
         # move to next frame
@@ -150,7 +151,8 @@ class FliImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(4)
         if not s:
-            raise EOFError
+            msg = "missing frame size"
+            raise EOFError(msg)
 
         framesize = i32(s)
 

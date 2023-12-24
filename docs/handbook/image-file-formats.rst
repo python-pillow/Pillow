@@ -63,8 +63,35 @@ DDS
 ^^^
 
 DDS is a popular container texture format used in video games and natively supported
-by DirectX. Uncompressed RGB and RGBA can be read, and (since 8.3.0) written. DXT1,
-DXT3 (since 3.4.0) and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+by DirectX.
+
+DXT1 and DXT5 pixel formats can be read, only in ``RGBA`` mode.
+
+.. versionadded:: 3.4.0
+   DXT3 images can be read in ``RGB`` mode and DX10 images can be read in
+   ``RGB`` and ``RGBA`` mode.
+
+.. versionadded:: 6.0.0
+   Uncompressed ``RGBA`` images can be read.
+
+
+.. versionadded:: 8.3.0
+   BC5S images can be opened in ``RGB`` mode, and uncompressed ``RGB`` images
+   can be read. Uncompressed data can also be saved to image files.
+
+
+.. versionadded:: 9.3.0
+   ATI1 images can be opened in ``L`` mode and ATI2 images can be opened in
+   ``RGB`` mode.
+
+.. versionadded:: 9.4.0
+   Uncompressed ``L`` ("luminance") and ``LA`` images can be opened and saved.
+
+
+.. versionadded:: 10.1.0
+   BC5U can be read in ``RGB`` mode, and 8-bit color indexed images can be read
+   in ``P`` mode.
+
 
 DIB
 ^^^
@@ -88,8 +115,13 @@ in ``L``, ``RGB`` and ``CMYK`` modes.
 Loading
 ~~~~~~~
 
+To use Ghostscript, Pillow searches for the "gs" executable. On Windows, it
+also searches for "gswin32c" and "gswin64c". To customise this behaviour,
+``EpsImagePlugin.gs_binary = "gswin64"`` will set the name of the executable to
+use. ``EpsImagePlugin.gs_binary = False`` will prevent Ghostscript use.
+
 If Ghostscript is available, you can call the :py:meth:`~PIL.Image.Image.load`
-method with the following parameters to affect how Ghostscript renders the EPS
+method with the following parameters to affect how Ghostscript renders the EPS.
 
 **scale**
     Affects the scale of the resultant rasterized image. If the EPS suggests
@@ -234,9 +266,13 @@ following options are available::
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
 **optimize**
-    If present and true, attempt to compress the palette by
-    eliminating unused colors. This is only useful if the palette can
-    be compressed to the next smaller power of 2 elements.
+    Whether to attempt to compress the palette by eliminating unused colors
+    (this is only useful if the palette can be compressed to the next smaller
+    power of 2 elements) and whether to mark all pixels that are not new in the
+    next frame as transparent.
+
+    This is attempted by default, unless a palette is specified as an option or
+    as part of the first image's :py:attr:`~PIL.Image.Image.info` dictionary.
 
 Note that if the image you are saving comes from an existing GIF, it may have
 the following properties in its :py:attr:`~PIL.Image.Image.info` dictionary.
@@ -253,7 +289,7 @@ their :py:attr:`~PIL.Image.Image.info` values.
 
 **loop**
     Integer number of times the GIF should loop. 0 means that it will loop
-    forever. By default, the image will not loop.
+    forever. If omitted or ``None``, the image will not loop.
 
 **comment**
     A comment about the image.
@@ -462,6 +498,18 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
     If absent, the setting will be determined by libjpeg or libjpeg-turbo.
 
+**restart_marker_blocks**
+    If present, emit a restart marker whenever the specified number of MCU
+    blocks has been produced.
+
+    .. versionadded:: 10.2.0
+
+**restart_marker_rows**
+    If present, emit a restart marker whenever the specified number of MCU
+    rows has been produced.
+
+    .. versionadded:: 10.2.0
+
 **qtables**
     If present, sets the qtables for the encoder. This is listed as an
     advanced option for wizards in the JPEG documentation. Use with
@@ -473,6 +521,19 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
        between 2 and 4 tables.
 
     .. versionadded:: 2.5.0
+
+**streamtype**
+    Allows storing images without quantization and Huffman tables, or with
+    these tables but without image data.  This is useful for container formats
+    or network protocols that handle tables separately and share them between
+    images.
+
+    * ``0`` (default): interchange datastream, with tables and image data
+    * ``1``: abbreviated table specification (tables-only) datastream
+
+      .. versionadded:: 10.2.0
+
+    * ``2``: abbreviated image (image-only) datastream
 
 **comment**
     A comment about the image.
@@ -568,6 +629,11 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     encoded using RLCP mode will have increasing resolutions decoded as they
     arrive, and so on.
 
+**signed**
+    If true, then tell the encoder to save the image as signed.
+
+    .. versionadded:: 9.4.0
+
 **cinema_mode**
     Set the encoder to produce output compliant with the digital cinema
     specifications.  The options here are ``"no"`` (the default),
@@ -583,6 +649,19 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     the format (default).
 
     .. versionadded:: 9.1.0
+
+**comment**
+    Adds a custom comment to the file, replacing the default
+    "Created by OpenJPEG version" comment.
+
+    .. versionadded:: 9.5.0
+
+**plt**
+    If ``True`` and OpenJPEG 2.4.0 or later is available, then include a PLT
+    (packet length, tile-part header) marker in the produced file.
+    Defaults to ``False``.
+
+    .. versionadded:: 9.5.0
 
 .. note::
 
@@ -843,6 +922,10 @@ PPM
 Pillow reads and writes PBM, PGM, PPM and PNM files containing ``1``, ``L``, ``I`` or
 ``RGB`` data.
 
+"Raw" (P4 to P6) formats can be read, and are used when writing.
+
+Since Pillow 9.2.0, "plain" (P1 to P3) formats can be read as well.
+
 SGI
 ^^^
 
@@ -1099,7 +1182,7 @@ using the general tags available through tiffinfo.
     Either an integer or a float.
 
 **dpi**
-    A tuple of (x_resolution, y_resolution), with inches as the resolution
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
     unit. For consistency with other image formats, the x and y resolutions
     of the dpi will be rounded to the nearest integer.
 
@@ -1121,7 +1204,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present and true, instructs the WebP writer to use lossless compression.
 
 **quality**
-    Integer, 1-100, Defaults to 80. For lossy, 0 gives the smallest
+    Integer, 0-100, Defaults to 80. For lossy, 0 gives the smallest
     size and 100 the largest. For lossless, this parameter is the amount
     of effort put into the compression: 0 is the fastest, but gives larger
     files compared to the slowest, but best, 100.
@@ -1140,6 +1223,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **exif**
     The exif data to include in the saved file. Only supported if
+    the system WebP library was built with webpmux support.
+
+**xmp**
+    The XMP data to include in the saved file. Only supported if
     the system WebP library was built with webpmux support.
 
 Saving sequences
@@ -1238,6 +1325,8 @@ Pillow reads Kodak FlashPix files. In the current version, only the highest
 resolution image is read from the file, and the viewing transform is not taken
 into account.
 
+To enable FPX support, you must install :pypi:`olefile`.
+
 .. note::
 
     To enable full FlashPix support, you need to build and install the IJG JPEG
@@ -1314,6 +1403,8 @@ the first sprite in the file is loaded. You can use :py:meth:`~PIL.Image.Image.s
 
 Note that there may be an embedded gamma of 2.2 in MIC files.
 
+To enable MIC support, you must install :pypi:`olefile`.
+
 MPO
 ^^^
 
@@ -1358,6 +1449,12 @@ PSD
 
 Pillow identifies and reads PSD files written by Adobe Photoshop 2.5 and 3.0.
 
+QOI
+^^^
+
+.. versionadded:: 9.5.0
+
+Pillow identifies and reads images in Quite OK Image format.
 
 SUN
 ^^^
@@ -1376,7 +1473,7 @@ the open function in the :py:mod:`~PIL.WalImageFile` module to read files in
 this format.
 
 By default, a Quake2 standard palette is attached to the texture. To override
-the palette, use the putpalette method.
+the palette, use the :py:func:`PIL.Image.Image.putpalette()` method.
 
 WMF, EMF
 ^^^^^^^^
@@ -1384,9 +1481,7 @@ WMF, EMF
 Pillow can identify WMF and EMF files.
 
 On Windows, it can read WMF and EMF files. By default, it will load the image
-at 72 dpi. To load it at another resolution:
-
-.. code-block:: python
+at 72 dpi. To load it at another resolution::
 
     from PIL import Image
 
@@ -1395,9 +1490,7 @@ at 72 dpi. To load it at another resolution:
 
 To add other read or write support, use
 :py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
-handler.
-
-.. code-block:: python
+handler. ::
 
     from PIL import Image
     from PIL import WmfImagePlugin
@@ -1452,8 +1545,13 @@ PDF
 ^^^
 
 Pillow can write PDF (Acrobat) images. Such images are written as binary PDF 1.4
-files, using either JPEG or HEX encoding depending on the image mode (and
-whether JPEG support is available or not).
+files. Different encoding methods are used, depending on the image mode.
+
+* 1 mode images are saved using TIFF encoding, or JPEG encoding if libtiff support is
+  unavailable
+* L, RGB and CMYK mode images use JPEG encoding
+* P mode images use HEX encoding
+* LA and RGBA mode images use JPEG2000 encoding
 
 .. _pdf-saving:
 
@@ -1487,6 +1585,11 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     Image resolution in DPI. This, together with the number of pixels in the
     image, will determine the physical dimensions of the page that will be
     saved in the PDF.
+
+**dpi**
+    A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
+    unit. If both the ``resolution`` parameter and the ``dpi`` parameter are
+    present, ``resolution`` will be ignored.
 
 **title**
     The document’s title. If not appending to an existing PDF file, this will

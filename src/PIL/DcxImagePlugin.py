@@ -20,6 +20,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 from . import Image
 from ._binary import i32le as i32
@@ -37,17 +38,16 @@ def _accept(prefix):
 
 
 class DcxImageFile(PcxImageFile):
-
     format = "DCX"
     format_description = "Intel DCX"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # Header
         s = self.fp.read(4)
         if not _accept(s):
-            raise SyntaxError("not a DCX file")
+            msg = "not a DCX file"
+            raise SyntaxError(msg)
 
         # Component directory
         self._offset = []

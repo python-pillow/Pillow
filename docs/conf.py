@@ -15,6 +15,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
+from __future__ import annotations
 
 import PIL
 
@@ -28,11 +29,11 @@ needs_sphinx = "2.4"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_inline_tabs",
-    "sphinx_issues",
     "sphinx_removed_in",
     "sphinxext.opengraph",
 ]
@@ -52,8 +53,10 @@ master_doc = "index"
 
 # General information about the project.
 project = "Pillow (PIL Fork)"
-copyright = "1995-2011 Fredrik Lundh, 2010-2022 Alex Clark and Contributors"
-author = "Fredrik Lundh, Alex Clark and Contributors"
+copyright = (
+    "1995-2011 Fredrik Lundh, 2010-2023 Jeffrey A. Clark (Alex) and contributors"
+)
+author = "Fredrik Lundh, Jeffrey A. Clark (Alex), contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -164,6 +167,12 @@ html_static_path = ["resources"]
 # directly to the root of the documentation.
 # html_extra_path = []
 
+html_css_files = ["css/dark.css"]
+
+html_js_files = [
+    "js/activate_tab.js",
+]
+
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
 # html_last_updated_fmt = '%b %d, %Y'
@@ -243,7 +252,7 @@ latex_documents = [
         master_doc,
         "PillowPILFork.tex",
         "Pillow (PIL Fork) Documentation",
-        "Alex Clark",
+        "Jeffrey A. Clark (Alex)",
         "manual",
     )
 ]
@@ -293,7 +302,7 @@ texinfo_documents = [
         "Pillow (PIL Fork) Documentation",
         author,
         "PillowPILFork",
-        "Pillow is the friendly PIL fork by Alex Clark and Contributors.",
+        "Pillow is the friendly PIL fork by Jeffrey A. Clark (Alex) and contributors.",
         "Miscellaneous",
     )
 ]
@@ -311,12 +320,29 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 
 
-def setup(app):
-    app.add_css_file("css/dark.css")
+linkcheck_allowed_redirects = {
+    r"https://www.bestpractices.dev/projects/6331": r"https://www.bestpractices.dev/en/.*",
+    r"https://badges.gitter.im/python-pillow/Pillow.svg": r"https://badges.gitter.im/repo.svg",
+    r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",
+    r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",
+    r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
+    r"https://tidelift.com/badges/package/pypi/Pillow?.*": r"https://img.shields.io/badge/.*",
+    r"https://zenodo.org/badge/17549/python-pillow/Pillow.svg": r"https://zenodo.org/badge/doi/[\.0-9]+/zenodo.[0-9]+.svg",
+    r"https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow": r"https://zenodo.org/record/[0-9]+",
+}
 
-
-# GitHub repo for sphinx-issues
-issues_github_path = "python-pillow/Pillow"
+# sphinx.ext.extlinks
+# This config is a dictionary of external sites,
+# mapping unique short aliases to a base URL and a prefix.
+# https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+_repo = "https://github.com/python-pillow/Pillow/"
+extlinks = {
+    "cve": ("https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-%s", "CVE-%s"),
+    "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
+    "issue": (_repo + "issues/%s", "#%s"),
+    "pr": (_repo + "pull/%s", "#%s"),
+    "pypi": ("https://pypi.org/project/%s/", "%s"),
+}
 
 # sphinxext.opengraph
 ogp_image = (

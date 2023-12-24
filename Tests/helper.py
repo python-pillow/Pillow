@@ -1,10 +1,12 @@
 """
 Helper functions.
 """
+from __future__ import annotations
 
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import sysconfig
 import tempfile
@@ -20,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 HAS_UPLOADER = False
 
-if os.environ.get("SHOW_ERRORS", None):
+if os.environ.get("SHOW_ERRORS"):
     # local img.show for errors.
     HAS_UPLOADER = True
 
@@ -91,11 +93,11 @@ def assert_image_equal(a, b, msg=None):
         if HAS_UPLOADER:
             try:
                 url = test_image_results.upload(a, b)
-                logger.error(f"Url for test images: {url}")
+                logger.error("URL for test images: %s", url)
             except Exception:
                 pass
 
-        assert False, msg or "got different content"
+        pytest.fail(msg or "got different content")
 
 
 def assert_image_equal_tofile(a, filename, msg=None, mode=None):
@@ -126,7 +128,7 @@ def assert_image_similar(a, b, epsilon, msg=None):
         if HAS_UPLOADER:
             try:
                 url = test_image_results.upload(a, b)
-                logger.error(f"Url for test images: {url}")
+                logger.exception("URL for test images: %s", url)
             except Exception:
                 pass
         raise e
@@ -258,11 +260,21 @@ def hopper(mode=None, cache={}):
 
 
 def djpeg_available():
-    return bool(shutil.which("djpeg"))
+    if shutil.which("djpeg"):
+        try:
+            subprocess.check_call(["djpeg", "-version"])
+            return True
+        except subprocess.CalledProcessError:  # pragma: no cover
+            return False
 
 
 def cjpeg_available():
-    return bool(shutil.which("cjpeg"))
+    if shutil.which("cjpeg"):
+        try:
+            subprocess.check_call(["cjpeg", "-version"])
+            return True
+        except subprocess.CalledProcessError:  # pragma: no cover
+            return False
 
 
 def netpbm_available():
@@ -271,7 +283,7 @@ def netpbm_available():
 
 def magick_command():
     if sys.platform == "win32":
-        magickhome = os.environ.get("MAGICK_HOME", "")
+        magickhome = os.environ.get("MAGICK_HOME")
         if magickhome:
             imagemagick = [os.path.join(magickhome, "convert.exe")]
             graphicsmagick = [os.path.join(magickhome, "gm.exe"), "convert"]

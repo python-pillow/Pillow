@@ -14,14 +14,11 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import builtins
 
 from . import Image, _imagingmath
-
-
-def _isconstant(v):
-    return isinstance(v, (int, float))
 
 
 class _Operand:
@@ -39,10 +36,11 @@ class _Operand:
             elif im1.im.mode in ("I", "F"):
                 return im1.im
             else:
-                raise ValueError(f"unsupported mode: {im1.im.mode}")
+                msg = f"unsupported mode: {im1.im.mode}"
+                raise ValueError(msg)
         else:
             # argument was a constant
-            if _isconstant(im1) and self.im.mode in ("1", "L", "I"):
+            if isinstance(im1, (int, float)) and self.im.mode in ("1", "L", "I"):
                 return Image.new("I", self.im.size, im1)
             else:
                 return Image.new("F", self.im.size, im1)
@@ -56,7 +54,8 @@ class _Operand:
             try:
                 op = getattr(_imagingmath, op + "_" + im1.mode)
             except AttributeError as e:
-                raise TypeError(f"bad operand type for '{op}'") from e
+                msg = f"bad operand type for '{op}'"
+                raise TypeError(msg) from e
             _imagingmath.unop(op, out.im.id, im1.im.id)
         else:
             # binary operation
@@ -80,7 +79,8 @@ class _Operand:
             try:
                 op = getattr(_imagingmath, op + "_" + im1.mode)
             except AttributeError as e:
-                raise TypeError(f"bad operand type for '{op}'") from e
+                msg = f"bad operand type for '{op}'"
+                raise TypeError(msg) from e
             _imagingmath.binop(op, out.im.id, im1.im.id, im2.im.id)
         return _Operand(out)
 
@@ -236,7 +236,7 @@ def eval(expression, _dict={}, **kw):
     args = ops.copy()
     args.update(_dict)
     args.update(kw)
-    for k, v in list(args.items()):
+    for k, v in args.items():
         if hasattr(v, "im"):
             args[k] = _Operand(v)
 
@@ -244,12 +244,13 @@ def eval(expression, _dict={}, **kw):
 
     def scan(code):
         for const in code.co_consts:
-            if type(const) == type(compiled_code):
+            if type(const) is type(compiled_code):
                 scan(const)
 
         for name in code.co_names:
             if name not in args and name != "abs":
-                raise ValueError(f"'{name}' not allowed")
+                msg = f"'{name}' not allowed"
+                raise ValueError(msg)
 
     scan(compiled_code)
     out = builtins.eval(expression, {"__builtins": {"abs": abs}}, args)

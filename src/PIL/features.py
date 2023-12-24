@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import os
 import sys
@@ -24,15 +26,19 @@ def check_module(feature):
     :returns: ``True`` if available, ``False`` otherwise.
     :raises ValueError: If the module is not defined in this version of Pillow.
     """
-    if not (feature in modules):
-        raise ValueError(f"Unknown module {feature}")
+    if feature not in modules:
+        msg = f"Unknown module {feature}"
+        raise ValueError(msg)
 
     module, ver = modules[feature]
 
     try:
         __import__(module)
         return True
-    except ImportError:
+    except ModuleNotFoundError:
+        return False
+    except ImportError as ex:
+        warnings.warn(str(ex))
         return False
 
 
@@ -78,7 +84,8 @@ def check_codec(feature):
     :raises ValueError: If the codec is not defined in this version of Pillow.
     """
     if feature not in codecs:
-        raise ValueError(f"Unknown codec {feature}")
+        msg = f"Unknown codec {feature}"
+        raise ValueError(msg)
 
     codec, lib = codecs[feature]
 
@@ -135,14 +142,18 @@ def check_feature(feature):
     :raises ValueError: If the feature is not defined in this version of Pillow.
     """
     if feature not in features:
-        raise ValueError(f"Unknown feature {feature}")
+        msg = f"Unknown feature {feature}"
+        raise ValueError(msg)
 
     module, flag, ver = features[feature]
 
     try:
         imported_module = __import__(module, fromlist=["PIL"])
         return getattr(imported_module, flag)
-    except ImportError:
+    except ModuleNotFoundError:
+        return None
+    except ImportError as ex:
+        warnings.warn(str(ex))
         return None
 
 

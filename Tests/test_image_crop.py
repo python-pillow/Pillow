@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image
@@ -86,7 +87,6 @@ def test_crop_crash():
 
 
 def test_crop_zero():
-
     im = Image.new("RGB", (0, 0), "white")
 
     cropped = im.crop((0, 0, 0, 0))

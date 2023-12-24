@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image, ImageShow
@@ -55,8 +56,8 @@ def test_show_without_viewers():
     viewers = ImageShow._viewers
     ImageShow._viewers = []
 
-    im = hopper()
-    assert not ImageShow.show(im)
+    with hopper() as im:
+        assert not ImageShow.show(im)
 
     ImageShow._viewers = viewers
 
@@ -85,24 +86,7 @@ def test_ipythonviewer():
             test_viewer = viewer
             break
     else:
-        assert False
+        pytest.fail()
 
     im = hopper()
     assert test_viewer.show(im) == 1
-
-
-@pytest.mark.skipif(
-    not on_ci() or is_win32(),
-    reason="Only run on CIs; hangs on Windows CIs",
-)
-@pytest.mark.parametrize("viewer", ImageShow._viewers)
-def test_file_deprecated(tmp_path, viewer):
-    f = str(tmp_path / "temp.jpg")
-    hopper().save(f)
-    with pytest.warns(DeprecationWarning):
-        try:
-            viewer.show_file(file=f)
-        except NotImplementedError:
-            pass
-    with pytest.raises(TypeError):
-        viewer.show_file()

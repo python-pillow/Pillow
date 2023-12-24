@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image
@@ -45,7 +46,6 @@ def test_unsupported_conversion():
 
 
 def test_default():
-
     im = hopper("P")
     assert im.mode == "P"
     converted_im = im.convert()
@@ -104,6 +104,13 @@ def test_rgba_p():
     assert_image_similar(im, comparable, 20)
 
 
+def test_rgba():
+    with Image.open("Tests/images/transparent.png") as im:
+        assert im.mode == "RGBA"
+
+        assert_image_similar(im.convert("RGBa").convert("RGB"), im.convert("RGB"), 1.5)
+
+
 def test_trns_p(tmp_path):
     im = hopper("P")
     im.info["transparency"] = 0
@@ -111,11 +118,11 @@ def test_trns_p(tmp_path):
     f = str(tmp_path / "temp.png")
 
     im_l = im.convert("L")
-    assert im_l.info["transparency"] == 1  # undone
+    assert im_l.info["transparency"] == 0
     im_l.save(f)
 
     im_rgb = im.convert("RGB")
-    assert im_rgb.info["transparency"] == (0, 1, 2)  # undone
+    assert im_rgb.info["transparency"] == (0, 0, 0)
     im_rgb.save(f)
 
 
@@ -246,17 +253,6 @@ def test_p2pa_palette():
     with Image.open("Tests/images/tiny.png") as im:
         im_pa = im.convert("PA")
     assert im_pa.getpalette() == im.getpalette()
-
-
-@pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
-def test_rgb_lab(mode):
-    im = Image.new(mode, (1, 1))
-    converted_im = im.convert("LAB")
-    assert converted_im.getpixel((0, 0)) == (0, 128, 128)
-
-    im = Image.new("LAB", (1, 1), (255, 0, 0))
-    converted_im = im.convert(mode)
-    assert converted_im.getpixel((0, 0))[:3] == (0, 255, 255)
 
 
 def test_matrix_illegal_conversion():

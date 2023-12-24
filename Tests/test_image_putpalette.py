@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image, ImagePalette
@@ -31,6 +32,14 @@ def test_putpalette():
         palette("RGBA")
     with pytest.raises(ValueError):
         palette("YCbCr")
+
+    with Image.open("Tests/images/hopper_gray.jpg") as im:
+        assert im.mode == "L"
+        im.putpalette(list(range(256)) * 3)
+
+    with Image.open("Tests/images/la.tga") as im:
+        assert im.mode == "LA"
+        im.putpalette(list(range(256)) * 3)
 
 
 def test_imagepalette():
@@ -76,3 +85,14 @@ def test_rgba_palette(mode, palette):
     im.putpalette(palette, mode)
     assert im.getpalette() == [1, 2, 3]
     assert im.palette.colors == {(1, 2, 3, 4): 0}
+
+
+def test_empty_palette():
+    im = Image.new("P", (1, 1))
+    assert im.getpalette() == []
+
+
+def test_undefined_palette_index():
+    im = Image.new("P", (1, 1), 3)
+    im.putpalette((1, 2, 3))
+    assert im.convert("RGB").getpixel((0, 0)) == (0, 0, 0)

@@ -22,7 +22,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import os
 
@@ -146,7 +146,8 @@ class BmpImageFile(ImageFile.ImageFile):
                     file_info["a_mask"],
                 )
         else:
-            raise OSError(f"Unsupported BMP header type ({file_info['header_size']})")
+            msg = f"Unsupported BMP header type ({file_info['header_size']})"
+            raise OSError(msg)
 
         # ------------------ Special case : header is reported 40, which
         # ---------------------- is shorter than real size for bpp >= 16
@@ -162,9 +163,10 @@ class BmpImageFile(ImageFile.ImageFile):
             offset += 4 * file_info["colors"]
 
         # ---------------------- Check bit depth for unusual unsupported values
-        self.mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
+        self._mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
         if self.mode is None:
-            raise OSError(f"Unsupported BMP pixel depth ({file_info['bits']})")
+            msg = f"Unsupported BMP pixel depth ({file_info['bits']})"
+            raise OSError(msg)
 
         # ---------------- Process BMP with Bitfields compression (not palette)
         decoder_name = "raw"
@@ -198,52 +200,55 @@ class BmpImageFile(ImageFile.ImageFile):
                     and file_info["rgba_mask"] in SUPPORTED[file_info["bits"]]
                 ):
                     raw_mode = MASK_MODES[(file_info["bits"], file_info["rgba_mask"])]
-                    self.mode = "RGBA" if "A" in raw_mode else self.mode
+                    self._mode = "RGBA" if "A" in raw_mode else self.mode
                 elif (
                     file_info["bits"] in (24, 16)
                     and file_info["rgb_mask"] in SUPPORTED[file_info["bits"]]
                 ):
                     raw_mode = MASK_MODES[(file_info["bits"], file_info["rgb_mask"])]
                 else:
-                    raise OSError("Unsupported BMP bitfields layout")
+                    msg = "Unsupported BMP bitfields layout"
+                    raise OSError(msg)
             else:
-                raise OSError("Unsupported BMP bitfields layout")
+                msg = "Unsupported BMP bitfields layout"
+                raise OSError(msg)
         elif file_info["compression"] == self.RAW:
             if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
-                raw_mode, self.mode = "BGRA", "RGBA"
+                raw_mode, self._mode = "BGRA", "RGBA"
         elif file_info["compression"] in (self.RLE8, self.RLE4):
             decoder_name = "bmp_rle"
         else:
-            raise OSError(f"Unsupported BMP compression ({file_info['compression']})")
+            msg = f"Unsupported BMP compression ({file_info['compression']})"
+            raise OSError(msg)
 
         # --------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
-
             # ---------------------------------------------------- 1-bit images
             if not (0 < file_info["colors"] <= 65536):
-                raise OSError(f"Unsupported BMP Palette size ({file_info['colors']})")
+                msg = f"Unsupported BMP Palette size ({file_info['colors']})"
+                raise OSError(msg)
             else:
                 padding = file_info["palette_padding"]
                 palette = read(padding * file_info["colors"])
-                greyscale = True
+                grayscale = True
                 indices = (
                     (0, 255)
                     if file_info["colors"] == 2
                     else list(range(file_info["colors"]))
                 )
 
-                # ----------------- Check if greyscale and ignore palette if so
+                # ----------------- Check if grayscale and ignore palette if so
                 for ind, val in enumerate(indices):
                     rgb = palette[ind * padding : ind * padding + 3]
                     if rgb != o8(val) * 3:
-                        greyscale = False
+                        grayscale = False
 
-                # ------- If all colors are grey, white or black, ditch palette
-                if greyscale:
-                    self.mode = "1" if file_info["colors"] == 2 else "L"
+                # ------- If all colors are gray, white or black, ditch palette
+                if grayscale:
+                    self._mode = "1" if file_info["colors"] == 2 else "L"
                     raw_mode = self.mode
                 else:
-                    self.mode = "P"
+                    self._mode = "P"
                     self.palette = ImagePalette.raw(
                         "BGRX" if padding == 4 else "BGR", palette
                     )
@@ -271,7 +276,8 @@ class BmpImageFile(ImageFile.ImageFile):
         head_data = self.fp.read(14)
         # choke if the file does not have the required magic bytes
         if not _accept(head_data):
-            raise SyntaxError("Not a BMP file")
+            msg = "Not a BMP file"
+            raise SyntaxError(msg)
         # read the start position of the BMP image data (u32)
         offset = i32(head_data, 10)
         # load bitmap information (offset=raster info)
@@ -353,7 +359,6 @@ class BmpRleDecoder(ImageFile.PyDecoder):
 # Image plugin for the DIB format (BMP alias)
 # =============================================================================
 class DibImageFile(BmpImageFile):
-
     format = "DIB"
     format_description = "Windows Bitmap"
 
@@ -383,14 +388,15 @@ def _save(im, fp, filename, bitmap_header=True):
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError as e:
-        raise OSError(f"cannot write mode {im.mode} as BMP") from e
+        msg = f"cannot write mode {im.mode} as BMP"
+        raise OSError(msg) from e
 
     info = im.encoderinfo
 
     dpi = info.get("dpi", (96, 96))
 
     # 1 meter == 39.3701 inches
-    ppm = tuple(map(lambda x: int(x * 39.3701 + 0.5), dpi))
+    ppm = tuple(int(x * 39.3701 + 0.5) for x in dpi)
 
     stride = ((im.size[0] * bits + 7) // 8 + 3) & (~3)
     header = 40  # or 64 for OS/2 version 2
@@ -411,7 +417,8 @@ def _save(im, fp, filename, bitmap_header=True):
         offset = 14 + header + colors * 4
         file_size = offset + image
         if file_size > 2**32 - 1:
-            raise ValueError("File size is too large for the BMP format")
+            msg = "File size is too large for the BMP format"
+            raise ValueError(msg)
         fp.write(
             b"BM"  # file type (magic)
             + o32(file_size)  # file size

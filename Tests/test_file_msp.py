@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 
 import pytest
@@ -44,7 +45,6 @@ def test_open_windows_v1():
     # Arrange
     # Act
     with Image.open(TEST_FILE) as im:
-
         # Assert
         assert_image_equal(im, hopper("1"))
         assert isinstance(im, MspImagePlugin.MspImageFile)
@@ -59,7 +59,6 @@ def _assert_file_image_equal(source_path, target_path):
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
 )
 def test_open_windows_v2():
-
     files = (
         os.path.join(EXTRA_DIR, f)
         for f in os.listdir(EXTRA_DIR)

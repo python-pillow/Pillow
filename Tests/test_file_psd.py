@@ -1,3 +1,4 @@
+from __future__ import annotations
 import warnings
 
 import pytest
@@ -27,7 +28,8 @@ def test_unclosed_file():
         im = Image.open(test_file)
         im.load()
 
-    pytest.warns(ResourceWarning, open)
+    with pytest.warns(ResourceWarning):
+        open()
 
 
 def test_closed_file():
@@ -77,7 +79,6 @@ def test_eoferror():
 
 def test_seek_tell():
     with Image.open(test_file) as im:
-
         layer_number = im.tell()
         assert layer_number == 1
 
@@ -95,7 +96,6 @@ def test_seek_tell():
 
 def test_seek_eoferror():
     with Image.open(test_file) as im:
-
         with pytest.raises(EOFError):
             im.seek(-1)
 
@@ -110,6 +110,11 @@ def test_open_after_exclusive_load():
 def test_rgba():
     with Image.open("Tests/images/rgba.psd") as im:
         assert_image_equal_tofile(im, "Tests/images/imagedraw_square.png")
+
+
+def test_layer_skip():
+    with Image.open("Tests/images/five_channels.psd") as im:
+        assert im.n_frames == 1
 
 
 def test_icc_profile():

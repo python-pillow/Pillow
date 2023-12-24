@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 
 import pytest
@@ -177,13 +178,14 @@ class TestEnvVars:
         Image._apply_env_variables({"PILLOW_BLOCK_SIZE": "2m"})
         assert Image.core.get_block_size() == 2 * 1024 * 1024
 
-    def test_warnings(self):
-        pytest.warns(
-            UserWarning, Image._apply_env_variables, {"PILLOW_ALIGNMENT": "15"}
-        )
-        pytest.warns(
-            UserWarning, Image._apply_env_variables, {"PILLOW_BLOCK_SIZE": "1024"}
-        )
-        pytest.warns(
-            UserWarning, Image._apply_env_variables, {"PILLOW_BLOCKS_MAX": "wat"}
-        )
+    @pytest.mark.parametrize(
+        "var",
+        (
+            {"PILLOW_ALIGNMENT": "15"},
+            {"PILLOW_BLOCK_SIZE": "1024"},
+            {"PILLOW_BLOCKS_MAX": "wat"},
+        ),
+    )
+    def test_warnings(self, var):
+        with pytest.warns(UserWarning):
+            Image._apply_env_variables(var)

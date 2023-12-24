@@ -324,18 +324,18 @@ static struct PyGetSetDef getseters[] = {
 
 static PyTypeObject ImagingEncoderType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingEncoder", /*tp_name*/
-    sizeof(ImagingEncoderObject),                    /*tp_size*/
+    sizeof(ImagingEncoderObject),                    /*tp_basicsize*/
     0,                                               /*tp_itemsize*/
     /* methods */
     (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_print*/
+    0,                    /*tp_vectorcall_offset*/
     0,                    /*tp_getattr*/
     0,                    /*tp_setattr*/
-    0,                    /*tp_compare*/
+    0,                    /*tp_as_async*/
     0,                    /*tp_repr*/
-    0,                    /*tp_as_number */
-    0,                    /*tp_as_sequence */
-    0,                    /*tp_as_mapping */
+    0,                    /*tp_as_number*/
+    0,                    /*tp_as_sequence*/
+    0,                    /*tp_as_mapping*/
     0,                    /*tp_hash*/
     0,                    /*tp_call*/
     0,                    /*tp_str*/
@@ -932,7 +932,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                     &encoder->state, (ttag_t)key_int, (UINT16)PyLong_AsLong(value));
             } else if (type == TIFF_LONG) {
                 status = ImagingLibTiffSetField(
-                    &encoder->state, (ttag_t)key_int, (UINT32)PyLong_AsLong(value));
+                    &encoder->state, (ttag_t)key_int, PyLong_AsLongLong(value));
             } else if (type == TIFF_SSHORT) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (INT16)PyLong_AsLong(value));
@@ -1073,6 +1073,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     Py_ssize_t streamtype = 0; /* 0=interchange, 1=tables only, 2=image only */
     Py_ssize_t xdpi = 0, ydpi = 0;
     Py_ssize_t subsampling = -1; /* -1=default, 0=none, 1=medium, 2=high */
+    Py_ssize_t restart_marker_blocks = 0;
+    Py_ssize_t restart_marker_rows = 0;
     PyObject *qtables = NULL;
     unsigned int *qarrays = NULL;
     int qtablesLen = 0;
@@ -1085,7 +1087,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|nnnnnnnnOz#y#y#",
+            "ss|nnnnnnnnnnOz#y#y#",
             &mode,
             &rawmode,
             &quality,
@@ -1096,6 +1098,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
             &xdpi,
             &ydpi,
             &subsampling,
+            &restart_marker_blocks,
+            &restart_marker_rows,
             &qtables,
             &comment,
             &comment_size,
@@ -1184,6 +1188,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     ((JPEGENCODERSTATE *)encoder->state.context)->streamtype = streamtype;
     ((JPEGENCODERSTATE *)encoder->state.context)->xdpi = xdpi;
     ((JPEGENCODERSTATE *)encoder->state.context)->ydpi = ydpi;
+    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_blocks = restart_marker_blocks;
+    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_rows = restart_marker_rows;
     ((JPEGENCODERSTATE *)encoder->state.context)->comment = comment;
     ((JPEGENCODERSTATE *)encoder->state.context)->comment_size = comment_size;
     ((JPEGENCODERSTATE *)encoder->state.context)->extra = extra;
@@ -1240,11 +1246,15 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     char *cinema_mode = "no";
     OPJ_CINEMA_MODE cine_mode;
     char mct = 0;
+    int sgnd = 0;
     Py_ssize_t fd = -1;
+    char *comment;
+    Py_ssize_t comment_size;
+    int plt = 0;
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbn",
+            "ss|OOOsOnOOOssbbnz#p",
             &mode,
             &format,
             &offset,
@@ -1259,7 +1269,11 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
             &progression,
             &cinema_mode,
             &mct,
-            &fd)) {
+            &sgnd,
+            &fd,
+            &comment,
+            &comment_size,
+            &plt)) {
         return NULL;
     }
 
@@ -1341,6 +1355,26 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
         }
     }
 
+    if (comment && comment_size > 0) {
+        /* Size is stored as as an uint16, subtract 4 bytes for the header */
+        if (comment_size >= 65532) {
+            PyErr_SetString(
+                PyExc_ValueError,
+                "JPEG 2000 comment is too long");
+            Py_DECREF(encoder);
+            return NULL;
+        }
+
+        char *p = malloc(comment_size + 1);
+        if (!p) {
+            Py_DECREF(encoder);
+            return ImagingError_MemoryError();
+        }
+        memcpy(p, comment, comment_size);
+        p[comment_size] = '\0';
+        context->comment = p;
+    }
+
     if (quality_layers && PySequence_Check(quality_layers)) {
         context->quality_is_in_db = strcmp(quality_mode, "dB") == 0;
         context->quality_layers = quality_layers;
@@ -1357,6 +1391,8 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
     context->mct = mct;
+    context->sgnd = sgnd;
+    context->plt = plt;
 
     return (PyObject *)encoder;
 }

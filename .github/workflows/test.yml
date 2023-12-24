@@ -1,6 +1,25 @@
 name: Test
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
+      - "docs/**"
+      - "wheels/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
+      - "docs/**"
+      - "wheels/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -20,16 +39,17 @@ jobs:
           "ubuntu-latest",
         ]
         python-version: [
+          "pypy3.10",
           "pypy3.9",
-          "pypy3.8",
+          "3.13",
+          "3.12",
           "3.11",
           "3.10",
           "3.9",
           "3.8",
-          "3.7",
         ]
         include:
-        - python-version: "3.7"
+        - python-version: "3.9"
           PYTHONOPTIMIZE: 1
           REVERSE: "--reverse"
         - python-version: "3.8"
@@ -39,12 +59,13 @@ jobs:
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
         cache: pip
         cache-dependency-path: ".ci/*.sh"
 
@@ -75,7 +96,9 @@ jobs:
           python3 -m pip install pytest-reverse
         fi
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-          xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+          xvfb-run -s '-screen 0 1024x768x24' sway&
+          export WAYLAND_DISPLAY=wayland-1
+          .ci/test.sh
         else
           .ci/test.sh
         fi
@@ -89,16 +112,11 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: errors
         path: Tests/errors
-
-    - name: Docs
-      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.11
-      run: |
-        make doccheck
 
     - name: After success
       run: |
@@ -107,9 +125,9 @@ jobs:
     - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
-        file: ./coverage.xml
         flags: ${{ matrix.os == 'macos-latest' && 'GHA_macOS' || 'GHA_Ubuntu' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+        gcov: true
 
   success:
     permissions:

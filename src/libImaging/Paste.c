@@ -425,7 +425,7 @@ fill_mask_L(
                 *out = BLEND(*mask, *out, ink[0], tmp1);
                 if (strncmp(imOut->mode, "I;16", 4) == 0) {
                     out++;
-                    *out = BLEND(*mask, *out, ink[0], tmp1);
+                    *out = BLEND(*mask, *out, ink[1], tmp1);
                 }
                 out++, mask++;
             }

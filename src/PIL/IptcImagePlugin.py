@@ -14,14 +14,15 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
+
 import os
 import tempfile
 
 from . import Image, ImageFile
-from ._binary import i8
+from ._binary import i8, o8
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._binary import o8
 
 COMPRESSION = {1: "raw", 5: "jpeg"}
 
@@ -48,7 +49,6 @@ def dump(c):
 
 
 class IptcImageFile(ImageFile.ImageFile):
-
     format = "IPTC"
     format_description = "IPTC/NAA"
 
@@ -59,19 +59,21 @@ class IptcImageFile(ImageFile.ImageFile):
         #
         # get a IPTC field header
         s = self.fp.read(5)
-        if not len(s):
+        if not s.strip(b"\x00"):
             return None, 0
 
         tag = s[1], s[2]
 
         # syntax
-        if s[0] != 0x1C or tag[0] < 1 or tag[0] > 9:
-            raise SyntaxError("invalid IPTC/NAA file")
+        if s[0] != 0x1C or tag[0] not in [1, 2, 3, 4, 5, 6, 7, 8, 9, 240]:
+            msg = "invalid IPTC/NAA file"
+            raise SyntaxError(msg)
 
         # field size
         size = s[3]
         if size > 132:
-            raise OSError("illegal field length in IPTC/NAA file")
+            msg = "illegal field length in IPTC/NAA file"
+            raise OSError(msg)
         elif size == 128:
             size = 0
         elif size > 128:
@@ -82,7 +84,6 @@ class IptcImageFile(ImageFile.ImageFile):
         return tag, size
 
     def _open(self):
-
         # load descriptive fields
         while True:
             offset = self.fp.tell()
@@ -109,11 +110,11 @@ class IptcImageFile(ImageFile.ImageFile):
         else:
             id = 0
         if layers == 1 and not component:
-            self.mode = "L"
+            self._mode = "L"
         elif layers == 3 and component:
-            self.mode = "RGB"[id]
+            self._mode = "RGB"[id]
         elif layers == 4 and component:
-            self.mode = "CMYK"[id]
+            self._mode = "CMYK"[id]
 
         # size
         self._size = self.getint((3, 20)), self.getint((3, 30))
@@ -122,7 +123,8 @@ class IptcImageFile(ImageFile.ImageFile):
         try:
             compression = COMPRESSION[self.getint((3, 120))]
         except KeyError as e:
-            raise OSError("Unknown IPTC image compression") from e
+            msg = "Unknown IPTC image compression"
+            raise OSError(msg) from e
 
         # tile
         if tag == (8, 10):
@@ -131,7 +133,6 @@ class IptcImageFile(ImageFile.ImageFile):
             ]
 
     def load(self):
-
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
             return ImageFile.ImageFile.load(self)
 

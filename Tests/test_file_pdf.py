@@ -1,3 +1,4 @@
+from __future__ import annotations
 import io
 import os
 import os.path
@@ -8,7 +9,7 @@ import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version
+from .helper import hopper, mark_if_feature_version, skip_unless_feature
 
 
 def helper_save_as_pdf(tmp_path, mode, **kwargs):
@@ -42,6 +43,28 @@ def test_save(tmp_path, mode):
     helper_save_as_pdf(tmp_path, mode)
 
 
+@skip_unless_feature("jpg_2000")
+@pytest.mark.parametrize("mode", ("LA", "RGBA"))
+def test_save_alpha(tmp_path, mode):
+    helper_save_as_pdf(tmp_path, mode)
+
+
+def test_p_alpha(tmp_path):
+    # Arrange
+    outfile = str(tmp_path / "temp.pdf")
+    with Image.open("Tests/images/pil123p.png") as im:
+        assert im.mode == "P"
+        assert isinstance(im.info["transparency"], bytes)
+
+        # Act
+        im.save(outfile)
+
+    # Assert
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+    assert b"\n/SMask " in contents
+
+
 def test_monochrome(tmp_path):
     # Arrange
     mode = "1"
@@ -52,8 +75,8 @@ def test_monochrome(tmp_path):
 
 
 def test_unsupported_mode(tmp_path):
-    im = hopper("LA")
-    outfile = str(tmp_path / "temp_LA.pdf")
+    im = hopper("PA")
+    outfile = str(tmp_path / "temp_PA.pdf")
 
     with pytest.raises(ValueError):
         im.save(outfile)
@@ -80,6 +103,34 @@ def test_resolution(tmp_path):
     assert size == (61.44, 61.44)
 
 
+@pytest.mark.parametrize(
+    "params",
+    (
+        {"dpi": (75, 150)},
+        {"dpi": (75, 150), "resolution": 200},
+    ),
+)
+def test_dpi(params, tmp_path):
+    im = hopper()
+
+    outfile = str(tmp_path / "temp.pdf")
+    im.save(outfile, **params)
+
+    with open(outfile, "rb") as fp:
+        contents = fp.read()
+
+    size = tuple(
+        float(d)
+        for d in contents.split(b"stream\nq ")[1].split(b" 0 0 cm")[0].split(b" 0 0 ")
+    )
+    assert size == (122.88, 61.44)
+
+    size = tuple(
+        float(d) for d in contents.split(b"/MediaBox [ 0 0 ")[1].split(b"]")[0].split()
+    )
+    assert size == (122.88, 61.44)
+
+
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
@@ -89,7 +140,6 @@ def test_save_all(tmp_path):
 
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-
         outfile = str(tmp_path / "temp.pdf")
         im.save(outfile, save_all=True)
 
@@ -123,7 +173,6 @@ def test_save_all(tmp_path):
 def test_multiframe_normal_save(tmp_path):
     # Test saving a multiframe image without save_all
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
-
         outfile = str(tmp_path / "temp.pdf")
         im.save(outfile)
 
@@ -286,6 +335,7 @@ def test_pdf_append_to_bytesio():
 
 
 @pytest.mark.timeout(1)
+@pytest.mark.skipif("PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower")
 @pytest.mark.parametrize("newline", (b"\r", b"\n"))
 def test_redos(newline):
     malicious = b" trailer<<>>" + newline * 3456

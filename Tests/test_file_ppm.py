@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 from io import BytesIO
 
@@ -252,6 +253,16 @@ def test_truncated_file(tmp_path):
     # Test EOF for PyDecoder
     fp = BytesIO(b"P5 3 1 4")
     with Image.open(fp) as im:
+        with pytest.raises(ValueError):
+            im.load()
+
+
+def test_not_enough_image_data(tmp_path):
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "wb") as f:
+        f.write(b"P2 1 2 255 255")
+
+    with Image.open(path) as im:
         with pytest.raises(ValueError):
             im.load()
 

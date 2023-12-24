@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import FtexImagePlugin, Image
@@ -21,12 +22,3 @@ def test_invalid_file():
 
     with pytest.raises(SyntaxError):
         FtexImagePlugin.FtexImageFile(invalid_file)
-
-
-def test_constants_deprecation():
-    for enum, prefix in {
-        FtexImagePlugin.Format: "FORMAT_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(FtexImagePlugin, prefix + name) == enum[name]

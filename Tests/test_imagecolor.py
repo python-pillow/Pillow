@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image, ImageColor
@@ -191,6 +192,10 @@ def test_rounding_errors():
     assert (255, 255) == ImageColor.getcolor("white", "LA")
     assert (163, 33) == ImageColor.getcolor("rgba(0, 255, 115, 33)", "LA")
     Image.new("LA", (1, 1), "white")
+
+
+def test_color_hsv():
+    assert (170, 255, 255) == ImageColor.getcolor("hsv(240, 100%, 100%)", "HSV")
 
 
 def test_color_too_long():

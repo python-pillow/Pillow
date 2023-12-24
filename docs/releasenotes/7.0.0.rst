@@ -85,7 +85,7 @@ Custom unidentified image error
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow will now throw a custom ``UnidentifiedImageError`` when an image cannot be
-identified. For backwards compatibility, this will inherit from ``OSError``.
+identified. For backwards compatibility, this will inherit from :py:exc:`OSError`.
 
 New argument ``reducing_gap`` for Image.resize() and Image.thumbnail() methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -118,9 +118,7 @@ Loading WMF images at a given DPI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 On Windows, Pillow can read WMF files, with a default DPI of 72. An image can
-now also be loaded at another resolution:
-
-.. code-block:: python
+now also be loaded at another resolution::
 
     from PIL import Image
     with Image.open("drawing.wmf") as im:
@@ -136,16 +134,12 @@ Implicitly closing the image's underlying file in ``Image.__del__`` has been rem
 Use a context manager or call :py:meth:`~PIL.Image.Image.close` instead to close
 the file in a deterministic way.
 
-Previous method:
-
-.. code-block:: python
+Previous method::
 
     im = Image.open("hopper.png")
     im.save("out.jpg")
 
-Use instead:
-
-.. code-block:: python
+Use instead::
 
     with Image.open("hopper.png") as im:
         im.save("out.jpg")

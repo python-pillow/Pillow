@@ -17,6 +17,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import itertools
 import os
@@ -32,9 +33,6 @@ from . import (
 )
 from ._binary import i16be as i16
 from ._binary import o32le
-
-# def _accept(prefix):
-#     return JpegImagePlugin._accept(prefix)
 
 
 def _save(im, fp, filename):
@@ -101,7 +99,6 @@ def _save_all(im, fp, filename):
 
 
 class MpoImageFile(JpegImagePlugin.JpegImageFile):
-
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False
@@ -143,7 +140,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.fp.seek(self.offset + 2)  # skip SOI marker
         segment = self.fp.read(2)
         if not segment:
-            raise ValueError("No data found for frame")
+            msg = "No data found for frame"
+            raise ValueError(msg)
         self._size = self._initial_size
         if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2

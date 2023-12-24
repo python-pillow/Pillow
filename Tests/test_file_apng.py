@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
@@ -163,6 +164,12 @@ def test_apng_blend():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+def test_apng_blend_transparency():
+    with Image.open("Tests/images/blend_transparency.png") as im:
+        im.seek(1)
+        assert im.getpixel((0, 0)) == (255, 0, 0)
+
+
 def test_apng_chunk_order():
     with Image.open("Tests/images/apng/fctl_actl.png") as im:
         im.seek(im.n_frames - 1)
@@ -225,13 +232,13 @@ def test_apng_mode():
         assert im.getpixel((0, 0)) == (0, 0, 128, 191)
         assert im.getpixel((64, 32)) == (0, 0, 128, 191)
 
-    with Image.open("Tests/images/apng/mode_greyscale.png") as im:
+    with Image.open("Tests/images/apng/mode_grayscale.png") as im:
         assert im.mode == "L"
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == 128
         assert im.getpixel((64, 32)) == 255
 
-    with Image.open("Tests/images/apng/mode_greyscale_alpha.png") as im:
+    with Image.open("Tests/images/apng/mode_grayscale_alpha.png") as im:
         assert im.mode == "LA"
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (128, 191)
@@ -263,12 +270,10 @@ def test_apng_chunk_errors():
     with Image.open("Tests/images/apng/chunk_no_actl.png") as im:
         assert not im.is_animated
 
-    def open():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/chunk_multi_actl.png") as im:
             im.load()
         assert not im.is_animated
-
-    pytest.warns(UserWarning, open)
 
     with Image.open("Tests/images/apng/chunk_actl_after_idat.png") as im:
         assert not im.is_animated
@@ -287,20 +292,16 @@ def test_apng_chunk_errors():
 
 
 def test_apng_syntax_errors():
-    def open_frames_zero():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/syntax_num_frames_zero.png") as im:
             assert not im.is_animated
             with pytest.raises(OSError):
                 im.load()
 
-    pytest.warns(UserWarning, open_frames_zero)
-
-    def open_frames_zero_default():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/syntax_num_frames_zero_default.png") as im:
             assert not im.is_animated
             im.load()
-
-    pytest.warns(UserWarning, open_frames_zero_default)
 
     # we can handle this case gracefully
     exception = None
@@ -316,12 +317,10 @@ def test_apng_syntax_errors():
             im.seek(im.n_frames - 1)
             im.load()
 
-    def open():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/syntax_num_frames_invalid.png") as im:
             assert not im.is_animated
             im.load()
-
-    pytest.warns(UserWarning, open)
 
 
 @pytest.mark.parametrize(
@@ -352,15 +351,13 @@ def test_apng_save(tmp_path):
         im.load()
         assert not im.is_animated
         assert im.n_frames == 1
-        assert im.get_format_mimetype() == "image/apng"
+        assert im.get_format_mimetype() == "image/png"
         assert im.info.get("default_image") is None
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
     with Image.open("Tests/images/apng/single_frame_default.png") as im:
-        frames = []
-        for frame_im in ImageSequence.Iterator(im):
-            frames.append(frame_im.copy())
+        frames = [frame_im.copy() for frame_im in ImageSequence.Iterator(im)]
         frames[0].save(
             test_file, save_all=True, default_image=True, append_images=frames[1:]
         )
@@ -374,6 +371,20 @@ def test_apng_save(tmp_path):
         im.seek(1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+
+def test_apng_save_alpha(tmp_path):
+    test_file = str(tmp_path / "temp.png")
+
+    im = Image.new("RGBA", (1, 1), (255, 0, 0, 255))
+    im2 = Image.new("RGBA", (1, 1), (255, 0, 0, 127))
+    im.save(test_file, save_all=True, append_images=[im2])
+
+    with Image.open(test_file) as reloaded:
+        assert reloaded.getpixel((0, 0)) == (255, 0, 0, 255)
+
+        reloaded.seek(1)
+        assert reloaded.getpixel((0, 0)) == (255, 0, 0, 127)
 
 
 def test_apng_save_split_fdat(tmp_path):
@@ -438,15 +449,29 @@ def test_apng_save_duration_loop(tmp_path):
         test_file, save_all=True, append_images=[frame, frame], duration=[500, 100, 150]
     )
     with Image.open(test_file) as im:
-        im.load()
         assert im.n_frames == 1
-        assert im.info.get("duration") == 750
+        assert "duration" not in im.info
+
+    different_frame = Image.new("RGBA", (128, 64))
+    frame.save(
+        test_file,
+        save_all=True,
+        append_images=[frame, different_frame],
+        duration=[500, 100, 150],
+    )
+    with Image.open(test_file) as im:
+        assert im.n_frames == 2
+        assert im.info["duration"] == 600
+
+        im.seek(1)
+        assert im.info["duration"] == 150
 
     # test info duration
-    frame.info["duration"] = 750
-    frame.save(test_file, save_all=True)
+    frame.info["duration"] = 300
+    frame.save(test_file, save_all=True, append_images=[frame, different_frame])
     with Image.open(test_file) as im:
-        assert im.info.get("duration") == 750
+        assert im.n_frames == 2
+        assert im.info["duration"] == 600
 
 
 def test_apng_save_disposal(tmp_path):
@@ -650,20 +675,17 @@ def test_seek_after_close():
 
 
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
-def test_different_modes_in_later_frames(mode, tmp_path):
+@pytest.mark.parametrize("default_image", (True, False))
+@pytest.mark.parametrize("duplicate", (True, False))
+def test_different_modes_in_later_frames(mode, default_image, duplicate, tmp_path):
     test_file = str(tmp_path / "temp.png")
 
     im = Image.new("L", (1, 1))
-    im.save(test_file, save_all=True, append_images=[Image.new(mode, (1, 1))])
+    im.save(
+        test_file,
+        save_all=True,
+        default_image=default_image,
+        append_images=[im.convert(mode) if duplicate else Image.new(mode, (1, 1), 1)],
+    )
     with Image.open(test_file) as reloaded:
         assert reloaded.mode == mode
-
-
-def test_constants_deprecation():
-    for enum, prefix in {
-        PngImagePlugin.Disposal: "APNG_DISPOSE_",
-        PngImagePlugin.Blend: "APNG_BLEND_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(PngImagePlugin, prefix + name) == enum[name]

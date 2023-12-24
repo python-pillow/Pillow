@@ -1,10 +1,7 @@
-import warnings
-
+from __future__ import annotations
 import pytest
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", category=DeprecationWarning)
-    from PIL import ImageQt
+from PIL import ImageQt
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
@@ -32,7 +29,7 @@ def test_sanity(mode, tmp_path):
         assert_image_equal(rt, src)
 
     if mode == "1":
-        # BW appears to not save correctly on QT5
+        # BW appears to not save correctly on Qt
         # kicks out errors on console:
         #     libpng warning: Invalid color type/bit depth combination
         #                     in IHDR

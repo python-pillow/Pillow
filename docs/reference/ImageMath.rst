@@ -11,7 +11,7 @@ an expression string and one or more images.
 Example: Using the :py:mod:`~PIL.ImageMath` module
 --------------------------------------------------
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageMath
 
@@ -72,7 +72,7 @@ pixel bits.
 
 Note that the operands are converted to 32-bit signed integers before the
 bitwise operation is applied. This means that you’ll get negative values if
-you invert an ordinary greyscale image. You can use the and (&) operator to
+you invert an ordinary grayscale image. You can use the and (&) operator to
 mask off unwanted bits.
 
 Bitwise operators don’t work on floating point images.

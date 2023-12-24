@@ -13,7 +13,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import os
 
@@ -36,7 +36,6 @@ class FontFile:
     bitmap = None
 
     def __init__(self):
-
         self.info = {}
         self.glyph = [None] * 256
 
@@ -79,7 +78,6 @@ class FontFile:
             if glyph:
                 d, dst, src, im = glyph
                 xx = src[2] - src[0]
-                # yy = src[3] - src[1]
                 x0, y0 = x, y
                 x = x + xx
                 if x > WIDTH:

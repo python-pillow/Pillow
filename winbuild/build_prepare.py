@@ -1,48 +1,49 @@
+from __future__ import annotations
+
+import argparse
 import os
 import platform
 import re
 import shutil
 import struct
 import subprocess
-import sys
 
 
-def cmd_cd(path):
+def cmd_cd(path: str) -> str:
     return f"cd /D {path}"
 
 
-def cmd_set(name, value):
+def cmd_set(name: str, value: str) -> str:
     return f"set {name}={value}"
 
 
-def cmd_append(name, value):
+def cmd_append(name: str, value: str) -> str:
     op = "path " if name == "PATH" else f"set {name}="
     return op + f"%{name}%;{value}"
 
 
-def cmd_copy(src, tgt):
+def cmd_copy(src: str, tgt: str) -> str:
     return f'copy /Y /B "{src}" "{tgt}"'
 
 
-def cmd_xcopy(src, tgt):
+def cmd_xcopy(src: str, tgt: str) -> str:
     return f'xcopy /Y /E "{src}" "{tgt}"'
 
 
-def cmd_mkdir(path):
+def cmd_mkdir(path: str) -> str:
     return f'mkdir "{path}"'
 
 
-def cmd_rmdir(path):
+def cmd_rmdir(path: str) -> str:
     return f'rmdir /S /Q "{path}"'
 
 
-def cmd_nmake(makefile=None, target="", params=None):
-    if params is None:
-        params = ""
-    elif isinstance(params, list) or isinstance(params, tuple):
-        params = " ".join(params)
-    else:
-        params = str(params)
+def cmd_nmake(
+    makefile: str | None = None,
+    target: str = "",
+    params: list[str] | None = None,
+) -> str:
+    params = "" if params is None else " ".join(params)
 
     return " ".join(
         [
@@ -55,29 +56,36 @@ def cmd_nmake(makefile=None, target="", params=None):
     )
 
 
-def cmd_cmake(params=None, file="."):
-    if params is None:
-        params = ""
-    elif isinstance(params, list) or isinstance(params, tuple):
-        params = " ".join(params)
-    else:
-        params = str(params)
-    return " ".join(
-        [
-            "{cmake}",
-            "-DCMAKE_VERBOSE_MAKEFILE=ON",
-            "-DCMAKE_RULE_MESSAGES:BOOL=OFF",
-            "-DCMAKE_BUILD_TYPE=Release",
-            f"{params}",
-            '-G "NMake Makefiles"',
-            f'"{file}"',
-        ]
-    )
+def cmds_cmake(target: str | tuple[str, ...] | list[str], *params) -> list[str]:
+    if not isinstance(target, str):
+        target = " ".join(target)
+
+    return [
+        " ".join(
+            [
+                "{cmake}",
+                "-DCMAKE_BUILD_TYPE=Release",
+                "-DCMAKE_VERBOSE_MAKEFILE=ON",
+                "-DCMAKE_RULE_MESSAGES:BOOL=OFF",  # for NMake
+                "-DCMAKE_C_COMPILER=cl.exe",  # for Ninja
+                "-DCMAKE_CXX_COMPILER=cl.exe",  # for Ninja
+                "-DCMAKE_C_FLAGS=-nologo",
+                "-DCMAKE_CXX_FLAGS=-nologo",
+                *params,
+                '-G "{cmake_generator}"',
+                ".",
+            ]
+        ),
+        f"{{cmake}} --build . --clean-first --parallel --target {target}",
+    ]
 
 
 def cmd_msbuild(
-    file, configuration="Release", target="Build", platform="{msbuild_arch}"
-):
+    file: str,
+    configuration: str = "Release",
+    target: str = "Build",
+    platform: str = "{msbuild_arch}",
+) -> str:
     return " ".join(
         [
             "{msbuild}",
@@ -92,45 +100,39 @@ def cmd_msbuild(
 
 SF_PROJECTS = "https://sourceforge.net/projects"
 
-architectures = {
+ARCHITECTURES = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
     "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
-header = [
-    cmd_set("INCLUDE", "{inc_dir}"),
-    cmd_set("INCLIB", "{lib_dir}"),
-    cmd_set("LIB", "{lib_dir}"),
-    cmd_append("PATH", "{bin_dir}"),
-]
-
 # dependencies, listed in order of compilation
-deps = {
+DEPS = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/2.1.4/libjpeg-turbo-2.1.4.tar.gz/download",
-        "filename": "libjpeg-turbo-2.1.4.tar.gz",
-        "dir": "libjpeg-turbo-2.1.4",
+        + "/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz/download",
+        "filename": "libjpeg-turbo-3.0.1.tar.gz",
+        "dir": "libjpeg-turbo-3.0.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
             ".+(libjpeg-turbo Licenses\n======================\n\n.+)$"
         ),
+        "patch": {
+            r"CMakeLists.txt": {
+                # libjpeg-turbo does not detect MSVC x86_arm64 cross-compiler correctly
+                'if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")': "if({architecture} STREQUAL ARM64)",  # noqa: E501
+            },
+        },
         "build": [
-            cmd_cmake(
-                [
-                    "-DENABLE_SHARED:BOOL=FALSE",
-                    "-DWITH_JPEG8:BOOL=TRUE",
-                    "-DWITH_CRT_DLL:BOOL=TRUE",
-                ]
+            *cmds_cmake(
+                ("jpeg-static", "cjpeg-static", "djpeg-static"),
+                "-DENABLE_SHARED:BOOL=FALSE",
+                "-DWITH_JPEG8:BOOL=TRUE",
+                "-DWITH_CRT_DLL:BOOL=TRUE",
             ),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="jpeg-static"),
             cmd_copy("jpeg-static.lib", "libjpeg.lib"),
-            cmd_nmake(target="cjpeg-static"),
             cmd_copy("cjpeg-static.exe", "cjpeg.exe"),
-            cmd_nmake(target="djpeg-static"),
             cmd_copy("djpeg-static.exe", "djpeg.exe"),
         ],
         "headers": ["j*.h"],
@@ -138,9 +140,9 @@ deps = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "https://zlib.net/zlib1213.zip",
-        "filename": "zlib1213.zip",
-        "dir": "zlib-1.2.13",
+        "url": "https://zlib.net/zlib13.zip",
+        "filename": "zlib13.zip",
+        "dir": "zlib-1.3",
         "license": "README",
         "license_pattern": "Copyright notice:\n\n(.+)$",
         "build": [
@@ -152,34 +154,22 @@ deps = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.0.tar.gz/download",
-        "filename": "xz-5.4.0.tar.gz",
-        "dir": "xz-5.4.0",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.5.tar.gz/download",
+        "filename": "xz-5.4.5.tar.gz",
+        "dir": "xz-5.4.5",
         "license": "COPYING",
-        "patch": {
-            r"src\liblzma\api\lzma.h": {
-                "#ifndef LZMA_API_IMPORT": "#ifndef LZMA_API_IMPORT\n#define LZMA_API_STATIC",  # noqa: E501
-            },
-            r"windows\vs2019\liblzma.vcxproj": {
-                # retarget to default toolset (selected by vcvarsall.bat)
-                "<PlatformToolset>v142</PlatformToolset>": "<PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>",  # noqa: E501
-                # retarget to latest (selected by vcvarsall.bat)
-                "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>": "<WindowsTargetPlatformVersion>$(WindowsSDKVersion)</WindowsTargetPlatformVersion>",  # noqa: E501
-            },
-        },
         "build": [
-            cmd_msbuild(r"windows\vs2019\liblzma.vcxproj", "Release", "Clean"),
-            cmd_msbuild(r"windows\vs2019\liblzma.vcxproj", "Release", "Build"),
+            *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_mkdir(r"{inc_dir}\lzma"),
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],
         "headers": [r"src\liblzma\api\lzma.h"],
-        "libs": [r"windows\vs2019\Release\{msbuild_arch}\liblzma\liblzma.lib"],
+        "libs": [r"liblzma.lib"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.2.4.tar.gz",
-        "filename": "libwebp-1.2.4.tar.gz",
-        "dir": "libwebp-1.2.4",
+        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.2.tar.gz",
+        "filename": "libwebp-1.3.2.tar.gz",
+        "dir": "libwebp-1.3.2",
         "license": "COPYING",
         "build": [
             cmd_rmdir(r"output\release-static"),  # clean
@@ -200,9 +190,9 @@ deps = {
         "libs": [r"output\release-static\{architecture}\lib\*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.5.0.tar.gz",
-        "filename": "tiff-4.5.0.tar.gz",
-        "dir": "tiff-4.5.0",
+        "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
+        "filename": "tiff-4.6.0.tar.gz",
+        "dir": "tiff-4.6.0",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
@@ -213,15 +203,22 @@ deps = {
                 # link against webp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "webp.lib")',  # noqa: E501
             },
+            r"test\CMakeLists.txt": {
+                "add_executable(test_write_read_tags ../placeholder.h)": "",
+                "target_sources(test_write_read_tags PRIVATE test_write_read_tags.c)": "",  # noqa: E501
+                "target_link_libraries(test_write_read_tags PRIVATE tiff)": "",
+                "list(APPEND simple_tests test_write_read_tags)": "",
+            },
         },
         "build": [
-            cmd_cmake("-DBUILD_SHARED_LIBS:BOOL=OFF"),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="tiff"),
+            *cmds_cmake(
+                "tiff",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+                '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
+            )
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
-        # "bins": [r"libtiff\*.dll"],
     },
     "libpng": {
         "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.39/lpng1639.zip/download",
@@ -229,33 +226,27 @@ deps = {
         "dir": "lpng1639",
         "license": "LICENSE",
         "build": [
-            # lint: do not inline
-            cmd_cmake(("-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF")),
-            cmd_nmake(target="clean"),
-            cmd_nmake(),
+            *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
             cmd_copy("libpng16_static.lib", "libpng16.lib"),
         ],
         "headers": [r"png*.h"],
         "libs": [r"libpng16.lib"],
     },
     "brotli": {
-        "url": "https://github.com/google/brotli/archive/refs/tags/v1.0.9.tar.gz",
-        "filename": "brotli-1.0.9.tar.gz",
-        "dir": "brotli-1.0.9",
+        "url": "https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz",
+        "filename": "brotli-1.1.0.tar.gz",
+        "dir": "brotli-1.1.0",
         "license": "LICENSE",
         "build": [
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="brotlicommon-static"),
-            cmd_nmake(target="brotlidec-static"),
+            *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
             cmd_xcopy(r"c\include", "{inc_dir}"),
         ],
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.gz",  # noqa: E501
-        "filename": "freetype-2.12.1.tar.gz",
-        "dir": "freetype-2.12.1",
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",
+        "filename": "freetype-2.13.2.tar.gz",
+        "dir": "freetype-2.13.2",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -268,7 +259,7 @@ deps = {
                 "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_SYSTEM_ZLIB;FT_CONFIG_OPTION_USE_PNG;FT_CONFIG_OPTION_USE_HARFBUZZ;FT_CONFIG_OPTION_USE_BROTLI</UserDefines>",  # noqa: E501
                 "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src;{inc_dir}</UserIncludeDirectories>",  # noqa: E501
                 "<UserLibraryDirectories></UserLibraryDirectories>": "<UserLibraryDirectories>{lib_dir}</UserLibraryDirectories>",  # noqa: E501
-                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon-static.lib;brotlidec-static.lib</UserDependencies>",  # noqa: E501
+                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon.lib;brotlidec.lib</UserDependencies>",  # noqa: E501
             },
             r"src/autofit/afshaper.c": {
                 # link against harfbuzz.lib
@@ -286,13 +277,12 @@ deps = {
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
-        # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.13/lcms2-2.14.tar.gz/download",
-        "filename": "lcms2-2.14.tar.gz",
-        "dir": "lcms2-2.14",
-        "license": "COPYING",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.16/lcms2-2.16.tar.gz/download",
+        "filename": "lcms2-2.16.tar.gz",
+        "dir": "lcms2-2.16",
+        "license": "LICENSE",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
@@ -319,10 +309,15 @@ deps = {
         "filename": "openjpeg-2.5.0.tar.gz",
         "dir": "openjpeg-2.5.0",
         "license": "LICENSE",
+        "patch": {
+            r"src\lib\openjp2\ht_dec.c": {
+                "#ifdef OPJ_COMPILER_MSVC\n    return (OPJ_UINT32)__popcnt(val);": "#if defined(OPJ_COMPILER_MSVC) && (defined(_M_IX86) || defined(_M_AMD64))\n    return (OPJ_UINT32)__popcnt(val);",  # noqa: E501
+            }
+        },
         "build": [
-            cmd_cmake(("-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF")),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="openjp2"),
+            *cmds_cmake(
+                "openjp2", "-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF"
+            ),
             cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
             cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.0"),
         ],
@@ -330,7 +325,7 @@ deps = {
     },
     "libimagequant": {
         # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "license": "COPYRIGHT",
@@ -338,43 +333,41 @@ deps = {
             "CMakeLists.txt": {
                 "if(OPENMP_FOUND)": "if(false)",
                 "install": "#install",
+                # libimagequant does not detect MSVC x86_arm64 cross-compiler correctly
+                "if(${{CMAKE_SYSTEM_PROCESSOR}} STREQUAL ARM64)": "if({architecture} STREQUAL ARM64)",  # noqa: E501
             }
         },
         "build": [
-            # lint: do not inline
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="imagequant_a"),
+            *cmds_cmake("imagequant_a"),
             cmd_copy("imagequant_a.lib", "imagequant.lib"),
         ],
         "headers": [r"*.h"],
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/6.0.0.zip",
-        "filename": "harfbuzz-6.0.0.zip",
-        "dir": "harfbuzz-6.0.0",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.3.0.zip",
+        "filename": "harfbuzz-8.3.0.zip",
+        "dir": "harfbuzz-8.3.0",
         "license": "COPYING",
         "build": [
-            cmd_set("CXXFLAGS", "-d2FH4-"),
-            cmd_cmake("-DHB_HAVE_FREETYPE:BOOL=TRUE"),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="harfbuzz"),
+            *cmds_cmake(
+                "harfbuzz",
+                "-DHB_HAVE_FREETYPE:BOOL=TRUE",
+                '-DCMAKE_CXX_FLAGS="-nologo -d2FH4-"',
+            ),
         ],
         "headers": [r"src\*.h"],
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.12.zip",
-        "filename": "fribidi-1.0.12.zip",
-        "dir": "fribidi-1.0.12",
+        "url": "https://github.com/fribidi/fribidi/archive/v1.0.13.zip",
+        "filename": "fribidi-1.0.13.zip",
+        "dir": "fribidi-1.0.13",
         "license": "COPYING",
         "build": [
-            cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.12-COPYING"),
+            cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.13-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
-            cmd_cmake(),
-            cmd_nmake(target="clean"),
-            cmd_nmake(target="fribidi"),
+            *cmds_cmake("fribidi"),
         ],
         "bins": [r"*.dll"],
     },
@@ -382,11 +375,16 @@ deps = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_msvs():
+def find_msvs(architecture: str) -> dict[str, str] | None:
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
         return None
+
+    if architecture == "ARM64":
+        tools = "Microsoft.VisualStudio.Component.VC.Tools.ARM64"
+    else:
+        tools = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
 
     try:
         vspath = (
@@ -398,7 +396,7 @@ def find_msvs():
                     "-latest",
                     "-prerelease",
                     "-requires",
-                    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                    tools,
                     "-property",
                     "installationPath",
                     "-products",
@@ -416,23 +414,12 @@ def find_msvs():
         print("Visual Studio seems to be missing C compiler")
         return None
 
-    vs = {
-        "header": [],
-        # nmake selected by vcvarsall
-        "nmake": "nmake.exe",
-        "vs_dir": vspath,
-    }
-
     # vs2017
     msbuild = os.path.join(vspath, "MSBuild", "15.0", "Bin", "MSBuild.exe")
-    if os.path.isfile(msbuild):
-        vs["msbuild"] = f'"{msbuild}"'
-    else:
+    if not os.path.isfile(msbuild):
         # vs2019
         msbuild = os.path.join(vspath, "MSBuild", "Current", "Bin", "MSBuild.exe")
-        if os.path.isfile(msbuild):
-            vs["msbuild"] = f'"{msbuild}"'
-        else:
+        if not os.path.isfile(msbuild):
             print("Visual Studio MSBuild not found")
             return None
 
@@ -440,30 +427,49 @@ def find_msvs():
     if not os.path.isfile(vcvarsall):
         print("Visual Studio vcvarsall not found")
         return None
-    vs["header"].append(f'call "{vcvarsall}" {{vcvars_arch}}')
 
-    return vs
+    return {
+        "vs_dir": vspath,
+        "msbuild": f'"{msbuild}"',
+        "vcvarsall": f'"{vcvarsall}"',
+        "nmake": "nmake.exe",  # nmake selected by vcvarsall
+    }
 
 
-def extract_dep(url, filename):
-    import tarfile
+def download_dep(url: str, file: str) -> None:
     import urllib.request
+
+    ex = None
+    for i in range(3):
+        try:
+            print(f"Fetching {url} (attempt {i + 1})...")
+            content = urllib.request.urlopen(url).read()
+            with open(file, "wb") as f:
+                f.write(content)
+            break
+        except urllib.error.URLError as e:
+            ex = e
+    else:
+        raise RuntimeError(ex)
+
+
+def extract_dep(url: str, filename: str) -> None:
+    import tarfile
     import zipfile
 
-    file = os.path.join(depends_dir, filename)
+    file = os.path.join(args.depends_dir, filename)
     if not os.path.exists(file):
-        ex = None
-        for i in range(3):
-            try:
-                print("Fetching %s (attempt %d)..." % (url, i + 1))
-                content = urllib.request.urlopen(url).read()
-                with open(file, "wb") as f:
-                    f.write(content)
-                break
-            except urllib.error.URLError as e:
-                ex = e
-        else:
-            raise RuntimeError(ex)
+        # First try our mirror
+        mirror_url = (
+            f"https://raw.githubusercontent.com/"
+            f"python-pillow/pillow-depends/main/{filename}"
+        )
+        try:
+            download_dep(mirror_url, file)
+        except RuntimeError as exc:
+            # Otherwise try upstream
+            print(exc)
+            download_dep(url, file)
 
     print("Extracting " + filename)
     sources_dir_abs = os.path.abspath(sources_dir)
@@ -473,32 +479,35 @@ def extract_dep(url, filename):
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
                 if sources_dir_abs != member_prefix:
-                    raise RuntimeError("Attempted Path Traversal in Zip File")
+                    msg = "Attempted Path Traversal in Zip File"
+                    raise RuntimeError(msg)
             zf.extractall(sources_dir)
-    elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
+    elif filename.endswith((".tar.gz", ".tgz")):
         with tarfile.open(file, "r:gz") as tgz:
             for member in tgz.getnames():
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
                 member_prefix = os.path.commonpath([sources_dir_abs, member_abspath])
                 if sources_dir_abs != member_prefix:
-                    raise RuntimeError("Attempted Path Traversal in Tar File")
+                    msg = "Attempted Path Traversal in Tar File"
+                    raise RuntimeError(msg)
             tgz.extractall(sources_dir)
     else:
-        raise RuntimeError("Unknown archive type: " + filename)
+        msg = "Unknown archive type: " + filename
+        raise RuntimeError(msg)
 
 
-def write_script(name, lines):
-    name = os.path.join(build_dir, name)
+def write_script(name: str, lines: list[str]) -> None:
+    name = os.path.join(args.build_dir, name)
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
     with open(name, "w", newline="") as f:
         f.write(os.linesep.join(lines))
-    if verbose:
+    if args.verbose:
         for line in lines:
             print("    " + line)
 
 
-def get_footer(dep):
+def get_footer(dep: dict) -> list[str]:
     lines = []
     for out in dep.get("headers", []):
         lines.append(cmd_copy(out, "{inc_dir}"))
@@ -509,8 +518,24 @@ def get_footer(dep):
     return lines
 
 
-def build_dep(name):
-    dep = deps[name]
+def build_env() -> None:
+    lines = [
+        "if defined DISTUTILS_USE_SDK goto end",
+        cmd_set("INCLUDE", "{inc_dir}"),
+        cmd_set("INCLIB", "{lib_dir}"),
+        cmd_set("LIB", "{lib_dir}"),
+        cmd_append("PATH", "{bin_dir}"),
+        "call {vcvarsall} {vcvars_arch}",
+        cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
+        cmd_set("py_vcruntime_redist", "true"),  # always use /MD, never /MT
+        ":end",
+        "@echo on",
+    ]
+    write_script("build_env.cmd", lines)
+
+
+def build_dep(name: str) -> str:
+    dep = DEPS[name]
     dir = dep["dir"]
     file = f"build_dep_{name}.cmd"
 
@@ -546,11 +571,11 @@ def build_dep(name):
 
     banner = f"Building {name} ({dir})"
     lines = [
+        r'call "{build_dir}\build_env.cmd"',
         "@echo " + ("=" * 70),
         f"@echo ==== {banner:<60} ====",
         "@echo " + ("=" * 70),
-        "cd /D %s" % os.path.join(sources_dir, dir),
-        *prefs["header"],
+        cmd_cd(os.path.join(sources_dir, dir)),
         *dep.get("build", []),
         *get_footer(dep),
     ]
@@ -559,118 +584,143 @@ def build_dep(name):
     return file
 
 
-def build_dep_all():
-    lines = ["@echo on"]
-    for dep_name in deps:
+def build_dep_all() -> None:
+    lines = [r'call "{build_dir}\build_env.cmd"']
+    gha_groups = "GITHUB_ACTIONS" in os.environ
+    for dep_name in DEPS:
+        print()
         if dep_name in disabled:
+            print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name)
+        if gha_groups:
+            lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+        if gha_groups:
+            lines.append("@echo ::endgroup::")
+    print()
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)
 
 
-def build_pillow():
-    lines = [
-        "@echo ---- Building Pillow (build_ext %*) ----",
-        cmd_cd("{pillow_dir}"),
-        *prefs["header"],
-        cmd_set("DISTUTILS_USE_SDK", "1"),  # use same compiler to build Pillow
-        cmd_set("py_vcruntime_redist", "true"),  # always use /MD, never /MT
-        r'"{python_dir}\{python_exe}" setup.py build_ext --vendor-raqm --vendor-fribidi %*',  # noqa: E501
-    ]
-
-    write_script("build_pillow.cmd", lines)
-
-
 if __name__ == "__main__":
-    # winbuild directory
     winbuild_dir = os.path.dirname(os.path.realpath(__file__))
+    pillow_dir = os.path.realpath(os.path.join(winbuild_dir, ".."))
 
-    verbose = False
-    disabled = []
-    depends_dir = os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends"))
-    python_dir = os.environ.get("PYTHON")
-    python_exe = os.environ.get("EXECUTABLE", "python.exe")
-    architecture = os.environ.get(
-        "ARCHITECTURE",
-        "ARM64"
-        if platform.machine() == "ARM64"
-        else ("x86" if struct.calcsize("P") == 4 else "x64"),
+    parser = argparse.ArgumentParser(
+        prog="winbuild\\build_prepare.py",
+        description="Download and generate build scripts for Pillow dependencies.",
+        epilog="""Arguments can also be supplied using the environment variables
+                  PILLOW_BUILD, PILLOW_DEPS, ARCHITECTURE. See winbuild\\build.rst
+                  for more information.""",
     )
-    build_dir = os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build"))
-    sources_dir = ""
-    for arg in sys.argv[1:]:
-        if arg == "-v":
-            verbose = True
-        elif arg == "--no-imagequant":
-            disabled += ["libimagequant"]
-        elif arg == "--no-raqm" or arg == "--no-fribidi":
-            disabled += ["fribidi"]
-        elif arg.startswith("--depends="):
-            depends_dir = arg[10:]
-        elif arg.startswith("--python="):
-            python_dir = arg[9:]
-        elif arg.startswith("--executable="):
-            python_exe = arg[13:]
-        elif arg.startswith("--architecture="):
-            architecture = arg[15:]
-        elif arg.startswith("--dir="):
-            build_dir = arg[6:]
-        elif arg == "--srcdir":
-            sources_dir = os.path.sep + "src"
-        else:
-            raise ValueError("Unknown parameter: " + arg)
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="print generated scripts"
+    )
+    parser.add_argument(
+        "-d",
+        "--dir",
+        "--build-dir",
+        dest="build_dir",
+        metavar="PILLOW_BUILD",
+        default=os.environ.get("PILLOW_BUILD", os.path.join(winbuild_dir, "build")),
+        help="build directory (default: 'winbuild\\build')",
+    )
+    parser.add_argument(
+        "--depends",
+        dest="depends_dir",
+        metavar="PILLOW_DEPS",
+        default=os.environ.get("PILLOW_DEPS", os.path.join(winbuild_dir, "depends")),
+        help="directory used to store cached dependencies "
+        "(default: 'winbuild\\depends')",
+    )
+    parser.add_argument(
+        "--architecture",
+        choices=ARCHITECTURES,
+        default=os.environ.get(
+            "ARCHITECTURE",
+            (
+                "ARM64"
+                if platform.machine() == "ARM64"
+                else ("x86" if struct.calcsize("P") == 4 else "x64")
+            ),
+        ),
+        help="build architecture (default: same as host Python)",
+    )
+    parser.add_argument(
+        "--nmake",
+        dest="cmake_generator",
+        action="store_const",
+        const="NMake Makefiles",
+        default="Ninja",
+        help="build dependencies using NMake instead of Ninja",
+    )
+    parser.add_argument(
+        "--no-imagequant",
+        action="store_true",
+        help="skip GPL-licensed optional dependency libimagequant",
+    )
+    parser.add_argument(
+        "--no-fribidi",
+        "--no-raqm",
+        action="store_true",
+        help="skip LGPL-licensed optional dependency FriBiDi",
+    )
+    args = parser.parse_args()
 
-    # dependency cache directory
-    os.makedirs(depends_dir, exist_ok=True)
-    print("Caching dependencies in:", depends_dir)
+    arch_prefs = ARCHITECTURES[args.architecture]
+    print("Target architecture:", args.architecture)
 
-    if python_dir is None:
-        python_dir = os.path.dirname(os.path.realpath(sys.executable))
-        python_exe = os.path.basename(sys.executable)
-    print("Target Python:", os.path.join(python_dir, python_exe))
-
-    arch_prefs = architectures[architecture]
-    print("Target Architecture:", architecture)
-
-    msvs = find_msvs()
+    msvs = find_msvs(args.architecture)
     if msvs is None:
-        raise RuntimeError(
-            "Visual Studio not found. Please install Visual Studio 2017 or newer."
-        )
+        msg = "Visual Studio not found. Please install Visual Studio 2017 or newer."
+        raise RuntimeError(msg)
     print("Found Visual Studio at:", msvs["vs_dir"])
 
-    print("Using output directory:", build_dir)
+    # dependency cache directory
+    args.depends_dir = os.path.abspath(args.depends_dir)
+    os.makedirs(args.depends_dir, exist_ok=True)
+    print("Caching dependencies in:", args.depends_dir)
+
+    args.build_dir = os.path.abspath(args.build_dir)
+    print("Using output directory:", args.build_dir)
 
     # build directory for *.h files
-    inc_dir = os.path.join(build_dir, "inc")
+    inc_dir = os.path.join(args.build_dir, "inc")
     # build directory for *.lib files
-    lib_dir = os.path.join(build_dir, "lib")
+    lib_dir = os.path.join(args.build_dir, "lib")
     # build directory for *.bin files
-    bin_dir = os.path.join(build_dir, "bin")
+    bin_dir = os.path.join(args.build_dir, "bin")
     # directory for storing project files
-    sources_dir = build_dir + sources_dir
+    sources_dir = os.path.join(args.build_dir, "src")
     # copy dependency licenses to this directory
-    license_dir = os.path.join(build_dir, "license")
+    license_dir = os.path.join(args.build_dir, "license")
 
-    shutil.rmtree(build_dir, ignore_errors=True)
-    os.makedirs(build_dir, exist_ok=False)
+    shutil.rmtree(args.build_dir, ignore_errors=True)
+    os.makedirs(args.build_dir, exist_ok=False)
     for path in [inc_dir, lib_dir, bin_dir, sources_dir, license_dir]:
         os.makedirs(path, exist_ok=True)
 
+    disabled = []
+    if args.no_imagequant:
+        disabled += ["libimagequant"]
+    if args.no_fribidi:
+        disabled += ["fribidi"]
+    elif args.architecture == "ARM64" and platform.machine() != "ARM64":
+        import warnings
+
+        warnings.warn("Cross-compiling FriBiDi is currently not supported, disabling")
+        disabled += ["fribidi"]
+
     prefs = {
-        # Python paths / preferences
-        "python_dir": python_dir,
-        "python_exe": python_exe,
-        "architecture": architecture,
+        "architecture": args.architecture,
         **arch_prefs,
         # Pillow paths
-        "pillow_dir": os.path.realpath(os.path.join(winbuild_dir, "..")),
+        "pillow_dir": pillow_dir,
         "winbuild_dir": winbuild_dir,
         # Build paths
-        "build_dir": build_dir,
+        "build_dir": args.build_dir,
         "inc_dir": inc_dir,
         "lib_dir": lib_dir,
         "bin_dir": bin_dir,
@@ -679,16 +729,15 @@ if __name__ == "__main__":
         # Compilers / Tools
         **msvs,
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
+        "cmake_generator": args.cmake_generator,
         # TODO find NASM automatically
-        # script header
-        "header": sum([header, msvs["header"], ["@echo on"]], []),
     }
 
-    for k, v in deps.items():
+    for k, v in DEPS.items():
         prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()
 
     write_script(".gitignore", ["*"])
+    build_env()
     build_dep_all()
-    build_pillow()
