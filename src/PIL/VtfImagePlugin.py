@@ -254,13 +254,13 @@ class VtfImageFile(ImageFile.ImageFile):
             VtfPF.BGRA8888,
             VtfPF.A8,
         ):
-            self.mode = "RGBA"
+            self._mode = "RGBA"
         elif pixel_format in (VtfPF.RGB888, VtfPF.BGR888, VtfPF.UV88):
-            self.mode = "RGB"
+            self._mode = "RGB"
         elif pixel_format == VtfPF.I8:
-            self.mode = "L"
+            self._mode = "L"
         elif pixel_format == VtfPF.IA88:
-            self.mode = "LA"
+            self._mode = "LA"
         else:
             raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
 
