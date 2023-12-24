@@ -9,6 +9,7 @@ The contents of this file are hereby released in the public domain (CC0)
 Full text of the CC0 license:
   https://creativecommons.org/publicdomain/zero/1.0/
 """
+from __future__ import annotations
 
 import struct
 from enum import IntEnum, IntFlag
@@ -101,30 +102,25 @@ class VtfPF(IntEnum):
     # UVLX8888 = 26
 
 
-VTFHeader = NamedTuple(
-    "VTFHeader",
-    [
-        ("header_size", int),
-        ("width", int),
-        ("height", int),
-        ("flags", int),
-        ("frames", int),
-        ("first_frames", int),
-        ("reflectivity_r", float),
-        ("reflectivity_g", float),
-        ("reflectivity_b", float),
-        ("bumpmap_scale", float),
-        ("pixel_format", int),
-        ("mipmap_count", int),
-        ("low_pixel_format", int),
-        ("low_width", int),
-        ("low_height", int),
-        # V 7.2+
-        ("depth", int),
-        # V 7.3+
-        ("resource_count", int),
-    ],
-)
+class VTFHeader(NamedTuple):
+    header_size: int
+    width: int
+    height: int
+    flags: int
+    frames: int
+    first_frames: int
+    reflectivity_r: float
+    reflectivity_g: float
+    reflectivity_b: float
+    bumpmap_scale: float
+    pixel_format: int
+    mipmap_count: int
+    low_pixel_format: int
+    low_width: int
+    low_height: int
+    depth: int
+    resource_count: int
+
 
 BLOCK_COMPRESSED = (VtfPF.DXT1, VtfPF.DXT1_ONEBITALPHA, VtfPF.DXT3, VtfPF.DXT5)
 HEADER_V70 = "<I2HI2H4x3f4xfIbI2b"

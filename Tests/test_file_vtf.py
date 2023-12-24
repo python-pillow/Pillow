@@ -1,4 +1,4 @@
-from typing import Tuple
+from __future__ import annotations
 
 import pytest
 
@@ -42,7 +42,7 @@ def test_closest_power(size: int, expected_size: int):
         ((1024, 1), 11),
     ],
 )
-def test_get_mipmap_count(size: Tuple[int, int], expected_count: int):
+def test_get_mipmap_count(size: tuple[int, int], expected_count: int):
     assert _get_mipmap_count(*size) == expected_count
 
 
@@ -63,7 +63,7 @@ def test_get_mipmap_count(size: Tuple[int, int], expected_count: int):
     ],
 )
 def test_get_texture_size(
-    pixel_format: VtfPF, size: Tuple[int, int], expected_size: int
+    pixel_format: VtfPF, size: tuple[int, int], expected_size: int
 ):
     assert _get_texture_size(pixel_format, *size) == expected_size
 
