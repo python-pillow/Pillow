@@ -77,7 +77,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}-${{ matrix.archs }}-${{ matrix.manylinux }}
+          name: dist-${{ matrix.os }}-${{ matrix.archs }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
           path: ./wheelhouse/*.whl
 
   windows:
