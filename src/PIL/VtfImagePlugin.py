@@ -144,7 +144,8 @@ def _get_texture_size(pixel_format: VtfPF, width, height):
         return width * height * 3
     elif pixel_format == VtfPF.RGBA8888:
         return width * height * 4
-    raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
+    msg = f"Unsupported VTF pixel format: {pixel_format}"
+    raise VTFException(msg)
 
 
 def _get_mipmap_count(width: int, height: int):
@@ -196,7 +197,8 @@ def _write_image(fp: BufferedIOBase, im: Image.Image, pixel_format: VtfPF):
         encoder = "raw"
         encoder_args = ("RG", 0, 0)
     else:
-        raise VTFException(f"Unsupported pixel format: {pixel_format!r}")
+        msg = f"Unsupported pixel format: {pixel_format!r}"
+        raise VTFException(msg)
 
     tile = [(encoder, extents, fp.tell(), encoder_args)]
     ImageFile._save(im, fp, tile, _get_texture_size(pixel_format, *im.size))
@@ -213,7 +215,8 @@ class VtfImageFile(ImageFile.ImageFile):
 
     def _open(self):
         if not _accept(self.fp.read(12)):
-            raise SyntaxError("not a VTF file")
+            msg = "not a VTF file"
+            raise SyntaxError(msg)
         self.fp.seek(4)
         version = struct.unpack("<2I", self.fp.read(8))
         if version <= (7, 2):
@@ -241,7 +244,8 @@ class VtfImageFile(ImageFile.ImageFile):
             )
             self.fp.seek(header.header_size)
         else:
-            raise VTFException(f"Unsupported VTF version: {version}")
+            msg = f"Unsupported VTF version: {version}"
+            raise VTFException(msg)
         # flags = CompiledVtfFlags(header.flags)
         pixel_format = VtfPF(header.pixel_format)
         low_format = VtfPF(header.low_pixel_format)
@@ -262,7 +266,8 @@ class VtfImageFile(ImageFile.ImageFile):
         elif pixel_format == VtfPF.IA88:
             self._mode = "LA"
         else:
-            raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
+            msg = f"Unsupported VTF pixel format: {pixel_format}"
+            raise VTFException(msg)
 
         self._size = (header.width, header.height)
 
@@ -298,14 +303,16 @@ class VtfImageFile(ImageFile.ImageFile):
         elif pixel_format == VtfPF.IA88:
             tile = ("raw", (0, 0) + self.size, data_start, ("LA", 0, 1))
         else:
-            raise VTFException(f"Unsupported VTF pixel format: {pixel_format}")
+            msg = f"Unsupported VTF pixel format: {pixel_format}"
+            raise VTFException(msg)
         self.tile = [tile]
 
 
 def _save(im, fp, filename):
     im: Image.Image
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
-        raise OSError(f"cannot write mode {im.mode} as VTF")
+        msg = f"cannot write mode {im.mode} as VTF"
+        raise OSError(msg)
     encoderinfo = im.encoderinfo
     pixel_format = VtfPF(encoderinfo.get("pixel_format", VtfPF.RGBA8888))
     version = encoderinfo.get("version", (7, 4))
@@ -373,7 +380,8 @@ def _save(im, fp, filename):
         header = header._replace(header_size=size + (16 - size % 16))
         fp.write(struct.pack(HEADER_V73, *header))
     else:
-        raise VTFException(f"Unsupported version {version}")
+        msg = f"Unsupported version {version}"
+        raise VTFException(msg)
 
     if version > (7, 2):
         fp.write(b"\x01\x00\x00\x00")
