@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from . import Image
+from . import ImageType
 
 
 class Iterator:
@@ -33,14 +33,14 @@ class Iterator:
     :param im: An image object.
     """
 
-    def __init__(self, im: Image.Image):
+    def __init__(self, im: ImageType):
         if not hasattr(im, "seek"):
             msg = "im must have seek method"
             raise AttributeError(msg)
         self.im = im
         self.position = getattr(self.im, "_min_frame", 0)
 
-    def __getitem__(self, ix: int) -> Image.Image:
+    def __getitem__(self, ix: int) -> ImageType:
         try:
             self.im.seek(ix)
             return self.im
@@ -51,7 +51,7 @@ class Iterator:
     def __iter__(self) -> Iterator:
         return self
 
-    def __next__(self) -> Image.Image:
+    def __next__(self) -> ImageType:
         try:
             self.im.seek(self.position)
             self.position += 1
@@ -62,9 +62,9 @@ class Iterator:
 
 
 def all_frames(
-    im: Image.Image | list[Image.Image],
-    func: Callable[[Image.Image], Image.Image] | None = None,
-) -> list[Image.Image]:
+    im: ImageType | list[ImageType],
+    func: Callable[[ImageType], ImageType] | None = None,
+) -> list[ImageType]:
     """
     Applies a given function to all frames in an image or a list of images.
     The frames are returned as a list of separate images.

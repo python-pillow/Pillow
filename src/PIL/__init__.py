@@ -83,3 +83,11 @@ class UnidentifiedImageError(OSError):
     """
 
     pass
+
+
+def __getattr__(name: str):
+    if name == "ImageType":
+        from . import Image
+
+        return Image.Image
+    raise AttributeError
