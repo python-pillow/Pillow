@@ -28,6 +28,7 @@ BLP files come in many different flavours:
   - DXT3 compression is used if alpha_encoding == 1.
   - DXT5 compression is used if alpha_encoding == 7.
 """
+from __future__ import annotations
 
 import os
 import struct

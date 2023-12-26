@@ -56,7 +56,9 @@ def cmd_nmake(
     )
 
 
-def cmds_cmake(target: str | tuple[str, ...] | list[str], *params) -> list[str]:
+def cmds_cmake(
+    target: str | tuple[str, ...] | list[str], *params, build_dir: str = "."
+) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
 
@@ -73,10 +75,11 @@ def cmds_cmake(target: str | tuple[str, ...] | list[str], *params) -> list[str]:
                 "-DCMAKE_CXX_FLAGS=-nologo",
                 *params,
                 '-G "{cmake_generator}"',
-                ".",
+                f'-B "{build_dir}"',
+                "-S .",
             ]
         ),
-        f"{{cmake}} --build . --clean-first --parallel --target {target}",
+        f'{{cmake}} --build "{build_dir}" --clean-first --parallel --target {target}',
     ]
 
 
@@ -367,7 +370,14 @@ DEPS = {
         "build": [
             cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.13-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
-            *cmds_cmake("fribidi"),
+            # generated tab.i files cannot be cross-compiled
+            " ^&^& ".join(
+                [
+                    "if {architecture}==ARM64 cmd /c call {vcvarsall} x86",
+                    *cmds_cmake("fribidi-gen", "-DARCH=x86", build_dir="build_x86"),
+                ]
+            ),
+            *cmds_cmake("fribidi", "-DARCH={architecture}"),
         ],
         "bins": [r"*.dll"],
     },
@@ -381,10 +391,9 @@ def find_msvs(architecture: str) -> dict[str, str] | None:
         print("Program Files not found")
         return None
 
+    requires = ["-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"]
     if architecture == "ARM64":
-        tools = "Microsoft.VisualStudio.Component.VC.Tools.ARM64"
-    else:
-        tools = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+        requires += ["-requires", "Microsoft.VisualStudio.Component.VC.Tools.ARM64"]
 
     try:
         vspath = (
@@ -395,8 +404,7 @@ def find_msvs(architecture: str) -> dict[str, str] | None:
                     ),
                     "-latest",
                     "-prerelease",
-                    "-requires",
-                    tools,
+                    *requires,
                     "-property",
                     "installationPath",
                     "-products",
@@ -706,11 +714,6 @@ if __name__ == "__main__":
     if args.no_imagequant:
         disabled += ["libimagequant"]
     if args.no_fribidi:
-        disabled += ["fribidi"]
-    elif args.architecture == "ARM64" and platform.machine() != "ARM64":
-        import warnings
-
-        warnings.warn("Cross-compiling FriBiDi is currently not supported, disabling")
         disabled += ["fribidi"]
 
     prefs = {

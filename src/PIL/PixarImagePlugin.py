@@ -18,6 +18,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
