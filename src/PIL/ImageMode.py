@@ -42,7 +42,6 @@ class ModeDescriptor:
 @lru_cache
 def getmode(mode: str) -> ModeDescriptor:
     """Gets a mode descriptor for the given mode."""
-    # if not _modes:
     # initialize mode cache
     endian = "<" if sys.byteorder == "little" else ">"
 
