@@ -37,6 +37,9 @@ classifiers = [
 dynamic = [
   "version",
 ]
+dependencies = [
+  'typing-extensions; python_version < "3.10"',
+]
 [project.optional-dependencies]
 docs = [
   "furo",
