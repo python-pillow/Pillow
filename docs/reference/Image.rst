@@ -9,6 +9,13 @@ used to represent a PIL image. The module also provides a number of factory
 functions, including functions to load images from files, and to create new
 images.
 
+To assist with type hints, ``ImageType`` has been added a simpler way to refer
+to the class within the module. ::
+
+    from PIL import Image, ImageType
+    im1: Image.Image = Image.new("RGB", (1, 1))
+    im2: ImageType = Image.new("RGB", (1, 1))
+
 Examples
 --------
 
