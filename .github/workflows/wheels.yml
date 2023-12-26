@@ -75,9 +75,9 @@ jobs:
           CIBW_TEST_SKIP: "*-macosx_arm64"
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-${{ matrix.os }}-${{ matrix.archs }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
           path: ./wheelhouse/*.whl
 
   windows:
@@ -154,9 +154,9 @@ jobs:
         shell: cmd
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-windows-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
 
       - name: Upload fribidi.dll
@@ -179,17 +179,26 @@ jobs:
 
     - run: make sdist
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
-        name: dist
+        name: dist-sdist
         path: dist/*.tar.gz
 
-  success:
-    permissions:
-      contents: none
+  pypi-publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: [build, windows, sdist]
     runs-on: ubuntu-latest
-    name: Wheels Successful
+    name: Upload release to PyPI
+    environment:
+      name: release-pypi
+      url: https://pypi.org/p/Pillow
+    permissions:
+      id-token: write
     steps:
-      - name: Success
-        run: echo Wheels Successful
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
