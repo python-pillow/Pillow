@@ -156,7 +156,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.arch }}
+          name: dist-windows-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
 
       - name: Upload fribidi.dll
