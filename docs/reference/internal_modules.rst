@@ -31,7 +31,7 @@ Internal Modules
 .. module:: PIL._typing
 
 Provides a convenient way to import type hints that are not available
-on some supported Python versions.
+on some Python versions.
 
 .. py:data:: TypeGuard
     :value: typing.TypeGuard
