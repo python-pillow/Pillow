@@ -90,4 +90,5 @@ def __getattr__(name: str):
         from . import Image
 
         return Image.Image
-    raise AttributeError
+    msg = f"module 'PIL' has no attribute '{name}'"
+    raise AttributeError(msg)
