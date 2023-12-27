@@ -1,14 +1,9 @@
 from __future__ import annotations
 
 import os
-import sys
 from pathlib import Path
 from typing import Any, NoReturn
-
-if sys.version_info >= (3, 10):
-    from typing import TypeGuard
-else:
-    from typing_extensions import TypeGuard
+from ._typing import TypeGuard
 
 
 def is_path(f: Any) -> TypeGuard[bytes | str | Path]:
