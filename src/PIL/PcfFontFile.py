@@ -42,7 +42,7 @@ PCF_SWIDTHS = 1 << 6
 PCF_GLYPH_NAMES = 1 << 7
 PCF_BDF_ACCELERATORS = 1 << 8
 
-BYTES_PER_ROW = [
+BYTES_PER_ROW: list[Callable[[int], int]] = [
     lambda bits: ((bits + 7) >> 3),
     lambda bits: ((bits + 15) >> 3) & ~1,
     lambda bits: ((bits + 31) >> 3) & ~3,
@@ -210,7 +210,7 @@ class PcfFontFile(FontFile.FontFile):
 
         data = fp.read(bitmapsize)
 
-        pad: Callable[[int], int] = BYTES_PER_ROW[padindex]
+        pad = BYTES_PER_ROW[padindex]
         mode = "1;R"
         if bitorder:
             mode = "1"
