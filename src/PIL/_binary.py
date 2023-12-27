@@ -18,7 +18,7 @@ from __future__ import annotations
 from struct import pack, unpack_from
 
 
-def i8(c):
+def i8(c) -> int:
     return c if c.__class__ is int else c[0]
 
 
@@ -57,7 +57,7 @@ def si16be(c, o=0):
     return unpack_from(">h", c, o)[0]
 
 
-def i32le(c, o=0):
+def i32le(c, o=0) -> int:
     """
     Converts a 4-bytes (32 bits) string to an unsigned integer.
 
@@ -94,7 +94,7 @@ def o32le(i):
     return pack("<I", i)
 
 
-def o16be(i):
+def o16be(i) -> bytes:
     return pack(">H", i)
 
 

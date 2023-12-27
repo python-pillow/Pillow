@@ -1194,7 +1194,7 @@ class Image:
 
     __copy__ = copy
 
-    def crop(self, box=None):
+    def crop(self, box=None) -> Image:
         """
         Returns a rectangular region from this image. The box is a
         4-tuple defining the left, upper, right, and lower pixel
@@ -1659,7 +1659,7 @@ class Image:
             return self.im.entropy(extrema)
         return self.im.entropy()
 
-    def paste(self, im, box=None, mask=None):
+    def paste(self, im, box=None, mask=None) -> None:
         """
         Pastes another image into this image. The box argument is either
         a 2-tuple giving the upper left corner, a 4-tuple defining the
@@ -2352,7 +2352,7 @@ class Image:
             (w, h), Transform.AFFINE, matrix, resample, fillcolor=fillcolor
         )
 
-    def save(self, fp, format=None, **params):
+    def save(self, fp, format=None, **params) -> None:
         """
         Saves this image under the given filename.  If no format is
         specified, the format to use is determined from the filename
@@ -2903,7 +2903,7 @@ def _check_size(size):
     return True
 
 
-def new(mode, size, color=0):
+def new(mode, size, color=0) -> Image:
     """
     Creates a new image with the given mode and size.
 
@@ -2942,7 +2942,7 @@ def new(mode, size, color=0):
     return im._new(core.fill(mode, size, color))
 
 
-def frombytes(mode, size, data, decoder_name="raw", *args):
+def frombytes(mode, size, data, decoder_name="raw", *args) -> Image:
     """
     Creates a copy of an image memory from pixel data in a buffer.
 
