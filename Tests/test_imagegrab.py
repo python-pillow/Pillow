@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import shutil
 import subprocess
@@ -11,6 +12,10 @@ from .helper import assert_image_equal_tofile, skip_unless_feature
 
 
 class TestImageGrab:
+    @pytest.mark.skipif(
+        os.environ.get("USERNAME") == "ContainerAdministrator",
+        reason="can't grab screen when running in Docker",
+    )
     @pytest.mark.skipif(
         sys.platform not in ("win32", "darwin"), reason="requires Windows or macOS"
     )
@@ -64,9 +69,13 @@ $bmp = New-Object Drawing.Bitmap 200, 200
             )
             p.communicate()
         else:
-            with pytest.raises(NotImplementedError) as e:
-                ImageGrab.grabclipboard()
-            assert str(e.value) == "ImageGrab.grabclipboard() is macOS and Windows only"
+            if not shutil.which("wl-paste") and not shutil.which("xclip"):
+                with pytest.raises(
+                    NotImplementedError,
+                    match="wl-paste or xclip is required for"
+                    r" ImageGrab.grabclipboard\(\) on Linux",
+                ):
+                    ImageGrab.grabclipboard()
             return
 
         ImageGrab.grabclipboard()
@@ -94,3 +103,18 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
 
         im = ImageGrab.grabclipboard()
         assert_image_equal_tofile(im, "Tests/images/hopper.png")
+
+    @pytest.mark.skipif(
+        (
+            sys.platform != "linux"
+            or not all(shutil.which(cmd) for cmd in ("wl-paste", "wl-copy"))
+        ),
+        reason="Linux with wl-clipboard only",
+    )
+    @pytest.mark.parametrize("ext", ("gif", "png", "ico"))
+    def test_grabclipboard_wl_clipboard(self, ext):
+        image_path = "Tests/images/hopper." + ext
+        with open(image_path, "rb") as fp:
+            subprocess.call(["wl-copy"], stdin=fp)
+        im = ImageGrab.grabclipboard()
+        assert_image_equal_tofile(im, image_path)

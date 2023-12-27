@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import warnings
 
@@ -18,7 +19,6 @@ def test_bad():
     """These shouldn't crash/dos, but they shouldn't return anything
     either"""
     for f in get_files("b"):
-
         # Assert that there is no unclosed file warning
         with warnings.catch_warnings():
             try:

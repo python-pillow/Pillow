@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 
 import pytest
@@ -207,6 +208,9 @@ class TestLibPack:
                 0x01000083,
             )
 
+    def test_I16(self):
+        self.assert_pack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+
     def test_F_float(self):
         self.assert_pack("F", "F;32F", 4, 1.539989614439558e-36, 4.063216068939723e-34)
 
@@ -336,6 +340,17 @@ class TestLibUnpack:
             self.assert_unpack("RGB", "R;16N", 2, (1, 0, 0), (3, 0, 0), (5, 0, 0))
             self.assert_unpack("RGB", "G;16N", 2, (0, 1, 0), (0, 3, 0), (0, 5, 0))
             self.assert_unpack("RGB", "B;16N", 2, (0, 0, 1), (0, 0, 3), (0, 0, 5))
+
+        self.assert_unpack(
+            "RGB", "CMYK", 4, (250, 249, 248), (242, 241, 240), (234, 233, 233)
+        )
+
+    def test_BGR(self):
+        self.assert_unpack("BGR;15", "BGR;15", 3, (8, 131, 0), (24, 0, 8), (41, 131, 8))
+        self.assert_unpack(
+            "BGR;16", "BGR;16", 3, (8, 64, 0), (24, 129, 0), (41, 194, 0)
+        )
+        self.assert_unpack("BGR;24", "BGR;24", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
 
     def test_RGBA(self):
         self.assert_unpack("RGBA", "LA", 2, (1, 1, 1, 2), (3, 3, 3, 4), (5, 5, 5, 6))
@@ -754,6 +769,7 @@ class TestLibUnpack:
 
     def test_I16(self):
         self.assert_unpack("I;16", "I;16", 2, 0x0201, 0x0403, 0x0605)
+        self.assert_unpack("I;16", "I;16B", 2, 0x0102, 0x0304, 0x0506)
         self.assert_unpack("I;16B", "I;16B", 2, 0x0102, 0x0304, 0x0506)
         self.assert_unpack("I;16L", "I;16L", 2, 0x0201, 0x0403, 0x0605)
         self.assert_unpack("I;16", "I;12", 2, 0x0010, 0x0203, 0x0040)
@@ -761,10 +777,12 @@ class TestLibUnpack:
             self.assert_unpack("I;16", "I;16N", 2, 0x0201, 0x0403, 0x0605)
             self.assert_unpack("I;16B", "I;16N", 2, 0x0201, 0x0403, 0x0605)
             self.assert_unpack("I;16L", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+            self.assert_unpack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
         else:
             self.assert_unpack("I;16", "I;16N", 2, 0x0102, 0x0304, 0x0506)
             self.assert_unpack("I;16B", "I;16N", 2, 0x0102, 0x0304, 0x0506)
             self.assert_unpack("I;16L", "I;16N", 2, 0x0102, 0x0304, 0x0506)
+            self.assert_unpack("I;16N", "I;16N", 2, 0x0102, 0x0304, 0x0506)
 
     def test_CMYK16(self):
         self.assert_unpack("CMYK", "CMYK;16L", 8, (2, 4, 6, 8), (10, 12, 14, 16))

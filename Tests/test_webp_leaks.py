@@ -1,3 +1,4 @@
+from __future__ import annotations
 from io import BytesIO
 
 from PIL import Image
@@ -9,7 +10,6 @@ test_file = "Tests/images/hopper.webp"
 
 @skip_unless_feature("webp")
 class TestWebPLeaks(PillowLeakTestCase):
-
     mem_limit = 3 * 1024  # kb
     iterations = 100
 

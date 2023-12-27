@@ -1,9 +1,11 @@
+from __future__ import annotations
 import copy
 import os
 import re
 import shutil
 import sys
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from packaging.version import parse as parse_version
@@ -76,8 +78,9 @@ def _render(font, layout_engine):
     return img
 
 
-def test_font_with_name(layout_engine):
-    _render(FONT_PATH, layout_engine)
+@pytest.mark.parametrize("font", (FONT_PATH, Path(FONT_PATH)))
+def test_font_with_name(layout_engine, font):
+    _render(font, layout_engine)
 
 
 def test_font_with_filelike(layout_engine):
@@ -141,7 +144,9 @@ def test_I16(font):
     draw = ImageDraw.Draw(im)
 
     txt = "Hello World!"
-    draw.text((10, 10), txt, font=font)
+    draw.text((10, 10), txt, fill=0xFFFE, font=font)
+
+    assert im.getpixel((12, 14)) == 0xFFFE
 
     target = "Tests/images/transparent_background_text_L.png"
     assert_image_similar_tofile(im.convert("L"), target, 0.01)
@@ -189,6 +194,16 @@ def test_getlength(
         # disable kerning, kerning metrics changed
         length = d.textlength(text, f, features=["-kern"])
         assert length == length_raqm
+
+
+def test_float_size():
+    lengths = []
+    for size in (48, 48.5, 49):
+        f = ImageFont.truetype(
+            "Tests/fonts/NotoSans-Regular.ttf", size, layout_engine=layout_engine
+        )
+        lengths.append(f.getlength("text"))
+    assert lengths[0] != lengths[1] != lengths[2]
 
 
 def test_render_multiline(font):
@@ -251,27 +266,6 @@ def test_draw_align(font):
     draw.text((100, 40), line, (0, 0, 0), font=font, align="left")
 
 
-def test_multiline_size(font):
-    im = Image.new(mode="RGB", size=(300, 100))
-    draw = ImageDraw.Draw(im)
-
-    with pytest.warns(DeprecationWarning) as log:
-        # Test that textsize() correctly connects to multiline_textsize()
-        assert draw.textsize(TEST_TEXT, font=font) == draw.multiline_textsize(
-            TEST_TEXT, font=font
-        )
-
-        # Test that multiline_textsize corresponds to ImageFont.textsize()
-        # for single line text
-        assert font.getsize("A") == draw.multiline_textsize("A", font=font)
-
-        # Test that textsize() can pass on additional arguments
-        # to multiline_textsize()
-        draw.textsize(TEST_TEXT, font=font, spacing=4)
-        draw.textsize(TEST_TEXT, font, 4)
-    assert len(log) == 6
-
-
 def test_multiline_bbox(font):
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
@@ -298,12 +292,6 @@ def test_multiline_width(font):
         draw.textbbox((0, 0), "longest line", font=font)[2]
         == draw.multiline_textbbox((0, 0), "longest line\nline", font=font)[2]
     )
-    with pytest.warns(DeprecationWarning) as log:
-        assert (
-            draw.textsize("longest line", font=font)[0]
-            == draw.multiline_textsize("longest line\nline", font=font)[0]
-        )
-    assert len(log) == 2
 
 
 def test_multiline_spacing(font):
@@ -318,40 +306,35 @@ def test_multiline_spacing(font):
     "orientation", (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270)
 )
 def test_rotated_transposed_font(font, orientation):
-    img_grey = Image.new("L", (100, 100))
-    draw = ImageDraw.Draw(img_grey)
+    img_gray = Image.new("L", (100, 100))
+    draw = ImageDraw.Draw(img_gray)
     word = "testing"
 
     transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
 
     # Original font
     draw.font = font
-    with pytest.warns(DeprecationWarning) as log:
-        box_size_a = draw.textsize(word)
-        assert box_size_a == font.getsize(word)
-    assert len(log) == 2
     bbox_a = draw.textbbox((10, 10), word)
 
     # Rotated font
     draw.font = transposed_font
-    with pytest.warns(DeprecationWarning) as log:
-        box_size_b = draw.textsize(word)
-        assert box_size_b == transposed_font.getsize(word)
-    assert len(log) == 2
     bbox_b = draw.textbbox((20, 20), word)
 
-    # Check (w,h) of box a is (h,w) of box b
-    assert box_size_a[0] == box_size_b[1]
-    assert box_size_a[1] == box_size_b[0]
+    # Check (w, h) of box a is (h, w) of box b
+    assert (
+        bbox_a[2] - bbox_a[0],
+        bbox_a[3] - bbox_a[1],
+    ) == (
+        bbox_b[3] - bbox_b[1],
+        bbox_b[2] - bbox_b[0],
+    )
 
-    # Check bbox b is (20, 20, 20 + h, 20 + w)
-    assert bbox_b[0] == 20
-    assert bbox_b[1] == 20
-    assert bbox_b[2] == 20 + bbox_a[3] - bbox_a[1]
-    assert bbox_b[3] == 20 + bbox_a[2] - bbox_a[0]
+    # Check top left co-ordinates are correct
+    assert bbox_b[:2] == (20, 20)
 
     # text length is undefined for vertical text
-    pytest.raises(ValueError, draw.textlength, word)
+    with pytest.raises(ValueError):
+        draw.textlength(word)
 
 
 @pytest.mark.parametrize(
@@ -364,36 +347,33 @@ def test_rotated_transposed_font(font, orientation):
     ),
 )
 def test_unrotated_transposed_font(font, orientation):
-    img_grey = Image.new("L", (100, 100))
-    draw = ImageDraw.Draw(img_grey)
+    img_gray = Image.new("L", (100, 100))
+    draw = ImageDraw.Draw(img_gray)
     word = "testing"
 
     transposed_font = ImageFont.TransposedFont(font, orientation=orientation)
 
     # Original font
     draw.font = font
-    with pytest.warns(DeprecationWarning) as log:
-        box_size_a = draw.textsize(word)
-    assert len(log) == 1
     bbox_a = draw.textbbox((10, 10), word)
     length_a = draw.textlength(word)
 
     # Rotated font
     draw.font = transposed_font
-    with pytest.warns(DeprecationWarning) as log:
-        box_size_b = draw.textsize(word)
-    assert len(log) == 1
     bbox_b = draw.textbbox((20, 20), word)
     length_b = draw.textlength(word)
 
     # Check boxes a and b are same size
-    assert box_size_a == box_size_b
+    assert (
+        bbox_a[2] - bbox_a[0],
+        bbox_a[3] - bbox_a[1],
+    ) == (
+        bbox_b[2] - bbox_b[0],
+        bbox_b[3] - bbox_b[1],
+    )
 
-    # Check bbox b is (20, 20, 20 + w, 20 + h)
-    assert bbox_b[0] == 20
-    assert bbox_b[1] == 20
-    assert bbox_b[2] == 20 + bbox_a[2] - bbox_a[0]
-    assert bbox_b[3] == 20 + bbox_a[3] - bbox_a[1]
+    # Check top left co-ordinates are correct
+    assert bbox_b[:2] == (20, 20)
 
     assert length_a == length_b
 
@@ -446,19 +426,6 @@ def test_free_type_font_get_metrics(font):
     assert (ascent, descent) == (16, 4)
 
 
-def test_free_type_font_get_offset(font):
-    # Arrange
-    text = "offset this"
-
-    # Act
-    with pytest.warns(DeprecationWarning) as log:
-        offset = font.getoffset(text)
-
-    # Assert
-    assert len(log) == 1
-    assert offset == (0, 3)
-
-
 def test_free_type_font_get_mask(font):
     # Arrange
     text = "mask this"
@@ -489,7 +456,7 @@ def test_load_non_font_bytes():
 
 def test_default_font():
     # Arrange
-    txt = 'This is a "better than nothing" default font.'
+    txt = "This is a default font using FreeType support."
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
 
@@ -497,8 +464,16 @@ def test_default_font():
     default_font = ImageFont.load_default()
     draw.text((10, 10), txt, font=default_font)
 
+    larger_default_font = ImageFont.load_default(size=14)
+    draw.text((10, 60), txt, font=larger_default_font)
+
     # Assert
-    assert_image_equal_tofile(im, "Tests/images/default_font.png")
+    assert_image_equal_tofile(im, "Tests/images/default_font_freetype.png")
+
+
+@pytest.mark.parametrize("mode", (None, "1", "RGBA"))
+def test_getbbox(font, mode):
+    assert (0, 4, 12, 16) == font.getbbox("A", mode)
 
 
 def test_getbbox_empty(font):
@@ -514,14 +489,6 @@ def test_render_empty(font):
     # should not crash here.
     draw.text((10, 10), "", font=font)
     assert_image_equal(im, target)
-
-
-def test_unicode_pilfont():
-    # should not segfault, should return UnicodeDecodeError
-    # issue #2826
-    font = ImageFont.load_default()
-    with pytest.raises(UnicodeEncodeError):
-        font.getbbox("’")
 
 
 def test_unicode_extended(layout_engine):
@@ -617,19 +584,6 @@ def test_imagefont_getters(font):
     assert font.getlength("M") == 12
     assert font.getlength("y") == 12
     assert font.getlength("a") == 12
-    with pytest.warns(DeprecationWarning) as log:
-        assert font.getsize("A") == (12, 16)
-        assert font.getsize("AB") == (24, 16)
-        assert font.getsize("M") == (12, 16)
-        assert font.getsize("y") == (12, 20)
-        assert font.getsize("a") == (12, 16)
-        assert font.getsize_multiline("A") == (12, 16)
-        assert font.getsize_multiline("AB") == (24, 16)
-        assert font.getsize_multiline("a") == (12, 16)
-        assert font.getsize_multiline("ABC\n") == (36, 36)
-        assert font.getsize_multiline("ABC\nA") == (36, 36)
-        assert font.getsize_multiline("ABC\nAaaa") == (48, 36)
-    assert len(log) == 11
 
 
 @pytest.mark.parametrize("stroke_width", (0, 2))
@@ -640,16 +594,6 @@ def test_getsize_stroke(font, stroke_width):
         12 + stroke_width,
         16 + stroke_width,
     )
-    with pytest.warns(DeprecationWarning) as log:
-        assert font.getsize("A", stroke_width=stroke_width) == (
-            12 + stroke_width * 2,
-            16 + stroke_width * 2,
-        )
-        assert font.getsize_multiline("ABC\nAaaa", stroke_width=stroke_width) == (
-            48 + stroke_width * 2,
-            36 + stroke_width * 4,
-        )
-    assert len(log) == 2
 
 
 def test_complex_font_settings():
@@ -776,17 +720,6 @@ def test_variation_set_by_axes(font):
     _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
 
 
-def test_textbbox_non_freetypefont():
-    im = Image.new("RGB", (200, 200))
-    d = ImageDraw.Draw(im)
-    default_font = ImageFont.load_default()
-    with pytest.warns(DeprecationWarning) as log:
-        width, height = d.textsize("test", font=default_font)
-    assert len(log) == 1
-    assert d.textlength("test", font=default_font) == width
-    assert d.textbbox((0, 0), "test", font=default_font) == (0, 0, width, height)
-
-
 @pytest.mark.parametrize(
     "anchor, left, top",
     (
@@ -872,25 +805,23 @@ def test_anchor_invalid(font):
     d.font = font
 
     for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
-        pytest.raises(ValueError, lambda: font.getmask2("hello", anchor=anchor))
-        pytest.raises(ValueError, lambda: font.getbbox("hello", anchor=anchor))
-        pytest.raises(ValueError, lambda: d.text((0, 0), "hello", anchor=anchor))
-        pytest.raises(ValueError, lambda: d.textbbox((0, 0), "hello", anchor=anchor))
-        pytest.raises(
-            ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
-        )
+        with pytest.raises(ValueError):
+            font.getmask2("hello", anchor=anchor)
+        with pytest.raises(ValueError):
+            font.getbbox("hello", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.text((0, 0), "hello", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.textbbox((0, 0), "hello", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)
     for anchor in ["lt", "lb"]:
-        pytest.raises(
-            ValueError, lambda: d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
-        )
-        pytest.raises(
-            ValueError,
-            lambda: d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor),
-        )
+        with pytest.raises(ValueError):
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+        with pytest.raises(ValueError):
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)
 
 
 @pytest.mark.parametrize("bpp", (1, 2, 4, 8))
@@ -926,6 +857,19 @@ def test_bitmap_font_stroke(layout_engine):
     draw.text((2, 2), text, "black", font, stroke_width=2, stroke_fill="red")
 
     assert_image_similar_tofile(im, target, 0.03)
+
+
+@pytest.mark.parametrize("embedded_color", (False, True))
+def test_bitmap_blend(layout_engine, embedded_color):
+    font = ImageFont.truetype(
+        "Tests/fonts/EBDTTestFont.ttf", size=64, layout_engine=layout_engine
+    )
+
+    im = Image.new("RGBA", (128, 96), "white")
+    d = ImageDraw.Draw(im)
+    d.text((16, 16), "AA", font=font, fill="#8E2F52", embedded_color=embedded_color)
+
+    assert_image_equal_tofile(im, "Tests/images/bitmap_font_blend.png")
 
 
 def test_standard_embedded_color(layout_engine):
@@ -966,15 +910,15 @@ def test_float_coord(layout_engine, fontmode):
 def test_cbdt(layout_engine):
     try:
         font = ImageFont.truetype(
-            "Tests/fonts/NotoColorEmoji.ttf", size=109, layout_engine=layout_engine
+            "Tests/fonts/CBDTTestFont.ttf", size=64, layout_engine=layout_engine
         )
 
-        im = Image.new("RGB", (150, 150), "white")
+        im = Image.new("RGB", (128, 96), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((10, 10), "\U0001f469", font=font, embedded_color=True)
+        d.text((16, 16), "AB", font=font, embedded_color=True)
 
-        assert_image_similar_tofile(im, "Tests/images/cbdt_notocoloremoji.png", 6.2)
+        assert_image_equal_tofile(im, "Tests/images/cbdt.png")
     except OSError as e:  # pragma: no cover
         assert str(e) in ("unimplemented feature", "unknown file format")
         pytest.skip("freetype compiled without libpng or CBDT support")
@@ -983,17 +927,15 @@ def test_cbdt(layout_engine):
 def test_cbdt_mask(layout_engine):
     try:
         font = ImageFont.truetype(
-            "Tests/fonts/NotoColorEmoji.ttf", size=109, layout_engine=layout_engine
+            "Tests/fonts/CBDTTestFont.ttf", size=64, layout_engine=layout_engine
         )
 
-        im = Image.new("RGB", (150, 150), "white")
+        im = Image.new("RGB", (128, 96), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((10, 10), "\U0001f469", "black", font=font)
+        d.text((16, 16), "AB", "green", font=font)
 
-        assert_image_similar_tofile(
-            im, "Tests/images/cbdt_notocoloremoji_mask.png", 6.2
-        )
+        assert_image_equal_tofile(im, "Tests/images/cbdt_mask.png")
     except OSError as e:  # pragma: no cover
         assert str(e) in ("unimplemented feature", "unknown file format")
         pytest.skip("freetype compiled without libpng or CBDT support")
@@ -1084,14 +1026,6 @@ def test_woff2(layout_engine):
     assert_image_similar_tofile(im, "Tests/images/test_woff2.png", 5)
 
 
-def test_fill_deprecation(font):
-    with pytest.warns(DeprecationWarning):
-        font.getmask2("Hello world", fill=Image.core.fill)
-    with pytest.warns(DeprecationWarning):
-        with pytest.raises(TypeError):
-            font.getmask2("Hello world", fill=None)
-
-
 def test_render_mono_size():
     # issue 4177
 
@@ -1107,10 +1041,30 @@ def test_render_mono_size():
     assert_image_equal_tofile(im, "Tests/images/text_mono.gif")
 
 
+def test_too_many_characters(font):
+    with pytest.raises(ValueError):
+        font.getlength("A" * 1_000_001)
+    with pytest.raises(ValueError):
+        font.getbbox("A" * 1_000_001)
+    with pytest.raises(ValueError):
+        font.getmask2("A" * 1_000_001)
+
+    transposed_font = ImageFont.TransposedFont(font)
+    with pytest.raises(ValueError):
+        transposed_font.getlength("A" * 1_000_001)
+
+    default_font = ImageFont.load_default()
+    with pytest.raises(ValueError):
+        default_font.getlength("A" * 1_000_001)
+    with pytest.raises(ValueError):
+        default_font.getbbox("A" * 1_000_001)
+
+
 @pytest.mark.parametrize(
     "test_file",
     [
         "Tests/fonts/oom-e8e927ba6c0d38274a37c1567560eb33baf74627.ttf",
+        "Tests/fonts/oom-4da0210eb7081b0bf15bf16cc4c52ce02c1e1bbc.ttf",
     ],
 )
 def test_oom(test_file):
@@ -1133,10 +1087,7 @@ def test_raqm_missing_warning(monkeypatch):
     )
 
 
-def test_constants_deprecation():
-    for enum, prefix in {
-        ImageFont.Layout: "LAYOUT_",
-    }.items():
-        for name in enum.__members__:
-            with pytest.warns(DeprecationWarning):
-                assert getattr(ImageFont, prefix + name) == enum[name]
+@pytest.mark.parametrize("size", [-1, 0])
+def test_invalid_truetype_sizes_raise_valueerror(layout_engine, size):
+    with pytest.raises(ValueError):
+        ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)

@@ -25,7 +25,7 @@
     implementation is provided for convenience and demonstrational
     purposes only.
 """
-
+from __future__ import annotations
 
 from . import ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i16be as i16
@@ -44,14 +44,14 @@ class GdImageFile(ImageFile.ImageFile):
     format_description = "GD uncompressed images"
 
     def _open(self):
-
         # Header
         s = self.fp.read(1037)
 
-        if not i16(s) in [65534, 65535]:
-            raise SyntaxError("Not a valid GD 2.x .gd file")
+        if i16(s) not in [65534, 65535]:
+            msg = "Not a valid GD 2.x .gd file"
+            raise SyntaxError(msg)
 
-        self.mode = "L"  # FIXME: "P"
+        self._mode = "L"  # FIXME: "P"
         self._size = i16(s, 2), i16(s, 4)
 
         true_color = s[6]
@@ -87,9 +87,11 @@ def open(fp, mode="r"):
     :raises OSError: If the image could not be read.
     """
     if mode != "r":
-        raise ValueError("bad mode")
+        msg = "bad mode"
+        raise ValueError(msg)
 
     try:
         return GdImageFile(fp)
     except SyntaxError as e:
-        raise UnidentifiedImageError("cannot identify this image file") from e
+        msg = "cannot identify this image file"
+        raise UnidentifiedImageError(msg) from e

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import ImageWin
@@ -100,8 +101,11 @@ class TestImageWinDib:
         # Act
         # Make one the same as the using tobytes()/frombytes()
         test_buffer = dib1.tobytes()
-        dib2.frombytes(test_buffer)
+        for datatype in ("bytes", "memoryview"):
+            if datatype == "memoryview":
+                test_buffer = memoryview(test_buffer)
+            dib2.frombytes(test_buffer)
 
-        # Assert
-        # Confirm they're the same
-        assert dib1.tobytes() == dib2.tobytes()
+            # Assert
+            # Confirm they're the same
+            assert dib1.tobytes() == dib2.tobytes()

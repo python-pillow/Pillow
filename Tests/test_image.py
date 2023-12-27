@@ -1,4 +1,6 @@
+from __future__ import annotations
 import io
+import logging
 import os
 import shutil
 import sys
@@ -49,6 +51,9 @@ class TestImage:
             "RGBX",
             "RGBA",
             "RGBa",
+            "BGR;15",
+            "BGR;16",
+            "BGR;24",
             "CMYK",
             "YCbCr",
             "LAB",
@@ -58,9 +63,7 @@ class TestImage:
     def test_image_modes_success(self, mode):
         Image.new(mode, (1, 1))
 
-    @pytest.mark.parametrize(
-        "mode", ("", "bad", "very very long", "BGR;15", "BGR;16", "BGR;24", "BGR;32")
-    )
+    @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode):
         with pytest.raises(ValueError) as e:
             Image.new(mode, (1, 1))
@@ -70,7 +73,6 @@ class TestImage:
         assert issubclass(UnidentifiedImageError, OSError)
 
     def test_sanity(self):
-
         im = Image.new("L", (100, 100))
         assert repr(im)[:45] == "<PIL.Image.Image image mode=L size=100x100 at"
         assert im.mode == "L"
@@ -135,6 +137,12 @@ class TestImage:
 
         with pytest.raises(AttributeError):
             im.size = (3, 4)
+
+    def test_set_mode(self):
+        im = Image.new("RGB", (1, 1))
+
+        with pytest.raises(AttributeError):
+            im.mode = "P"
 
     def test_invalid_image(self):
         im = io.BytesIO(b"")
@@ -399,21 +407,26 @@ class TestImage:
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
 
+    def test_register_open_duplicates(self):
+        # Arrange
+        factory, accept = Image.OPEN["JPEG"]
+        id_length = len(Image.ID)
+
+        # Act
+        Image.register_open("JPEG", factory, accept)
+
+        # Assert
+        assert len(Image.ID) == id_length
+
     def test_registered_extensions_uninitialized(self):
         # Arrange
         Image._initialized = 0
-        extension = Image.EXTENSION
-        Image.EXTENSION = {}
 
         # Act
         Image.registered_extensions()
 
         # Assert
         assert Image._initialized == 2
-
-        # Restore the original state and assert
-        Image.EXTENSION = extension
-        assert Image.EXTENSION
 
     def test_registered_extensions(self):
         # Arrange
@@ -580,6 +593,14 @@ class TestImage:
         i = Image.new("RGB", [1, 1])
         assert isinstance(i.size, tuple)
 
+    @pytest.mark.timeout(0.75)
+    @pytest.mark.skipif(
+        "PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower"
+    )
+    @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
+    def test_empty_image(self, size):
+        Image.new("RGB", size)
+
     def test_storage_neg(self):
         # Storage.c accepted negative values for xsize, ysize.  Was
         # test_neg_ppm, but the core function for that has been
@@ -681,8 +702,8 @@ class TestImage:
                 im.remap_palette(None)
 
     def test_remap_palette_transparency(self):
-        im = Image.new("P", (1, 2))
-        im.putpixel((0, 1), 1)
+        im = Image.new("P", (1, 2), (0, 0, 0))
+        im.putpixel((0, 1), (255, 0, 0))
         im.info["transparency"] = 0
 
         im_remapped = im.remap_palette([1, 0])
@@ -704,15 +725,15 @@ class TestImage:
         blank_p.palette = None
         blank_pa.palette = None
 
-        def _make_new(base_image, im, palette_result=None):
-            new_im = base_image._new(im)
-            assert new_im.mode == im.mode
-            assert new_im.size == im.size
-            assert new_im.info == base_image.info
+        def _make_new(base_image, image, palette_result=None):
+            new_image = base_image._new(image.im)
+            assert new_image.mode == image.mode
+            assert new_image.size == image.size
+            assert new_image.info == base_image.info
             if palette_result is not None:
-                assert new_im.palette.tobytes() == palette_result.tobytes()
+                assert new_image.palette.tobytes() == palette_result.tobytes()
             else:
-                assert new_im.palette is None
+                assert new_image.palette is None
 
         _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
         _make_new(im_p, im, None)
@@ -919,10 +940,67 @@ class TestImage:
                 34665: 196,
             }
 
+    def test_exif_hide_offsets(self):
+        with Image.open("Tests/images/flower.jpg") as im:
+            exif = im.getexif()
+
+        # Check offsets are present initially
+        assert 0x8769 in exif
+        for tag in (0xA005, 0x927C):
+            assert tag in exif.get_ifd(0x8769)
+        assert exif.get_ifd(0xA005)
+        loaded_exif = exif
+
+        with Image.open("Tests/images/flower.jpg") as im:
+            new_exif = im.getexif()
+
+            for exif in (loaded_exif, new_exif):
+                exif.hide_offsets()
+
+                # Assert they are hidden afterwards,
+                # but that the IFDs are still available
+                assert 0x8769 not in exif
+                assert exif.get_ifd(0x8769)
+                for tag in (0xA005, 0x927C):
+                    assert tag not in exif.get_ifd(0x8769)
+                assert exif.get_ifd(0xA005)
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size):
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
+
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero_frombytes(self, size):
+        Image.frombytes("RGB", size, b"")
+
+        im = Image.new("RGB", size)
+        im.frombytes(b"")
+
+    def test_has_transparency_data(self):
+        for mode in ("1", "L", "P", "RGB"):
+            im = Image.new(mode, (1, 1))
+            assert not im.has_transparency_data
+
+        for mode in ("LA", "La", "PA", "RGBA", "RGBa"):
+            im = Image.new(mode, (1, 1))
+            assert im.has_transparency_data
+
+        # P mode with "transparency" info
+        with Image.open("Tests/images/first_frame_transparency.gif") as im:
+            assert "transparency" in im.info
+            assert im.has_transparency_data
+
+        # RGB mode with "transparency" info
+        with Image.open("Tests/images/rgb_trns.png") as im:
+            assert "transparency" in im.info
+            assert im.has_transparency_data
+
+        # P mode with RGBA palette
+        im = Image.new("RGBA", (1, 1)).convert("P")
+        assert im.mode == "P"
+        assert im.palette.mode == "RGBA"
+        assert im.has_transparency_data
 
     def test_apply_transparency(self):
         im = Image.new("P", (1, 1))
@@ -953,30 +1031,7 @@ class TestImage:
             im.apply_transparency()
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
-    def test_categories_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            assert hopper().category == 0
-
-        with pytest.warns(DeprecationWarning):
-            assert Image.NORMAL == 0
-        with pytest.warns(DeprecationWarning):
-            assert Image.SEQUENCE == 1
-        with pytest.warns(DeprecationWarning):
-            assert Image.CONTAINER == 2
-
-    def test_constants_deprecation(self):
-        with pytest.warns(DeprecationWarning):
-            assert Image.NEAREST == 0
-        with pytest.warns(DeprecationWarning):
-            assert Image.NONE == 0
-
-        with pytest.warns(DeprecationWarning):
-            assert Image.LINEAR == Image.Resampling.BILINEAR
-        with pytest.warns(DeprecationWarning):
-            assert Image.CUBIC == Image.Resampling.BICUBIC
-        with pytest.warns(DeprecationWarning):
-            assert Image.ANTIALIAS == Image.Resampling.LANCZOS
-
+    def test_constants(self):
         for enum in (
             Image.Transpose,
             Image.Transform,
@@ -986,8 +1041,7 @@ class TestImage:
             Image.Quantize,
         ):
             for name in enum.__members__:
-                with pytest.warns(DeprecationWarning):
-                    assert getattr(Image, name) == enum[name]
+                assert getattr(Image, name) == enum[name]
 
     @pytest.mark.parametrize(
         "path",
@@ -1009,7 +1063,7 @@ class TestImage:
         with Image.open(os.path.join("Tests/images", path)) as im:
             try:
                 im.load()
-                assert False
+                pytest.fail()
             except OSError as e:
                 buffer_overrun = str(e) == "buffer overrun when reading image file"
                 truncated = "image file is truncated" in str(e)
@@ -1020,9 +1074,18 @@ class TestImage:
         with Image.open("Tests/images/fli_overrun2.bin") as im:
             try:
                 im.seek(1)
-                assert False
+                pytest.fail()
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
+
+    def test_close_graceful(self, caplog):
+        with Image.open("Tests/images/hopper.jpg") as im:
+            copy = im.copy()
+            with caplog.at_level(logging.DEBUG):
+                im.close()
+                copy.close()
+            assert len(caplog.records) == 0
+            assert im.fp is None
 
 
 class MockEncoder:
@@ -1037,7 +1100,6 @@ def mock_encode(*args):
 
 class TestRegistry:
     def test_encode_registry(self):
-
         Image.register_encoder("MOCK", mock_encode)
         assert "MOCK" in Image.ENCODERS
 

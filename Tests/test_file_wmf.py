@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image, WmfImagePlugin
@@ -6,7 +7,6 @@ from .helper import assert_image_similar_tofile, hopper
 
 
 def test_load_raw():
-
     # Test basic EMF open and rendering
     with Image.open("Tests/images/drawing.emf") as im:
         if hasattr(Image.core, "drawwmf"):

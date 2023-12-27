@@ -15,19 +15,17 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import sys
 from io import BytesIO
 
 from . import Image
-from ._deprecate import deprecate
 from ._util import is_path
 
 qt_versions = [
     ["6", "PyQt6"],
     ["side6", "PySide6"],
-    ["5", "PyQt5"],
-    ["side2", "PySide2"],
 ]
 
 # If a version has already been imported, attempt it first
@@ -40,16 +38,6 @@ for qt_version, qt_module in qt_versions:
         elif qt_module == "PySide6":
             from PySide6.QtCore import QBuffer, QIODevice
             from PySide6.QtGui import QImage, QPixmap, qRgba
-        elif qt_module == "PyQt5":
-            from PyQt5.QtCore import QBuffer, QIODevice
-            from PyQt5.QtGui import QImage, QPixmap, qRgba
-
-            deprecate("Support for PyQt5", 10, "PyQt6 or PySide6")
-        elif qt_module == "PySide2":
-            from PySide2.QtCore import QBuffer, QIODevice
-            from PySide2.QtGui import QImage, QPixmap, qRgba
-
-            deprecate("Support for PySide2", 10, "PyQt6 or PySide6")
     except (ImportError, RuntimeError):
         continue
     qt_is_installed = True
@@ -96,16 +84,6 @@ def fromqimage(im):
 
 def fromqpixmap(im):
     return fromqimage(im)
-    # buffer = QBuffer()
-    # buffer.open(QIODevice.ReadWrite)
-    # # im.save(buffer)
-    # # What if png doesn't support some image features like animation?
-    # im.save(buffer, 'ppm')
-    # bytes_io = BytesIO()
-    # bytes_io.write(buffer.data())
-    # buffer.close()
-    # bytes_io.seek(0)
-    # return Image.open(bytes_io)
 
 
 def align8to32(bytes, width, mode):
@@ -126,12 +104,10 @@ def align8to32(bytes, width, mode):
     if not extra_padding:
         return bytes
 
-    new_data = []
-    for i in range(len(bytes) // bytes_per_line):
-        new_data.append(
-            bytes[i * bytes_per_line : (i + 1) * bytes_per_line]
-            + b"\x00" * extra_padding
-        )
+    new_data = [
+        bytes[i * bytes_per_line : (i + 1) * bytes_per_line] + b"\x00" * extra_padding
+        for i in range(len(bytes) // bytes_per_line)
+    ]
 
     return b"".join(new_data)
 
@@ -154,15 +130,11 @@ def _toqclass_helper(im):
         format = qt_format.Format_Mono
     elif im.mode == "L":
         format = qt_format.Format_Indexed8
-        colortable = []
-        for i in range(256):
-            colortable.append(rgb(i, i, i))
+        colortable = [rgb(i, i, i) for i in range(256)]
     elif im.mode == "P":
         format = qt_format.Format_Indexed8
-        colortable = []
         palette = im.getpalette()
-        for i in range(0, len(palette), 3):
-            colortable.append(rgb(*palette[i : i + 3]))
+        colortable = [rgb(*palette[i : i + 3]) for i in range(0, len(palette), 3)]
     elif im.mode == "RGB":
         # Populate the 4th channel with 255
         im = im.convert("RGBA")
@@ -179,7 +151,8 @@ def _toqclass_helper(im):
     else:
         if exclusive_fp:
             im.close()
-        raise ValueError(f"unsupported image mode {repr(im.mode)}")
+        msg = f"unsupported image mode {repr(im.mode)}"
+        raise ValueError(msg)
 
     size = im.size
     __data = data or align8to32(im.tobytes(), size[0], im.mode)
@@ -220,9 +193,5 @@ def toqimage(im):
 
 
 def toqpixmap(im):
-    # # This doesn't work. For now using a dumb approach.
-    # im_data = _toqclass_helper(im)
-    # result = QPixmap(im_data["size"][0], im_data["size"][1])
-    # result.loadFromData(im_data["data"])
     qimage = toqimage(im)
     return QPixmap.fromImage(qimage)

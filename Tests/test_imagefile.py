@@ -1,3 +1,4 @@
+from __future__ import annotations
 from io import BytesIO
 
 import pytest
@@ -30,7 +31,6 @@ SAFEBLOCK = ImageFile.SAFEBLOCK
 class TestImageFile:
     def test_parser(self):
         def roundtrip(format):
-
             im = hopper("L").resize((1000, 1000), Image.Resampling.NEAREST)
             if format in ("MSP", "XBM"):
                 im = im.convert("1")
@@ -116,8 +116,9 @@ class TestImageFile:
         assert_image_equal(im1, im2)
 
     def test_raise_oserror(self):
-        with pytest.raises(OSError):
-            ImageFile.raise_oserror(1)
+        with pytest.warns(DeprecationWarning):
+            with pytest.raises(OSError):
+                ImageFile.raise_oserror(1)
 
     def test_raise_typeerror(self):
         with pytest.raises(TypeError):
@@ -137,7 +138,7 @@ class TestImageFile:
 
         class DummyImageFile(ImageFile.ImageFile):
             def _open(self):
-                self.mode = "RGB"
+                self._mode = "RGB"
                 self._size = (1, 1)
 
         im = DummyImageFile(buf)
@@ -218,7 +219,7 @@ xoff, yoff, xsize, ysize = 10, 20, 100, 100
 class MockImageFile(ImageFile.ImageFile):
     def _open(self):
         self.rawmode = "RGBA"
-        self.mode = "RGBA"
+        self._mode = "RGBA"
         self._size = (200, 200)
         self.tile = [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 32, None)]
 

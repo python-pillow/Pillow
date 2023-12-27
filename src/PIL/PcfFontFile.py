@@ -15,6 +15,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 
@@ -58,12 +59,12 @@ class PcfFontFile(FontFile.FontFile):
     name = "name"
 
     def __init__(self, fp, charset_encoding="iso8859-1"):
-
         self.charset_encoding = charset_encoding
 
         magic = l32(fp.read(4))
         if magic != PCF_MAGIC:
-            raise SyntaxError("not a PCF file")
+            msg = "not a PCF file"
+            raise SyntaxError(msg)
 
         super().__init__()
 
@@ -86,12 +87,24 @@ class PcfFontFile(FontFile.FontFile):
 
         for ch, ix in enumerate(encoding):
             if ix is not None:
-                x, y, l, r, w, a, d, f = metrics[ix]
-                glyph = (w, 0), (l, d - y, x + l, d), (0, 0, x, y), bitmaps[ix]
-                self.glyph[ch] = glyph
+                (
+                    xsize,
+                    ysize,
+                    left,
+                    right,
+                    width,
+                    ascent,
+                    descent,
+                    attributes,
+                ) = metrics[ix]
+                self.glyph[ch] = (
+                    (width, 0),
+                    (left, descent - ysize, xsize + left, descent),
+                    (0, 0, xsize, ysize),
+                    bitmaps[ix],
+                )
 
     def _getformat(self, tag):
-
         format, size, offset = self.toc[tag]
 
         fp = self.fp
@@ -107,7 +120,6 @@ class PcfFontFile(FontFile.FontFile):
         return fp, format, i16, i32
 
     def _load_properties(self):
-
         #
         # font properties
 
@@ -118,9 +130,8 @@ class PcfFontFile(FontFile.FontFile):
         nprops = i32(fp.read(4))
 
         # read property description
-        p = []
-        for i in range(nprops):
-            p.append((i32(fp.read(4)), i8(fp.read(1)), i32(fp.read(4))))
+        p = [(i32(fp.read(4)), i8(fp.read(1)), i32(fp.read(4))) for _ in range(nprops)]
+
         if nprops & 3:
             fp.seek(4 - (nprops & 3), io.SEEK_CUR)  # pad
 
@@ -135,7 +146,6 @@ class PcfFontFile(FontFile.FontFile):
         return properties
 
     def _load_metrics(self):
-
         #
         # font metrics
 
@@ -146,7 +156,6 @@ class PcfFontFile(FontFile.FontFile):
         append = metrics.append
 
         if (format & 0xFF00) == 0x100:
-
             # "compressed" metrics
             for i in range(i16(fp.read(2))):
                 left = i8(fp.read(1)) - 128
@@ -159,7 +168,6 @@ class PcfFontFile(FontFile.FontFile):
                 append((xsize, ysize, left, right, width, ascent, descent, 0))
 
         else:
-
             # "jumbo" metrics
             for i in range(i32(fp.read(4))):
                 left = i16(fp.read(2))
@@ -175,26 +183,20 @@ class PcfFontFile(FontFile.FontFile):
         return metrics
 
     def _load_bitmaps(self, metrics):
-
         #
         # bitmap data
-
-        bitmaps = []
 
         fp, format, i16, i32 = self._getformat(PCF_BITMAPS)
 
         nbitmaps = i32(fp.read(4))
 
         if nbitmaps != len(metrics):
-            raise OSError("Wrong number of bitmaps")
+            msg = "Wrong number of bitmaps"
+            raise OSError(msg)
 
-        offsets = []
-        for i in range(nbitmaps):
-            offsets.append(i32(fp.read(4)))
+        offsets = [i32(fp.read(4)) for _ in range(nbitmaps)]
 
-        bitmap_sizes = []
-        for i in range(4):
-            bitmap_sizes.append(i32(fp.read(4)))
+        bitmap_sizes = [i32(fp.read(4)) for _ in range(4)]
 
         # byteorder = format & 4  # non-zero => MSB
         bitorder = format & 8  # non-zero => MSB
@@ -210,10 +212,13 @@ class PcfFontFile(FontFile.FontFile):
         if bitorder:
             mode = "1"
 
+        bitmaps = []
         for i in range(nbitmaps):
-            x, y, l, r, w, a, d, f = metrics[i]
-            b, e = offsets[i], offsets[i + 1]
-            bitmaps.append(Image.frombytes("1", (x, y), data[b:e], "raw", mode, pad(x)))
+            xsize, ysize = metrics[i][:2]
+            b, e = offsets[i : i + 2]
+            bitmaps.append(
+                Image.frombytes("1", (xsize, ysize), data[b:e], "raw", mode, pad(xsize))
+            )
 
         return bitmaps
 

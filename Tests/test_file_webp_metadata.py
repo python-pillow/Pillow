@@ -1,3 +1,4 @@
+from __future__ import annotations
 from io import BytesIO
 
 import pytest
@@ -18,10 +19,8 @@ except ImportError:
 
 
 def test_read_exif_metadata():
-
     file_path = "Tests/images/flower.webp"
     with Image.open(file_path) as image:
-
         assert image.format == "WEBP"
         exif_data = image.info.get("exif", None)
         assert exif_data
@@ -64,10 +63,8 @@ def test_write_exif_metadata():
 
 
 def test_read_icc_profile():
-
     file_path = "Tests/images/flower2.webp"
     with Image.open(file_path) as image:
-
         assert image.format == "WEBP"
         assert image.info.get("icc_profile", None)
 
@@ -122,7 +119,10 @@ def test_getxmp():
 
     with Image.open("Tests/images/flower2.webp") as im:
         if ElementTree is None:
-            with pytest.warns(UserWarning):
+            with pytest.warns(
+                UserWarning,
+                match="XMP data cannot be read without defusedxml dependency",
+            ):
                 assert im.getxmp() == {}
         else:
             assert (

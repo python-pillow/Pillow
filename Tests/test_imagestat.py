@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image, ImageStat
@@ -6,7 +7,6 @@ from .helper import hopper
 
 
 def test_sanity():
-
     im = hopper()
 
     st = ImageStat.Stat(im)
@@ -31,7 +31,6 @@ def test_sanity():
 
 
 def test_hopper():
-
     im = hopper()
 
     st = ImageStat.Stat(im)
@@ -45,7 +44,6 @@ def test_hopper():
 
 
 def test_constant():
-
     im = Image.new("L", (128, 128), 128)
 
     st = ImageStat.Stat(im)

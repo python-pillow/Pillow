@@ -16,6 +16,7 @@
 # This module provides constants and clear-text names for various
 # well-known TIFF tags.
 ##
+from __future__ import annotations
 
 from collections import namedtuple
 
@@ -56,7 +57,7 @@ def lookup(tag, group=None):
 ##
 # Map tag numbers to tag info.
 #
-#  id: (Name, Type, Length, enum_values)
+#  id: (Name, Type, Length[, enum_values])
 #
 # The length here differs from the length in the tiff spec.  For
 # numbers, the tiff spec is for the number of fields returned. We
@@ -195,6 +196,7 @@ TAGS_V2 = {
     34675: ("ICCProfile", UNDEFINED, 1),
     34853: ("GPSInfoIFD", LONG, 1),
     36864: ("ExifVersion", UNDEFINED, 1),
+    37724: ("ImageSourceData", UNDEFINED, 1),
     40965: ("InteroperabilityIFD", LONG, 1),
     41730: ("CFAPattern", UNDEFINED, 1),
     # MPInfo
@@ -312,7 +314,7 @@ TAGS = {
     34910: "HylaFAX FaxRecvTime",
     36864: "ExifVersion",
     36867: "DateTimeOriginal",
-    36868: "DateTImeDigitized",
+    36868: "DateTimeDigitized",
     37121: "ComponentsConfiguration",
     37122: "CompressedBitsPerPixel",
     37724: "ImageSourceData",
@@ -426,7 +428,7 @@ def _populate():
 
         TAGS_V2[k] = TagInfo(k, *v)
 
-    for group, tags in TAGS_V2_GROUPS.items():
+    for tags in TAGS_V2_GROUPS.values():
         for k, v in tags.items():
             tags[k] = TagInfo(k, *v)
 
@@ -436,22 +438,6 @@ _populate()
 # Map type numbers to type names -- defined in ImageFileDirectory.
 
 TYPES = {}
-
-# was:
-# TYPES = {
-#     1: "byte",
-#     2: "ascii",
-#     3: "short",
-#     4: "long",
-#     5: "rational",
-#     6: "signed byte",
-#     7: "undefined",
-#     8: "signed short",
-#     9: "signed long",
-#     10: "signed rational",
-#     11: "float",
-#     12: "double",
-# }
 
 #
 # These tags are handled by default in libtiff, without

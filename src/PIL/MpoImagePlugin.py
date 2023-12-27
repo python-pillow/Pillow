@@ -17,6 +17,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import itertools
 import os
@@ -32,9 +33,6 @@ from . import (
 )
 from ._binary import i16be as i16
 from ._binary import o32le
-
-# def _accept(prefix):
-#     return JpegImagePlugin._accept(prefix)
 
 
 def _save(im, fp, filename):
@@ -52,14 +50,22 @@ def _save_all(im, fp, filename):
             _save(im, fp, filename)
             return
 
+    mpf_offset = 28
     offsets = []
     for imSequence in itertools.chain([im], append_images):
         for im_frame in ImageSequence.Iterator(imSequence):
             if not offsets:
                 # APP2 marker
-                im.encoderinfo["extra"] = (
+                im_frame.encoderinfo["extra"] = (
                     b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
                 )
+                exif = im_frame.encoderinfo.get("exif")
+                if isinstance(exif, Image.Exif):
+                    exif = exif.tobytes()
+                    im_frame.encoderinfo["exif"] = exif
+                if exif:
+                    mpf_offset += 4 + len(exif)
+
                 JpegImagePlugin._save(im_frame, fp, filename)
                 offsets.append(fp.tell())
             else:
@@ -79,11 +85,11 @@ def _save_all(im, fp, filename):
             mptype = 0x000000  # Undefined
         mpentries += struct.pack("<LLLHH", mptype, size, data_offset, 0, 0)
         if i == 0:
-            data_offset -= 28
+            data_offset -= mpf_offset
         data_offset += size
     ifd[0xB002] = mpentries
 
-    fp.seek(28)
+    fp.seek(mpf_offset)
     fp.write(b"II\x2A\x00" + o32le(8) + ifd.tobytes(8))
     fp.seek(0, os.SEEK_END)
 
@@ -93,7 +99,6 @@ def _save_all(im, fp, filename):
 
 
 class MpoImageFile(JpegImagePlugin.JpegImageFile):
-
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False
@@ -135,7 +140,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.fp.seek(self.offset + 2)  # skip SOI marker
         segment = self.fp.read(2)
         if not segment:
-            raise ValueError("No data found for frame")
+            msg = "No data found for frame"
+            raise ValueError(msg)
         self._size = self._initial_size
         if i16(segment) == 0xFFE1:  # APP1
             n = i16(self.fp.read(2)) - 2

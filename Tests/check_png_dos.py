@@ -1,3 +1,4 @@
+from __future__ import annotations
 import zlib
 from io import BytesIO
 
@@ -23,7 +24,6 @@ def test_ignore_dos_text():
 
 
 def test_dos_text():
-
     try:
         im = Image.open(TEST_FILE)
         im.load()

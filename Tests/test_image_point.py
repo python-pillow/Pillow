@@ -1,6 +1,5 @@
+from __future__ import annotations
 import pytest
-
-from PIL import Image
 
 from .helper import assert_image_equal, hopper
 
@@ -62,8 +61,3 @@ def test_f_mode():
     im = hopper("F")
     with pytest.raises(ValueError):
         im.point(None)
-
-
-def test_coerce_e_deprecation():
-    with pytest.warns(DeprecationWarning):
-        assert Image.coerce_e(2).data == 2

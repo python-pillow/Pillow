@@ -341,7 +341,10 @@ splitlists(
 
     PixelList *l, *r, *c, *n;
     int i;
-    int nRight, nLeft;
+    int nRight;
+#ifndef NO_OUTPUT
+    int nLeft;
+#endif
     int splitColourVal;
 
 #ifdef TEST_SPLIT
@@ -396,12 +399,17 @@ splitlists(
     }
 #endif
     nCount[0] = nCount[1] = 0;
-    nLeft = nRight = 0;
+    nRight = 0;
+#ifndef NO_OUTPUT
+    nLeft = 0;
+#endif
     for (left = 0, c = h[axis]; c;) {
         left = left + c->count;
         nCount[0] += c->count;
         c->flag = 0;
+#ifndef NO_OUTPUT
         nLeft++;
+#endif
         c = c->next[axis];
         if (left * 2 > pixelCount) {
             break;
@@ -414,7 +422,9 @@ splitlists(
                 break;
             }
             c->flag = 0;
+#ifndef NO_OUTPUT
             nLeft++;
+#endif
             nCount[0] += c->count;
         }
     }
@@ -430,7 +440,9 @@ splitlists(
             }
             c->flag = 1;
             nRight++;
+#ifndef NO_OUTPUT
             nLeft--;
+#endif
             nCount[0] -= c->count;
             nCount[1] += c->count;
         }
@@ -1685,7 +1697,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
        image data? */
 
     if (!strcmp(im->mode, "L")) {
-        /* greyscale */
+        /* grayscale */
 
         /* FIXME: converting a "L" image to "P" with 256 colors
            should be done by a simple copy... */
@@ -1813,6 +1825,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
         free(newData);
 
+        imOut->palette->size = (int)paletteLength;
         pp = imOut->palette->palette;
 
         for (i = j = 0; i < (int)paletteLength; i++) {
@@ -1820,16 +1833,9 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
             *pp++ = palette[i].c.g;
             *pp++ = palette[i].c.b;
             if (withAlpha) {
-                *pp++ = palette[i].c.a;
-            } else {
-                *pp++ = 255;
+                *pp = palette[i].c.a;
             }
-        }
-        for (; i < 256; i++) {
-            *pp++ = 0;
-            *pp++ = 0;
-            *pp++ = 0;
-            *pp++ = 255;
+            pp++;
         }
 
         if (withAlpha) {

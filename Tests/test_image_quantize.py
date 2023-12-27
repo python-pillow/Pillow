@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 from packaging.version import parse as parse_version
 
@@ -67,7 +68,7 @@ def test_quantize_no_dither():
 
 def test_quantize_no_dither2():
     im = Image.new("RGB", (9, 1))
-    im.putdata(list((p,) * 3 for p in range(0, 36, 4)))
+    im.putdata([(p,) * 3 for p in range(0, 36, 4)])
 
     palette = Image.new("P", (1, 1))
     data = (0, 0, 0, 32, 32, 32)

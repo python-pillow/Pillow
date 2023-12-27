@@ -1,6 +1,25 @@
 name: Test Docker
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
+      - "docs/**"
+      - "wheels/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - ".travis.yml"
+      - "docs/**"
+      - "wheels/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,16 +43,17 @@ jobs:
           # Then run the remainder
           alpine,
           amazon-2-amd64,
+          amazon-2023-amd64,
           arch,
           centos-7-amd64,
           centos-stream-8-amd64,
           centos-stream-9-amd64,
-          debian-10-buster-x86,
-          debian-11-bullseye-x86,
-          fedora-36-amd64,
-          fedora-37-amd64,
+          debian-11-bullseye-amd64,
+          debian-12-bookworm-x86,
+          debian-12-bookworm-amd64,
+          fedora-38-amd64,
+          fedora-39-amd64,
           gentoo,
-          ubuntu-18.04-bionic-amd64,
           ubuntu-20.04-focal-amd64,
           ubuntu-22.04-jammy-amd64,
         ]
@@ -49,7 +69,7 @@ jobs:
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
@@ -87,6 +107,7 @@ jobs:
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
+        gcov: true
 
   success:
     permissions:

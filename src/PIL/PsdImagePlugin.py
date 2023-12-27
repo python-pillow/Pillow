@@ -15,6 +15,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 
@@ -51,13 +52,11 @@ def _accept(prefix):
 
 
 class PsdImageFile(ImageFile.ImageFile):
-
     format = "PSD"
     format_description = "Adobe Photoshop"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         read = self.fp.read
 
         #
@@ -65,7 +64,8 @@ class PsdImageFile(ImageFile.ImageFile):
 
         s = read(26)
         if not _accept(s) or i16(s, 4) != 1:
-            raise SyntaxError("not a PSD file")
+            msg = "not a PSD file"
+            raise SyntaxError(msg)
 
         psd_bits = i16(s, 22)
         psd_channels = i16(s, 12)
@@ -74,12 +74,13 @@ class PsdImageFile(ImageFile.ImageFile):
         mode, channels = MODES[(psd_mode, psd_bits)]
 
         if channels > psd_channels:
-            raise OSError("not enough channels")
+            msg = "not enough channels"
+            raise OSError(msg)
         if mode == "RGB" and psd_channels == 4:
             mode = "RGBA"
             channels = 4
 
-        self.mode = mode
+        self._mode = mode
         self._size = i32(s, 18), i32(s, 14)
 
         #
@@ -146,13 +147,14 @@ class PsdImageFile(ImageFile.ImageFile):
         # seek to given layer (1..max)
         try:
             name, mode, bbox, tile = self.layers[layer - 1]
-            self.mode = mode
+            self._mode = mode
             self.tile = tile
             self.frame = layer
             self.fp = self._fp
             return name, bbox
         except IndexError as e:
-            raise EOFError("no such layer") from e
+            msg = "no such layer"
+            raise EOFError(msg) from e
 
     def tell(self):
         # return layer number (0=image, 1..max=layers)
@@ -170,10 +172,10 @@ def _layerinfo(fp, ct_bytes):
 
     # sanity check
     if ct_bytes < (abs(ct) * 20):
-        raise SyntaxError("Layer block too short for number of layers requested")
+        msg = "Layer block too short for number of layers requested"
+        raise SyntaxError(msg)
 
     for _ in range(abs(ct)):
-
         # bounding box
         y0 = i32(read(4))
         x0 = i32(read(4))
@@ -185,6 +187,9 @@ def _layerinfo(fp, ct_bytes):
         ct_types = i16(read(2))
         types = list(range(ct_types))
         if len(types) > 4:
+            fp.seek(len(types) * 6 + 12, io.SEEK_CUR)
+            size = i32(read(4))
+            fp.seek(size, io.SEEK_CUR)
             continue
 
         for _ in types:
@@ -234,21 +239,18 @@ def _layerinfo(fp, ct_bytes):
         layers.append((name, mode, (x0, y0, x1, y1)))
 
     # get tiles
-    i = 0
-    for name, mode, bbox in layers:
+    for i, (name, mode, bbox) in enumerate(layers):
         tile = []
         for m in mode:
             t = _maketile(fp, m, bbox, 1)
             if t:
                 tile.extend(t)
         layers[i] = name, mode, bbox, tile
-        i += 1
 
     return layers
 
 
 def _maketile(file, mode, bbox, channels):
-
     tile = None
     read = file.read
 

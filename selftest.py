@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # minimal sanity check
+from __future__ import annotations
 
 import sys
 
@@ -14,7 +15,7 @@ except AttributeError:
     pass
 
 
-def testimage():
+def testimage() -> None:
     """
     PIL lets you create in-memory images with various pixel types:
 

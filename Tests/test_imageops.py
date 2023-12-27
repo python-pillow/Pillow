@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pytest
 
 from PIL import Image, ImageDraw, ImageOps, ImageStat, features
@@ -21,7 +22,6 @@ deformer = Deformer()
 
 
 def test_sanity():
-
     ImageOps.autocontrast(hopper("L"))
     ImageOps.autocontrast(hopper("RGB"))
 
@@ -39,6 +39,9 @@ def test_sanity():
 
     ImageOps.contain(hopper("L"), (128, 128))
     ImageOps.contain(hopper("RGB"), (128, 128))
+
+    ImageOps.cover(hopper("L"), (128, 128))
+    ImageOps.cover(hopper("RGB"), (128, 128))
 
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
@@ -118,6 +121,20 @@ def test_contain_round():
     im = Image.new("1", (63, 43), 1)
     new_im = ImageOps.contain(im, (7, 5))
     assert new_im.height == 5
+
+
+@pytest.mark.parametrize(
+    "image_name, expected_size",
+    (
+        ("colr_bungee.png", (1024, 256)),  # landscape
+        ("imagedraw_stroke_multiline.png", (256, 640)),  # portrait
+        ("hopper.png", (256, 256)),  # square
+    ),
+)
+def test_cover(image_name, expected_size):
+    with Image.open("Tests/images/" + image_name) as im:
+        new_im = ImageOps.cover(im, (256, 256))
+        assert new_im.size == expected_size
 
 
 def test_pad():
@@ -405,6 +422,24 @@ def test_exif_transpose():
     assert 0x0112 not in transposed_im.getexif()
 
 
+def test_exif_transpose_in_place():
+    with Image.open("Tests/images/orientation_rectangle.jpg") as im:
+        assert im.size == (2, 1)
+        assert im.getexif()[0x0112] == 8
+        expected = im.rotate(90, expand=True)
+
+        ImageOps.exif_transpose(im, in_place=True)
+        assert im.size == (1, 2)
+        assert 0x0112 not in im.getexif()
+        assert_image_equal(im, expected)
+
+
+def test_autocontrast_unsupported_mode():
+    im = Image.new("RGBA", (1, 1))
+    with pytest.raises(OSError):
+        ImageOps.autocontrast(im)
+
+
 def test_autocontrast_cutoff():
     # Test the cutoff argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
@@ -419,7 +454,6 @@ def test_autocontrast_cutoff():
 def test_autocontrast_mask_toy_input():
     # Test the mask argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
-
         rect_mask = Image.new("L", img.size, 0)
         draw = ImageDraw.Draw(rect_mask)
         x0 = img.size[0] // 4
@@ -439,7 +473,6 @@ def test_autocontrast_mask_toy_input():
 def test_autocontrast_mask_real_input():
     # Test the autocontrast with a rectangular mask
     with Image.open("Tests/images/iptc.jpg") as img:
-
         rect_mask = Image.new("L", img.size, 0)
         draw = ImageDraw.Draw(rect_mask)
         x0, y0 = img.size[0] // 2, img.size[1] // 2

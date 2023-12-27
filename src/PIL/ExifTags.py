@@ -13,6 +13,7 @@
 This module provides constants and clear-text names for various
 well-known EXIF tags.
 """
+from __future__ import annotations
 
 from enum import IntEnum
 
@@ -354,3 +355,27 @@ class IFD(IntEnum):
     Makernote = 37500
     Interop = 40965
     IFD1 = -1
+
+
+class LightSource(IntEnum):
+    Unknown = 0
+    Daylight = 1
+    Fluorescent = 2
+    Tungsten = 3
+    Flash = 4
+    Fine = 9
+    Cloudy = 10
+    Shade = 11
+    DaylightFluorescent = 12
+    DayWhiteFluorescent = 13
+    CoolWhiteFluorescent = 14
+    WhiteFluorescent = 15
+    StandardLightA = 17
+    StandardLightB = 18
+    StandardLightC = 19
+    D55 = 20
+    D65 = 21
+    D75 = 22
+    D50 = 23
+    ISO = 24
+    Other = 255

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 from array import array
 
@@ -55,10 +56,11 @@ def test_mode_with_L_with_float():
     assert im.getpixel((0, 0)) == 2
 
 
-def test_mode_i():
+@pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B"))
+def test_mode_i(mode):
     src = hopper("L")
     data = list(src.getdata())
-    im = Image.new("I", src.size, 0)
+    im = Image.new(mode, src.size, 0)
     im.putdata(data, 2, 256)
 
     target = [2 * elt + 256 for elt in data]
@@ -73,6 +75,15 @@ def test_mode_F():
 
     target = [2.0 * float(elt) + 256.0 for elt in data]
     assert list(im.getdata()) == target
+
+
+@pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
+def test_mode_BGR(mode):
+    data = [(16, 32, 49), (32, 32, 98)]
+    im = Image.new(mode, (1, 2))
+    im.putdata(data)
+
+    assert list(im.getdata()) == data
 
 
 def test_array_B():

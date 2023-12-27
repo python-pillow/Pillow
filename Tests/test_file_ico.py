@@ -1,3 +1,4 @@
+from __future__ import annotations
 import io
 import os
 
@@ -69,6 +70,19 @@ def test_save_to_bytes():
         assert_image_equal(
             reloaded, hopper().resize((32, 32), Image.Resampling.LANCZOS)
         )
+
+
+def test_getpixel(tmp_path):
+    temp_file = str(tmp_path / "temp.ico")
+
+    im = hopper()
+    im.save(temp_file, "ico", sizes=[(32, 32), (64, 64)])
+
+    with Image.open(temp_file) as reloaded:
+        reloaded.load()
+        reloaded.size = (32, 32)
+
+        assert reloaded.getpixel((0, 0)) == (18, 20, 62)
 
 
 def test_no_duplicates(tmp_path):
@@ -162,7 +176,6 @@ def test_save_256x256(tmp_path):
         # Act
         im.save(outfile)
     with Image.open(outfile) as im_saved:
-
         # Assert
         assert im_saved.size == (256, 256)
 
@@ -200,11 +213,9 @@ def test_save_append_images(tmp_path):
 def test_unexpected_size():
     # This image has been manually hexedited to state that it is 16x32
     # while the image within is still 16x16
-    def open():
+    with pytest.warns(UserWarning):
         with Image.open("Tests/images/hopper_unexpected.ico") as im:
             assert im.size == (16, 16)
-
-    pytest.warns(UserWarning, open)
 
 
 def test_draw_reloaded(tmp_path):

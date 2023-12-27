@@ -1,6 +1,14 @@
 Installation
 ============
 
+.. raw:: html
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      activateTab(getOS());
+    });
+    </script>
+
 Warnings
 --------
 
@@ -42,6 +50,11 @@ Install Pillow with :command:`pip`::
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
+Optionally, install :pypi:`defusedxml` for Pillow to read XMP data,
+and :pypi:`olefile` for Pillow to read FPX and MIC images::
+
+    python3 -m pip install --upgrade defusedxml olefile
+
 
 .. tab:: Linux
 
@@ -68,13 +81,25 @@ Install Pillow with :command:`pip`::
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow
 
+    While we provide binaries for both x86-64 and arm64, we do not provide universal2
+    binaries. However, it is simple to combine our current binaries to create one::
+
+        python3 -m pip download --only-binary=:all: --platform macosx_10_10_x86_64 Pillow
+        python3 -m pip download --only-binary=:all: --platform macosx_11_0_arm64 Pillow
+        python3 -m pip install delocate
+
+    Then, with the names of the downloaded wheels, use Python to combine them::
+
+        from delocate.fuse import fuse_wheels
+        fuse_wheels('Pillow-9.4.0-2-cp39-cp39-macosx_10_10_x86_64.whl', 'Pillow-9.4.0-cp39-cp39-macosx_11_0_arm64.whl', 'Pillow-9.4.0-cp39-cp39-macosx_11_0_universal2.whl')
+
 .. tab:: Windows
 
-    We provide Pillow binaries for Windows compiled for the matrix of
-    supported Pythons in both 32 and 64-bit versions in the wheel format.
-    These binaries include support for all optional libraries except
-    libimagequant and libxcb. Raqm support requires
-    FriBiDi to be installed separately::
+    We provide Pillow binaries for Windows compiled for the matrix of supported
+    Pythons in the wheel format. These include x86, x86-64 and arm64 versions
+    (with the exception of Python 3.8 on arm64). These binaries include support
+    for all optional libraries except libimagequant and libxcb. Raqm support
+    requires FriBiDi to be installed separately::
 
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow
@@ -133,32 +158,30 @@ Many of Pillow's features require external libraries:
 
   * Pillow has been tested with libjpeg versions **6b**, **8**, **9-9d** and
     libjpeg-turbo version **8**.
-  * Starting with Pillow 3.0.0, libjpeg is required by default, but
-    may be disabled with the ``--disable-jpeg`` flag.
+  * Starting with Pillow 3.0.0, libjpeg is required by default. It can be
+    disabled with the ``-C jpeg=disable`` flag.
 
 * **zlib** provides access to compressed PNGs
 
-  * Starting with Pillow 3.0.0, zlib is required by default, but may
-    be disabled with the ``--disable-zlib`` flag.
+  * Starting with Pillow 3.0.0, zlib is required by default. It can be
+    disabled with the ``-C zlib=disable`` flag.
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.4**
+  * Pillow has been tested with libtiff versions **3.x** and **4.0-4.6.0**
 
 * **libfreetype** provides type related services
 
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.14**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.16**.
 
 * **libwebp** provides the WebP format.
 
   * Pillow has been tested with version **0.1.3**, which does not read
     transparent WebP files. Versions **0.3.0** and above support
     transparency.
-
-* **tcl/tk** provides support for tkinter bitmap and photo images.
 
 * **openjpeg** provides JPEG 2000 functionality.
 
@@ -169,7 +192,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.0.4**
+  * Pillow has been tested with libimagequant **2.6-4.2.2**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -186,8 +209,8 @@ Many of Pillow's features require external libraries:
   * Pillow wheels since version 8.2.0 include a modified version of libraqm that
     loads libfribidi at runtime if it is installed.
     On Windows this requires compiling FriBiDi and installing ``fribidi.dll``
-    into a directory listed in the `Dynamic-Link Library Search Order (Microsoft Docs)
-    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-desktop-applications>`_
+    into a directory listed in the `Dynamic-link library search order (Microsoft Learn)
+    <https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-unpackaged-apps>`_
     (``fribidi-0.dll`` or ``libfribidi-0.dll`` are also detected).
     See `Build Options`_ to see how to build this version.
   * Previous versions of Pillow (5.0.0 to 8.1.2) linked libraqm dynamically at runtime.
@@ -300,6 +323,11 @@ Many of Pillow's features require external libraries:
             mingw-w64-x86_64-libimagequant \
             mingw-w64-x86_64-libraqm
 
+    https://www.msys2.org/docs/python/ states that setuptools >= 60 does not work with
+    MSYS2. To workaround this, before installing Pillow you must run::
+
+        export SETUPTOOLS_USE_DISTUTILS=stdlib
+
 .. tab:: FreeBSD
 
     .. Note:: Only FreeBSD 10 and 11 tested
@@ -338,7 +366,7 @@ for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
 additional configuration should be required. If they are installed in
 a non-standard location, you may need to configure setuptools to use
 those locations by editing :file:`setup.py` or
-:file:`setup.cfg`, or by adding environment variables on the command
+:file:`pyproject.toml`, or by adding environment variables on the command
 line::
 
     CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow --no-binary :all:
@@ -368,40 +396,40 @@ Build Options
   using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
   available, as many as are present.
 
-* Build flags: ``--disable-zlib``, ``--disable-jpeg``,
-  ``--disable-tiff``, ``--disable-freetype``, ``--disable-lcms``,
-  ``--disable-webp``, ``--disable-webpmux``, ``--disable-jpeg2000``,
-  ``--disable-imagequant``, ``--disable-xcb``.
+* Config settings: ``-C zlib=disable``, ``-C jpeg=disable``,
+  ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,
+  ``-C lcms=disable``, ``-C webp=disable``, ``-C webpmux=disable``,
+  ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
-* Build flags: ``--enable-zlib``, ``--enable-jpeg``,
-  ``--enable-tiff``, ``--enable-freetype``, ``--enable-lcms``,
-  ``--enable-webp``, ``--enable-webpmux``, ``--enable-jpeg2000``,
-  ``--enable-imagequant``, ``--enable-xcb``.
+* Config settings: ``-C zlib=enable``, ``-C jpeg=enable``,
+  ``-C tiff=enable``, ``-C freetype=enable``, ``-C raqm=enable``,
+  ``-C lcms=enable``, ``-C webp=enable``, ``-C webpmux=enable``,
+  ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``.
   Require that the corresponding feature is built. The build will raise
   an exception if the libraries are not found. Webpmux (WebP metadata)
   relies on WebP support. Tcl and Tk also must be used together.
 
-* Build flags: ``--vendor-raqm --vendor-fribidi``
+* Config settings: ``-C raqm=vendor``, ``-C fribidi=vendor``.
   These flags are used to compile a modified version of libraqm and
   a shim that dynamically loads libfribidi at runtime. These are
   used to compile the standard Pillow wheels. Compiling libraqm requires
   a C99-compliant compiler.
 
-* Build flag: ``--disable-platform-guessing``. Skips all of the
+* Build flag: ``-C platform-guessing=disable``. Skips all of the
   platform dependent guessing of include and library directories for
   automated build systems that configure the proper paths in the
   environment variables (e.g. Buildroot).
 
-* Build flag: ``--debug``. Adds a debugging flag to the include and
+* Build flag: ``-C debug=true``. Adds a debugging flag to the include and
   library search process to dump all paths searched for and found to
   stdout.
 
 
 Sample usage::
 
-    python3 -m pip install --upgrade Pillow --global-option="build_ext" --global-option="--enable-[feature]"
+    python3 -m pip install --upgrade Pillow -C [feature]=enable
 
 Platform Support
 ----------------
@@ -422,7 +450,9 @@ These platforms are built and tested for every change.
 +==================================+============================+=====================+
 | Alpine                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Amazon Linux 2                   | 3.7                        | x86-64              |
+| Amazon Linux 2                   | 3.9                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Amazon Linux 2023                | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Arch                             | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
@@ -432,33 +462,35 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | CentOS Stream 9                  | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Debian 10 Buster                 | 3.7                        | x86                 |
+| Debian 11 Bullseye               | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Debian 11 Bullseye               | 3.9                        | x86                 |
+| Debian 12 Bookworm               | 3.11                       | x86, x86-64         |
 +----------------------------------+----------------------------+---------------------+
-| Fedora 36                        | 3.10                       | x86-64              |
+| Fedora 38                        | 3.11                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Fedora 37                        | 3.11                       | x86-64              |
+| Fedora 39                        | 3.12                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Gentoo                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
-|                                  | PyPy3                      |                     |
+| macOS 12 Monterey                | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
+|                                  | 3.12, PyPy3                |                     |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 18.04 LTS (Bionic)  | 3.9                        | x86-64              |
+| Ubuntu Linux 20.04 LTS (Focal)   | 3.8                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 20.04 LTS (Focal)   | 3.7, 3.8, 3.9, 3.10, 3.11, | x86-64              |
-|                                  | PyPy3                      |                     |
-+----------------------------------+----------------------------+---------------------+
-| Ubuntu Linux 22.04 LTS (Jammy)   | 3.10                       | arm64v8, ppc64le,   |
-|                                  |                            | s390x, x86-64       |
-+----------------------------------+----------------------------+---------------------+
-| Windows Server 2016              | 3.7                        | x86-64              |
-+----------------------------------+----------------------------+---------------------+
-| Windows Server 2022              | 3.7, 3.8, 3.9, 3.10, 3.11, | x86, x86-64         |
-|                                  | PyPy3                      |                     |
+| Ubuntu Linux 22.04 LTS (Jammy)   | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
+|                                  | 3.12, PyPy3                |                     |
 |                                  +----------------------------+---------------------+
-|                                  | 3.9 (MinGW)                | x86, x86-64         |
+|                                  | 3.10                       | arm64v8, ppc64le,   |
+|                                  |                            | s390x               |
++----------------------------------+----------------------------+---------------------+
+| Windows Server 2016              | 3.8                        | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Windows Server 2022              | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
+|                                  | 3.12, PyPy3                |                     |
+|                                  +----------------------------+---------------------+
+|                                  | 3.12                       | x86                 |
+|                                  +----------------------------+---------------------+
+|                                  | 3.9 (MinGW)                | x86-64              |
 |                                  +----------------------------+---------------------+
 |                                  | 3.8, 3.9 (Cygwin)          | x86-64              |
 +----------------------------------+----------------------------+---------------------+
@@ -474,89 +506,97 @@ These platforms have been reported to work at the versions mentioned.
     Contributors please test Pillow on your platform then update this
     document and send a pull request.
 
-+----------------------------------+---------------------------+------------------+--------------+
-| Operating system                 | | Tested Python           | | Latest tested  | | Tested     |
-|                                  | | versions                | | Pillow version | | processors |
-+==================================+===========================+==================+==============+
-| macOS 13 Ventura                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
-+----------------------------------+---------------------------+------------------+--------------+
-| macOS 12 Big Sur                 | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |arm           |
-+----------------------------------+---------------------------+------------------+--------------+
-| macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10       | 8.4.0            |arm           |
-|                                  +---------------------------+------------------+--------------+
-|                                  | 3.7, 3.8, 3.9, 3.10, 3.11 | 9.3.0            |x86-64        |
-|                                  +---------------------------+------------------+              |
-|                                  | 3.6                       | 8.4.0            |              |
-+----------------------------------+---------------------------+------------------+--------------+
-| macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9        | 8.3.2            |x86-64        |
-|                                  +---------------------------+------------------+              |
-|                                  | 3.5                       | 7.2.0            |              |
-+----------------------------------+---------------------------+------------------+--------------+
-| macOS 10.14 Mojave               | 3.5, 3.6, 3.7, 3.8        | 7.2.0            |x86-64        |
-|                                  +---------------------------+------------------+              |
-|                                  | 2.7                       | 6.0.0            |              |
-|                                  +---------------------------+------------------+              |
-|                                  | 3.4                       | 5.4.1            |              |
-+----------------------------------+---------------------------+------------------+--------------+
-| macOS 10.13 High Sierra          | 2.7, 3.4, 3.5, 3.6        | 4.2.1            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| macOS 10.12 Sierra               | 2.7, 3.4, 3.5, 3.6        | 4.1.1            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Mac OS X 10.11 El Capitan        | 2.7, 3.4, 3.5, 3.6, 3.7   | 5.4.1            |x86-64        |
-|                                  +---------------------------+------------------+              |
-|                                  | 3.3                       | 4.1.0            |              |
-+----------------------------------+---------------------------+------------------+--------------+
-| Mac OS X 10.9 Mavericks          | 2.7, 3.2, 3.3, 3.4        | 3.0.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Mac OS X 10.8 Mountain Lion      | 2.6, 2.7, 3.2, 3.3        |                  |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Redhat Linux 6                   | 2.6                       |                  |x86           |
-+----------------------------------+---------------------------+------------------+--------------+
-| CentOS 6.3                       | 2.7, 3.3                  |                  |x86           |
-+----------------------------------+---------------------------+------------------+--------------+
-| CentOS 8                         | 3.9                       | 9.0.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Fedora 23                        | 2.7, 3.4                  | 3.1.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Ubuntu Linux 12.04 LTS (Precise) | | 2.6, 3.2, 3.3, 3.4, 3.5 | 3.4.1            |x86,x86-64    |
-|                                  | | PyPy5.3.1, PyPy3 v2.4.0 |                  |              |
-|                                  +---------------------------+------------------+--------------+
-|                                  | 2.7                       | 4.3.0            |x86-64        |
-|                                  +---------------------------+------------------+--------------+
-|                                  | 2.7, 3.2                  | 3.4.1            |ppc           |
-+----------------------------------+---------------------------+------------------+--------------+
-| Ubuntu Linux 10.04 LTS (Lucid)   | 2.6                       | 2.3.0            |x86,x86-64    |
-+----------------------------------+---------------------------+------------------+--------------+
-| Debian 8.2 Jessie                | 2.7, 3.4                  | 3.1.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Raspbian Jessie                  | 2.7, 3.4                  | 3.1.0            |arm           |
-+----------------------------------+---------------------------+------------------+--------------+
-| Raspbian Stretch                 | 2.7, 3.5                  | 4.0.0            |arm           |
-+----------------------------------+---------------------------+------------------+--------------+
-| Raspberry Pi OS                  | 3.6, 3.7, 3.8, 3.9        | 8.2.0            |arm           |
-|                                  +---------------------------+------------------+              |
-|                                  | 2.7                       | 6.2.2            |              |
-+----------------------------------+---------------------------+------------------+--------------+
-| Gentoo Linux                     | 2.7, 3.2                  | 2.1.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| FreeBSD 11.1                     | 2.7, 3.4, 3.5, 3.6        | 4.3.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| FreeBSD 10.3                     | 2.7, 3.4, 3.5             | 4.2.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| FreeBSD 10.2                     | 2.7, 3.4                  | 3.1.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Windows 10                       | 3.7                       | 7.1.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Windows 10/Cygwin 3.3            | 3.6, 3.7, 3.8, 3.9        | 8.4.0            |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
-| Windows 8.1 Pro                  | 2.6, 2.7, 3.2, 3.3, 3.4   | 2.4.0            |x86,x86-64    |
-+----------------------------------+---------------------------+------------------+--------------+
-| Windows 8 Pro                    | 2.6, 2.7, 3.2, 3.3, 3.4a3 | 2.2.0            |x86,x86-64    |
-+----------------------------------+---------------------------+------------------+--------------+
-| Windows 7 Professional           | 3.7                       | 7.0.0            |x86,x86-64    |
-+----------------------------------+---------------------------+------------------+--------------+
-| Windows Server 2008 R2 Enterprise| 3.3                       |                  |x86-64        |
-+----------------------------------+---------------------------+------------------+--------------+
++----------------------------------+----------------------------+------------------+--------------+
+| Operating system                 | | Tested Python            | | Latest tested  | | Tested     |
+|                                  | | versions                 | | Pillow version | | processors |
++==================================+============================+==================+==============+
+| macOS 14 Sonoma                  | 3.8, 3.9, 3.10, 3.11, 3.12 | 10.1.0           |arm           |
++----------------------------------+----------------------------+------------------+--------------+
+| macOS 13 Ventura                 | 3.8, 3.9, 3.10, 3.11       | 10.0.1           |arm           |
+|                                  +----------------------------+------------------+              |
+|                                  | 3.7                        | 9.5.0            |              |
++----------------------------------+----------------------------+------------------+--------------+
+| macOS 12 Monterey                | 3.7, 3.8, 3.9, 3.10, 3.11  | 9.3.0            |arm           |
++----------------------------------+----------------------------+------------------+--------------+
+| macOS 11 Big Sur                 | 3.7, 3.8, 3.9, 3.10        | 8.4.0            |arm           |
+|                                  +----------------------------+------------------+--------------+
+|                                  | 3.7, 3.8, 3.9, 3.10, 3.11  | 9.4.0            |x86-64        |
+|                                  +----------------------------+------------------+              |
+|                                  | 3.6                        | 8.4.0            |              |
++----------------------------------+----------------------------+------------------+--------------+
+| macOS 10.15 Catalina             | 3.6, 3.7, 3.8, 3.9         | 8.3.2            |x86-64        |
+|                                  +----------------------------+------------------+              |
+|                                  | 3.5                        | 7.2.0            |              |
++----------------------------------+----------------------------+------------------+--------------+
+| macOS 10.14 Mojave               | 3.5, 3.6, 3.7, 3.8         | 7.2.0            |x86-64        |
+|                                  +----------------------------+------------------+              |
+|                                  | 2.7                        | 6.0.0            |              |
+|                                  +----------------------------+------------------+              |
+|                                  | 3.4                        | 5.4.1            |              |
++----------------------------------+----------------------------+------------------+--------------+
+| macOS 10.13 High Sierra          | 2.7, 3.4, 3.5, 3.6         | 4.2.1            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| macOS 10.12 Sierra               | 2.7, 3.4, 3.5, 3.6         | 4.1.1            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Mac OS X 10.11 El Capitan        | 2.7, 3.4, 3.5, 3.6, 3.7    | 5.4.1            |x86-64        |
+|                                  +----------------------------+------------------+              |
+|                                  | 3.3                        | 4.1.0            |              |
++----------------------------------+----------------------------+------------------+--------------+
+| Mac OS X 10.9 Mavericks          | 2.7, 3.2, 3.3, 3.4         | 3.0.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Mac OS X 10.8 Mountain Lion      | 2.6, 2.7, 3.2, 3.3         |                  |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Redhat Linux 6                   | 2.6                        |                  |x86           |
++----------------------------------+----------------------------+------------------+--------------+
+| CentOS 6.3                       | 2.7, 3.3                   |                  |x86           |
++----------------------------------+----------------------------+------------------+--------------+
+| CentOS 8                         | 3.9                        | 9.0.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Fedora 23                        | 2.7, 3.4                   | 3.1.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Ubuntu Linux 12.04 LTS (Precise) | | 2.6, 3.2, 3.3, 3.4, 3.5  | 3.4.1            |x86,x86-64    |
+|                                  | | PyPy5.3.1, PyPy3 v2.4.0  |                  |              |
+|                                  +----------------------------+------------------+--------------+
+|                                  | 2.7                        | 4.3.0            |x86-64        |
+|                                  +----------------------------+------------------+--------------+
+|                                  | 2.7, 3.2                   | 3.4.1            |ppc           |
++----------------------------------+----------------------------+------------------+--------------+
+| Ubuntu Linux 10.04 LTS (Lucid)   | 2.6                        | 2.3.0            |x86,x86-64    |
++----------------------------------+----------------------------+------------------+--------------+
+| Debian 8.2 Jessie                | 2.7, 3.4                   | 3.1.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Raspbian Jessie                  | 2.7, 3.4                   | 3.1.0            |arm           |
++----------------------------------+----------------------------+------------------+--------------+
+| Raspbian Stretch                 | 2.7, 3.5                   | 4.0.0            |arm           |
++----------------------------------+----------------------------+------------------+--------------+
+| Raspberry Pi OS                  | 3.6, 3.7, 3.8, 3.9         | 8.2.0            |arm           |
+|                                  +----------------------------+------------------+              |
+|                                  | 2.7                        | 6.2.2            |              |
++----------------------------------+----------------------------+------------------+--------------+
+| Gentoo Linux                     | 2.7, 3.2                   | 2.1.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| FreeBSD 11.1                     | 2.7, 3.4, 3.5, 3.6         | 4.3.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| FreeBSD 10.3                     | 2.7, 3.4, 3.5              | 4.2.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| FreeBSD 10.2                     | 2.7, 3.4                   | 3.1.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows 11                       | 3.9, 3.10, 3.11, 3.12      | 10.1.0           |arm64         |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows 11 Pro                   | 3.11, 3.12                 | 10.1.0           |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows 10                       | 3.7                        | 7.1.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows 10/Cygwin 3.3            | 3.6, 3.7, 3.8, 3.9         | 8.4.0            |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows 8.1 Pro                  | 2.6, 2.7, 3.2, 3.3, 3.4    | 2.4.0            |x86,x86-64    |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows 8 Pro                    | 2.6, 2.7, 3.2, 3.3, 3.4a3  | 2.2.0            |x86,x86-64    |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows 7 Professional           | 3.7                        | 7.0.0            |x86,x86-64    |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows Server 2008 R2 Enterprise| 3.3                        |                  |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
 
 Old Versions
 ------------

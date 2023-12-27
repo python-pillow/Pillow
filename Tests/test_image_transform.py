@@ -1,3 +1,4 @@
+from __future__ import annotations
 import math
 
 import pytest
@@ -42,12 +43,12 @@ class TestImageTransform:
     def test_extent(self):
         im = hopper("RGB")
         (w, h) = im.size
-        # fmt: off
-        transformed = im.transform(im.size, Image.Transform.EXTENT,
-                                   (0, 0,
-                                    w//2, h//2),  # ul -> lr
-                                   Image.Resampling.BILINEAR)
-        # fmt: on
+        transformed = im.transform(
+            im.size,
+            Image.Transform.EXTENT,
+            (0, 0, w // 2, h // 2),  # ul -> lr
+            Image.Resampling.BILINEAR,
+        )
 
         scaled = im.resize((w * 2, h * 2), Image.Resampling.BILINEAR).crop((0, 0, w, h))
 
@@ -58,13 +59,12 @@ class TestImageTransform:
         # one simple quad transform, equivalent to scale & crop upper left quad
         im = hopper("RGB")
         (w, h) = im.size
-        # fmt: off
-        transformed = im.transform(im.size, Image.Transform.QUAD,
-                                   (0, 0, 0, h//2,
-                                    # ul -> ccw around quad:
-                                    w//2, h//2, w//2, 0),
-                                   Image.Resampling.BILINEAR)
-        # fmt: on
+        transformed = im.transform(
+            im.size,
+            Image.Transform.QUAD,
+            (0, 0, 0, h // 2, w // 2, h // 2, w // 2, 0),  # ul -> ccw around quad
+            Image.Resampling.BILINEAR,
+        )
 
         scaled = im.transform(
             (w, h),
@@ -99,16 +99,21 @@ class TestImageTransform:
         # this should be a checkerboard of halfsized hoppers in ul, lr
         im = hopper("RGBA")
         (w, h) = im.size
-        # fmt: off
-        transformed = im.transform(im.size, Image.Transform.MESH,
-                                   [((0, 0, w//2, h//2),  # box
-                                    (0, 0, 0, h,
-                                     w, h, w, 0)),  # ul -> ccw around quad
-                                    ((w//2, h//2, w, h),  # box
-                                    (0, 0, 0, h,
-                                     w, h, w, 0))],  # ul -> ccw around quad
-                                   Image.Resampling.BILINEAR)
-        # fmt: on
+        transformed = im.transform(
+            im.size,
+            Image.Transform.MESH,
+            (
+                (
+                    (0, 0, w // 2, h // 2),  # box
+                    (0, 0, 0, h, w, h, w, 0),  # ul -> ccw around quad
+                ),
+                (
+                    (w // 2, h // 2, w, h),  # box
+                    (0, 0, 0, h, w, h, w, 0),  # ul -> ccw around quad
+                ),
+            ),
+            Image.Resampling.BILINEAR,
+        )
 
         scaled = im.transform(
             (w // 2, h // 2),
@@ -174,11 +179,13 @@ class TestImageTransform:
 
         im = op(im, (40, 10))
 
-        colors = im.getcolors()
-        assert colors == [
-            (20 * 10, opaque),
-            (20 * 10, transparent),
-        ]
+        colors = sorted(im.getcolors())
+        assert colors == sorted(
+            (
+                (20 * 10, opaque),
+                (20 * 10, transparent),
+            )
+        )
 
     @pytest.mark.parametrize("mode", ("RGBA", "LA"))
     def test_nearest_resize(self, mode):

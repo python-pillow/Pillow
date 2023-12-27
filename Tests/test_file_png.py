@@ -1,3 +1,4 @@
+from __future__ import annotations
 import re
 import sys
 import warnings
@@ -78,9 +79,8 @@ class TestFilePng:
         return chunks
 
     def test_sanity(self, tmp_path):
-
         # internal version number
-        assert re.search(r"\d+\.\d+\.\d+(\.\d+)?$", features.version_codec("zlib"))
+        assert re.search(r"\d+(\.\d+){1,3}$", features.version_codec("zlib"))
 
         test_file = str(tmp_path / "temp.png")
 
@@ -93,11 +93,11 @@ class TestFilePng:
             assert im.format == "PNG"
             assert im.get_format_mimetype() == "image/png"
 
-        for mode in ["1", "L", "P", "RGB", "I", "I;16"]:
+        for mode in ["1", "L", "P", "RGB", "I", "I;16", "I;16B"]:
             im = hopper(mode)
             im.save(test_file)
             with Image.open(test_file) as reloaded:
-                if mode == "I;16":
+                if mode in ("I;16", "I;16B"):
                     reloaded = reloaded.convert(mode)
                 assert_image_equal(reloaded, im)
 
@@ -156,7 +156,6 @@ class TestFilePng:
         assert im.info == {"spam": "egg"}
 
     def test_bad_itxt(self):
-
         im = load(HEAD + chunk(b"iTXt") + TAIL)
         assert im.info == {}
 
@@ -201,7 +200,6 @@ class TestFilePng:
         assert im.info["spam"].tkey == "Spam"
 
     def test_interlace(self):
-
         test_file = "Tests/images/pil123p.png"
         with Image.open(test_file) as im:
             assert_image(im, "P", (162, 150))
@@ -308,7 +306,7 @@ class TestFilePng:
         assert_image(im, "RGBA", (10, 10))
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
-    def test_save_greyscale_transparency(self, tmp_path):
+    def test_save_grayscale_transparency(self, tmp_path):
         for mode, num_transparent in {"1": 1994, "L": 559, "I": 559}.items():
             in_file = "Tests/images/" + mode.lower() + "_trns.png"
             with Image.open(in_file) as im:
@@ -503,7 +501,6 @@ class TestFilePng:
         # Check reading images with null tRNS value, issue #1239
         test_file = "Tests/images/tRNS_null_1x1.png"
         with Image.open(test_file) as im:
-
             assert im.info["transparency"] == 0
 
     def test_save_icc_profile(self):
@@ -544,11 +541,10 @@ class TestFilePng:
             assert repr_png.format == "PNG"
             assert_image_equal(im, repr_png)
 
-    def test_repr_png_error(self):
+    def test_repr_png_error_returns_none(self):
         im = hopper("F")
 
-        with pytest.raises(ValueError):
-            im._repr_png_()
+        assert im._repr_png_() is None
 
     def test_chunk_order(self, tmp_path):
         with Image.open("Tests/images/icc_profile.png") as im:
@@ -601,7 +597,7 @@ class TestFilePng:
 
     def test_textual_chunks_after_idat(self):
         with Image.open("Tests/images/hopper.png") as im:
-            assert "comment" in im.text.keys()
+            assert "comment" in im.text
             for k, v in {
                 "date:create": "2014-09-04T09:37:08+03:00",
                 "date:modify": "2014-09-04T09:37:08+03:00",
@@ -678,7 +674,10 @@ class TestFilePng:
     def test_getxmp(self):
         with Image.open("Tests/images/color_snakes.png") as im:
             if ElementTree is None:
-                with pytest.warns(UserWarning):
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
                     assert im.getxmp() == {}
             else:
                 xmp = im.getxmp()
@@ -714,9 +713,17 @@ class TestFilePng:
         assert exif[274] == 3
 
     def test_exif_save(self, tmp_path):
+        # Test exif is not saved from info
+        test_file = str(tmp_path / "temp.png")
         with Image.open("Tests/images/exif.png") as im:
-            test_file = str(tmp_path / "temp.png")
             im.save(test_file)
+
+        with Image.open(test_file) as reloaded:
+            assert reloaded._getexif() is None
+
+        # Test passing in exif
+        with Image.open("Tests/images/exif.png") as im:
+            im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
             exif = reloaded._getexif()
@@ -728,7 +735,7 @@ class TestFilePng:
     def test_exif_from_jpg(self, tmp_path):
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = str(tmp_path / "temp.png")
-            im.save(test_file)
+            im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
             exif = reloaded._getexif()
