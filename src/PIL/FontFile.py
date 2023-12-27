@@ -118,6 +118,9 @@ class FontFile:
         self.compile()
 
         # font data
+        if not self.bitmap:
+            msg = "No bitmap created"
+            raise ValueError(msg)
         self.bitmap.save(os.path.splitext(filename)[0] + ".pbm", "PNG")
 
         # font metrics
