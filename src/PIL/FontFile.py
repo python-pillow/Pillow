@@ -65,7 +65,7 @@ class FontFile:
         ysize = lines * h
 
         if xsize == 0 and ysize == 0:
-            return ""
+            return
 
         self.ysize = h
 
