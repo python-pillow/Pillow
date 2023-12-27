@@ -24,7 +24,7 @@ class ContainerIO:
     file (for example a TAR file).
     """
 
-    def __init__(self, file, offset, length):
+    def __init__(self, file, offset, length) -> None:
         """
         Create file object.
 

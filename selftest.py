@@ -15,7 +15,7 @@ except AttributeError:
     pass
 
 
-def testimage():
+def testimage() -> None:
     """
     PIL lets you create in-memory images with various pixel types:
 

@@ -1181,7 +1181,7 @@ class Image:
 
         return im
 
-    def copy(self):
+    def copy(self) -> Image:
         """
         Copies this image. Use this method if you wish to paste things
         into an image, but still retain the original.
@@ -2467,7 +2467,7 @@ class Image:
             }
         )
 
-    def seek(self, frame):
+    def seek(self, frame) -> Image:
         """
         Seeks to the given frame in this sequence file. If you seek
         beyond the end of the sequence, the method raises an
@@ -2554,7 +2554,7 @@ class Image:
 
         return self._new(self.im.getband(channel))
 
-    def tell(self):
+    def tell(self) -> int:
         """
         Returns the current frame number. See :py:meth:`~PIL.Image.Image.seek`.
 
