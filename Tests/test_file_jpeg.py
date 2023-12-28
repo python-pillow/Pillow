@@ -148,6 +148,7 @@ class TestFileJpeg:
         im = hopper()
         im_ycbcr = self.roundtrip(im)
         assert getchannels(im_ycbcr) == (1, 2, 3)
+        assert_image_similar(im, im_ycbcr, 17)
 
         im_rgb = self.roundtrip(im, keep_rgb=True)
         assert getchannels(im_rgb) == (ord("R"), ord("G"), ord("B"))
