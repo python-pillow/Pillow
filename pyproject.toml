@@ -117,6 +117,8 @@ extend-ignore = [
 
 [tool.ruff.per-file-ignores]
 "Tests/*.py" = ["I001"]
+"Tests/oss-fuzz/fuzz_font.py" = ["I002"]
+"Tests/oss-fuzz/fuzz_pillow.py" = ["I002"]
 
 [tool.ruff.isort]
 known-first-party = ["PIL"]
