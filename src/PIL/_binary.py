@@ -18,8 +18,8 @@ from __future__ import annotations
 from struct import pack, unpack_from
 
 
-def i8(c: int | bytes) -> int:
-    return c if c.__class__ is int else c[0]  # type: ignore[index, return-value]
+def i8(c: bytes) -> int:
+    return c[0]
 
 
 def o8(i: int) -> bytes:
