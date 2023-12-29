@@ -62,10 +62,13 @@ output only the quantization and Huffman tables for the image.
 Security
 ========
 
-TODO
-^^^^
+Restricted environment keys for ImageMath.eval
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+:cve:`2023-50447`: If an attacker has control over the keys passed to the
+``environment`` argument of :py:meth:`PIL.ImageMath.eval`, they may be able to execute
+arbitrary code. To prevent this, keys matching the names of builtins and keys
+containing double underscores will now raise a :py:exc:`ValueError`.
 
 Other Changes
 =============
