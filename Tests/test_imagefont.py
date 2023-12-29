@@ -1053,11 +1053,11 @@ def test_too_many_characters(font):
     with pytest.raises(ValueError):
         transposed_font.getlength("A" * 1_000_001)
 
-    default_font = ImageFont.load_default()
+    imagefont = ImageFont.ImageFont()
     with pytest.raises(ValueError):
-        default_font.getlength("A" * 1_000_001)
+        imagefont.getlength("A" * 1_000_001)
     with pytest.raises(ValueError):
-        default_font.getbbox("A" * 1_000_001)
+        imagefont.getbbox("A" * 1_000_001)
 
 
 @pytest.mark.parametrize(
