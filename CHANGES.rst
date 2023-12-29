@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Restricted environment keys for ImageMath.eval() #7655
+  [wiredfool, radarhere]
+
 - Fix incorrect color blending for overlapping glyphs #7497
   [ZachNagengast, nulano, radarhere]
 
