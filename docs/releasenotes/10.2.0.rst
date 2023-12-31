@@ -62,8 +62,19 @@ output only the quantization and Huffman tables for the image.
 Security
 ========
 
-Restricted environment keys for ImageMath.eval
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImageFont.getmask: Applied ImageFont.MAX_STRING_LENGTH
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using arbitrary strings as text input,
+Pillow will now raise a :py:exc:`ValueError` if the number of characters passed into
+:py:meth:`PIL.ImageFont.ImageFont.getmask` is over a certain limit,
+:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`.
+
+This threshold can be changed by setting :py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It
+can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
+
+ImageMath.eval: Restricted environment keys
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :cve:`2023-50447`: If an attacker has control over the keys passed to the
 ``environment`` argument of :py:meth:`PIL.ImageMath.eval`, they may be able to execute
