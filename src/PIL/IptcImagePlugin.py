@@ -16,8 +16,7 @@
 #
 from __future__ import annotations
 
-import os
-import tempfile
+from io import BytesIO
 
 from . import Image, ImageFile
 from ._binary import i8, o8
@@ -139,12 +138,11 @@ class IptcImageFile(ImageFile.ImageFile):
         self.fp.seek(offset)
 
         # Copy image data to temporary file
-        o_fd, outfile = tempfile.mkstemp(text=False)
-        o = os.fdopen(o_fd)
+        o = BytesIO()
         if compression == "raw":
             # To simplify access to the extracted file,
             # prepend a PPM header
-            o.write("P5\n%d %d\n255\n" % self.size)
+            o.write(b"P5\n%d %d\n255\n" % self.size)
         while True:
             type, size = self.field()
             if type != (8, 10):
@@ -155,17 +153,10 @@ class IptcImageFile(ImageFile.ImageFile):
                     break
                 o.write(s)
                 size -= len(s)
-        o.close()
 
-        try:
-            with Image.open(outfile) as _im:
-                _im.load()
-                self.im = _im.im
-        finally:
-            try:
-                os.unlink(outfile)
-            except OSError:
-                pass
+        with Image.open(o) as _im:
+            _im.load()
+            self.im = _im.im
 
 
 Image.register_open(IptcImageFile.format, IptcImageFile)
