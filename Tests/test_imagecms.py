@@ -506,6 +506,12 @@ def test_profile_typesafety() -> None:
     with pytest.raises(TypeError, match="Invalid type for Profile"):
         ImageCms.ImageCmsProfile(1).tobytes()
 
+    # also check core function
+    with pytest.raises(TypeError):
+        ImageCms.core.profile_tobytes(0)
+    with pytest.raises(TypeError):
+        ImageCms.core.profile_tobytes(1)
+
 
 def assert_aux_channel_preserved(
     mode: str, transform_in_place: bool, preserved_channel: str

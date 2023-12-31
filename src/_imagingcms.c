@@ -143,7 +143,7 @@ cms_profile_tobytes(PyObject *self, PyObject *args) {
     cmsHPROFILE *profile;
 
     PyObject *ret;
-    if (!PyArg_ParseTuple(args, "O", &CmsProfile)) {
+    if (!PyArg_ParseTuple(args, "O!", &CmsProfile_Type, &CmsProfile)) {
         return NULL;
     }
 
