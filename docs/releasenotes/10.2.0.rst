@@ -1,14 +1,6 @@
 10.2.0
 ------
 
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
-
-TODO
-
 Deprecations
 ============
 
@@ -19,11 +11,6 @@ ImageFile.raise_oserror
 12.0.0 (2025-10-15). The function is undocumented and is only useful for translating
 error codes returned by a codec's ``decode()`` method, which ImageFile already does
 automatically.
-
-TODO
-^^^^
-
-TODO
 
 API Changes
 ===========
@@ -92,6 +79,21 @@ Support has been added to read the BC4U format of DDS images.
 Support has also been added to read DX10 BC1 and BC4, whether UNORM or
 TYPELESS.
 
+Optimized ImageColor.getrgb and getcolor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The color calculations of :py:attr:`~PIL.ImageColor.getrgb` and
+:py:attr:`~PIL.ImageColor.getcolor` are now cached using
+:py:func:`functools.lru_cache`. Cached calls of ``getrgb`` are 3.1 - 91.4 times
+as fast and ``getcolor`` are 5.1 - 19.6 times as fast.
+
+Optimized ImageMode.getmode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The lookups made by :py:attr:`~PIL.ImageMode.getmode` are now cached using
+:py:func:`functools.lru_cache` instead of a custom cache. Cached calls are 20%
+faster.
+
 Optimized ImageStat.Stat count and extrema
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -105,3 +107,15 @@ Encoder errors now report error detail as string
 
 :py:exc:`OSError` exceptions from image encoders now include a textual description of
 the error instead of a numeric error code.
+
+Type hints
+^^^^^^^^^^
+
+Work has begun to add type annotations to Pillow, including:
+
+* :py:class:`~PIL.ContainerIO`
+* :py:class:`~PIL.FontFile` and subclasses
+* :py:class:`~PIL.ImageChops`
+* :py:class:`~PIL.ImageMode`
+* :py:class:`~PIL.ImageSequence`
+* :py:class:`~PIL.TarIO`
