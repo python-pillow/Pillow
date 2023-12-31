@@ -11,6 +11,15 @@ from .helper import hopper
 TEST_FILE = "Tests/images/iptc.jpg"
 
 
+def test_open():
+    f = BytesIO(
+        b"\x1c\x03<\x00\x02\x01\x00\x1c\x03x\x00\x01\x01\x1c"
+        b"\x03\x14\x00\x01\x01\x1c\x03\x1e\x00\x01\x01\x1c\x08\n\x00\x00"
+    )
+    with Image.open(f) as im:
+        assert im.tile == [("iptc", (0, 0, 1, 1), 25, "raw")]
+
+
 def test_getiptcinfo_jpg_none():
     # Arrange
     with hopper() as im:

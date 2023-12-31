@@ -128,24 +128,20 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # tile
         if tag == (8, 10):
-            self.tile = [
-                ("iptc", (compression, offset), (0, 0, self.size[0], self.size[1]))
-            ]
+            self.tile = [("iptc", (0, 0) + self.size, offset, compression)]
 
     def load(self):
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
             return ImageFile.ImageFile.load(self)
 
-        type, tile, box = self.tile[0]
-
-        encoding, offset = tile
+        offset, compression = self.tile[0][2:]
 
         self.fp.seek(offset)
 
         # Copy image data to temporary file
         o_fd, outfile = tempfile.mkstemp(text=False)
         o = os.fdopen(o_fd)
-        if encoding == "raw":
+        if compression == "raw":
             # To simplify access to the extracted file,
             # prepend a PPM header
             o.write("P5\n%d %d\n255\n" % self.size)
