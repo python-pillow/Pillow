@@ -12,7 +12,7 @@ TEST_FILE = "Tests/images/iptc.jpg"
 
 
 def test_open():
-    expected = Image.new("L", (1, 1), 0)
+    expected = Image.new("L", (1, 1))
 
     f = BytesIO(
         b"\x1c\x03<\x00\x02\x01\x00\x1c\x03x\x00\x01\x01\x1c\x03\x14\x00\x01\x01"
