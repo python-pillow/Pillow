@@ -1058,6 +1058,8 @@ def test_too_many_characters(font):
         imagefont.getlength("A" * 1_000_001)
     with pytest.raises(ValueError):
         imagefont.getbbox("A" * 1_000_001)
+    with pytest.raises(ValueError):
+        imagefont.getmask("A" * 1_000_001)
 
 
 @pytest.mark.parametrize(
