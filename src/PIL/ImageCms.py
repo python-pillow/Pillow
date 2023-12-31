@@ -23,7 +23,7 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Any
+from typing import Any, BinaryIO
 
 from . import Image, __version__
 from ._deprecate import deprecate
@@ -237,7 +237,7 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
-    def __init__(self, profile):
+    def __init__(self, profile: str | BinaryIO | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
             a file like object containing a profile or a
@@ -260,16 +260,16 @@ class ImageCmsProfile:
         elif isinstance(profile, _imagingcms.CmsProfile):
             self._set(profile)
         else:
-            msg = "Invalid type for Profile"
+            msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
 
-    def _set(self, profile, filename=None):
+    def _set(self, profile: core.CmsProfile, filename: str | None = None) -> None:
         self.profile = profile
         self.filename = filename
         self.product_name = None  # profile.product_name
         self.product_info = None  # profile.product_info
 
-    def tobytes(self):
+    def tobytes(self) -> bytes:
         """
         Returns the profile in a format suitable for embedding in
         saved images.
@@ -290,14 +290,14 @@ class ImageCmsTransform(Image.ImagePointHandler):
 
     def __init__(
         self,
-        input,
-        output,
-        input_mode,
-        output_mode,
-        intent=Intent.PERCEPTUAL,
-        proof=None,
-        proof_intent=Intent.ABSOLUTE_COLORIMETRIC,
-        flags=Flags.NONE,
+        input: ImageCmsProfile,
+        output: ImageCmsProfile,
+        input_mode: str,
+        output_mode: str,
+        intent: Intent = Intent.PERCEPTUAL,
+        proof: ImageCmsProfile | None = None,
+        proof_intent: Intent = Intent.ABSOLUTE_COLORIMETRIC,
+        flags: Flags | int = Flags.NONE,
     ):
         if proof is None:
             self.transform = core.buildTransform(
@@ -320,10 +320,10 @@ class ImageCmsTransform(Image.ImagePointHandler):
 
         self.output_profile = output
 
-    def point(self, im):
+    def point(self, im: Image.Image) -> Image.Image:
         return self.apply(im)
 
-    def apply(self, im, imOut=None):
+    def apply(self, im: Image.Image, imOut: Image.Image | None = None) -> Image.Image:
         im.load()
         if imOut is None:
             imOut = Image.new(self.output_mode, im.size, None)
@@ -331,7 +331,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         imOut.info["icc_profile"] = self.output_profile.tobytes()
         return imOut
 
-    def apply_in_place(self, im):
+    def apply_in_place(self, im: Image.Image) -> Image.Image:
         im.load()
         if im.mode != self.output_mode:
             msg = "mode mismatch"
