@@ -10,8 +10,8 @@ exclude_also =
     def create_lut():
     # Don't complain about debug code
     if DEBUG:
-    # Don't complain about compatibility code
-    class TypeGuard:
+    # Don't complain about compatibility code for missing optional dependencies
+    except ImportError
 
 [run]
 omit =
