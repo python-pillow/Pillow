@@ -612,6 +612,14 @@ class TestFileTiff:
 
             assert_image_equal_tofile(im, tmpfile)
 
+    def test_rowsperstrip(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+        im = hopper()
+        im.save(outfile, tiffinfo={278: 256})
+
+        with Image.open(outfile) as im:
+            assert im.tag_v2[278] == 256
+
     def test_strip_raw(self):
         infile = "Tests/images/tiff_strip_raw.tif"
         with Image.open(infile) as im:
