@@ -18,6 +18,7 @@ from enum import IntEnum, IntFlag
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
+from ._binary import o8
 from ._binary import o32le as o32
 
 # Magic ("DDS ")
@@ -341,6 +342,7 @@ class DdsImageFile(ImageFile.ImageFile):
 
         flags, height, width = struct.unpack("<3I", header.read(12))
         self._size = (width, height)
+        extents = (0, 0) + self.size
 
         pitch, depth, mipmaps = struct.unpack("<3I", header.read(12))
         struct.unpack("<11I", header.read(44))  # reserved
@@ -351,22 +353,16 @@ class DdsImageFile(ImageFile.ImageFile):
         rawmode = None
         if pfflags & DDPF.RGB:
             # Texture contains uncompressed RGB data
-            masks = struct.unpack("<4I", header.read(16))
-            masks = {mask: ["R", "G", "B", "A"][i] for i, mask in enumerate(masks)}
-            if bitcount == 24:
-                self._mode = "RGB"
-                rawmode = masks[0x000000FF] + masks[0x0000FF00] + masks[0x00FF0000]
-            elif bitcount == 32 and pfflags & DDPF.ALPHAPIXELS:
+            if pfflags & DDPF.ALPHAPIXELS:
                 self._mode = "RGBA"
-                rawmode = (
-                    masks[0x000000FF]
-                    + masks[0x0000FF00]
-                    + masks[0x00FF0000]
-                    + masks[0xFF000000]
-                )
+                mask_count = 4
             else:
-                msg = f"Unsupported bitcount {bitcount} for {pfflags}"
-                raise OSError(msg)
+                self._mode = "RGB"
+                mask_count = 3
+
+            masks = struct.unpack(f"<{mask_count}I", header.read(mask_count * 4))
+            self.tile = [("dds_rgb", extents, 0, (bitcount, masks))]
+            return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
                 self._mode = "L"
@@ -464,7 +460,6 @@ class DdsImageFile(ImageFile.ImageFile):
             msg = f"Unknown pixel format flags {pfflags}"
             raise NotImplementedError(msg)
 
-        extents = (0, 0) + self.size
         if n:
             self.tile = [
                 ImageFile._Tile("bcn", extents, offset, (n, self.pixel_format))
@@ -474,6 +469,39 @@ class DdsImageFile(ImageFile.ImageFile):
 
     def load_seek(self, pos):
         pass
+
+
+class DdsRgbDecoder(ImageFile.PyDecoder):
+    _pulls_fd = True
+
+    def decode(self, buffer):
+        bitcount, masks = self.args
+
+        # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
+        # Calculate how many zeros each mask is padded with
+        mask_offsets = []
+        # And the maximum value of each channel without the padding
+        mask_totals = []
+        for mask in masks:
+            offset = 0
+            if mask != 0:
+                while mask >> (offset + 1) << (offset + 1) == mask:
+                    offset += 1
+            mask_offsets.append(offset)
+            mask_totals.append(mask >> offset)
+
+        data = bytearray()
+        bytecount = bitcount // 8
+        while len(data) < self.state.xsize * self.state.ysize * len(masks):
+            value = int.from_bytes(self.fd.read(bytecount), "little")
+            for i, mask in enumerate(masks):
+                masked_value = value & mask
+                # Remove the zero padding, and scale it to 8 bits
+                data += o8(
+                    int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
+                )
+        self.set_as_raw(bytes(data))
+        return -1, 0
 
 
 def _save(im, fp, filename):
@@ -533,5 +561,6 @@ def _accept(prefix):
 
 
 Image.register_open(DdsImageFile.format, DdsImageFile, _accept)
+Image.register_decoder("dds_rgb", DdsRgbDecoder)
 Image.register_save(DdsImageFile.format, _save)
 Image.register_extension(DdsImageFile.format, ".dds")
