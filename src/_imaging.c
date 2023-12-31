@@ -2742,7 +2742,7 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
     PyObject *encoded_string;
 
     unsigned char *text;
-    char *mode = "";
+    char *mode;
 
     if (!PyArg_ParseTuple(args, "O|s:getmask", &encoded_string, &mode)) {
         return NULL;
