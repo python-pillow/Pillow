@@ -48,11 +48,13 @@ def _i8(c: int | bytes) -> int:
 
 
 def i(c):
+    """.. deprecated:: 10.2.0"""
     deprecate("IptcImagePlugin.i", 12)
     return _i(c)
 
 
 def dump(c):
+    """.. deprecated:: 10.2.0"""
     deprecate("IptcImagePlugin.dump", 12)
     for i in c:
         print("%02x" % _i8(i), end=" ")
