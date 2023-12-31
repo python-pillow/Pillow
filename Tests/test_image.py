@@ -1016,6 +1016,11 @@ class TestImage:
             except OSError as e:
                 assert str(e) == "buffer overrun when reading image file"
 
+    def test_exit_fp(self):
+        with Image.new("L", (1, 1)) as im:
+            pass
+        assert not hasattr(im, "fp")
+
     def test_close_graceful(self, caplog):
         with Image.open("Tests/images/hopper.jpg") as im:
             copy = im.copy()
