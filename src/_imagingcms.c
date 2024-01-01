@@ -1518,6 +1518,9 @@ setup_module(PyObject *m) {
     Py_INCREF(&CmsProfile_Type);
     PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
 
+    Py_INCREF(&CmsTransform_Type);
+    PyModule_AddObject(m, "CmsTransform", (PyObject *)&CmsTransform_Type);
+
     d = PyModule_GetDict(m);
 
     /* this check is also in PIL.features.pilinfo() */

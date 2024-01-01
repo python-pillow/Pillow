@@ -522,6 +522,15 @@ def test_profile_typesafety() -> None:
             ImageCms.core.CmsProfile(0)
 
 
+@pytest.mark.skipif(is_pypy(), reason="fails on PyPy")
+def test_transform_typesafety() -> None:
+    # core transform should not be directly instantiable
+    with pytest.raises(TypeError):
+        ImageCms.core.CmsProfile()
+    with pytest.raises(TypeError):
+        ImageCms.core.CmsProfile(0)
+
+
 def assert_aux_channel_preserved(
     mode: str, transform_in_place: bool, preserved_channel: str
 ) -> None:
