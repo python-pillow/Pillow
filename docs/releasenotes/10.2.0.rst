@@ -12,6 +12,15 @@ ImageFile.raise_oserror
 error codes returned by a codec's ``decode()`` method, which ImageFile already does
 automatically.
 
+IptcImageFile helper functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
+``IptcImageFile.PAD`` have been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). These are undocumented helper functions intended
+for internal use, so there is no replacement. They can each be replaced
+by a single line of code using builtin functions in Python.
+
 API Changes
 ===========
 
@@ -59,6 +68,16 @@ Pillow will now raise a :py:exc:`ValueError` if the number of characters passed 
 
 This threshold can be changed by setting :py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It
 can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
+
+A decompression bomb check has also been added to
+:py:meth:`PIL.ImageFont.ImageFont.getmask`.
+
+ImageFont.getmask: Trim glyph size
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using PIL fonts,
+:py:class:`PIL.ImageFont.ImageFont` now trims the size of individual glyphs so that
+they do not extend beyond the bitmap image.
 
 ImageMath.eval: Restricted environment keys
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
