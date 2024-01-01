@@ -77,6 +77,16 @@ Pillow will now raise a :py:exc:`ValueError` if the number of characters passed 
 This threshold can be changed by setting :py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It
 can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
 
+A decompression bomb check has also been added to
+:py:meth:`PIL.ImageFont.ImageFont.getmask`.
+
+ImageFont.getmask: Trim glyph size
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using PIL fonts,
+:py:class:`PIL.ImageFont.ImageFont` now trims the size of individual glyphs so that
+they do not extend beyond the bitmap image.
+
 ImageMath.eval: Restricted environment keys
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

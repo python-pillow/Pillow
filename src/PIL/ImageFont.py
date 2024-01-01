@@ -150,6 +150,7 @@ class ImageFont:
                  :py:mod:`PIL.Image.core` interface module.
         """
         _string_length_check(text)
+        Image._decompression_bomb_check(self.font.getsize(text))
         return self.font.getmask(text, mode)
 
     def getbbox(self, text, *args, **kwargs):
