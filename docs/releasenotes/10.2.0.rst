@@ -91,16 +91,16 @@ Optimized ImageMode.getmode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The lookups made by :py:attr:`~PIL.ImageMode.getmode` are now cached using
-:py:func:`functools.lru_cache` instead of a custom cache. Cached calls are 20%
-faster.
+:py:func:`functools.lru_cache` instead of a custom cache. Cached calls are 1.2 times as
+fast.
 
 Optimized ImageStat.Stat count and extrema
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Calculating the :py:attr:`~PIL.ImageStat.Stat.count` and
 :py:attr:`~PIL.ImageStat.Stat.extrema` statistics is now faster. After the
-histogram is created in ``st = ImageStat.Stat(im)``, ``st.count`` is 3x as fast
-on average and ``st.extrema`` is 12x as fast on average.
+histogram is created in ``st = ImageStat.Stat(im)``, ``st.count`` is 3 times as fast on
+average and ``st.extrema`` is 12 times as fast on average.
 
 Encoder errors now report error detail as string
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
