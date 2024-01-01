@@ -2733,7 +2733,7 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
 static PyObject *
 _font_getmask(ImagingFontObject *self, PyObject *args) {
     Imaging im;
-    Imaging bitmap;
+    Imaging bitmap = NULL;
     int x, b;
     int i = 0;
     int status;
@@ -2765,10 +2765,13 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
     b = self->baseline;
     for (x = 0; text[i]; i++) {
         glyph = &self->glyphs[text[i]];
-        bitmap =
-            ImagingCrop(self->bitmap, glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1);
-        if (!bitmap) {
-            goto failed;
+        if (i == 0 || text[i] != text[i - 1]) {
+            ImagingDelete(bitmap);
+            bitmap =
+                ImagingCrop(self->bitmap, glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1);
+            if (!bitmap) {
+                goto failed;
+            }
         }
         status = ImagingPaste(
             im,
@@ -2778,17 +2781,18 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
             glyph->dy0 + b,
             glyph->dx1 + x,
             glyph->dy1 + b);
-        ImagingDelete(bitmap);
         if (status < 0) {
             goto failed;
         }
         x = x + glyph->dx;
         b = b + glyph->dy;
     }
+    ImagingDelete(bitmap);
     free(text);
     return PyImagingNew(im);
 
 failed:
+    ImagingDelete(bitmap);
     free(text);
     ImagingDelete(im);
     Py_RETURN_NONE;
