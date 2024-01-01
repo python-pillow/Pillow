@@ -106,6 +106,18 @@ Support has been added to read the BC4U format of DDS images.
 Support has also been added to read DX10 BC1 and BC4, whether UNORM or
 TYPELESS.
 
+Support arbitrary masks for uncompressed RGB DDS images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All masks are now supported when reading DDS images with uncompressed RGB data,
+allowing for bit counts other than 24 and 32.
+
+Saving TIFF tag RowsPerStrip
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving TIFF images, the TIFF tag RowsPerStrip can now be one of the tags set by
+the user, rather than always being calculated by Pillow.
+
 Optimized ImageStat.Stat count and extrema
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
