@@ -29,13 +29,13 @@ from . import Image, __version__
 from ._deprecate import deprecate
 
 try:
-    from . import _imagingcms
+    from . import _imagingcms as core
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
     from ._util import DeferredError
 
-    _imagingcms = DeferredError.new(ex)
+    core = DeferredError.new(ex)
 
 _DESCRIPTION = """
 pyCMS
@@ -119,7 +119,6 @@ def __getattr__(name: str) -> Any:
 
 # --------------------------------------------------------------------.
 
-core = _imagingcms
 
 #
 # intent/direction values
@@ -257,7 +256,7 @@ class ImageCmsProfile:
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
             self._set(core.profile_frombytes(profile.read()))
-        elif isinstance(profile, _imagingcms.CmsProfile):
+        elif isinstance(profile, core.CmsProfile):
             self._set(profile)
         else:
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
