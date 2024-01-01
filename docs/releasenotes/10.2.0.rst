@@ -42,6 +42,14 @@ Added DdsImagePlugin enums
 :py:class:`~PIL.DdsImagePlugin.DXGI_FORMAT` and :py:class:`~PIL.DdsImagePlugin.D3DFMT`
 enums have been added to :py:class:`PIL.DdsImagePlugin`.
 
+JPEG RGB color space
+^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``keep_rgb`` can now be set to ``True``. This will store RGB
+images in the RGB color space instead of being converted to YCbCr automatically by
+libjpeg. When this option is enabled, attempting to chroma-subsample RGB images with
+the ``subsampling`` option will raise an :py:exc:`OSError`.
+
 JPEG restart marker interval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
