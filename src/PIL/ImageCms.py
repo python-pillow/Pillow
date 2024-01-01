@@ -23,7 +23,7 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Any, BinaryIO, SupportsInt
+from typing import Any, BinaryIO, Literal, SupportsFloat, SupportsInt, Union
 
 from . import Image, __version__
 from ._deprecate import deprecate
@@ -366,6 +366,8 @@ def get_display_profile(handle: SupportsInt | None = None) -> ImageCmsProfile | 
 # pyCMS compatible layer
 # --------------------------------------------------------------------.
 
+_CmsProfileCompatible = Union[str, BinaryIO, core.CmsProfile, ImageCmsProfile]
+
 
 class PyCMSError(Exception):
     """(pyCMS) Exception class.
@@ -375,14 +377,14 @@ class PyCMSError(Exception):
 
 
 def profileToProfile(
-    im,
-    inputProfile,
-    outputProfile,
-    renderingIntent=Intent.PERCEPTUAL,
-    outputMode=None,
-    inPlace=False,
-    flags=Flags.NONE,
-):
+    im: Image.Image,
+    inputProfile: _CmsProfileCompatible,
+    outputProfile: _CmsProfileCompatible,
+    renderingIntent: Intent = Intent.PERCEPTUAL,
+    outputMode: str | None = None,
+    inPlace: bool = False,
+    flags: Flags | int = Flags.NONE,
+) -> Image.Image | None:
     """
     (pyCMS) Applies an ICC transformation to a given image, mapping from
     ``inputProfile`` to ``outputProfile``.
@@ -470,7 +472,9 @@ def profileToProfile(
     return imOut
 
 
-def getOpenProfile(profileFilename):
+def getOpenProfile(
+    profileFilename: str | BinaryIO | core.CmsProfile,
+) -> ImageCmsProfile:
     """
     (pyCMS) Opens an ICC profile file.
 
@@ -493,13 +497,13 @@ def getOpenProfile(profileFilename):
 
 
 def buildTransform(
-    inputProfile,
-    outputProfile,
-    inMode,
-    outMode,
-    renderingIntent=Intent.PERCEPTUAL,
-    flags=Flags.NONE,
-):
+    inputProfile: _CmsProfileCompatible,
+    outputProfile: _CmsProfileCompatible,
+    inMode: str,
+    outMode: str,
+    renderingIntent: Intent = Intent.PERCEPTUAL,
+    flags: Flags | int = Flags.NONE,
+) -> ImageCmsTransform:
     """
     (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
     ``outputProfile``. Use applyTransform to apply the transform to a given
@@ -576,15 +580,15 @@ def buildTransform(
 
 
 def buildProofTransform(
-    inputProfile,
-    outputProfile,
-    proofProfile,
-    inMode,
-    outMode,
-    renderingIntent=Intent.PERCEPTUAL,
-    proofRenderingIntent=Intent.ABSOLUTE_COLORIMETRIC,
-    flags=Flags.SOFTPROOFING,
-):
+    inputProfile: _CmsProfileCompatible,
+    outputProfile: _CmsProfileCompatible,
+    proofProfile: _CmsProfileCompatible,
+    inMode: str,
+    outMode: str,
+    renderingIntent: Intent = Intent.PERCEPTUAL,
+    proofRenderingIntent: Intent = Intent.ABSOLUTE_COLORIMETRIC,
+    flags: Flags | int = Flags.SOFTPROOFING,
+) -> ImageCmsTransform:
     """
     (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
     ``outputProfile``, but tries to simulate the result that would be
@@ -692,7 +696,9 @@ buildTransformFromOpenProfiles = buildTransform
 buildProofTransformFromOpenProfiles = buildProofTransform
 
 
-def applyTransform(im, transform, inPlace=False):
+def applyTransform(
+    im: Image.Image, transform: ImageCmsTransform, inPlace: bool = False
+) -> Image.Image | None:
     """
     (pyCMS) Applies a transform to a given image.
 
@@ -745,7 +751,9 @@ def applyTransform(im, transform, inPlace=False):
     return imOut
 
 
-def createProfile(colorSpace, colorTemp=-1):
+def createProfile(
+    colorSpace: Literal["LAB", "XYZ", "sRGB"], colorTemp: SupportsFloat = -1
+) -> core.CmsProfile:
     """
     (pyCMS) Creates a profile.
 
@@ -787,6 +795,9 @@ def createProfile(colorSpace, colorTemp=-1):
         except (TypeError, ValueError) as e:
             msg = f'Color temperature must be numeric, "{colorTemp}" not valid'
             raise PyCMSError(msg) from e
+    else:
+        # colorTemp is unused if colorSpace != "LAB"
+        colorTemp = 0.0
 
     try:
         return core.createProfile(colorSpace, colorTemp)
@@ -794,7 +805,7 @@ def createProfile(colorSpace, colorTemp=-1):
         raise PyCMSError(v) from v
 
 
-def getProfileName(profile):
+def getProfileName(profile: _CmsProfileCompatible) -> str:
     """
 
     (pyCMS) Gets the internal product name for the given profile.
@@ -828,15 +839,15 @@ def getProfileName(profile):
 
         if not (model or manufacturer):
             return (profile.profile.profile_description or "") + "\n"
-        if not manufacturer or len(model) > 30:
-            return model + "\n"
+        if not manufacturer or len(model) > 30:  # type: ignore[arg-type]
+            return model + "\n"  # type: ignore[operator]
         return f"{model} - {manufacturer}\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v) from v
 
 
-def getProfileInfo(profile):
+def getProfileInfo(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the internal product information for the given profile.
 
@@ -873,7 +884,7 @@ def getProfileInfo(profile):
         raise PyCMSError(v) from v
 
 
-def getProfileCopyright(profile):
+def getProfileCopyright(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the copyright for the given profile.
 
@@ -901,7 +912,7 @@ def getProfileCopyright(profile):
         raise PyCMSError(v) from v
 
 
-def getProfileManufacturer(profile):
+def getProfileManufacturer(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the manufacturer for the given profile.
 
@@ -929,7 +940,7 @@ def getProfileManufacturer(profile):
         raise PyCMSError(v) from v
 
 
-def getProfileModel(profile):
+def getProfileModel(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the model for the given profile.
 
@@ -958,7 +969,7 @@ def getProfileModel(profile):
         raise PyCMSError(v) from v
 
 
-def getProfileDescription(profile):
+def getProfileDescription(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the description for the given profile.
 
@@ -987,7 +998,7 @@ def getProfileDescription(profile):
         raise PyCMSError(v) from v
 
 
-def getDefaultIntent(profile):
+def getDefaultIntent(profile: _CmsProfileCompatible) -> int:
     """
     (pyCMS) Gets the default intent name for the given profile.
 
@@ -1026,7 +1037,9 @@ def getDefaultIntent(profile):
         raise PyCMSError(v) from v
 
 
-def isIntentSupported(profile, intent, direction):
+def isIntentSupported(
+    profile: _CmsProfileCompatible, intent: Intent, direction: Direction
+) -> Literal[-1, 1]:
     """
     (pyCMS) Checks if a given intent is supported.
 
@@ -1077,7 +1090,7 @@ def isIntentSupported(profile, intent, direction):
         raise PyCMSError(v) from v
 
 
-def versions():
+def versions() -> tuple[str, str, str, str]:
     """
     (pyCMS) Fetches versions.
     """
