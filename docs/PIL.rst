@@ -74,7 +74,6 @@ can be found here.
 
 .. automodule:: PIL.ImageMode
     :members:
-    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
