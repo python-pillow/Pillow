@@ -28,7 +28,7 @@ except ImportError as ex:
     # anything in core.
     from ._util import DeferredError
 
-    _imagingcms = DeferredError(ex)
+    _imagingcms = DeferredError.new(ex)
 
 DESCRIPTION = """
 pyCMS

@@ -25,6 +25,19 @@ Internal Modules
     :undoc-members:
     :show-inheritance:
 
+:mod:`~PIL._typing` Module
+--------------------------
+
+.. module:: PIL._typing
+
+Provides a convenient way to import type hints that are not available
+on some Python versions.
+
+.. py:data:: TypeGuard
+    :value: typing.TypeGuard
+
+    See :py:obj:`typing.TypeGuard`.
+
 :mod:`~PIL._util` Module
 ------------------------
 

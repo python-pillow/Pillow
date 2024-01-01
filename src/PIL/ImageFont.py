@@ -34,7 +34,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from pathlib import Path
-from typing import IO
+from typing import BinaryIO
 
 from . import Image
 from ._util import is_directory, is_path
@@ -53,7 +53,7 @@ try:
 except ImportError as ex:
     from ._util import DeferredError
 
-    core = DeferredError(ex)
+    core = DeferredError.new(ex)
 
 
 def _string_length_check(text):
@@ -193,7 +193,7 @@ class FreeTypeFont:
 
     def __init__(
         self,
-        font: bytes | str | Path | IO | None = None,
+        font: bytes | str | Path | BinaryIO | None = None,
         size: float = 10,
         index: int = 0,
         encoding: str = "",
