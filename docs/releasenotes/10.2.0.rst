@@ -149,4 +149,5 @@ Work has begun to add type annotations to Pillow, including:
 * :py:mod:`~PIL.ImageChops`
 * :py:mod:`~PIL.ImageMode`
 * :py:mod:`~PIL.ImageSequence`
+* :py:mod:`~PIL.ImageTransform`
 * :py:mod:`~PIL.TarIO`
