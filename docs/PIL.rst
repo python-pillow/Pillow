@@ -69,6 +69,14 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
+:mod:`~PIL.ImageMode` Module
+----------------------------
+
+.. automodule:: PIL.ImageMode
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`~PIL.ImageTransform` Module
 ---------------------------------
 

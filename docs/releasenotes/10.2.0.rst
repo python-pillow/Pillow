@@ -1,14 +1,6 @@
 10.2.0
 ------
 
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
-
-TODO
-
 Deprecations
 ============
 
@@ -118,16 +110,43 @@ Saving TIFF tag RowsPerStrip
 When saving TIFF images, the TIFF tag RowsPerStrip can now be one of the tags set by
 the user, rather than always being calculated by Pillow.
 
+Optimized ImageColor.getrgb and getcolor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The color calculations of :py:attr:`~PIL.ImageColor.getrgb` and
+:py:attr:`~PIL.ImageColor.getcolor` are now cached using
+:py:func:`functools.lru_cache`. Cached calls of ``getrgb`` are 3.1 - 91.4 times
+as fast and ``getcolor`` are 5.1 - 19.6 times as fast.
+
+Optimized ImageMode.getmode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The lookups made by :py:attr:`~PIL.ImageMode.getmode` are now cached using
+:py:func:`functools.lru_cache` instead of a custom cache. Cached calls are 1.2 times as
+fast.
+
 Optimized ImageStat.Stat count and extrema
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Calculating the :py:attr:`~PIL.ImageStat.Stat.count` and
 :py:attr:`~PIL.ImageStat.Stat.extrema` statistics is now faster. After the
-histogram is created in ``st = ImageStat.Stat(im)``, ``st.count`` is 3x as fast
-on average and ``st.extrema`` is 12x as fast on average.
+histogram is created in ``st = ImageStat.Stat(im)``, ``st.count`` is 3 times as fast on
+average and ``st.extrema`` is 12 times as fast on average.
 
 Encoder errors now report error detail as string
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :py:exc:`OSError` exceptions from image encoders now include a textual description of
 the error instead of a numeric error code.
+
+Type hints
+^^^^^^^^^^
+
+Work has begun to add type annotations to Pillow, including:
+
+* :py:mod:`~PIL.ContainerIO`
+* :py:mod:`~PIL.FontFile`, :py:mod:`~PIL.BdfFontFile` and :py:mod:`~PIL.PcfFontFile`
+* :py:mod:`~PIL.ImageChops`
+* :py:mod:`~PIL.ImageMode`
+* :py:mod:`~PIL.ImageSequence`
+* :py:mod:`~PIL.TarIO`
