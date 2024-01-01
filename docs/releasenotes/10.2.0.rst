@@ -114,7 +114,7 @@ Type hints
 Work has begun to add type annotations to Pillow, including:
 
 * :py:mod:`~PIL.ContainerIO`
-* :py:mod:`~PIL.FontFile` and subclasses
+* :py:mod:`~PIL.FontFile`, :py:mod:`~PIL.BdfFontFile` and :py:mod:`~PIL.PcfFontFile`
 * :py:mod:`~PIL.ImageChops`
 * :py:mod:`~PIL.ImageMode`
 * :py:mod:`~PIL.ImageSequence`

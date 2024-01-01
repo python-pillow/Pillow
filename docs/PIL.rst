@@ -70,7 +70,7 @@ can be found here.
     :show-inheritance:
 
 :mod:`~PIL.ImageMode` Module
------------------------------
+----------------------------
 
 .. automodule:: PIL.ImageMode
     :members:
