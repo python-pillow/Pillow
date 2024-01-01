@@ -149,6 +149,7 @@ class ImageFont:
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
+        _string_length_check(text)
         return self.font.getmask(text, mode)
 
     def getbbox(self, text, *args, **kwargs):

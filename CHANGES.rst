@@ -5,8 +5,35 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Allow uncompressed TIFF images to be saved in chunks #7650
+  [radarhere]
+
+- Concatenate multiple JPEG EXIF markers #7496
+  [radarhere]
+
+- Changed IPTC tile tuple to match other plugins #7661
+  [radarhere]
+
+- Do not assign new fp attribute when exiting context manager #7566
+  [radarhere]
+
+- Support arbitrary masks for uncompressed RGB DDS images #7589
+  [radarhere, akx]
+
+- Support setting ROWSPERSTRIP tag #7654
+  [radarhere]
+
+- Apply ImageFont.MAX_STRING_LENGTH to ImageFont.getmask() #7662
+  [radarhere]
+
+- Optimise ``ImageColor`` using ``functools.lru_cache`` #7657
+  [hugovk]
+
 - Restricted environment keys for ImageMath.eval() #7655
   [wiredfool, radarhere]
+
+- Optimise ``ImageMode.getmode`` using ``functools.lru_cache`` #7641
+  [hugovk, radarhere]
 
 - Fix incorrect color blending for overlapping glyphs #7497
   [ZachNagengast, nulano, radarhere]

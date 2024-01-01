@@ -90,24 +90,28 @@ def test_i():
     c = b"a"
 
     # Act
-    ret = IptcImagePlugin.i(c)
+    with pytest.warns(DeprecationWarning):
+        ret = IptcImagePlugin.i(c)
 
     # Assert
     assert ret == 97
 
 
-def test_dump():
+def test_dump(monkeypatch):
     # Arrange
     c = b"abc"
     # Temporarily redirect stdout
-    old_stdout = sys.stdout
-    sys.stdout = mystdout = StringIO()
+    mystdout = StringIO()
+    monkeypatch.setattr(sys, "stdout", mystdout)
 
     # Act
-    IptcImagePlugin.dump(c)
-
-    # Reset stdout
-    sys.stdout = old_stdout
+    with pytest.warns(DeprecationWarning):
+        IptcImagePlugin.dump(c)
 
     # Assert
     assert mystdout.getvalue() == "61 62 63 \n"
+
+
+def test_pad_deprecation():
+    with pytest.warns(DeprecationWarning):
+        assert IptcImagePlugin.PAD == b"\0\0\0\0"
