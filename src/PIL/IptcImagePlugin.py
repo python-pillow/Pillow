@@ -172,8 +172,6 @@ def getiptcinfo(im):
     :returns: A dictionary containing IPTC information, or None if
         no IPTC information block was found.
     """
-    import io
-
     from . import JpegImagePlugin, TiffImagePlugin
 
     data = None
@@ -208,7 +206,7 @@ def getiptcinfo(im):
 
     # parse the IPTC information chunk
     im.info = {}
-    im.fp = io.BytesIO(data)
+    im.fp = BytesIO(data)
 
     try:
         im._open()
