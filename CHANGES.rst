@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Add ``keep_rgb`` option when saving JPEG to prevent conversion of RGB colorspace #7553
+  [bgilbert, radarhere]
+
 - Trim glyph size in ImageFont.getmask() #7669, #7672
   [radarhere, nulano]
 
