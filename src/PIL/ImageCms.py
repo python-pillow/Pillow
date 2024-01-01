@@ -123,26 +123,43 @@ class Direction(IntEnum):
 
 
 class Flags(IntFlag):
-    # These are taken from lcms2.h (including comments)
+    """Flags and documentation are taken from ``lcms2.h``."""
+
     NONE = 0
-    NOCACHE = 0x0040  # Inhibit 1-pixel cache
-    NOOPTIMIZE = 0x0100  # Inhibit optimizations
-    NULLTRANSFORM = 0x0200  # Don't transform anyway
-    GAMUTCHECK = 0x1000  # Out of Gamut alarm
-    SOFTPROOFING = 0x4000  # Do softproofing
+    NOCACHE = 0x0040
+    """Inhibit 1-pixel cache"""
+    NOOPTIMIZE = 0x0100
+    """Inhibit optimizations"""
+    NULLTRANSFORM = 0x0200
+    """Don't transform anyway"""
+    GAMUTCHECK = 0x1000
+    """Out of Gamut alarm"""
+    SOFTPROOFING = 0x4000
+    """Do softproofing"""
     BLACKPOINTCOMPENSATION = 0x2000
-    NOWHITEONWHITEFIXUP = 0x0004  # Don't fix scum dot
-    HIGHRESPRECALC = 0x0400  # Use more memory to give better accuracy
-    LOWRESPRECALC = 0x0800  # Use less memory to minimize resources
+    NOWHITEONWHITEFIXUP = 0x0004
+    """Don't fix scum dot"""
+    HIGHRESPRECALC = 0x0400
+    """Use more memory to give better accuracy"""
+    LOWRESPRECALC = 0x0800
+    """Use less memory to minimize resources"""
     # this should be 8BITS_DEVICELINK, but that is not a valid name in Python:
-    USE_8BITS_DEVICELINK = 0x0008  # Create 8 bits devicelinks
-    GUESSDEVICECLASS = 0x0020  # Guess device class (for transform2devicelink)
-    KEEP_SEQUENCE = 0x0080  # Keep profile sequence for devicelink creation
-    FORCE_CLUT = 0x0002  # Force CLUT optimization
-    CLUT_POST_LINEARIZATION = 0x0001  # create postlinearization tables if possible
-    CLUT_PRE_LINEARIZATION = 0x0010  # create prelinearization tables if possible
-    NONEGATIVES = 0x8000  # Prevent negative numbers in floating point transforms
-    COPY_ALPHA = 0x04000000  # Alpha channels are copied on cmsDoTransform()
+    USE_8BITS_DEVICELINK = 0x0008
+    """Create 8 bits devicelinks"""
+    GUESSDEVICECLASS = 0x0020
+    """Guess device class (for transform2devicelink)"""
+    KEEP_SEQUENCE = 0x0080
+    """Keep profile sequence for devicelink creation"""
+    FORCE_CLUT = 0x0002
+    """Force CLUT optimization"""
+    CLUT_POST_LINEARIZATION = 0x0001
+    """create postlinearization tables if possible"""
+    CLUT_PRE_LINEARIZATION = 0x0010
+    """create prelinearization tables if possible"""
+    NONEGATIVES = 0x8000
+    """Prevent negative numbers in floating point transforms"""
+    COPY_ALPHA = 0x04000000
+    """Alpha channels are copied on cmsDoTransform()"""
     NODEFAULTRESOURCEDEF = 0x01000000
 
     _GRIDPOINTS_1 = 1 << 16
@@ -156,7 +173,11 @@ class Flags(IntFlag):
 
     @staticmethod
     def GRIDPOINTS(n: int) -> Flags:
-        # Fine-tune control over number of gridpoints
+        """
+        Fine-tune control over number of gridpoints
+
+        :param n: :py:class:`int` in range ``0 <= n <= 255``
+        """
         return Flags.NONE | ((n & 0xFF) << 16)
 
 

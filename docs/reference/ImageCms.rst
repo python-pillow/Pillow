@@ -27,6 +27,10 @@ Constants
     :members:
     :member-order: bysource
     :undoc-members:
+.. autoclass:: Flags
+    :members:
+    :member-order: bysource
+    :undoc-members:
 
 Functions
 ---------
