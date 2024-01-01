@@ -18,29 +18,45 @@ from __future__ import annotations
 
 import os
 import tempfile
+from typing import Sequence
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import i32be as i32
+from ._deprecate import deprecate
 
 COMPRESSION = {1: "raw", 5: "jpeg"}
 
-PAD = b"\0\0\0\0"
+
+def __getattr__(name: str) -> bytes:
+    if name == "PAD":
+        deprecate("IptcImagePlugin.PAD", 12)
+        return b"\0\0\0\0"
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
 
 
 #
 # Helpers
 
 
+def _i(c: bytes) -> int:
+    return i32((b"\0\0\0\0" + c)[-4:])
+
+
 def _i8(c: int | bytes) -> int:
     return c if isinstance(c, int) else c[0]
 
 
-def i(c):
-    return i32((PAD + c)[-4:])
+def i(c: bytes) -> int:
+    """.. deprecated:: 10.2.0"""
+    deprecate("IptcImagePlugin.i", 12)
+    return _i(c)
 
 
-def dump(c):
+def dump(c: Sequence[int | bytes]) -> None:
+    """.. deprecated:: 10.2.0"""
+    deprecate("IptcImagePlugin.dump", 12)
     for i in c:
         print("%02x" % _i8(i), end=" ")
     print()
@@ -55,10 +71,10 @@ class IptcImageFile(ImageFile.ImageFile):
     format = "IPTC"
     format_description = "IPTC/NAA"
 
-    def getint(self, key):
-        return i(self.info[key])
+    def getint(self, key: tuple[int, int]) -> int:
+        return _i(self.info[key])
 
-    def field(self):
+    def field(self) -> tuple[tuple[int, int] | None, int]:
         #
         # get a IPTC field header
         s = self.fp.read(5)
@@ -80,13 +96,13 @@ class IptcImageFile(ImageFile.ImageFile):
         elif size == 128:
             size = 0
         elif size > 128:
-            size = i(self.fp.read(size - 128))
+            size = _i(self.fp.read(size - 128))
         else:
             size = i16(s, 3)
 
         return tag, size
 
-    def _open(self):
+    def _open(self) -> None:
         # load descriptive fields
         while True:
             offset = self.fp.tell()
