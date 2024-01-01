@@ -2649,6 +2649,18 @@ _font_new(PyObject *self_, PyObject *args) {
         self->glyphs[i].sy0 = S16(B16(glyphdata, 14));
         self->glyphs[i].sx1 = S16(B16(glyphdata, 16));
         self->glyphs[i].sy1 = S16(B16(glyphdata, 18));
+
+        // Do not allow glyphs to extend beyond bitmap image
+        // Helps prevent DOS by stopping cropped images being larger than the original
+        if (self->glyphs[i].sx1 > self->bitmap->xsize) {
+            self->glyphs[i].dx1 -= self->glyphs[i].sx1 - self->bitmap->xsize;
+            self->glyphs[i].sx1 = self->bitmap->xsize;
+        }
+        if (self->glyphs[i].sy1 > self->bitmap->ysize) {
+            self->glyphs[i].dy1 -= self->glyphs[i].sy1 - self->bitmap->ysize;
+            self->glyphs[i].sy1 = self->bitmap->ysize;
+        }
+
         if (self->glyphs[i].dy0 < y0) {
             y0 = self->glyphs[i].dy0;
         }
