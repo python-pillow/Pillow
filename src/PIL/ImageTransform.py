@@ -20,7 +20,7 @@ from . import Image
 
 
 class Transform(Image.ImageTransformHandler):
-    method: int
+    method: Image.Transform
 
     def __init__(self, data: Sequence[int]) -> None:
         self.data = data
