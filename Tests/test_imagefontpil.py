@@ -66,7 +66,9 @@ def test_decompression_bomb():
 
 @pytest.mark.timeout(4)
 def test_oom():
-    glyph = struct.pack(">hhhhhhhhhh", 1, 0, 0, 0, 32767, 32767, 0, 0, 32767, 32767)
+    glyph = struct.pack(
+        ">hhhhhhhhhh", 1, 0, -32767, -32767, 32767, 32767, -32767, -32767, 32767, 32767
+    )
     fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
 
     font = ImageFont.ImageFont()
