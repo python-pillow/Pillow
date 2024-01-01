@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Allow uncompressed TIFF images to be saved in chunks #7650
+  [radarhere]
+
 - Concatenate multiple JPEG EXIF markers #7496
   [radarhere]
 
