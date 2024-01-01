@@ -2643,7 +2643,7 @@ class Image:
         resample=Resampling.NEAREST,
         fill=1,
         fillcolor=None,
-    ):
+    ) -> Image:
         """
         Transforms this image.  This method creates a new image with the
         given size, and the same mode as the original, and copies data
