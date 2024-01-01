@@ -19,6 +19,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    is_pypy,
 )
 
 try:
@@ -501,11 +502,7 @@ def test_non_ascii_path(tmp_path: Path) -> None:
 
 
 def test_profile_typesafety() -> None:
-    """Profile init type safety
-
-    prepatch, these would segfault, postpatch they should emit a typeerror
-    """
-
+    # does not segfault
     with pytest.raises(TypeError, match="Invalid type for Profile"):
         ImageCms.ImageCmsProfile(0).tobytes()
     with pytest.raises(TypeError, match="Invalid type for Profile"):
@@ -516,6 +513,13 @@ def test_profile_typesafety() -> None:
         ImageCms.core.profile_tobytes(0)
     with pytest.raises(TypeError):
         ImageCms.core.profile_tobytes(1)
+
+    if not is_pypy():
+        # core profile should not be directly instantiable
+        with pytest.raises(TypeError):
+            ImageCms.core.CmsProfile()
+        with pytest.raises(TypeError):
+            ImageCms.core.CmsProfile(0)
 
 
 def assert_aux_channel_preserved(
