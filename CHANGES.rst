@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Deprecate IptcImagePlugin helpers #7664
+  [nulano, hugovk, radarhere]
+
 - Allow uncompressed TIFF images to be saved in chunks #7650
   [radarhere]
 
