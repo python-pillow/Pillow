@@ -338,8 +338,8 @@ ImageCms.CmsProfile attributes
 .. deprecated:: 3.2.0
 .. versionremoved:: 8.0.0
 
-Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6.0.0,
-they issued a :py:exc:`DeprecationWarning`:
+Some attributes in :py:class:`PIL.ImageCms.core.CmsProfile` have been removed.
+From 6.0.0, they issued a :py:exc:`DeprecationWarning`:
 
 ========================  ===================================================
 Removed                   Use instead

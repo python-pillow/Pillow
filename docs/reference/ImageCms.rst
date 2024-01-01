@@ -8,8 +8,25 @@ The :py:mod:`~PIL.ImageCms` module provides color profile management
 support using the LittleCMS2 color management engine, based on Kevin
 Cazabon's PyCMS library.
 
+.. autoclass:: ImageCmsProfile
+    :members:
+    :special-members: __init__
 .. autoclass:: ImageCmsTransform
+    :members:
+    :undoc-members:
 .. autoexception:: PyCMSError
+
+Constants
+---------
+
+.. autoclass:: Intent
+    :members:
+    :member-order: bysource
+    :undoc-members:
+.. autoclass:: Direction
+    :members:
+    :member-order: bysource
+    :undoc-members:
 
 Functions
 ---------
@@ -37,13 +54,15 @@ CmsProfile
 ----------
 
 The ICC color profiles are wrapped in an instance of the class
-:py:class:`CmsProfile`.  The specification ICC.1:2010 contains more
+:py:class:`~core.CmsProfile`.  The specification ICC.1:2010 contains more
 information about the meaning of the values in ICC profiles.
 
 For convenience, all XYZ-values are also given as xyY-values (so they
 can be easily displayed in a chromaticity diagram, for example).
 
+.. py:currentmodule:: PIL.ImageCms.core
 .. py:class:: CmsProfile
+    :canonical: PIL._imagingcms.CmsProfile
 
     .. py:attribute:: creation_date
         :type: Optional[datetime.datetime]
