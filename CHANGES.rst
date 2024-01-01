@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.2.0 (unreleased)
 -------------------
 
+- Trim glyph size in ImageFont.getmask() #7669
+  [radarhere]
+
 - Deprecate IptcImagePlugin helpers #7664
   [nulano, hugovk, radarhere]
 
