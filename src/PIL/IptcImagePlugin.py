@@ -20,17 +20,20 @@ import os
 import tempfile
 
 from . import Image, ImageFile
-from ._binary import i8, o8
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 
 COMPRESSION = {1: "raw", 5: "jpeg"}
 
-PAD = o8(0) * 4
+PAD = b"\0\0\0\0"
 
 
 #
 # Helpers
+
+
+def _i8(c: int | bytes) -> int:
+    return c if isinstance(c, int) else c[0]
 
 
 def i(c):
@@ -39,7 +42,7 @@ def i(c):
 
 def dump(c):
     for i in c:
-        print("%02x" % i8(i), end=" ")
+        print("%02x" % _i8(i), end=" ")
     print()
 
 
@@ -103,10 +106,10 @@ class IptcImageFile(ImageFile.ImageFile):
                 self.info[tag] = tagdata
 
         # mode
-        layers = i8(self.info[(3, 60)][0])
-        component = i8(self.info[(3, 60)][1])
+        layers = self.info[(3, 60)][0]
+        component = self.info[(3, 60)][1]
         if (3, 65) in self.info:
-            id = i8(self.info[(3, 65)][0]) - 1
+            id = self.info[(3, 65)][0] - 1
         else:
             id = 0
         if layers == 1 and not component:
@@ -128,24 +131,20 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # tile
         if tag == (8, 10):
-            self.tile = [
-                ("iptc", (compression, offset), (0, 0, self.size[0], self.size[1]))
-            ]
+            self.tile = [("iptc", (0, 0) + self.size, offset, compression)]
 
     def load(self):
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
             return ImageFile.ImageFile.load(self)
 
-        type, tile, box = self.tile[0]
-
-        encoding, offset = tile
+        offset, compression = self.tile[0][2:]
 
         self.fp.seek(offset)
 
         # Copy image data to temporary file
         o_fd, outfile = tempfile.mkstemp(text=False)
         o = os.fdopen(o_fd)
-        if encoding == "raw":
+        if compression == "raw":
             # To simplify access to the extracted file,
             # prepend a PPM header
             o.write("P5\n%d %d\n255\n" % self.size)

@@ -20,12 +20,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   git tag 5.2.0
   git push --tags
   ```
-* [ ] Create [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
-* [ ] Check and upload all source and binary distributions e.g.:
-  ```bash
-  python3 -m twine check --strict dist/*
-  python3 -m twine upload dist/Pillow-5.2.0*
-  ```
+* [ ] Create and upload all [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/),
       increment and append `.dev0` to version identifier in `src/PIL/_version.py` and then:
@@ -55,12 +50,7 @@ Released as needed for security, installation or critical bug fixes.
   ```bash
   make sdist
   ```
-* [ ] Create [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
-* [ ] Check and upload all source and binary distributions e.g.:
-  ```bash
-  python3 -m twine check --strict dist/*
-  python3 -m twine upload dist/Pillow-5.2.1*
-  ```
+* [ ] Create and upload all [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases) and then:
   ```bash
   git push
@@ -82,11 +72,7 @@ Released as needed privately to individual vendors for critical security-related
   git tag 2.5.3
   git push origin --tags
   ```
-* [ ] Create and check source distribution:
-  ```bash
-  make sdist
-  ```
-* [ ] Create [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
+* [ ] Create and upload all [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases) and then:
   ```bash
   git push origin 2.5.x
@@ -94,14 +80,15 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Source and Binary Distributions
 
-* [ ] Download sdist and wheels from the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
-  and copy into `dist/`. For example using [GitHub CLI](https://github.com/cli/cli):
-  ```bash
-  gh run download --dir dist
-  # select dist
-  ```
+* [ ] Check the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
+  has passed, including the "Upload release to PyPI" job. This will have been triggered
+  by the new tag.
 * [ ] Download the Linux aarch64 wheels created by Travis CI from [GitHub releases](https://github.com/python-pillow/Pillow/releases)
-  and copy into `dist`.
+  and copy into `dist`. Check and upload them e.g.:
+  ```bash
+  python3 -m twine check --strict dist/*
+  python3 -m twine upload dist/Pillow-5.2.0*
+  ```
 
 ## Publicize Release
 
