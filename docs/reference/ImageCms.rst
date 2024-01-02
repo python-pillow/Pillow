@@ -14,6 +14,7 @@ Cazabon's PyCMS library.
 .. autoclass:: ImageCmsTransform
     :members:
     :undoc-members:
+    :show-inheritance:
 .. autoexception:: PyCMSError
 
 Constants
