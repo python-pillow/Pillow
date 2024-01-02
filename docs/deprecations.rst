@@ -44,6 +44,17 @@ ImageFile.raise_oserror
 error codes returned by a codec's ``decode()`` method, which ImageFile already does
 automatically.
 
+IptcImageFile helper functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.2.0
+
+The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
+``IptcImageFile.PAD`` have been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). These are undocumented helper functions intended
+for internal use, so there is no replacement. They can each be replaced
+by a single line of code using builtin functions in Python.
+
 Removed features
 ----------------
 

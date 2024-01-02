@@ -2,8 +2,35 @@
 Changelog (Pillow)
 ==================
 
-10.2.0 (unreleased)
+10.2.0 (2024-01-02)
 -------------------
+
+- Add ``keep_rgb`` option when saving JPEG to prevent conversion of RGB colorspace #7553
+  [bgilbert, radarhere]
+
+- Trim glyph size in ImageFont.getmask() #7669, #7672
+  [radarhere, nulano]
+
+- Deprecate IptcImagePlugin helpers #7664
+  [nulano, hugovk, radarhere]
+
+- Allow uncompressed TIFF images to be saved in chunks #7650
+  [radarhere]
+
+- Concatenate multiple JPEG EXIF markers #7496
+  [radarhere]
+
+- Changed IPTC tile tuple to match other plugins #7661
+  [radarhere]
+
+- Do not assign new fp attribute when exiting context manager #7566
+  [radarhere]
+
+- Support arbitrary masks for uncompressed RGB DDS images #7589
+  [radarhere, akx]
+
+- Support setting ROWSPERSTRIP tag #7654
+  [radarhere]
 
 - Apply ImageFont.MAX_STRING_LENGTH to ImageFont.getmask() #7662
   [radarhere]

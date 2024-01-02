@@ -92,7 +92,7 @@ try:
         raise ImportError(msg)
 
 except ImportError as v:
-    core = DeferredError(ImportError("The _imaging C module is not installed."))
+    core = DeferredError.new(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -530,15 +530,19 @@ class Image:
     def __enter__(self):
         return self
 
+    def _close_fp(self):
+        if getattr(self, "_fp", False):
+            if self._fp != self.fp:
+                self._fp.close()
+            self._fp = DeferredError(ValueError("Operation on closed image"))
+        if self.fp:
+            self.fp.close()
+
     def __exit__(self, *args):
-        if hasattr(self, "fp") and getattr(self, "_exclusive_fp", False):
-            if getattr(self, "_fp", False):
-                if self._fp != self.fp:
-                    self._fp.close()
-                self._fp = DeferredError(ValueError("Operation on closed image"))
-            if self.fp:
-                self.fp.close()
-        self.fp = None
+        if hasattr(self, "fp"):
+            if getattr(self, "_exclusive_fp", False):
+                self._close_fp()
+            self.fp = None
 
     def close(self):
         """
@@ -554,12 +558,7 @@ class Image:
         """
         if hasattr(self, "fp"):
             try:
-                if getattr(self, "_fp", False):
-                    if self._fp != self.fp:
-                        self._fp.close()
-                    self._fp = DeferredError(ValueError("Operation on closed image"))
-                if self.fp:
-                    self.fp.close()
+                self._close_fp()
                 self.fp = None
             except Exception as msg:
                 logger.debug("Error closing: %s", msg)
@@ -2644,7 +2643,7 @@ class Image:
         resample=Resampling.NEAREST,
         fill=1,
         fillcolor=None,
-    ):
+    ) -> Image:
         """
         Transforms this image.  This method creates a new image with the
         given size, and the same mode as the original, and copies data
@@ -3191,7 +3190,7 @@ def _decompression_bomb_check(size):
         )
 
 
-def open(fp, mode="r", formats=None):
+def open(fp, mode="r", formats=None) -> Image:
     """
     Opens and identifies the given image file.
 
@@ -3416,7 +3415,7 @@ def merge(mode, bands):
 # Plugin registry
 
 
-def register_open(id, factory, accept=None):
+def register_open(id, factory, accept=None) -> None:
     """
     Register an image file plugin.  This function should not be used
     in application code.
@@ -3470,7 +3469,7 @@ def register_save_all(id, driver):
     SAVE_ALL[id.upper()] = driver
 
 
-def register_extension(id, extension):
+def register_extension(id, extension) -> None:
     """
     Registers an image extension.  This function should not be
     used in application code.

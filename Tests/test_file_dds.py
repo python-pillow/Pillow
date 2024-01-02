@@ -32,6 +32,7 @@ TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB = "Tests/images/DXGI_FORMAT_R8G8B8A8_UNORM_SR
 TEST_FILE_UNCOMPRESSED_L = "Tests/images/uncompressed_l.dds"
 TEST_FILE_UNCOMPRESSED_L_WITH_ALPHA = "Tests/images/uncompressed_la.dds"
 TEST_FILE_UNCOMPRESSED_RGB = "Tests/images/hopper.dds"
+TEST_FILE_UNCOMPRESSED_BGR15 = "Tests/images/bgr15.dds"
 TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 
 
@@ -249,6 +250,7 @@ def test_dx10_r8g8b8a8_unorm_srgb():
         ("L", (128, 128), TEST_FILE_UNCOMPRESSED_L),
         ("LA", (128, 128), TEST_FILE_UNCOMPRESSED_L_WITH_ALPHA),
         ("RGB", (128, 128), TEST_FILE_UNCOMPRESSED_RGB),
+        ("RGB", (128, 128), TEST_FILE_UNCOMPRESSED_BGR15),
         ("RGBA", (800, 600), TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA),
     ],
 )
@@ -341,16 +343,9 @@ def test_palette():
         assert_image_equal_tofile(im, "Tests/images/transparent.gif")
 
 
-@pytest.mark.parametrize(
-    "test_file",
-    (
-        "Tests/images/unsupported_bitcount_rgb.dds",
-        "Tests/images/unsupported_bitcount_luminance.dds",
-    ),
-)
-def test_unsupported_bitcount(test_file):
+def test_unsupported_bitcount():
     with pytest.raises(OSError):
-        with Image.open(test_file):
+        with Image.open("Tests/images/unsupported_bitcount.dds"):
             pass
 
 

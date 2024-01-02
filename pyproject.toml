@@ -65,6 +65,9 @@ tests = [
   "pytest-cov",
   "pytest-timeout",
 ]
+typing = [
+  'typing-extensions; python_version < "3.10"',
+]
 xmp = [
   "defusedxml",
 ]
@@ -143,9 +146,6 @@ exclude = [
   '^src/PIL/DdsImagePlugin.py$',
   '^src/PIL/FpxImagePlugin.py$',
   '^src/PIL/Image.py$',
-  '^src/PIL/ImageCms.py$',
-  '^src/PIL/ImageFile.py$',
-  '^src/PIL/ImageFont.py$',
   '^src/PIL/ImageMath.py$',
   '^src/PIL/ImageMorph.py$',
   '^src/PIL/ImageQt.py$',
