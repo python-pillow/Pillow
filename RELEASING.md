@@ -87,7 +87,7 @@ Released as needed privately to individual vendors for critical security-related
   and copy into `dist`. Check and upload them e.g.:
   ```bash
   python3 -m twine check --strict dist/*
-  python3 -m twine upload dist/Pillow-5.2.0*
+  python3 -m twine upload dist/pillow-5.2.0*
   ```
 
 ## Publicize Release
