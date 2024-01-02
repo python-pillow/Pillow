@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-10.2.0 (unreleased)
+10.2.0 (2024-01-02)
 -------------------
 
 - Add ``keep_rgb`` option when saving JPEG to prevent conversion of RGB colorspace #7553
