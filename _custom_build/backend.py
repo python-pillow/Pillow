@@ -12,13 +12,11 @@ class _CustomBuildMetaBackend(backend_class):
     def run_setup(self, setup_script="setup.py"):
         if self.config_settings:
             params = []
-            for k, v in self.config_settings.items():
-                if isinstance(v, list):
-                    msg = "Conflicting options: " + ", ".join(
-                        f"'--config-setting {k}={v_}'" for v_ in v
-                    )
-                    raise ValueError(msg)
-                params.append(f"--pillow-configuration={k}={v}")
+            for key, values in self.config_settings.items():
+                if not isinstance(values, list):
+                    values = [values]
+                for value in values:
+                    params.append(f"--pillow-configuration={key}={value}")
 
             sys.argv = sys.argv[:1] + params + sys.argv[1:]
         return super().run_setup(setup_script)
