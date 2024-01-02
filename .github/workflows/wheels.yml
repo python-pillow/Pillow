@@ -30,7 +30,80 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  build:
+  build-1-QEMU-emulated-wheels:
+    name: QEMU ${{ matrix.python-version }} ${{ matrix.spec }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - pp39
+          - pp310
+          - cp38
+          - cp39
+          - cp310
+          - cp311
+          - cp312
+        spec:
+          - manylinux2014
+          - manylinux_2_28
+          - musllinux
+        exclude:
+          - { python-version: pp39, spec: musllinux }
+          - { python-version: pp310, spec: musllinux }
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install cibuildwheel
+        run: |
+          python3 -m pip install -r .ci/requirements-cibw.txt
+
+      - name: Build wheels (manylinux)
+        if: matrix.spec != 'musllinux'
+        run: |
+          python3 -m cibuildwheel --output-dir wheelhouse
+        env:
+          # Build only the currently selected Linux architecture (so we can
+          # parallelise for speed).
+          CIBW_ARCHS_LINUX: "aarch64"
+          # Likewise, select only one Python version per job to speed this up.
+          CIBW_BUILD: "${{ matrix.python-version }}-manylinux*"
+          # Extra options for manylinux.
+          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.spec }}
+          CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.spec }}
+
+      - name: Build wheels (musllinux)
+        if: matrix.spec == 'musllinux'
+        run: |
+          python3 -m cibuildwheel --output-dir wheelhouse
+        env:
+          # Build only the currently selected Linux architecture (so we can
+          # parallelise for speed).
+          CIBW_ARCHS_LINUX: "aarch64"
+          # Likewise, select only one Python version per job to speed this up.
+          CIBW_BUILD: "${{ matrix.python-version }}-${{ matrix.spec }}*"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-qemu-${{ matrix.python-version }}-${{ matrix.spec }}
+          path: ./wheelhouse/*.whl
+
+  build-2-native-wheels:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -187,7 +260,7 @@ jobs:
 
   pypi-publish:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: [build, windows, sdist]
+    needs: [build-1-QEMU-emulated-wheels, build-2-native-wheels, windows, sdist]
     runs-on: ubuntu-latest
     name: Upload release to PyPI
     environment:
