@@ -11,9 +11,9 @@ or the clipboard to a PIL image memory.
 
 .. py:function:: grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None)
 
-    Take a snapshot of the screen. The pixels inside the bounding box are
-    returned as an "RGBA" on macOS, or an "RGB" image otherwise.
-    If the bounding box is omitted, the entire screen is copied.
+    Take a snapshot of the screen. The pixels inside the bounding box are returned as
+    an "RGBA" on macOS, or an "RGB" image otherwise. If the bounding box is omitted,
+    the entire screen is copied, and on macOS, it will be at 2x if on a Retina screen.
 
     On Linux, if ``xdisplay`` is ``None`` and the default X11 display does not return
     a snapshot of the screen, ``gnome-screenshot`` will be used as fallback if it is
