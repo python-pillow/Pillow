@@ -21,9 +21,9 @@ cd /D C:\Pillow\winbuild
 %PYTHON%\python.exe build_prepare.py -v --depends=C:\pillow-depends
 build\build_dep_all.cmd
 cd ..
-%PYTHON%\python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor .
+%PYTHON%\python.exe -m pip install -v . -C raqm=vendor -C fribidi=vendor
 path C:\Pillow\winbuild\build\bin;%PATH%
 %PYTHON%\python.exe selftest.py
 %PYTHON%\python.exe -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
-%PYTHON%\python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .
+%PYTHON%\python.exe -m pip wheel -v . -C raqm=vendor -C fribidi=vendor
 ```

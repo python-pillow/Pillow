@@ -38,7 +38,7 @@ install:
 build_script:
 - cd c:\pillow
 - winbuild\build\build_env.cmd
-- '%PYTHON%\%EXECUTABLE% -m pip install -v -C raqm=vendor -C fribidi=vendor .'
+- '%PYTHON%\%EXECUTABLE% -m pip install -v . -C raqm=vendor -C fribidi=vendor'
 - '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
 test_script:
@@ -67,7 +67,7 @@ artifacts:
 
 before_deploy:
   - cd c:\pillow
-  - '%PYTHON%\%EXECUTABLE% -m pip wheel -v -C raqm=vendor -C fribidi=vendor .'
+  - '%PYTHON%\%EXECUTABLE% -m pip wheel -v . -C raqm=vendor -C fribidi=vendor'
   - ps: Get-ChildItem .\*.whl | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
 deploy:
