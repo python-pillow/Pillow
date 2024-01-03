@@ -8,7 +8,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   pull_request:
@@ -16,7 +15,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   workflow_dispatch:
