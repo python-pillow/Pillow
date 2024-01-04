@@ -76,7 +76,7 @@ jobs:
         env:
           # Build only the currently selected Linux architecture (so we can
           # parallelise for speed).
-          CIBW_ARCHS_LINUX: "aarch64"
+          CIBW_ARCHS: "aarch64"
           # Likewise, select only one Python version per job to speed this up.
           CIBW_BUILD: "${{ matrix.python-version }}-manylinux*"
           # Extra options for manylinux.
@@ -90,7 +90,7 @@ jobs:
         env:
           # Build only the currently selected Linux architecture (so we can
           # parallelise for speed).
-          CIBW_ARCHS_LINUX: "aarch64"
+          CIBW_ARCHS: "aarch64"
           # Likewise, select only one Python version per job to speed this up.
           CIBW_BUILD: "${{ matrix.python-version }}-${{ matrix.spec }}*"
 
