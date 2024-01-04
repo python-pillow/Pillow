@@ -10,7 +10,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Open a release ticket e.g. https://github.com/python-pillow/Pillow/issues/3154
 * [ ] Develop and prepare release in `main` branch.
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `main` branch.
-* [ ] Check that all of the wheel builds pass the tests in the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml) and [Travis CI](https://app.travis-ci.com/github/python-pillow/pillow) jobs by manually triggering them.
+* [ ] Check that all the wheel builds pass the tests in the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml) jobs by manually triggering them.
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
 * [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
@@ -83,12 +83,6 @@ Released as needed privately to individual vendors for critical security-related
 * [ ] Check the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
   has passed, including the "Upload release to PyPI" job. This will have been triggered
   by the new tag.
-* [ ] Download the Linux aarch64 wheels created by Travis CI from [GitHub releases](https://github.com/python-pillow/Pillow/releases)
-  and copy into `dist`. Check and upload them e.g.:
-  ```bash
-  python3 -m twine check --strict dist/*
-  python3 -m twine upload dist/pillow-5.2.0*
-  ```
 
 ## Publicize Release
 
