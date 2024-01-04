@@ -174,6 +174,11 @@ DEPS = {
         "filename": "libwebp-1.3.2.tar.gz",
         "dir": "libwebp-1.3.2",
         "license": "COPYING",
+        "patch": {
+            r"src\enc\picture_csp_enc.c": {
+                '#include "sharpyuv/sharpyuv.h"': '#include "sharpyuv/sharpyuv.h"\n#pragma comment(lib, "libsharpyuv.lib")',  # noqa: E501
+            }
+        },
         "build": [
             *cmds_cmake(
                 "webp webpdemux webpmux",
@@ -183,7 +188,7 @@ DEPS = {
             cmd_mkdir(r"{inc_dir}\webp"),
             cmd_copy(r"src\webp\*.h", r"{inc_dir}\webp"),
         ],
-        "libs": [r"libwebp*.lib"],
+        "libs": [r"libsharpyuv.lib", r"libwebp*.lib"],
     },
     "libtiff": {
         "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
