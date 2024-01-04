@@ -175,22 +175,15 @@ DEPS = {
         "dir": "libwebp-1.3.2",
         "license": "COPYING",
         "build": [
-            cmd_rmdir(r"output\release-static"),  # clean
-            cmd_nmake(
-                "Makefile.vc",
-                "all",
-                [
-                    "CFG=release-static",
-                    "RTLIBCFG=dynamic",
-                    "OBJDIR=output",
-                    "ARCH={architecture}",
-                    "LIBWEBP_BASENAME=webp",
-                ],
+            *cmds_cmake(
+                "webp webpdemux webpmux",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+                "-DWEBP_LINK_STATIC:BOOL=OFF",
             ),
             cmd_mkdir(r"{inc_dir}\webp"),
             cmd_copy(r"src\webp\*.h", r"{inc_dir}\webp"),
         ],
-        "libs": [r"output\release-static\{architecture}\lib\*.lib"],
+        "libs": [r"libwebp*.lib"],
     },
     "libtiff": {
         "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
@@ -204,7 +197,7 @@ DEPS = {
             },
             r"libtiff\tif_webp.c": {
                 # link against webp.lib
-                "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "webp.lib")',  # noqa: E501
+                "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "libwebp.lib")',  # noqa: E501
             },
             r"test\CMakeLists.txt": {
                 "add_executable(test_write_read_tags ../placeholder.h)": "",
@@ -217,6 +210,7 @@ DEPS = {
             *cmds_cmake(
                 "tiff",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
+                "-DWebP_LIBRARY=libwebp",
                 '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
             )
         ],
