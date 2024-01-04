@@ -31,7 +31,7 @@ env:
 
 jobs:
   build-1-QEMU-emulated-wheels:
-    name: QEMU ${{ matrix.python-version }} ${{ matrix.spec }}
+    name: aarch64 ${{ matrix.python-version }} ${{ matrix.spec }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
