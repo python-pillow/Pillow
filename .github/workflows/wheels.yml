@@ -124,6 +124,7 @@ jobs:
           python3 -m pip install -r .ci/requirements-cibw.txt
 
       - name: Build wheels
+        run: |
           python3 -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
