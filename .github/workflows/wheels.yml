@@ -39,18 +39,18 @@ jobs:
         include:
           - name: "macOS x86_64"
             os: macos-latest
-            archs: x86_64
+            cibw_arch: x86_64
             macosx_deployment_target: "10.10"
           - name: "macOS arm64"
             os: macos-latest
-            archs: arm64
+            cibw_arch: arm64
             macosx_deployment_target: "11.0"
           - name: "manylinux2014 and musllinux x86_64"
             os: ubuntu-latest
-            archs: x86_64
+            cibw_arch: x86_64
           - name: "manylinux_2_28 x86_64"
             os: ubuntu-latest
-            archs: x86_64
+            cibw_arch: x86_64
             build: "*manylinux*"
             manylinux: "manylinux_2_28"
     steps:
@@ -67,7 +67,7 @@ jobs:
           python3 -m pip install -r .ci/requirements-cibw.txt
           python3 -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_ARCHS: ${{ matrix.archs }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
@@ -77,7 +77,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}-${{ matrix.archs }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
+          name: dist-${{ matrix.os }}-${{ matrix.cibw_arch }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
           path: ./wheelhouse/*.whl
 
   windows:
