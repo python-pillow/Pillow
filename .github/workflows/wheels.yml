@@ -69,8 +69,7 @@ jobs:
         run: |
           python3 -m pip install -r .ci/requirements-cibw.txt
 
-      - name: Build wheels (manylinux)
-        if: matrix.spec != 'musllinux'
+      - name: Build wheels
         run: |
           python3 -m cibuildwheel --output-dir wheelhouse
         env:
@@ -78,21 +77,10 @@ jobs:
           # parallelise for speed).
           CIBW_ARCHS: "aarch64"
           # Likewise, select only one Python version per job to speed this up.
-          CIBW_BUILD: "${{ matrix.python-version }}-manylinux*"
+          CIBW_BUILD: "${{ matrix.python-version }}-${{ matrix.spec == 'musllinux' && 'musllinux' || 'manylinux' }}*"
           # Extra options for manylinux.
           CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.spec }}
           CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.spec }}
-
-      - name: Build wheels (musllinux)
-        if: matrix.spec == 'musllinux'
-        run: |
-          python3 -m cibuildwheel --output-dir wheelhouse
-        env:
-          # Build only the currently selected Linux architecture (so we can
-          # parallelise for speed).
-          CIBW_ARCHS: "aarch64"
-          # Likewise, select only one Python version per job to speed this up.
-          CIBW_BUILD: "${{ matrix.python-version }}-${{ matrix.spec }}*"
 
       - uses: actions/upload-artifact@v4
         with:
