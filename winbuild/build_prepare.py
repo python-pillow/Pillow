@@ -176,6 +176,7 @@ DEPS = {
         "license": "COPYING",
         "patch": {
             r"src\enc\picture_csp_enc.c": {
+                # link against libsharpyuv.lib
                 '#include "sharpyuv/sharpyuv.h"': '#include "sharpyuv/sharpyuv.h"\n#pragma comment(lib, "libsharpyuv.lib")',  # noqa: E501
             }
         },
@@ -201,7 +202,7 @@ DEPS = {
                 "#ifdef LZMA_SUPPORT": '#ifdef LZMA_SUPPORT\n#pragma comment(lib, "liblzma.lib")',  # noqa: E501
             },
             r"libtiff\tif_webp.c": {
-                # link against webp.lib
+                # link against libwebp.lib
                 "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "libwebp.lib")',  # noqa: E501
             },
             r"test\CMakeLists.txt": {
