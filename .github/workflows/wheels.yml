@@ -168,7 +168,7 @@ jobs:
 
       - name: Install cibuildwheel
         run: |
-          & python.exe -m pip install -r .ci/requirements-cibw.txt
+          python.exe -m pip install -r .ci/requirements-cibw.txt
 
       - name: Prepare for build
         run: |
