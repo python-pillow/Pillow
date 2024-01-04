@@ -105,7 +105,7 @@ SF_PROJECTS = "https://sourceforge.net/projects"
 
 ARCHITECTURES = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
-    "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
+    "AMD64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
@@ -651,7 +651,7 @@ if __name__ == "__main__":
             (
                 "ARM64"
                 if platform.machine() == "ARM64"
-                else ("x86" if struct.calcsize("P") == 4 else "x64")
+                else ("x86" if struct.calcsize("P") == 4 else "AMD64")
             ),
         ),
         help="build architecture (default: same as host Python)",
