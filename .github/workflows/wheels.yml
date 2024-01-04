@@ -65,10 +65,6 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # https://github.com/docker/setup-buildx-action
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Install cibuildwheel
         run: |
           python3 -m pip install -r .ci/requirements-cibw.txt
