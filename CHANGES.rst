@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+10.3.0 (unreleased)
+-------------------
+
+- Rename x64 to AMD64 in winbuild #7693
+  [nulano]
+
 10.2.0 (2024-01-02)
 -------------------
 
