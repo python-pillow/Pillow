@@ -141,18 +141,15 @@ jobs:
           path: ./wheelhouse/*.whl
 
   windows:
-    name: Windows ${{ matrix.arch }}
+    name: Windows ${{ matrix.cibw_arch }}
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: x86
-            cibw_arch: x86
-          - arch: x64
-            cibw_arch: AMD64
-          - arch: ARM64
-            cibw_arch: ARM64
+          - cibw_arch: x86
+          - cibw_arch: AMD64
+          - cibw_arch: ARM64
     steps:
       - uses: actions/checkout@v4
 
@@ -178,7 +175,7 @@ jobs:
           # Install extra test images
           xcopy /S /Y Tests\test-images\* Tests\images
 
-          & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.arch }}
+          & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.cibw_arch }}
         shell: pwsh
 
       - name: Build wheels
@@ -219,13 +216,13 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-windows-${{ matrix.arch }}
+          name: dist-windows-${{ matrix.cibw_arch }}
           path: ./wheelhouse/*.whl
 
       - name: Upload fribidi.dll
         uses: actions/upload-artifact@v4
         with:
-          name: fribidi-windows-${{ matrix.arch }}
+          name: fribidi-windows-${{ matrix.cibw_arch }}
           path: winbuild\build\bin\fribidi*
 
   sdist:
