@@ -2666,6 +2666,10 @@ class Image:
                 def transform(self, size, data, resample, fill=1):
                     # Return result
 
+          Implementations of :py:class:`~PIL.Image.ImageTransformHandler`
+          for some of the :py:class:`Transform` methods are provided
+          in :py:mod:`~PIL.ImageTransform`.
+
           It may also be an object with a ``method.getdata`` method
           that returns a tuple supplying new ``method`` and ``data`` values::
 

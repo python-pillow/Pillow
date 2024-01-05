@@ -77,14 +77,6 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.ImageTransform` Module
----------------------------------
-
-.. automodule:: PIL.ImageTransform
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`~PIL.PaletteFile` Module
 ------------------------------
 
