@@ -6,7 +6,12 @@ import pytest
 
 from PIL import Image, PpmImagePlugin
 
-from .helper import assert_image_equal_tofile, assert_image_similar, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 # sample ppm stream
 TEST_FILE = "Tests/images/hopper.ppm"
@@ -98,6 +103,44 @@ def test_pnm(tmp_path):
         im.save(f)
 
         assert_image_equal_tofile(im, f)
+
+
+def test_pfm(tmp_path):
+    with Image.open("Tests/images/hopper.pfm") as im:
+        assert im.info["scale"] == 1.0
+        assert_image_equal(im, hopper("F"))
+
+        f = str(tmp_path / "tmp.pfm")
+        im.save(f)
+
+        assert_image_equal_tofile(im, f)
+
+
+def test_pfm_big_endian(tmp_path):
+    with Image.open("Tests/images/hopper_be.pfm") as im:
+        assert im.info["scale"] == 2.5
+        assert_image_equal(im, hopper("F"))
+
+        f = str(tmp_path / "tmp.pfm")
+        im.save(f)
+
+        assert_image_equal_tofile(im, f)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"Pf 1 1 NaN \0\0\0\0",
+        b"Pf 1 1 inf \0\0\0\0",
+        b"Pf 1 1 -inf \0\0\0\0",
+        b"Pf 1 1 0.0 \0\0\0\0",
+        b"Pf 1 1 -0.0 \0\0\0\0",
+    ],
+)
+def test_pfm_invalid(data):
+    with pytest.raises(ValueError):
+        with Image.open(BytesIO(data)):
+            pass
 
 
 @pytest.mark.parametrize(

@@ -696,6 +696,24 @@ PCX
 
 Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
 
+PFM
+^^^
+
+.. versionadded:: 10.3.0
+
+Pillow reads and writes grayscale (Pf format) PFM files containing ``F`` data.
+
+Color (PF format) PFM files are not supported.
+
+Opening
+~~~~~~~
+
+The :py:func:`~PIL.Image.open` function sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**scale**
+    The absolute value of the number stored in the *Scale Factor / Endianness* line.
+
 PNG
 ^^^
 
