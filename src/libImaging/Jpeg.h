@@ -74,7 +74,7 @@ typedef struct {
     /* Optimize Huffman tables (slow) */
     int optimize;
 
-    /* Disable automatic conversion of RGB images to YCbCr if nonzero */
+    /* Disable automatic conversion of RGB images to YCbCr if non-zero */
     int keep_rgb;
 
     /* Stream type (0=full, 1=tables only, 2=image only) */

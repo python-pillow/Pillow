@@ -105,7 +105,7 @@ encode_loop:
                 st->head = st->codes[st->probe] >> 20;
                 goto encode_loop;
             } else {
-        /* Reprobe decrement must be nonzero and relatively prime to table
+        /* Reprobe decrement must be non-zero and relatively prime to table
          * size. So, any odd positive number for power-of-2 size. */
                 if ((st->probe -= ((st->tail << 2) | 1)) < 0) {
                     st->probe += TABLE_SIZE;
