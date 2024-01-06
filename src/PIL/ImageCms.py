@@ -147,7 +147,7 @@ class Flags(IntFlag):
     USE_8BITS_DEVICELINK = 0x0008
     """Create 8 bits devicelinks"""
     GUESSDEVICECLASS = 0x0020
-    """Guess device class (for transform2devicelink)"""
+    """Guess device class (for ``transform2devicelink``)"""
     KEEP_SEQUENCE = 0x0080
     """Keep profile sequence for devicelink creation"""
     FORCE_CLUT = 0x0002
@@ -159,7 +159,7 @@ class Flags(IntFlag):
     NONEGATIVES = 0x8000
     """Prevent negative numbers in floating point transforms"""
     COPY_ALPHA = 0x04000000
-    """Alpha channels are copied on cmsDoTransform()"""
+    """Alpha channels are copied on ``cmsDoTransform()``"""
     NODEFAULTRESOURCEDEF = 0x01000000
 
     _GRIDPOINTS_1 = 1 << 16
