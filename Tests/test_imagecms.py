@@ -90,6 +90,16 @@ def test_sanity():
     hopper().point(t)
 
 
+def test_flags():
+    assert ImageCms.Flags.NONE == 0
+    assert ImageCms.Flags.GRIDPOINTS(0) == ImageCms.Flags.NONE
+    assert ImageCms.Flags.GRIDPOINTS(256) == ImageCms.Flags.NONE
+
+    assert ImageCms.Flags.GRIDPOINTS(255) == (255 << 16)
+    assert ImageCms.Flags.GRIDPOINTS(-1) == ImageCms.Flags.GRIDPOINTS(255)
+    assert ImageCms.Flags.GRIDPOINTS(511) == ImageCms.Flags.GRIDPOINTS(255)
+
+
 def test_name():
     skip_missing()
     # get profile information for file
