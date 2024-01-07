@@ -16,6 +16,8 @@ class TestImageTransform:
 
         transform = ImageTransform.AffineTransform(seq[:6])
         im.transform((100, 100), transform)
+        transform = ImageTransform.PerspectiveTransform(seq[:8])
+        im.transform((100, 100), transform)
         transform = ImageTransform.ExtentTransform(seq[:4])
         im.transform((100, 100), transform)
         transform = ImageTransform.QuadTransform(seq[:8])
