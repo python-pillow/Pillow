@@ -58,11 +58,11 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :alt: Fuzzing Status
 
 .. image:: https://img.shields.io/pypi/v/pillow.svg
-   :target: https://pypi.org/project/Pillow/
+   :target: https://pypi.org/project/pillow/
    :alt: Latest PyPI version
 
 .. image:: https://img.shields.io/pypi/dm/pillow.svg
-   :target: https://pypi.org/project/Pillow/
+   :target: https://pypi.org/project/pillow/
    :alt: Number of PyPI downloads
 
 .. image:: https://www.bestpractices.dev/projects/6331/badge
