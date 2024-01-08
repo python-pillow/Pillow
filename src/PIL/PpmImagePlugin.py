@@ -115,7 +115,7 @@ class PpmImageFile(ImageFile.ImageFile):
         for ix in range(3):
             if mode == "F" and ix == 2:
                 scale = float(self._read_token())
-                if not math.isfinite(scale) or scale == 0.0:
+                if scale == 0.0 or not math.isfinite(scale):
                     msg = "scale must be finite and non-zero"
                     raise ValueError(msg)
                 rawmode = "F;32F" if scale < 0 else "F;32BF"
