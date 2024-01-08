@@ -701,7 +701,8 @@ PFM
 
 .. versionadded:: 10.3.0
 
-Pillow reads and writes grayscale (Pf format) PFM files containing ``F`` data.
+Pillow reads and writes grayscale (Pf format) Portable FloatMap (PFM) files
+containing ``F`` data.
 
 Color (PF format) PFM files are not supported.
 
