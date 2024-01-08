@@ -89,20 +89,20 @@ def test_16bit_pgm():
 
 def test_16bit_pgm_write(tmp_path):
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
-        f = str(tmp_path / "temp.pgm")
-        im.save(f, "PPM")
+        filename = str(tmp_path / "temp.pgm")
+        im.save(filename, "PPM")
 
-        assert_image_equal_tofile(im, f)
+        assert_image_equal_tofile(im, filename)
 
 
 def test_pnm(tmp_path):
     with Image.open("Tests/images/hopper.pnm") as im:
         assert_image_similar(im, hopper(), 0.0001)
 
-        f = str(tmp_path / "temp.pnm")
-        im.save(f)
+        filename = str(tmp_path / "temp.pnm")
+        im.save(filename)
 
-        assert_image_equal_tofile(im, f)
+        assert_image_equal_tofile(im, filename)
 
 
 def test_pfm(tmp_path):
@@ -110,10 +110,10 @@ def test_pfm(tmp_path):
         assert im.info["scale"] == 1.0
         assert_image_equal(im, hopper("F"))
 
-        f = str(tmp_path / "tmp.pfm")
-        im.save(f)
+        filename = str(tmp_path / "tmp.pfm")
+        im.save(filename)
 
-        assert_image_equal_tofile(im, f)
+        assert_image_equal_tofile(im, filename)
 
 
 def test_pfm_big_endian(tmp_path):
@@ -121,10 +121,10 @@ def test_pfm_big_endian(tmp_path):
         assert im.info["scale"] == 2.5
         assert_image_equal(im, hopper("F"))
 
-        f = str(tmp_path / "tmp.pfm")
-        im.save(f)
+        filename = str(tmp_path / "tmp.pfm")
+        im.save(filename)
 
-        assert_image_equal_tofile(im, f)
+        assert_image_equal_tofile(im, filename)
 
 
 @pytest.mark.parametrize(
