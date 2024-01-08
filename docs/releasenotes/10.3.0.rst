@@ -20,11 +20,11 @@ with a new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
 =====================================================  ============================================================
 Deprecated                                             Use instead
 =====================================================  ============================================================
-``ImageCms.DESCRIPTION``
+``ImageCms.DESCRIPTION``                               No replacement
 ``ImageCms.VERSION``                                   ``PIL.__version__``
 ``ImageCms.FLAGS["MATRIXINPUT"]``                      :py:attr:`.ImageCms.Flags.CLUT_POST_LINEARIZATION`
 ``ImageCms.FLAGS["MATRIXOUTPUT"]``                     :py:attr:`.ImageCms.Flags.FORCE_CLUT`
-``ImageCms.FLAGS["MATRIXONLY"]``
+``ImageCms.FLAGS["MATRIXONLY"]``                       No replacement
 ``ImageCms.FLAGS["NOWHITEONWHITEFIXUP"]``              :py:attr:`.ImageCms.Flags.NOWHITEONWHITEFIXUP`
 ``ImageCms.FLAGS["NOPRELINEARIZATION"]``               :py:attr:`.ImageCms.Flags.CLUT_PRE_LINEARIZATION`
 ``ImageCms.FLAGS["GUESSDEVICECLASS"]``                 :py:attr:`.ImageCms.Flags.GUESSDEVICECLASS`

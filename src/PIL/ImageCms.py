@@ -4,6 +4,9 @@
 # Optional color management support, based on Kevin Cazabon's PyCMS
 # library.
 
+# Originally released under LGPL.  Graciously donated to PIL in
+# March 2009, for distribution under the standard PIL license
+
 # History:
 
 # 2009-03-08 fl   Added to PIL.
