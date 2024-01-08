@@ -1,0 +1,49 @@
+10.3.0
+------
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+Portable FloatMap (PFM) images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for reading and writing grayscale (Pf format)
+Portable FloatMap (PFM) files containing ``F`` data.
