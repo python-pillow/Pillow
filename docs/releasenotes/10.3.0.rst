@@ -33,6 +33,13 @@ When saving JPEG files, ``no_default_app_segments`` can now be set to ``True`` t
 the image without default JFIF and Adobe application segments.  The JFIF segment will
 still be stored if ``dpi`` is also specified.
 
+Added PerspectiveTransform
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageTransform.PerspectiveTransform` has been added, meaning
+that all of the :py:data:`~PIL.Image.Transform` values now have a corresponding
+subclass of :py:class:`~PIL.ImageTransform.Transform`.
+
 Security
 ========
 

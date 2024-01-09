@@ -19,6 +19,11 @@ The :py:mod:`~PIL.ImageTransform` module contains implementations of
     :undoc-members:
     :show-inheritance:
 
+.. autoclass:: PerspectiveTransform
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. autoclass:: ExtentTransform
     :members:
     :undoc-members:
