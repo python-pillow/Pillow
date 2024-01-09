@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Added PerspectiveTransform #7699
+  [radarhere]
+
 - Add support for reading and writing grayscale PFM images #7696
   [nulano, hugovk]
 
