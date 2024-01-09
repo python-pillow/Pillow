@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Add support for reading and writing grayscale PFM images #7696
+  [nulano, hugovk]
+
+- Add LCMS2 flags to ImageCms #7676
+  [nulano, radarhere, hugovk]
+
 - Rename x64 to AMD64 in winbuild #7693
   [nulano]
 

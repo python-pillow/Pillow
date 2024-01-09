@@ -44,7 +44,8 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Portable FloatMap (PFM) images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Support has been added for reading and writing grayscale (Pf format)
+Portable FloatMap (PFM) files containing ``F`` data.

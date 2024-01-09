@@ -385,7 +385,7 @@ After navigating to the Pillow directory, run::
     python3 -m pip install --upgrade pip
     python3 -m pip install .
 
-.. _compressed archive from PyPI: https://pypi.org/project/Pillow/#files
+.. _compressed archive from PyPI: https://pypi.org/project/pillow/#files
 
 Build Options
 """""""""""""
@@ -602,5 +602,5 @@ Old Versions
 ------------
 
 You can download old distributions from the `release history at PyPI
-<https://pypi.org/project/Pillow/#history>`_ and by direct URL access
-eg. https://pypi.org/project/Pillow/1.0/.
+<https://pypi.org/project/pillow/#history>`_ and by direct URL access
+eg. https://pypi.org/project/pillow/1.0/.
