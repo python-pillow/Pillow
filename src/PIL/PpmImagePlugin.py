@@ -311,7 +311,6 @@ class PpmDecoder(ImageFile.PyDecoder):
 
 
 def _save(im, fp, filename):
-    row_order = 1
     if im.mode == "1":
         rawmode, head = "1;I", b"P4"
     elif im.mode == "L":
@@ -322,7 +321,6 @@ def _save(im, fp, filename):
         rawmode, head = "RGB", b"P6"
     elif im.mode == "F":
         rawmode, head = "F;32F", b"Pf"
-        row_order = -1
     else:
         msg = f"cannot write mode {im.mode} as PPM"
         raise OSError(msg)
@@ -336,6 +334,7 @@ def _save(im, fp, filename):
             fp.write(b"65535\n")
     elif head == b"Pf":
         fp.write(b"-1.0\n")
+    row_order = -1 if im.mode == "F" else 1
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, row_order))])
 
 
