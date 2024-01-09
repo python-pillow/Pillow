@@ -33,8 +33,9 @@ Added ExifTags enums
 ^^^^^^^^^^^^^^^^^^^^
 
 The data from :py:data:`~PIL.ExifTags.TAGS` and
-:py:data:`~PIL.ExifTags.GPSTAGS` is now also exposed as ``enum.IntEnum``
-classes: :py:data:`~PIL.ExifTags.Base` and :py:data:`~PIL.ExifTags.GPS`.
+:py:data:`~PIL.ExifTags.GPSTAGS` is now also exposed as
+:py:class:`enum.IntEnum` classes: :py:data:`~PIL.ExifTags.Base` and
+:py:data:`~PIL.ExifTags.GPS`.
 
 
 Security
