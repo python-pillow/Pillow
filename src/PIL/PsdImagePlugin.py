@@ -185,14 +185,13 @@ def _layerinfo(fp, ct_bytes):
         # image info
         mode = []
         ct_types = i16(read(2))
-        types = list(range(ct_types))
-        if len(types) > 4:
-            fp.seek(len(types) * 6 + 12, io.SEEK_CUR)
+        if ct_types > 4:
+            fp.seek(ct_types * 6 + 12, io.SEEK_CUR)
             size = i32(read(4))
             fp.seek(size, io.SEEK_CUR)
             continue
 
-        for _ in types:
+        for _ in range(ct_types):
             type = i16(read(2))
 
             if type == 65535:
