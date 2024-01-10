@@ -692,7 +692,7 @@ def test_different_modes_in_later_frames(mode, default_image, duplicate, tmp_pat
 
 
 def test_apng_repeated_seeks_give_correct_info() -> None:
-    with Image.open("Tests/images/apng/repeated_seeks_give_correct_info.png") as im:
+    with Image.open("Tests/images/apng/different_durations.png") as im:
         for i in range(3):
             im.seek(0)
             assert im.info["duration"] == 4000
