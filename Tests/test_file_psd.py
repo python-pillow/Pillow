@@ -112,6 +112,11 @@ def test_rgba():
         assert_image_equal_tofile(im, "Tests/images/imagedraw_square.png")
 
 
+def test_negative_top_left_layer() -> None:
+    with Image.open("Tests/images/negative_top_left_layer.psd") as im:
+        assert im.layers[0][2] == (-50, -50, 50, 50)
+
+
 def test_layer_skip():
     with Image.open("Tests/images/five_channels.psd") as im:
         assert im.n_frames == 1
