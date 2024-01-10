@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import builtins
+from types import CodeType
 from typing import Any
 
 from . import Image, _imagingmath
@@ -257,7 +258,7 @@ def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
 
     compiled_code = compile(expression, "<string>", "eval")
 
-    def scan(code) -> None:
+    def scan(code: CodeType) -> None:
         for const in code.co_consts:
             if type(const) is type(compiled_code):
                 scan(const)
