@@ -873,7 +873,7 @@ class Image:
 
     def convert(
         self, mode=None, matrix=None, dither=None, palette=Palette.WEB, colors=256
-    ):
+    ) -> Image:
         """
         Returns a converted copy of this image. For the "P" mode, this
         method translates pixels through the palette.  If mode is
@@ -1305,7 +1305,7 @@ class Image:
         """
         return ImageMode.getmode(self.mode).bands
 
-    def getbbox(self, *, alpha_only=True):
+    def getbbox(self, *, alpha_only=True) -> tuple[int, int, int, int]:
         """
         Calculates the bounding box of the non-zero regions in the
         image.
