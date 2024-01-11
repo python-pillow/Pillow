@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Deprecate ImageCms constants and versions() function #7702
+  [nulano, radarhere]
+
 - Added PerspectiveTransform #7699
   [radarhere]
 
