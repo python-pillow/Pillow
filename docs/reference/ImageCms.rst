@@ -24,14 +24,17 @@ Constants
     :members:
     :member-order: bysource
     :undoc-members:
+    :show-inheritance:
 .. autoclass:: Direction
     :members:
     :member-order: bysource
     :undoc-members:
+    :show-inheritance:
 .. autoclass:: Flags
     :members:
     :member-order: bysource
     :undoc-members:
+    :show-inheritance:
 
 Functions
 ---------

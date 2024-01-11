@@ -4,6 +4,9 @@
 # Optional color management support, based on Kevin Cazabon's PyCMS
 # library.
 
+# Originally released under LGPL.  Graciously donated to PIL in
+# March 2009, for distribution under the standard PIL license
+
 # History:
 
 # 2009-03-08 fl   Added to PIL.
@@ -20,8 +23,10 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
+from typing import Any
 
 from . import Image
+from ._deprecate import deprecate
 
 try:
     from . import _imagingcms
@@ -32,7 +37,7 @@ except ImportError as ex:
 
     _imagingcms = DeferredError.new(ex)
 
-DESCRIPTION = """
+_DESCRIPTION = """
 pyCMS
 
     a Python / PIL interface to the littleCMS ICC Color Management System
@@ -95,7 +100,22 @@ pyCMS
 
 """
 
-VERSION = "1.0.0 pil"
+_VERSION = "1.0.0 pil"
+
+
+def __getattr__(name: str) -> Any:
+    if name == "DESCRIPTION":
+        deprecate("PIL.ImageCms.DESCRIPTION", 12)
+        return _DESCRIPTION
+    elif name == "VERSION":
+        deprecate("PIL.ImageCms.VERSION", 12)
+        return _VERSION
+    elif name == "FLAGS":
+        deprecate("PIL.ImageCms.FLAGS", 12, "PIL.ImageCms.Flags")
+        return _FLAGS
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
+
 
 # --------------------------------------------------------------------.
 
@@ -184,7 +204,7 @@ class Flags(IntFlag):
 _MAX_FLAG = reduce(operator.or_, Flags)
 
 
-FLAGS = {
+_FLAGS = {
     "MATRIXINPUT": 1,
     "MATRIXOUTPUT": 2,
     "MATRIXONLY": (1 | 2),
@@ -1064,4 +1084,9 @@ def versions():
     (pyCMS) Fetches versions.
     """
 
-    return VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__
+    deprecate(
+        "PIL.ImageCms.versions()",
+        12,
+        '(PIL.features.version("littlecms2"), sys.version, PIL.__version__)',
+    )
+    return _VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__
