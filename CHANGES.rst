@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Fix APNG info after seeking backwards more than twice #7701
+  [esoma, radarhere]
+
 - Deprecate ImageCms constants and versions() function #7702
   [nulano, radarhere]
 
