@@ -639,7 +639,7 @@ def test_rgb_lab(mode):
     assert converted_im.getpixel((0, 0))[:3] == (0, 255, 255)
 
 
-def test_deprecation():
+def test_deprecation() -> None:
     with pytest.warns(DeprecationWarning):
         assert ImageCms.DESCRIPTION.strip().startswith("pyCMS")
     with pytest.warns(DeprecationWarning):
