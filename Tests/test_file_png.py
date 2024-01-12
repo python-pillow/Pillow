@@ -777,6 +777,15 @@ class TestFilePng:
             mystdout = mystdout.buffer
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
+    
+    def test_end_truncated_file(self):
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            with Image.open("Tests/images/end_trunc_file.png") as im:
+                assert_image_equal_tofile(im, "Tests/images/end_trunc_file.png")
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
+
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
