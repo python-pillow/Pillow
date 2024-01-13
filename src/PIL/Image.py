@@ -242,7 +242,7 @@ MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "
 _MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16L", "I;16B")
 
 
-def getmodebase(mode):
+def getmodebase(mode: str) -> str:
     """
     Gets the "base" mode for given mode.  This function returns "L" for
     images that contain grayscale data, and "RGB" for images that
@@ -583,7 +583,9 @@ class Image:
         else:
             self.load()
 
-    def _dump(self, file=None, format=None, **options):
+    def _dump(
+        self, file: str | None = None, format: str | None = None, **options
+    ) -> str:
         suffix = ""
         if format:
             suffix = "." + format
