@@ -184,7 +184,7 @@ class UnixViewer(Viewer):
 
     @abc.abstractmethod
     def get_command_ex(self, file: str, **options: Any) -> tuple[str, str]:
-        pass
+        pass  # pragma: no cover
 
     def get_command(self, file: str, **options: Any) -> str:
         command = self.get_command_ex(file, **options)[0]
