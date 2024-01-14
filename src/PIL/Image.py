@@ -3486,7 +3486,7 @@ def register_extension(id, extension) -> None:
     EXTENSION[extension.lower()] = id.upper()
 
 
-def register_extensions(id, extensions):
+def register_extensions(id, extensions) -> None:
     """
     Registers image extensions.  This function should not be
     used in application code.
