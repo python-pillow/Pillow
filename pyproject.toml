@@ -147,7 +147,6 @@ exclude = [
   '^src/PIL/FpxImagePlugin.py$',
   '^src/PIL/Image.py$',
   '^src/PIL/ImageQt.py$',
-  '^src/PIL/ImageShow.py$',
   '^src/PIL/ImImagePlugin.py$',
   '^src/PIL/MicImagePlugin.py$',
   '^src/PIL/PdfParser.py$',
