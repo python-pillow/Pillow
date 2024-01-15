@@ -3507,7 +3507,7 @@ def registered_extensions():
     return EXTENSION
 
 
-def register_decoder(name, decoder):
+def register_decoder(name: str, decoder) -> None:
     """
     Registers an image decoder.  This function should not be
     used in application code.
