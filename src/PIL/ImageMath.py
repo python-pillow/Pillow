@@ -227,11 +227,7 @@ def imagemath_convert(self: _Operand, mode: str) -> _Operand:
 
 @cache
 def _get_ops() -> dict[str, Any]:
-    ops = {}
-    for k, v in list(globals().items()):
-        if k[:10] == "imagemath_":
-            ops[k[10:]] = v
-    return ops
+    return {k[10:]: v for k, v in globals().items() if k[:10] == "imagemath_"}
 
 
 def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
