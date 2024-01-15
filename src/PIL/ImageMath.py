@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 import builtins
-from functools import cache
+from functools import lru_cache
 from types import CodeType
 from typing import Any
 
@@ -225,7 +225,7 @@ def imagemath_convert(self: _Operand, mode: str) -> _Operand:
     return _Operand(self.im.convert(mode))
 
 
-@cache
+@lru_cache
 def _get_ops() -> dict[str, Any]:
     return {k[10:]: v for k, v in globals().items() if k[:10] == "imagemath_"}
 
