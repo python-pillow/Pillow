@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import builtins
+from functools import cache
 from types import CodeType
 from typing import Any
 
@@ -224,10 +225,13 @@ def imagemath_convert(self: _Operand, mode: str) -> _Operand:
     return _Operand(self.im.convert(mode))
 
 
-ops = {}
-for k, v in list(globals().items()):
-    if k[:10] == "imagemath_":
-        ops[k[10:]] = v
+@cache
+def _get_ops() -> dict[str, Any]:
+    ops = {}
+    for k, v in list(globals().items()):
+        if k[:10] == "imagemath_":
+            ops[k[10:]] = v
+    return ops
 
 
 def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
@@ -244,7 +248,7 @@ def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
     """
 
     # build execution namespace
-    args = ops.copy()
+    args = _get_ops().copy()
     for k in list(_dict.keys()) + list(kw.keys()):
         if "__" in k or hasattr(builtins, k):
             msg = f"'{k}' not allowed"
