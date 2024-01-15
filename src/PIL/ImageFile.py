@@ -713,7 +713,7 @@ class PyDecoder(PyCodec):
         msg = "unavailable in base decoder"
         raise NotImplementedError(msg)
 
-    def set_as_raw(self, data: bytes, rawmode = None) -> None:
+    def set_as_raw(self, data: bytes, rawmode=None) -> None:
         """
         Convenience method to set the internal image from a stream of raw data
 
