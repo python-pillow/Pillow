@@ -514,7 +514,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im, fp, tile, bufsize=0):
+def _save(im, fp, tile, bufsize=0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.

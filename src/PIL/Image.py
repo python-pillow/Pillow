@@ -3437,7 +3437,7 @@ def register_open(id, factory, accept=None) -> None:
     OPEN[id] = factory, accept
 
 
-def register_mime(id, mimetype):
+def register_mime(id: str, mimetype: str) -> None:
     """
     Registers an image MIME type by populating ``Image.MIME``. This function
     should not be used in application code.
@@ -3452,7 +3452,7 @@ def register_mime(id, mimetype):
     MIME[id.upper()] = mimetype
 
 
-def register_save(id, driver):
+def register_save(id: str, driver) -> None:
     """
     Registers an image save function.  This function should not be
     used in application code.
