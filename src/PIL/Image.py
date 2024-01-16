@@ -710,7 +710,7 @@ class Image:
             self.putpalette(palette)
         self.frombytes(data)
 
-    def tobytes(self, encoder_name="raw", *args):
+    def tobytes(self, encoder_name: str = "raw", *args) -> bytes:
         """
         Return image as a bytes object.
 
@@ -788,7 +788,7 @@ class Image:
             ]
         )
 
-    def frombytes(self, data, decoder_name="raw", *args):
+    def frombytes(self, data: bytes, decoder_name: str = "raw", *args) -> None:
         """
         Loads this image with pixel data from a bytes object.
 
@@ -1297,7 +1297,7 @@ class Image:
         ]
         return merge(self.mode, ims)
 
-    def getbands(self):
+    def getbands(self) -> tuple[str, ...]:
         """
         Returns a tuple containing the name of each band in this image.
         For example, ``getbands`` on an RGB image returns ("R", "G", "B").
@@ -2495,7 +2495,7 @@ class Image:
 
         _show(self, title=title)
 
-    def split(self):
+    def split(self) -> tuple[Image, ...]:
         """
         Split this image into individual bands. This method returns a
         tuple of individual image bands from an image. For example,
