@@ -778,10 +778,14 @@ class TestFilePng:
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
-    def test_end_truncated_file(self):
+    def test_truncated_end_chunk(self):
+        with Image.open("Tests/images/truncated_end_chunk.png") as im:
+            with pytest.raises(OSError):
+                im.load()
+
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
-            with Image.open("Tests/images/end_trunc_file.png") as im:
+            with Image.open("Tests/images/truncated_end_chunk.png") as im:
                 assert_image_equal_tofile(im, "Tests/images/hopper.png")
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
