@@ -782,7 +782,7 @@ class TestFilePng:
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         try:
             with Image.open("Tests/images/end_trunc_file.png") as im:
-                assert_image_equal_tofile(im, "Tests/images/end_trunc_file.png")
+                assert_image_equal_tofile(im, "Tests/images/hopper.png")
         finally:
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
