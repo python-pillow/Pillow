@@ -282,7 +282,7 @@ def getmodebandnames(mode):
     return ImageMode.getmode(mode).bands
 
 
-def getmodebands(mode):
+def getmodebands(mode: str) -> int:
     """
     Gets the number of individual bands for this mode.
 
