@@ -616,6 +616,8 @@ class PyCodecState:
 
 
 class PyCodec:
+    fd: io.BytesIO | None
+
     def __init__(self, mode, *args):
         self.im = None
         self.state = PyCodecState()
