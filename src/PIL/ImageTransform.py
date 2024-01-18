@@ -20,12 +20,14 @@ from . import Image
 
 
 class Transform(Image.ImageTransformHandler):
+    """Base class for other transforms defined in :py:mod:`~PIL.ImageTransform`."""
+
     method: Image.Transform
 
     def __init__(self, data: Sequence[int]) -> None:
         self.data = data
 
-    def getdata(self) -> tuple[int, Sequence[int]]:
+    def getdata(self) -> tuple[Image.Transform, Sequence[int]]:
         return self.method, self.data
 
     def transform(
@@ -34,6 +36,7 @@ class Transform(Image.ImageTransformHandler):
         image: Image.Image,
         **options: dict[str, str | int | tuple[int, ...] | list[int]],
     ) -> Image.Image:
+        """Perform the transform. Called from :py:meth:`.Image.transform`."""
         # can be overridden
         method, data = self.getdata()
         return image.transform(size, method, data, **options)
@@ -51,13 +54,33 @@ class AffineTransform(Transform):
     This function can be used to scale, translate, rotate, and shear the
     original image.
 
-    See :py:meth:`~PIL.Image.Image.transform`
+    See :py:meth:`.Image.transform`
 
     :param matrix: A 6-tuple (a, b, c, d, e, f) containing the first two rows
         from an affine transform matrix.
     """
 
     method = Image.Transform.AFFINE
+
+
+class PerspectiveTransform(Transform):
+    """
+    Define a perspective image transform.
+
+    This function takes an 8-tuple (a, b, c, d, e, f, g, h). For each pixel
+    (x, y) in the output image, the new value is taken from a position
+    ((a x + b y + c) / (g x + h y + 1), (d x + e y + f) / (g x + h y + 1)) in
+    the input image, rounded to nearest pixel.
+
+    This function can be used to scale, translate, rotate, and shear the
+    original image.
+
+    See :py:meth:`.Image.transform`
+
+    :param matrix: An 8-tuple (a, b, c, d, e, f, g, h).
+    """
+
+    method = Image.Transform.PERSPECTIVE
 
 
 class ExtentTransform(Transform):
@@ -73,7 +96,7 @@ class ExtentTransform(Transform):
     rectangle in the current image. It is slightly slower than crop, but about
     as fast as a corresponding resize operation.
 
-    See :py:meth:`~PIL.Image.Image.transform`
+    See :py:meth:`.Image.transform`
 
     :param bbox: A 4-tuple (x0, y0, x1, y1) which specifies two points in the
         input image's coordinate system. See :ref:`coordinate-system`.
@@ -89,7 +112,7 @@ class QuadTransform(Transform):
     Maps a quadrilateral (a region defined by four corners) from the image to a
     rectangle of the given size.
 
-    See :py:meth:`~PIL.Image.Image.transform`
+    See :py:meth:`.Image.transform`
 
     :param xy: An 8-tuple (x0, y0, x1, y1, x2, y2, x3, y3) which contain the
         upper left, lower left, lower right, and upper right corner of the
@@ -104,7 +127,7 @@ class MeshTransform(Transform):
     Define a mesh image transform.  A mesh transform consists of one or more
     individual quad transforms.
 
-    See :py:meth:`~PIL.Image.Image.transform`
+    See :py:meth:`.Image.transform`
 
     :param data: A list of (bbox, quad) tuples.
     """

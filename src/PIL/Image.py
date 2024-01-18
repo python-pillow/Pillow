@@ -242,7 +242,7 @@ MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "
 _MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16L", "I;16B")
 
 
-def getmodebase(mode):
+def getmodebase(mode: str) -> str:
     """
     Gets the "base" mode for given mode.  This function returns "L" for
     images that contain grayscale data, and "RGB" for images that
@@ -282,7 +282,7 @@ def getmodebandnames(mode):
     return ImageMode.getmode(mode).bands
 
 
-def getmodebands(mode):
+def getmodebands(mode: str) -> int:
     """
     Gets the number of individual bands for this mode.
 
@@ -583,7 +583,9 @@ class Image:
         else:
             self.load()
 
-    def _dump(self, file=None, format=None, **options):
+    def _dump(
+        self, file: str | None = None, format: str | None = None, **options
+    ) -> str:
         suffix = ""
         if format:
             suffix = "." + format
@@ -708,7 +710,7 @@ class Image:
             self.putpalette(palette)
         self.frombytes(data)
 
-    def tobytes(self, encoder_name="raw", *args):
+    def tobytes(self, encoder_name: str = "raw", *args) -> bytes:
         """
         Return image as a bytes object.
 
@@ -786,7 +788,7 @@ class Image:
             ]
         )
 
-    def frombytes(self, data, decoder_name="raw", *args):
+    def frombytes(self, data: bytes, decoder_name: str = "raw", *args) -> None:
         """
         Loads this image with pixel data from a bytes object.
 
@@ -873,7 +875,7 @@ class Image:
 
     def convert(
         self, mode=None, matrix=None, dither=None, palette=Palette.WEB, colors=256
-    ):
+    ) -> Image:
         """
         Returns a converted copy of this image. For the "P" mode, this
         method translates pixels through the palette.  If mode is
@@ -1295,7 +1297,7 @@ class Image:
         ]
         return merge(self.mode, ims)
 
-    def getbands(self):
+    def getbands(self) -> tuple[str, ...]:
         """
         Returns a tuple containing the name of each band in this image.
         For example, ``getbands`` on an RGB image returns ("R", "G", "B").
@@ -1305,7 +1307,7 @@ class Image:
         """
         return ImageMode.getmode(self.mode).bands
 
-    def getbbox(self, *, alpha_only=True):
+    def getbbox(self, *, alpha_only: bool = True) -> tuple[int, int, int, int]:
         """
         Calculates the bounding box of the non-zero regions in the
         image.
@@ -2493,7 +2495,7 @@ class Image:
 
         _show(self, title=title)
 
-    def split(self):
+    def split(self) -> tuple[Image, ...]:
         """
         Split this image into individual bands. This method returns a
         tuple of individual image bands from an image. For example,
@@ -2665,6 +2667,10 @@ class Image:
             class Example(Image.ImageTransformHandler):
                 def transform(self, size, data, resample, fill=1):
                     # Return result
+
+          Implementations of :py:class:`~PIL.Image.ImageTransformHandler`
+          for some of the :py:class:`Transform` methods are provided
+          in :py:mod:`~PIL.ImageTransform`.
 
           It may also be an object with a ``method.getdata`` method
           that returns a tuple supplying new ``method`` and ``data`` values::
@@ -3431,7 +3437,7 @@ def register_open(id, factory, accept=None) -> None:
     OPEN[id] = factory, accept
 
 
-def register_mime(id, mimetype):
+def register_mime(id: str, mimetype: str) -> None:
     """
     Registers an image MIME type by populating ``Image.MIME``. This function
     should not be used in application code.
@@ -3446,7 +3452,7 @@ def register_mime(id, mimetype):
     MIME[id.upper()] = mimetype
 
 
-def register_save(id, driver):
+def register_save(id: str, driver) -> None:
     """
     Registers an image save function.  This function should not be
     used in application code.
@@ -3480,7 +3486,7 @@ def register_extension(id, extension) -> None:
     EXTENSION[extension.lower()] = id.upper()
 
 
-def register_extensions(id, extensions):
+def register_extensions(id, extensions) -> None:
     """
     Registers image extensions.  This function should not be
     used in application code.
@@ -3501,7 +3507,7 @@ def registered_extensions():
     return EXTENSION
 
 
-def register_decoder(name, decoder):
+def register_decoder(name: str, decoder) -> None:
     """
     Registers an image decoder.  This function should not be
     used in application code.
