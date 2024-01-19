@@ -158,7 +158,7 @@ def assert_tuple_approx_equal(actuals, targets, threshold, msg):
     assert value, msg + ": " + repr(actuals) + " != " + repr(targets)
 
 
-def skip_unless_feature(feature):
+def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
     reason = f"{feature} not available"
     return pytest.mark.skipif(not features.check(feature), reason=reason)
 
