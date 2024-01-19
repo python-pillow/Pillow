@@ -238,7 +238,7 @@ def tostring(im, string_format, **options):
     return out.getvalue()
 
 
-def hopper(mode=None, cache={}):
+def hopper(mode: str | None = None, cache: dict[str, Image.Image] = {}) -> Image.Image:
     if mode is None:
         # Always return fresh not-yet-loaded version of image.
         # Operations on not-yet-loaded images is separate class of errors
@@ -323,7 +323,7 @@ def is_ppc64le():
     return platform.machine() == "ppc64le"
 
 
-def is_win32():
+def is_win32() -> bool:
     return sys.platform.startswith("win32")
 
 
