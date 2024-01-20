@@ -37,7 +37,9 @@ jobs:
       with:
         python-version: "3.x"
         cache: pip
-        cache-dependency-path: ".ci/*.sh"
+        cache-dependency-path: |
+          ".ci/*.sh"
+          "pyproject.toml"
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py

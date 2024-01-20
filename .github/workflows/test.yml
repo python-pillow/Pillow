@@ -26,6 +26,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   build:
 
@@ -65,7 +68,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
         cache: pip
-        cache-dependency-path: ".ci/*.sh"
+        cache-dependency-path: |
+          ".ci/*.sh"
+          "pyproject.toml"
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
