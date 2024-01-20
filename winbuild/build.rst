@@ -92,7 +92,7 @@ You can also install Pillow in `editable mode`_::
     winbuild\build\build_env.cmd
     python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor -e .
 
-To build a wheel instead, run::
+To build a binary wheel instead, run::
 
     winbuild\build\build_env.cmd
     python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .
