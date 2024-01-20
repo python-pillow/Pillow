@@ -91,12 +91,12 @@ def assert_image_equal(a: Image.Image, b: Image.Image, msg: str | None = None) -
     assert a.mode == b.mode, msg or f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, msg or f"got size {repr(a.size)}, expected {repr(b.size)}"
     if a.tobytes() != b.tobytes():
-        if uploader:
-            try:
-                url = upload(a, b)
+        try:
+            url = upload(a, b)
+            if url:
                 logger.error("URL for test images: %s", url)
-            except Exception:
-                pass
+        except Exception:
+            pass
 
         pytest.fail(msg or "got different content")
 
@@ -130,12 +130,12 @@ def assert_image_similar(
             + f" average pixel value difference {ave_diff:.4f} > epsilon {epsilon:.4f}"
         )
     except Exception as e:
-        if uploader:
-            try:
-                url = upload(a, b)
+        try:
+            url = upload(a, b)
+            if url:
                 logger.exception("URL for test images: %s", url)
-            except Exception:
-                pass
+        except Exception:
+            pass
         raise e
 
 
