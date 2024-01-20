@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from array import array
 
 import pytest
