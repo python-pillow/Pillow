@@ -75,12 +75,21 @@ jobs:
     - name: Build system information
       run: python3 .github/workflows/system-info.py
 
+    - name: Cache libimagequant
+      if: startsWith(matrix.os, 'ubuntu')
+      uses: actions/cache@v4
+      id: cache-libimagequant
+      with:
+        path: ~/cache-libimagequant
+        key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
+
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         .ci/install.sh
       env:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+        GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
 
     - name: Install macOS dependencies
       if: startsWith(matrix.os, 'macOS')

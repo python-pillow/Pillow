@@ -44,11 +44,19 @@ jobs:
     - name: Build system information
       run: python3 .github/workflows/system-info.py
 
+    - name: Cache libimagequant
+      uses: actions/cache@v4
+      id: cache-libimagequant
+      with:
+        path: ~/cache-libimagequant
+        key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
+
     - name: Install Linux dependencies
       run: |
         .ci/install.sh
       env:
         GHA_PYTHON_VERSION: "3.x"
+        GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
 
     - name: Build
       run: |
