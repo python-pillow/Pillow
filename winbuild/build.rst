@@ -97,7 +97,7 @@ To build a wheel instead, run::
     winbuild\build\build_env.cmd
     python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .
 
-.. _editable mode: https://setuptools.pypa.io/en/latest/userguide/development_mode.html
+.. _editable mode: https://setuptools.pypa.io/en/stable/userguide/development_mode.html
 
 Testing Pillow
 --------------
