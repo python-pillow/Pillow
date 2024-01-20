@@ -11,10 +11,10 @@ import sys
 import sysconfig
 import tempfile
 from io import BytesIO
+from typing import Any, Callable, Sequence
 
 import pytest
 from packaging.version import parse as parse_version
-from typing import Any, Callable, Sequence
 
 from PIL import Image, ImageMath, features
 
