@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import io
 import struct
 
@@ -123,6 +124,7 @@ def test_write_metadata(tmp_path):
     """Test metadata writing through the python code"""
     with Image.open("Tests/images/hopper.tif") as img:
         f = str(tmp_path / "temp.tiff")
+        del img.tag[278]
         img.save(f, tiffinfo=img.tag)
 
         original = img.tag_v2.named()
@@ -159,9 +161,11 @@ def test_change_stripbytecounts_tag_type(tmp_path):
     out = str(tmp_path / "temp.tiff")
     with Image.open("Tests/images/hopper.tif") as im:
         info = im.tag_v2
+        del info[278]
 
         # Resize the image so that STRIPBYTECOUNTS will be larger than a SHORT
         im = im.resize((500, 500))
+        info[TiffImagePlugin.IMAGEWIDTH] = im.width
 
         # STRIPBYTECOUNTS can be a SHORT or a LONG
         info.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] = TiffTags.SHORT

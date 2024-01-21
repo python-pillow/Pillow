@@ -33,9 +33,11 @@ class ImtImageFile(ImageFile.ImageFile):
     format = "IMT"
     format_description = "IM Tools"
 
-    def _open(self):
+    def _open(self) -> None:
         # Quick rejection: if there's not a LF among the first
         # 100 bytes, this is (probably) not a text header.
+
+        assert self.fp is not None
 
         buffer = self.fp.read(100)
         if b"\n" not in buffer:

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import io
 
 import pytest
@@ -270,7 +271,7 @@ def test_render_scale1():
         image1_scale1_compare.load()
         assert_image_similar(image1_scale1, image1_scale1_compare, 5)
 
-    # Non-Zero bounding box
+    # Non-zero bounding box
     with Image.open(FILE2) as image2_scale1:
         image2_scale1.load()
         with Image.open(FILE2_COMPARE) as image2_scale1_compare:
@@ -292,7 +293,7 @@ def test_render_scale2():
         image1_scale2_compare.load()
         assert_image_similar(image1_scale2, image1_scale2_compare, 5)
 
-    # Non-Zero bounding box
+    # Non-zero bounding box
     with Image.open(FILE2) as image2_scale2:
         image2_scale2.load(scale=2)
         with Image.open(FILE2_COMPARE_SCALE2) as image2_scale2_compare:

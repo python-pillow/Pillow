@@ -8,7 +8,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   pull_request:
@@ -16,7 +15,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   workflow_dispatch:
@@ -85,6 +83,10 @@ jobs:
         .github/workflows/macos-install.sh
       env:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+
+    - name: Register gcc problem matcher
+      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'"
+      run: echo "::add-matcher::.github/problem-matchers/gcc.json"
 
     - name: Build
       run: |

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import zlib
 from io import BytesIO
 

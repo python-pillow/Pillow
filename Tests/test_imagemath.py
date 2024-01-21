@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import pytest
 
 from PIL import Image, ImageMath
@@ -62,6 +63,16 @@ def test_ops():
 def test_prevent_exec(expression):
     with pytest.raises(ValueError):
         ImageMath.eval(expression)
+
+
+def test_prevent_double_underscores():
+    with pytest.raises(ValueError):
+        ImageMath.eval("1", {"__": None})
+
+
+def test_prevent_builtins():
+    with pytest.raises(ValueError):
+        ImageMath.eval("(lambda: exec('exit()'))()", {"exec": None})
 
 
 def test_logical():

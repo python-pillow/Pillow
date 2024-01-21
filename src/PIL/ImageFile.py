@@ -32,7 +32,7 @@ import io
 import itertools
 import struct
 import sys
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from . import Image
 from ._deprecate import deprecate
@@ -94,7 +94,7 @@ class _Tile(NamedTuple):
     encoder_name: str
     extents: tuple[int, int, int, int]
     offset: int
-    args: tuple | str | None
+    args: tuple[Any, ...] | str | None
 
 
 #
@@ -514,7 +514,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im, fp, tile, bufsize=0):
+def _save(im, fp, tile, bufsize=0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.
@@ -616,6 +616,8 @@ class PyCodecState:
 
 
 class PyCodec:
+    fd: io.BytesIO | None
+
     def __init__(self, mode, *args):
         self.im = None
         self.state = PyCodecState()
@@ -713,7 +715,7 @@ class PyDecoder(PyCodec):
         msg = "unavailable in base decoder"
         raise NotImplementedError(msg)
 
-    def set_as_raw(self, data, rawmode=None):
+    def set_as_raw(self, data: bytes, rawmode=None) -> None:
         """
         Convenience method to set the internal image from a stream of raw data
 

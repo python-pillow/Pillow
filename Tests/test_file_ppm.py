@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import sys
 from io import BytesIO
 
@@ -6,7 +7,12 @@ import pytest
 
 from PIL import Image, PpmImagePlugin
 
-from .helper import assert_image_equal_tofile, assert_image_similar, hopper
+from .helper import (
+    assert_image_equal,
+    assert_image_equal_tofile,
+    assert_image_similar,
+    hopper,
+)
 
 # sample ppm stream
 TEST_FILE = "Tests/images/hopper.ppm"
@@ -84,20 +90,58 @@ def test_16bit_pgm():
 
 def test_16bit_pgm_write(tmp_path):
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
-        f = str(tmp_path / "temp.pgm")
-        im.save(f, "PPM")
+        filename = str(tmp_path / "temp.pgm")
+        im.save(filename, "PPM")
 
-        assert_image_equal_tofile(im, f)
+        assert_image_equal_tofile(im, filename)
 
 
 def test_pnm(tmp_path):
     with Image.open("Tests/images/hopper.pnm") as im:
         assert_image_similar(im, hopper(), 0.0001)
 
-        f = str(tmp_path / "temp.pnm")
-        im.save(f)
+        filename = str(tmp_path / "temp.pnm")
+        im.save(filename)
 
-        assert_image_equal_tofile(im, f)
+        assert_image_equal_tofile(im, filename)
+
+
+def test_pfm(tmp_path):
+    with Image.open("Tests/images/hopper.pfm") as im:
+        assert im.info["scale"] == 1.0
+        assert_image_equal(im, hopper("F"))
+
+        filename = str(tmp_path / "tmp.pfm")
+        im.save(filename)
+
+        assert_image_equal_tofile(im, filename)
+
+
+def test_pfm_big_endian(tmp_path):
+    with Image.open("Tests/images/hopper_be.pfm") as im:
+        assert im.info["scale"] == 2.5
+        assert_image_equal(im, hopper("F"))
+
+        filename = str(tmp_path / "tmp.pfm")
+        im.save(filename)
+
+        assert_image_equal_tofile(im, filename)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"Pf 1 1 NaN \0\0\0\0",
+        b"Pf 1 1 inf \0\0\0\0",
+        b"Pf 1 1 -inf \0\0\0\0",
+        b"Pf 1 1 0.0 \0\0\0\0",
+        b"Pf 1 1 -0.0 \0\0\0\0",
+    ],
+)
+def test_pfm_invalid(data):
+    with pytest.raises(ValueError):
+        with Image.open(BytesIO(data)):
+            pass
 
 
 @pytest.mark.parametrize(

@@ -1,14 +1,24 @@
 from __future__ import annotations
+
+import struct
+from io import BytesIO
+
 import pytest
 
-from PIL import Image, ImageDraw, ImageFont, features
+from PIL import Image, ImageDraw, ImageFont, _util, features
 
 from .helper import assert_image_equal_tofile
 
-pytestmark = pytest.mark.skipif(
-    features.check_module("freetype2"),
-    reason="PILfont superseded if FreeType is supported",
-)
+original_core = ImageFont.core
+
+
+def setup_module():
+    if features.check_module("freetype2"):
+        ImageFont.core = _util.DeferredError(ImportError)
+
+
+def teardown_module():
+    ImageFont.core = original_core
 
 
 def test_default_font():
@@ -44,3 +54,25 @@ def test_textbbox():
     default_font = ImageFont.load_default()
     assert d.textlength("test", font=default_font) == 24
     assert d.textbbox((0, 0), "test", font=default_font) == (0, 0, 24, 11)
+
+
+def test_decompression_bomb():
+    glyph = struct.pack(">hhhhhhhhhh", 1, 0, 0, 0, 256, 256, 0, 0, 256, 256)
+    fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
+
+    font = ImageFont.ImageFont()
+    font._load_pilfont_data(fp, Image.new("L", (256, 256)))
+    with pytest.raises(Image.DecompressionBombError):
+        font.getmask("A" * 1_000_000)
+
+
+@pytest.mark.timeout(4)
+def test_oom():
+    glyph = struct.pack(
+        ">hhhhhhhhhh", 1, 0, -32767, -32767, 32767, 32767, -32767, -32767, 32767, 32767
+    )
+    fp = BytesIO(b"PILfont\n\nDATA\n" + glyph * 256)
+
+    font = ImageFont.ImageFont()
+    font._load_pilfont_data(fp, Image.new("L", (1, 1)))
+    font.getmask("A" * 1_000_000)

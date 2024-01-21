@@ -65,6 +65,9 @@ tests = [
   "pytest-cov",
   "pytest-timeout",
 ]
+typing = [
+  'typing-extensions; python_version < "3.10"',
+]
 xmp = [
   "defusedxml",
 ]
@@ -116,7 +119,8 @@ extend-ignore = [
 ]
 
 [tool.ruff.per-file-ignores]
-"Tests/*.py" = ["I001"]
+"Tests/oss-fuzz/fuzz_font.py" = ["I002"]
+"Tests/oss-fuzz/fuzz_pillow.py" = ["I002"]
 
 [tool.ruff.isort]
 known-first-party = ["PIL"]
@@ -141,13 +145,7 @@ exclude = [
   '^src/PIL/DdsImagePlugin.py$',
   '^src/PIL/FpxImagePlugin.py$',
   '^src/PIL/Image.py$',
-  '^src/PIL/ImageCms.py$',
-  '^src/PIL/ImageFile.py$',
-  '^src/PIL/ImageFont.py$',
-  '^src/PIL/ImageMath.py$',
-  '^src/PIL/ImageMorph.py$',
   '^src/PIL/ImageQt.py$',
-  '^src/PIL/ImageShow.py$',
   '^src/PIL/ImImagePlugin.py$',
   '^src/PIL/MicImagePlugin.py$',
   '^src/PIL/PdfParser.py$',

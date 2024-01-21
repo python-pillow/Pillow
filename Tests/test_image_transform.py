@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import math
 
 import pytest
@@ -10,18 +11,25 @@ from .helper import assert_image_equal, assert_image_similar, hopper
 
 class TestImageTransform:
     def test_sanity(self):
-        im = Image.new("L", (100, 100))
+        im = hopper()
 
-        seq = tuple(range(10))
-
-        transform = ImageTransform.AffineTransform(seq[:6])
-        im.transform((100, 100), transform)
-        transform = ImageTransform.ExtentTransform(seq[:4])
-        im.transform((100, 100), transform)
-        transform = ImageTransform.QuadTransform(seq[:8])
-        im.transform((100, 100), transform)
-        transform = ImageTransform.MeshTransform([(seq[:4], seq[:8])])
-        im.transform((100, 100), transform)
+        for transform in (
+            ImageTransform.AffineTransform((1, 0, 0, 0, 1, 0)),
+            ImageTransform.PerspectiveTransform((1, 0, 0, 0, 1, 0, 0, 0)),
+            ImageTransform.ExtentTransform((0, 0) + im.size),
+            ImageTransform.QuadTransform(
+                (0, 0, 0, im.height, im.width, im.height, im.width, 0)
+            ),
+            ImageTransform.MeshTransform(
+                [
+                    (
+                        (0, 0) + im.size,
+                        (0, 0, 0, im.height, im.width, im.height, im.width, 0),
+                    )
+                ]
+            ),
+        ):
+            assert_image_equal(im, im.transform(im.size, transform))
 
     def test_info(self):
         comment = b"File written by Adobe Photoshop\xa8 4.0"

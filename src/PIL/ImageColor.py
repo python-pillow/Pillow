@@ -19,10 +19,12 @@
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 
 from . import Image
 
 
+@lru_cache
 def getrgb(color):
     """
      Convert a color string to an RGB or RGBA tuple. If the string cannot be
@@ -121,6 +123,7 @@ def getrgb(color):
     raise ValueError(msg)
 
 
+@lru_cache
 def getcolor(color, mode):
     """
     Same as :py:func:`~PIL.ImageColor.getrgb` for most modes. However, if
