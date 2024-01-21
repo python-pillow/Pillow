@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from .helper import assert_image_equal, assert_image_similar, hopper
 
 
