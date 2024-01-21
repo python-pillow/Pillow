@@ -14,7 +14,6 @@
 # version.
 from __future__ import annotations
 
-
 from PIL import Image
 
 repro = ("00r0_gray_l.jp2", "00r1_graya_la.jp2")

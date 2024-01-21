@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from PIL import Image, ImageDraw, ImageFont
 
 from .helper import PillowLeakTestCase, skip_unless_feature

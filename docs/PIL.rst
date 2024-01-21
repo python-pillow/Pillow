@@ -69,10 +69,10 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-:mod:`~PIL.ImageTransform` Module
----------------------------------
+:mod:`~PIL.ImageMode` Module
+----------------------------
 
-.. automodule:: PIL.ImageTransform
+.. automodule:: PIL.ImageMode
     :members:
     :undoc-members:
     :show-inheritance:

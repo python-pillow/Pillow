@@ -4,6 +4,9 @@
 # Optional color management support, based on Kevin Cazabon's PyCMS
 # library.
 
+# Originally released under LGPL.  Graciously donated to PIL in
+# March 2009, for distribution under the standard PIL license
+
 # History:
 
 # 2009-03-08 fl   Added to PIL.
@@ -16,10 +19,14 @@
 # below for the original description.
 from __future__ import annotations
 
+import operator
 import sys
-from enum import IntEnum
+from enum import IntEnum, IntFlag
+from functools import reduce
+from typing import Any
 
 from . import Image
+from ._deprecate import deprecate
 
 try:
     from . import _imagingcms
@@ -28,9 +35,9 @@ except ImportError as ex:
     # anything in core.
     from ._util import DeferredError
 
-    _imagingcms = DeferredError(ex)
+    _imagingcms = DeferredError.new(ex)
 
-DESCRIPTION = """
+_DESCRIPTION = """
 pyCMS
 
     a Python / PIL interface to the littleCMS ICC Color Management System
@@ -93,7 +100,22 @@ pyCMS
 
 """
 
-VERSION = "1.0.0 pil"
+_VERSION = "1.0.0 pil"
+
+
+def __getattr__(name: str) -> Any:
+    if name == "DESCRIPTION":
+        deprecate("PIL.ImageCms.DESCRIPTION", 12)
+        return _DESCRIPTION
+    elif name == "VERSION":
+        deprecate("PIL.ImageCms.VERSION", 12)
+        return _VERSION
+    elif name == "FLAGS":
+        deprecate("PIL.ImageCms.FLAGS", 12, "PIL.ImageCms.Flags")
+        return _FLAGS
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
+
 
 # --------------------------------------------------------------------.
 
@@ -119,7 +141,70 @@ class Direction(IntEnum):
 #
 # flags
 
-FLAGS = {
+
+class Flags(IntFlag):
+    """Flags and documentation are taken from ``lcms2.h``."""
+
+    NONE = 0
+    NOCACHE = 0x0040
+    """Inhibit 1-pixel cache"""
+    NOOPTIMIZE = 0x0100
+    """Inhibit optimizations"""
+    NULLTRANSFORM = 0x0200
+    """Don't transform anyway"""
+    GAMUTCHECK = 0x1000
+    """Out of Gamut alarm"""
+    SOFTPROOFING = 0x4000
+    """Do softproofing"""
+    BLACKPOINTCOMPENSATION = 0x2000
+    NOWHITEONWHITEFIXUP = 0x0004
+    """Don't fix scum dot"""
+    HIGHRESPRECALC = 0x0400
+    """Use more memory to give better accuracy"""
+    LOWRESPRECALC = 0x0800
+    """Use less memory to minimize resources"""
+    # this should be 8BITS_DEVICELINK, but that is not a valid name in Python:
+    USE_8BITS_DEVICELINK = 0x0008
+    """Create 8 bits devicelinks"""
+    GUESSDEVICECLASS = 0x0020
+    """Guess device class (for ``transform2devicelink``)"""
+    KEEP_SEQUENCE = 0x0080
+    """Keep profile sequence for devicelink creation"""
+    FORCE_CLUT = 0x0002
+    """Force CLUT optimization"""
+    CLUT_POST_LINEARIZATION = 0x0001
+    """create postlinearization tables if possible"""
+    CLUT_PRE_LINEARIZATION = 0x0010
+    """create prelinearization tables if possible"""
+    NONEGATIVES = 0x8000
+    """Prevent negative numbers in floating point transforms"""
+    COPY_ALPHA = 0x04000000
+    """Alpha channels are copied on ``cmsDoTransform()``"""
+    NODEFAULTRESOURCEDEF = 0x01000000
+
+    _GRIDPOINTS_1 = 1 << 16
+    _GRIDPOINTS_2 = 2 << 16
+    _GRIDPOINTS_4 = 4 << 16
+    _GRIDPOINTS_8 = 8 << 16
+    _GRIDPOINTS_16 = 16 << 16
+    _GRIDPOINTS_32 = 32 << 16
+    _GRIDPOINTS_64 = 64 << 16
+    _GRIDPOINTS_128 = 128 << 16
+
+    @staticmethod
+    def GRIDPOINTS(n: int) -> Flags:
+        """
+        Fine-tune control over number of gridpoints
+
+        :param n: :py:class:`int` in range ``0 <= n <= 255``
+        """
+        return Flags.NONE | ((n & 0xFF) << 16)
+
+
+_MAX_FLAG = reduce(operator.or_, Flags)
+
+
+_FLAGS = {
     "MATRIXINPUT": 1,
     "MATRIXOUTPUT": 2,
     "MATRIXONLY": (1 | 2),
@@ -141,11 +226,6 @@ FLAGS = {
     "NODEFAULTRESOURCEDEF": 16777216,  # CRD special
     "GRIDPOINTS": lambda n: (n & 0xFF) << 16,  # Gridpoints
 }
-
-_MAX_FLAG = 0
-for flag in FLAGS.values():
-    if isinstance(flag, int):
-        _MAX_FLAG = _MAX_FLAG | flag
 
 
 # --------------------------------------------------------------------.
@@ -218,7 +298,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         intent=Intent.PERCEPTUAL,
         proof=None,
         proof_intent=Intent.ABSOLUTE_COLORIMETRIC,
-        flags=0,
+        flags=Flags.NONE,
     ):
         if proof is None:
             self.transform = core.buildTransform(
@@ -303,7 +383,7 @@ def profileToProfile(
     renderingIntent=Intent.PERCEPTUAL,
     outputMode=None,
     inPlace=False,
-    flags=0,
+    flags=Flags.NONE,
 ):
     """
     (pyCMS) Applies an ICC transformation to a given image, mapping from
@@ -420,7 +500,7 @@ def buildTransform(
     inMode,
     outMode,
     renderingIntent=Intent.PERCEPTUAL,
-    flags=0,
+    flags=Flags.NONE,
 ):
     """
     (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
@@ -482,7 +562,7 @@ def buildTransform(
         raise PyCMSError(msg)
 
     if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
-        msg = "flags must be an integer between 0 and %s" + _MAX_FLAG
+        msg = f"flags must be an integer between 0 and {_MAX_FLAG}"
         raise PyCMSError(msg)
 
     try:
@@ -505,7 +585,7 @@ def buildProofTransform(
     outMode,
     renderingIntent=Intent.PERCEPTUAL,
     proofRenderingIntent=Intent.ABSOLUTE_COLORIMETRIC,
-    flags=FLAGS["SOFTPROOFING"],
+    flags=Flags.SOFTPROOFING,
 ):
     """
     (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
@@ -586,7 +666,7 @@ def buildProofTransform(
         raise PyCMSError(msg)
 
     if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
-        msg = "flags must be an integer between 0 and %s" + _MAX_FLAG
+        msg = f"flags must be an integer between 0 and {_MAX_FLAG}"
         raise PyCMSError(msg)
 
     try:
@@ -1004,4 +1084,9 @@ def versions():
     (pyCMS) Fetches versions.
     """
 
-    return VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__
+    deprecate(
+        "PIL.ImageCms.versions()",
+        12,
+        '(PIL.features.version("littlecms2"), sys.version, PIL.__version__)',
+    )
+    return _VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__

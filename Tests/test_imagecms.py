@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import datetime
 import os
 import re
@@ -49,8 +50,8 @@ def skip_missing():
 def test_sanity():
     # basic smoke test.
     # this mostly follows the cms_test outline.
-
-    v = ImageCms.versions()  # should return four strings
+    with pytest.warns(DeprecationWarning):
+        v = ImageCms.versions()  # should return four strings
     assert v[0] == "1.0.0 pil"
     assert list(map(type, v)) == [str, str, str, str]
 
@@ -88,6 +89,16 @@ def test_sanity():
 
     # test PointTransform convenience API
     hopper().point(t)
+
+
+def test_flags():
+    assert ImageCms.Flags.NONE == 0
+    assert ImageCms.Flags.GRIDPOINTS(0) == ImageCms.Flags.NONE
+    assert ImageCms.Flags.GRIDPOINTS(256) == ImageCms.Flags.NONE
+
+    assert ImageCms.Flags.GRIDPOINTS(255) == (255 << 16)
+    assert ImageCms.Flags.GRIDPOINTS(-1) == ImageCms.Flags.GRIDPOINTS(255)
+    assert ImageCms.Flags.GRIDPOINTS(511) == ImageCms.Flags.GRIDPOINTS(255)
 
 
 def test_name():
@@ -627,3 +638,12 @@ def test_rgb_lab(mode):
     im = Image.new("LAB", (1, 1), (255, 0, 0))
     converted_im = im.convert(mode)
     assert converted_im.getpixel((0, 0))[:3] == (0, 255, 255)
+
+
+def test_deprecation() -> None:
+    with pytest.warns(DeprecationWarning):
+        assert ImageCms.DESCRIPTION.strip().startswith("pyCMS")
+    with pytest.warns(DeprecationWarning):
+        assert ImageCms.VERSION == "1.0.0 pil"
+    with pytest.warns(DeprecationWarning):
+        assert isinstance(ImageCms.FLAGS, dict)

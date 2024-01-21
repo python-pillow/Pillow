@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
@@ -689,3 +690,12 @@ def test_different_modes_in_later_frames(mode, default_image, duplicate, tmp_pat
     )
     with Image.open(test_file) as reloaded:
         assert reloaded.mode == mode
+
+
+def test_apng_repeated_seeks_give_correct_info() -> None:
+    with Image.open("Tests/images/apng/different_durations.png") as im:
+        for i in range(3):
+            im.seek(0)
+            assert im.info["duration"] == 4000
+            im.seek(1)
+            assert im.info["duration"] == 1000

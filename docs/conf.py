@@ -54,7 +54,7 @@ master_doc = "index"
 # General information about the project.
 project = "Pillow (PIL Fork)"
 copyright = (
-    "1995-2011 Fredrik Lundh, 2010-2023 Jeffrey A. Clark (Alex) and contributors"
+    "1995-2011 Fredrik Lundh, 2010-2024 Jeffrey A. Clark (Alex) and contributors"
 )
 author = "Fredrik Lundh, Jeffrey A. Clark (Alex), contributors"
 
@@ -233,7 +233,7 @@ htmlhelp_basename = "PillowPILForkdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').

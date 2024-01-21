@@ -34,7 +34,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from pathlib import Path
-from typing import IO
+from typing import BinaryIO
 
 from . import Image
 from ._util import is_directory, is_path
@@ -53,7 +53,7 @@ try:
 except ImportError as ex:
     from ._util import DeferredError
 
-    core = DeferredError(ex)
+    core = DeferredError.new(ex)
 
 
 def _string_length_check(text):
@@ -149,6 +149,8 @@ class ImageFont:
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
+        _string_length_check(text)
+        Image._decompression_bomb_check(self.font.getsize(text))
         return self.font.getmask(text, mode)
 
     def getbbox(self, text, *args, **kwargs):
@@ -191,7 +193,7 @@ class FreeTypeFont:
 
     def __init__(
         self,
-        font: bytes | str | Path | IO | None = None,
+        font: bytes | str | Path | BinaryIO | None = None,
         size: float = 10,
         index: int = 0,
         encoding: str = "",
@@ -582,22 +584,13 @@ class FreeTypeFont:
         _string_length_check(text)
         if start is None:
             start = (0, 0)
-        im = None
-        size = None
 
         def fill(width, height):
-            nonlocal im, size
-
             size = (width, height)
-            if Image.MAX_IMAGE_PIXELS is not None:
-                pixels = max(1, width) * max(1, height)
-                if pixels > 2 * Image.MAX_IMAGE_PIXELS:
-                    return
+            Image._decompression_bomb_check(size)
+            return Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
 
-            im = Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
-            return im
-
-        offset = self.font.render(
+        return self.font.render(
             text,
             fill,
             mode,
@@ -610,8 +603,6 @@ class FreeTypeFont:
             start[0],
             start[1],
         )
-        Image._decompression_bomb_check(size)
-        return im, offset
 
     def font_variant(
         self, font=None, size=None, index=None, encoding=None, layout_engine=None

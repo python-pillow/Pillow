@@ -1,5 +1,6 @@
 # Test the ImageMorphology functionality
 from __future__ import annotations
+
 import pytest
 
 from PIL import Image, ImageMorph, _imagingmorph
@@ -57,15 +58,6 @@ def test_str_to_img():
     assert_image_equal_tofile(A, "Tests/images/morph_a.png")
 
 
-def create_lut():
-    for op in ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge"):
-        lb = ImageMorph.LutBuilder(op_name=op)
-        lut = lb.build_lut()
-        with open(f"Tests/images/{op}.lut", "wb") as f:
-            f.write(lut)
-
-
-# create_lut()
 @pytest.mark.parametrize(
     "op", ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge")
 )

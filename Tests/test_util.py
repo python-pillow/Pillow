@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import pytest
 
 from PIL import _util
@@ -66,7 +67,7 @@ def test_deferred_error():
     # Arrange
 
     # Act
-    thing = _util.DeferredError(ValueError("Some error text"))
+    thing = _util.DeferredError.new(ValueError("Some error text"))
 
     # Assert
     with pytest.raises(ValueError):

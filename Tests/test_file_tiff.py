@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import os
 import warnings
 from io import BytesIO
@@ -484,13 +485,13 @@ class TestFileTiff:
         outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
             exif = im.getexif()
-            exif[256] = 100
+            exif[264] = 100
 
             im.save(outfile, exif=exif)
 
         with Image.open(outfile) as im:
             exif = im.getexif()
-            assert exif[256] == 100
+            assert exif[264] == 100
 
     def test_reload_exif_after_seek(self):
         with Image.open("Tests/images/multipage.tiff") as im:
@@ -611,6 +612,14 @@ class TestFileTiff:
             im.save(tmpfile)
 
             assert_image_equal_tofile(im, tmpfile)
+
+    def test_rowsperstrip(self, tmp_path):
+        outfile = str(tmp_path / "temp.tif")
+        im = hopper()
+        im.save(outfile, tiffinfo={278: 256})
+
+        with Image.open(outfile) as im:
+            assert im.tag_v2[278] == 256
 
     def test_strip_raw(self):
         infile = "Tests/images/tiff_strip_raw.tif"
@@ -772,6 +781,27 @@ class TestFileTiff:
                 4000,
                 4001,
             ]
+
+    def test_tiff_chunks(self, tmp_path):
+        tmpfile = str(tmp_path / "temp.tif")
+
+        im = hopper()
+        with open(tmpfile, "wb") as fp:
+            for y in range(0, 128, 32):
+                chunk = im.crop((0, y, 128, y + 32))
+                if y == 0:
+                    chunk.save(
+                        fp,
+                        "TIFF",
+                        tiffinfo={
+                            TiffImagePlugin.IMAGEWIDTH: 128,
+                            TiffImagePlugin.IMAGELENGTH: 128,
+                        },
+                    )
+                else:
+                    fp.write(chunk.tobytes())
+
+        assert_image_equal_tofile(im, tmpfile)
 
     def test_close_on_load_exclusive(self, tmp_path):
         # similar to test_fd_leak, but runs on unixlike os

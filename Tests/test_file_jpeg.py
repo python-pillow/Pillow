@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import os
 import re
 import warnings
@@ -141,6 +142,19 @@ class TestFileJpeg:
                 x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
             )
             assert k > 0.9
+
+    def test_rgb(self):
+        def getchannels(im):
+            return tuple(v[0] for v in im.layer)
+
+        im = hopper()
+        im_ycbcr = self.roundtrip(im)
+        assert getchannels(im_ycbcr) == (1, 2, 3)
+        assert_image_similar(im, im_ycbcr, 17)
+
+        im_rgb = self.roundtrip(im, keep_rgb=True)
+        assert getchannels(im_rgb) == (ord("R"), ord("G"), ord("B"))
+        assert_image_similar(im, im_rgb, 12)
 
     @pytest.mark.parametrize(
         "test_image_path",
@@ -423,25 +437,28 @@ class TestFileJpeg:
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
 
         # experimental API
-        im = self.roundtrip(hopper(), subsampling=-1)  # default
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling=0)  # 4:4:4
-        assert getsampling(im) == (1, 1, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling=1)  # 4:2:2
-        assert getsampling(im) == (2, 1, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling=2)  # 4:2:0
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling=3)  # default (undefined)
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
+        for subsampling in (-1, 3):  # (default, invalid)
+            im = self.roundtrip(hopper(), subsampling=subsampling)
+            assert getsampling(im) == (2, 2, 1, 1, 1, 1)
+        for subsampling in (0, "4:4:4"):
+            im = self.roundtrip(hopper(), subsampling=subsampling)
+            assert getsampling(im) == (1, 1, 1, 1, 1, 1)
+        for subsampling in (1, "4:2:2"):
+            im = self.roundtrip(hopper(), subsampling=subsampling)
+            assert getsampling(im) == (2, 1, 1, 1, 1, 1)
+        for subsampling in (2, "4:2:0", "4:1:1"):
+            im = self.roundtrip(hopper(), subsampling=subsampling)
+            assert getsampling(im) == (2, 2, 1, 1, 1, 1)
 
-        im = self.roundtrip(hopper(), subsampling="4:4:4")
-        assert getsampling(im) == (1, 1, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling="4:2:2")
-        assert getsampling(im) == (2, 1, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling="4:2:0")
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-        im = self.roundtrip(hopper(), subsampling="4:1:1")
-        assert getsampling(im) == (2, 2, 1, 1, 1, 1)
+        # RGB colorspace
+        for subsampling in (-1, 0, "4:4:4"):
+            # "4:4:4" doesn't really make sense for RGB, but the conversion
+            # to an integer happens at a higher level
+            im = self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling)
+            assert getsampling(im) == (1, 1, 1, 1, 1, 1)
+        for subsampling in (1, "4:2:2", 2, "4:2:0", 3):
+            with pytest.raises(OSError):
+                self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling)
 
         with pytest.raises(TypeError):
             self.roundtrip(hopper(), subsampling="1:1:1")
@@ -839,6 +856,10 @@ class TestFileJpeg:
         with Image.open("Tests/images/exif-ifd-offset.jpg") as im:
             # Act / Assert
             assert im._getexif()[306] == "2017:03:13 23:03:09"
+
+    def test_multiple_exif(self):
+        with Image.open("Tests/images/multiple_exif.jpg") as im:
+            assert im.info["exif"] == b"Exif\x00\x00firstsecond"
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"

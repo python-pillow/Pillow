@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from contextlib import contextmanager
 
 import pytest
@@ -403,7 +404,7 @@ class TestCoreResampleCoefficients:
             if px[2, 0] != test_color // 2:
                 assert test_color // 2 == px[2, 0]
 
-    def test_nonzero_coefficients(self):
+    def test_non_zero_coefficients(self):
         # regression test for the wrong coefficients calculation
         # due to bug https://github.com/python-pillow/Pillow/issues/2161
         im = Image.new("RGBA", (1280, 1280), (0x20, 0x40, 0x60, 0xFF))
