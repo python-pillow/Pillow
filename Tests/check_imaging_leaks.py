@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import pytest
 
 from typing import Any, Callable
+
+import pytest
 
 from PIL import Image
 

@@ -95,7 +95,7 @@ jobs:
           python3 -m pip list --outdated | grep numpy | sed -r 's/ +/ /g' | cut -d ' ' -f 3 | sed 's/^/version=/' >> $GITHUB_OUTPUT
 
       - name: pip cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: 'C:\cygwin\home\runneradmin\.cache\pip'
           key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-${{ hashFiles('.ci/install.sh') }}

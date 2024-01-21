@@ -1,6 +1,7 @@
 from __future__ import annotations
-from pathlib import PosixPath
+
 import sys
+from pathlib import PosixPath
 from types import ModuleType
 
 import pytest

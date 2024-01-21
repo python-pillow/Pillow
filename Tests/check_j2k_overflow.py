@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from pathlib import PosixPath
+
 import pytest
 
 from PIL import Image

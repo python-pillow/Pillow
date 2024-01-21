@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from PIL import _binary
 
 

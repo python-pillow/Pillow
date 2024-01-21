@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import pytest
 
 from PIL import Hdf5StubImagePlugin, Image

@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 import struct
-import pytest
 from io import BytesIO
 
-from PIL import Image, ImageDraw, ImageFont, features, _util
+import pytest
+
+from PIL import Image, ImageDraw, ImageFont, _util, features
 
 from .helper import assert_image_equal_tofile
 
