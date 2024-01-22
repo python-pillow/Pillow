@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import sys
+from typing import Protocol, TypeVar, Union
 
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
@@ -15,4 +17,16 @@ else:
                 return bool
 
 
-__all__ = ["TypeGuard"]
+_T_co = TypeVar("_T_co", covariant=True)
+
+
+class SupportsRead(Protocol[_T_co]):
+    def read(self, __length: int = ...) -> _T_co:
+        ...
+
+
+FileDescriptor = int
+StrOrBytesPath = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
+
+
+__all__ = ["FileDescriptor", "TypeGuard", "StrOrBytesPath", "SupportsRead"]

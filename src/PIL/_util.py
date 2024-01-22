@@ -4,10 +4,10 @@ import os
 from pathlib import Path
 from typing import Any, NoReturn
 
-from ._typing import TypeGuard
+from ._typing import StrOrBytesPath, TypeGuard
 
 
-def is_path(f: Any) -> TypeGuard[bytes | str | Path]:
+def is_path(f: Any) -> TypeGuard[StrOrBytesPath]:
     return isinstance(f, (bytes, str, Path))
 
 
