@@ -149,18 +149,7 @@ def grabclipboard():
             session_type = None
 
         if shutil.which("wl-paste") and session_type in ("wayland", None):
-            output = subprocess.check_output(["wl-paste", "-l"]).decode()
-            mimetypes = output.splitlines()
-            if "image/png" in mimetypes:
-                mimetype = "image/png"
-            elif mimetypes:
-                mimetype = mimetypes[0]
-            else:
-                mimetype = None
-
-            args = ["wl-paste"]
-            if mimetype:
-                args.extend(["-t", mimetype])
+            args = ["wl-paste", "-t", "image"]
         elif shutil.which("xclip") and session_type in ("x11", None):
             args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
         else:
@@ -168,10 +157,19 @@ def grabclipboard():
             raise NotImplementedError(msg)
 
         p = subprocess.run(args, capture_output=True)
-        err = p.stderr
-        if err:
-            msg = f"{args[0]} error: {err.strip().decode()}"
+        err = p.stderr.decode()
+        if p.returncode != 0:
+            allowed_errors = [
+                "Nothing is copied",  # wl-paste, when the clipboard is empty
+                "not available",  # wl-paste/debian xclip, when an image isn't available
+                "cannot convert",  # xclip, when an image isn't available
+                "There is no owner",  # xclip, when the clipboard isn't initialized
+            ]
+            if any(e in err for e in allowed_errors):
+                return None
+            msg = f"{args[0]} error: {err.strip() if err else 'Unknown error'}"
             raise ChildProcessError(msg)
+
         data = io.BytesIO(p.stdout)
         im = Image.open(data)
         im.load()
