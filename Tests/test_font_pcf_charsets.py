@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import PosixPath
+from typing import TypedDict
 
 import pytest
 
@@ -15,7 +16,14 @@ from .helper import (
 
 fontname = "Tests/fonts/ter-x20b.pcf"
 
-charsets: dict[str, dict[str, int | str]] = {
+
+class Charset(TypedDict):
+    glyph_count: int
+    message: str
+    image1: str
+
+
+charsets: dict[str, Charset] = {
     "iso8859-1": {
         "glyph_count": 223,
         "message": "hello, world",
@@ -81,14 +89,9 @@ def test_draw(
     font = ImageFont.load(tempname)
     im = Image.new("L", (150, 30), "white")
     draw = ImageDraw.Draw(im)
-
-    message = charsets[encoding]["message"]
-    assert isinstance(message, str)
-    draw.text((0, 0), message.encode(encoding), "black", font=font)
-
-    expected_path = charsets[encoding]["image1"]
-    assert isinstance(expected_path, str)
-    assert_image_similar_tofile(im, expected_path, 0)
+    message = charsets[encoding]["message"].encode(encoding)
+    draw.text((0, 0), message, "black", font=font)
+    assert_image_similar_tofile(im, charsets[encoding]["image1"], 0)
 
 
 @pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
@@ -104,10 +107,8 @@ def test_textsize(
         assert dy == 20
         assert dx in (0, 10)
         assert font.getlength(bytearray([i])) == dx
-    message = charsets[encoding]["message"]
-    assert isinstance(message, str)
-    message_bytes = message.encode(encoding)
-    for i in range(len(message_bytes)):
-        msg = message_bytes[: i + 1]
+    message = charsets[encoding]["message"].encode(encoding)
+    for i in range(len(message)):
+        msg = message[: i + 1]
         assert font.getlength(msg) == len(msg) * 10
         assert font.getbbox(msg) == (0, 0, len(msg) * 10, 20)
