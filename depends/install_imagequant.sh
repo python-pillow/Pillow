@@ -19,18 +19,20 @@ else
 
     pushd $archive/imagequant-sys
 
-    time cargo install cargo-c
-    time cargo cinstall --prefix=/usr --destdir=.
+    cargo install cargo-c
+    cargo cinstall --prefix=/usr --destdir=.
 
     # Copy into place
     sudo cp usr/lib/libimagequant.so* /usr/lib/
     sudo cp usr/include/libimagequant.h /usr/include/
 
-    # Copy to cache
-    rm -rf ~/cache-$archive_name
-    mkdir ~/cache-$archive_name
-    cp usr/lib/libimagequant.so* ~/cache-$archive_name/
-    cp usr/include/libimagequant.h ~/cache-$archive_name/
+    if [ -n "$GITHUB_ACTIONS" ]; then
+        # Copy to cache
+        rm -rf ~/cache-$archive_name
+        mkdir ~/cache-$archive_name
+        cp usr/lib/libimagequant.so* ~/cache-$archive_name/
+        cp usr/include/libimagequant.h ~/cache-$archive_name/
+    fi
 
     popd
 
