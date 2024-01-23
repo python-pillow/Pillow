@@ -10,6 +10,9 @@ exclude_also =
     if DEBUG:
     # Don't complain about compatibility code for missing optional dependencies
     except ImportError
+    # Empty bodies in protocols or abstract methods
+    ^\s*def [a-zA-Z0-9_]+\(.*\)(\s*->.*)?:\s*\.\.\.(\s*#.*)?$
+    ^\s*\.\.\.(\s*#.*)?$
 
 [run]
 omit =
