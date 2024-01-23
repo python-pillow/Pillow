@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from pathlib import PosixPath
+from pathlib import Path
 from typing import TypedDict
 
 import pytest
@@ -45,9 +45,7 @@ charsets: dict[str, Charset] = {
 pytestmark = skip_unless_feature("zlib")
 
 
-def save_font(
-    request: pytest.FixtureRequest, tmp_path: PosixPath, encoding: str
-) -> str:
+def save_font(request: pytest.FixtureRequest, tmp_path: Path, encoding: str) -> str:
     with open(fontname, "rb") as test_file:
         font = PcfFontFile.PcfFontFile(test_file, encoding)
     assert isinstance(font, FontFile.FontFile)
@@ -75,16 +73,12 @@ def save_font(
 
 
 @pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
-def test_sanity(
-    request: pytest.FixtureRequest, tmp_path: PosixPath, encoding: str
-) -> None:
+def test_sanity(request: pytest.FixtureRequest, tmp_path: Path, encoding: str) -> None:
     save_font(request, tmp_path, encoding)
 
 
 @pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
-def test_draw(
-    request: pytest.FixtureRequest, tmp_path: PosixPath, encoding: str
-) -> None:
+def test_draw(request: pytest.FixtureRequest, tmp_path: Path, encoding: str) -> None:
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     im = Image.new("L", (150, 30), "white")
@@ -96,7 +90,7 @@ def test_draw(
 
 @pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
 def test_textsize(
-    request: pytest.FixtureRequest, tmp_path: PosixPath, encoding: str
+    request: pytest.FixtureRequest, tmp_path: Path, encoding: str
 ) -> None:
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
