@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Do not support using test-image-results to upload images after test failures #7739
+  [radarhere]
+
+- Changed ImageMath.ops to be static #7721
+  [radarhere]
+
 - Fix APNG info after seeking backwards more than twice #7701
   [esoma, radarhere]
 
