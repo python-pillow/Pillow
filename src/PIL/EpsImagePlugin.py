@@ -356,14 +356,10 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 self._size = columns, rows
                 return
+            elif bytes_mv[:5] == b"%%EOF":
+                break
             elif trailer_reached and reading_trailer_comments:
                 # Load EPS trailer
-
-                # if this line starts with "%%EOF",
-                # then we've reached the end of the file
-                if bytes_mv[:5] == b"%%EOF":
-                    break
-
                 s = str(bytes_mv[:bytes_read], "latin-1")
                 _read_comment(s)
             elif bytes_mv[:9] == b"%%Trailer":
