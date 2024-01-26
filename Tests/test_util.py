@@ -1,27 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import _util
 
 
-def test_is_path():
-    # Arrange
-    fp = "filename.ext"
-
-    # Act
-    it_is = _util.is_path(fp)
-
-    # Assert
-    assert it_is
-
-
-def test_path_obj_is_path():
-    # Arrange
-    from pathlib import Path
-
-    test_path = Path("filename.ext")
-
+@pytest.mark.parametrize("test_path", ["filename.ext", Path("filename.ext")])
+def test_is_path(test_path):
     # Act
     it_is = _util.is_path(test_path)
 
