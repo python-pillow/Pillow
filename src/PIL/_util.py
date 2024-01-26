@@ -8,7 +8,7 @@ from ._typing import StrOrBytesPath, TypeGuard
 
 
 def is_path(f: Any) -> TypeGuard[StrOrBytesPath]:
-    return isinstance(f, (bytes, str, Path))
+    return isinstance(f, (bytes, str, os.PathLike))
 
 
 def is_directory(f: Any) -> TypeGuard[bytes | str | Path]:
