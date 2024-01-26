@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import pytest
 
 from PIL import _util
 
 
-@pytest.mark.parametrize("test_path", ["filename.ext", Path("filename.ext")])
+@pytest.mark.parametrize(
+    "test_path", ["filename.ext", Path("filename.ext"), PurePath("filename.ext")]
+)
 def test_is_path(test_path):
     # Act
     it_is = _util.is_path(test_path)
