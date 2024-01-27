@@ -7,6 +7,7 @@ import shutil
 import sys
 import tempfile
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -161,8 +162,6 @@ class TestImage:
                 pass
 
     def test_pathlib(self, tmp_path):
-        from PIL.Image import Path
-
         with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
             assert im.mode == "P"
             assert im.size == (10, 10)
