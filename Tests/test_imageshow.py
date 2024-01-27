@@ -26,7 +26,7 @@ def test_register() -> None:
 )
 def test_viewer_show(order) -> None:
     class TestViewer(ImageShow.Viewer):
-        def show_image(self, image, **options):
+        def show_image(self, image, **options) -> bool:
             self.methodCalled = True
             return True
 
