@@ -7,6 +7,7 @@ import shutil
 import sys
 import tempfile
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -160,7 +161,7 @@ class TestImage:
             with Image.open(io.StringIO()):
                 pass
 
-    def test_pathlib(self, tmp_path) -> None:
+    def test_pathlib(self, tmp_path: Path) -> None:
         from PIL.Image import Path
 
         with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
@@ -179,7 +180,7 @@ class TestImage:
                     os.remove(temp_file)
                 im.save(Path(temp_file))
 
-    def test_fp_name(self, tmp_path) -> None:
+    def test_fp_name(self, tmp_path: Path) -> None:
         temp_file = str(tmp_path / "temp.jpg")
 
         class FP:
@@ -201,7 +202,7 @@ class TestImage:
             fp.seek(0)
             assert_image_similar_tofile(im, fp, 20)
 
-    def test_unknown_extension(self, tmp_path) -> None:
+    def test_unknown_extension(self, tmp_path: Path) -> None:
         im = hopper()
         temp_file = str(tmp_path / "temp.unknown")
         with pytest.raises(ValueError):
@@ -222,7 +223,7 @@ class TestImage:
         sys.platform == "cygwin",
         reason="Test requires opening an mmaped file for writing",
     )
-    def test_readonly_save(self, tmp_path) -> None:
+    def test_readonly_save(self, tmp_path: Path) -> None:
         temp_file = str(tmp_path / "temp.bmp")
         shutil.copy("Tests/images/rgb32bf-rgba.bmp", temp_file)
 
@@ -230,7 +231,7 @@ class TestImage:
             assert im.readonly
             im.save(temp_file)
 
-    def test_dump(self, tmp_path) -> None:
+    def test_dump(self, tmp_path: Path) -> None:
         im = Image.new("L", (10, 10))
         im._dump(str(tmp_path / "temp_L.ppm"))
 
@@ -689,7 +690,7 @@ class TestImage:
             expected = Image.new(mode, (100, 100), color)
             assert_image_equal(im.convert(mode), expected)
 
-    def test_no_resource_warning_on_save(self, tmp_path) -> None:
+    def test_no_resource_warning_on_save(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/835
         # Arrange
         test_file = "Tests/images/hopper.png"
@@ -700,7 +701,7 @@ class TestImage:
             with warnings.catch_warnings():
                 im.save(temp_file)
 
-    def test_no_new_file_on_error(self, tmp_path) -> None:
+    def test_no_new_file_on_error(self, tmp_path: Path) -> None:
         temp_file = str(tmp_path / "temp.jpg")
 
         im = Image.new("RGB", (0, 0))
@@ -739,7 +740,7 @@ class TestImage:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_exif_jpeg(self, tmp_path) -> None:
+    def test_exif_jpeg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif-72dpi-int.jpg") as im:  # Little endian
             exif = im.getexif()
             assert 258 not in exif
@@ -785,7 +786,7 @@ class TestImage:
 
     @skip_unless_feature("webp")
     @skip_unless_feature("webp_anim")
-    def test_exif_webp(self, tmp_path) -> None:
+    def test_exif_webp(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
             assert exif == {}
@@ -807,7 +808,7 @@ class TestImage:
             im.save(out, exif=exif, save_all=True)
             check_exif()
 
-    def test_exif_png(self, tmp_path) -> None:
+    def test_exif_png(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/exif.png") as im:
             exif = im.getexif()
             assert exif == {274: 1}

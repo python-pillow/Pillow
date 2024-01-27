@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
+from pathlib import Path
 
 from PIL import Image, TiffImagePlugin, features
 from PIL.TiffImagePlugin import IFDRational
@@ -51,7 +52,7 @@ def test_nonetype() -> None:
     assert xres and yres
 
 
-def test_ifd_rational_save(tmp_path) -> None:
+def test_ifd_rational_save(tmp_path: Path) -> None:
     methods = (True, False)
     if not features.check("libtiff"):
         methods = (False,)

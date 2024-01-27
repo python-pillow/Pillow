@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from packaging.version import parse as parse_version
 
@@ -30,7 +32,7 @@ def test_n_frames() -> None:
         assert im.is_animated
 
 
-def test_write_animation_L(tmp_path) -> None:
+def test_write_animation_L(tmp_path: Path) -> None:
     """
     Convert an animated GIF to animated WebP, then compare the frame count, and first
     and last frames to ensure they're visually similar.
@@ -60,7 +62,7 @@ def test_write_animation_L(tmp_path) -> None:
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
 
-def test_write_animation_RGB(tmp_path) -> None:
+def test_write_animation_RGB(tmp_path: Path) -> None:
     """
     Write an animated WebP from RGB frames, and ensure the frames
     are visually similar to the originals.
@@ -105,7 +107,7 @@ def test_write_animation_RGB(tmp_path) -> None:
             check(temp_file2)
 
 
-def test_timestamp_and_duration(tmp_path) -> None:
+def test_timestamp_and_duration(tmp_path: Path) -> None:
     """
     Try passing a list of durations, and make sure the encoded
     timestamps and durations are correct.
@@ -136,7 +138,7 @@ def test_timestamp_and_duration(tmp_path) -> None:
             ts += durations[frame]
 
 
-def test_float_duration(tmp_path) -> None:
+def test_float_duration(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.webp")
     with Image.open("Tests/images/iss634.apng") as im:
         assert im.info["duration"] == 70.0
@@ -148,7 +150,7 @@ def test_float_duration(tmp_path) -> None:
         assert reloaded.info["duration"] == 70
 
 
-def test_seeking(tmp_path) -> None:
+def test_seeking(tmp_path: Path) -> None:
     """
     Create an animated WebP file, and then try seeking through frames in reverse-order,
     verifying the timestamps and durations are correct.

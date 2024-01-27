@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import filecmp
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -21,7 +22,7 @@ def test_sanity() -> None:
         assert im.format == "IM"
 
 
-def test_name_limit(tmp_path) -> None:
+def test_name_limit(tmp_path: Path) -> None:
     out = str(tmp_path / ("name_limit_test" * 7 + ".im"))
     with Image.open(TEST_IM) as im:
         im.save(out)
@@ -81,14 +82,14 @@ def test_eoferror() -> None:
 
 
 @pytest.mark.parametrize("mode", ("RGB", "P", "PA"))
-def test_roundtrip(mode, tmp_path) -> None:
+def test_roundtrip(mode, tmp_path: Path) -> None:
     out = str(tmp_path / "temp.im")
     im = hopper(mode)
     im.save(out)
     assert_image_equal_tofile(im, out)
 
 
-def test_small_palette(tmp_path) -> None:
+def test_small_palette(tmp_path: Path) -> None:
     im = Image.new("P", (1, 1))
     colors = [0, 1, 2]
     im.putpalette(colors)
@@ -100,7 +101,7 @@ def test_small_palette(tmp_path) -> None:
         assert reloaded.getpalette() == colors + [0] * 765
 
 
-def test_save_unsupported_mode(tmp_path) -> None:
+def test_save_unsupported_mode(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.im")
     im = hopper("HSV")
     with pytest.raises(ValueError):

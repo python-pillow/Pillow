@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, SgiImagePlugin
@@ -69,7 +71,7 @@ def test_invalid_file() -> None:
         SgiImagePlugin.SgiImageFile(invalid_file)
 
 
-def test_write(tmp_path) -> None:
+def test_write(tmp_path: Path) -> None:
     def roundtrip(img) -> None:
         out = str(tmp_path / "temp.sgi")
         img.save(out, format="sgi")
@@ -89,7 +91,7 @@ def test_write(tmp_path) -> None:
     roundtrip(Image.new("L", (10, 1)))
 
 
-def test_write16(tmp_path) -> None:
+def test_write16(tmp_path: Path) -> None:
     test_file = "Tests/images/hopper16.rgb"
 
     with Image.open(test_file) as im:
@@ -99,7 +101,7 @@ def test_write16(tmp_path) -> None:
         assert_image_equal_tofile(im, out)
 
 
-def test_unsupported_mode(tmp_path) -> None:
+def test_unsupported_mode(tmp_path: Path) -> None:
     im = hopper("LA")
     out = str(tmp_path / "temp.sgi")
 

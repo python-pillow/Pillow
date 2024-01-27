@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -476,7 +477,7 @@ def test_extended_information() -> None:
     assert p.xcolor_space == "RGB "
 
 
-def test_non_ascii_path(tmp_path) -> None:
+def test_non_ascii_path(tmp_path: Path) -> None:
     skip_missing()
     tempfile = str(tmp_path / ("temp_" + chr(128) + ".icc"))
     try:

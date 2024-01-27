@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, ImageSequence, TiffImagePlugin
@@ -7,7 +9,7 @@ from PIL import Image, ImageSequence, TiffImagePlugin
 from .helper import assert_image_equal, hopper, skip_unless_feature
 
 
-def test_sanity(tmp_path) -> None:
+def test_sanity(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.im")
 
     im = hopper("RGB")

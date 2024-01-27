@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -82,7 +83,7 @@ def test_bytesio() -> None:
 # PIL (they were made using Adobe Photoshop)
 
 
-def test_lossless(tmp_path) -> None:
+def test_lossless(tmp_path: Path) -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         im.load()
         outfile = str(tmp_path / "temp_test-card.png")
@@ -192,7 +193,7 @@ def test_header_errors() -> None:
             pass
 
 
-def test_layers_type(tmp_path) -> None:
+def test_layers_type(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp_layers.jp2")
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
         test_card.save(outfile, quality_layers=quality_layers)
@@ -262,7 +263,7 @@ def test_mct() -> None:
             assert_image_similar(im, jp2, 1.0e-3)
 
 
-def test_sgnd(tmp_path) -> None:
+def test_sgnd(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.jp2")
 
     im = Image.new("L", (1, 1))

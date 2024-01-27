@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+from pathlib import Path
 
 import pytest
 
@@ -14,7 +15,7 @@ from .helper import (
 )
 
 
-def test_sanity(tmp_path) -> None:
+def test_sanity(tmp_path: Path) -> None:
     def roundtrip(im) -> None:
         outfile = str(tmp_path / "temp.bmp")
 
@@ -60,7 +61,7 @@ def test_save_to_bytes() -> None:
         assert reloaded.format == "BMP"
 
 
-def test_small_palette(tmp_path) -> None:
+def test_small_palette(tmp_path: Path) -> None:
     im = Image.new("P", (1, 1))
     colors = [0, 0, 0, 125, 125, 125, 255, 255, 255]
     im.putpalette(colors)
@@ -72,7 +73,7 @@ def test_small_palette(tmp_path) -> None:
         assert reloaded.getpalette() == colors
 
 
-def test_save_too_large(tmp_path) -> None:
+def test_save_too_large(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.bmp")
     with Image.new("RGB", (1, 1)) as im:
         im._size = (37838, 37838)
@@ -92,7 +93,7 @@ def test_dpi() -> None:
         assert reloaded.info["dpi"] == (72.008961115161, 72.008961115161)
 
 
-def test_save_bmp_with_dpi(tmp_path) -> None:
+def test_save_bmp_with_dpi(tmp_path: Path) -> None:
     # Test for #1301
     # Arrange
     outfile = str(tmp_path / "temp.jpg")
@@ -110,7 +111,7 @@ def test_save_bmp_with_dpi(tmp_path) -> None:
             assert reloaded.format == "JPEG"
 
 
-def test_save_float_dpi(tmp_path) -> None:
+def test_save_float_dpi(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.bmp")
     with Image.open("Tests/images/hopper.bmp") as im:
         im.save(outfile, dpi=(72.21216100543306, 72.21216100543306))
@@ -127,7 +128,7 @@ def test_load_dib() -> None:
         assert_image_equal_tofile(im, "Tests/images/clipboard_target.png")
 
 
-def test_save_dib(tmp_path) -> None:
+def test_save_dib(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.dib")
 
     with Image.open("Tests/images/clipboard.dib") as im:

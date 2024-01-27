@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -363,7 +364,7 @@ def test_not_implemented(test_file) -> None:
             pass
 
 
-def test_save_unsupported_mode(tmp_path) -> None:
+def test_save_unsupported_mode(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.dds")
     im = hopper("HSV")
     with pytest.raises(OSError):
@@ -379,7 +380,7 @@ def test_save_unsupported_mode(tmp_path) -> None:
         ("RGBA", "Tests/images/pil123rgba.png"),
     ],
 )
-def test_save(mode, test_file, tmp_path) -> None:
+def test_save(mode, test_file, tmp_path: Path) -> None:
     out = str(tmp_path / "temp.dds")
     with Image.open(test_file) as im:
         assert im.mode == mode

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, WmfImagePlugin
@@ -31,7 +33,7 @@ def test_load() -> None:
             assert im.load()[0, 0] == (255, 255, 255)
 
 
-def test_register_handler(tmp_path) -> None:
+def test_register_handler(tmp_path: Path) -> None:
     class TestHandler:
         methodCalled = False
 
@@ -68,7 +70,7 @@ def test_load_set_dpi() -> None:
 
 
 @pytest.mark.parametrize("ext", (".wmf", ".emf"))
-def test_save(ext, tmp_path) -> None:
+def test_save(ext, tmp_path: Path) -> None:
     im = hopper()
 
     tmpfile = str(tmp_path / ("temp" + ext))

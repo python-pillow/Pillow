@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
@@ -343,7 +345,7 @@ def test_apng_sequence_errors(test_file) -> None:
             im.load()
 
 
-def test_apng_save(tmp_path) -> None:
+def test_apng_save(tmp_path: Path) -> None:
     with Image.open("Tests/images/apng/single_frame.png") as im:
         test_file = str(tmp_path / "temp.png")
         im.save(test_file, save_all=True)
@@ -374,7 +376,7 @@ def test_apng_save(tmp_path) -> None:
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_save_alpha(tmp_path) -> None:
+def test_apng_save_alpha(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
 
     im = Image.new("RGBA", (1, 1), (255, 0, 0, 255))
@@ -388,7 +390,7 @@ def test_apng_save_alpha(tmp_path) -> None:
         assert reloaded.getpixel((0, 0)) == (255, 0, 0, 127)
 
 
-def test_apng_save_split_fdat(tmp_path) -> None:
+def test_apng_save_split_fdat(tmp_path: Path) -> None:
     # test to make sure we do not generate sequence errors when writing
     # frames with image data spanning multiple fdAT chunks (in this case
     # both the default image and first animation frame will span multiple
@@ -412,7 +414,7 @@ def test_apng_save_split_fdat(tmp_path) -> None:
         assert exception is None
 
 
-def test_apng_save_duration_loop(tmp_path) -> None:
+def test_apng_save_duration_loop(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
     with Image.open("Tests/images/apng/delay.png") as im:
         frames = []
@@ -475,7 +477,7 @@ def test_apng_save_duration_loop(tmp_path) -> None:
         assert im.info["duration"] == 600
 
 
-def test_apng_save_disposal(tmp_path) -> None:
+def test_apng_save_disposal(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)
     red = Image.new("RGBA", size, (255, 0, 0, 255))
@@ -576,7 +578,7 @@ def test_apng_save_disposal(tmp_path) -> None:
         assert im.getpixel((64, 32)) == (0, 0, 0, 0)
 
 
-def test_apng_save_disposal_previous(tmp_path) -> None:
+def test_apng_save_disposal_previous(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)
     blue = Image.new("RGBA", size, (0, 0, 255, 255))
@@ -598,7 +600,7 @@ def test_apng_save_disposal_previous(tmp_path) -> None:
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_save_blend(tmp_path) -> None:
+def test_apng_save_blend(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)
     red = Image.new("RGBA", size, (255, 0, 0, 255))
@@ -679,7 +681,7 @@ def test_seek_after_close() -> None:
 @pytest.mark.parametrize("default_image", (True, False))
 @pytest.mark.parametrize("duplicate", (True, False))
 def test_different_modes_in_later_frames(
-    mode, default_image, duplicate, tmp_path
+    mode, default_image, duplicate, tmp_path: Path
 ) -> None:
     test_file = str(tmp_path / "temp.png")
 

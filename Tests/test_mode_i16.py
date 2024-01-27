@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image
@@ -25,7 +27,7 @@ def verify(im1) -> None:
 
 
 @pytest.mark.parametrize("mode", ("L", "I;16", "I;16B", "I;16L", "I"))
-def test_basic(tmp_path, mode) -> None:
+def test_basic(tmp_path: Path, mode) -> None:
     # PIL 1.1 has limited support for 16-bit image data.  Check that
     # create/copy/transform and save works as expected.
 

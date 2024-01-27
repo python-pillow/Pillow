@@ -5,6 +5,7 @@ import os
 import os.path
 import tempfile
 import time
+from pathlib import Path
 
 import pytest
 
@@ -13,7 +14,7 @@ from PIL import Image, PdfParser, features
 from .helper import hopper, mark_if_feature_version, skip_unless_feature
 
 
-def helper_save_as_pdf(tmp_path, mode, **kwargs):
+def helper_save_as_pdf(tmp_path: Path, mode, **kwargs):
     # Arrange
     im = hopper(mode)
     outfile = str(tmp_path / ("temp_" + mode + ".pdf"))
@@ -40,17 +41,17 @@ def helper_save_as_pdf(tmp_path, mode, **kwargs):
 
 
 @pytest.mark.parametrize("mode", ("L", "P", "RGB", "CMYK"))
-def test_save(tmp_path, mode) -> None:
+def test_save(tmp_path: Path, mode) -> None:
     helper_save_as_pdf(tmp_path, mode)
 
 
 @skip_unless_feature("jpg_2000")
 @pytest.mark.parametrize("mode", ("LA", "RGBA"))
-def test_save_alpha(tmp_path, mode) -> None:
+def test_save_alpha(tmp_path: Path, mode) -> None:
     helper_save_as_pdf(tmp_path, mode)
 
 
-def test_p_alpha(tmp_path) -> None:
+def test_p_alpha(tmp_path: Path) -> None:
     # Arrange
     outfile = str(tmp_path / "temp.pdf")
     with Image.open("Tests/images/pil123p.png") as im:
@@ -66,7 +67,7 @@ def test_p_alpha(tmp_path) -> None:
     assert b"\n/SMask " in contents
 
 
-def test_monochrome(tmp_path) -> None:
+def test_monochrome(tmp_path: Path) -> None:
     # Arrange
     mode = "1"
 
@@ -75,7 +76,7 @@ def test_monochrome(tmp_path) -> None:
     assert os.path.getsize(outfile) < (5000 if features.check("libtiff") else 15000)
 
 
-def test_unsupported_mode(tmp_path) -> None:
+def test_unsupported_mode(tmp_path: Path) -> None:
     im = hopper("PA")
     outfile = str(tmp_path / "temp_PA.pdf")
 
@@ -83,7 +84,7 @@ def test_unsupported_mode(tmp_path) -> None:
         im.save(outfile)
 
 
-def test_resolution(tmp_path) -> None:
+def test_resolution(tmp_path: Path) -> None:
     im = hopper()
 
     outfile = str(tmp_path / "temp.pdf")
@@ -111,7 +112,7 @@ def test_resolution(tmp_path) -> None:
         {"dpi": (75, 150), "resolution": 200},
     ),
 )
-def test_dpi(params, tmp_path) -> None:
+def test_dpi(params, tmp_path: Path) -> None:
     im = hopper()
 
     outfile = str(tmp_path / "temp.pdf")
@@ -135,7 +136,7 @@ def test_dpi(params, tmp_path) -> None:
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
-def test_save_all(tmp_path) -> None:
+def test_save_all(tmp_path: Path) -> None:
     # Single frame image
     helper_save_as_pdf(tmp_path, "RGB", save_all=True)
 
@@ -171,7 +172,7 @@ def test_save_all(tmp_path) -> None:
     assert os.path.getsize(outfile) > 0
 
 
-def test_multiframe_normal_save(tmp_path) -> None:
+def test_multiframe_normal_save(tmp_path: Path) -> None:
     # Test saving a multiframe image without save_all
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
         outfile = str(tmp_path / "temp.pdf")
@@ -181,7 +182,7 @@ def test_multiframe_normal_save(tmp_path) -> None:
     assert os.path.getsize(outfile) > 0
 
 
-def test_pdf_open(tmp_path) -> None:
+def test_pdf_open(tmp_path: Path) -> None:
     # fail on a buffer full of null bytes
     with pytest.raises(PdfParser.PdfFormatError):
         PdfParser.PdfParser(buf=bytearray(65536))
@@ -243,7 +244,7 @@ def check_pdf_pages_consistency(pdf) -> None:
     assert kids_not_used == []
 
 
-def test_pdf_append(tmp_path) -> None:
+def test_pdf_append(tmp_path: Path) -> None:
     # make a PDF file
     pdf_filename = helper_save_as_pdf(tmp_path, "RGB", producer="PdfParser")
 
@@ -294,7 +295,7 @@ def test_pdf_append(tmp_path) -> None:
         check_pdf_pages_consistency(pdf)
 
 
-def test_pdf_info(tmp_path) -> None:
+def test_pdf_info(tmp_path: Path) -> None:
     # make a PDF file
     pdf_filename = helper_save_as_pdf(
         tmp_path,

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import sys
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -31,7 +32,7 @@ def _create_document(ps) -> None:
     ps.end_document()
 
 
-def test_draw_postscript(tmp_path) -> None:
+def test_draw_postscript(tmp_path: Path) -> None:
     # Based on Pillow tutorial, but there is no textsize:
     # https://pillow.readthedocs.io/en/latest/handbook/tutorial.html#drawing-postscript
 

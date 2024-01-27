@@ -5,6 +5,7 @@ import sys
 import warnings
 import zlib
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -79,7 +80,7 @@ class TestFilePng:
                     png.crc(cid, s)
         return chunks
 
-    def test_sanity(self, tmp_path) -> None:
+    def test_sanity(self, tmp_path: Path) -> None:
         # internal version number
         assert re.search(r"\d+(\.\d+){1,3}$", features.version_codec("zlib"))
 
@@ -237,7 +238,7 @@ class TestFilePng:
         # image has 876 transparent pixels
         assert im.getchannel("A").getcolors()[0][0] == 876
 
-    def test_save_p_transparent_palette(self, tmp_path) -> None:
+    def test_save_p_transparent_palette(self, tmp_path: Path) -> None:
         in_file = "Tests/images/pil123p.png"
         with Image.open(in_file) as im:
             # 'transparency' contains a byte string with the opacity for
@@ -258,7 +259,7 @@ class TestFilePng:
         # image has 124 unique alpha values
         assert len(im.getchannel("A").getcolors()) == 124
 
-    def test_save_p_single_transparency(self, tmp_path) -> None:
+    def test_save_p_single_transparency(self, tmp_path: Path) -> None:
         in_file = "Tests/images/p_trns_single.png"
         with Image.open(in_file) as im:
             # pixel value 164 is full transparent
@@ -281,7 +282,7 @@ class TestFilePng:
         # image has 876 transparent pixels
         assert im.getchannel("A").getcolors()[0][0] == 876
 
-    def test_save_p_transparent_black(self, tmp_path) -> None:
+    def test_save_p_transparent_black(self, tmp_path: Path) -> None:
         # check if solid black image with full transparency
         # is supported (check for #1838)
         im = Image.new("RGBA", (10, 10), (0, 0, 0, 0))
@@ -299,7 +300,7 @@ class TestFilePng:
         assert_image(im, "RGBA", (10, 10))
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
-    def test_save_grayscale_transparency(self, tmp_path) -> None:
+    def test_save_grayscale_transparency(self, tmp_path: Path) -> None:
         for mode, num_transparent in {"1": 1994, "L": 559, "I": 559}.items():
             in_file = "Tests/images/" + mode.lower() + "_trns.png"
             with Image.open(in_file) as im:
@@ -320,7 +321,7 @@ class TestFilePng:
             test_im_rgba = test_im.convert("RGBA")
             assert test_im_rgba.getchannel("A").getcolors()[0][0] == num_transparent
 
-    def test_save_rgb_single_transparency(self, tmp_path) -> None:
+    def test_save_rgb_single_transparency(self, tmp_path: Path) -> None:
         in_file = "Tests/images/caption_6_33_22.png"
         with Image.open(in_file) as im:
             test_file = str(tmp_path / "temp.png")
@@ -477,7 +478,7 @@ class TestFilePng:
         im = roundtrip(im, transparency=(0, 1, 2))
         assert im.info["transparency"] == (0, 1, 2)
 
-    def test_trns_p(self, tmp_path) -> None:
+    def test_trns_p(self, tmp_path: Path) -> None:
         # Check writing a transparency of 0, issue #528
         im = hopper("P")
         im.info["transparency"] = 0
@@ -539,7 +540,7 @@ class TestFilePng:
 
         assert im._repr_png_() is None
 
-    def test_chunk_order(self, tmp_path) -> None:
+    def test_chunk_order(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/icc_profile.png") as im:
             test_file = str(tmp_path / "temp.png")
             im.convert("P").save(test_file, dpi=(100, 100))
@@ -645,7 +646,7 @@ class TestFilePng:
             png.call(cid, 0, 0)
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
-    def test_specify_bits(self, tmp_path) -> None:
+    def test_specify_bits(self, tmp_path: Path) -> None:
         im = hopper("P")
 
         out = str(tmp_path / "temp.png")
@@ -654,7 +655,7 @@ class TestFilePng:
         with Image.open(out) as reloaded:
             assert len(reloaded.png.im_palette[1]) == 48
 
-    def test_plte_length(self, tmp_path) -> None:
+    def test_plte_length(self, tmp_path: Path) -> None:
         im = Image.new("P", (1, 1))
         im.putpalette((1, 1, 1))
 
@@ -705,7 +706,7 @@ class TestFilePng:
             exif = im.getexif()
         assert exif[274] == 3
 
-    def test_exif_save(self, tmp_path) -> None:
+    def test_exif_save(self, tmp_path: Path) -> None:
         # Test exif is not saved from info
         test_file = str(tmp_path / "temp.png")
         with Image.open("Tests/images/exif.png") as im:
@@ -725,7 +726,7 @@ class TestFilePng:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_exif_from_jpg(self, tmp_path) -> None:
+    def test_exif_from_jpg(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             test_file = str(tmp_path / "temp.png")
             im.save(test_file, exif=im.getexif())
@@ -734,7 +735,7 @@ class TestFilePng:
             exif = reloaded._getexif()
         assert exif[305] == "Adobe Photoshop CS Macintosh"
 
-    def test_exif_argument(self, tmp_path) -> None:
+    def test_exif_argument(self, tmp_path: Path) -> None:
         with Image.open(TEST_PNG_FILE) as im:
             test_file = str(tmp_path / "temp.png")
             im.save(test_file, exif=b"exifstring")

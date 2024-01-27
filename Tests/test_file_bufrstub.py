@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import BufrStubImagePlugin, Image
@@ -37,7 +39,7 @@ def test_load() -> None:
             im.load()
 
 
-def test_save(tmp_path) -> None:
+def test_save(tmp_path: Path) -> None:
     # Arrange
     im = hopper()
     tmpfile = str(tmp_path / "temp.bufr")
@@ -47,7 +49,7 @@ def test_save(tmp_path) -> None:
         im.save(tmpfile)
 
 
-def test_handler(tmp_path) -> None:
+def test_handler(tmp_path: Path) -> None:
     class TestHandler:
         opened = False
         loaded = False

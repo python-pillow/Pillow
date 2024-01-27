@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -70,7 +71,7 @@ def test_invalid_file() -> None:
         XbmImagePlugin.XbmImageFile(invalid_file)
 
 
-def test_save_wrong_mode(tmp_path) -> None:
+def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper()
     out = str(tmp_path / "temp.xbm")
 
@@ -78,7 +79,7 @@ def test_save_wrong_mode(tmp_path) -> None:
         im.save(out)
 
 
-def test_hotspot(tmp_path) -> None:
+def test_hotspot(tmp_path: Path) -> None:
     im = hopper("1")
     out = str(tmp_path / "temp.xbm")
 

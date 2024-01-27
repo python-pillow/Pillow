@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Hdf5StubImagePlugin, Image
@@ -48,7 +50,7 @@ def test_save() -> None:
             Hdf5StubImagePlugin._save(im, dummy_fp, dummy_filename)
 
 
-def test_handler(tmp_path) -> None:
+def test_handler(tmp_path: Path) -> None:
     class TestHandler:
         opened = False
         loaded = False

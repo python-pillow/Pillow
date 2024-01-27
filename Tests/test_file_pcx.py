@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, ImageFile, PcxImagePlugin
@@ -7,7 +9,7 @@ from PIL import Image, ImageFile, PcxImagePlugin
 from .helper import assert_image_equal, hopper
 
 
-def _roundtrip(tmp_path, im) -> None:
+def _roundtrip(tmp_path: Path, im) -> None:
     f = str(tmp_path / "temp.pcx")
     im.save(f)
     with Image.open(f) as im2:
@@ -18,7 +20,7 @@ def _roundtrip(tmp_path, im) -> None:
         assert_image_equal(im2, im)
 
 
-def test_sanity(tmp_path) -> None:
+def test_sanity(tmp_path: Path) -> None:
     for mode in ("1", "L", "P", "RGB"):
         _roundtrip(tmp_path, hopper(mode))
 
@@ -42,7 +44,7 @@ def test_invalid_file() -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-def test_odd(tmp_path, mode) -> None:
+def test_odd(tmp_path: Path, mode) -> None:
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
@@ -71,7 +73,7 @@ def test_pil184() -> None:
         assert im.histogram()[0] + im.histogram()[255] == 447 * 144
 
 
-def test_1px_width(tmp_path) -> None:
+def test_1px_width(tmp_path: Path) -> None:
     im = Image.new("L", (1, 256))
     px = im.load()
     for y in range(256):
@@ -79,7 +81,7 @@ def test_1px_width(tmp_path) -> None:
     _roundtrip(tmp_path, im)
 
 
-def test_large_count(tmp_path) -> None:
+def test_large_count(tmp_path: Path) -> None:
     im = Image.new("L", (256, 1))
     px = im.load()
     for x in range(256):
@@ -87,7 +89,7 @@ def test_large_count(tmp_path) -> None:
     _roundtrip(tmp_path, im)
 
 
-def _test_buffer_overflow(tmp_path, im, size: int = 1024) -> None:
+def _test_buffer_overflow(tmp_path: Path, im, size: int = 1024) -> None:
     _last = ImageFile.MAXBLOCK
     ImageFile.MAXBLOCK = size
     try:
@@ -96,7 +98,7 @@ def _test_buffer_overflow(tmp_path, im, size: int = 1024) -> None:
         ImageFile.MAXBLOCK = _last
 
 
-def test_break_in_count_overflow(tmp_path) -> None:
+def test_break_in_count_overflow(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(4):
@@ -105,7 +107,7 @@ def test_break_in_count_overflow(tmp_path) -> None:
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_one_in_loop(tmp_path) -> None:
+def test_break_one_in_loop(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(5):
@@ -114,7 +116,7 @@ def test_break_one_in_loop(tmp_path) -> None:
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_many_in_loop(tmp_path) -> None:
+def test_break_many_in_loop(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(4):
@@ -125,7 +127,7 @@ def test_break_many_in_loop(tmp_path) -> None:
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_one_at_end(tmp_path) -> None:
+def test_break_one_at_end(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(5):
@@ -135,7 +137,7 @@ def test_break_one_at_end(tmp_path) -> None:
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_many_at_end(tmp_path) -> None:
+def test_break_many_at_end(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(5):
@@ -147,7 +149,7 @@ def test_break_many_at_end(tmp_path) -> None:
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_padding(tmp_path) -> None:
+def test_break_padding(tmp_path: Path) -> None:
     im = Image.new("L", (257, 5))
     px = im.load()
     for y in range(5):

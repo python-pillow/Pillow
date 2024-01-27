@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import struct
+from pathlib import Path
 
 import pytest
 
@@ -13,7 +14,7 @@ from .helper import assert_deep_equal, hopper
 TAG_IDS = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
 
 
-def test_rt_metadata(tmp_path) -> None:
+def test_rt_metadata(tmp_path: Path) -> None:
     """Test writing arbitrary metadata into the tiff image directory
     Use case is ImageJ private tags, one numeric, one arbitrary
     data.  https://github.com/python-pillow/Pillow/issues/291
@@ -120,7 +121,7 @@ def test_read_metadata() -> None:
         } == img.tag.named()
 
 
-def test_write_metadata(tmp_path) -> None:
+def test_write_metadata(tmp_path: Path) -> None:
     """Test metadata writing through the python code"""
     with Image.open("Tests/images/hopper.tif") as img:
         f = str(tmp_path / "temp.tiff")
@@ -157,7 +158,7 @@ def test_write_metadata(tmp_path) -> None:
             assert value == reloaded[tag], f"{tag} didn't roundtrip"
 
 
-def test_change_stripbytecounts_tag_type(tmp_path) -> None:
+def test_change_stripbytecounts_tag_type(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.tiff")
     with Image.open("Tests/images/hopper.tif") as im:
         info = im.tag_v2
@@ -181,14 +182,14 @@ def test_no_duplicate_50741_tag() -> None:
     assert TAG_IDS["BestQualityScale"] == 50780
 
 
-def test_iptc(tmp_path) -> None:
+def test_iptc(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.tiff")
     with Image.open("Tests/images/hopper.Lab.tif") as im:
         im.save(out)
 
 
 @pytest.mark.parametrize("value, expected", ((b"test", "test"), (1, "1")))
-def test_writing_other_types_to_ascii(value, expected, tmp_path) -> None:
+def test_writing_other_types_to_ascii(value, expected, tmp_path: Path) -> None:
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     tag = TiffTags.TAGS_V2[271]
@@ -205,7 +206,7 @@ def test_writing_other_types_to_ascii(value, expected, tmp_path) -> None:
 
 
 @pytest.mark.parametrize("value", (1, IFDRational(1)))
-def test_writing_other_types_to_bytes(value, tmp_path) -> None:
+def test_writing_other_types_to_bytes(value, tmp_path: Path) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
@@ -221,7 +222,7 @@ def test_writing_other_types_to_bytes(value, tmp_path) -> None:
         assert reloaded.tag_v2[700] == b"\x01"
 
 
-def test_writing_other_types_to_undefined(tmp_path) -> None:
+def test_writing_other_types_to_undefined(tmp_path: Path) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
@@ -237,7 +238,7 @@ def test_writing_other_types_to_undefined(tmp_path) -> None:
         assert reloaded.tag_v2[33723] == b"1"
 
 
-def test_undefined_zero(tmp_path) -> None:
+def test_undefined_zero(tmp_path: Path) -> None:
     # Check that the tag has not been changed since this test was created
     tag = TiffTags.TAGS_V2[45059]
     assert tag.type == TiffTags.UNDEFINED
@@ -261,7 +262,7 @@ def test_empty_metadata() -> None:
         info.load(f)
 
 
-def test_iccprofile(tmp_path) -> None:
+def test_iccprofile(tmp_path: Path) -> None:
     # https://github.com/python-pillow/Pillow/issues/1462
     out = str(tmp_path / "temp.tiff")
     with Image.open("Tests/images/hopper.iccprofile.tif") as im:
@@ -282,19 +283,19 @@ def test_iccprofile_binary() -> None:
         assert im.info["icc_profile"]
 
 
-def test_iccprofile_save_png(tmp_path) -> None:
+def test_iccprofile_save_png(tmp_path: Path) -> None:
     with Image.open("Tests/images/hopper.iccprofile.tif") as im:
         outfile = str(tmp_path / "temp.png")
         im.save(outfile)
 
 
-def test_iccprofile_binary_save_png(tmp_path) -> None:
+def test_iccprofile_binary_save_png(tmp_path: Path) -> None:
     with Image.open("Tests/images/hopper.iccprofile_binary.tif") as im:
         outfile = str(tmp_path / "temp.png")
         im.save(outfile)
 
 
-def test_exif_div_zero(tmp_path) -> None:
+def test_exif_div_zero(tmp_path: Path) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
     info[41988] = TiffImagePlugin.IFDRational(0, 0)
@@ -307,7 +308,7 @@ def test_exif_div_zero(tmp_path) -> None:
         assert 0 == reloaded.tag_v2[41988].denominator
 
 
-def test_ifd_unsigned_rational(tmp_path) -> None:
+def test_ifd_unsigned_rational(tmp_path: Path) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
@@ -338,7 +339,7 @@ def test_ifd_unsigned_rational(tmp_path) -> None:
         assert 1 == reloaded.tag_v2[41493].denominator
 
 
-def test_ifd_signed_rational(tmp_path) -> None:
+def test_ifd_signed_rational(tmp_path: Path) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
@@ -381,7 +382,7 @@ def test_ifd_signed_rational(tmp_path) -> None:
         assert -1 == reloaded.tag_v2[37380].denominator
 
 
-def test_ifd_signed_long(tmp_path) -> None:
+def test_ifd_signed_long(tmp_path: Path) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
@@ -409,7 +410,7 @@ def test_empty_values() -> None:
     assert 33432 in info
 
 
-def test_photoshop_info(tmp_path) -> None:
+def test_photoshop_info(tmp_path: Path) -> None:
     with Image.open("Tests/images/issue_2278.tif") as im:
         assert len(im.tag_v2[34377]) == 70
         assert isinstance(im.tag_v2[34377], bytes)
@@ -446,7 +447,7 @@ def test_tag_group_data() -> None:
     assert base_ifd.tagtype[2] != interop_ifd.tagtype[256]
 
 
-def test_empty_subifd(tmp_path) -> None:
+def test_empty_subifd(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.jpg")
 
     im = hopper()

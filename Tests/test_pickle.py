@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pickle
+from pathlib import Path
 
 import pytest
 
@@ -12,7 +13,7 @@ FONT_SIZE = 20
 FONT_PATH = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
 
 
-def helper_pickle_file(tmp_path, pickle, protocol, test_file, mode) -> None:
+def helper_pickle_file(tmp_path: Path, pickle, protocol, test_file, mode) -> None:
     # Arrange
     with Image.open(test_file) as im:
         filename = str(tmp_path / "temp.pkl")
@@ -63,13 +64,13 @@ def helper_pickle_string(pickle, protocol, test_file, mode) -> None:
     ],
 )
 @pytest.mark.parametrize("protocol", range(0, pickle.HIGHEST_PROTOCOL + 1))
-def test_pickle_image(tmp_path, test_file, test_mode, protocol) -> None:
+def test_pickle_image(tmp_path: Path, test_file, test_mode, protocol) -> None:
     # Act / Assert
     helper_pickle_string(pickle, protocol, test_file, test_mode)
     helper_pickle_file(tmp_path, pickle, protocol, test_file, test_mode)
 
 
-def test_pickle_la_mode_with_palette(tmp_path) -> None:
+def test_pickle_la_mode_with_palette(tmp_path: Path) -> None:
     # Arrange
     filename = str(tmp_path / "temp.pkl")
     with Image.open("Tests/images/hopper.jpg") as im:
@@ -130,7 +131,7 @@ def test_pickle_font_string(protocol) -> None:
 
 @skip_unless_feature("freetype2")
 @pytest.mark.parametrize("protocol", list(range(0, pickle.HIGHEST_PROTOCOL + 1)))
-def test_pickle_font_file(tmp_path, protocol) -> None:
+def test_pickle_font_file(tmp_path: Path, protocol) -> None:
     # Arrange
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     filename = str(tmp_path / "temp.pkl")

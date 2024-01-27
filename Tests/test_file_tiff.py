@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import warnings
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -26,7 +27,7 @@ except ImportError:
 
 
 class TestFileTiff:
-    def test_sanity(self, tmp_path) -> None:
+    def test_sanity(self, tmp_path: Path) -> None:
         filename = str(tmp_path / "temp.tif")
 
         hopper("RGB").save(filename)
@@ -98,7 +99,7 @@ class TestFileTiff:
 
             assert_image_similar_tofile(im, "Tests/images/pil136.png", 1)
 
-    def test_bigtiff(self, tmp_path) -> None:
+    def test_bigtiff(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
@@ -162,7 +163,7 @@ class TestFileTiff:
             assert im.tag_v2.get(RESOLUTION_UNIT) == resolution_unit
             assert im.info["dpi"] == (dpi, dpi)
 
-    def test_save_float_dpi(self, tmp_path) -> None:
+    def test_save_float_dpi(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/hopper.tif") as im:
             dpi = (72.2, 72.2)
@@ -196,12 +197,12 @@ class TestFileTiff:
             with pytest.warns(UserWarning):
                 i._getexif()
 
-    def test_save_rgba(self, tmp_path) -> None:
+    def test_save_rgba(self, tmp_path: Path) -> None:
         im = hopper("RGBA")
         outfile = str(tmp_path / "temp.tif")
         im.save(outfile)
 
-    def test_save_unsupported_mode(self, tmp_path) -> None:
+    def test_save_unsupported_mode(self, tmp_path: Path) -> None:
         im = hopper("HSV")
         outfile = str(tmp_path / "temp.tif")
         with pytest.raises(OSError):
@@ -429,7 +430,7 @@ class TestFileTiff:
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
             assert 0x8825 in im.tag_v2
 
-    def test_exif(self, tmp_path) -> None:
+    def test_exif(self, tmp_path: Path) -> None:
         def check_exif(exif) -> None:
             assert sorted(exif.keys()) == [
                 256,
@@ -481,7 +482,7 @@ class TestFileTiff:
             exif = im.getexif()
             check_exif(exif)
 
-    def test_modify_exif(self, tmp_path) -> None:
+    def test_modify_exif(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/ifd_tag_type.tiff") as im:
             exif = im.getexif()
@@ -510,7 +511,7 @@ class TestFileTiff:
             assert im.getexif()[273] == (1408, 1907)
 
     @pytest.mark.parametrize("mode", ("1", "L"))
-    def test_photometric(self, mode, tmp_path) -> None:
+    def test_photometric(self, mode, tmp_path: Path) -> None:
         filename = str(tmp_path / "temp.tif")
         im = hopper(mode)
         im.save(filename, tiffinfo={262: 0})
@@ -588,7 +589,7 @@ class TestFileTiff:
                         assert im2.mode == "L"
                         assert_image_equal(im, im2)
 
-    def test_with_underscores(self, tmp_path) -> None:
+    def test_with_underscores(self, tmp_path: Path) -> None:
         kwargs = {"resolution_unit": "inch", "x_resolution": 72, "y_resolution": 36}
         filename = str(tmp_path / "temp.tif")
         hopper("RGB").save(filename, **kwargs)
@@ -601,7 +602,7 @@ class TestFileTiff:
             assert im.tag_v2[X_RESOLUTION] == 72
             assert im.tag_v2[Y_RESOLUTION] == 36
 
-    def test_roundtrip_tiff_uint16(self, tmp_path) -> None:
+    def test_roundtrip_tiff_uint16(self, tmp_path: Path) -> None:
         # Test an image of all '0' values
         pixel_value = 0x1234
         infile = "Tests/images/uint16_1_4660.tif"
@@ -613,7 +614,7 @@ class TestFileTiff:
 
             assert_image_equal_tofile(im, tmpfile)
 
-    def test_rowsperstrip(self, tmp_path) -> None:
+    def test_rowsperstrip(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
         im = hopper()
         im.save(outfile, tiffinfo={278: 256})
@@ -647,7 +648,7 @@ class TestFileTiff:
         with Image.open(infile) as im:
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
-    def test_planar_configuration_save(self, tmp_path) -> None:
+    def test_planar_configuration_save(self, tmp_path: Path) -> None:
         infile = "Tests/images/tiff_tiled_planar_raw.tif"
         with Image.open(infile) as im:
             assert im._planar_configuration == 2
@@ -659,7 +660,7 @@ class TestFileTiff:
                 assert_image_equal_tofile(reloaded, infile)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
-    def test_palette(self, mode, tmp_path) -> None:
+    def test_palette(self, mode, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
 
         im = hopper(mode)
@@ -698,7 +699,7 @@ class TestFileTiff:
         with Image.open(mp) as reread:
             assert reread.n_frames == 3
 
-    def test_saving_icc_profile(self, tmp_path) -> None:
+    def test_saving_icc_profile(self, tmp_path: Path) -> None:
         # Tests saving TIFF with icc_profile set.
         # At the time of writing this will only work for non-compressed tiffs
         # as libtiff does not support embedded ICC profiles,
@@ -712,7 +713,7 @@ class TestFileTiff:
         with Image.open(tmpfile) as reloaded:
             assert b"Dummy value" == reloaded.info["icc_profile"]
 
-    def test_save_icc_profile(self, tmp_path) -> None:
+    def test_save_icc_profile(self, tmp_path: Path) -> None:
         im = hopper()
         assert "icc_profile" not in im.info
 
@@ -723,14 +724,14 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert reloaded.info["icc_profile"] == icc_profile
 
-    def test_save_bmp_compression(self, tmp_path) -> None:
+    def test_save_bmp_compression(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper.bmp") as im:
             assert im.info["compression"] == 0
 
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile)
 
-    def test_discard_icc_profile(self, tmp_path) -> None:
+    def test_discard_icc_profile(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
 
         with Image.open("Tests/images/icc_profile.png") as im:
@@ -782,7 +783,7 @@ class TestFileTiff:
                 4001,
             ]
 
-    def test_tiff_chunks(self, tmp_path) -> None:
+    def test_tiff_chunks(self, tmp_path: Path) -> None:
         tmpfile = str(tmp_path / "temp.tif")
 
         im = hopper()
@@ -803,7 +804,7 @@ class TestFileTiff:
 
         assert_image_equal_tofile(im, tmpfile)
 
-    def test_close_on_load_exclusive(self, tmp_path) -> None:
+    def test_close_on_load_exclusive(self, tmp_path: Path) -> None:
         # similar to test_fd_leak, but runs on unixlike os
         tmpfile = str(tmp_path / "temp.tif")
 
@@ -816,7 +817,7 @@ class TestFileTiff:
         im.load()
         assert fp.closed
 
-    def test_close_on_load_nonexclusive(self, tmp_path) -> None:
+    def test_close_on_load_nonexclusive(self, tmp_path: Path) -> None:
         tmpfile = str(tmp_path / "temp.tif")
 
         with Image.open("Tests/images/uint16_1_4660.tif") as im:
@@ -868,7 +869,7 @@ class TestFileTiff:
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 class TestFileTiffW32:
-    def test_fd_leak(self, tmp_path) -> None:
+    def test_fd_leak(self, tmp_path: Path) -> None:
         tmpfile = str(tmp_path / "temp.tif")
 
         # this is an mmaped file.

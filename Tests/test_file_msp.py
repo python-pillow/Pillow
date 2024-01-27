@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import pytest
 
@@ -13,7 +14,7 @@ EXTRA_DIR = "Tests/images/picins"
 YA_EXTRA_DIR = "Tests/images/msp"
 
 
-def test_sanity(tmp_path) -> None:
+def test_sanity(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.msp")
 
     hopper("1").save(test_file)
@@ -80,7 +81,7 @@ def test_msp_v2() -> None:
         _assert_file_image_equal(path, path.replace(".MSP", ".png"))
 
 
-def test_cannot_save_wrong_mode(tmp_path) -> None:
+def test_cannot_save_wrong_mode(tmp_path: Path) -> None:
     # Arrange
     im = hopper()
     filename = str(tmp_path / "temp.msp")

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import warnings
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -219,7 +220,7 @@ def test_optimize_if_palette_can_be_reduced_by_half() -> None:
             assert len(reloaded.palette.palette) // 3 == colors
 
 
-def test_full_palette_second_frame(tmp_path) -> None:
+def test_full_palette_second_frame(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im = Image.new("P", (1, 256))
 
@@ -240,7 +241,7 @@ def test_full_palette_second_frame(tmp_path) -> None:
             reloaded.getpixel((0, i)) == i
 
 
-def test_roundtrip(tmp_path) -> None:
+def test_roundtrip(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im = hopper()
     im.save(out)
@@ -248,7 +249,7 @@ def test_roundtrip(tmp_path) -> None:
         assert_image_similar(reread.convert("RGB"), im, 50)
 
 
-def test_roundtrip2(tmp_path) -> None:
+def test_roundtrip2(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/403
     out = str(tmp_path / "temp.gif")
     with Image.open(TEST_GIF) as im:
@@ -258,7 +259,7 @@ def test_roundtrip2(tmp_path) -> None:
         assert_image_similar(reread.convert("RGB"), hopper(), 50)
 
 
-def test_roundtrip_save_all(tmp_path) -> None:
+def test_roundtrip_save_all(tmp_path: Path) -> None:
     # Single frame image
     out = str(tmp_path / "temp.gif")
     im = hopper()
@@ -275,7 +276,7 @@ def test_roundtrip_save_all(tmp_path) -> None:
         assert reread.n_frames == 5
 
 
-def test_roundtrip_save_all_1(tmp_path) -> None:
+def test_roundtrip_save_all_1(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im = Image.new("1", (1, 1))
     im2 = Image.new("1", (1, 1), 1)
@@ -314,7 +315,7 @@ def test_loading_multiple_palettes(path, mode) -> None:
         assert im.load()[24, 24] not in first_frame_colors
 
 
-def test_headers_saving_for_animated_gifs(tmp_path) -> None:
+def test_headers_saving_for_animated_gifs(tmp_path: Path) -> None:
     important_headers = ["background", "version", "duration", "loop"]
     # Multiframe image
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
@@ -327,7 +328,7 @@ def test_headers_saving_for_animated_gifs(tmp_path) -> None:
             assert info[header] == reread.info[header]
 
 
-def test_palette_handling(tmp_path) -> None:
+def test_palette_handling(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/513
 
     with Image.open(TEST_GIF) as im:
@@ -343,7 +344,7 @@ def test_palette_handling(tmp_path) -> None:
         assert_image_similar(im, reloaded.convert("RGB"), 10)
 
 
-def test_palette_434(tmp_path) -> None:
+def test_palette_434(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/434
 
     def roundtrip(im, *args, **kwargs):
@@ -368,7 +369,7 @@ def test_palette_434(tmp_path) -> None:
 
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
-def test_save_netpbm_bmp_mode(tmp_path) -> None:
+def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
     with Image.open(TEST_GIF) as img:
         img = img.convert("RGB")
 
@@ -379,7 +380,7 @@ def test_save_netpbm_bmp_mode(tmp_path) -> None:
 
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
-def test_save_netpbm_l_mode(tmp_path) -> None:
+def test_save_netpbm_l_mode(tmp_path: Path) -> None:
     with Image.open(TEST_GIF) as img:
         img = img.convert("L")
 
@@ -582,7 +583,7 @@ def test_previous_frame_loaded() -> None:
             assert_image_equal(img_skipped, img)
 
 
-def test_save_dispose(tmp_path) -> None:
+def test_save_dispose(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im_list = [
         Image.new("L", (100, 100), "#000"),
@@ -610,7 +611,7 @@ def test_save_dispose(tmp_path) -> None:
             assert img.disposal_method == i + 1
 
 
-def test_dispose2_palette(tmp_path) -> None:
+def test_dispose2_palette(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     # Four colors: white, gray, black, red
@@ -641,7 +642,7 @@ def test_dispose2_palette(tmp_path) -> None:
             assert rgb_img.getpixel((50, 50)) == circle
 
 
-def test_dispose2_diff(tmp_path) -> None:
+def test_dispose2_diff(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     # 4 frames: red/blue, red/red, blue/blue, red/blue
@@ -683,7 +684,7 @@ def test_dispose2_diff(tmp_path) -> None:
             assert rgb_img.getpixel((1, 1)) == (255, 255, 255, 0)
 
 
-def test_dispose2_background(tmp_path) -> None:
+def test_dispose2_background(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     im_list = []
@@ -709,7 +710,7 @@ def test_dispose2_background(tmp_path) -> None:
         assert im.getpixel((0, 0)) == (255, 0, 0)
 
 
-def test_dispose2_background_frame(tmp_path) -> None:
+def test_dispose2_background_frame(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     im_list = [Image.new("RGBA", (1, 20))]
@@ -727,7 +728,7 @@ def test_dispose2_background_frame(tmp_path) -> None:
         assert im.n_frames == 3
 
 
-def test_transparency_in_second_frame(tmp_path) -> None:
+def test_transparency_in_second_frame(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/different_transparency.gif") as im:
         assert im.info["transparency"] == 0
@@ -757,7 +758,7 @@ def test_no_transparency_in_second_frame() -> None:
         assert img.histogram()[255] == 0
 
 
-def test_remapped_transparency(tmp_path) -> None:
+def test_remapped_transparency(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     im = Image.new("P", (1, 2))
@@ -773,7 +774,7 @@ def test_remapped_transparency(tmp_path) -> None:
         assert reloaded.info["transparency"] == reloaded.getpixel((0, 1))
 
 
-def test_duration(tmp_path) -> None:
+def test_duration(tmp_path: Path) -> None:
     duration = 1000
 
     out = str(tmp_path / "temp.gif")
@@ -787,7 +788,7 @@ def test_duration(tmp_path) -> None:
         assert reread.info["duration"] == duration
 
 
-def test_multiple_duration(tmp_path) -> None:
+def test_multiple_duration(tmp_path: Path) -> None:
     duration_list = [1000, 2000, 3000]
 
     out = str(tmp_path / "temp.gif")
@@ -822,7 +823,7 @@ def test_multiple_duration(tmp_path) -> None:
                 pass
 
 
-def test_roundtrip_info_duration(tmp_path) -> None:
+def test_roundtrip_info_duration(tmp_path: Path) -> None:
     duration_list = [100, 500, 500]
 
     out = str(tmp_path / "temp.gif")
@@ -839,7 +840,7 @@ def test_roundtrip_info_duration(tmp_path) -> None:
         ] == duration_list
 
 
-def test_roundtrip_info_duration_combined(tmp_path) -> None:
+def test_roundtrip_info_duration_combined(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/duplicate_frame.gif") as im:
         assert [frame.info["duration"] for frame in ImageSequence.Iterator(im)] == [
@@ -855,7 +856,7 @@ def test_roundtrip_info_duration_combined(tmp_path) -> None:
         ] == [1000, 2000]
 
 
-def test_identical_frames(tmp_path) -> None:
+def test_identical_frames(tmp_path: Path) -> None:
     duration_list = [1000, 1500, 2000, 4000]
 
     out = str(tmp_path / "temp.gif")
@@ -888,7 +889,7 @@ def test_identical_frames(tmp_path) -> None:
         1500,
     ),
 )
-def test_identical_frames_to_single_frame(duration, tmp_path) -> None:
+def test_identical_frames_to_single_frame(duration, tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im_list = [
         Image.new("L", (100, 100), "#000"),
@@ -905,7 +906,7 @@ def test_identical_frames_to_single_frame(duration, tmp_path) -> None:
         assert reread.info["duration"] == 4500
 
 
-def test_loop_none(tmp_path) -> None:
+def test_loop_none(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im = Image.new("L", (100, 100), "#000")
     im.save(out, loop=None)
@@ -913,7 +914,7 @@ def test_loop_none(tmp_path) -> None:
         assert "loop" not in reread.info
 
 
-def test_number_of_loops(tmp_path) -> None:
+def test_number_of_loops(tmp_path: Path) -> None:
     number_of_loops = 2
 
     out = str(tmp_path / "temp.gif")
@@ -931,7 +932,7 @@ def test_number_of_loops(tmp_path) -> None:
         assert im.info["loop"] == 2
 
 
-def test_background(tmp_path) -> None:
+def test_background(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im = Image.new("L", (100, 100), "#000")
     im.info["background"] = 1
@@ -940,7 +941,7 @@ def test_background(tmp_path) -> None:
         assert reread.info["background"] == im.info["background"]
 
 
-def test_webp_background(tmp_path) -> None:
+def test_webp_background(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     # Test opaque WebP background
@@ -955,7 +956,7 @@ def test_webp_background(tmp_path) -> None:
     im.save(out)
 
 
-def test_comment(tmp_path) -> None:
+def test_comment(tmp_path: Path) -> None:
     with Image.open(TEST_GIF) as im:
         assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0"
 
@@ -975,7 +976,7 @@ def test_comment(tmp_path) -> None:
         assert reread.info["version"] == b"GIF89a"
 
 
-def test_comment_over_255(tmp_path) -> None:
+def test_comment_over_255(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im = Image.new("L", (100, 100), "#000")
     comment = b"Test comment text"
@@ -1001,7 +1002,7 @@ def test_read_multiple_comment_blocks() -> None:
         assert im.info["comment"] == b"Test comment 1\nTest comment 2"
 
 
-def test_empty_string_comment(tmp_path) -> None:
+def test_empty_string_comment(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/chi.gif") as im:
         assert "comment" in im.info
@@ -1014,7 +1015,7 @@ def test_empty_string_comment(tmp_path) -> None:
             assert "comment" not in frame.info
 
 
-def test_retain_comment_in_subsequent_frames(tmp_path) -> None:
+def test_retain_comment_in_subsequent_frames(tmp_path: Path) -> None:
     # Test that a comment block at the beginning is kept
     with Image.open("Tests/images/chi.gif") as im:
         for frame in ImageSequence.Iterator(im):
@@ -1045,7 +1046,7 @@ def test_retain_comment_in_subsequent_frames(tmp_path) -> None:
             assert frame.info["comment"] == b"Test"
 
 
-def test_version(tmp_path) -> None:
+def test_version(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     def assert_version_after_save(im, version) -> None:
@@ -1075,7 +1076,7 @@ def test_version(tmp_path) -> None:
         assert_version_after_save(im, b"GIF87a")
 
 
-def test_append_images(tmp_path) -> None:
+def test_append_images(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     # Test appending single frame images
@@ -1104,7 +1105,7 @@ def test_append_images(tmp_path) -> None:
         assert reread.n_frames == 10
 
 
-def test_transparent_optimize(tmp_path) -> None:
+def test_transparent_optimize(tmp_path: Path) -> None:
     # From issue #2195, if the transparent color is incorrectly optimized out, GIF loses
     # transparency.
     # Need a palette that isn't using the 0 color,
@@ -1124,7 +1125,7 @@ def test_transparent_optimize(tmp_path) -> None:
         assert reloaded.info["transparency"] == reloaded.getpixel((252, 0))
 
 
-def test_removed_transparency(tmp_path) -> None:
+def test_removed_transparency(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     im = Image.new("RGB", (256, 1))
 
@@ -1139,7 +1140,7 @@ def test_removed_transparency(tmp_path) -> None:
         assert "transparency" not in reloaded.info
 
 
-def test_rgb_transparency(tmp_path) -> None:
+def test_rgb_transparency(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     # Single frame
@@ -1161,7 +1162,7 @@ def test_rgb_transparency(tmp_path) -> None:
         assert "transparency" not in reloaded.info
 
 
-def test_rgba_transparency(tmp_path) -> None:
+def test_rgba_transparency(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     im = hopper("P")
@@ -1172,13 +1173,13 @@ def test_rgba_transparency(tmp_path) -> None:
         assert_image_equal(hopper("P").convert("RGB"), reloaded)
 
 
-def test_background_outside_palettte(tmp_path) -> None:
+def test_background_outside_palettte(tmp_path: Path) -> None:
     with Image.open("Tests/images/background_outside_palette.gif") as im:
         im.seek(1)
         assert im.info["background"] == 255
 
 
-def test_bbox(tmp_path) -> None:
+def test_bbox(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     im = Image.new("RGB", (100, 100), "#fff")
@@ -1189,7 +1190,7 @@ def test_bbox(tmp_path) -> None:
         assert reread.n_frames == 2
 
 
-def test_bbox_alpha(tmp_path) -> None:
+def test_bbox_alpha(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     im = Image.new("RGBA", (1, 2), (255, 0, 0, 255))
@@ -1201,7 +1202,7 @@ def test_bbox_alpha(tmp_path) -> None:
         assert reread.n_frames == 2
 
 
-def test_palette_save_L(tmp_path) -> None:
+def test_palette_save_L(tmp_path: Path) -> None:
     # Generate an L mode image with a separate palette
 
     im = hopper("P")
@@ -1215,7 +1216,7 @@ def test_palette_save_L(tmp_path) -> None:
         assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))
 
 
-def test_palette_save_P(tmp_path) -> None:
+def test_palette_save_P(tmp_path: Path) -> None:
     im = Image.new("P", (1, 2))
     im.putpixel((0, 1), 1)
 
@@ -1229,7 +1230,7 @@ def test_palette_save_P(tmp_path) -> None:
         assert reloaded_rgb.getpixel((0, 1)) == (4, 5, 6)
 
 
-def test_palette_save_duplicate_entries(tmp_path) -> None:
+def test_palette_save_duplicate_entries(tmp_path: Path) -> None:
     im = Image.new("P", (1, 2))
     im.putpixel((0, 1), 1)
 
@@ -1242,7 +1243,7 @@ def test_palette_save_duplicate_entries(tmp_path) -> None:
         assert reloaded.convert("RGB").getpixel((0, 1)) == (0, 0, 0)
 
 
-def test_palette_save_all_P(tmp_path) -> None:
+def test_palette_save_all_P(tmp_path: Path) -> None:
     frames = []
     colors = ((255, 0, 0), (0, 255, 0))
     for color in colors:
@@ -1265,7 +1266,7 @@ def test_palette_save_all_P(tmp_path) -> None:
         assert im.palette.palette == im.global_palette.palette
 
 
-def test_palette_save_ImagePalette(tmp_path) -> None:
+def test_palette_save_ImagePalette(tmp_path: Path) -> None:
     # Pass in a different palette, as an ImagePalette.ImagePalette
     # effectively the same as test_palette_save_P
 
@@ -1280,7 +1281,7 @@ def test_palette_save_ImagePalette(tmp_path) -> None:
         assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))
 
 
-def test_save_I(tmp_path) -> None:
+def test_save_I(tmp_path: Path) -> None:
     # Test saving something that would trigger the auto-convert to 'L'
 
     im = hopper("I")
@@ -1348,7 +1349,7 @@ def test_missing_background() -> None:
         assert_image_equal_tofile(im, "Tests/images/missing_background_first_frame.png")
 
 
-def test_saving_rgba(tmp_path) -> None:
+def test_saving_rgba(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/transparent.png") as im:
         im.save(out)

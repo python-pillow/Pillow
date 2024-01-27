@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, ImagePalette
@@ -79,7 +81,7 @@ def test_getcolor_not_special(index, palette) -> None:
     assert index2 not in (index, index1)
 
 
-def test_file(tmp_path) -> None:
+def test_file(tmp_path: Path) -> None:
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
 
     f = str(tmp_path / "temp.lut")
@@ -142,7 +144,7 @@ def test_make_gamma_lut() -> None:
     assert lut[255] == 255
 
 
-def test_rawmode_valueerrors(tmp_path) -> None:
+def test_rawmode_valueerrors(tmp_path: Path) -> None:
     # Arrange
     palette = ImagePalette.raw("RGB", list(range(256)) * 3)
 
@@ -181,7 +183,7 @@ def test_rawmode_getdata() -> None:
     assert data_in == data_out
 
 
-def test_2bit_palette(tmp_path) -> None:
+def test_2bit_palette(tmp_path: Path) -> None:
     # issue #2258, 2 bit palettes are corrupted.
     outfile = str(tmp_path / "temp.png")
 

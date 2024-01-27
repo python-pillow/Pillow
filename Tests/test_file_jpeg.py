@@ -4,6 +4,7 @@ import os
 import re
 import warnings
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -70,7 +71,7 @@ class TestFileJpeg:
             assert im.get_format_mimetype() == "image/jpeg"
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
-    def test_zero(self, size, tmp_path) -> None:
+    def test_zero(self, size, tmp_path: Path) -> None:
         f = str(tmp_path / "temp.jpg")
         im = Image.new("RGB", size)
         with pytest.raises(ValueError):
@@ -174,7 +175,7 @@ class TestFileJpeg:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_icc(self, tmp_path) -> None:
+    def test_icc(self, tmp_path: Path) -> None:
         # Test ICC support
         with Image.open("Tests/images/rgb.jpg") as im1:
             icc_profile = im1.info["icc_profile"]
@@ -219,7 +220,7 @@ class TestFileJpeg:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_large_icc_meta(self, tmp_path) -> None:
+    def test_large_icc_meta(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
         # Sometimes the meta data on the icc_profile block is bigger than
         # Image.MAXBLOCK or the image size.
@@ -252,7 +253,7 @@ class TestFileJpeg:
         assert im1.bytes >= im2.bytes
         assert im1.bytes >= im3.bytes
 
-    def test_optimize_large_buffer(self, tmp_path) -> None:
+    def test_optimize_large_buffer(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
         f = str(tmp_path / "temp.jpg")
         # this requires ~ 1.5x Image.MAXBLOCK
@@ -270,13 +271,13 @@ class TestFileJpeg:
         assert_image_equal(im1, im3)
         assert im1.bytes >= im3.bytes
 
-    def test_progressive_large_buffer(self, tmp_path) -> None:
+    def test_progressive_large_buffer(self, tmp_path: Path) -> None:
         f = str(tmp_path / "temp.jpg")
         # this requires ~ 1.5x Image.MAXBLOCK
         im = Image.new("RGB", (4096, 4096), 0xFF3333)
         im.save(f, format="JPEG", progressive=True)
 
-    def test_progressive_large_buffer_highest_quality(self, tmp_path) -> None:
+    def test_progressive_large_buffer_highest_quality(self, tmp_path: Path) -> None:
         f = str(tmp_path / "temp.jpg")
         im = self.gen_random_image((255, 255))
         # this requires more bytes than pixels in the image
@@ -288,7 +289,7 @@ class TestFileJpeg:
         im = self.gen_random_image((256, 256), "CMYK")
         im.save(f, format="JPEG", progressive=True, quality=94)
 
-    def test_large_exif(self, tmp_path) -> None:
+    def test_large_exif(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
         f = str(tmp_path / "temp.jpg")
         im = hopper()
@@ -302,7 +303,7 @@ class TestFileJpeg:
             # Should not raise a TypeError
             im._getexif()
 
-    def test_exif_gps(self, tmp_path) -> None:
+    def test_exif_gps(self, tmp_path: Path) -> None:
         expected_exif_gps = {
             0: b"\x00\x00\x00\x01",
             2: 4294967295,
@@ -479,7 +480,7 @@ class TestFileJpeg:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
             assert im._getmp() is None
 
-    def test_quality_keep(self, tmp_path) -> None:
+    def test_quality_keep(self, tmp_path: Path) -> None:
         # RGB
         with Image.open("Tests/images/hopper.jpg") as im:
             f = str(tmp_path / "temp.jpg")
@@ -528,7 +529,7 @@ class TestFileJpeg:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_qtables(self, tmp_path) -> None:
+    def test_qtables(self, tmp_path: Path) -> None:
         def _n_qtables_helper(n, test_file) -> None:
             with Image.open(test_file) as im:
                 f = str(tmp_path / "temp.jpg")
@@ -685,7 +686,7 @@ class TestFileJpeg:
             assert_image_similar_tofile(img, TEST_FILE, 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
-    def test_save_cjpeg(self, tmp_path) -> None:
+    def test_save_cjpeg(self, tmp_path: Path) -> None:
         with Image.open(TEST_FILE) as img:
             tempfile = str(tmp_path / "temp.jpg")
             JpegImagePlugin._save_cjpeg(img, 0, tempfile)
@@ -700,7 +701,7 @@ class TestFileJpeg:
         assert tag_ids["RelatedImageWidth"] == 0x1001
         assert tag_ids["RelatedImageLength"] == 0x1002
 
-    def test_MAXBLOCK_scaling(self, tmp_path) -> None:
+    def test_MAXBLOCK_scaling(self, tmp_path: Path) -> None:
         im = self.gen_random_image((512, 512))
         f = str(tmp_path / "temp.jpeg")
         im.save(f, quality=100, optimize=True)
@@ -736,7 +737,7 @@ class TestFileJpeg:
         with pytest.raises(OSError):
             img.save(out, "JPEG")
 
-    def test_save_tiff_with_dpi(self, tmp_path) -> None:
+    def test_save_tiff_with_dpi(self, tmp_path: Path) -> None:
         # Arrange
         outfile = str(tmp_path / "temp.tif")
         with Image.open("Tests/images/hopper.tif") as im:
@@ -748,7 +749,7 @@ class TestFileJpeg:
                 reloaded.load()
                 assert im.info["dpi"] == reloaded.info["dpi"]
 
-    def test_save_dpi_rounding(self, tmp_path) -> None:
+    def test_save_dpi_rounding(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.jpg")
         with Image.open("Tests/images/hopper.jpg") as im:
             im.save(outfile, dpi=(72.2, 72.2))
@@ -830,7 +831,7 @@ class TestFileJpeg:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_exif_x_resolution(self, tmp_path) -> None:
+    def test_exif_x_resolution(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/flower.jpg") as im:
             exif = im.getexif()
             assert exif[282] == 180
@@ -1038,7 +1039,7 @@ class TestFileJpeg:
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 @skip_unless_feature("jpg")
 class TestFileCloseW32:
-    def test_fd_leak(self, tmp_path) -> None:
+    def test_fd_leak(self, tmp_path: Path) -> None:
         tmpfile = str(tmp_path / "temp.jpg")
 
         with Image.open("Tests/images/hopper.jpg") as im:

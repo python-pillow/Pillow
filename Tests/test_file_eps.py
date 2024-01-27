@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+from pathlib import Path
 
 import pytest
 
@@ -225,7 +226,7 @@ def test_transparency() -> None:
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_file_object(tmp_path) -> None:
+def test_file_object(tmp_path: Path) -> None:
     # issue 479
     with Image.open(FILE1) as image1:
         with open(str(tmp_path / "temp.eps"), "wb") as fh:
@@ -251,7 +252,7 @@ def test_1_mode() -> None:
         assert im.mode == "1"
 
 
-def test_image_mode_not_supported(tmp_path) -> None:
+def test_image_mode_not_supported(tmp_path: Path) -> None:
     im = hopper("RGBA")
     tmpfile = str(tmp_path / "temp.eps")
     with pytest.raises(ValueError):
@@ -328,7 +329,7 @@ def test_read_binary_preview() -> None:
         pass
 
 
-def test_readline_psfile(tmp_path) -> None:
+def test_readline_psfile(tmp_path: Path) -> None:
     # check all the freaking line endings possible from the spec
     # test_string = u'something\r\nelse\n\rbaz\rbif\n'
     line_endings = ["\r\n", "\n", "\n\r", "\r"]

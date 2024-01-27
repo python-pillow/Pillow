@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import warnings
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -44,7 +45,7 @@ def test_context_manager() -> None:
             im.load()
 
 
-def test_save(tmp_path) -> None:
+def test_save(tmp_path: Path) -> None:
     # Arrange
     temp = str(tmp_path / "temp.spider")
     im = hopper()

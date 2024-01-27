@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from glob import glob
 from itertools import product
+from pathlib import Path
 
 import pytest
 
@@ -21,7 +22,7 @@ _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
 
 
 @pytest.mark.parametrize("mode", _MODES)
-def test_sanity(mode, tmp_path) -> None:
+def test_sanity(mode, tmp_path: Path) -> None:
     def roundtrip(original_im) -> None:
         out = str(tmp_path / "temp.tga")
 
@@ -64,7 +65,7 @@ def test_sanity(mode, tmp_path) -> None:
                     roundtrip(original_im)
 
 
-def test_palette_depth_16(tmp_path) -> None:
+def test_palette_depth_16(tmp_path: Path) -> None:
     with Image.open("Tests/images/p_16.tga") as im:
         assert_image_equal_tofile(im.convert("RGB"), "Tests/images/p_16.png")
 
@@ -103,7 +104,7 @@ def test_cross_scan_line() -> None:
             im.load()
 
 
-def test_save(tmp_path) -> None:
+def test_save(tmp_path: Path) -> None:
     test_file = "Tests/images/tga_id_field.tga"
     with Image.open(test_file) as im:
         out = str(tmp_path / "temp.tga")
@@ -120,7 +121,7 @@ def test_save(tmp_path) -> None:
         assert test_im.size == (100, 100)
 
 
-def test_small_palette(tmp_path) -> None:
+def test_small_palette(tmp_path: Path) -> None:
     im = Image.new("P", (1, 1))
     colors = [0, 0, 0]
     im.putpalette(colors)
@@ -132,7 +133,7 @@ def test_small_palette(tmp_path) -> None:
         assert reloaded.getpalette() == colors
 
 
-def test_save_wrong_mode(tmp_path) -> None:
+def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper("PA")
     out = str(tmp_path / "temp.tga")
 
@@ -148,7 +149,7 @@ def test_save_mapdepth() -> None:
         assert_image_equal_tofile(im, "Tests/images/tga/common/200x32_p.png")
 
 
-def test_save_id_section(tmp_path) -> None:
+def test_save_id_section(tmp_path: Path) -> None:
     test_file = "Tests/images/rgb32rle.tga"
     with Image.open(test_file) as im:
         out = str(tmp_path / "temp.tga")
@@ -179,7 +180,7 @@ def test_save_id_section(tmp_path) -> None:
         assert "id_section" not in test_im.info
 
 
-def test_save_orientation(tmp_path) -> None:
+def test_save_orientation(tmp_path: Path) -> None:
     test_file = "Tests/images/rgb32rle.tga"
     out = str(tmp_path / "temp.tga")
     with Image.open(test_file) as im:
@@ -199,7 +200,7 @@ def test_horizontal_orientations() -> None:
         assert im.load()[90, 90][:3] == (0, 255, 0)
 
 
-def test_save_rle(tmp_path) -> None:
+def test_save_rle(tmp_path: Path) -> None:
     test_file = "Tests/images/rgb32rle.tga"
     with Image.open(test_file) as im:
         assert im.info["compression"] == "tga_rle"
@@ -232,7 +233,7 @@ def test_save_rle(tmp_path) -> None:
         assert test_im.info["compression"] == "tga_rle"
 
 
-def test_save_l_transparency(tmp_path) -> None:
+def test_save_l_transparency(tmp_path: Path) -> None:
     # There are 559 transparent pixels in la.tga.
     num_transparent = 559
 

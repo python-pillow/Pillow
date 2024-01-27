@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import os
+from pathlib import Path
 
 import pytest
 
@@ -73,7 +74,7 @@ def test_save_to_bytes() -> None:
         )
 
 
-def test_getpixel(tmp_path) -> None:
+def test_getpixel(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.ico")
 
     im = hopper()
@@ -86,7 +87,7 @@ def test_getpixel(tmp_path) -> None:
         assert reloaded.getpixel((0, 0)) == (18, 20, 62)
 
 
-def test_no_duplicates(tmp_path) -> None:
+def test_no_duplicates(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.ico")
     temp_file2 = str(tmp_path / "temp2.ico")
 
@@ -100,7 +101,7 @@ def test_no_duplicates(tmp_path) -> None:
     assert os.path.getsize(temp_file) == os.path.getsize(temp_file2)
 
 
-def test_different_bit_depths(tmp_path) -> None:
+def test_different_bit_depths(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.ico")
     temp_file2 = str(tmp_path / "temp2.ico")
 
@@ -168,7 +169,7 @@ def test_incorrect_size() -> None:
             im.size = (1, 1)
 
 
-def test_save_256x256(tmp_path) -> None:
+def test_save_256x256(tmp_path: Path) -> None:
     """Issue #2264 https://github.com/python-pillow/Pillow/issues/2264"""
     # Arrange
     with Image.open("Tests/images/hopper_256x256.ico") as im:
@@ -181,7 +182,7 @@ def test_save_256x256(tmp_path) -> None:
         assert im_saved.size == (256, 256)
 
 
-def test_only_save_relevant_sizes(tmp_path) -> None:
+def test_only_save_relevant_sizes(tmp_path: Path) -> None:
     """Issue #2266 https://github.com/python-pillow/Pillow/issues/2266
     Should save in 16x16, 24x24, 32x32, 48x48 sizes
     and not in 16x16, 24x24, 32x32, 48x48, 48x48, 48x48, 48x48 sizes
@@ -197,7 +198,7 @@ def test_only_save_relevant_sizes(tmp_path) -> None:
         assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
 
 
-def test_save_append_images(tmp_path) -> None:
+def test_save_append_images(tmp_path: Path) -> None:
     # append_images should be used for scaled down versions of the image
     im = hopper("RGBA")
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0))
@@ -219,7 +220,7 @@ def test_unexpected_size() -> None:
             assert im.size == (16, 16)
 
 
-def test_draw_reloaded(tmp_path) -> None:
+def test_draw_reloaded(tmp_path: Path) -> None:
     with Image.open(TEST_ICO_FILE) as im:
         outfile = str(tmp_path / "temp_saved_hopper_draw.ico")
 

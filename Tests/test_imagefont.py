@@ -116,7 +116,7 @@ def test_render_equal(layout_engine) -> None:
     assert_image_equal(img_path, img_filelike)
 
 
-def test_non_ascii_path(tmp_path, layout_engine) -> None:
+def test_non_ascii_path(tmp_path: Path, layout_engine) -> None:
     tempfile = str(tmp_path / ("temp_" + chr(128) + ".ttf"))
     try:
         shutil.copy(FONT_PATH, tempfile)

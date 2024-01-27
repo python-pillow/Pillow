@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import ImageQt
@@ -42,7 +44,7 @@ def roundtrip(expected) -> None:
 
 
 @pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
-def test_sanity(tmp_path) -> None:
+def test_sanity(tmp_path: Path) -> None:
     # Segfault test
     app = QApplication([])
     ex = Example()

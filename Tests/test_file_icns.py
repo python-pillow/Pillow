@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import os
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -35,7 +36,7 @@ def test_load() -> None:
         assert im.load()[0, 0] == (0, 0, 0, 0)
 
 
-def test_save(tmp_path) -> None:
+def test_save(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.icns")
 
     with Image.open(TEST_FILE) as im:
@@ -52,7 +53,7 @@ def test_save(tmp_path) -> None:
         assert _binary.i32be(fp.read(4)) == file_length
 
 
-def test_save_append_images(tmp_path) -> None:
+def test_save_append_images(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.icns")
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0, 128))
 

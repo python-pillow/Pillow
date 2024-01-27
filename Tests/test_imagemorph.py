@@ -1,6 +1,8 @@
 # Test the ImageMorphology functionality
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, ImageMorph, _imagingmorph
@@ -287,7 +289,7 @@ def test_load_invalid_mrl() -> None:
     assert str(e.value) == "Wrong size operator file!"
 
 
-def test_roundtrip_mrl(tmp_path) -> None:
+def test_roundtrip_mrl(tmp_path: Path) -> None:
     # Arrange
     tempfile = str(tmp_path / "temp.mrl")
     mop = ImageMorph.MorphOp(op_name="corner")

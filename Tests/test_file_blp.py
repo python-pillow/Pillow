@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image
@@ -35,7 +37,7 @@ def test_load_blp2_dxt1a() -> None:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
 
 
-def test_save(tmp_path) -> None:
+def test_save(tmp_path: Path) -> None:
     f = str(tmp_path / "temp.blp")
 
     for version in ("BLP1", "BLP2"):
