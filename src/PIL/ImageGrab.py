@@ -158,7 +158,8 @@ def grabclipboard():
 
         p = subprocess.run(args, capture_output=True)
         if p.returncode != 0:
-            allowed_errors = [
+            err = p.stderr
+            for silent_error in [
                 # wl-paste, when the clipboard is empty
                 b"Nothing is copied",
                 # wl-paste/debian xclip, when an image isn't available
@@ -167,10 +168,9 @@ def grabclipboard():
                 b"cannot convert",
                 # xclip, when the clipboard isn't initialized
                 b"There is no owner",
-            ]
-            err = p.stderr
-            if any(e in err for e in allowed_errors):
-                return None
+            ]:
+                if err in silent_error:
+                    return None
             msg = f"{args[0]} error"
             if err:
                 msg += f": {err.strip().decode()}"
