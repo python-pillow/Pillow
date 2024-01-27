@@ -127,7 +127,7 @@ def compare_reduce_with_box(im, factor) -> None:
 
 
 def compare_reduce_with_reference(
-    im, factor, average_diff=0.4, max_diff: int = 1
+    im, factor, average_diff: float = 0.4, max_diff: int = 1
 ) -> None:
     """Image.reduce() should look very similar to Image.resize(BOX).
 
