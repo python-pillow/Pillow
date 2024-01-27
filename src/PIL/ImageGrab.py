@@ -157,17 +157,21 @@ def grabclipboard():
             raise NotImplementedError(msg)
 
         p = subprocess.run(args, capture_output=True)
-        err = p.stderr.decode()
+        err = p.stderr
         if p.returncode != 0:
             allowed_errors = [
-                "Nothing is copied",  # wl-paste, when the clipboard is empty
-                "not available",  # wl-paste/debian xclip, when an image isn't available
-                "cannot convert",  # xclip, when an image isn't available
-                "There is no owner",  # xclip, when the clipboard isn't initialized
+                # wl-paste, when the clipboard is empty
+                b"Nothing is copied",
+                # wl-paste/debian xclip, when an image isn't available
+                b"not available",
+                # xclip, when an image isn't available
+                b"cannot convert",
+                # xclip, when the clipboard isn't initialized
+                b"There is no owner",
             ]
             if any(e in err for e in allowed_errors):
                 return None
-            msg = f"{args[0]} error: {err.strip() if err else 'Unknown error'}"
+            msg = f"{args[0]} error: {err.strip().decode() if err else 'Unknown error'}"
             raise ChildProcessError(msg)
 
         data = io.BytesIO(p.stdout)
