@@ -157,7 +157,6 @@ def grabclipboard():
             raise NotImplementedError(msg)
 
         p = subprocess.run(args, capture_output=True)
-        err = p.stderr
         if p.returncode != 0:
             allowed_errors = [
                 # wl-paste, when the clipboard is empty
@@ -169,6 +168,7 @@ def grabclipboard():
                 # xclip, when the clipboard isn't initialized
                 b"There is no owner",
             ]
+            err = p.stderr
             if any(e in err for e in allowed_errors):
                 return None
             msg = f"{args[0]} error: {err.strip().decode() if err else 'Unknown error'}"
