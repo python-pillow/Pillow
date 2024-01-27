@@ -50,7 +50,7 @@ class TestFileJpeg:
         im.bytes = test_bytes  # for testing only
         return im
 
-    def gen_random_image(self, size, mode="RGB"):
+    def gen_random_image(self, size, mode: str = "RGB"):
         """Generates a very hard to compress file
         :param size: tuple
         :param mode: optional image mode

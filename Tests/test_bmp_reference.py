@@ -10,7 +10,7 @@ from .helper import assert_image_similar
 base = os.path.join("Tests", "images", "bmp")
 
 
-def get_files(d, ext=".bmp"):
+def get_files(d, ext: str = ".bmp"):
     return [
         os.path.join(base, d, f) for f in os.listdir(os.path.join(base, d)) if ext in f
     ]
