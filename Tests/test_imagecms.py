@@ -334,7 +334,7 @@ def test_extended_information() -> None:
     o = ImageCms.getOpenProfile(SRGB)
     p = o.profile
 
-    def assert_truncated_tuple_equal(tup1, tup2, digits=10) -> None:
+    def assert_truncated_tuple_equal(tup1, tup2, digits: int = 10) -> None:
         # Helper function to reduce precision of tuples of floats
         # recursively and then check equality.
         power = 10**digits

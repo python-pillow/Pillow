@@ -87,7 +87,7 @@ def test_large_count(tmp_path) -> None:
     _roundtrip(tmp_path, im)
 
 
-def _test_buffer_overflow(tmp_path, im, size=1024) -> None:
+def _test_buffer_overflow(tmp_path, im, size: int = 1024) -> None:
     _last = ImageFile.MAXBLOCK
     ImageFile.MAXBLOCK = size
     try:

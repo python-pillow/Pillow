@@ -126,7 +126,9 @@ def compare_reduce_with_box(im, factor) -> None:
     assert reduced == reference
 
 
-def compare_reduce_with_reference(im, factor, average_diff=0.4, max_diff=1) -> None:
+def compare_reduce_with_reference(
+    im, factor, average_diff=0.4, max_diff: int = 1
+) -> None:
     """Image.reduce() should look very similar to Image.resize(BOX).
 
     A reference image is compiled from a large source area
@@ -171,7 +173,7 @@ def compare_reduce_with_reference(im, factor, average_diff=0.4, max_diff=1) -> N
     assert_compare_images(reduced, reference, average_diff, max_diff)
 
 
-def assert_compare_images(a, b, max_average_diff, max_diff=255) -> None:
+def assert_compare_images(a, b, max_average_diff, max_diff: int = 255) -> None:
     assert a.mode == b.mode, f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, f"got size {repr(a.size)}, expected {repr(b.size)}"
 

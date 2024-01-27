@@ -14,7 +14,7 @@ TEST_IMAGE_SIZE = (10, 10)
 
 
 def test_numpy_to_image() -> None:
-    def to_image(dtype, bands=1, boolean=0):
+    def to_image(dtype, bands: int = 1, boolean: int = 0):
         if bands == 1:
             if boolean:
                 data = [0, 255] * 50
