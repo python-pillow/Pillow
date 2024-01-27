@@ -16,7 +16,7 @@ def get_files(d, ext=".bmp"):
     ]
 
 
-def test_bad():
+def test_bad() -> None:
     """These shouldn't crash/dos, but they shouldn't return anything
     either"""
     for f in get_files("b"):
@@ -56,7 +56,7 @@ def test_questionable():
                 raise
 
 
-def test_good():
+def test_good() -> None:
     """These should all work. There's a set of target files in the
     html directory that we can compare against."""
 

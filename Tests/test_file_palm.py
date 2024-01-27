@@ -10,7 +10,7 @@ from PIL import Image
 from .helper import assert_image_equal, hopper, magick_command
 
 
-def helper_save_as_palm(tmp_path, mode):
+def helper_save_as_palm(tmp_path, mode) -> None:
     # Arrange
     im = hopper(mode)
     outfile = str(tmp_path / ("temp_" + mode + ".palm"))
@@ -32,7 +32,7 @@ def open_with_magick(magick, tmp_path, f):
     return Image.open(outfile)
 
 
-def roundtrip(tmp_path, mode):
+def roundtrip(tmp_path, mode) -> None:
     magick = magick_command()
     if not magick:
         return
@@ -45,7 +45,7 @@ def roundtrip(tmp_path, mode):
     assert_image_equal(converted, im)
 
 
-def test_monochrome(tmp_path):
+def test_monochrome(tmp_path) -> None:
     # Arrange
     mode = "1"
 
@@ -55,7 +55,7 @@ def test_monochrome(tmp_path):
 
 
 @pytest.mark.xfail(reason="Palm P image is wrong")
-def test_p_mode(tmp_path):
+def test_p_mode(tmp_path) -> None:
     # Arrange
     mode = "P"
 
@@ -65,6 +65,6 @@ def test_p_mode(tmp_path):
 
 
 @pytest.mark.parametrize("mode", ("L", "RGB"))
-def test_oserror(tmp_path, mode):
+def test_oserror(tmp_path, mode) -> None:
     with pytest.raises(OSError):
         helper_save_as_palm(tmp_path, mode)

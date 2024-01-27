@@ -15,7 +15,7 @@ if ImageQt.qt_is_installed:
 
 
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "L", "P", "1"))
-def test_sanity(mode, tmp_path):
+def test_sanity(mode, tmp_path) -> None:
     src = hopper(mode)
     data = ImageQt.toqimage(src)
 

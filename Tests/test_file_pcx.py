@@ -7,7 +7,7 @@ from PIL import Image, ImageFile, PcxImagePlugin
 from .helper import assert_image_equal, hopper
 
 
-def _roundtrip(tmp_path, im):
+def _roundtrip(tmp_path, im) -> None:
     f = str(tmp_path / "temp.pcx")
     im.save(f)
     with Image.open(f) as im2:
@@ -18,7 +18,7 @@ def _roundtrip(tmp_path, im):
         assert_image_equal(im2, im)
 
 
-def test_sanity(tmp_path):
+def test_sanity(tmp_path) -> None:
     for mode in ("1", "L", "P", "RGB"):
         _roundtrip(tmp_path, hopper(mode))
 
@@ -34,7 +34,7 @@ def test_sanity(tmp_path):
         im.save(f)
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
     with pytest.raises(SyntaxError):
@@ -42,7 +42,7 @@ def test_invalid_file():
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-def test_odd(tmp_path, mode):
+def test_odd(tmp_path, mode) -> None:
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
@@ -51,7 +51,7 @@ def test_odd(tmp_path, mode):
     _roundtrip(tmp_path, hopper(mode).resize((511, 511)))
 
 
-def test_odd_read():
+def test_odd_read() -> None:
     # Reading an image with an odd stride, making it malformed
     with Image.open("Tests/images/odd_stride.pcx") as im:
         im.load()
@@ -59,7 +59,7 @@ def test_odd_read():
         assert im.size == (371, 150)
 
 
-def test_pil184():
+def test_pil184() -> None:
     # Check reading of files where xmin/xmax is not zero.
 
     test_file = "Tests/images/pil184.pcx"
@@ -71,7 +71,7 @@ def test_pil184():
         assert im.histogram()[0] + im.histogram()[255] == 447 * 144
 
 
-def test_1px_width(tmp_path):
+def test_1px_width(tmp_path) -> None:
     im = Image.new("L", (1, 256))
     px = im.load()
     for y in range(256):
@@ -79,7 +79,7 @@ def test_1px_width(tmp_path):
     _roundtrip(tmp_path, im)
 
 
-def test_large_count(tmp_path):
+def test_large_count(tmp_path) -> None:
     im = Image.new("L", (256, 1))
     px = im.load()
     for x in range(256):
@@ -87,7 +87,7 @@ def test_large_count(tmp_path):
     _roundtrip(tmp_path, im)
 
 
-def _test_buffer_overflow(tmp_path, im, size=1024):
+def _test_buffer_overflow(tmp_path, im, size=1024) -> None:
     _last = ImageFile.MAXBLOCK
     ImageFile.MAXBLOCK = size
     try:
@@ -96,7 +96,7 @@ def _test_buffer_overflow(tmp_path, im, size=1024):
         ImageFile.MAXBLOCK = _last
 
 
-def test_break_in_count_overflow(tmp_path):
+def test_break_in_count_overflow(tmp_path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(4):
@@ -105,7 +105,7 @@ def test_break_in_count_overflow(tmp_path):
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_one_in_loop(tmp_path):
+def test_break_one_in_loop(tmp_path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(5):
@@ -114,7 +114,7 @@ def test_break_one_in_loop(tmp_path):
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_many_in_loop(tmp_path):
+def test_break_many_in_loop(tmp_path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(4):
@@ -125,7 +125,7 @@ def test_break_many_in_loop(tmp_path):
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_one_at_end(tmp_path):
+def test_break_one_at_end(tmp_path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(5):
@@ -135,7 +135,7 @@ def test_break_one_at_end(tmp_path):
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_many_at_end(tmp_path):
+def test_break_many_at_end(tmp_path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
     for y in range(5):
@@ -147,7 +147,7 @@ def test_break_many_at_end(tmp_path):
     _test_buffer_overflow(tmp_path, im)
 
 
-def test_break_padding(tmp_path):
+def test_break_padding(tmp_path) -> None:
     im = Image.new("L", (257, 5))
     px = im.load()
     for y in range(5):

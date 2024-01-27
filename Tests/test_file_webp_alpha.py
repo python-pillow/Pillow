@@ -14,12 +14,12 @@ from .helper import (
 _webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
-def setup_module():
+def setup_module() -> None:
     if _webp.WebPDecoderBuggyAlpha():
         pytest.skip("Buggy early version of WebP installed, not testing transparency")
 
 
-def test_read_rgba():
+def test_read_rgba() -> None:
     """
     Can we read an RGBA mode file without error?
     Does it have the bits we expect?
@@ -39,7 +39,7 @@ def test_read_rgba():
         assert_image_similar_tofile(image, "Tests/images/transparent.png", 20.0)
 
 
-def test_write_lossless_rgb(tmp_path):
+def test_write_lossless_rgb(tmp_path) -> None:
     """
     Can we write an RGBA mode file with lossless compression without error?
     Does it have the bits we expect?
@@ -68,7 +68,7 @@ def test_write_lossless_rgb(tmp_path):
         assert_image_equal(image, pil_image)
 
 
-def test_write_rgba(tmp_path):
+def test_write_rgba(tmp_path) -> None:
     """
     Can we write a RGBA mode file to WebP without error.
     Does it have the bits we expect?
@@ -99,7 +99,7 @@ def test_write_rgba(tmp_path):
             assert_image_similar(image, pil_image, 1.0)
 
 
-def test_keep_rgb_values_when_transparent(tmp_path):
+def test_keep_rgb_values_when_transparent(tmp_path) -> None:
     """
     Saving transparent pixels should retain their original RGB values
     when using the "exact" parameter.
@@ -128,7 +128,7 @@ def test_keep_rgb_values_when_transparent(tmp_path):
         assert_image_equal(reloaded.convert("RGB"), image)
 
 
-def test_write_unsupported_mode_PA(tmp_path):
+def test_write_unsupported_mode_PA(tmp_path) -> None:
     """
     Saving a palette-based file with transparency to WebP format
     should work, and be similar to the original file.

@@ -7,19 +7,19 @@ from PIL import Image, ImagePalette
 from .helper import assert_image_equal, assert_image_equal_tofile
 
 
-def test_sanity():
+def test_sanity() -> None:
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
     assert len(palette.colors) == 256
 
 
-def test_reload():
+def test_reload() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         original = im.copy()
         im.palette.dirty = 1
         assert_image_equal(im.convert("RGB"), original.convert("RGB"))
 
 
-def test_getcolor():
+def test_getcolor() -> None:
     palette = ImagePalette.ImagePalette()
     assert len(palette.palette) == 0
     assert len(palette.colors) == 0
@@ -46,7 +46,7 @@ def test_getcolor():
         palette.getcolor("unknown")
 
 
-def test_getcolor_rgba_color_rgb_palette():
+def test_getcolor_rgba_color_rgb_palette() -> None:
     palette = ImagePalette.ImagePalette("RGB")
 
     # Opaque RGBA colors are converted
@@ -65,7 +65,7 @@ def test_getcolor_rgba_color_rgb_palette():
         (255, ImagePalette.ImagePalette("RGB", list(range(256)) * 3)),
     ],
 )
-def test_getcolor_not_special(index, palette):
+def test_getcolor_not_special(index, palette) -> None:
     im = Image.new("P", (1, 1))
 
     # Do not use transparency index as a new color
@@ -79,7 +79,7 @@ def test_getcolor_not_special(index, palette):
     assert index2 not in (index, index1)
 
 
-def test_file(tmp_path):
+def test_file(tmp_path) -> None:
     palette = ImagePalette.ImagePalette("RGB", list(range(256)) * 3)
 
     f = str(tmp_path / "temp.lut")
@@ -97,7 +97,7 @@ def test_file(tmp_path):
     assert p.palette == palette.tobytes()
 
 
-def test_make_linear_lut():
+def test_make_linear_lut() -> None:
     # Arrange
     black = 0
     white = 255
@@ -113,7 +113,7 @@ def test_make_linear_lut():
         assert lut[i] == i
 
 
-def test_make_linear_lut_not_yet_implemented():
+def test_make_linear_lut_not_yet_implemented() -> None:
     # Update after FIXME
     # Arrange
     black = 1
@@ -124,7 +124,7 @@ def test_make_linear_lut_not_yet_implemented():
         ImagePalette.make_linear_lut(black, white)
 
 
-def test_make_gamma_lut():
+def test_make_gamma_lut() -> None:
     # Arrange
     exp = 5
 
@@ -142,7 +142,7 @@ def test_make_gamma_lut():
     assert lut[255] == 255
 
 
-def test_rawmode_valueerrors(tmp_path):
+def test_rawmode_valueerrors(tmp_path) -> None:
     # Arrange
     palette = ImagePalette.raw("RGB", list(range(256)) * 3)
 
@@ -156,7 +156,7 @@ def test_rawmode_valueerrors(tmp_path):
         palette.save(f)
 
 
-def test_getdata():
+def test_getdata() -> None:
     # Arrange
     data_in = list(range(256)) * 3
     palette = ImagePalette.ImagePalette("RGB", data_in)
@@ -168,7 +168,7 @@ def test_getdata():
     assert mode == "RGB"
 
 
-def test_rawmode_getdata():
+def test_rawmode_getdata() -> None:
     # Arrange
     data_in = list(range(256)) * 3
     palette = ImagePalette.raw("RGB", data_in)
@@ -181,7 +181,7 @@ def test_rawmode_getdata():
     assert data_in == data_out
 
 
-def test_2bit_palette(tmp_path):
+def test_2bit_palette(tmp_path) -> None:
     # issue #2258, 2 bit palettes are corrupted.
     outfile = str(tmp_path / "temp.png")
 
@@ -193,6 +193,6 @@ def test_2bit_palette(tmp_path):
     assert_image_equal_tofile(img, outfile)
 
 
-def test_invalid_palette():
+def test_invalid_palette() -> None:
     with pytest.raises(OSError):
         ImagePalette.load("Tests/images/hopper.jpg")

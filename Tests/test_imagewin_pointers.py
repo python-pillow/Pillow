@@ -83,7 +83,7 @@ if is_win32():
         memcpy(bp + bf.bfOffBits, pixels, bi.biSizeImage)
         return bytearray(buf)
 
-    def test_pointer(tmp_path):
+    def test_pointer(tmp_path) -> None:
         im = hopper()
         (width, height) = im.size
         opath = str(tmp_path / "temp.png")

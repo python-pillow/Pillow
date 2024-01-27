@@ -18,7 +18,7 @@ pytestmark = [
 ]
 
 
-def test_n_frames():
+def test_n_frames() -> None:
     """Ensure that WebP format sets n_frames and is_animated attributes correctly."""
 
     with Image.open("Tests/images/hopper.webp") as im:
@@ -30,7 +30,7 @@ def test_n_frames():
         assert im.is_animated
 
 
-def test_write_animation_L(tmp_path):
+def test_write_animation_L(tmp_path) -> None:
     """
     Convert an animated GIF to animated WebP, then compare the frame count, and first
     and last frames to ensure they're visually similar.
@@ -60,13 +60,13 @@ def test_write_animation_L(tmp_path):
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
 
-def test_write_animation_RGB(tmp_path):
+def test_write_animation_RGB(tmp_path) -> None:
     """
     Write an animated WebP from RGB frames, and ensure the frames
     are visually similar to the originals.
     """
 
-    def check(temp_file):
+    def check(temp_file) -> None:
         with Image.open(temp_file) as im:
             assert im.n_frames == 2
 
@@ -105,7 +105,7 @@ def test_write_animation_RGB(tmp_path):
             check(temp_file2)
 
 
-def test_timestamp_and_duration(tmp_path):
+def test_timestamp_and_duration(tmp_path) -> None:
     """
     Try passing a list of durations, and make sure the encoded
     timestamps and durations are correct.
@@ -136,7 +136,7 @@ def test_timestamp_and_duration(tmp_path):
             ts += durations[frame]
 
 
-def test_float_duration(tmp_path):
+def test_float_duration(tmp_path) -> None:
     temp_file = str(tmp_path / "temp.webp")
     with Image.open("Tests/images/iss634.apng") as im:
         assert im.info["duration"] == 70.0
@@ -148,7 +148,7 @@ def test_float_duration(tmp_path):
         assert reloaded.info["duration"] == 70
 
 
-def test_seeking(tmp_path):
+def test_seeking(tmp_path) -> None:
     """
     Create an animated WebP file, and then try seeking through frames in reverse-order,
     verifying the timestamps and durations are correct.
@@ -179,7 +179,7 @@ def test_seeking(tmp_path):
             ts -= dur
 
 
-def test_seek_errors():
+def test_seek_errors() -> None:
     with Image.open("Tests/images/iss634.webp") as im:
         with pytest.raises(EOFError):
             im.seek(-1)

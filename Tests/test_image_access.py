@@ -35,16 +35,16 @@ class AccessTest:
     _need_cffi_access = False
 
     @classmethod
-    def setup_class(cls):
+    def setup_class(cls) -> None:
         Image.USE_CFFI_ACCESS = cls._need_cffi_access
 
     @classmethod
-    def teardown_class(cls):
+    def teardown_class(cls) -> None:
         Image.USE_CFFI_ACCESS = cls._init_cffi_access
 
 
 class TestImagePutPixel(AccessTest):
-    def test_sanity(self):
+    def test_sanity(self) -> None:
         im1 = hopper()
         im2 = Image.new(im1.mode, im1.size, 0)
 
@@ -81,7 +81,7 @@ class TestImagePutPixel(AccessTest):
 
         assert_image_equal(im1, im2)
 
-    def test_sanity_negative_index(self):
+    def test_sanity_negative_index(self) -> None:
         im1 = hopper()
         im2 = Image.new(im1.mode, im1.size, 0)
 
@@ -119,7 +119,7 @@ class TestImagePutPixel(AccessTest):
         assert_image_equal(im1, im2)
 
     @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
-    def test_numpy(self):
+    def test_numpy(self) -> None:
         im = hopper()
         pix = im.load()
 
@@ -138,7 +138,7 @@ class TestImageGetPixel(AccessTest):
             return (16, 32, 49)
         return tuple(range(1, bands + 1))
 
-    def check(self, mode, expected_color=None):
+    def check(self, mode, expected_color=None) -> None:
         if self._need_cffi_access and mode.startswith("BGR;"):
             pytest.skip("Support not added to deprecated module for BGR;* modes")
 
@@ -222,10 +222,10 @@ class TestImageGetPixel(AccessTest):
             "YCbCr",
         ),
     )
-    def test_basic(self, mode):
+    def test_basic(self, mode) -> None:
         self.check(mode)
 
-    def test_list(self):
+    def test_list(self) -> None:
         im = hopper()
         assert im.getpixel([0, 0]) == (20, 20, 70)
 
@@ -233,14 +233,14 @@ class TestImageGetPixel(AccessTest):
     @pytest.mark.parametrize(
         "expected_color", (2**15 - 1, 2**15, 2**15 + 1, 2**16 - 1)
     )
-    def test_signedness(self, mode, expected_color):
+    def test_signedness(self, mode, expected_color) -> None:
         # see https://github.com/python-pillow/Pillow/issues/452
         # pixelaccess is using signed int* instead of uint*
         self.check(mode, expected_color)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     @pytest.mark.parametrize("color", ((255, 0, 0), (255, 0, 0, 255)))
-    def test_p_putpixel_rgb_rgba(self, mode, color):
+    def test_p_putpixel_rgb_rgba(self, mode, color) -> None:
         im = Image.new(mode, (1, 1))
         im.putpixel((0, 0), color)
 
@@ -264,7 +264,7 @@ class TestCffiGetPixel(TestImageGetPixel):
 class TestCffi(AccessTest):
     _need_cffi_access = True
 
-    def _test_get_access(self, im):
+    def _test_get_access(self, im) -> None:
         """Do we get the same thing as the old pixel access
 
         Using private interfaces, forcing a capi access and
@@ -282,7 +282,7 @@ class TestCffi(AccessTest):
         with pytest.raises(ValueError):
             access[(access.xsize + 1, access.ysize + 1)]
 
-    def test_get_vs_c(self):
+    def test_get_vs_c(self) -> None:
         with pytest.warns(DeprecationWarning):
             rgb = hopper("RGB")
             rgb.load()
@@ -301,7 +301,7 @@ class TestCffi(AccessTest):
         # im = Image.new('I;32B', (10, 10), 2**10)
         # self._test_get_access(im)
 
-    def _test_set_access(self, im, color):
+    def _test_set_access(self, im, color) -> None:
         """Are we writing the correct bits into the image?
 
         Using private interfaces, forcing a capi access and
@@ -322,7 +322,7 @@ class TestCffi(AccessTest):
         with pytest.raises(ValueError):
             access[(0, 0)] = color
 
-    def test_set_vs_c(self):
+    def test_set_vs_c(self) -> None:
         rgb = hopper("RGB")
         with pytest.warns(DeprecationWarning):
             rgb.load()
@@ -345,11 +345,11 @@ class TestCffi(AccessTest):
         # self._test_set_access(im, 2**13-1)
 
     @pytest.mark.filterwarnings("ignore::DeprecationWarning")
-    def test_not_implemented(self):
+    def test_not_implemented(self) -> None:
         assert PyAccess.new(hopper("BGR;15")) is None
 
     # ref https://github.com/python-pillow/Pillow/pull/2009
-    def test_reference_counting(self):
+    def test_reference_counting(self) -> None:
         size = 10
 
         for _ in range(10):
@@ -361,7 +361,7 @@ class TestCffi(AccessTest):
                 assert px[i, 0] == 0
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
-    def test_p_putpixel_rgb_rgba(self, mode):
+    def test_p_putpixel_rgb_rgba(self, mode) -> None:
         for color in ((255, 0, 0), (255, 0, 0, 127 if mode == "PA" else 255)):
             im = Image.new(mode, (1, 1))
             with pytest.warns(DeprecationWarning):
@@ -379,7 +379,7 @@ class TestImagePutPixelError(AccessTest):
     INVALID_TYPES = ["foo", 1.0, None]
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1)
-    def test_putpixel_type_error1(self, mode):
+    def test_putpixel_type_error1(self, mode) -> None:
         im = hopper(mode)
         for v in self.INVALID_TYPES:
             with pytest.raises(TypeError, match="color must be int or tuple"):
@@ -402,14 +402,14 @@ class TestImagePutPixelError(AccessTest):
             ),
         ),
     )
-    def test_putpixel_invalid_number_of_bands(self, mode, band_numbers, match):
+    def test_putpixel_invalid_number_of_bands(self, mode, band_numbers, match) -> None:
         im = hopper(mode)
         for band_number in band_numbers:
             with pytest.raises(TypeError, match=match):
                 im.putpixel((0, 0), (0,) * band_number)
 
     @pytest.mark.parametrize("mode", IMAGE_MODES2)
-    def test_putpixel_type_error2(self, mode):
+    def test_putpixel_type_error2(self, mode) -> None:
         im = hopper(mode)
         for v in self.INVALID_TYPES:
             with pytest.raises(
@@ -418,7 +418,7 @@ class TestImagePutPixelError(AccessTest):
                 im.putpixel((0, 0), v)
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1 + IMAGE_MODES2)
-    def test_putpixel_overflow_error(self, mode):
+    def test_putpixel_overflow_error(self, mode) -> None:
         im = hopper(mode)
         with pytest.raises(OverflowError):
             im.putpixel((0, 0), 2**80)
@@ -427,7 +427,7 @@ class TestImagePutPixelError(AccessTest):
 class TestEmbeddable:
     @pytest.mark.xfail(reason="failing test")
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
-    def test_embeddable(self):
+    def test_embeddable(self) -> None:
         import ctypes
 
         from setuptools.command.build_ext import new_compiler
