@@ -171,7 +171,9 @@ def grabclipboard():
             err = p.stderr
             if any(e in err for e in allowed_errors):
                 return None
-            msg = f"{args[0]} error: {err.strip().decode() if err else 'Unknown error'}"
+            msg = f"{args[0]} error"
+            if err:
+                msg += f": {err.strip().decode()}"
             raise ChildProcessError(msg)
 
         data = io.BytesIO(p.stdout)
