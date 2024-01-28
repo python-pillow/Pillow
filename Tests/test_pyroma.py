@@ -7,7 +7,7 @@ from PIL import __version__
 pyroma = pytest.importorskip("pyroma", reason="Pyroma not installed")
 
 
-def test_pyroma():
+def test_pyroma() -> None:
     # Arrange
     data = pyroma.projectdata.get_data(".")
 
