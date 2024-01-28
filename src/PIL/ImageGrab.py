@@ -162,7 +162,11 @@ def grabclipboard():
             for silent_error in [
                 # wl-paste, when the clipboard is empty
                 b"Nothing is copied",
-                # wl-paste/debian xclip, when an image isn't available
+                # Ubuntu/Debian wl-paste, when the clipboard is empty
+                b"No selection",
+                # Ubuntu/Debian wl-paste, when an image isn't available
+                b"No suitable type of content copied",
+                # wl-paste or Ubuntu/Debian xclip, when an image isn't available
                 b" not available",
                 # xclip, when an image isn't available
                 b"cannot convert ",
