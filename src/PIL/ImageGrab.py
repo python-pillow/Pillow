@@ -163,11 +163,11 @@ def grabclipboard():
                 # wl-paste, when the clipboard is empty
                 b"Nothing is copied",
                 # wl-paste/debian xclip, when an image isn't available
-                b"not available",
+                b" not available",
                 # xclip, when an image isn't available
-                b"cannot convert",
+                b"cannot convert ",
                 # xclip, when the clipboard isn't initialized
-                b"There is no owner",
+                b"xclip: Error: There is no owner for the ",
             ]:
                 if err in silent_error:
                     return None
