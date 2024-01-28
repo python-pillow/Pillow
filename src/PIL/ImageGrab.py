@@ -173,7 +173,7 @@ def grabclipboard():
                 # xclip, when the clipboard isn't initialized
                 b"xclip: Error: There is no owner for the ",
             ]:
-                if err in silent_error:
+                if silent_error in err:
                     return None
             msg = f"{args[0]} error"
             if err:
