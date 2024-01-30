@@ -131,13 +131,13 @@ untar pillow-depends-main.zip
 
 if [[ -n "$IS_MACOS" ]]; then
   # webp, libtiff, libxcb cause a conflict with building webp, libtiff, libxcb
-  # libxdmcp causes an issue on macOS < 11
+  # libxau and libxdmcp cause an issue on macOS < 11
   # if php is installed, brew tries to reinstall these after installing openblas
   # remove cairo to fix building harfbuzz on arm64
   # remove lcms2 and libpng to fix building openjpeg on arm64
   # remove zstd to avoid inclusion on x86_64
   # curl from brew requires zstd, use system curl
-  brew remove --ignore-dependencies webp libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript zstd
+  brew remove --ignore-dependencies webp libpng libtiff libxcb libxau libxdmcp curl php cairo lcms2 ghostscript zstd
 
   brew install pkg-config
 fi
