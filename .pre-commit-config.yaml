@@ -32,6 +32,7 @@ repos:
     rev: v4.5.0
     hooks:
       - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
       - id: check-merge-conflict
       - id: check-json
       - id: check-toml
