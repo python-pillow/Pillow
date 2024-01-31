@@ -137,6 +137,30 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             /* Compressor configuration */
             jpeg_set_defaults(&context->cinfo);
 
+            /* Prevent RGB -> YCbCr conversion */
+            if (context->keep_rgb) {
+                switch (context->cinfo.in_color_space) {
+                    case JCS_RGB:
+#ifdef JCS_EXTENSIONS
+                    case JCS_EXT_RGBX:
+#endif
+                        switch (context->subsampling) {
+                            case -1:  /* Default */
+                            case 0:   /* No subsampling */
+                                break;
+                            default:
+                                /* Would subsample the green and blue
+                                   channels, which doesn't make sense */
+                                state->errcode = IMAGING_CODEC_CONFIG;
+                                return -1;
+                        }
+                        jpeg_set_colorspace(&context->cinfo, JCS_RGB);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             /* Use custom quantization tables */
             if (context->qtables) {
                 int i;
@@ -210,6 +234,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             context->cinfo.smoothing_factor = context->smooth;
             context->cinfo.optimize_coding = (boolean)context->optimize;
+            context->cinfo.restart_interval = context->restart_marker_blocks;
+            context->cinfo.restart_in_rows = context->restart_marker_rows;
             if (context->xdpi > 0 && context->ydpi > 0) {
                 context->cinfo.write_JFIF_header = TRUE;
                 context->cinfo.density_unit = 1; /* dots per inch */
@@ -218,9 +244,9 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             switch (context->streamtype) {
                 case 1:
-                    /* tables only -- not yet implemented */
-                    state->errcode = IMAGING_CODEC_CONFIG;
-                    return -1;
+                    /* tables only */
+                    jpeg_write_tables(&context->cinfo);
+                    goto cleanup;
                 case 2:
                     /* image only */
                     jpeg_suppress_tables(&context->cinfo, TRUE);
@@ -316,6 +342,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             jpeg_finish_compress(&context->cinfo);
 
+cleanup:
             /* Clean up */
             if (context->comment) {
                 free(context->comment);

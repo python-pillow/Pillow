@@ -22,6 +22,7 @@
 # Figure 206. Windows Paint Version 2: "LinS" Format. Used in Windows V2.03
 #
 # See also: https://www.fileformat.info/format/mspaint/egff.htm
+from __future__ import annotations
 
 import io
 import struct
@@ -34,7 +35,7 @@ from ._binary import o16le as o16
 # read MSP files
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] in [b"DanM", b"LinS"]
 
 
@@ -47,8 +48,10 @@ class MspImageFile(ImageFile.ImageFile):
     format = "MSP"
     format_description = "Windows Paint"
 
-    def _open(self):
+    def _open(self) -> None:
         # Header
+        assert self.fp is not None
+
         s = self.fp.read(32)
         if not _accept(s):
             msg = "not an MSP file"
@@ -108,7 +111,9 @@ class MspDecoder(ImageFile.PyDecoder):
 
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
+
         img = io.BytesIO()
         blank_line = bytearray((0xFF,) * ((self.state.xsize + 7) // 8))
         try:
@@ -158,7 +163,7 @@ Image.register_decoder("MSP", MspDecoder)
 # write MSP files (uncompressed only)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: io.BytesIO, filename: str) -> None:
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as MSP"
         raise OSError(msg)

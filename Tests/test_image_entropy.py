@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from .helper import hopper
 
 
-def test_entropy():
+def test_entropy() -> None:
     def entropy(mode):
         return hopper(mode).entropy()
 

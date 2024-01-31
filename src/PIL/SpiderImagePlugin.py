@@ -32,6 +32,8 @@
 # Details about the Spider image format:
 # https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
 #
+from __future__ import annotations
+
 import os
 import struct
 import sys
@@ -238,9 +240,7 @@ def makeSpiderHeader(im):
     if nvalues < 23:
         return []
 
-    hdr = []
-    for i in range(nvalues):
-        hdr.append(0.0)
+    hdr = [0.0] * nvalues
 
     # NB these are Fortran indices
     hdr[1] = 1.0  # nslice (=1 for an image)

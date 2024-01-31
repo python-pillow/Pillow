@@ -10,7 +10,7 @@ operations. As a result PIL was unable to open them as images, requiring a wrap 
 ``cStringIO`` or ``BytesIO``.
 
 Now new functionality has been added to ``Image.open()`` by way of an ``.seek(0)`` check and
-catch on exception ``AttributeError`` or ``io.UnsupportedOperation``. If this is caught we
+catch on exception :py:exc:`AttributeError` or :py:exc:`io.UnsupportedOperation`. If this is caught we
 attempt to wrap the object using ``io.BytesIO`` (which will only work on buffer-file-like
 objects).
 

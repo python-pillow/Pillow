@@ -5,8 +5,10 @@ include *.md
 include *.py
 include *.rst
 include *.sh
+include *.toml
 include *.txt
 include *.yaml
+include .flake8
 include LICENSE
 include Makefile
 include tox.ini

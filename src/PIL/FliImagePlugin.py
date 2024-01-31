@@ -14,6 +14,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import os
 
@@ -150,7 +151,8 @@ class FliImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(4)
         if not s:
-            raise EOFError
+            msg = "missing frame size"
+            raise EOFError(msg)
 
         framesize = i32(s)
 

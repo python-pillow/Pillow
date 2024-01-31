@@ -9,6 +9,7 @@ The contents of this file are hereby released in the public domain (CC0)
 Full text of the CC0 license:
   https://creativecommons.org/publicdomain/zero/1.0/
 """
+from __future__ import annotations
 
 import struct
 from io import BytesIO

@@ -18,8 +18,10 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import re
+from io import BytesIO
 
 from . import Image, ImageFile
 
@@ -35,7 +37,7 @@ xbm_head = re.compile(
 )
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix.lstrip()[:7] == b"#define"
 
 
@@ -47,7 +49,9 @@ class XbmImageFile(ImageFile.ImageFile):
     format = "XBM"
     format_description = "X11 Bitmap"
 
-    def _open(self):
+    def _open(self) -> None:
+        assert self.fp is not None
+
         m = xbm_head.match(self.fp.read(512))
 
         if not m:
@@ -66,7 +70,7 @@ class XbmImageFile(ImageFile.ImageFile):
         self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: BytesIO, filename: str) -> None:
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as XBM"
         raise OSError(msg)

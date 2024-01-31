@@ -22,7 +22,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import os
 
@@ -230,21 +230,21 @@ class BmpImageFile(ImageFile.ImageFile):
             else:
                 padding = file_info["palette_padding"]
                 palette = read(padding * file_info["colors"])
-                greyscale = True
+                grayscale = True
                 indices = (
                     (0, 255)
                     if file_info["colors"] == 2
                     else list(range(file_info["colors"]))
                 )
 
-                # ----------------- Check if greyscale and ignore palette if so
+                # ----------------- Check if grayscale and ignore palette if so
                 for ind, val in enumerate(indices):
                     rgb = palette[ind * padding : ind * padding + 3]
                     if rgb != o8(val) * 3:
-                        greyscale = False
+                        grayscale = False
 
-                # ------- If all colors are grey, white or black, ditch palette
-                if greyscale:
+                # ------- If all colors are gray, white or black, ditch palette
+                if grayscale:
                     self._mode = "1" if file_info["colors"] == 2 else "L"
                     raw_mode = self.mode
                 else:
@@ -396,7 +396,7 @@ def _save(im, fp, filename, bitmap_header=True):
     dpi = info.get("dpi", (96, 96))
 
     # 1 meter == 39.3701 inches
-    ppm = tuple(map(lambda x: int(x * 39.3701 + 0.5), dpi))
+    ppm = tuple(int(x * 39.3701 + 0.5) for x in dpi)
 
     stride = ((im.size[0] * bits + 7) // 8 + 3) & (~3)
     header = 40  # or 64 for OS/2 version 2

@@ -25,12 +25,16 @@
 # See the README file for information on usage and redistribution.
 #
 
+from __future__ import annotations
+
 import base64
 import os
 import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
+from pathlib import Path
+from typing import BinaryIO
 
 from . import Image
 from ._util import is_directory, is_path
@@ -49,7 +53,7 @@ try:
 except ImportError as ex:
     from ._util import DeferredError
 
-    core = DeferredError(ex)
+    core = DeferredError.new(ex)
 
 
 def _string_length_check(text):
@@ -145,6 +149,8 @@ class ImageFont:
         :return: An internal PIL storage memory instance as defined by the
                  :py:mod:`PIL.Image.core` interface module.
         """
+        _string_length_check(text)
+        Image._decompression_bomb_check(self.font.getsize(text))
         return self.font.getmask(text, mode)
 
     def getbbox(self, text, *args, **kwargs):
@@ -185,8 +191,19 @@ class ImageFont:
 class FreeTypeFont:
     """FreeType font wrapper (requires _imagingft service)"""
 
-    def __init__(self, font=None, size=10, index=0, encoding="", layout_engine=None):
+    def __init__(
+        self,
+        font: bytes | str | Path | BinaryIO | None = None,
+        size: float = 10,
+        index: int = 0,
+        encoding: str = "",
+        layout_engine: Layout | None = None,
+    ) -> None:
         # FIXME: use service provider instead
+
+        if size <= 0:
+            msg = "font size must be greater than 0"
+            raise ValueError(msg)
 
         self.path = font
         self.size = size
@@ -213,6 +230,8 @@ class FreeTypeFont:
             )
 
         if is_path(font):
+            if isinstance(font, Path):
+                font = str(font)
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -375,8 +394,9 @@ class FreeTypeFont:
         :param stroke_width: The width of the text stroke.
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
@@ -449,8 +469,9 @@ class FreeTypeFont:
                          .. versionadded:: 6.2.0
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
                          .. versionadded:: 8.0.0
 
@@ -541,8 +562,9 @@ class FreeTypeFont:
                          .. versionadded:: 6.2.0
 
         :param anchor:  The text anchor alignment. Determines the relative location of
-                        the anchor to the text. The default alignment is top left.
-                        See :ref:`text-anchors` for valid values.
+                        the anchor to the text. The default alignment is top left,
+                        specifically ``la`` for horizontal text and ``lt`` for
+                        vertical text. See :ref:`text-anchors` for details.
 
                          .. versionadded:: 8.0.0
 
@@ -562,22 +584,13 @@ class FreeTypeFont:
         _string_length_check(text)
         if start is None:
             start = (0, 0)
-        im = None
-        size = None
 
-        def fill(mode, im_size):
-            nonlocal im, size
+        def fill(width, height):
+            size = (width, height)
+            Image._decompression_bomb_check(size)
+            return Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
 
-            size = im_size
-            if Image.MAX_IMAGE_PIXELS is not None:
-                pixels = max(1, size[0]) * max(1, size[1])
-                if pixels > 2 * Image.MAX_IMAGE_PIXELS:
-                    return
-
-            im = Image.core.fill(mode, size)
-            return im
-
-        offset = self.font.render(
+        return self.font.render(
             text,
             fill,
             mode,
@@ -590,8 +603,6 @@ class FreeTypeFont:
             start[0],
             start[1],
         )
-        Image._decompression_bomb_check(size)
-        return im, offset
 
     def font_variant(
         self, font=None, size=None, index=None, encoding=None, layout_engine=None
@@ -712,7 +723,6 @@ class TransposedFont:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
-        _string_length_check(text)
         return self.font.getlength(text, *args, **kwargs)
 
 
@@ -775,7 +785,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      This specifies the character set to use. It does not alter the
                      encoding of any text provided in subsequent operations.
     :param layout_engine: Which layout engine to use, if available:
-                     :data:`.ImageFont.Layout.BASIC` or :data:`.ImageFont.Layout.RAQM`.
+                     :attr:`.ImageFont.Layout.BASIC` or :attr:`.ImageFont.Layout.RAQM`.
                      If it is available, Raqm layout will be used by default.
                      Otherwise, basic layout will be used.
 
@@ -788,6 +798,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
                      .. versionadded:: 4.2.0
     :return: A font object.
     :exception OSError: If the file could not be read.
+    :exception ValueError: If the font size is not greater than zero.
     """
 
     def freetype(font):

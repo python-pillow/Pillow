@@ -19,6 +19,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 import os
@@ -77,14 +78,11 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
 
     # Hack to support hi-res rendering
     scale = int(scale) or 1
-    # orig_size = size
-    # orig_bbox = bbox
-    size = (size[0] * scale, size[1] * scale)
+    width = size[0] * scale
+    height = size[1] * scale
     # resolution is dependent on bbox and size
-    res = (
-        72.0 * size[0] / (bbox[2] - bbox[0]),
-        72.0 * size[1] / (bbox[3] - bbox[1]),
-    )
+    res_x = 72.0 * width / (bbox[2] - bbox[0])
+    res_y = 72.0 * height / (bbox[3] - bbox[1])
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
@@ -121,8 +119,8 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
     command = [
         gs_binary,
         "-q",  # quiet mode
-        "-g%dx%d" % size,  # set output geometry (pixels)
-        "-r%fx%f" % res,  # set input DPI (dots per inch)
+        f"-g{width:d}x{height:d}",  # set output geometry (pixels)
+        f"-r{res_x:f}x{res_y:f}",  # set input DPI (dots per inch)
         "-dBATCH",  # exit after processing
         "-dNOPAUSE",  # don't pause between pages
         "-dSAFER",  # safe mode

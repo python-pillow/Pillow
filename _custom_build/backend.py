@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import sys
 
-from setuptools.build_meta import *  # noqa: F401, F403
+from setuptools.build_meta import *  # noqa: F403
 from setuptools.build_meta import build_wheel
 
 backend_class = build_wheel.__self__.__class__

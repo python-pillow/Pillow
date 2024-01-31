@@ -8,13 +8,14 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import math
 
 from . import Image, ImageFile
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:6] == b"SIMPLE"
 
 
@@ -22,8 +23,10 @@ class FitsImageFile(ImageFile.ImageFile):
     format = "FITS"
     format_description = "FITS"
 
-    def _open(self):
-        headers = {}
+    def _open(self) -> None:
+        assert self.fp is not None
+
+        headers: dict[bytes, bytes] = {}
         while True:
             header = self.fp.read(80)
             if not header:
@@ -54,12 +57,10 @@ class FitsImageFile(ImageFile.ImageFile):
             self._mode = "L"
         elif number_of_bits == 16:
             self._mode = "I"
-            # rawmode = "I;16S"
         elif number_of_bits == 32:
             self._mode = "I"
         elif number_of_bits in (-32, -64):
             self._mode = "F"
-            # rawmode = "F" if number_of_bits == -32 else "F;64F"
 
         offset = math.ceil(self.fp.tell() / 2880) * 2880
         self.tile = [("raw", (0, 0) + self.size, offset, (self.mode, 0, -1))]

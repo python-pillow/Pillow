@@ -1,6 +1,14 @@
 Installation
 ============
 
+.. raw:: html
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      activateTab(getOS());
+    });
+    </script>
+
 Warnings
 --------
 
@@ -42,6 +50,11 @@ Install Pillow with :command:`pip`::
     python3 -m pip install --upgrade pip
     python3 -m pip install --upgrade Pillow
 
+Optionally, install :pypi:`defusedxml` for Pillow to read XMP data,
+and :pypi:`olefile` for Pillow to read FPX and MIC images::
+
+    python3 -m pip install --upgrade defusedxml olefile
+
 
 .. tab:: Linux
 
@@ -82,11 +95,10 @@ Install Pillow with :command:`pip`::
 
 .. tab:: Windows
 
-    .. warning:: Pillow > 9.5.0 no longer includes 32-bit wheels.
-
-    We provide Pillow binaries for Windows compiled for the matrix of
-    supported Pythons in 64-bit versions in the wheel format. These binaries include
-    support for all optional libraries except libimagequant and libxcb. Raqm support
+    We provide Pillow binaries for Windows compiled for the matrix of supported
+    Pythons in the wheel format. These include x86, x86-64 and arm64 versions
+    (with the exception of Python 3.8 on arm64). These binaries include support
+    for all optional libraries except libimagequant and libxcb. Raqm support
     requires FriBiDi to be installed separately::
 
         python3 -m pip install --upgrade pip
@@ -146,13 +158,13 @@ Many of Pillow's features require external libraries:
 
   * Pillow has been tested with libjpeg versions **6b**, **8**, **9-9d** and
     libjpeg-turbo version **8**.
-  * Starting with Pillow 3.0.0, libjpeg is required by default, but
-    may be disabled with the ``--disable-jpeg`` flag.
+  * Starting with Pillow 3.0.0, libjpeg is required by default. It can be
+    disabled with the ``-C jpeg=disable`` flag.
 
 * **zlib** provides access to compressed PNGs
 
-  * Starting with Pillow 3.0.0, zlib is required by default, but may
-    be disabled with the ``--disable-zlib`` flag.
+  * Starting with Pillow 3.0.0, zlib is required by default. It can be
+    disabled with the ``-C zlib=disable`` flag.
 
 * **libtiff** provides compressed TIFF functionality
 
@@ -163,15 +175,13 @@ Many of Pillow's features require external libraries:
 * **littlecms** provides color management
 
   * Pillow version 2.2.1 and below uses liblcms1, Pillow 2.3.0 and
-    above uses liblcms2. Tested with **1.19** and **2.7-2.15**.
+    above uses liblcms2. Tested with **1.19** and **2.7-2.16**.
 
 * **libwebp** provides the WebP format.
 
   * Pillow has been tested with version **0.1.3**, which does not read
     transparent WebP files. Versions **0.3.0** and above support
     transparency.
-
-* **tcl/tk** provides support for tkinter bitmap and photo images.
 
 * **openjpeg** provides JPEG 2000 functionality.
 
@@ -356,7 +366,7 @@ for your machine (e.g. :file:`/usr` or :file:`/usr/local`), no
 additional configuration should be required. If they are installed in
 a non-standard location, you may need to configure setuptools to use
 those locations by editing :file:`setup.py` or
-:file:`setup.cfg`, or by adding environment variables on the command
+:file:`pyproject.toml`, or by adding environment variables on the command
 line::
 
     CFLAGS="-I/usr/pkg/include" python3 -m pip install --upgrade Pillow --no-binary :all:
@@ -375,7 +385,7 @@ After navigating to the Pillow directory, run::
     python3 -m pip install --upgrade pip
     python3 -m pip install .
 
-.. _compressed archive from PyPI: https://pypi.org/project/Pillow/#files
+.. _compressed archive from PyPI: https://pypi.org/project/pillow/#files
 
 Build Options
 """""""""""""
@@ -456,9 +466,9 @@ These platforms are built and tested for every change.
 +----------------------------------+----------------------------+---------------------+
 | Debian 12 Bookworm               | 3.11                       | x86, x86-64         |
 +----------------------------------+----------------------------+---------------------+
-| Fedora 37                        | 3.11                       | x86-64              |
-+----------------------------------+----------------------------+---------------------+
 | Fedora 38                        | 3.11                       | x86-64              |
++----------------------------------+----------------------------+---------------------+
+| Fedora 39                        | 3.12                       | x86-64              |
 +----------------------------------+----------------------------+---------------------+
 | Gentoo                           | 3.9                        | x86-64              |
 +----------------------------------+----------------------------+---------------------+
@@ -478,7 +488,7 @@ These platforms are built and tested for every change.
 | Windows Server 2022              | 3.8, 3.9, 3.10, 3.11,      | x86-64              |
 |                                  | 3.12, PyPy3                |                     |
 |                                  +----------------------------+---------------------+
-|                                  | 3.11                       | x86                 |
+|                                  | 3.12                       | x86                 |
 |                                  +----------------------------+---------------------+
 |                                  | 3.9 (MinGW)                | x86-64              |
 |                                  +----------------------------+---------------------+
@@ -500,7 +510,7 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python            | | Latest tested  | | Tested     |
 |                                  | | versions                 | | Pillow version | | processors |
 +==================================+============================+==================+==============+
-| macOS 14 Sonoma                  | 3.8, 3.9, 3.10, 3.11, 3.12 | 10.1.0           |arm           |
+| macOS 14 Sonoma                  | 3.8, 3.9, 3.10, 3.11, 3.12 | 10.2.0           |arm           |
 +----------------------------------+----------------------------+------------------+--------------+
 | macOS 13 Ventura                 | 3.8, 3.9, 3.10, 3.11       | 10.0.1           |arm           |
 |                                  +----------------------------+------------------+              |
@@ -571,6 +581,10 @@ These platforms have been reported to work at the versions mentioned.
 +----------------------------------+----------------------------+------------------+--------------+
 | FreeBSD 10.2                     | 2.7, 3.4                   | 3.1.0            |x86-64        |
 +----------------------------------+----------------------------+------------------+--------------+
+| Windows 11                       | 3.9, 3.10, 3.11, 3.12      | 10.2.0           |arm64         |
++----------------------------------+----------------------------+------------------+--------------+
+| Windows 11 Pro                   | 3.11, 3.12                 | 10.2.0           |x86-64        |
++----------------------------------+----------------------------+------------------+--------------+
 | Windows 10                       | 3.7                        | 7.1.0            |x86-64        |
 +----------------------------------+----------------------------+------------------+--------------+
 | Windows 10/Cygwin 3.3            | 3.6, 3.7, 3.8, 3.9         | 8.4.0            |x86-64        |
@@ -588,5 +602,5 @@ Old Versions
 ------------
 
 You can download old distributions from the `release history at PyPI
-<https://pypi.org/project/Pillow/#history>`_ and by direct URL access
-eg. https://pypi.org/project/Pillow/1.0/.
+<https://pypi.org/project/pillow/#history>`_ and by direct URL access
+eg. https://pypi.org/project/pillow/1.0/.

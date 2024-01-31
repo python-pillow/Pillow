@@ -31,6 +31,8 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
+
 import array
 import io
 import math
@@ -85,10 +87,12 @@ def APP(self, marker):
                 self.info["dpi"] = jfif_density
             self.info["jfif_unit"] = jfif_unit
             self.info["jfif_density"] = jfif_density
-    elif marker == 0xFFE1 and s[:5] == b"Exif\0":
-        if "exif" not in self.info:
-            # extract EXIF information (incomplete)
-            self.info["exif"] = s  # FIXME: value will change
+    elif marker == 0xFFE1 and s[:6] == b"Exif\0\0":
+        # extract EXIF information
+        if "exif" in self.info:
+            self.info["exif"] += s[6:]
+        else:
+            self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
@@ -165,7 +169,8 @@ def APP(self, marker):
             except TypeError:
                 dpi = x_resolution
             if math.isnan(dpi):
-                raise ValueError
+                msg = "DPI is not a number"
+                raise ValueError(msg)
             if resolution_unit == 3:  # cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
@@ -232,9 +237,7 @@ def SOF(self, marker):
         # fixup icc profile
         self.icclist.sort()  # sort by sequence number
         if self.icclist[0][13] == len(self.icclist):
-            profile = []
-            for p in self.icclist:
-                profile.append(p[14:])
+            profile = [p[14:] for p in self.icclist]
             icc_profile = b"".join(profile)
         else:
             icc_profile = None  # wrong number of fragments
@@ -396,7 +399,7 @@ class JpegImageFile(ImageFile.ImageFile):
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
-            elif i == 0 or i == 0xFFFF:
+            elif i in {0, 0xFFFF}:
                 # padded marker or junk; move on
                 s = b"\xff"
             elif i == 0xFF00:  # Skip extraneous data (escaped 0xFF)
@@ -719,7 +722,8 @@ def _save(im, fp, filename):
             for idx, table in enumerate(qtables):
                 try:
                     if len(table) != 64:
-                        raise TypeError
+                        msg = "Invalid quantization table"
+                        raise TypeError(msg)
                     table = array.array("H", table)
                 except TypeError as e:
                     msg = "Invalid quantization table"
@@ -781,10 +785,13 @@ def _save(im, fp, filename):
         progressive,
         info.get("smooth", 0),
         optimize,
+        info.get("keep_rgb", False),
         info.get("streamtype", 0),
         dpi[0],
         dpi[1],
         subsampling,
+        info.get("restart_marker_blocks", 0),
+        info.get("restart_marker_rows", 0),
         qtables,
         comment,
         extra,

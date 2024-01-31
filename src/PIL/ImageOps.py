@@ -16,6 +16,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import functools
 import operator
@@ -56,7 +57,7 @@ def _lut(image, lut):
             lut = lut + lut + lut
         return image.point(lut)
     else:
-        msg = "not supported for this image mode"
+        msg = f"not supported for mode {image.mode}"
         raise OSError(msg)
 
 
@@ -557,9 +558,7 @@ def invert(image):
     :param image: The image to invert.
     :return: An image.
     """
-    lut = []
-    for i in range(256):
-        lut.append(255 - i)
+    lut = list(range(255, -1, -1))
     return image.point(lut) if image.mode == "1" else _lut(image, lut)
 
 
@@ -581,10 +580,8 @@ def posterize(image, bits):
     :param bits: The number of bits to keep for each channel (1-8).
     :return: An image.
     """
-    lut = []
     mask = ~(2 ** (8 - bits) - 1)
-    for i in range(256):
-        lut.append(i & mask)
+    lut = [i & mask for i in range(256)]
     return _lut(image, lut)
 
 
@@ -593,7 +590,7 @@ def solarize(image, threshold=128):
     Invert all pixel values above a threshold.
 
     :param image: The image to solarize.
-    :param threshold: All pixels above this greyscale level are inverted.
+    :param threshold: All pixels above this grayscale level are inverted.
     :return: An image.
     """
     lut = []

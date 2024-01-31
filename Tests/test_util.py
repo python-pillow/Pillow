@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 import pytest
 
 from PIL import _util
 
 
-def test_is_path():
+def test_is_path() -> None:
     # Arrange
     fp = "filename.ext"
 
@@ -14,7 +18,7 @@ def test_is_path():
     assert it_is
 
 
-def test_path_obj_is_path():
+def test_path_obj_is_path() -> None:
     # Arrange
     from pathlib import Path
 
@@ -27,7 +31,7 @@ def test_path_obj_is_path():
     assert it_is
 
 
-def test_is_not_path(tmp_path):
+def test_is_not_path(tmp_path: Path) -> None:
     # Arrange
     with (tmp_path / "temp.ext").open("w") as fp:
         pass
@@ -39,7 +43,7 @@ def test_is_not_path(tmp_path):
     assert not it_is_not
 
 
-def test_is_directory():
+def test_is_directory() -> None:
     # Arrange
     directory = "Tests"
 
@@ -50,7 +54,7 @@ def test_is_directory():
     assert it_is
 
 
-def test_is_not_directory():
+def test_is_not_directory() -> None:
     # Arrange
     text = "abc"
 
@@ -61,11 +65,11 @@ def test_is_not_directory():
     assert not it_is_not
 
 
-def test_deferred_error():
+def test_deferred_error() -> None:
     # Arrange
 
     # Act
-    thing = _util.DeferredError(ValueError("Some error text"))
+    thing = _util.DeferredError.new(ValueError("Some error text"))
 
     # Assert
     with pytest.raises(ValueError):

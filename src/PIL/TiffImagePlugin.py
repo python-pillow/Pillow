@@ -38,6 +38,8 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
+
 import io
 import itertools
 import logging
@@ -1702,25 +1704,27 @@ def _save(im, fp, filename):
             colormap += [0] * (256 - colors)
         ifd[COLORMAP] = colormap
     # data orientation
-    stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
-    # aim for given strip size (64 KB by default) when using libtiff writer
-    if libtiff:
-        im_strip_size = encoderinfo.get("strip_size", STRIP_SIZE)
-        rows_per_strip = 1 if stride == 0 else min(im_strip_size // stride, im.size[1])
-        # JPEG encoder expects multiple of 8 rows
-        if compression == "jpeg":
-            rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, im.size[1])
-    else:
-        rows_per_strip = im.size[1]
-    if rows_per_strip == 0:
-        rows_per_strip = 1
-    strip_byte_counts = 1 if stride == 0 else stride * rows_per_strip
-    strips_per_image = (im.size[1] + rows_per_strip - 1) // rows_per_strip
-    ifd[ROWSPERSTRIP] = rows_per_strip
+    w, h = ifd[IMAGEWIDTH], ifd[IMAGELENGTH]
+    stride = len(bits) * ((w * bits[0] + 7) // 8)
+    if ROWSPERSTRIP not in ifd:
+        # aim for given strip size (64 KB by default) when using libtiff writer
+        if libtiff:
+            im_strip_size = encoderinfo.get("strip_size", STRIP_SIZE)
+            rows_per_strip = 1 if stride == 0 else min(im_strip_size // stride, h)
+            # JPEG encoder expects multiple of 8 rows
+            if compression == "jpeg":
+                rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, h)
+        else:
+            rows_per_strip = h
+        if rows_per_strip == 0:
+            rows_per_strip = 1
+        ifd[ROWSPERSTRIP] = rows_per_strip
+    strip_byte_counts = 1 if stride == 0 else stride * ifd[ROWSPERSTRIP]
+    strips_per_image = (h + ifd[ROWSPERSTRIP] - 1) // ifd[ROWSPERSTRIP]
     if strip_byte_counts >= 2**16:
         ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
     ifd[STRIPBYTECOUNTS] = (strip_byte_counts,) * (strips_per_image - 1) + (
-        stride * im.size[1] - strip_byte_counts * (strips_per_image - 1),
+        stride * h - strip_byte_counts * (strips_per_image - 1),
     )
     ifd[STRIPOFFSETS] = tuple(
         range(0, strip_byte_counts * strips_per_image, strip_byte_counts)
@@ -1885,13 +1889,14 @@ class AppendingTiffWriter:
         8,  # long8
     ]
 
-    #    StripOffsets = 273
-    #    FreeOffsets = 288
-    #    TileOffsets = 324
-    #    JPEGQTables = 519
-    #    JPEGDCTables = 520
-    #    JPEGACTables = 521
-    Tags = {273, 288, 324, 519, 520, 521}
+    Tags = {
+        273,  # StripOffsets
+        288,  # FreeOffsets
+        324,  # TileOffsets
+        519,  # JPEGQTables
+        520,  # JPEGDCTables
+        521,  # JPEGACTables
+    }
 
     def __init__(self, fn, new=False):
         if hasattr(fn, "read"):
@@ -1941,8 +1946,6 @@ class AppendingTiffWriter:
 
         iimm = self.f.read(4)
         if not iimm:
-            # msg = "nothing written into new page"
-            # raise RuntimeError(msg)
             # Make it easy to finish a frame without committing to a new one.
             return
 

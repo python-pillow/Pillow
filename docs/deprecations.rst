@@ -10,7 +10,7 @@ Deprecated features
 -------------------
 
 Below are features which are considered deprecated. Where appropriate,
-a ``DeprecationWarning`` is issued.
+a :py:exc:`DeprecationWarning` is issued.
 
 PSFile
 ~~~~~~
@@ -33,6 +33,64 @@ Since Pillow's C API is now faster than PyAccess on PyPy,
 
 ``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, is
 similarly deprecated.
+
+ImageFile.raise_oserror
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.2.0
+
+``ImageFile.raise_oserror()`` has been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). The function is undocumented and is only useful for translating
+error codes returned by a codec's ``decode()`` method, which ImageFile already does
+automatically.
+
+IptcImageFile helper functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.2.0
+
+The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
+``IptcImageFile.PAD`` have been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). These are undocumented helper functions intended
+for internal use, so there is no replacement. They can each be replaced
+by a single line of code using builtin functions in Python.
+
+ImageCms constants and versions() function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.3.0
+
+A number of constants and a function in :py:mod:`.ImageCms` have been deprecated.
+This includes a table of flags based on LittleCMS version 1 which has been
+replaced with a new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
+
+============================================  ====================================================
+Deprecated                                    Use instead
+============================================  ====================================================
+``ImageCms.DESCRIPTION``                      No replacement
+``ImageCms.VERSION``                          ``PIL.__version__``
+``ImageCms.FLAGS["MATRIXINPUT"]``             :py:attr:`.ImageCms.Flags.CLUT_POST_LINEARIZATION`
+``ImageCms.FLAGS["MATRIXOUTPUT"]``            :py:attr:`.ImageCms.Flags.FORCE_CLUT`
+``ImageCms.FLAGS["MATRIXONLY"]``              No replacement
+``ImageCms.FLAGS["NOWHITEONWHITEFIXUP"]``     :py:attr:`.ImageCms.Flags.NOWHITEONWHITEFIXUP`
+``ImageCms.FLAGS["NOPRELINEARIZATION"]``      :py:attr:`.ImageCms.Flags.CLUT_PRE_LINEARIZATION`
+``ImageCms.FLAGS["GUESSDEVICECLASS"]``        :py:attr:`.ImageCms.Flags.GUESSDEVICECLASS`
+``ImageCms.FLAGS["NOTCACHE"]``                :py:attr:`.ImageCms.Flags.NOCACHE`
+``ImageCms.FLAGS["NOTPRECALC"]``              :py:attr:`.ImageCms.Flags.NOOPTIMIZE`
+``ImageCms.FLAGS["NULLTRANSFORM"]``           :py:attr:`.ImageCms.Flags.NULLTRANSFORM`
+``ImageCms.FLAGS["HIGHRESPRECALC"]``          :py:attr:`.ImageCms.Flags.HIGHRESPRECALC`
+``ImageCms.FLAGS["LOWRESPRECALC"]``           :py:attr:`.ImageCms.Flags.LOWRESPRECALC`
+``ImageCms.FLAGS["GAMUTCHECK"]``              :py:attr:`.ImageCms.Flags.GAMUTCHECK`
+``ImageCms.FLAGS["WHITEBLACKCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["BLACKPOINTCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["SOFTPROOFING"]``            :py:attr:`.ImageCms.Flags.SOFTPROOFING`
+``ImageCms.FLAGS["PRESERVEBLACK"]``           :py:attr:`.ImageCms.Flags.NONEGATIVES`
+``ImageCms.FLAGS["NODEFAULTRESOURCEDEF"]``    :py:attr:`.ImageCms.Flags.NODEFAULTRESOURCEDEF`
+``ImageCms.FLAGS["GRIDPOINTS"]``              :py:attr:`.ImageCms.Flags.GRIDPOINTS()`
+``ImageCms.versions()``                       :py:func:`PIL.features.version_module` with
+                                              ``feature="littlecms2"``, :py:data:`sys.version` or
+                                              :py:data:`sys.version_info`, and ``PIL.__version__``
+============================================  ====================================================
 
 Removed features
 ----------------
@@ -97,7 +155,7 @@ Constants
 .. versionremoved:: 10.0.0
 
 A number of constants have been removed.
-Instead, ``enum.IntEnum`` classes have been added.
+Instead, :py:class:`enum.IntEnum` classes have been added.
 
 .. note::
 
@@ -267,7 +325,7 @@ ImageFile.raise_ioerror
 .. deprecated:: 7.2.0
 .. versionremoved:: 9.0.0
 
-``IOError`` was merged into ``OSError`` in Python 3.3.
+:py:exc:`IOError` was merged into :py:exc:`OSError` in Python 3.3.
 So, ``ImageFile.raise_ioerror`` has been removed.
 Use ``ImageFile.raise_oserror`` instead.
 
@@ -293,9 +351,9 @@ im.offset
 ``im.offset()`` has been removed, call :py:func:`.ImageChops.offset()` instead.
 
 It was documented as deprecated in PIL 1.1.2,
-raised a ``DeprecationWarning`` since 1.1.5,
-an ``Exception`` since Pillow 3.0.0
-and ``NotImplementedError`` since 3.3.0.
+raised a :py:exc:`DeprecationWarning` since 1.1.5,
+an :py:exc:`Exception` since Pillow 3.0.0
+and :py:exc:`NotImplementedError` since 3.3.0.
 
 Image.fromstring, im.fromstring and im.tostring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -307,9 +365,9 @@ Image.fromstring, im.fromstring and im.tostring
 * ``im.fromstring()`` has been removed, call :py:meth:`~PIL.Image.Image.frombytes()` instead.
 * ``im.tostring()`` has been removed, call :py:meth:`~PIL.Image.Image.tobytes()` instead.
 
-They issued a ``DeprecationWarning`` since 2.0.0,
-an ``Exception`` since 3.0.0
-and ``NotImplementedError`` since 3.3.0.
+They issued a :py:exc:`DeprecationWarning` since 2.0.0,
+an :py:exc:`Exception` since 3.0.0
+and :py:exc:`NotImplementedError` since 3.3.0.
 
 ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -317,8 +375,8 @@ ImageCms.CmsProfile attributes
 .. deprecated:: 3.2.0
 .. versionremoved:: 8.0.0
 
-Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6.0.0,
-they issued a ``DeprecationWarning``:
+Some attributes in :py:class:`PIL.ImageCms.core.CmsProfile` have been removed.
+From 6.0.0, they issued a :py:exc:`DeprecationWarning`:
 
 ========================  ===================================================
 Removed                   Use instead
@@ -442,7 +500,7 @@ PIL.OleFileIO
 .. deprecated:: 4.0.0
 .. versionremoved:: 6.0.0
 
-PIL.OleFileIO was removed as a vendored file in Pillow 4.0.0 (2017-01) in favour of
-the upstream olefile Python package, and replaced with an ``ImportError`` in 5.0.0
+``PIL.OleFileIO`` was removed as a vendored file in Pillow 4.0.0 (2017-01) in favour of
+the upstream :pypi:`olefile` Python package, and replaced with an :py:exc:`ImportError` in 5.0.0
 (2018-01). The deprecated file has now been removed from Pillow. If needed, install from
 PyPI (eg. ``python3 -m pip install olefile``).

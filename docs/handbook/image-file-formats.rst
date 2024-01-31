@@ -266,9 +266,13 @@ following options are available::
     :py:class:`PIL.ImagePalette.ImagePalette` object.
 
 **optimize**
-    If present and true, attempt to compress the palette by
-    eliminating unused colors. This is only useful if the palette can
-    be compressed to the next smaller power of 2 elements.
+    Whether to attempt to compress the palette by eliminating unused colors
+    (this is only useful if the palette can be compressed to the next smaller
+    power of 2 elements) and whether to mark all pixels that are not new in the
+    next frame as transparent.
+
+    This is attempted by default, unless a palette is specified as an option or
+    as part of the first image's :py:attr:`~PIL.Image.Image.info` dictionary.
 
 Note that if the image you are saving comes from an existing GIF, it may have
 the following properties in its :py:attr:`~PIL.Image.Image.info` dictionary.
@@ -483,6 +487,16 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **exif**
     If present, the image will be stored with the provided raw EXIF data.
 
+**keep_rgb**
+    By default, libjpeg converts images with an RGB color space to YCbCr.
+    If this option is present and true, those images will be stored as RGB
+    instead.
+
+    When this option is enabled, attempting to chroma-subsample RGB images
+    with the ``subsampling`` option will raise an :py:exc:`OSError`.
+
+    .. versionadded:: 10.2.0
+
 **subsampling**
     If present, sets the subsampling for the encoder.
 
@@ -493,6 +507,18 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     * ``2``: equivalent to ``4:2:0``
 
     If absent, the setting will be determined by libjpeg or libjpeg-turbo.
+
+**restart_marker_blocks**
+    If present, emit a restart marker whenever the specified number of MCU
+    blocks has been produced.
+
+    .. versionadded:: 10.2.0
+
+**restart_marker_rows**
+    If present, emit a restart marker whenever the specified number of MCU
+    rows has been produced.
+
+    .. versionadded:: 10.2.0
 
 **qtables**
     If present, sets the qtables for the encoder. This is listed as an
@@ -505,6 +531,19 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
        between 2 and 4 tables.
 
     .. versionadded:: 2.5.0
+
+**streamtype**
+    Allows storing images without quantization and Huffman tables, or with
+    these tables but without image data.  This is useful for container formats
+    or network protocols that handle tables separately and share them between
+    images.
+
+    * ``0`` (default): interchange datastream, with tables and image data
+    * ``1``: abbreviated table specification (tables-only) datastream
+
+      .. versionadded:: 10.2.0
+
+    * ``2``: abbreviated image (image-only) datastream
 
 **comment**
     A comment about the image.
@@ -523,12 +562,13 @@ JPEG 2000
 
 .. versionadded:: 2.4.0
 
-Pillow reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB`` or
-``RGBA`` data.  It can also read files containing ``YCbCr`` data, which it
-converts on read into ``RGB`` or ``RGBA`` depending on whether or not there is
-an alpha channel.  Pillow supports JPEG 2000 raw codestreams (``.j2k`` files),
-as well as boxed JPEG 2000 files (``.j2p`` or ``.jpx`` files).  Pillow does
-*not* support files whose components have different sampling frequencies.
+Pillow reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB``,
+``RGBA``, or ``YCbCr`` data.  When reading, ``YCbCr`` data is converted to
+``RGB`` or ``RGBA`` depending on whether or not there is an alpha channel.
+Beginning with version 8.3.0, Pillow can read (but not write) ``RGB``,
+``RGBA``, and ``YCbCr`` images with subsampled components.  Pillow supports
+JPEG 2000 raw codestreams (``.j2k`` files), as well as boxed JPEG 2000 files
+(``.jp2`` or ``.jpx`` files).
 
 When loading, if you set the ``mode`` on the image prior to the
 :py:meth:`~PIL.Image.Image.load` method being invoked, you can ask Pillow to
@@ -655,6 +695,25 @@ PCX
 ^^^
 
 Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
+
+PFM
+^^^
+
+.. versionadded:: 10.3.0
+
+Pillow reads and writes grayscale (Pf format) Portable FloatMap (PFM) files
+containing ``F`` data.
+
+Color (PF format) PFM files are not supported.
+
+Opening
+~~~~~~~
+
+The :py:func:`~PIL.Image.open` function sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**scale**
+    The absolute value of the number stored in the *Scale Factor / Endianness* line.
 
 PNG
 ^^^
@@ -1296,6 +1355,8 @@ Pillow reads Kodak FlashPix files. In the current version, only the highest
 resolution image is read from the file, and the viewing transform is not taken
 into account.
 
+To enable FPX support, you must install :pypi:`olefile`.
+
 .. note::
 
     To enable full FlashPix support, you need to build and install the IJG JPEG
@@ -1371,6 +1432,8 @@ the first sprite in the file is loaded. You can use :py:meth:`~PIL.Image.Image.s
 :py:meth:`~PIL.Image.Image.tell` to read other sprites from the file.
 
 Note that there may be an embedded gamma of 2.2 in MIC files.
+
+To enable MIC support, you must install :pypi:`olefile`.
 
 MPO
 ^^^

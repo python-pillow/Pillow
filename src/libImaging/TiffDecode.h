@@ -13,12 +13,6 @@
 #include <tiff.h>
 #endif
 
-/* UNDONE -- what are we using from this? */
-/*#ifndef _UNISTD_H
-  # include <unistd.h>
-  # endif
-*/
-
 #ifndef min
 #define min(x, y) ((x > y) ? y : x)
 #define max(x, y) ((x < y) ? y : x)

@@ -15,6 +15,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
+from __future__ import annotations
 
 import PIL
 
@@ -53,7 +54,7 @@ master_doc = "index"
 # General information about the project.
 project = "Pillow (PIL Fork)"
 copyright = (
-    "1995-2011 Fredrik Lundh, 2010-2023 Jeffrey A. Clark (Alex) and contributors"
+    "1995-2011 Fredrik Lundh, 2010-2024 Jeffrey A. Clark (Alex) and contributors"
 )
 author = "Fredrik Lundh, Jeffrey A. Clark (Alex), contributors"
 
@@ -166,6 +167,12 @@ html_static_path = ["resources"]
 # directly to the root of the documentation.
 # html_extra_path = []
 
+html_css_files = ["css/dark.css"]
+
+html_js_files = [
+    "js/activate_tab.js",
+]
+
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
 # html_last_updated_fmt = '%b %d, %Y'
@@ -226,7 +233,7 @@ htmlhelp_basename = "PillowPILForkdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').
@@ -313,19 +320,15 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 
 
-def setup(app):
-    app.add_css_file("css/dark.css")
-
-
 linkcheck_allowed_redirects = {
-    r"https://www.bestpractices.dev/projects/6331": r"https://www.bestpractices.dev/en/.*",  # noqa: E501
-    r"https://badges.gitter.im/python-pillow/Pillow.svg": r"https://badges.gitter.im/repo.svg",  # noqa: E501
-    r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",  # noqa: E501
-    r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",  # noqa: E501
+    r"https://www.bestpractices.dev/projects/6331": r"https://www.bestpractices.dev/en/.*",
+    r"https://badges.gitter.im/python-pillow/Pillow.svg": r"https://badges.gitter.im/repo.svg",
+    r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",
+    r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",
     r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
-    r"https://tidelift.com/badges/package/pypi/Pillow?.*": r"https://img.shields.io/badge/.*",  # noqa: E501
-    r"https://zenodo.org/badge/17549/python-pillow/Pillow.svg": r"https://zenodo.org/badge/doi/[\.0-9]+/zenodo.[0-9]+.svg",  # noqa: E501
-    r"https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow": r"https://zenodo.org/record/[0-9]+",  # noqa: E501
+    r"https://tidelift.com/badges/package/pypi/Pillow?.*": r"https://img.shields.io/badge/.*",
+    r"https://zenodo.org/badge/17549/python-pillow/Pillow.svg": r"https://zenodo.org/badge/doi/[\.0-9]+/zenodo.[0-9]+.svg",
+    r"https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow": r"https://zenodo.org/record/[0-9]+",
 }
 
 # sphinx.ext.extlinks
@@ -338,6 +341,7 @@ extlinks = {
     "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
     "issue": (_repo + "issues/%s", "#%s"),
     "pr": (_repo + "pull/%s", "#%s"),
+    "pypi": ("https://pypi.org/project/%s/", "%s"),
 }
 
 # sphinxext.opengraph

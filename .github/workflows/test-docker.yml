@@ -8,7 +8,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   pull_request:
@@ -16,7 +15,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   workflow_dispatch:
@@ -51,8 +49,8 @@ jobs:
           debian-11-bullseye-amd64,
           debian-12-bookworm-x86,
           debian-12-bookworm-amd64,
-          fedora-37-amd64,
           fedora-38-amd64,
+          fedora-39-amd64,
           gentoo,
           ubuntu-20.04-focal-amd64,
           ubuntu-22.04-jammy-amd64,

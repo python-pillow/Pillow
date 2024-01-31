@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from PIL import Image, ImageDraw, ImageFont
 
 from .helper import PillowLeakTestCase, skip_unless_feature
@@ -8,7 +10,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
     iterations = 10
     mem_limit = 4096  # k
 
-    def _test_font(self, font):
+    def _test_font(self, font: ImageFont.FreeTypeFont) -> None:
         im = Image.new("RGB", (255, 255), "white")
         draw = ImageDraw.ImageDraw(im)
         self._test_leak(
@@ -18,7 +20,7 @@ class TestTTypeFontLeak(PillowLeakTestCase):
         )
 
     @skip_unless_feature("freetype2")
-    def test_leak(self):
+    def test_leak(self) -> None:
         ttype = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 20)
         self._test_font(ttype)
 
@@ -28,6 +30,6 @@ class TestDefaultFontLeak(TestTTypeFontLeak):
     iterations = 100
     mem_limit = 1024  # k
 
-    def test_leak(self):
+    def test_leak(self) -> None:
         default_font = ImageFont.load_default()
         self._test_font(default_font)

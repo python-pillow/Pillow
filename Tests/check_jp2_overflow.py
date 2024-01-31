@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Reproductions/tests for OOB read errors in FliDecode.c
 
 # When run in python, all of these images should fail for
@@ -12,7 +10,7 @@
 # the output should be empty. There may be python issues
 # in the valgrind especially if run in a debug python
 # version.
-
+from __future__ import annotations
 
 from PIL import Image
 

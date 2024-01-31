@@ -56,7 +56,9 @@ def cmd_nmake(
     )
 
 
-def cmds_cmake(target: str | tuple[str, ...] | list[str], *params) -> list[str]:
+def cmds_cmake(
+    target: str | tuple[str, ...] | list[str], *params, build_dir: str = "."
+) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
 
@@ -73,10 +75,11 @@ def cmds_cmake(target: str | tuple[str, ...] | list[str], *params) -> list[str]:
                 "-DCMAKE_CXX_FLAGS=-nologo",
                 *params,
                 '-G "{cmake_generator}"',
-                ".",
+                f'-B "{build_dir}"',
+                "-S .",
             ]
         ),
-        f"{{cmake}} --build . --clean-first --parallel --target {target}",
+        f'{{cmake}} --build "{build_dir}" --clean-first --parallel --target {target}',
     ]
 
 
@@ -102,7 +105,7 @@ SF_PROJECTS = "https://sourceforge.net/projects"
 
 ARCHITECTURES = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
-    "x64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
+    "AMD64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
@@ -110,14 +113,20 @@ ARCHITECTURES = {
 DEPS = {
     "libjpeg": {
         "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/3.0.0/libjpeg-turbo-3.0.0.tar.gz/download",
-        "filename": "libjpeg-turbo-3.0.0.tar.gz",
-        "dir": "libjpeg-turbo-3.0.0",
+        + "/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz/download",
+        "filename": "libjpeg-turbo-3.0.1.tar.gz",
+        "dir": "libjpeg-turbo-3.0.1",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
             ".+(libjpeg-turbo Licenses\n======================\n\n.+)$"
         ),
+        "patch": {
+            r"CMakeLists.txt": {
+                # libjpeg-turbo does not detect MSVC x86_arm64 cross-compiler correctly
+                'if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")': "if({architecture} STREQUAL ARM64)",  # noqa: E501
+            },
+        },
         "build": [
             *cmds_cmake(
                 ("jpeg-static", "cjpeg-static", "djpeg-static"),
@@ -148,9 +157,9 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.4.tar.gz/download",
-        "filename": "xz-5.4.4.tar.gz",
-        "dir": "xz-5.4.4",
+        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.5.tar.gz/download",
+        "filename": "xz-5.4.5.tar.gz",
+        "dir": "xz-5.4.5",
         "license": "COPYING",
         "build": [
             *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -165,23 +174,22 @@ DEPS = {
         "filename": "libwebp-1.3.2.tar.gz",
         "dir": "libwebp-1.3.2",
         "license": "COPYING",
+        "patch": {
+            r"src\enc\picture_csp_enc.c": {
+                # link against libsharpyuv.lib
+                '#include "sharpyuv/sharpyuv.h"': '#include "sharpyuv/sharpyuv.h"\n#pragma comment(lib, "libsharpyuv.lib")',  # noqa: E501
+            }
+        },
         "build": [
-            cmd_rmdir(r"output\release-static"),  # clean
-            cmd_nmake(
-                "Makefile.vc",
-                "all",
-                [
-                    "CFG=release-static",
-                    "RTLIBCFG=dynamic",
-                    "OBJDIR=output",
-                    "ARCH={architecture}",
-                    "LIBWEBP_BASENAME=webp",
-                ],
+            *cmds_cmake(
+                "webp webpdemux webpmux",
+                "-DBUILD_SHARED_LIBS:BOOL=OFF",
+                "-DWEBP_LINK_STATIC:BOOL=OFF",
             ),
             cmd_mkdir(r"{inc_dir}\webp"),
             cmd_copy(r"src\webp\*.h", r"{inc_dir}\webp"),
         ],
-        "libs": [r"output\release-static\{architecture}\lib\*.lib"],
+        "libs": [r"libsharpyuv.lib", r"libwebp*.lib"],
     },
     "libtiff": {
         "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
@@ -194,8 +202,8 @@ DEPS = {
                 "#ifdef LZMA_SUPPORT": '#ifdef LZMA_SUPPORT\n#pragma comment(lib, "liblzma.lib")',  # noqa: E501
             },
             r"libtiff\tif_webp.c": {
-                # link against webp.lib
-                "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "webp.lib")',  # noqa: E501
+                # link against libwebp.lib
+                "#ifdef WEBP_SUPPORT": '#ifdef WEBP_SUPPORT\n#pragma comment(lib, "libwebp.lib")',  # noqa: E501
             },
             r"test\CMakeLists.txt": {
                 "add_executable(test_write_read_tags ../placeholder.h)": "",
@@ -208,12 +216,12 @@ DEPS = {
             *cmds_cmake(
                 "tiff",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
+                "-DWebP_LIBRARY=libwebp",
                 '-DCMAKE_C_FLAGS="-nologo -DLZMA_API_STATIC"',
             )
         ],
         "headers": [r"libtiff\tiff*.h"],
         "libs": [r"libtiff\*.lib"],
-        # "bins": [r"libtiff\*.dll"],
     },
     "libpng": {
         "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.39/lpng1639.zip/download",
@@ -239,7 +247,7 @@ DEPS = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",  # noqa: E501
+        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",
         "filename": "freetype-2.13.2.tar.gz",
         "dir": "freetype-2.13.2",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
@@ -272,13 +280,12 @@ DEPS = {
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
-        # "bins": [r"objs\{msbuild_arch}\Release\freetype.dll"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.15/lcms2-2.15.tar.gz/download",
-        "filename": "lcms2-2.15.tar.gz",
-        "dir": "lcms2-2.15",
-        "license": "COPYING",
+        "url": SF_PROJECTS + "/lcms/files/lcms/2.16/lcms2-2.16.tar.gz/download",
+        "filename": "lcms2-2.16.tar.gz",
+        "dir": "lcms2-2.16",
+        "license": "LICENSE",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
                 # default is /MD for x86 and /MT for x64, we need /MD always
@@ -321,7 +328,7 @@ DEPS = {
     },
     "libimagequant": {
         # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",  # noqa: E501
+        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "license": "COPYRIGHT",
@@ -329,6 +336,8 @@ DEPS = {
             "CMakeLists.txt": {
                 "if(OPENMP_FOUND)": "if(false)",
                 "install": "#install",
+                # libimagequant does not detect MSVC x86_arm64 cross-compiler correctly
+                "if(${{CMAKE_SYSTEM_PROCESSOR}} STREQUAL ARM64)": "if({architecture} STREQUAL ARM64)",  # noqa: E501
             }
         },
         "build": [
@@ -339,9 +348,9 @@ DEPS = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.2.1.zip",
-        "filename": "harfbuzz-8.2.1.zip",
-        "dir": "harfbuzz-8.2.1",
+        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.3.0.zip",
+        "filename": "harfbuzz-8.3.0.zip",
+        "dir": "harfbuzz-8.3.0",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -361,7 +370,14 @@ DEPS = {
         "build": [
             cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.13-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
-            *cmds_cmake("fribidi"),
+            # generated tab.i files cannot be cross-compiled
+            " ^&^& ".join(
+                [
+                    "if {architecture}==ARM64 cmd /c call {vcvarsall} x86",
+                    *cmds_cmake("fribidi-gen", "-DARCH=x86", build_dir="build_x86"),
+                ]
+            ),
+            *cmds_cmake("fribidi", "-DARCH={architecture}"),
         ],
         "bins": [r"*.dll"],
     },
@@ -369,11 +385,15 @@ DEPS = {
 
 
 # based on distutils._msvccompiler from CPython 3.7.4
-def find_msvs() -> dict[str, str] | None:
+def find_msvs(architecture: str) -> dict[str, str] | None:
     root = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles")
     if not root:
         print("Program Files not found")
         return None
+
+    requires = ["-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"]
+    if architecture == "ARM64":
+        requires += ["-requires", "Microsoft.VisualStudio.Component.VC.Tools.ARM64"]
 
     try:
         vspath = (
@@ -384,8 +404,7 @@ def find_msvs() -> dict[str, str] | None:
                     ),
                     "-latest",
                     "-prerelease",
-                    "-requires",
-                    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                    *requires,
                     "-property",
                     "installationPath",
                     "-products",
@@ -471,7 +490,7 @@ def extract_dep(url: str, filename: str) -> None:
                     msg = "Attempted Path Traversal in Zip File"
                     raise RuntimeError(msg)
             zf.extractall(sources_dir)
-    elif filename.endswith(".tar.gz") or filename.endswith(".tgz"):
+    elif filename.endswith((".tar.gz", ".tgz")):
         with tarfile.open(file, "r:gz") as tgz:
             for member in tgz.getnames():
                 member_abspath = os.path.abspath(os.path.join(sources_dir, member))
@@ -575,14 +594,19 @@ def build_dep(name: str) -> str:
 
 def build_dep_all() -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
+    gha_groups = "GITHUB_ACTIONS" in os.environ
     for dep_name in DEPS:
         print()
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
             continue
         script = build_dep(dep_name)
+        if gha_groups:
+            lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
         lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+        if gha_groups:
+            lines.append("@echo ::endgroup::")
     print()
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines)
@@ -627,7 +651,7 @@ if __name__ == "__main__":
             (
                 "ARM64"
                 if platform.machine() == "ARM64"
-                else ("x86" if struct.calcsize("P") == 4 else "x64")
+                else ("x86" if struct.calcsize("P") == 4 else "AMD64")
             ),
         ),
         help="build architecture (default: same as host Python)",
@@ -656,7 +680,7 @@ if __name__ == "__main__":
     arch_prefs = ARCHITECTURES[args.architecture]
     print("Target architecture:", args.architecture)
 
-    msvs = find_msvs()
+    msvs = find_msvs(args.architecture)
     if msvs is None:
         msg = "Visual Studio not found. Please install Visual Studio 2017 or newer."
         raise RuntimeError(msg)
