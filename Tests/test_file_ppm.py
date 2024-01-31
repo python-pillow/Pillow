@@ -70,7 +70,9 @@ def test_sanity() -> None:
         ),
     ),
 )
-def test_arbitrary_maxval(data, mode, pixels) -> None:
+def test_arbitrary_maxval(
+    data: bytes, mode: str, pixels: tuple[int | tuple[int, int, int], ...]
+) -> None:
     fp = BytesIO(data)
     with Image.open(fp) as im:
         assert im.size == (3, 1)
@@ -139,7 +141,7 @@ def test_pfm_big_endian(tmp_path: Path) -> None:
         b"Pf 1 1 -0.0 \0\0\0\0",
     ],
 )
-def test_pfm_invalid(data) -> None:
+def test_pfm_invalid(data: bytes) -> None:
     with pytest.raises(ValueError):
         with Image.open(BytesIO(data)):
             pass
@@ -162,7 +164,7 @@ def test_pfm_invalid(data) -> None:
         ),
     ),
 )
-def test_plain(plain_path, raw_path) -> None:
+def test_plain(plain_path: str, raw_path: str) -> None:
     with Image.open(plain_path) as im:
         assert_image_equal_tofile(im, raw_path)
 
@@ -186,7 +188,9 @@ def test_16bit_plain_pgm() -> None:
         (b"P3\n2 2\n255", b"0 0 0 001 1 1 2 2 2 255 255 255", 10**6),
     ),
 )
-def test_plain_data_with_comment(tmp_path: Path, header, data, comment_count) -> None:
+def test_plain_data_with_comment(
+    tmp_path: Path, header: bytes, data: bytes, comment_count: int
+) -> None:
     path1 = str(tmp_path / "temp1.ppm")
     path2 = str(tmp_path / "temp2.ppm")
     comment = b"# comment" * comment_count
@@ -199,7 +203,7 @@ def test_plain_data_with_comment(tmp_path: Path, header, data, comment_count) ->
 
 
 @pytest.mark.parametrize("data", (b"P1\n128 128\n", b"P3\n128 128\n255\n"))
-def test_plain_truncated_data(tmp_path: Path, data) -> None:
+def test_plain_truncated_data(tmp_path: Path, data: bytes) -> None:
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(data)
@@ -210,7 +214,7 @@ def test_plain_truncated_data(tmp_path: Path, data) -> None:
 
 
 @pytest.mark.parametrize("data", (b"P1\n128 128\n1009", b"P3\n128 128\n255\n100A"))
-def test_plain_invalid_data(tmp_path: Path, data) -> None:
+def test_plain_invalid_data(tmp_path: Path, data: bytes) -> None:
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(data)
@@ -227,7 +231,7 @@ def test_plain_invalid_data(tmp_path: Path, data) -> None:
         b"P3\n128 128\n255\n012345678910 0",  # token too long
     ),
 )
-def test_plain_ppm_token_too_long(tmp_path: Path, data) -> None:
+def test_plain_ppm_token_too_long(tmp_path: Path, data: bytes) -> None:
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(data)
@@ -313,7 +317,7 @@ def test_not_enough_image_data(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("maxval", (b"0", b"65536"))
-def test_invalid_maxval(maxval, tmp_path: Path) -> None:
+def test_invalid_maxval(maxval: bytes, tmp_path: Path) -> None:
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(b"P6\n3 1 " + maxval)
@@ -351,7 +355,7 @@ def test_mimetypes(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("buffer", (True, False))
-def test_save_stdout(buffer) -> None:
+def test_save_stdout(buffer: bool) -> None:
     old_stdout = sys.stdout
 
     if buffer:
