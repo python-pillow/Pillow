@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
@@ -8,7 +10,7 @@ from PIL import Image, ImageSequence, PngImagePlugin
 # APNG browser support tests and fixtures via:
 # https://philip.html5.org/tests/apng/tests.html
 # (referenced from https://wiki.mozilla.org/APNG_Specification)
-def test_apng_basic():
+def test_apng_basic() -> None:
     with Image.open("Tests/images/apng/single_frame.png") as im:
         assert not im.is_animated
         assert im.n_frames == 1
@@ -45,14 +47,14 @@ def test_apng_basic():
     "filename",
     ("Tests/images/apng/split_fdat.png", "Tests/images/apng/split_fdat_zero_chunk.png"),
 )
-def test_apng_fdat(filename):
+def test_apng_fdat(filename) -> None:
     with Image.open(filename) as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_dispose():
+def test_apng_dispose() -> None:
     with Image.open("Tests/images/apng/dispose_op_none.png") as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
@@ -84,7 +86,7 @@ def test_apng_dispose():
         assert im.getpixel((64, 32)) == (0, 0, 0, 0)
 
 
-def test_apng_dispose_region():
+def test_apng_dispose_region() -> None:
     with Image.open("Tests/images/apng/dispose_op_none_region.png") as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
@@ -106,7 +108,7 @@ def test_apng_dispose_region():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_dispose_op_previous_frame():
+def test_apng_dispose_op_previous_frame() -> None:
     # Test that the dispose settings being used are from the previous frame
     #
     # Image created with:
@@ -131,14 +133,14 @@ def test_apng_dispose_op_previous_frame():
         assert im.getpixel((0, 0)) == (255, 0, 0, 255)
 
 
-def test_apng_dispose_op_background_p_mode():
+def test_apng_dispose_op_background_p_mode() -> None:
     with Image.open("Tests/images/apng/dispose_op_background_p_mode.png") as im:
         im.seek(1)
         im.load()
         assert im.size == (128, 64)
 
 
-def test_apng_blend():
+def test_apng_blend() -> None:
     with Image.open("Tests/images/apng/blend_op_source_solid.png") as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
@@ -165,20 +167,20 @@ def test_apng_blend():
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_blend_transparency():
+def test_apng_blend_transparency() -> None:
     with Image.open("Tests/images/blend_transparency.png") as im:
         im.seek(1)
         assert im.getpixel((0, 0)) == (255, 0, 0)
 
 
-def test_apng_chunk_order():
+def test_apng_chunk_order() -> None:
     with Image.open("Tests/images/apng/fctl_actl.png") as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_delay():
+def test_apng_delay() -> None:
     with Image.open("Tests/images/apng/delay.png") as im:
         im.seek(1)
         assert im.info.get("duration") == 500.0
@@ -218,7 +220,7 @@ def test_apng_delay():
         assert im.info.get("duration") == 1000.0
 
 
-def test_apng_num_plays():
+def test_apng_num_plays() -> None:
     with Image.open("Tests/images/apng/num_plays.png") as im:
         assert im.info.get("loop") == 0
 
@@ -226,7 +228,7 @@ def test_apng_num_plays():
         assert im.info.get("loop") == 1
 
 
-def test_apng_mode():
+def test_apng_mode() -> None:
     with Image.open("Tests/images/apng/mode_16bit.png") as im:
         assert im.mode == "RGBA"
         im.seek(im.n_frames - 1)
@@ -267,7 +269,7 @@ def test_apng_mode():
         assert im.getpixel((64, 32)) == (0, 0, 255, 128)
 
 
-def test_apng_chunk_errors():
+def test_apng_chunk_errors() -> None:
     with Image.open("Tests/images/apng/chunk_no_actl.png") as im:
         assert not im.is_animated
 
@@ -292,7 +294,7 @@ def test_apng_chunk_errors():
             im.seek(im.n_frames - 1)
 
 
-def test_apng_syntax_errors():
+def test_apng_syntax_errors() -> None:
     with pytest.warns(UserWarning):
         with Image.open("Tests/images/apng/syntax_num_frames_zero.png") as im:
             assert not im.is_animated
@@ -336,14 +338,14 @@ def test_apng_syntax_errors():
         "sequence_fdat_fctl.png",
     ),
 )
-def test_apng_sequence_errors(test_file):
+def test_apng_sequence_errors(test_file) -> None:
     with pytest.raises(SyntaxError):
         with Image.open(f"Tests/images/apng/{test_file}") as im:
             im.seek(im.n_frames - 1)
             im.load()
 
 
-def test_apng_save(tmp_path):
+def test_apng_save(tmp_path: Path) -> None:
     with Image.open("Tests/images/apng/single_frame.png") as im:
         test_file = str(tmp_path / "temp.png")
         im.save(test_file, save_all=True)
@@ -374,7 +376,7 @@ def test_apng_save(tmp_path):
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_save_alpha(tmp_path):
+def test_apng_save_alpha(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
 
     im = Image.new("RGBA", (1, 1), (255, 0, 0, 255))
@@ -388,7 +390,7 @@ def test_apng_save_alpha(tmp_path):
         assert reloaded.getpixel((0, 0)) == (255, 0, 0, 127)
 
 
-def test_apng_save_split_fdat(tmp_path):
+def test_apng_save_split_fdat(tmp_path: Path) -> None:
     # test to make sure we do not generate sequence errors when writing
     # frames with image data spanning multiple fdAT chunks (in this case
     # both the default image and first animation frame will span multiple
@@ -412,7 +414,7 @@ def test_apng_save_split_fdat(tmp_path):
         assert exception is None
 
 
-def test_apng_save_duration_loop(tmp_path):
+def test_apng_save_duration_loop(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
     with Image.open("Tests/images/apng/delay.png") as im:
         frames = []
@@ -475,7 +477,7 @@ def test_apng_save_duration_loop(tmp_path):
         assert im.info["duration"] == 600
 
 
-def test_apng_save_disposal(tmp_path):
+def test_apng_save_disposal(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)
     red = Image.new("RGBA", size, (255, 0, 0, 255))
@@ -576,7 +578,7 @@ def test_apng_save_disposal(tmp_path):
         assert im.getpixel((64, 32)) == (0, 0, 0, 0)
 
 
-def test_apng_save_disposal_previous(tmp_path):
+def test_apng_save_disposal_previous(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)
     blue = Image.new("RGBA", size, (0, 0, 255, 255))
@@ -598,7 +600,7 @@ def test_apng_save_disposal_previous(tmp_path):
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
-def test_apng_save_blend(tmp_path):
+def test_apng_save_blend(tmp_path: Path) -> None:
     test_file = str(tmp_path / "temp.png")
     size = (128, 64)
     red = Image.new("RGBA", size, (255, 0, 0, 255))
@@ -666,7 +668,7 @@ def test_apng_save_blend(tmp_path):
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
 
 
-def test_seek_after_close():
+def test_seek_after_close() -> None:
     im = Image.open("Tests/images/apng/delay.png")
     im.seek(1)
     im.close()
@@ -678,7 +680,9 @@ def test_seek_after_close():
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))
 @pytest.mark.parametrize("default_image", (True, False))
 @pytest.mark.parametrize("duplicate", (True, False))
-def test_different_modes_in_later_frames(mode, default_image, duplicate, tmp_path):
+def test_different_modes_in_later_frames(
+    mode, default_image, duplicate, tmp_path: Path
+) -> None:
     test_file = str(tmp_path / "temp.png")
 
     im = Image.new("L", (1, 1))

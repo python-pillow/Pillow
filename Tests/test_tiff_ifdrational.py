@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
+from pathlib import Path
 
 from PIL import Image, TiffImagePlugin, features
 from PIL.TiffImagePlugin import IFDRational
@@ -8,14 +9,14 @@ from PIL.TiffImagePlugin import IFDRational
 from .helper import hopper
 
 
-def _test_equal(num, denom, target):
+def _test_equal(num, denom, target) -> None:
     t = IFDRational(num, denom)
 
     assert target == t
     assert t == target
 
 
-def test_sanity():
+def test_sanity() -> None:
     _test_equal(1, 1, 1)
     _test_equal(1, 1, Fraction(1, 1))
 
@@ -31,13 +32,13 @@ def test_sanity():
     _test_equal(7, 5, 1.4)
 
 
-def test_ranges():
+def test_ranges() -> None:
     for num in range(1, 10):
         for denom in range(1, 10):
             assert IFDRational(num, denom) == IFDRational(num, denom)
 
 
-def test_nonetype():
+def test_nonetype() -> None:
     # Fails if the _delegate function doesn't return a valid function
 
     xres = IFDRational(72)
@@ -51,7 +52,7 @@ def test_nonetype():
     assert xres and yres
 
 
-def test_ifd_rational_save(tmp_path):
+def test_ifd_rational_save(tmp_path: Path) -> None:
     methods = (True, False)
     if not features.check("libtiff"):
         methods = (False,)

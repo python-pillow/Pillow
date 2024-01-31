@@ -9,7 +9,7 @@ import pytest
 from PIL import Image, ImagePath
 
 
-def test_path():
+def test_path() -> None:
     p = ImagePath.Path(list(range(10)))
 
     # sequence interface
@@ -57,7 +57,7 @@ def test_path():
         ImagePath.Path((0, 1)),
     ),
 )
-def test_path_constructors(coords):
+def test_path_constructors(coords) -> None:
     # Arrange / Act
     p = ImagePath.Path(coords)
 
@@ -75,7 +75,7 @@ def test_path_constructors(coords):
         [[0.0, 1.0]],
     ),
 )
-def test_invalid_path_constructors(coords):
+def test_invalid_path_constructors(coords) -> None:
     # Act
     with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
@@ -93,7 +93,7 @@ def test_invalid_path_constructors(coords):
         [0, 1, 2],
     ),
 )
-def test_path_odd_number_of_coordinates(coords):
+def test_path_odd_number_of_coordinates(coords) -> None:
     # Act
     with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
@@ -111,7 +111,7 @@ def test_path_odd_number_of_coordinates(coords):
         (1, (0.0, 0.0, 0.0, 0.0)),
     ],
 )
-def test_getbbox(coords, expected):
+def test_getbbox(coords, expected) -> None:
     # Arrange
     p = ImagePath.Path(coords)
 
@@ -119,7 +119,7 @@ def test_getbbox(coords, expected):
     assert p.getbbox() == expected
 
 
-def test_getbbox_no_args():
+def test_getbbox_no_args() -> None:
     # Arrange
     p = ImagePath.Path([0, 1, 2, 3])
 
@@ -135,7 +135,7 @@ def test_getbbox_no_args():
         (list(range(6)), [(0.0, 3.0), (4.0, 9.0), (8.0, 15.0)]),
     ],
 )
-def test_map(coords, expected):
+def test_map(coords, expected) -> None:
     # Arrange
     p = ImagePath.Path(coords)
 
@@ -147,7 +147,7 @@ def test_map(coords, expected):
     assert list(p) == expected
 
 
-def test_transform():
+def test_transform() -> None:
     # Arrange
     p = ImagePath.Path([0, 1, 2, 3])
     theta = math.pi / 15
@@ -165,7 +165,7 @@ def test_transform():
     ]
 
 
-def test_transform_with_wrap():
+def test_transform_with_wrap() -> None:
     # Arrange
     p = ImagePath.Path([0, 1, 2, 3])
     theta = math.pi / 15
@@ -184,7 +184,7 @@ def test_transform_with_wrap():
     ]
 
 
-def test_overflow_segfault():
+def test_overflow_segfault() -> None:
     # Some Pythons fail getting the argument as an integer, and it falls
     # through to the sequence. Seeing this on 32-bit Windows.
     with pytest.raises((TypeError, MemoryError)):
@@ -198,12 +198,12 @@ def test_overflow_segfault():
 
 
 class Evil:
-    def __init__(self):
+    def __init__(self) -> None:
         self.corrupt = Image.core.path(0x4000000000000000)
 
     def __getitem__(self, i):
         x = self.corrupt[i]
         return struct.pack("dd", x[0], x[1])
 
-    def __setitem__(self, i, x):
+    def __setitem__(self, i, x) -> None:
         self.corrupt[i] = struct.unpack("dd", x)
