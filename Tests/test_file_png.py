@@ -778,7 +778,7 @@ class TestFilePng:
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
-    def test_truncated_end_chunk(self):
+    def test_truncated_end_chunk(self) -> None:
         with Image.open("Tests/images/truncated_end_chunk.png") as im:
             with pytest.raises(OSError):
                 im.load()
