@@ -81,7 +81,7 @@ jobs:
             zlib-devel
 
       - name: Add Lapack to PATH
-        uses: egor-tensin/cleanup-path@v3
+        uses: egor-tensin/cleanup-path@v4
         with:
           dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
 
@@ -142,7 +142,7 @@ jobs:
           bash.exe .ci/after_success.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
           flags: GHA_Cygwin
