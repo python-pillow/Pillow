@@ -21,7 +21,7 @@ def tuple_to_ints(tp):
     return int(x * 255.0), int(y * 255.0), int(z * 255.0)
 
 
-def test_sanity():
+def test_sanity() -> None:
     Image.new("HSV", (100, 100))
 
 
@@ -78,7 +78,7 @@ def to_rgb_colorsys(im):
     return to_xxx_colorsys(im, colorsys.hsv_to_rgb, "RGB")
 
 
-def test_wedge():
+def test_wedge() -> None:
     src = wedge().resize((3 * 32, 32), Image.Resampling.BILINEAR)
     im = src.convert("HSV")
     comparable = to_hsv_colorsys(src)
@@ -110,7 +110,7 @@ def test_wedge():
     )
 
 
-def test_convert():
+def test_convert() -> None:
     im = hopper("RGB").convert("HSV")
     comparable = to_hsv_colorsys(hopper("RGB"))
 
@@ -128,7 +128,7 @@ def test_convert():
     )
 
 
-def test_hsv_to_rgb():
+def test_hsv_to_rgb() -> None:
     comparable = to_hsv_colorsys(hopper("RGB"))
     converted = comparable.convert("RGB")
     comparable = to_rgb_colorsys(comparable)

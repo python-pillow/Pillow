@@ -5,7 +5,7 @@ from PIL import Image
 from .helper import hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     data = hopper().getdata()
 
     len(data)
@@ -14,8 +14,8 @@ def test_sanity():
     assert data[0] == (20, 20, 70)
 
 
-def test_roundtrip():
-    def getdata(mode):
+def test_roundtrip() -> None:
+    def getdata(mode: str) -> tuple[float | tuple[int, ...], int, int]:
         im = hopper(mode).resize((32, 30), Image.Resampling.NEAREST)
         data = im.getdata()
         return data[0], len(data), len(list(data))

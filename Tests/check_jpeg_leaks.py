@@ -111,14 +111,14 @@ standard_chrominance_qtable = (
         [standard_l_qtable, standard_chrominance_qtable],
     ),
 )
-def test_qtables_leak(qtables):
+def test_qtables_leak(qtables: tuple[tuple[int, ...]] | list[tuple[int, ...]]) -> None:
     im = hopper("RGB")
     for _ in range(iterations):
         test_output = BytesIO()
         im.save(test_output, "JPEG", qtables=qtables)
 
 
-def test_exif_leak():
+def test_exif_leak() -> None:
     """
     pre patch:
 
@@ -181,7 +181,7 @@ def test_exif_leak():
         im.save(test_output, "JPEG", exif=exif)
 
 
-def test_base_save():
+def test_base_save() -> None:
     """
     base case:
         MB

@@ -25,13 +25,6 @@ if os.environ.get("SHOW_ERRORS"):
     uploader = "show"
 elif "GITHUB_ACTIONS" in os.environ:
     uploader = "github_actions"
-else:
-    try:
-        import test_image_results
-
-        uploader = "aws"
-    except ImportError:
-        pass
 
 
 def upload(a: Image.Image, b: Image.Image) -> str | None:
@@ -46,8 +39,6 @@ def upload(a: Image.Image, b: Image.Image) -> str | None:
         a.save(os.path.join(tmpdir, "a.png"))
         b.save(os.path.join(tmpdir, "b.png"))
         return tmpdir
-    elif uploader == "aws":
-        return test_image_results.upload(a, b)
     return None
 
 
