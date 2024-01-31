@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from typing import Any, NoReturn
 
 from ._typing import StrOrBytesPath, TypeGuard
