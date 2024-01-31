@@ -13,7 +13,7 @@ pytestmark = skip_unless_feature("libtiff")
 TEST_FILE = "Tests/images/hopper.mic"
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open(TEST_FILE) as im:
         im.load()
         assert im.mode == "RGBA"
@@ -28,22 +28,22 @@ def test_sanity():
         assert_image_similar(im, im2, 10)
 
 
-def test_n_frames():
+def test_n_frames() -> None:
     with Image.open(TEST_FILE) as im:
         assert im.n_frames == 1
 
 
-def test_is_animated():
+def test_is_animated() -> None:
     with Image.open(TEST_FILE) as im:
         assert not im.is_animated
 
 
-def test_tell():
+def test_tell() -> None:
     with Image.open(TEST_FILE) as im:
         assert im.tell() == 0
 
 
-def test_seek():
+def test_seek() -> None:
     with Image.open(TEST_FILE) as im:
         im.seek(0)
         assert im.tell() == 0
@@ -53,7 +53,7 @@ def test_seek():
         assert im.tell() == 0
 
 
-def test_close():
+def test_close() -> None:
     with Image.open(TEST_FILE) as im:
         pass
     assert im.ole.fp.closed
@@ -63,7 +63,7 @@ def test_close():
     assert im.ole.fp.closed
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     # Test an invalid OLE file
     invalid_file = "Tests/images/flower.jpg"
     with pytest.raises(SyntaxError):

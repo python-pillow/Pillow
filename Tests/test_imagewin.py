@@ -8,10 +8,10 @@ from .helper import hopper, is_win32
 
 
 class TestImageWin:
-    def test_sanity(self):
+    def test_sanity(self) -> None:
         dir(ImageWin)
 
-    def test_hdc(self):
+    def test_hdc(self) -> None:
         # Arrange
         dc = 50
 
@@ -22,7 +22,7 @@ class TestImageWin:
         # Assert
         assert dc2 == 50
 
-    def test_hwnd(self):
+    def test_hwnd(self) -> None:
         # Arrange
         wnd = 50
 
@@ -36,7 +36,7 @@ class TestImageWin:
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 class TestImageWinDib:
-    def test_dib_image(self):
+    def test_dib_image(self) -> None:
         # Arrange
         im = hopper()
 
@@ -46,7 +46,7 @@ class TestImageWinDib:
         # Assert
         assert dib.size == im.size
 
-    def test_dib_mode_string(self):
+    def test_dib_mode_string(self) -> None:
         # Arrange
         mode = "RGBA"
         size = (128, 128)
@@ -57,7 +57,7 @@ class TestImageWinDib:
         # Assert
         assert dib.size == (128, 128)
 
-    def test_dib_paste(self):
+    def test_dib_paste(self) -> None:
         # Arrange
         im = hopper()
 
@@ -71,7 +71,7 @@ class TestImageWinDib:
         # Assert
         assert dib.size == (128, 128)
 
-    def test_dib_paste_bbox(self):
+    def test_dib_paste_bbox(self) -> None:
         # Arrange
         im = hopper()
         bbox = (0, 0, 10, 10)
@@ -86,7 +86,7 @@ class TestImageWinDib:
         # Assert
         assert dib.size == (128, 128)
 
-    def test_dib_frombytes_tobytes_roundtrip(self):
+    def test_dib_frombytes_tobytes_roundtrip(self) -> None:
         # Arrange
         # Make two different DIB images
         im = hopper()

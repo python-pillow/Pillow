@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
 
 from PIL import Image, ImageWin
 
@@ -83,7 +84,7 @@ if is_win32():
         memcpy(bp + bf.bfOffBits, pixels, bi.biSizeImage)
         return bytearray(buf)
 
-    def test_pointer(tmp_path):
+    def test_pointer(tmp_path: Path) -> None:
         im = hopper()
         (width, height) = im.size
         opath = str(tmp_path / "temp.png")
