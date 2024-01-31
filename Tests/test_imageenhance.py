@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import pytest
 
 from PIL import Image, ImageEnhance
@@ -6,7 +7,7 @@ from PIL import Image, ImageEnhance
 from .helper import assert_image_equal, hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     # FIXME: assert_image
     # Implicit asserts no exception:
     ImageEnhance.Color(hopper()).enhance(0.5)
@@ -15,7 +16,7 @@ def test_sanity():
     ImageEnhance.Sharpness(hopper()).enhance(0.5)
 
 
-def test_crash():
+def test_crash() -> None:
     # crashes on small images
     im = Image.new("RGB", (1, 1))
     ImageEnhance.Sharpness(im).enhance(0.5)
@@ -33,7 +34,7 @@ def _half_transparent_image():
     return im
 
 
-def _check_alpha(im, original, op, amount):
+def _check_alpha(im, original, op, amount) -> None:
     assert im.getbands() == original.getbands()
     assert_image_equal(
         im.getchannel("A"),
@@ -43,7 +44,7 @@ def _check_alpha(im, original, op, amount):
 
 
 @pytest.mark.parametrize("op", ("Color", "Brightness", "Contrast", "Sharpness"))
-def test_alpha(op):
+def test_alpha(op) -> None:
     # Issue https://github.com/python-pillow/Pillow/issues/899
     # Is alpha preserved through image enhancement?
 

@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import warnings
+from io import BytesIO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -49,8 +50,10 @@ class TgaImageFile(ImageFile.ImageFile):
     format = "TGA"
     format_description = "Targa"
 
-    def _open(self):
+    def _open(self) -> None:
         # process header
+        assert self.fp is not None
+
         s = self.fp.read(18)
 
         id_len = s[0]
@@ -151,8 +154,9 @@ class TgaImageFile(ImageFile.ImageFile):
         except KeyError:
             pass  # cannot decode
 
-    def load_end(self):
+    def load_end(self) -> None:
         if self._flip_horizontally:
+            assert self.im is not None
             self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
@@ -171,7 +175,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: BytesIO, filename: str) -> None:
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:
@@ -194,6 +198,7 @@ def _save(im, fp, filename):
         warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
+        assert im.im is not None
         palette = im.im.getpalette("RGB", "BGR")
         colormaplength, colormapentry = len(palette) // 3, 24
     else:

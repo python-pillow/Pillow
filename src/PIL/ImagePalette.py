@@ -192,7 +192,7 @@ class ImagePalette:
 # Internal
 
 
-def raw(rawmode, data):
+def raw(rawmode, data) -> ImagePalette:
     palette = ImagePalette()
     palette.rawmode = rawmode
     palette.palette = data

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import locale
 
 import pytest
@@ -23,7 +24,7 @@ from PIL import Image
 path = "Tests/images/hopper.jpg"
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open(path):
         pass
     try:

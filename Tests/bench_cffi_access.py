@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import time
 
 from PIL import PyAccess
@@ -8,21 +9,21 @@ from .helper import hopper
 # Not running this test by default. No DOS against CI.
 
 
-def iterate_get(size, access):
+def iterate_get(size, access) -> None:
     (w, h) = size
     for x in range(w):
         for y in range(h):
             access[(x, y)]
 
 
-def iterate_set(size, access):
+def iterate_set(size, access) -> None:
     (w, h) = size
     for x in range(w):
         for y in range(h):
             access[(x, y)] = (x % 256, y % 256, 0)
 
 
-def timer(func, label, *args):
+def timer(func, label, *args) -> None:
     iterations = 5000
     starttime = time.time()
     for x in range(iterations):
@@ -37,7 +38,7 @@ def timer(func, label, *args):
     )
 
 
-def test_direct():
+def test_direct() -> None:
     im = hopper()
     im.load()
     # im = Image.new("RGB", (2000, 2000), (1, 3, 2))

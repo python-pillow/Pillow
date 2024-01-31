@@ -119,7 +119,6 @@ extend-ignore = [
 ]
 
 [tool.ruff.per-file-ignores]
-"Tests/*.py" = ["I001"]
 "Tests/oss-fuzz/fuzz_font.py" = ["I002"]
 "Tests/oss-fuzz/fuzz_pillow.py" = ["I002"]
 
@@ -146,10 +145,7 @@ exclude = [
   '^src/PIL/DdsImagePlugin.py$',
   '^src/PIL/FpxImagePlugin.py$',
   '^src/PIL/Image.py$',
-  '^src/PIL/ImageMath.py$',
-  '^src/PIL/ImageMorph.py$',
   '^src/PIL/ImageQt.py$',
-  '^src/PIL/ImageShow.py$',
   '^src/PIL/ImImagePlugin.py$',
   '^src/PIL/MicImagePlugin.py$',
   '^src/PIL/PdfParser.py$',
