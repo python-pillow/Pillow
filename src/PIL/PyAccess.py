@@ -43,7 +43,7 @@ except ImportError as ex:
     # anything in core.
     from ._util import DeferredError
 
-    FFI = ffi = DeferredError(ex)
+    FFI = ffi = DeferredError.new(ex)
 
 logger = logging.getLogger(__name__)
 

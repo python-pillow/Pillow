@@ -41,10 +41,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml
    :alt: GitHub Actions build status (Wheels)
 
-.. image:: https://img.shields.io/travis/com/python-pillow/Pillow/main.svg?label=aarch64%20wheels
-   :target: https://app.travis-ci.com/github/python-pillow/Pillow
-   :alt: Travis CI wheels build status (aarch64)
-
 .. image:: https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg
    :target: https://app.codecov.io/gh/python-pillow/Pillow
    :alt: Code coverage
@@ -62,11 +58,11 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :alt: Fuzzing Status
 
 .. image:: https://img.shields.io/pypi/v/pillow.svg
-   :target: https://pypi.org/project/Pillow/
+   :target: https://pypi.org/project/pillow/
    :alt: Latest PyPI version
 
 .. image:: https://img.shields.io/pypi/dm/pillow.svg
-   :target: https://pypi.org/project/Pillow/
+   :target: https://pypi.org/project/pillow/
    :alt: Number of PyPI downloads
 
 .. image:: https://www.bestpractices.dev/projects/6331/badge

@@ -2,11 +2,12 @@ name: Test Windows
 
 on:
   push:
+    branches:
+      - "**"
     paths-ignore:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   pull_request:
@@ -14,7 +15,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   workflow_dispatch:
@@ -89,7 +89,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: winbuild\build
         key:

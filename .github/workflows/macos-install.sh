@@ -2,7 +2,16 @@
 
 set -e
 
-brew install libtiff libjpeg openjpeg libimagequant webp little-cms2 freetype libraqm
+brew install \
+    freetype \
+    ghostscript \
+    libimagequant \
+    libjpeg \
+    libraqm \
+    libtiff \
+    little-cms2 \
+    openjpeg \
+    webp
 export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
 
 # TODO Update condition when cffi supports 3.13

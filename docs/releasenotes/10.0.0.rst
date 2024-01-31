@@ -43,7 +43,7 @@ Constants
 ^^^^^^^^^
 
 A number of constants have been removed.
-Instead, ``enum.IntEnum`` classes have been added.
+Instead, :py:class:`enum.IntEnum` classes have been added.
 
 =====================================================  ============================================================
 Removed                                                Use instead

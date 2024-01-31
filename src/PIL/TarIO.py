@@ -21,7 +21,7 @@ from types import TracebackType
 from . import ContainerIO
 
 
-class TarIO(ContainerIO.ContainerIO):
+class TarIO(ContainerIO.ContainerIO[bytes]):
     """A file object that provides read access to a given member of a TAR file."""
 
     def __init__(self, tarfile: str, file: str) -> None:
