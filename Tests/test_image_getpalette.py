@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from PIL import Image
 
 from .helper import hopper
 
 
-def test_palette():
+def test_palette() -> None:
     def palette(mode):
         p = hopper(mode).getpalette()
         if p:
@@ -22,7 +23,7 @@ def test_palette():
     assert palette("YCbCr") is None
 
 
-def test_palette_rawmode():
+def test_palette_rawmode() -> None:
     im = Image.new("P", (1, 1))
     im.putpalette((1, 2, 3))
 

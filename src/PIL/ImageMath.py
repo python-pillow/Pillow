@@ -224,10 +224,15 @@ def imagemath_convert(self: _Operand, mode: str) -> _Operand:
     return _Operand(self.im.convert(mode))
 
 
-ops = {}
-for k, v in list(globals().items()):
-    if k[:10] == "imagemath_":
-        ops[k[10:]] = v
+ops = {
+    "int": imagemath_int,
+    "float": imagemath_float,
+    "equal": imagemath_equal,
+    "notequal": imagemath_notequal,
+    "min": imagemath_min,
+    "max": imagemath_max,
+    "convert": imagemath_convert,
+}
 
 
 def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
@@ -244,7 +249,7 @@ def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
     """
 
     # build execution namespace
-    args = ops.copy()
+    args: dict[str, Any] = ops.copy()
     for k in list(_dict.keys()) + list(kw.keys()):
         if "__" in k or hasattr(builtins, k):
             msg = f"'{k}' not allowed"
