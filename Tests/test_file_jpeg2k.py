@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -46,7 +47,7 @@ def roundtrip(im, **options):
     return im
 
 
-def test_sanity():
+def test_sanity() -> None:
     # Internal version number
     assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("jpg_2000"))
 
@@ -59,20 +60,20 @@ def test_sanity():
         assert im.get_format_mimetype() == "image/jp2"
 
 
-def test_jpf():
+def test_jpf() -> None:
     with Image.open("Tests/images/balloon.jpf") as im:
         assert im.format == "JPEG2000"
         assert im.get_format_mimetype() == "image/jpx"
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
     with pytest.raises(SyntaxError):
         Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file)
 
 
-def test_bytesio():
+def test_bytesio() -> None:
     with open("Tests/images/test-card-lossless.jp2", "rb") as f:
         data = BytesIO(f.read())
     assert_image_similar_tofile(test_card, data, 1.0e-3)
@@ -82,7 +83,7 @@ def test_bytesio():
 # PIL (they were made using Adobe Photoshop)
 
 
-def test_lossless(tmp_path):
+def test_lossless(tmp_path: Path) -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         im.load()
         outfile = str(tmp_path / "temp_test-card.png")
@@ -90,54 +91,54 @@ def test_lossless(tmp_path):
     assert_image_similar(im, test_card, 1.0e-3)
 
 
-def test_lossy_tiled():
+def test_lossy_tiled() -> None:
     assert_image_similar_tofile(
         test_card, "Tests/images/test-card-lossy-tiled.jp2", 2.0
     )
 
 
-def test_lossless_rt():
+def test_lossless_rt() -> None:
     im = roundtrip(test_card)
     assert_image_equal(im, test_card)
 
 
-def test_lossy_rt():
+def test_lossy_rt() -> None:
     im = roundtrip(test_card, quality_layers=[20])
     assert_image_similar(im, test_card, 2.0)
 
 
-def test_tiled_rt():
+def test_tiled_rt() -> None:
     im = roundtrip(test_card, tile_size=(128, 128))
     assert_image_equal(im, test_card)
 
 
-def test_tiled_offset_rt():
+def test_tiled_offset_rt() -> None:
     im = roundtrip(test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(32, 32))
     assert_image_equal(im, test_card)
 
 
-def test_tiled_offset_too_small():
+def test_tiled_offset_too_small() -> None:
     with pytest.raises(ValueError):
         roundtrip(test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(128, 32))
 
 
-def test_irreversible_rt():
+def test_irreversible_rt() -> None:
     im = roundtrip(test_card, irreversible=True, quality_layers=[20])
     assert_image_similar(im, test_card, 2.0)
 
 
-def test_prog_qual_rt():
+def test_prog_qual_rt() -> None:
     im = roundtrip(test_card, quality_layers=[60, 40, 20], progression="LRCP")
     assert_image_similar(im, test_card, 2.0)
 
 
-def test_prog_res_rt():
+def test_prog_res_rt() -> None:
     im = roundtrip(test_card, num_resolutions=8, progression="RLCP")
     assert_image_equal(im, test_card)
 
 
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
-def test_default_num_resolutions(num_resolutions):
+def test_default_num_resolutions(num_resolutions) -> None:
     d = 1 << (num_resolutions - 1)
     im = test_card.resize((d - 1, d - 1))
     with pytest.raises(OSError):
@@ -146,7 +147,7 @@ def test_default_num_resolutions(num_resolutions):
     assert_image_equal(im, reloaded)
 
 
-def test_reduce():
+def test_reduce() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert callable(im.reduce)
 
@@ -160,7 +161,7 @@ def test_reduce():
         assert im.size == (40, 30)
 
 
-def test_load_dpi():
+def test_load_dpi() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert im.info["dpi"] == (71.9836, 71.9836)
 
@@ -168,7 +169,7 @@ def test_load_dpi():
         assert "dpi" not in im.info
 
 
-def test_restricted_icc_profile():
+def test_restricted_icc_profile() -> None:
     ImageFile.LOAD_TRUNCATED_IMAGES = True
     try:
         # JPEG2000 image with a restricted ICC profile and a known colorspace
@@ -178,7 +179,7 @@ def test_restricted_icc_profile():
         ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
-def test_header_errors():
+def test_header_errors() -> None:
     for path in (
         "Tests/images/invalid_header_length.jp2",
         "Tests/images/not_enough_data.jp2",
@@ -192,7 +193,7 @@ def test_header_errors():
             pass
 
 
-def test_layers_type(tmp_path):
+def test_layers_type(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp_layers.jp2")
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
         test_card.save(outfile, quality_layers=quality_layers)
@@ -202,7 +203,7 @@ def test_layers_type(tmp_path):
             test_card.save(outfile, quality_layers=quality_layers)
 
 
-def test_layers():
+def test_layers() -> None:
     out = BytesIO()
     test_card.save(out, "JPEG2000", quality_layers=[100, 50, 10], progression="LRCP")
     out.seek(0)
@@ -232,7 +233,7 @@ def test_layers():
         ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
     ),
 )
-def test_no_jp2(name, args, offset, data):
+def test_no_jp2(name, args, offset, data) -> None:
     out = BytesIO()
     if name:
         out.name = name
@@ -241,7 +242,7 @@ def test_no_jp2(name, args, offset, data):
     assert out.read(2) == data
 
 
-def test_mct():
+def test_mct() -> None:
     # Three component
     for val in (0, 1):
         out = BytesIO()
@@ -262,7 +263,7 @@ def test_mct():
             assert_image_similar(im, jp2, 1.0e-3)
 
 
-def test_sgnd(tmp_path):
+def test_sgnd(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.jp2")
 
     im = Image.new("L", (1, 1))
@@ -277,7 +278,7 @@ def test_sgnd(tmp_path):
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
-def test_rgba(ext):
+def test_rgba(ext) -> None:
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc" + ext) as im:
         # Act
@@ -288,47 +289,47 @@ def test_rgba(ext):
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
-def test_16bit_monochrome_has_correct_mode(ext):
+def test_16bit_monochrome_has_correct_mode(ext) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
         im.load()
         assert im.mode == "I;16"
 
 
-def test_16bit_monochrome_jp2_like_tiff():
+def test_16bit_monochrome_jp2_like_tiff() -> None:
     with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
         assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.jp2", 1e-3)
 
 
-def test_16bit_monochrome_j2k_like_tiff():
+def test_16bit_monochrome_j2k_like_tiff() -> None:
     with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
         assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.j2k", 1e-3)
 
 
-def test_16bit_j2k_roundtrips():
+def test_16bit_j2k_roundtrips() -> None:
     with Image.open("Tests/images/16bit.cropped.j2k") as j2k:
         im = roundtrip(j2k)
         assert_image_equal(im, j2k)
 
 
-def test_16bit_jp2_roundtrips():
+def test_16bit_jp2_roundtrips() -> None:
     with Image.open("Tests/images/16bit.cropped.jp2") as jp2:
         im = roundtrip(jp2)
         assert_image_equal(im, jp2)
 
 
-def test_issue_6194():
+def test_issue_6194() -> None:
     with Image.open("Tests/images/issue_6194.j2k") as im:
         assert im.getpixel((5, 5)) == 31
 
 
-def test_unbound_local():
+def test_unbound_local() -> None:
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
     with pytest.raises(OSError):
         with Image.open("Tests/images/unbound_variable.jp2"):
             pass
 
 
-def test_parser_feed():
+def test_parser_feed() -> None:
     # Arrange
     with open("Tests/images/test-card-lossless.jp2", "rb") as f:
         data = f.read()
@@ -345,7 +346,7 @@ def test_parser_feed():
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
 )
 @pytest.mark.parametrize("name", ("subsampling_1", "subsampling_2", "zoo1", "zoo2"))
-def test_subsampling_decode(name):
+def test_subsampling_decode(name) -> None:
     test = f"{EXTRA_DIR}/{name}.jp2"
     reference = f"{EXTRA_DIR}/{name}.ppm"
 
@@ -361,7 +362,7 @@ def test_subsampling_decode(name):
         assert_image_similar(im, expected, epsilon)
 
 
-def test_comment():
+def test_comment() -> None:
     with Image.open("Tests/images/comment.jp2") as im:
         assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
 
@@ -372,7 +373,7 @@ def test_comment():
             pass
 
 
-def test_save_comment():
+def test_save_comment() -> None:
     for comment in ("Created by Pillow", b"Created by Pillow"):
         out = BytesIO()
         test_card.save(out, "JPEG2000", comment=comment)
@@ -399,7 +400,7 @@ def test_save_comment():
         "Tests/images/crash-d2c93af851d3ab9a19e34503626368b2ecde9c03.j2k",
     ],
 )
-def test_crashes(test_file):
+def test_crashes(test_file) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             # Valgrind should not complain here
@@ -410,7 +411,7 @@ def test_crashes(test_file):
 
 
 @skip_unless_feature_version("jpg_2000", "2.4.0")
-def test_plt_marker():
+def test_plt_marker() -> None:
     # Search the start of the codesteam for PLT
     out = BytesIO()
     test_card.save(out, "JPEG2000", no_jp2=True, plt=True)

@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          "macos-latest",
+          "macos-14",
           "ubuntu-latest",
         ]
         python-version: [
@@ -50,11 +50,21 @@ jobs:
           "3.8",
         ]
         include:
-        - python-version: "3.9"
+        - python-version: "3.11"
           PYTHONOPTIMIZE: 1
           REVERSE: "--reverse"
-        - python-version: "3.8"
+        - python-version: "3.10"
           PYTHONOPTIMIZE: 2
+        # M1 only available for 3.10+
+        - os: "macos-latest"
+          python-version: "3.9"
+        - os: "macos-latest"
+          python-version: "3.8"
+        exclude:
+        - os: "macos-14"
+          python-version: "3.9"
+        - os: "macos-14"
+          python-version: "3.8"
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
@@ -139,9 +149,9 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
-        flags: ${{ matrix.os == 'macos-latest' && 'GHA_macOS' || 'GHA_Ubuntu' }}
+        flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
         gcov: true
 
