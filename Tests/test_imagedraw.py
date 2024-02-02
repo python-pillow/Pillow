@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os.path
+from typing import Sequence
 
 import pytest
 
@@ -74,14 +75,7 @@ def test_mode_mismatch() -> None:
 
 @pytest.mark.parametrize("bbox", BBOX)
 @pytest.mark.parametrize("start, end", ((0, 180), (0.5, 180.4)))
-def test_arc(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int],
-    start: float,
-    end: float,
-) -> None:
+def test_arc(bbox: Sequence[int | Sequence[int]], start: float, end: float) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -94,12 +88,7 @@ def test_arc(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_end_le_start(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_arc_end_le_start(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -114,12 +103,7 @@ def test_arc_end_le_start(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_no_loops(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_arc_no_loops(bbox: Sequence[int | Sequence[int]]) -> None:
     # No need to go in loops
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -135,12 +119,7 @@ def test_arc_no_loops(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_arc_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -153,12 +132,7 @@ def test_arc_width(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_width_pieslice_large(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_arc_width_pieslice_large(bbox: Sequence[int | Sequence[int]]) -> None:
     # Tests an arc with a large enough width that it is a pieslice
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -172,12 +146,7 @@ def test_arc_width_pieslice_large(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_width_fill(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_arc_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -190,12 +159,7 @@ def test_arc_width_fill(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_width_non_whole_angle(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_arc_width_non_whole_angle(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -237,13 +201,7 @@ def test_bitmap() -> None:
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
 @pytest.mark.parametrize("bbox", BBOX)
-def test_chord(
-    mode: str,
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int],
-) -> None:
+def test_chord(mode: str, bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new(mode, (W, H))
     draw = ImageDraw.Draw(im)
@@ -257,12 +215,7 @@ def test_chord(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_chord_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_chord_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -275,12 +228,7 @@ def test_chord_width(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_chord_width_fill(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_chord_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -293,12 +241,7 @@ def test_chord_width_fill(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_chord_zero_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_chord_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -324,13 +267,7 @@ def test_chord_too_fat() -> None:
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse(
-    mode: str,
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int],
-) -> None:
+def test_ellipse(mode: str, bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new(mode, (W, H))
     draw = ImageDraw.Draw(im)
@@ -344,12 +281,7 @@ def test_ellipse(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse_translucent(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_ellipse_translucent(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im, "RGBA")
@@ -386,12 +318,7 @@ def test_ellipse_symmetric() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_ellipse_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -416,12 +343,7 @@ def test_ellipse_width_large() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse_width_fill(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_ellipse_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -434,12 +356,7 @@ def test_ellipse_width_fill(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse_zero_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_ellipse_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -572,12 +489,7 @@ def test_transform() -> None:
 @pytest.mark.parametrize("bbox", BBOX)
 @pytest.mark.parametrize("start, end", ((-92, 46), (-92.2, 46.2)))
 def test_pieslice(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int],
-    start: float,
-    end: float,
+    bbox: Sequence[int | Sequence[int]], start: float, end: float
 ) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -591,12 +503,7 @@ def test_pieslice(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_pieslice_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_pieslice_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -609,12 +516,7 @@ def test_pieslice_width(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_pieslice_width_fill(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_pieslice_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -628,12 +530,7 @@ def test_pieslice_width_fill(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_pieslice_zero_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_pieslice_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -796,12 +693,7 @@ def test_polygon_translucent() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_rectangle(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -828,12 +720,7 @@ def test_big_rectangle() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_rectangle_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -847,12 +734,7 @@ def test_rectangle_width(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_width_fill(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_rectangle_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -866,12 +748,7 @@ def test_rectangle_width_fill(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_zero_width(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_rectangle_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -884,12 +761,7 @@ def test_rectangle_zero_width(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_I16(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_rectangle_I16(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("I;16", (W, H))
     draw = ImageDraw.Draw(im)
@@ -902,12 +774,7 @@ def test_rectangle_I16(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_translucent_outline(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_rectangle_translucent_outline(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im, "RGBA")
@@ -999,12 +866,7 @@ def test_rounded_rectangle_non_integer_radius(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rounded_rectangle_zero_radius(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_rounded_rectangle_zero_radius(bbox: Sequence[int | Sequence[int]]) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -1045,12 +907,7 @@ def test_rounded_rectangle_translucent(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_floodfill(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_floodfill(bbox: Sequence[int | Sequence[int]]) -> None:
     red = ImageColor.getrgb("red")
 
     for mode, value in [("L", 1), ("RGBA", (255, 0, 0, 0)), ("RGB", red)]:
@@ -1083,12 +940,7 @@ def test_floodfill(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_floodfill_border(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_floodfill_border(bbox: Sequence[int | Sequence[int]]) -> None:
     # floodfill() is experimental
 
     # Arrange
@@ -1110,12 +962,7 @@ def test_floodfill_border(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_floodfill_thresh(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_floodfill_thresh(bbox: Sequence[int | Sequence[int]]) -> None:
     # floodfill() is experimental
 
     # Arrange
@@ -1572,12 +1419,7 @@ def test_default_font_size() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_same_color_outline(
-    bbox: tuple[tuple[int, int], tuple[int, int]]
-    | list[tuple[int, int]]
-    | list[int]
-    | tuple[int, int, int, int]
-) -> None:
+def test_same_color_outline(bbox: Sequence[int | Sequence[int]]) -> None:
     # Prepare shape
     x0, y0 = 5, 5
     x1, y1 = 5, 50
