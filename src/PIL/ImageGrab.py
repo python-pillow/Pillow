@@ -162,14 +162,18 @@ def grabclipboard():
             for silent_error in [
                 # wl-paste, when the clipboard is empty
                 b"Nothing is copied",
-                # wl-paste/debian xclip, when an image isn't available
-                b"not available",
+                # Ubuntu/Debian wl-paste, when the clipboard is empty
+                b"No selection",
+                # Ubuntu/Debian wl-paste, when an image isn't available
+                b"No suitable type of content copied",
+                # wl-paste or Ubuntu/Debian xclip, when an image isn't available
+                b" not available",
                 # xclip, when an image isn't available
-                b"cannot convert",
+                b"cannot convert ",
                 # xclip, when the clipboard isn't initialized
-                b"There is no owner",
+                b"xclip: Error: There is no owner for the ",
             ]:
-                if err in silent_error:
+                if silent_error in err:
                     return None
             msg = f"{args[0]} error"
             if err:
