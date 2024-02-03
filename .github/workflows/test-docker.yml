@@ -105,7 +105,6 @@ jobs:
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
-        gcov: true
 
   success:
     permissions:

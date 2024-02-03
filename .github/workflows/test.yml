@@ -153,7 +153,6 @@ jobs:
       with:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
-        gcov: true
 
   success:
     permissions:
