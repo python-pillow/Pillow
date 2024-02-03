@@ -82,7 +82,7 @@ jobs:
           python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3.1.5
         with:
           file: ./coverage.xml
           flags: GHA_Windows

@@ -101,7 +101,7 @@ jobs:
         MATRIX_DOCKER: ${{ matrix.docker }}
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v3.1.5
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
