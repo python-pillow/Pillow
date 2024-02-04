@@ -106,6 +106,7 @@ select = [
   "ISC", # flake8-implicit-str-concat
   "LOG", # flake8-logging
   "PGH", # pygrep-hooks
+  "PYI", # flake8-pyi
   "RUF100", # unused noqa (yesqa)
   "UP", # pyupgrade
   "W", # pycodestyle warnings
