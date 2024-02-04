@@ -18,7 +18,7 @@ def test_images():
             im.close()
 
 
-def test_filter_api(test_images):
+def test_filter_api(test_images) -> None:
     im = test_images["im"]
 
     test_filter = ImageFilter.GaussianBlur(2.0)
@@ -32,7 +32,7 @@ def test_filter_api(test_images):
     assert i.size == (128, 128)
 
 
-def test_usm_formats(test_images):
+def test_usm_formats(test_images) -> None:
     im = test_images["im"]
 
     usm = ImageFilter.UnsharpMask
@@ -50,7 +50,7 @@ def test_usm_formats(test_images):
         im.convert("YCbCr").filter(usm)
 
 
-def test_blur_formats(test_images):
+def test_blur_formats(test_images) -> None:
     im = test_images["im"]
 
     blur = ImageFilter.GaussianBlur
@@ -68,7 +68,7 @@ def test_blur_formats(test_images):
         im.convert("YCbCr").filter(blur)
 
 
-def test_usm_accuracy(test_images):
+def test_usm_accuracy(test_images) -> None:
     snakes = test_images["snakes"]
 
     src = snakes.convert("RGB")
@@ -77,7 +77,7 @@ def test_usm_accuracy(test_images):
     assert i.tobytes() == src.tobytes()
 
 
-def test_blur_accuracy(test_images):
+def test_blur_accuracy(test_images) -> None:
     snakes = test_images["snakes"]
 
     i = snakes.filter(ImageFilter.GaussianBlur(0.4))

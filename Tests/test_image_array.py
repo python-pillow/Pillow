@@ -12,12 +12,12 @@ numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 im = hopper().resize((128, 100))
 
 
-def test_toarray():
+def test_toarray() -> None:
     def test(mode):
         ai = numpy.array(im.convert(mode))
         return ai.shape, ai.dtype.str, ai.nbytes
 
-    def test_with_dtype(dtype):
+    def test_with_dtype(dtype) -> None:
         ai = numpy.array(im, dtype=dtype)
         assert ai.dtype == dtype
 
@@ -46,11 +46,11 @@ def test_toarray():
                 numpy.array(im_truncated)
 
 
-def test_fromarray():
+def test_fromarray() -> None:
     class Wrapper:
         """Class with API matching Image.fromarray"""
 
-        def __init__(self, img, arr_params):
+        def __init__(self, img, arr_params) -> None:
             self.img = img
             self.__array_interface__ = arr_params
 
@@ -89,7 +89,7 @@ def test_fromarray():
         Image.fromarray(wrapped)
 
 
-def test_fromarray_palette():
+def test_fromarray_palette() -> None:
     # Arrange
     i = im.convert("L")
     a = numpy.array(i)
