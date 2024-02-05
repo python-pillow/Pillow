@@ -104,12 +104,12 @@ select = [
   "F", # pyflakes errors
   "I", # isort
   "ISC", # flake8-implicit-str-concat
+  "LOG", # flake8-logging
   "PGH", # pygrep-hooks
   "RUF100", # unused noqa (yesqa)
   "UP", # pyupgrade
   "W", # pycodestyle warnings
   "YTT", # flake8-2020
-  # "LOG", # TODO: enable flake8-logging when it's not in preview anymore
 ]
 extend-ignore = [
   "E203", # Whitespace before ':'
