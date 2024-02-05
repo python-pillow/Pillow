@@ -111,7 +111,7 @@ select = [
   "YTT", # flake8-2020
   # "LOG", # TODO: enable flake8-logging when it's not in preview anymore
 ]
-extend-ignore = [
+ignore = [
   "E203", # Whitespace before ':'
   "E221", # Multiple spaces before operator
   "E226", # Missing whitespace around arithmetic operator
