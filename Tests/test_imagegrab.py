@@ -119,3 +119,15 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
             subprocess.call(["wl-copy"], stdin=fp)
         im = ImageGrab.grabclipboard()
         assert_image_equal_tofile(im, image_path)
+
+    @pytest.mark.skipif(
+        (
+            sys.platform != "linux"
+            or not all(shutil.which(cmd) for cmd in ("wl-paste", "wl-copy"))
+        ),
+        reason="Linux with wl-clipboard only",
+    )
+    @pytest.mark.parametrize("arg", ("text", "--clear"))
+    def test_grabclipboard_wl_clipboard_errors(self, arg):
+        subprocess.call(["wl-copy", arg])
+        assert ImageGrab.grabclipboard() is None
