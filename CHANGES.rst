@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Update wl-paste handling and return None for some errors in grabclipboard() on Linux #7745
+  [nik012003, radarhere]
+
+- Remove execute bit from ``setup.py`` #7760
+  [hugovk]
+
 - Do not support using test-image-results to upload images after test failures #7739
   [radarhere]
 
