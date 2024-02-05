@@ -1519,7 +1519,7 @@ def test_compute_regular_polygon_vertices(
     [
         (None, (50, 50, 25), 0, TypeError, "n_sides should be an int"),
         (1, (50, 50, 25), 0, ValueError, "n_sides should be an int > 2"),
-        (3, 50, 0, TypeError, "bounding_circle should be a tuple"),
+        (3, 50, 0, TypeError, "bounding_circle should be a sequence"),
         (
             3,
             (50, 50, 100, 100),
