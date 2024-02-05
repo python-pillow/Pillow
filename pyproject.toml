@@ -111,7 +111,7 @@ select = [
   "W", # pycodestyle warnings
   "YTT", # flake8-2020
 ]
-extend-ignore = [
+ignore = [
   "E203", # Whitespace before ':'
   "E221", # Multiple spaces before operator
   "E226", # Missing whitespace around arithmetic operator
