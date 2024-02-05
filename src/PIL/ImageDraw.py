@@ -34,8 +34,10 @@ from __future__ import annotations
 import math
 import numbers
 import struct
+from typing import Sequence, cast
 
 from . import Image, ImageColor
+from ._typing import Coords
 
 """
 A simple 2D drawing interface for PIL images.
@@ -145,13 +147,13 @@ class ImageDraw:
                 fill = self.draw.draw_ink(fill)
         return ink, fill
 
-    def arc(self, xy, start, end, fill=None, width=1) -> None:
+    def arc(self, xy: Coords, start, end, fill=None, width=1) -> None:
         """Draw an arc."""
         ink, fill = self._getink(fill)
         if ink is not None:
             self.draw.draw_arc(xy, start, end, ink, width)
 
-    def bitmap(self, xy, bitmap, fill=None) -> None:
+    def bitmap(self, xy: Sequence[int], bitmap, fill=None) -> None:
         """Draw a bitmap."""
         bitmap.load()
         ink, fill = self._getink(fill)
@@ -160,7 +162,7 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_bitmap(xy, bitmap.im, ink)
 
-    def chord(self, xy, start, end, fill=None, outline=None, width=1) -> None:
+    def chord(self, xy: Coords, start, end, fill=None, outline=None, width=1) -> None:
         """Draw a chord."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -168,7 +170,7 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_chord(xy, start, end, ink, 0, width)
 
-    def ellipse(self, xy, fill=None, outline=None, width=1) -> None:
+    def ellipse(self, xy: Coords, fill=None, outline=None, width=1) -> None:
         """Draw an ellipse."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -176,20 +178,29 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_ellipse(xy, ink, 0, width)
 
-    def line(self, xy, fill=None, width=0, joint=None) -> None:
+    def line(self, xy: Coords, fill=None, width=0, joint=None) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                if not isinstance(xy[0], (list, tuple)):
-                    xy = [tuple(xy[i : i + 2]) for i in range(0, len(xy), 2)]
-                for i in range(1, len(xy) - 1):
-                    point = xy[i]
+                points: Sequence[Sequence[float]]
+                if isinstance(xy[0], (list, tuple)):
+                    points = cast(Sequence[Sequence[float]], xy)
+                else:
+                    points = [
+                        cast(Sequence[float], tuple(xy[i : i + 2]))
+                        for i in range(0, len(xy), 2)
+                    ]
+                for i in range(1, len(points) - 1):
+                    point = points[i]
                     angles = [
                         math.degrees(math.atan2(end[0] - start[0], start[1] - end[1]))
                         % 360
-                        for start, end in ((xy[i - 1], point), (point, xy[i + 1]))
+                        for start, end in (
+                            (points[i - 1], point),
+                            (point, points[i + 1]),
+                        )
                     ]
                     if angles[0] == angles[1]:
                         # This is a straight line, so no joint is required
@@ -245,7 +256,9 @@ class ImageDraw:
         if ink is not None and ink != fill:
             self.draw.draw_outline(shape, ink, 0)
 
-    def pieslice(self, xy, start, end, fill=None, outline=None, width=1) -> None:
+    def pieslice(
+        self, xy: Coords, start, end, fill=None, outline=None, width=1
+    ) -> None:
         """Draw a pieslice."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -253,13 +266,13 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_pieslice(xy, start, end, ink, 0, width)
 
-    def point(self, xy, fill=None) -> None:
+    def point(self, xy: Coords, fill=None) -> None:
         """Draw one or more individual pixels."""
         ink, fill = self._getink(fill)
         if ink is not None:
             self.draw.draw_points(xy, ink)
 
-    def polygon(self, xy, fill=None, outline=None, width=1) -> None:
+    def polygon(self, xy: Coords, fill=None, outline=None, width=1) -> None:
         """Draw a polygon."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -296,7 +309,7 @@ class ImageDraw:
         xy = _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
         self.polygon(xy, fill, outline, width)
 
-    def rectangle(self, xy, fill=None, outline=None, width=1) -> None:
+    def rectangle(self, xy: Coords, fill=None, outline=None, width=1) -> None:
         """Draw a rectangle."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -305,13 +318,13 @@ class ImageDraw:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
     def rounded_rectangle(
-        self, xy, radius=0, fill=None, outline=None, width=1, *, corners=None
+        self, xy: Coords, radius=0, fill=None, outline=None, width=1, *, corners=None
     ) -> None:
         """Draw a rounded rectangle."""
         if isinstance(xy[0], (list, tuple)):
-            (x0, y0), (x1, y1) = xy
+            (x0, y0), (x1, y1) = cast(Sequence[Sequence[float]], xy)
         else:
-            x0, y0, x1, y1 = xy
+            x0, y0, x1, y1 = cast(Sequence[float], xy)
         if x1 < x0:
             msg = "x1 must be greater than or equal to x0"
             raise ValueError(msg)
@@ -347,6 +360,7 @@ class ImageDraw:
         ink, fill = self._getink(outline, fill)
 
         def draw_corners(pieslice) -> None:
+            parts: tuple[tuple[tuple[float, float, float, float], int, int], ...]
             if full_x:
                 # Draw top and bottom halves
                 parts = (
@@ -361,17 +375,18 @@ class ImageDraw:
                 )
             else:
                 # Draw four separate corners
-                parts = []
-                for i, part in enumerate(
-                    (
-                        ((x0, y0, x0 + d, y0 + d), 180, 270),
-                        ((x1 - d, y0, x1, y0 + d), 270, 360),
-                        ((x1 - d, y1 - d, x1, y1), 0, 90),
-                        ((x0, y1 - d, x0 + d, y1), 90, 180),
+                parts = tuple(
+                    part
+                    for i, part in enumerate(
+                        (
+                            ((x0, y0, x0 + d, y0 + d), 180, 270),
+                            ((x1 - d, y0, x1, y0 + d), 270, 360),
+                            ((x1 - d, y1 - d, x1, y1), 0, 90),
+                            ((x0, y1 - d, x0 + d, y1), 90, 180),
+                        )
                     )
-                ):
-                    if corners[i]:
-                        parts.append(part)
+                    if corners[i]
+                )
             for part in parts:
                 if pieslice:
                     self.draw.draw_pieslice(*(part + (fill, 1)))
@@ -520,7 +535,7 @@ class ImageDraw:
                     *args,
                     **kwargs,
                 )
-                coord = coord[0] + offset[0], coord[1] + offset[1]
+                coord = [coord[0] + offset[0], coord[1] + offset[1]]
             except AttributeError:
                 try:
                     mask = font.getmask(
@@ -539,7 +554,7 @@ class ImageDraw:
                 except TypeError:
                     mask = font.getmask(text)
             if stroke_offset:
-                coord = coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]
+                coord = [coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]]
             if mode == "RGBA":
                 # font.getmask2(mode="RGBA") returns color in RGB bands and mask in A
                 # extract mask and set text alpha
@@ -548,7 +563,9 @@ class ImageDraw:
                 color.fillband(3, ink_alpha)
                 x, y = coord
                 if self.im is not None:
-                    self.im.paste(color, (x, y, x + mask.size[0], y + mask.size[1]), mask)
+                    self.im.paste(
+                        color, (x, y, x + mask.size[0], y + mask.size[1]), mask
+                    )
             else:
                 self.draw.draw_bitmap(coord, mask, ink)
 
@@ -829,7 +846,7 @@ class ImageDraw:
         return bbox
 
 
-def Draw(im: Image.Image, mode: str | None = None) -> ImageDraw:
+def Draw(im, mode: str | None = None) -> ImageDraw:
     """
     A simple 2D drawing interface for PIL images.
 
@@ -933,7 +950,9 @@ def floodfill(image: Image.Image, xy, value, border=None, thresh=0) -> None:
         edge = new_edge
 
 
-def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation) -> list[tuple[float, float]]:
+def _compute_regular_polygon_vertices(
+    bounding_circle, n_sides, rotation
+) -> list[tuple[float, float]]:
     """
     Generate a list of vertices for a 2D regular polygon.
 
@@ -1051,9 +1070,7 @@ def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation) -> lis
     angles = _get_angles(n_sides, rotation)
 
     # 4. Compute Vertices
-    return [
-        _compute_polygon_vertex(angle) for angle in angles
-    ]
+    return [_compute_polygon_vertex(angle) for angle in angles]
 
 
 def _color_diff(color1, color2: float | tuple[int, ...]) -> float:

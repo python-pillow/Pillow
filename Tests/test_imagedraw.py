@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import contextlib
 import os.path
-from typing import Sequence
 
 import pytest
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, features
+from PIL._typing import Coords
 
 from .helper import (
     assert_image_equal,
@@ -75,7 +75,7 @@ def test_mode_mismatch() -> None:
 
 @pytest.mark.parametrize("bbox", BBOX)
 @pytest.mark.parametrize("start, end", ((0, 180), (0.5, 180.4)))
-def test_arc(bbox: Sequence[int | Sequence[int]], start: float, end: float) -> None:
+def test_arc(bbox: Coords, start: float, end: float) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -88,7 +88,7 @@ def test_arc(bbox: Sequence[int | Sequence[int]], start: float, end: float) -> N
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_end_le_start(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_arc_end_le_start(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -103,7 +103,7 @@ def test_arc_end_le_start(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_no_loops(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_arc_no_loops(bbox: Coords) -> None:
     # No need to go in loops
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -119,7 +119,7 @@ def test_arc_no_loops(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_arc_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -132,7 +132,7 @@ def test_arc_width(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_width_pieslice_large(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_arc_width_pieslice_large(bbox: Coords) -> None:
     # Tests an arc with a large enough width that it is a pieslice
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -146,7 +146,7 @@ def test_arc_width_pieslice_large(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_arc_width_fill(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -159,7 +159,7 @@ def test_arc_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_arc_width_non_whole_angle(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_arc_width_non_whole_angle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -201,7 +201,7 @@ def test_bitmap() -> None:
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
 @pytest.mark.parametrize("bbox", BBOX)
-def test_chord(mode: str, bbox: Sequence[int | Sequence[int]]) -> None:
+def test_chord(mode: str, bbox: Coords) -> None:
     # Arrange
     im = Image.new(mode, (W, H))
     draw = ImageDraw.Draw(im)
@@ -215,7 +215,7 @@ def test_chord(mode: str, bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_chord_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_chord_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -228,7 +228,7 @@ def test_chord_width(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_chord_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_chord_width_fill(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -241,7 +241,7 @@ def test_chord_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_chord_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_chord_zero_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -267,7 +267,7 @@ def test_chord_too_fat() -> None:
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse(mode: str, bbox: Sequence[int | Sequence[int]]) -> None:
+def test_ellipse(mode: str, bbox: Coords) -> None:
     # Arrange
     im = Image.new(mode, (W, H))
     draw = ImageDraw.Draw(im)
@@ -281,7 +281,7 @@ def test_ellipse(mode: str, bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse_translucent(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_ellipse_translucent(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im, "RGBA")
@@ -318,7 +318,7 @@ def test_ellipse_symmetric() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_ellipse_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -343,7 +343,7 @@ def test_ellipse_width_large() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_ellipse_width_fill(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -356,7 +356,7 @@ def test_ellipse_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_ellipse_zero_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -410,12 +410,7 @@ def test_ellipse_various_sizes_filled() -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_line(
-    points: tuple[tuple[int, int], ...]
-    | list[tuple[int, int]]
-    | tuple[int, ...]
-    | list[int]
-) -> None:
+def test_line(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -488,9 +483,7 @@ def test_transform() -> None:
 
 @pytest.mark.parametrize("bbox", BBOX)
 @pytest.mark.parametrize("start, end", ((-92, 46), (-92.2, 46.2)))
-def test_pieslice(
-    bbox: Sequence[int | Sequence[int]], start: float, end: float
-) -> None:
+def test_pieslice(bbox: Coords, start: float, end: float) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -503,7 +496,7 @@ def test_pieslice(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_pieslice_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_pieslice_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -516,7 +509,7 @@ def test_pieslice_width(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_pieslice_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_pieslice_width_fill(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -530,7 +523,7 @@ def test_pieslice_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_pieslice_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_pieslice_zero_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -585,12 +578,7 @@ def test_pieslice_no_spikes() -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_point(
-    points: tuple[tuple[int, int], ...]
-    | list[tuple[int, int]]
-    | tuple[int, ...]
-    | list[int]
-) -> None:
+def test_point(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -615,12 +603,7 @@ def test_point_I16() -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_polygon(
-    points: tuple[tuple[int, int], ...]
-    | list[tuple[int, int]]
-    | tuple[int, ...]
-    | list[int]
-) -> None:
+def test_polygon(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -693,7 +676,7 @@ def test_polygon_translucent() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_rectangle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -720,7 +703,7 @@ def test_big_rectangle() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_rectangle_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -734,7 +717,7 @@ def test_rectangle_width(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_rectangle_width_fill(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -748,7 +731,7 @@ def test_rectangle_width_fill(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_rectangle_zero_width(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -761,7 +744,7 @@ def test_rectangle_zero_width(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_I16(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_rectangle_I16(bbox: Coords) -> None:
     # Arrange
     im = Image.new("I;16", (W, H))
     draw = ImageDraw.Draw(im)
@@ -774,7 +757,7 @@ def test_rectangle_I16(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle_translucent_outline(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_rectangle_translucent_outline(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im, "RGBA")
@@ -866,7 +849,7 @@ def test_rounded_rectangle_non_integer_radius(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rounded_rectangle_zero_radius(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_rounded_rectangle_zero_radius(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
@@ -907,7 +890,7 @@ def test_rounded_rectangle_translucent(
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_floodfill(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_floodfill(bbox: Coords) -> None:
     red = ImageColor.getrgb("red")
 
     for mode, value in [("L", 1), ("RGBA", (255, 0, 0, 0)), ("RGB", red)]:
@@ -940,7 +923,7 @@ def test_floodfill(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_floodfill_border(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_floodfill_border(bbox: Coords) -> None:
     # floodfill() is experimental
 
     # Arrange
@@ -962,7 +945,7 @@ def test_floodfill_border(bbox: Sequence[int | Sequence[int]]) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_floodfill_thresh(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_floodfill_thresh(bbox: Coords) -> None:
     # floodfill() is experimental
 
     # Arrange
@@ -1419,7 +1402,7 @@ def test_default_font_size() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_same_color_outline(bbox: Sequence[int | Sequence[int]]) -> None:
+def test_same_color_outline(bbox: Coords) -> None:
     # Prepare shape
     x0, y0 = 5, 5
     x1, y1 = 5, 50
