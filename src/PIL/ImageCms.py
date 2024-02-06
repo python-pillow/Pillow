@@ -281,7 +281,6 @@ class ImageCmsProfile:
 
 
 class ImageCmsTransform(Image.ImagePointHandler):
-
     """
     Transform.  This can be used with the procedural API, or with the standard
     :py:func:`~PIL.Image.Image.point` method.
@@ -369,7 +368,6 @@ def get_display_profile(handle=None):
 
 
 class PyCMSError(Exception):
-
     """(pyCMS) Exception class.
     This is used for all errors in the pyCMS API."""
 
