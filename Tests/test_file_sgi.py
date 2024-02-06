@@ -72,7 +72,7 @@ def test_invalid_file() -> None:
 
 
 def test_write(tmp_path: Path) -> None:
-    def roundtrip(img) -> None:
+    def roundtrip(img: Image.Image) -> None:
         out = str(tmp_path / "temp.sgi")
         img.save(out, format="sgi")
         assert_image_equal_tofile(img, out)

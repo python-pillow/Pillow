@@ -571,7 +571,7 @@ class Image:
         # object is gone.
         self.im = DeferredError(ValueError("Operation on closed image"))
 
-    def _copy(self):
+    def _copy(self) -> None:
         self.load()
         self.im = self.im.copy()
         self.pyaccess = None

@@ -10,7 +10,13 @@ X = 255
 
 
 class TestLibPack:
-    def assert_pack(self, mode, rawmode, data, *pixels) -> None:
+    def assert_pack(
+        self,
+        mode: str,
+        rawmode: str,
+        data: int | bytes,
+        *pixels: int | float | tuple[int, ...],
+    ) -> None:
         """
         data - either raw bytes with data or just number of bytes in rawmode.
         """
@@ -228,7 +234,13 @@ class TestLibPack:
 
 
 class TestLibUnpack:
-    def assert_unpack(self, mode, rawmode, data, *pixels) -> None:
+    def assert_unpack(
+        self,
+        mode: str,
+        rawmode: str,
+        data: int | bytes,
+        *pixels: int | float | tuple[int, ...],
+    ) -> None:
         """
         data - either raw bytes with data or just number of bytes in rawmode.
         """
