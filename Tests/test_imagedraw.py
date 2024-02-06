@@ -776,9 +776,11 @@ def test_rectangle_translucent_outline(bbox: Coords) -> None:
     [(10, 20, 190, 180), ([10, 20], [190, 180]), ((10, 20), (190, 180))],
 )
 def test_rounded_rectangle(
-    xy: tuple[int, int, int, int]
-    | tuple[list[int]]
-    | tuple[tuple[int, int], tuple[int, int]]
+    xy: (
+        tuple[int, int, int, int]
+        | tuple[list[int]]
+        | tuple[tuple[int, int], tuple[int, int]]
+    )
 ) -> None:
     # Arrange
     im = Image.new("RGB", (200, 200))
