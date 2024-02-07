@@ -5,6 +5,7 @@ import re
 import warnings
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -42,7 +43,7 @@ TEST_FILE = "Tests/images/hopper.jpg"
 
 @skip_unless_feature("jpg")
 class TestFileJpeg:
-    def roundtrip(self, im, **options):
+    def roundtrip(self, im: Image.Image, **options: Any) -> Image.Image:
         out = BytesIO()
         im.save(out, "JPEG", **options)
         test_bytes = out.tell()
@@ -51,7 +52,7 @@ class TestFileJpeg:
         im.bytes = test_bytes  # for testing only
         return im
 
-    def gen_random_image(self, size, mode: str = "RGB"):
+    def gen_random_image(self, size: tuple[int, int], mode: str = "RGB") -> Image.Image:
         """Generates a very hard to compress file
         :param size: tuple
         :param mode: optional image mode
@@ -71,7 +72,7 @@ class TestFileJpeg:
             assert im.get_format_mimetype() == "image/jpeg"
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
-    def test_zero(self, size, tmp_path: Path) -> None:
+    def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = str(tmp_path / "temp.jpg")
         im = Image.new("RGB", size)
         with pytest.raises(ValueError):
@@ -108,13 +109,11 @@ class TestFileJpeg:
                     assert "comment" not in reloaded.info
 
             # Test that a comment argument overrides the default comment
-            for comment in ("Test comment text", b"Text comment text"):
+            for comment in ("Test comment text", b"Test comment text"):
                 out = BytesIO()
                 im.save(out, format="JPEG", comment=comment)
                 with Image.open(out) as reloaded:
-                    if not isinstance(comment, bytes):
-                        comment = comment.encode()
-                    assert reloaded.info["comment"] == comment
+                    assert reloaded.info["comment"] == b"Test comment text"
 
     def test_cmyk(self) -> None:
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
@@ -145,7 +144,7 @@ class TestFileJpeg:
             assert k > 0.9
 
     def test_rgb(self) -> None:
-        def getchannels(im):
+        def getchannels(im: Image.Image) -> tuple[int, int, int]:
             return tuple(v[0] for v in im.layer)
 
         im = hopper()
@@ -161,8 +160,8 @@ class TestFileJpeg:
         "test_image_path",
         [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
     )
-    def test_dpi(self, test_image_path) -> None:
-        def test(xdpi, ydpi=None):
+    def test_dpi(self, test_image_path: str) -> None:
+        def test(xdpi: int, ydpi: int | None = None):
             with Image.open(test_image_path) as im:
                 im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
@@ -207,7 +206,7 @@ class TestFileJpeg:
             ImageFile.MAXBLOCK * 4 + 3,  # large block
         ),
     )
-    def test_icc_big(self, n) -> None:
+    def test_icc_big(self, n: int) -> None:
         # Make sure that the "extra" support handles large blocks
         # The ICC APP marker can store 65519 bytes per marker, so
         # using a 4-byte test code should allow us to detect out of
@@ -433,7 +432,7 @@ class TestFileJpeg:
         assert_image(im1, im2.mode, im2.size)
 
     def test_subsampling(self) -> None:
-        def getsampling(im):
+        def getsampling(im: Image.Image):
             layer = im.layer
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
 
@@ -530,7 +529,7 @@ class TestFileJpeg:
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
     def test_qtables(self, tmp_path: Path) -> None:
-        def _n_qtables_helper(n, test_file) -> None:
+        def _n_qtables_helper(n: int, test_file: str) -> None:
             with Image.open(test_file) as im:
                 f = str(tmp_path / "temp.jpg")
                 im.save(f, qtables=[[n] * 64] * n)
@@ -666,7 +665,7 @@ class TestFileJpeg:
         "blocks, rows, markers",
         ((0, 0, 0), (1, 0, 15), (3, 0, 5), (8, 0, 1), (0, 1, 3), (0, 2, 1)),
     )
-    def test_restart_markers(self, blocks, rows, markers) -> None:
+    def test_restart_markers(self, blocks: int, rows: int, markers: int) -> None:
         im = Image.new("RGB", (32, 32))  # 16 MCUs
         out = BytesIO()
         im.save(
@@ -724,13 +723,13 @@ class TestFileJpeg:
             assert im.format == "JPEG"
 
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
-    def test_save_correct_modes(self, mode) -> None:
+    def test_save_correct_modes(self, mode: str) -> None:
         out = BytesIO()
         img = Image.new(mode, (20, 20))
         img.save(out, "JPEG")
 
     @pytest.mark.parametrize("mode", ("LA", "La", "RGBA", "RGBa", "P"))
-    def test_save_wrong_modes(self, mode) -> None:
+    def test_save_wrong_modes(self, mode: str) -> None:
         # ref https://github.com/python-pillow/Pillow/issues/2005
         out = BytesIO()
         img = Image.new(mode, (20, 20))
@@ -982,12 +981,12 @@ class TestFileJpeg:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
-            def decode(self, buffer):
+            def decode(self, buffer: bytes) -> tuple[int, int]:
                 return 0, 0
 
         decoder = InfiniteMockPyDecoder(None)
 
-        def closure(mode, *args):
+        def closure(mode: str, *args) -> InfiniteMockPyDecoder:
             decoder.__init__(mode, *args)
             return decoder
 
