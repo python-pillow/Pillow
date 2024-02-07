@@ -8,8 +8,8 @@ from PIL import Image, ImageMath
 def pixel(im: Image.Image | int) -> str | int:
     if isinstance(im, int):
         return int(im)  # hack to deal with booleans
-    else:
-        return f"{im.mode} {repr(im.getpixel((0, 0)))}"
+
+    return f"{im.mode} {repr(im.getpixel((0, 0)))}"
 
 
 A = Image.new("L", (1, 1), 1)
