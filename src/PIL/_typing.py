@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Protocol, TypeVar, Union
+from typing import Protocol, Sequence, TypeVar, Union
 
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
@@ -17,12 +17,14 @@ else:
                 return bool
 
 
+Coords = Union[Sequence[float], Sequence[Sequence[float]]]
+
+
 _T_co = TypeVar("_T_co", covariant=True)
 
 
 class SupportsRead(Protocol[_T_co]):
-    def read(self, __length: int = ...) -> _T_co:
-        ...
+    def read(self, __length: int = ...) -> _T_co: ...
 
 
 FileDescriptor = int
