@@ -33,10 +33,10 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
-from pathlib import Path
 from typing import BinaryIO
 
 from . import Image
+from ._typing import StrOrBytesPath
 from ._util import is_directory, is_path
 
 
@@ -193,7 +193,7 @@ class FreeTypeFont:
 
     def __init__(
         self,
-        font: bytes | str | Path | BinaryIO | None = None,
+        font: StrOrBytesPath | BinaryIO | None = None,
         size: float = 10,
         index: int = 0,
         encoding: str = "",
