@@ -2385,7 +2385,7 @@ class Image:
         filename = ""
         open_fp = False
         if is_path(fp):
-            filename = os.fspath(fp)
+            filename = os.path.realpath(os.fspath(fp))
             open_fp = True
         elif fp == sys.stdout:
             try:
