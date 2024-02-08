@@ -448,18 +448,19 @@ PyObject *
 _anim_decoder_get_next(PyObject *self) {
     uint8_t *buf;
     int timestamp;
+    int ok;
     PyObject *bytes;
     PyObject *ret;
     ImagingSectionCookie cookie;
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
 
     ImagingSectionEnter(&cookie);
-    if (!WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)) {
-        ImagingSectionLeave(&cookie);
+    ok = WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)
+    ImagingSectionLeave(&cookie);
+    if (!ok) {
         PyErr_SetString(PyExc_OSError, "failed to read next frame");
         return NULL;
     }
-    ImagingSectionLeave(&cookie);
 
     bytes = PyBytes_FromStringAndSize(
         (char *)buf, decp->info.canvas_width * 4 * decp->info.canvas_height);
