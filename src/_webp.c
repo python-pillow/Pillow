@@ -455,7 +455,7 @@ _anim_decoder_get_next(PyObject *self) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
 
     ImagingSectionEnter(&cookie);
-    ok = WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)
+    ok = WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp);
     ImagingSectionLeave(&cookie);
     if (!ok) {
         PyErr_SetString(PyExc_OSError, "failed to read next frame");
