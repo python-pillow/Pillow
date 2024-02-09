@@ -647,6 +647,9 @@ def test_dispose2_palette(tmp_path: Path) -> None:
             # Center remains red every frame
             assert rgb_img.getpixel((50, 50)) == circle
 
+            # Check that frame transparency wasn't added unnecessarily
+            assert img._frame_transparency is None
+
 
 def test_dispose2_diff(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")

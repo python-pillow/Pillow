@@ -638,7 +638,11 @@ def _write_multiple_frames(im, fp, palette):
                         background_im = Image.new("P", im_frame.size, background)
                         background_im.putpalette(im_frames[0]["im"].palette)
                     delta, bbox = _getbbox(background_im, im_frame)
-                if encoderinfo.get("optimize") and im_frame.mode != "1":
+                if (
+                    encoderinfo.get("optimize")
+                    and im_frames[-1]["encoderinfo"].get("disposal") != 2
+                    and im_frame.mode != "1"
+                ):
                     if "transparency" not in encoderinfo:
                         try:
                             encoderinfo["transparency"] = (
