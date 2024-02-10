@@ -737,6 +737,25 @@ def test_dispose2_background_frame(tmp_path: Path) -> None:
         assert im.n_frames == 3
 
 
+def test_dispose2_previous_frame(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("P", (100, 100))
+    im.info["transparency"] = 0
+    d = ImageDraw.Draw(im)
+    d.rectangle([(0, 0), (100, 50)], 1)
+    im.putpalette((0, 0, 0, 255, 0, 0))
+
+    im2 = Image.new("P", (100, 100))
+    im2.putpalette((0, 0, 0))
+
+    im.save(out, save_all=True, append_images=[im2], disposal=[0, 2])
+
+    with Image.open(out) as im:
+        im.seek(1)
+        assert im.getpixel((0, 0)) == (0, 0, 0, 255)
+
+
 def test_transparency_in_second_frame(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/different_transparency.gif") as im:
