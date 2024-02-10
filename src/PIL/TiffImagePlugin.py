@@ -476,7 +476,7 @@ def _register_basic(idx_fmt_name):
 
 
 if TYPE_CHECKING:
-    _IFDv2Base = MutableMapping[int, Any]  # pragma: no cover
+    _IFDv2Base = MutableMapping[int, Any]
 else:
     _IFDv2Base = MutableMapping
 

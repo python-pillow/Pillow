@@ -217,7 +217,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 if TYPE_CHECKING:
-    from . import ImageFile  # pragma: no cover
+    from . import ImageFile
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -2890,7 +2890,7 @@ class ImageTransformHandler:
         image: Image,
         **options: dict[str, str | int | tuple[int, ...] | list[int]],
     ) -> Image:
-        pass  # pragma: no cover
+        pass
 
 
 # --------------------------------------------------------------------
@@ -3653,7 +3653,7 @@ atexit.register(core.clear_cache)
 
 
 if TYPE_CHECKING:
-    _ExifBase = MutableMapping[int, Any]  # pragma: no cover
+    _ExifBase = MutableMapping[int, Any]
 else:
     _ExifBase = MutableMapping
 

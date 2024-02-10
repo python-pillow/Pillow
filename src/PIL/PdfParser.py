@@ -246,7 +246,7 @@ class PdfArray(List[Any]):
 
 
 if TYPE_CHECKING:
-    _DictBase = collections.UserDict[Union[str, bytes], Any]  # pragma: no cover
+    _DictBase = collections.UserDict[Union[str, bytes], Any]
 else:
     _DictBase = collections.UserDict
 
