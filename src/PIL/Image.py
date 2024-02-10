@@ -2385,7 +2385,7 @@ class Image:
         filename = ""
         open_fp = False
         if is_path(fp):
-            filename = os.fspath(fp)
+            filename = os.path.realpath(os.fspath(fp))
             open_fp = True
         elif fp == sys.stdout:
             try:
@@ -3240,10 +3240,8 @@ def open(fp, mode="r", formats=None) -> Image:
 
     exclusive_fp = False
     filename = ""
-    if isinstance(fp, os.PathLike):
+    if is_path(fp):
         filename = os.path.realpath(os.fspath(fp))
-    elif is_path(fp):
-        filename = fp
 
     if filename:
         fp = builtins.open(filename, "rb")
