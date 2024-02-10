@@ -2526,8 +2526,7 @@ class Image:
         self.load()
         if self.im.bands == 1:
             return (self.copy(),)
-        else:
-            return tuple(map(self._new, self.im.split()))
+        return tuple(map(self._new, self.im.split()))
 
     def getchannel(self, channel):
         """
