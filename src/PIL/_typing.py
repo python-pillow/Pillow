@@ -27,8 +27,7 @@ class SupportsRead(Protocol[_T_co]):
     def read(self, __length: int = ...) -> _T_co: ...
 
 
-FileDescriptor = int
 StrOrBytesPath = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
 
 
-__all__ = ["FileDescriptor", "TypeGuard", "StrOrBytesPath", "SupportsRead"]
+__all__ = ["TypeGuard", "StrOrBytesPath", "SupportsRead"]

@@ -32,7 +32,7 @@ from typing import IO
 from . import ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._typing import FileDescriptor, StrOrBytesPath
+from ._typing import StrOrBytesPath
 
 
 class GdImageFile(ImageFile.ImageFile):
@@ -81,9 +81,7 @@ class GdImageFile(ImageFile.ImageFile):
         ]
 
 
-def open(
-    fp: StrOrBytesPath | FileDescriptor | IO[bytes], mode: str = "r"
-) -> GdImageFile:
+def open(fp: StrOrBytesPath | IO[bytes], mode: str = "r") -> GdImageFile:
     """
     Load texture from a GD image file.
 
