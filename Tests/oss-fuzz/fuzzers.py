@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 import warnings
 
-from PIL import Image, ImageDraw, ImageFile, ImageFilter, ImageFont, ImageCms
+from PIL import Image, ImageCms, ImageDraw, ImageFile, ImageFilter, ImageFont
 
 
 def enable_decompressionbomb_error() -> None:
@@ -25,10 +25,12 @@ def fuzz_image(data: bytes) -> None:
         im.filter(ImageFilter.DETAIL)
         im.save(io.BytesIO(), "BMP")
 
+
 def fuzz_cms(profile1, profile2, trans1, trans2) -> None:
     p1 = ImageCms.createProfile(profile1)
     p2 = ImageCms.createProfile(profile2)
     t = ImageCms.buildTransform(p1, p2, trans1, trans2)
+
 
 def fuzz_font(data: bytes) -> None:
     wrapper = io.BytesIO(data)

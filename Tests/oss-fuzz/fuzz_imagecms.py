@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
 
 import atheris
 
@@ -22,10 +22,31 @@ with atheris.instrument_imports():
 
     import fuzzers
 
-MODES = ["1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "LAB",
-    "HSV", "I", "F", "LA", "PA", "RGBX", "RGBa", "La", "I;16",
-    "I;16L", "I;16B", "I;16N", "BGR;15", "BGR;16", "BGR;24",
-    ]
+MODES = [
+    "1",
+    "L",
+    "P",
+    "RGB",
+    "RGBA",
+    "CMYK",
+    "YCbCr",
+    "LAB",
+    "HSV",
+    "I",
+    "F",
+    "LA",
+    "PA",
+    "RGBX",
+    "RGBa",
+    "La",
+    "I;16",
+    "I;16L",
+    "I;16B",
+    "I;16N",
+    "BGR;15",
+    "BGR;16",
+    "BGR;24",
+]
 
 
 def TestOneInput(data: bytes) -> None:
