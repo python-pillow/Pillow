@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 from packaging.version import parse as parse_version
 
@@ -13,7 +15,7 @@ im = hopper().resize((128, 100))
 
 
 def test_toarray() -> None:
-    def test(mode):
+    def test(mode: str) -> tuple[tuple[int, ...], str, int]:
         ai = numpy.array(im.convert(mode))
         return ai.shape, ai.dtype.str, ai.nbytes
 
@@ -50,14 +52,14 @@ def test_fromarray() -> None:
     class Wrapper:
         """Class with API matching Image.fromarray"""
 
-        def __init__(self, img, arr_params) -> None:
+        def __init__(self, img: Image.Image, arr_params: dict[str, Any]) -> None:
             self.img = img
             self.__array_interface__ = arr_params
 
-        def tobytes(self):
+        def tobytes(self) -> bytes:
             return self.img.tobytes()
 
-    def test(mode):
+    def test(mode: str) -> tuple[str, tuple[int, int], bool]:
         i = im.convert(mode)
         a = numpy.array(i)
         # Make wrapper instance for image, new array interface

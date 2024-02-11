@@ -8,7 +8,7 @@ from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 
 def test_putpalette() -> None:
-    def palette(mode):
+    def palette(mode: str) -> str | tuple[str, list[int]]:
         im = hopper(mode).copy()
         im.putpalette(list(range(256)) * 3)
         p = im.getpalette()
@@ -81,7 +81,7 @@ def test_putpalette_with_alpha_values() -> None:
         ("RGBAX", (1, 2, 3, 4, 0)),
     ),
 )
-def test_rgba_palette(mode, palette) -> None:
+def test_rgba_palette(mode: str, palette: tuple[int, ...]) -> None:
     im = Image.new("P", (1, 1))
     im.putpalette(palette, mode)
     assert im.getpalette() == [1, 2, 3]
