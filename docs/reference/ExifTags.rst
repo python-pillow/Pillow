@@ -4,8 +4,9 @@
 :py:mod:`~PIL.ExifTags` Module
 ==============================
 
-The :py:mod:`~PIL.ExifTags` module exposes several ``enum.IntEnum`` classes
-which provide constants and clear-text names for various well-known EXIF tags.
+The :py:mod:`~PIL.ExifTags` module exposes several :py:class:`enum.IntEnum`
+classes which provide constants and clear-text names for various well-known
+EXIF tags.
 
 .. py:data:: Base
 

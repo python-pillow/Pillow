@@ -89,7 +89,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: winbuild\build
         key:
@@ -202,7 +202,7 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v3.1.5
       with:
         file: ./coverage.xml
         flags: GHA_Windows
