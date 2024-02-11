@@ -270,13 +270,17 @@ class D3DFMT(IntEnum):
 # Backward compatibility layer
 module = sys.modules[__name__]
 for item in DDSD:
+    assert item.name is not None
     setattr(module, "DDSD_" + item.name, item.value)
-for item in DDSCAPS:
-    setattr(module, "DDSCAPS_" + item.name, item.value)
-for item in DDSCAPS2:
-    setattr(module, "DDSCAPS2_" + item.name, item.value)
-for item in DDPF:
-    setattr(module, "DDPF_" + item.name, item.value)
+for item1 in DDSCAPS:
+    assert item1.name is not None
+    setattr(module, "DDSCAPS_" + item1.name, item1.value)
+for item2 in DDSCAPS2:
+    assert item2.name is not None
+    setattr(module, "DDSCAPS2_" + item2.name, item2.value)
+for item3 in DDPF:
+    assert item3.name is not None
+    setattr(module, "DDPF_" + item3.name, item3.value)
 
 DDS_FOURCC = DDPF.FOURCC
 DDS_RGB = DDPF.RGB

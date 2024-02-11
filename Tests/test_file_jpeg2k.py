@@ -4,6 +4,7 @@ import os
 import re
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -36,7 +37,7 @@ test_card.load()
 # 'Not enough memory to handle tile data'
 
 
-def roundtrip(im, **options):
+def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
     out = BytesIO()
     im.save(out, "JPEG2000", **options)
     test_bytes = out.tell()
@@ -138,7 +139,7 @@ def test_prog_res_rt() -> None:
 
 
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
-def test_default_num_resolutions(num_resolutions) -> None:
+def test_default_num_resolutions(num_resolutions: int) -> None:
     d = 1 << (num_resolutions - 1)
     im = test_card.resize((d - 1, d - 1))
     with pytest.raises(OSError):
@@ -198,9 +199,9 @@ def test_layers_type(tmp_path: Path) -> None:
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
         test_card.save(outfile, quality_layers=quality_layers)
 
-    for quality_layers in ["quality_layers", ("100", "50", "10")]:
+    for quality_layers_str in ["quality_layers", ("100", "50", "10")]:
         with pytest.raises(ValueError):
-            test_card.save(outfile, quality_layers=quality_layers)
+            test_card.save(outfile, quality_layers=quality_layers_str)
 
 
 def test_layers() -> None:
@@ -233,7 +234,7 @@ def test_layers() -> None:
         ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
     ),
 )
-def test_no_jp2(name, args, offset, data) -> None:
+def test_no_jp2(name: str, args: dict[str, bool], offset: int, data: bytes) -> None:
     out = BytesIO()
     if name:
         out.name = name
@@ -278,7 +279,7 @@ def test_sgnd(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
-def test_rgba(ext) -> None:
+def test_rgba(ext: str) -> None:
     # Arrange
     with Image.open("Tests/images/rgb_trns_ycbc" + ext) as im:
         # Act
@@ -289,7 +290,7 @@ def test_rgba(ext) -> None:
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
-def test_16bit_monochrome_has_correct_mode(ext) -> None:
+def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
         im.load()
         assert im.mode == "I;16"
@@ -346,12 +347,12 @@ def test_parser_feed() -> None:
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
 )
 @pytest.mark.parametrize("name", ("subsampling_1", "subsampling_2", "zoo1", "zoo2"))
-def test_subsampling_decode(name) -> None:
+def test_subsampling_decode(name: str) -> None:
     test = f"{EXTRA_DIR}/{name}.jp2"
     reference = f"{EXTRA_DIR}/{name}.ppm"
 
     with Image.open(test) as im:
-        epsilon = 3  # for YCbCr images
+        epsilon = 3.0  # for YCbCr images
         with Image.open(reference) as im2:
             width, height = im2.size
             if name[-1] == "2":
@@ -400,7 +401,7 @@ def test_save_comment() -> None:
         "Tests/images/crash-d2c93af851d3ab9a19e34503626368b2ecde9c03.j2k",
     ],
 )
-def test_crashes(test_file) -> None:
+def test_crashes(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             # Valgrind should not complain here
