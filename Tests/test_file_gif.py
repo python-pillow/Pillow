@@ -3,6 +3,7 @@ from __future__ import annotations
 import warnings
 from io import BytesIO
 from pathlib import Path
+from typing import Generator
 
 import pytest
 
@@ -144,13 +145,13 @@ def test_strategy() -> None:
 
 
 def test_optimize() -> None:
-    def test_grayscale(optimize):
+    def test_grayscale(optimize: int) -> int:
         im = Image.new("L", (1, 1), 0)
         filename = BytesIO()
         im.save(filename, "GIF", optimize=optimize)
         return len(filename.getvalue())
 
-    def test_bilevel(optimize):
+    def test_bilevel(optimize: int) -> int:
         im = Image.new("1", (1, 1), 0)
         test_file = BytesIO()
         im.save(test_file, "GIF", optimize=optimize)
@@ -178,7 +179,9 @@ def test_optimize() -> None:
         (4, 513, 256),
     ),
 )
-def test_optimize_correctness(colors, size, expected_palette_length) -> None:
+def test_optimize_correctness(
+    colors: int, size: int, expected_palette_length: int
+) -> None:
     # 256 color Palette image, posterize to > 128 and < 128 levels.
     # Size bigger and smaller than 512x512.
     # Check the palette for number of colors allocated.
@@ -297,7 +300,7 @@ def test_roundtrip_save_all_1(tmp_path: Path) -> None:
         ("Tests/images/dispose_bgnd_rgba.gif", "RGBA"),
     ),
 )
-def test_loading_multiple_palettes(path, mode) -> None:
+def test_loading_multiple_palettes(path: str, mode: str) -> None:
     with Image.open(path) as im:
         assert im.mode == "P"
         first_frame_colors = im.palette.colors.keys()
@@ -347,9 +350,9 @@ def test_palette_handling(tmp_path: Path) -> None:
 def test_palette_434(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/434
 
-    def roundtrip(im, *args, **kwargs):
+    def roundtrip(im: Image.Image, **kwargs: bool) -> Image.Image:
         out = str(tmp_path / "temp.gif")
-        im.copy().save(out, *args, **kwargs)
+        im.copy().save(out, **kwargs)
         reloaded = Image.open(out)
 
         return reloaded
@@ -429,7 +432,7 @@ def test_seek_rewind() -> None:
         ("Tests/images/iss634.gif", 42),
     ),
 )
-def test_n_frames(path, n_frames) -> None:
+def test_n_frames(path: str, n_frames: int) -> None:
     # Test is_animated before n_frames
     with Image.open(path) as im:
         assert im.is_animated == (n_frames != 1)
@@ -541,7 +544,10 @@ def test_dispose_background_transparency() -> None:
         ),
     ),
 )
-def test_transparent_dispose(loading_strategy, expected_colors) -> None:
+def test_transparent_dispose(
+    loading_strategy: GifImagePlugin.LoadingStrategy,
+    expected_colors: tuple[tuple[int | tuple[int, int, int, int], ...]],
+) -> None:
     GifImagePlugin.LOADING_STRATEGY = loading_strategy
     try:
         with Image.open("Tests/images/transparent_dispose.gif") as img:
@@ -889,7 +895,9 @@ def test_identical_frames(tmp_path: Path) -> None:
         1500,
     ),
 )
-def test_identical_frames_to_single_frame(duration, tmp_path: Path) -> None:
+def test_identical_frames_to_single_frame(
+    duration: int | list[int], tmp_path: Path
+) -> None:
     out = str(tmp_path / "temp.gif")
     im_list = [
         Image.new("L", (100, 100), "#000"),
@@ -1049,7 +1057,7 @@ def test_retain_comment_in_subsequent_frames(tmp_path: Path) -> None:
 def test_version(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
-    def assert_version_after_save(im, version) -> None:
+    def assert_version_after_save(im: Image.Image, version: bytes) -> None:
         im.save(out)
         with Image.open(out) as reread:
             assert reread.info["version"] == version
@@ -1088,7 +1096,7 @@ def test_append_images(tmp_path: Path) -> None:
         assert reread.n_frames == 3
 
     # Tests appending using a generator
-    def im_generator(ims):
+    def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
         yield from ims
 
     im.save(out, save_all=True, append_images=im_generator(ims))

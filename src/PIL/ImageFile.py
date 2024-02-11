@@ -91,7 +91,7 @@ def _tilesort(t):
 
 
 class _Tile(NamedTuple):
-    encoder_name: str
+    codec_name: str
     extents: tuple[int, int, int, int]
     offset: int
     args: tuple[Any, ...] | str | None

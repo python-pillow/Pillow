@@ -641,9 +641,9 @@ def _write_multiple_frames(im, fp, palette):
                 if encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         try:
-                            encoderinfo[
-                                "transparency"
-                            ] = im_frame.palette._new_color_index(im_frame)
+                            encoderinfo["transparency"] = (
+                                im_frame.palette._new_color_index(im_frame)
+                            )
                         except ValueError:
                             pass
                     if "transparency" in encoderinfo:
