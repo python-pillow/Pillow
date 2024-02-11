@@ -872,7 +872,7 @@ def load_path(filename):
     raise OSError(msg)
 
 
-def load_default(size=None):
+def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """If FreeType support is available, load a version of Aileron Regular,
     https://dotcolon.net/font/aileron, with a more limited character set.
 

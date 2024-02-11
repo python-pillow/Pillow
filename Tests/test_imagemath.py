@@ -5,11 +5,11 @@ import pytest
 from PIL import Image, ImageMath
 
 
-def pixel(im):
-    if hasattr(im, "im"):
-        return f"{im.mode} {repr(im.getpixel((0, 0)))}"
+def pixel(im: Image.Image | int) -> str | int:
     if isinstance(im, int):
         return int(im)  # hack to deal with booleans
+
+    return f"{im.mode} {repr(im.getpixel((0, 0)))}"
 
 
 A = Image.new("L", (1, 1), 1)
@@ -60,7 +60,7 @@ def test_ops() -> None:
         "(lambda: (lambda: exec('pass'))())()",
     ),
 )
-def test_prevent_exec(expression) -> None:
+def test_prevent_exec(expression: str) -> None:
     with pytest.raises(ValueError):
         ImageMath.eval(expression)
 

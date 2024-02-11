@@ -25,6 +25,7 @@ import sys
 
 from ._deprecate import deprecate
 
+FFI: type
 try:
     from cffi import FFI
 

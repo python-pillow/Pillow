@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import warnings
 from io import BytesIO
+from typing import Any
 
 import pytest
 
@@ -19,7 +20,7 @@ test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 pytestmark = skip_unless_feature("jpg")
 
 
-def roundtrip(im, **options):
+def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
     out = BytesIO()
     im.save(out, "MPO", **options)
     test_bytes = out.tell()
@@ -30,7 +31,7 @@ def roundtrip(im, **options):
 
 
 @pytest.mark.parametrize("test_file", test_files)
-def test_sanity(test_file) -> None:
+def test_sanity(test_file: str) -> None:
     with Image.open(test_file) as im:
         im.load()
         assert im.mode == "RGB"
@@ -70,7 +71,7 @@ def test_context_manager() -> None:
 
 
 @pytest.mark.parametrize("test_file", test_files)
-def test_app(test_file) -> None:
+def test_app(test_file: str) -> None:
     # Test APP/COM reader (@PIL135)
     with Image.open(test_file) as im:
         assert im.applist[0][0] == "APP1"
@@ -82,7 +83,7 @@ def test_app(test_file) -> None:
 
 
 @pytest.mark.parametrize("test_file", test_files)
-def test_exif(test_file) -> None:
+def test_exif(test_file: str) -> None:
     with Image.open(test_file) as im_original:
         im_reloaded = roundtrip(im_original, save_all=True, exif=im_original.getexif())
 
@@ -143,7 +144,7 @@ def test_reload_exif_after_seek() -> None:
 
 
 @pytest.mark.parametrize("test_file", test_files)
-def test_mp(test_file) -> None:
+def test_mp(test_file: str) -> None:
     with Image.open(test_file) as im:
         mpinfo = im._getmp()
         assert mpinfo[45056] == b"0100"
@@ -168,7 +169,7 @@ def test_mp_no_data() -> None:
 
 
 @pytest.mark.parametrize("test_file", test_files)
-def test_mp_attribute(test_file) -> None:
+def test_mp_attribute(test_file: str) -> None:
     with Image.open(test_file) as im:
         mpinfo = im._getmp()
     for frame_number, mpentry in enumerate(mpinfo[0xB002]):
@@ -185,7 +186,7 @@ def test_mp_attribute(test_file) -> None:
 
 
 @pytest.mark.parametrize("test_file", test_files)
-def test_seek(test_file) -> None:
+def test_seek(test_file: str) -> None:
     with Image.open(test_file) as im:
         assert im.tell() == 0
         # prior to first image raises an error, both blatant and borderline
@@ -229,7 +230,7 @@ def test_eoferror() -> None:
 
 
 @pytest.mark.parametrize("test_file", test_files)
-def test_image_grab(test_file) -> None:
+def test_image_grab(test_file: str) -> None:
     with Image.open(test_file) as im:
         assert im.tell() == 0
         im0 = im.tobytes()
@@ -244,7 +245,7 @@ def test_image_grab(test_file) -> None:
 
 
 @pytest.mark.parametrize("test_file", test_files)
-def test_save(test_file) -> None:
+def test_save(test_file: str) -> None:
     with Image.open(test_file) as im:
         assert im.tell() == 0
         jpg0 = roundtrip(im)
