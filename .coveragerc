@@ -10,6 +10,8 @@ exclude_also =
     if DEBUG:
     # Don't complain about compatibility code for missing optional dependencies
     except ImportError
+    if TYPE_CHECKING:
+    @abc.abstractmethod
 
 [run]
 omit =

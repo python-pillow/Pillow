@@ -141,16 +141,6 @@ warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
 exclude = [
-  '^src/PIL/_tkinter_finder.py$',
-  '^src/PIL/DdsImagePlugin.py$',
   '^src/PIL/FpxImagePlugin.py$',
-  '^src/PIL/Image.py$',
-  '^src/PIL/ImageQt.py$',
-  '^src/PIL/ImImagePlugin.py$',
   '^src/PIL/MicImagePlugin.py$',
-  '^src/PIL/PdfParser.py$',
-  '^src/PIL/PyAccess.py$',
-  '^src/PIL/TiffImagePlugin.py$',
-  '^src/PIL/TiffTags.py$',
-  '^src/PIL/WebPImagePlugin.py$',
 ]

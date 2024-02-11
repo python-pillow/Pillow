@@ -22,7 +22,7 @@ from collections import namedtuple
 
 
 class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
-    __slots__ = []
+    __slots__: list[str] = []
 
     def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
         return super().__new__(cls, value, name, type, length, enum or {})
@@ -437,7 +437,7 @@ _populate()
 ##
 # Map type numbers to type names -- defined in ImageFileDirectory.
 
-TYPES = {}
+TYPES: dict[int, str] = {}
 
 #
 # These tags are handled by default in libtiff, without
