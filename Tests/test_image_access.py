@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import sysconfig
+from types import ModuleType
 
 import pytest
 
@@ -23,6 +24,7 @@ else:
     except ImportError:
         cffi = None
 
+numpy: ModuleType | None
 try:
     import numpy
 except ImportError:
@@ -71,9 +73,10 @@ class TestImagePutPixel(AccessTest):
         pix1 = im1.load()
         pix2 = im2.load()
 
-        for x, y in ((0, "0"), ("0", 0)):
-            with pytest.raises(TypeError):
-                pix1[x, y]
+        with pytest.raises(TypeError):
+            pix1[0, "0"]
+        with pytest.raises(TypeError):
+            pix1["0", 0]
 
         for y in range(im1.size[1]):
             for x in range(im1.size[0]):
@@ -123,12 +126,13 @@ class TestImagePutPixel(AccessTest):
         im = hopper()
         pix = im.load()
 
+        assert numpy is not None
         assert pix[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
 
 
 class TestImageGetPixel(AccessTest):
     @staticmethod
-    def color(mode):
+    def color(mode: str) -> int | tuple[int, ...]:
         bands = Image.getmodebands(mode)
         if bands == 1:
             return 1
@@ -138,12 +142,13 @@ class TestImageGetPixel(AccessTest):
             return (16, 32, 49)
         return tuple(range(1, bands + 1))
 
-    def check(self, mode, expected_color=None) -> None:
+    def check(self, mode: str, expected_color_int: int | None = None) -> None:
         if self._need_cffi_access and mode.startswith("BGR;"):
             pytest.skip("Support not added to deprecated module for BGR;* modes")
 
-        if not expected_color:
-            expected_color = self.color(mode)
+        expected_color = (
+            self.color(mode) if expected_color_int is None else expected_color_int
+        )
 
         # check putpixel
         im = Image.new(mode, (1, 1), None)
@@ -222,7 +227,7 @@ class TestImageGetPixel(AccessTest):
             "YCbCr",
         ),
     )
-    def test_basic(self, mode) -> None:
+    def test_basic(self, mode: str) -> None:
         self.check(mode)
 
     def test_list(self) -> None:
@@ -231,14 +236,14 @@ class TestImageGetPixel(AccessTest):
 
     @pytest.mark.parametrize("mode", ("I;16", "I;16B"))
     @pytest.mark.parametrize("expected_color", (2**15 - 1, 2**15, 2**15 + 1, 2**16 - 1))
-    def test_signedness(self, mode, expected_color) -> None:
+    def test_signedness(self, mode: str, expected_color: int) -> None:
         # see https://github.com/python-pillow/Pillow/issues/452
         # pixelaccess is using signed int* instead of uint*
         self.check(mode, expected_color)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     @pytest.mark.parametrize("color", ((255, 0, 0), (255, 0, 0, 255)))
-    def test_p_putpixel_rgb_rgba(self, mode, color) -> None:
+    def test_p_putpixel_rgb_rgba(self, mode: str, color: tuple[int, ...]) -> None:
         im = Image.new(mode, (1, 1))
         im.putpixel((0, 0), color)
 
@@ -262,7 +267,7 @@ class TestCffiGetPixel(TestImageGetPixel):
 class TestCffi(AccessTest):
     _need_cffi_access = True
 
-    def _test_get_access(self, im) -> None:
+    def _test_get_access(self, im: Image.Image) -> None:
         """Do we get the same thing as the old pixel access
 
         Using private interfaces, forcing a capi access and
@@ -299,7 +304,7 @@ class TestCffi(AccessTest):
         # im = Image.new('I;32B', (10, 10), 2**10)
         # self._test_get_access(im)
 
-    def _test_set_access(self, im, color) -> None:
+    def _test_set_access(self, im: Image.Image, color: tuple[int, ...] | float) -> None:
         """Are we writing the correct bits into the image?
 
         Using private interfaces, forcing a capi access and
@@ -359,7 +364,7 @@ class TestCffi(AccessTest):
                 assert px[i, 0] == 0
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
-    def test_p_putpixel_rgb_rgba(self, mode) -> None:
+    def test_p_putpixel_rgb_rgba(self, mode: str) -> None:
         for color in ((255, 0, 0), (255, 0, 0, 127 if mode == "PA" else 255)):
             im = Image.new(mode, (1, 1))
             with pytest.warns(DeprecationWarning):
@@ -377,7 +382,7 @@ class TestImagePutPixelError(AccessTest):
     INVALID_TYPES = ["foo", 1.0, None]
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1)
-    def test_putpixel_type_error1(self, mode) -> None:
+    def test_putpixel_type_error1(self, mode: str) -> None:
         im = hopper(mode)
         for v in self.INVALID_TYPES:
             with pytest.raises(TypeError, match="color must be int or tuple"):
@@ -400,14 +405,16 @@ class TestImagePutPixelError(AccessTest):
             ),
         ),
     )
-    def test_putpixel_invalid_number_of_bands(self, mode, band_numbers, match) -> None:
+    def test_putpixel_invalid_number_of_bands(
+        self, mode: str, band_numbers: tuple[int, ...], match: str
+    ) -> None:
         im = hopper(mode)
         for band_number in band_numbers:
             with pytest.raises(TypeError, match=match):
                 im.putpixel((0, 0), (0,) * band_number)
 
     @pytest.mark.parametrize("mode", IMAGE_MODES2)
-    def test_putpixel_type_error2(self, mode) -> None:
+    def test_putpixel_type_error2(self, mode: str) -> None:
         im = hopper(mode)
         for v in self.INVALID_TYPES:
             with pytest.raises(
@@ -416,7 +423,7 @@ class TestImagePutPixelError(AccessTest):
                 im.putpixel((0, 0), v)
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1 + IMAGE_MODES2)
-    def test_putpixel_overflow_error(self, mode) -> None:
+    def test_putpixel_overflow_error(self, mode: str) -> None:
         im = hopper(mode)
         with pytest.raises(OverflowError):
             im.putpixel((0, 0), 2**80)
@@ -428,7 +435,7 @@ class TestEmbeddable:
     def test_embeddable(self) -> None:
         import ctypes
 
-        from setuptools.command.build_ext import new_compiler
+        from setuptools.command import build_ext
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             fh.write(
@@ -457,7 +464,7 @@ int main(int argc, char* argv[])
                 % sys.prefix.replace("\\", "\\\\")
             )
 
-        compiler = new_compiler()
+        compiler = getattr(build_ext, "new_compiler")()
         compiler.add_include_dir(sysconfig.get_config_var("INCLUDEPY"))
 
         libdir = sysconfig.get_config_var("LIBDIR") or sysconfig.get_config_var(
@@ -471,7 +478,7 @@ int main(int argc, char* argv[])
         env["PATH"] = sys.prefix + ";" + env["PATH"]
 
         # do not display the Windows Error Reporting dialog
-        ctypes.windll.kernel32.SetErrorMode(0x0002)
+        getattr(ctypes, "windll").kernel32.SetErrorMode(0x0002)
 
         process = subprocess.Popen(["embed_pil.exe"], env=env)
         process.communicate()

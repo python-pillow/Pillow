@@ -7,7 +7,12 @@ from .helper import fromstring, skip_unless_feature, tostring
 pytestmark = skip_unless_feature("jpg")
 
 
-def draft_roundtrip(in_mode, in_size, req_mode, req_size):
+def draft_roundtrip(
+    in_mode: str,
+    in_size: tuple[int, int],
+    req_mode: str | None,
+    req_size: tuple[int, int] | None,
+) -> Image.Image:
     im = Image.new(in_mode, in_size)
     data = tostring(im, "JPEG")
     im = fromstring(data)
