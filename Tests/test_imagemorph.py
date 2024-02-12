@@ -10,7 +10,7 @@ from PIL import Image, ImageMorph, _imagingmorph
 from .helper import assert_image_equal_tofile, hopper
 
 
-def string_to_img(image_string):
+def string_to_img(image_string: str) -> Image.Image:
     """Turn a string image representation into a binary image"""
     rows = [s for s in image_string.replace(" ", "").split("\n") if len(s)]
     height = len(rows)
@@ -38,7 +38,7 @@ A = string_to_img(
 )
 
 
-def img_to_string(im):
+def img_to_string(im: Image.Image) -> str:
     """Turn a (small) binary image into a string representation"""
     chars = ".1"
     width, height = im.size
@@ -48,11 +48,11 @@ def img_to_string(im):
     )
 
 
-def img_string_normalize(im):
+def img_string_normalize(im: str) -> str:
     return img_to_string(string_to_img(im))
 
 
-def assert_img_equal_img_string(a, b_string) -> None:
+def assert_img_equal_img_string(a: Image.Image, b_string: str) -> None:
     assert img_to_string(a) == img_string_normalize(b_string)
 
 
@@ -63,7 +63,7 @@ def test_str_to_img() -> None:
 @pytest.mark.parametrize(
     "op", ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge")
 )
-def test_lut(op) -> None:
+def test_lut(op: str) -> None:
     lb = ImageMorph.LutBuilder(op_name=op)
     assert lb.get_lut() is None
 

@@ -67,7 +67,7 @@ def test_getcolor_rgba_color_rgb_palette() -> None:
         (255, ImagePalette.ImagePalette("RGB", list(range(256)) * 3)),
     ],
 )
-def test_getcolor_not_special(index, palette) -> None:
+def test_getcolor_not_special(index: int, palette: ImagePalette.ImagePalette) -> None:
     im = Image.new("P", (1, 1))
 
     # Do not use transparency index as a new color
