@@ -147,7 +147,7 @@ class TestImageGetPixel(AccessTest):
             pytest.skip("Support not added to deprecated module for BGR;* modes")
 
         expected_color = (
-            expected_color_int if expected_color_int is not None else self.color(mode)
+            self.color(mode) if expected_color_int is None else expected_color_int
         )
 
         # check putpixel
