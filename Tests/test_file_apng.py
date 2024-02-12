@@ -674,6 +674,10 @@ def test_save_all_progress() -> None:
     progress = []
 
     def callback(state):
+        if state["image_filename"]:
+            state["image_filename"] = (
+                state["image_filename"].replace("\\", "/").split("Tests/images/")[-1]
+            )
         progress.append(state)
 
     Image.new("RGB", (1, 1)).save(out, "PNG", save_all=True, progress=callback)
@@ -700,7 +704,7 @@ def test_save_all_progress() -> None:
         expected.append(
             {
                 "image_index": i,
-                "image_filename": "Tests/images/apng/single_frame.png",
+                "image_filename": "apng/single_frame.png",
                 "completed_frames": i + 1,
                 "total_frames": 7,
             }
@@ -709,7 +713,7 @@ def test_save_all_progress() -> None:
         expected.append(
             {
                 "image_index": 2,
-                "image_filename": "Tests/images/apng/delay.png",
+                "image_filename": "apng/delay.png",
                 "completed_frames": i + 3,
                 "total_frames": 7,
             }

@@ -704,6 +704,12 @@ class TestFileTiff:
         progress = []
 
         def callback(state):
+            if state["image_filename"]:
+                state["image_filename"] = (
+                    state["image_filename"]
+                    .replace("\\", "/")
+                    .split("Tests/images/")[-1]
+                )
             progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "TIFF", save_all=True, progress=callback)
@@ -728,7 +734,7 @@ class TestFileTiff:
         expected = [
             {
                 "image_index": 0,
-                "image_filename": "Tests/images/hopper.tif",
+                "image_filename": "hopper.tif",
                 "completed_frames": 1,
                 "total_frames": 4,
             }
@@ -737,7 +743,7 @@ class TestFileTiff:
             expected.append(
                 {
                     "image_index": 1,
-                    "image_filename": "Tests/images/multipage.tiff",
+                    "image_filename": "multipage.tiff",
                     "completed_frames": i + 2,
                     "total_frames": 4,
                 }

@@ -297,6 +297,10 @@ def test_save_all_progress():
     progress = []
 
     def callback(state):
+        if state["image_filename"]:
+            state["image_filename"] = (
+                state["image_filename"].replace("\\", "/").split("Tests/images/")[-1]
+            )
         progress.append(state)
 
     Image.new("RGB", (1, 1)).save(out, "GIF", save_all=True, progress=callback)
@@ -328,7 +332,7 @@ def test_save_all_progress():
         expected.append(
             {
                 "image_index": 1,
-                "image_filename": "Tests/images/chi.gif",
+                "image_filename": "chi.gif",
                 "completed_frames": i + 2,
                 "total_frames": 32,
             }

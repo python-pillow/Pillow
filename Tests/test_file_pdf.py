@@ -177,6 +177,10 @@ def test_save_all_progress() -> None:
     progress = []
 
     def callback(state):
+        if state["image_filename"]:
+            state["image_filename"] = (
+                state["image_filename"].replace("\\", "/").split("Tests/images/")[-1]
+            )
         progress.append(state)
 
     Image.new("RGB", (1, 1)).save(out, "PDF", save_all=True, progress=callback)
@@ -197,9 +201,7 @@ def test_save_all_progress() -> None:
             im.save(out, "PDF", save_all=True, append_images=[im2], progress=callback)
 
     expected = []
-    for i, filename in enumerate(
-        ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
-    ):
+    for i, filename in enumerate(["sugarshack.mpo", "frozenpond.mpo"]):
         for j in range(2):
             expected.append(
                 {

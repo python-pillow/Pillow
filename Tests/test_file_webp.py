@@ -131,6 +131,12 @@ class TestFileWebp:
         progress = []
 
         def callback(state):
+            if state["image_filename"]:
+                state["image_filename"] = (
+                    state["image_filename"]
+                    .replace("\\", "/")
+                    .split("Tests/images/")[-1]
+                )
             progress.append(state)
 
         Image.new("RGB", (1, 1)).save(out, "WEBP", save_all=True, progress=callback)
@@ -155,7 +161,7 @@ class TestFileWebp:
             expected.append(
                 {
                     "image_index": 0,
-                    "image_filename": "Tests/images/iss634.webp",
+                    "image_filename": "iss634.webp",
                     "completed_frames": i + 1,
                     "total_frames": 43,
                 }
