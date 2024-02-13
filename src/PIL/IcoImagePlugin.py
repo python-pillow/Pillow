@@ -329,6 +329,8 @@ class IcoImageFile(ImageFile.ImageFile):
         self.im = im.im
         self.pyaccess = None
         self._mode = im.mode
+        if im.palette:
+            self.palette = im.palette
         if im.size != self.size:
             warnings.warn("Image was not the expected size")
 

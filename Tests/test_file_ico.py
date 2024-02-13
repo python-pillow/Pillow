@@ -38,6 +38,17 @@ def test_black_and_white() -> None:
         assert im.size == (16, 16)
 
 
+def test_palette(tmp_path: Path) -> None:
+    temp_file = str(tmp_path / "temp.ico")
+
+    im = Image.new("P", (16, 16))
+    im.save(temp_file)
+
+    with Image.open(temp_file) as reloaded:
+        assert reloaded.mode == "P"
+        assert reloaded.palette is not None
+
+
 def test_invalid_file() -> None:
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
