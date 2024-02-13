@@ -32,7 +32,7 @@ import io
 import itertools
 import struct
 import sys
-from typing import Any, NamedTuple
+from typing import IO, Any, NamedTuple
 
 from . import Image
 from ._deprecate import deprecate
@@ -616,7 +616,7 @@ class PyCodecState:
 
 
 class PyCodec:
-    fd: io.BytesIO | None
+    fd: IO[bytes] | None
 
     def __init__(self, mode, *args):
         self.im = None

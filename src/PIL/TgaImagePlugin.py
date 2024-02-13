@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 import warnings
-from io import BytesIO
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -175,7 +175,7 @@ SAVE = {
 }
 
 
-def _save(im: Image.Image, fp: BytesIO, filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:
