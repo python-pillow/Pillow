@@ -147,7 +147,7 @@ def test_seek() -> None:
     ],
 )
 @pytest.mark.timeout(timeout=3)
-def test_timeouts(test_file) -> None:
+def test_timeouts(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             with pytest.raises(OSError):
@@ -160,7 +160,7 @@ def test_timeouts(test_file) -> None:
         "Tests/images/crash-5762152299364352.fli",
     ],
 )
-def test_crash(test_file) -> None:
+def test_crash(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             with pytest.raises(OSError):

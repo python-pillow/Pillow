@@ -5,6 +5,7 @@ import re
 import warnings
 from io import BytesIO
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import pytest
@@ -33,6 +34,7 @@ from .helper import (
     skip_unless_feature,
 )
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:
@@ -440,25 +442,25 @@ class TestFileJpeg:
         for subsampling in (-1, 3):  # (default, invalid)
             im = self.roundtrip(hopper(), subsampling=subsampling)
             assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-        for subsampling in (0, "4:4:4"):
-            im = self.roundtrip(hopper(), subsampling=subsampling)
+        for subsampling1 in (0, "4:4:4"):
+            im = self.roundtrip(hopper(), subsampling=subsampling1)
             assert getsampling(im) == (1, 1, 1, 1, 1, 1)
-        for subsampling in (1, "4:2:2"):
-            im = self.roundtrip(hopper(), subsampling=subsampling)
+        for subsampling1 in (1, "4:2:2"):
+            im = self.roundtrip(hopper(), subsampling=subsampling1)
             assert getsampling(im) == (2, 1, 1, 1, 1, 1)
-        for subsampling in (2, "4:2:0", "4:1:1"):
-            im = self.roundtrip(hopper(), subsampling=subsampling)
+        for subsampling1 in (2, "4:2:0", "4:1:1"):
+            im = self.roundtrip(hopper(), subsampling=subsampling1)
             assert getsampling(im) == (2, 2, 1, 1, 1, 1)
 
         # RGB colorspace
-        for subsampling in (-1, 0, "4:4:4"):
+        for subsampling1 in (-1, 0, "4:4:4"):
             # "4:4:4" doesn't really make sense for RGB, but the conversion
             # to an integer happens at a higher level
-            im = self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling)
+            im = self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling1)
             assert getsampling(im) == (1, 1, 1, 1, 1, 1)
-        for subsampling in (1, "4:2:2", 2, "4:2:0", 3):
+        for subsampling1 in (1, "4:2:2", 2, "4:2:0", 3):
             with pytest.raises(OSError):
-                self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling)
+                self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling1)
 
         with pytest.raises(TypeError):
             self.roundtrip(hopper(), subsampling="1:1:1")

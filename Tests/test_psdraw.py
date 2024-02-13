@@ -10,7 +10,7 @@ import pytest
 from PIL import Image, PSDraw
 
 
-def _create_document(ps) -> None:
+def _create_document(ps: PSDraw.PSDraw) -> None:
     title = "hopper"
     box = (1 * 72, 2 * 72, 7 * 72, 10 * 72)  # in points
 
@@ -50,7 +50,7 @@ def test_draw_postscript(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("buffer", (True, False))
-def test_stdout(buffer) -> None:
+def test_stdout(buffer: bool) -> None:
     # Temporarily redirect stdout
     old_stdout = sys.stdout
 
