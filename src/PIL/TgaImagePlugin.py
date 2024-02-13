@@ -85,7 +85,7 @@ class TgaImageFile(ImageFile.ImageFile):
             elif depth == 16:
                 self._mode = "LA"
         elif imagetype in (1, 9):
-            self._mode = "P"
+            self._mode = "P" if colormaptype else "L"
         elif imagetype in (2, 10):
             self._mode = "RGB"
             if depth == 32:

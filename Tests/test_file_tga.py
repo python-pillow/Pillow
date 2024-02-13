@@ -133,6 +133,11 @@ def test_small_palette(tmp_path: Path) -> None:
         assert reloaded.getpalette() == colors
 
 
+def test_missing_palette() -> None:
+    with Image.open("Tests/images/dilation4.lut") as im:
+        assert im.mode == "L"
+
+
 def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper("PA")
     out = str(tmp_path / "temp.tga")
