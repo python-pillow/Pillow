@@ -6,7 +6,7 @@ from .helper import hopper
 
 
 def test_extrema() -> None:
-    def extrema(mode):
+    def extrema(mode: str) -> tuple[int, int] | tuple[tuple[int, int], ...]:
         return hopper(mode).getextrema()
 
     assert extrema("1") == (0, 255)

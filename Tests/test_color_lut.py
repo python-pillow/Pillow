@@ -15,7 +15,9 @@ except ImportError:
 
 
 class TestColorLut3DCoreAPI:
-    def generate_identity_table(self, channels, size):
+    def generate_identity_table(
+        self, channels: int, size: int | tuple[int, int, int]
+    ) -> tuple[int, int, int, int, list[float]]:
         if isinstance(size, tuple):
             size_1d, size_2d, size_3d = size
         else:
