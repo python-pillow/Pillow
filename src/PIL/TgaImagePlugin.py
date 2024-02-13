@@ -128,6 +128,9 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.palette = ImagePalette.raw(
                     "BGRA", b"\0" * 4 * start + self.fp.read(4 * size)
                 )
+            else:
+                msg = "unknown TGA map depth"
+                raise SyntaxError(msg)
 
         # setup tile descriptor
         try:
