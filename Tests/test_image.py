@@ -162,8 +162,6 @@ class TestImage:
                 pass
 
     def test_pathlib(self, tmp_path: Path) -> None:
-        from PIL.Image import Path
-
         with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
             assert im.mode == "P"
             assert im.size == (10, 10)
