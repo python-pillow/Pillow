@@ -1,0 +1,81 @@
+10.3.0
+------
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+Deprecations
+============
+
+ImageCms constants and versions() function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A number of constants and a function in :py:mod:`.ImageCms` have been deprecated.
+This includes a table of flags based on LittleCMS version 1 which has been replaced
+with a new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
+
+============================================  ====================================================
+Deprecated                                    Use instead
+============================================  ====================================================
+``ImageCms.DESCRIPTION``                      No replacement
+``ImageCms.VERSION``                          ``PIL.__version__``
+``ImageCms.FLAGS["MATRIXINPUT"]``             :py:attr:`.ImageCms.Flags.CLUT_POST_LINEARIZATION`
+``ImageCms.FLAGS["MATRIXOUTPUT"]``            :py:attr:`.ImageCms.Flags.FORCE_CLUT`
+``ImageCms.FLAGS["MATRIXONLY"]``              No replacement
+``ImageCms.FLAGS["NOWHITEONWHITEFIXUP"]``     :py:attr:`.ImageCms.Flags.NOWHITEONWHITEFIXUP`
+``ImageCms.FLAGS["NOPRELINEARIZATION"]``      :py:attr:`.ImageCms.Flags.CLUT_PRE_LINEARIZATION`
+``ImageCms.FLAGS["GUESSDEVICECLASS"]``        :py:attr:`.ImageCms.Flags.GUESSDEVICECLASS`
+``ImageCms.FLAGS["NOTCACHE"]``                :py:attr:`.ImageCms.Flags.NOCACHE`
+``ImageCms.FLAGS["NOTPRECALC"]``              :py:attr:`.ImageCms.Flags.NOOPTIMIZE`
+``ImageCms.FLAGS["NULLTRANSFORM"]``           :py:attr:`.ImageCms.Flags.NULLTRANSFORM`
+``ImageCms.FLAGS["HIGHRESPRECALC"]``          :py:attr:`.ImageCms.Flags.HIGHRESPRECALC`
+``ImageCms.FLAGS["LOWRESPRECALC"]``           :py:attr:`.ImageCms.Flags.LOWRESPRECALC`
+``ImageCms.FLAGS["GAMUTCHECK"]``              :py:attr:`.ImageCms.Flags.GAMUTCHECK`
+``ImageCms.FLAGS["WHITEBLACKCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["BLACKPOINTCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["SOFTPROOFING"]``            :py:attr:`.ImageCms.Flags.SOFTPROOFING`
+``ImageCms.FLAGS["PRESERVEBLACK"]``           :py:attr:`.ImageCms.Flags.NONEGATIVES`
+``ImageCms.FLAGS["NODEFAULTRESOURCEDEF"]``    :py:attr:`.ImageCms.Flags.NODEFAULTRESOURCEDEF`
+``ImageCms.FLAGS["GRIDPOINTS"]``              :py:attr:`.ImageCms.Flags.GRIDPOINTS()`
+``ImageCms.versions()``                       :py:func:`PIL.features.version_module` with
+                                              ``feature="littlecms2"``, :py:data:`sys.version` or
+                                              :py:data:`sys.version_info`, and ``PIL.__version__``
+============================================  ====================================================
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Added PerspectiveTransform
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageTransform.PerspectiveTransform` has been added, meaning
+that all of the :py:data:`~PIL.Image.Transform` values now have a corresponding
+subclass of :py:class:`~PIL.ImageTransform.Transform`.
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+Portable FloatMap (PFM) images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added for reading and writing grayscale (Pf format)
+Portable FloatMap (PFM) files containing ``F`` data.

@@ -385,7 +385,7 @@ After navigating to the Pillow directory, run::
     python3 -m pip install --upgrade pip
     python3 -m pip install .
 
-.. _compressed archive from PyPI: https://pypi.org/project/Pillow/#files
+.. _compressed archive from PyPI: https://pypi.org/project/pillow/#files
 
 Build Options
 """""""""""""
@@ -510,7 +510,7 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python            | | Latest tested  | | Tested     |
 |                                  | | versions                 | | Pillow version | | processors |
 +==================================+============================+==================+==============+
-| macOS 14 Sonoma                  | 3.8, 3.9, 3.10, 3.11, 3.12 | 10.1.0           |arm           |
+| macOS 14 Sonoma                  | 3.8, 3.9, 3.10, 3.11, 3.12 | 10.2.0           |arm           |
 +----------------------------------+----------------------------+------------------+--------------+
 | macOS 13 Ventura                 | 3.8, 3.9, 3.10, 3.11       | 10.0.1           |arm           |
 |                                  +----------------------------+------------------+              |
@@ -581,9 +581,9 @@ These platforms have been reported to work at the versions mentioned.
 +----------------------------------+----------------------------+------------------+--------------+
 | FreeBSD 10.2                     | 2.7, 3.4                   | 3.1.0            |x86-64        |
 +----------------------------------+----------------------------+------------------+--------------+
-| Windows 11                       | 3.9, 3.10, 3.11, 3.12      | 10.1.0           |arm64         |
+| Windows 11                       | 3.9, 3.10, 3.11, 3.12      | 10.2.0           |arm64         |
 +----------------------------------+----------------------------+------------------+--------------+
-| Windows 11 Pro                   | 3.11, 3.12                 | 10.1.0           |x86-64        |
+| Windows 11 Pro                   | 3.11, 3.12                 | 10.2.0           |x86-64        |
 +----------------------------------+----------------------------+------------------+--------------+
 | Windows 10                       | 3.7                        | 7.1.0            |x86-64        |
 +----------------------------------+----------------------------+------------------+--------------+
@@ -602,5 +602,5 @@ Old Versions
 ------------
 
 You can download old distributions from the `release history at PyPI
-<https://pypi.org/project/Pillow/#history>`_ and by direct URL access
-eg. https://pypi.org/project/Pillow/1.0/.
+<https://pypi.org/project/pillow/#history>`_ and by direct URL access
+eg. https://pypi.org/project/pillow/1.0/.

@@ -1,5 +1,8 @@
 # Test the ImageMorphology functionality
 from __future__ import annotations
+
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, ImageMorph, _imagingmorph
@@ -7,7 +10,7 @@ from PIL import Image, ImageMorph, _imagingmorph
 from .helper import assert_image_equal_tofile, hopper
 
 
-def string_to_img(image_string):
+def string_to_img(image_string: str) -> Image.Image:
     """Turn a string image representation into a binary image"""
     rows = [s for s in image_string.replace(" ", "").split("\n") if len(s)]
     height = len(rows)
@@ -35,7 +38,7 @@ A = string_to_img(
 )
 
 
-def img_to_string(im):
+def img_to_string(im: Image.Image) -> str:
     """Turn a (small) binary image into a string representation"""
     chars = ".1"
     width, height = im.size
@@ -45,22 +48,22 @@ def img_to_string(im):
     )
 
 
-def img_string_normalize(im):
+def img_string_normalize(im: str) -> str:
     return img_to_string(string_to_img(im))
 
 
-def assert_img_equal_img_string(a, b_string):
+def assert_img_equal_img_string(a: Image.Image, b_string: str) -> None:
     assert img_to_string(a) == img_string_normalize(b_string)
 
 
-def test_str_to_img():
+def test_str_to_img() -> None:
     assert_image_equal_tofile(A, "Tests/images/morph_a.png")
 
 
 @pytest.mark.parametrize(
     "op", ("corner", "dilation4", "dilation8", "erosion4", "erosion8", "edge")
 )
-def test_lut(op):
+def test_lut(op: str) -> None:
     lb = ImageMorph.LutBuilder(op_name=op)
     assert lb.get_lut() is None
 
@@ -69,7 +72,7 @@ def test_lut(op):
         assert lut == bytearray(f.read())
 
 
-def test_no_operator_loaded():
+def test_no_operator_loaded() -> None:
     mop = ImageMorph.MorphOp()
     with pytest.raises(Exception) as e:
         mop.apply(None)
@@ -83,7 +86,7 @@ def test_no_operator_loaded():
 
 
 # Test the named patterns
-def test_erosion8():
+def test_erosion8() -> None:
     # erosion8
     mop = ImageMorph.MorphOp(op_name="erosion8")
     count, Aout = mop.apply(A)
@@ -102,7 +105,7 @@ def test_erosion8():
     )
 
 
-def test_dialation8():
+def test_dialation8() -> None:
     # dialation8
     mop = ImageMorph.MorphOp(op_name="dilation8")
     count, Aout = mop.apply(A)
@@ -121,7 +124,7 @@ def test_dialation8():
     )
 
 
-def test_erosion4():
+def test_erosion4() -> None:
     # erosion4
     mop = ImageMorph.MorphOp(op_name="dilation4")
     count, Aout = mop.apply(A)
@@ -140,7 +143,7 @@ def test_erosion4():
     )
 
 
-def test_edge():
+def test_edge() -> None:
     # edge
     mop = ImageMorph.MorphOp(op_name="edge")
     count, Aout = mop.apply(A)
@@ -159,7 +162,7 @@ def test_edge():
     )
 
 
-def test_corner():
+def test_corner() -> None:
     # Create a corner detector pattern
     mop = ImageMorph.MorphOp(patterns=["1:(... ... ...)->0", "4:(00. 01. ...)->1"])
     count, Aout = mop.apply(A)
@@ -187,7 +190,7 @@ def test_corner():
     assert tuple(coords) == ((2, 2), (4, 2), (2, 4), (4, 4))
 
 
-def test_mirroring():
+def test_mirroring() -> None:
     # Test 'M' for mirroring
     mop = ImageMorph.MorphOp(patterns=["1:(... ... ...)->0", "M:(00. 01. ...)->1"])
     count, Aout = mop.apply(A)
@@ -206,7 +209,7 @@ def test_mirroring():
     )
 
 
-def test_negate():
+def test_negate() -> None:
     # Test 'N' for negate
     mop = ImageMorph.MorphOp(patterns=["1:(... ... ...)->0", "N:(00. 01. ...)->1"])
     count, Aout = mop.apply(A)
@@ -225,7 +228,7 @@ def test_negate():
     )
 
 
-def test_incorrect_mode():
+def test_incorrect_mode() -> None:
     im = hopper("RGB")
     mop = ImageMorph.MorphOp(op_name="erosion8")
 
@@ -240,7 +243,7 @@ def test_incorrect_mode():
     assert str(e.value) == "Image mode must be L"
 
 
-def test_add_patterns():
+def test_add_patterns() -> None:
     # Arrange
     lb = ImageMorph.LutBuilder(op_name="corner")
     assert lb.patterns == ["1:(... ... ...)->0", "4:(00. 01. ...)->1"]
@@ -258,12 +261,12 @@ def test_add_patterns():
     ]
 
 
-def test_unknown_pattern():
+def test_unknown_pattern() -> None:
     with pytest.raises(Exception):
         ImageMorph.LutBuilder(op_name="unknown")
 
 
-def test_pattern_syntax_error():
+def test_pattern_syntax_error() -> None:
     # Arrange
     lb = ImageMorph.LutBuilder(op_name="corner")
     new_patterns = ["a pattern with a syntax error"]
@@ -275,7 +278,7 @@ def test_pattern_syntax_error():
     assert str(e.value) == 'Syntax error in pattern "a pattern with a syntax error"'
 
 
-def test_load_invalid_mrl():
+def test_load_invalid_mrl() -> None:
     # Arrange
     invalid_mrl = "Tests/images/hopper.png"
     mop = ImageMorph.MorphOp()
@@ -286,7 +289,7 @@ def test_load_invalid_mrl():
     assert str(e.value) == "Wrong size operator file!"
 
 
-def test_roundtrip_mrl(tmp_path):
+def test_roundtrip_mrl(tmp_path: Path) -> None:
     # Arrange
     tempfile = str(tmp_path / "temp.mrl")
     mop = ImageMorph.MorphOp(op_name="corner")
@@ -300,7 +303,7 @@ def test_roundtrip_mrl(tmp_path):
     assert mop.lut == initial_lut
 
 
-def test_set_lut():
+def test_set_lut() -> None:
     # Arrange
     lb = ImageMorph.LutBuilder(op_name="corner")
     lut = lb.build_lut()
@@ -313,7 +316,7 @@ def test_set_lut():
     assert mop.lut == lut
 
 
-def test_wrong_mode():
+def test_wrong_mode() -> None:
     lut = ImageMorph.LutBuilder(op_name="corner").build_lut()
     imrgb = Image.new("RGB", (10, 10))
     iml = Image.new("L", (10, 10))

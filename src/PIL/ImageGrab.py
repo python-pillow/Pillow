@@ -149,18 +149,7 @@ def grabclipboard():
             session_type = None
 
         if shutil.which("wl-paste") and session_type in ("wayland", None):
-            output = subprocess.check_output(["wl-paste", "-l"]).decode()
-            mimetypes = output.splitlines()
-            if "image/png" in mimetypes:
-                mimetype = "image/png"
-            elif mimetypes:
-                mimetype = mimetypes[0]
-            else:
-                mimetype = None
-
-            args = ["wl-paste"]
-            if mimetype:
-                args.extend(["-t", mimetype])
+            args = ["wl-paste", "-t", "image"]
         elif shutil.which("xclip") and session_type in ("x11", None):
             args = ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"]
         else:
@@ -168,10 +157,29 @@ def grabclipboard():
             raise NotImplementedError(msg)
 
         p = subprocess.run(args, capture_output=True)
-        err = p.stderr
-        if err:
-            msg = f"{args[0]} error: {err.strip().decode()}"
+        if p.returncode != 0:
+            err = p.stderr
+            for silent_error in [
+                # wl-paste, when the clipboard is empty
+                b"Nothing is copied",
+                # Ubuntu/Debian wl-paste, when the clipboard is empty
+                b"No selection",
+                # Ubuntu/Debian wl-paste, when an image isn't available
+                b"No suitable type of content copied",
+                # wl-paste or Ubuntu/Debian xclip, when an image isn't available
+                b" not available",
+                # xclip, when an image isn't available
+                b"cannot convert ",
+                # xclip, when the clipboard isn't initialized
+                b"xclip: Error: There is no owner for the ",
+            ]:
+                if silent_error in err:
+                    return None
+            msg = f"{args[0]} error"
+            if err:
+                msg += f": {err.strip().decode()}"
             raise ChildProcessError(msg)
+
         data = io.BytesIO(p.stdout)
         im = Image.open(data)
         im.load()

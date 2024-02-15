@@ -33,10 +33,10 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
-from pathlib import Path
 from typing import BinaryIO
 
 from . import Image
+from ._typing import StrOrBytesPath
 from ._util import is_directory, is_path
 
 
@@ -193,7 +193,7 @@ class FreeTypeFont:
 
     def __init__(
         self,
-        font: bytes | str | Path | BinaryIO | None = None,
+        font: StrOrBytesPath | BinaryIO | None = None,
         size: float = 10,
         index: int = 0,
         encoding: str = "",
@@ -230,8 +230,7 @@ class FreeTypeFont:
             )
 
         if is_path(font):
-            if isinstance(font, Path):
-                font = str(font)
+            font = os.path.realpath(os.fspath(font))
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -584,22 +583,13 @@ class FreeTypeFont:
         _string_length_check(text)
         if start is None:
             start = (0, 0)
-        im = None
-        size = None
 
         def fill(width, height):
-            nonlocal im, size
-
             size = (width, height)
-            if Image.MAX_IMAGE_PIXELS is not None:
-                pixels = max(1, width) * max(1, height)
-                if pixels > 2 * Image.MAX_IMAGE_PIXELS:
-                    return
+            Image._decompression_bomb_check(size)
+            return Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
 
-            im = Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
-            return im
-
-        offset = self.font.render(
+        return self.font.render(
             text,
             fill,
             mode,
@@ -612,8 +602,6 @@ class FreeTypeFont:
             start[0],
             start[1],
         )
-        Image._decompression_bomb_check(size)
-        return im, offset
 
     def font_variant(
         self, font=None, size=None, index=None, encoding=None, layout_engine=None
@@ -883,7 +871,7 @@ def load_path(filename):
     raise OSError(msg)
 
 
-def load_default(size=None):
+def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """If FreeType support is available, load a version of Aileron Regular,
     https://dotcolon.net/font/aileron, with a more limited character set.
 

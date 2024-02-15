@@ -27,7 +27,7 @@ Download and install:
 * `Ninja <https://ninja-build.org/>`_
   (optional, use ``--nmake`` if not available; bundled in Visual Studio CMake component)
 
-* x86/x64: `Netwide Assembler (NASM) <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
+* x86/AMD64: `Netwide Assembler (NASM) <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
 
 Any version of Visual Studio 2017 or newer should be supported,
 including Visual Studio 2017 Community, or Build Tools for Visual Studio 2019.
@@ -42,7 +42,7 @@ Run ``build_prepare.py`` to configure the build::
 
     usage: winbuild\build_prepare.py [-h] [-v] [-d PILLOW_BUILD]
                                      [--depends PILLOW_DEPS]
-                                     [--architecture {x86,x64,ARM64}] [--nmake]
+                                     [--architecture {x86,AMD64,ARM64}] [--nmake]
                                      [--no-imagequant] [--no-fribidi]
 
     Download and generate build scripts for Pillow dependencies.
@@ -55,7 +55,7 @@ Run ``build_prepare.py`` to configure the build::
       --depends PILLOW_DEPS
                             directory used to store cached dependencies (default:
                             'winbuild\depends')
-      --architecture {x86,x64,ARM64}
+      --architecture {x86,AMD64,ARM64}
                             build architecture (default: same as host Python)
       --nmake               build dependencies using NMake instead of Ninja
       --no-imagequant       skip GPL-licensed optional dependency libimagequant

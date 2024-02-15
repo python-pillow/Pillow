@@ -2,6 +2,39 @@
 Changelog (Pillow)
 ==================
 
+10.3.0 (unreleased)
+-------------------
+
+- Update wl-paste handling and return None for some errors in grabclipboard() on Linux #7745
+  [nik012003, radarhere]
+
+- Remove execute bit from ``setup.py`` #7760
+  [hugovk]
+
+- Do not support using test-image-results to upload images after test failures #7739
+  [radarhere]
+
+- Changed ImageMath.ops to be static #7721
+  [radarhere]
+
+- Fix APNG info after seeking backwards more than twice #7701
+  [esoma, radarhere]
+
+- Deprecate ImageCms constants and versions() function #7702
+  [nulano, radarhere]
+
+- Added PerspectiveTransform #7699
+  [radarhere]
+
+- Add support for reading and writing grayscale PFM images #7696
+  [nulano, hugovk]
+
+- Add LCMS2 flags to ImageCms #7676
+  [nulano, radarhere, hugovk]
+
+- Rename x64 to AMD64 in winbuild #7693
+  [nulano]
+
 10.2.0 (2024-01-02)
 -------------------
 
