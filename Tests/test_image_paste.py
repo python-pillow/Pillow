@@ -46,7 +46,7 @@ class TestImagingPaste:
         self.assert_9points_image(im, expected)
 
     @CachedProperty
-    def mask_1(self):
+    def mask_1(self) -> Image.Image:
         mask = Image.new("1", (self.size, self.size))
         px = mask.load()
         for y in range(mask.height):
@@ -55,11 +55,11 @@ class TestImagingPaste:
         return mask
 
     @CachedProperty
-    def mask_L(self):
+    def mask_L(self) -> Image.Image:
         return self.gradient_L.transpose(Image.Transpose.ROTATE_270)
 
     @CachedProperty
-    def gradient_L(self):
+    def gradient_L(self) -> Image.Image:
         gradient = Image.new("L", (self.size, self.size))
         px = gradient.load()
         for y in range(gradient.height):
@@ -68,7 +68,7 @@ class TestImagingPaste:
         return gradient
 
     @CachedProperty
-    def gradient_RGB(self):
+    def gradient_RGB(self) -> Image.Image:
         return Image.merge(
             "RGB",
             [
@@ -79,7 +79,7 @@ class TestImagingPaste:
         )
 
     @CachedProperty
-    def gradient_LA(self):
+    def gradient_LA(self) -> Image.Image:
         return Image.merge(
             "LA",
             [
@@ -89,7 +89,7 @@ class TestImagingPaste:
         )
 
     @CachedProperty
-    def gradient_RGBA(self):
+    def gradient_RGBA(self) -> Image.Image:
         return Image.merge(
             "RGBA",
             [
@@ -101,7 +101,7 @@ class TestImagingPaste:
         )
 
     @CachedProperty
-    def gradient_RGBa(self):
+    def gradient_RGBa(self) -> Image.Image:
         return Image.merge(
             "RGBa",
             [

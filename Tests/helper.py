@@ -244,7 +244,7 @@ def fromstring(data: bytes) -> Image.Image:
     return Image.open(BytesIO(data))
 
 
-def tostring(im: Image.Image, string_format: str, **options: dict[str, Any]) -> bytes:
+def tostring(im: Image.Image, string_format: str, **options: Any) -> bytes:
     out = BytesIO()
     im.save(out, string_format, **options)
     return out.getvalue()

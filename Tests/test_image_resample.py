@@ -231,11 +231,13 @@ class TestImagingCoreResampleAccuracy:
 
 
 class TestCoreResampleConsistency:
-    def make_case(self, mode: str, fill: tuple[int, int, int] | float):
+    def make_case(
+        self, mode: str, fill: tuple[int, int, int] | float
+    ) -> tuple[Image.Image, tuple[int, ...]]:
         im = Image.new(mode, (512, 9), fill)
         return im.resize((9, 512), Image.Resampling.LANCZOS), im.load()[0, 0]
 
-    def run_case(self, case) -> None:
+    def run_case(self, case: tuple[Image.Image, Image.Image]) -> None:
         channel, color = case
         px = channel.load()
         for x in range(channel.size[0]):
@@ -353,7 +355,7 @@ class TestCoreResampleAlphaCorrect:
 
 class TestCoreResamplePasses:
     @contextmanager
-    def count(self, diff):
+    def count(self, diff: int) -> Generator[None, None, None]:
         count = Image.core.get_stats()["new_count"]
         yield
         assert Image.core.get_stats()["new_count"] - count == diff

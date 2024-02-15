@@ -8,6 +8,7 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
+from typing import IO
 
 import pytest
 
@@ -61,11 +62,11 @@ class TestImage:
             "HSV",
         ),
     )
-    def test_image_modes_success(self, mode) -> None:
+    def test_image_modes_success(self, mode: str) -> None:
         Image.new(mode, (1, 1))
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
-    def test_image_modes_fail(self, mode) -> None:
+    def test_image_modes_fail(self, mode: str) -> None:
         with pytest.raises(ValueError) as e:
             Image.new(mode, (1, 1))
         assert str(e.value) == "unrecognized image mode"
@@ -100,7 +101,7 @@ class TestImage:
 
     def test_repr_pretty(self) -> None:
         class Pretty:
-            def text(self, text) -> None:
+            def text(self, text: str) -> None:
                 self.pretty_output = text
 
         im = Image.new("L", (100, 100))
@@ -162,8 +163,6 @@ class TestImage:
                 pass
 
     def test_pathlib(self, tmp_path: Path) -> None:
-        from PIL.Image import Path
-
         with Image.open(Path("Tests/images/multipage-mmap.tiff")) as im:
             assert im.mode == "P"
             assert im.size == (10, 10)
@@ -184,7 +183,9 @@ class TestImage:
         temp_file = str(tmp_path / "temp.jpg")
 
         class FP:
-            def write(self, b) -> None:
+            name: str
+
+            def write(self, b: bytes) -> None:
                 pass
 
         fp = FP()
@@ -538,7 +539,7 @@ class TestImage:
         "PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower"
     )
     @pytest.mark.parametrize("size", ((0, 100000000), (100000000, 0)))
-    def test_empty_image(self, size) -> None:
+    def test_empty_image(self, size: tuple[int, int]) -> None:
         Image.new("RGB", size)
 
     def test_storage_neg(self) -> None:
@@ -565,7 +566,7 @@ class TestImage:
             Image.linear_gradient(wrong_mode)
 
     @pytest.mark.parametrize("mode", ("L", "P", "I", "F"))
-    def test_linear_gradient(self, mode) -> None:
+    def test_linear_gradient(self, mode: str) -> None:
         # Arrange
         target_file = "Tests/images/linear_gradient.png"
 
@@ -590,7 +591,7 @@ class TestImage:
             Image.radial_gradient(wrong_mode)
 
     @pytest.mark.parametrize("mode", ("L", "P", "I", "F"))
-    def test_radial_gradient(self, mode) -> None:
+    def test_radial_gradient(self, mode: str) -> None:
         # Arrange
         target_file = "Tests/images/radial_gradient.png"
 
@@ -665,7 +666,11 @@ class TestImage:
         blank_p.palette = None
         blank_pa.palette = None
 
-        def _make_new(base_image, image, palette_result=None) -> None:
+        def _make_new(
+            base_image: Image.Image,
+            image: Image.Image,
+            palette_result: ImagePalette.ImagePalette | None = None,
+        ) -> None:
             new_image = base_image._new(image.im)
             assert new_image.mode == image.mode
             assert new_image.size == image.size
@@ -713,7 +718,7 @@ class TestImage:
     def test_load_on_nonexclusive_multiframe(self) -> None:
         with open("Tests/images/frozenpond.mpo", "rb") as fp:
 
-            def act(fp) -> None:
+            def act(fp: IO[bytes]) -> None:
                 im = Image.open(fp)
                 im.load()
 
@@ -906,12 +911,12 @@ class TestImage:
                 assert exif.get_ifd(0xA005)
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
-    def test_zero_tobytes(self, size) -> None:
+    def test_zero_tobytes(self, size: tuple[int, int]) -> None:
         im = Image.new("RGB", size)
         assert im.tobytes() == b""
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
-    def test_zero_frombytes(self, size) -> None:
+    def test_zero_frombytes(self, size: tuple[int, int]) -> None:
         Image.frombytes("RGB", size, b"")
 
         im = Image.new("RGB", size)
@@ -996,7 +1001,7 @@ class TestImage:
             "01r_00.pcx",
         ],
     )
-    def test_overrun(self, path) -> None:
+    def test_overrun(self, path: str) -> None:
         """For overrun completeness, test as:
         valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
         """
@@ -1023,7 +1028,7 @@ class TestImage:
             pass
         assert not hasattr(im, "fp")
 
-    def test_close_graceful(self, caplog) -> None:
+    def test_close_graceful(self, caplog: pytest.LogCaptureFixture) -> None:
         with Image.open("Tests/images/hopper.jpg") as im:
             copy = im.copy()
             with caplog.at_level(logging.DEBUG):
@@ -1034,10 +1039,10 @@ class TestImage:
 
 
 class MockEncoder:
-    pass
+    args: tuple[str, ...]
 
 
-def mock_encode(*args):
+def mock_encode(*args: str) -> MockEncoder:
     encoder = MockEncoder()
     encoder.args = args
     return encoder
