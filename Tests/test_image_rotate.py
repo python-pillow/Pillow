@@ -12,7 +12,13 @@ from .helper import (
 )
 
 
-def rotate(im, mode, angle, center=None, translate=None) -> None:
+def rotate(
+    im: Image.Image,
+    mode: str,
+    angle: int,
+    center: tuple[int, int] | None = None,
+    translate: tuple[int, int] | None = None,
+) -> None:
     out = im.rotate(angle, center=center, translate=translate)
     assert out.mode == mode
     assert out.size == im.size  # default rotate clips output
@@ -27,13 +33,13 @@ def rotate(im, mode, angle, center=None, translate=None) -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "P", "L", "RGB", "I", "F"))
-def test_mode(mode) -> None:
+def test_mode(mode: str) -> None:
     im = hopper(mode)
     rotate(im, mode, 45)
 
 
 @pytest.mark.parametrize("angle", (0, 90, 180, 270))
-def test_angle(angle) -> None:
+def test_angle(angle: int) -> None:
     with Image.open("Tests/images/test-card.png") as im:
         rotate(im, im.mode, angle)
 
@@ -42,7 +48,7 @@ def test_angle(angle) -> None:
 
 
 @pytest.mark.parametrize("angle", (0, 45, 90, 180, 270))
-def test_zero(angle) -> None:
+def test_zero(angle: int) -> None:
     im = Image.new("RGB", (0, 0))
     rotate(im, im.mode, angle)
 

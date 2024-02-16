@@ -342,9 +342,11 @@ def test_extended_information() -> None:
 
         def truncate_tuple(tuple_or_float):
             return tuple(
-                truncate_tuple(val)
-                if isinstance(val, tuple)
-                else int(val * power) / power
+                (
+                    truncate_tuple(val)
+                    if isinstance(val, tuple)
+                    else int(val * power) / power
+                )
                 for val in tuple_or_float
             )
 

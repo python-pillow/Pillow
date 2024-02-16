@@ -47,7 +47,7 @@ def test_apng_basic() -> None:
     "filename",
     ("Tests/images/apng/split_fdat.png", "Tests/images/apng/split_fdat_zero_chunk.png"),
 )
-def test_apng_fdat(filename) -> None:
+def test_apng_fdat(filename: str) -> None:
     with Image.open(filename) as im:
         im.seek(im.n_frames - 1)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
@@ -338,7 +338,7 @@ def test_apng_syntax_errors() -> None:
         "sequence_fdat_fctl.png",
     ),
 )
-def test_apng_sequence_errors(test_file) -> None:
+def test_apng_sequence_errors(test_file: str) -> None:
     with pytest.raises(SyntaxError):
         with Image.open(f"Tests/images/apng/{test_file}") as im:
             im.seek(im.n_frames - 1)
@@ -681,7 +681,7 @@ def test_seek_after_close() -> None:
 @pytest.mark.parametrize("default_image", (True, False))
 @pytest.mark.parametrize("duplicate", (True, False))
 def test_different_modes_in_later_frames(
-    mode, default_image, duplicate, tmp_path: Path
+    mode: str, default_image: bool, duplicate: bool, tmp_path: Path
 ) -> None:
     test_file = str(tmp_path / "temp.png")
 

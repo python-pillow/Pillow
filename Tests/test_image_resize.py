@@ -1,6 +1,7 @@
 """
 Tests for resize functionality.
 """
+
 from __future__ import annotations
 
 from itertools import permutations

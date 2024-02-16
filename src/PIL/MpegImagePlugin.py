@@ -14,17 +14,16 @@
 #
 from __future__ import annotations
 
-from io import BytesIO
-
 from . import Image, ImageFile
 from ._binary import i8
+from ._typing import SupportsRead
 
 #
 # Bitstream parser
 
 
 class BitStream:
-    def __init__(self, fp: BytesIO) -> None:
+    def __init__(self, fp: SupportsRead[bytes]) -> None:
         self.fp = fp
         self.bits = 0
         self.bitbuffer = 0
