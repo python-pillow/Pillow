@@ -3,6 +3,7 @@ from __future__ import annotations
 import array
 import math
 import struct
+from typing import Sequence
 
 import pytest
 
@@ -75,7 +76,9 @@ def test_path_constructors(coords) -> None:
         [[0.0, 1.0]],
     ),
 )
-def test_invalid_path_constructors(coords) -> None:
+def test_invalid_path_constructors(
+    coords: tuple[str, str] | Sequence[Sequence[int]]
+) -> None:
     # Act
     with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
@@ -93,7 +96,7 @@ def test_invalid_path_constructors(coords) -> None:
         [0, 1, 2],
     ),
 )
-def test_path_odd_number_of_coordinates(coords) -> None:
+def test_path_odd_number_of_coordinates(coords: Sequence[int]) -> None:
     # Act
     with pytest.raises(ValueError) as e:
         ImagePath.Path(coords)
@@ -111,7 +114,9 @@ def test_path_odd_number_of_coordinates(coords) -> None:
         (1, (0.0, 0.0, 0.0, 0.0)),
     ],
 )
-def test_getbbox(coords, expected) -> None:
+def test_getbbox(
+    coords: int | list[int], expected: tuple[float, float, float, float]
+) -> None:
     # Arrange
     p = ImagePath.Path(coords)
 
@@ -135,7 +140,7 @@ def test_getbbox_no_args() -> None:
         (list(range(6)), [(0.0, 3.0), (4.0, 9.0), (8.0, 15.0)]),
     ],
 )
-def test_map(coords, expected) -> None:
+def test_map(coords: int | list[int], expected: list[tuple[float, float]]) -> None:
     # Arrange
     p = ImagePath.Path(coords)
 
