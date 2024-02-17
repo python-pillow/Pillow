@@ -140,7 +140,3 @@ follow_imports = "silent"
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
-exclude = [
-  '^src/PIL/FpxImagePlugin.py$',
-  '^src/PIL/MicImagePlugin.py$',
-]
