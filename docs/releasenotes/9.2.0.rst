@@ -69,10 +69,10 @@ Previous code::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width, height = draw.textsize("Hello world")
+    width, height = draw.textsize("Hello world", font)
 
     width, height = font.getsize_multiline("Hello\nworld")
-    width, height = draw.multiline_textsize("Hello\nworld")
+    width, height = draw.multiline_textsize("Hello\nworld", font)
 
 Use instead::
 
@@ -84,9 +84,9 @@ Use instead::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width = draw.textlength("Hello world")
+    width = draw.textlength("Hello world", font)
 
-    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
+    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld", font)
     width, height = right - left, bottom - top
 
 API Additions
