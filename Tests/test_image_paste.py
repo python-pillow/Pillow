@@ -8,7 +8,6 @@ from .helper import CachedProperty, assert_image_equal
 
 
 class TestImagingPaste:
-    masks = {}
     size = 128
 
     def assert_9points_image(
