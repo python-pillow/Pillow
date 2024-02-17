@@ -16,7 +16,7 @@ from .helper import (
 
 
 def test_sanity(tmp_path: Path) -> None:
-    def roundtrip(im) -> None:
+    def roundtrip(im: Image.Image) -> None:
         outfile = str(tmp_path / "temp.bmp")
 
         im.save(outfile, "BMP")
@@ -194,7 +194,7 @@ def test_rle4() -> None:
         ("Tests/images/bmp/g/pal8rle.bmp", 1064),
     ),
 )
-def test_rle8_eof(file_name, length) -> None:
+def test_rle8_eof(file_name: str, length: int) -> None:
     with open(file_name, "rb") as fp:
         data = fp.read(length)
         with Image.open(io.BytesIO(data)) as im:
