@@ -5,6 +5,7 @@ import os.path
 import pytest
 
 from PIL import Image, ImageDraw, ImageDraw2, features
+from PIL._typing import Coords
 
 from .helper import (
     assert_image_equal,
@@ -56,7 +57,7 @@ def test_sanity() -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse(bbox) -> None:
+def test_ellipse(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -84,7 +85,7 @@ def test_ellipse_edge() -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_line(points) -> None:
+def test_line(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -98,7 +99,7 @@ def test_line(points) -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_line_pen_as_brush(points) -> None:
+def test_line_pen_as_brush(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -114,7 +115,7 @@ def test_line_pen_as_brush(points) -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_polygon(points) -> None:
+def test_polygon(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -129,7 +130,7 @@ def test_polygon(points) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle(bbox) -> None:
+def test_rectangle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)

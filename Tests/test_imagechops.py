@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Callable
+
 from PIL import Image, ImageChops
 
 from .helper import assert_image_equal, hopper
@@ -387,7 +389,9 @@ def test_overlay() -> None:
 
 
 def test_logical() -> None:
-    def table(op, a, b):
+    def table(
+        op: Callable[[Image.Image, Image.Image], Image.Image], a: int, b: int
+    ) -> tuple[int, int, int, int]:
         out = []
         for x in (a, b):
             imx = Image.new("1", (1, 1), x)

@@ -71,7 +71,7 @@ def test_save(tmp_path: Path) -> None:
         "Tests/images/timeout-ef9112a065e7183fa7faa2e18929b03e44ee16bf.blp",
     ],
 )
-def test_crashes(test_file) -> None:
+def test_crashes(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             with pytest.raises(OSError):
