@@ -12,10 +12,6 @@ def int_to_float(i):
     return i / 255
 
 
-def str_to_float(i):
-    return ord(i) / 255
-
-
 def tuple_to_ints(tp):
     x, y, z = tp
     return int(x * 255.0), int(y * 255.0), int(z * 255.0)
