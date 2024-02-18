@@ -64,7 +64,7 @@ As of 2019, Pillow development is
                 src="https://zenodo.org/badge/17549/python-pillow/Pillow.svg"></a>
             <a href="https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge"><img
                 alt="Tidelift"
-                src="https://tidelift.com/badges/package/pypi/Pillow?style=flat"></a>
+                src="https://tidelift.com/badges/package/pypi/pillow?style=flat"></a>
             <a href="https://pypi.org/project/pillow/"><img
                 alt="Newest PyPI version"
                 src="https://img.shields.io/pypi/v/pillow.svg"></a>
