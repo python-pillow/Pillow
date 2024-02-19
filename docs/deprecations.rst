@@ -260,6 +260,30 @@ offset.
     :alt: Demonstration of size height vs bbox top and bottom
     :align: center
 
+If you are using these methods for aligning text, consider using :ref:`text-anchors` instead
+which avoid issues that can occur with non-English text or unusual fonts.
+For example, instead of the following code::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width, height = draw.textsize("Hello world", font)
+    x, y = (100 - width) / 2, (100 - height) / 2
+    draw.text((x, y), "Hello world", font=font)
+
+Use instead::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    draw.text((100 / 2, 100 / 2), "Hello world", font=font, anchor="mm")
+
 FreeTypeFont.getmask2 fill parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
