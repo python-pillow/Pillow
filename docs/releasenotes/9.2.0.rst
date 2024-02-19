@@ -90,8 +90,12 @@ Use instead::
     width, height = right - left, bottom - top
 
 Previously, the ``size`` methods returned a ``height`` that included the vertical
-offset of the text, while the new ``bbox`` methods explicitly distinguish this as a
-``top`` offset.
+offset of the text, while the new ``bbox`` methods distinguish this as a ``top``
+offset.
+
+.. image:: ./example/size_vs_bbox.png
+    :alt: Demonstration of size height vs bbox top and bottom
+    :align: center
 
 API Additions
 =============
