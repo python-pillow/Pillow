@@ -48,6 +48,10 @@ Thank you.
 * Python: 
 * Pillow: 
 
+```text
+please paste the output of running `python3 -m PIL --bugreport` here
+```
+
 <!--
 Please include **code** that reproduces the issue and whenever possible, an **image** that demonstrates the issue. Please upload images to GitHub, not to third-party file hosting sites. If necessary, add the image to a zip or tar archive.
 
