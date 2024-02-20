@@ -7,7 +7,7 @@ import shutil
 import sys
 from io import BytesIO
 from pathlib import Path
-from typing import BinaryIO
+from typing import Any, BinaryIO
 
 import pytest
 from packaging.version import parse as parse_version
@@ -44,7 +44,7 @@ def test_sanity() -> None:
         pytest.param(ImageFont.Layout.RAQM, marks=skip_unless_feature("raqm")),
     ],
 )
-def layout_engine(request):
+def layout_engine(request: pytest.FixtureRequest) -> ImageFont.Layout:
     return request.param
 
 
@@ -535,21 +535,23 @@ def test_unicode_extended(layout_engine: ImageFont.Layout) -> None:
     (("linux", "/usr/local/share/fonts"), ("darwin", "/System/Library/Fonts")),
 )
 @pytest.mark.skipif(is_win32(), reason="requires Unix or macOS")
-def test_find_font(monkeypatch, platform, font_directory) -> None:
+def test_find_font(
+    monkeypatch: pytest.MonkeyPatch, platform: str, font_directory: str
+) -> None:
     def _test_fake_loading_font(path_to_fake: str, fontname: str) -> None:
         # Make a copy of FreeTypeFont so we can patch the original
         free_type_font = copy.deepcopy(ImageFont.FreeTypeFont)
         with monkeypatch.context() as m:
             m.setattr(ImageFont, "_FreeTypeFont", free_type_font, raising=False)
 
-            def loadable_font(filepath, size, index, encoding, *args, **kwargs):
+            def loadable_font(
+                filepath: str, size: int, index: int, encoding: str, *args: Any
+            ):
                 if filepath == path_to_fake:
                     return ImageFont._FreeTypeFont(
-                        FONT_PATH, size, index, encoding, *args, **kwargs
+                        FONT_PATH, size, index, encoding, *args
                     )
-                return ImageFont._FreeTypeFont(
-                    filepath, size, index, encoding, *args, **kwargs
-                )
+                return ImageFont._FreeTypeFont(filepath, size, index, encoding, *args)
 
             m.setattr(ImageFont, "FreeTypeFont", loadable_font)
             font = ImageFont.truetype(fontname)
@@ -563,7 +565,7 @@ def test_find_font(monkeypatch, platform, font_directory) -> None:
     if platform == "linux":
         monkeypatch.setenv("XDG_DATA_DIRS", "/usr/share/:/usr/local/share/")
 
-    def fake_walker(path):
+    def fake_walker(path: str) -> list[tuple[str, list[str], list[str]]]:
         if path == font_directory:
             return [
                 (
@@ -1101,7 +1103,7 @@ def test_oom(test_file: str) -> None:
             font.getmask("Test Text")
 
 
-def test_raqm_missing_warning(monkeypatch) -> None:
+def test_raqm_missing_warning(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ImageFont.core, "HAVE_RAQM", False)
     with pytest.warns(UserWarning) as record:
         font = ImageFont.truetype(
