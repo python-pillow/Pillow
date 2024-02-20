@@ -49,7 +49,7 @@ Thank you.
 * Pillow: 
 
 ```text
-please paste the output of running `python3 -m PIL --bugreport` here
+please paste here the output of the following Python code: `from PIL import features; features.pilinfo(supported_formats=False)`
 ```
 
 <!--
