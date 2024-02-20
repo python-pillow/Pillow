@@ -343,14 +343,14 @@ def test_extended_information() -> None:
         # recursively and then check equality.
         power = 10**digits
 
-        def truncate_tuple(tuple_or_float: tuple[Any, ...]) -> tuple[Any, ...]:
+        def truncate_tuple(tuple_value: tuple[Any, ...]) -> tuple[Any, ...]:
             return tuple(
                 (
                     truncate_tuple(val)
                     if isinstance(val, tuple)
                     else int(val * power) / power
                 )
-                for val in tuple_or_float
+                for val in tuple_value
             )
 
         assert truncate_tuple(tup1) == truncate_tuple(tup2)
