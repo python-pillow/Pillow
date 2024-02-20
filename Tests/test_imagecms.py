@@ -6,6 +6,7 @@ import re
 import shutil
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -336,25 +337,13 @@ def test_extended_information() -> None:
     p = o.profile
 
     def assert_truncated_tuple_equal(
-        tup1: tuple[tuple[float, float, float], ...] | tuple[float],
-        tup2: (
-            tuple[tuple[tuple[float, float, float], ...], ...]
-            | tuple[tuple[float, float, float], ...]
-            | tuple[float]
-        ),
-        digits: int = 10,
+        tup1: tuple[Any, ...], tup2: tuple[Any, ...], digits: int = 10
     ) -> None:
         # Helper function to reduce precision of tuples of floats
         # recursively and then check equality.
         power = 10**digits
 
-        def truncate_tuple(
-            tuple_or_float: (
-                tuple[tuple[tuple[float, float, float], ...], ...]
-                | tuple[tuple[float, float, float], ...]
-                | tuple[float, ...]
-            )
-        ) -> tuple[tuple[float, ...], ...]:
+        def truncate_tuple(tuple_or_float: tuple[Any, ...]) -> tuple[Any, ...]:
             return tuple(
                 (
                     truncate_tuple(val)
