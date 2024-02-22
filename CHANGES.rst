@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Fixed reading FLI/FLC images with a prefix chunk #7804
+  [twolife]
+
 - Update wl-paste handling and return None for some errors in grabclipboard() on Linux #7745
   [nik012003, radarhere]
 
