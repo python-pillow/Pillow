@@ -619,6 +619,10 @@ class TestFilePng:
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
+    def test_unknown_compression_method(self) -> None:
+        with pytest.raises(SyntaxError, match="Unknown compression method"):
+            PngImagePlugin.PngImageFile("Tests/images/unknown_compression_method.png")
+
     def test_padded_idat(self) -> None:
         # This image has been manually hexedited
         # so that the IDAT chunk has padding at the end
