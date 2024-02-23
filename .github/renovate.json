@@ -13,5 +13,6 @@
             "separateMajorMinor": "false"
         }
     ],
-    "schedule": ["on the 3rd day of the month"]
+    "schedule": ["on the 3rd day of the month"],
+    "updatePinnedDependencies": false
 }
