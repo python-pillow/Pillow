@@ -69,8 +69,16 @@ jobs:
     - name: Print build system information
       run: python3 .github/workflows/system-info.py
 
-    - name: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml olefile pyroma
-      run: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml olefile pyroma
+    - name: Install Python dependencies
+      run: >
+        python3 -m pip install
+        coverage>=7.4.2
+        defusedxml
+        olefile
+        pyroma
+        pytest
+        pytest-cov
+        pytest-timeout
 
     - name: Install dependencies
       id: install
