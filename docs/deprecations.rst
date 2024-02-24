@@ -516,10 +516,10 @@ Please use ``from PIL.Image import core as _imaging`` instead.
 Pillow and PIL
 ~~~~~~~~~~~~~~
 
+.. versionremoved:: 1.0.0
+
 Pillow and PIL cannot co-exist in the same environment.
 Before installing Pillow, please uninstall PIL.
-
-.. versionremoved:: 1.0.0
 
 import Image
 ~~~~~~~~~~~~
