@@ -44,6 +44,54 @@ ImageFile.raise_oserror
 error codes returned by a codec's ``decode()`` method, which ImageFile already does
 automatically.
 
+IptcImageFile helper functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.2.0
+
+The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
+``IptcImageFile.PAD`` have been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). These are undocumented helper functions intended
+for internal use, so there is no replacement. They can each be replaced
+by a single line of code using builtin functions in Python.
+
+ImageCms constants and versions() function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.3.0
+
+A number of constants and a function in :py:mod:`.ImageCms` have been deprecated.
+This includes a table of flags based on LittleCMS version 1 which has been
+replaced with a new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
+
+============================================  ====================================================
+Deprecated                                    Use instead
+============================================  ====================================================
+``ImageCms.DESCRIPTION``                      No replacement
+``ImageCms.VERSION``                          ``PIL.__version__``
+``ImageCms.FLAGS["MATRIXINPUT"]``             :py:attr:`.ImageCms.Flags.CLUT_POST_LINEARIZATION`
+``ImageCms.FLAGS["MATRIXOUTPUT"]``            :py:attr:`.ImageCms.Flags.FORCE_CLUT`
+``ImageCms.FLAGS["MATRIXONLY"]``              No replacement
+``ImageCms.FLAGS["NOWHITEONWHITEFIXUP"]``     :py:attr:`.ImageCms.Flags.NOWHITEONWHITEFIXUP`
+``ImageCms.FLAGS["NOPRELINEARIZATION"]``      :py:attr:`.ImageCms.Flags.CLUT_PRE_LINEARIZATION`
+``ImageCms.FLAGS["GUESSDEVICECLASS"]``        :py:attr:`.ImageCms.Flags.GUESSDEVICECLASS`
+``ImageCms.FLAGS["NOTCACHE"]``                :py:attr:`.ImageCms.Flags.NOCACHE`
+``ImageCms.FLAGS["NOTPRECALC"]``              :py:attr:`.ImageCms.Flags.NOOPTIMIZE`
+``ImageCms.FLAGS["NULLTRANSFORM"]``           :py:attr:`.ImageCms.Flags.NULLTRANSFORM`
+``ImageCms.FLAGS["HIGHRESPRECALC"]``          :py:attr:`.ImageCms.Flags.HIGHRESPRECALC`
+``ImageCms.FLAGS["LOWRESPRECALC"]``           :py:attr:`.ImageCms.Flags.LOWRESPRECALC`
+``ImageCms.FLAGS["GAMUTCHECK"]``              :py:attr:`.ImageCms.Flags.GAMUTCHECK`
+``ImageCms.FLAGS["WHITEBLACKCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["BLACKPOINTCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["SOFTPROOFING"]``            :py:attr:`.ImageCms.Flags.SOFTPROOFING`
+``ImageCms.FLAGS["PRESERVEBLACK"]``           :py:attr:`.ImageCms.Flags.NONEGATIVES`
+``ImageCms.FLAGS["NODEFAULTRESOURCEDEF"]``    :py:attr:`.ImageCms.Flags.NODEFAULTRESOURCEDEF`
+``ImageCms.FLAGS["GRIDPOINTS"]``              :py:attr:`.ImageCms.Flags.GRIDPOINTS()`
+``ImageCms.versions()``                       :py:func:`PIL.features.version_module` with
+                                              ``feature="littlecms2"``, :py:data:`sys.version` or
+                                              :py:data:`sys.version_info`, and ``PIL.__version__``
+============================================  ====================================================
+
 Removed features
 ----------------
 
@@ -107,7 +155,7 @@ Constants
 .. versionremoved:: 10.0.0
 
 A number of constants have been removed.
-Instead, ``enum.IntEnum`` classes have been added.
+Instead, :py:class:`enum.IntEnum` classes have been added.
 
 .. note::
 
@@ -327,8 +375,8 @@ ImageCms.CmsProfile attributes
 .. deprecated:: 3.2.0
 .. versionremoved:: 8.0.0
 
-Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6.0.0,
-they issued a :py:exc:`DeprecationWarning`:
+Some attributes in :py:class:`PIL.ImageCms.core.CmsProfile` have been removed.
+From 6.0.0, they issued a :py:exc:`DeprecationWarning`:
 
 ========================  ===================================================
 Removed                   Use instead

@@ -2,11 +2,12 @@ name: Test Windows
 
 on:
   push:
+    branches:
+      - "**"
     paths-ignore:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   pull_request:
@@ -14,7 +15,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   workflow_dispatch:
@@ -26,13 +26,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  COVERAGE_CORE: sysmon
+
 jobs:
   build:
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.10", "pypy3.9", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy3.10", "pypy3.9", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13.0-alpha.3"]
 
     timeout-minutes: 30
 
@@ -66,8 +69,16 @@ jobs:
     - name: Print build system information
       run: python3 .github/workflows/system-info.py
 
-    - name: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml olefile pyroma
-      run: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml olefile pyroma
+    - name: Install Python dependencies
+      run: >
+        python3 -m pip install
+        coverage>=7.4.2
+        defusedxml
+        olefile
+        pyroma
+        pytest
+        pytest-cov
+        pytest-timeout
 
     - name: Install dependencies
       id: install
@@ -89,7 +100,7 @@ jobs:
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: winbuild\build
         key:
@@ -202,7 +213,7 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v3.1.5
       with:
         file: ./coverage.xml
         flags: GHA_Windows

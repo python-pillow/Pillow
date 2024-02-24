@@ -54,7 +54,7 @@ master_doc = "index"
 # General information about the project.
 project = "Pillow (PIL Fork)"
 copyright = (
-    "1995-2011 Fredrik Lundh, 2010-2023 Jeffrey A. Clark (Alex) and contributors"
+    "1995-2011 Fredrik Lundh, 2010-2024 Jeffrey A. Clark (Alex) and contributors"
 )
 author = "Fredrik Lundh, Jeffrey A. Clark (Alex), contributors"
 
@@ -233,7 +233,7 @@ htmlhelp_basename = "PillowPILForkdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').
@@ -326,7 +326,7 @@ linkcheck_allowed_redirects = {
     r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",
     r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",
     r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
-    r"https://tidelift.com/badges/package/pypi/Pillow?.*": r"https://img.shields.io/badge/.*",
+    r"https://tidelift.com/badges/package/pypi/pillow?.*": r"https://img.shields.io/badge/.*",
     r"https://zenodo.org/badge/17549/python-pillow/Pillow.svg": r"https://zenodo.org/badge/doi/[\.0-9]+/zenodo.[0-9]+.svg",
     r"https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow": r"https://zenodo.org/record/[0-9]+",
 }

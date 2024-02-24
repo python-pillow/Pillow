@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import annotations
 
 
 import atheris
@@ -24,7 +21,7 @@ with atheris.instrument_imports():
     import fuzzers
 
 
-def TestOneInput(data):
+def TestOneInput(data: bytes) -> None:
     try:
         fuzzers.fuzz_image(data)
     except Exception:
@@ -33,7 +30,7 @@ def TestOneInput(data):
         pass
 
 
-def main():
+def main() -> None:
     fuzzers.enable_decompressionbomb_error()
     atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()

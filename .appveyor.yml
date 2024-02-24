@@ -6,6 +6,7 @@ init:
 # Uncomment previous line to get RDP access during the build.
 
 environment:
+  COVERAGE_CORE: sysmon
   EXECUTABLE: python.exe
   TEST_OPTIONS:
   DEPLOY: YES
@@ -14,7 +15,7 @@ environment:
     ARCHITECTURE: x86
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
   - PYTHON: C:/Python38-x64
-    ARCHITECTURE: x64
+    ARCHITECTURE: AMD64
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 
 

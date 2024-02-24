@@ -880,7 +880,7 @@ font_render(FontObject *self, PyObject *args) {
     image = PyObject_CallFunction(fill, "ii", width, height);
     if (image == Py_None) {
         PyMem_Del(glyph_info);
-        return Py_BuildValue("ii", 0, 0);
+        return Py_BuildValue("N(ii)", image, 0, 0);
     } else if (image == NULL) {
         PyMem_Del(glyph_info);
         return NULL;
@@ -894,7 +894,7 @@ font_render(FontObject *self, PyObject *args) {
     y_offset -= stroke_width;
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
-        return Py_BuildValue("ii", x_offset, y_offset);
+        return Py_BuildValue("N(ii)", image, x_offset, y_offset);
     }
 
     if (stroke_width) {
@@ -1049,8 +1049,8 @@ font_render(FontObject *self, PyObject *args) {
             if (yy >= 0 && yy < im->ysize) {
                 /* blend this glyph into the buffer */
                 int k;
-                unsigned char v;
                 unsigned char *target;
+                unsigned int tmp;
                 if (color) {
                     /* target[RGB] returns the color, target[A] returns the mask */
                     /* target bands get split again in ImageDraw.text */
@@ -1061,34 +1061,55 @@ font_render(FontObject *self, PyObject *args) {
                 if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
                     /* paste color glyph */
                     for (k = x0; k < x1; k++) {
-                        if (target[k * 4 + 3] < source[k * 4 + 3]) {
-                            /* unpremultiply BGRa to RGBA */
-                            target[k * 4 + 0] = CLIP8(
-                                (255 * (int)source[k * 4 + 2]) / source[k * 4 + 3]);
-                            target[k * 4 + 1] = CLIP8(
-                                (255 * (int)source[k * 4 + 1]) / source[k * 4 + 3]);
-                            target[k * 4 + 2] = CLIP8(
-                                (255 * (int)source[k * 4 + 0]) / source[k * 4 + 3]);
-                            target[k * 4 + 3] = source[k * 4 + 3];
+                        unsigned int src_alpha = source[k * 4 + 3];
+
+                        /* paste only if source has data */
+                        if (src_alpha > 0) {
+                            /* unpremultiply BGRa */
+                            int src_red = CLIP8((255 * (int)source[k * 4 + 2]) / src_alpha);
+                            int src_green = CLIP8((255 * (int)source[k * 4 + 1]) / src_alpha);
+                            int src_blue = CLIP8((255 * (int)source[k * 4 + 0]) / src_alpha);
+
+                            /* blend required if target has data */
+                            if (target[k * 4 + 3] > 0) {
+                                /* blend RGBA colors */
+                                target[k * 4 + 0] = BLEND(src_alpha, target[k * 4 + 0], src_red, tmp);
+                                target[k * 4 + 1] = BLEND(src_alpha, target[k * 4 + 1], src_green, tmp);
+                                target[k * 4 + 2] = BLEND(src_alpha, target[k * 4 + 2], src_blue, tmp);
+                                target[k * 4 + 3] = CLIP8(src_alpha + MULDIV255(target[k * 4 + 3], (255 - src_alpha), tmp));
+                            } else {
+                                /* paste unpremultiplied RGBA values */
+                                target[k * 4 + 0] = src_red;
+                                target[k * 4 + 1] = src_green;
+                                target[k * 4 + 2] = src_blue;
+                                target[k * 4 + 3] = src_alpha;
+                            }
                         }
                     }
                 } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
                     if (color) {
                         unsigned char *ink = (unsigned char *)&foreground_ink;
                         for (k = x0; k < x1; k++) {
-                            v = source[k] * convert_scale;
-                            if (target[k * 4 + 3] < v) {
-                                target[k * 4 + 0] = ink[0];
-                                target[k * 4 + 1] = ink[1];
-                                target[k * 4 + 2] = ink[2];
-                                target[k * 4 + 3] = v;
+                            unsigned int src_alpha = source[k] * convert_scale;
+                            if (src_alpha > 0) {
+                                if (target[k * 4 + 3] > 0) {
+                                    target[k * 4 + 0] = BLEND(src_alpha, target[k * 4 + 0], ink[0], tmp);
+                                    target[k * 4 + 1] = BLEND(src_alpha, target[k * 4 + 1], ink[1], tmp);
+                                    target[k * 4 + 2] = BLEND(src_alpha, target[k * 4 + 2], ink[2], tmp);
+                                    target[k * 4 + 3] = CLIP8(src_alpha + MULDIV255(target[k * 4 + 3], (255 - src_alpha), tmp));
+                                } else {
+                                    target[k * 4 + 0] = ink[0];
+                                    target[k * 4 + 1] = ink[1];
+                                    target[k * 4 + 2] = ink[2];
+                                    target[k * 4 + 3] = src_alpha;
+                                }
                             }
                         }
                     } else {
                         for (k = x0; k < x1; k++) {
-                            v = source[k] * convert_scale;
-                            if (target[k] < v) {
-                                target[k] = v;
+                            unsigned int src_alpha = source[k] * convert_scale;
+                            if (src_alpha > 0) {
+                                target[k] = target[k] > 0 ? CLIP8(src_alpha + MULDIV255(target[k], (255 - src_alpha), tmp)) : src_alpha;
                             }
                         }
                     }
@@ -1109,18 +1130,12 @@ font_render(FontObject *self, PyObject *args) {
     if (bitmap_converted_ready) {
         FT_Bitmap_Done(library, &bitmap_converted);
     }
-    Py_DECREF(image);
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
-    return Py_BuildValue("ii", x_offset, y_offset);
+    return Py_BuildValue("N(ii)", image, x_offset, y_offset);
 
 glyph_error:
-    if (im->destroy) {
-        im->destroy(im);
-    }
-    if (im->image) {
-        free(im->image);
-    }
+    Py_DECREF(image);
     if (stroker != NULL) {
         FT_Done_Glyph(glyph);
     }

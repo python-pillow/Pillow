@@ -24,13 +24,14 @@ from __future__ import annotations
 
 import os
 import struct
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import o8
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return len(prefix) >= 2 and i16(prefix) == 474
 
 
@@ -52,8 +53,10 @@ class SgiImageFile(ImageFile.ImageFile):
     format = "SGI"
     format_description = "SGI Image File Format"
 
-    def _open(self):
+    def _open(self) -> None:
         # HEAD
+        assert self.fp is not None
+
         headlen = 512
         s = self.fp.read(headlen)
 
@@ -122,7 +125,7 @@ class SgiImageFile(ImageFile.ImageFile):
             ]
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode not in {"RGB", "RGBA", "L"}:
         msg = "Unsupported SGI image mode"
         raise ValueError(msg)
@@ -168,8 +171,8 @@ def _save(im, fp, filename):
     # Maximum Byte value (255 = 8bits per pixel)
     pinmax = 255
     # Image name (79 characters max, truncated below in write)
-    img_name = os.path.splitext(os.path.basename(filename))[0]
-    img_name = img_name.encode("ascii", "ignore")
+    filename = os.path.basename(filename)
+    img_name = os.path.splitext(filename)[0].encode("ascii", "ignore")
     # Standard representation of pixel in the file
     colormap = 0
     fp.write(struct.pack(">h", magic_number))
@@ -201,7 +204,10 @@ def _save(im, fp, filename):
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
+        assert self.im is not None
+
         rawmode, stride, orientation = self.args
         pagesize = self.state.xsize * self.state.ysize
         zsize = len(self.mode)

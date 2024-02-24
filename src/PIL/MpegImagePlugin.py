@@ -16,21 +16,22 @@ from __future__ import annotations
 
 from . import Image, ImageFile
 from ._binary import i8
+from ._typing import SupportsRead
 
 #
 # Bitstream parser
 
 
 class BitStream:
-    def __init__(self, fp):
+    def __init__(self, fp: SupportsRead[bytes]) -> None:
         self.fp = fp
         self.bits = 0
         self.bitbuffer = 0
 
-    def next(self):
+    def next(self) -> int:
         return i8(self.fp.read(1))
 
-    def peek(self, bits):
+    def peek(self, bits: int) -> int:
         while self.bits < bits:
             c = self.next()
             if c < 0:
@@ -40,13 +41,13 @@ class BitStream:
             self.bits += 8
         return self.bitbuffer >> (self.bits - bits) & (1 << bits) - 1
 
-    def skip(self, bits):
+    def skip(self, bits: int) -> None:
         while self.bits < bits:
             self.bitbuffer = (self.bitbuffer << 8) + i8(self.fp.read(1))
             self.bits += 8
         self.bits = self.bits - bits
 
-    def read(self, bits):
+    def read(self, bits: int) -> int:
         v = self.peek(bits)
         self.bits = self.bits - bits
         return v
@@ -61,9 +62,10 @@ class MpegImageFile(ImageFile.ImageFile):
     format = "MPEG"
     format_description = "MPEG"
 
-    def _open(self):
-        s = BitStream(self.fp)
+    def _open(self) -> None:
+        assert self.fp is not None
 
+        s = BitStream(self.fp)
         if s.read(32) != 0x1B3:
             msg = "not an MPEG file"
             raise SyntaxError(msg)

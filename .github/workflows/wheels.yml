@@ -30,7 +30,64 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  build:
+  build-1-QEMU-emulated-wheels:
+    name: aarch64 ${{ matrix.python-version }} ${{ matrix.spec }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - pp39
+          - pp310
+          - cp38
+          - cp39
+          - cp310
+          - cp311
+          - cp312
+        spec:
+          - manylinux2014
+          - manylinux_2_28
+          - musllinux
+        exclude:
+          - { python-version: pp39, spec: musllinux }
+          - { python-version: pp310, spec: musllinux }
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Install cibuildwheel
+        run: |
+          python3 -m pip install -r .ci/requirements-cibw.txt
+
+      - name: Build wheels
+        run: |
+          python3 -m cibuildwheel --output-dir wheelhouse
+        env:
+          # Build only the currently selected Linux architecture (so we can
+          # parallelise for speed).
+          CIBW_ARCHS: "aarch64"
+          # Likewise, select only one Python version per job to speed this up.
+          CIBW_BUILD: "${{ matrix.python-version }}-${{ matrix.spec == 'musllinux' && 'musllinux' || 'manylinux' }}*"
+          # Extra options for manylinux.
+          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.spec }}
+          CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.spec }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-qemu-${{ matrix.python-version }}-${{ matrix.spec }}
+          path: ./wheelhouse/*.whl
+
+  build-2-native-wheels:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -39,18 +96,18 @@ jobs:
         include:
           - name: "macOS x86_64"
             os: macos-latest
-            archs: x86_64
+            cibw_arch: x86_64
             macosx_deployment_target: "10.10"
           - name: "macOS arm64"
             os: macos-latest
-            archs: arm64
+            cibw_arch: arm64
             macosx_deployment_target: "11.0"
           - name: "manylinux2014 and musllinux x86_64"
             os: ubuntu-latest
-            archs: x86_64
+            cibw_arch: x86_64
           - name: "manylinux_2_28 x86_64"
             os: ubuntu-latest
-            archs: x86_64
+            cibw_arch: x86_64
             build: "*manylinux*"
             manylinux: "manylinux_2_28"
     steps:
@@ -62,12 +119,15 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Build wheels
+      - name: Install cibuildwheel
         run: |
           python3 -m pip install -r .ci/requirements-cibw.txt
+
+      - name: Build wheels
+        run: |
           python3 -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_ARCHS: ${{ matrix.archs }}
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
@@ -75,24 +135,21 @@ jobs:
           CIBW_TEST_SKIP: "*-macosx_arm64"
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-${{ matrix.os }}-${{ matrix.cibw_arch }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
           path: ./wheelhouse/*.whl
 
   windows:
-    name: Windows ${{ matrix.arch }}
+    name: Windows ${{ matrix.cibw_arch }}
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: x86
-            cibw_arch: x86
-          - arch: x64
-            cibw_arch: AMD64
-          - arch: ARM64
-            cibw_arch: ARM64
+          - cibw_arch: x86
+          - cibw_arch: AMD64
+          - cibw_arch: ARM64
     steps:
       - uses: actions/checkout@v4
 
@@ -106,6 +163,10 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install cibuildwheel
+        run: |
+          python.exe -m pip install -r .ci/requirements-cibw.txt
+
       - name: Prepare for build
         run: |
           choco install nasm --no-progress
@@ -114,12 +175,7 @@ jobs:
           # Install extra test images
           xcopy /S /Y Tests\test-images\* Tests\images
 
-          & python.exe -m pip install -r .ci/requirements-cibw.txt
-
-          # Cannot cross-compile FriBiDi (only used for tests)
-          $FLAGS = ("--no-imagequant", "--architecture=${{ matrix.arch }}")
-          if ('${{ matrix.arch }}' -eq 'ARM64') { $FLAGS += "--no-fribidi" }
-          & python.exe winbuild\build_prepare.py -v @FLAGS
+          & python.exe winbuild\build_prepare.py -v --no-imagequant --architecture=${{ matrix.cibw_arch }}
         shell: pwsh
 
       - name: Build wheels
@@ -146,6 +202,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
+          CIBW_SKIP: pp38-*
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm
             -v {project}:C:\pillow
@@ -157,24 +214,16 @@ jobs:
         shell: cmd
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-windows-${{ matrix.cibw_arch }}
           path: ./wheelhouse/*.whl
 
-      - name: Prepare to upload FriBiDi
-        if: "matrix.arch != 'ARM64'"
-        run: |
-          mkdir fribidi\${{ matrix.arch }}
-          copy winbuild\build\bin\fribidi* fribidi\${{ matrix.arch }}
-        shell: cmd
-
       - name: Upload fribidi.dll
-        if: "matrix.arch != 'ARM64'"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: fribidi
-          path: fribidi\*
+          name: fribidi-windows-${{ matrix.cibw_arch }}
+          path: winbuild\build\bin\fribidi*
 
   sdist:
     runs-on: ubuntu-latest
@@ -190,17 +239,26 @@ jobs:
 
     - run: make sdist
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
-        name: dist
+        name: dist-sdist
         path: dist/*.tar.gz
 
-  success:
-    permissions:
-      contents: none
-    needs: [build, windows, sdist]
+  pypi-publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: [build-1-QEMU-emulated-wheels, build-2-native-wheels, windows, sdist]
     runs-on: ubuntu-latest
-    name: Wheels Successful
+    name: Upload release to PyPI
+    environment:
+      name: release-pypi
+      url: https://pypi.org/p/Pillow
+    permissions:
+      id-token: write
     steps:
-      - name: Success
-        run: echo Wheels Successful
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
