@@ -3,7 +3,7 @@ from __future__ import annotations
 from PIL import Image
 
 
-def test_white():
+def test_white() -> None:
     with Image.open("Tests/images/lab.tif") as i:
         i.load()
 
@@ -24,7 +24,7 @@ def test_white():
     assert list(b) == [128] * 100
 
 
-def test_green():
+def test_green() -> None:
     # l= 50 (/100), a = -100 (-128 .. 128) b=0 in PS
     # == RGB: 0, 152, 117
     with Image.open("Tests/images/lab-green.tif") as i:
@@ -32,7 +32,7 @@ def test_green():
     assert k == (128, 28, 128)
 
 
-def test_red():
+def test_red() -> None:
     # l= 50 (/100), a = 100 (-128 .. 128) b=0 in PS
     # == RGB: 255, 0, 124
     with Image.open("Tests/images/lab-red.tif") as i:

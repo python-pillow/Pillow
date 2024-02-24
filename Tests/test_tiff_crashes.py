@@ -42,7 +42,7 @@ from .helper import on_ci
 @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
 @pytest.mark.filterwarnings("ignore:Metadata warning")
 @pytest.mark.filterwarnings("ignore:Truncated File Read")
-def test_tiff_crashes(test_file):
+def test_tiff_crashes(test_file: str) -> None:
     try:
         with Image.open(test_file) as im:
             im.load()

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from typing import Callable
 
 import pytest
 
@@ -10,7 +11,7 @@ from .helper import assert_image_equal, assert_image_similar, hopper
 
 
 class TestImageTransform:
-    def test_sanity(self):
+    def test_sanity(self) -> None:
         im = hopper()
 
         for transform in (
@@ -31,7 +32,7 @@ class TestImageTransform:
         ):
             assert_image_equal(im, im.transform(im.size, transform))
 
-    def test_info(self):
+    def test_info(self) -> None:
         comment = b"File written by Adobe Photoshop\xa8 4.0"
 
         with Image.open("Tests/images/hopper.gif") as im:
@@ -41,14 +42,14 @@ class TestImageTransform:
             new_im = im.transform((100, 100), transform)
         assert new_im.info["comment"] == comment
 
-    def test_palette(self):
+    def test_palette(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
             transformed = im.transform(
                 im.size, Image.Transform.AFFINE, [1, 0, 0, 0, 1, 0]
             )
             assert im.palette.palette == transformed.palette.palette
 
-    def test_extent(self):
+    def test_extent(self) -> None:
         im = hopper("RGB")
         (w, h) = im.size
         transformed = im.transform(
@@ -63,7 +64,7 @@ class TestImageTransform:
         # undone -- precision?
         assert_image_similar(transformed, scaled, 23)
 
-    def test_quad(self):
+    def test_quad(self) -> None:
         # one simple quad transform, equivalent to scale & crop upper left quad
         im = hopper("RGB")
         (w, h) = im.size
@@ -91,7 +92,7 @@ class TestImageTransform:
             ("LA", (76, 0)),
         ),
     )
-    def test_fill(self, mode, expected_pixel):
+    def test_fill(self, mode: str, expected_pixel: tuple[int, ...]) -> None:
         im = hopper(mode)
         (w, h) = im.size
         transformed = im.transform(
@@ -103,7 +104,7 @@ class TestImageTransform:
         )
         assert transformed.getpixel((w - 1, h - 1)) == expected_pixel
 
-    def test_mesh(self):
+    def test_mesh(self) -> None:
         # this should be a checkerboard of halfsized hoppers in ul, lr
         im = hopper("RGBA")
         (w, h) = im.size
@@ -142,7 +143,9 @@ class TestImageTransform:
         assert_image_equal(blank, transformed.crop((w // 2, 0, w, h // 2)))
         assert_image_equal(blank, transformed.crop((0, h // 2, w // 2, h)))
 
-    def _test_alpha_premult(self, op):
+    def _test_alpha_premult(
+        self, op: Callable[[Image.Image, tuple[int, int]], Image.Image]
+    ) -> None:
         # create image with half white, half black,
         # with the black half transparent.
         # do op,
@@ -158,14 +161,14 @@ class TestImageTransform:
         hist = im_background.histogram()
         assert 40 * 10 == hist[-1]
 
-    def test_alpha_premult_resize(self):
-        def op(im, sz):
+    def test_alpha_premult_resize(self) -> None:
+        def op(im: Image.Image, sz: tuple[int, int]) -> Image.Image:
             return im.resize(sz, Image.Resampling.BILINEAR)
 
         self._test_alpha_premult(op)
 
-    def test_alpha_premult_transform(self):
-        def op(im, sz):
+    def test_alpha_premult_transform(self) -> None:
+        def op(im: Image.Image, sz: tuple[int, int]) -> Image.Image:
             (w, h) = im.size
             return im.transform(
                 sz, Image.Transform.EXTENT, (0, 0, w, h), Image.Resampling.BILINEAR
@@ -173,7 +176,9 @@ class TestImageTransform:
 
         self._test_alpha_premult(op)
 
-    def _test_nearest(self, op, mode):
+    def _test_nearest(
+        self, op: Callable[[Image.Image, tuple[int, int]], Image.Image], mode: str
+    ) -> None:
         # create white image with half transparent,
         # do op,
         # the image should remain white with half transparent
@@ -196,15 +201,15 @@ class TestImageTransform:
         )
 
     @pytest.mark.parametrize("mode", ("RGBA", "LA"))
-    def test_nearest_resize(self, mode):
-        def op(im, sz):
+    def test_nearest_resize(self, mode: str) -> None:
+        def op(im: Image.Image, sz: tuple[int, int]) -> Image.Image:
             return im.resize(sz, Image.Resampling.NEAREST)
 
         self._test_nearest(op, mode)
 
     @pytest.mark.parametrize("mode", ("RGBA", "LA"))
-    def test_nearest_transform(self, mode):
-        def op(im, sz):
+    def test_nearest_transform(self, mode: str) -> None:
+        def op(im: Image.Image, sz: tuple[int, int]) -> Image.Image:
             (w, h) = im.size
             return im.transform(
                 sz, Image.Transform.EXTENT, (0, 0, w, h), Image.Resampling.NEAREST
@@ -212,7 +217,7 @@ class TestImageTransform:
 
         self._test_nearest(op, mode)
 
-    def test_blank_fill(self):
+    def test_blank_fill(self) -> None:
         # attempting to hit
         # https://github.com/python-pillow/Pillow/issues/254 reported
         #
@@ -227,20 +232,22 @@ class TestImageTransform:
         # Running by default, but I'd totally understand not doing it in
         # the future
 
-        pattern = [Image.new("RGBA", (1024, 1024), (a, a, a, a)) for a in range(1, 65)]
+        pattern: list[Image.Image] | None = [
+            Image.new("RGBA", (1024, 1024), (a, a, a, a)) for a in range(1, 65)
+        ]
 
         # Yeah. Watch some JIT optimize this out.
         pattern = None  # noqa: F841
 
         self.test_mesh()
 
-    def test_missing_method_data(self):
+    def test_missing_method_data(self) -> None:
         with hopper() as im:
             with pytest.raises(ValueError):
                 im.transform((100, 100), None)
 
     @pytest.mark.parametrize("resample", (Image.Resampling.BOX, "unknown"))
-    def test_unknown_resampling_filter(self, resample):
+    def test_unknown_resampling_filter(self, resample: Image.Resampling | str) -> None:
         with hopper() as im:
             (w, h) = im.size
             with pytest.raises(ValueError):
@@ -250,7 +257,7 @@ class TestImageTransform:
 class TestImageTransformAffine:
     transform = Image.Transform.AFFINE
 
-    def _test_image(self):
+    def _test_image(self) -> Image.Image:
         im = hopper("RGB")
         return im.crop((10, 20, im.width - 10, im.height - 20))
 
@@ -263,7 +270,7 @@ class TestImageTransformAffine:
             (270, Image.Transpose.ROTATE_270),
         ),
     )
-    def test_rotate(self, deg, transpose):
+    def test_rotate(self, deg: int, transpose: Image.Transpose | None) -> None:
         im = self._test_image()
 
         angle = -math.radians(deg)
@@ -313,7 +320,13 @@ class TestImageTransformAffine:
             (Image.Resampling.BICUBIC, 1),
         ),
     )
-    def test_resize(self, scale, epsilon_scale, resample, epsilon):
+    def test_resize(
+        self,
+        scale: float,
+        epsilon_scale: float,
+        resample: Image.Resampling,
+        epsilon: int,
+    ) -> None:
         im = self._test_image()
 
         size_up = int(round(im.width * scale)), int(round(im.height * scale))
@@ -342,7 +355,14 @@ class TestImageTransformAffine:
             (Image.Resampling.BICUBIC, 1),
         ),
     )
-    def test_translate(self, x, y, epsilon_scale, resample, epsilon):
+    def test_translate(
+        self,
+        x: float,
+        y: float,
+        epsilon_scale: float,
+        resample: Image.Resampling,
+        epsilon: float,
+    ) -> None:
         im = self._test_image()
 
         size_up = int(round(im.width + x)), int(round(im.height + y))

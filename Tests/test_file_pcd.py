@@ -3,7 +3,7 @@ from __future__ import annotations
 from PIL import Image
 
 
-def test_load_raw():
+def test_load_raw() -> None:
     with Image.open("Tests/images/hopper.pcd") as im:
         im.load()  # should not segfault.
 

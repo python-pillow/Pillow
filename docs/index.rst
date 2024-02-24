@@ -49,7 +49,7 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
    :alt: Zenodo
 
-.. image:: https://tidelift.com/badges/package/pypi/Pillow?style=flat
+.. image:: https://tidelift.com/badges/package/pypi/pillow?style=flat
    :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge
    :alt: Tidelift
 

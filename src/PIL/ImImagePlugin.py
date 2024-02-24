@@ -93,8 +93,8 @@ for i in ["16", "16L", "16B"]:
 for i in ["32S"]:
     OPEN[f"L {i} image"] = ("I", f"I;{i}")
     OPEN[f"L*{i} image"] = ("I", f"I;{i}")
-for i in range(2, 33):
-    OPEN[f"L*{i} image"] = ("F", f"F;{i}")
+for j in range(2, 33):
+    OPEN[f"L*{j} image"] = ("F", f"F;{j}")
 
 
 # --------------------------------------------------------------------

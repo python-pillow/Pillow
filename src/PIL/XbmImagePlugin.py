@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import re
-from io import BytesIO
+from typing import IO
 
 from . import Image, ImageFile
 
@@ -70,7 +70,7 @@ class XbmImageFile(ImageFile.ImageFile):
         self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
 
 
-def _save(im: Image.Image, fp: BytesIO, filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as XBM"
         raise OSError(msg)

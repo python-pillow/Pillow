@@ -72,13 +72,11 @@ function build {
 
     build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
-        if [[ "$CIBW_ARCHS" == "arm64" ]]; then
-            build_simple xorgproto 2023.2 https://www.x.org/pub/individual/proto
-            build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
-            build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
-            if [ -f /Library/Frameworks/Python.framework/Versions/Current/share/pkgconfig/xcb-proto.pc ]; then
-                cp /Library/Frameworks/Python.framework/Versions/Current/share/pkgconfig/xcb-proto.pc /Library/Frameworks/Python.framework/Versions/Current/lib/pkgconfig/xcb-proto.pc
-            fi
+        build_simple xorgproto 2023.2 https://www.x.org/pub/individual/proto
+        build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
+        build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
+        if [ -f /Library/Frameworks/Python.framework/Versions/Current/share/pkgconfig/xcb-proto.pc ]; then
+            cp /Library/Frameworks/Python.framework/Versions/Current/share/pkgconfig/xcb-proto.pc /Library/Frameworks/Python.framework/Versions/Current/lib/pkgconfig/xcb-proto.pc
         fi
     else
         sed s/\${pc_sysrootdir\}// /usr/local/share/pkgconfig/xcb-proto.pc > /usr/local/lib/pkgconfig/xcb-proto.pc
@@ -131,13 +129,13 @@ untar pillow-depends-main.zip
 
 if [[ -n "$IS_MACOS" ]]; then
   # webp, libtiff, libxcb cause a conflict with building webp, libtiff, libxcb
-  # libxdmcp causes an issue on macOS < 11
+  # libxau and libxdmcp cause an issue on macOS < 11
   # if php is installed, brew tries to reinstall these after installing openblas
   # remove cairo to fix building harfbuzz on arm64
   # remove lcms2 and libpng to fix building openjpeg on arm64
   # remove zstd to avoid inclusion on x86_64
   # curl from brew requires zstd, use system curl
-  brew remove --ignore-dependencies webp libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript zstd
+  brew remove --ignore-dependencies webp libpng libtiff libxcb libxau libxdmcp curl php cairo lcms2 ghostscript zstd
 
   brew install pkg-config
 fi

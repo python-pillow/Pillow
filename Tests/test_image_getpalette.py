@@ -5,8 +5,8 @@ from PIL import Image
 from .helper import hopper
 
 
-def test_palette():
-    def palette(mode):
+def test_palette() -> None:
+    def palette(mode: str) -> list[int] | None:
         p = hopper(mode).getpalette()
         if p:
             return p[:10]
@@ -23,7 +23,7 @@ def test_palette():
     assert palette("YCbCr") is None
 
 
-def test_palette_rawmode():
+def test_palette_rawmode() -> None:
     im = Image.new("P", (1, 1))
     im.putpalette((1, 2, 3))
 

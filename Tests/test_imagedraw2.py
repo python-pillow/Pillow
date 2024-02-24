@@ -5,6 +5,7 @@ import os.path
 import pytest
 
 from PIL import Image, ImageDraw, ImageDraw2, features
+from PIL._typing import Coords
 
 from .helper import (
     assert_image_equal,
@@ -43,7 +44,7 @@ POINTS = (
 FONT_PATH = "Tests/fonts/FreeMono.ttf"
 
 
-def test_sanity():
+def test_sanity() -> None:
     im = hopper("RGB").copy()
 
     draw = ImageDraw2.Draw(im)
@@ -56,7 +57,7 @@ def test_sanity():
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse(bbox):
+def test_ellipse(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -70,7 +71,7 @@ def test_ellipse(bbox):
     assert_image_similar_tofile(im, "Tests/images/imagedraw_ellipse_RGB.png", 1)
 
 
-def test_ellipse_edge():
+def test_ellipse_edge() -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -84,7 +85,7 @@ def test_ellipse_edge():
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_line(points):
+def test_line(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -98,7 +99,7 @@ def test_line(points):
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_line_pen_as_brush(points):
+def test_line_pen_as_brush(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -114,7 +115,7 @@ def test_line_pen_as_brush(points):
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_polygon(points):
+def test_polygon(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -129,7 +130,7 @@ def test_polygon(points):
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle(bbox):
+def test_rectangle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -143,7 +144,7 @@ def test_rectangle(bbox):
     assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle.png")
 
 
-def test_big_rectangle():
+def test_big_rectangle() -> None:
     # Test drawing a rectangle bigger than the image
     # Arrange
     im = Image.new("RGB", (W, H))
@@ -160,7 +161,7 @@ def test_big_rectangle():
 
 
 @skip_unless_feature("freetype2")
-def test_text():
+def test_text() -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -175,7 +176,7 @@ def test_text():
 
 
 @skip_unless_feature("freetype2")
-def test_textbbox():
+def test_textbbox() -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -190,7 +191,7 @@ def test_textbbox():
 
 
 @skip_unless_feature("freetype2")
-def test_textsize_empty_string():
+def test_textsize_empty_string() -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -206,7 +207,7 @@ def test_textsize_empty_string():
 
 
 @skip_unless_feature("freetype2")
-def test_flush():
+def test_flush() -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)

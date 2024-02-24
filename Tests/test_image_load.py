@@ -10,14 +10,14 @@ from PIL import Image
 from .helper import hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     im = hopper()
     pix = im.load()
 
     assert pix[0, 0] == (20, 20, 70)
 
 
-def test_close():
+def test_close() -> None:
     im = Image.open("Tests/images/hopper.gif")
     im.close()
     with pytest.raises(ValueError):
@@ -26,7 +26,7 @@ def test_close():
         im.getpixel((0, 0))
 
 
-def test_close_after_load(caplog):
+def test_close_after_load(caplog: pytest.LogCaptureFixture) -> None:
     im = Image.open("Tests/images/hopper.gif")
     im.load()
     with caplog.at_level(logging.DEBUG):
@@ -34,7 +34,7 @@ def test_close_after_load(caplog):
     assert len(caplog.records) == 0
 
 
-def test_contextmanager():
+def test_contextmanager() -> None:
     fn = None
     with Image.open("Tests/images/hopper.gif") as im:
         fn = im.fp.fileno()
@@ -44,7 +44,7 @@ def test_contextmanager():
         os.fstat(fn)
 
 
-def test_contextmanager_non_exclusive_fp():
+def test_contextmanager_non_exclusive_fp() -> None:
     with open("Tests/images/hopper.gif", "rb") as fp:
         with Image.open(fp):
             pass

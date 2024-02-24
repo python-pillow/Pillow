@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import io
 
+import pytest
 
-def pytest_report_header(config):
+
+def pytest_report_header(config: pytest.Config) -> str:
     try:
         from PIL import features
 
@@ -14,7 +16,7 @@ def pytest_report_header(config):
         return f"pytest_report_header failed: {e}"
 
 
-def pytest_configure(config):
+def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line(
         "markers",
         "pil_noop_mark: A conditional mark where nothing special happens",

@@ -1,7 +1,9 @@
 """Test DdsImagePlugin"""
+
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -46,7 +48,7 @@ TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
         TEST_FILE_DX10_BC1_TYPELESS,
     ),
 )
-def test_sanity_dxt1_bc1(image_path):
+def test_sanity_dxt1_bc1(image_path: str) -> None:
     """Check DXT1 and BC1 images can be opened"""
     with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
         target = target.convert("RGBA")
@@ -60,7 +62,7 @@ def test_sanity_dxt1_bc1(image_path):
         assert_image_equal(im, target)
 
 
-def test_sanity_dxt3():
+def test_sanity_dxt3() -> None:
     """Check DXT3 images can be opened"""
 
     with Image.open(TEST_FILE_DXT3) as im:
@@ -73,7 +75,7 @@ def test_sanity_dxt3():
         assert_image_equal_tofile(im, TEST_FILE_DXT3.replace(".dds", ".png"))
 
 
-def test_sanity_dxt5():
+def test_sanity_dxt5() -> None:
     """Check DXT5 images can be opened"""
 
     with Image.open(TEST_FILE_DXT5) as im:
@@ -94,7 +96,7 @@ def test_sanity_dxt5():
         TEST_FILE_BC4U,
     ),
 )
-def test_sanity_ati1_bc4u(image_path):
+def test_sanity_ati1_bc4u(image_path: str) -> None:
     """Check ATI1 and BC4U images can be opened"""
 
     with Image.open(image_path) as im:
@@ -115,7 +117,7 @@ def test_sanity_ati1_bc4u(image_path):
         TEST_FILE_DX10_BC4_TYPELESS,
     ),
 )
-def test_dx10_bc4(image_path):
+def test_dx10_bc4(image_path: str) -> None:
     """Check DX10 BC4 images can be opened"""
 
     with Image.open(image_path) as im:
@@ -136,7 +138,7 @@ def test_dx10_bc4(image_path):
         TEST_FILE_BC5U,
     ),
 )
-def test_sanity_ati2_bc5u(image_path):
+def test_sanity_ati2_bc5u(image_path: str) -> None:
     """Check ATI2 and BC5U images can be opened"""
 
     with Image.open(image_path) as im:
@@ -160,7 +162,7 @@ def test_sanity_ati2_bc5u(image_path):
         (TEST_FILE_BC5S, TEST_FILE_BC5S),
     ),
 )
-def test_dx10_bc5(image_path, expected_path):
+def test_dx10_bc5(image_path: str, expected_path: str) -> None:
     """Check DX10 BC5 images can be opened"""
 
     with Image.open(image_path) as im:
@@ -174,7 +176,7 @@ def test_dx10_bc5(image_path, expected_path):
 
 
 @pytest.mark.parametrize("image_path", (TEST_FILE_BC6H, TEST_FILE_BC6HS))
-def test_dx10_bc6h(image_path):
+def test_dx10_bc6h(image_path: str) -> None:
     """Check DX10 BC6H/BC6HS images can be opened"""
 
     with Image.open(image_path) as im:
@@ -187,7 +189,7 @@ def test_dx10_bc6h(image_path):
         assert_image_equal_tofile(im, image_path.replace(".dds", ".png"))
 
 
-def test_dx10_bc7():
+def test_dx10_bc7() -> None:
     """Check DX10 images can be opened"""
 
     with Image.open(TEST_FILE_DX10_BC7) as im:
@@ -200,7 +202,7 @@ def test_dx10_bc7():
         assert_image_equal_tofile(im, TEST_FILE_DX10_BC7.replace(".dds", ".png"))
 
 
-def test_dx10_bc7_unorm_srgb():
+def test_dx10_bc7_unorm_srgb() -> None:
     """Check DX10 unsigned normalized integer images can be opened"""
 
     with Image.open(TEST_FILE_DX10_BC7_UNORM_SRGB) as im:
@@ -216,7 +218,7 @@ def test_dx10_bc7_unorm_srgb():
         )
 
 
-def test_dx10_r8g8b8a8():
+def test_dx10_r8g8b8a8() -> None:
     """Check DX10 images can be opened"""
 
     with Image.open(TEST_FILE_DX10_R8G8B8A8) as im:
@@ -229,7 +231,7 @@ def test_dx10_r8g8b8a8():
         assert_image_equal_tofile(im, TEST_FILE_DX10_R8G8B8A8.replace(".dds", ".png"))
 
 
-def test_dx10_r8g8b8a8_unorm_srgb():
+def test_dx10_r8g8b8a8_unorm_srgb() -> None:
     """Check DX10 unsigned normalized integer images can be opened"""
 
     with Image.open(TEST_FILE_DX10_R8G8B8A8_UNORM_SRGB) as im:
@@ -255,7 +257,7 @@ def test_dx10_r8g8b8a8_unorm_srgb():
         ("RGBA", (800, 600), TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA),
     ],
 )
-def test_uncompressed(mode, size, test_file):
+def test_uncompressed(mode: str, size: tuple[int, int], test_file: str) -> None:
     """Check uncompressed images can be opened"""
 
     with Image.open(test_file) as im:
@@ -266,7 +268,7 @@ def test_uncompressed(mode, size, test_file):
         assert_image_equal_tofile(im, test_file.replace(".dds", ".png"))
 
 
-def test__accept_true():
+def test__accept_true() -> None:
     """Check valid prefix"""
     # Arrange
     prefix = b"DDS etc"
@@ -278,7 +280,7 @@ def test__accept_true():
     assert output
 
 
-def test__accept_false():
+def test__accept_false() -> None:
     """Check invalid prefix"""
     # Arrange
     prefix = b"something invalid"
@@ -290,19 +292,19 @@ def test__accept_false():
     assert not output
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
     with pytest.raises(SyntaxError):
         DdsImagePlugin.DdsImageFile(invalid_file)
 
 
-def test_short_header():
+def test_short_header() -> None:
     """Check a short header"""
     with open(TEST_FILE_DXT5, "rb") as f:
         img_file = f.read()
 
-    def short_header():
+    def short_header() -> None:
         with Image.open(BytesIO(img_file[:119])):
             pass  # pragma: no cover
 
@@ -310,13 +312,13 @@ def test_short_header():
         short_header()
 
 
-def test_short_file():
+def test_short_file() -> None:
     """Check that the appropriate error is thrown for a short file"""
 
     with open(TEST_FILE_DXT5, "rb") as f:
         img_file = f.read()
 
-    def short_file():
+    def short_file() -> None:
         with Image.open(BytesIO(img_file[:-100])) as im:
             im.load()
 
@@ -324,7 +326,7 @@ def test_short_file():
         short_file()
 
 
-def test_dxt5_colorblock_alpha_issue_4142():
+def test_dxt5_colorblock_alpha_issue_4142() -> None:
     """Check that colorblocks are decoded correctly in DXT5"""
 
     with Image.open("Tests/images/dxt5-colorblock-alpha-issue-4142.dds") as im:
@@ -339,12 +341,12 @@ def test_dxt5_colorblock_alpha_issue_4142():
         assert px[2] != 0
 
 
-def test_palette():
+def test_palette() -> None:
     with Image.open("Tests/images/palette.dds") as im:
         assert_image_equal_tofile(im, "Tests/images/transparent.gif")
 
 
-def test_unsupported_bitcount():
+def test_unsupported_bitcount() -> None:
     with pytest.raises(OSError):
         with Image.open("Tests/images/unsupported_bitcount.dds"):
             pass
@@ -357,13 +359,13 @@ def test_unsupported_bitcount():
         "Tests/images/unimplemented_pfflags.dds",
     ),
 )
-def test_not_implemented(test_file):
+def test_not_implemented(test_file: str) -> None:
     with pytest.raises(NotImplementedError):
         with Image.open(test_file):
             pass
 
 
-def test_save_unsupported_mode(tmp_path):
+def test_save_unsupported_mode(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.dds")
     im = hopper("HSV")
     with pytest.raises(OSError):
@@ -379,7 +381,7 @@ def test_save_unsupported_mode(tmp_path):
         ("RGBA", "Tests/images/pil123rgba.png"),
     ],
 )
-def test_save(mode, test_file, tmp_path):
+def test_save(mode: str, test_file: str, tmp_path: Path) -> None:
     out = str(tmp_path / "temp.dds")
     with Image.open(test_file) as im:
         assert im.mode == mode

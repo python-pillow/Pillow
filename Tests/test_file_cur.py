@@ -7,7 +7,7 @@ import pytest
 from PIL import CurImagePlugin, Image
 
 
-def test_deerstalker():
+def test_deerstalker() -> None:
     with Image.open("Tests/images/cur/deerstalker.cur") as im:
         assert im.size == (32, 32)
         assert im.info["hotspots"] == [(0, 0)]
@@ -53,7 +53,7 @@ def test_win98_arrow():
         assert im.getpixel((14, 19)) == (255, 255, 255, 255)
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/cur/posy_link.png"
 
     with pytest.raises(SyntaxError):
