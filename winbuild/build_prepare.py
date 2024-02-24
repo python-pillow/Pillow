@@ -224,9 +224,9 @@ DEPS = {
         "libs": [r"libtiff\*.lib"],
     },
     "libpng": {
-        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.39/lpng1639.zip/download",
-        "filename": "lpng1639.zip",
-        "dir": "lpng1639",
+        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.43/lpng1643.zip/download",
+        "filename": "lpng1643.zip",
+        "dir": "lpng1643",
         "license": "LICENSE",
         "build": [
             *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
