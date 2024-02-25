@@ -46,8 +46,8 @@ docs = [
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinx-removed-in",
-  "sphinxext-opengraph",
   "sphinx-reredirects",
+  "sphinxext-opengraph",
 ]
 fpx = [
   "olefile",
