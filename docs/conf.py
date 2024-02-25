@@ -36,6 +36,7 @@ extensions = [
     "sphinx_inline_tabs",
     "sphinx_removed_in",
     "sphinxext.opengraph",
+    "sphinx_reredirects",
 ]
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
@@ -350,3 +351,8 @@ ogp_image = (
     "pillow-logo-dark-text-1280x640.png"
 )
 ogp_image_alt = "Pillow"
+
+# sphinx-reredirects
+redirects = {
+     "installation.html": "installation/index.html"
+}
