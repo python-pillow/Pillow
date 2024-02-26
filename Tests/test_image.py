@@ -686,7 +686,7 @@ class TestImage:
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
 
     @pytest.mark.parametrize(
-        ("mode", "color"),
+        "mode, color",
         (
             ("RGB", "#DDEEFF"),
             ("RGB", (221, 238, 255)),
