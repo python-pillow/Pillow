@@ -693,7 +693,7 @@ class TestImage:
             ("RGBA", (221, 238, 255, 255)),
         ),
     )
-    def test_p_from_rgb_rgba(self, mode, color) -> None:
+    def test_p_from_rgb_rgba(self, mode: str, color: str | tuple[int, ...]) -> None:
         im = Image.new("P", (100, 100), color)
         expected = Image.new(mode, (100, 100), color)
         assert_image_equal(im.convert(mode), expected)
