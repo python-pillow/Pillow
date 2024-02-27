@@ -1,3 +1,5 @@
+.. _building-from-source:
+
 Building From Source
 --------------------
 

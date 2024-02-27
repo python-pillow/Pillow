@@ -353,4 +353,4 @@ ogp_image = (
 ogp_image_alt = "Pillow"
 
 # sphinx-reredirects
-redirects = {"installation.html": "installation/index.html"}
+# redirects = {"installation.html": "installation/index.html"}

@@ -1,3 +1,5 @@
+.. _python-support:
+
 Python Support
 --------------
 

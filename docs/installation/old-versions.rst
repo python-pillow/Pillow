@@ -1,3 +1,5 @@
+.. _old-versions:
+
 Old Versions
 ------------
 

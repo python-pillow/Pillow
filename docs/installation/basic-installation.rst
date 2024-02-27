@@ -1,3 +1,5 @@
+.. _basic-installation:
+
 Basic Installation
 ------------------
 

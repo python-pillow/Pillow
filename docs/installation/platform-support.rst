@@ -1,3 +1,5 @@
+.. _platform-support:
+
 Platform Support
 ----------------
 
