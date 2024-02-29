@@ -109,30 +109,33 @@ ARCHITECTURES = {
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
-BROTLI_VERSION = "1.1.0"
-FREETYPE_VERSION = "2.13.2"
-FRIBIDI_VERSION = "1.0.13"
-HARFBUZZ_VERSION = "8.3.0"
-JPEGTURBO_VERSION = "3.0.1"
-LCMS2_VERSION = "2.16"
-LIBPNG_VERSION = "1.6.39"
-LIBPNG_DOTLESS = LIBPNG_VERSION.replace(".", "")
-LIBPNG_XY = "".join(LIBPNG_VERSION.split(".")[:2])
-LIBWEBP_VERSION = "1.3.2"
-LIBXCB_VERSION = "1.16"
-OPENJPEG_VERSION = "2.5.2"
-TIFF_VERSION = "4.6.0"
-XZ_VERSION = "5.4.5"
-ZLIB_VERSION = "1.3"
-ZLIB_DOTLESS = ZLIB_VERSION.replace(".", "")
+V = {
+    "BROTLI": "1.1.0",
+    "FREETYPE": "2.13.2",
+    "FRIBIDI": "1.0.13",
+    "HARFBUZZ": "8.3.0",
+    "JPEGTURBO": "3.0.1",
+    "LCMS2": "2.16",
+    "LIBPNG": "1.6.39",
+    "LIBWEBP": "1.3.2",
+    "LIBXCB": "1.16",
+    "OPENJPEG": "2.5.2",
+    "TIFF": "4.6.0",
+    "XZ": "5.4.5",
+    "ZLIB": "1.3",
+}
+V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
+V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
+V["ZLIB_DOTLESS"] = V["ZLIB"].replace(".", "")
+
 
 # dependencies, listed in order of compilation
 DEPS = {
     "libjpeg": {
-        "url": SF_PROJECTS + f"/libjpeg-turbo/files/{JPEGTURBO_VERSION}/"
-        f"libjpeg-turbo-{JPEGTURBO_VERSION}.tar.gz/download",
-        "filename": f"libjpeg-turbo-{JPEGTURBO_VERSION}.tar.gz",
-        "dir": f"libjpeg-turbo-{JPEGTURBO_VERSION}",
+        "url": SF_PROJECTS + f"/libjpeg-turbo/files/{V['JPEGTURBO']}/"
+        f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz/download",
+        "filename": f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
+        "dir": f"libjpeg-turbo-{V['JPEGTURBO']}",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
@@ -160,9 +163,9 @@ DEPS = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": f"https://zlib.net/zlib{ZLIB_DOTLESS}.zip",
-        "filename": f"zlib{ZLIB_DOTLESS}.zip",
-        "dir": f"zlib-{ZLIB_VERSION}",
+        "url": f"https://zlib.net/zlib{V['ZLIB_DOTLESS']}.zip",
+        "filename": f"zlib{V['ZLIB_DOTLESS']}.zip",
+        "dir": f"zlib-{V['ZLIB']}",
         "license": "README",
         "license_pattern": "Copyright notice:\n\n(.+)$",
         "build": [
@@ -174,9 +177,9 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + f"/lzmautils/files/xz-{XZ_VERSION}.tar.gz/download",
-        "filename": f"xz-{XZ_VERSION}.tar.gz",
-        "dir": f"xz-{XZ_VERSION}",
+        "url": SF_PROJECTS + f"/lzmautils/files/xz-{V['XZ']}.tar.gz/download",
+        "filename": f"xz-{V['XZ']}.tar.gz",
+        "dir": f"xz-{V['XZ']}",
         "license": "COPYING",
         "build": [
             *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -187,9 +190,9 @@ DEPS = {
         "libs": [r"liblzma.lib"],
     },
     "libwebp": {
-        "url": f"http://downloads.webmproject.org/releases/webp/libwebp-{LIBWEBP_VERSION}.tar.gz",
-        "filename": f"libwebp-{LIBWEBP_VERSION}.tar.gz",
-        "dir": f"libwebp-{LIBWEBP_VERSION}",
+        "url": f"http://downloads.webmproject.org/releases/webp/libwebp-{V['LIBWEBP']}.tar.gz",
+        "filename": f"libwebp-{V['LIBWEBP']}.tar.gz",
+        "dir": f"libwebp-{V['LIBWEBP']}",
         "license": "COPYING",
         "patch": {
             r"src\enc\picture_csp_enc.c": {
@@ -209,9 +212,9 @@ DEPS = {
         "libs": [r"libsharpyuv.lib", r"libwebp*.lib"],
     },
     "libtiff": {
-        "url": f"https://download.osgeo.org/libtiff/tiff-{TIFF_VERSION}.tar.gz",
-        "filename": f"tiff-{TIFF_VERSION}.tar.gz",
-        "dir": f"tiff-{TIFF_VERSION}",
+        "url": f"https://download.osgeo.org/libtiff/tiff-{V['TIFF']}.tar.gz",
+        "filename": f"tiff-{V['TIFF']}.tar.gz",
+        "dir": f"tiff-{V['TIFF']}",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
@@ -241,22 +244,24 @@ DEPS = {
         "libs": [r"libtiff\*.lib"],
     },
     "libpng": {
-        "url": SF_PROJECTS + f"/libpng/files/libpng{LIBPNG_XY}/{LIBPNG_VERSION}/"
-        f"lpng{LIBPNG_DOTLESS}.zip/download",
-        "filename": f"lpng{LIBPNG_DOTLESS}.zip",
-        "dir": f"lpng{LIBPNG_DOTLESS}",
+        "url": SF_PROJECTS + f"/libpng/files/libpng{V['LIBPNG_XY']}/{V['LIBPNG']}/"
+        f"lpng{V['LIBPNG_DOTLESS']}.zip/download",
+        "filename": f"lpng{V['LIBPNG_DOTLESS']}.zip",
+        "dir": f"lpng{V['LIBPNG_DOTLESS']}",
         "license": "LICENSE",
         "build": [
             *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
-            cmd_copy(f"libpng{LIBPNG_XY}_static.lib", f"libpng{LIBPNG_XY}.lib"),
+            cmd_copy(
+                f"libpng{V['LIBPNG_XY']}_static.lib", f"libpng{V['LIBPNG_XY']}.lib"
+            ),
         ],
         "headers": [r"png*.h"],
-        "libs": [rf"libpng{LIBPNG_XY}.lib"],
+        "libs": [rf"libpng{V['LIBPNG_XY']}.lib"],
     },
     "brotli": {
-        "url": f"https://github.com/google/brotli/archive/refs/tags/v{BROTLI_VERSION}.tar.gz",
-        "filename": f"brotli-{BROTLI_VERSION}.tar.gz",
-        "dir": f"brotli-{BROTLI_VERSION}",
+        "url": f"https://github.com/google/brotli/archive/refs/tags/v{V['BROTLI']}.tar.gz",
+        "filename": f"brotli-{V['BROTLI']}.tar.gz",
+        "dir": f"brotli-{V['BROTLI']}",
         "license": "LICENSE",
         "build": [
             *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -265,9 +270,9 @@ DEPS = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": f"https://download.savannah.gnu.org/releases/freetype/freetype-{FREETYPE_VERSION}.tar.gz",
-        "filename": f"freetype-{FREETYPE_VERSION}.tar.gz",
-        "dir": f"freetype-{FREETYPE_VERSION}",
+        "url": f"https://download.savannah.gnu.org/releases/freetype/freetype-{V['FREETYPE']}.tar.gz",
+        "filename": f"freetype-{V['FREETYPE']}.tar.gz",
+        "dir": f"freetype-{V['FREETYPE']}",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -280,7 +285,7 @@ DEPS = {
                 "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_SYSTEM_ZLIB;FT_CONFIG_OPTION_USE_PNG;FT_CONFIG_OPTION_USE_HARFBUZZ;FT_CONFIG_OPTION_USE_BROTLI</UserDefines>",  # noqa: E501
                 "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src;{inc_dir}</UserIncludeDirectories>",  # noqa: E501
                 "<UserLibraryDirectories></UserLibraryDirectories>": "<UserLibraryDirectories>{lib_dir}</UserLibraryDirectories>",  # noqa: E501
-                "<UserDependencies></UserDependencies>": f"<UserDependencies>zlib.lib;libpng{LIBPNG_XY}.lib;brotlicommon.lib;brotlidec.lib</UserDependencies>",  # noqa: E501
+                "<UserDependencies></UserDependencies>": f"<UserDependencies>zlib.lib;libpng{V['LIBPNG_XY']}.lib;brotlicommon.lib;brotlidec.lib</UserDependencies>",  # noqa: E501
             },
             r"src/autofit/afshaper.c": {
                 # link against harfbuzz.lib
@@ -301,9 +306,9 @@ DEPS = {
     },
     "lcms2": {
         "url": SF_PROJECTS
-        + f"/lcms/files/lcms/{LCMS2_VERSION}/lcms2-{LCMS2_VERSION}.tar.gz/download",
-        "filename": f"lcms2-{LCMS2_VERSION}.tar.gz",
-        "dir": f"lcms2-{LCMS2_VERSION}",
+        + f"/lcms/files/lcms/{V['LCMS2']}/lcms2-{V['LCMS2']}.tar.gz/download",
+        "filename": f"lcms2-{V['LCMS2']}.tar.gz",
+        "dir": f"lcms2-{V['LCMS2']}",
         "license": "LICENSE",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
@@ -327,18 +332,16 @@ DEPS = {
         "libs": [r"Lib\MS\*.lib"],
     },
     "openjpeg": {
-        "url": f"https://github.com/uclouvain/openjpeg/archive/v{OPENJPEG_VERSION}.tar.gz",
-        "filename": f"openjpeg-{OPENJPEG_VERSION}.tar.gz",
-        "dir": f"openjpeg-{OPENJPEG_VERSION}",
+        "url": f"https://github.com/uclouvain/openjpeg/archive/v{V['OPENJPEG']}.tar.gz",
+        "filename": f"openjpeg-{V['OPENJPEG']}.tar.gz",
+        "dir": f"openjpeg-{V['OPENJPEG']}",
         "license": "LICENSE",
         "build": [
             *cmds_cmake(
                 "openjp2", "-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF"
             ),
-            cmd_mkdir(rf"{{inc_dir}}\openjpeg-{OPENJPEG_VERSION}"),
-            cmd_copy(
-                r"src\lib\openjp2\*.h", rf"{{inc_dir}}\openjpeg-{OPENJPEG_VERSION}"
-            ),
+            cmd_mkdir(rf"{{inc_dir}}\openjpeg-{V['OPENJPEG']}"),
+            cmd_copy(r"src\lib\openjp2\*.h", rf"{{inc_dir}}\openjpeg-{V['OPENJPEG']}"),
         ],
         "libs": [r"bin\*.lib"],
     },
@@ -364,9 +367,9 @@ DEPS = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": f"https://github.com/harfbuzz/harfbuzz/archive/{HARFBUZZ_VERSION}.zip",
-        "filename": f"harfbuzz-{HARFBUZZ_VERSION}.zip",
-        "dir": f"harfbuzz-{HARFBUZZ_VERSION}",
+        "url": f"https://github.com/harfbuzz/harfbuzz/archive/{V['HARFBUZZ']}.zip",
+        "filename": f"harfbuzz-{V['HARFBUZZ']}.zip",
+        "dir": f"harfbuzz-{V['HARFBUZZ']}",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -379,12 +382,12 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": f"https://github.com/fribidi/fribidi/archive/v{FRIBIDI_VERSION}.zip",
-        "filename": f"fribidi-{FRIBIDI_VERSION}.zip",
-        "dir": f"fribidi-{FRIBIDI_VERSION}",
+        "url": f"https://github.com/fribidi/fribidi/archive/v{V['FRIBIDI']}.zip",
+        "filename": f"fribidi-{V['FRIBIDI']}.zip",
+        "dir": f"fribidi-{V['FRIBIDI']}",
         "license": "COPYING",
         "build": [
-            cmd_copy(r"COPYING", rf"{{bin_dir}}\fribidi-{FRIBIDI_VERSION}-COPYING"),
+            cmd_copy(r"COPYING", rf"{{bin_dir}}\fribidi-{V['FRIBIDI']}-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             # generated tab.i files cannot be cross-compiled
             " ^&^& ".join(
