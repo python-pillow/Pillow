@@ -504,3 +504,27 @@ PIL.OleFileIO
 the upstream :pypi:`olefile` Python package, and replaced with an :py:exc:`ImportError` in 5.0.0
 (2018-01). The deprecated file has now been removed from Pillow. If needed, install from
 PyPI (eg. ``python3 -m pip install olefile``).
+
+import _imaging
+~~~~~~~~~~~~~~~
+
+.. versionremoved:: 2.1.0
+
+Pillow >= 2.1.0 no longer supports ``import _imaging``.
+Please use ``from PIL.Image import core as _imaging`` instead.
+
+Pillow and PIL
+~~~~~~~~~~~~~~
+
+.. versionremoved:: 1.0.0
+
+Pillow and PIL cannot co-exist in the same environment.
+Before installing Pillow, please uninstall PIL.
+
+import Image
+~~~~~~~~~~~~
+
+.. versionremoved:: 1.0.0
+
+Pillow >= 1.0 no longer supports ``import Image``.
+Please use ``from PIL import Image`` instead.
