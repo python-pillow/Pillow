@@ -19,14 +19,14 @@ from PIL.PdfParser import (
 )
 
 
-def test_text_encode_decode():
+def test_text_encode_decode() -> None:
     assert encode_text("abc") == b"\xFE\xFF\x00a\x00b\x00c"
     assert decode_text(b"\xFE\xFF\x00a\x00b\x00c") == "abc"
     assert decode_text(b"abc") == "abc"
     assert decode_text(b"\x1B a \x1C") == "\u02D9 a \u02DD"
 
 
-def test_indirect_refs():
+def test_indirect_refs() -> None:
     assert IndirectReference(1, 2) == IndirectReference(1, 2)
     assert IndirectReference(1, 2) != IndirectReference(1, 3)
     assert IndirectReference(1, 2) != IndirectObjectDef(1, 2)
@@ -37,7 +37,7 @@ def test_indirect_refs():
     assert IndirectObjectDef(1, 2) != (1, 2)
 
 
-def test_parsing():
+def test_parsing() -> None:
     assert PdfParser.interpret_name(b"Name#23Hash") == b"Name#Hash"
     assert PdfParser.interpret_name(b"Name#23Hash", as_text=True) == "Name#Hash"
     assert PdfParser.get_value(b"1 2 R ", 0) == (IndirectReference(1, 2), 5)
@@ -95,7 +95,7 @@ def test_parsing():
             assert time.strftime("%Y%m%d%H%M%S", getattr(d, name)) == value
 
 
-def test_pdf_repr():
+def test_pdf_repr() -> None:
     assert bytes(IndirectReference(1, 2)) == b"1 2 R"
     assert bytes(IndirectObjectDef(*IndirectReference(1, 2))) == b"1 2 obj"
     assert bytes(PdfName(b"Name#Hash")) == b"/Name#23Hash"
@@ -121,7 +121,7 @@ def test_pdf_repr():
     assert pdf_repr(PdfBinary(b"\x90\x1F\xA0")) == b"<901FA0>"
 
 
-def test_duplicate_xref_entry():
+def test_duplicate_xref_entry() -> None:
     pdf = PdfParser("Tests/images/duplicate_xref_entry.pdf")
     assert pdf.xref_table.existing_entries[6][0] == 1197
     pdf.close()

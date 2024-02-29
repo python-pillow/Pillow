@@ -12,7 +12,7 @@ FONT_PATH = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
 pytestmark = skip_unless_feature("raqm")
 
 
-def test_english():
+def test_english() -> None:
     # smoke test, this should not fail
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     im = Image.new(mode="RGB", size=(300, 100))
@@ -20,7 +20,7 @@ def test_english():
     draw.text((0, 0), "TEST", font=ttf, fill=500, direction="ltr")
 
 
-def test_complex_text():
+def test_complex_text() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -31,7 +31,7 @@ def test_complex_text():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_y_offset():
+def test_y_offset() -> None:
     ttf = ImageFont.truetype("Tests/fonts/NotoNastaliqUrdu-Regular.ttf", FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -42,7 +42,7 @@ def test_y_offset():
     assert_image_similar_tofile(im, target, 1.7)
 
 
-def test_complex_unicode_text():
+def test_complex_unicode_text() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -62,7 +62,7 @@ def test_complex_unicode_text():
     assert_image_similar_tofile(im, target, 2.33)
 
 
-def test_text_direction_rtl():
+def test_text_direction_rtl() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -73,7 +73,7 @@ def test_text_direction_rtl():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_text_direction_ltr():
+def test_text_direction_ltr() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -84,7 +84,7 @@ def test_text_direction_ltr():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_text_direction_rtl2():
+def test_text_direction_rtl2() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -95,7 +95,7 @@ def test_text_direction_rtl2():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_text_direction_ttb():
+def test_text_direction_ttb() -> None:
     ttf = ImageFont.truetype("Tests/fonts/NotoSansJP-Regular.otf", FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(100, 300))
@@ -110,7 +110,7 @@ def test_text_direction_ttb():
     assert_image_similar_tofile(im, target, 2.8)
 
 
-def test_text_direction_ttb_stroke():
+def test_text_direction_ttb_stroke() -> None:
     ttf = ImageFont.truetype("Tests/fonts/NotoSansJP-Regular.otf", 50)
 
     im = Image.new(mode="RGB", size=(100, 300))
@@ -133,7 +133,7 @@ def test_text_direction_ttb_stroke():
     assert_image_similar_tofile(im, target, 19.4)
 
 
-def test_ligature_features():
+def test_ligature_features() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -146,7 +146,7 @@ def test_ligature_features():
     assert liga_bbox == (0, 4, 13, 19)
 
 
-def test_kerning_features():
+def test_kerning_features() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -157,7 +157,7 @@ def test_kerning_features():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_arabictext_features():
+def test_arabictext_features() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -174,7 +174,7 @@ def test_arabictext_features():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_x_max_and_y_offset():
+def test_x_max_and_y_offset() -> None:
     ttf = ImageFont.truetype("Tests/fonts/ArefRuqaa-Regular.ttf", 40)
 
     im = Image.new(mode="RGB", size=(50, 100))
@@ -185,7 +185,7 @@ def test_x_max_and_y_offset():
     assert_image_similar_tofile(im, target, 0.5)
 
 
-def test_language():
+def test_language() -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     im = Image.new(mode="RGB", size=(300, 100))
@@ -208,7 +208,9 @@ def test_language():
     ),
     ids=("None", "ltr", "rtl2", "rtl", "ttb"),
 )
-def test_getlength(mode, text, direction, expected):
+def test_getlength(
+    mode: str, text: str, direction: str | None, expected: float
+) -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     im = Image.new(mode, (1, 1), 0)
     d = ImageDraw.Draw(im)
@@ -230,7 +232,7 @@ def test_getlength(mode, text, direction, expected):
     ("i" + ("\u030C" * 15) + "i", "i" + "\u032C" * 15 + "i", "\u035Cii", "i\u0305i"),
     ids=("caron-above", "caron-below", "double-breve", "overline"),
 )
-def test_getlength_combine(mode, direction, text):
+def test_getlength_combine(mode: str, direction: str, text: str) -> None:
     if text == "i\u0305i" and direction == "ttb":
         pytest.skip("fails with this font")
 
@@ -250,7 +252,7 @@ def test_getlength_combine(mode, direction, text):
 
 
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
-def test_anchor_ttb(anchor):
+def test_anchor_ttb(anchor: str) -> None:
     text = "f"
     path = f"Tests/images/test_anchor_ttb_{text}_{anchor}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 120)
@@ -306,7 +308,9 @@ combine_tests = (
 @pytest.mark.parametrize(
     "name, text, anchor, dir, epsilon", combine_tests, ids=[r[0] for r in combine_tests]
 )
-def test_combine(name, text, dir, anchor, epsilon):
+def test_combine(
+    name: str, text: str, dir: str | None, anchor: str | None, epsilon: float
+) -> None:
     path = f"Tests/images/test_combine_{name}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
 
@@ -337,7 +341,7 @@ def test_combine(name, text, dir, anchor, epsilon):
         ("rm", "right"),  # pass with getsize
     ),
 )
-def test_combine_multiline(anchor, align):
+def test_combine_multiline(anchor: str, align: str) -> None:
     # test that multiline text uses getlength, not getsize or getbbox
 
     path = f"Tests/images/test_combine_multiline_{anchor}_{align}.png"
@@ -355,7 +359,7 @@ def test_combine_multiline(anchor, align):
     assert_image_similar_tofile(im, path, 0.015)
 
 
-def test_anchor_invalid_ttb():
+def test_anchor_invalid_ttb() -> None:
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     im = Image.new("RGB", (100, 100), "white")
     d = ImageDraw.Draw(im)

@@ -86,7 +86,7 @@ Released as needed privately to individual vendors for critical security-related
 
 ## Publicize Release
 
-* [ ] Announce release availability via [Twitter](https://twitter.com/pythonpillow) and [Mastodon](https://fosstodon.org/@pillow) e.g. https://twitter.com/PythonPillow/status/1013789184354603010
+* [ ] Announce release availability via [Mastodon](https://fosstodon.org/@pillow) e.g. https://fosstodon.org/@pillow/110639450470725321
 
 ## Documentation
 

@@ -8,7 +8,7 @@ from .helper import assert_image_equal, hopper
 
 
 @pytest.mark.parametrize("data_type", ("bytes", "memoryview"))
-def test_sanity(data_type):
+def test_sanity(data_type: str) -> None:
     im1 = hopper()
 
     data = im1.tobytes()

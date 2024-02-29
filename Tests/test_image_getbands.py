@@ -3,7 +3,7 @@ from __future__ import annotations
 from PIL import Image
 
 
-def test_getbands():
+def test_getbands() -> None:
     assert Image.new("1", (1, 1)).getbands() == ("1",)
     assert Image.new("L", (1, 1)).getbands() == ("L",)
     assert Image.new("I", (1, 1)).getbands() == ("I",)

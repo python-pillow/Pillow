@@ -124,7 +124,7 @@ def getrgb(color):
 
 
 @lru_cache
-def getcolor(color, mode):
+def getcolor(color, mode: str) -> tuple[int, ...]:
     """
     Same as :py:func:`~PIL.ImageColor.getrgb` for most modes. However, if
     ``mode`` is HSV, converts the RGB value to a HSV value, or if ``mode`` is

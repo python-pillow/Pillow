@@ -3,8 +3,8 @@ from __future__ import annotations
 from .helper import hopper
 
 
-def test_entropy():
-    def entropy(mode):
+def test_entropy() -> None:
+    def entropy(mode: str) -> float:
         return hopper(mode).entropy()
 
     assert round(abs(entropy("1") - 0.9138803254693582), 7) == 0
