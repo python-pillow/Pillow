@@ -456,11 +456,14 @@ def download_dep(url: str, file: str) -> None:
         raise RuntimeError(ex)
 
 
-def extract_dep(url: str, filename: str) -> None:
+def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
     import tarfile
     import zipfile
 
-    file = os.path.join(args.depends_dir, filename)
+    depends_dir = prefs["depends_dir"]
+    sources_dir = prefs["src_dir"]
+
+    file = os.path.join(depends_dir, filename)
     if not os.path.exists(file):
         # First try our mirror
         mirror_url = (
@@ -499,13 +502,15 @@ def extract_dep(url: str, filename: str) -> None:
         raise RuntimeError(msg)
 
 
-def write_script(name: str, lines: list[str]) -> None:
-    name = os.path.join(args.build_dir, name)
+def write_script(
+    name: str, lines: list[str], prefs: dict[str, str], verbose: bool
+) -> None:
+    name = os.path.join(prefs["build_dir"], name)
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
     with open(name, "w", newline="") as f:
         f.write(os.linesep.join(lines))
-    if args.verbose:
+    if verbose:
         for line in lines:
             print("    " + line)
 
@@ -521,7 +526,7 @@ def get_footer(dep: dict) -> list[str]:
     return lines
 
 
-def build_env() -> None:
+def build_env(prefs: dict[str, str], verbose: bool) -> None:
     lines = [
         "if defined DISTUTILS_USE_SDK goto end",
         cmd_set("INCLUDE", "{inc_dir}"),
@@ -534,15 +539,17 @@ def build_env() -> None:
         ":end",
         "@echo on",
     ]
-    write_script("build_env.cmd", lines)
+    write_script("build_env.cmd", lines, prefs, verbose)
 
 
-def build_dep(name: str) -> str:
+def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
     dep = DEPS[name]
     dir = dep["dir"]
     file = f"build_dep_{name}.cmd"
+    license_dir = prefs["license_dir"]
+    sources_dir = prefs["src_dir"]
 
-    extract_dep(dep["url"], dep["filename"])
+    extract_dep(dep["url"], dep["filename"], prefs)
 
     licenses = dep["license"]
     if isinstance(licenses, str):
@@ -583,11 +590,11 @@ def build_dep(name: str) -> str:
         *get_footer(dep),
     ]
 
-    write_script(file, lines)
+    write_script(file, lines, prefs, verbose)
     return file
 
 
-def build_dep_all() -> None:
+def build_dep_all(disabled: list[str], prefs: dict[str, str], verbose: bool) -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
     gha_groups = "GITHUB_ACTIONS" in os.environ
     for dep_name in DEPS:
@@ -595,7 +602,7 @@ def build_dep_all() -> None:
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
             continue
-        script = build_dep(dep_name)
+        script = build_dep(dep_name, prefs, verbose)
         if gha_groups:
             lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
@@ -604,10 +611,10 @@ def build_dep_all() -> None:
             lines.append("@echo ::endgroup::")
     print()
     lines.append("@echo All Pillow dependencies built successfully!")
-    write_script("build_dep_all.cmd", lines)
+    write_script("build_dep_all.cmd", lines, prefs, verbose)
 
 
-if __name__ == "__main__":
+def main() -> None:
     winbuild_dir = os.path.dirname(os.path.realpath(__file__))
     pillow_dir = os.path.realpath(os.path.join(winbuild_dir, ".."))
 
@@ -718,12 +725,13 @@ if __name__ == "__main__":
         "pillow_dir": pillow_dir,
         "winbuild_dir": winbuild_dir,
         # Build paths
+        "bin_dir": bin_dir,
         "build_dir": args.build_dir,
+        "depends_dir": args.depends_dir,
         "inc_dir": inc_dir,
         "lib_dir": lib_dir,
-        "bin_dir": bin_dir,
-        "src_dir": sources_dir,
         "license_dir": license_dir,
+        "src_dir": sources_dir,
         # Compilers / Tools
         **msvs,
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
@@ -736,6 +744,10 @@ if __name__ == "__main__":
 
     print()
 
-    write_script(".gitignore", ["*"])
-    build_env()
-    build_dep_all()
+    write_script(".gitignore", ["*"], prefs, args.verbose)
+    build_env(prefs, args.verbose)
+    build_dep_all(disabled, prefs, args.verbose)
+
+
+if __name__ == "__main__":
+    main()
