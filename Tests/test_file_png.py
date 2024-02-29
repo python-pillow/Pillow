@@ -6,6 +6,7 @@ import warnings
 import zlib
 from io import BytesIO
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import pytest
@@ -23,6 +24,7 @@ from .helper import (
     skip_unless_feature,
 )
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:

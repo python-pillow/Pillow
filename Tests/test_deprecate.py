@@ -20,7 +20,7 @@ from PIL import _deprecate
         ),
     ],
 )
-def test_version(version, expected) -> None:
+def test_version(version: int | None, expected: str) -> None:
     with pytest.warns(DeprecationWarning, match=expected):
         _deprecate.deprecate("Old thing", version, "new thing")
 
@@ -46,7 +46,7 @@ def test_unknown_version() -> None:
         ),
     ],
 )
-def test_old_version(deprecated, plural, expected) -> None:
+def test_old_version(deprecated: str, plural: bool, expected: str) -> None:
     expected = r""
     with pytest.raises(RuntimeError, match=expected):
         _deprecate.deprecate(deprecated, 1, plural=plural)
@@ -76,7 +76,7 @@ def test_replacement_and_action() -> None:
         "Upgrade to new thing.",
     ],
 )
-def test_action(action) -> None:
+def test_action(action: str) -> None:
     expected = (
         r"Old thing is deprecated and will be removed in Pillow 11 \(2024-10-15\)\. "
         r"Upgrade to new thing\."

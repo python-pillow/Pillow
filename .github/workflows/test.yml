@@ -27,6 +27,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  COVERAGE_CORE: sysmon
   FORCE_COLOR: 1
 
 jobs:

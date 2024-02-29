@@ -98,7 +98,7 @@ def test_i() -> None:
     assert ret == 97
 
 
-def test_dump(monkeypatch) -> None:
+def test_dump(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange
     c = b"abc"
     # Temporarily redirect stdout
