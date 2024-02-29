@@ -308,21 +308,16 @@ DEPS = {
         "libs": [r"Lib\MS\*.lib"],
     },
     "openjpeg": {
-        "url": "https://github.com/uclouvain/openjpeg/archive/v2.5.0.tar.gz",
-        "filename": "openjpeg-2.5.0.tar.gz",
-        "dir": "openjpeg-2.5.0",
+        "url": "https://github.com/uclouvain/openjpeg/archive/v2.5.2.tar.gz",
+        "filename": "openjpeg-2.5.2.tar.gz",
+        "dir": "openjpeg-2.5.2",
         "license": "LICENSE",
-        "patch": {
-            r"src\lib\openjp2\ht_dec.c": {
-                "#ifdef OPJ_COMPILER_MSVC\n    return (OPJ_UINT32)__popcnt(val);": "#if defined(OPJ_COMPILER_MSVC) && (defined(_M_IX86) || defined(_M_AMD64))\n    return (OPJ_UINT32)__popcnt(val);",  # noqa: E501
-            }
-        },
         "build": [
             *cmds_cmake(
                 "openjp2", "-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF"
             ),
-            cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
-            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.0"),
+            cmd_mkdir(r"{inc_dir}\openjpeg-2.5.2"),
+            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.2"),
         ],
         "libs": [r"bin\*.lib"],
     },
