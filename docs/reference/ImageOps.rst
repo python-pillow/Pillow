@@ -14,6 +14,8 @@ only work on L and RGB images.
 .. autofunction:: colorize
 .. autofunction:: crop
 .. autofunction:: scale
+.. autoclass:: SupportsGetMesh
+    :show-inheritance:
 .. autofunction:: deform
 .. autofunction:: equalize
 .. autofunction:: expand
