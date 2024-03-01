@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Handle truncated chunks at the end of PNG images #7709
+  [lajiyuan, radarhere]
+
 - Match mask size to pasted image size in GifImagePlugin #7779
   [radarhere]
 
