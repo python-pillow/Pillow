@@ -981,7 +981,13 @@ class PngImageFile(ImageFile.ImageFile):
             except EOFError:
                 if cid == b"fdAT":
                     length -= 4
-                ImageFile._safe_read(self.fp, length)
+                try:
+                    ImageFile._safe_read(self.fp, length)
+                except OSError as e:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        break
+                    else:
+                        raise e
             except AttributeError:
                 logger.debug("%r %s %s (unknown)", cid, pos, length)
                 s = ImageFile._safe_read(self.fp, length)
