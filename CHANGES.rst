@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Match mask size to pasted image size in GifImagePlugin #7779
+  [radarhere]
+
 - Release GIL while calling ``WebPAnimDecoderGetNext`` #7782
   [evanmiller, radarhere]
 
