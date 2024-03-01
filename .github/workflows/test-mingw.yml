@@ -67,10 +67,10 @@ jobs:
               mingw-w64-x86_64-python3-cffi \
               mingw-w64-x86_64-python3-numpy \
               mingw-w64-x86_64-python3-olefile \
-              mingw-w64-x86_64-python3-pip \
               mingw-w64-x86_64-python3-setuptools \
               mingw-w64-x86_64-python-pyqt6
 
+          python3 -m ensurepip
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
           pushd depends && ./install_extra_test_images.sh && popd
