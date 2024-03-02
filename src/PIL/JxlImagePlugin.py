@@ -67,13 +67,8 @@ class JxlImageFile(ImageFile.ImageFile):
         xmp = self._decoder.get_xmp()
         if icc:
             self.info["icc_profile"] = icc
-        import traceback
-
-        try:
-            if exif:
-                self.info["exif"] = self._fix_exif(exif)
-        except:
-            traceback.print_exc()
+        if exif:
+            self.info["exif"] = self._fix_exif(exif)
         if xmp:
             self.info["xmp"] = xmp
 

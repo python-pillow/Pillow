@@ -11,7 +11,8 @@ test_file = "Tests/images/hopper.jxl"
 
 @skip_unless_feature("jxl")
 class TestJxlLeaks(PillowLeakTestCase):
-    # TODO: lower the limit, I'm not sure what is correct limit since I have libjxl debug system-wide
+    # TODO: lower the limit, I'm not sure what is correct limit
+    # since I have libjxl debug system-wide
     mem_limit = 16 * 1024  # kb
     iterations = 100
 

@@ -21,7 +21,10 @@ except ImportError:
 
 # cjxl flower.jpg flower.jxl --lossless_jpeg=0 -q 75 -e 8
 
-# python -c "from PIL import Image; im=Image.open('Tests/images/flower2.webp'); f=open('/tmp/xmp.xml', 'wb'); f.write(im.info['xmp']); f.close()"
+# >>> from PIL import Image
+# >>> with Image.open('Tests/images/flower2.webp') as im:
+# >>>   with open('/tmp/xmp.xml', 'wb') as f:
+# >>>     f.write(im.info['xmp'])
 # cjxl flower2.jpg flower2.jxl --lossless_jpeg=0 -q 75 -e 8 -x xmp=/tmp/xmp.xml
 
 
