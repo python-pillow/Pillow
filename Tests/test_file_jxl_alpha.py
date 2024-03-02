@@ -4,9 +4,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import (
-    assert_image_similar_tofile
-)
+from .helper import assert_image_similar_tofile
 
 _webp = pytest.importorskip("PIL._jxl", reason="JXL support not installed")
 
@@ -29,4 +27,3 @@ def test_read_rgba() -> None:
         image.tobytes()
 
         assert_image_similar_tofile(image, "Tests/images/transparent.png", 1.0)
-

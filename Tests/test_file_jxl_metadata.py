@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from io import BytesIO
-from pathlib import Path
 from types import ModuleType
 
 import pytest
 
 from PIL import Image
 
-from .helper import mark_if_feature_version, skip_unless_feature
+from .helper import skip_unless_feature
 
 pytestmark = [
     skip_unless_feature("jxl"),
@@ -25,6 +23,7 @@ except ImportError:
 
 # python -c "from PIL import Image; im=Image.open('Tests/images/flower2.webp'); f=open('/tmp/xmp.xml', 'wb'); f.write(im.info['xmp']); f.close()"
 # cjxl flower2.jpg flower2.jxl --lossless_jpeg=0 -q 75 -e 8 -x xmp=/tmp/xmp.xml
+
 
 def test_read_exif_metadata() -> None:
     file_path = "Tests/images/flower.jxl"
@@ -85,4 +84,3 @@ def test_getxmp() -> None:
                 im.getxmp()["xmpmeta"]["xmptk"]
                 == "Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        "
             )
-

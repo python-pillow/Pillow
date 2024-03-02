@@ -12,9 +12,9 @@
 
 
 void _pil_jxl_get_pixel_format(JxlPixelFormat *pf, const JxlBasicInfo *bi) {
-    
+
     pf->num_channels = bi->num_color_channels + bi->num_extra_channels;
-    
+
     if (bi->exponent_bits_per_sample > 0 || bi->alpha_exponent_bits > 0) {
         pf->data_type = JXL_TYPE_FLOAT;   // not yet supported
     } else if (bi->bits_per_sample > 8) {
@@ -22,7 +22,7 @@ void _pil_jxl_get_pixel_format(JxlPixelFormat *pf, const JxlBasicInfo *bi) {
     } else {
         pf->data_type = JXL_TYPE_UINT8;
     }
-    
+
     // this *might* cause some issues on Big-Endian systems
     // would be great to test it
     pf->endianness = JXL_NATIVE_ENDIAN;
@@ -37,7 +37,7 @@ char* _pil_jxl_get_mode(const JxlBasicInfo *bi) {
     // it will throw an exception but that's for your own good
     // you wouldn't want to see distorted image
     if (bi->bits_per_sample != 8) return "uns";
-    
+
     // image has transparency
     if (bi->alpha_bits > 0) {
         if (bi->num_color_channels == 3) {
@@ -62,7 +62,7 @@ char* _pil_jxl_get_mode(const JxlBasicInfo *bi) {
 typedef struct {
     PyObject_HEAD JxlDecoder *decoder;
     void *runner;
-    
+
     uint8_t *jxl_data;  // input jxl bitstream
     Py_ssize_t jxl_data_len; // length of input jxl bitstream
 
@@ -75,13 +75,13 @@ typedef struct {
     Py_ssize_t jxl_exif_len;
     uint8_t *jxl_xmp;
     Py_ssize_t jxl_xmp_len;
-    
+
     JxlDecoderStatus status;
     JxlBasicInfo basic_info;
     JxlPixelFormat pixel_format;
 
     Py_ssize_t n_frames;
-    
+
     char *mode;
 } PILJxlDecoderObject;
 
@@ -90,7 +90,7 @@ static PyTypeObject PILJxlDecoder_Type;
 void
 _jxl_decoder_dealloc(PyObject *self) {
     PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
-    
+
     if (decp->jxl_data) {
         free(decp->jxl_data);
         decp->jxl_data = NULL;
@@ -209,7 +209,7 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
 
     // convert jxl data string to C uint8_t pointer
     PyBytes_AsStringAndSize((PyObject *)jxl_string, (char **)&_tmp_jxl_data, &_tmp_jxl_data_len);
-    
+
     // here occurs this copying (inefficiency)
     decp->jxl_data = malloc(_tmp_jxl_data_len);
     memcpy(decp->jxl_data, _tmp_jxl_data, _tmp_jxl_data_len);
@@ -222,7 +222,7 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
     decp->decoder = JxlDecoderCreate(NULL);
 
     decp->status = JxlDecoderSetParallelRunner(decp->decoder,
-			JxlThreadParallelRunner, decp->runner);
+            JxlThreadParallelRunner, decp->runner);
     _PIL_JXL_CHECK("JxlDecoderSetParallelRunner")
 
     decp->status = JxlDecoderSubscribeEvents(decp->decoder,
@@ -241,7 +241,7 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
 
     // decode everything up to the first frame
     do {
-        
+
         decp->status = JxlDecoderProcessInput(decp->decoder);
         //printf("Status: %d\n", decp->status);
 
@@ -255,7 +255,7 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
 
         // got basic info
         if (decp->status == JXL_DEC_BASIC_INFO) {
-            
+
             decp->status = JxlDecoderGetBasicInfo(decp->decoder,
                 &decp->basic_info);
             _PIL_JXL_CHECK("JxlDecoderGetBasicInfo");
@@ -274,7 +274,7 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
 
         // got color encoding
         if (decp->status == JXL_DEC_COLOR_ENCODING) {
-            
+
             decp->status = JxlDecoderGetICCProfileSize(decp->decoder,
                 JXL_COLOR_PROFILE_TARGET_DATA, &decp->jxl_icc_len);
             _PIL_JXL_CHECK("JxlDecoderGetICCProfileSize");
@@ -337,7 +337,7 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
                 final_jxl_buf_len += (cur_compr_box_size - remaining);
             }
             while (decp->status == JXL_DEC_BOX_NEED_MORE_OUTPUT);
-            
+
             if (is_box_exif) {
                 decp->jxl_exif = final_jxl_buf;
                 decp->jxl_exif_len = final_jxl_buf_len;
@@ -444,7 +444,7 @@ _jxl_decoder_get_next(PyObject *self) {
     size_t new_outbuf_len;
     decp->status = JxlDecoderImageOutBufferSize(decp->decoder, &decp->pixel_format, &new_outbuf_len);
     _PIL_JXL_CHECK("JxlDecoderImageOutBufferSize");
-    
+
     // only allocate memory when current buffer is too small
     if (decp->outbuf_len < new_outbuf_len) {
 
@@ -455,7 +455,7 @@ _jxl_decoder_get_next(PyObject *self) {
             goto end_with_custom_error;
         }
         decp->outbuf = _new_outbuf;
-    
+
     }
 
     decp->status = JxlDecoderSetImageOutBuffer(decp->decoder, &decp->pixel_format, decp->outbuf, decp->outbuf_len);

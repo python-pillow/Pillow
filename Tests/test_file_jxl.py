@@ -1,13 +1,13 @@
+from __future__ import annotations
+
 import re
+
 import pytest
 
 from PIL import Image, JxlImagePlugin, features
 
 from .helper import (
-    assert_image_equal,
-    assert_image_similar,
     assert_image_similar_tofile,
-    hopper,
     skip_unless_feature,
 )
 
@@ -20,6 +20,7 @@ except ImportError:
 
 # cjxl v0.9.2 41b8cdab
 # hopper.jxl: cjxl hopper.png hopper.jxl -q 75 -e 8
+
 
 class TestUnsupportedJxl:
     def test_unsupported(self) -> None:
@@ -34,6 +35,7 @@ class TestUnsupportedJxl:
 
         if HAVE_JXL:
             JxlImagePlugin.SUPPORTED = True
+
 
 @skip_unless_feature("jxl")
 class TestFileJxl:
@@ -68,5 +70,3 @@ class TestFileJxl:
 
         with pytest.raises(TypeError):
             _jxl.PILJxlDecoder()
-
-

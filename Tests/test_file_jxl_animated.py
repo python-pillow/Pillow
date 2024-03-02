@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import pytest
-from packaging.version import parse as parse_version
 
-from PIL import Image, features
+from PIL import Image
 
 from .helper import (
     assert_image_equal,
@@ -52,9 +51,9 @@ def test_seeking() -> None:
                 im1.load()
                 im2.seek(frame)
                 im2.load()
-                
-                assert_image_equal(im1.convert('RGB'), im2.convert('RGB'))
-                
+
+                assert_image_equal(im1.convert("RGB"), im2.convert("RGB"))
+
                 total_dur += im1.info["duration"]
                 assert im1.info["duration"] == im2.info["duration"]
                 assert im1.info["timestamp"] == im1.info["timestamp"]

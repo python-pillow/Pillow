@@ -1,6 +1,9 @@
-from io import BytesIO
-from . import Image, ImageFile
+from __future__ import annotations
+
 import struct
+from io import BytesIO
+
+from . import Image, ImageFile
 
 try:
     from . import _jxl
@@ -16,11 +19,14 @@ except ImportError:
 ## then libjxl decoder is rewinded and we're ready to decode frame by frame
 ## if OPEN_COUNTS_FRAMES is False, n_frames will be None until the last frame is decoded
 ## it only applies to animated jpeg xl images
-#OPEN_COUNTS_FRAMES = True
+# OPEN_COUNTS_FRAMES = True
+
 
 def _accept(prefix):
-    is_jxl = prefix[:2] == b'\xff\x0a' \
-        or prefix[:12] == b'\x00\x00\x00\x0c\x4a\x58\x4c\x20\x0d\x0a\x87\x0a'
+    is_jxl = (
+        prefix[:2] == b"\xff\x0a"
+        or prefix[:12] == b"\x00\x00\x00\x0c\x4a\x58\x4c\x20\x0d\x0a\x87\x0a"
+    )
     if is_jxl and not SUPPORTED:
         return "image file could not be identified because JXL support not installed"
     return is_jxl
@@ -35,7 +41,9 @@ class JxlImageFile(ImageFile.ImageFile):
     def _open(self):
         self._decoder = _jxl.PILJxlDecoder(self.fp.read())
 
-        width, height, mode, has_anim, tps_num, tps_denom, n_loops, n_frames = self._decoder.get_info()
+        width, height, mode, has_anim, tps_num, tps_denom, n_loops, n_frames = (
+            self._decoder.get_info()
+        )
         self._size = width, height
         self.info["loop"] = n_loops
         self.is_animated = has_anim
@@ -46,7 +54,7 @@ class JxlImageFile(ImageFile.ImageFile):
             self.n_frames = 1
         elif n_frames > 0:
             self.n_frames = n_frames
-            self._tps_dur_secs = tps_num/tps_denom
+            self._tps_dur_secs = tps_num / tps_denom
         # TODO: handle libjxl timecods
         self.__timestamp = 0
 
@@ -57,13 +65,17 @@ class JxlImageFile(ImageFile.ImageFile):
         icc = self._decoder.get_icc()
         exif = self._decoder.get_exif()
         xmp = self._decoder.get_xmp()
-        if icc: self.info["icc_profile"] = icc
+        if icc:
+            self.info["icc_profile"] = icc
         import traceback
+
         try:
-            if exif: self.info["exif"] = self._fix_exif(exif)
+            if exif:
+                self.info["exif"] = self._fix_exif(exif)
         except:
             traceback.print_exc()
-        if xmp: self.info["xmp"] = xmp
+        if xmp:
+            self.info["xmp"] = xmp
 
         self._rewind()
 
@@ -73,7 +85,7 @@ class JxlImageFile(ImageFile.ImageFile):
         if len(exif) <= 4:
             return None
         exif_start_offset = struct.unpack(">I", exif[:4])[0]
-        return exif[exif_start_offset+4:]
+        return exif[exif_start_offset + 4 :]
 
     def _getexif(self):
         if "exif" not in self.info:
@@ -82,7 +94,7 @@ class JxlImageFile(ImageFile.ImageFile):
 
     def getxmp(self):
         return self._getxmp(self.info["xmp"]) if "xmp" in self.info else {}
-    
+
     def _get_next(self):
 
         # Get next frame
@@ -93,14 +105,14 @@ class JxlImageFile(ImageFile.ImageFile):
         if next_frame is None:
             msg = "failed to decode next frame in JXL file"
             raise EOFError(msg)
-        
+
         data, tps_duration, is_last = next_frame
         if is_last and self.n_frames is None:
             # libjxl said this frame is the last one
             self.n_frames = self.__physical_frame
 
         # duration in miliseconds
-        duration = 1000 * tps_duration * (1/self._tps_dur_secs)
+        duration = 1000 * tps_duration * (1 / self._tps_dur_secs)
         timestamp = self.__timestamp
         self.__timestamp += duration
 
@@ -115,21 +127,22 @@ class JxlImageFile(ImageFile.ImageFile):
 
     def _seek_check(self, frame):
         # if image is not animated then only the 0th frame is available
-        if (not self.is_animated and frame != 0) or \
-            (self.n_frames is not None and (frame >= self.n_frames or frame < 0)):
+        if (not self.is_animated and frame != 0) or (
+            self.n_frames is not None and (frame >= self.n_frames or frame < 0)
+        ):
             msg = "attempt to seek outside sequence"
             raise EOFError(msg)
 
         return self.tell() != frame
 
     def _seek(self, frame):
-        #print("_seek: phy: {}, fr: {}".format(self.__physical_frame, frame))
+        # print("_seek: phy: {}, fr: {}".format(self.__physical_frame, frame))
         if frame == self.__physical_frame:
             return  # Nothing to do
         if frame < self.__physical_frame:
             # also rewind libjxl decoder instance
             self._rewind(hard=True)
-        
+
         while self.__physical_frame < frame:
             self._get_next()  # Advance to the requested frame
 
@@ -144,7 +157,7 @@ class JxlImageFile(ImageFile.ImageFile):
 
         if self.__loaded != self.__logical_frame:
             self._seek(self.__logical_frame)
-            
+
             data, timestamp, duration, is_last = self._get_next()
             self.info["timestamp"] = timestamp
             self.info["duration"] = duration
@@ -157,9 +170,9 @@ class JxlImageFile(ImageFile.ImageFile):
             # you need probably 2*(raw image plane) bytes of memory
             self.fp = BytesIO(data)
             self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
- 
+
         return super().load()
-    
+
     def load_seek(self, pos):
         pass
 

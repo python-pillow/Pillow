@@ -270,8 +270,7 @@ def pilinfo(out=None, supported_formats=True):
         ("transp_webp", "WEBP Transparency"),
         ("webp_mux", "WEBPMUX"),
         ("webp_anim", "WEBP Animation"),
-        ("jxl", "JPEG XL")
-        ("jpg", "JPEG"),
+        ("jxl", "JPEG XL")("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),
         ("libtiff", "LIBTIFF"),
