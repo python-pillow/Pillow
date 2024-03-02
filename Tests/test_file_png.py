@@ -6,6 +6,7 @@ import warnings
 import zlib
 from io import BytesIO
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import pytest
@@ -23,6 +24,7 @@ from .helper import (
     skip_unless_feature,
 )
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:
@@ -780,6 +782,18 @@ class TestFilePng:
             mystdout = mystdout.buffer
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
+
+    def test_truncated_end_chunk(self) -> None:
+        with Image.open("Tests/images/truncated_end_chunk.png") as im:
+            with pytest.raises(OSError):
+                im.load()
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            with Image.open("Tests/images/truncated_end_chunk.png") as im:
+                assert_image_equal_tofile(im, "Tests/images/hopper.png")
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

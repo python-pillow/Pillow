@@ -6,6 +6,7 @@ import re
 import shutil
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -237,7 +238,7 @@ def test_invalid_color_temperature() -> None:
 
 
 @pytest.mark.parametrize("flag", ("my string", -1))
-def test_invalid_flag(flag) -> None:
+def test_invalid_flag(flag: str | int) -> None:
     with hopper() as im:
         with pytest.raises(
             ImageCms.PyCMSError, match="flags must be an integer between 0 and "
@@ -335,19 +336,21 @@ def test_extended_information() -> None:
     o = ImageCms.getOpenProfile(SRGB)
     p = o.profile
 
-    def assert_truncated_tuple_equal(tup1, tup2, digits: int = 10) -> None:
+    def assert_truncated_tuple_equal(
+        tup1: tuple[Any, ...], tup2: tuple[Any, ...], digits: int = 10
+    ) -> None:
         # Helper function to reduce precision of tuples of floats
         # recursively and then check equality.
         power = 10**digits
 
-        def truncate_tuple(tuple_or_float):
+        def truncate_tuple(tuple_value: tuple[Any, ...]) -> tuple[Any, ...]:
             return tuple(
                 (
                     truncate_tuple(val)
                     if isinstance(val, tuple)
                     else int(val * power) / power
                 )
-                for val in tuple_or_float
+                for val in tuple_value
             )
 
         assert truncate_tuple(tup1) == truncate_tuple(tup2)
@@ -504,8 +507,10 @@ def test_profile_typesafety() -> None:
         ImageCms.ImageCmsProfile(1).tobytes()
 
 
-def assert_aux_channel_preserved(mode, transform_in_place, preserved_channel) -> None:
-    def create_test_image():
+def assert_aux_channel_preserved(
+    mode: str, transform_in_place: bool, preserved_channel: str
+) -> None:
+    def create_test_image() -> Image.Image:
         # set up test image with something interesting in the tested aux channel.
         # fmt: off
         nine_grid_deltas = [
@@ -633,7 +638,7 @@ def test_auxiliary_channels_isolated() -> None:
 
 
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
-def test_rgb_lab(mode) -> None:
+def test_rgb_lab(mode: str) -> None:
     im = Image.new(mode, (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (0, 128, 128)

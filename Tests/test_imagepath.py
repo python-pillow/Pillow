@@ -58,7 +58,9 @@ def test_path() -> None:
         ImagePath.Path((0, 1)),
     ),
 )
-def test_path_constructors(coords) -> None:
+def test_path_constructors(
+    coords: Sequence[float] | array.array[float] | ImagePath.Path,
+) -> None:
     # Arrange / Act
     p = ImagePath.Path(coords)
 
@@ -206,9 +208,9 @@ class Evil:
     def __init__(self) -> None:
         self.corrupt = Image.core.path(0x4000000000000000)
 
-    def __getitem__(self, i):
+    def __getitem__(self, i: int) -> bytes:
         x = self.corrupt[i]
         return struct.pack("dd", x[0], x[1])
 
-    def __setitem__(self, i, x) -> None:
+    def __setitem__(self, i: int, x: bytes) -> None:
         self.corrupt[i] = struct.unpack("dd", x)

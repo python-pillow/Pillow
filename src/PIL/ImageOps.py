@@ -411,7 +411,15 @@ def scale(
         return image.resize(size, resample)
 
 
-class _SupportsGetMesh(Protocol):
+class SupportsGetMesh(Protocol):
+    """
+    An object that supports the ``getmesh`` method, taking an image as an
+    argument, and returning a list of tuples. Each tuple contains two tuples,
+    the source box as a tuple of 4 integers, and a tuple of 8 integers for the
+    final quadrilateral, in order of top left, bottom left, bottom right, top
+    right.
+    """
+
     def getmesh(
         self, image: Image.Image
     ) -> list[
@@ -421,7 +429,7 @@ class _SupportsGetMesh(Protocol):
 
 def deform(
     image: Image.Image,
-    deformer: _SupportsGetMesh,
+    deformer: SupportsGetMesh,
     resample: int = Image.Resampling.BILINEAR,
 ) -> Image.Image:
     """

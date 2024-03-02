@@ -79,3 +79,9 @@ Portable FloatMap (PFM) images
 
 Support has been added for reading and writing grayscale (Pf format)
 Portable FloatMap (PFM) files containing ``F`` data.
+
+Release GIL when fetching WebP frames
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Python's Global Interpreter Lock is now released when fetching WebP frames from
+the libwebp decoder.

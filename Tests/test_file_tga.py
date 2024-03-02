@@ -22,8 +22,8 @@ _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
 
 
 @pytest.mark.parametrize("mode", _MODES)
-def test_sanity(mode, tmp_path: Path) -> None:
-    def roundtrip(original_im) -> None:
+def test_sanity(mode: str, tmp_path: Path) -> None:
+    def roundtrip(original_im: Image.Image) -> None:
         out = str(tmp_path / "temp.tga")
 
         original_im.save(out, rle=rle)

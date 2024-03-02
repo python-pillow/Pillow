@@ -135,7 +135,7 @@ def test_different_bit_depths(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
-def test_save_to_bytes_bmp(mode) -> None:
+def test_save_to_bytes_bmp(mode: str) -> None:
     output = io.BytesIO()
     im = hopper(mode)
     im.save(output, "ico", bitmap_format="bmp", sizes=[(32, 32), (64, 64)])

@@ -14,7 +14,7 @@ TEST_IMAGE_SIZE = (10, 10)
 
 
 def test_numpy_to_image() -> None:
-    def to_image(dtype, bands: int = 1, boolean: int = 0):
+    def to_image(dtype, bands: int = 1, boolean: int = 0) -> Image.Image:
         if bands == 1:
             if boolean:
                 data = [0, 255] * 50
@@ -99,7 +99,7 @@ def test_1d_array() -> None:
     assert_image(Image.fromarray(a), "L", (1, 5))
 
 
-def _test_img_equals_nparray(img, np) -> None:
+def _test_img_equals_nparray(img: Image.Image, np) -> None:
     assert len(np.shape) >= 2
     np_size = np.shape[1], np.shape[0]
     assert img.size == np_size
@@ -157,7 +157,7 @@ def test_save_tiff_uint16() -> None:
         ("HSV", numpy.uint8),
     ),
 )
-def test_to_array(mode, dtype) -> None:
+def test_to_array(mode: str, dtype) -> None:
     img = hopper(mode)
 
     # Resize to non-square

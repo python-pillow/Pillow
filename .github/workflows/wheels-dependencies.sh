@@ -19,7 +19,7 @@ FREETYPE_VERSION=2.13.2
 HARFBUZZ_VERSION=8.3.0
 LIBPNG_VERSION=1.6.40
 JPEGTURBO_VERSION=3.0.1
-OPENJPEG_VERSION=2.5.0
+OPENJPEG_VERSION=2.5.2
 XZ_VERSION=5.4.5
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
@@ -40,7 +40,7 @@ BROTLI_VERSION=1.1.0
 
 if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "x86_64" ]]; then
     function build_openjpeg {
-        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz openjpeg-2.5.0.tar.gz)
+        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz openjpeg-${OPENJPEG_VERSION}.tar.gz)
         (cd $out_dir \
             && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
             && make install)
@@ -93,6 +93,9 @@ function build {
         done
     fi
     build_openjpeg
+    if [ -f /usr/local/lib64/libopenjp2.so ]; then
+        cp /usr/local/lib64/libopenjp2.so /usr/local/lib
+    fi
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"

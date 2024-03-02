@@ -10,7 +10,7 @@ from PIL import _util
 @pytest.mark.parametrize(
     "test_path", ["filename.ext", Path("filename.ext"), PurePath("filename.ext")]
 )
-def test_is_path(test_path) -> None:
+def test_is_path(test_path: str | Path | PurePath) -> None:
     # Act
     it_is = _util.is_path(test_path)
 

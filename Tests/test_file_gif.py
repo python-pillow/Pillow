@@ -1113,6 +1113,21 @@ def test_append_images(tmp_path: Path) -> None:
         assert reread.n_frames == 10
 
 
+def test_append_different_size_image(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("RGB", (100, 100))
+    bigger_im = Image.new("RGB", (200, 200), "#f00")
+
+    im.save(out, save_all=True, append_images=[bigger_im])
+
+    with Image.open(out) as reread:
+        assert reread.size == (100, 100)
+
+        reread.seek(1)
+        assert reread.size == (100, 100)
+
+
 def test_transparent_optimize(tmp_path: Path) -> None:
     # From issue #2195, if the transparent color is incorrectly optimized out, GIF loses
     # transparency.

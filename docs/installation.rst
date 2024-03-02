@@ -9,15 +9,6 @@ Installation
     });
     </script>
 
-Warnings
---------
-
-.. warning:: Pillow and PIL cannot co-exist in the same environment. Before installing Pillow, please uninstall PIL.
-
-.. warning:: Pillow >= 1.0 no longer supports ``import Image``. Please use ``from PIL import Image`` instead.
-
-.. warning:: Pillow >= 2.1.0 no longer supports ``import _imaging``. Please use ``from PIL.Image import core as _imaging`` instead.
-
 Python Support
 --------------
 
@@ -186,7 +177,7 @@ Many of Pillow's features require external libraries:
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
-    **2.4.0** and **2.5.0**.
+    **2.4.0**, **2.5.0** and **2.5.2**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
