@@ -102,7 +102,7 @@ class TestFilePng:
             im = hopper(mode)
             im.save(test_file)
             with Image.open(test_file) as reloaded:
-                if mode in ("I;16", "I;16B"):
+                if mode in ("I", "I;16B"):
                     reloaded = reloaded.convert(mode)
                 assert_image_equal(reloaded, im)
 
@@ -304,8 +304,8 @@ class TestFilePng:
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
     def test_save_grayscale_transparency(self, tmp_path: Path) -> None:
-        for mode, num_transparent in {"1": 1994, "L": 559, "I": 559}.items():
-            in_file = "Tests/images/" + mode.lower() + "_trns.png"
+        for mode, num_transparent in {"1": 1994, "L": 559, "I;16": 559}.items():
+            in_file = "Tests/images/" + mode.split(";")[0].lower() + "_trns.png"
             with Image.open(in_file) as im:
                 assert im.mode == mode
                 assert im.info["transparency"] == 255

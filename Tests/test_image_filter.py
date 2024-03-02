@@ -148,9 +148,7 @@ def test_kernel_not_enough_coefficients() -> None:
 @pytest.mark.parametrize("mode", ("L", "LA", "I", "RGB", "CMYK"))
 def test_consistency_3x3(mode: str) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
-        reference_name = "hopper_emboss"
-        reference_name += "_I.png" if mode == "I" else ".bmp"
-        with Image.open("Tests/images/" + reference_name) as reference:
+        with Image.open("Tests/images/hopper_emboss.bmp") as reference:
             kernel = ImageFilter.Kernel(
                 (3, 3),
                 # fmt: off
@@ -160,23 +158,13 @@ def test_consistency_3x3(mode: str) -> None:
                 # fmt: on
                 0.3,
             )
-            source = source.split() * 2
-            reference = reference.split() * 2
-
-            if mode == "I":
-                source = source[0].convert(mode)
-            else:
-                source = Image.merge(mode, source[: len(mode)])
-            reference = Image.merge(mode, reference[: len(mode)])
             assert_image_equal(source.filter(kernel), reference)
 
 
 @pytest.mark.parametrize("mode", ("L", "LA", "I", "RGB", "CMYK"))
 def test_consistency_5x5(mode: str) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
-        reference_name = "hopper_emboss_more"
-        reference_name += "_I.png" if mode == "I" else ".bmp"
-        with Image.open("Tests/images/" + reference_name) as reference:
+        with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:
             kernel = ImageFilter.Kernel(
                 (5, 5),
                 # fmt: off
@@ -188,14 +176,6 @@ def test_consistency_5x5(mode: str) -> None:
                 # fmt: on
                 0.3,
             )
-            source = source.split() * 2
-            reference = reference.split() * 2
-
-            if mode == "I":
-                source = source[0].convert(mode)
-            else:
-                source = Image.merge(mode, source[: len(mode)])
-            reference = Image.merge(mode, reference[: len(mode)])
             assert_image_equal(source.filter(kernel), reference)
 
 
