@@ -384,7 +384,7 @@ class Parser:
     """
 
     incremental = None
-    image = None
+    image: Image.Image | None = None
     data = None
     decoder = None
     offset = 0

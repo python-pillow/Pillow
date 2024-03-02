@@ -7,7 +7,7 @@ import zlib
 from io import BytesIO
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -59,11 +59,11 @@ def load(data: bytes) -> Image.Image:
     return Image.open(BytesIO(data))
 
 
-def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
+def roundtrip(im: Image.Image, **options: Any) -> PngImagePlugin.PngImageFile:
     out = BytesIO()
     im.save(out, "PNG", **options)
     out.seek(0)
-    return Image.open(out)
+    return cast(PngImagePlugin.PngImageFile, Image.open(out))
 
 
 @skip_unless_feature("zlib")

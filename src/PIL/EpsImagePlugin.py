@@ -38,7 +38,7 @@ from ._deprecate import deprecate
 split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
 field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
 
-gs_binary = None
+gs_binary: str | bool | None = None
 gs_windows_binary = None
 
 
