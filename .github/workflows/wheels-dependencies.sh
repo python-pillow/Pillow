@@ -130,9 +130,15 @@ if [[ -n "$IS_MACOS" ]]; then
   # libxau and libxdmcp cause an issue on macOS < 11
   # remove cairo to fix building harfbuzz on arm64
   # remove lcms2 and libpng to fix building openjpeg on arm64
-  # remove zstd to avoid inclusion on x86_64
+  # remove jpeg-turbo to avoid inclusion on arm64
+  # remove webp and zstd to avoid inclusion on x86_64
   # curl from brew requires zstd, use system curl
   brew remove --ignore-dependencies libpng libtiff libxcb libxau libxdmcp curl cairo lcms2 zstd
+  if [[ "$CIBW_ARCHS" == "arm64" ]]; then
+    brew remove --ignore-dependencies jpeg-turbo
+  else
+    brew remove --ignore-dependencies webp
+  fi
 
   brew install pkg-config
 fi
