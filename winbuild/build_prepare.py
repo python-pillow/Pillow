@@ -132,7 +132,7 @@ V["ZLIB_DOTLESS"] = V["ZLIB"].replace(".", "")
 # dependencies, listed in order of compilation
 DEPS = {
     "libjpeg": {
-        "url": SF_PROJECTS + f"/libjpeg-turbo/files/{V['JPEGTURBO']}/"
+        "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/"
         f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz/download",
         "filename": f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
         "dir": f"libjpeg-turbo-{V['JPEGTURBO']}",
@@ -177,7 +177,7 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + f"/lzmautils/files/xz-{V['XZ']}.tar.gz/download",
+        "url": f"{SF_PROJECTS}/lzmautils/files/xz-{V['XZ']}.tar.gz/download",
         "filename": f"xz-{V['XZ']}.tar.gz",
         "dir": f"xz-{V['XZ']}",
         "license": "COPYING",
@@ -244,7 +244,7 @@ DEPS = {
         "libs": [r"libtiff\*.lib"],
     },
     "libpng": {
-        "url": SF_PROJECTS + f"/libpng/files/libpng{V['LIBPNG_XY']}/{V['LIBPNG']}/"
+        "url": f"{SF_PROJECTS}/libpng/files/libpng{V['LIBPNG_XY']}/{V['LIBPNG']}/"
         f"lpng{V['LIBPNG_DOTLESS']}.zip/download",
         "filename": f"lpng{V['LIBPNG_DOTLESS']}.zip",
         "dir": f"lpng{V['LIBPNG_DOTLESS']}",
@@ -305,8 +305,7 @@ DEPS = {
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
     },
     "lcms2": {
-        "url": SF_PROJECTS
-        + f"/lcms/files/lcms/{V['LCMS2']}/lcms2-{V['LCMS2']}.tar.gz/download",
+        "url": f"{SF_PROJECTS}/lcms/files/lcms/{V['LCMS2']}/lcms2-{V['LCMS2']}.tar.gz/download",  # noqa: E501
         "filename": f"lcms2-{V['LCMS2']}.tar.gz",
         "dir": f"lcms2-{V['LCMS2']}",
         "license": "LICENSE",
