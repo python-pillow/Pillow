@@ -87,7 +87,7 @@ def cmd_msbuild(
     file: str,
     configuration: str = "Release",
     target: str = "Build",
-    platform: str = "{msbuild_arch}",
+    plat: str = "{msbuild_arch}",
 ) -> str:
     return " ".join(
         [
@@ -95,7 +95,7 @@ def cmd_msbuild(
             f"{file}",
             f'/t:"{target}"',
             f'/p:Configuration="{configuration}"',
-            f"/p:Platform={platform}",
+            f"/p:Platform={plat}",
             "/m",
         ]
     )
@@ -567,7 +567,7 @@ def build_env(prefs: dict[str, str], verbose: bool) -> None:
 
 def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
     dep = DEPS[name]
-    dir = dep["dir"]
+    directory = dep["dir"]
     file = f"build_dep_{name}.cmd"
     license_dir = prefs["license_dir"]
     sources_dir = prefs["src_dir"]
@@ -579,18 +579,18 @@ def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
         licenses = [licenses]
     license_text = ""
     for license_file in licenses:
-        with open(os.path.join(sources_dir, dir, license_file)) as f:
+        with open(os.path.join(sources_dir, directory, license_file)) as f:
             license_text += f.read()
     if "license_pattern" in dep:
         match = re.search(dep["license_pattern"], license_text, re.DOTALL)
         license_text = "\n".join(match.groups())
     assert len(license_text) > 50
-    with open(os.path.join(license_dir, f"{dir}.txt"), "w") as f:
-        print(f"Writing license {dir}.txt")
+    with open(os.path.join(license_dir, f"{directory}.txt"), "w") as f:
+        print(f"Writing license {directory}.txt")
         f.write(license_text)
 
     for patch_file, patch_list in dep.get("patch", {}).items():
-        patch_file = os.path.join(sources_dir, dir, patch_file.format(**prefs))
+        patch_file = os.path.join(sources_dir, directory, patch_file.format(**prefs))
         with open(patch_file) as f:
             text = f.read()
         for patch_from, patch_to in patch_list.items():
@@ -602,13 +602,13 @@ def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
             print(f"Patching {patch_file}")
             f.write(text)
 
-    banner = f"Building {name} ({dir})"
+    banner = f"Building {name} ({directory})"
     lines = [
         r'call "{build_dir}\build_env.cmd"',
         "@echo " + ("=" * 70),
         f"@echo ==== {banner:<60} ====",
         "@echo " + ("=" * 70),
-        cmd_cd(os.path.join(sources_dir, dir)),
+        cmd_cd(os.path.join(sources_dir, directory)),
         *dep.get("build", []),
         *get_footer(dep),
     ]
