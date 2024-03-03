@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Open 16-bit grayscale PNGs as I;16 #7849
+  [radarhere]
+
 - Handle truncated chunks at the end of PNG images #7709
   [lajiyuan, radarhere]
 
