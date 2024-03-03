@@ -40,10 +40,8 @@ test_card.load()
 def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
     out = BytesIO()
     im.save(out, "JPEG2000", **options)
-    test_bytes = out.tell()
     out.seek(0)
     with Image.open(out) as im:
-        im.bytes = test_bytes  # for testing only
         im.load()
     return im
 
@@ -77,7 +75,9 @@ def test_invalid_file() -> None:
 def test_bytesio() -> None:
     with open("Tests/images/test-card-lossless.jp2", "rb") as f:
         data = BytesIO(f.read())
-    assert_image_similar_tofile(test_card, data, 1.0e-3)
+    with Image.open(data) as im:
+        im.load()
+        assert_image_similar(im, test_card, 1.0e-3)
 
 
 # These two test pre-written JPEG 2000 files that were not written with
@@ -340,6 +340,7 @@ def test_parser_feed() -> None:
     p.feed(data)
 
     # Assert
+    assert p.image is not None
     assert p.image.size == (640, 480)
 
 
