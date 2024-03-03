@@ -463,6 +463,7 @@ def find_msvs(architecture: str) -> dict[str, str] | None:
 
 
 def download_dep(url: str, file: str) -> None:
+    import urllib.error
     import urllib.request
 
     ex = None
