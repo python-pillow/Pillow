@@ -152,7 +152,7 @@ def test_nonstack_dos() -> None:
             assert i <= 1, "Non-stack DOS file test failed"
 
 
-# for issue #4093s
+# for issue #4093
 def test_odd_size() -> None:
     data = BytesIO()
     width = 100
