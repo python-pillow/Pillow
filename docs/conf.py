@@ -35,8 +35,8 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_inline_tabs",
     "sphinx_removed_in",
-    "sphinxext.opengraph",
     "sphinx_reredirects",
+    "sphinxext.opengraph",
 ]
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
