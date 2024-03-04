@@ -4,4 +4,4 @@ import sys
 
 from .features import pilinfo
 
-pilinfo(supported_formats="--bugreport" not in sys.argv)
+pilinfo(supported_formats="--report" not in sys.argv)
