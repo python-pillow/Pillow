@@ -35,7 +35,6 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_inline_tabs",
     "sphinx_removed_in",
-    "sphinx_reredirects",
     "sphinxext.opengraph",
 ]
 
@@ -351,6 +350,3 @@ ogp_image = (
     "pillow-logo-dark-text-1280x640.png"
 )
 ogp_image_alt = "Pillow"
-
-# sphinx-reredirects
-# redirects = {"installation.html": "installation/index.html"}

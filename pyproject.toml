@@ -46,7 +46,6 @@ docs = [
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinx-removed-in",
-  "sphinx-reredirects",
   "sphinxext-opengraph",
 ]
 fpx = [
