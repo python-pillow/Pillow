@@ -93,7 +93,7 @@ The core image library is designed for fast access to data stored in a few basic
 .. toctree::
    :maxdepth: 2
 
-   installation.rst
+   installation/index.rst
    handbook/index.rst
    reference/index.rst
    porting.rst
