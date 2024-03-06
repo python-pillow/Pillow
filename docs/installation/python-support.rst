@@ -1,7 +1,7 @@
 .. _python-support:
 
 Python Support
---------------
+==============
 
 Pillow supports these Python versions.
 

@@ -1,7 +1,7 @@
 .. _basic-installation:
 
 Basic Installation
-------------------
+==================
 
 .. note::
 
