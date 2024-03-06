@@ -1,3 +1,9 @@
+.. _Building on Linux:
+.. _Building on macOS:
+.. _Building on Windows:
+.. _Building on Windows using MSYS2/MinGW:
+.. _Building on FreeBSD:
+.. _Building on Android:
 .. _building-from-source:
 
 Building From Source

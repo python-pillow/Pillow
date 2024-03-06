@@ -87,11 +87,3 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
         The `Pillow FreeBSD port
         <https://www.freshports.org/graphics/py-pillow/>`_ and packages
         are tested by the ports team with all supported FreeBSD versions.
-
-
-.. _Building on Linux:
-.. _Building on macOS:
-.. _Building on Windows:
-.. _Building on Windows using MSYS2/MinGW:
-.. _Building on FreeBSD:
-.. _Building on Android:
