@@ -1,3 +1,11 @@
+.. raw:: html
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      activateTab(getOS());
+    });
+    </script>
+
 .. _Building on Linux:
 .. _Building on macOS:
 .. _Building on Windows:
