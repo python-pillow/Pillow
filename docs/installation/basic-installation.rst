@@ -68,7 +68,7 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade Pillow
 
-    To install Pillow in MSYS2, see `Building on Windows using MSYS2/MinGW`_.
+    To install Pillow in MSYS2, see :ref:`Building on Windows using MSYS2/MinGW`.
 
 .. tab:: FreeBSD
 
