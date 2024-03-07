@@ -138,13 +138,13 @@ class TestImage:
         assert im.height == 2
 
         with pytest.raises(AttributeError):
-            im.size = (3, 4)
+            im.size = (3, 4)  # type: ignore[misc]
 
     def test_set_mode(self) -> None:
         im = Image.new("RGB", (1, 1))
 
         with pytest.raises(AttributeError):
-            im.mode = "P"
+            im.mode = "P"  # type: ignore[misc]
 
     def test_invalid_image(self) -> None:
         im = io.BytesIO(b"")
@@ -685,15 +685,18 @@ class TestImage:
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
 
-    def test_p_from_rgb_rgba(self) -> None:
-        for mode, color in [
+    @pytest.mark.parametrize(
+        "mode, color",
+        (
             ("RGB", "#DDEEFF"),
             ("RGB", (221, 238, 255)),
             ("RGBA", (221, 238, 255, 255)),
-        ]:
-            im = Image.new("P", (100, 100), color)
-            expected = Image.new(mode, (100, 100), color)
-            assert_image_equal(im.convert(mode), expected)
+        ),
+    )
+    def test_p_from_rgb_rgba(self, mode: str, color: str | tuple[int, ...]) -> None:
+        im = Image.new("P", (100, 100), color)
+        expected = Image.new(mode, (100, 100), color)
+        assert_image_equal(im.convert(mode), expected)
 
     def test_no_resource_warning_on_save(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/835

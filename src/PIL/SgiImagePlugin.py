@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import os
 import struct
-from io import BytesIO
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -125,7 +125,7 @@ class SgiImageFile(ImageFile.ImageFile):
             ]
 
 
-def _save(im: Image.Image, fp: BytesIO, filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode not in {"RGB", "RGBA", "L"}:
         msg = "Unsupported SGI image mode"
         raise ValueError(msg)

@@ -78,7 +78,7 @@ def test_basic(tmp_path: Path, mode: str) -> None:
 
 
 def test_tobytes() -> None:
-    def tobytes(mode: str) -> Image.Image:
+    def tobytes(mode: str) -> bytes:
         return Image.new(mode, (1, 1), 1).tobytes()
 
     order = 1 if Image._ENDIAN == "<" else -1

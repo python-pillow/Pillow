@@ -17,6 +17,7 @@ def test_ignore_dos_text() -> None:
     finally:
         ImageFile.LOAD_TRUNCATED_IMAGES = False
 
+    assert isinstance(im, PngImagePlugin.PngImageFile)
     for s in im.text.values():
         assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
 
@@ -32,6 +33,7 @@ def test_dos_text() -> None:
         assert msg, "Decompressed Data Too Large"
         return
 
+    assert isinstance(im, PngImagePlugin.PngImageFile)
     for s in im.text.values():
         assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
 
@@ -57,6 +59,7 @@ def test_dos_total_memory() -> None:
         return
 
     total_len = 0
+    assert isinstance(im2, PngImagePlugin.PngImageFile)
     for txt in im2.text.values():
         total_len += len(txt)
     assert total_len < 64 * 1024 * 1024, "Total text chunks greater than 64M"

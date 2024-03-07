@@ -6,7 +6,8 @@ import warnings
 import zlib
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from types import ModuleType
+from typing import Any, cast
 
 import pytest
 
@@ -23,6 +24,7 @@ from .helper import (
     skip_unless_feature,
 )
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:
@@ -57,11 +59,11 @@ def load(data: bytes) -> Image.Image:
     return Image.open(BytesIO(data))
 
 
-def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
+def roundtrip(im: Image.Image, **options: Any) -> PngImagePlugin.PngImageFile:
     out = BytesIO()
     im.save(out, "PNG", **options)
     out.seek(0)
-    return Image.open(out)
+    return cast(PngImagePlugin.PngImageFile, Image.open(out))
 
 
 @skip_unless_feature("zlib")
@@ -100,7 +102,7 @@ class TestFilePng:
             im = hopper(mode)
             im.save(test_file)
             with Image.open(test_file) as reloaded:
-                if mode in ("I;16", "I;16B"):
+                if mode in ("I", "I;16B"):
                     reloaded = reloaded.convert(mode)
                 assert_image_equal(reloaded, im)
 
@@ -302,8 +304,8 @@ class TestFilePng:
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
     def test_save_grayscale_transparency(self, tmp_path: Path) -> None:
-        for mode, num_transparent in {"1": 1994, "L": 559, "I": 559}.items():
-            in_file = "Tests/images/" + mode.lower() + "_trns.png"
+        for mode, num_transparent in {"1": 1994, "L": 559, "I;16": 559}.items():
+            in_file = "Tests/images/" + mode.split(";")[0].lower() + "_trns.png"
             with Image.open(in_file) as im:
                 assert im.mode == mode
                 assert im.info["transparency"] == 255
@@ -780,6 +782,18 @@ class TestFilePng:
             mystdout = mystdout.buffer
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
+
+    def test_truncated_end_chunk(self) -> None:
+        with Image.open("Tests/images/truncated_end_chunk.png") as im:
+            with pytest.raises(OSError):
+                im.load()
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            with Image.open("Tests/images/truncated_end_chunk.png") as im:
+                assert_image_equal_tofile(im, "Tests/images/hopper.png")
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

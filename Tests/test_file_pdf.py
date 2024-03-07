@@ -6,6 +6,7 @@ import os.path
 import tempfile
 import time
 from pathlib import Path
+from typing import Any, Generator
 
 import pytest
 
@@ -14,7 +15,7 @@ from PIL import Image, PdfParser, features
 from .helper import hopper, mark_if_feature_version, skip_unless_feature
 
 
-def helper_save_as_pdf(tmp_path: Path, mode, **kwargs):
+def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
     # Arrange
     im = hopper(mode)
     outfile = str(tmp_path / ("temp_" + mode + ".pdf"))
@@ -41,13 +42,13 @@ def helper_save_as_pdf(tmp_path: Path, mode, **kwargs):
 
 
 @pytest.mark.parametrize("mode", ("L", "P", "RGB", "CMYK"))
-def test_save(tmp_path: Path, mode) -> None:
+def test_save(tmp_path: Path, mode: str) -> None:
     helper_save_as_pdf(tmp_path, mode)
 
 
 @skip_unless_feature("jpg_2000")
 @pytest.mark.parametrize("mode", ("LA", "RGBA"))
-def test_save_alpha(tmp_path: Path, mode) -> None:
+def test_save_alpha(tmp_path: Path, mode: str) -> None:
     helper_save_as_pdf(tmp_path, mode)
 
 
@@ -112,7 +113,7 @@ def test_resolution(tmp_path: Path) -> None:
         {"dpi": (75, 150), "resolution": 200},
     ),
 )
-def test_dpi(params, tmp_path: Path) -> None:
+def test_dpi(params: dict[str, int | tuple[int, int]], tmp_path: Path) -> None:
     im = hopper()
 
     outfile = str(tmp_path / "temp.pdf")
@@ -156,7 +157,7 @@ def test_save_all(tmp_path: Path) -> None:
         assert os.path.getsize(outfile) > 0
 
         # Test appending using a generator
-        def im_generator(ims):
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
             yield from ims
 
         im.save(outfile, save_all=True, append_images=im_generator(ims))
@@ -226,7 +227,7 @@ def test_pdf_append_fails_on_nonexistent_file() -> None:
             im.save(os.path.join(temp_dir, "nonexistent.pdf"), append=True)
 
 
-def check_pdf_pages_consistency(pdf) -> None:
+def check_pdf_pages_consistency(pdf: PdfParser.PdfParser) -> None:
     pages_info = pdf.read_indirect(pdf.pages_ref)
     assert b"Parent" not in pages_info
     assert b"Kids" in pages_info
@@ -339,7 +340,7 @@ def test_pdf_append_to_bytesio() -> None:
 @pytest.mark.timeout(1)
 @pytest.mark.skipif("PILLOW_VALGRIND_TEST" in os.environ, reason="Valgrind is slower")
 @pytest.mark.parametrize("newline", (b"\r", b"\n"))
-def test_redos(newline) -> None:
+def test_redos(newline: bytes) -> None:
     malicious = b" trailer<<>>" + newline * 3456
 
     # This particular exception isn't relevant here.

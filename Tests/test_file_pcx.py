@@ -9,7 +9,7 @@ from PIL import Image, ImageFile, PcxImagePlugin
 from .helper import assert_image_equal, hopper
 
 
-def _roundtrip(tmp_path: Path, im) -> None:
+def _roundtrip(tmp_path: Path, im: Image.Image) -> None:
     f = str(tmp_path / "temp.pcx")
     im.save(f)
     with Image.open(f) as im2:
@@ -44,7 +44,7 @@ def test_invalid_file() -> None:
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
-def test_odd(tmp_path: Path, mode) -> None:
+def test_odd(tmp_path: Path, mode: str) -> None:
     # See issue #523, odd sized images should have a stride that's even.
     # Not that ImageMagick or GIMP write PCX that way.
     # We were not handling properly.
@@ -89,7 +89,7 @@ def test_large_count(tmp_path: Path) -> None:
     _roundtrip(tmp_path, im)
 
 
-def _test_buffer_overflow(tmp_path: Path, im, size: int = 1024) -> None:
+def _test_buffer_overflow(tmp_path: Path, im: Image.Image, size: int = 1024) -> None:
     _last = ImageFile.MAXBLOCK
     ImageFile.MAXBLOCK = size
     try:

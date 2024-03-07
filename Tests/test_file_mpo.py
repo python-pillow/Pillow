@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import warnings
 from io import BytesIO
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
-from PIL import Image
+from PIL import Image, MpoImagePlugin
 
 from .helper import (
     assert_image_equal,
@@ -20,14 +20,11 @@ test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 pytestmark = skip_unless_feature("jpg")
 
 
-def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
+def roundtrip(im: Image.Image, **options: Any) -> MpoImagePlugin.MpoImageFile:
     out = BytesIO()
     im.save(out, "MPO", **options)
-    test_bytes = out.tell()
     out.seek(0)
-    im = Image.open(out)
-    im.bytes = test_bytes  # for testing only
-    return im
+    return cast(MpoImagePlugin.MpoImageFile, Image.open(out))
 
 
 @pytest.mark.parametrize("test_file", test_files)

@@ -75,7 +75,7 @@ class DecompressionBombError(Exception):
 
 
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
-MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
+MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
 
 try:
@@ -978,7 +978,7 @@ class Image:
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if (self.mode in ("1", "L", "I") and mode in ("LA", "RGBA")) or (
+            if (self.mode in ("1", "L", "I", "I;16") and mode in ("LA", "RGBA")) or (
                 self.mode == "RGB" and mode == "RGBA"
             ):
                 # Use transparent conversion to promote from transparent
@@ -1430,7 +1430,7 @@ class Image:
             root = ElementTree.fromstring(xmp_tags)
             return {get_name(root.tag): get_value(root)}
 
-    def getexif(self):
+    def getexif(self) -> Exif:
         """
         Gets EXIF data from the image.
 
@@ -1438,7 +1438,6 @@ class Image:
         """
         if self._exif is None:
             self._exif = Exif()
-            self._exif._loaded = False
         elif self._exif._loaded:
             return self._exif
         self._exif._loaded = True
@@ -1525,7 +1524,7 @@ class Image:
         self.load()
         return self.im.ptr
 
-    def getpalette(self, rawmode="RGB"):
+    def getpalette(self, rawmode: str | None = "RGB") -> list[int] | None:
         """
         Returns the image palette as a list.
 
@@ -1615,7 +1614,7 @@ class Image:
         x, y = self.im.getprojection()
         return list(x), list(y)
 
-    def histogram(self, mask=None, extrema=None):
+    def histogram(self, mask=None, extrema=None) -> list[int]:
         """
         Returns a histogram for the image. The histogram is returned as a
         list of pixel counts, one for each pixel value in the source
@@ -1804,7 +1803,7 @@ class Image:
         result = alpha_composite(background, overlay)
         self.paste(result, box)
 
-    def point(self, lut, mode=None):
+    def point(self, lut, mode: str | None = None) -> Image:
         """
         Maps this image through a lookup table or function.
 
@@ -1928,7 +1927,7 @@ class Image:
 
         self.im.putdata(data, scale, offset)
 
-    def putpalette(self, data, rawmode="RGB"):
+    def putpalette(self, data, rawmode="RGB") -> None:
         """
         Attaches a palette to this image.  The image must be a "P", "PA", "L"
         or "LA" image.
@@ -2108,7 +2107,7 @@ class Image:
             min(self.size[1], math.ceil(box[3] + support_y)),
         )
 
-    def resize(self, size, resample=None, box=None, reducing_gap=None):
+    def resize(self, size, resample=None, box=None, reducing_gap=None) -> Image:
         """
         Returns a resized copy of this image.
 
@@ -2200,10 +2199,11 @@ class Image:
             if factor_x > 1 or factor_y > 1:
                 reduce_box = self._get_safe_box(size, resample, box)
                 factor = (factor_x, factor_y)
-                if callable(self.reduce):
-                    self = self.reduce(factor, box=reduce_box)
-                else:
-                    self = Image.reduce(self, factor, box=reduce_box)
+                self = (
+                    self.reduce(factor, box=reduce_box)
+                    if callable(self.reduce)
+                    else Image.reduce(self, factor, box=reduce_box)
+                )
                 box = (
                     (box[0] - reduce_box[0]) / factor_x,
                     (box[1] - reduce_box[1]) / factor_y,
@@ -2818,7 +2818,7 @@ class Image:
 
         self.im.transform2(box, image.im, method, data, resample, fill)
 
-    def transpose(self, method):
+    def transpose(self, method: Transpose) -> Image:
         """
         Transpose image (flip or rotate in 90 degree steps)
 
@@ -2870,7 +2870,9 @@ class ImagePointHandler:
     (for use with :py:meth:`~PIL.Image.Image.point`)
     """
 
-    pass
+    @abc.abstractmethod
+    def point(self, im: Image) -> Image:
+        pass
 
 
 class ImageTransformHandler:
@@ -3690,6 +3692,7 @@ class Exif(_ExifBase):
 
     endian = None
     bigtiff = False
+    _loaded = False
 
     def __init__(self):
         self._data = {}
@@ -3805,7 +3808,7 @@ class Exif(_ExifBase):
 
         return merged_dict
 
-    def tobytes(self, offset=8):
+    def tobytes(self, offset: int = 8) -> bytes:
         from . import TiffImagePlugin
 
         head = self._get_head()
@@ -3960,7 +3963,7 @@ class Exif(_ExifBase):
             del self._info[tag]
         self._data[tag] = value
 
-    def __delitem__(self, tag):
+    def __delitem__(self, tag: int) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         else:

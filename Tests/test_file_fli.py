@@ -4,7 +4,7 @@ import warnings
 
 import pytest
 
-from PIL import FliImagePlugin, Image
+from PIL import FliImagePlugin, Image, ImageFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile, is_pypy
 
@@ -12,8 +12,11 @@ from .helper import assert_image_equal, assert_image_equal_tofile, is_pypy
 # save as...-> hopper.fli, default options.
 static_test_file = "Tests/images/hopper.fli"
 
-# From https://samples.libav.org/fli-flc/
+# From https://samples.ffmpeg.org/fli-flc/
 animated_test_file = "Tests/images/a.fli"
+
+# From https://samples.ffmpeg.org/fli-flc/
+animated_test_file_with_prefix_chunk = "Tests/images/2422.flc"
 
 
 def test_sanity() -> None:
@@ -30,6 +33,24 @@ def test_sanity() -> None:
         assert im.format == "FLI"
         assert im.info["duration"] == 71
         assert im.is_animated
+
+
+def test_prefix_chunk() -> None:
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    try:
+        with Image.open(animated_test_file_with_prefix_chunk) as im:
+            assert im.mode == "P"
+            assert im.size == (320, 200)
+            assert im.format == "FLI"
+            assert im.info["duration"] == 171
+            assert im.is_animated
+
+            palette = im.getpalette()
+            assert palette[3:6] == [255, 255, 255]
+            assert palette[381:384] == [204, 204, 12]
+            assert palette[765:] == [252, 0, 0]
+    finally:
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")

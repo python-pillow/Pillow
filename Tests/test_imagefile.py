@@ -31,7 +31,7 @@ SAFEBLOCK = ImageFile.SAFEBLOCK
 
 class TestImageFile:
     def test_parser(self) -> None:
-        def roundtrip(format):
+        def roundtrip(format: str) -> tuple[Image.Image, Image.Image]:
             im = hopper("L").resize((1000, 1000), Image.Resampling.NEAREST)
             if format in ("MSP", "XBM"):
                 im = im.convert("1")

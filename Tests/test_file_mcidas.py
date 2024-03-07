@@ -19,7 +19,7 @@ def test_valid_file() -> None:
     # https://ghrc.nsstc.nasa.gov/hydro/details/cmx3g8
     # https://ghrc.nsstc.nasa.gov/pub/fieldCampaigns/camex3/cmx3g8/browse/
     test_file = "Tests/images/cmx3g8_wv_1998.260_0745_mcidas.ara"
-    saved_file = "Tests/images/cmx3g8_wv_1998.260_0745_mcidas.png"
+    saved_file = "Tests/images/cmx3g8_wv_1998.260_0745_mcidas.tiff"
 
     # Act
     with Image.open(test_file) as im:
