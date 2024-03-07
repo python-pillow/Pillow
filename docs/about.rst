@@ -35,7 +35,4 @@ What about PIL?
     Prior to Pillow 2.0.0, very few image code changes were made. Pillow 2.0.0
     added Python 3 support and includes many bug fixes from many contributors.
 
-.. role:: strike
-    :class: strike
-
-As more time passes since the last PIL release (1.1.7 in 2009), the likelihood of a new PIL release decreases. :strike:`However, we've yet to hear an official "PIL is dead" announcement.` In January 2020, `the PyPI moderators exhausted the PEP 541 process for contacting the PIL project owner <https://github.com/python-pillow/Pillow/issues/1535#issuecomment-570308446>`_ and the `PIL project on PyPI <https://pypi.org/project/PIL>`_ was transferred to the `Pillow team <https://github.com/python-pillow/Pillow/graphs/contributors>`_.
+As more time passes since the last PIL release (1.1.7 in 2009), the likelihood of a new PIL release decreases. Although we've yet to hear an official "PIL is dead" announcement, in January 2020, `the PyPI moderators exhausted the PEP 541 process for contacting the PIL project owner <https://github.com/python-pillow/Pillow/issues/1535#issuecomment-570308446>`_ and the `PIL project on PyPI <https://pypi.org/project/PIL>`_ was transferred to the `Pillow team <https://github.com/python-pillow/Pillow/graphs/contributors>`_.
