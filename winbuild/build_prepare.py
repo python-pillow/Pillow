@@ -255,7 +255,7 @@ DEPS = {
             ),
         ],
         "headers": [r"png*.h"],
-        "libs": [rf"libpng{V['LIBPNG_XY']}.lib"],
+        "libs": [f"libpng{V['LIBPNG_XY']}.lib"],
     },
     "brotli": {
         "url": f"https://github.com/google/brotli/archive/refs/tags/v{V['BROTLI']}.tar.gz",
