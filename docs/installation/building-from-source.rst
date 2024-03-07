@@ -1,12 +1,20 @@
+.. raw:: html
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      activateTab(getOS());
+    });
+    </script>
+
 .. _building-from-source:
 
 Building From Source
---------------------
+====================
 
 .. _external-libraries:
 
 External Libraries
-^^^^^^^^^^^^^^^^^^
+------------------
 
 .. note::
 
@@ -221,7 +229,7 @@ Many of Pillow's features require external libraries:
     This has been tested within the Termux app on ChromeOS, on x86.
 
 Installing
-^^^^^^^^^^
+----------
 
 Once you have installed the prerequisites, to install Pillow from the source
 code on PyPI, run::
@@ -256,7 +264,7 @@ After navigating to the Pillow directory, run::
 .. _compressed archive from PyPI: https://pypi.org/project/pillow/#files
 
 Build Options
-"""""""""""""
+^^^^^^^^^^^^^
 
 * Environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
   multiprocessing to build the extension. Setting ``MAX_CONCURRENCY``
@@ -298,3 +306,12 @@ Build Options
 Sample usage::
 
     python3 -m pip install --upgrade Pillow -C [feature]=enable
+
+.. _old-versions:
+
+Old Versions
+============
+
+You can download old distributions from the `release history at PyPI
+<https://pypi.org/project/pillow/#history>`_ and by direct URL access
+eg. https://pypi.org/project/pillow/1.0/.

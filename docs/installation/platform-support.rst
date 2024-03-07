@@ -1,7 +1,7 @@
 .. _platform-support:
 
 Platform Support
-----------------
+================
 
 Current platform support for Pillow. Binary distributions are
 contributed for each release on a volunteer basis, but the source
@@ -10,7 +10,7 @@ general, we aim to support all current versions of Linux, macOS, and
 Windows.
 
 Continuous Integration Targets
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 These platforms are built and tested for every change.
 
@@ -66,7 +66,7 @@ These platforms are built and tested for every change.
 
 
 Other Platforms
-^^^^^^^^^^^^^^^
+---------------
 
 These platforms have been reported to work at the versions mentioned.
 

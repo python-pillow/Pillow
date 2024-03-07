@@ -8,4 +8,3 @@ Installation
   python-support
   platform-support
   building-from-source
-  old-versions
