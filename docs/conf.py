@@ -167,7 +167,7 @@ html_static_path = ["resources"]
 # directly to the root of the documentation.
 # html_extra_path = []
 
-html_css_files = ["css/dark.css", "css/strike.css"]
+html_css_files = ["css/dark.css"]
 
 html_js_files = [
     "js/activate_tab.js",
