@@ -23,7 +23,7 @@ Like PIL, Pillow is `licensed under the open source HPND License <https://raw.gi
 Why a fork?
 -----------
 
-PIL is not setuptools compatible. Please see `this Image-SIG post`_ for a more detailed explanation. Also, PIL's current bi-yearly (or greater) release schedule is too infrequent to accommodate the large number and frequency of issues reported.
+PIL is not setuptools compatible. Please see `this Image-SIG post`_ for a more detailed explanation. Also, PIL's bi-yearly (or greater) release schedule was too infrequent to accommodate the large number and frequency of issues reported.
 
 .. _this Image-SIG post: https://mail.python.org/pipermail/image-sig/2010-August/006480.html
 
