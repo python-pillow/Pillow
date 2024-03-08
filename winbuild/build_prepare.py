@@ -639,7 +639,6 @@ def build_dep_all(disabled: list[str], prefs: dict[str, str], verbose: bool) -> 
 
 def main() -> None:
     winbuild_dir = os.path.dirname(os.path.realpath(__file__))
-    pillow_dir = os.path.realpath(os.path.join(winbuild_dir, ".."))
 
     parser = argparse.ArgumentParser(
         prog="winbuild\\build_prepare.py",
@@ -745,7 +744,6 @@ def main() -> None:
         "architecture": args.architecture,
         **arch_prefs,
         # Pillow paths
-        "pillow_dir": pillow_dir,
         "winbuild_dir": winbuild_dir,
         # Build paths
         "bin_dir": bin_dir,
