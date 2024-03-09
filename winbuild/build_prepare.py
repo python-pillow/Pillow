@@ -114,7 +114,7 @@ V = {
     "FREETYPE": "2.13.2",
     "FRIBIDI": "1.0.13",
     "HARFBUZZ": "8.3.0",
-    "JPEGTURBO": "3.0.1",
+    "JPEGTURBO": "3.0.2",
     "LCMS2": "2.16",
     "LIBPNG": "1.6.39",
     "LIBWEBP": "1.3.2",
