@@ -507,10 +507,10 @@ rgba2rgb_(UINT8 *out, const UINT8 *in, int xsize) {
 static void
 rgbT2rgba(UINT8 *out, int xsize, int r, int g, int b) {
 #ifdef WORDS_BIGENDIAN
-    UINT32 trns = ((r & 0xffU) << 24) | ((g & 0xffU) << 16) | ((b & 0xffU) << 8) | 0xff;
+    UINT32 trns = ((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | 0xff;
     UINT32 repl = trns & 0xffffff00;
 #else
-    UINT32 trns = (0xffU << 24) | ((b & 0xffU) << 16) | ((g & 0xffU) << 8) | (r & 0xff);
+    UINT32 trns = (0xffU << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
     UINT32 repl = trns & 0x00ffffff;
 #endif
 
