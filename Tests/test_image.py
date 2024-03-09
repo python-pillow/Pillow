@@ -138,13 +138,13 @@ class TestImage:
         assert im.height == 2
 
         with pytest.raises(AttributeError):
-            im.size = (3, 4)
+            im.size = (3, 4)  # type: ignore[misc]
 
     def test_set_mode(self) -> None:
         im = Image.new("RGB", (1, 1))
 
         with pytest.raises(AttributeError):
-            im.mode = "P"
+            im.mode = "P"  # type: ignore[misc]
 
     def test_invalid_image(self) -> None:
         im = io.BytesIO(b"")

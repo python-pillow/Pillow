@@ -62,7 +62,7 @@ _MODES = {
     (2, 0): ("L", "L;2"),
     (4, 0): ("L", "L;4"),
     (8, 0): ("L", "L"),
-    (16, 0): ("I", "I;16B"),
+    (16, 0): ("I;16", "I;16B"),
     # Truecolour
     (8, 2): ("RGB", "RGB"),
     (16, 2): ("RGB", "RGB;16B"),
@@ -467,7 +467,7 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode in ("1", "L", "I"):
+        elif self.im_mode in ("1", "L", "I;16"):
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
             self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
@@ -981,7 +981,13 @@ class PngImageFile(ImageFile.ImageFile):
             except EOFError:
                 if cid == b"fdAT":
                     length -= 4
-                ImageFile._safe_read(self.fp, length)
+                try:
+                    ImageFile._safe_read(self.fp, length)
+                except OSError as e:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        break
+                    else:
+                        raise e
             except AttributeError:
                 logger.debug("%r %s %s (unknown)", cid, pos, length)
                 s = ImageFile._safe_read(self.fp, length)
@@ -1350,7 +1356,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
                 transparency = max(0, min(255, transparency))
                 alpha = b"\xFF" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
-        elif im.mode in ("1", "L", "I"):
+        elif im.mode in ("1", "L", "I", "I;16"):
             transparency = max(0, min(65535, transparency))
             chunk(fp, b"tRNS", o16(transparency))
         elif im.mode == "RGB":

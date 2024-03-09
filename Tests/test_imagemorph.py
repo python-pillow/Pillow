@@ -73,15 +73,16 @@ def test_lut(op: str) -> None:
 
 
 def test_no_operator_loaded() -> None:
+    im = Image.new("L", (1, 1))
     mop = ImageMorph.MorphOp()
     with pytest.raises(Exception) as e:
-        mop.apply(None)
+        mop.apply(im)
     assert str(e.value) == "No operator loaded"
     with pytest.raises(Exception) as e:
-        mop.match(None)
+        mop.match(im)
     assert str(e.value) == "No operator loaded"
     with pytest.raises(Exception) as e:
-        mop.save_lut(None)
+        mop.save_lut("")
     assert str(e.value) == "No operator loaded"
 
 

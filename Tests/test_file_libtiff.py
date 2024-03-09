@@ -27,7 +27,7 @@ from .helper import (
 
 @skip_unless_feature("libtiff")
 class LibTiffTestCase:
-    def _assert_noerr(self, tmp_path: Path, im: Image.Image) -> None:
+    def _assert_noerr(self, tmp_path: Path, im: TiffImagePlugin.TiffImageFile) -> None:
         """Helper tests that assert basic sanity about the g4 tiff reading"""
         # 1 bit
         assert im.mode == "1"
@@ -524,7 +524,8 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, compression=compression)
 
     def test_fp_leak(self) -> None:
-        im = Image.open("Tests/images/hopper_g4_500.tif")
+        im: Image.Image | None = Image.open("Tests/images/hopper_g4_500.tif")
+        assert im is not None
         fn = im.fp.fileno()
 
         os.fstat(fn)
@@ -716,6 +717,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 f.write(src.read())
 
         im = Image.open(tmpfile)
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         im.n_frames
         im.close()
         # Should not raise PermissionError.
@@ -1097,6 +1099,7 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as im:
             # Assert that there are multiple strips
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert len(im.tag_v2[STRIPOFFSETS]) > 1
 
     @pytest.mark.parametrize("argument", (True, False))
@@ -1113,6 +1116,7 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, **arguments)
 
             with Image.open(out) as im:
+                assert isinstance(im, TiffImagePlugin.TiffImageFile)
                 assert len(im.tag_v2[STRIPOFFSETS]) == 1
         finally:
             TiffImagePlugin.STRIP_SIZE = 65536

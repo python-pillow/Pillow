@@ -32,7 +32,7 @@ class TestImagingPaste:
     def assert_9points_paste(
         self,
         im: Image.Image,
-        im2: Image.Image,
+        im2: Image.Image | str | tuple[int, ...],
         mask: Image.Image,
         expected: list[tuple[int, int, int, int]],
     ) -> None:

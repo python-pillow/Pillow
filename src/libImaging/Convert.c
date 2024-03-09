@@ -878,6 +878,18 @@ I16B_L(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
+static void
+I16_RGB(UINT8 *out, const UINT8 *in, int xsize) {
+    int x;
+    for (x = 0; x < xsize; x++, in += 2) {
+        UINT8 v = in[1] == 0 ? in[0] : 255;
+        *out++ = v;
+        *out++ = v;
+        *out++ = v;
+        *out++ = 255;
+    }
+}
+
 static struct {
     const char *from;
     const char *to;
@@ -978,6 +990,7 @@ static struct {
 
     {"I", "I;16", I_I16L},
     {"I;16", "I", I16L_I},
+    {"I;16", "RGB", I16_RGB},
     {"L", "I;16", L_I16L},
     {"I;16", "L", I16L_L},
 
@@ -1678,6 +1691,7 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
         convert = rgb2rgba;
     } else if ((strcmp(imIn->mode, "1") == 0 ||
                 strcmp(imIn->mode, "I") == 0 ||
+                strcmp(imIn->mode, "I;16") == 0 ||
                 strcmp(imIn->mode, "L") == 0
                ) && (
                 strcmp(mode, "RGBA") == 0 ||
@@ -1687,6 +1701,8 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
             convert = bit2rgb;
         } else if (strcmp(imIn->mode, "I") == 0) {
             convert = i2rgb;
+        } else if (strcmp(imIn->mode, "I;16") == 0) {
+            convert = I16_RGB;
         } else {
             convert = l2rgb;
         }

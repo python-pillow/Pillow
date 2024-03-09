@@ -75,7 +75,7 @@ class DecompressionBombError(Exception):
 
 
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
-MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
+MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
 
 try:
@@ -978,7 +978,7 @@ class Image:
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if (self.mode in ("1", "L", "I") and mode in ("LA", "RGBA")) or (
+            if (self.mode in ("1", "L", "I", "I;16") and mode in ("LA", "RGBA")) or (
                 self.mode == "RGB" and mode == "RGBA"
             ):
                 # Use transparent conversion to promote from transparent
