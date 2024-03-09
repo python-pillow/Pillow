@@ -4,9 +4,15 @@ import os
 import subprocess
 import sys
 
+import pytest
 
-def test_main() -> None:
-    out = subprocess.check_output([sys.executable, "-m", "PIL"]).decode("utf-8")
+
+@pytest.mark.parametrize("report", (False, True))
+def test_main(report) -> None:
+    args = [sys.executable, "-m", "PIL"]
+    if report:
+        args.append("--report")
+    out = subprocess.check_output(args).decode("utf-8")
     lines = out.splitlines()
     assert lines[0] == "-" * 68
     assert lines[1].startswith("Pillow ")
@@ -37,4 +43,4 @@ def test_main() -> None:
         + "-" * 68
         + os.linesep
     )
-    assert jpeg in out
+    assert report == (jpeg not in out)

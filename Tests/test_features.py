@@ -117,9 +117,10 @@ def test_unsupported_module() -> None:
         features.version_module(module)
 
 
-def test_pilinfo() -> None:
+@pytest.mark.parametrize("supported_formats", (True, False))
+def test_pilinfo(supported_formats) -> None:
     buf = io.StringIO()
-    features.pilinfo(buf)
+    features.pilinfo(buf, supported_formats=supported_formats)
     out = buf.getvalue()
     lines = out.splitlines()
     assert lines[0] == "-" * 68
@@ -148,4 +149,4 @@ def test_pilinfo() -> None:
         + "-" * 68
         + "\n"
     )
-    assert jpeg in out
+    assert supported_formats == (jpeg in out)
