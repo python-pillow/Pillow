@@ -5,6 +5,15 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Open 16-bit grayscale PNGs as I;16 #7849
+  [radarhere]
+
+- Handle truncated chunks at the end of PNG images #7709
+  [lajiyuan, radarhere]
+
+- Match mask size to pasted image size in GifImagePlugin #7779
+  [radarhere]
+
 - Release GIL while calling ``WebPAnimDecoderGetNext`` #7782
   [evanmiller, radarhere]
 

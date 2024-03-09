@@ -80,7 +80,6 @@ Homepage = "https://python-pillow.org"
 Mastodon = "https://fosstodon.org/@pillow"
 "Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
 Source = "https://github.com/python-pillow/Pillow"
-Twitter = "https://twitter.com/PythonPillow"
 
 [tool.setuptools]
 packages = ["PIL"]

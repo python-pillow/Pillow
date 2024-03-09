@@ -14,6 +14,7 @@ from .helper import assert_image_equal, hopper, is_win32
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
+cffi: ModuleType | None
 if os.environ.get("PYTHONOPTIMIZE") == "2":
     cffi = None
 else:

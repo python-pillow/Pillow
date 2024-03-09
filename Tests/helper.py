@@ -351,7 +351,7 @@ def is_mingw() -> bool:
 
 
 class CachedProperty:
-    def __init__(self, func: Callable[[Any], None]) -> None:
+    def __init__(self, func: Callable[[Any], Any]) -> None:
         self.func = func
 
     def __get__(self, instance: Any, cls: type[Any] | None = None) -> Any:
