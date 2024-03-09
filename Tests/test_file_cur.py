@@ -7,7 +7,7 @@ from PIL import CurImagePlugin, Image
 TEST_FILE = "Tests/images/deerstalker.cur"
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open(TEST_FILE) as im:
         assert im.size == (32, 32)
         assert isinstance(im, CurImagePlugin.CurImageFile)
@@ -17,7 +17,7 @@ def test_sanity():
         assert im.getpixel((16, 16)) == (84, 87, 86, 255)
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
     with pytest.raises(SyntaxError):

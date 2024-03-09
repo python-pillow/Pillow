@@ -26,6 +26,7 @@
 
 from __future__ import annotations
 
+import abc
 import atexit
 import builtins
 import io
@@ -39,12 +40,8 @@ import tempfile
 import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
-from pathlib import Path
-
-try:
-    from defusedxml import ElementTree
-except ImportError:
-    ElementTree = None
+from types import ModuleType
+from typing import IO, TYPE_CHECKING, Any
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -60,6 +57,12 @@ from . import (
 from ._binary import i32le, o32be, o32le
 from ._util import DeferredError, is_path
 
+ElementTree: ModuleType | None
+try:
+    from defusedxml import ElementTree
+except ImportError:
+    ElementTree = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -72,7 +75,7 @@ class DecompressionBombError(Exception):
 
 
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
-MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
+MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
 
 try:
@@ -110,6 +113,7 @@ except ImportError as v:
 
 
 USE_CFFI_ACCESS = False
+cffi: ModuleType | None
 try:
     import cffi
 except ImportError:
@@ -211,14 +215,22 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # --------------------------------------------------------------------
 # Registries
 
-ID = []
-OPEN = {}
-MIME = {}
-SAVE = {}
-SAVE_ALL = {}
-EXTENSION = {}
-DECODERS = {}
-ENCODERS = {}
+if TYPE_CHECKING:
+    from . import ImageFile
+ID: list[str] = []
+OPEN: dict[
+    str,
+    tuple[
+        Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
+        Callable[[bytes], bool] | None,
+    ],
+] = {}
+MIME: dict[str, str] = {}
+SAVE: dict[str, Callable[[Image, IO[bytes], str | bytes], None]] = {}
+SAVE_ALL: dict[str, Callable[[Image, IO[bytes], str | bytes], None]] = {}
+EXTENSION: dict[str, str] = {}
+DECODERS: dict[str, object] = {}
+ENCODERS: dict[str, object] = {}
 
 # --------------------------------------------------------------------
 # Modes
@@ -571,7 +583,7 @@ class Image:
         # object is gone.
         self.im = DeferredError(ValueError("Operation on closed image"))
 
-    def _copy(self):
+    def _copy(self) -> None:
         self.load()
         self.im = self.im.copy()
         self.pyaccess = None
@@ -966,7 +978,7 @@ class Image:
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if (self.mode in ("1", "L", "I") and mode in ("LA", "RGBA")) or (
+            if (self.mode in ("1", "L", "I", "I;16") and mode in ("LA", "RGBA")) or (
                 self.mode == "RGB" and mode == "RGBA"
             ):
                 # Use transparent conversion to promote from transparent
@@ -1418,7 +1430,7 @@ class Image:
             root = ElementTree.fromstring(xmp_tags)
             return {get_name(root.tag): get_value(root)}
 
-    def getexif(self):
+    def getexif(self) -> Exif:
         """
         Gets EXIF data from the image.
 
@@ -1426,7 +1438,6 @@ class Image:
         """
         if self._exif is None:
             self._exif = Exif()
-            self._exif._loaded = False
         elif self._exif._loaded:
             return self._exif
         self._exif._loaded = True
@@ -1513,7 +1524,7 @@ class Image:
         self.load()
         return self.im.ptr
 
-    def getpalette(self, rawmode="RGB"):
+    def getpalette(self, rawmode: str | None = "RGB") -> list[int] | None:
         """
         Returns the image palette as a list.
 
@@ -1603,7 +1614,7 @@ class Image:
         x, y = self.im.getprojection()
         return list(x), list(y)
 
-    def histogram(self, mask=None, extrema=None):
+    def histogram(self, mask=None, extrema=None) -> list[int]:
         """
         Returns a histogram for the image. The histogram is returned as a
         list of pixel counts, one for each pixel value in the source
@@ -1792,7 +1803,7 @@ class Image:
         result = alpha_composite(background, overlay)
         self.paste(result, box)
 
-    def point(self, lut, mode=None):
+    def point(self, lut, mode: str | None = None) -> Image:
         """
         Maps this image through a lookup table or function.
 
@@ -1916,7 +1927,7 @@ class Image:
 
         self.im.putdata(data, scale, offset)
 
-    def putpalette(self, data, rawmode="RGB"):
+    def putpalette(self, data, rawmode="RGB") -> None:
         """
         Attaches a palette to this image.  The image must be a "P", "PA", "L"
         or "LA" image.
@@ -2096,7 +2107,7 @@ class Image:
             min(self.size[1], math.ceil(box[3] + support_y)),
         )
 
-    def resize(self, size, resample=None, box=None, reducing_gap=None):
+    def resize(self, size, resample=None, box=None, reducing_gap=None) -> Image:
         """
         Returns a resized copy of this image.
 
@@ -2188,10 +2199,11 @@ class Image:
             if factor_x > 1 or factor_y > 1:
                 reduce_box = self._get_safe_box(size, resample, box)
                 factor = (factor_x, factor_y)
-                if callable(self.reduce):
-                    self = self.reduce(factor, box=reduce_box)
-                else:
-                    self = Image.reduce(self, factor, box=reduce_box)
+                self = (
+                    self.reduce(factor, box=reduce_box)
+                    if callable(self.reduce)
+                    else Image.reduce(self, factor, box=reduce_box)
+                )
                 box = (
                     (box[0] - reduce_box[0]) / factor_x,
                     (box[1] - reduce_box[1]) / factor_y,
@@ -2370,7 +2382,7 @@ class Image:
         implement the ``seek``, ``tell``, and ``write``
         methods, and be opened in binary mode.
 
-        :param fp: A filename (string), pathlib.Path object or file object.
+        :param fp: A filename (string), os.PathLike object or file object.
         :param format: Optional format override.  If omitted, the
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
@@ -2383,13 +2395,10 @@ class Image:
            may have been created, and may contain partial data.
         """
 
-        filename = ""
+        filename: str | bytes = ""
         open_fp = False
-        if isinstance(fp, Path):
-            filename = str(fp)
-            open_fp = True
-        elif is_path(fp):
-            filename = fp
+        if is_path(fp):
+            filename = os.path.realpath(os.fspath(fp))
             open_fp = True
         elif fp == sys.stdout:
             try:
@@ -2398,7 +2407,7 @@ class Image:
                 pass
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
-            filename = fp.name
+            filename = os.path.realpath(os.fspath(fp.name))
 
         # may mutate self!
         self._ensure_mutable()
@@ -2409,7 +2418,8 @@ class Image:
 
         preinit()
 
-        ext = os.path.splitext(filename)[1].lower()
+        filename_ext = os.path.splitext(filename)[1].lower()
+        ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
 
         if not format:
             if ext not in EXTENSION:
@@ -2451,7 +2461,7 @@ class Image:
         if open_fp:
             fp.close()
 
-    def seek(self, frame) -> Image:
+    def seek(self, frame) -> None:
         """
         Seeks to the given frame in this sequence file. If you seek
         beyond the end of the sequence, the method raises an
@@ -2511,10 +2521,8 @@ class Image:
 
         self.load()
         if self.im.bands == 1:
-            ims = [self.copy()]
-        else:
-            ims = map(self._new, self.im.split())
-        return tuple(ims)
+            return (self.copy(),)
+        return tuple(map(self._new, self.im.split()))
 
     def getchannel(self, channel):
         """
@@ -2810,7 +2818,7 @@ class Image:
 
         self.im.transform2(box, image.im, method, data, resample, fill)
 
-    def transpose(self, method):
+    def transpose(self, method: Transpose) -> Image:
         """
         Transpose image (flip or rotate in 90 degree steps)
 
@@ -2862,7 +2870,9 @@ class ImagePointHandler:
     (for use with :py:meth:`~PIL.Image.Image.point`)
     """
 
-    pass
+    @abc.abstractmethod
+    def point(self, im: Image) -> Image:
+        pass
 
 
 class ImageTransformHandler:
@@ -2871,7 +2881,14 @@ class ImageTransformHandler:
     (for use with :py:meth:`~PIL.Image.Image.transform`)
     """
 
-    pass
+    @abc.abstractmethod
+    def transform(
+        self,
+        size: tuple[int, int],
+        image: Image,
+        **options: dict[str, str | int | tuple[int, ...] | list[int]],
+    ) -> Image:
+        pass
 
 
 # --------------------------------------------------------------------
@@ -3206,7 +3223,7 @@ def open(fp, mode="r", formats=None) -> Image:
     :py:meth:`~PIL.Image.Image.load` method).  See
     :py:func:`~PIL.Image.new`. See :ref:`file-handling`.
 
-    :param fp: A filename (string), pathlib.Path object or a file object.
+    :param fp: A filename (string), os.PathLike object or a file object.
        The file object must implement ``file.read``,
        ``file.seek``, and ``file.tell`` methods,
        and be opened in binary mode. The file object will also seek to zero
@@ -3243,11 +3260,9 @@ def open(fp, mode="r", formats=None) -> Image:
         raise TypeError(msg)
 
     exclusive_fp = False
-    filename = ""
-    if isinstance(fp, Path):
-        filename = str(fp.resolve())
-    elif is_path(fp):
-        filename = fp
+    filename: str | bytes = ""
+    if is_path(fp):
+        filename = os.path.realpath(os.fspath(fp))
 
     if filename:
         fp = builtins.open(filename, "rb")
@@ -3421,7 +3436,11 @@ def merge(mode, bands):
 # Plugin registry
 
 
-def register_open(id, factory, accept=None) -> None:
+def register_open(
+    id,
+    factory: Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
+    accept: Callable[[bytes], bool] | None = None,
+) -> None:
     """
     Register an image file plugin.  This function should not be used
     in application code.
@@ -3631,7 +3650,13 @@ _apply_env_variables()
 atexit.register(core.clear_cache)
 
 
-class Exif(MutableMapping):
+if TYPE_CHECKING:
+    _ExifBase = MutableMapping[int, Any]
+else:
+    _ExifBase = MutableMapping
+
+
+class Exif(_ExifBase):
     """
     This class provides read and write access to EXIF image data::
 
@@ -3667,6 +3692,7 @@ class Exif(MutableMapping):
 
     endian = None
     bigtiff = False
+    _loaded = False
 
     def __init__(self):
         self._data = {}
@@ -3782,7 +3808,7 @@ class Exif(MutableMapping):
 
         return merged_dict
 
-    def tobytes(self, offset=8):
+    def tobytes(self, offset: int = 8) -> bytes:
         from . import TiffImagePlugin
 
         head = self._get_head()
@@ -3937,7 +3963,7 @@ class Exif(MutableMapping):
             del self._info[tag]
         self._data[tag] = value
 
-    def __delitem__(self, tag):
+    def __delitem__(self, tag: int) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         else:

@@ -20,12 +20,12 @@ from PIL import _deprecate
         ),
     ],
 )
-def test_version(version, expected):
+def test_version(version: int | None, expected: str) -> None:
     with pytest.warns(DeprecationWarning, match=expected):
         _deprecate.deprecate("Old thing", version, "new thing")
 
 
-def test_unknown_version():
+def test_unknown_version() -> None:
     expected = r"Unknown removal version: 12345. Update PIL\._deprecate\?"
     with pytest.raises(ValueError, match=expected):
         _deprecate.deprecate("Old thing", 12345, "new thing")
@@ -46,13 +46,13 @@ def test_unknown_version():
         ),
     ],
 )
-def test_old_version(deprecated, plural, expected):
+def test_old_version(deprecated: str, plural: bool, expected: str) -> None:
     expected = r""
     with pytest.raises(RuntimeError, match=expected):
         _deprecate.deprecate(deprecated, 1, plural=plural)
 
 
-def test_plural():
+def test_plural() -> None:
     expected = (
         r"Old things are deprecated and will be removed in Pillow 11 \(2024-10-15\)\. "
         r"Use new thing instead\."
@@ -61,7 +61,7 @@ def test_plural():
         _deprecate.deprecate("Old things", 11, "new thing", plural=True)
 
 
-def test_replacement_and_action():
+def test_replacement_and_action() -> None:
     expected = "Use only one of 'replacement' and 'action'"
     with pytest.raises(ValueError, match=expected):
         _deprecate.deprecate(
@@ -76,7 +76,7 @@ def test_replacement_and_action():
         "Upgrade to new thing.",
     ],
 )
-def test_action(action):
+def test_action(action: str) -> None:
     expected = (
         r"Old thing is deprecated and will be removed in Pillow 11 \(2024-10-15\)\. "
         r"Upgrade to new thing\."
@@ -85,7 +85,7 @@ def test_action(action):
         _deprecate.deprecate("Old thing", 11, action=action)
 
 
-def test_no_replacement_or_action():
+def test_no_replacement_or_action() -> None:
     expected = (
         r"Old thing is deprecated and will be removed in Pillow 11 \(2024-10-15\)"
     )

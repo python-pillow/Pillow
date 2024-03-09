@@ -16,7 +16,7 @@ if ImageQt.qt_is_installed:
     from PIL.ImageQt import qRgba
 
 
-def test_rgb():
+def test_rgb() -> None:
     # from https://doc.qt.io/archives/qt-4.8/qcolor.html
     # typedef QRgb
     # An ARGB quadruplet on the format #AARRGGBB,
@@ -28,7 +28,7 @@ def test_rgb():
 
     assert qRgb(0, 0, 0) == qRgba(0, 0, 0, 255)
 
-    def checkrgb(r, g, b):
+    def checkrgb(r: int, g: int, b: int) -> None:
         val = ImageQt.rgb(r, g, b)
         val = val % 2**24  # drop the alpha
         assert val >> 16 == r
@@ -41,7 +41,7 @@ def test_rgb():
     checkrgb(0, 0, 255)
 
 
-def test_image():
+def test_image() -> None:
     modes = ["1", "RGB", "RGBA", "L", "P"]
     qt_format = ImageQt.QImage.Format if ImageQt.qt_version == "6" else ImageQt.QImage
     if hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
@@ -55,6 +55,6 @@ def test_image():
         assert_image_similar(roundtripped_im, im, 1)
 
 
-def test_closed_file():
+def test_closed_file() -> None:
     with warnings.catch_warnings():
         ImageQt.ImageQt("Tests/images/hopper.gif")

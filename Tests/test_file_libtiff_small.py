@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
 
 from PIL import Image
 
@@ -8,7 +9,6 @@ from .test_file_libtiff import LibTiffTestCase
 
 
 class TestFileLibTiffSmall(LibTiffTestCase):
-
     """The small lena image was failing on open in the libtiff
     decoder because the file pointer was set to the wrong place
     by a spurious seek. It wasn't failing with the byteio method.
@@ -17,7 +17,7 @@ class TestFileLibTiffSmall(LibTiffTestCase):
     file just before reading in libtiff. These tests remain
     to ensure that it stays fixed."""
 
-    def test_g4_hopper_file(self, tmp_path):
+    def test_g4_hopper_file(self, tmp_path: Path) -> None:
         """Testing the open file load path"""
 
         test_file = "Tests/images/hopper_g4.tif"
@@ -26,7 +26,7 @@ class TestFileLibTiffSmall(LibTiffTestCase):
                 assert im.size == (128, 128)
                 self._assert_noerr(tmp_path, im)
 
-    def test_g4_hopper_bytesio(self, tmp_path):
+    def test_g4_hopper_bytesio(self, tmp_path: Path) -> None:
         """Testing the bytesio loading code path"""
         test_file = "Tests/images/hopper_g4.tif"
         s = BytesIO()
@@ -37,7 +37,7 @@ class TestFileLibTiffSmall(LibTiffTestCase):
             assert im.size == (128, 128)
             self._assert_noerr(tmp_path, im)
 
-    def test_g4_hopper(self, tmp_path):
+    def test_g4_hopper(self, tmp_path: Path) -> None:
         """The 128x128 lena image failed for some reason."""
 
         test_file = "Tests/images/hopper_g4.tif"

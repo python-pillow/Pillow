@@ -13,8 +13,12 @@ from .helper import (
 )
 
 
-class Deformer:
-    def getmesh(self, im):
+class Deformer(ImageOps.SupportsGetMesh):
+    def getmesh(
+        self, im: Image.Image
+    ) -> list[
+        tuple[tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]]
+    ]:
         x, y = im.size
         return [((0, 0, x, y), (0, 0, x, 0, x, y, y, 0))]
 
@@ -22,7 +26,7 @@ class Deformer:
 deformer = Deformer()
 
 
-def test_sanity():
+def test_sanity() -> None:
     ImageOps.autocontrast(hopper("L"))
     ImageOps.autocontrast(hopper("RGB"))
 
@@ -84,7 +88,7 @@ def test_sanity():
     ImageOps.exif_transpose(hopper("RGB"))
 
 
-def test_1pxfit():
+def test_1pxfit() -> None:
     # Division by zero in equalize if image is 1 pixel high
     newimg = ImageOps.fit(hopper("RGB").resize((1, 1)), (35, 35))
     assert newimg.size == (35, 35)
@@ -96,7 +100,7 @@ def test_1pxfit():
     assert newimg.size == (35, 35)
 
 
-def test_fit_same_ratio():
+def test_fit_same_ratio() -> None:
     # The ratio for this image is 1000.0 / 755 = 1.3245033112582782
     # If the ratios are not acknowledged to be the same,
     # and Pillow attempts to adjust the width to
@@ -108,13 +112,13 @@ def test_fit_same_ratio():
 
 
 @pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
-def test_contain(new_size):
+def test_contain(new_size: tuple[int, int]) -> None:
     im = hopper()
     new_im = ImageOps.contain(im, new_size)
     assert new_im.size == (256, 256)
 
 
-def test_contain_round():
+def test_contain_round() -> None:
     im = Image.new("1", (43, 63), 1)
     new_im = ImageOps.contain(im, (5, 7))
     assert new_im.width == 5
@@ -132,13 +136,13 @@ def test_contain_round():
         ("hopper.png", (256, 256)),  # square
     ),
 )
-def test_cover(image_name, expected_size):
+def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
 
 
-def test_pad():
+def test_pad() -> None:
     # Same ratio
     im = hopper()
     new_size = (im.width * 2, im.height * 2)
@@ -158,7 +162,7 @@ def test_pad():
             )
 
 
-def test_pad_round():
+def test_pad_round() -> None:
     im = Image.new("1", (1, 1), 1)
     new_im = ImageOps.pad(im, (4, 1))
     assert new_im.load()[2, 0] == 1
@@ -168,7 +172,7 @@ def test_pad_round():
 
 
 @pytest.mark.parametrize("mode", ("P", "PA"))
-def test_palette(mode):
+def test_palette(mode: str) -> None:
     im = hopper(mode)
 
     # Expand
@@ -182,7 +186,7 @@ def test_palette(mode):
     )
 
 
-def test_pil163():
+def test_pil163() -> None:
     # Division by zero in equalize if < 255 pixels in image (@PIL163)
 
     i = hopper("RGB").resize((15, 16))
@@ -192,7 +196,7 @@ def test_pil163():
     ImageOps.equalize(i.convert("RGB"))
 
 
-def test_scale():
+def test_scale() -> None:
     # Test the scaling function
     i = hopper("L").resize((50, 50))
 
@@ -210,7 +214,7 @@ def test_scale():
 
 
 @pytest.mark.parametrize("border", (10, (1, 2, 3, 4)))
-def test_expand_palette(border):
+def test_expand_palette(border: int | tuple[int, int, int, int]) -> None:
     with Image.open("Tests/images/p_16.tga") as im:
         im_expanded = ImageOps.expand(im, border, (255, 0, 0))
 
@@ -236,7 +240,7 @@ def test_expand_palette(border):
         assert_image_equal(im_cropped, im)
 
 
-def test_colorize_2color():
+def test_colorize_2color() -> None:
     # Test the colorizing function with 2-color functionality
 
     # Open test image (256px by 10px, black to white)
@@ -270,7 +274,7 @@ def test_colorize_2color():
     )
 
 
-def test_colorize_2color_offset():
+def test_colorize_2color_offset() -> None:
     # Test the colorizing function with 2-color functionality and offset
 
     # Open test image (256px by 10px, black to white)
@@ -306,7 +310,7 @@ def test_colorize_2color_offset():
     )
 
 
-def test_colorize_3color_offset():
+def test_colorize_3color_offset() -> None:
     # Test the colorizing function with 3-color functionality and offset
 
     # Open test image (256px by 10px, black to white)
@@ -359,14 +363,14 @@ def test_colorize_3color_offset():
     )
 
 
-def test_exif_transpose():
+def test_exif_transpose() -> None:
     exts = [".jpg"]
     if features.check("webp") and features.check("webp_anim"):
         exts.append(".webp")
     for ext in exts:
         with Image.open("Tests/images/hopper" + ext) as base_im:
 
-            def check(orientation_im):
+            def check(orientation_im: Image.Image) -> None:
                 for im in [
                     orientation_im,
                     orientation_im.copy(),
@@ -376,6 +380,7 @@ def test_exif_transpose():
                     else:
                         original_exif = im.info["exif"]
                     transposed_im = ImageOps.exif_transpose(im)
+                    assert transposed_im is not None
                     assert_image_similar(base_im, transposed_im, 17)
                     if orientation_im is base_im:
                         assert "exif" not in im.info
@@ -387,6 +392,7 @@ def test_exif_transpose():
 
                     # Repeat the operation to test that it does not keep transposing
                     transposed_im2 = ImageOps.exif_transpose(transposed_im)
+                    assert transposed_im2 is not None
                     assert_image_equal(transposed_im2, transposed_im)
 
             check(base_im)
@@ -402,6 +408,7 @@ def test_exif_transpose():
             assert im.getexif()[0x0112] == 3
 
             transposed_im = ImageOps.exif_transpose(im)
+            assert transposed_im is not None
             assert 0x0112 not in transposed_im.getexif()
 
             transposed_im._reload_exif()
@@ -414,16 +421,18 @@ def test_exif_transpose():
         assert im.getexif()[0x0112] == 3
 
         transposed_im = ImageOps.exif_transpose(im)
+        assert transposed_im is not None
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation set directly on Image.Exif
     im = hopper()
     im.getexif()[0x0112] = 3
     transposed_im = ImageOps.exif_transpose(im)
+    assert transposed_im is not None
     assert 0x0112 not in transposed_im.getexif()
 
 
-def test_exif_transpose_in_place():
+def test_exif_transpose_in_place() -> None:
     with Image.open("Tests/images/orientation_rectangle.jpg") as im:
         assert im.size == (2, 1)
         assert im.getexif()[0x0112] == 8
@@ -435,24 +444,24 @@ def test_exif_transpose_in_place():
         assert_image_equal(im, expected)
 
 
-def test_autocontrast_unsupported_mode():
+def test_autocontrast_unsupported_mode() -> None:
     im = Image.new("RGBA", (1, 1))
     with pytest.raises(OSError):
         ImageOps.autocontrast(im)
 
 
-def test_autocontrast_cutoff():
+def test_autocontrast_cutoff() -> None:
     # Test the cutoff argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
 
-        def autocontrast(cutoff):
+        def autocontrast(cutoff: int | tuple[int, int]):
             return ImageOps.autocontrast(img, cutoff).histogram()
 
         assert autocontrast(10) == autocontrast((10, 10))
         assert autocontrast(10) != autocontrast((1, 10))
 
 
-def test_autocontrast_mask_toy_input():
+def test_autocontrast_mask_toy_input() -> None:
     # Test the mask argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
         rect_mask = Image.new("L", img.size, 0)
@@ -471,7 +480,7 @@ def test_autocontrast_mask_toy_input():
         assert ImageStat.Stat(result_nomask).median == [128]
 
 
-def test_autocontrast_mask_real_input():
+def test_autocontrast_mask_real_input() -> None:
     # Test the autocontrast with a rectangular mask
     with Image.open("Tests/images/iptc.jpg") as img:
         rect_mask = Image.new("L", img.size, 0)
@@ -486,20 +495,20 @@ def test_autocontrast_mask_real_input():
         assert result_nomask != result
         assert_tuple_approx_equal(
             ImageStat.Stat(result, mask=rect_mask).median,
-            [195, 202, 184],
+            (195, 202, 184),
             threshold=2,
             msg="autocontrast with mask pixel incorrect",
         )
         assert_tuple_approx_equal(
             ImageStat.Stat(result_nomask).median,
-            [119, 106, 79],
+            (119, 106, 79),
             threshold=2,
             msg="autocontrast without mask pixel incorrect",
         )
 
 
-def test_autocontrast_preserve_tone():
-    def autocontrast(mode, preserve_tone):
+def test_autocontrast_preserve_tone() -> None:
+    def autocontrast(mode: str, preserve_tone: bool) -> list[int]:
         im = hopper(mode)
         return ImageOps.autocontrast(im, preserve_tone=preserve_tone).histogram()
 
@@ -507,7 +516,7 @@ def test_autocontrast_preserve_tone():
     assert autocontrast("L", True) == autocontrast("L", False)
 
 
-def test_autocontrast_preserve_gradient():
+def test_autocontrast_preserve_gradient() -> None:
     gradient = Image.linear_gradient("L")
 
     # test with a grayscale gradient that extends to 0,255.
@@ -533,7 +542,7 @@ def test_autocontrast_preserve_gradient():
 @pytest.mark.parametrize(
     "color", ((255, 255, 255), (127, 255, 0), (127, 127, 127), (0, 0, 0))
 )
-def test_autocontrast_preserve_one_color(color):
+def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
     img = Image.new("RGB", (10, 10), color)
 
     # single color images shouldn't change

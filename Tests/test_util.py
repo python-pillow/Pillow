@@ -1,27 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path, PurePath
+
 import pytest
 
 from PIL import _util
 
 
-def test_is_path():
-    # Arrange
-    fp = "filename.ext"
-
-    # Act
-    it_is = _util.is_path(fp)
-
-    # Assert
-    assert it_is
-
-
-def test_path_obj_is_path():
-    # Arrange
-    from pathlib import Path
-
-    test_path = Path("filename.ext")
-
+@pytest.mark.parametrize(
+    "test_path", ["filename.ext", Path("filename.ext"), PurePath("filename.ext")]
+)
+def test_is_path(test_path: str | Path | PurePath) -> None:
     # Act
     it_is = _util.is_path(test_path)
 
@@ -29,7 +18,7 @@ def test_path_obj_is_path():
     assert it_is
 
 
-def test_is_not_path(tmp_path):
+def test_is_not_path(tmp_path: Path) -> None:
     # Arrange
     with (tmp_path / "temp.ext").open("w") as fp:
         pass
@@ -41,7 +30,7 @@ def test_is_not_path(tmp_path):
     assert not it_is_not
 
 
-def test_is_directory():
+def test_is_directory() -> None:
     # Arrange
     directory = "Tests"
 
@@ -52,7 +41,7 @@ def test_is_directory():
     assert it_is
 
 
-def test_is_not_directory():
+def test_is_not_directory() -> None:
     # Arrange
     text = "abc"
 
@@ -63,7 +52,7 @@ def test_is_not_directory():
     assert not it_is_not
 
 
-def test_deferred_error():
+def test_deferred_error() -> None:
     # Arrange
 
     # Act

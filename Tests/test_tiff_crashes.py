@@ -42,14 +42,13 @@ from .helper import on_ci
 @pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
 @pytest.mark.filterwarnings("ignore:Metadata warning")
 @pytest.mark.filterwarnings("ignore:Truncated File Read")
-def test_tiff_crashes(test_file):
+def test_tiff_crashes(test_file: str) -> None:
     try:
         with Image.open(test_file) as im:
             im.load()
     except FileNotFoundError:
-        if not on_ci():
-            pytest.skip("test image not found")
-            return
-        raise
+        if on_ci():
+            raise
+        pytest.skip("test image not found")
     except OSError:
         pass

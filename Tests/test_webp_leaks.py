@@ -14,11 +14,11 @@ class TestWebPLeaks(PillowLeakTestCase):
     mem_limit = 3 * 1024  # kb
     iterations = 100
 
-    def test_leak_load(self):
+    def test_leak_load(self) -> None:
         with open(test_file, "rb") as f:
             im_data = f.read()
 
-        def core():
+        def core() -> None:
             with Image.open(BytesIO(im_data)) as im:
                 im.load()
 

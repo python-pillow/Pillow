@@ -11,7 +11,7 @@ FpxImagePlugin = pytest.importorskip(
 )
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open("Tests/images/input_bw_one_band.fpx") as im:
         assert im.mode == "L"
         assert im.size == (70, 46)
@@ -20,7 +20,7 @@ def test_sanity():
         assert_image_equal_tofile(im, "Tests/images/input_bw_one_band.png")
 
 
-def test_close():
+def test_close() -> None:
     with Image.open("Tests/images/input_bw_one_band.fpx") as im:
         pass
     assert im.ole.fp.closed
@@ -30,7 +30,7 @@ def test_close():
     assert im.ole.fp.closed
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     # Test an invalid OLE file
     invalid_file = "Tests/images/flower.jpg"
     with pytest.raises(SyntaxError):
@@ -42,7 +42,7 @@ def test_invalid_file():
         FpxImagePlugin.FpxImageFile(ole_file)
 
 
-def test_fpx_invalid_number_of_bands():
+def test_fpx_invalid_number_of_bands() -> None:
     with pytest.raises(OSError, match="Invalid number of bands"):
         with Image.open("Tests/images/input_bw_five_bands.fpx"):
             pass

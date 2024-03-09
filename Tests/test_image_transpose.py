@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from PIL import Image
 from PIL.Image import Transpose
 
 from . import helper
@@ -14,7 +15,7 @@ HOPPER = {
 
 
 @pytest.mark.parametrize("mode", HOPPER)
-def test_flip_left_right(mode):
+def test_flip_left_right(mode: str) -> None:
     im = HOPPER[mode]
     out = im.transpose(Transpose.FLIP_LEFT_RIGHT)
     assert out.mode == mode
@@ -28,7 +29,7 @@ def test_flip_left_right(mode):
 
 
 @pytest.mark.parametrize("mode", HOPPER)
-def test_flip_top_bottom(mode):
+def test_flip_top_bottom(mode: str) -> None:
     im = HOPPER[mode]
     out = im.transpose(Transpose.FLIP_TOP_BOTTOM)
     assert out.mode == mode
@@ -42,7 +43,7 @@ def test_flip_top_bottom(mode):
 
 
 @pytest.mark.parametrize("mode", HOPPER)
-def test_rotate_90(mode):
+def test_rotate_90(mode: str) -> None:
     im = HOPPER[mode]
     out = im.transpose(Transpose.ROTATE_90)
     assert out.mode == mode
@@ -56,7 +57,7 @@ def test_rotate_90(mode):
 
 
 @pytest.mark.parametrize("mode", HOPPER)
-def test_rotate_180(mode):
+def test_rotate_180(mode: str) -> None:
     im = HOPPER[mode]
     out = im.transpose(Transpose.ROTATE_180)
     assert out.mode == mode
@@ -70,7 +71,7 @@ def test_rotate_180(mode):
 
 
 @pytest.mark.parametrize("mode", HOPPER)
-def test_rotate_270(mode):
+def test_rotate_270(mode: str) -> None:
     im = HOPPER[mode]
     out = im.transpose(Transpose.ROTATE_270)
     assert out.mode == mode
@@ -84,7 +85,7 @@ def test_rotate_270(mode):
 
 
 @pytest.mark.parametrize("mode", HOPPER)
-def test_transpose(mode):
+def test_transpose(mode: str) -> None:
     im = HOPPER[mode]
     out = im.transpose(Transpose.TRANSPOSE)
     assert out.mode == mode
@@ -98,7 +99,7 @@ def test_transpose(mode):
 
 
 @pytest.mark.parametrize("mode", HOPPER)
-def test_tranverse(mode):
+def test_tranverse(mode: str) -> None:
     im = HOPPER[mode]
     out = im.transpose(Transpose.TRANSVERSE)
     assert out.mode == mode
@@ -112,10 +113,10 @@ def test_tranverse(mode):
 
 
 @pytest.mark.parametrize("mode", HOPPER)
-def test_roundtrip(mode):
+def test_roundtrip(mode: str) -> None:
     im = HOPPER[mode]
 
-    def transpose(first, second):
+    def transpose(first: Transpose, second: Transpose) -> Image.Image:
         return im.transpose(first).transpose(second)
 
     assert_image_equal(

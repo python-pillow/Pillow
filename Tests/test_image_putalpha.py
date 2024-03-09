@@ -3,7 +3,7 @@ from __future__ import annotations
 from PIL import Image
 
 
-def test_interface():
+def test_interface() -> None:
     im = Image.new("RGBA", (1, 1), (1, 2, 3, 0))
     assert im.getpixel((0, 0)) == (1, 2, 3, 0)
 
@@ -17,7 +17,7 @@ def test_interface():
     assert im.getpixel((0, 0)) == (1, 2, 3, 5)
 
 
-def test_promote():
+def test_promote() -> None:
     im = Image.new("L", (1, 1), 1)
     assert im.getpixel((0, 0)) == 1
 
@@ -40,7 +40,7 @@ def test_promote():
     assert im.getpixel((0, 0)) == (1, 2, 3, 4)
 
 
-def test_readonly():
+def test_readonly() -> None:
     im = Image.new("RGB", (1, 1), (1, 2, 3))
     im.readonly = 1
 

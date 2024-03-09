@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import BufrStubImagePlugin, Image
@@ -9,7 +11,7 @@ from .helper import hopper
 TEST_FILE = "Tests/images/gfs.t06z.rassda.tm00.bufr_d"
 
 
-def test_open():
+def test_open() -> None:
     # Act
     with Image.open(TEST_FILE) as im:
         # Assert
@@ -20,7 +22,7 @@ def test_open():
         assert im.size == (1, 1)
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     # Arrange
     invalid_file = "Tests/images/flower.jpg"
 
@@ -29,7 +31,7 @@ def test_invalid_file():
         BufrStubImagePlugin.BufrStubImageFile(invalid_file)
 
 
-def test_load():
+def test_load() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         # Act / Assert: stub cannot load without an implemented handler
@@ -37,7 +39,7 @@ def test_load():
             im.load()
 
 
-def test_save(tmp_path):
+def test_save(tmp_path: Path) -> None:
     # Arrange
     im = hopper()
     tmpfile = str(tmp_path / "temp.bufr")
@@ -47,13 +49,13 @@ def test_save(tmp_path):
         im.save(tmpfile)
 
 
-def test_handler(tmp_path):
+def test_handler(tmp_path: Path) -> None:
     class TestHandler:
         opened = False
         loaded = False
         saved = False
 
-        def open(self, im):
+        def open(self, im) -> None:
             self.opened = True
 
         def load(self, im):
@@ -61,7 +63,7 @@ def test_handler(tmp_path):
             im.fp.close()
             return Image.new("RGB", (1, 1))
 
-        def save(self, im, fp, filename):
+        def save(self, im, fp, filename) -> None:
             self.saved = True
 
     handler = TestHandler()

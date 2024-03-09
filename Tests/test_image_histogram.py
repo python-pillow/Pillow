@@ -3,8 +3,8 @@ from __future__ import annotations
 from .helper import hopper
 
 
-def test_histogram():
-    def histogram(mode):
+def test_histogram() -> None:
+    def histogram(mode: str) -> tuple[int, int, int]:
         h = hopper(mode).histogram()
         return len(h), min(h), max(h)
 

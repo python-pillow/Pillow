@@ -9,7 +9,7 @@ from .helper import assert_image_similar, hopper
 TEST_FILE = "Tests/images/hopper.xpm"
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open(TEST_FILE) as im:
         im.load()
         assert im.mode == "P"
@@ -20,14 +20,14 @@ def test_sanity():
         assert_image_similar(im.convert("RGB"), hopper("RGB"), 60)
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
     with pytest.raises(SyntaxError):
         XpmImagePlugin.XpmImageFile(invalid_file)
 
 
-def test_load_read():
+def test_load_read() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         dummy_bytes = 1

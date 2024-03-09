@@ -5,6 +5,33 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Open 16-bit grayscale PNGs as I;16 #7849
+  [radarhere]
+
+- Handle truncated chunks at the end of PNG images #7709
+  [lajiyuan, radarhere]
+
+- Match mask size to pasted image size in GifImagePlugin #7779
+  [radarhere]
+
+- Release GIL while calling ``WebPAnimDecoderGetNext`` #7782
+  [evanmiller, radarhere]
+
+- Fixed reading FLI/FLC images with a prefix chunk #7804
+  [twolife]
+
+- Update wl-paste handling and return None for some errors in grabclipboard() on Linux #7745
+  [nik012003, radarhere]
+
+- Remove execute bit from ``setup.py`` #7760
+  [hugovk]
+
+- Do not support using test-image-results to upload images after test failures #7739
+  [radarhere]
+
+- Changed ImageMath.ops to be static #7721
+  [radarhere]
+
 - Fix APNG info after seeking backwards more than twice #7701
   [esoma, radarhere]
 

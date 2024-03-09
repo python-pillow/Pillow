@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 from packaging.version import parse as parse_version
 
@@ -12,12 +14,12 @@ numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 im = hopper().resize((128, 100))
 
 
-def test_toarray():
-    def test(mode):
+def test_toarray() -> None:
+    def test(mode: str) -> tuple[tuple[int, ...], str, int]:
         ai = numpy.array(im.convert(mode))
         return ai.shape, ai.dtype.str, ai.nbytes
 
-    def test_with_dtype(dtype):
+    def test_with_dtype(dtype) -> None:
         ai = numpy.array(im, dtype=dtype)
         assert ai.dtype == dtype
 
@@ -46,18 +48,18 @@ def test_toarray():
                 numpy.array(im_truncated)
 
 
-def test_fromarray():
+def test_fromarray() -> None:
     class Wrapper:
         """Class with API matching Image.fromarray"""
 
-        def __init__(self, img, arr_params):
+        def __init__(self, img: Image.Image, arr_params: dict[str, Any]) -> None:
             self.img = img
             self.__array_interface__ = arr_params
 
-        def tobytes(self):
+        def tobytes(self) -> bytes:
             return self.img.tobytes()
 
-    def test(mode):
+    def test(mode: str) -> tuple[str, tuple[int, int], bool]:
         i = im.convert(mode)
         a = numpy.array(i)
         # Make wrapper instance for image, new array interface
@@ -89,7 +91,7 @@ def test_fromarray():
         Image.fromarray(wrapped)
 
 
-def test_fromarray_palette():
+def test_fromarray_palette() -> None:
     # Arrange
     i = im.convert("L")
     a = numpy.array(i)

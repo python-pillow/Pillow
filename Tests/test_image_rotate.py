@@ -12,7 +12,13 @@ from .helper import (
 )
 
 
-def rotate(im, mode, angle, center=None, translate=None):
+def rotate(
+    im: Image.Image,
+    mode: str,
+    angle: int,
+    center: tuple[int, int] | None = None,
+    translate: tuple[int, int] | None = None,
+) -> None:
     out = im.rotate(angle, center=center, translate=translate)
     assert out.mode == mode
     assert out.size == im.size  # default rotate clips output
@@ -27,13 +33,13 @@ def rotate(im, mode, angle, center=None, translate=None):
 
 
 @pytest.mark.parametrize("mode", ("1", "P", "L", "RGB", "I", "F"))
-def test_mode(mode):
+def test_mode(mode: str) -> None:
     im = hopper(mode)
     rotate(im, mode, 45)
 
 
 @pytest.mark.parametrize("angle", (0, 90, 180, 270))
-def test_angle(angle):
+def test_angle(angle: int) -> None:
     with Image.open("Tests/images/test-card.png") as im:
         rotate(im, im.mode, angle)
 
@@ -42,12 +48,12 @@ def test_angle(angle):
 
 
 @pytest.mark.parametrize("angle", (0, 45, 90, 180, 270))
-def test_zero(angle):
+def test_zero(angle: int) -> None:
     im = Image.new("RGB", (0, 0))
     rotate(im, im.mode, angle)
 
 
-def test_resample():
+def test_resample() -> None:
     # Target image creation, inspected by eye.
     # >>> im = Image.open('Tests/images/hopper.ppm')
     # >>> im = im.rotate(45, resample=Image.Resampling.BICUBIC, expand=True)
@@ -64,7 +70,7 @@ def test_resample():
             assert_image_similar(im, target, epsilon)
 
 
-def test_center_0():
+def test_center_0() -> None:
     im = hopper()
     im = im.rotate(45, center=(0, 0), resample=Image.Resampling.BICUBIC)
 
@@ -75,7 +81,7 @@ def test_center_0():
     assert_image_similar(im, target, 15)
 
 
-def test_center_14():
+def test_center_14() -> None:
     im = hopper()
     im = im.rotate(45, center=(14, 14), resample=Image.Resampling.BICUBIC)
 
@@ -86,7 +92,7 @@ def test_center_14():
         assert_image_similar(im, target, 10)
 
 
-def test_translate():
+def test_translate() -> None:
     im = hopper()
     with Image.open("Tests/images/hopper_45.png") as target:
         target_origin = (target.size[1] / 2 - 64) - 5
@@ -99,7 +105,7 @@ def test_translate():
     assert_image_similar(im, target, 1)
 
 
-def test_fastpath_center():
+def test_fastpath_center() -> None:
     # if the center is -1,-1 and we rotate by 90<=x<=270 the
     # resulting image should be black
     for angle in (90, 180, 270):
@@ -107,7 +113,7 @@ def test_fastpath_center():
         assert_image_equal(im, Image.new("RGB", im.size, "black"))
 
 
-def test_fastpath_translate():
+def test_fastpath_translate() -> None:
     # if we post-translate by -128
     # resulting image should be black
     for angle in (0, 90, 180, 270):
@@ -115,26 +121,26 @@ def test_fastpath_translate():
         assert_image_equal(im, Image.new("RGB", im.size, "black"))
 
 
-def test_center():
+def test_center() -> None:
     im = hopper()
     rotate(im, im.mode, 45, center=(0, 0))
     rotate(im, im.mode, 45, translate=(im.size[0] / 2, 0))
     rotate(im, im.mode, 45, center=(0, 0), translate=(im.size[0] / 2, 0))
 
 
-def test_rotate_no_fill():
+def test_rotate_no_fill() -> None:
     im = Image.new("RGB", (100, 100), "green")
     im = im.rotate(45)
     assert_image_equal_tofile(im, "Tests/images/rotate_45_no_fill.png")
 
 
-def test_rotate_with_fill():
+def test_rotate_with_fill() -> None:
     im = Image.new("RGB", (100, 100), "green")
     im = im.rotate(45, fillcolor="white")
     assert_image_equal_tofile(im, "Tests/images/rotate_45_with_fill.png")
 
 
-def test_alpha_rotate_no_fill():
+def test_alpha_rotate_no_fill() -> None:
     # Alpha images are handled differently internally
     im = Image.new("RGBA", (10, 10), "green")
     im = im.rotate(45, expand=1)
@@ -142,7 +148,7 @@ def test_alpha_rotate_no_fill():
     assert corner == (0, 0, 0, 0)
 
 
-def test_alpha_rotate_with_fill():
+def test_alpha_rotate_with_fill() -> None:
     # Alpha images are handled differently internally
     im = Image.new("RGBA", (10, 10), "green")
     im = im.rotate(45, expand=1, fillcolor=(255, 0, 0, 255))

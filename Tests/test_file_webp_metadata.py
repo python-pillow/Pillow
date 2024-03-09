@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -13,13 +15,14 @@ pytestmark = [
     skip_unless_feature("webp_mux"),
 ]
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:
     ElementTree = None
 
 
-def test_read_exif_metadata():
+def test_read_exif_metadata() -> None:
     file_path = "Tests/images/flower.webp"
     with Image.open(file_path) as image:
         assert image.format == "WEBP"
@@ -37,7 +40,7 @@ def test_read_exif_metadata():
             assert exif_data == expected_exif
 
 
-def test_read_exif_metadata_without_prefix():
+def test_read_exif_metadata_without_prefix() -> None:
     with Image.open("Tests/images/flower2.webp") as im:
         # Assert prefix is not present
         assert im.info["exif"][:6] != b"Exif\x00\x00"
@@ -49,7 +52,7 @@ def test_read_exif_metadata_without_prefix():
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
-def test_write_exif_metadata():
+def test_write_exif_metadata() -> None:
     file_path = "Tests/images/flower.jpg"
     test_buffer = BytesIO()
     with Image.open(file_path) as image:
@@ -63,7 +66,7 @@ def test_write_exif_metadata():
     assert webp_exif == expected_exif[6:], "WebP EXIF didn't match"
 
 
-def test_read_icc_profile():
+def test_read_icc_profile() -> None:
     file_path = "Tests/images/flower2.webp"
     with Image.open(file_path) as image:
         assert image.format == "WEBP"
@@ -80,7 +83,7 @@ def test_read_icc_profile():
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
-def test_write_icc_metadata():
+def test_write_icc_metadata() -> None:
     file_path = "Tests/images/flower2.jpg"
     test_buffer = BytesIO()
     with Image.open(file_path) as image:
@@ -100,7 +103,7 @@ def test_write_icc_metadata():
 @mark_if_feature_version(
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
-def test_read_no_exif():
+def test_read_no_exif() -> None:
     file_path = "Tests/images/flower.jpg"
     test_buffer = BytesIO()
     with Image.open(file_path) as image:
@@ -113,7 +116,7 @@ def test_read_no_exif():
         assert not webp_image._getexif()
 
 
-def test_getxmp():
+def test_getxmp() -> None:
     with Image.open("Tests/images/flower.webp") as im:
         assert "xmp" not in im.info
         assert im.getxmp() == {}
@@ -133,7 +136,7 @@ def test_getxmp():
 
 
 @skip_unless_feature("webp_anim")
-def test_write_animated_metadata(tmp_path):
+def test_write_animated_metadata(tmp_path: Path) -> None:
     iccp_data = b"<iccp_data>"
     exif_data = b"<exif_data>"
     xmp_data = b"<xmp_data>"

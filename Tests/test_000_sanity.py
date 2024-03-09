@@ -3,7 +3,7 @@ from __future__ import annotations
 from PIL import Image
 
 
-def test_sanity():
+def test_sanity() -> None:
     # Make sure we have the binary extension
     Image.core.new("L", (100, 100))
 

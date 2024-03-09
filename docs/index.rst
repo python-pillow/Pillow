@@ -49,7 +49,7 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow
    :alt: Zenodo
 
-.. image:: https://tidelift.com/badges/package/pypi/Pillow?style=flat
+.. image:: https://tidelift.com/badges/package/pypi/pillow?style=flat
    :target: https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge
    :alt: Tidelift
 
@@ -73,10 +73,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
    :alt: Join the chat at https://gitter.im/python-pillow/Pillow
 
-.. image:: https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg
-   :target: https://twitter.com/PythonPillow
-   :alt: Follow on https://twitter.com/PythonPillow
-
 .. image:: https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg
    :target: https://fosstodon.org/@pillow
    :alt: Follow on https://fosstodon.org/@pillow
@@ -97,7 +93,7 @@ The core image library is designed for fast access to data stored in a few basic
 .. toctree::
    :maxdepth: 2
 
-   installation.rst
+   installation/index.rst
    handbook/index.rst
    reference/index.rst
    porting.rst

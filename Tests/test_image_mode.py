@@ -7,7 +7,7 @@ from PIL import Image, ImageMode
 from .helper import hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     with hopper() as im:
         im.mode
 
@@ -69,7 +69,7 @@ def test_sanity():
 )
 def test_properties(
     mode, expected_base, expected_type, expected_bands, expected_band_names
-):
+) -> None:
     assert Image.getmodebase(mode) == expected_base
     assert Image.getmodetype(mode) == expected_type
     assert Image.getmodebands(mode) == expected_bands

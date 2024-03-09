@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image
@@ -10,7 +12,7 @@ _webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 RGB_MODE = "RGB"
 
 
-def test_write_lossless_rgb(tmp_path):
+def test_write_lossless_rgb(tmp_path: Path) -> None:
     if _webp.WebPDecoderVersion() < 0x0200:
         pytest.skip("lossless not included")
 

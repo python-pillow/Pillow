@@ -8,7 +8,7 @@ from .helper import assert_image_equal, hopper
 
 
 @pytest.mark.parametrize("mode", ("1", "P", "L", "RGB", "I", "F"))
-def test_crop(mode):
+def test_crop(mode: str) -> None:
     im = hopper(mode)
     assert_image_equal(im.crop(), im)
 
@@ -17,8 +17,8 @@ def test_crop(mode):
     assert cropped.size == (50, 50)
 
 
-def test_wide_crop():
-    def crop(*bbox):
+def test_wide_crop() -> None:
+    def crop(*bbox: int) -> tuple[int, ...]:
         i = im.crop(bbox)
         h = i.histogram()
         while h and not h[-1]:
@@ -47,14 +47,14 @@ def test_wide_crop():
 
 
 @pytest.mark.parametrize("box", ((8, 2, 2, 8), (2, 8, 8, 2), (8, 8, 2, 2)))
-def test_negative_crop(box):
+def test_negative_crop(box: tuple[int, int, int, int]) -> None:
     im = Image.new("RGB", (10, 10))
 
     with pytest.raises(ValueError):
         im.crop(box)
 
 
-def test_crop_float():
+def test_crop_float() -> None:
     # Check cropping floats are rounded to nearest integer
     # https://github.com/python-pillow/Pillow/issues/1744
 
@@ -69,7 +69,7 @@ def test_crop_float():
     assert cropped.size == (3, 5)
 
 
-def test_crop_crash():
+def test_crop_crash() -> None:
     # Image.crop crashes prepatch with an access violation
     # apparently a use after free on Windows, see
     # https://github.com/python-pillow/Pillow/issues/1077
@@ -87,7 +87,7 @@ def test_crop_crash():
     img.load()
 
 
-def test_crop_zero():
+def test_crop_zero() -> None:
     im = Image.new("RGB", (0, 0), "white")
 
     cropped = im.crop((0, 0, 0, 0))

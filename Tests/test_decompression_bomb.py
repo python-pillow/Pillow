@@ -12,16 +12,16 @@ ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
 
 
 class TestDecompressionBomb:
-    def teardown_method(self, method):
+    def teardown_method(self, method) -> None:
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
-    def test_no_warning_small_file(self):
+    def test_no_warning_small_file(self) -> None:
         # Implicit assert: no warning.
         # A warning would cause a failure.
         with Image.open(TEST_FILE):
             pass
 
-    def test_no_warning_no_limit(self):
+    def test_no_warning_no_limit(self) -> None:
         # Arrange
         # Turn limit off
         Image.MAX_IMAGE_PIXELS = None
@@ -33,7 +33,7 @@ class TestDecompressionBomb:
         with Image.open(TEST_FILE):
             pass
 
-    def test_warning(self):
+    def test_warning(self) -> None:
         # Set limit to trigger warning on the test file
         Image.MAX_IMAGE_PIXELS = 128 * 128 - 1
         assert Image.MAX_IMAGE_PIXELS == 128 * 128 - 1
@@ -42,7 +42,7 @@ class TestDecompressionBomb:
             with Image.open(TEST_FILE):
                 pass
 
-    def test_exception(self):
+    def test_exception(self) -> None:
         # Set limit to trigger exception on the test file
         Image.MAX_IMAGE_PIXELS = 64 * 128 - 1
         assert Image.MAX_IMAGE_PIXELS == 64 * 128 - 1
@@ -51,22 +51,22 @@ class TestDecompressionBomb:
             with Image.open(TEST_FILE):
                 pass
 
-    def test_exception_ico(self):
+    def test_exception_ico(self) -> None:
         with pytest.raises(Image.DecompressionBombError):
             with Image.open("Tests/images/decompression_bomb.ico"):
                 pass
 
-    def test_exception_gif(self):
+    def test_exception_gif(self) -> None:
         with pytest.raises(Image.DecompressionBombError):
             with Image.open("Tests/images/decompression_bomb.gif"):
                 pass
 
-    def test_exception_gif_extents(self):
+    def test_exception_gif_extents(self) -> None:
         with Image.open("Tests/images/decompression_bomb_extents.gif") as im:
             with pytest.raises(Image.DecompressionBombError):
                 im.seek(1)
 
-    def test_exception_gif_zero_width(self):
+    def test_exception_gif_zero_width(self) -> None:
         # Set limit to trigger exception on the test file
         Image.MAX_IMAGE_PIXELS = 4 * 64 * 128
         assert Image.MAX_IMAGE_PIXELS == 4 * 64 * 128
@@ -75,7 +75,7 @@ class TestDecompressionBomb:
             with Image.open("Tests/images/zero_width.gif"):
                 pass
 
-    def test_exception_bmp(self):
+    def test_exception_bmp(self) -> None:
         with pytest.raises(Image.DecompressionBombError):
             with Image.open("Tests/images/bmp/b/reallybig.bmp"):
                 pass
@@ -83,15 +83,15 @@ class TestDecompressionBomb:
 
 class TestDecompressionCrop:
     @classmethod
-    def setup_class(cls):
+    def setup_class(cls) -> None:
         width, height = 128, 128
         Image.MAX_IMAGE_PIXELS = height * width * 4 - 1
 
     @classmethod
-    def teardown_class(cls):
+    def teardown_class(cls) -> None:
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
-    def test_enlarge_crop(self):
+    def test_enlarge_crop(self) -> None:
         # Crops can extend the extents, therefore we should have the
         # same decompression bomb warnings on them.
         with hopper() as src:
@@ -99,7 +99,7 @@ class TestDecompressionCrop:
             with pytest.warns(Image.DecompressionBombWarning):
                 src.crop(box)
 
-    def test_crop_decompression_checks(self):
+    def test_crop_decompression_checks(self) -> None:
         im = Image.new("RGB", (100, 100))
 
         for value in ((-9999, -9999, -9990, -9990), (-999, -999, -990, -990)):

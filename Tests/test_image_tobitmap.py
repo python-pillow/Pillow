@@ -5,7 +5,7 @@ import pytest
 from .helper import assert_image_equal, fromstring, hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     with pytest.raises(ValueError):
         hopper().tobitmap()
 

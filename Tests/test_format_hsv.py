@@ -2,30 +2,27 @@ from __future__ import annotations
 
 import colorsys
 import itertools
+from typing import Callable
 
 from PIL import Image
 
 from .helper import assert_image_similar, hopper
 
 
-def int_to_float(i):
+def int_to_float(i: int) -> float:
     return i / 255
 
 
-def str_to_float(i):
-    return ord(i) / 255
-
-
-def tuple_to_ints(tp):
+def tuple_to_ints(tp: tuple[float, float, float]) -> tuple[int, int, int]:
     x, y, z = tp
     return int(x * 255.0), int(y * 255.0), int(z * 255.0)
 
 
-def test_sanity():
+def test_sanity() -> None:
     Image.new("HSV", (100, 100))
 
 
-def wedge():
+def wedge() -> Image.Image:
     w = Image._wedge()
     w90 = w.rotate(90)
 
@@ -49,7 +46,11 @@ def wedge():
     return img
 
 
-def to_xxx_colorsys(im, func, mode):
+def to_xxx_colorsys(
+    im: Image.Image,
+    func: Callable[[float, float, float], tuple[float, float, float]],
+    mode: str,
+) -> Image.Image:
     # convert the hard way using the library colorsys routines.
 
     (r, g, b) = im.split()
@@ -70,15 +71,15 @@ def to_xxx_colorsys(im, func, mode):
     return hsv
 
 
-def to_hsv_colorsys(im):
+def to_hsv_colorsys(im: Image.Image) -> Image.Image:
     return to_xxx_colorsys(im, colorsys.rgb_to_hsv, "HSV")
 
 
-def to_rgb_colorsys(im):
+def to_rgb_colorsys(im: Image.Image) -> Image.Image:
     return to_xxx_colorsys(im, colorsys.hsv_to_rgb, "RGB")
 
 
-def test_wedge():
+def test_wedge() -> None:
     src = wedge().resize((3 * 32, 32), Image.Resampling.BILINEAR)
     im = src.convert("HSV")
     comparable = to_hsv_colorsys(src)
@@ -110,7 +111,7 @@ def test_wedge():
     )
 
 
-def test_convert():
+def test_convert() -> None:
     im = hopper("RGB").convert("HSV")
     comparable = to_hsv_colorsys(hopper("RGB"))
 
@@ -128,7 +129,7 @@ def test_convert():
     )
 
 
-def test_hsv_to_rgb():
+def test_hsv_to_rgb() -> None:
     comparable = to_hsv_colorsys(hopper("RGB"))
     converted = comparable.convert("RGB")
     comparable = to_rgb_colorsys(comparable)

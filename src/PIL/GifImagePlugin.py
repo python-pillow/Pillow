@@ -641,17 +641,15 @@ def _write_multiple_frames(im, fp, palette):
                 if encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         try:
-                            encoderinfo[
-                                "transparency"
-                            ] = im_frame.palette._new_color_index(im_frame)
+                            encoderinfo["transparency"] = (
+                                im_frame.palette._new_color_index(im_frame)
+                            )
                         except ValueError:
                             pass
                     if "transparency" in encoderinfo:
                         # When the delta is zero, fill the image with transparency
                         diff_frame = im_frame.copy()
-                        fill = Image.new(
-                            "P", diff_frame.size, encoderinfo["transparency"]
-                        )
+                        fill = Image.new("P", delta.size, encoderinfo["transparency"])
                         if delta.mode == "RGBA":
                             r, g, b, a = delta.split()
                             mask = ImageMath.eval(

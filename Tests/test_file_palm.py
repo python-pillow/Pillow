@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os.path
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -10,7 +11,7 @@ from PIL import Image
 from .helper import assert_image_equal, hopper, magick_command
 
 
-def helper_save_as_palm(tmp_path, mode):
+def helper_save_as_palm(tmp_path: Path, mode: str) -> None:
     # Arrange
     im = hopper(mode)
     outfile = str(tmp_path / ("temp_" + mode + ".palm"))
@@ -23,7 +24,7 @@ def helper_save_as_palm(tmp_path, mode):
     assert os.path.getsize(outfile) > 0
 
 
-def open_with_magick(magick, tmp_path, f):
+def open_with_magick(magick: list[str], tmp_path: Path, f: str) -> Image.Image:
     outfile = str(tmp_path / "temp.png")
     rc = subprocess.call(
         magick + [f, outfile], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
@@ -32,7 +33,7 @@ def open_with_magick(magick, tmp_path, f):
     return Image.open(outfile)
 
 
-def roundtrip(tmp_path, mode):
+def roundtrip(tmp_path: Path, mode: str) -> None:
     magick = magick_command()
     if not magick:
         return
@@ -45,7 +46,7 @@ def roundtrip(tmp_path, mode):
     assert_image_equal(converted, im)
 
 
-def test_monochrome(tmp_path):
+def test_monochrome(tmp_path: Path) -> None:
     # Arrange
     mode = "1"
 
@@ -55,7 +56,7 @@ def test_monochrome(tmp_path):
 
 
 @pytest.mark.xfail(reason="Palm P image is wrong")
-def test_p_mode(tmp_path):
+def test_p_mode(tmp_path: Path) -> None:
     # Arrange
     mode = "P"
 
@@ -65,6 +66,6 @@ def test_p_mode(tmp_path):
 
 
 @pytest.mark.parametrize("mode", ("L", "RGB"))
-def test_oserror(tmp_path, mode):
+def test_oserror(tmp_path: Path, mode: str) -> None:
     with pytest.raises(OSError):
         helper_save_as_palm(tmp_path, mode)

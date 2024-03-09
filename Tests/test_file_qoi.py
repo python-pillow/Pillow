@@ -7,7 +7,7 @@ from PIL import Image, QoiImagePlugin
 from .helper import assert_image_equal_tofile
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open("Tests/images/hopper.qoi") as im:
         assert im.mode == "RGB"
         assert im.size == (128, 128)
@@ -23,7 +23,7 @@ def test_sanity():
         assert_image_equal_tofile(im, "Tests/images/pil123rgba.png")
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
     with pytest.raises(SyntaxError):

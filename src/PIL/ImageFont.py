@@ -33,10 +33,10 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
-from pathlib import Path
 from typing import BinaryIO
 
 from . import Image
+from ._typing import StrOrBytesPath
 from ._util import is_directory, is_path
 
 
@@ -193,7 +193,7 @@ class FreeTypeFont:
 
     def __init__(
         self,
-        font: bytes | str | Path | BinaryIO | None = None,
+        font: StrOrBytesPath | BinaryIO | None = None,
         size: float = 10,
         index: int = 0,
         encoding: str = "",
@@ -230,8 +230,7 @@ class FreeTypeFont:
             )
 
         if is_path(font):
-            if isinstance(font, Path):
-                font = str(font)
+            font = os.path.realpath(os.fspath(font))
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
@@ -872,7 +871,7 @@ def load_path(filename):
     raise OSError(msg)
 
 
-def load_default(size=None):
+def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     """If FreeType support is available, load a version of Aileron Regular,
     https://dotcolon.net/font/aileron, with a more limited character set.
 

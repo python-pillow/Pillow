@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image
@@ -12,7 +14,7 @@ from .helper import (
 )
 
 
-def test_load_blp1():
+def test_load_blp1() -> None:
     with Image.open("Tests/images/blp/blp1_jpeg.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp1_jpeg.png")
 
@@ -20,22 +22,22 @@ def test_load_blp1():
         im.load()
 
 
-def test_load_blp2_raw():
+def test_load_blp2_raw() -> None:
     with Image.open("Tests/images/blp/blp2_raw.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_raw.png")
 
 
-def test_load_blp2_dxt1():
+def test_load_blp2_dxt1() -> None:
     with Image.open("Tests/images/blp/blp2_dxt1.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1.png")
 
 
-def test_load_blp2_dxt1a():
+def test_load_blp2_dxt1a() -> None:
     with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
 
 
-def test_save(tmp_path):
+def test_save(tmp_path: Path) -> None:
     f = str(tmp_path / "temp.blp")
 
     for version in ("BLP1", "BLP2"):
@@ -69,7 +71,7 @@ def test_save(tmp_path):
         "Tests/images/timeout-ef9112a065e7183fa7faa2e18929b03e44ee16bf.blp",
     ],
 )
-def test_crashes(test_file):
+def test_crashes(test_file: str) -> None:
     with open(test_file, "rb") as f:
         with Image.open(f) as im:
             with pytest.raises(OSError):

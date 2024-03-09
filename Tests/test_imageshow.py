@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from PIL import Image, ImageShow
@@ -7,12 +9,12 @@ from PIL import Image, ImageShow
 from .helper import hopper, is_win32, on_ci
 
 
-def test_sanity():
+def test_sanity() -> None:
     dir(Image)
     dir(ImageShow)
 
 
-def test_register():
+def test_register() -> None:
     # Test registering a viewer that is not a class
     ImageShow.register("not a class")
 
@@ -24,9 +26,9 @@ def test_register():
     "order",
     [-1, 0],
 )
-def test_viewer_show(order):
+def test_viewer_show(order: int) -> None:
     class TestViewer(ImageShow.Viewer):
-        def show_image(self, image, **options):
+        def show_image(self, image: Image.Image, **options: Any) -> bool:
             self.methodCalled = True
             return True
 
@@ -48,12 +50,12 @@ def test_viewer_show(order):
     reason="Only run on CIs; hangs on Windows CIs",
 )
 @pytest.mark.parametrize("mode", ("1", "I;16", "LA", "RGB", "RGBA"))
-def test_show(mode):
+def test_show(mode: str) -> None:
     im = hopper(mode)
     assert ImageShow.show(im)
 
 
-def test_show_without_viewers():
+def test_show_without_viewers() -> None:
     viewers = ImageShow._viewers
     ImageShow._viewers = []
 
@@ -63,24 +65,25 @@ def test_show_without_viewers():
     ImageShow._viewers = viewers
 
 
-def test_viewer():
+def test_viewer() -> None:
     viewer = ImageShow.Viewer()
 
-    assert viewer.get_format(None) is None
+    im = Image.new("L", (1, 1))
+    assert viewer.get_format(im) is None
 
     with pytest.raises(NotImplementedError):
-        viewer.get_command(None)
+        viewer.get_command("")
 
 
 @pytest.mark.parametrize("viewer", ImageShow._viewers)
-def test_viewers(viewer):
+def test_viewers(viewer: ImageShow.Viewer) -> None:
     try:
         viewer.get_command("test.jpg")
     except NotImplementedError:
         pass
 
 
-def test_ipythonviewer():
+def test_ipythonviewer() -> None:
     pytest.importorskip("IPython", reason="IPython not installed")
     for viewer in ImageShow._viewers:
         if isinstance(viewer, ImageShow.IPythonViewer):

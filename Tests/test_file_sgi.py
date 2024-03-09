@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, SgiImagePlugin
@@ -12,7 +14,7 @@ from .helper import (
 )
 
 
-def test_rgb():
+def test_rgb() -> None:
     # Created with ImageMagick then renamed:
     # convert hopper.ppm -compress None sgi:hopper.rgb
     test_file = "Tests/images/hopper.rgb"
@@ -22,11 +24,11 @@ def test_rgb():
         assert im.get_format_mimetype() == "image/rgb"
 
 
-def test_rgb16():
+def test_rgb16() -> None:
     assert_image_equal_tofile(hopper(), "Tests/images/hopper16.rgb")
 
 
-def test_l():
+def test_l() -> None:
     # Created with ImageMagick
     # convert hopper.ppm -monochrome -compress None sgi:hopper.bw
     test_file = "Tests/images/hopper.bw"
@@ -36,7 +38,7 @@ def test_l():
         assert im.get_format_mimetype() == "image/sgi"
 
 
-def test_rgba():
+def test_rgba() -> None:
     # Created with ImageMagick:
     # convert transparent.png -compress None transparent.sgi
     test_file = "Tests/images/transparent.sgi"
@@ -46,7 +48,7 @@ def test_rgba():
         assert im.get_format_mimetype() == "image/sgi"
 
 
-def test_rle():
+def test_rle() -> None:
     # Created with ImageMagick:
     # convert hopper.ppm  hopper.sgi
     test_file = "Tests/images/hopper.sgi"
@@ -55,22 +57,22 @@ def test_rle():
         assert_image_equal_tofile(im, "Tests/images/hopper.rgb")
 
 
-def test_rle16():
+def test_rle16() -> None:
     test_file = "Tests/images/tv16.sgi"
 
     with Image.open(test_file) as im:
         assert_image_equal_tofile(im, "Tests/images/tv.rgb")
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
     with pytest.raises(ValueError):
         SgiImagePlugin.SgiImageFile(invalid_file)
 
 
-def test_write(tmp_path):
-    def roundtrip(img):
+def test_write(tmp_path: Path) -> None:
+    def roundtrip(img: Image.Image) -> None:
         out = str(tmp_path / "temp.sgi")
         img.save(out, format="sgi")
         assert_image_equal_tofile(img, out)
@@ -89,7 +91,7 @@ def test_write(tmp_path):
     roundtrip(Image.new("L", (10, 1)))
 
 
-def test_write16(tmp_path):
+def test_write16(tmp_path: Path) -> None:
     test_file = "Tests/images/hopper16.rgb"
 
     with Image.open(test_file) as im:
@@ -99,7 +101,7 @@ def test_write16(tmp_path):
         assert_image_equal_tofile(im, out)
 
 
-def test_unsupported_mode(tmp_path):
+def test_unsupported_mode(tmp_path: Path) -> None:
     im = hopper("LA")
     out = str(tmp_path / "temp.sgi")
 

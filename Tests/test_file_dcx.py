@@ -12,7 +12,7 @@ from .helper import assert_image_equal, hopper, is_pypy
 TEST_FILE = "Tests/images/hopper.dcx"
 
 
-def test_sanity():
+def test_sanity() -> None:
     # Arrange
 
     # Act
@@ -25,8 +25,8 @@ def test_sanity():
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
-def test_unclosed_file():
-    def open():
+def test_unclosed_file() -> None:
+    def open() -> None:
         im = Image.open(TEST_FILE)
         im.load()
 
@@ -34,26 +34,26 @@ def test_unclosed_file():
         open()
 
 
-def test_closed_file():
+def test_closed_file() -> None:
     with warnings.catch_warnings():
         im = Image.open(TEST_FILE)
         im.load()
         im.close()
 
 
-def test_context_manager():
+def test_context_manager() -> None:
     with warnings.catch_warnings():
         with Image.open(TEST_FILE) as im:
             im.load()
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
             DcxImagePlugin.DcxImageFile(fp)
 
 
-def test_tell():
+def test_tell() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         # Act
@@ -63,13 +63,13 @@ def test_tell():
         assert frame == 0
 
 
-def test_n_frames():
+def test_n_frames() -> None:
     with Image.open(TEST_FILE) as im:
         assert im.n_frames == 1
         assert not im.is_animated
 
 
-def test_eoferror():
+def test_eoferror() -> None:
     with Image.open(TEST_FILE) as im:
         n_frames = im.n_frames
 
@@ -82,7 +82,7 @@ def test_eoferror():
         im.seek(n_frames - 1)
 
 
-def test_seek_too_far():
+def test_seek_too_far() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         frame = 999  # too big on purpose

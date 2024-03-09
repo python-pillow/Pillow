@@ -7,8 +7,8 @@ from PIL import Image, ImagePalette
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
 
-def test_putpalette():
-    def palette(mode):
+def test_putpalette() -> None:
+    def palette(mode: str) -> str | tuple[str, list[int]]:
         im = hopper(mode).copy()
         im.putpalette(list(range(256)) * 3)
         p = im.getpalette()
@@ -43,7 +43,7 @@ def test_putpalette():
         im.putpalette(list(range(256)) * 3)
 
 
-def test_imagepalette():
+def test_imagepalette() -> None:
     im = hopper("P")
     im.putpalette(ImagePalette.negative())
     assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_negative.png")
@@ -57,7 +57,7 @@ def test_imagepalette():
     assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_wedge.png")
 
 
-def test_putpalette_with_alpha_values():
+def test_putpalette_with_alpha_values() -> None:
     with Image.open("Tests/images/transparent.gif") as im:
         expected = im.convert("RGBA")
 
@@ -81,19 +81,19 @@ def test_putpalette_with_alpha_values():
         ("RGBAX", (1, 2, 3, 4, 0)),
     ),
 )
-def test_rgba_palette(mode, palette):
+def test_rgba_palette(mode: str, palette: tuple[int, ...]) -> None:
     im = Image.new("P", (1, 1))
     im.putpalette(palette, mode)
     assert im.getpalette() == [1, 2, 3]
     assert im.palette.colors == {(1, 2, 3, 4): 0}
 
 
-def test_empty_palette():
+def test_empty_palette() -> None:
     im = Image.new("P", (1, 1))
     assert im.getpalette() == []
 
 
-def test_undefined_palette_index():
+def test_undefined_palette_index() -> None:
     im = Image.new("P", (1, 1), 3)
     im.putpalette((1, 2, 3))
     assert im.convert("RGB").getpixel((0, 0)) == (0, 0, 0)

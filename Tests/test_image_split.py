@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, features
@@ -7,8 +9,8 @@ from PIL import Image, features
 from .helper import assert_image_equal, hopper
 
 
-def test_split():
-    def split(mode):
+def test_split() -> None:
+    def split(mode: str) -> list[tuple[str, int, int]]:
         layers = hopper(mode).split()
         return [(i.mode, i.size[0], i.size[1]) for i in layers]
 
@@ -36,18 +38,18 @@ def test_split():
 @pytest.mark.parametrize(
     "mode", ("1", "L", "I", "F", "P", "RGB", "RGBA", "CMYK", "YCbCr")
 )
-def test_split_merge(mode):
+def test_split_merge(mode: str) -> None:
     expected = Image.merge(mode, hopper(mode).split())
     assert_image_equal(hopper(mode), expected)
 
 
-def test_split_open(tmp_path):
+def test_split_open(tmp_path: Path) -> None:
     if features.check("zlib"):
         test_file = str(tmp_path / "temp.png")
     else:
         test_file = str(tmp_path / "temp.pcx")
 
-    def split_open(mode):
+    def split_open(mode: str) -> int:
         hopper(mode).save(test_file)
         with Image.open(test_file) as im:
             return len(im.split())

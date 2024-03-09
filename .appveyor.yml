@@ -6,6 +6,7 @@ init:
 # Uncomment previous line to get RDP access during the build.
 
 environment:
+  COVERAGE_CORE: sysmon
   EXECUTABLE: python.exe
   TEST_OPTIONS:
   DEPLOY: YES

@@ -11,7 +11,7 @@ from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 EXTRA_DIR = "Tests/images/sunraster"
 
 
-def test_sanity():
+def test_sanity() -> None:
     # Arrange
     # Created with ImageMagick: convert hopper.jpg hopper.ras
     test_file = "Tests/images/hopper.ras"
@@ -28,7 +28,7 @@ def test_sanity():
         SunImagePlugin.SunImageFile(invalid_file)
 
 
-def test_im1():
+def test_im1() -> None:
     with Image.open("Tests/images/sunraster.im1") as im:
         assert_image_equal_tofile(im, "Tests/images/sunraster.im1.png")
 
@@ -36,7 +36,7 @@ def test_im1():
 @pytest.mark.skipif(
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
 )
-def test_others():
+def test_others() -> None:
     files = (
         os.path.join(EXTRA_DIR, f)
         for f in os.listdir(EXTRA_DIR)

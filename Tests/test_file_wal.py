@@ -7,7 +7,7 @@ from .helper import assert_image_equal_tofile
 TEST_FILE = "Tests/images/hopper.wal"
 
 
-def test_open():
+def test_open() -> None:
     with WalImageFile.open(TEST_FILE) as im:
         assert im.format == "WAL"
         assert im.format_description == "Quake2 Texture"
@@ -19,7 +19,7 @@ def test_open():
         assert_image_equal_tofile(im, "Tests/images/hopper_wal.png")
 
 
-def test_load():
+def test_load() -> None:
     with WalImageFile.open(TEST_FILE) as im:
         assert im.load()[0, 0] == 122
 

@@ -1,6 +1,7 @@
 """
 Helper functions.
 """
+
 from __future__ import annotations
 
 import logging
@@ -25,13 +26,6 @@ if os.environ.get("SHOW_ERRORS"):
     uploader = "show"
 elif "GITHUB_ACTIONS" in os.environ:
     uploader = "github_actions"
-else:
-    try:
-        import test_image_results
-
-        uploader = "aws"
-    except ImportError:
-        pass
 
 
 def upload(a: Image.Image, b: Image.Image) -> str | None:
@@ -46,8 +40,6 @@ def upload(a: Image.Image, b: Image.Image) -> str | None:
         a.save(os.path.join(tmpdir, "a.png"))
         b.save(os.path.join(tmpdir, "b.png"))
         return tmpdir
-    elif uploader == "aws":
-        return test_image_results.upload(a, b)
     return None
 
 
@@ -252,7 +244,7 @@ def fromstring(data: bytes) -> Image.Image:
     return Image.open(BytesIO(data))
 
 
-def tostring(im: Image.Image, string_format: str, **options: dict[str, Any]) -> bytes:
+def tostring(im: Image.Image, string_format: str, **options: Any) -> bytes:
     out = BytesIO()
     im.save(out, string_format, **options)
     return out.getvalue()
@@ -359,7 +351,7 @@ def is_mingw() -> bool:
 
 
 class CachedProperty:
-    def __init__(self, func: Callable[[Any], None]) -> None:
+    def __init__(self, func: Callable[[Any], Any]) -> None:
         self.func = func
 
     def __get__(self, instance: Any, cls: type[Any] | None = None) -> Any:

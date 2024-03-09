@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Callable
+
 from PIL import Image, ImageChops
 
 from .helper import assert_image_equal, hopper
@@ -15,7 +17,7 @@ WHITE = (255, 255, 255)
 GRAY = 128
 
 
-def test_sanity():
+def test_sanity() -> None:
     im = hopper("L")
 
     ImageChops.constant(im, 128)
@@ -48,7 +50,7 @@ def test_sanity():
     ImageChops.offset(im, 10, 20)
 
 
-def test_add():
+def test_add() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
@@ -60,7 +62,7 @@ def test_add():
     assert new.getpixel((50, 50)) == ORANGE
 
 
-def test_add_scale_offset():
+def test_add_scale_offset() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
@@ -72,7 +74,7 @@ def test_add_scale_offset():
     assert new.getpixel((50, 50)) == (202, 151, 100)
 
 
-def test_add_clip():
+def test_add_clip() -> None:
     # Arrange
     im = hopper()
 
@@ -83,7 +85,7 @@ def test_add_clip():
     assert new.getpixel((50, 50)) == (255, 255, 254)
 
 
-def test_add_modulo():
+def test_add_modulo() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
@@ -95,7 +97,7 @@ def test_add_modulo():
     assert new.getpixel((50, 50)) == ORANGE
 
 
-def test_add_modulo_no_clip():
+def test_add_modulo_no_clip() -> None:
     # Arrange
     im = hopper()
 
@@ -106,7 +108,7 @@ def test_add_modulo_no_clip():
     assert new.getpixel((50, 50)) == (224, 76, 254)
 
 
-def test_blend():
+def test_blend() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
@@ -118,7 +120,7 @@ def test_blend():
     assert new.getpixel((50, 50)) == BROWN
 
 
-def test_constant():
+def test_constant() -> None:
     # Arrange
     im = Image.new("RGB", (20, 10))
 
@@ -131,7 +133,7 @@ def test_constant():
     assert new.getpixel((19, 9)) == GRAY
 
 
-def test_darker_image():
+def test_darker_image() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
@@ -142,7 +144,7 @@ def test_darker_image():
             assert_image_equal(new, im2)
 
 
-def test_darker_pixel():
+def test_darker_pixel() -> None:
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
@@ -153,7 +155,7 @@ def test_darker_pixel():
     assert new.getpixel((50, 50)) == (240, 166, 0)
 
 
-def test_difference():
+def test_difference() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_arc_end_le_start.png") as im1:
         with Image.open("Tests/images/imagedraw_arc_no_loops.png") as im2:
@@ -164,7 +166,7 @@ def test_difference():
     assert new.getbbox() == (25, 25, 76, 76)
 
 
-def test_difference_pixel():
+def test_difference_pixel() -> None:
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_polygon_kite_RGB.png") as im2:
@@ -175,7 +177,7 @@ def test_difference_pixel():
     assert new.getpixel((50, 50)) == (240, 166, 128)
 
 
-def test_duplicate():
+def test_duplicate() -> None:
     # Arrange
     im = hopper()
 
@@ -186,7 +188,7 @@ def test_duplicate():
     assert_image_equal(new, im)
 
 
-def test_invert():
+def test_invert() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im:
         # Act
@@ -198,7 +200,7 @@ def test_invert():
     assert new.getpixel((50, 50)) == CYAN
 
 
-def test_lighter_image():
+def test_lighter_image() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
@@ -209,7 +211,7 @@ def test_lighter_image():
         assert_image_equal(new, im1)
 
 
-def test_lighter_pixel():
+def test_lighter_pixel() -> None:
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
@@ -220,7 +222,7 @@ def test_lighter_pixel():
     assert new.getpixel((50, 50)) == (255, 255, 127)
 
 
-def test_multiply_black():
+def test_multiply_black() -> None:
     """If you multiply an image with a solid black image,
     the result is black."""
     # Arrange
@@ -234,7 +236,7 @@ def test_multiply_black():
     assert_image_equal(new, black)
 
 
-def test_multiply_green():
+def test_multiply_green() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im:
         green = Image.new("RGB", im.size, "green")
@@ -248,7 +250,7 @@ def test_multiply_green():
     assert new.getpixel((50, 50)) == BLACK
 
 
-def test_multiply_white():
+def test_multiply_white() -> None:
     """If you multiply with a solid white image, the image is unaffected."""
     # Arrange
     im1 = hopper()
@@ -261,7 +263,7 @@ def test_multiply_white():
     assert_image_equal(new, im1)
 
 
-def test_offset():
+def test_offset() -> None:
     # Arrange
     xoffset = 45
     yoffset = 20
@@ -278,7 +280,7 @@ def test_offset():
         assert ImageChops.offset(im, xoffset) == ImageChops.offset(im, xoffset, xoffset)
 
 
-def test_screen():
+def test_screen() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_ellipse_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_floodfill_RGB.png") as im2:
@@ -290,7 +292,7 @@ def test_screen():
     assert new.getpixel((50, 50)) == ORANGE
 
 
-def test_subtract():
+def test_subtract() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
@@ -303,7 +305,7 @@ def test_subtract():
     assert new.getpixel((50, 52)) == BLACK
 
 
-def test_subtract_scale_offset():
+def test_subtract_scale_offset() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
@@ -315,7 +317,7 @@ def test_subtract_scale_offset():
     assert new.getpixel((50, 50)) == (100, 202, 100)
 
 
-def test_subtract_clip():
+def test_subtract_clip() -> None:
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
@@ -326,7 +328,7 @@ def test_subtract_clip():
     assert new.getpixel((50, 50)) == (0, 0, 127)
 
 
-def test_subtract_modulo():
+def test_subtract_modulo() -> None:
     # Arrange
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im1:
         with Image.open("Tests/images/imagedraw_outline_chord_RGB.png") as im2:
@@ -339,7 +341,7 @@ def test_subtract_modulo():
     assert new.getpixel((50, 52)) == BLACK
 
 
-def test_subtract_modulo_no_clip():
+def test_subtract_modulo_no_clip() -> None:
     # Arrange
     im1 = hopper()
     with Image.open("Tests/images/imagedraw_chord_RGB.png") as im2:
@@ -350,7 +352,7 @@ def test_subtract_modulo_no_clip():
     assert new.getpixel((50, 50)) == (241, 167, 127)
 
 
-def test_soft_light():
+def test_soft_light() -> None:
     # Arrange
     with Image.open("Tests/images/hopper.png") as im1:
         with Image.open("Tests/images/hopper-XYZ.png") as im2:
@@ -362,7 +364,7 @@ def test_soft_light():
     assert new.getpixel((15, 100)) == (1, 1, 3)
 
 
-def test_hard_light():
+def test_hard_light() -> None:
     # Arrange
     with Image.open("Tests/images/hopper.png") as im1:
         with Image.open("Tests/images/hopper-XYZ.png") as im2:
@@ -374,7 +376,7 @@ def test_hard_light():
     assert new.getpixel((15, 100)) == (1, 1, 2)
 
 
-def test_overlay():
+def test_overlay() -> None:
     # Arrange
     with Image.open("Tests/images/hopper.png") as im1:
         with Image.open("Tests/images/hopper-XYZ.png") as im2:
@@ -386,8 +388,10 @@ def test_overlay():
     assert new.getpixel((15, 100)) == (1, 1, 2)
 
 
-def test_logical():
-    def table(op, a, b):
+def test_logical() -> None:
+    def table(
+        op: Callable[[Image.Image, Image.Image], Image.Image], a: int, b: int
+    ) -> tuple[int, int, int, int]:
         out = []
         for x in (a, b):
             imx = Image.new("1", (1, 1), x)

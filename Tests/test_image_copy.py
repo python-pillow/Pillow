@@ -10,7 +10,7 @@ from .helper import hopper, skip_unless_feature
 
 
 @pytest.mark.parametrize("mode", ("1", "P", "L", "RGB", "I", "F"))
-def test_copy(mode):
+def test_copy(mode: str) -> None:
     cropped_coordinates = (10, 10, 20, 20)
     cropped_size = (10, 10)
 
@@ -39,7 +39,7 @@ def test_copy(mode):
     assert out.size == cropped_size
 
 
-def test_copy_zero():
+def test_copy_zero() -> None:
     im = Image.new("RGB", (0, 0))
     out = im.copy()
     assert out.mode == im.mode
@@ -47,7 +47,7 @@ def test_copy_zero():
 
 
 @skip_unless_feature("libtiff")
-def test_deepcopy():
+def test_deepcopy() -> None:
     with Image.open("Tests/images/g4_orientation_5.tif") as im:
         out = copy.deepcopy(im)
     assert out.size == (590, 88)

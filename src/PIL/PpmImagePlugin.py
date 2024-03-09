@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 import math
-from io import BytesIO
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -324,7 +324,7 @@ class PpmDecoder(ImageFile.PyDecoder):
 # --------------------------------------------------------------------
 
 
-def _save(im: Image.Image, fp: BytesIO, filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode == "1":
         rawmode, head = "1;I", b"P4"
     elif im.mode == "L":

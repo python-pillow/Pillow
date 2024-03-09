@@ -3,17 +3,18 @@ from __future__ import annotations
 import tempfile
 import warnings
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
 from PIL import Image, ImageSequence, SpiderImagePlugin
 
-from .helper import assert_image_equal_tofile, hopper, is_pypy
+from .helper import assert_image_equal, hopper, is_pypy
 
 TEST_FILE = "Tests/images/hopper.spider"
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open(TEST_FILE) as im:
         im.load()
         assert im.mode == "F"
@@ -22,8 +23,8 @@ def test_sanity():
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
-def test_unclosed_file():
-    def open():
+def test_unclosed_file() -> None:
+    def open() -> None:
         im = Image.open(TEST_FILE)
         im.load()
 
@@ -31,20 +32,20 @@ def test_unclosed_file():
         open()
 
 
-def test_closed_file():
+def test_closed_file() -> None:
     with warnings.catch_warnings():
         im = Image.open(TEST_FILE)
         im.load()
         im.close()
 
 
-def test_context_manager():
+def test_context_manager() -> None:
     with warnings.catch_warnings():
         with Image.open(TEST_FILE) as im:
             im.load()
 
 
-def test_save(tmp_path):
+def test_save(tmp_path: Path) -> None:
     # Arrange
     temp = str(tmp_path / "temp.spider")
     im = hopper()
@@ -59,7 +60,7 @@ def test_save(tmp_path):
         assert im2.format == "SPIDER"
 
 
-def test_tempfile():
+def test_tempfile() -> None:
     # Arrange
     im = hopper()
 
@@ -75,11 +76,11 @@ def test_tempfile():
             assert reloaded.format == "SPIDER"
 
 
-def test_is_spider_image():
+def test_is_spider_image() -> None:
     assert SpiderImagePlugin.isSpiderImage(TEST_FILE)
 
 
-def test_tell():
+def test_tell() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         # Act
@@ -89,13 +90,13 @@ def test_tell():
         assert index == 0
 
 
-def test_n_frames():
+def test_n_frames() -> None:
     with Image.open(TEST_FILE) as im:
         assert im.n_frames == 1
         assert not im.is_animated
 
 
-def test_load_image_series():
+def test_load_image_series() -> None:
     # Arrange
     not_spider_file = "Tests/images/hopper.ppm"
     file_list = [TEST_FILE, not_spider_file, "path/not_found.ext"]
@@ -109,7 +110,7 @@ def test_load_image_series():
     assert img_list[0].size == (128, 128)
 
 
-def test_load_image_series_no_input():
+def test_load_image_series_no_input() -> None:
     # Arrange
     file_list = None
 
@@ -120,7 +121,7 @@ def test_load_image_series_no_input():
     assert img_list is None
 
 
-def test_is_int_not_a_number():
+def test_is_int_not_a_number() -> None:
     # Arrange
     not_a_number = "a"
 
@@ -131,7 +132,7 @@ def test_is_int_not_a_number():
     assert ret == 0
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/invalid.spider"
 
     with pytest.raises(OSError):
@@ -139,24 +140,25 @@ def test_invalid_file():
             pass
 
 
-def test_nonstack_file():
+def test_nonstack_file() -> None:
     with Image.open(TEST_FILE) as im:
         with pytest.raises(EOFError):
             im.seek(0)
 
 
-def test_nonstack_dos():
+def test_nonstack_dos() -> None:
     with Image.open(TEST_FILE) as im:
         for i, frame in enumerate(ImageSequence.Iterator(im)):
             assert i <= 1, "Non-stack DOS file test failed"
 
 
 # for issue #4093
-def test_odd_size():
+def test_odd_size() -> None:
     data = BytesIO()
     width = 100
     im = Image.new("F", (width, 64))
     im.save(data, format="SPIDER")
 
     data.seek(0)
-    assert_image_equal_tofile(im, data)
+    with Image.open(data) as im2:
+        assert_image_equal(im, im2)

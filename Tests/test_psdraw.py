@@ -3,13 +3,14 @@ from __future__ import annotations
 import os
 import sys
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
 from PIL import Image, PSDraw
 
 
-def _create_document(ps):
+def _create_document(ps: PSDraw.PSDraw) -> None:
     title = "hopper"
     box = (1 * 72, 2 * 72, 7 * 72, 10 * 72)  # in points
 
@@ -31,7 +32,7 @@ def _create_document(ps):
     ps.end_document()
 
 
-def test_draw_postscript(tmp_path):
+def test_draw_postscript(tmp_path: Path) -> None:
     # Based on Pillow tutorial, but there is no textsize:
     # https://pillow.readthedocs.io/en/latest/handbook/tutorial.html#drawing-postscript
 
@@ -49,7 +50,7 @@ def test_draw_postscript(tmp_path):
 
 
 @pytest.mark.parametrize("buffer", (True, False))
-def test_stdout(buffer):
+def test_stdout(buffer: bool) -> None:
     # Temporarily redirect stdout
     old_stdout = sys.stdout
 

@@ -19,7 +19,7 @@ TEST_TAR_FILE = "Tests/images/hopper.tar"
         ("jpg", "hopper.jpg", "JPEG"),
     ),
 )
-def test_sanity(codec, test_path, format):
+def test_sanity(codec: str, test_path: str, format: str) -> None:
     if features.check(codec):
         with TarIO.TarIO(TEST_TAR_FILE, test_path) as tar:
             with Image.open(tar) as im:
@@ -30,18 +30,18 @@ def test_sanity(codec, test_path, format):
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
-def test_unclosed_file():
+def test_unclosed_file() -> None:
     with pytest.warns(ResourceWarning):
         TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
 
 
-def test_close():
+def test_close() -> None:
     with warnings.catch_warnings():
         tar = TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
         tar.close()
 
 
-def test_contextmanager():
+def test_contextmanager() -> None:
     with warnings.catch_warnings():
         with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
             pass

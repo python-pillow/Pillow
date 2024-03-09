@@ -5,8 +5,8 @@ from PIL import Image
 from .helper import hopper
 
 
-def test_extrema():
-    def extrema(mode):
+def test_extrema() -> None:
+    def extrema(mode: str) -> tuple[int, int] | tuple[tuple[int, int], ...]:
         return hopper(mode).getextrema()
 
     assert extrema("1") == (0, 255)
@@ -20,7 +20,7 @@ def test_extrema():
     assert extrema("I;16") == (1, 255)
 
 
-def test_true_16():
+def test_true_16() -> None:
     with Image.open("Tests/images/16_bit_noise.tif") as im:
         assert im.mode == "I;16"
         extrema = im.getextrema()

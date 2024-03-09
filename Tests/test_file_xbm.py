@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
@@ -32,14 +33,14 @@ static char basic_bits[] = {
 """
 
 
-def test_pil151():
+def test_pil151() -> None:
     with Image.open(BytesIO(PIL151)) as im:
         im.load()
         assert im.mode == "1"
         assert im.size == (32, 32)
 
 
-def test_open():
+def test_open() -> None:
     # Arrange
     # Created with `convert hopper.png hopper.xbm`
     filename = "Tests/images/hopper.xbm"
@@ -51,7 +52,7 @@ def test_open():
         assert im.size == (128, 128)
 
 
-def test_open_filename_with_underscore():
+def test_open_filename_with_underscore() -> None:
     # Arrange
     # Created with `convert hopper.png hopper_underscore.xbm`
     filename = "Tests/images/hopper_underscore.xbm"
@@ -63,14 +64,14 @@ def test_open_filename_with_underscore():
         assert im.size == (128, 128)
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
 
     with pytest.raises(SyntaxError):
         XbmImagePlugin.XbmImageFile(invalid_file)
 
 
-def test_save_wrong_mode(tmp_path):
+def test_save_wrong_mode(tmp_path: Path) -> None:
     im = hopper()
     out = str(tmp_path / "temp.xbm")
 
@@ -78,7 +79,7 @@ def test_save_wrong_mode(tmp_path):
         im.save(out)
 
 
-def test_hotspot(tmp_path):
+def test_hotspot(tmp_path: Path) -> None:
     im = hopper("1")
     out = str(tmp_path / "temp.xbm")
 
