@@ -114,14 +114,14 @@ V = {
     "FREETYPE": "2.13.2",
     "FRIBIDI": "1.0.13",
     "HARFBUZZ": "8.3.0",
-    "JPEGTURBO": "3.0.1",
+    "JPEGTURBO": "3.0.2",
     "LCMS2": "2.16",
     "LIBPNG": "1.6.43",
     "LIBWEBP": "1.3.2",
     "OPENJPEG": "2.5.2",
     "TIFF": "4.6.0",
     "XZ": "5.4.5",
-    "ZLIB": "1.3",
+    "ZLIB": "1.3.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])

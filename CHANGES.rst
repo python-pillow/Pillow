@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Fix shift-sign issue in Convert.c #7838
+  [r-barnes, radarhere]
+
 - Open 16-bit grayscale PNGs as I;16 #7849
   [radarhere]
 
