@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Turn off nullability warnings for macOS SDK #7827
+  [radarhere]
+
 - Fix shift-sign issue in Convert.c #7838
   [r-barnes, radarhere]
 
