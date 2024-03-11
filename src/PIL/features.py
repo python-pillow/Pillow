@@ -125,7 +125,6 @@ features = {
     "webp_anim": ("PIL._webp", "HAVE_WEBPANIM", None),
     "webp_mux": ("PIL._webp", "HAVE_WEBPMUX", None),
     "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY", None),
-    "jxl": ("PIL._jxl", "HAVE_JXL", None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
