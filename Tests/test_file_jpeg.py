@@ -993,13 +993,7 @@ class TestFileJpeg:
             def decode(self, buffer: bytes) -> tuple[int, int]:
                 return 0, 0
 
-        decoder = InfiniteMockPyDecoder(None)
-
-        def closure(mode: str, *args) -> InfiniteMockPyDecoder:
-            decoder.__init__(mode, *args)
-            return decoder
-
-        Image.register_decoder("INFINITE", closure)
+        Image.register_decoder("INFINITE", InfiniteMockPyDecoder)
 
         with Image.open(TEST_FILE) as im:
             im.tile = [

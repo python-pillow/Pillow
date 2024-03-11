@@ -229,8 +229,8 @@ MIME: dict[str, str] = {}
 SAVE: dict[str, Callable[[Image, IO[bytes], str | bytes], None]] = {}
 SAVE_ALL: dict[str, Callable[[Image, IO[bytes], str | bytes], None]] = {}
 EXTENSION: dict[str, str] = {}
-DECODERS: dict[str, object] = {}
-ENCODERS: dict[str, object] = {}
+DECODERS: dict[str, type[ImageFile.PyDecoder]] = {}
+ENCODERS: dict[str, type[ImageFile.PyEncoder]] = {}
 
 # --------------------------------------------------------------------
 # Modes
@@ -3526,28 +3526,26 @@ def registered_extensions():
     return EXTENSION
 
 
-def register_decoder(name: str, decoder) -> None:
+def register_decoder(name: str, decoder: type[ImageFile.PyDecoder]) -> None:
     """
     Registers an image decoder.  This function should not be
     used in application code.
 
     :param name: The name of the decoder
-    :param decoder: A callable(mode, args) that returns an
-                    ImageFile.PyDecoder object
+    :param decoder: An ImageFile.PyDecoder object
 
     .. versionadded:: 4.1.0
     """
     DECODERS[name] = decoder
 
 
-def register_encoder(name, encoder):
+def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
     """
     Registers an image encoder.  This function should not be
     used in application code.
 
     :param name: The name of the encoder
-    :param encoder: A callable(mode, args) that returns an
-                    ImageFile.PyEncoder object
+    :param encoder: An ImageFile.PyEncoder object
 
     .. versionadded:: 4.1.0
     """
