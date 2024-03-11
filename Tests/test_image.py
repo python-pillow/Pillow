@@ -1045,26 +1045,18 @@ class TestImage:
 
 
 class TestImageBytes:
-    # The BGR modes don't support the methods tested in this class.
-    image_modes_not_bgr = [mode for mode in image_modes if "BGR" not in mode[0]]
-    image_mode_names_not_bgr = [
-        name for name, num_bands, pixelsize in image_modes if "BGR" not in name
-    ]
-
     sample_bytes = bytes(
-        range(
-            2 * 2 * max(pixelsize for mode, num_bands, pixelsize in image_modes_not_bgr)
-        )
+        range(2 * 2 * max(pixelsize for mode, num_bands, pixelsize in image_modes))
     )
 
-    @pytest.mark.parametrize("mode", image_mode_names_not_bgr)
+    @pytest.mark.parametrize("mode", image_mode_names)
     def test_roundtrip_bytes_constructor(self, mode: str):
         source_image = hopper(mode)
         source_bytes = source_image.tobytes()
         copy_image = Image.frombytes(mode, source_image.size, source_bytes)
         assert copy_image.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", image_mode_names_not_bgr)
+    @pytest.mark.parametrize("mode", image_mode_names)
     def test_roundtrip_bytes_method(self, mode: str):
         source_image = hopper(mode)
         source_bytes = source_image.tobytes()
@@ -1072,7 +1064,7 @@ class TestImageBytes:
         copy_image.frombytes(source_bytes)
         assert copy_image.tobytes() == source_bytes
 
-    @pytest.mark.parametrize(("mode", "num_bands", "pixelsize"), image_modes_not_bgr)
+    @pytest.mark.parametrize(("mode", "num_bands", "pixelsize"), image_modes)
     def test_pixels_after_getdata_putdata(
         self, mode: str, num_bands: int, pixelsize: int
     ):
