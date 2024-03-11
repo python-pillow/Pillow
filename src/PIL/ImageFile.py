@@ -328,7 +328,7 @@ class ImageFile(Image.Image):
     #     pass
 
     # may be defined for blocked formats (e.g. PNG)
-    # def load_read(self, bytes):
+    # def load_read(self, read_bytes):
     #     pass
 
     def _seek_check(self, frame):
