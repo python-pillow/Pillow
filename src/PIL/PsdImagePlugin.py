@@ -24,6 +24,7 @@ from ._binary import i8
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import si16be as si16
+from ._binary import si32be as si32
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -177,22 +178,21 @@ def _layerinfo(fp, ct_bytes):
 
     for _ in range(abs(ct)):
         # bounding box
-        y0 = i32(read(4))
-        x0 = i32(read(4))
-        y1 = i32(read(4))
-        x1 = i32(read(4))
+        y0 = si32(read(4))
+        x0 = si32(read(4))
+        y1 = si32(read(4))
+        x1 = si32(read(4))
 
         # image info
         mode = []
         ct_types = i16(read(2))
-        types = list(range(ct_types))
-        if len(types) > 4:
-            fp.seek(len(types) * 6 + 12, io.SEEK_CUR)
+        if ct_types > 4:
+            fp.seek(ct_types * 6 + 12, io.SEEK_CUR)
             size = i32(read(4))
             fp.seek(size, io.SEEK_CUR)
             continue
 
-        for _ in types:
+        for _ in range(ct_types):
             type = i16(read(2))
 
             if type == 65535:
