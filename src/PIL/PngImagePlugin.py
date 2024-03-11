@@ -392,8 +392,8 @@ class PngStream(ChunkStream):
         # Compressed profile    n bytes (zlib with deflate compression)
         i = s.find(b"\0")
         logger.debug("iCCP profile name %r", s[:i])
-        logger.debug("Compression method %s", s[i])
-        comp_method = s[i]
+        comp_method = s[i + 1]
+        logger.debug("Compression method %s", comp_method)
         if comp_method != 0:
             msg = f"Unknown compression method {comp_method} in iCCP chunk"
             raise SyntaxError(msg)
