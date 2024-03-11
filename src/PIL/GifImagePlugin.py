@@ -629,7 +629,7 @@ def _write_multiple_frames(im, fp, palette):
                             "duration"
                         ]
                     continue
-                if encoderinfo.get("disposal") == 2:
+                if im_frames[-1]["encoderinfo"].get("disposal") == 2:
                     if background_im is None:
                         color = im.encoderinfo.get(
                             "transparency", im.info.get("transparency", (0, 0, 0))
@@ -637,8 +637,8 @@ def _write_multiple_frames(im, fp, palette):
                         background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
                         background_im.putpalette(im_frames[0]["im"].palette)
-                    delta, bbox = _getbbox(background_im, im_frame)
-                if encoderinfo.get("optimize") and im_frame.mode != "1":
+                    bbox = _getbbox(background_im, im_frame)[1]
+                elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         try:
                             encoderinfo["transparency"] = (
