@@ -437,3 +437,11 @@ def test_eof_before_bounding_box() -> None:
     with pytest.raises(OSError):
         with Image.open("Tests/images/zero_bb_eof_before_boundingbox.eps"):
             pass
+
+
+def test_invalid_data_after_eof() -> None:
+    with open("Tests/images/illuCS6_preview.eps", "rb") as f:
+        img_bytes = io.BytesIO(f.read() + b"\r\n%" + (b" " * 255))
+
+    with Image.open(img_bytes) as img:
+        assert img.mode == "RGB"
