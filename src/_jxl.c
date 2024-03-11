@@ -373,9 +373,10 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
 
     // on success we should never reach here
 
-    end:
     // set error message
     char err_msg[128];
+
+    end:
     snprintf(err_msg, 128,
         "could not create decoder object. libjxl call: %s returned: %d",
         jxl_call_name, decp->status);
@@ -477,11 +478,12 @@ _jxl_decoder_get_next(PyObject *self) {
     Py_DECREF(bytes);
     return ret;
 
-    end:
     // we also shouldn't reach here if frame read was ok
 
     // set error message
     char err_msg[128];
+    
+    end:
     snprintf(err_msg, 128,
         "could not read frame. libjxl call: %s returned: %d",
         jxl_call_name, decp->status);
@@ -490,7 +492,7 @@ _jxl_decoder_get_next(PyObject *self) {
     end_with_custom_error:
 
     // no need to deallocate anything here
-    // user can just igonre error
+    // user can just ignore error
 
     return NULL;
 
