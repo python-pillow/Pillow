@@ -1238,16 +1238,20 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
             "default_image", im.info.get("default_image")
         )
         modes = set()
+        sizes = set()
         append_images = im.encoderinfo.get("append_images", [])
         for im_seq in itertools.chain([im], append_images):
             for im_frame in ImageSequence.Iterator(im_seq):
                 modes.add(im_frame.mode)
+                sizes.add(im_frame.size)
         for mode in ("RGBA", "RGB", "P"):
             if mode in modes:
                 break
         else:
             mode = modes.pop()
+        size = tuple(max(frame_size[i] for frame_size in sizes) for i in range(2))
     else:
+        size = im.size
         mode = im.mode
 
     if mode == "P":
@@ -1295,8 +1299,8 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
     chunk(
         fp,
         b"IHDR",
-        o32(im.size[0]),  # 0: size
-        o32(im.size[1]),
+        o32(size[0]),  # 0: size
+        o32(size[1]),
         mode,  # 8: depth/type
         b"\0",  # 10: compression
         b"\0",  # 11: filter category
