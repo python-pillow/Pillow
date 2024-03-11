@@ -19,7 +19,7 @@ import io
 import os
 import struct
 
-from . import Image, ImageFile, _binary
+from . import Image, ImageFile, ImagePalette, _binary
 
 
 class BoxReader:
@@ -162,6 +162,7 @@ def _parse_jp2_header(fp):
     bpc = None
     nc = None
     dpi = None  # 2-tuple of DPI info, or None
+    palette = None
 
     while header.has_next_box():
         tbox = header.next_box_type()
@@ -179,6 +180,14 @@ def _parse_jp2_header(fp):
                 mode = "RGB"
             elif nc == 4:
                 mode = "RGBA"
+        elif tbox == b"pclr" and mode[0] == "L":
+            ne, npc = header.read_fields(">HB")
+            bitdepths = header.read_fields(">" + ("B" * npc))
+            if max(bitdepths) <= 8:
+                palette = ImagePalette.ImagePalette()
+                for i in range(ne):
+                    palette.getcolor(header.read_fields(">" + ("B" * npc)))
+                mode = "PA" if nc == 2 else "P"
         elif tbox == b"res ":
             res = header.read_boxes()
             while res.has_next_box():
@@ -195,7 +204,7 @@ def _parse_jp2_header(fp):
         msg = "Malformed JP2 header"
         raise SyntaxError(msg)
 
-    return size, mode, mimetype, dpi
+    return size, mode, mimetype, dpi, palette
 
 
 ##
@@ -217,7 +226,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
                 self.codec = "jp2"
                 header = _parse_jp2_header(self.fp)
-                self._size, self._mode, self.custom_mimetype, dpi = header
+                self._size, self._mode, self.custom_mimetype, dpi, self.palette = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
                 if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):

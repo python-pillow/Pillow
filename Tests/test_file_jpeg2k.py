@@ -364,6 +364,16 @@ def test_subsampling_decode(name: str) -> None:
         assert_image_similar(im, expected, epsilon)
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+def test_pclr() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue104_jpxstream.jp2") as im:
+        assert im.mode == "P"
+        assert len(im.palette.colors) == 256
+        assert im.palette.colors[(255, 255, 255)] == 0
+
+
 def test_comment() -> None:
     with Image.open("Tests/images/comment.jp2") as im:
         assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
