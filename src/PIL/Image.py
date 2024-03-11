@@ -3712,7 +3712,7 @@ class Exif(_ExifBase):
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, offset):
+    def _get_ifd_dict(self, offset, group=None):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
@@ -3722,7 +3722,7 @@ class Exif(_ExifBase):
         else:
             from . import TiffImagePlugin
 
-            info = TiffImagePlugin.ImageFileDirectory_v2(self.head)
+            info = TiffImagePlugin.ImageFileDirectory_v2(self.head, group=group)
             info.load(self.fp)
             return self._fixup_dict(info)
 
@@ -3794,14 +3794,14 @@ class Exif(_ExifBase):
 
         # get EXIF extension
         if ExifTags.IFD.Exif in self:
-            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif])
+            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif], ExifTags.IFD.Exif)
             if ifd:
                 merged_dict.update(ifd)
 
         # GPS
         if ExifTags.IFD.GPSInfo in self:
             merged_dict[ExifTags.IFD.GPSInfo] = self._get_ifd_dict(
-                self[ExifTags.IFD.GPSInfo]
+                self[ExifTags.IFD.GPSInfo], ExifTags.IFD.GPSInfo
             )
 
         return merged_dict
@@ -3835,7 +3835,7 @@ class Exif(_ExifBase):
             elif tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
                 offset = self._hidden_data.get(tag, self.get(tag))
                 if offset is not None:
-                    self._ifds[tag] = self._get_ifd_dict(offset)
+                    self._ifds[tag] = self._get_ifd_dict(offset, tag)
             elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
@@ -3917,7 +3917,7 @@ class Exif(_ExifBase):
                         self._ifds[tag] = makernote
                 else:
                     # Interop
-                    self._ifds[tag] = self._get_ifd_dict(tag_data)
+                    self._ifds[tag] = self._get_ifd_dict(tag_data, tag)
         ifd = self._ifds.get(tag, {})
         if tag == ExifTags.IFD.Exif and self._hidden_data:
             ifd = {
