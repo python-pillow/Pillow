@@ -482,7 +482,7 @@ _jxl_decoder_get_next(PyObject *self) {
 
     // set error message
     char err_msg[128];
-    
+
     end:
     snprintf(err_msg, 128,
         "could not read frame. libjxl call: %s returned: %d",
