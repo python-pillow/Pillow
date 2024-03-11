@@ -33,6 +33,14 @@ Internal Modules
 Provides a convenient way to import type hints that are not available
 on some Python versions.
 
+.. py:class:: StrOrBytesPath
+
+    Typing alias.
+
+.. py:class:: SupportsRead
+
+    An object that supports the read method.
+
 .. py:data:: TypeGuard
     :value: typing.TypeGuard
 

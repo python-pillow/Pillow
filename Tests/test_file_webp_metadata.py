@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -14,6 +15,7 @@ pytestmark = [
     skip_unless_feature("webp_mux"),
 ]
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import ImageQt
+from PIL import Image, ImageQt
 
 from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
@@ -37,7 +37,7 @@ if ImageQt.qt_is_installed:
             lbl.setPixmap(pixmap1.copy())
 
 
-def roundtrip(expected) -> None:
+def roundtrip(expected: Image.Image) -> None:
     result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))
     # Qt saves all pixmaps as rgb
     assert_image_similar(result, expected.convert("RGB"), 1)

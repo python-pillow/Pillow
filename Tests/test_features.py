@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import re
+from typing import Callable
 
 import pytest
 
@@ -29,7 +30,7 @@ def test_version() -> None:
     # Check the correctness of the convenience function
     # and the format of version numbers
 
-    def test(name, function) -> None:
+    def test(name: str, function: Callable[[str], bool]) -> None:
         version = features.version(name)
         if not features.check(name):
             assert version is None
@@ -73,12 +74,12 @@ def test_libimagequant_version() -> None:
 
 
 @pytest.mark.parametrize("feature", features.modules)
-def test_check_modules(feature) -> None:
+def test_check_modules(feature: str) -> None:
     assert features.check_module(feature) in [True, False]
 
 
 @pytest.mark.parametrize("feature", features.codecs)
-def test_check_codecs(feature) -> None:
+def test_check_codecs(feature: str) -> None:
     assert features.check_codec(feature) in [True, False]
 
 

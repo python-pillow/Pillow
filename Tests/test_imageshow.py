@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from PIL import Image, ImageShow
@@ -24,9 +26,9 @@ def test_register() -> None:
     "order",
     [-1, 0],
 )
-def test_viewer_show(order) -> None:
+def test_viewer_show(order: int) -> None:
     class TestViewer(ImageShow.Viewer):
-        def show_image(self, image, **options) -> bool:
+        def show_image(self, image: Image.Image, **options: Any) -> bool:
             self.methodCalled = True
             return True
 
@@ -48,7 +50,7 @@ def test_viewer_show(order) -> None:
     reason="Only run on CIs; hangs on Windows CIs",
 )
 @pytest.mark.parametrize("mode", ("1", "I;16", "LA", "RGB", "RGBA"))
-def test_show(mode) -> None:
+def test_show(mode: str) -> None:
     im = hopper(mode)
     assert ImageShow.show(im)
 
@@ -66,14 +68,15 @@ def test_show_without_viewers() -> None:
 def test_viewer() -> None:
     viewer = ImageShow.Viewer()
 
-    assert viewer.get_format(None) is None
+    im = Image.new("L", (1, 1))
+    assert viewer.get_format(im) is None
 
     with pytest.raises(NotImplementedError):
-        viewer.get_command(None)
+        viewer.get_command("")
 
 
 @pytest.mark.parametrize("viewer", ImageShow._viewers)
-def test_viewers(viewer) -> None:
+def test_viewers(viewer: ImageShow.Viewer) -> None:
     try:
         viewer.get_command("test.jpg")
     except NotImplementedError:

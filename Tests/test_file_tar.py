@@ -19,7 +19,7 @@ TEST_TAR_FILE = "Tests/images/hopper.tar"
         ("jpg", "hopper.jpg", "JPEG"),
     ),
 )
-def test_sanity(codec, test_path, format) -> None:
+def test_sanity(codec: str, test_path: str, format: str) -> None:
     if features.check(codec):
         with TarIO.TarIO(TEST_TAR_FILE, test_path) as tar:
             with Image.open(tar) as im:

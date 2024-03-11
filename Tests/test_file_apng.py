@@ -721,6 +721,16 @@ def test_save_all_progress() -> None:
     assert progress == expected
 
 
+def test_apng_save_size(tmp_path: Path) -> None:
+    test_file = str(tmp_path / "temp.png")
+
+    im = Image.new("L", (100, 100))
+    im.save(test_file, save_all=True, append_images=[Image.new("L", (200, 200))])
+
+    with Image.open(test_file) as reloaded:
+        assert reloaded.size == (200, 200)
+
+
 def test_seek_after_close() -> None:
     im = Image.open("Tests/images/apng/delay.png")
     im.seek(1)

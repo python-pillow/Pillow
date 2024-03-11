@@ -4,6 +4,8 @@ import os
 import warnings
 from io import BytesIO
 from pathlib import Path
+from types import ModuleType
+from typing import Generator
 
 import pytest
 
@@ -20,6 +22,7 @@ from .helper import (
     is_win32,
 )
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:
@@ -156,7 +159,7 @@ class TestFileTiff:
         "resolution_unit, dpi",
         [(None, 72.8), (2, 72.8), (3, 184.912)],
     )
-    def test_load_float_dpi(self, resolution_unit, dpi) -> None:
+    def test_load_float_dpi(self, resolution_unit: int | None, dpi: float) -> None:
         with Image.open(
             "Tests/images/hopper_float_dpi_" + str(resolution_unit) + ".tif"
         ) as im:
@@ -284,7 +287,7 @@ class TestFileTiff:
             ("Tests/images/multipage.tiff", 3),
         ),
     )
-    def test_n_frames(self, path, n_frames) -> None:
+    def test_n_frames(self, path: str, n_frames: int) -> None:
         with Image.open(path) as im:
             assert im.n_frames == n_frames
             assert im.is_animated == (n_frames != 1)
@@ -402,7 +405,7 @@ class TestFileTiff:
             assert len_before == len_after + 1
 
     @pytest.mark.parametrize("legacy_api", (False, True))
-    def test_load_byte(self, legacy_api) -> None:
+    def test_load_byte(self, legacy_api: bool) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abc"
         ret = ifd.load_byte(data, legacy_api)
@@ -431,7 +434,7 @@ class TestFileTiff:
             assert 0x8825 in im.tag_v2
 
     def test_exif(self, tmp_path: Path) -> None:
-        def check_exif(exif) -> None:
+        def check_exif(exif: Image.Exif) -> None:
             assert sorted(exif.keys()) == [
                 256,
                 257,
@@ -511,7 +514,7 @@ class TestFileTiff:
             assert im.getexif()[273] == (1408, 1907)
 
     @pytest.mark.parametrize("mode", ("1", "L"))
-    def test_photometric(self, mode, tmp_path: Path) -> None:
+    def test_photometric(self, mode: str, tmp_path: Path) -> None:
         filename = str(tmp_path / "temp.tif")
         im = hopper(mode)
         im.save(filename, tiffinfo={262: 0})
@@ -620,6 +623,7 @@ class TestFileTiff:
         im.save(outfile, tiffinfo={278: 256})
 
         with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[278] == 256
 
     def test_strip_raw(self) -> None:
@@ -660,7 +664,7 @@ class TestFileTiff:
                 assert_image_equal_tofile(reloaded, infile)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
-    def test_palette(self, mode, tmp_path: Path) -> None:
+    def test_palette(self, mode: str, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
 
         im = hopper(mode)
@@ -689,7 +693,7 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def im_generator(ims):
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
             yield from ims
 
         mp = BytesIO()
@@ -911,7 +915,7 @@ class TestFileTiff:
         ],
     )
     @pytest.mark.timeout(2)
-    def test_oom(self, test_file) -> None:
+    def test_oom(self, test_file: str) -> None:
         with pytest.raises(UnidentifiedImageError):
             with pytest.warns(UserWarning):
                 with Image.open(test_file):

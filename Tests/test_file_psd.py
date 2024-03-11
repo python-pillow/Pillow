@@ -113,6 +113,11 @@ def test_rgba() -> None:
         assert_image_equal_tofile(im, "Tests/images/imagedraw_square.png")
 
 
+def test_negative_top_left_layer() -> None:
+    with Image.open("Tests/images/negative_top_left_layer.psd") as im:
+        assert im.layers[0][2] == (-50, -50, 50, 50)
+
+
 def test_layer_skip() -> None:
     with Image.open("Tests/images/five_channels.psd") as im:
         assert im.n_frames == 1
@@ -157,7 +162,7 @@ def test_combined_larger_than_size() -> None:
         ("Tests/images/timeout-dedc7a4ebd856d79b4359bbcc79e8ef231ce38f6.psd", OSError),
     ],
 )
-def test_crashes(test_file, raises) -> None:
+def test_crashes(test_file: str, raises) -> None:
     with open(test_file, "rb") as f:
         with pytest.raises(raises):
             with Image.open(f):

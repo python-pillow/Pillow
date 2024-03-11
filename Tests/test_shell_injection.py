@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+from typing import Callable
 
 import pytest
 
@@ -17,7 +18,12 @@ test_filenames = ("temp_';", 'temp_";', "temp_'\"|", "temp_'\"||", "temp_'\"&&")
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
 class TestShellInjection:
-    def assert_save_filename_check(self, tmp_path: Path, src_img, save_func) -> None:
+    def assert_save_filename_check(
+        self,
+        tmp_path: Path,
+        src_img: Image.Image,
+        save_func: Callable[[Image.Image, int, str], None],
+    ) -> None:
         for filename in test_filenames:
             dest_file = str(tmp_path / filename)
             save_func(src_img, 0, dest_file)

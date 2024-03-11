@@ -31,7 +31,7 @@ def test_sanity() -> None:
 
 def test_long_integers() -> None:
     # see bug-200802-systemerror
-    def put(value):
+    def put(value: int) -> tuple[int, int, int, int]:
         im = Image.new("RGBA", (1, 1))
         im.putdata([value])
         return im.getpixel((0, 0))
@@ -58,7 +58,7 @@ def test_mode_with_L_with_float() -> None:
 
 
 @pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B"))
-def test_mode_i(mode) -> None:
+def test_mode_i(mode: str) -> None:
     src = hopper("L")
     data = list(src.getdata())
     im = Image.new(mode, src.size, 0)
@@ -79,7 +79,7 @@ def test_mode_F() -> None:
 
 
 @pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
-def test_mode_BGR(mode) -> None:
+def test_mode_BGR(mode: str) -> None:
     data = [(16, 32, 49), (32, 32, 98)]
     im = Image.new(mode, (1, 2))
     im.putdata(data)

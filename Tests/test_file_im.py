@@ -82,7 +82,7 @@ def test_eoferror() -> None:
 
 
 @pytest.mark.parametrize("mode", ("RGB", "P", "PA"))
-def test_roundtrip(mode, tmp_path: Path) -> None:
+def test_roundtrip(mode: str, tmp_path: Path) -> None:
     out = str(tmp_path / "temp.im")
     im = hopper(mode)
     im.save(out)

@@ -753,7 +753,7 @@ def test_rectangle_I16(bbox: Coords) -> None:
     draw.rectangle(bbox, outline=0xFFFF)
 
     # Assert
-    assert_image_equal_tofile(im.convert("I"), "Tests/images/imagedraw_rectangle_I.png")
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_I.tiff")
 
 
 @pytest.mark.parametrize("bbox", BBOX)

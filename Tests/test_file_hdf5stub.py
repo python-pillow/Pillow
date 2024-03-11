@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import IO
 
 import pytest
 
@@ -56,15 +57,15 @@ def test_handler(tmp_path: Path) -> None:
         loaded = False
         saved = False
 
-        def open(self, im) -> None:
+        def open(self, im: Image.Image) -> None:
             self.opened = True
 
-        def load(self, im):
+        def load(self, im: Image.Image) -> Image.Image:
             self.loaded = True
             im.fp.close()
             return Image.new("RGB", (1, 1))
 
-        def save(self, im, fp, filename) -> None:
+        def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             self.saved = True
 
     handler = TestHandler()

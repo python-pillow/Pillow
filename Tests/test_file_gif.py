@@ -695,6 +695,9 @@ def test_dispose2_palette(tmp_path: Path) -> None:
             # Center remains red every frame
             assert rgb_img.getpixel((50, 50)) == circle
 
+            # Check that frame transparency wasn't added unnecessarily
+            assert img._frame_transparency is None
+
 
 def test_dispose2_diff(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
@@ -780,6 +783,25 @@ def test_dispose2_background_frame(tmp_path: Path) -> None:
 
     with Image.open(out) as im:
         assert im.n_frames == 3
+
+
+def test_dispose2_previous_frame(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("P", (100, 100))
+    im.info["transparency"] = 0
+    d = ImageDraw.Draw(im)
+    d.rectangle([(0, 0), (100, 50)], 1)
+    im.putpalette((0, 0, 0, 255, 0, 0))
+
+    im2 = Image.new("P", (100, 100))
+    im2.putpalette((0, 0, 0))
+
+    im.save(out, save_all=True, append_images=[im2], disposal=[0, 2])
+
+    with Image.open(out) as im:
+        im.seek(1)
+        assert im.getpixel((0, 0)) == (0, 0, 0, 255)
 
 
 def test_transparency_in_second_frame(tmp_path: Path) -> None:
@@ -1159,6 +1181,21 @@ def test_append_images(tmp_path: Path) -> None:
 
     with Image.open(out) as reread:
         assert reread.n_frames == 10
+
+
+def test_append_different_size_image(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("RGB", (100, 100))
+    bigger_im = Image.new("RGB", (200, 200), "#f00")
+
+    im.save(out, save_all=True, append_images=[bigger_im])
+
+    with Image.open(out) as reread:
+        assert reread.size == (100, 100)
+
+        reread.seek(1)
+        assert reread.size == (100, 100)
 
 
 def test_transparent_optimize(tmp_path: Path) -> None:
