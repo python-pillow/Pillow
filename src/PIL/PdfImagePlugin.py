@@ -188,9 +188,9 @@ def _save(im, fp, filename, save_all=False):
         x_resolution = y_resolution = im.encoderinfo.get("resolution", 72.0)
 
     info = {
-        "title": None
-        if is_appending
-        else os.path.splitext(os.path.basename(filename))[0],
+        "title": (
+            None if is_appending else os.path.splitext(os.path.basename(filename))[0]
+        ),
         "author": None,
         "subject": None,
         "keywords": None,

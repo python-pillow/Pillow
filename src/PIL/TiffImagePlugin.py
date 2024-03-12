@@ -50,6 +50,7 @@ import warnings
 from collections.abc import MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
+from typing import TYPE_CHECKING, Any, Callable
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
@@ -306,6 +307,13 @@ _load_dispatch = {}
 _write_dispatch = {}
 
 
+def _delegate(op):
+    def delegate(self, *args):
+        return getattr(self._val, op)(*args)
+
+    return delegate
+
+
 class IFDRational(Rational):
     """Implements a rational class where 0/0 is a legal value to match
     the in the wild use of exif rationals.
@@ -391,12 +399,6 @@ class IFDRational(Rational):
         self._numerator = _numerator
         self._denominator = _denominator
 
-    def _delegate(op):
-        def delegate(self, *args):
-            return getattr(self._val, op)(*args)
-
-        return delegate
-
     """ a = ['add','radd', 'sub', 'rsub', 'mul', 'rmul',
              'truediv', 'rtruediv', 'floordiv', 'rfloordiv',
              'mod','rmod', 'pow','rpow', 'pos', 'neg',
@@ -436,7 +438,50 @@ class IFDRational(Rational):
         __int__ = _delegate("__int__")
 
 
-class ImageFileDirectory_v2(MutableMapping):
+def _register_loader(idx, size):
+    def decorator(func):
+        from .TiffTags import TYPES
+
+        if func.__name__.startswith("load_"):
+            TYPES[idx] = func.__name__[5:].replace("_", " ")
+        _load_dispatch[idx] = size, func  # noqa: F821
+        return func
+
+    return decorator
+
+
+def _register_writer(idx):
+    def decorator(func):
+        _write_dispatch[idx] = func  # noqa: F821
+        return func
+
+    return decorator
+
+
+def _register_basic(idx_fmt_name):
+    from .TiffTags import TYPES
+
+    idx, fmt, name = idx_fmt_name
+    TYPES[idx] = name
+    size = struct.calcsize("=" + fmt)
+    _load_dispatch[idx] = (  # noqa: F821
+        size,
+        lambda self, data, legacy_api=True: (
+            self._unpack(f"{len(data) // size}{fmt}", data)
+        ),
+    )
+    _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
+        b"".join(self._pack(fmt, value) for value in values)
+    )
+
+
+if TYPE_CHECKING:
+    _IFDv2Base = MutableMapping[int, Any]
+else:
+    _IFDv2Base = MutableMapping
+
+
+class ImageFileDirectory_v2(_IFDv2Base):
     """This class represents a TIFF tag directory.  To speed things up, we
     don't decode tags unless they're asked for.
 
@@ -497,6 +542,9 @@ class ImageFileDirectory_v2(MutableMapping):
 
     """
 
+    _load_dispatch: dict[int, Callable[[ImageFileDirectory_v2, bytes, bool], Any]] = {}
+    _write_dispatch: dict[int, Callable[..., Any]] = {}
+
     def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None, group=None):
         """Initialize an ImageFileDirectory.
 
@@ -531,7 +579,10 @@ class ImageFileDirectory_v2(MutableMapping):
 
     prefix = property(lambda self: self._prefix)
     offset = property(lambda self: self._offset)
-    legacy_api = property(lambda self: self._legacy_api)
+
+    @property
+    def legacy_api(self):
+        return self._legacy_api
 
     @legacy_api.setter
     def legacy_api(self, value):
@@ -674,40 +725,6 @@ class ImageFileDirectory_v2(MutableMapping):
     def _pack(self, fmt, *values):
         return struct.pack(self._endian + fmt, *values)
 
-    def _register_loader(idx, size):
-        def decorator(func):
-            from .TiffTags import TYPES
-
-            if func.__name__.startswith("load_"):
-                TYPES[idx] = func.__name__[5:].replace("_", " ")
-            _load_dispatch[idx] = size, func  # noqa: F821
-            return func
-
-        return decorator
-
-    def _register_writer(idx):
-        def decorator(func):
-            _write_dispatch[idx] = func  # noqa: F821
-            return func
-
-        return decorator
-
-    def _register_basic(idx_fmt_name):
-        from .TiffTags import TYPES
-
-        idx, fmt, name = idx_fmt_name
-        TYPES[idx] = name
-        size = struct.calcsize("=" + fmt)
-        _load_dispatch[idx] = (  # noqa: F821
-            size,
-            lambda self, data, legacy_api=True: (
-                self._unpack(f"{len(data) // size}{fmt}", data)
-            ),
-        )
-        _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
-            b"".join(self._pack(fmt, value) for value in values)
-        )
-
     list(
         map(
             _register_basic,
@@ -773,6 +790,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_writer(7)
     def write_undefined(self, value):
+        if isinstance(value, IFDRational):
+            value = int(value)
         if isinstance(value, int):
             value = str(value).encode("ascii", "replace")
         return value
@@ -995,7 +1014,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     tagdata = property(lambda self: self._tagdata)
 
     # defined in ImageFileDirectory_v2
-    tagtype: dict
+    tagtype: dict[int, int]
     """Dictionary of tag types"""
 
     @classmethod
@@ -1704,25 +1723,27 @@ def _save(im, fp, filename):
             colormap += [0] * (256 - colors)
         ifd[COLORMAP] = colormap
     # data orientation
-    stride = len(bits) * ((im.size[0] * bits[0] + 7) // 8)
-    # aim for given strip size (64 KB by default) when using libtiff writer
-    if libtiff:
-        im_strip_size = encoderinfo.get("strip_size", STRIP_SIZE)
-        rows_per_strip = 1 if stride == 0 else min(im_strip_size // stride, im.size[1])
-        # JPEG encoder expects multiple of 8 rows
-        if compression == "jpeg":
-            rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, im.size[1])
-    else:
-        rows_per_strip = im.size[1]
-    if rows_per_strip == 0:
-        rows_per_strip = 1
-    strip_byte_counts = 1 if stride == 0 else stride * rows_per_strip
-    strips_per_image = (im.size[1] + rows_per_strip - 1) // rows_per_strip
-    ifd[ROWSPERSTRIP] = rows_per_strip
+    w, h = ifd[IMAGEWIDTH], ifd[IMAGELENGTH]
+    stride = len(bits) * ((w * bits[0] + 7) // 8)
+    if ROWSPERSTRIP not in ifd:
+        # aim for given strip size (64 KB by default) when using libtiff writer
+        if libtiff:
+            im_strip_size = encoderinfo.get("strip_size", STRIP_SIZE)
+            rows_per_strip = 1 if stride == 0 else min(im_strip_size // stride, h)
+            # JPEG encoder expects multiple of 8 rows
+            if compression == "jpeg":
+                rows_per_strip = min(((rows_per_strip + 7) // 8) * 8, h)
+        else:
+            rows_per_strip = h
+        if rows_per_strip == 0:
+            rows_per_strip = 1
+        ifd[ROWSPERSTRIP] = rows_per_strip
+    strip_byte_counts = 1 if stride == 0 else stride * ifd[ROWSPERSTRIP]
+    strips_per_image = (h + ifd[ROWSPERSTRIP] - 1) // ifd[ROWSPERSTRIP]
     if strip_byte_counts >= 2**16:
         ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
     ifd[STRIPBYTECOUNTS] = (strip_byte_counts,) * (strips_per_image - 1) + (
-        stride * im.size[1] - strip_byte_counts * (strips_per_image - 1),
+        stride * h - strip_byte_counts * (strips_per_image - 1),
     )
     ifd[STRIPOFFSETS] = tuple(
         range(0, strip_byte_counts * strips_per_image, strip_byte_counts)
@@ -1833,11 +1854,11 @@ def _save(im, fp, filename):
         tags = list(atts.items())
         tags.sort()
         a = (rawmode, compression, _fp, filename, tags, types)
-        e = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        e.setimage(im.im, (0, 0) + im.size)
+        encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
+        encoder.setimage(im.im, (0, 0) + im.size)
         while True:
             # undone, change to self.decodermaxblock:
-            errcode, data = e.encode(16 * 1024)[1:]
+            errcode, data = encoder.encode(16 * 1024)[1:]
             if not _fp:
                 fp.write(data)
             if errcode:

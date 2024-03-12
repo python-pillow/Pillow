@@ -8,7 +8,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   pull_request:
@@ -16,7 +15,6 @@ on:
       - ".github/workflows/docs.yml"
       - ".github/workflows/wheels*"
       - ".gitmodules"
-      - ".travis.yml"
       - "docs/**"
       - "wheels/**"
   workflow_dispatch:
@@ -28,6 +26,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  COVERAGE_CORE: sysmon
+  FORCE_COLOR: 1
+
 jobs:
   build:
 
@@ -35,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          "macos-latest",
+          "macos-14",
           "ubuntu-latest",
         ]
         python-version: [
@@ -49,11 +51,21 @@ jobs:
           "3.8",
         ]
         include:
-        - python-version: "3.9"
+        - python-version: "3.11"
           PYTHONOPTIMIZE: 1
           REVERSE: "--reverse"
-        - python-version: "3.8"
+        - python-version: "3.10"
           PYTHONOPTIMIZE: 2
+        # M1 only available for 3.10+
+        - os: "macos-latest"
+          python-version: "3.9"
+        - os: "macos-latest"
+          python-version: "3.8"
+        exclude:
+        - os: "macos-14"
+          python-version: "3.9"
+        - os: "macos-14"
+          python-version: "3.8"
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
@@ -67,10 +79,20 @@ jobs:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
         cache: pip
-        cache-dependency-path: ".ci/*.sh"
+        cache-dependency-path: |
+          ".ci/*.sh"
+          "pyproject.toml"
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
+
+    - name: Cache libimagequant
+      if: startsWith(matrix.os, 'ubuntu')
+      uses: actions/cache@v4
+      id: cache-libimagequant
+      with:
+        path: ~/cache-libimagequant
+        key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
 
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -78,6 +100,7 @@ jobs:
         .ci/install.sh
       env:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+        GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
 
     - name: Install macOS dependencies
       if: startsWith(matrix.os, 'macOS')
@@ -85,6 +108,10 @@ jobs:
         .github/workflows/macos-install.sh
       env:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+
+    - name: Register gcc problem matcher
+      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'"
+      run: echo "::add-matcher::.github/problem-matchers/gcc.json"
 
     - name: Build
       run: |
@@ -123,9 +150,9 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v3.1.5
       with:
-        flags: ${{ matrix.os == 'macos-latest' && 'GHA_macOS' || 'GHA_Ubuntu' }}
+        flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
         gcov: true
 

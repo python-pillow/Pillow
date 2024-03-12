@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from PIL import Image
 
 from .helper import hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     im = hopper()
 
     projection = im.getprojection()

@@ -2649,6 +2649,26 @@ _font_new(PyObject *self_, PyObject *args) {
         self->glyphs[i].sy0 = S16(B16(glyphdata, 14));
         self->glyphs[i].sx1 = S16(B16(glyphdata, 16));
         self->glyphs[i].sy1 = S16(B16(glyphdata, 18));
+
+        // Do not allow glyphs to extend beyond bitmap image
+        // Helps prevent DOS by stopping cropped images being larger than the original
+        if (self->glyphs[i].sx0 < 0) {
+            self->glyphs[i].dx0 -= self->glyphs[i].sx0;
+            self->glyphs[i].sx0 = 0;
+        }
+        if (self->glyphs[i].sy0 < 0) {
+            self->glyphs[i].dy0 -= self->glyphs[i].sy0;
+            self->glyphs[i].sy0 = 0;
+        }
+        if (self->glyphs[i].sx1 > self->bitmap->xsize) {
+            self->glyphs[i].dx1 -= self->glyphs[i].sx1 - self->bitmap->xsize;
+            self->glyphs[i].sx1 = self->bitmap->xsize;
+        }
+        if (self->glyphs[i].sy1 > self->bitmap->ysize) {
+            self->glyphs[i].dy1 -= self->glyphs[i].sy1 - self->bitmap->ysize;
+            self->glyphs[i].sy1 = self->bitmap->ysize;
+        }
+
         if (self->glyphs[i].dy0 < y0) {
             y0 = self->glyphs[i].dy0;
         }
@@ -2721,7 +2741,7 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
 static PyObject *
 _font_getmask(ImagingFontObject *self, PyObject *args) {
     Imaging im;
-    Imaging bitmap;
+    Imaging bitmap = NULL;
     int x, b;
     int i = 0;
     int status;
@@ -2730,7 +2750,7 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
     PyObject *encoded_string;
 
     unsigned char *text;
-    char *mode = "";
+    char *mode;
 
     if (!PyArg_ParseTuple(args, "O|s:getmask", &encoded_string, &mode)) {
         return NULL;
@@ -2753,10 +2773,13 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
     b = self->baseline;
     for (x = 0; text[i]; i++) {
         glyph = &self->glyphs[text[i]];
-        bitmap =
-            ImagingCrop(self->bitmap, glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1);
-        if (!bitmap) {
-            goto failed;
+        if (i == 0 || text[i] != text[i - 1]) {
+            ImagingDelete(bitmap);
+            bitmap =
+                ImagingCrop(self->bitmap, glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1);
+            if (!bitmap) {
+                goto failed;
+            }
         }
         status = ImagingPaste(
             im,
@@ -2766,17 +2789,18 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
             glyph->dy0 + b,
             glyph->dx1 + x,
             glyph->dy1 + b);
-        ImagingDelete(bitmap);
         if (status < 0) {
             goto failed;
         }
         x = x + glyph->dx;
         b = b + glyph->dy;
     }
+    ImagingDelete(bitmap);
     free(text);
     return PyImagingNew(im);
 
 failed:
+    ImagingDelete(bitmap);
     free(text);
     ImagingDelete(im);
     Py_RETURN_NONE;

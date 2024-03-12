@@ -62,7 +62,7 @@ _MODES = {
     (2, 0): ("L", "L;2"),
     (4, 0): ("L", "L;4"),
     (8, 0): ("L", "L"),
-    (16, 0): ("I", "I;16B"),
+    (16, 0): ("I;16", "I;16B"),
     # Truecolour
     (8, 2): ("RGB", "RGB"),
     (16, 2): ("RGB", "RGB;16B"),
@@ -378,7 +378,7 @@ class PngStream(ChunkStream):
         }
 
     def rewind(self):
-        self.im_info = self.rewind_state["info"]
+        self.im_info = self.rewind_state["info"].copy()
         self.im_tile = self.rewind_state["tile"]
         self._seq_num = self.rewind_state["seq_num"]
 
@@ -392,8 +392,8 @@ class PngStream(ChunkStream):
         # Compressed profile    n bytes (zlib with deflate compression)
         i = s.find(b"\0")
         logger.debug("iCCP profile name %r", s[:i])
-        logger.debug("Compression method %s", s[i])
-        comp_method = s[i]
+        comp_method = s[i + 1]
+        logger.debug("Compression method %s", comp_method)
         if comp_method != 0:
             msg = f"Unknown compression method {comp_method} in iCCP chunk"
             raise SyntaxError(msg)
@@ -467,7 +467,7 @@ class PngStream(ChunkStream):
                 # otherwise, we have a byte string with one alpha value
                 # for each palette entry
                 self.im_info["transparency"] = s
-        elif self.im_mode in ("1", "L", "I"):
+        elif self.im_mode in ("1", "L", "I;16"):
             self.im_info["transparency"] = i16(s)
         elif self.im_mode == "RGB":
             self.im_info["transparency"] = i16(s), i16(s, 2), i16(s, 4)
@@ -981,7 +981,13 @@ class PngImageFile(ImageFile.ImageFile):
             except EOFError:
                 if cid == b"fdAT":
                     length -= 4
-                ImageFile._safe_read(self.fp, length)
+                try:
+                    ImageFile._safe_read(self.fp, length)
+                except OSError as e:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        break
+                    else:
+                        raise e
             except AttributeError:
                 logger.debug("%r %s %s (unknown)", cid, pos, length)
                 s = ImageFile._safe_read(self.fp, length)
@@ -1232,16 +1238,20 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
             "default_image", im.info.get("default_image")
         )
         modes = set()
+        sizes = set()
         append_images = im.encoderinfo.get("append_images", [])
         for im_seq in itertools.chain([im], append_images):
             for im_frame in ImageSequence.Iterator(im_seq):
                 modes.add(im_frame.mode)
+                sizes.add(im_frame.size)
         for mode in ("RGBA", "RGB", "P"):
             if mode in modes:
                 break
         else:
             mode = modes.pop()
+        size = tuple(max(frame_size[i] for frame_size in sizes) for i in range(2))
     else:
+        size = im.size
         mode = im.mode
 
     if mode == "P":
@@ -1289,8 +1299,8 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
     chunk(
         fp,
         b"IHDR",
-        o32(im.size[0]),  # 0: size
-        o32(im.size[1]),
+        o32(size[0]),  # 0: size
+        o32(size[1]),
         mode,  # 8: depth/type
         b"\0",  # 10: compression
         b"\0",  # 11: filter category
@@ -1350,7 +1360,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
                 transparency = max(0, min(255, transparency))
                 alpha = b"\xFF" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
-        elif im.mode in ("1", "L", "I"):
+        elif im.mode in ("1", "L", "I", "I;16"):
             transparency = max(0, min(65535, transparency))
             chunk(fp, b"tRNS", o16(transparency))
         elif im.mode == "RGB":

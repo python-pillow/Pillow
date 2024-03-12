@@ -15,7 +15,7 @@ import math
 from . import Image, ImageFile
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:6] == b"SIMPLE"
 
 
@@ -23,8 +23,10 @@ class FitsImageFile(ImageFile.ImageFile):
     format = "FITS"
     format_description = "FITS"
 
-    def _open(self):
-        headers = {}
+    def _open(self) -> None:
+        assert self.fp is not None
+
+        headers: dict[bytes, bytes] = {}
         while True:
             header = self.fp.read(80)
             if not header:

@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 import os
 import subprocess
 import sys
 
 
-def test_main():
+def test_main() -> None:
     out = subprocess.check_output([sys.executable, "-m", "PIL"]).decode("utf-8")
     lines = out.splitlines()
     assert lines[0] == "-" * 68

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # > pyroma .
 # ------------------------------
 # Checking .
@@ -570,6 +569,9 @@ class pil_build_ext(build_ext):
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
                 _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
+                for extension in self.extensions:
+                    extension.extra_compile_args = ["-Wno-nullability-completeness"]
         elif (
             sys.platform.startswith("linux")
             or sys.platform.startswith("gnu")

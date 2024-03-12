@@ -487,6 +487,16 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **exif**
     If present, the image will be stored with the provided raw EXIF data.
 
+**keep_rgb**
+    By default, libjpeg converts images with an RGB color space to YCbCr.
+    If this option is present and true, those images will be stored as RGB
+    instead.
+
+    When this option is enabled, attempting to chroma-subsample RGB images
+    with the ``subsampling`` option will raise an :py:exc:`OSError`.
+
+    .. versionadded:: 10.2.0
+
 **subsampling**
     If present, sets the subsampling for the encoder.
 
@@ -552,12 +562,13 @@ JPEG 2000
 
 .. versionadded:: 2.4.0
 
-Pillow reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB`` or
-``RGBA`` data.  It can also read files containing ``YCbCr`` data, which it
-converts on read into ``RGB`` or ``RGBA`` depending on whether or not there is
-an alpha channel.  Pillow supports JPEG 2000 raw codestreams (``.j2k`` files),
-as well as boxed JPEG 2000 files (``.j2p`` or ``.jpx`` files).  Pillow does
-*not* support files whose components have different sampling frequencies.
+Pillow reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB``,
+``RGBA``, or ``YCbCr`` data.  When reading, ``YCbCr`` data is converted to
+``RGB`` or ``RGBA`` depending on whether or not there is an alpha channel.
+Beginning with version 8.3.0, Pillow can read (but not write) ``RGB``,
+``RGBA``, and ``YCbCr`` images with subsampled components.  Pillow supports
+JPEG 2000 raw codestreams (``.j2k`` files), as well as boxed JPEG 2000 files
+(``.jp2`` or ``.jpx`` files).
 
 When loading, if you set the ``mode`` on the image prior to the
 :py:meth:`~PIL.Image.Image.load` method being invoked, you can ask Pillow to
@@ -684,6 +695,25 @@ PCX
 ^^^
 
 Pillow reads and writes PCX files containing ``1``, ``L``, ``P``, or ``RGB`` data.
+
+PFM
+^^^
+
+.. versionadded:: 10.3.0
+
+Pillow reads and writes grayscale (Pf format) Portable FloatMap (PFM) files
+containing ``F`` data.
+
+Color (PF format) PFM files are not supported.
+
+Opening
+~~~~~~~
+
+The :py:func:`~PIL.Image.open` function sets the following
+:py:attr:`~PIL.Image.Image.info` properties:
+
+**scale**
+    The absolute value of the number stored in the *Scale Factor / Endianness* line.
 
 PNG
 ^^^

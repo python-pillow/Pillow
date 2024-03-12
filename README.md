@@ -48,9 +48,6 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml"><img
                 alt="GitHub Actions build status (Wheels)"
                 src="https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg"></a>
-            <a href="https://app.travis-ci.com/github/python-pillow/Pillow"><img
-                alt="Travis CI wheels build status (aarch64)"
-                src="https://img.shields.io/travis/com/python-pillow/Pillow/main.svg?label=aarch64%20wheels"></a>
             <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
@@ -67,11 +64,11 @@ As of 2019, Pillow development is
                 src="https://zenodo.org/badge/17549/python-pillow/Pillow.svg"></a>
             <a href="https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge"><img
                 alt="Tidelift"
-                src="https://tidelift.com/badges/package/pypi/Pillow?style=flat"></a>
-            <a href="https://pypi.org/project/Pillow/"><img
+                src="https://tidelift.com/badges/package/pypi/pillow?style=flat"></a>
+            <a href="https://pypi.org/project/pillow/"><img
                 alt="Newest PyPI version"
                 src="https://img.shields.io/pypi/v/pillow.svg"></a>
-            <a href="https://pypi.org/project/Pillow/"><img
+            <a href="https://pypi.org/project/pillow/"><img
                 alt="Number of PyPI downloads"
                 src="https://img.shields.io/pypi/dm/pillow.svg"></a>
             <a href="https://www.bestpractices.dev/projects/6331"><img
@@ -85,9 +82,6 @@ As of 2019, Pillow development is
             <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
                 alt="Join the chat at https://gitter.im/python-pillow/Pillow"
                 src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
-            <a href="https://twitter.com/PythonPillow"><img
-                alt="Follow on https://twitter.com/PythonPillow"
-                src="https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg"></a>
             <a href="https://fosstodon.org/@pillow"><img
                 alt="Follow on https://fosstodon.org/@pillow"
                 src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"

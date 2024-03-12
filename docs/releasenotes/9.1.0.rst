@@ -51,7 +51,7 @@ Constants
 ^^^^^^^^^
 
 A number of constants have been deprecated and will be removed in Pillow 10.0.0
-(2023-07-01). Instead, ``enum.IntEnum`` classes have been added.
+(2023-07-01). Instead, :py:class:`enum.IntEnum` classes have been added.
 
 .. note::
 

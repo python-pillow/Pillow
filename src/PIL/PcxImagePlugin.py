@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import io
 import logging
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -37,7 +38,7 @@ from ._binary import o16le as o16
 logger = logging.getLogger(__name__)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[0] == 10 and prefix[1] in [0, 2, 3, 5]
 
 
@@ -49,8 +50,10 @@ class PcxImageFile(ImageFile.ImageFile):
     format = "PCX"
     format_description = "Paintbrush"
 
-    def _open(self):
+    def _open(self) -> None:
         # header
+        assert self.fp is not None
+
         s = self.fp.read(128)
         if not _accept(s):
             msg = "not a PCX file"
@@ -141,7 +144,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -199,6 +202,8 @@ def _save(im, fp, filename):
 
     if im.mode == "P":
         # colour palette
+        assert im.im is not None
+
         fp.write(o8(12))
         palette = im.im.getpalette("RGB", "RGB")
         palette += b"\x00" * (768 - len(palette))
