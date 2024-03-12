@@ -81,6 +81,7 @@ jobs:
             wget
             xorg-server-extra
             zlib-devel
+            ninja cmake meson
 
       - name: Add Lapack to PATH
         uses: egor-tensin/cleanup-path@v4
