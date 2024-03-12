@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import EpsImagePlugin, Image, features
+from PIL import EpsImagePlugin, Image, UnidentifiedImageError, features
 
 from .helper import (
     assert_image_similar,
@@ -419,7 +419,7 @@ def test_emptyline() -> None:
 )
 def test_timeout(test_file: str) -> None:
     with open(test_file, "rb") as f:
-        with pytest.raises(Image.UnidentifiedImageError):
+        with pytest.raises(UnidentifiedImageError):
             with Image.open(f):
                 pass
 

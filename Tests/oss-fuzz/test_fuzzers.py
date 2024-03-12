@@ -7,7 +7,7 @@ import fuzzers
 import packaging
 import pytest
 
-from PIL import Image, features
+from PIL import Image, UnidentifiedImageError, features
 from Tests.helper import skip_unless_feature
 
 if sys.platform.startswith("win32"):
@@ -43,7 +43,7 @@ def test_fuzz_images(path: str) -> None:
     except (
         Image.DecompressionBombError,
         Image.DecompressionBombWarning,
-        Image.UnidentifiedImageError,
+        UnidentifiedImageError,
     ):
         # Known Image.* exceptions
         assert True
