@@ -25,7 +25,7 @@ from enum import IntEnum, IntFlag
 from functools import reduce
 from typing import Any
 
-from . import Image
+from . import Image, __version__
 from ._deprecate import deprecate
 
 try:
@@ -1087,4 +1087,4 @@ def versions():
         12,
         '(PIL.features.version("littlecms2"), sys.version, PIL.__version__)',
     )
-    return _VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__
+    return _VERSION, core.littlecms_version, sys.version.split()[0], __version__
