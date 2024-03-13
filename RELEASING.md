@@ -11,7 +11,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Develop and prepare release in `main` branch.
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `main` branch.
 * [ ] Check that all the wheel builds pass the tests in the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml) jobs by manually triggering them.
-* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
+* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/__init__.py`
 * [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
@@ -23,7 +23,7 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Create and upload all [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/),
-      increment and append `.dev0` to version identifier in `src/PIL/_version.py` and then:
+      increment and append `.dev0` to version identifier in `src/PIL/__init__.py` and then:
   ```bash
   git push --all
    ```
@@ -39,7 +39,7 @@ Released as needed for security, installation or critical bug fixes.
   ```
 * [ ] Cherry pick individual commits from `main` branch to release branch e.g. `5.2.x`, then `git push`.
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in release branch e.g. `5.2.x`.
-* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
+* [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/__init__.py`
 * [ ] Run pre-release check via `make release-test`.
 * [ ] Create tag for release e.g.:
   ```bash
