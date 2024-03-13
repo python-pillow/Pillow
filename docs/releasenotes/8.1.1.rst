@@ -4,7 +4,7 @@
 Security
 ========
 
-Fix CVE-2021-25289 
+Fix CVE-2021-25289
 ^^^^^^^^^^^^^^^^^^
 
 .. note:: More information about this vulnerability included in database record :cve:`2021-25289`
