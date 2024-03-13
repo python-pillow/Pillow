@@ -49,7 +49,7 @@ Fix CVE-2022-22817
 .. note:: More information about this vulnerability included in database record :cve:`2022-22817`
 
 Restrict builtins available to ImageMath.eval
-+++++++++++++++++++++++++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To limit :py:class:`PIL.ImageMath` to working with images, Pillow
 will now restrict the builtins available to :py:meth:`PIL.ImageMath.eval`. This will

@@ -31,7 +31,7 @@ Fix CVE-2023-50447
 .. note:: More information about this vulnerability included in database record :cve:`2023-50447`
 
 ImageMath.eval: Restricted environment keys
-+++++++++++++++++++++++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If an attacker has control over the keys passed to the
 ``environment`` argument of :py:meth:`PIL.ImageMath.eval`, they may be able to execute

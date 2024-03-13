@@ -13,7 +13,7 @@ Fix CVE-2021-25287, CVE-2021-25288, CVE-2021-28675
     :cve:`2021-25287`, :cve:`2021-25288`, :cve:`2021-28675`
 
 OOB read in Jpeg2KDecode
-++++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 * For J2k images with multiple bands, it's legal to have different widths for each band,
   e.g. 1 byte for ``L``, 4 bytes for ``A``.

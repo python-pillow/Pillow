@@ -12,7 +12,7 @@ Fix CVE-2022-30595
 .. note:: More information about this vulnerability included in database record :cve:`2022-30595`
 
 Heap buffer overflow
-++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~
 
 When reading a TGA file with RLE packets that cross scan lines,
 Pillow reads the information past the end of the first line without deducting that
