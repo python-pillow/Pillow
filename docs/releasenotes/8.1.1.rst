@@ -7,8 +7,6 @@ Security
 Fix CVE-2021-25289 
 ^^^^^^^^^^^^^^^^^^
 
-The previous fix for CVE-2020-35654 was insufficient.
-
 .. note:: More information about this vulnerability included in database record :cve:`2021-25289`
 
 The previous fix for :cve:`2020-35654` was insufficient due to incorrect error checking in ``TiffDecode.c``.
@@ -16,40 +14,30 @@ The previous fix for :cve:`2020-35654` was insufficient due to incorrect error c
 Fix CVE-2021-25290
 ^^^^^^^^^^^^^^^^^^
 
-In ``TiffDecode.c`` there is a negative-offset.
-
 .. note:: More information about this vulnerability included in database record :cve:`2021-25290`
 
-In ``TiffDecode.c``, there is a negative-offset ``memcpy``
-with an invalid size.
+In ``TiffDecode.c``, there is a negative-offset ``memcpy`` with an invalid size.
 
 Fix CVE-2021-25291
 ^^^^^^^^^^^^^^^^^^
 
-``TiffDecode.c`` has invalid tile boundaries.
-
 .. note:: More information about this vulnerability included in database record :cve:`2021-25291`
 
-In ``TiffDecode.c``, invalid tile boundaries could lead to
-an out-of-bounds read in ``TIFFReadRGBATile``.
+In ``TiffDecode.c``, invalid tile boundaries could lead to an out-of-bounds read in ``TIFFReadRGBATile``.
 
 Fix CVE-2021-25292
 ^^^^^^^^^^^^^^^^^^
 
-The PDF parser has a catastrophic backtracking regex.
-
 .. note:: More information about this vulnerability included in database record :cve:`2021-25292`:
 
-The PDF parser has a catastrophic backtracking regex
-that could be used as a DOS attack.
+The PDF parser has a catastrophic backtracking regex that could be used as a DOS attack.
 
 Fix CVE-2021-25293
 ^^^^^^^^^^^^^^^^^^
 
-There is an out-of-bounds read in ``SgiRleDecode.c`` since Pillow 4.3.0.
-
 .. note:: More information about this vulnerability included in database record :cve:`2021-25293`
 
+There is an out-of-bounds read in ``SgiRleDecode.c`` since Pillow 4.3.0.
 
 Other Changes
 =============

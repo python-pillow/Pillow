@@ -7,8 +7,6 @@ Security
 Fix CVE-2023-4863
 ^^^^^^^^^^^^^^^^^
 
-Updated install script and wheels with libwebp 1.3.2
-
 .. note:: More information about this vulnerability included in database record :cve:`2023-4863`
 
 This release provides an updated install script and updated wheels to

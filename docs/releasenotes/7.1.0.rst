@@ -9,37 +9,37 @@ This release includes many security fixes.
 Fix CVE-2020-10177
 ^^^^^^^^^^^^^^^^^^
 
-Multiple out-of-bounds reads in FLI decoding.
-
 .. note:: More information about this vulnerability included in database record :cve:`2020-10177`
+
+Multiple out-of-bounds reads in FLI decoding.
 
 Fix CVE-2020-10378
 ^^^^^^^^^^^^^^^^^^
 
-Bounds overflow in PCX decoding.
-
 .. note:: More information about this vulnerability included in database record :cve:`2020-10378`
+
+Bounds overflow in PCX decoding.
 
 Fix CVE-2020-10379
 ^^^^^^^^^^^^^^^^^^
 
-Two buffer overflows in TIFF decoding
-
 .. note:: More information about this vulnerability included in database record :cve:`2020-10379`
+
+Two buffer overflows in TIFF decoding.
 
 Fix CVE-2020-10994
 ^^^^^^^^^^^^^^^^^^
 
-Bounds overflow in JPEG 2000 decoding
-
 .. note:: More information about this vulnerability included in database record :cve:`2020-10994`
+
+Bounds overflow in JPEG 2000 decoding.
 
 Fix CVE-2020-11538
 ^^^^^^^^^^^^^^^^^^
 
-Buffer overflow in SGI-RLE decoding
-
 .. note:: More information about this vulnerability included in database record :cve:`2020-11538`
+
+Buffer overflow in SGI-RLE decoding.
 
 API Changes
 ===========

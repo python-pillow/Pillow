@@ -7,38 +7,27 @@ Security
 Fix CVE-2021-27921
 ^^^^^^^^^^^^^^^^^^
 
-There is an exhaustion of memory DOS in BLP images.
-
 .. note:: More information about this vulnerability included in database record :cve:`2021-27921`
 
-There is an exhaustion of memory DOS in BLP
-images where Pillow did not properly check the reported size of the
-contained image. These images could cause arbitrarily large memory
+There is an exhaustion of memory DOS in BLP images. where Pillow did not properly check the
+reported size of the contained image. These images could cause arbitrarily large memory
 allocations.
 
 Fix CVE-2021-27922
 ^^^^^^^^^^^^^^^^^^
 
-There is an exhaustion of memory DOS in ICNS images.
-
 .. note:: More information about this vulnerability included in database record :cve:`2021-27921`
 
-There is an exhaustion of memory DOS in the ICNS
-images where Pillow did not properly check the reported size of the
-contained image. These images could cause arbitrarily large memory
-allocations.
+There is an exhaustion of memory DOS in ICNS images where Pillow did not properly check the
+reported size of the contained image. These images could cause arbitrarily large memory allocations.
 
 Fix CVE-2021-27923
 ^^^^^^^^^^^^^^^^^^
 
-There is an exhaustion of memory DOS in ICO images.
-
 .. note:: More information about this vulnerability included in database record :cve:`2021-27923`
 
-There is an exhaustion of memory DOS in ICO
-images where Pillow did not properly check the reported size of the
-contained image. These images could cause arbitrarily large memory
-allocations.
+There is an exhaustion of memory DOS in ICO images where Pillow did not properly check the reported
+size of the contained image. These images could cause arbitrarily large memory allocations.
 
 These were reported by Jiayi Lin, Luke Shaffer, Xinran Xie and
 Akshay Ajayan of `Arizona State University <https://www.asu.edu/>`_.

@@ -9,8 +9,8 @@ TODO
 
 TODO
 
-Fix CVE-YYYY-XXXXX -- TODO
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Fix CVE-YYYY-XXXXX
+^^^^^^^^^^^^^^^^^^
 
 .. note:: More information about this vulnerability included in database record :cve:`YYYY-XXXXX`
 

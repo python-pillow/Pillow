@@ -26,8 +26,6 @@ perform operations on it.
 Fix CVE-2019-16865
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-DOS attack vulnerabilities.
-
 .. note:: More information about this vulnerability included in database record :cve:`2019-16865`
 
 The CVE is regarding DOS problems, such as consuming large
