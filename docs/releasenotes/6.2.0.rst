@@ -24,7 +24,7 @@ An error is now raised if a TIFF dimension is a string, rather than trying to
 perform operations on it.
 
 Fix CVE-2019-16865
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 .. note:: More information about this vulnerability included in database record :cve:`2019-16865`
 
