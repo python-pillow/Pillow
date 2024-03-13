@@ -117,7 +117,7 @@ jobs:
       - name: Upgrade NumPy
         shell: dash.exe -l "{0}"
         run: |
-          python3 -m pip install -U "numpy" --config-settings=setup-args="-Dblas=blas" --config-settings=setup-args="-Dlapack=lapack"
+          python3 -m pip install -U numpy --config-settings=setup-args="-Dblas=blas" --config-settings=setup-args="-Dlapack=lapack"
 
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
