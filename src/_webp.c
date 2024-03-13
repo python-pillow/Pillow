@@ -195,6 +195,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     char *mode;
     int lossless;
     float quality_factor;
+    float alpha_quality_factor;
     int method;
     WebPConfig config;
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
@@ -203,7 +204,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "z#iiisifi",
+            "z#iiisiffi",
             (char **)&rgb,
             &size,
             &timestamp,
@@ -212,6 +213,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
             &mode,
             &lossless,
             &quality_factor,
+            &alpha_quality_factor,
             &method)) {
         return NULL;
     }
@@ -229,6 +231,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     }
     config.lossless = lossless;
     config.quality = quality_factor;
+    config.alpha_quality = alpha_quality_factor;
     config.method = method;
 
     // Validate the config
@@ -578,6 +581,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     int height;
     int lossless;
     float quality_factor;
+    float alpha_quality_factor;
     int method;
     int exact;
     uint8_t *rgb;
@@ -601,13 +605,14 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "y#iiifss#iis#s#",
+            "y#iiiffss#iis#s#",
             (char **)&rgb,
             &size,
             &width,
             &height,
             &lossless,
             &quality_factor,
+            &alpha_quality_factor,
             &mode,
             &icc_bytes,
             &icc_size,
@@ -637,6 +642,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     }
     config.lossless = lossless;
     config.quality = quality_factor;
+    config.alpha_quality = alpha_quality_factor;
     config.method = method;
 #if WEBP_ENCODER_ABI_VERSION >= 0x0209
     // the "exact" flag is only available in libwebp 0.5.0 and later
