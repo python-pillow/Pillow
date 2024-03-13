@@ -11,7 +11,8 @@ Fix CVE-2019-19911
 
 .. note:: More information about this vulnerability included in database record :cve:`2019-19911`
 
-DOS attack vulnerability.
+DOS attack vulnerability
+++++++++++++++++++++++++
 
 If an FPX image reports that it has a large number of bands, a large amount of
 resources will be used when trying to process the image. This is fixed by

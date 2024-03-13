@@ -13,6 +13,7 @@ Fix CVE-2021-34552
 .. note:: More information about this vulnerability included in database record :cve:`2021-34552`
 
 Buffer overflow
++++++++++++++++
 
 PIL since 1.1.4 and Pillow since 1.0 allowed parameters passed into a convert function to trigger
 buffer overflow in Convert.c.

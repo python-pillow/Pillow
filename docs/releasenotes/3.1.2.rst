@@ -9,7 +9,8 @@ Fix CVE-2016-3076
 
 .. note:: More information about this vulnerability included in database record :cve:`2016-3076`
 
-Buffer overflow in Jpeg2KEncode.c.
+Buffer overflow in Jpeg2KEncode.c
++++++++++++++++++++++++++++++++++
 
 Pillow between 2.5.0 and 3.1.1 may overflow a buffer
 when writing large Jpeg2000 files, allowing for code execution or other
