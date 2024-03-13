@@ -1,12 +1,19 @@
-
 3.1.1
-=====
+-----
 
-CVE-2016-0740 -- Buffer overflow in TiffDecode.c
-------------------------------------------------
+Security
+========
 
-Pillow 3.1.0 and earlier when linked against libtiff >= 4.0.0 on x64
-may overflow a buffer when reading a specially crafted tiff file (:cve:`2016-0740`).
+Fix CVE-2016-0740
+^^^^^^^^^^^^^^^^^
+
+Buffer overflow in TiffDecode.c.
+
+.. note:: More information about this vulnerability included in database record :cve:`2016-0740`
+
+Pillow 3.1.0 and earlier when linked against
+libtiff >= 4.0.0 on x64 may overflow a buffer when reading a
+specially crafted tiff file. 
 
 Specifically, libtiff >= 4.0.0 changed the return type of
 ``TIFFScanlineSize`` from ``int32`` to machine dependent
@@ -19,12 +26,15 @@ image data over 64k is written over the heap, causing a segfault.
 
 This issue was found by security researcher FourOne.
 
+Fix CVE-2016-0775
+^^^^^^^^^^^^^^^^^
 
-CVE-2016-0775 -- Buffer overflow in FliDecode.c
------------------------------------------------
+Buffer overflow in FliDecode.c.
 
-In all versions of Pillow, dating back at least to the last PIL 1.1.7
-release, FliDecode.c has a buffer overflow error (:cve:`2016-0775`).
+.. note:: More information about this vulnerability included in database record :cve:`2016-0775`
+
+In all versions of Pillow, dating back at least to
+the last PIL 1.1.7 release, FliDecode.c has a buffer overflow error. 
 
 Around line 192:
 
@@ -49,11 +59,15 @@ off the end of the memory buffer, causing a segfault.
 
 This issue was found by Alyssa Besseling at Atlassian.
 
-CVE-2016-2533 -- Buffer overflow in PcdDecode.c
------------------------------------------------
+Fix CVE-2016-2533
+^^^^^^^^^^^^^^^^^
 
-In all versions of Pillow, dating back at least to the last PIL 1.1.7
-release, ``PcdDecode.c`` has a buffer overflow error (:cve:`2016-2533`).
+Buffer overflow in PcdDecode.c.
+
+.. note:: More information about this vulnerability available in :cve:`2016-2533`
+
+In all versions of Pillow, dating back at least to the
+last PIL 1.1.7 release, ``PcdDecode.c`` has a buffer overflow error. 
 
 The ``state.buffer`` for ``PcdDecode.c`` is allocated based on a 3
 bytes per pixel sizing, where ``PcdDecode.c`` wrote into the buffer
@@ -62,7 +76,7 @@ the buffer into other Python object storage. In some cases, this
 causes a segfault, in others an internal Python malloc error.
 
 Integer overflow in Resample.c
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If a large value was passed into the new size for an image, it is
 possible to overflow an ``int32`` value passed into malloc.

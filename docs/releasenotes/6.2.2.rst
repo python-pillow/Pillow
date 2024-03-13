@@ -4,15 +4,56 @@
 Security
 ========
 
-This release addresses several security problems.
+This release fixes several buffer overruns and DOS attacks reported in CVE-2019-19911, CVE-2020-5310, CVE-2020-5311, CVE-2020-5312 and CVE-2020-5313.
 
-:cve:`2019-19911` is regarding FPX images. If an image reports that it has a large
-number of bands, a large amount of resources will be used when trying to process the
-image. This is fixed by limiting the number of bands to those usable by Pillow.
+Fix CVE-2019-19911
+^^^^^^^^^^^^^^^^^^
 
-Buffer overruns were found when processing an SGI (:cve:`2020-5311`),
-PCX (:cve:`2020-5312`) or FLI image (:cve:`2020-5313`). Checks have been added
-to prevent this.
+DOS attack vulnerability.
 
-:cve:`2020-5310`: Overflow checks have been added when calculating the size of a
+.. note:: More information about this vulnerability included in database record :cve:`2019-19911`
+
+If an FPX image reports that it has a large number of bands, a large amount of
+resources will be used when trying to process the image. This is fixed by
+limiting the number of bands to those usable by Pillow.
+
+
+Fix CVE-2020-5310
+^^^^^^^^^^^^^^^^^
+
+Overflow checks added to TIFF image processing.
+
+.. note:: More information about this vulnerability included in database record :cve:`2020-5310`
+
+Overflow checks have been added when calculating the size of a
 memory block to be reallocated in the processing of a TIFF image.
+
+Fix CVE-2020-5311
+^^^^^^^^^^^^^^^^^
+
+Overflow checks added to SGI image processing.
+
+.. note:: More information about this vulnerability included in database record :cve:`2020-5311`
+
+Buffer overruns were found when processing an SGI image. Checks
+have been added to prevent this.
+
+Fix CVE-2020-5312
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Overflow checks added to PCX image processing.
+
+.. note:: More information about this vulnerability included in database record :cve:`2020-5312`
+
+Buffer overruns were found when processing an SGI PCX. Checks have
+been added to prevent this.
+
+Fix CVE-2020-5313
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Overflow checks added to FLI image processing.
+
+.. note:: More information about this vulnerability included in database record :cve:`2020-5313`
+
+Buffer overruns were found when processing an FLI image. Checks
+have been added to prevent this.

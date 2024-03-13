@@ -1,6 +1,21 @@
 xx.y.z
 ------
 
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+Fix CVE-YYYY-XXXXX -- TODO
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note:: More information about this vulnerability included in database record :cve:`YYYY-XXXXX`
+
+TODO
+
 Backwards Incompatible Changes
 ==============================
 
@@ -25,14 +40,6 @@ TODO
 
 API Additions
 =============
-
-TODO
-^^^^
-
-TODO
-
-Security
-========
 
 TODO
 ^^^^
