@@ -20,7 +20,7 @@ Fix CVE-2023-44271
 .. note:: More information about this vulnerability included in database record :cve:`2023-44271`
 
 Added ImageFont.MAX_STRING_LENGTH
-+++++++++++++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To protect against potential DOS attacks when using arbitrary strings as text
 input, Pillow will now raise a :py:exc:`ValueError` if the number of characters
