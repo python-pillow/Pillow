@@ -34,14 +34,14 @@ Fix CVE-2020-5311
 Buffer overruns were found when processing an SGI image. Checks have been added to prevent this.
 
 Fix CVE-2020-5312
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 .. note:: More information about this vulnerability included in database record :cve:`2020-5312`
 
 Buffer overruns were found when processing an SGI PCX. Checks have been added to prevent this.
 
 Fix CVE-2020-5313
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 .. note:: More information about this vulnerability included in database record :cve:`2020-5313`
 
