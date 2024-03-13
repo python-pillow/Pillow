@@ -26,7 +26,7 @@ To protect against potential DOS attacks when using PIL fonts,
 they do not extend beyond the bitmap image.
 
 Fix CVE-2023-50447
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 .. note:: More information about this vulnerability included in database record :cve:`2023-50447`
 
