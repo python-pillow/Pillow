@@ -11,13 +11,13 @@ There is an exhaustion of memory DOS in BLP images. where Pillow did not properl
 reported size of the contained image. These images could cause arbitrarily large memory
 allocations.
 
-:cve:`2021-27921`: There is an exhaustion of memory DOS in ICNS images 
+:cve:`2021-27921`: There is an exhaustion of memory DOS in ICNS images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There is an exhaustion of memory DOS in ICNS images where Pillow did not properly check the
 reported size of the contained image. These images could cause arbitrarily large memory allocations.
 
-:cve:`2021-27923`: There is an exhaustion of memory DOS in ICO images 
+:cve:`2021-27923`: There is an exhaustion of memory DOS in ICO images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There is an exhaustion of memory DOS in ICO images where Pillow did not properly check the reported
