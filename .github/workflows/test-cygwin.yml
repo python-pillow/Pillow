@@ -52,6 +52,7 @@ jobs:
       - name: Install Cygwin
         uses: egor-tensin/setup-cygwin@v4
         with:
+          install-dir: 'C:/tools/cygwin'
           packages: >
             gcc-g++
             ghostscript
@@ -86,7 +87,7 @@ jobs:
       - name: Add Lapack to PATH
         uses: egor-tensin/cleanup-path@v4
         with:
-          dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
+          dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
 
       - name: Select Python version
         run: |
@@ -94,45 +95,45 @@ jobs:
 
       - name: Get latest NumPy version
         id: latest-numpy
-        shell: bash.exe -eo pipefail -o igncr "{0}"
+        shell: C:/tools/cygwin/bin/bash.exe -eo pipefail -o igncr "{0}"
         run: |
           python3 -m pip list --outdated | grep numpy | sed -r 's/ +/ /g' | cut -d ' ' -f 3 | sed 's/^/version=/' >> $GITHUB_OUTPUT
 
       - name: pip cache
         uses: actions/cache@v4
         with:
-          path: 'C:\cygwin\home\runneradmin\.cache\pip'
+          path: 'C:\tools\cygwin\home\runneradmin\.cache\pip'
           key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
             ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-
 
       - name: Build system information
         run: |
-          dash.exe -c "python3 .github/workflows/system-info.py"
+          C:/tools/cygwin/bin/dash.exe -c "python3 .github/workflows/system-info.py"
 
       - name: Install dependencies
         run: |
-          bash.exe .ci/install.sh
+          C:/tools/cygwin/bin/bash.exe .ci/install.sh
 
       - name: Upgrade NumPy
-        shell: dash.exe -l "{0}"
+        shell: C:/tools/cygwin/bin/dash.exe -l "{0}"
         run: |
           python3 -m pip install -U numpy --config-settings=setup-args="-Dblas=blas" --config-settings=setup-args="-Dlapack=lapack"
           python3 -c "import numpy as np; print(np.__version__)"
 
       - name: Build
-        shell: bash.exe -eo pipefail -o igncr "{0}"
+        shell: C:/tools/cygwin/bin/bash.exe -eo pipefail -o igncr "{0}"
         run: |
           .ci/build.sh
 
       - name: Test
         run: |
-          bash.exe xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+          C:/tools/cygwin/bin/bash.exe xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
 
       - name: Prepare to upload errors
         if: failure()
         run: |
-          dash.exe -c "mkdir -p Tests/errors"
+          C:/tools/cygwin/bin/dash.exe -c "mkdir -p Tests/errors"
 
       - name: Upload errors
         uses: actions/upload-artifact@v4
@@ -143,7 +144,7 @@ jobs:
 
       - name: After success
         run: |
-          bash.exe .ci/after_success.sh
+          C:/tools/cygwin/bin/bash.exe .ci/after_success.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3.1.5
