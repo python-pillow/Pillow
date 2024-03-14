@@ -9,7 +9,7 @@ This release catches several buffer overruns and fixes :cve:`2019-16865`.
 Buffer overruns
 ^^^^^^^^^^^^^^^
 
-In RawDecode.c, an error is now thrown if skip is calculated to be less than
+In ``RawDecode.c``, an error is now thrown if skip is calculated to be less than
 zero. It is intended to skip padding between lines, not to go backwards.
 
 In PsdImagePlugin, if the combined sizes of the individual parts is larger than
