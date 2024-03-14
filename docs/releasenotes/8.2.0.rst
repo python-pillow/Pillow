@@ -4,25 +4,17 @@
 Security
 ========
 
-These were all found with `OSS-Fuzz`_.
+These issues were all found with `OSS-Fuzz`_.
 
-Fix CVE-2021-25287, CVE-2021-25288, CVE-2021-28675
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about these vulnerabilities included in database records
-    :cve:`2021-25287`, :cve:`2021-25288`, :cve:`2021-28675`
-
-OOB read in Jpeg2KDecode
-~~~~~~~~~~~~~~~~~~~~~~~~
+:cve:`2021-25287`, :cve:`2021-25288`, :cve:`2021-28675`: OOB read in Jpeg2KDecode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * For J2k images with multiple bands, it's legal to have different widths for each band,
   e.g. 1 byte for ``L``, 4 bytes for ``A``.
 * This dates to Pillow 2.4.0.
 
-Fix CVE-2021-28675 -- DOS attack in PsdImagePlugin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2021-28675`
+:cve:`2021-28675`: DOS attack in PsdImagePlugin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * :py:class:`.PsdImagePlugin.PsdImageFile` did not sanity check the number of input
   layers with regard to the size of the data block, this could lead to a
@@ -30,19 +22,15 @@ Fix CVE-2021-28675 -- DOS attack in PsdImagePlugin
   :py:meth:`~PIL.Image.Image.load`.
 * This dates to the PIL fork.
 
-Fix CVE-2021-28676 -- FLI image DOS attack
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2021-28676`
+:cve:`2021-28676`: FLI image DOS attack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``FliDecode.c`` did not properly check that the block advance was non-zero,
   potentially leading to an infinite loop on load.
 * This dates to the PIL fork.
 
-Fix CVE-2021-28677 -- EPS DOS on _open
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2021-28677`
+:cve:`2021-28677`: EPS DOS on _open
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * The readline used in EPS has to deal with any combination of ``\r`` and ``\n`` as line
   endings. It accidentally used a quadratic method of accumulating lines while looking
@@ -51,10 +39,8 @@ Fix CVE-2021-28677 -- EPS DOS on _open
   open phase, before an image was accepted for opening.
 * This dates to the PIL fork.
 
-CVE-2021-28678 -- BLP DOS attack
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2021-28678`
+:cve:`2021-28678`: BLP DOS attack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``BlpImagePlugin`` did not properly check that reads after jumping to file offsets
   returned data. This could lead to a denial-of-service where the decoder could be run a

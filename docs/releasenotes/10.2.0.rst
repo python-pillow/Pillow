@@ -25,13 +25,8 @@ To protect against potential DOS attacks when using PIL fonts,
 :py:class:`PIL.ImageFont.ImageFont` now trims the size of individual glyphs so that
 they do not extend beyond the bitmap image.
 
-Fix CVE-2023-50447
-^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2023-50447`
-
-ImageMath.eval: Restricted environment keys
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:cve:`2023-50447`: ImageMath.eval: Restricted environment keys
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If an attacker has control over the keys passed to the
 ``environment`` argument of :py:meth:`PIL.ImageMath.eval`, they may be able to execute

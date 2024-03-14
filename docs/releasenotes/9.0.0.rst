@@ -56,10 +56,8 @@ will now restrict the builtins available to :py:meth:`PIL.ImageMath.eval`. This 
 help prevent problems arising if users evaluate arbitrary expressions, such as
 ``ImageMath.eval("exec(exit())")``.
 
-Fix CVE-2022-22817 -- ImagePath.Path array handling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2022-22815`
+:cve:`2022-22815`: ImagePath.Path array handling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 (:cwe:`126`) and :cve:`2022-22816` (:cwe:`665`) were found when initializing ``ImagePath.Path``.
 

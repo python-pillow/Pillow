@@ -4,13 +4,8 @@
 Security
 ========
 
-Fix CVE-2020-15999
-^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2020-15999`
-
-Update FreeType in wheels to `2.10.4`_
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:cve:`2020-15999`: Update FreeType in wheels to `2.10.4`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * A heap buffer overflow has been found  in the handling of embedded PNG bitmaps,
   introduced in FreeType version 2.6.

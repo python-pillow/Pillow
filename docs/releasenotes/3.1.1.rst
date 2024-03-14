@@ -4,13 +4,8 @@
 Security
 ========
 
-Fix CVE-2016-0740
-^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2016-0740`
-
-Buffer overflow in TiffDecode.c
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:cve:`2016-0740`: Buffer overflow in TiffDecode.c
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow 3.1.0 and earlier when linked against
 libtiff >= 4.0.0 on x64 may overflow a buffer when reading a
@@ -27,16 +22,11 @@ image data over 64k is written over the heap, causing a segfault.
 
 This issue was found by security researcher FourOne.
 
-Fix CVE-2016-0775
-^^^^^^^^^^^^^^^^^
+:cve:`2016-0775`: Buffer overflow in FliDecode.c
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: More information about this vulnerability included in database record :cve:`2016-0775`
-
-Buffer overflow in FliDecode.c
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In all versions of Pillow, dating back at least to
-the last PIL 1.1.7 release, FliDecode.c has a buffer overflow error.
+In all versions of Pillow, dating back at least to the last PIL 1.1.7
+release, FliDecode.c has a buffer overflow error.
 
 Around line 192:
 
@@ -61,13 +51,8 @@ off the end of the memory buffer, causing a segfault.
 
 This issue was found by Alyssa Besseling at Atlassian.
 
-Fix CVE-2016-2533
-^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability available in :cve:`2016-2533`
-
-Buffer overflow in PcdDecode.c
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:cve:`2016-2533`: Buffer overflow in PcdDecode.c
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In all versions of Pillow, dating back at least to the
 last PIL 1.1.7 release, ``PcdDecode.c`` has a buffer overflow error.

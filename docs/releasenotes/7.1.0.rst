@@ -6,40 +6,30 @@ Security
 
 This release includes many security fixes.
 
-Fix CVE-2020-10177
-^^^^^^^^^^^^^^^^^^
+:cve:`2020-10177`: Multiple out-of-bounds reads in FLI decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: More information about this vulnerability included in database record :cve:`2020-10177`
+Pillow before 7.1.0 has multiple out-of-bounds reads in ``libImaging/FliDecode.c``.
 
-Multiple out-of-bounds reads in FLI decoding.
+:cve:`2020-10378`: Bounds overflow in PCX decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Fix CVE-2020-10378
-^^^^^^^^^^^^^^^^^^
+In ``libImaging/PcxDecode.c`` in Pillow before 7.1.0, an out-of-bounds read can occur when reading PCX files where state->shuffle is instructed to read beyond state->buffer. 
 
-.. note:: More information about this vulnerability included in database record :cve:`2020-10378`
+:cve:`2020-10379`: Two buffer overflows in TIFF decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Bounds overflow in PCX decoding.
+In Pillow before 7.1.0, there are two buffer overflows in ``libImaging/TiffDecode.c``.
 
-Fix CVE-2020-10379
-^^^^^^^^^^^^^^^^^^
+:cve:`2020-10994`: Bounds overflow in JPEG 2000 decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: More information about this vulnerability included in database record :cve:`2020-10379`
+In ``libImaging/Jpeg2KDecode.c`` in Pillow before 7.1.0, there are multiple out-of-bounds reads via a crafted JP2 file. 
 
-Two buffer overflows in TIFF decoding.
+:cve:`2020-11538`: Buffer overflow in SGI-RLE decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Fix CVE-2020-10994
-^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2020-10994`
-
-Bounds overflow in JPEG 2000 decoding.
-
-Fix CVE-2020-11538
-^^^^^^^^^^^^^^^^^^
-
-.. note:: More information about this vulnerability included in database record :cve:`2020-11538`
-
-Buffer overflow in SGI-RLE decoding.
+In ``libImaging/SgiRleDecode.c`` in Pillow through 7.0.0, a number of out-of-bounds reads exist in the parsing of SGI image files, a different issue than CVE-2020-5311. 
 
 API Changes
 ===========
