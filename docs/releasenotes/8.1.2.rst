@@ -4,24 +4,12 @@
 Security
 ========
 
-:cve:`2021-27921`: There is an exhaustion of memory DOS in BLP images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2021-27921`, :cve:`2021-27922`, :cve:`2021-27923`: Fix DOS attacks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There is an exhaustion of memory DOS in BLP images. where Pillow did not properly check the
-reported size of the contained image. These images could cause arbitrarily large memory
-allocations.
+There is an exhaustion of memory DOS attack in BLP, ICNS, ICO images
+where Pillow did not properly check the reported size of the contained image.
+These images could cause arbitrarily large memory allocations.
 
-:cve:`2021-27922`: There is an exhaustion of memory DOS in ICNS images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-There is an exhaustion of memory DOS in ICNS images where Pillow did not properly check the
-reported size of the contained image. These images could cause arbitrarily large memory allocations.
-
-:cve:`2021-27923`: There is an exhaustion of memory DOS in ICO images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-There is an exhaustion of memory DOS in ICO images where Pillow did not properly check the reported
-size of the contained image. These images could cause arbitrarily large memory allocations.
-
-These were reported by Jiayi Lin, Luke Shaffer, Xinran Xie and
+These issues were reported by Jiayi Lin, Luke Shaffer, Xinran Xie and
 Akshay Ajayan of `Arizona State University <https://www.asu.edu/>`_.
