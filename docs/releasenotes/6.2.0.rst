@@ -4,7 +4,7 @@
 Security
 ========
 
-This release catches several buffer overruns and fixes CVE-2019-16865.
+This release catches several buffer overruns and fixes :cve:`2019-16865`.
 
 Buffer overruns
 ^^^^^^^^^^^^^^^
