@@ -4,8 +4,15 @@
 Security
 ========
 
-:cve:`2016-0775`: Fix buffer overflow
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2016-0740`: Fix buffer overflow in ``libImaging/TiffDecode.c``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Buffer overflow in the ImagingLibTiffDecode function in
+``libImaging/TiffDecode.c`` in Pillow before 3.1.1 allows remote attackers to
+overwrite memory via a crafted TIFF file.
+
+:cve:`2016-0775`: Fix buffer overflow in ``libImaging/FliDecode.c``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Buffer overflow in the ImagingFliDecode function in ``libImaging/FliDecode.c``
 in Pillow before 3.1.1 allows remote attackers to cause a denial of service
