@@ -34,7 +34,7 @@ fixed in Pillow 3.1, and some of them have been extended to have
 different behavior.
 
 TiffImagePlugin.IFDRational
----------------------------
++++++++++++++++++++++++++++
 
 Pillow 3.0 changed rational metadata to use a float. In Pillow 3.1,
 this has changed to allow the expression of 0/0 as a valid piece of
@@ -52,7 +52,7 @@ This class should be used when adding a rational value to an
 ImageFileDirectory for saving to image metadata.
 
 JpegImagePlugin._getexif
-------------------------
+++++++++++++++++++++++++
 
 In Pillow 3.0, the dictionary returned from the private, experimental,
 but generally widely used ``_getexif`` function changed to reflect the
@@ -67,7 +67,7 @@ The format returned by Pillow 3.0 has been abandoned. A more fully
 featured interface for EXIF is anticipated in a future release.
 
 Out of Spec Metadata
---------------------
+++++++++++++++++++++
 
 In Pillow 3.0 and 3.1, images that contain metadata that is internally
 consistent, but not in agreement with the TIFF spec, may cause an

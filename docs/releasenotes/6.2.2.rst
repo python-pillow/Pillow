@@ -13,23 +13,8 @@ If an FPX image reports that it has a large number of bands, a large amount of
 resources will be used when trying to process the image. This is fixed by
 limiting the number of bands to those usable by Pillow.
 
-:cve:`2020-5310`: Overflow checks added to TIFF image processing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2020-5310`, :cve:`2020-5311`, :cve:`2020-5312`, :cve:`2020-5313`: Overflow checks added
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Overflow checks have been added when calculating the size of a memory block to be reallocated
-in the processing of a TIFF image.
-
-:cve:`2020-5311`: Overflow checks added to SGI image processing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Buffer overruns were found when processing an SGI image. Checks have been added to prevent this.
-
-:cve:`2020-5312`: Overflow checks added to PCX image processing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Buffer overruns were found when processing a PCX image. Checks have been added to prevent this.
-
-:cve:`2020-5313`: Overflow checks added to FLI image processing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Buffer overruns were found when processing an FLI image. Checks have been added to prevent this.
+in the processing of TIFF, SGI, PCX and FLI images.

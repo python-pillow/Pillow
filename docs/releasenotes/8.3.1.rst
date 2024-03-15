@@ -22,7 +22,7 @@ with a ``dtype`` argument.
     >>>
 
 Catch OSError when checking if destination is sys.stdout
-========================================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In 8.3.0, a check to see if the destination was ``sys.stdout`` when saving an image was
 updated. This lead to an :py:exc:`OSError` being raised if the environment restricted

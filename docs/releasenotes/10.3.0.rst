@@ -90,3 +90,8 @@ Release GIL when fetching WebP frames
 
 Python's Global Interpreter Lock is now released when fetching WebP frames from
 the libwebp decoder.
+
+Add release notes for 2.3.1, 2.3.2, 2.5.2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
