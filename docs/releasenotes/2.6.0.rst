@@ -1,0 +1,22 @@
+2.6.0
+-----
+
+Security
+========
+
+:cve:`2014-3589`: Fix DOS attack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``PIL/IcnsImagePlugin.py`` in Python Imaging Library (PIL) and Pillow before 2.3.2 and
+2.5.x before 2.5.2 allows remote attackers to cause a denial of service via a crafted
+block size.
+
+Found and reported by Andrew Drake of dropbox.com
+
+Other Changes
+=============
+
+Relaxed precision of some tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Relaxed imagedraw tests to allow slight errors for x86 vs x64.
