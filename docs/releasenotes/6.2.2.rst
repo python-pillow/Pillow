@@ -4,7 +4,7 @@
 Security
 ========
 
-This release fixes several buffer overruns and DOS attacks.
+This release fixes several buffer overflow issues and a DOS attack vulnerability.
 
 :cve:`2019-19911`: DOS attack vulnerability
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

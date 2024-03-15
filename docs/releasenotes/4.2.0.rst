@@ -1,6 +1,29 @@
 4.2.0
 -----
 
+Deprecations
+============
+
+Several deprecated items have been removed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* The methods ``PIL.ImageWin.Dib.fromstring``,
+  ``PIL.ImageWin.Dib.tostring`` and
+  ``PIL.TiffImagePlugin.ImageFileDirectory_v2.as_dict`` have
+  been removed.
+
+* Before Pillow 4.2.0, attempting to save an RGBA image as JPEG would
+  discard the alpha channel. From Pillow 3.4.0, a deprecation warning
+  was shown. From Pillow 4.2.0, the deprecation warning is removed and
+  an :py:exc:`IOError` is raised.
+
+Removed Core Image Function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The unused function ``Image.core.new_array`` was removed. This is an
+internal function that should not have been used by user code, but it
+was accessible from the python layer.
+
 Other Changes
 =============
 
@@ -30,26 +53,3 @@ New DecompressionBomb Warning
 :py:meth:`PIL.Image.Image.crop` now may raise a DecompressionBomb
 warning if the crop region enlarges the image over the threshold
 specified by :py:data:`PIL.Image.MAX_IMAGE_PIXELS`.
-
-Deprections
-===========
-
-Several deprecated items have been removed
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* The methods ``PIL.ImageWin.Dib.fromstring``,
-  ``PIL.ImageWin.Dib.tostring`` and
-  ``PIL.TiffImagePlugin.ImageFileDirectory_v2.as_dict`` have
-  been removed.
-
-* Before Pillow 4.2.0, attempting to save an RGBA image as JPEG would
-  discard the alpha channel. From Pillow 3.4.0, a deprecation warning
-  was shown. From Pillow 4.2.0, the deprecation warning is removed and
-  an :py:exc:`IOError` is raised.
-
-Removed Core Image Function
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The unused function ``Image.core.new_array`` was removed. This is an
-internal function that should not have been used by user code, but it
-was accessible from the python layer.

@@ -11,10 +11,10 @@ These issues reported in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The (1) load_djpeg function in ``JpegImagePlugin.py``, (2) Ghostscript function
-in EpsImagePlugin.py, (3) load function in ``IptcImagePlugin.py``, and (4) _copy
-function in Image.py in Python Image Library (PIL) 1.1.7 and earlier and
-Pillow before 2.3.1 do not properly create temporary files, which allow local
-users to overwrite arbitrary files and obtain sensitive information via a
+in EpsImagePlugin.py, (3) load function in ``IptcImagePlugin.py``, and (4)
+``_copy`` function in Image.py in Python Image Library (PIL) 1.1.7 and earlier
+and Pillow before 2.3.1 do not properly create temporary files, which allow
+local users to overwrite arbitrary files and obtain sensitive information via a
 symlink attack on the temporary file.
 
 :cve:`2014-1933`: Fix insecure use of :py:func:`tempfile.mktemp`

@@ -4,11 +4,11 @@
 Security
 ========
 
-:cve:`2021-34552`: Buffer overflow
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2021-34552`: Fix buffer overflow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PIL since 1.1.4 and Pillow since 1.0 allowed parameters passed into a convert function to trigger
-buffer overflow in Convert.c.
+PIL since 1.1.4 and Pillow since 1.0 allowed parameters passed into a convert
+function to trigger buffer overflow in ``Convert.c``.
 
 Parsing XML
 ^^^^^^^^^^^
