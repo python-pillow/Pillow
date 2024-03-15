@@ -90,19 +90,13 @@ jobs:
         run: |
           ln -sf c:/cygwin/bin/python3.${{ matrix.python-minor-version }} c:/cygwin/bin/python3
 
-      - name: Get latest NumPy version
-        id: latest-numpy
-        shell: bash.exe -eo pipefail -o igncr "{0}"
-        run: |
-          python3 -m pip list --outdated | grep numpy | sed -r 's/ +/ /g' | cut -d ' ' -f 3 | sed 's/^/version=/' >> $GITHUB_OUTPUT
-
       - name: pip cache
         uses: actions/cache@v4
         with:
           path: 'C:\cygwin\home\runneradmin\.cache\pip'
-          key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-${{ hashFiles('.ci/install.sh') }}
+          key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
-            ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-
+            ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-
 
       - name: Build system information
         run: |
@@ -111,11 +105,6 @@ jobs:
       - name: Install dependencies
         run: |
           bash.exe .ci/install.sh
-
-      - name: Upgrade NumPy
-        shell: dash.exe -l "{0}"
-        run: |
-          python3 -m pip install -U "numpy<1.26"
 
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
