@@ -29,7 +29,8 @@ In ``libImaging/Jpeg2KDecode.c`` in Pillow before 7.1.0, there are multiple out-
 :cve:`2020-11538`: Buffer overflow in SGI-RLE decoding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In ``libImaging/SgiRleDecode.c`` in Pillow through 7.0.0, a number of out-of-bounds reads exist in the parsing of SGI image files, a different issue than CVE-2020-5311.
+In ``libImaging/SgiRleDecode.c`` in Pillow through 7.0.0, a number of out-of-bounds
+reads exist in the parsing of SGI image files, a different issue than :cve:`2020-5311`.
 
 API Changes
 ===========
