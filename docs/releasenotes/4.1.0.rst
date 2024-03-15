@@ -1,8 +1,8 @@
 4.1.0
 -----
 
-Removed Deprecated Items
-========================
+Deprecations
+============
 
 Several deprecated items have been removed.
 
@@ -15,8 +15,11 @@ Several deprecated items have been removed.
   ``PIL.ImageDraw.ImageDraw.setfont`` have been removed.
 
 
+Other Changes
+=============
+
 Closing Files When Opening Images
-=================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The file handling when opening images has been overhauled. Previously,
 Pillow would attempt to close some, but not all image formats
@@ -38,9 +41,8 @@ is specified:
   the underlying file until we are done with the image. The mapping
   will be closed in the ``close`` or ``__del__`` method.
 
-
 Changes to GIF Handling When Saving
-===================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :py:class:`PIL.GifImagePlugin` code has been refactored to fix the flow when
 saving images. There are two external changes that arise from this:

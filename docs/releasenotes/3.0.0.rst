@@ -1,32 +1,8 @@
-
 3.0.0
-=====
+-----
 
-Saving Multipage Images
------------------------
-
-There is now support for saving multipage images in the ``GIF`` and
-``PDF`` formats. To enable this functionality, pass in ``save_all=True``
-as a keyword argument to the save::
-
-    im.save('test.pdf', save_all=True)
-
-Tiff ImageFileDirectory Rewrite
--------------------------------
-
-The Tiff ImageFileDirectory metadata code has been rewritten. Where
-previously it returned a somewhat arbitrary set of values and tuples,
-it now returns bare values where appropriate and tuples when the
-metadata item is a sequence or collection.
-
-The original metadata is still available in the TiffImage.tags, the
-new values are available in the TiffImage.tags_v2 member. The old
-structures will be deprecated at some point in the future.  When
-saving Tiff metadata, new code should use the
-TiffImagePlugin.ImageFileDirectory_v2 class.
-
-Deprecated Methods
-------------------
+Deprecations
+============
 
 Several methods that have been marked as deprecated for many releases
 have been removed in this release::
@@ -42,8 +18,34 @@ have been removed in this release::
     ImageWin.fromstring()
     ImageWin.tostring()
 
-LibJpeg and Zlib are Required by Default
-----------------------------------------
+Other Changes
+=============
+
+Saving Multipage Images
+^^^^^^^^^^^^^^^^^^^^^^^
+
+There is now support for saving multipage images in the ``GIF`` and
+``PDF`` formats. To enable this functionality, pass in ``save_all=True``
+as a keyword argument to the save::
+
+    im.save('test.pdf', save_all=True)
+
+Tiff ImageFileDirectory Rewrite
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Tiff ImageFileDirectory metadata code has been rewritten. Where
+previously it returned a somewhat arbitrary set of values and tuples,
+it now returns bare values where appropriate and tuples when the
+metadata item is a sequence or collection.
+
+The original metadata is still available in the TiffImage.tags, the
+new values are available in the TiffImage.tags_v2 member. The old
+structures will be deprecated at some point in the future.  When
+saving Tiff metadata, new code should use the
+TiffImagePlugin.ImageFileDirectory_v2 class.
+
+LibJpeg and Zlib are required by default
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The external dependencies on libjpeg and zlib are now required by default.
 If the headers or libraries are not found, then installation will abort

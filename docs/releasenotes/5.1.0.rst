@@ -1,14 +1,22 @@
 5.1.0
 -----
 
+Other Changes
+=============
+
 New File Format
-===============
+^^^^^^^^^^^^^^^
 
 BLP File Format
-^^^^^^^^^^^^^^^
+---------------
 
 Pillow now supports reading the BLP "Blizzard Mipmap" file format used
 for tiles in Blizzard's engine.
+
+WebP memory leak
+^^^^^^^^^^^^^^^^
+
+A memory leak when opening ``WebP`` files has been fixed.
 
 API Changes
 ===========
@@ -26,11 +34,3 @@ Append to PDF Files
 
 Images can now be appended to PDF files in place by passing in
 ``append=True`` when saving the image.
-
-Other Changes
-=============
-
-WebP memory leak
-^^^^^^^^^^^^^^^^
-
-A memory leak when opening ``WebP`` files has been fixed.

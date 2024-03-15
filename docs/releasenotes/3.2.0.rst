@@ -1,9 +1,11 @@
-
 3.2.0
 -----
 
+Other Changes
+=============
+
 New DDS and FTEX Image Plugins
-==============================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``DdsImagePlugin`` reading DXT1 and DXT5 encoded ``.dds`` images was
 added. DXT3 images are not currently supported.
@@ -14,7 +16,7 @@ per file, in the ``.ftc`` (compressed) and ``.ftu`` (uncompressed)
 formats.
 
 Updates to the GbrImagePlugin
-=============================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``GbrImagePlugin`` (GIMP brush format) has been updated to fix
 support for version 1 files and add support for version 2 files.

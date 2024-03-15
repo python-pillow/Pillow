@@ -3,6 +3,9 @@
 
 This release fixes regressions in 5.4.0.
 
+Other Changes
+=============
+
 Installation on Termux
 ^^^^^^^^^^^^^^^^^^^^^^
 
