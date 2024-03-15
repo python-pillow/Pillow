@@ -95,9 +95,9 @@ Added release notes for past releases
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Added release notes for past releases: ``2.6.0``, ``2.5.2``,
-``2.3.2``, ``2.3.1``. With these additions we are now able to
-provide a comprehensive view of all CVE data from 1995 to 2024
-across three noteworthy periods:
+``2.3.2``, ``2.3.1``. With these additions we are able to
+provide a comprehensive list of all Pillow CVE records from
+1995 to 2024 across three noteworthy periods:
 
 - 1995-2009: No known CVEs
 - 2010-2018: :cve:`2014-1932`, :cve:`2014-3589`, :cve:`2016-0740`, :cve:`2016-3076`
