@@ -336,6 +336,10 @@ class ImageDraw:
 
         d = radius * 2
 
+        x0 = round(x0)
+        y0 = round(y0)
+        x1 = round(x1)
+        y1 = round(y1)
         full_x, full_y = False, False
         if all(corners):
             full_x = d >= x1 - x0 - 1
