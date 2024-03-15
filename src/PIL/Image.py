@@ -702,7 +702,7 @@ class Image:
                     pass
                 else:
                     if parse_version(numpy.__version__) < parse_version("1.23"):
-                        warnings.warn(e)
+                        warnings.warn(str(e))
             raise
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
