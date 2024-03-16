@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Fixed joined corners for ImageDraw rounded_rectangle() non-integer dimensions #7881
+  [radarhere]
+
 - Stop reading EPS image at EOF marker #7753
   [radarhere]
 
