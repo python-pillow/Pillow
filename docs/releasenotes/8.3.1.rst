@@ -1,9 +1,6 @@
 8.3.1
 -----
 
-Other Changes
-=============
-
 Fixed regression converting to NumPy arrays
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

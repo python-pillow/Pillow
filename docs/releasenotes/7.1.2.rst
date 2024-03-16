@@ -1,9 +1,6 @@
 7.1.2
 -----
 
-Other Changes
-=============
-
 Fix another regression seeking PNG files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

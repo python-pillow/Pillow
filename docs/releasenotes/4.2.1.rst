@@ -3,9 +3,6 @@
 
 There are no functional changes in this release.
 
-Other Changes
-=============
-
 Fixed Windows PyPy Build
 ^^^^^^^^^^^^^^^^^^^^^^^^
 

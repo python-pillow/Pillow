@@ -1,9 +1,6 @@
 2.7.0
 -----
 
-Other Changes
-=============
-
 Sane Plugin
 ^^^^^^^^^^^
 

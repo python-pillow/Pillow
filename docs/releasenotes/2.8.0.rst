@@ -1,9 +1,6 @@
 2.8.0
 -----
 
-Other Changes
-=============
-
 Open HTTP response objects with Image.open
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

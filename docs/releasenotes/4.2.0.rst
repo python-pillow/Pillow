@@ -1,8 +1,8 @@
 4.2.0
 -----
 
-Deprecations
-============
+Backwards Incompatible Changes
+==============================
 
 Several deprecated items have been removed
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
