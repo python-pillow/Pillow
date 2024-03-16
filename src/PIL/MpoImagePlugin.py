@@ -24,14 +24,11 @@ import os
 import struct
 
 from . import (
-    ExifTags,
     Image,
-    ImageFile,
     ImageSequence,
     JpegImagePlugin,
     TiffImagePlugin,
 )
-from ._binary import i16be as i16
 from ._binary import o32le
 
 
@@ -109,7 +106,6 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self._after_jpeg_open()
 
     def _after_jpeg_open(self, mpheader=None):
-        self._initial_size = self.size
         self.mpinfo = mpheader if mpheader is not None else self._getmp()
         self.n_frames = self.mpinfo[0xB001]
         self.__mpoffsets = [
@@ -137,27 +133,20 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.fp = self._fp
         self.offset = self.__mpoffsets[frame]
 
+        original_exif = self.info.get("exif")
+        if "exif" in self.info:
+            del self.info["exif"]
+
         self.fp.seek(self.offset + 2)  # skip SOI marker
-        segment = self.fp.read(2)
-        if not segment:
+        if not self.fp.read(2):
             msg = "No data found for frame"
             raise ValueError(msg)
-        self._size = self._initial_size
-        if i16(segment) == 0xFFE1:  # APP1
-            n = i16(self.fp.read(2)) - 2
-            self.info["exif"] = ImageFile._safe_read(self.fp, n)
+        self.fp.seek(self.offset)
+        JpegImagePlugin.JpegImageFile._open(self)
+        if self.info.get("exif") != original_exif:
             self._reload_exif()
 
-            mptype = self.mpinfo[0xB002][frame]["Attribute"]["MPType"]
-            if mptype.startswith("Large Thumbnail"):
-                exif = self.getexif().get_ifd(ExifTags.IFD.Exif)
-                if 40962 in exif and 40963 in exif:
-                    self._size = (exif[40962], exif[40963])
-        elif "exif" in self.info:
-            del self.info["exif"]
-            self._reload_exif()
-
-        self.tile = [("jpeg", (0, 0) + self.size, self.offset, (self.mode, ""))]
+        self.tile = [("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])]
         self.__frame = frame
 
     def tell(self):
