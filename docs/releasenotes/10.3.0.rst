@@ -1,6 +1,19 @@
 10.3.0
 ------
 
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
 Backwards Incompatible Changes
 ==============================
 
@@ -63,14 +76,6 @@ Added PerspectiveTransform
 that all of the :py:data:`~PIL.Image.Transform` values now have a corresponding
 subclass of :py:class:`~PIL.ImageTransform.Transform`.
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
 Other Changes
 =============
 
@@ -85,3 +90,19 @@ Release GIL when fetching WebP frames
 
 Python's Global Interpreter Lock is now released when fetching WebP frames from
 the libwebp decoder.
+
+Added release notes for past releases
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Added release notes for past releases: ``2.6.0``, ``2.5.2``,
+``2.3.2``, ``2.3.1``. With these additions we are able to
+provide a comprehensive list of all Pillow CVE records from
+1995 to 2024 across three noteworthy periods:
+
+- 1995-2009: No known CVEs
+- 2010-2018: :cve:`2014-1932`, :cve:`2014-3589`, :cve:`2016-0740`, :cve:`2016-3076`
+- 2019-2024: :cve:`2019-16865`, :cve:`2019-19911`, :cve:`2020-10177`, :cve:`2020-15999`,
+  :cve:`2020-35653`, :cve:`2021-25289`, :cve:`2020-35654`, :cve:`2020-35654`,
+  :cve:`2021-27921`, :cve:`2021-27922`, :cve:`2021-27923`, :cve:`2021-25287`,
+  :cve:`2021-25288`, :cve:`2021-34552`, :cve:`2021-23437`, :cve:`2022-22817`,
+  :cve:`2022-24303`, :cve:`2022-30595`, :cve:`2023-44271`, :cve:`2023-4863`
