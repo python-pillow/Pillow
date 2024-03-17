@@ -8,8 +8,7 @@ Security
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow 3.1.0 and earlier when linked against libtiff >= 4.0.0 on x64
-may overflow a buffer when reading a specially crafted tiff file
-(:cve:`2016-0740`).
+may overflow a buffer when reading a specially crafted tiff file.
 
 Specifically, libtiff >= 4.0.0 changed the return type of
 ``TIFFScanlineSize`` from ``int32`` to machine dependent
