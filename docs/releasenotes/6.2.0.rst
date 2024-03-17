@@ -29,6 +29,25 @@ perform operations on it.
 The CVE is regarding DOS problems, such as consuming large amounts of memory,
 or taking a large amount of time to process an image.
 
+API Changes
+===========
+
+Image.getexif
+^^^^^^^^^^^^^
+
+To allow for lazy loading of Exif data, ``Image.getexif()`` now returns a
+shared instance of ``Image.Exif``.
+
+Deprecations
+^^^^^^^^^^^^
+
+Image.frombuffer
+~~~~~~~~~~~~~~~~
+
+There has been a longstanding warning that the defaults of ``Image.frombuffer``
+may change in the future for the "raw" decoder. The change will now take place
+in Pillow 7.0.
+
 API Additions
 =============
 
@@ -73,25 +92,6 @@ ImageGrab on multi-monitor Windows
 
 An ``all_screens`` argument has been added to ``ImageGrab.grab``. If ``True``,
 all monitors will be included in the created image.
-
-API Changes
-===========
-
-Image.getexif
-^^^^^^^^^^^^^
-
-To allow for lazy loading of Exif data, ``Image.getexif()`` now returns a
-shared instance of ``Image.Exif``.
-
-Deprecations
-^^^^^^^^^^^^
-
-Image.frombuffer
-~~~~~~~~~~~~~~~~
-
-There has been a longstanding warning that the defaults of ``Image.frombuffer``
-may change in the future for the "raw" decoder. The change will now take place
-in Pillow 7.0.
 
 Other Changes
 =============

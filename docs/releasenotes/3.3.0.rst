@@ -1,9 +1,6 @@
 3.3.0
 -----
 
-Other Changes
-=============
-
 Libimagequant support
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -19,13 +16,13 @@ New Setup.py options
 
 There are two new options to control the ``build_ext`` task in ``setup.py``:
 
-  * ``--debug`` dumps all of the directories and files that are
-    checked when searching for libraries or headers when building the
-    extensions.
-  * ``--disable-platform-guessing`` removes many of the directories
-    that are checked for libraries and headers for build systems or
-    cross compilers that specify that information in via environment
-    variables.
+* ``--debug`` dumps all of the directories and files that are
+  checked when searching for libraries or headers when building the
+  extensions.
+* ``--disable-platform-guessing`` removes many of the directories
+  that are checked for libraries and headers for build systems or
+  cross compilers that specify that information in via environment
+  variables.
 
 Resizing
 ^^^^^^^^
@@ -51,4 +48,4 @@ Image Metadata
 
 The return type for binary data in version 2 Exif and Tiff metadata
 has been changed from a tuple of integers to bytes. This is a change
-from the behavior since ``3.0.0``.
+from the behavior since 3.0.0.

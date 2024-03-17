@@ -1,9 +1,6 @@
 3.1.0
 -----
 
-Other Changes
-=============
-
 ImageDraw arc, chord and pieslice can now use floats
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -1,6 +1,16 @@
 3.4.0
 -----
 
+Backwards Incompatible Changes
+==============================
+
+Image.core.open_ppm removed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The nominally private/debugging function ``Image.core.open_ppm`` has
+been removed. If you were using this function, please use
+``Image.open`` instead.
+
 Deprecations
 ============
 
@@ -12,14 +22,7 @@ silently drops the alpha channel. With this release Pillow will now
 issue a :py:exc:`DeprecationWarning` when attempting to save a ``RGBA`` mode
 image as a JPEG. This will become an error in Pillow 4.2.
 
-Image.core.open_ppm removed
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The nominally private/debugging function ``Image.core.open_ppm`` has
-been removed. If you were using this function, please use
-``Image.open`` instead.
-
-Other changes
+API Additions
 =============
 
 New resizing filters

@@ -4,8 +4,8 @@
 Security
 ========
 
-:cve:`2021-25289`: Fix the fix for :cve:`2020-35654`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2021-25289`: Correct the fix for :cve:`2020-35654`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The previous fix for :cve:`2020-35654` was insufficient due to incorrect
 error checking in ``TiffDecode.c``.

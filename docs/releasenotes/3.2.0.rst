@@ -1,9 +1,6 @@
 3.2.0
 -----
 
-Other Changes
-=============
-
 New DDS and FTEX Image Plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
