@@ -63,8 +63,8 @@ assuming 4 bytes per pixel. This writes 768 bytes beyond the end of
 the buffer into other Python object storage. In some cases, this
 causes a segfault, in others an internal Python malloc error.
 
-Integer overflow in Resample.c
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Integer overflow in ``Resample.c``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If a large value was passed into the new size for an image, it is
 possible to overflow an ``int32`` value passed into malloc.
