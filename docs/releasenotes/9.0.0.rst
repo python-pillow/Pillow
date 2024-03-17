@@ -44,17 +44,18 @@ duplicate tiles that only differ by their offset, only load the last tile. Credi
 Google's `OSS-Fuzz`_ project for finding this issue.
 
 :cve:`2022-22817`: Restrict builtins available to ImageMath.eval
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To limit :py:class:`PIL.ImageMath` to working with images, Pillow
 will now restrict the builtins available to :py:meth:`PIL.ImageMath.eval`. This will
 help prevent problems arising if users evaluate arbitrary expressions, such as
 ``ImageMath.eval("exec(exit())")``.
 
-:cve:`2022-22815`: ImagePath.Path array handling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2022-22815`, :cve:`2022-22816`: ImagePath.Path array handling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-(:cwe:`126`) and :cve:`2022-22816` (:cwe:`665`) were found when initializing ``ImagePath.Path``.
+:cve:`2022-22815` (:cwe:`126`) and :cve:`2022-22816` (:cwe:`665`) were found when
+initializing ``ImagePath.Path``.
 
 .. _OSS-Fuzz: https://github.com/google/oss-fuzz
 

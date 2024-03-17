@@ -14,7 +14,9 @@ Pillow before 7.1.0 has multiple out-of-bounds reads in ``libImaging/FliDecode.c
 :cve:`2020-10378`: Bounds overflow in PCX decoding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In ``libImaging/PcxDecode.c`` in Pillow before 7.1.0, an out-of-bounds read can occur when reading PCX files where state->shuffle is instructed to read beyond state->buffer.
+In ``libImaging/PcxDecode.c`` in Pillow before 7.1.0, an out-of-bounds read can occur
+when reading PCX files where ``state->shuffle`` is instructed to read beyond
+``state->buffer``.
 
 :cve:`2020-10379`: Two buffer overflows in TIFF decoding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -24,7 +26,8 @@ In Pillow before 7.1.0, there are two buffer overflows in ``libImaging/TiffDecod
 :cve:`2020-10994`: Bounds overflow in JPEG 2000 decoding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In ``libImaging/Jpeg2KDecode.c`` in Pillow before 7.1.0, there are multiple out-of-bounds reads via a crafted JP2 file.
+In ``libImaging/Jpeg2KDecode.c`` in Pillow before 7.1.0, there are multiple
+out-of-bounds reads via a crafted JP2 file.
 
 :cve:`2020-11538`: Buffer overflow in SGI-RLE decoding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
