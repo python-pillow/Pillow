@@ -56,7 +56,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
             if n_frames > 0:
                 self.n_frames = n_frames
                 self._tps_dur_secs = tps_num / tps_denom
-        
+
         # TODO: handle libjxl time codes
         self.__timestamp = 0
 
@@ -112,7 +112,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
 
         return data, timestamp, duration, is_last
 
-    def _rewind(self, hard: bool=False) -> None:
+    def _rewind(self, hard: bool = False) -> None:
         if hard:
             self._decoder.rewind()
         self.__physical_frame = 0
