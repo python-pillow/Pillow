@@ -59,6 +59,13 @@ def test_seeking() -> None:
                 assert im1.info["timestamp"] == im1.info["timestamp"]
             assert total_dur == 8000
 
+            assert im1.tell() == 0 and im2.tell() == 0
+
+            im1.seek(0)
+            im1.load()
+            im2.seek(0)
+            im2.load()
+
 
 def test_seek_errors() -> None:
     with Image.open("Tests/images/iss634.jxl") as im:
