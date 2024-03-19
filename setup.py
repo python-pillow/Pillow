@@ -998,10 +998,9 @@ ext_modules = [
 
 
 # parse configuration from _custom_build/backend.py
-while len(sys.argv[1]) >= 2 and sys.argv[1].startswith("--pillow-configuration="):
-    _, key, value = sys.argv[1].split("=", 2)
+while sys.argv[-1].startswith("--pillow-configuration="):
+    _, key, value = sys.argv.pop().split("=", 2)
     configuration.setdefault(key, []).append(value)
-    del sys.argv[1]
 
 try:
     setup(
