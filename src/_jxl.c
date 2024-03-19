@@ -150,7 +150,7 @@ _jxl_decoder_rewind(PyObject *self) {
 
 }
 
-void *
+bool
 _jxl_decoder_count_frames(PyObject *self) {
     PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
 
