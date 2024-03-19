@@ -16,6 +16,7 @@ from PIL import (
     ExifTags,
     Image,
     ImageDraw,
+    ImageFile,
     ImagePalette,
     UnidentifiedImageError,
     features,
@@ -138,13 +139,13 @@ class TestImage:
         assert im.height == 2
 
         with pytest.raises(AttributeError):
-            im.size = (3, 4)
+            im.size = (3, 4)  # type: ignore[misc]
 
     def test_set_mode(self) -> None:
         im = Image.new("RGB", (1, 1))
 
         with pytest.raises(AttributeError):
-            im.mode = "P"
+            im.mode = "P"  # type: ignore[misc]
 
     def test_invalid_image(self) -> None:
         im = io.BytesIO(b"")
@@ -1041,25 +1042,20 @@ class TestImage:
             assert im.fp is None
 
 
-class MockEncoder:
-    args: tuple[str, ...]
-
-
-def mock_encode(*args: str) -> MockEncoder:
-    encoder = MockEncoder()
-    encoder.args = args
-    return encoder
+class MockEncoder(ImageFile.PyEncoder):
+    pass
 
 
 class TestRegistry:
     def test_encode_registry(self) -> None:
-        Image.register_encoder("MOCK", mock_encode)
+        Image.register_encoder("MOCK", MockEncoder)
         assert "MOCK" in Image.ENCODERS
 
         enc = Image._getencoder("RGB", "MOCK", ("args",), extra=("extra",))
 
         assert isinstance(enc, MockEncoder)
-        assert enc.args == ("RGB", "args", "extra")
+        assert enc.mode == "RGB"
+        assert enc.args == ("args", "extra")
 
     def test_encode_registry_fail(self) -> None:
         with pytest.raises(OSError):

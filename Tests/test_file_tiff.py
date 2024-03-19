@@ -623,6 +623,7 @@ class TestFileTiff:
         im.save(outfile, tiffinfo={278: 256})
 
         with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[278] == 256
 
     def test_strip_raw(self) -> None:

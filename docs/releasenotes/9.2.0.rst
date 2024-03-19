@@ -1,6 +1,11 @@
 9.2.0
 -----
 
+Security
+========
+
+An additional decompression bomb check has been added for the GIF format.
+
 Deprecations
 ============
 
@@ -69,10 +74,10 @@ Previous code::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width, height = draw.textsize("Hello world")
+    width, height = draw.textsize("Hello world", font)
 
     width, height = font.getsize_multiline("Hello\nworld")
-    width, height = draw.multiline_textsize("Hello\nworld")
+    width, height = draw.multiline_textsize("Hello\nworld", font)
 
 Use instead::
 
@@ -84,10 +89,42 @@ Use instead::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width = draw.textlength("Hello world")
+    width = draw.textlength("Hello world", font)
 
-    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
+    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld", font)
     width, height = right - left, bottom - top
+
+Previously, the ``size`` methods returned a ``height`` that included the vertical
+offset of the text, while the new ``bbox`` methods distinguish this as a ``top``
+offset.
+
+.. image:: ../example/size_vs_bbox.png
+    :alt: In bbox methods, top measures the vertical distance above the text, while bottom measures that plus the vertical distance of the text itself. In size methods, height also measures the vertical distance above the text plus the vertical distance of the text itself.
+    :align: center
+
+If you are using these methods for aligning text, consider using :ref:`text-anchors` instead
+which avoid issues that can occur with non-English text or unusual fonts.
+For example, instead of the following code::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width, height = draw.textsize("Hello world", font)
+    x, y = (100 - width) / 2, (100 - height) / 2
+    draw.text((x, y), "Hello world", font=font)
+
+Use instead::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    draw.text((100 / 2, 100 / 2), "Hello world", font=font, anchor="mm")
 
 API Additions
 =============
@@ -99,11 +136,6 @@ Added :py:meth:`~PIL.Image.Image.apply_transparency`, a method to take a P mode 
 with "transparency" in ``im.info``, and apply the transparency to the palette instead.
 The image's palette mode will become "RGBA", and "transparency" will be removed from
 ``im.info``.
-
-Security
-========
-
-An additional decompression bomb check has been added for the GIF format.
 
 Other Changes
 =============

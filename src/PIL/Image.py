@@ -75,7 +75,7 @@ class DecompressionBombError(Exception):
 
 
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
-MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
+MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
 
 try:
@@ -229,8 +229,8 @@ MIME: dict[str, str] = {}
 SAVE: dict[str, Callable[[Image, IO[bytes], str | bytes], None]] = {}
 SAVE_ALL: dict[str, Callable[[Image, IO[bytes], str | bytes], None]] = {}
 EXTENSION: dict[str, str] = {}
-DECODERS: dict[str, object] = {}
-ENCODERS: dict[str, object] = {}
+DECODERS: dict[str, type[ImageFile.PyDecoder]] = {}
+ENCODERS: dict[str, type[ImageFile.PyEncoder]] = {}
 
 # --------------------------------------------------------------------
 # Modes
@@ -702,7 +702,7 @@ class Image:
                     pass
                 else:
                     if parse_version(numpy.__version__) < parse_version("1.23"):
-                        warnings.warn(e)
+                        warnings.warn(str(e))
             raise
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
@@ -978,7 +978,7 @@ class Image:
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if (self.mode in ("1", "L", "I") and mode in ("LA", "RGBA")) or (
+            if (self.mode in ("1", "L", "I", "I;16") and mode in ("LA", "RGBA")) or (
                 self.mode == "RGB" and mode == "RGBA"
             ):
                 # Use transparent conversion to promote from transparent
@@ -3526,28 +3526,26 @@ def registered_extensions():
     return EXTENSION
 
 
-def register_decoder(name: str, decoder) -> None:
+def register_decoder(name: str, decoder: type[ImageFile.PyDecoder]) -> None:
     """
     Registers an image decoder.  This function should not be
     used in application code.
 
     :param name: The name of the decoder
-    :param decoder: A callable(mode, args) that returns an
-                    ImageFile.PyDecoder object
+    :param decoder: An ImageFile.PyDecoder object
 
     .. versionadded:: 4.1.0
     """
     DECODERS[name] = decoder
 
 
-def register_encoder(name, encoder):
+def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
     """
     Registers an image encoder.  This function should not be
     used in application code.
 
     :param name: The name of the encoder
-    :param encoder: A callable(mode, args) that returns an
-                    ImageFile.PyEncoder object
+    :param encoder: An ImageFile.PyEncoder object
 
     .. versionadded:: 4.1.0
     """
@@ -3714,7 +3712,7 @@ class Exif(_ExifBase):
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, offset):
+    def _get_ifd_dict(self, offset, group=None):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
@@ -3724,7 +3722,7 @@ class Exif(_ExifBase):
         else:
             from . import TiffImagePlugin
 
-            info = TiffImagePlugin.ImageFileDirectory_v2(self.head)
+            info = TiffImagePlugin.ImageFileDirectory_v2(self.head, group=group)
             info.load(self.fp)
             return self._fixup_dict(info)
 
@@ -3796,14 +3794,14 @@ class Exif(_ExifBase):
 
         # get EXIF extension
         if ExifTags.IFD.Exif in self:
-            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif])
+            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif], ExifTags.IFD.Exif)
             if ifd:
                 merged_dict.update(ifd)
 
         # GPS
         if ExifTags.IFD.GPSInfo in self:
             merged_dict[ExifTags.IFD.GPSInfo] = self._get_ifd_dict(
-                self[ExifTags.IFD.GPSInfo]
+                self[ExifTags.IFD.GPSInfo], ExifTags.IFD.GPSInfo
             )
 
         return merged_dict
@@ -3837,7 +3835,7 @@ class Exif(_ExifBase):
             elif tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
                 offset = self._hidden_data.get(tag, self.get(tag))
                 if offset is not None:
-                    self._ifds[tag] = self._get_ifd_dict(offset)
+                    self._ifds[tag] = self._get_ifd_dict(offset, tag)
             elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
@@ -3919,7 +3917,7 @@ class Exif(_ExifBase):
                         self._ifds[tag] = makernote
                 else:
                     # Interop
-                    self._ifds[tag] = self._get_ifd_dict(tag_data)
+                    self._ifds[tag] = self._get_ifd_dict(tag_data, tag)
         ifd = self._ifds.get(tag, {})
         if tag == ExifTags.IFD.Exif and self._hidden_data:
             ifd = {

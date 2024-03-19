@@ -1,15 +1,14 @@
 2.7.0
-=====
+-----
 
 Sane Plugin
------------
+^^^^^^^^^^^
 
 The Sane plugin has now been split into its own repo:
 https://github.com/python-pillow/Sane .
 
-
 Png text chunk size limits
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To prevent potential denial of service attacks using compressed text
 chunks, there are now limits to the decompressed size of text chunks
@@ -24,7 +23,7 @@ default. The total decompressed size of all text chunks is limited to
 know that there are large text blocks that are desired.
 
 Image resizing filters
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 Image resizing methods :py:meth:`~PIL.Image.Image.resize` and
 :py:meth:`~PIL.Image.Image.thumbnail` take a ``resample`` argument, which tells
@@ -33,7 +32,7 @@ which filter should be used for resampling. Possible values are:
 were changed in this version.
 
 Bicubic and bilinear downscaling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+++++++++++++++++++++++++++++++++
 
 From the beginning ``BILINEAR`` and ``BICUBIC`` filters were based on affine
 transformations and used a fixed number of pixels from the source image for
@@ -50,7 +49,7 @@ If you have previously used any tricks to maintain quality when downscaling with
 steps), they are unnecessary now.
 
 Antialias renamed to Lanczos
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+++++++++++++++++++++++++++++
 
 A new ``LANCZOS`` constant was added instead of ``ANTIALIAS``.
 
@@ -64,19 +63,19 @@ The ``ANTIALIAS`` constant is left for backward compatibility and is an alias
 for ``LANCZOS``.
 
 Lanczos upscaling quality
-^^^^^^^^^^^^^^^^^^^^^^^^^
++++++++++++++++++++++++++
 
 The image upscaling quality with ``LANCZOS`` filter was almost the same as
 ``BILINEAR`` due to a bug. This has been fixed.
 
 Bicubic upscaling quality
-^^^^^^^^^^^^^^^^^^^^^^^^^
++++++++++++++++++++++++++
 
 The ``BICUBIC`` filter for affine transformations produced sharp, slightly
 pixelated image for upscaling. Bicubic for convolutions is more soft.
 
 Resize performance
-^^^^^^^^^^^^^^^^^^
+++++++++++++++++++
 
 In most cases, convolution is more a expensive algorithm for downscaling
 because it takes into account all the pixels of source image. Therefore
@@ -93,7 +92,7 @@ The upscaling performance of the ``LANCZOS`` filter has remained the same. For
 times.
 
 Default filter for thumbnails
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++++++++++++++++++++++++++++++
 
 In Pillow 2.5 the default filter for :py:meth:`~PIL.Image.Image.thumbnail` was
 changed from ``NEAREST`` to ``ANTIALIAS``. Antialias was chosen because all the
@@ -103,7 +102,7 @@ other filters gave poor quality for reduction. Starting from Pillow 2.7.0,
 uses supersampling internally, not convolutions.
 
 Image transposition
--------------------
++++++++++++++++++++
 
 A new method ``TRANSPOSE`` has been added for the
 :py:meth:`~PIL.Image.Image.transpose` operation in addition to
@@ -115,7 +114,7 @@ The speed of ``ROTATE_90``, ``ROTATE_270`` and ``TRANSPOSE`` has been significan
 improved for large images which don't fit in the processor cache.
 
 Gaussian blur and unsharp mask
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :py:meth:`~PIL.ImageFilter.GaussianBlur` implementation has been replaced
 with a sequential application of box filters. The new implementation is based on
@@ -125,7 +124,7 @@ implementations use Gaussian blur internally, all changes from this chapter
 are also applicable to it.
 
 Blur radius
-^^^^^^^^^^^
++++++++++++
 
 There was an error in the previous version of Pillow, where blur radius (the
 standard deviation of Gaussian) actually meant blur diameter. For example, to
@@ -136,7 +135,7 @@ If you used a Gaussian blur with some radius value, you need to divide this
 value by two.
 
 Blur performance
-^^^^^^^^^^^^^^^^
+++++++++++++++++
 
 Box filter computation time is constant relative to the radius and depends
 on source image size only. Because the new Gaussian blur implementation
@@ -148,7 +147,7 @@ second for radius 1, 3.6 seconds for radius 10 and 17 seconds for 50, now blur
 with any radius on same image is executed for 0.2 seconds.
 
 Blur quality
-^^^^^^^^^^^^
+++++++++++++
 
 The previous implementation takes into account only source pixels within
 2 * standard deviation radius for every destination pixel. This was not enough,
@@ -157,7 +156,7 @@ so the quality was worse compared to other Gaussian blur software.
 The new implementation does not have this drawback.
 
 TIFF Parameter Changes
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 Several kwarg parameters for saving TIFF images were previously
 specified as strings with included spaces (e.g. 'x resolution'). This

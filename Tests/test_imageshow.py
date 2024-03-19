@@ -68,10 +68,11 @@ def test_show_without_viewers() -> None:
 def test_viewer() -> None:
     viewer = ImageShow.Viewer()
 
-    assert viewer.get_format(None) is None
+    im = Image.new("L", (1, 1))
+    assert viewer.get_format(im) is None
 
     with pytest.raises(NotImplementedError):
-        viewer.get_command(None)
+        viewer.get_command("")
 
 
 @pytest.mark.parametrize("viewer", ImageShow._viewers)

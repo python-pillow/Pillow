@@ -26,7 +26,7 @@ def test_sanity(tmp_path: Path) -> None:
     assert index == 1
 
     with pytest.raises(AttributeError):
-        ImageSequence.Iterator(0)
+        ImageSequence.Iterator(0)  # type: ignore[arg-type]
 
 
 def test_iterator() -> None:
@@ -72,6 +72,7 @@ def test_consecutive() -> None:
         for frame in ImageSequence.Iterator(im):
             if first_frame is None:
                 first_frame = frame.copy()
+        assert first_frame is not None
         for frame in ImageSequence.Iterator(im):
             assert_image_equal(frame, first_frame)
             break

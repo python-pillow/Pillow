@@ -1,9 +1,8 @@
-
 3.2.0
 -----
 
 New DDS and FTEX Image Plugins
-==============================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``DdsImagePlugin`` reading DXT1 and DXT5 encoded ``.dds`` images was
 added. DXT3 images are not currently supported.
@@ -14,13 +13,13 @@ per file, in the ``.ftc`` (compressed) and ``.ftu`` (uncompressed)
 formats.
 
 Updates to the GbrImagePlugin
-=============================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``GbrImagePlugin`` (GIMP brush format) has been updated to fix
 support for version 1 files and add support for version 2 files.
 
 Passthrough Parameters for ImageDraw.text
-=========================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``ImageDraw.multiline_text`` and ``ImageDraw.multiline_size`` take extra
 spacing parameters above what are used in ``ImageDraw.text`` and
@@ -29,7 +28,7 @@ spacing parameters above what are used in ``ImageDraw.text`` and
 to the corresponding multiline functions.
 
 ImageSequence.Iterator changes
-==============================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``ImageSequence.Iterator`` is now an actual iterator implementing the
 Iterator protocol.  It is also now possible to seek to the first image

@@ -753,7 +753,7 @@ def test_rectangle_I16(bbox: Coords) -> None:
     draw.rectangle(bbox, outline=0xFFFF)
 
     # Assert
-    assert_image_equal_tofile(im.convert("I"), "Tests/images/imagedraw_rectangle_I.png")
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_rectangle_I.tiff")
 
 
 @pytest.mark.parametrize("bbox", BBOX)
@@ -868,8 +868,10 @@ def test_rounded_rectangle_zero_radius(bbox: Coords) -> None:
     [
         ((20, 10, 80, 90), "x"),
         ((20, 10, 81, 90), "x_odd"),
+        ((20, 10, 81.1, 90), "x_odd"),
         ((10, 20, 90, 80), "y"),
         ((10, 20, 90, 81), "y_odd"),
+        ((10, 20, 90, 81.1), "y_odd"),
         ((20, 20, 80, 80), "both"),
     ],
 )

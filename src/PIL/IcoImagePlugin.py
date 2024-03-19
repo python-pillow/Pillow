@@ -329,6 +329,8 @@ class IcoImageFile(ImageFile.ImageFile):
         self.im = im.im
         self.pyaccess = None
         self._mode = im.mode
+        if im.palette:
+            self.palette = im.palette
         if im.size != self.size:
             warnings.warn("Image was not the expected size")
 
@@ -339,7 +341,7 @@ class IcoImageFile(ImageFile.ImageFile):
 
             self.size = im.size
 
-    def load_seek(self):
+    def load_seek(self, pos):
         # Flag the ImageFile.Parser so that it
         # just does all the decode at the end.
         pass

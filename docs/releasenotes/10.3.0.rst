@@ -1,6 +1,19 @@
 10.3.0
 ------
 
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
 Backwards Incompatible Changes
 ==============================
 
@@ -62,14 +75,6 @@ Added PerspectiveTransform
 :py:class:`~PIL.ImageTransform.PerspectiveTransform` has been added, meaning
 that all of the :py:data:`~PIL.Image.Transform` values now have a corresponding
 subclass of :py:class:`~PIL.ImageTransform.Transform`.
-
-Security
-========
-
-TODO
-^^^^
-
-TODO
 
 Other Changes
 =============

@@ -5,6 +5,51 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Fixed joined corners for ImageDraw rounded_rectangle() non-integer dimensions #7881
+  [radarhere]
+
+- Stop reading EPS image at EOF marker #7753
+  [radarhere]
+
+- PSD layer co-ordinates may be negative #7706
+  [radarhere]
+
+- Use subprocess with CREATE_NO_WINDOW flag in ImageShow WindowsViewer #7791
+  [radarhere]
+
+- When saving GIF frame that restores to background color, do not fill identical pixels #7788
+  [radarhere]
+
+- Fixed reading PNG iCCP compression method #7823
+  [radarhere]
+
+- Allow writing IFDRational to UNDEFINED tag #7840
+  [radarhere]
+
+- Fix logged tag name when loading Exif data #7842
+  [radarhere]
+
+- Use maximum frame size in IHDR chunk when saving APNG images #7821
+  [radarhere]
+
+- Prevent opening P TGA images without a palette #7797
+  [radarhere]
+
+- Use palette when loading ICO images #7798
+  [radarhere]
+
+- Use consistent arguments for load_read and load_seek #7713
+  [radarhere]
+
+- Turn off nullability warnings for macOS SDK #7827
+  [radarhere]
+
+- Fix shift-sign issue in Convert.c #7838
+  [r-barnes, radarhere]
+
+- Open 16-bit grayscale PNGs as I;16 #7849
+  [radarhere]
+
 - Handle truncated chunks at the end of PNG images #7709
   [lajiyuan, radarhere]
 

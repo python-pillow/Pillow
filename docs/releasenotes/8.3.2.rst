@@ -4,14 +4,21 @@
 Security
 ========
 
-* :cve:`2021-23437`: Avoid a potential ReDoS (regular expression denial of service)
-  in :py:class:`~PIL.ImageColor`'s :py:meth:`~PIL.ImageColor.getrgb` by raising
-  :py:exc:`ValueError` if the color specifier is too long. Present since Pillow 5.2.0.
+:cve:`2021-23437`: Avoid potential ReDoS (regular expression denial of service)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Fix 6-byte out-of-bounds (OOB) read. The previous bounds check in ``FliDecode.c``
-  incorrectly calculated the required read buffer size when copying a chunk, potentially
-  reading six extra bytes off the end of the allocated buffer from the heap. Present
-  since Pillow 7.1.0. This bug was found by Google's `OSS-Fuzz`_ `CIFuzz`_ runs.
+Avoid a potential ReDoS (regular expression denial of service) in :py:class:`~PIL.ImageColor`'s
+:py:meth:`~PIL.ImageColor.getrgb` by raising :py:exc:`ValueError` if the color specifier is
+too long. Present since Pillow 5.2.0.
+
+Fix 6-byte out-of-bounds (OOB) read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fix 6-byte out-of-bounds (OOB) read. The previous bounds check in ``FliDecode.c`` incorrectly
+calculated the required read buffer size when copying a chunk, potentially reading six extra
+bytes off the end of the allocated buffer from the heap. Present since Pillow 7.1.0.
+
+This bug was found by Google's `OSS-Fuzz`_ `CIFuzz`_ runs.
 
 Other Changes
 =============
