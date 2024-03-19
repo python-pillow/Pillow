@@ -48,28 +48,26 @@ class JxlImageFile(ImageFile.ImageFile):
         self.info["loop"] = n_loops
         self.is_animated = has_anim
 
-        self.n_frames = None
         self._tps_dur_secs = 1
-        if not self.is_animated:
-            self.n_frames = 1
-        elif n_frames > 0:
-            self.n_frames = n_frames
-            self._tps_dur_secs = tps_num / tps_denom
-        # TODO: handle libjxl timecods
+        self.n_frames = 1
+        if self.is_animated:
+            self.n_frames = None
+            if n_frames > 0:
+                self.n_frames = n_frames
+                self._tps_dur_secs = tps_num / tps_denom
+        
+        # TODO: handle libjxl time codes
         self.__timestamp = 0
 
         self._mode = mode
         self.rawmode = mode
         self.tile = []
 
-        icc = self._decoder.get_icc()
-        exif = self._decoder.get_exif()
-        xmp = self._decoder.get_xmp()
-        if icc:
+        if icc := self._decoder.get_icc():
             self.info["icc_profile"] = icc
-        if exif:
+        if exif := self._decoder.get_exif():
             self.info["exif"] = self._fix_exif(exif)
-        if xmp:
+        if xmp := self._decoder.get_xmp():
             self.info["xmp"] = xmp
 
         self._rewind()
