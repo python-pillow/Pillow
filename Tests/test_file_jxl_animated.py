@@ -10,7 +10,7 @@ from .helper import (
 )
 
 pytestmark = [
-    skip_unless_feature("jxl"),
+    skip_unless_feature("jpegxl"),
 ]
 
 

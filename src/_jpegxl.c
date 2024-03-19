@@ -83,13 +83,13 @@ typedef struct {
     Py_ssize_t n_frames;
 
     char *mode;
-} PILJxlDecoderObject;
+} PILJpegXlDecoderObject;
 
-static PyTypeObject PILJxlDecoder_Type;
+static PyTypeObject PILJpegXlDecoder_Type;
 
 void
 _jxl_decoder_dealloc(PyObject *self) {
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
     if (decp->jxl_data) {
         free(decp->jxl_data);
@@ -131,7 +131,7 @@ _jxl_decoder_dealloc(PyObject *self) {
 // sets input jxl bitstream loaded into jxl_data
 // has to be called after every rewind
 void _jxl_decoder_set_input(PyObject *self) {
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
     decp->status = JxlDecoderSetInput(decp->decoder, decp->jxl_data,
         decp->jxl_data_len);
@@ -144,7 +144,7 @@ void _jxl_decoder_set_input(PyObject *self) {
 PyObject *
 _jxl_decoder_rewind(PyObject *self) {
 
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
     JxlDecoderRewind(decp->decoder);
     Py_RETURN_NONE;
 
@@ -152,7 +152,7 @@ _jxl_decoder_rewind(PyObject *self) {
 
 bool
 _jxl_decoder_count_frames(PyObject *self) {
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
     decp->n_frames = 0;
 
@@ -179,8 +179,8 @@ PyObject *
 _jxl_decoder_new(PyObject *self, PyObject *args) {
     PyBytesObject *jxl_string;
 
-    PILJxlDecoderObject *decp = NULL;
-    decp = PyObject_New(PILJxlDecoderObject, &PILJxlDecoder_Type);
+    PILJpegXlDecoderObject *decp = NULL;
+    decp = PyObject_New(PILJpegXlDecoderObject, &PILJpegXlDecoder_Type);
     decp->mode = NULL;
     decp->jxl_data = NULL;
     decp->jxl_data_len = 0;
@@ -202,7 +202,7 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // this data needs to be copied to PILJxlDecoderObject
+    // this data needs to be copied to PILJpegXlDecoderObject
     // so that input bitstream is preserved across calls
     const uint8_t *_tmp_jxl_data;
     Py_ssize_t _tmp_jxl_data_len;
@@ -393,7 +393,7 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
 
 PyObject *
 _jxl_decoder_get_info(PyObject *self) {
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
     return Py_BuildValue(
         "IIsiIIII",
@@ -411,7 +411,7 @@ _jxl_decoder_get_info(PyObject *self) {
 PyObject *
 _jxl_decoder_get_next(PyObject *self) {
 
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
     PyObject *bytes;
     PyObject *ret;
     JxlFrameHeader fhdr = {};
@@ -500,7 +500,7 @@ _jxl_decoder_get_next(PyObject *self) {
 
 PyObject *
 _jxl_decoder_get_icc(PyObject *self) {
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
     if (!decp->jxl_icc) Py_RETURN_NONE;
 
@@ -509,7 +509,7 @@ _jxl_decoder_get_icc(PyObject *self) {
 
 PyObject *
 _jxl_decoder_get_exif(PyObject *self) {
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
     if (!decp->jxl_exif) Py_RETURN_NONE;
 
@@ -518,15 +518,15 @@ _jxl_decoder_get_exif(PyObject *self) {
 
 PyObject *
 _jxl_decoder_get_xmp(PyObject *self) {
-    PILJxlDecoderObject *decp = (PILJxlDecoderObject *)self;
+    PILJpegXlDecoderObject *decp = (PILJpegXlDecoderObject *)self;
 
     if (!decp->jxl_xmp) Py_RETURN_NONE;
 
     return PyBytes_FromStringAndSize((const char *)decp->jxl_xmp, decp->jxl_xmp_len);
 }
 
-// PILJxlDecoder methods
-static struct PyMethodDef _jxl_decoder_methods[] = {
+// PILJpegXlDecoder methods
+static struct PyMethodDef _jpegxl_decoder_methods[] = {
     {"get_info", (PyCFunction)_jxl_decoder_get_info, METH_NOARGS, "get_info"},
     {"get_next", (PyCFunction)_jxl_decoder_get_next, METH_NOARGS, "get_next"},
     {"get_icc", (PyCFunction)_jxl_decoder_get_icc, METH_NOARGS, "get_icc"},
@@ -536,10 +536,10 @@ static struct PyMethodDef _jxl_decoder_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-// PILJxlDecoder type definition
-static PyTypeObject PILJxlDecoder_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PILJxlDecoder", /*tp_name */
-    sizeof(PILJxlDecoderObject),                    /*tp_basicsize */
+// PILJpegXlDecoder type definition
+static PyTypeObject PILJpegXlDecoder_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0) "PILJpegXlDecoder", /*tp_name */
+    sizeof(PILJpegXlDecoderObject),                    /*tp_basicsize */
     0,                                              /*tp_itemsize */
     /* methods */
     (destructor)_jxl_decoder_dealloc,  /*tp_dealloc*/
@@ -565,7 +565,7 @@ static PyTypeObject PILJxlDecoder_Type = {
     0,                                 /*tp_weaklistoffset*/
     0,                                 /*tp_iter*/
     0,                                 /*tp_iternext*/
-    _jxl_decoder_methods,              /*tp_methods*/
+    _jpegxl_decoder_methods,              /*tp_methods*/
     0,                                 /*tp_members*/
     0,                                 /*tp_getset*/
 };
@@ -573,13 +573,13 @@ static PyTypeObject PILJxlDecoder_Type = {
 // Return libjxl decoder version available as integer:
 // MAJ*1_000_000 + MIN*1_000 + PATCH
 PyObject *
-JxlDecoderVersion_wrapper() {
+JpegXlDecoderVersion_wrapper() {
     return Py_BuildValue("i", JxlDecoderVersion());
 }
 
 // Version as string
 const char *
-JxlDecoderVersion_str(void) {
+JpegXlDecoderVersion_str(void) {
     static char version[20];
     int version_number = JxlDecoderVersion();
     sprintf(
@@ -592,22 +592,22 @@ JxlDecoderVersion_str(void) {
     return version;
 }
 
-static PyMethodDef jxlMethods[] = {
-    {"JxlDecoderVersion", JxlDecoderVersion_wrapper, METH_NOARGS, "JxlVersion"},
-    {"PILJxlDecoder", _jxl_decoder_new, METH_VARARGS, "PILJxlDecoder"},
+static PyMethodDef jpegxlMethods[] = {
+    {"JpegXlDecoderVersion", JpegXlDecoderVersion_wrapper, METH_NOARGS, "JpegXlVersion"},
+    {"PILJpegXlDecoder", _jxl_decoder_new, METH_VARARGS, "PILJpegXlDecoder"},
     {NULL, NULL}
 };
 
 static int
 setup_module(PyObject *m) {
-    if (PyType_Ready(&PILJxlDecoder_Type) < 0) {
+    if (PyType_Ready(&PILJpegXlDecoder_Type) < 0) {
         return -1;
     }
 
     // TODO(oloke) ready object types?
     PyObject *d = PyModule_GetDict(m);
 
-    PyObject *v = PyUnicode_FromString(JxlDecoderVersion_str());
+    PyObject *v = PyUnicode_FromString(JpegXlDecoderVersion_str());
     PyDict_SetItemString(d, "libjxl_version", v ? v : Py_None);
     Py_XDECREF(v);
 
@@ -615,15 +615,15 @@ setup_module(PyObject *m) {
 }
 
 PyMODINIT_FUNC
-PyInit__jxl(void) {
+PyInit__jpegxl(void) {
     PyObject *m;
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_jxl",      /* m_name */
+        "_jpegxl",      /* m_name */
         NULL,        /* m_doc */
         -1,          /* m_size */
-        jxlMethods,  /* m_methods */
+        jpegxlMethods,  /* m_methods */
     };
 
     m = PyModule_Create(&module_def);

@@ -6,7 +6,7 @@ from PIL import Image
 
 from .helper import assert_image_similar_tofile
 
-_webp = pytest.importorskip("PIL._jxl", reason="JXL support not installed")
+_jpegxl = pytest.importorskip("PIL._jpegxl", reason="JPEG XL support not installed")
 
 
 def test_read_rgba() -> None:

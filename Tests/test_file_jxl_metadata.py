@@ -9,7 +9,7 @@ from PIL import Image
 from .helper import skip_unless_feature
 
 pytestmark = [
-    skip_unless_feature("jxl"),
+    skip_unless_feature("jpegxl"),
 ]
 
 ElementTree: ModuleType | None

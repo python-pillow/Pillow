@@ -286,7 +286,7 @@ class pil_build_ext(build_ext):
         features = [
             "zlib",
             "jpeg",
-            "jxl",
+            "jpegxl",
             "tiff",
             "freetype",
             "raqm",
@@ -695,13 +695,13 @@ class pil_build_ext(build_ext):
                 feature.jpeg2000 = "openjp2"
                 feature.openjpeg_version = ".".join(str(x) for x in best_version)
 
-        if feature.want("jxl"):
-            _dbg("Looking for jxl")
+        if feature.want("jpegxl"):
+            _dbg("Looking for jpegxl")
             if _find_include_file(self, "jxl/encode.h") and _find_include_file(
                 self, "jxl/decode.h"
             ):
                 if _find_library_file(self, "jxl"):
-                    feature.jxl = "jxl jxl_threads"
+                    feature.jpegxl = "jxl jxl_threads"
 
         if feature.want("imagequant"):
             _dbg("Looking for imagequant")
@@ -786,14 +786,14 @@ class pil_build_ext(build_ext):
                     # alternate Windows name.
                     feature.lcms = "lcms2_static"
 
-        if feature.jxl:
+        if feature.jpegxl:
             # jxl and jxl_threads are required
-            libs = feature.jxl.split()
+            libs = feature.jpegxl.split()
             defs = []
 
-            self._update_extension("PIL._jxl", libs, defs)
+            self._update_extension("PIL._jpegxl", libs, defs)
         else:
-            self._remove_extension("PIL._jxl")
+            self._remove_extension("PIL._jpegxl")
 
         if feature.want("webp"):
             _dbg("Looking for webp")
@@ -955,7 +955,7 @@ class pil_build_ext(build_ext):
             (feature.freetype, "FREETYPE2"),
             (feature.raqm, "RAQM (Text shaping)", raqm_extra_info),
             (feature.lcms, "LITTLECMS2"),
-            (feature.jxl, "JXL"),
+            (feature.jpegxl, "JPEG XL"),
             (feature.webp, "WEBP"),
             (feature.webpmux, "WEBPMUX"),
             (feature.xcb, "XCB (X protocol)"),
@@ -1000,7 +1000,7 @@ ext_modules = [
     Extension("PIL._imaging", files),
     Extension("PIL._imagingft", ["src/_imagingft.c"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
-    Extension("PIL._jxl", ["src/_jxl.c"]),
+    Extension("PIL._jpegxl", ["src/_jpegxl.c"]),
     Extension("PIL._webp", ["src/_webp.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),

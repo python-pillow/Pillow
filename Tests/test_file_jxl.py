@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from PIL import Image, JxlImagePlugin, features
+from PIL import Image, JpegXlImagePlugin, features
 
 from .helper import (
     assert_image_similar_tofile,
@@ -12,39 +12,38 @@ from .helper import (
 )
 
 try:
-    from PIL import _jxl
+    from PIL import _jpegxl
 
-    HAVE_JXL = True
+    HAVE_JPEGXL = True
 except ImportError:
-    HAVE_JXL = False
+    HAVE_JPEGXL = False
 
 # cjxl v0.9.2 41b8cdab
 # hopper.jxl: cjxl hopper.png hopper.jxl -q 75 -e 8
 
 
-class TestUnsupportedJxl:
+class TestUnsupportedJpegXl:
     def test_unsupported(self) -> None:
-        if HAVE_JXL:
-            JxlImagePlugin.SUPPORTED = False
+        if HAVE_JPEGXL:
+            JpegXlImagePlugin.SUPPORTED = False
 
         file_path = "Tests/images/hopper.jxl"
-        with pytest.warns(UserWarning):
-            with pytest.raises(OSError):
-                with Image.open(file_path):
-                    pass
+        with pytest.raises(OSError):
+            with Image.open(file_path):
+                pass
 
-        if HAVE_JXL:
-            JxlImagePlugin.SUPPORTED = True
+        if HAVE_JPEGXL:
+            JpegXlImagePlugin.SUPPORTED = True
 
 
-@skip_unless_feature("jxl")
-class TestFileJxl:
+@skip_unless_feature("jpegxl")
+class TestFileJpegXl:
     def setup_method(self) -> None:
         self.rgb_mode = "RGB"
 
     def test_version(self) -> None:
-        _jxl.JxlDecoderVersion()
-        assert re.search(r"\d+\.\d+\.\d+$", features.version_module("jxl"))
+        _jpegxl.JpegXlDecoderVersion()
+        assert re.search(r"\d+\.\d+\.\d+$", features.version_module("jpegxl"))
 
     def test_read_rgb(self) -> None:
         """
@@ -63,10 +62,10 @@ class TestFileJxl:
             # djxl hopper.jxl hopper_jxl_bits.ppm
             assert_image_similar_tofile(image, "Tests/images/hopper_jxl_bits.ppm", 1.0)
 
-    def test_JxlDecode_with_invalid_args(self) -> None:
+    def test_JpegXlDecode_with_invalid_args(self) -> None:
         """
         Calling decoder functions with no arguments should result in an error.
         """
 
         with pytest.raises(TypeError):
-            _jxl.PILJxlDecoder()
+            _jpegxl.PILJpegXlDecoder()

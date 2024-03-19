@@ -9,8 +9,8 @@ from .helper import PillowLeakTestCase, skip_unless_feature
 TEST_FILE = "Tests/images/hopper.jxl"
 
 
-@skip_unless_feature("jxl")
-class TestJxlLeaks(PillowLeakTestCase):
+@skip_unless_feature("jpegxl")
+class TestJpegXlLeaks(PillowLeakTestCase):
     mem_limit = 6 * 1024  # kb
     iterations = 1000
 

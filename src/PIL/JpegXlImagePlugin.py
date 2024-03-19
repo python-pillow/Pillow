@@ -6,7 +6,7 @@ from io import BytesIO
 from . import Image, ImageFile
 
 try:
-    from . import _jxl
+    from . import _jpegxl
 
     SUPPORTED = True
 except ImportError:
@@ -33,14 +33,14 @@ def _accept(prefix: bytes) -> bool:
     return is_jxl
 
 
-class JxlImageFile(ImageFile.ImageFile):
+class JpegXlImageFile(ImageFile.ImageFile):
     format = "JPEG XL"
     format_description = "JPEG XL image"
     __loaded = 0
     __logical_frame = 0
 
     def _open(self) -> None:
-        self._decoder = _jxl.PILJxlDecoder(self.fp.read())
+        self._decoder = _jpegxl.PILJpegXlDecoder(self.fp.read())
 
         width, height, mode, has_anim, tps_num, tps_denom, n_loops, n_frames = (
             self._decoder.get_info()
@@ -174,6 +174,6 @@ class JxlImageFile(ImageFile.ImageFile):
         return self.__logical_frame
 
 
-Image.register_open(JxlImageFile.format, JxlImageFile, _accept)
-Image.register_extension(JxlImageFile.format, ".jxl")
-Image.register_mime(JxlImageFile.format, "image/jxl")
+Image.register_open(JpegXlImageFile.format, JpegXlImageFile, _accept)
+Image.register_extension(JpegXlImageFile.format, ".jxl")
+Image.register_mime(JpegXlImageFile.format, "image/jxl")
