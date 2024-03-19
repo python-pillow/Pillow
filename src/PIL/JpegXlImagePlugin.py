@@ -50,7 +50,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
         self.is_animated = has_anim
 
         self._tps_dur_secs = 1
-        self.n_frames: Optional[int] = 1
+        self.n_frames: int | None = 1
         if self.is_animated:
             self.n_frames = None
             if n_frames > 0:
@@ -73,7 +73,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
 
         self._rewind()
 
-    def _fix_exif(self, exif: bytes) -> Optional[bytes]:
+    def _fix_exif(self, exif: bytes) -> bytes | None:
         # jpeg xl does some weird shenanigans when storing exif
         # it omits first 6 bytes of tiff header but adds 4 byte offset instead
         if len(exif) <= 4:
@@ -81,7 +81,7 @@ class JpegXlImageFile(ImageFile.ImageFile):
         exif_start_offset = struct.unpack(">I", exif[:4])[0]
         return exif[exif_start_offset + 4 :]
 
-    def _getexif(self) -> Optional[dict[str, str]]:
+    def _getexif(self) -> dict[str, str] | None:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
