@@ -97,14 +97,14 @@ class Stat:
 
     def _getmedian(self):
         """Get median pixel level for each layer"""
-
         v = []
-        for i in self.bands:
+        histogram_length = len(self.h)
+        for i, band in enumerate(self.bands):
             s = 0
             half = self.count[i] // 2
-            b = i * 256
-            for j in range(256):
-                s = s + self.h[b + j]
+            b = band * 256
+            for j, value in enumerate(self.h[b : min(b + 256, histogram_length)]):
+                s += value
                 if s > half:
                     break
             v.append(j)
