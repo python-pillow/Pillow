@@ -76,14 +76,14 @@ def test_getxmp() -> None:
         assert im.getxmp() == {}
 
     with Image.open("Tests/images/flower2.jxl") as im:
-        if ElementTree is None:
+        if ElementTree:
+            assert (
+                im.getxmp()["xmpmeta"]["xmptk"]
+                == "Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        "
+            )
+        else:
             with pytest.warns(
                 UserWarning,
                 match="XMP data cannot be read without defusedxml dependency",
             ):
                 assert im.getxmp() == {}
-        else:
-            assert (
-                im.getxmp()["xmpmeta"]["xmptk"]
-                == "Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        "
-            )
