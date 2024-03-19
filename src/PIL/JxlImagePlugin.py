@@ -22,13 +22,14 @@ except ImportError:
 # OPEN_COUNTS_FRAMES = True
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     is_jxl = (
         prefix[:2] == b"\xff\x0a"
         or prefix[:12] == b"\x00\x00\x00\x0c\x4a\x58\x4c\x20\x0d\x0a\x87\x0a"
     )
     if is_jxl and not SUPPORTED:
-        return "image file could not be identified because JXL support not installed"
+        msg = "image file could not be identified because JXL support not installed"
+        raise SyntaxError(msg)
     return is_jxl
 
 
@@ -38,7 +39,7 @@ class JxlImageFile(ImageFile.ImageFile):
     __loaded = 0
     __logical_frame = 0
 
-    def _open(self):
+    def _open(self) -> None:
         self._decoder = _jxl.PILJxlDecoder(self.fp.read())
 
         width, height, mode, has_anim, tps_num, tps_denom, n_loops, n_frames = (
@@ -72,7 +73,7 @@ class JxlImageFile(ImageFile.ImageFile):
 
         self._rewind()
 
-    def _fix_exif(self, exif):
+    def _fix_exif(self, exif: bytes) -> bytes:
         # jpeg xl does some weird shenanigans when storing exif
         # it omits first 6 bytes of tiff header but adds 4 byte offset instead
         if len(exif) <= 4:
@@ -80,15 +81,15 @@ class JxlImageFile(ImageFile.ImageFile):
         exif_start_offset = struct.unpack(">I", exif[:4])[0]
         return exif[exif_start_offset + 4 :]
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, str]:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
 
-    def getxmp(self):
+    def getxmp(self) -> dict[str, str]:
         return self._getxmp(self.info["xmp"]) if "xmp" in self.info else {}
 
-    def _get_next(self):
+    def _get_next(self) -> tuple[bytes, float, float, bool]:
 
         # Get next frame
         next_frame = self._decoder.get_next()
@@ -111,14 +112,14 @@ class JxlImageFile(ImageFile.ImageFile):
 
         return data, timestamp, duration, is_last
 
-    def _rewind(self, hard=False):
+    def _rewind(self, hard: bool=False) -> None:
         if hard:
             self._decoder.rewind()
         self.__physical_frame = 0
         self.__loaded = -1
         self.__timestamp = 0
 
-    def _seek_check(self, frame):
+    def _seek_check(self, frame: int) -> bool:
         # if image is not animated then only the 0th frame is available
         if (not self.is_animated and frame != 0) or (
             self.n_frames is not None and (frame >= self.n_frames or frame < 0)
@@ -128,7 +129,7 @@ class JxlImageFile(ImageFile.ImageFile):
 
         return self.tell() != frame
 
-    def _seek(self, frame):
+    def _seek(self, frame: int) -> None:
         # print("_seek: phy: {}, fr: {}".format(self.__physical_frame, frame))
         if frame == self.__physical_frame:
             return  # Nothing to do
@@ -139,7 +140,7 @@ class JxlImageFile(ImageFile.ImageFile):
         while self.__physical_frame < frame:
             self._get_next()  # Advance to the requested frame
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
@@ -166,10 +167,10 @@ class JxlImageFile(ImageFile.ImageFile):
 
         return super().load()
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__logical_frame
 
 
