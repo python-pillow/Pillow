@@ -87,3 +87,11 @@ def test_getxmp() -> None:
                 match="XMP data cannot be read without defusedxml dependency",
             ):
                 assert im.getxmp() == {}
+
+def test_fix_exif_fail() -> None:
+    with Image.open("Tests/images/flower2.jxl") as image:
+        assert image._fix_exif(b"\0\0\0\0") is None
+
+def test_read_exif_metadata_empty() -> None:
+    with Image.open("Tests/images/hopper.jxl") as image:
+        assert(image._getexif() is None)
