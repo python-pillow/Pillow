@@ -88,10 +88,12 @@ def test_getxmp() -> None:
             ):
                 assert im.getxmp() == {}
 
+
 def test_fix_exif_fail() -> None:
     with Image.open("Tests/images/flower2.jxl") as image:
         assert image._fix_exif(b"\0\0\0\0") is None
 
+
 def test_read_exif_metadata_empty() -> None:
     with Image.open("Tests/images/hopper.jxl") as image:
-        assert(image._getexif() is None)
+        assert image._getexif() is None
