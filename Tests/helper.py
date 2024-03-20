@@ -261,11 +261,7 @@ def hopper(mode: str | None = None, cache: dict[str, Image.Image] = {}) -> Image
     # (for fast, isolated, repeatable tests).
     im = cache.get(mode)
     if im is None:
-        if mode == "RGBa":
-            im = hopper("RGBA").convert(mode)
-        elif mode == "La":
-            im = hopper("LA").convert(mode)
-        elif mode == "F":
+        if mode == "F":
             im = hopper("L").convert(mode)
         elif mode[:4] == "I;16":
             im = hopper("I").convert(mode)
