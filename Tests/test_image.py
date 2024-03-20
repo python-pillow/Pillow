@@ -60,7 +60,7 @@ image_modes = (
     ("LAB", 3, 4),
 )
 
-image_mode_names = [name for name, num_bands, pixelsize in image_modes]
+image_mode_names = [name for name, _, _ in image_modes]
 
 
 class TestImage:
