@@ -33,34 +33,34 @@ from .helper import (
     skip_unless_feature,
 )
 
-# name, number of bands, pixel size
+# name, pixel size
 image_modes = (
-    ("1", 1, 1),
-    ("L", 1, 1),
-    ("LA", 2, 4),
-    ("La", 2, 4),
-    ("P", 1, 1),
-    ("PA", 2, 4),
-    ("F", 1, 4),
-    ("I", 1, 4),
-    ("I;16", 1, 2),
-    ("I;16L", 1, 2),
-    ("I;16B", 1, 2),
-    ("I;16N", 1, 2),
-    ("RGB", 3, 4),
-    ("RGBA", 4, 4),
-    ("RGBa", 4, 4),
-    ("RGBX", 4, 4),
-    ("BGR;15", 3, 2),
-    ("BGR;16", 3, 2),
-    ("BGR;24", 3, 3),
-    ("CMYK", 4, 4),
-    ("YCbCr", 3, 4),
-    ("HSV", 3, 4),
-    ("LAB", 3, 4),
+    ("1", 1),
+    ("L", 1),
+    ("LA", 4),
+    ("La", 4),
+    ("P", 1),
+    ("PA", 4),
+    ("F", 4),
+    ("I", 4),
+    ("I;16", 2),
+    ("I;16L", 2),
+    ("I;16B", 2),
+    ("I;16N", 2),
+    ("RGB", 4),
+    ("RGBA", 4),
+    ("RGBa", 4),
+    ("RGBX", 4),
+    ("BGR;15", 2),
+    ("BGR;16", 2),
+    ("BGR;24", 3),
+    ("CMYK", 4),
+    ("YCbCr", 4),
+    ("HSV", 4),
+    ("LAB", 4),
 )
 
-image_mode_names = [name for name, _, _ in image_modes]
+image_mode_names = [name for name, _ in image_modes]
 
 
 class TestImage:
@@ -1062,10 +1062,8 @@ class TestImageBytes:
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize(("mode", "num_bands", "pixelsize"), image_modes)
-    def test_getdata_putdata(
-        self, mode: str, num_bands: int, pixelsize: int
-    ):
+    @pytest.mark.parametrize(("mode", "pixelsize"), image_modes)
+    def test_getdata_putdata(self, mode: str, pixelsize: int):
         start_bytes = bytes(range(2 * 2 * pixelsize))
         im = Image.frombytes(mode, (2, 2), start_bytes)
 
