@@ -1045,10 +1045,6 @@ class TestImage:
 
 
 class TestImageBytes:
-    sample_bytes = bytes(
-        range(2 * 2 * max(pixelsize for mode, num_bands, pixelsize in image_modes))
-    )
-
     @pytest.mark.parametrize("mode", image_mode_names)
     def test_roundtrip_bytes_constructor(self, mode: str):
         source_image = hopper(mode)
@@ -1065,11 +1061,11 @@ class TestImageBytes:
         assert copy_image.tobytes() == source_bytes
 
     @pytest.mark.parametrize(("mode", "num_bands", "pixelsize"), image_modes)
-    def test_pixels_after_getdata_putdata(
+    def test_getdata_putdata(
         self, mode: str, num_bands: int, pixelsize: int
     ):
         image_byte_size = 2 * 2 * pixelsize
-        start_bytes = self.sample_bytes[:image_byte_size]
+        start_bytes = bytes(range(image_byte_size))
         image = Image.frombytes(mode, (2, 2), start_bytes)
 
         start_pixels = (
