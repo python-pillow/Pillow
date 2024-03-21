@@ -615,6 +615,8 @@ j2ku_sycca_rgba(
 
 static const struct j2k_decode_unpacker j2k_unpackers[] = {
     {"L", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_l},
+    {"P", OPJ_CLRSPC_SRGB, 1, 0, j2ku_gray_l},
+    {"PA", OPJ_CLRSPC_SRGB, 2, 0, j2ku_graya_la},
     {"I;16", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
     {"I;16B", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
     {"LA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
