@@ -1064,8 +1064,9 @@ class TestImageBytes:
 
     @pytest.mark.parametrize(("mode", "pixelsize"), image_modes)
     def test_getdata_putdata(self, mode: str, pixelsize: int) -> None:
-        start_bytes = bytes(range(2 * 2 * pixelsize))
-        im = Image.frombytes(mode, (2, 2), start_bytes)
+        im = Image.new(mode, (2, 2))
+        source_bytes = bytes(range(im.width * im.height * pixelsize))
+        im.frombytes(source_bytes)
 
         reloaded = Image.new(mode, im.size)
         reloaded.putdata(im.getdata())
