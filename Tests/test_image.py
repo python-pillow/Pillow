@@ -1047,44 +1047,31 @@ class TestImage:
 class TestImageBytes:
     @pytest.mark.parametrize("mode", image_mode_names)
     def test_roundtrip_bytes_constructor(self, mode: str):
-        source_image = hopper(mode)
-        source_bytes = source_image.tobytes()
-        copy_image = Image.frombytes(mode, source_image.size, source_bytes)
-        assert copy_image.tobytes() == source_bytes
+        im = hopper(mode)
+        source_bytes = im.tobytes()
+
+        reloaded = Image.frombytes(mode, im.size, source_bytes)
+        assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize("mode", image_mode_names)
     def test_roundtrip_bytes_method(self, mode: str):
-        source_image = hopper(mode)
-        source_bytes = source_image.tobytes()
-        copy_image = Image.new(mode, source_image.size)
-        copy_image.frombytes(source_bytes)
-        assert copy_image.tobytes() == source_bytes
+        im = hopper(mode)
+        source_bytes = im.tobytes()
+
+        reloaded = Image.new(mode, im.size)
+        reloaded.frombytes(source_bytes)
+        assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize(("mode", "num_bands", "pixelsize"), image_modes)
     def test_getdata_putdata(
         self, mode: str, num_bands: int, pixelsize: int
     ):
-        image_byte_size = 2 * 2 * pixelsize
-        start_bytes = bytes(range(image_byte_size))
-        image = Image.frombytes(mode, (2, 2), start_bytes)
+        start_bytes = bytes(range(2 * 2 * pixelsize))
+        im = Image.frombytes(mode, (2, 2), start_bytes)
 
-        start_pixels = (
-            image.getpixel((0, 0)),
-            image.getpixel((0, 1)),
-            image.getpixel((1, 0)),
-            image.getpixel((1, 1)),
-        )
-
-        image.putdata(image.getdata())
-
-        end_pixels = (
-            image.getpixel((0, 0)),
-            image.getpixel((0, 1)),
-            image.getpixel((1, 0)),
-            image.getpixel((1, 1)),
-        )
-
-        assert start_pixels == end_pixels
+        reloaded = Image.new(mode, im.size)
+        reloaded.putdata(im.getdata())
+        assert_image_equal(im, reloaded)
 
 
 class MockEncoder(ImageFile.PyEncoder):
