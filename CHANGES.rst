@@ -5,6 +5,21 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Raise ValueError if kmeans is negative #7891
+  [radarhere]
+
+- Remove TIFF tag OSUBFILETYPE when saving using libtiff #7893
+  [radarhere]
+
+- Raise ValueError for negative values when loading P1-P3 PPM images #7882
+  [radarhere]
+
+- Added reading of JPEG2000 palettes #7870
+  [radarhere]
+
+- Added alpha_quality argument when saving WebP images #7872
+  [radarhere]
+
 - Fixed joined corners for ImageDraw rounded_rectangle() non-integer dimensions #7881
   [radarhere]
 
