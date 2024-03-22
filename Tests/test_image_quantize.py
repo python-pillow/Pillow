@@ -99,6 +99,10 @@ def test_quantize_dither_diff() -> None:
 )
 def test_quantize_kmeans(method) -> None:
     im = hopper()
+    no_kmeans = im.quantize(kmeans=0, method=method)
+    kmeans = im.quantize(kmeans=1, method=method)
+    assert kmeans.tobytes() != no_kmeans.tobytes()
+
     with pytest.raises(ValueError):
         im.quantize(kmeans=-1, method=method)
 
