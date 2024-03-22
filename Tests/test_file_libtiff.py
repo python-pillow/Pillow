@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
-from PIL.TiffImagePlugin import SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
+from PIL.TiffImagePlugin import OSUBFILETYPE, SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -324,6 +324,12 @@ class TestFileLibTiff(LibTiffTestCase):
                 }
             )
         TiffImagePlugin.WRITE_LIBTIFF = False
+
+    def test_osubfiletype(self, tmp_path: Path) -> None:
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            im.tag_v2[OSUBFILETYPE] = 1
+            im.save(outfile)
 
     def test_subifd(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
