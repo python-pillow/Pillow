@@ -94,6 +94,19 @@ def test_quantize_dither_diff() -> None:
     assert dither.tobytes() != nodither.tobytes()
 
 
+@pytest.mark.parametrize(
+    "method", (Image.Quantize.MEDIANCUT, Image.Quantize.MAXCOVERAGE)
+)
+def test_quantize_kmeans(method) -> None:
+    im = hopper()
+    no_kmeans = im.quantize(kmeans=0, method=method)
+    kmeans = im.quantize(kmeans=1, method=method)
+    assert kmeans.tobytes() != no_kmeans.tobytes()
+
+    with pytest.raises(ValueError):
+        im.quantize(kmeans=-1, method=method)
+
+
 def test_colors() -> None:
     im = hopper()
     colors = 2

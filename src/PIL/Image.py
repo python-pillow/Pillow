@@ -1141,7 +1141,7 @@ class Image:
                        The exception to this is RGBA images. :data:`Quantize.MEDIANCUT`
                        and :data:`Quantize.MAXCOVERAGE` do not support RGBA images, so
                        :data:`Quantize.FASTOCTREE` is used by default instead.
-        :param kmeans: Integer
+        :param kmeans: Integer greater than or equal to zero.
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
         :param dither: Dithering method, used when converting from
@@ -1183,6 +1183,10 @@ class Image:
             new_im = self._new(im)
             new_im.palette = palette.palette.copy()
             return new_im
+
+        if kmeans < 0:
+            msg = "kmeans must not be negative"
+            raise ValueError(msg)
 
         im = self._new(self.im.quantize(colors, method, kmeans))
 
