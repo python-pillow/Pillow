@@ -447,6 +447,7 @@ def test_plt_marker() -> None:
         length = _binary.i16be(hdr)
         out.seek(length - 2, os.SEEK_CUR)
 
+
 def test_9bit():
     # Test 9-bit images are decoded to I;16
     with Image.open("Tests/images/9bit.j2k") as im:
