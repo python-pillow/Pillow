@@ -61,10 +61,11 @@ Deprecated                                    Use instead
 API Changes
 ===========
 
-TODO
-^^^^
+Negative kmeans error
+^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+When calling :py:meth:`~PIL.Image.Image.quantize`, a negative ``kmeans`` will now
+raise a :py:exc:`ValueError`, unless a palette is supplied to make the value redundant.
 
 API Additions
 =============
