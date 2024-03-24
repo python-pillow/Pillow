@@ -114,7 +114,7 @@ def _parse_codestream(fp):
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
-        if (yrsiz[0] & 0x7F) > 8:
+        if (yrsiz[0] & 0x7F) + 1 > 8:
             mode = "I;16"
         else:
             mode = "L"
