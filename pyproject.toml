@@ -15,7 +15,7 @@ keywords = [
   "Imaging",
 ]
 license = {text = "HPND"}
-authors = [{name = "Jeffrey A. Clark (Alex)", email = "aclark@aclark.net"}]
+authors = [{name = "Jeffrey A. Clark", email = "aclark@aclark.net"}]
 requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 6 - Mature",
