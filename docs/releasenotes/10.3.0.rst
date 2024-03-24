@@ -61,6 +61,13 @@ Deprecated                                    Use instead
 API Changes
 ===========
 
+Added alpha_quality argument when saving WebP images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving WebP images, an ``alpha_quality`` argument can be passed to the encoder. It
+is an integer value between 0 to 100, where values other than 100 will provide lossy
+compression.
+
 Negative kmeans error
 ^^^^^^^^^^^^^^^^^^^^^
 
