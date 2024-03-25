@@ -652,8 +652,17 @@ def _write_multiple_frames(im, fp, palette):
                         fill = Image.new("P", delta.size, encoderinfo["transparency"])
                         if delta.mode == "RGBA":
                             r, g, b, a = delta.split()
-                            mask = ImageMath.eval(
-                                "convert(max(max(max(r, g), b), a) * 255, '1')",
+                            mask = ImageMath.lambda_eval(
+                                lambda args: args["convert"](
+                                    args["max"](
+                                        args["max"](
+                                            args["max"](args["r"], args["g"]), args["b"]
+                                        ),
+                                        args["a"],
+                                    )
+                                    * 255,
+                                    "1",
+                                ),
                                 r=r,
                                 g=g,
                                 b=b,
@@ -665,7 +674,10 @@ def _write_multiple_frames(im, fp, palette):
                                 delta_l = Image.new("L", delta.size)
                                 delta_l.putdata(delta.getdata())
                                 delta = delta_l
-                            mask = ImageMath.eval("convert(im * 255, '1')", im=delta)
+                            mask = ImageMath.lambda_eval(
+                                lambda args: args["convert"](args["im"] * 255, "1"),
+                                im=delta,
+                            )
                         diff_frame.paste(fill, mask=ImageOps.invert(mask))
             else:
                 bbox = None

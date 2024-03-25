@@ -18,7 +18,7 @@ has been present since PIL.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 While Pillow 9.0 restricted top-level builtins available to
-:py:meth:`PIL.ImageMath.eval`, it did not prevent builtins
+:py:meth:`!PIL.ImageMath.eval`, it did not prevent builtins
 available to lambda expressions. These are now also restricted.
 
 Other Changes

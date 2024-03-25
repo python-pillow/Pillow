@@ -29,7 +29,7 @@ they do not extend beyond the bitmap image.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If an attacker has control over the keys passed to the
-``environment`` argument of :py:meth:`PIL.ImageMath.eval`, they may be able to execute
+``environment`` argument of :py:meth:`!PIL.ImageMath.eval`, they may be able to execute
 arbitrary code. To prevent this, keys matching the names of builtins and keys
 containing double underscores will now raise a :py:exc:`ValueError`.
 
