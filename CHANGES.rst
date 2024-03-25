@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Use I;16 mode for 9-bit JPEG 2000 images #7900
+  [scaramallion, radarhere]
+
 - Raise ValueError if kmeans is negative #7891
   [radarhere]
 
