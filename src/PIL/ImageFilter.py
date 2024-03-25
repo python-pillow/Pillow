@@ -42,8 +42,8 @@ class Kernel(BuiltinFilter):
 
     Kernels can only be applied to "L" and "RGB" images.
 
-    :param size: Kernel size, given as (width, height). In the current
-                    version, this must be (3,3) or (5,5).
+    :param size: Kernel size, given as (width, height).
+                    This must be (3,3) or (5,5).
     :param kernel: A sequence containing kernel weights. The kernel will
                    be flipped vertically before being applied to the image.
     :param scale: Scale factor. If given, the result for each pixel is
