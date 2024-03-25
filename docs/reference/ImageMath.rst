@@ -46,10 +46,13 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
 
 .. py:function:: unsafe_eval(expression, environment)
 
-    Evaluates an image expression. This uses Python's ``eval()`` function to process
-    the expression string, and carries the security risks of doing so. It is not
-    recommended to process expressions without considering this.
-    :py:meth:`~lambda_eval` is a more secure alternative.
+    Evaluates an image expression.
+
+    .. danger::
+        This uses Python's ``eval()`` function to process the expression string,
+        and carries the security risks of doing so. It is not
+        recommended to process expressions without considering this.
+        :py:meth:`lambda_eval` is a more secure alternative.
 
     :py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
     images, use the :py:meth:`~PIL.Image.Image.split` method or
@@ -69,14 +72,17 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
 Expression syntax
 -----------------
 
-:py:meth:`~lambda_eval` expressions are functions that receive a dictionary containing
-images and operators.
+* :py:meth:`lambda_eval` expressions are functions that receive a dictionary
+  containing images and operators.
 
-:py:meth:`~unsafe_eval` expressions are standard Python expressions, but they’re
-evaluated in a non-standard environment.
+* :py:meth:`unsafe_eval` expressions are standard Python expressions,
+  but they’re evaluated in a non-standard environment.
 
-In both cases, you can use Pillow methods as usual, plus the following set of operators
-and functions.
+.. danger::
+  :py:meth:`unsafe_eval` uses Python's ``eval()`` function to process the
+  expression string, and carries the security risks of doing so.
+  It is not recommended to process expressions without considering this.
+  :py:meth:`lambda_eval` is a more secure alternative.
 
 Standard Operators
 ^^^^^^^^^^^^^^^^^^
