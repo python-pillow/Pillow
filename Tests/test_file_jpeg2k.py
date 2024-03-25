@@ -446,3 +446,9 @@ def test_plt_marker() -> None:
         hdr = out.read(2)
         length = _binary.i16be(hdr)
         out.seek(length - 2, os.SEEK_CUR)
+
+
+def test_9bit():
+    with Image.open("Tests/images/9bit.j2k") as im:
+        assert im.mode == "I;16"
+        assert im.size == (128, 128)
