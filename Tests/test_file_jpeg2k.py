@@ -449,7 +449,6 @@ def test_plt_marker() -> None:
 
 
 def test_9bit():
-    # Test 9-bit images are decoded to I;16
     with Image.open("Tests/images/9bit.j2k") as im:
         assert im.mode == "I;16"
         assert im.size == (128, 128)
