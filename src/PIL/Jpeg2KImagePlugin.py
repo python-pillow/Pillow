@@ -110,11 +110,11 @@ def _parse_codestream(fp):
     xrsiz = [None] * csiz
     yrsiz = [None] * csiz
     for i in range(csiz):
-        ssiz[i], xrsiz[i], yrsiz[i] = struct.unpack_from(">BBB", siz, 36 + 3 * i)
+        ssiz[i], xrsiz[i], yrsiz[i] = struct.unpack_from(">BBB", siz, 38 + 3 * i)
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
-        if (yrsiz[0] & 0x7F) + 1 > 8:
+        if (ssiz[0] & 0x7F) + 1 > 8:
             mode = "I;16"
         else:
             mode = "L"
