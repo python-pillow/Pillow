@@ -1355,9 +1355,8 @@ The :py:meth:`~PIL.Image.open` method sets the following
 FPX
 ^^^
 
-Pillow reads Kodak FlashPix files. In the current version, only the highest
-resolution image is read from the file, and the viewing transform is not taken
-into account.
+Pillow reads Kodak FlashPix files. Only the highest resolution image is read from the
+file, and the viewing transform is not taken into account.
 
 To enable FPX support, you must install :pypi:`olefile`.
 

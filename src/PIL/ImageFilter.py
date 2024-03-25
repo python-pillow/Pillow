@@ -37,11 +37,10 @@ class BuiltinFilter(MultibandFilter):
 
 class Kernel(BuiltinFilter):
     """
-    Create a convolution kernel. The current version only
-    supports 3x3 and 5x5 integer and floating point kernels.
+    Create a convolution kernel. This only supports 3x3 and 5x5 integer and floating
+    point kernels.
 
-    In the current version, kernels can only be applied to
-    "L" and "RGB" images.
+    Kernels can only be applied to "L" and "RGB" images.
 
     :param size: Kernel size, given as (width, height). In the current
                     version, this must be (3,3) or (5,5).
