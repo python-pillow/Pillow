@@ -7,9 +7,9 @@
 The :py:mod:`~PIL.ImageMath` module can be used to evaluate “image expressions”, that
 can take a number of images and generate a result.
 
-In the current version, :py:mod:`~PIL.ImageMath` only supports single-layer images. To
-process multi-band images, use the :py:meth:`~PIL.Image.Image.split` method or
-:py:func:`~PIL.Image.merge` function.
+:py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
+images, use the :py:meth:`~PIL.Image.Image.split` method or :py:func:`~PIL.Image.merge`
+function.
 
 Example: Using the :py:mod:`~PIL.ImageMath` module
 --------------------------------------------------
@@ -51,10 +51,9 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
     recommended to process expressions without considering this.
     :py:meth:`~lambda_eval` is a more secure alternative.
 
-    In the current version, :py:mod:`~PIL.ImageMath` only supports
-    single-layer images. To process multi-band images, use the
-    :py:meth:`~PIL.Image.Image.split` method or :py:func:`~PIL.Image.merge`
-    function.
+    :py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
+    images, use the :py:meth:`~PIL.Image.Image.split` method or
+    :py:func:`~PIL.Image.merge` function.
 
     :param expression: A string which uses the standard Python expression
                        syntax. In addition to the standard operators, you can
