@@ -183,6 +183,10 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert im_l.info["transparency"] == im_l.getpixel((0, 0))  # undone
     im_l.save(f)
 
+    im_la = im.convert("LA")
+    assert "transparency" not in im_la.info
+    im_la.save(f)
+
     im_p = im.convert("P")
     assert "transparency" in im_p.info
     im_p.save(f)
