@@ -72,7 +72,7 @@ function build {
 
     build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
-        build_simple xorgproto 2023.2 https://www.x.org/pub/individual/proto
+        build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
         if [[ "$CIBW_ARCHS" == "arm64" ]]; then
