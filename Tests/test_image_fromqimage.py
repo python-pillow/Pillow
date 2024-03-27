@@ -24,6 +24,7 @@ def setup_module() -> None:
     ims.append(Image.open("Tests/images/transparent.png"))
     ims.append(Image.open("Tests/images/7x13.png"))
 
+
 def teardown_module() -> None:
     for im in ims:
         im.close()
