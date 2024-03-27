@@ -33,34 +33,34 @@ from .helper import (
     skip_unless_feature,
 )
 
-# name, number of bands, pixel size
+# name, pixel size
 image_modes = (
-    ("1", 1, 1),
-    ("L", 1, 1),
-    ("LA", 2, 4),
-    ("La", 2, 4),
-    ("P", 1, 1),
-    ("PA", 2, 4),
-    ("F", 1, 4),
-    ("I", 1, 4),
-    ("I;16", 1, 2),
-    ("I;16L", 1, 2),
-    ("I;16B", 1, 2),
-    ("I;16N", 1, 2),
-    ("RGB", 3, 4),
-    ("RGBA", 4, 4),
-    ("RGBa", 4, 4),
-    ("RGBX", 4, 4),
-    ("BGR;15", 3, 2),
-    ("BGR;16", 3, 2),
-    ("BGR;24", 3, 3),
-    ("CMYK", 4, 4),
-    ("YCbCr", 3, 4),
-    ("HSV", 3, 4),
-    ("LAB", 3, 4),
+    ("1", 1),
+    ("L", 1),
+    ("LA", 4),
+    ("La", 4),
+    ("P", 1),
+    ("PA", 4),
+    ("F", 4),
+    ("I", 4),
+    ("I;16", 2),
+    ("I;16L", 2),
+    ("I;16B", 2),
+    ("I;16N", 2),
+    ("RGB", 4),
+    ("RGBA", 4),
+    ("RGBa", 4),
+    ("RGBX", 4),
+    ("BGR;15", 2),
+    ("BGR;16", 2),
+    ("BGR;24", 3),
+    ("CMYK", 4),
+    ("YCbCr", 4),
+    ("HSV", 4),
+    ("LAB", 4),
 )
 
-image_mode_names = [name for name, _, _ in image_modes]
+image_mode_names = [name for name, _ in image_modes]
 
 
 class TestImage:
@@ -1045,50 +1045,32 @@ class TestImage:
 
 
 class TestImageBytes:
-    sample_bytes = bytes(
-        range(2 * 2 * max(pixelsize for mode, num_bands, pixelsize in image_modes))
-    )
+    @pytest.mark.parametrize("mode", image_mode_names)
+    def test_roundtrip_bytes_constructor(self, mode: str) -> None:
+        im = hopper(mode)
+        source_bytes = im.tobytes()
+
+        reloaded = Image.frombytes(mode, im.size, source_bytes)
+        assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize("mode", image_mode_names)
-    def test_roundtrip_bytes_constructor(self, mode: str):
-        source_image = hopper(mode)
-        source_bytes = source_image.tobytes()
-        copy_image = Image.frombytes(mode, source_image.size, source_bytes)
-        assert copy_image.tobytes() == source_bytes
+    def test_roundtrip_bytes_method(self, mode: str) -> None:
+        im = hopper(mode)
+        source_bytes = im.tobytes()
 
-    @pytest.mark.parametrize("mode", image_mode_names)
-    def test_roundtrip_bytes_method(self, mode: str):
-        source_image = hopper(mode)
-        source_bytes = source_image.tobytes()
-        copy_image = Image.new(mode, source_image.size)
-        copy_image.frombytes(source_bytes)
-        assert copy_image.tobytes() == source_bytes
+        reloaded = Image.new(mode, im.size)
+        reloaded.frombytes(source_bytes)
+        assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize(("mode", "num_bands", "pixelsize"), image_modes)
-    def test_pixels_after_getdata_putdata(
-        self, mode: str, num_bands: int, pixelsize: int
-    ):
-        image_byte_size = 2 * 2 * pixelsize
-        start_bytes = self.sample_bytes[:image_byte_size]
-        image = Image.frombytes(mode, (2, 2), start_bytes)
+    @pytest.mark.parametrize(("mode", "pixelsize"), image_modes)
+    def test_getdata_putdata(self, mode: str, pixelsize: int) -> None:
+        im = Image.new(mode, (2, 2))
+        source_bytes = bytes(range(im.width * im.height * pixelsize))
+        im.frombytes(source_bytes)
 
-        start_pixels = (
-            image.getpixel((0, 0)),
-            image.getpixel((0, 1)),
-            image.getpixel((1, 0)),
-            image.getpixel((1, 1)),
-        )
-
-        image.putdata(image.getdata())
-
-        end_pixels = (
-            image.getpixel((0, 0)),
-            image.getpixel((0, 1)),
-            image.getpixel((1, 0)),
-            image.getpixel((1, 1)),
-        )
-
-        assert start_pixels == end_pixels
+        reloaded = Image.new(mode, im.size)
+        reloaded.putdata(im.getdata())
+        assert_image_equal(im, reloaded)
 
 
 class MockEncoder(ImageFile.PyEncoder):
