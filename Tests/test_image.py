@@ -8,7 +8,7 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
-from typing import IO
+from typing import IO, NamedTuple
 
 import pytest
 
@@ -33,34 +33,39 @@ from .helper import (
     skip_unless_feature,
 )
 
-# name, pixel size
+
+class ImageModeInfo(NamedTuple):
+    name: str
+    pixel_size: int
+
+
 image_modes = (
-    ("1", 1),
-    ("L", 1),
-    ("LA", 4),
-    ("La", 4),
-    ("P", 1),
-    ("PA", 4),
-    ("F", 4),
-    ("I", 4),
-    ("I;16", 2),
-    ("I;16L", 2),
-    ("I;16B", 2),
-    ("I;16N", 2),
-    ("RGB", 4),
-    ("RGBA", 4),
-    ("RGBa", 4),
-    ("RGBX", 4),
-    ("BGR;15", 2),
-    ("BGR;16", 2),
-    ("BGR;24", 3),
-    ("CMYK", 4),
-    ("YCbCr", 4),
-    ("HSV", 4),
-    ("LAB", 4),
+    ImageModeInfo("1", 1),
+    ImageModeInfo("L", 1),
+    ImageModeInfo("LA", 4),
+    ImageModeInfo("La", 4),
+    ImageModeInfo("P", 1),
+    ImageModeInfo("PA", 4),
+    ImageModeInfo("F", 4),
+    ImageModeInfo("I", 4),
+    ImageModeInfo("I;16", 2),
+    ImageModeInfo("I;16L", 2),
+    ImageModeInfo("I;16B", 2),
+    ImageModeInfo("I;16N", 2),
+    ImageModeInfo("RGB", 4),
+    ImageModeInfo("RGBA", 4),
+    ImageModeInfo("RGBa", 4),
+    ImageModeInfo("RGBX", 4),
+    ImageModeInfo("BGR;15", 2),
+    ImageModeInfo("BGR;16", 2),
+    ImageModeInfo("BGR;24", 3),
+    ImageModeInfo("CMYK", 4),
+    ImageModeInfo("YCbCr", 4),
+    ImageModeInfo("HSV", 4),
+    ImageModeInfo("LAB", 4),
 )
 
-image_mode_names = [name for name, _ in image_modes]
+image_mode_names = [mode.name for mode in image_modes]
 
 
 class TestImage:
@@ -1062,13 +1067,13 @@ class TestImageBytes:
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize(("mode", "pixelsize"), image_modes)
-    def test_getdata_putdata(self, mode: str, pixelsize: int) -> None:
-        im = Image.new(mode, (2, 2))
-        source_bytes = bytes(range(im.width * im.height * pixelsize))
+    @pytest.mark.parametrize("mode", image_modes)
+    def test_getdata_putdata(self, mode: ImageModeInfo) -> None:
+        im = Image.new(mode.name, (2, 2))
+        source_bytes = bytes(range(im.width * im.height * mode.pixel_size))
         im.frombytes(source_bytes)
 
-        reloaded = Image.new(mode, im.size)
+        reloaded = Image.new(mode.name, im.size)
         reloaded.putdata(im.getdata())
         assert_image_equal(im, reloaded)
 
