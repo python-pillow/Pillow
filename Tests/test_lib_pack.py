@@ -15,7 +15,7 @@ class TestLibPack:
         mode: str,
         rawmode: str,
         data: int | bytes,
-        *pixels: int | float | tuple[int, ...],
+        *pixels: float | tuple[int, ...],
     ) -> None:
         """
         data - either raw bytes with data or just number of bytes in rawmode.
@@ -239,7 +239,7 @@ class TestLibUnpack:
         mode: str,
         rawmode: str,
         data: int | bytes,
-        *pixels: int | float | tuple[int, ...],
+        *pixels: float | tuple[int, ...],
     ) -> None:
         """
         data - either raw bytes with data or just number of bytes in rawmode.
