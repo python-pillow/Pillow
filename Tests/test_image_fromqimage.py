@@ -16,12 +16,13 @@ pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
 )
 
-ims = [
-    hopper(),
-    Image.open("Tests/images/transparent.png"),
-    Image.open("Tests/images/7x13.png"),
-]
+ims = []
 
+
+def setup_module() -> None:
+    ims.append(hopper())
+    ims.append(Image.open("Tests/images/transparent.png"))
+    ims.append(Image.open("Tests/images/7x13.png"))
 
 def teardown_module() -> None:
     for im in ims:
