@@ -16,7 +16,7 @@ pytestmark = pytest.mark.skipif(
     not ImageQt.qt_is_installed, reason="Qt bindings are not installed"
 )
 
-ims = []
+ims: list[Image.Image] = []
 
 
 def setup_module() -> None:
