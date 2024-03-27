@@ -894,9 +894,8 @@ class Image:
         omitted, a mode is chosen so that all information in the image
         and the palette can be represented without a palette.
 
-        The current version supports all possible conversions between
-        "L", "RGB" and "CMYK". The ``matrix`` argument only supports "L"
-        and "RGB".
+        This supports all possible conversions between "L", "RGB" and "CMYK". The
+        ``matrix`` argument only supports "L" and "RGB".
 
         When translating a color image to grayscale (mode "L"),
         the library uses the ITU-R 601-2 luma transform::
@@ -1824,9 +1823,8 @@ class Image:
                class Example(Image.ImagePointHandler):
                  def point(self, data):
                    # Return result
-        :param mode: Output mode (default is same as input).  In the
-           current version, this can only be used if the source image
-           has mode "L" or "P", and the output has mode "1" or the
+        :param mode: Output mode (default is same as input). This can only be used if
+           the source image has mode "L" or "P", and the output has mode "1" or the
            source image mode is "I" and the output mode is "L".
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
@@ -3020,11 +3018,10 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     If you have an entire image file in a string, wrap it in a
     :py:class:`~io.BytesIO` object, and use :py:func:`~PIL.Image.open` to load it.
 
-    In the current version, the default parameters used for the "raw" decoder
-    differs from that used for :py:func:`~PIL.Image.frombytes`.  This is a
-    bug, and will probably be fixed in a future release.  The current release
-    issues a warning if you do this; to disable the warning, you should provide
-    the full set of parameters.  See below for details.
+    The default parameters used for the "raw" decoder differs from that used for
+    :py:func:`~PIL.Image.frombytes`. This is a bug, and will probably be fixed in a
+    future release. The current release issues a warning if you do this; to disable
+    the warning, you should provide the full set of parameters. See below for details.
 
     :param mode: The image mode. See: :ref:`concept-modes`.
     :param size: The image size.
