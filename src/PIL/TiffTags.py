@@ -22,11 +22,11 @@ from typing import NamedTuple
 
 
 class _TagInfo(NamedTuple):
-    value: int
+    value: int | None
     name: str
-    type: int
-    length: int
-    enum: dict[int, str]
+    type: int | None
+    length: int | None
+    enum: dict[int, str] | None
 
 
 class TagInfo(_TagInfo):

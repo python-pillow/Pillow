@@ -117,7 +117,7 @@ ignore = [
   "E221", # Multiple spaces before operator
   "E226", # Missing whitespace around arithmetic operator
   "E241", # Multiple spaces after ','
-  "PYI034", # flake8-pyi: typing.Self added in Python 3.10
+  "PYI034", # flake8-pyi: typing.Self added in Python 3.11
 ]
 
 [tool.ruff.lint.per-file-ignores]
