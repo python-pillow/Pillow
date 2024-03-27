@@ -1,3 +1,10 @@
+skip_commits:
+  files:
+    - ".github/**"
+    - ".gitmodules"
+    - "docs/**"
+    - "wheels/**"
+
 version: '{build}'
 clone_folder: c:\pillow
 init:
