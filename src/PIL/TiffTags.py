@@ -26,7 +26,7 @@ class _TagInfo(NamedTuple):
     name: str
     type: int | None
     length: int | None
-    enum: dict[int, str] | None
+    enum: dict[str, int]
 
 
 class TagInfo(_TagInfo):
