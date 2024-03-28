@@ -48,6 +48,21 @@ Thank you.
 * Python: 
 * Pillow: 
 
+```text
+Please paste here the output of running:
+
+python3 -m PIL.report
+or
+python3 -m PIL --report
+
+Or the output of the following Python code:
+
+from PIL import report
+# or
+from PIL import features
+features.pilinfo(supported_formats=False)
+```
+
 <!--
 Please include **code** that reproduces the issue and whenever possible, an **image** that demonstrates the issue. Please upload images to GitHub, not to third-party file hosting sites. If necessary, add the image to a zip or tar archive.
 

@@ -1,17 +1,11 @@
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 
-import pytest
 
-
-@pytest.mark.parametrize("report", (False, True))
-def test_main(report) -> None:
-    args = [sys.executable, "-m", "PIL"]
-    if report:
-        args.append("--report")
+def test_main() -> None:
+    args = [sys.executable, "-m", "PIL.report"]
     out = subprocess.check_output(args).decode("utf-8")
     lines = out.splitlines()
     assert lines[0] == "-" * 68
@@ -30,17 +24,4 @@ def test_main(report) -> None:
     assert lines[2].startswith("Python Pillow modules loaded from ")
     assert lines[3].startswith("Binary Pillow modules loaded from ")
     assert lines[4] == "-" * 68
-    jpeg = (
-        os.linesep
-        + "-" * 68
-        + os.linesep
-        + "JPEG image/jpeg"
-        + os.linesep
-        + "Extensions: .jfif, .jpe, .jpeg, .jpg"
-        + os.linesep
-        + "Features: open, save"
-        + os.linesep
-        + "-" * 68
-        + os.linesep
-    )
-    assert report == (jpeg not in out)
+    assert "JPEG image/jpeg" not in out
