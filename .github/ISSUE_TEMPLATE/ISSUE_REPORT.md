@@ -49,9 +49,16 @@ Thank you.
 * Pillow: 
 
 ```text
-Please paste here the output of running `python3 -m PIL --report`,
-or the output of the following Python code:
+Please paste here the output of running:
 
+python3 -m PIL.report
+or
+python3 -m PIL --report
+
+Or the output of the following Python code:
+
+from PIL import report
+# or
 from PIL import features
 features.pilinfo(supported_formats=False)
 ```
