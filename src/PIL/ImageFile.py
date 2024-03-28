@@ -106,7 +106,7 @@ class ImageFile(Image.Image):
     """Base class for image file format handlers."""
 
     def __init__(self, fp=None, filename=None):
-        super().__init__()
+        super()._prepare()
 
         self._min_frame = 0
 
