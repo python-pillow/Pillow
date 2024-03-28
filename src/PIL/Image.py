@@ -620,14 +620,18 @@ class Image:
         return filename
 
     def __eq__(self, other):
-        return (
+        if self is other:
+            return True
+        if not (
             self.__class__ is other.__class__
             and self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
-            and self.getpalette() == other.getpalette()
-            and self.tobytes() == other.tobytes()
-        )
+        ):
+            return False
+        self.load()
+        other.load()
+        return self.im == other.im
 
     def __repr__(self):
         return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
