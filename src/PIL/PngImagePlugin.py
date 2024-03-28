@@ -1101,16 +1101,21 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal", Disposal.OP_NONE))
     blend = im.encoderinfo.get("blend", im.info.get("blend", Blend.OP_SOURCE))
+    progress = im.encoderinfo.get("progress")
 
-    if default_image:
-        chain = itertools.chain(append_images)
-    else:
-        chain = itertools.chain([im], append_images)
+    imSequences = []
+    if not default_image:
+        imSequences.append(im)
+    imSequences += append_images
+    if progress:
+        total = 0
+        for imSequence in imSequences:
+            total += getattr(imSequence, "n_frames", 1)
 
     im_frames = []
     frame_count = 0
-    for im_seq in chain:
-        for im_frame in ImageSequence.Iterator(im_seq):
+    for i, imSequence in enumerate(imSequences):
+        for im_frame in ImageSequence.Iterator(imSequence):
             if im_frame.mode == rawmode:
                 im_frame = im_frame.copy()
             else:
@@ -1156,12 +1161,16 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
                     previous["encoderinfo"]["duration"] += encoderinfo.get(
                         "duration", duration
                     )
+                    if progress:
+                        im._save_all_progress(imSequence, i, frame_count, total)
                     continue
             else:
                 bbox = None
             if "duration" not in encoderinfo:
                 encoderinfo["duration"] = duration
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
+            if progress:
+                im._save_all_progress(imSequence, i, frame_count, total)
 
     if len(im_frames) == 1 and not default_image:
         return im_frames[0]["im"]

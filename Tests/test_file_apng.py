@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -666,6 +667,58 @@ def test_apng_save_blend(tmp_path: Path) -> None:
     with Image.open(test_file) as im:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+
+
+def test_save_all_progress() -> None:
+    out = BytesIO()
+    progress = []
+
+    def callback(state):
+        if state["image_filename"]:
+            state["image_filename"] = (
+                state["image_filename"].replace("\\", "/").split("Tests/images/")[-1]
+            )
+        progress.append(state)
+
+    Image.new("RGB", (1, 1)).save(out, "PNG", save_all=True, progress=callback)
+    assert progress == [
+        {
+            "image_index": 0,
+            "image_filename": None,
+            "completed_frames": 1,
+            "total_frames": 1,
+        }
+    ]
+
+    out = BytesIO()
+    progress = []
+
+    with Image.open("Tests/images/apng/single_frame.png") as im:
+        with Image.open("Tests/images/apng/delay.png") as im2:
+            im.save(
+                out, "PNG", save_all=True, append_images=[im, im2], progress=callback
+            )
+
+    expected = []
+    for i in range(2):
+        expected.append(
+            {
+                "image_index": i,
+                "image_filename": "apng/single_frame.png",
+                "completed_frames": i + 1,
+                "total_frames": 7,
+            }
+        )
+    for i in range(5):
+        expected.append(
+            {
+                "image_index": 2,
+                "image_filename": "apng/delay.png",
+                "completed_frames": i + 3,
+                "total_frames": 7,
+            }
+        )
+    assert progress == expected
 
 
 def test_apng_save_size(tmp_path: Path) -> None:

@@ -248,7 +248,7 @@ def _save(im, fp, filename, save_all=False):
     existing_pdf.write_catalog()
 
     page_number = 0
-    for im_sequence in ims:
+    for i, im_sequence in enumerate(ims):
         im_pages = ImageSequence.Iterator(im_sequence) if save_all else [im_sequence]
         for im in im_pages:
             image_ref, procset = _write_image(im, filename, existing_pdf, image_refs)
@@ -282,6 +282,7 @@ def _save(im, fp, filename, save_all=False):
             existing_pdf.write_obj(contents_refs[page_number], stream=page_contents)
 
             page_number += 1
+            im._save_all_progress(im_sequence, i, page_number, number_of_pages)
 
     #
     # trailer

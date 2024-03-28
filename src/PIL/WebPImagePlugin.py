@@ -191,6 +191,7 @@ def _save_all(im, fp, filename):
         total += getattr(ims, "n_frames", 1)
     if total == 1:
         _save(im, fp, filename)
+        im._save_all_progress()
         return
 
     background = (0, 0, 0, 0)
@@ -264,7 +265,7 @@ def _save_all(im, fp, filename):
     timestamp = 0
     cur_idx = im.tell()
     try:
-        for ims in [im] + append_images:
+        for i, ims in enumerate([im] + append_images):
             # Get # of frames in this image
             nfr = getattr(ims, "n_frames", 1)
 
@@ -307,6 +308,7 @@ def _save_all(im, fp, filename):
                 else:
                     timestamp += duration
                 frame_idx += 1
+                im._save_all_progress(ims, i, frame_idx, total)
 
     finally:
         im.seek(cur_idx)
