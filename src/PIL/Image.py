@@ -978,7 +978,7 @@ class Image:
         # transparency handling
         if has_transparency:
             if (self.mode in ("1", "L", "I", "I;16") and mode in ("LA", "RGBA")) or (
-                self.mode == "RGB" and mode == "RGBA"
+                self.mode == "RGB" and mode in ("La", "LA", "RGBa", "RGBA")
             ):
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
