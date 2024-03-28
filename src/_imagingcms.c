@@ -143,7 +143,7 @@ cms_profile_tobytes(PyObject *self, PyObject *args) {
     cmsHPROFILE *profile;
 
     PyObject *ret;
-    if (!PyArg_ParseTuple(args, "O", &CmsProfile)) {
+    if (!PyArg_ParseTuple(args, "O!", &CmsProfile_Type, &CmsProfile)) {
         return NULL;
     }
 
@@ -1421,9 +1421,9 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     {NULL}};
 
 static PyTypeObject CmsProfile_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PIL._imagingcms.CmsProfile", /*tp_name*/
-    sizeof(CmsProfileObject),                                    /*tp_basicsize*/
-    0,                                                           /*tp_itemsize*/
+    PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsProfile", /*tp_name*/
+    sizeof(CmsProfileObject),                                      /*tp_basicsize*/
+    0,                                                             /*tp_itemsize*/
     /* methods */
     (destructor)cms_profile_dealloc, /*tp_dealloc*/
     0,                               /*tp_vectorcall_offset*/
@@ -1473,9 +1473,9 @@ static struct PyGetSetDef cms_transform_getsetters[] = {
     {NULL}};
 
 static PyTypeObject CmsTransform_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "CmsTransform", /*tp_name*/
-    sizeof(CmsTransformObject),                    /*tp_basicsize*/
-    0,                                             /*tp_itemsize*/
+    PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsTransform", /*tp_name*/
+    sizeof(CmsTransformObject),                                      /*tp_basicsize*/
+    0,                                                               /*tp_itemsize*/
     /* methods */
     (destructor)cms_transform_dealloc, /*tp_dealloc*/
     0,                                 /*tp_vectorcall_offset*/
@@ -1511,14 +1511,15 @@ setup_module(PyObject *m) {
     PyObject *v;
     int vn;
 
-    CmsProfile_Type.tp_new = PyType_GenericNew;
-
     /* Ready object types */
     PyType_Ready(&CmsProfile_Type);
     PyType_Ready(&CmsTransform_Type);
 
     Py_INCREF(&CmsProfile_Type);
     PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
+
+    Py_INCREF(&CmsTransform_Type);
+    PyModule_AddObject(m, "CmsTransform", (PyObject *)&CmsTransform_Type);
 
     d = PyModule_GetDict(m);
 

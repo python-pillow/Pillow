@@ -73,7 +73,7 @@ can be easily displayed in a chromaticity diagram, for example).
     :canonical: PIL._imagingcms.CmsProfile
 
     .. py:attribute:: creation_date
-        :type: Optional[datetime.datetime]
+        :type: datetime.datetime | None
 
         Date and time this profile was first created (see 7.2.1 of ICC.1:2010).
 
@@ -156,58 +156,58 @@ can be easily displayed in a chromaticity diagram, for example).
         not been calculated (see 7.2.18 of ICC.1:2010).
 
     .. py:attribute:: copyright
-        :type: Optional[str]
+        :type: str | None
 
         The text copyright information for the profile (see 9.2.21 of ICC.1:2010).
 
     .. py:attribute:: manufacturer
-        :type: Optional[str]
+        :type: str | None
 
         The (English) display string for the device manufacturer (see
         9.2.22 of ICC.1:2010).
 
     .. py:attribute:: model
-        :type: Optional[str]
+        :type: str | None
 
         The (English) display string for the device model of the device
         for which this profile is created (see 9.2.23 of ICC.1:2010).
 
     .. py:attribute:: profile_description
-        :type: Optional[str]
+        :type: str | None
 
         The (English) display string for the profile description (see
         9.2.41 of ICC.1:2010).
 
     .. py:attribute:: target
-        :type: Optional[str]
+        :type: str | None
 
         The name of the registered characterization data set, or the
         measurement data for a characterization target (see 9.2.14 of
         ICC.1:2010).
 
     .. py:attribute:: red_colorant
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
         The first column in the matrix used in matrix/TRC transforms (see 9.2.44 of ICC.1:2010).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: green_colorant
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
         The second column in the matrix used in matrix/TRC transforms (see 9.2.30 of ICC.1:2010).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: blue_colorant
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
         The third column in the matrix used in matrix/TRC transforms (see 9.2.4 of ICC.1:2010).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: luminance
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
         The absolute luminance of emissive devices in candelas per square
         metre as described by the Y channel (see 9.2.32 of ICC.1:2010).
@@ -215,7 +215,7 @@ can be easily displayed in a chromaticity diagram, for example).
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: chromaticity
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]] | None
 
         The data of the phosphor/colorant chromaticity set used (red,
         green and blue channels, see 9.2.16 of ICC.1:2010).
@@ -223,7 +223,7 @@ can be easily displayed in a chromaticity diagram, for example).
         The value is in the format ``((x, y, Y), (x, y, Y), (x, y, Y))``, if available.
 
     .. py:attribute:: chromatic_adaption
-        :type: tuple[tuple[float]]
+        :type: tuple[tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]], tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]] | None
 
         The chromatic adaption matrix converts a color measured using the
         actual illumination conditions and relative to the actual adopted
@@ -249,34 +249,34 @@ can be easily displayed in a chromaticity diagram, for example).
         9.2.19 of ICC.1:2010).
 
     .. py:attribute:: colorimetric_intent
-        :type: Optional[str]
+        :type: str | None
 
         4-character string (padded with whitespace) identifying the image
         state of PCS colorimetry produced using the colorimetric intent
         transforms (see 9.2.20 of ICC.1:2010 for details).
 
     .. py:attribute:: perceptual_rendering_intent_gamut
-        :type: Optional[str]
+        :type: str | None
 
         4-character string (padded with whitespace) identifying the (one)
         standard reference medium gamut (see 9.2.37 of ICC.1:2010 for
         details).
 
     .. py:attribute:: saturation_rendering_intent_gamut
-        :type: Optional[str]
+        :type: str | None
 
         4-character string (padded with whitespace) identifying the (one)
         standard reference medium gamut (see 9.2.37 of ICC.1:2010 for
         details).
 
     .. py:attribute:: technology
-        :type: Optional[str]
+        :type: str | None
 
         4-character string (padded with whitespace) identifying the device
         technology (see 9.2.47 of ICC.1:2010 for details).
 
     .. py:attribute:: media_black_point
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
         This tag specifies the media black point and is used for
         generating absolute colorimetry.
@@ -287,19 +287,19 @@ can be easily displayed in a chromaticity diagram, for example).
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: media_white_point_temperature
-        :type: Optional[float]
+        :type: float | None
 
         Calculates the white point temperature (see the LCMS documentation
         for more information).
 
     .. py:attribute:: viewing_condition
-        :type: Optional[str]
+        :type: str | None
 
         The (English) display string for the viewing conditions (see
         9.2.48 of ICC.1:2010).
 
     .. py:attribute:: screening_description
-        :type: Optional[str]
+        :type: str | None
 
         The (English) display string for the screening conditions.
 
@@ -307,21 +307,21 @@ can be easily displayed in a chromaticity diagram, for example).
         version 4.
 
     .. py:attribute:: red_primary
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
         The XYZ-transformed of the RGB primary color red (1, 0, 0).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: green_primary
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
         The XYZ-transformed of the RGB primary color green (0, 1, 0).
 
         The value is in the format ``((X, Y, Z), (x, y, Y))``, if available.
 
     .. py:attribute:: blue_primary
-        :type: Optional[tuple[tuple[float]]]
+        :type: tuple[tuple[float, float, float], tuple[float, float, float]] | None
 
         The XYZ-transformed of the RGB primary color blue (0, 0, 1).
 
@@ -334,7 +334,7 @@ can be easily displayed in a chromaticity diagram, for example).
         documentation on LCMS).
 
     .. py:attribute:: clut
-        :type: dict[tuple[bool]]
+        :type: dict[int, tuple[bool, bool, bool]] | None
 
         Returns a dictionary of all supported intents and directions for
         the CLUT model.
@@ -353,7 +353,7 @@ can be easily displayed in a chromaticity diagram, for example).
         that intent is supported for that direction.
 
     .. py:attribute:: intent_supported
-        :type: dict[tuple[bool]]
+        :type: dict[int, tuple[bool, bool, bool]] | None
 
         Returns a dictionary of all supported intents and directions.
 
@@ -372,7 +372,7 @@ can be easily displayed in a chromaticity diagram, for example).
 
     There is one function defined on the class:
 
-    .. py:method:: is_intent_supported(intent, direction)
+    .. py:method:: is_intent_supported(intent: int, direction: int, /)
 
         Returns if the intent is supported for the given direction.
 
