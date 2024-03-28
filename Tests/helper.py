@@ -252,8 +252,8 @@ def tostring(im: Image.Image, string_format: str, **options: Any) -> bytes:
 
 
 def hopper(mode: str | None = None) -> Image.Image:
-    # Use caching to reduce reading from disk but so an original copy is
-    # returned each time and the cached image isn't modified by tests
+    # Use caching to reduce reading from disk, but return a copy
+    # so that the cached image isn't modified by the tests
     # (for fast, isolated, repeatable tests).
     return _cached_hopper(mode).copy()
 
