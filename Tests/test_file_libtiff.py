@@ -6,13 +6,13 @@ import itertools
 import os
 import re
 import sys
-from collections import namedtuple
 from pathlib import Path
+from typing import Any, NamedTuple
 
 import pytest
 
 from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
-from PIL.TiffImagePlugin import SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
+from PIL.TiffImagePlugin import OSUBFILETYPE, SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -243,36 +243,40 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_custom_metadata(self, tmp_path: Path) -> None:
-        tc = namedtuple("tc", "value,type,supported_by_default")
+        class Tc(NamedTuple):
+            value: Any
+            type: int
+            supported_by_default: bool
+
         custom = {
             37000 + k: v
             for k, v in enumerate(
                 [
-                    tc(4, TiffTags.SHORT, True),
-                    tc(123456789, TiffTags.LONG, True),
-                    tc(-4, TiffTags.SIGNED_BYTE, False),
-                    tc(-4, TiffTags.SIGNED_SHORT, False),
-                    tc(-123456789, TiffTags.SIGNED_LONG, False),
-                    tc(TiffImagePlugin.IFDRational(4, 7), TiffTags.RATIONAL, True),
-                    tc(4.25, TiffTags.FLOAT, True),
-                    tc(4.25, TiffTags.DOUBLE, True),
-                    tc("custom tag value", TiffTags.ASCII, True),
-                    tc(b"custom tag value", TiffTags.BYTE, True),
-                    tc((4, 5, 6), TiffTags.SHORT, True),
-                    tc((123456789, 9, 34, 234, 219387, 92432323), TiffTags.LONG, True),
-                    tc((-4, 9, 10), TiffTags.SIGNED_BYTE, False),
-                    tc((-4, 5, 6), TiffTags.SIGNED_SHORT, False),
-                    tc(
+                    Tc(4, TiffTags.SHORT, True),
+                    Tc(123456789, TiffTags.LONG, True),
+                    Tc(-4, TiffTags.SIGNED_BYTE, False),
+                    Tc(-4, TiffTags.SIGNED_SHORT, False),
+                    Tc(-123456789, TiffTags.SIGNED_LONG, False),
+                    Tc(TiffImagePlugin.IFDRational(4, 7), TiffTags.RATIONAL, True),
+                    Tc(4.25, TiffTags.FLOAT, True),
+                    Tc(4.25, TiffTags.DOUBLE, True),
+                    Tc("custom tag value", TiffTags.ASCII, True),
+                    Tc(b"custom tag value", TiffTags.BYTE, True),
+                    Tc((4, 5, 6), TiffTags.SHORT, True),
+                    Tc((123456789, 9, 34, 234, 219387, 92432323), TiffTags.LONG, True),
+                    Tc((-4, 9, 10), TiffTags.SIGNED_BYTE, False),
+                    Tc((-4, 5, 6), TiffTags.SIGNED_SHORT, False),
+                    Tc(
                         (-123456789, 9, 34, 234, 219387, -92432323),
                         TiffTags.SIGNED_LONG,
                         False,
                     ),
-                    tc((4.25, 5.25), TiffTags.FLOAT, True),
-                    tc((4.25, 5.25), TiffTags.DOUBLE, True),
+                    Tc((4.25, 5.25), TiffTags.FLOAT, True),
+                    Tc((4.25, 5.25), TiffTags.DOUBLE, True),
                     # array of TIFF_BYTE requires bytes instead of tuple for backwards
                     # compatibility
-                    tc(bytes([4]), TiffTags.BYTE, True),
-                    tc(bytes((4, 9, 10)), TiffTags.BYTE, True),
+                    Tc(bytes([4]), TiffTags.BYTE, True),
+                    Tc(bytes((4, 9, 10)), TiffTags.BYTE, True),
                 ]
             )
         }
@@ -324,6 +328,12 @@ class TestFileLibTiff(LibTiffTestCase):
                 }
             )
         TiffImagePlugin.WRITE_LIBTIFF = False
+
+    def test_osubfiletype(self, tmp_path: Path) -> None:
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            im.tag_v2[OSUBFILETYPE] = 1
+            im.save(outfile)
 
     def test_subifd(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")

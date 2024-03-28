@@ -1,6 +1,33 @@
 9.3.0
 -----
 
+Security
+========
+
+Initialize libtiff buffer when saving
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a TIFF image to a file object using libtiff, the buffer was not
+initialized. This behaviour introduced in Pillow 2.0.0, and has now been fixed.
+
+Decode JPEG compressed BLP1 data in original mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Within the BLP image format, BLP1 data may use JPEG compression. Instead of
+telling the JPEG library that this data is in BGRX mode, Pillow will now
+decode the data in its natural CMYK mode, then convert it to RGB and rearrange
+the channels afterwards. Trying to load the data in an incorrect mode could
+result in a segmentation fault. This issue was introduced in Pillow 9.1.0.
+
+Limit SAMPLESPERPIXEL to avoid runtime DOS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A large value in the ``SAMPLESPERPIXEL`` tag could lead to a memory and runtime DOS in
+``TiffImagePlugin.py`` when setting up the context for image decoding.
+This was introduced in Pillow 9.2.0, found with `OSS-Fuzz`_ and fixed by limiting
+``SAMPLESPERPIXEL`` to the number of planes that we can decode.
+
+
 API Additions
 =============
 
@@ -36,33 +63,6 @@ The data from :py:data:`~PIL.ExifTags.TAGS` and
 :py:data:`~PIL.ExifTags.GPSTAGS` is now also exposed as
 :py:class:`enum.IntEnum` classes: :py:data:`~PIL.ExifTags.Base` and
 :py:data:`~PIL.ExifTags.GPS`.
-
-
-Security
-========
-
-Initialize libtiff buffer when saving
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-When saving a TIFF image to a file object using libtiff, the buffer was not
-initialized. This behaviour introduced in Pillow 2.0.0, and has now been fixed.
-
-Decode JPEG compressed BLP1 data in original mode
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Within the BLP image format, BLP1 data may use JPEG compression. Instead of
-telling the JPEG library that this data is in BGRX mode, Pillow will now
-decode the data in its natural CMYK mode, then convert it to RGB and rearrange
-the channels afterwards. Trying to load the data in an incorrect mode could
-result in a segmentation fault. This issue was introduced in Pillow 9.1.0.
-
-Limit SAMPLESPERPIXEL to avoid runtime DOS
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A large value in the ``SAMPLESPERPIXEL`` tag could lead to a memory and runtime DOS in
-``TiffImagePlugin.py`` when setting up the context for image decoding.
-This was introduced in Pillow 9.2.0, found with `OSS-Fuzz`_ and fixed by limiting
-``SAMPLESPERPIXEL`` to the number of planes that we can decode.
 
 
 Other Changes

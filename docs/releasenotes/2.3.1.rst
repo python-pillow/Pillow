@@ -1,0 +1,26 @@
+2.3.1
+-----
+
+Security
+========
+
+These issues were reported in
+`Debian bug #737059 <https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=737059>`_.
+
+:cve:`2014-1932`: Fix insecure use of :py:func:`tempfile.mktemp`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The (1) ``load_djpeg`` function in ``JpegImagePlugin.py``, (2) Ghostscript function
+in ``EpsImagePlugin.py``, (3) ``load`` function in ``IptcImagePlugin.py``, and (4)
+``_copy`` function in ``Image.py`` in
+Pillow before 2.3.1 do not properly create temporary files, which allow
+local users to overwrite arbitrary files and obtain sensitive information via a
+symlink attack on the temporary file.
+
+:cve:`2014-1933`: Fix insecure use of :py:func:`tempfile.mktemp`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The (1) ``JpegImagePlugin.py`` and (2) ``EpsImagePlugin.py`` scripts in
+Pillow before 2.3.1 uses the names of
+temporary files on the command line, which makes it easier for local users to
+conduct symlink attacks by listing the processes.

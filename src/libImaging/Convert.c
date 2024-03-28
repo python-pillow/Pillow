@@ -499,26 +499,27 @@ rgba2rgb_(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 /*
- * Conversion of RGB + single transparent color to RGBA,
- * where any pixel that matches the color will have the
- * alpha channel set to 0
+ * Conversion of RGB + single transparent color either to
+ * RGBA or LA, where any pixel matching the color will have the alpha channel set to 0, or
+ * RGBa or La, where any pixel matching the color will have all channels set to 0
  */
 
 static void
-rgbT2rgba(UINT8 *out, int xsize, int r, int g, int b) {
+rgbT2a(UINT8 *out, UINT8 *in, int xsize, int r, int g, int b, int premultiplied) {
 #ifdef WORDS_BIGENDIAN
     UINT32 trns = ((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | 0xff;
-    UINT32 repl = trns & 0xffffff00;
+    UINT32 repl = premultiplied ? 0 : (trns & 0xffffff00);
 #else
     UINT32 trns = (0xffU << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
-    UINT32 repl = trns & 0x00ffffff;
+    UINT32 repl = premultiplied ? 0 : (trns & 0x00ffffff);
 #endif
 
     int i;
 
-    for (i = 0; i < xsize; i++, out += sizeof(trns)) {
+    UINT8 *ref = in != NULL ? in : out;
+    for (i = 0; i < xsize; i++, ref += sizeof(trns), out += sizeof(trns)) {
         UINT32 v;
-        memcpy(&v, out, sizeof(v));
+        memcpy(&v, ref, sizeof(v));
         if (v == trns) {
             memcpy(out, &repl, sizeof(repl));
         }
@@ -1683,14 +1684,27 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
     Imaging imOut = NULL;
+    int premultiplied = 0;
+    // If the transparency matches pixels in the source image, not the converted image
+    UINT8 *source;
+    int source_transparency = 0;
     int y;
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (strcmp(imIn->mode, "RGB") == 0 && strcmp(mode, "RGBA") == 0) {
+    if (strcmp(imIn->mode, "RGB") == 0 && (strcmp(mode, "RGBA") == 0 || strcmp(mode, "RGBa") == 0)) {
         convert = rgb2rgba;
+        if (strcmp(mode, "RGBa") == 0) {
+            premultiplied = 1;
+        }
+    } else if (strcmp(imIn->mode, "RGB") == 0 && (strcmp(mode, "LA") == 0 || strcmp(mode, "La") == 0)) {
+        convert = rgb2la;
+        source_transparency = 1;
+        if (strcmp(mode, "La") == 0) {
+            premultiplied = 1;
+        }
     } else if ((strcmp(imIn->mode, "1") == 0 ||
                 strcmp(imIn->mode, "I") == 0 ||
                 strcmp(imIn->mode, "I;16") == 0 ||
@@ -1728,7 +1742,9 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
-        rgbT2rgba((UINT8 *)imOut->image[y], imIn->xsize, r, g, b);
+
+        source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
+        rgbT2a((UINT8 *)imOut->image[y], source, imIn->xsize, r, g, b, premultiplied);
     }
     ImagingSectionLeave(&cookie);
 

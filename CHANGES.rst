@@ -5,6 +5,60 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Use I;16 mode for 9-bit JPEG 2000 images #7900
+  [scaramallion, radarhere]
+
+- Raise ValueError if kmeans is negative #7891
+  [radarhere]
+
+- Remove TIFF tag OSUBFILETYPE when saving using libtiff #7893
+  [radarhere]
+
+- Raise ValueError for negative values when loading P1-P3 PPM images #7882
+  [radarhere]
+
+- Added reading of JPEG2000 palettes #7870
+  [radarhere]
+
+- Added alpha_quality argument when saving WebP images #7872
+  [radarhere]
+
+- Fixed joined corners for ImageDraw rounded_rectangle() non-integer dimensions #7881
+  [radarhere]
+
+- Stop reading EPS image at EOF marker #7753
+  [radarhere]
+
+- PSD layer co-ordinates may be negative #7706
+  [radarhere]
+
+- Use subprocess with CREATE_NO_WINDOW flag in ImageShow WindowsViewer #7791
+  [radarhere]
+
+- When saving GIF frame that restores to background color, do not fill identical pixels #7788
+  [radarhere]
+
+- Fixed reading PNG iCCP compression method #7823
+  [radarhere]
+
+- Allow writing IFDRational to UNDEFINED tag #7840
+  [radarhere]
+
+- Fix logged tag name when loading Exif data #7842
+  [radarhere]
+
+- Use maximum frame size in IHDR chunk when saving APNG images #7821
+  [radarhere]
+
+- Prevent opening P TGA images without a palette #7797
+  [radarhere]
+
+- Use palette when loading ICO images #7798
+  [radarhere]
+
+- Use consistent arguments for load_read and load_seek #7713
+  [radarhere]
+
 - Turn off nullability warnings for macOS SDK #7827
   [radarhere]
 

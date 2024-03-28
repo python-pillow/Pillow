@@ -270,6 +270,9 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                     msg = b"Token too long found in data: %s" % token[: max_len + 1]
                     raise ValueError(msg)
                 value = int(token)
+                if value < 0:
+                    msg_str = f"Channel value is negative: {value}"
+                    raise ValueError(msg_str)
                 if value > maxval:
                     msg_str = f"Channel value too large for this mode: {value}"
                     raise ValueError(msg_str)

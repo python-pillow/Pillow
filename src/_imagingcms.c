@@ -52,7 +52,7 @@ https://www.cazabon.com\n\
 
 */
 
-/* known to-do list with current version:
+/* known to-do list:
 
    Verify that PILmode->littleCMStype conversion in findLCMStype is correct for all
    PIL modes (it probably isn't for the more obscure ones)

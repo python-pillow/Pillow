@@ -2,7 +2,7 @@
 -----
 
 Fixed regression converting to NumPy arrays
-===========================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This fixes a regression introduced in 8.3.0 when converting an image to a NumPy array
 with a ``dtype`` argument.
@@ -19,7 +19,7 @@ with a ``dtype`` argument.
     >>>
 
 Catch OSError when checking if destination is sys.stdout
-========================================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In 8.3.0, a check to see if the destination was ``sys.stdout`` when saving an image was
 updated. This lead to an :py:exc:`OSError` being raised if the environment restricted
@@ -28,7 +28,7 @@ access.
 The :py:exc:`OSError` is now silently caught.
 
 Fixed removing orientation in ImageOps.exif_transpose
-=====================================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In 8.3.0, :py:meth:`~PIL.ImageOps.exif_transpose` was changed to ensure that the
 original image EXIF data was not modified, and the orientation was only removed from

@@ -21,8 +21,8 @@ vector data. Path objects can be passed to the methods on the
 
     The path object implements most parts of the Python sequence interface, and
     behaves like a list of (x, y) pairs. You can use len(), item access, and
-    slicing as usual. However, the current version does not support slice
-    assignment, or item and slice deletion.
+    slicing as usual. However, this does not support slice assignment, or item
+    and slice deletion.
 
     :param xy: A sequence. The sequence can contain 2-tuples [(x, y), ...]
                or a flat list of numbers [x, y, ...].
