@@ -266,9 +266,10 @@ After navigating to the Pillow directory, run::
 Build Options
 ^^^^^^^^^^^^^
 
-* Environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
-  multiprocessing to build the extension. Setting ``MAX_CONCURRENCY``
-  sets the number of CPUs to use, or can disable parallel building by
+* Config setting: ``-C parallel=n``. Can also be given
+  with environment variable: ``MAX_CONCURRENCY=n``. Pillow can use
+  multiprocessing to build the extension. Setting ``-C parallel=n``
+  sets the number of CPUs to use to ``n``, or can disable parallel building by
   using a setting of 1. By default, it uses 4 CPUs, or if 4 are not
   available, as many as are present.
 
@@ -293,14 +294,13 @@ Build Options
   used to compile the standard Pillow wheels. Compiling libraqm requires
   a C99-compliant compiler.
 
-* Build flag: ``-C platform-guessing=disable``. Skips all of the
+* Config setting: ``-C platform-guessing=disable``. Skips all of the
   platform dependent guessing of include and library directories for
   automated build systems that configure the proper paths in the
   environment variables (e.g. Buildroot).
 
-* Build flag: ``-C debug=true``. Adds a debugging flag to the include and
-  library search process to dump all paths searched for and found to
-  stdout.
+* Config setting: ``-C debug=true``. Adds a debugging flag to the include and
+  library search process to dump all paths searched for and found to stdout.
 
 
 Sample usage::

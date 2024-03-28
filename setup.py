@@ -27,6 +27,9 @@ def get_version():
     return locals()["__version__"]
 
 
+configuration = {}
+
+
 PILLOW_VERSION = get_version()
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
@@ -333,15 +336,24 @@ class pil_build_ext(build_ext):
         + [("add-imaging-libs=", None, "Add libs to _imaging build")]
     )
 
+    @staticmethod
+    def check_configuration(option, value):
+        return True if value in configuration.get(option, []) else None
+
     def initialize_options(self):
-        self.disable_platform_guessing = None
+        self.disable_platform_guessing = self.check_configuration(
+            "platform-guessing", "disable"
+        )
         self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
-            setattr(self, f"disable_{x}", None)
-            setattr(self, f"enable_{x}", None)
+            setattr(self, f"disable_{x}", self.check_configuration(x, "disable"))
+            setattr(self, f"enable_{x}", self.check_configuration(x, "enable"))
         for x in ("raqm", "fribidi"):
-            setattr(self, f"vendor_{x}", None)
+            setattr(self, f"vendor_{x}", self.check_configuration(x, "vendor"))
+        if self.check_configuration("debug", "true"):
+            self.debug = True
+        self.parallel = configuration.get("parallel", [None])[-1]
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -986,6 +998,12 @@ ext_modules = [
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
+
+
+# parse configuration from _custom_build/backend.py
+while sys.argv[-1].startswith("--pillow-configuration="):
+    _, key, value = sys.argv.pop().split("=", 2)
+    configuration.setdefault(key, []).append(value)
 
 try:
     setup(
