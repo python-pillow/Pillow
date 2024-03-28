@@ -23,10 +23,11 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Any, BinaryIO, Literal, SupportsFloat, SupportsInt, Union
+from typing import Any, Literal, SupportsFloat, SupportsInt, Union
 
 from . import Image, __version__
 from ._deprecate import deprecate
+from ._typing import SupportsRead
 
 try:
     from . import _imagingcms as core
@@ -236,7 +237,7 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
-    def __init__(self, profile: str | BinaryIO | core.CmsProfile) -> None:
+    def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
             a file like object containing a profile or a
@@ -365,7 +366,9 @@ def get_display_profile(handle: SupportsInt | None = None) -> ImageCmsProfile | 
 # pyCMS compatible layer
 # --------------------------------------------------------------------.
 
-_CmsProfileCompatible = Union[str, BinaryIO, core.CmsProfile, ImageCmsProfile]
+_CmsProfileCompatible = Union[
+    str, SupportsRead[bytes], core.CmsProfile, ImageCmsProfile
+]
 
 
 class PyCMSError(Exception):
@@ -472,7 +475,7 @@ def profileToProfile(
 
 
 def getOpenProfile(
-    profileFilename: str | BinaryIO | core.CmsProfile,
+    profileFilename: str | SupportsRead[bytes] | core.CmsProfile,
 ) -> ImageCmsProfile:
     """
     (pyCMS) Opens an ICC profile file.
