@@ -857,6 +857,10 @@ def jpeg_factory(fp=None, filename=None):
     return im
 
 
+def _supported_modes():
+    return ["RGB", "CMYK", "YCbCr", "RGBX", "L", "1"]
+
+
 # ---------------------------------------------------------------------
 # Registry stuff
 

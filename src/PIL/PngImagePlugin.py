@@ -1458,6 +1458,10 @@ def getchunks(im, **params):
     return fp.data
 
 
+def _supported_modes():
+    return ["RGB", "RGBA", "P", "I", "LA", "L", "1"]
+
+
 # --------------------------------------------------------------------
 # Registry
 
