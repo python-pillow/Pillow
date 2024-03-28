@@ -241,3 +241,41 @@ def test_draw_reloaded(tmp_path: Path) -> None:
 
     with Image.open(outfile) as im:
         assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")
+
+
+@pytest.mark.parametrize(
+    "test_image_path",
+    (
+        "Tests/images/ico1device_independent.ico",
+        "Tests/images/ico1device_dependent.ico",
+        "Tests/images/ico1both.ico",
+    ),
+)
+def test_ico1_open(test_image_path):
+    with Image.open(test_image_path) as im:
+        assert_image_equal_tofile(im, "Tests/images/ico1.png")
+
+
+def test_ico1_invalid_file():
+    with open("Tests/images/flower.jpg", "rb") as fp:
+        with pytest.raises(SyntaxError):
+            IcoImagePlugin.Ico1ImageFile(fp)
+
+
+def test_ico1_save(tmp_path):
+    outfile = str(tmp_path / "temp.ico")
+    with Image.open("Tests/images/l_trns.png") as im:
+        l_channel = im.convert("1").convert("L")
+        a_channel = im.convert("LA").getchannel("A")
+    la = Image.merge("LA", (l_channel, a_channel))
+
+    la.save(outfile, "ICO1")
+
+    with Image.open(outfile) as im:
+        assert_image_equal(im, la)
+
+    # Test saving in an incorrect mode
+    output = io.BytesIO()
+    im = hopper()
+    with pytest.raises(OSError):
+        im.save(output, "ICO1")
