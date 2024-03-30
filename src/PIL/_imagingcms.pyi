@@ -1,6 +1,6 @@
 import datetime
 import sys
-from typing import Literal, TypedDict
+from typing import Literal, SupportsFloat, TypedDict
 
 littlecms_version: str
 
@@ -138,7 +138,7 @@ def buildProofTransform(
     /,
 ) -> CmsTransform: ...
 def createProfile(
-    color_space: Literal["LAB", "XYZ", "sRGB"], color_temp: float = 0.0, /
+    color_space: Literal["LAB", "XYZ", "sRGB"], color_temp: SupportsFloat = 0.0, /
 ) -> CmsProfile: ...
 
 if sys.platform == "win32":

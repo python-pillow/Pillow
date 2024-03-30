@@ -797,9 +797,6 @@ def createProfile(
         except (TypeError, ValueError) as e:
             msg = f'Color temperature must be numeric, "{colorTemp}" not valid'
             raise PyCMSError(msg) from e
-    else:
-        # colorTemp is unused if colorSpace != "LAB"
-        colorTemp = 0.0
 
     try:
         return core.createProfile(colorSpace, colorTemp)
