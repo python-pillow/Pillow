@@ -251,6 +251,26 @@ rgb2i(UINT8 *out_, const UINT8 *in, int xsize) {
 }
 
 static void
+rgb2i16l(UINT8 *out_, const UINT8 *in, int xsize) {
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        UINT8 v = CLIP16(L24(in) >> 16);
+        *out_++ = v;
+        *out_++ = v >> 8;
+    }
+}
+
+static void
+rgb2i16b(UINT8 *out_, const UINT8 *in, int xsize) {
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        UINT8 v = CLIP16(L24(in) >> 16);
+        *out_++ = v >> 8;
+        *out_++ = v;
+    }
+}
+
+static void
 rgb2f(UINT8 *out_, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in += 4, out_ += 4) {
@@ -944,6 +964,9 @@ static struct {
     {"RGB", "LA", rgb2la},
     {"RGB", "La", rgb2la},
     {"RGB", "I", rgb2i},
+    {"RGB", "I;16", rgb2i16l},
+    {"RGB", "I;16L", rgb2i16l},
+    {"RGB", "I;16B", rgb2i16b},
     {"RGB", "F", rgb2f},
     {"RGB", "BGR;15", rgb2bgr15},
     {"RGB", "BGR;16", rgb2bgr16},

@@ -263,8 +263,6 @@ def hopper(mode: str | None = None, cache: dict[str, Image.Image] = {}) -> Image
     if im is None:
         if mode == "F":
             im = hopper("L").convert(mode)
-        elif mode[:4] == "I;16":
-            im = hopper("I").convert(mode)
         else:
             im = hopper().convert(mode)
         cache[mode] = im
