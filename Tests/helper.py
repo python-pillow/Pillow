@@ -267,8 +267,6 @@ def _cached_hopper(mode: str | None = None) -> Image.Image:
         return Image.open("Tests/images/hopper.ppm")
     if mode == "F":
         im = _cached_hopper("L").convert(mode)
-    elif mode[:4] == "I;16":
-        im = _cached_hopper("I").convert(mode)
     else:
         im = _cached_hopper().convert(mode)
     return im

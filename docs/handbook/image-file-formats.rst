@@ -1339,7 +1339,8 @@ FITS
 
 .. versionadded:: 9.1.0
 
-Pillow identifies and reads FITS files, commonly used for astronomy.
+Pillow identifies and reads FITS files, commonly used for astronomy. Uncompressed and
+GZIP_1 compressed images can be read.
 
 FLI, FLC
 ^^^^^^^^
