@@ -5,6 +5,7 @@ on:
     paths:
       - ".ci/requirements-cibw.txt"
       - ".github/workflows/wheel*"
+      - "setup.py"
       - "wheels/*"
       - "winbuild/build_prepare.py"
       - "winbuild/fribidi.cmake"
@@ -14,6 +15,7 @@ on:
     paths:
       - ".ci/requirements-cibw.txt"
       - ".github/workflows/wheel*"
+      - "setup.py"
       - "wheels/*"
       - "winbuild/build_prepare.py"
       - "winbuild/fribidi.cmake"
