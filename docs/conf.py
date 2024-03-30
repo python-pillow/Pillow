@@ -122,7 +122,9 @@ nitpicky = True
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 nitpick_ignore = [
-    # sphinx does not understand `typing.Literal[-1]`
+    # Sphinx does not understand typing.Literal[-1]
+    # Will be fixed in a future version.
+    # https://github.com/sphinx-doc/sphinx/pull/11904
     ("py:obj", "typing.Literal[-1, 1]"),
 ]
 
