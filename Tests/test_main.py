@@ -9,7 +9,7 @@ import pytest
 
 @pytest.mark.parametrize(
     "args, report",
-    ((["PIL.report"], True), (["PIL", "--report"], True), (["PIL"], False)),
+    ((["PIL"], False), (["PIL", "--report"], True), (["PIL.report"], True)),
 )
 def test_main(args, report) -> None:
     args = [sys.executable, "-m"] + args
