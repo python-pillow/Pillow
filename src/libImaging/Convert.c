@@ -967,6 +967,11 @@ static struct {
     {"RGB", "I;16", rgb2i16l},
     {"RGB", "I;16L", rgb2i16l},
     {"RGB", "I;16B", rgb2i16b},
+#ifdef WORDS_BIGENDIAN
+    {"RGB", "I;16N", rgb2i16b},
+#else
+    {"RGB", "I;16N", rgb2i16l},
+#endif
     {"RGB", "F", rgb2f},
     {"RGB", "BGR;15", rgb2bgr15},
     {"RGB", "BGR;16", rgb2bgr16},
