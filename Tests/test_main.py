@@ -7,11 +7,12 @@ import sys
 import pytest
 
 
-@pytest.mark.parametrize("report", (False, True))
-def test_main(report) -> None:
-    args = [sys.executable, "-m", "PIL"]
-    if report:
-        args.append("--report")
+@pytest.mark.parametrize(
+    "args, report",
+    ((["PIL.report"], True), (["PIL", "--report"], True), (["PIL"], False)),
+)
+def test_main(args, report) -> None:
+    args = [sys.executable, "-m"] + args
     out = subprocess.check_output(args).decode("utf-8")
     lines = out.splitlines()
     assert lines[0] == "-" * 68
