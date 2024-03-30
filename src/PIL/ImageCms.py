@@ -297,7 +297,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         intent: Intent = Intent.PERCEPTUAL,
         proof: ImageCmsProfile | None = None,
         proof_intent: Intent = Intent.ABSOLUTE_COLORIMETRIC,
-        flags: Flags | int = Flags.NONE,
+        flags: Flags = Flags.NONE,
     ):
         if proof is None:
             self.transform = core.buildTransform(
@@ -385,7 +385,7 @@ def profileToProfile(
     renderingIntent: Intent = Intent.PERCEPTUAL,
     outputMode: str | None = None,
     inPlace: bool = False,
-    flags: Flags | int = Flags.NONE,
+    flags: Flags = Flags.NONE,
 ) -> Image.Image | None:
     """
     (pyCMS) Applies an ICC transformation to a given image, mapping from
@@ -504,7 +504,7 @@ def buildTransform(
     inMode: str,
     outMode: str,
     renderingIntent: Intent = Intent.PERCEPTUAL,
-    flags: Flags | int = Flags.NONE,
+    flags: Flags = Flags.NONE,
 ) -> ImageCmsTransform:
     """
     (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
@@ -589,7 +589,7 @@ def buildProofTransform(
     outMode: str,
     renderingIntent: Intent = Intent.PERCEPTUAL,
     proofRenderingIntent: Intent = Intent.ABSOLUTE_COLORIMETRIC,
-    flags: Flags | int = Flags.SOFTPROOFING,
+    flags: Flags = Flags.SOFTPROOFING,
 ) -> ImageCmsTransform:
     """
     (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
