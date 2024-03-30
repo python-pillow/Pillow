@@ -230,9 +230,9 @@ def pilinfo(out=None, supported_formats=True):
     """
     Prints information about this installation of Pillow.
     This function can be called with ``python3 -m PIL``.
-    It can also be called with ``python3 -m PIL --report`` to have
-    "supported_formats" set to ``False``, omitting the list of all supported image
-    file formats.
+    It can also be called with ``python3 -m PIL.report`` or ``python3 -m PIL --report``
+    to have "supported_formats" set to ``False``, omitting the list of all supported
+    image file formats.
 
     :param out:
         The output stream to print to. Defaults to ``sys.stdout`` if ``None``.
