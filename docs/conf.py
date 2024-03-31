@@ -121,7 +121,12 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-# nitpick_ignore = []
+nitpick_ignore = [
+    # Sphinx does not understand typing.Literal[-1]
+    # Will be fixed in a future version.
+    # https://github.com/sphinx-doc/sphinx/pull/11904
+    ("py:obj", "typing.Literal[-1, 1]"),
+]
 
 
 # -- Options for HTML output ----------------------------------------------
