@@ -108,5 +108,5 @@ the libwebp decoder.
 Type hints
 ^^^^^^^^^^
 
-Pillow now has type hints, and the package includes a ``py.typed`` file and the
-``Typing :: Typed`` Trove classifier.
+Pillow now has type hints for a large part of its modules, and the package
+includes a ``py.typed`` file and the ``Typing :: Typed`` Trove classifier.
