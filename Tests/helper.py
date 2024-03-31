@@ -255,20 +255,22 @@ def hopper(mode: str | None = None) -> Image.Image:
     # Use caching to reduce reading from disk, but return a copy
     # so that the cached image isn't modified by the tests
     # (for fast, isolated, repeatable tests).
-    return _cached_hopper(mode).copy()
 
-
-@lru_cache(maxsize=None)
-def _cached_hopper(mode: str | None = None) -> Image.Image:
     if mode is None:
         # Always return fresh not-yet-loaded version of image.
         # Operations on not-yet-loaded images is separate class of errors
         # what we should catch.
         return Image.open("Tests/images/hopper.ppm")
+
+    return _cached_hopper(mode).copy()
+
+
+@lru_cache(maxsize=None)
+def _cached_hopper(mode: str | None = None) -> Image.Image:
     if mode == "F":
-        im = _cached_hopper("L").convert(mode)
+        im = hopper("L").convert(mode)
     else:
-        im = _cached_hopper().convert(mode)
+        im = hopper().convert(mode)
     return im
 
 
