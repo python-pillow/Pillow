@@ -180,7 +180,7 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
 
             /* Decoder settings */
 
-            /* jpegmode indicates whats in the file; if not set, we'll
+            /* jpegmode indicates what's in the file; if not set, we'll
                trust the decoder */
             if (strcmp(context->jpegmode, "L") == 0) {
                 context->cinfo.jpeg_color_space = JCS_GRAYSCALE;
