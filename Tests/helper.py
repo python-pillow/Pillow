@@ -266,7 +266,7 @@ def hopper(mode: str | None = None) -> Image.Image:
 
 
 @lru_cache(maxsize=None)
-def _cached_hopper(mode: str | None = None) -> Image.Image:
+def _cached_hopper(mode: str = None) -> Image.Image:
     if mode == "F":
         im = hopper("L").convert(mode)
     else:
