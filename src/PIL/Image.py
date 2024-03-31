@@ -55,6 +55,7 @@ from . import (
     _plugins,
 )
 from ._binary import i32le, o32be, o32le
+from ._typing import TypeGuard
 from ._util import DeferredError, is_path
 
 ElementTree: ModuleType | None
@@ -120,7 +121,7 @@ except ImportError:
     cffi = None
 
 
-def isImageType(t):
+def isImageType(t: Any) -> TypeGuard[Image]:
     """
     Checks if an object is an image object.
 
@@ -267,7 +268,7 @@ def getmodebase(mode: str) -> str:
     return ImageMode.getmode(mode).basemode
 
 
-def getmodetype(mode):
+def getmodetype(mode: str) -> str:
     """
     Gets the storage type mode.  Given a mode, this function returns a
     single-layer mode suitable for storing individual bands.
@@ -279,7 +280,7 @@ def getmodetype(mode):
     return ImageMode.getmode(mode).basetype
 
 
-def getmodebandnames(mode):
+def getmodebandnames(mode: str) -> tuple[str, ...]:
     """
     Gets a list of individual band names.  Given a mode, this function returns
     a tuple containing the names of individual bands (use
@@ -311,7 +312,7 @@ def getmodebands(mode: str) -> int:
 _initialized = 0
 
 
-def preinit():
+def preinit() -> None:
     """
     Explicitly loads BMP, GIF, JPEG, PPM and PPM file format drivers.
 
@@ -437,7 +438,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
 
 
 class _E:
-    def __init__(self, scale, offset):
+    def __init__(self, scale, offset) -> None:
         self.scale = scale
         self.offset = offset
 
@@ -508,22 +509,22 @@ class Image:
         self._exif = None
 
     @property
-    def width(self):
+    def width(self) -> int:
         return self.size[0]
 
     @property
-    def height(self):
+    def height(self) -> int:
         return self.size[1]
 
     @property
-    def size(self):
+    def size(self) -> tuple[int, int]:
         return self._size
 
     @property
     def mode(self):
         return self._mode
 
-    def _new(self, im):
+    def _new(self, im: Image) -> Image:
         new = Image()
         new.im = im
         new._mode = im.mode
@@ -556,7 +557,7 @@ class Image:
                 self._close_fp()
             self.fp = None
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the file pointer, if possible.
 
@@ -589,7 +590,7 @@ class Image:
         self.pyaccess = None
         self.readonly = 0
 
-    def _ensure_mutable(self):
+    def _ensure_mutable(self) -> None:
         if self.readonly:
             self._copy()
         else:
@@ -629,7 +630,7 @@ class Image:
             and self.tobytes() == other.tobytes()
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
             self.__class__.__module__,
             self.__class__.__name__,
@@ -639,7 +640,7 @@ class Image:
             id(self),
         )
 
-    def _repr_pretty_(self, p, cycle):
+    def _repr_pretty_(self, p, cycle) -> None:
         """IPython plain text display support"""
 
         # Same as __repr__ but without unpredictable id(self),
@@ -711,7 +712,7 @@ class Image:
         im_data = self.tobytes()  # load image first
         return [self.info, self.mode, self.size, self.getpalette(), im_data]
 
-    def __setstate__(self, state):
+    def __setstate__(self, state) -> None:
         Image.__init__(self)
         info, mode, size, palette, data = state
         self.info = info
@@ -774,7 +775,7 @@ class Image:
 
         return b"".join(output)
 
-    def tobitmap(self, name="image"):
+    def tobitmap(self, name: str = "image") -> bytes:
         """
         Returns the image converted to an X11 bitmap.
 
@@ -886,7 +887,12 @@ class Image:
         pass
 
     def convert(
-        self, mode=None, matrix=None, dither=None, palette=Palette.WEB, colors=256
+        self,
+        mode: str | None = None,
+        matrix: tuple[float, ...] | None = None,
+        dither: Dither | None = None,
+        palette: Palette = Palette.WEB,
+        colors: int = 256,
     ) -> Image:
         """
         Returns a converted copy of this image. For the "P" mode, this
@@ -1117,12 +1123,12 @@ class Image:
 
     def quantize(
         self,
-        colors=256,
-        method=None,
-        kmeans=0,
+        colors: int = 256,
+        method: Quantize | None = None,
+        kmeans: int = 0,
         palette=None,
-        dither=Dither.FLOYDSTEINBERG,
-    ):
+        dither: Dither = Dither.FLOYDSTEINBERG,
+    ) -> Image:
         """
         Convert the image to 'P' mode with the specified number
         of colors.
@@ -1210,7 +1216,7 @@ class Image:
 
     __copy__ = copy
 
-    def crop(self, box=None) -> Image:
+    def crop(self, box: tuple[int, int, int, int] | None = None) -> Image:
         """
         Returns a rectangular region from this image. The box is a
         4-tuple defining the left, upper, right, and lower pixel
@@ -1341,7 +1347,7 @@ class Image:
         self.load()
         return self.im.getbbox(alpha_only)
 
-    def getcolors(self, maxcolors=256):
+    def getcolors(self, maxcolors: int = 256) -> list[tuple[int, int]] | None:
         """
         Returns a list of colors used in this image.
 
@@ -1364,7 +1370,7 @@ class Image:
             return out
         return self.im.getcolors(maxcolors)
 
-    def getdata(self, band=None):
+    def getdata(self, band: int | None = None) -> Image:
         """
         Returns the contents of this image as a sequence object
         containing pixel values.  The sequence object is flattened, so
@@ -1387,7 +1393,7 @@ class Image:
             return self.im.getband(band)
         return self.im  # could be abused
 
-    def getextrema(self):
+    def getextrema(self) -> tuple[float, float] | tuple[tuple[float, float], ...]:
         """
         Gets the minimum and maximum pixel values for each band in
         the image.
@@ -1468,7 +1474,7 @@ class Image:
 
         return self._exif
 
-    def _reload_exif(self):
+    def _reload_exif(self) -> None:
         if self._exif is None or not self._exif._loaded:
             return
         self._exif._loaded = False
@@ -1605,7 +1611,7 @@ class Image:
             return self.pyaccess.getpixel(xy)
         return self.im.getpixel(tuple(xy))
 
-    def getprojection(self):
+    def getprojection(self) -> tuple[list[int], list[int]]:
         """
         Get projection to x and y axes
 
@@ -1617,7 +1623,7 @@ class Image:
         x, y = self.im.getprojection()
         return list(x), list(y)
 
-    def histogram(self, mask=None, extrema=None) -> list[int]:
+    def histogram(self, mask: Image | None = None, extrema=None) -> list[int]:
         """
         Returns a histogram for the image. The histogram is returned as a
         list of pixel counts, one for each pixel value in the source
@@ -2463,7 +2469,7 @@ class Image:
         if open_fp:
             fp.close()
 
-    def seek(self, frame) -> None:
+    def seek(self, frame: int) -> None:
         """
         Seeks to the given frame in this sequence file. If you seek
         beyond the end of the sequence, the method raises an
@@ -2485,7 +2491,7 @@ class Image:
             msg = "no more images in file"
             raise EOFError(msg)
 
-    def show(self, title=None):
+    def show(self, title: str | None = None) -> None:
         """
         Displays this image. This method is mainly intended for debugging purposes.
 
@@ -2526,7 +2532,7 @@ class Image:
             return (self.copy(),)
         return tuple(map(self._new, self.im.split()))
 
-    def getchannel(self, channel):
+    def getchannel(self, channel: int | str) -> Image:
         """
         Returns an image containing a single channel of the source image.
 
@@ -2601,13 +2607,13 @@ class Image:
 
         provided_size = tuple(map(math.floor, size))
 
-        def preserve_aspect_ratio():
+        def preserve_aspect_ratio() -> tuple[int, int] | None:
             def round_aspect(number, key):
                 return max(min(math.floor(number), math.ceil(number), key=key), 1)
 
             x, y = provided_size
             if x >= self.width and y >= self.height:
-                return
+                return None
 
             aspect = self.width / self.height
             if x / y >= aspect:
@@ -2927,7 +2933,9 @@ def _check_size(size):
     return True
 
 
-def new(mode, size, color=0) -> Image:
+def new(
+    mode: str, size: tuple[int, int], color: float | tuple[float, ...] | str | None = 0
+) -> Image:
     """
     Creates a new image with the given mode and size.
 
@@ -3193,7 +3201,7 @@ _fromarray_typemap = {
 }
 
 
-def _decompression_bomb_check(size):
+def _decompression_bomb_check(size: tuple[int, int]) -> None:
     if MAX_IMAGE_PIXELS is None:
         return
 
@@ -3335,7 +3343,7 @@ def open(fp, mode="r", formats=None) -> Image:
 # Image processing.
 
 
-def alpha_composite(im1, im2):
+def alpha_composite(im1: Image, im2: Image) -> Image:
     """
     Alpha composite im2 over im1.
 
@@ -3350,7 +3358,7 @@ def alpha_composite(im1, im2):
     return im1._new(core.alpha_composite(im1.im, im2.im))
 
 
-def blend(im1, im2, alpha):
+def blend(im1: Image, im2: Image, alpha: float) -> Image:
     """
     Creates a new image by interpolating between two input images, using
     a constant alpha::
@@ -3373,7 +3381,7 @@ def blend(im1, im2, alpha):
     return im1._new(core.blend(im1.im, im2.im, alpha))
 
 
-def composite(image1, image2, mask):
+def composite(image1: Image, image2: Image, mask: Image) -> Image:
     """
     Create composite image by blending images using a transparency mask.
 
@@ -3483,7 +3491,7 @@ def register_save(id: str, driver) -> None:
     SAVE[id.upper()] = driver
 
 
-def register_save_all(id, driver):
+def register_save_all(id, driver) -> None:
     """
     Registers an image function to save all the frames
     of a multiframe format.  This function should not be
@@ -3557,7 +3565,7 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
 # Simple display support.
 
 
-def _show(image, **options):
+def _show(image, **options) -> None:
     from . import ImageShow
 
     ImageShow.show(image, **options)
@@ -3613,7 +3621,7 @@ def radial_gradient(mode):
 # Resources
 
 
-def _apply_env_variables(env=None):
+def _apply_env_variables(env=None) -> None:
     if env is None:
         env = os.environ
 
@@ -3928,13 +3936,13 @@ class Exif(_ExifBase):
             }
         return ifd
 
-    def hide_offsets(self):
+    def hide_offsets(self) -> None:
         for tag in (ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo):
             if tag in self:
                 self._hidden_data[tag] = self[tag]
                 del self[tag]
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self._info is not None:
             # Load all keys into self._data
             for tag in self._info:
@@ -3942,7 +3950,7 @@ class Exif(_ExifBase):
 
         return str(self._data)
 
-    def __len__(self):
+    def __len__(self) -> int:
         keys = set(self._data)
         if self._info is not None:
             keys.update(self._info)
@@ -3954,10 +3962,10 @@ class Exif(_ExifBase):
             del self._info[tag]
         return self._data[tag]
 
-    def __contains__(self, tag):
+    def __contains__(self, tag) -> bool:
         return tag in self._data or (self._info is not None and tag in self._info)
 
-    def __setitem__(self, tag, value):
+    def __setitem__(self, tag, value) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         self._data[tag] = value
