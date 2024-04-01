@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Deprecate eval(), replacing it with lambda_eval() and unsafe_eval() #7927
+  [radarhere, hugovk]
+
 - Raise ValueError if seeking to greater than offset-sized integer in TIFF #7883
   [radarhere]
 
