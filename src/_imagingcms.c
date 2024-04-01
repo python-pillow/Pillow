@@ -181,8 +181,7 @@ cms_profile_dealloc(CmsProfileObject *self) {
 /* a transform represents the mapping between two profiles */
 
 typedef struct {
-    PyObject_HEAD char mode_in[8];
-    char mode_out[8];
+    PyObject_HEAD
     cmsHTRANSFORM transform;
 } CmsTransformObject;
 
@@ -191,7 +190,7 @@ static PyTypeObject CmsTransform_Type;
 #define CmsTransform_Check(op) (Py_TYPE(op) == &CmsTransform_Type)
 
 static PyObject *
-cms_transform_new(cmsHTRANSFORM transform, char *mode_in, char *mode_out) {
+cms_transform_new(cmsHTRANSFORM transform) {
     CmsTransformObject *self;
 
     self = PyObject_New(CmsTransformObject, &CmsTransform_Type);
@@ -200,9 +199,6 @@ cms_transform_new(cmsHTRANSFORM transform, char *mode_in, char *mode_out) {
     }
 
     self->transform = transform;
-
-    strncpy(self->mode_in, mode_in, 8);
-    strncpy(self->mode_out, mode_out, 8);
 
     return (PyObject *)self;
 }
@@ -476,7 +472,7 @@ buildTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform, sInMode, sOutMode);
+    return cms_transform_new(transform);
 }
 
 static PyObject *
@@ -523,7 +519,7 @@ buildProofTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform, sInMode, sOutMode);
+    return cms_transform_new(transform);
 }
 
 static PyObject *
@@ -1456,21 +1452,6 @@ static struct PyMethodDef cms_transform_methods[] = {
     {"apply", (PyCFunction)cms_transform_apply, 1}, {NULL, NULL} /* sentinel */
 };
 
-static PyObject *
-cms_transform_getattr_inputMode(CmsTransformObject *self, void *closure) {
-    return PyUnicode_FromString(self->mode_in);
-}
-
-static PyObject *
-cms_transform_getattr_outputMode(CmsTransformObject *self, void *closure) {
-    return PyUnicode_FromString(self->mode_out);
-}
-
-static struct PyGetSetDef cms_transform_getsetters[] = {
-    {"inputMode", (getter)cms_transform_getattr_inputMode},
-    {"outputMode", (getter)cms_transform_getattr_outputMode},
-    {NULL}};
-
 static PyTypeObject CmsTransform_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsTransform", /*tp_name*/
     sizeof(CmsTransformObject),                                      /*tp_basicsize*/
@@ -1501,7 +1482,7 @@ static PyTypeObject CmsTransform_Type = {
     0,                                 /*tp_iternext*/
     cms_transform_methods,             /*tp_methods*/
     0,                                 /*tp_members*/
-    cms_transform_getsetters,          /*tp_getset*/
+    0,                                 /*tp_getset*/
 };
 
 static int
