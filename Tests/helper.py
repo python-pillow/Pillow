@@ -258,20 +258,20 @@ def hopper(mode: str | None = None) -> Image.Image:
 
     if mode is None:
         # Always return fresh not-yet-loaded version of image.
-        # Operations on not-yet-loaded images is separate class of errors
-        # what we should catch.
+        # Operations on not-yet-loaded images are a separate class of errors
+        # that we should catch.
         return Image.open("Tests/images/hopper.ppm")
 
     return _cached_hopper(mode).copy()
 
 
-@lru_cache(maxsize=None)
-def _cached_hopper(mode: str = None) -> Image.Image:
+@lru_cache
+def _cached_hopper(mode: str) -> Image.Image:
     if mode == "F":
-        im = hopper("L").convert(mode)
+        im = hopper("L")
     else:
-        im = hopper().convert(mode)
-    return im
+        im = hopper()
+    return im.convert(mode)
 
 
 def djpeg_available() -> bool:
