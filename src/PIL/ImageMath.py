@@ -238,7 +238,7 @@ ops = {
 
 def lambda_eval(
     expression: Callable[[dict[str, Any]], Any],
-    _dict: dict[str, Any] = {},
+    options: dict[str, Any] = {},
     **kw: Any,
 ) -> Any:
     """
@@ -258,7 +258,7 @@ def lambda_eval(
     """
 
     args: dict[str, Any] = ops.copy()
-    args.update(_dict)
+    args.update(options)
     args.update(kw)
     for k, v in args.items():
         if hasattr(v, "im"):
@@ -273,7 +273,7 @@ def lambda_eval(
 
 def unsafe_eval(
     expression: str,
-    _dict: dict[str, Any] = {},
+    options: dict[str, Any] = {},
     **kw: Any,
 ) -> Any:
     """
@@ -297,12 +297,12 @@ def unsafe_eval(
 
     # build execution namespace
     args: dict[str, Any] = ops.copy()
-    for k in list(_dict.keys()) + list(kw.keys()):
+    for k in list(options.keys()) + list(kw.keys()):
         if "__" in k or hasattr(builtins, k):
             msg = f"'{k}' not allowed"
             raise ValueError(msg)
 
-    args.update(_dict)
+    args.update(options)
     args.update(kw)
     for k, v in args.items():
         if hasattr(v, "im"):
@@ -339,9 +339,9 @@ def eval(
     Deprecated. Use lambda_eval() or unsafe_eval() instead.
 
     :param expression: A string containing a Python-style expression.
-    :param options: Values to add to the evaluation context.  You
-                    can either use a dictionary, or one or more keyword
-                    arguments.
+    :param _dict: Values to add to the evaluation context.  You
+                  can either use a dictionary, or one or more keyword
+                  arguments.
     :return: The evaluated expression. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
