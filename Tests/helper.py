@@ -115,7 +115,9 @@ def assert_image_similar(
 
     diff = 0
     for ach, bch in zip(a.split(), b.split()):
-        chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert("L")
+        chdiff = ImageMath.lambda_eval(
+            lambda args: abs(args["a"] - args["b"]), a=ach, b=bch
+        ).convert("L")
         diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
 
     ave_diff = diff / (a.size[0] * a.size[1])
