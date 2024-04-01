@@ -53,7 +53,8 @@ class QoiDecoder(ImageFile.PyDecoder):
 
         data = bytearray()
         bands = Image.getmodebands(self.mode)
-        while len(data) < self.state.xsize * self.state.ysize * bands:
+        dest_length = self.state.xsize * self.state.ysize * bands
+        while len(data) < dest_length:
             byte = self.fd.read(1)[0]
             if byte == 0b11111110:  # QOI_OP_RGB
                 value = self.fd.read(3) + self._previous_pixel[3:]
