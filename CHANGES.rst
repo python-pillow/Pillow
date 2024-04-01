@@ -4325,7 +4325,7 @@ Changelog (Pillow)
 - Documentation changes, URL update, transpose, release checklist
   [radarhere]
 
-- Fixed saving to nonexistant files specified by pathlib.Path objects #1748 (fixes #1747)
+- Fixed saving to nonexistent files specified by pathlib.Path objects #1748 (fixes #1747)
   [radarhere]
 
 - Round Image.crop arguments to the nearest integer #1745 (fixes #1744)
@@ -7536,7 +7536,7 @@ The test suite includes 400 individual tests.
 - A handbook is available (distributed separately).
 
 - The coordinate system is changed so that (0,0) is now located
-  in the upper left corner.  This is in compliancy with ISO 12087
+  in the upper left corner.  This is in compliance with ISO 12087
   and 90% of all other image processing and graphics libraries.
 
 - Modes "1" (bilevel) and "P" (palette) have been introduced.  Note

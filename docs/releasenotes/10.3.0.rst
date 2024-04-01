@@ -104,3 +104,9 @@ Release GIL when fetching WebP frames
 
 Python's Global Interpreter Lock is now released when fetching WebP frames from
 the libwebp decoder.
+
+Type hints
+^^^^^^^^^^
+
+Pillow now has type hints for a large part of its modules, and the package
+includes a ``py.typed`` file and the ``Typing :: Typed`` Trove classifier.
