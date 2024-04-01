@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- CVE-2024-28219: Use strncpy to avoid buffer overflow #7928
+  [radarhere, hugovk]
+
 - Deprecate eval(), replacing it with lambda_eval() and unsafe_eval() #7927
   [radarhere, hugovk]
 
