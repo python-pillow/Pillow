@@ -1,6 +1,11 @@
 9.2.0
 -----
 
+Security
+========
+
+An additional decompression bomb check has been added for the GIF format.
+
 Deprecations
 ============
 
@@ -131,11 +136,6 @@ Added :py:meth:`~PIL.Image.Image.apply_transparency`, a method to take a P mode 
 with "transparency" in ``im.info``, and apply the transparency to the palette instead.
 The image's palette mode will become "RGBA", and "transparency" will be removed from
 ``im.info``.
-
-Security
-========
-
-An additional decompression bomb check has been added for the GIF format.
 
 Other Changes
 =============

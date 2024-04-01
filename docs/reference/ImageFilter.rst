@@ -23,8 +23,7 @@ Example: Filter an image
 Filters
 -------
 
-The current version of the library provides the following set of predefined
-image enhancement filters:
+Pillow provides the following set of predefined image enhancement filters:
 
 * **BLUR**
 * **CONTOUR**

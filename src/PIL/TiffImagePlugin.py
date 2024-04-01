@@ -74,6 +74,7 @@ MM = b"MM"  # big-endian (Motorola style)
 # Read TIFF files
 
 # a few tag names, just to make the code below a bit more readable
+OSUBFILETYPE = 255
 IMAGEWIDTH = 256
 IMAGELENGTH = 257
 BITSPERSAMPLE = 258
@@ -1166,6 +1167,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.__next,
                 self.fp.tell(),
             )
+            if self.__next >= 2**63:
+                msg = "Unable to seek to frame"
+                raise ValueError(msg)
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
             logger.debug("Loading tags, location: %s", self.fp.tell())
@@ -1784,11 +1788,13 @@ def _save(im, fp, filename):
         types = {}
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
+        # OSUBFILETYPE is deprecated.
         # The other tags expect arrays with a certain length (fixed or depending on
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
         # SUBIFD may also cause a segfault.
         blocklist += [
+            OSUBFILETYPE,
             REFERENCEBLACKWHITE,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,

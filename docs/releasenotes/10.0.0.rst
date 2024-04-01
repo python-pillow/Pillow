@@ -1,6 +1,33 @@
 10.0.0
 ------
 
+Security
+========
+
+Limit size even if one dimension is zero
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When performing decompression bomb checks, Pillow did not reject images with
+excessive width and zero height, or zero width and excessive height. That has
+now been fixed.
+
+This effectively dates to the PIL fork, since problem images would still have
+been processed before Pillow started checking for decompression bombs.
+
+.. _Added ImageFont.MAX_STRING_LENGTH:
+
+:cve:`2023-44271`: Added ImageFont.MAX_STRING_LENGTH
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using arbitrary strings as text
+input, Pillow will now raise a :py:exc:`ValueError` if the number of characters
+passed into ImageFont methods is over a certain limit,
+:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`.
+
+This threshold can be changed by setting
+:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It can be disabled by setting
+``ImageFont.MAX_STRING_LENGTH = None``.
+
 Backwards Incompatible Changes
 ==============================
 
@@ -156,31 +183,6 @@ Added ``alpha_only`` argument to ``getbbox()``
 ``alpha_only``. This is an optional flag, defaulting to ``True``. If ``True``
 and the image has an alpha channel, trim transparent pixels. Otherwise, trim
 pixels when all channels are zero.
-
-Security
-========
-
-Limit size even if one dimension is zero
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-When performing decompression bomb checks, Pillow did not reject images with
-excessive width and zero height, or zero width and excessive height. That has
-now been fixed.
-
-This effectively dates to the PIL fork, since problem images would still have
-been processed before Pillow started checking for decompression bombs.
-
-Added ImageFont.MAX_STRING_LENGTH
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:cve:`2023-44271`: To protect against potential DOS attacks when using arbitrary strings as text
-input, Pillow will now raise a :py:exc:`ValueError` if the number of characters
-passed into ImageFont methods is over a certain limit,
-:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`.
-
-This threshold can be changed by setting
-:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It can be disabled by setting
-``ImageFont.MAX_STRING_LENGTH = None``.
 
 Other Changes
 =============

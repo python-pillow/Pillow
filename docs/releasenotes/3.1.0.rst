@@ -1,9 +1,8 @@
-
 3.1.0
-=====
+-----
 
 ImageDraw arc, chord and pieslice can now use floats
-----------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There is no longer a need to ensure that the start and end arguments for ``arc``,
 ``chord`` and ``pieslice`` are integers.
@@ -12,7 +11,7 @@ Note that these numbers are not simply rounded internally, but are actually
 utilised in the drawing process.
 
 Consistent multiline text spacing
----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When using the ``ImageDraw`` multiline methods, the spacing between
 lines was inconsistent, based on the combination on ascenders and
@@ -24,7 +23,7 @@ not the absolute height of each line.
 There is also now a default spacing of 4px between lines.
 
 Exif, Jpeg and Tiff Metadata
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There were major changes in the TIFF ImageFileDirectory support in
 Pillow 3.0 that led to a number of regressions. Some of them have been

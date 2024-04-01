@@ -1,6 +1,25 @@
 9.4.0
 -----
 
+Security
+========
+
+Fix memory DOS in ImageFont
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A corrupt or specially crafted TTF font could have font metrics that lead to
+unreasonably large sizes when rendering text in font. ``ImageFont.py`` did not
+check the image size before allocating memory for it. This dates to the PIL
+fork. Pillow 8.2.0 added a check for large sizes, but did not consider the
+case where one dimension is zero.
+
+Null pointer dereference crash in ImageFont
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow attempted to dereference a null pointer in ``ImageFont``, leading to a
+crash. An error is now raised instead. This has been present since
+Pillow 8.0.0.
+
 API Additions
 =============
 
@@ -68,25 +87,6 @@ When saving a JPEG image, a comment can now be written from
 :py:attr:`~PIL.Image.Image.info`, or by using an argument when saving::
 
     im.save(out, comment="Test comment")
-
-Security
-========
-
-Fix memory DOS in ImageFont
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A corrupt or specially crafted TTF font could have font metrics that lead to
-unreasonably large sizes when rendering text in font. ``ImageFont.py`` did not
-check the image size before allocating memory for it. This dates to the PIL
-fork. Pillow 8.2.0 added a check for large sizes, but did not consider the
-case where one dimension is zero.
-
-Null pointer dereference crash in ImageFont
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Pillow attempted to dereference a null pointer in ``ImageFont``, leading to a
-crash. An error is now raised instead. This has been present since
-Pillow 8.0.0.
 
 Other Changes
 =============

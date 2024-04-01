@@ -291,7 +291,8 @@ class BmpRleDecoder(ImageFile.PyDecoder):
         rle4 = self.args[1]
         data = bytearray()
         x = 0
-        while len(data) < self.state.xsize * self.state.ysize:
+        dest_length = self.state.xsize * self.state.ysize
+        while len(data) < dest_length:
             pixels = self.fd.read(1)
             byte = self.fd.read(1)
             if not pixels or not byte:

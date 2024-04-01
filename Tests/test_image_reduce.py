@@ -186,7 +186,9 @@ def assert_compare_images(
 
     bands = ImageMode.getmode(a.mode).bands
     for band, ach, bch in zip(bands, a.split(), b.split()):
-        ch_diff = ImageMath.eval("convert(abs(a - b), 'L')", a=ach, b=bch)
+        ch_diff = ImageMath.lambda_eval(
+            lambda args: args["convert"](abs(args["a"] - args["b"]), "L"), a=ach, b=bch
+        )
         ch_hist = ch_diff.histogram()
 
         average_diff = sum(i * num for i, num in enumerate(ch_hist)) / (

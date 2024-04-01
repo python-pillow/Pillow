@@ -1,8 +1,8 @@
 2.8.0
-=====
+-----
 
 Open HTTP response objects with Image.open
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 HTTP response objects returned from ``urllib2.urlopen(url)`` or
 ``requests.get(url, stream=True).raw`` are 'file-like' but do not support ``.seek()``

@@ -1,6 +1,38 @@
 10.2.0
 ------
 
+Security
+========
+
+ImageFont.getmask: Applied ImageFont.MAX_STRING_LENGTH
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using arbitrary strings as text input,
+Pillow will now raise a :py:exc:`ValueError` if the number of characters passed into
+:py:meth:`PIL.ImageFont.ImageFont.getmask` is over a certain limit,
+:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`.
+
+This threshold can be changed by setting :py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It
+can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
+
+A decompression bomb check has also been added to
+:py:meth:`PIL.ImageFont.ImageFont.getmask`.
+
+ImageFont.getmask: Trim glyph size
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using PIL fonts,
+:py:class:`PIL.ImageFont.ImageFont` now trims the size of individual glyphs so that
+they do not extend beyond the bitmap image.
+
+:cve:`2023-50447`: ImageMath.eval: Restricted environment keys
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If an attacker has control over the keys passed to the
+``environment`` argument of :py:meth:`!PIL.ImageMath.eval`, they may be able to execute
+arbitrary code. To prevent this, keys matching the names of builtins and keys
+containing double underscores will now raise a :py:exc:`ValueError`.
+
 Deprecations
 ============
 
@@ -62,38 +94,6 @@ JPEG tables-only streamtype
 
 When saving JPEG files, ``streamtype`` can now be set to 1, for tables-only. This will
 output only the quantization and Huffman tables for the image.
-
-Security
-========
-
-ImageFont.getmask: Applied ImageFont.MAX_STRING_LENGTH
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To protect against potential DOS attacks when using arbitrary strings as text input,
-Pillow will now raise a :py:exc:`ValueError` if the number of characters passed into
-:py:meth:`PIL.ImageFont.ImageFont.getmask` is over a certain limit,
-:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`.
-
-This threshold can be changed by setting :py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It
-can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
-
-A decompression bomb check has also been added to
-:py:meth:`PIL.ImageFont.ImageFont.getmask`.
-
-ImageFont.getmask: Trim glyph size
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To protect against potential DOS attacks when using PIL fonts,
-:py:class:`PIL.ImageFont.ImageFont` now trims the size of individual glyphs so that
-they do not extend beyond the bitmap image.
-
-ImageMath.eval: Restricted environment keys
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:cve:`2023-50447`: If an attacker has control over the keys passed to the
-``environment`` argument of :py:meth:`PIL.ImageMath.eval`, they may be able to execute
-arbitrary code. To prevent this, keys matching the names of builtins and keys
-containing double underscores will now raise a :py:exc:`ValueError`.
 
 Other Changes
 =============

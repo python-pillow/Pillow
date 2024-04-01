@@ -1,6 +1,40 @@
 7.1.0
 -----
 
+Security
+========
+
+This release includes many security fixes.
+
+:cve:`2020-10177`: Multiple out-of-bounds reads in FLI decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow before 7.1.0 has multiple out-of-bounds reads in ``libImaging/FliDecode.c``.
+
+:cve:`2020-10378`: Bounds overflow in PCX decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In ``libImaging/PcxDecode.c`` in Pillow before 7.1.0, an out-of-bounds read can occur
+when reading PCX files where ``state->shuffle`` is instructed to read beyond
+``state->buffer``.
+
+:cve:`2020-10379`: Two buffer overflows in TIFF decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Pillow before 7.1.0, there are two buffer overflows in ``libImaging/TiffDecode.c``.
+
+:cve:`2020-10994`: Bounds overflow in JPEG 2000 decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In ``libImaging/Jpeg2KDecode.c`` in Pillow before 7.1.0, there are multiple
+out-of-bounds reads via a crafted JP2 file.
+
+:cve:`2020-11538`: Buffer overflow in SGI-RLE decoding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In ``libImaging/SgiRleDecode.c`` in Pillow through 7.0.0, a number of out-of-bounds
+reads exist in the parsing of SGI image files, a different issue than :cve:`2020-5311`.
+
 API Changes
 ===========
 
@@ -66,17 +100,6 @@ with the default value of :data:`None` using the default X server.
 Passing a different value on Windows or macOS will force taking a snapshot
 using the selected X server; pass an empty string to use the default X server.
 XCB support is not included in pre-compiled wheels for Windows and macOS.
-
-Security
-========
-
-This release includes security fixes.
-
-* :cve:`2020-10177` Fix multiple out-of-bounds reads in FLI decoding
-* :cve:`2020-10378` Fix bounds overflow in PCX decoding
-* :cve:`2020-10379` Fix two buffer overflows in TIFF decoding
-* :cve:`2020-10994` Fix bounds overflow in JPEG 2000 decoding
-* :cve:`2020-11538` Fix buffer overflow in SGI-RLE decoding
 
 Other Changes
 =============

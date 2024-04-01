@@ -18,10 +18,18 @@
 ##
 from __future__ import annotations
 
-from collections import namedtuple
+from typing import NamedTuple
 
 
-class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
+class _TagInfo(NamedTuple):
+    value: int | None
+    name: str
+    type: int | None
+    length: int | None
+    enum: dict[str, int]
+
+
+class TagInfo(_TagInfo):
     __slots__: list[str] = []
 
     def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
