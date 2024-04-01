@@ -32,7 +32,8 @@ def timer(func, label, *args) -> None:
             break
     endtime = time.time()
     print(
-        f"{label}: completed {x + 1} iterations in {endtime - starttime:.4f}s, {(endtime - starttime) / (x + 1.0):.6f}s per iteration"
+        f"{label}: completed {x + 1} iterations in {endtime - starttime:.4f}s, "
+        f"{(endtime - starttime) / (x + 1.0):.6f}s per iteration"
     )
 
 
