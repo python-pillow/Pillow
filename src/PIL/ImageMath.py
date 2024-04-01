@@ -236,9 +236,11 @@ ops = {
 }
 
 
-def lambda_eval(expression: Callable[[dict[str, Any]], Any],
+def lambda_eval(
+    expression: Callable[[dict[str, Any]], Any],
     _dict: dict[str, Any] = {},
-    **kw: Any,) -> Any:
+    **kw: Any,
+) -> Any:
     """
     Returns the result of an image function.
 
