@@ -14,16 +14,11 @@ ImageMath eval()
   not recommended to process expressions without considering this.
   :py:meth:`~PIL.ImageMath.lambda_eval` is a more secure alternative.
 
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
+:cve:`2024-28219`: Fix buffer overflow in ``_imagingcms.c``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
-
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
+In ``_imagingcms.c``, two ``strcpy`` calls were able to copy too much data into fixed
+length strings. This has been fixed by using ``strncpy`` instead.
 
 Deprecations
 ============

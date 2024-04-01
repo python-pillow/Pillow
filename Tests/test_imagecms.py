@@ -661,6 +661,11 @@ def test_auxiliary_channels_isolated() -> None:
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 
+def test_long_modes() -> None:
+    p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
+    ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
+
+
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
 def test_rgb_lab(mode: str) -> None:
     im = Image.new(mode, (1, 1))
