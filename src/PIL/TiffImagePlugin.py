@@ -1167,6 +1167,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.__next,
                 self.fp.tell(),
             )
+            if self.__next >= 2**63:
+                msg = "Unable to seek to frame"
+                raise ValueError(msg)
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
             logger.debug("Loading tags, location: %s", self.fp.tell())
