@@ -11,6 +11,7 @@ import subprocess
 import sys
 import sysconfig
 import tempfile
+from functools import lru_cache
 from io import BytesIO
 from typing import Any, Callable, Sequence
 
@@ -250,23 +251,27 @@ def tostring(im: Image.Image, string_format: str, **options: Any) -> bytes:
     return out.getvalue()
 
 
-def hopper(mode: str | None = None, cache: dict[str, Image.Image] = {}) -> Image.Image:
+def hopper(mode: str | None = None) -> Image.Image:
+    # Use caching to reduce reading from disk, but return a copy
+    # so that the cached image isn't modified by the tests
+    # (for fast, isolated, repeatable tests).
+
     if mode is None:
         # Always return fresh not-yet-loaded version of image.
-        # Operations on not-yet-loaded images is separate class of errors
-        # what we should catch.
+        # Operations on not-yet-loaded images are a separate class of errors
+        # that we should catch.
         return Image.open("Tests/images/hopper.ppm")
-    # Use caching to reduce reading from disk but so an original copy is
-    # returned each time and the cached image isn't modified by tests
-    # (for fast, isolated, repeatable tests).
-    im = cache.get(mode)
-    if im is None:
-        if mode == "F":
-            im = hopper("L").convert(mode)
-        else:
-            im = hopper().convert(mode)
-        cache[mode] = im
-    return im.copy()
+
+    return _cached_hopper(mode).copy()
+
+
+@lru_cache
+def _cached_hopper(mode: str) -> Image.Image:
+    if mode == "F":
+        im = hopper("L")
+    else:
+        im = hopper()
+    return im.convert(mode)
 
 
 def djpeg_available() -> bool:
