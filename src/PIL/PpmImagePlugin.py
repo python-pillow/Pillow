@@ -307,7 +307,8 @@ class PpmDecoder(ImageFile.PyDecoder):
         out_byte_count = 4 if self.mode == "I" else 1
         out_max = 65535 if self.mode == "I" else 255
         bands = Image.getmodebands(self.mode)
-        while len(data) < self.state.xsize * self.state.ysize * bands * out_byte_count:
+        dest_length = self.state.xsize * self.state.ysize * bands * out_byte_count
+        while len(data) < dest_length:
             pixels = self.fd.read(in_byte_count * bands)
             if len(pixels) < in_byte_count * bands:
                 # eof

@@ -497,7 +497,8 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
 
         data = bytearray()
         bytecount = bitcount // 8
-        while len(data) < self.state.xsize * self.state.ysize * len(masks):
+        dest_length = self.state.xsize * self.state.ysize * len(masks)
+        while len(data) < dest_length:
             value = int.from_bytes(self.fd.read(bytecount), "little")
             for i, mask in enumerate(masks):
                 masked_value = value & mask
@@ -505,7 +506,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
                 data += o8(
                     int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
                 )
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
         return -1, 0
 
 
