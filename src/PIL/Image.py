@@ -524,7 +524,7 @@ class Image:
     def mode(self):
         return self._mode
 
-    def _new(self, im: Image) -> Image:
+    def _new(self, im: Image):
         new = Image()
         new.im = im
         new._mode = im.mode
@@ -1347,7 +1347,9 @@ class Image:
         self.load()
         return self.im.getbbox(alpha_only)
 
-    def getcolors(self, maxcolors: int = 256) -> list[tuple[int, int]] | None:
+    def getcolors(
+        self, maxcolors: int = 256
+    ) -> list[tuple[int, int | tuple[int, ...]]] | None:
         """
         Returns a list of colors used in this image.
 
@@ -1370,7 +1372,7 @@ class Image:
             return out
         return self.im.getcolors(maxcolors)
 
-    def getdata(self, band: int | None = None) -> Image:
+    def getdata(self, band: int | None = None):
         """
         Returns the contents of this image as a sequence object
         containing pixel values.  The sequence object is flattened, so
@@ -1393,7 +1395,7 @@ class Image:
             return self.im.getband(band)
         return self.im  # could be abused
 
-    def getextrema(self) -> tuple[float, float] | tuple[tuple[float, float], ...]:
+    def getextrema(self) -> tuple[float, float] | tuple[tuple[int, int], ...]:
         """
         Gets the minimum and maximum pixel values for each band in
         the image.
