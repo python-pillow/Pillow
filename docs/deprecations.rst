@@ -92,6 +92,14 @@ Deprecated                                    Use instead
                                               :py:data:`sys.version_info`, and ``PIL.__version__``
 ============================================  ====================================================
 
+ImageMath eval()
+^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.3.0
+
+``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
+:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
+
 Removed features
 ----------------
 
