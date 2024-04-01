@@ -5,6 +5,18 @@ Changelog (Pillow)
 10.3.0 (unreleased)
 -------------------
 
+- Add --report argument to __main__.py to omit supported formats #7818
+  [nulano, radarhere, hugovk]
+
+- Added RGB to I;16, I;16L, I;16B and I;16N conversion #7918, #7920
+  [radarhere]
+
+- Fix editable installation with custom build backend and configuration options #7658
+  [nulano, radarhere]
+
+- Fix putdata() for I;16N on big-endian #7209
+  [Yay295, hugovk, radarhere]
+
 - Determine MPO size from markers, not EXIF data #7884
   [radarhere]
 
