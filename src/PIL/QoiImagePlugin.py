@@ -98,7 +98,7 @@ class QoiDecoder(ImageFile.PyDecoder):
             if bands == 3:
                 value = value[:3]
             data += value
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
         return -1, 0
 
 

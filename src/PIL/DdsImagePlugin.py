@@ -506,7 +506,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
                 data += o8(
                     int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
                 )
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
         return -1, 0
 
 
