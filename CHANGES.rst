@@ -2,19 +2,19 @@
 Changelog (Pillow)
 ==================
 
-10.3.0 (unreleased)
+10.3.0 (2024-04-01)
 -------------------
 
-- CVE-2024-28219: Use strncpy to avoid buffer overflow #7928
+- CVE-2024-28219: Use ``strncpy`` to avoid buffer overflow #7928
   [radarhere, hugovk]
 
-- Deprecate eval(), replacing it with lambda_eval() and unsafe_eval() #7927
+- Deprecate ``eval()``, replacing it with ``lambda_eval()`` and ``unsafe_eval()`` #7927
   [radarhere, hugovk]
 
-- Raise ValueError if seeking to greater than offset-sized integer in TIFF #7883
+- Raise ``ValueError`` if seeking to greater than offset-sized integer in TIFF #7883
   [radarhere]
 
-- Add --report argument to __main__.py to omit supported formats #7818
+- Add ``--report`` argument to ``__main__.py`` to omit supported formats #7818
   [nulano, radarhere, hugovk]
 
 - Added RGB to I;16, I;16L, I;16B and I;16N conversion #7918, #7920
