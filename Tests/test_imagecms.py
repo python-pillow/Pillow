@@ -526,9 +526,9 @@ def test_profile_typesafety() -> None:
 def test_transform_typesafety() -> None:
     # core transform should not be directly instantiable
     with pytest.raises(TypeError):
-        ImageCms.core.CmsProfile()
+        ImageCms.core.CmsTransform()
     with pytest.raises(TypeError):
-        ImageCms.core.CmsProfile(0)
+        ImageCms.core.CmsTransform(0)
 
 
 def assert_aux_channel_preserved(
