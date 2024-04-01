@@ -524,7 +524,7 @@ class Image:
     def mode(self):
         return self._mode
 
-    def _new(self, im: Image):
+    def _new(self, im) -> Image:
         new = Image()
         new.im = im
         new._mode = im.mode
@@ -1347,9 +1347,7 @@ class Image:
         self.load()
         return self.im.getbbox(alpha_only)
 
-    def getcolors(
-        self, maxcolors: int = 256
-    ) -> list[tuple[int, int | tuple[int, ...]]] | None:
+    def getcolors(self, maxcolors: int = 256):
         """
         Returns a list of colors used in this image.
 
