@@ -19,7 +19,7 @@ import io
 import os
 import struct
 
-from . import Image, ImageFile, _binary
+from . import Image, ImageFile, ImagePalette, _binary
 
 
 class BoxReader:
@@ -106,15 +106,11 @@ def _parse_codestream(fp):
     lsiz, rsiz, xsiz, ysiz, xosiz, yosiz, _, _, _, _, csiz = struct.unpack_from(
         ">HHIIIIIIIIH", siz
     )
-    ssiz = [None] * csiz
-    xrsiz = [None] * csiz
-    yrsiz = [None] * csiz
-    for i in range(csiz):
-        ssiz[i], xrsiz[i], yrsiz[i] = struct.unpack_from(">BBB", siz, 36 + 3 * i)
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
-        if (yrsiz[0] & 0x7F) > 8:
+        ssiz = struct.unpack_from(">B", siz, 38)
+        if (ssiz[0] & 0x7F) + 1 > 8:
             mode = "I;16"
         else:
             mode = "L"
@@ -162,6 +158,7 @@ def _parse_jp2_header(fp):
     bpc = None
     nc = None
     dpi = None  # 2-tuple of DPI info, or None
+    palette = None
 
     while header.has_next_box():
         tbox = header.next_box_type()
@@ -179,6 +176,14 @@ def _parse_jp2_header(fp):
                 mode = "RGB"
             elif nc == 4:
                 mode = "RGBA"
+        elif tbox == b"pclr" and mode in ("L", "LA"):
+            ne, npc = header.read_fields(">HB")
+            bitdepths = header.read_fields(">" + ("B" * npc))
+            if max(bitdepths) <= 8:
+                palette = ImagePalette.ImagePalette()
+                for i in range(ne):
+                    palette.getcolor(header.read_fields(">" + ("B" * npc)))
+                mode = "P" if mode == "L" else "PA"
         elif tbox == b"res ":
             res = header.read_boxes()
             while res.has_next_box():
@@ -195,7 +200,7 @@ def _parse_jp2_header(fp):
         msg = "Malformed JP2 header"
         raise SyntaxError(msg)
 
-    return size, mode, mimetype, dpi
+    return size, mode, mimetype, dpi, palette
 
 
 ##
@@ -217,7 +222,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
                 self.codec = "jp2"
                 header = _parse_jp2_header(self.fp)
-                self._size, self._mode, self.custom_mimetype, dpi = header
+                self._size, self._mode, self.custom_mimetype, dpi, self.palette = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
                 if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):

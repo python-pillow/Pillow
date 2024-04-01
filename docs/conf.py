@@ -54,9 +54,10 @@ master_doc = "index"
 # General information about the project.
 project = "Pillow (PIL Fork)"
 copyright = (
-    "1995-2011 Fredrik Lundh, 2010-2024 Jeffrey A. Clark (Alex) and contributors"
+    "1995-2011 Fredrik Lundh and contributors, "
+    "2010-2024 Jeffrey A. Clark and contributors."
 )
-author = "Fredrik Lundh, Jeffrey A. Clark (Alex), contributors"
+author = "Fredrik Lundh (PIL), Jeffrey A. Clark (Pillow)"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -120,7 +121,12 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-# nitpick_ignore = []
+nitpick_ignore = [
+    # Sphinx does not understand typing.Literal[-1]
+    # Will be fixed in a future version.
+    # https://github.com/sphinx-doc/sphinx/pull/11904
+    ("py:obj", "typing.Literal[-1, 1]"),
+]
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -252,7 +258,7 @@ latex_documents = [
         master_doc,
         "PillowPILFork.tex",
         "Pillow (PIL Fork) Documentation",
-        "Jeffrey A. Clark (Alex)",
+        "Jeffrey A. Clark",
         "manual",
     )
 ]
@@ -302,7 +308,7 @@ texinfo_documents = [
         "Pillow (PIL Fork) Documentation",
         author,
         "PillowPILFork",
-        "Pillow is the friendly PIL fork by Jeffrey A. Clark (Alex) and contributors.",
+        "Pillow is the friendly PIL fork by Jeffrey A. Clark and contributors.",
         "Miscellaneous",
     )
 ]
@@ -326,7 +332,7 @@ linkcheck_allowed_redirects = {
     r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",
     r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",
     r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
-    r"https://tidelift.com/badges/package/pypi/Pillow?.*": r"https://img.shields.io/badge/.*",
+    r"https://tidelift.com/badges/package/pypi/pillow?.*": r"https://img.shields.io/badge/.*",
     r"https://zenodo.org/badge/17549/python-pillow/Pillow.svg": r"https://zenodo.org/badge/doi/[\.0-9]+/zenodo.[0-9]+.svg",
     r"https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow": r"https://zenodo.org/record/[0-9]+",
 }

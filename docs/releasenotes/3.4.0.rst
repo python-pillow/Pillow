@@ -1,9 +1,32 @@
-
 3.4.0
 -----
 
+Backwards Incompatible Changes
+==============================
+
+Image.core.open_ppm removed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The nominally private/debugging function ``Image.core.open_ppm`` has
+been removed. If you were using this function, please use
+``Image.open`` instead.
+
+Deprecations
+============
+
+Deprecation Warning when Saving JPEGs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JPEG images cannot contain an alpha channel. Pillow prior to 3.4.0
+silently drops the alpha channel. With this release Pillow will now
+issue a :py:exc:`DeprecationWarning` when attempting to save a ``RGBA`` mode
+image as a JPEG. This will become an error in Pillow 4.2.
+
+API Additions
+=============
+
 New resizing filters
-====================
+^^^^^^^^^^^^^^^^^^^^
 
 Two new filters available for ``Image.resize()`` and ``Image.thumbnail()``
 functions: ``BOX`` and ``HAMMING``. ``BOX`` is the high-performance filter with
@@ -14,23 +37,15 @@ two times shorter window than ``BILINEAR``. It can be used for image reduction
 providing the image downscaling quality comparable to ``BICUBIC``.
 Both new filters don't show good quality for the image upscaling.
 
-Deprecation Warning when Saving JPEGs
-=====================================
-
-JPEG images cannot contain an alpha channel. Pillow prior to 3.4.0
-silently drops the alpha channel. With this release Pillow will now
-issue a :py:exc:`DeprecationWarning` when attempting to save a ``RGBA`` mode
-image as a JPEG. This will become an error in Pillow 4.2.
-
 New DDS Decoders
-================
+^^^^^^^^^^^^^^^^
 
 Pillow can now decode DXT3 images, as well as the previously supported
 DXT1 and DXT5 formats. All three formats are now decoded in C code for
 better performance.
 
 Append images to GIF
-====================
+^^^^^^^^^^^^^^^^^^^^
 
 Additional frames can now be appended when saving a GIF file, through the
 ``append_images`` argument. The new frames are passed in as a list of images,
@@ -42,16 +57,9 @@ in effect, e.g.::
     im.save(out, save_all=True, append_images=[im1, im2, ...])
 
 Save multiple frame TIFF
-========================
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Multiple frames can now be saved in a TIFF file by using the ``save_all`` option.
 e.g.::
 
     im.save("filename.tiff", format="TIFF", save_all=True)
-
-Image.core.open_ppm removed
-===========================
-
-The nominally private/debugging function ``Image.core.open_ppm`` has
-been removed. If you were using this function, please use
-``Image.open`` instead.

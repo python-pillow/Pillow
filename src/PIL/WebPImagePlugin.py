@@ -217,6 +217,7 @@ def _save_all(im, fp, filename):
     verbose = False
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
+    alpha_quality = im.encoderinfo.get("alpha_quality", 100)
     method = im.encoderinfo.get("method", 0)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", "")
@@ -296,6 +297,7 @@ def _save_all(im, fp, filename):
                     rawmode,
                     lossless,
                     quality,
+                    alpha_quality,
                     method,
                 )
 
@@ -310,7 +312,7 @@ def _save_all(im, fp, filename):
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, 0)
+    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, alpha_quality, 0)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
@@ -324,6 +326,7 @@ def _save_all(im, fp, filename):
 def _save(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
+    alpha_quality = im.encoderinfo.get("alpha_quality", 100)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", b"")
     if isinstance(exif, Image.Exif):
@@ -343,6 +346,7 @@ def _save(im, fp, filename):
         im.size[1],
         lossless,
         float(quality),
+        float(alpha_quality),
         im.mode,
         icc_profile,
         method,

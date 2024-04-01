@@ -70,7 +70,7 @@ if is_win32():
     ]
     CreateDIBSection.restype = ctypes.wintypes.HBITMAP
 
-    def serialize_dib(bi, pixels):
+    def serialize_dib(bi, pixels) -> bytearray:
         bf = BITMAPFILEHEADER()
         bf.bfType = 0x4D42
         bf.bfOffBits = ctypes.sizeof(bf) + bi.biSize

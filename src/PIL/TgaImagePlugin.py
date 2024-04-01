@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 import warnings
-from io import BytesIO
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -85,7 +85,7 @@ class TgaImageFile(ImageFile.ImageFile):
             elif depth == 16:
                 self._mode = "LA"
         elif imagetype in (1, 9):
-            self._mode = "P"
+            self._mode = "P" if colormaptype else "L"
         elif imagetype in (2, 10):
             self._mode = "RGB"
             if depth == 32:
@@ -128,6 +128,9 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.palette = ImagePalette.raw(
                     "BGRA", b"\0" * 4 * start + self.fp.read(4 * size)
                 )
+            else:
+                msg = "unknown TGA map depth"
+                raise SyntaxError(msg)
 
         # setup tile descriptor
         try:
@@ -175,7 +178,7 @@ SAVE = {
 }
 
 
-def _save(im: Image.Image, fp: BytesIO, filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:

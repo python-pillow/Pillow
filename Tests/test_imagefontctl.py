@@ -208,7 +208,9 @@ def test_language() -> None:
     ),
     ids=("None", "ltr", "rtl2", "rtl", "ttb"),
 )
-def test_getlength(mode, text, direction, expected) -> None:
+def test_getlength(
+    mode: str, text: str, direction: str | None, expected: float
+) -> None:
     ttf = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     im = Image.new(mode, (1, 1), 0)
     d = ImageDraw.Draw(im)
@@ -230,7 +232,7 @@ def test_getlength(mode, text, direction, expected) -> None:
     ("i" + ("\u030C" * 15) + "i", "i" + "\u032C" * 15 + "i", "\u035Cii", "i\u0305i"),
     ids=("caron-above", "caron-below", "double-breve", "overline"),
 )
-def test_getlength_combine(mode, direction, text) -> None:
+def test_getlength_combine(mode: str, direction: str, text: str) -> None:
     if text == "i\u0305i" and direction == "ttb":
         pytest.skip("fails with this font")
 
@@ -250,7 +252,7 @@ def test_getlength_combine(mode, direction, text) -> None:
 
 
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
-def test_anchor_ttb(anchor) -> None:
+def test_anchor_ttb(anchor: str) -> None:
     text = "f"
     path = f"Tests/images/test_anchor_ttb_{text}_{anchor}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 120)
@@ -306,7 +308,9 @@ combine_tests = (
 @pytest.mark.parametrize(
     "name, text, anchor, dir, epsilon", combine_tests, ids=[r[0] for r in combine_tests]
 )
-def test_combine(name, text, dir, anchor, epsilon) -> None:
+def test_combine(
+    name: str, text: str, dir: str | None, anchor: str | None, epsilon: float
+) -> None:
     path = f"Tests/images/test_combine_{name}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
 
@@ -337,7 +341,7 @@ def test_combine(name, text, dir, anchor, epsilon) -> None:
         ("rm", "right"),  # pass with getsize
     ),
 )
-def test_combine_multiline(anchor, align) -> None:
+def test_combine_multiline(anchor: str, align: str) -> None:
     # test that multiline text uses getlength, not getsize or getbbox
 
     path = f"Tests/images/test_combine_multiline_{anchor}_{align}.png"

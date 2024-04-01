@@ -92,6 +92,14 @@ Deprecated                                    Use instead
                                               :py:data:`sys.version_info`, and ``PIL.__version__``
 ============================================  ====================================================
 
+ImageMath eval()
+^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.3.0
+
+``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
+:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
+
 Removed features
 ----------------
 
@@ -232,10 +240,10 @@ Previous code::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width, height = draw.textsize("Hello world")
+    width, height = draw.textsize("Hello world", font)
 
     width, height = font.getsize_multiline("Hello\nworld")
-    width, height = draw.multiline_textsize("Hello\nworld")
+    width, height = draw.multiline_textsize("Hello\nworld", font)
 
 Use instead::
 
@@ -247,10 +255,42 @@ Use instead::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width = draw.textlength("Hello world")
+    width = draw.textlength("Hello world", font)
 
-    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
+    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld", font)
     width, height = right - left, bottom - top
+
+Previously, the ``size`` methods returned a ``height`` that included the vertical
+offset of the text, while the new ``bbox`` methods distinguish this as a ``top``
+offset.
+
+.. image:: ./example/size_vs_bbox.png
+    :alt: In bbox methods, top measures the vertical distance above the text, while bottom measures that plus the vertical distance of the text itself. In size methods, height also measures the vertical distance above the text plus the vertical distance of the text itself.
+    :align: center
+
+If you are using these methods for aligning text, consider using :ref:`text-anchors` instead
+which avoid issues that can occur with non-English text or unusual fonts.
+For example, instead of the following code::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width, height = draw.textsize("Hello world", font)
+    x, y = (100 - width) / 2, (100 - height) / 2
+    draw.text((x, y), "Hello world", font=font)
+
+Use instead::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    draw.text((100 / 2, 100 / 2), "Hello world", font=font, anchor="mm")
 
 FreeTypeFont.getmask2 fill parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -504,3 +544,27 @@ PIL.OleFileIO
 the upstream :pypi:`olefile` Python package, and replaced with an :py:exc:`ImportError` in 5.0.0
 (2018-01). The deprecated file has now been removed from Pillow. If needed, install from
 PyPI (eg. ``python3 -m pip install olefile``).
+
+import _imaging
+~~~~~~~~~~~~~~~
+
+.. versionremoved:: 2.1.0
+
+Pillow >= 2.1.0 no longer supports ``import _imaging``.
+Please use ``from PIL.Image import core as _imaging`` instead.
+
+Pillow and PIL
+~~~~~~~~~~~~~~
+
+.. versionremoved:: 1.0.0
+
+Pillow and PIL cannot co-exist in the same environment.
+Before installing Pillow, please uninstall PIL.
+
+import Image
+~~~~~~~~~~~~
+
+.. versionremoved:: 1.0.0
+
+Pillow >= 1.0 no longer supports ``import Image``.
+Please use ``from PIL import Image`` instead.

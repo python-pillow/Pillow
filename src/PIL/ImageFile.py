@@ -32,7 +32,7 @@ import io
 import itertools
 import struct
 import sys
-from typing import Any, NamedTuple
+from typing import IO, Any, NamedTuple
 
 from . import Image
 from ._deprecate import deprecate
@@ -328,7 +328,7 @@ class ImageFile(Image.Image):
     #     pass
 
     # may be defined for blocked formats (e.g. PNG)
-    # def load_read(self, bytes):
+    # def load_read(self, read_bytes):
     #     pass
 
     def _seek_check(self, frame):
@@ -384,7 +384,7 @@ class Parser:
     """
 
     incremental = None
-    image = None
+    image: Image.Image | None = None
     data = None
     decoder = None
     offset = 0
@@ -616,7 +616,7 @@ class PyCodecState:
 
 
 class PyCodec:
-    fd: io.BytesIO | None
+    fd: IO[bytes] | None
 
     def __init__(self, mode, *args):
         self.im = None

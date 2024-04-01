@@ -1,5 +1,5 @@
-Internal Reference Docs
-=======================
+Internal Reference
+==================
 
 .. toctree::
   :maxdepth: 2

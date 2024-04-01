@@ -28,7 +28,7 @@ def test_rgb() -> None:
 
     assert qRgb(0, 0, 0) == qRgba(0, 0, 0, 255)
 
-    def checkrgb(r, g, b) -> None:
+    def checkrgb(r: int, g: int, b: int) -> None:
         val = ImageQt.rgb(r, g, b)
         val = val % 2**24  # drop the alpha
         assert val >> 16 == r

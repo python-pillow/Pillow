@@ -187,6 +187,6 @@ class TestEnvVars:
             {"PILLOW_BLOCKS_MAX": "wat"},
         ),
     )
-    def test_warnings(self, var) -> None:
+    def test_warnings(self, var: dict[str, str]) -> None:
         with pytest.warns(UserWarning):
             Image._apply_env_variables(var)

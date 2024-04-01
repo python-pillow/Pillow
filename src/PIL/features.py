@@ -230,6 +230,9 @@ def pilinfo(out=None, supported_formats=True):
     """
     Prints information about this installation of Pillow.
     This function can be called with ``python3 -m PIL``.
+    It can also be called with ``python3 -m PIL.report`` or ``python3 -m PIL --report``
+    to have "supported_formats" set to ``False``, omitting the list of all supported
+    image file formats.
 
     :param out:
         The output stream to print to. Defaults to ``sys.stdout`` if ``None``.
@@ -249,12 +252,17 @@ def pilinfo(out=None, supported_formats=True):
     for py_version in py_version[1:]:
         print(f"       {py_version.strip()}", file=out)
     print("-" * 68, file=out)
+    print(f"Python executable is {sys.executable or 'unknown'}", file=out)
+    if sys.prefix != sys.base_prefix:
+        print(f"Environment Python files loaded from {sys.prefix}", file=out)
+    print(f"System Python files loaded from {sys.base_prefix}", file=out)
+    print("-" * 68, file=out)
     print(
-        f"Python modules loaded from {os.path.dirname(Image.__file__)}",
+        f"Python Pillow modules loaded from {os.path.dirname(Image.__file__)}",
         file=out,
     )
     print(
-        f"Binary modules loaded from {os.path.dirname(Image.core.__file__)}",
+        f"Binary Pillow modules loaded from {os.path.dirname(Image.core.__file__)}",
         file=out,
     )
     print("-" * 68, file=out)

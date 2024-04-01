@@ -88,7 +88,7 @@ def test_16bit_pgm() -> None:
         assert im.size == (20, 100)
         assert im.get_format_mimetype() == "image/x-portable-graymap"
 
-        assert_image_equal_tofile(im, "Tests/images/16_bit_binary_pgm.png")
+        assert_image_equal_tofile(im, "Tests/images/16_bit_binary_pgm.tiff")
 
 
 def test_16bit_pgm_write(tmp_path: Path) -> None:
@@ -241,13 +241,23 @@ def test_plain_ppm_token_too_long(tmp_path: Path, data: bytes) -> None:
             im.load()
 
 
+def test_plain_ppm_value_negative(tmp_path: Path) -> None:
+    path = str(tmp_path / "temp.ppm")
+    with open(path, "wb") as f:
+        f.write(b"P3\n128 128\n255\n-1")
+
+    with Image.open(path) as im:
+        with pytest.raises(ValueError, match="Channel value is negative"):
+            im.load()
+
+
 def test_plain_ppm_value_too_large(tmp_path: Path) -> None:
     path = str(tmp_path / "temp.ppm")
     with open(path, "wb") as f:
         f.write(b"P3\n128 128\n255\n256")
 
     with Image.open(path) as im:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Channel value too large"):
             im.load()
 
 

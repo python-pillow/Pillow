@@ -1,13 +1,15 @@
-
 3.1.2
-=====
+-----
 
-CVE-2016-3076 -- Buffer overflow in Jpeg2KEncode.c
---------------------------------------------------
+Security
+========
 
-Pillow between 2.5.0 and 3.1.1 may overflow a buffer when writing
-large Jpeg2000 files, allowing for code execution or other memory
-corruption (:cve:`2016-3076`).
+:cve:`2016-3076`: Buffer overflow in Jpeg2KEncode.c
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow between 2.5.0 and 3.1.1 may overflow a buffer
+when writing large Jpeg2000 files, allowing for code execution or other
+memory corruption.
 
 This occurs specifically in the function ``j2k_encode_entry``, at the line:
 

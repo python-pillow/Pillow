@@ -87,7 +87,7 @@ def cmd_msbuild(
     file: str,
     configuration: str = "Release",
     target: str = "Build",
-    platform: str = "{msbuild_arch}",
+    plat: str = "{msbuild_arch}",
 ) -> str:
     return " ".join(
         [
@@ -95,7 +95,7 @@ def cmd_msbuild(
             f"{file}",
             f'/t:"{target}"',
             f'/p:Configuration="{configuration}"',
-            f"/p:Platform={platform}",
+            f"/p:Platform={plat}",
             "/m",
         ]
     )
@@ -109,13 +109,32 @@ ARCHITECTURES = {
     "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
 }
 
+V = {
+    "BROTLI": "1.1.0",
+    "FREETYPE": "2.13.2",
+    "FRIBIDI": "1.0.13",
+    "HARFBUZZ": "8.4.0",
+    "JPEGTURBO": "3.0.2",
+    "LCMS2": "2.16",
+    "LIBPNG": "1.6.43",
+    "LIBWEBP": "1.3.2",
+    "OPENJPEG": "2.5.2",
+    "TIFF": "4.6.0",
+    "XZ": "5.4.5",
+    "ZLIB": "1.3.1",
+}
+V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
+V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
+V["ZLIB_DOTLESS"] = V["ZLIB"].replace(".", "")
+
+
 # dependencies, listed in order of compilation
 DEPS = {
     "libjpeg": {
-        "url": SF_PROJECTS
-        + "/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz/download",
-        "filename": "libjpeg-turbo-3.0.1.tar.gz",
-        "dir": "libjpeg-turbo-3.0.1",
+        "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/"
+        f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz/download",
+        "filename": f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
+        "dir": f"libjpeg-turbo-{V['JPEGTURBO']}",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
@@ -143,9 +162,9 @@ DEPS = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "https://zlib.net/zlib13.zip",
-        "filename": "zlib13.zip",
-        "dir": "zlib-1.3",
+        "url": f"https://zlib.net/zlib{V['ZLIB_DOTLESS']}.zip",
+        "filename": f"zlib{V['ZLIB_DOTLESS']}.zip",
+        "dir": f"zlib-{V['ZLIB']}",
         "license": "README",
         "license_pattern": "Copyright notice:\n\n(.+)$",
         "build": [
@@ -157,9 +176,9 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": SF_PROJECTS + "/lzmautils/files/xz-5.4.5.tar.gz/download",
-        "filename": "xz-5.4.5.tar.gz",
-        "dir": "xz-5.4.5",
+        "url": f"{SF_PROJECTS}/lzmautils/files/xz-{V['XZ']}.tar.gz/download",
+        "filename": f"xz-{V['XZ']}.tar.gz",
+        "dir": f"xz-{V['XZ']}",
         "license": "COPYING",
         "build": [
             *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -170,9 +189,9 @@ DEPS = {
         "libs": [r"liblzma.lib"],
     },
     "libwebp": {
-        "url": "http://downloads.webmproject.org/releases/webp/libwebp-1.3.2.tar.gz",
-        "filename": "libwebp-1.3.2.tar.gz",
-        "dir": "libwebp-1.3.2",
+        "url": f"http://downloads.webmproject.org/releases/webp/libwebp-{V['LIBWEBP']}.tar.gz",
+        "filename": f"libwebp-{V['LIBWEBP']}.tar.gz",
+        "dir": f"libwebp-{V['LIBWEBP']}",
         "license": "COPYING",
         "patch": {
             r"src\enc\picture_csp_enc.c": {
@@ -192,9 +211,9 @@ DEPS = {
         "libs": [r"libsharpyuv.lib", r"libwebp*.lib"],
     },
     "libtiff": {
-        "url": "https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz",
-        "filename": "tiff-4.6.0.tar.gz",
-        "dir": "tiff-4.6.0",
+        "url": f"https://download.osgeo.org/libtiff/tiff-{V['TIFF']}.tar.gz",
+        "filename": f"tiff-{V['TIFF']}.tar.gz",
+        "dir": f"tiff-{V['TIFF']}",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
@@ -224,21 +243,24 @@ DEPS = {
         "libs": [r"libtiff\*.lib"],
     },
     "libpng": {
-        "url": SF_PROJECTS + "/libpng/files/libpng16/1.6.39/lpng1639.zip/download",
-        "filename": "lpng1639.zip",
-        "dir": "lpng1639",
+        "url": f"{SF_PROJECTS}/libpng/files/libpng{V['LIBPNG_XY']}/{V['LIBPNG']}/"
+        f"lpng{V['LIBPNG_DOTLESS']}.zip/download",
+        "filename": f"lpng{V['LIBPNG_DOTLESS']}.zip",
+        "dir": f"lpng{V['LIBPNG_DOTLESS']}",
         "license": "LICENSE",
         "build": [
             *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
-            cmd_copy("libpng16_static.lib", "libpng16.lib"),
+            cmd_copy(
+                f"libpng{V['LIBPNG_XY']}_static.lib", f"libpng{V['LIBPNG_XY']}.lib"
+            ),
         ],
         "headers": [r"png*.h"],
-        "libs": [r"libpng16.lib"],
+        "libs": [f"libpng{V['LIBPNG_XY']}.lib"],
     },
     "brotli": {
-        "url": "https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz",
-        "filename": "brotli-1.1.0.tar.gz",
-        "dir": "brotli-1.1.0",
+        "url": f"https://github.com/google/brotli/archive/refs/tags/v{V['BROTLI']}.tar.gz",
+        "filename": f"brotli-{V['BROTLI']}.tar.gz",
+        "dir": f"brotli-{V['BROTLI']}",
         "license": "LICENSE",
         "build": [
             *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -247,9 +269,9 @@ DEPS = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.gz",
-        "filename": "freetype-2.13.2.tar.gz",
-        "dir": "freetype-2.13.2",
+        "url": f"https://download.savannah.gnu.org/releases/freetype/freetype-{V['FREETYPE']}.tar.gz",
+        "filename": f"freetype-{V['FREETYPE']}.tar.gz",
+        "dir": f"freetype-{V['FREETYPE']}",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -262,7 +284,7 @@ DEPS = {
                 "<UserDefines></UserDefines>": "<UserDefines>FT_CONFIG_OPTION_SYSTEM_ZLIB;FT_CONFIG_OPTION_USE_PNG;FT_CONFIG_OPTION_USE_HARFBUZZ;FT_CONFIG_OPTION_USE_BROTLI</UserDefines>",  # noqa: E501
                 "<UserIncludeDirectories></UserIncludeDirectories>": r"<UserIncludeDirectories>{dir_harfbuzz}\src;{inc_dir}</UserIncludeDirectories>",  # noqa: E501
                 "<UserLibraryDirectories></UserLibraryDirectories>": "<UserLibraryDirectories>{lib_dir}</UserLibraryDirectories>",  # noqa: E501
-                "<UserDependencies></UserDependencies>": "<UserDependencies>zlib.lib;libpng16.lib;brotlicommon.lib;brotlidec.lib</UserDependencies>",  # noqa: E501
+                "<UserDependencies></UserDependencies>": f"<UserDependencies>zlib.lib;libpng{V['LIBPNG_XY']}.lib;brotlicommon.lib;brotlidec.lib</UserDependencies>",  # noqa: E501
             },
             r"src/autofit/afshaper.c": {
                 # link against harfbuzz.lib
@@ -282,9 +304,9 @@ DEPS = {
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
     },
     "lcms2": {
-        "url": SF_PROJECTS + "/lcms/files/lcms/2.16/lcms2-2.16.tar.gz/download",
-        "filename": "lcms2-2.16.tar.gz",
-        "dir": "lcms2-2.16",
+        "url": f"{SF_PROJECTS}/lcms/files/lcms/{V['LCMS2']}/lcms2-{V['LCMS2']}.tar.gz/download",  # noqa: E501
+        "filename": f"lcms2-{V['LCMS2']}.tar.gz",
+        "dir": f"lcms2-{V['LCMS2']}",
         "license": "LICENSE",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
@@ -308,21 +330,16 @@ DEPS = {
         "libs": [r"Lib\MS\*.lib"],
     },
     "openjpeg": {
-        "url": "https://github.com/uclouvain/openjpeg/archive/v2.5.0.tar.gz",
-        "filename": "openjpeg-2.5.0.tar.gz",
-        "dir": "openjpeg-2.5.0",
+        "url": f"https://github.com/uclouvain/openjpeg/archive/v{V['OPENJPEG']}.tar.gz",
+        "filename": f"openjpeg-{V['OPENJPEG']}.tar.gz",
+        "dir": f"openjpeg-{V['OPENJPEG']}",
         "license": "LICENSE",
-        "patch": {
-            r"src\lib\openjp2\ht_dec.c": {
-                "#ifdef OPJ_COMPILER_MSVC\n    return (OPJ_UINT32)__popcnt(val);": "#if defined(OPJ_COMPILER_MSVC) && (defined(_M_IX86) || defined(_M_AMD64))\n    return (OPJ_UINT32)__popcnt(val);",  # noqa: E501
-            }
-        },
         "build": [
             *cmds_cmake(
                 "openjp2", "-DBUILD_CODEC:BOOL=OFF", "-DBUILD_SHARED_LIBS:BOOL=OFF"
             ),
-            cmd_mkdir(r"{inc_dir}\openjpeg-2.5.0"),
-            cmd_copy(r"src\lib\openjp2\*.h", r"{inc_dir}\openjpeg-2.5.0"),
+            cmd_mkdir(rf"{{inc_dir}}\openjpeg-{V['OPENJPEG']}"),
+            cmd_copy(r"src\lib\openjp2\*.h", rf"{{inc_dir}}\openjpeg-{V['OPENJPEG']}"),
         ],
         "libs": [r"bin\*.lib"],
     },
@@ -348,9 +365,9 @@ DEPS = {
         "libs": [r"imagequant.lib"],
     },
     "harfbuzz": {
-        "url": "https://github.com/harfbuzz/harfbuzz/archive/8.3.0.zip",
-        "filename": "harfbuzz-8.3.0.zip",
-        "dir": "harfbuzz-8.3.0",
+        "url": f"https://github.com/harfbuzz/harfbuzz/archive/{V['HARFBUZZ']}.zip",
+        "filename": f"harfbuzz-{V['HARFBUZZ']}.zip",
+        "dir": f"harfbuzz-{V['HARFBUZZ']}",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -363,12 +380,12 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "fribidi": {
-        "url": "https://github.com/fribidi/fribidi/archive/v1.0.13.zip",
-        "filename": "fribidi-1.0.13.zip",
-        "dir": "fribidi-1.0.13",
+        "url": f"https://github.com/fribidi/fribidi/archive/v{V['FRIBIDI']}.zip",
+        "filename": f"fribidi-{V['FRIBIDI']}.zip",
+        "dir": f"fribidi-{V['FRIBIDI']}",
         "license": "COPYING",
         "build": [
-            cmd_copy(r"COPYING", r"{bin_dir}\fribidi-1.0.13-COPYING"),
+            cmd_copy(r"COPYING", rf"{{bin_dir}}\fribidi-{V['FRIBIDI']}-COPYING"),
             cmd_copy(r"{winbuild_dir}\fribidi.cmake", r"CMakeLists.txt"),
             # generated tab.i files cannot be cross-compiled
             " ^&^& ".join(
@@ -445,6 +462,7 @@ def find_msvs(architecture: str) -> dict[str, str] | None:
 
 
 def download_dep(url: str, file: str) -> None:
+    import urllib.error
     import urllib.request
 
     ex = None
@@ -461,11 +479,14 @@ def download_dep(url: str, file: str) -> None:
         raise RuntimeError(ex)
 
 
-def extract_dep(url: str, filename: str) -> None:
+def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
     import tarfile
     import zipfile
 
-    file = os.path.join(args.depends_dir, filename)
+    depends_dir = prefs["depends_dir"]
+    sources_dir = prefs["src_dir"]
+
+    file = os.path.join(depends_dir, filename)
     if not os.path.exists(file):
         # First try our mirror
         mirror_url = (
@@ -504,13 +525,15 @@ def extract_dep(url: str, filename: str) -> None:
         raise RuntimeError(msg)
 
 
-def write_script(name: str, lines: list[str]) -> None:
-    name = os.path.join(args.build_dir, name)
+def write_script(
+    name: str, lines: list[str], prefs: dict[str, str], verbose: bool
+) -> None:
+    name = os.path.join(prefs["build_dir"], name)
     lines = [line.format(**prefs) for line in lines]
     print("Writing " + name)
     with open(name, "w", newline="") as f:
         f.write(os.linesep.join(lines))
-    if args.verbose:
+    if verbose:
         for line in lines:
             print("    " + line)
 
@@ -526,7 +549,7 @@ def get_footer(dep: dict) -> list[str]:
     return lines
 
 
-def build_env() -> None:
+def build_env(prefs: dict[str, str], verbose: bool) -> None:
     lines = [
         "if defined DISTUTILS_USE_SDK goto end",
         cmd_set("INCLUDE", "{inc_dir}"),
@@ -539,33 +562,35 @@ def build_env() -> None:
         ":end",
         "@echo on",
     ]
-    write_script("build_env.cmd", lines)
+    write_script("build_env.cmd", lines, prefs, verbose)
 
 
-def build_dep(name: str) -> str:
+def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
     dep = DEPS[name]
-    dir = dep["dir"]
+    directory = dep["dir"]
     file = f"build_dep_{name}.cmd"
+    license_dir = prefs["license_dir"]
+    sources_dir = prefs["src_dir"]
 
-    extract_dep(dep["url"], dep["filename"])
+    extract_dep(dep["url"], dep["filename"], prefs)
 
     licenses = dep["license"]
     if isinstance(licenses, str):
         licenses = [licenses]
     license_text = ""
     for license_file in licenses:
-        with open(os.path.join(sources_dir, dir, license_file)) as f:
+        with open(os.path.join(sources_dir, directory, license_file)) as f:
             license_text += f.read()
     if "license_pattern" in dep:
         match = re.search(dep["license_pattern"], license_text, re.DOTALL)
         license_text = "\n".join(match.groups())
     assert len(license_text) > 50
-    with open(os.path.join(license_dir, f"{dir}.txt"), "w") as f:
-        print(f"Writing license {dir}.txt")
+    with open(os.path.join(license_dir, f"{directory}.txt"), "w") as f:
+        print(f"Writing license {directory}.txt")
         f.write(license_text)
 
     for patch_file, patch_list in dep.get("patch", {}).items():
-        patch_file = os.path.join(sources_dir, dir, patch_file.format(**prefs))
+        patch_file = os.path.join(sources_dir, directory, patch_file.format(**prefs))
         with open(patch_file) as f:
             text = f.read()
         for patch_from, patch_to in patch_list.items():
@@ -577,22 +602,22 @@ def build_dep(name: str) -> str:
             print(f"Patching {patch_file}")
             f.write(text)
 
-    banner = f"Building {name} ({dir})"
+    banner = f"Building {name} ({directory})"
     lines = [
         r'call "{build_dir}\build_env.cmd"',
         "@echo " + ("=" * 70),
         f"@echo ==== {banner:<60} ====",
         "@echo " + ("=" * 70),
-        cmd_cd(os.path.join(sources_dir, dir)),
+        cmd_cd(os.path.join(sources_dir, directory)),
         *dep.get("build", []),
         *get_footer(dep),
     ]
 
-    write_script(file, lines)
+    write_script(file, lines, prefs, verbose)
     return file
 
 
-def build_dep_all() -> None:
+def build_dep_all(disabled: list[str], prefs: dict[str, str], verbose: bool) -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
     gha_groups = "GITHUB_ACTIONS" in os.environ
     for dep_name in DEPS:
@@ -600,7 +625,7 @@ def build_dep_all() -> None:
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
             continue
-        script = build_dep(dep_name)
+        script = build_dep(dep_name, prefs, verbose)
         if gha_groups:
             lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
@@ -609,12 +634,11 @@ def build_dep_all() -> None:
             lines.append("@echo ::endgroup::")
     print()
     lines.append("@echo All Pillow dependencies built successfully!")
-    write_script("build_dep_all.cmd", lines)
+    write_script("build_dep_all.cmd", lines, prefs, verbose)
 
 
-if __name__ == "__main__":
+def main() -> None:
     winbuild_dir = os.path.dirname(os.path.realpath(__file__))
-    pillow_dir = os.path.realpath(os.path.join(winbuild_dir, ".."))
 
     parser = argparse.ArgumentParser(
         prog="winbuild\\build_prepare.py",
@@ -720,15 +744,15 @@ if __name__ == "__main__":
         "architecture": args.architecture,
         **arch_prefs,
         # Pillow paths
-        "pillow_dir": pillow_dir,
         "winbuild_dir": winbuild_dir,
         # Build paths
+        "bin_dir": bin_dir,
         "build_dir": args.build_dir,
+        "depends_dir": args.depends_dir,
         "inc_dir": inc_dir,
         "lib_dir": lib_dir,
-        "bin_dir": bin_dir,
-        "src_dir": sources_dir,
         "license_dir": license_dir,
+        "src_dir": sources_dir,
         # Compilers / Tools
         **msvs,
         "cmake": "cmake.exe",  # TODO find CMAKE automatically
@@ -741,6 +765,10 @@ if __name__ == "__main__":
 
     print()
 
-    write_script(".gitignore", ["*"])
-    build_env()
-    build_dep_all()
+    write_script(".gitignore", ["*"], prefs, args.verbose)
+    build_env(prefs, args.verbose)
+    build_dep_all(disabled, prefs, args.verbose)
+
+
+if __name__ == "__main__":
+    main()

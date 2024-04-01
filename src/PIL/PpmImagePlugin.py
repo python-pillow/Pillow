@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 import math
-from io import BytesIO
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -270,6 +270,9 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                     msg = b"Token too long found in data: %s" % token[: max_len + 1]
                     raise ValueError(msg)
                 value = int(token)
+                if value < 0:
+                    msg_str = f"Channel value is negative: {value}"
+                    raise ValueError(msg_str)
                 if value > maxval:
                     msg_str = f"Channel value too large for this mode: {value}"
                     raise ValueError(msg_str)
@@ -304,7 +307,8 @@ class PpmDecoder(ImageFile.PyDecoder):
         out_byte_count = 4 if self.mode == "I" else 1
         out_max = 65535 if self.mode == "I" else 255
         bands = Image.getmodebands(self.mode)
-        while len(data) < self.state.xsize * self.state.ysize * bands * out_byte_count:
+        dest_length = self.state.xsize * self.state.ysize * bands * out_byte_count
+        while len(data) < dest_length:
             pixels = self.fd.read(in_byte_count * bands)
             if len(pixels) < in_byte_count * bands:
                 # eof
@@ -324,7 +328,7 @@ class PpmDecoder(ImageFile.PyDecoder):
 # --------------------------------------------------------------------
 
 
-def _save(im: Image.Image, fp: BytesIO, filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode == "1":
         rawmode, head = "1;I", b"P4"
     elif im.mode == "L":

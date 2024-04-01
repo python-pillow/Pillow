@@ -154,7 +154,7 @@ class TestImagingCoreResize:
 
     def test_unknown_filter(self) -> None:
         with pytest.raises(ValueError):
-            self.resize(hopper(), (10, 10), 9)
+            self.resize(hopper(), (10, 10), 9)  # type: ignore[arg-type]
 
     def test_cross_platform(self, tmp_path: Path) -> None:
         # This test is intended for only check for consistent behaviour across
