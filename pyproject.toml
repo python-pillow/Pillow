@@ -96,6 +96,9 @@ config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
+[tool.ruff]
+fix = true
+
 [tool.ruff.lint]
 select = [
   "C4", # flake8-comprehensions
