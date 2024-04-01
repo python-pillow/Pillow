@@ -10,7 +10,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, is_win32
+from .helper import assert_image_equal, hopper, image_mode_names, is_win32
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -138,8 +138,8 @@ class TestImageGetPixel(AccessTest):
         if bands == 1:
             return 1
         if mode in ("BGR;15", "BGR;16"):
-            # These modes have less than 8 bits per band
-            # So (1, 2, 3) cannot be roundtripped
+            # These modes have less than 8 bits per band,
+            # so (1, 2, 3) cannot be roundtripped.
             return (16, 32, 49)
         return tuple(range(1, bands + 1))
 
@@ -168,16 +168,15 @@ class TestImageGetPixel(AccessTest):
             f"expected {expected_color} got {actual_color}"
         )
 
-        # Check 0
+        # check 0x0 image with None initial color
         im = Image.new(mode, (0, 0), None)
         assert im.load() is not None
-
         error = ValueError if self._need_cffi_access else IndexError
         with pytest.raises(error):
             im.putpixel((0, 0), expected_color)
         with pytest.raises(error):
             im.getpixel((0, 0))
-        # Check 0 negative index
+        # check negative index
         with pytest.raises(error):
             im.putpixel((-1, -1), expected_color)
         with pytest.raises(error):
@@ -198,36 +197,15 @@ class TestImageGetPixel(AccessTest):
             f"expected {expected_color} got {actual_color}"
         )
 
-        # Check 0
+        # check 0x0 image with initial color
         im = Image.new(mode, (0, 0), expected_color)
         with pytest.raises(error):
             im.getpixel((0, 0))
-        # Check 0 negative index
+        # check negative index
         with pytest.raises(error):
             im.getpixel((-1, -1))
 
-    @pytest.mark.parametrize(
-        "mode",
-        (
-            "1",
-            "L",
-            "LA",
-            "I",
-            "I;16",
-            "I;16B",
-            "F",
-            "P",
-            "PA",
-            "BGR;15",
-            "BGR;16",
-            "BGR;24",
-            "RGB",
-            "RGBA",
-            "RGBX",
-            "CMYK",
-            "YCbCr",
-        ),
-    )
+    @pytest.mark.parametrize("mode", image_mode_names)
     def test_basic(self, mode: str) -> None:
         self.check(mode)
 
