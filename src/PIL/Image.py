@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, Optional, TYPE_CHECKING, Any
+from typing import IO, TYPE_CHECKING, Any, Optional
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -3071,7 +3071,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
 
 def fromarray(
     obj,  # type: numpy.typing.ArrayLike
-    mode: Optional[str] = None
+    mode: Optional[str] = None,
 ) -> Image:
     """
     Creates an image memory from an object exporting the array interface
