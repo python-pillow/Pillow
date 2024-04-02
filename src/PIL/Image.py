@@ -3069,7 +3069,7 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     return frombytes(mode, size, data, decoder_name, args)
 
 
-def fromarray(obj: "numpy.typing.ArrayLike", mode: Optional[str] = None) -> Image:
+def fromarray(obj: numpy.typing.ArrayLike, mode: Optional[str] = None) -> Image:
     """
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol)::
