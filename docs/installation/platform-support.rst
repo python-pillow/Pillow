@@ -81,7 +81,7 @@ These platforms have been reported to work at the versions mentioned.
 | Operating system                 | | Tested Python            | | Latest tested  | | Tested     |
 |                                  | | versions                 | | Pillow version | | processors |
 +==================================+============================+==================+==============+
-| macOS 14 Sonoma                  | 3.8, 3.9, 3.10, 3.11, 3.12 | 10.2.0           |arm           |
+| macOS 14 Sonoma                  | 3.8, 3.9, 3.10, 3.11, 3.12 | 10.3.0           |arm           |
 +----------------------------------+----------------------------+------------------+--------------+
 | macOS 13 Ventura                 | 3.8, 3.9, 3.10, 3.11       | 10.0.1           |arm           |
 |                                  +----------------------------+------------------+              |
