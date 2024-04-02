@@ -181,8 +181,7 @@ cms_profile_dealloc(CmsProfileObject *self) {
 /* a transform represents the mapping between two profiles */
 
 typedef struct {
-    PyObject_HEAD
-    cmsHTRANSFORM transform;
+    PyObject_HEAD cmsHTRANSFORM transform;
 } CmsTransformObject;
 
 static PyTypeObject CmsTransform_Type;
