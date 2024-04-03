@@ -1,9 +1,9 @@
 skip_commits:
   files:
-    - ".github/**"
+    - ".github/**/*"
     - ".gitmodules"
-    - "docs/**"
-    - "wheels/**"
+    - "docs/**/*"
+    - "wheels/**/*"
 
 version: '{build}'
 clone_folder: c:\pillow
