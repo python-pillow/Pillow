@@ -8,6 +8,7 @@ import os
 import re
 import time
 import zlib
+from typing import TYPE_CHECKING, Any, List, NamedTuple, Union
 
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
@@ -80,9 +81,12 @@ def check_format_condition(condition, error_message):
         raise PdfFormatError(error_message)
 
 
-class IndirectReference(
-    collections.namedtuple("IndirectReferenceTuple", ["object_id", "generation"])
-):
+class IndirectReferenceTuple(NamedTuple):
+    object_id: int
+    generation: int
+
+
+class IndirectReference(IndirectReferenceTuple):
     def __str__(self):
         return f"{self.object_id} {self.generation} R"
 
@@ -239,12 +243,18 @@ class PdfName:
         return bytes(result)
 
 
-class PdfArray(list):
+class PdfArray(List[Any]):
     def __bytes__(self):
         return b"[ " + b" ".join(pdf_repr(x) for x in self) + b" ]"
 
 
-class PdfDict(collections.UserDict):
+if TYPE_CHECKING:
+    _DictBase = collections.UserDict[Union[str, bytes], Any]
+else:
+    _DictBase = collections.UserDict
+
+
+class PdfDict(_DictBase):
     def __setattr__(self, key, value):
         if key == "data":
             collections.UserDict.__setattr__(self, key, value)

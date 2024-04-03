@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from array import array
+from types import ModuleType
 
 import pytest
 
@@ -8,6 +9,7 @@ from PIL import Image, ImageFilter
 
 from .helper import assert_image_equal
 
+numpy: ModuleType | None
 try:
     import numpy
 except ImportError:
@@ -15,7 +17,9 @@ except ImportError:
 
 
 class TestColorLut3DCoreAPI:
-    def generate_identity_table(self, channels, size):
+    def generate_identity_table(
+        self, channels: int, size: int | tuple[int, int, int]
+    ) -> tuple[int, int, int, int, list[float]]:
         if isinstance(size, tuple):
             size_1d, size_2d, size_3d = size
         else:
@@ -395,6 +399,7 @@ class TestColorLut3DFilter:
 
     @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
     def test_numpy_sources(self) -> None:
+        assert numpy is not None
         table = numpy.ones((5, 6, 7, 3), dtype=numpy.float16)
         with pytest.raises(ValueError, match="should have either channels"):
             lut = ImageFilter.Color3DLUT((5, 6, 7), table)
@@ -428,6 +433,7 @@ class TestColorLut3DFilter:
 
     @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
     def test_numpy_formats(self) -> None:
+        assert numpy is not None
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",

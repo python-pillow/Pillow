@@ -28,6 +28,7 @@ BLP files come in many different flavours:
   - DXT3 compression is used if alpha_encoding == 1.
   - DXT5 compression is used if alpha_encoding == 7.
 """
+
 from __future__ import annotations
 
 import os
@@ -340,7 +341,7 @@ class BLP1Decoder(_BLPBaseDecoder):
             if self._blp_encoding in (4, 5):
                 palette = self._read_palette()
                 data = self._read_bgra(palette)
-                self.set_as_raw(bytes(data))
+                self.set_as_raw(data)
             else:
                 msg = f"Unsupported BLP encoding {repr(self._blp_encoding)}"
                 raise BLPFormatError(msg)
@@ -411,7 +412,7 @@ class BLP2Decoder(_BLPBaseDecoder):
             msg = f"Unknown BLP compression {repr(self._blp_compression)}"
             raise BLPFormatError(msg)
 
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
 
 
 class BLPEncoder(ImageFile.PyEncoder):

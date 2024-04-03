@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 import pytest
 
 from PIL import ContainerIO, Image
@@ -21,9 +23,16 @@ def test_isatty() -> None:
     assert container.isatty() is False
 
 
-def test_seek_mode_0() -> None:
+@pytest.mark.parametrize(
+    "mode, expected_position",
+    (
+        (0, 33),
+        (1, 66),
+        (2, 100),
+    ),
+)
+def test_seek_mode(mode: Literal[0, 1, 2], expected_position: int) -> None:
     # Arrange
-    mode = 0
     with open(TEST_FILE, "rb") as fh:
         container = ContainerIO.ContainerIO(fh, 22, 100)
 
@@ -32,39 +41,11 @@ def test_seek_mode_0() -> None:
         container.seek(33, mode)
 
         # Assert
-        assert container.tell() == 33
-
-
-def test_seek_mode_1() -> None:
-    # Arrange
-    mode = 1
-    with open(TEST_FILE, "rb") as fh:
-        container = ContainerIO.ContainerIO(fh, 22, 100)
-
-        # Act
-        container.seek(33, mode)
-        container.seek(33, mode)
-
-        # Assert
-        assert container.tell() == 66
-
-
-def test_seek_mode_2() -> None:
-    # Arrange
-    mode = 2
-    with open(TEST_FILE, "rb") as fh:
-        container = ContainerIO.ContainerIO(fh, 22, 100)
-
-        # Act
-        container.seek(33, mode)
-        container.seek(33, mode)
-
-        # Assert
-        assert container.tell() == 100
+        assert container.tell() == expected_position
 
 
 @pytest.mark.parametrize("bytesmode", (True, False))
-def test_read_n0(bytesmode) -> None:
+def test_read_n0(bytesmode: bool) -> None:
     # Arrange
     with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
         container = ContainerIO.ContainerIO(fh, 22, 100)
@@ -80,7 +61,7 @@ def test_read_n0(bytesmode) -> None:
 
 
 @pytest.mark.parametrize("bytesmode", (True, False))
-def test_read_n(bytesmode) -> None:
+def test_read_n(bytesmode: bool) -> None:
     # Arrange
     with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
         container = ContainerIO.ContainerIO(fh, 22, 100)
@@ -96,7 +77,7 @@ def test_read_n(bytesmode) -> None:
 
 
 @pytest.mark.parametrize("bytesmode", (True, False))
-def test_read_eof(bytesmode) -> None:
+def test_read_eof(bytesmode: bool) -> None:
     # Arrange
     with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
         container = ContainerIO.ContainerIO(fh, 22, 100)
@@ -112,7 +93,7 @@ def test_read_eof(bytesmode) -> None:
 
 
 @pytest.mark.parametrize("bytesmode", (True, False))
-def test_readline(bytesmode) -> None:
+def test_readline(bytesmode: bool) -> None:
     # Arrange
     with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
         container = ContainerIO.ContainerIO(fh, 0, 120)
@@ -127,7 +108,7 @@ def test_readline(bytesmode) -> None:
 
 
 @pytest.mark.parametrize("bytesmode", (True, False))
-def test_readlines(bytesmode) -> None:
+def test_readlines(bytesmode: bool) -> None:
     # Arrange
     expected = [
         "This is line 1\n",

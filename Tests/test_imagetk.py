@@ -57,7 +57,7 @@ def test_kw() -> None:
 
 
 @pytest.mark.parametrize("mode", TK_MODES)
-def test_photoimage(mode) -> None:
+def test_photoimage(mode: str) -> None:
     # test as image:
     im = hopper(mode)
 
@@ -79,7 +79,7 @@ def test_photoimage_apply_transparency() -> None:
 
 
 @pytest.mark.parametrize("mode", TK_MODES)
-def test_photoimage_blank(mode) -> None:
+def test_photoimage_blank(mode: str) -> None:
     # test a image using mode/size:
     im_tk = ImageTk.PhotoImage(mode, (100, 100))
 

@@ -52,7 +52,7 @@ def test_open_windows_v1() -> None:
         assert isinstance(im, MspImagePlugin.MspImageFile)
 
 
-def _assert_file_image_equal(source_path, target_path) -> None:
+def _assert_file_image_equal(source_path: str, target_path: str) -> None:
     with Image.open(source_path) as im:
         assert_image_equal_tofile(im, target_path)
 

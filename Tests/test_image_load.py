@@ -26,7 +26,7 @@ def test_close() -> None:
         im.getpixel((0, 0))
 
 
-def test_close_after_load(caplog) -> None:
+def test_close_after_load(caplog: pytest.LogCaptureFixture) -> None:
     im = Image.open("Tests/images/hopper.gif")
     im.load()
     with caplog.at_level(logging.DEBUG):

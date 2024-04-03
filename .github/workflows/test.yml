@@ -27,6 +27,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  COVERAGE_CORE: sysmon
   FORCE_COLOR: 1
 
 jobs:
@@ -149,7 +150,7 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v3.1.5
       with:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}

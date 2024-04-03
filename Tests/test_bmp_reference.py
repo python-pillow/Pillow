@@ -10,7 +10,7 @@ from .helper import assert_image_similar
 base = os.path.join("Tests", "images", "bmp")
 
 
-def get_files(d, ext: str = ".bmp"):
+def get_files(d: str, ext: str = ".bmp") -> list[str]:
     return [
         os.path.join(base, d, f) for f in os.listdir(os.path.join(base, d)) if ext in f
     ]
@@ -29,7 +29,7 @@ def test_bad() -> None:
                 pass
 
 
-def test_questionable():
+def test_questionable() -> None:
     """These shouldn't crash/dos, but it's not well defined that these
     are in spec"""
     supported = [
@@ -80,7 +80,7 @@ def test_good() -> None:
         "rgb32bf.bmp": "rgb24.png",
     }
 
-    def get_compare(f):
+    def get_compare(f: str) -> str:
         name = os.path.split(f)[1]
         if name in file_map:
             return os.path.join(base, "html", file_map[name])

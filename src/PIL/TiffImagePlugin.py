@@ -50,6 +50,7 @@ import warnings
 from collections.abc import MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
+from typing import TYPE_CHECKING, Any, Callable
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
@@ -73,6 +74,7 @@ MM = b"MM"  # big-endian (Motorola style)
 # Read TIFF files
 
 # a few tag names, just to make the code below a bit more readable
+OSUBFILETYPE = 255
 IMAGEWIDTH = 256
 IMAGELENGTH = 257
 BITSPERSAMPLE = 258
@@ -306,6 +308,13 @@ _load_dispatch = {}
 _write_dispatch = {}
 
 
+def _delegate(op):
+    def delegate(self, *args):
+        return getattr(self._val, op)(*args)
+
+    return delegate
+
+
 class IFDRational(Rational):
     """Implements a rational class where 0/0 is a legal value to match
     the in the wild use of exif rationals.
@@ -391,12 +400,6 @@ class IFDRational(Rational):
         self._numerator = _numerator
         self._denominator = _denominator
 
-    def _delegate(op):
-        def delegate(self, *args):
-            return getattr(self._val, op)(*args)
-
-        return delegate
-
     """ a = ['add','radd', 'sub', 'rsub', 'mul', 'rmul',
              'truediv', 'rtruediv', 'floordiv', 'rfloordiv',
              'mod','rmod', 'pow','rpow', 'pos', 'neg',
@@ -436,7 +439,50 @@ class IFDRational(Rational):
         __int__ = _delegate("__int__")
 
 
-class ImageFileDirectory_v2(MutableMapping):
+def _register_loader(idx, size):
+    def decorator(func):
+        from .TiffTags import TYPES
+
+        if func.__name__.startswith("load_"):
+            TYPES[idx] = func.__name__[5:].replace("_", " ")
+        _load_dispatch[idx] = size, func  # noqa: F821
+        return func
+
+    return decorator
+
+
+def _register_writer(idx):
+    def decorator(func):
+        _write_dispatch[idx] = func  # noqa: F821
+        return func
+
+    return decorator
+
+
+def _register_basic(idx_fmt_name):
+    from .TiffTags import TYPES
+
+    idx, fmt, name = idx_fmt_name
+    TYPES[idx] = name
+    size = struct.calcsize("=" + fmt)
+    _load_dispatch[idx] = (  # noqa: F821
+        size,
+        lambda self, data, legacy_api=True: (
+            self._unpack(f"{len(data) // size}{fmt}", data)
+        ),
+    )
+    _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
+        b"".join(self._pack(fmt, value) for value in values)
+    )
+
+
+if TYPE_CHECKING:
+    _IFDv2Base = MutableMapping[int, Any]
+else:
+    _IFDv2Base = MutableMapping
+
+
+class ImageFileDirectory_v2(_IFDv2Base):
     """This class represents a TIFF tag directory.  To speed things up, we
     don't decode tags unless they're asked for.
 
@@ -497,6 +543,9 @@ class ImageFileDirectory_v2(MutableMapping):
 
     """
 
+    _load_dispatch: dict[int, Callable[[ImageFileDirectory_v2, bytes, bool], Any]] = {}
+    _write_dispatch: dict[int, Callable[..., Any]] = {}
+
     def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None, group=None):
         """Initialize an ImageFileDirectory.
 
@@ -531,7 +580,10 @@ class ImageFileDirectory_v2(MutableMapping):
 
     prefix = property(lambda self: self._prefix)
     offset = property(lambda self: self._offset)
-    legacy_api = property(lambda self: self._legacy_api)
+
+    @property
+    def legacy_api(self):
+        return self._legacy_api
 
     @legacy_api.setter
     def legacy_api(self, value):
@@ -674,40 +726,6 @@ class ImageFileDirectory_v2(MutableMapping):
     def _pack(self, fmt, *values):
         return struct.pack(self._endian + fmt, *values)
 
-    def _register_loader(idx, size):
-        def decorator(func):
-            from .TiffTags import TYPES
-
-            if func.__name__.startswith("load_"):
-                TYPES[idx] = func.__name__[5:].replace("_", " ")
-            _load_dispatch[idx] = size, func  # noqa: F821
-            return func
-
-        return decorator
-
-    def _register_writer(idx):
-        def decorator(func):
-            _write_dispatch[idx] = func  # noqa: F821
-            return func
-
-        return decorator
-
-    def _register_basic(idx_fmt_name):
-        from .TiffTags import TYPES
-
-        idx, fmt, name = idx_fmt_name
-        TYPES[idx] = name
-        size = struct.calcsize("=" + fmt)
-        _load_dispatch[idx] = (  # noqa: F821
-            size,
-            lambda self, data, legacy_api=True: (
-                self._unpack(f"{len(data) // size}{fmt}", data)
-            ),
-        )
-        _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
-            b"".join(self._pack(fmt, value) for value in values)
-        )
-
     list(
         map(
             _register_basic,
@@ -773,6 +791,8 @@ class ImageFileDirectory_v2(MutableMapping):
 
     @_register_writer(7)
     def write_undefined(self, value):
+        if isinstance(value, IFDRational):
+            value = int(value)
         if isinstance(value, int):
             value = str(value).encode("ascii", "replace")
         return value
@@ -995,7 +1015,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     tagdata = property(lambda self: self._tagdata)
 
     # defined in ImageFileDirectory_v2
-    tagtype: dict
+    tagtype: dict[int, int]
     """Dictionary of tag types"""
 
     @classmethod
@@ -1147,6 +1167,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.__next,
                 self.fp.tell(),
             )
+            if self.__next >= 2**63:
+                msg = "Unable to seek to frame"
+                raise ValueError(msg)
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
             logger.debug("Loading tags, location: %s", self.fp.tell())
@@ -1765,11 +1788,13 @@ def _save(im, fp, filename):
         types = {}
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
+        # OSUBFILETYPE is deprecated.
         # The other tags expect arrays with a certain length (fixed or depending on
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
         # SUBIFD may also cause a segfault.
         blocklist += [
+            OSUBFILETYPE,
             REFERENCEBLACKWHITE,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,
@@ -1835,11 +1860,11 @@ def _save(im, fp, filename):
         tags = list(atts.items())
         tags.sort()
         a = (rawmode, compression, _fp, filename, tags, types)
-        e = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
-        e.setimage(im.im, (0, 0) + im.size)
+        encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
+        encoder.setimage(im.im, (0, 0) + im.size)
         while True:
             # undone, change to self.decodermaxblock:
-            errcode, data = e.encode(16 * 1024)[1:]
+            errcode, data = encoder.encode(16 * 1024)[1:]
             if not _fp:
                 fp.write(data)
             if errcode:

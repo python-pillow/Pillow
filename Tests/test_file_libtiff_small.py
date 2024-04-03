@@ -9,7 +9,6 @@ from .test_file_libtiff import LibTiffTestCase
 
 
 class TestFileLibTiffSmall(LibTiffTestCase):
-
     """The small lena image was failing on open in the libtiff
     decoder because the file pointer was set to the wrong place
     by a spurious seek. It wasn't failing with the byteio method.

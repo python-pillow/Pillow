@@ -23,7 +23,10 @@ def _get_mem_usage() -> float:
 
 
 def _test_leak(
-    min_iterations: int, max_iterations: int, fn: Callable[..., None], *args: Any
+    min_iterations: int,
+    max_iterations: int,
+    fn: Callable[..., Image.Image | None],
+    *args: Any,
 ) -> None:
     mem_limit = None
     for i in range(max_iterations):

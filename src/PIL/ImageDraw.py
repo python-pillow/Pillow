@@ -34,8 +34,10 @@ from __future__ import annotations
 import math
 import numbers
 import struct
+from typing import Sequence, cast
 
 from . import Image, ImageColor
+from ._typing import Coords
 
 """
 A simple 2D drawing interface for PIL images.
@@ -48,7 +50,7 @@ directly.
 class ImageDraw:
     font = None
 
-    def __init__(self, im, mode=None):
+    def __init__(self, im: Image.Image, mode: str | None = None) -> None:
         """
         Create a drawing instance.
 
@@ -115,7 +117,7 @@ class ImageDraw:
             self.font = ImageFont.load_default()
         return self.font
 
-    def _getfont(self, font_size):
+    def _getfont(self, font_size: float | None):
         if font_size is not None:
             from . import ImageFont
 
@@ -124,7 +126,7 @@ class ImageDraw:
             font = self.getfont()
         return font
 
-    def _getink(self, ink, fill=None):
+    def _getink(self, ink, fill=None) -> tuple[int | None, int | None]:
         if ink is None and fill is None:
             if self.fill:
                 fill = self.ink
@@ -145,13 +147,13 @@ class ImageDraw:
                 fill = self.draw.draw_ink(fill)
         return ink, fill
 
-    def arc(self, xy, start, end, fill=None, width=1):
+    def arc(self, xy: Coords, start, end, fill=None, width=1) -> None:
         """Draw an arc."""
         ink, fill = self._getink(fill)
         if ink is not None:
             self.draw.draw_arc(xy, start, end, ink, width)
 
-    def bitmap(self, xy, bitmap, fill=None):
+    def bitmap(self, xy: Sequence[int], bitmap, fill=None) -> None:
         """Draw a bitmap."""
         bitmap.load()
         ink, fill = self._getink(fill)
@@ -160,7 +162,7 @@ class ImageDraw:
         if ink is not None:
             self.draw.draw_bitmap(xy, bitmap.im, ink)
 
-    def chord(self, xy, start, end, fill=None, outline=None, width=1):
+    def chord(self, xy: Coords, start, end, fill=None, outline=None, width=1) -> None:
         """Draw a chord."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -168,7 +170,7 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_chord(xy, start, end, ink, 0, width)
 
-    def ellipse(self, xy, fill=None, outline=None, width=1):
+    def ellipse(self, xy: Coords, fill=None, outline=None, width=1) -> None:
         """Draw an ellipse."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -176,20 +178,29 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_ellipse(xy, ink, 0, width)
 
-    def line(self, xy, fill=None, width=0, joint=None):
+    def line(self, xy: Coords, fill=None, width=0, joint=None) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
         if ink is not None:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
-                if not isinstance(xy[0], (list, tuple)):
-                    xy = [tuple(xy[i : i + 2]) for i in range(0, len(xy), 2)]
-                for i in range(1, len(xy) - 1):
-                    point = xy[i]
+                points: Sequence[Sequence[float]]
+                if isinstance(xy[0], (list, tuple)):
+                    points = cast(Sequence[Sequence[float]], xy)
+                else:
+                    points = [
+                        cast(Sequence[float], tuple(xy[i : i + 2]))
+                        for i in range(0, len(xy), 2)
+                    ]
+                for i in range(1, len(points) - 1):
+                    point = points[i]
                     angles = [
                         math.degrees(math.atan2(end[0] - start[0], start[1] - end[1]))
                         % 360
-                        for start, end in ((xy[i - 1], point), (point, xy[i + 1]))
+                        for start, end in (
+                            (points[i - 1], point),
+                            (point, points[i + 1]),
+                        )
                     ]
                     if angles[0] == angles[1]:
                         # This is a straight line, so no joint is required
@@ -236,7 +247,7 @@ class ImageDraw:
                             ]
                         self.line(gap_coords, fill, width=3)
 
-    def shape(self, shape, fill=None, outline=None):
+    def shape(self, shape, fill=None, outline=None) -> None:
         """(Experimental) Draw a shape."""
         shape.close()
         ink, fill = self._getink(outline, fill)
@@ -245,7 +256,9 @@ class ImageDraw:
         if ink is not None and ink != fill:
             self.draw.draw_outline(shape, ink, 0)
 
-    def pieslice(self, xy, start, end, fill=None, outline=None, width=1):
+    def pieslice(
+        self, xy: Coords, start, end, fill=None, outline=None, width=1
+    ) -> None:
         """Draw a pieslice."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -253,13 +266,13 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_pieslice(xy, start, end, ink, 0, width)
 
-    def point(self, xy, fill=None):
+    def point(self, xy: Coords, fill=None) -> None:
         """Draw one or more individual pixels."""
         ink, fill = self._getink(fill)
         if ink is not None:
             self.draw.draw_points(xy, ink)
 
-    def polygon(self, xy, fill=None, outline=None, width=1):
+    def polygon(self, xy: Coords, fill=None, outline=None, width=1) -> None:
         """Draw a polygon."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -267,7 +280,7 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             if width == 1:
                 self.draw.draw_polygon(xy, ink, 0, width)
-            else:
+            elif self.im is not None:
                 # To avoid expanding the polygon outwards,
                 # use the fill as a mask
                 mask = Image.new("1", self.im.size)
@@ -291,12 +304,12 @@ class ImageDraw:
 
     def regular_polygon(
         self, bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1
-    ):
+    ) -> None:
         """Draw a regular polygon."""
         xy = _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
         self.polygon(xy, fill, outline, width)
 
-    def rectangle(self, xy, fill=None, outline=None, width=1):
+    def rectangle(self, xy: Coords, fill=None, outline=None, width=1) -> None:
         """Draw a rectangle."""
         ink, fill = self._getink(outline, fill)
         if fill is not None:
@@ -305,13 +318,13 @@ class ImageDraw:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
     def rounded_rectangle(
-        self, xy, radius=0, fill=None, outline=None, width=1, *, corners=None
-    ):
+        self, xy: Coords, radius=0, fill=None, outline=None, width=1, *, corners=None
+    ) -> None:
         """Draw a rounded rectangle."""
         if isinstance(xy[0], (list, tuple)):
-            (x0, y0), (x1, y1) = xy
+            (x0, y0), (x1, y1) = cast(Sequence[Sequence[float]], xy)
         else:
-            x0, y0, x1, y1 = xy
+            x0, y0, x1, y1 = cast(Sequence[float], xy)
         if x1 < x0:
             msg = "x1 must be greater than or equal to x0"
             raise ValueError(msg)
@@ -323,6 +336,10 @@ class ImageDraw:
 
         d = radius * 2
 
+        x0 = round(x0)
+        y0 = round(y0)
+        x1 = round(x1)
+        y1 = round(y1)
         full_x, full_y = False, False
         if all(corners):
             full_x = d >= x1 - x0 - 1
@@ -346,7 +363,8 @@ class ImageDraw:
         r = d // 2
         ink, fill = self._getink(outline, fill)
 
-        def draw_corners(pieslice):
+        def draw_corners(pieslice) -> None:
+            parts: tuple[tuple[tuple[float, float, float, float], int, int], ...]
             if full_x:
                 # Draw top and bottom halves
                 parts = (
@@ -361,17 +379,18 @@ class ImageDraw:
                 )
             else:
                 # Draw four separate corners
-                parts = []
-                for i, part in enumerate(
-                    (
-                        ((x0, y0, x0 + d, y0 + d), 180, 270),
-                        ((x1 - d, y0, x1, y0 + d), 270, 360),
-                        ((x1 - d, y1 - d, x1, y1), 0, 90),
-                        ((x0, y1 - d, x0 + d, y1), 90, 180),
+                parts = tuple(
+                    part
+                    for i, part in enumerate(
+                        (
+                            ((x0, y0, x0 + d, y0 + d), 180, 270),
+                            ((x1 - d, y0, x1, y0 + d), 270, 360),
+                            ((x1 - d, y1 - d, x1, y1), 0, 90),
+                            ((x0, y1 - d, x0 + d, y1), 90, 180),
+                        )
                     )
-                ):
-                    if corners[i]:
-                        parts.append(part)
+                    if corners[i]
+                )
             for part in parts:
                 if pieslice:
                     self.draw.draw_pieslice(*(part + (fill, 1)))
@@ -431,12 +450,12 @@ class ImageDraw:
                     right[3] -= r + 1
                 self.draw.draw_rectangle(right, ink, 1)
 
-    def _multiline_check(self, text):
+    def _multiline_check(self, text) -> bool:
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
 
-    def _multiline_split(self, text):
+    def _multiline_split(self, text) -> list[str | bytes]:
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return text.split(split_character)
@@ -465,7 +484,7 @@ class ImageDraw:
         embedded_color=False,
         *args,
         **kwargs,
-    ):
+    ) -> None:
         """Draw text."""
         if embedded_color and self.mode not in ("RGB", "RGBA"):
             msg = "Embedded color supported only in RGB and RGBA modes"
@@ -497,7 +516,7 @@ class ImageDraw:
                 return fill
             return ink
 
-        def draw_text(ink, stroke_width=0, stroke_offset=None):
+        def draw_text(ink, stroke_width=0, stroke_offset=None) -> None:
             mode = self.fontmode
             if stroke_width == 0 and embedded_color:
                 mode = "RGBA"
@@ -520,7 +539,7 @@ class ImageDraw:
                     *args,
                     **kwargs,
                 )
-                coord = coord[0] + offset[0], coord[1] + offset[1]
+                coord = [coord[0] + offset[0], coord[1] + offset[1]]
             except AttributeError:
                 try:
                     mask = font.getmask(
@@ -539,7 +558,7 @@ class ImageDraw:
                 except TypeError:
                     mask = font.getmask(text)
             if stroke_offset:
-                coord = coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]
+                coord = [coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]]
             if mode == "RGBA":
                 # font.getmask2(mode="RGBA") returns color in RGB bands and mask in A
                 # extract mask and set text alpha
@@ -547,7 +566,10 @@ class ImageDraw:
                 ink_alpha = struct.pack("i", ink)[3]
                 color.fillband(3, ink_alpha)
                 x, y = coord
-                self.im.paste(color, (x, y, x + mask.size[0], y + mask.size[1]), mask)
+                if self.im is not None:
+                    self.im.paste(
+                        color, (x, y, x + mask.size[0], y + mask.size[1]), mask
+                    )
             else:
                 self.draw.draw_bitmap(coord, mask, ink)
 
@@ -584,7 +606,7 @@ class ImageDraw:
         embedded_color=False,
         *,
         font_size=None,
-    ):
+    ) -> None:
         if direction == "ttb":
             msg = "ttb direction is unsupported for multiline text"
             raise ValueError(msg)
@@ -693,7 +715,7 @@ class ImageDraw:
         embedded_color=False,
         *,
         font_size=None,
-    ):
+    ) -> tuple[int, int, int, int]:
         """Get the bounding box of a given string, in pixels."""
         if embedded_color and self.mode not in ("RGB", "RGBA"):
             msg = "Embedded color supported only in RGB and RGBA modes"
@@ -738,7 +760,7 @@ class ImageDraw:
         embedded_color=False,
         *,
         font_size=None,
-    ):
+    ) -> tuple[int, int, int, int]:
         if direction == "ttb":
             msg = "ttb direction is unsupported for multiline text"
             raise ValueError(msg)
@@ -777,7 +799,7 @@ class ImageDraw:
         elif anchor[1] == "d":
             top -= (len(lines) - 1) * line_spacing
 
-        bbox = None
+        bbox: tuple[int, int, int, int] | None = None
 
         for idx, line in enumerate(lines):
             left = xy[0]
@@ -828,7 +850,7 @@ class ImageDraw:
         return bbox
 
 
-def Draw(im, mode=None):
+def Draw(im, mode: str | None = None) -> ImageDraw:
     """
     A simple 2D drawing interface for PIL images.
 
@@ -876,7 +898,7 @@ def getdraw(im=None, hints=None):
     return im, handler
 
 
-def floodfill(image, xy, value, border=None, thresh=0):
+def floodfill(image: Image.Image, xy, value, border=None, thresh=0) -> None:
     """
     (experimental) Fills a bounded region with a given color.
 
@@ -932,7 +954,9 @@ def floodfill(image, xy, value, border=None, thresh=0):
         edge = new_edge
 
 
-def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
+def _compute_regular_polygon_vertices(
+    bounding_circle, n_sides, rotation
+) -> list[tuple[float, float]]:
     """
     Generate a list of vertices for a 2D regular polygon.
 
@@ -982,7 +1006,7 @@ def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
 
     # 1.2 Check `bounding_circle` has an appropriate value
     if not isinstance(bounding_circle, (list, tuple)):
-        msg = "bounding_circle should be a tuple"
+        msg = "bounding_circle should be a sequence"
         raise TypeError(msg)
 
     if len(bounding_circle) == 3:
@@ -1014,7 +1038,7 @@ def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
         raise ValueError(msg)
 
     # 2. Define Helper Functions
-    def _apply_rotation(point, degrees, centroid):
+    def _apply_rotation(point: list[float], degrees: float) -> tuple[int, int]:
         return (
             round(
                 point[0] * math.cos(math.radians(360 - degrees))
@@ -1030,11 +1054,11 @@ def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
             ),
         )
 
-    def _compute_polygon_vertex(centroid, polygon_radius, angle):
+    def _compute_polygon_vertex(angle: float) -> tuple[int, int]:
         start_point = [polygon_radius, 0]
-        return _apply_rotation(start_point, angle, centroid)
+        return _apply_rotation(start_point, angle)
 
-    def _get_angles(n_sides, rotation):
+    def _get_angles(n_sides: int, rotation: float) -> list[float]:
         angles = []
         degrees = 360 / n_sides
         # Start with the bottom left polygon vertex
@@ -1050,12 +1074,10 @@ def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
     angles = _get_angles(n_sides, rotation)
 
     # 4. Compute Vertices
-    return [
-        _compute_polygon_vertex(centroid, polygon_radius, angle) for angle in angles
-    ]
+    return [_compute_polygon_vertex(angle) for angle in angles]
 
 
-def _color_diff(color1, color2):
+def _color_diff(color1, color2: float | tuple[int, ...]) -> float:
     """
     Uses 1-norm distance to calculate difference between two values.
     """

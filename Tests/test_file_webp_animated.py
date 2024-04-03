@@ -188,3 +188,21 @@ def test_seek_errors() -> None:
 
         with pytest.raises(EOFError):
             im.seek(42)
+
+
+def test_alpha_quality(tmp_path: Path) -> None:
+    with Image.open("Tests/images/transparent.png") as im:
+        first_frame = Image.new("L", im.size)
+
+        out = str(tmp_path / "temp.webp")
+        first_frame.save(out, save_all=True, append_images=[im])
+
+        out_quality = str(tmp_path / "quality.webp")
+        first_frame.save(
+            out_quality, save_all=True, append_images=[im], alpha_quality=50
+        )
+        with Image.open(out) as reloaded:
+            reloaded.seek(1)
+            with Image.open(out_quality) as reloaded_quality:
+                reloaded_quality.seek(1)
+                assert reloaded.tobytes() != reloaded_quality.tobytes()

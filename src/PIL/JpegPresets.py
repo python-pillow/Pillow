@@ -37,7 +37,7 @@ You can get the subsampling of a JPEG with the
 :func:`.JpegImagePlugin.get_sampling` function.
 
 In JPEG compressed data a JPEG marker is used instead of an EXIF tag.
-(ref.: https://exiv2.org/tags.html)
+(ref.: https://web.archive.org/web/20240227115053/https://exiv2.org/tags.html)
 
 
 Quantization tables
@@ -62,6 +62,7 @@ Libjpeg ref.:
 https://web.archive.org/web/20120328125543/http://www.jpegcameras.com/libjpeg/libjpeg-3.html
 
 """
+
 from __future__ import annotations
 
 # fmt: off

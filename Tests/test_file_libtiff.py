@@ -6,13 +6,13 @@ import itertools
 import os
 import re
 import sys
-from collections import namedtuple
 from pathlib import Path
+from typing import Any, NamedTuple
 
 import pytest
 
 from PIL import Image, ImageFilter, ImageOps, TiffImagePlugin, TiffTags, features
-from PIL.TiffImagePlugin import SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
+from PIL.TiffImagePlugin import OSUBFILETYPE, SAMPLEFORMAT, STRIPOFFSETS, SUBIFD
 
 from .helper import (
     assert_image_equal,
@@ -27,7 +27,7 @@ from .helper import (
 
 @skip_unless_feature("libtiff")
 class LibTiffTestCase:
-    def _assert_noerr(self, tmp_path: Path, im) -> None:
+    def _assert_noerr(self, tmp_path: Path, im: TiffImagePlugin.TiffImageFile) -> None:
         """Helper tests that assert basic sanity about the g4 tiff reading"""
         # 1 bit
         assert im.mode == "1"
@@ -140,7 +140,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
 
     @pytest.mark.parametrize("legacy_api", (False, True))
-    def test_write_metadata(self, legacy_api, tmp_path: Path) -> None:
+    def test_write_metadata(self, legacy_api: bool, tmp_path: Path) -> None:
         """Test metadata writing through libtiff"""
         f = str(tmp_path / "temp.tiff")
         with Image.open("Tests/images/hopper_g4.tif") as img:
@@ -243,36 +243,40 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_custom_metadata(self, tmp_path: Path) -> None:
-        tc = namedtuple("test_case", "value,type,supported_by_default")
+        class Tc(NamedTuple):
+            value: Any
+            type: int
+            supported_by_default: bool
+
         custom = {
             37000 + k: v
             for k, v in enumerate(
                 [
-                    tc(4, TiffTags.SHORT, True),
-                    tc(123456789, TiffTags.LONG, True),
-                    tc(-4, TiffTags.SIGNED_BYTE, False),
-                    tc(-4, TiffTags.SIGNED_SHORT, False),
-                    tc(-123456789, TiffTags.SIGNED_LONG, False),
-                    tc(TiffImagePlugin.IFDRational(4, 7), TiffTags.RATIONAL, True),
-                    tc(4.25, TiffTags.FLOAT, True),
-                    tc(4.25, TiffTags.DOUBLE, True),
-                    tc("custom tag value", TiffTags.ASCII, True),
-                    tc(b"custom tag value", TiffTags.BYTE, True),
-                    tc((4, 5, 6), TiffTags.SHORT, True),
-                    tc((123456789, 9, 34, 234, 219387, 92432323), TiffTags.LONG, True),
-                    tc((-4, 9, 10), TiffTags.SIGNED_BYTE, False),
-                    tc((-4, 5, 6), TiffTags.SIGNED_SHORT, False),
-                    tc(
+                    Tc(4, TiffTags.SHORT, True),
+                    Tc(123456789, TiffTags.LONG, True),
+                    Tc(-4, TiffTags.SIGNED_BYTE, False),
+                    Tc(-4, TiffTags.SIGNED_SHORT, False),
+                    Tc(-123456789, TiffTags.SIGNED_LONG, False),
+                    Tc(TiffImagePlugin.IFDRational(4, 7), TiffTags.RATIONAL, True),
+                    Tc(4.25, TiffTags.FLOAT, True),
+                    Tc(4.25, TiffTags.DOUBLE, True),
+                    Tc("custom tag value", TiffTags.ASCII, True),
+                    Tc(b"custom tag value", TiffTags.BYTE, True),
+                    Tc((4, 5, 6), TiffTags.SHORT, True),
+                    Tc((123456789, 9, 34, 234, 219387, 92432323), TiffTags.LONG, True),
+                    Tc((-4, 9, 10), TiffTags.SIGNED_BYTE, False),
+                    Tc((-4, 5, 6), TiffTags.SIGNED_SHORT, False),
+                    Tc(
                         (-123456789, 9, 34, 234, 219387, -92432323),
                         TiffTags.SIGNED_LONG,
                         False,
                     ),
-                    tc((4.25, 5.25), TiffTags.FLOAT, True),
-                    tc((4.25, 5.25), TiffTags.DOUBLE, True),
+                    Tc((4.25, 5.25), TiffTags.FLOAT, True),
+                    Tc((4.25, 5.25), TiffTags.DOUBLE, True),
                     # array of TIFF_BYTE requires bytes instead of tuple for backwards
                     # compatibility
-                    tc(bytes([4]), TiffTags.BYTE, True),
-                    tc(bytes((4, 9, 10)), TiffTags.BYTE, True),
+                    Tc(bytes([4]), TiffTags.BYTE, True),
+                    Tc(bytes((4, 9, 10)), TiffTags.BYTE, True),
                 ]
             )
         }
@@ -284,7 +288,9 @@ class TestFileLibTiff(LibTiffTestCase):
         for libtiff in libtiffs:
             TiffImagePlugin.WRITE_LIBTIFF = libtiff
 
-            def check_tags(tiffinfo) -> None:
+            def check_tags(
+                tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str]
+            ) -> None:
                 im = hopper()
 
                 out = str(tmp_path / "temp.tif")
@@ -322,6 +328,12 @@ class TestFileLibTiff(LibTiffTestCase):
                 }
             )
         TiffImagePlugin.WRITE_LIBTIFF = False
+
+    def test_osubfiletype(self, tmp_path: Path) -> None:
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/g4_orientation_6.tif") as im:
+            im.tag_v2[OSUBFILETYPE] = 1
+            im.save(outfile)
 
     def test_subifd(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
@@ -502,7 +514,7 @@ class TestFileLibTiff(LibTiffTestCase):
         assert_image_equal_tofile(im, out)
 
     @pytest.mark.parametrize("im", (hopper("P"), Image.new("P", (1, 1), "#000")))
-    def test_palette_save(self, im, tmp_path: Path) -> None:
+    def test_palette_save(self, im: Image.Image, tmp_path: Path) -> None:
         out = str(tmp_path / "temp.tif")
 
         TiffImagePlugin.WRITE_LIBTIFF = True
@@ -514,7 +526,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert len(reloaded.tag_v2[320]) == 768
 
     @pytest.mark.parametrize("compression", ("tiff_ccitt", "group3", "group4"))
-    def test_bw_compression_w_rgb(self, compression, tmp_path: Path) -> None:
+    def test_bw_compression_w_rgb(self, compression: str, tmp_path: Path) -> None:
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
 
@@ -522,7 +534,8 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, compression=compression)
 
     def test_fp_leak(self) -> None:
-        im = Image.open("Tests/images/hopper_g4_500.tif")
+        im: Image.Image | None = Image.open("Tests/images/hopper_g4_500.tif")
+        assert im is not None
         fn = im.fp.fileno()
 
         os.fstat(fn)
@@ -647,7 +660,7 @@ class TestFileLibTiff(LibTiffTestCase):
         # Generate test image
         pilim = hopper()
 
-        def save_bytesio(compression=None) -> None:
+        def save_bytesio(compression: str | None = None) -> None:
             buffer_io = io.BytesIO()
             pilim.save(buffer_io, format="tiff", compression=compression)
             buffer_io.seek(0)
@@ -714,6 +727,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 f.write(src.read())
 
         im = Image.open(tmpfile)
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         im.n_frames
         im.close()
         # Should not raise PermissionError.
@@ -731,7 +745,7 @@ class TestFileLibTiff(LibTiffTestCase):
         assert icc == icc_libtiff
 
     def test_write_icc(self, tmp_path: Path) -> None:
-        def check_write(libtiff) -> None:
+        def check_write(libtiff: bool) -> None:
             TiffImagePlugin.WRITE_LIBTIFF = libtiff
 
             with Image.open("Tests/images/hopper.iccprofile.tif") as img:
@@ -837,7 +851,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert reloaded.mode == "F"
             assert reloaded.getexif()[SAMPLEFORMAT] == 3
 
-    def test_lzma(self, capfd):
+    def test_lzma(self, capfd: pytest.CaptureFixture[str]) -> None:
         try:
             with Image.open("Tests/images/hopper_lzma.tif") as im:
                 assert im.mode == "RGB"
@@ -853,7 +867,7 @@ class TestFileLibTiff(LibTiffTestCase):
             sys.stderr.write(captured.err)
             raise
 
-    def test_webp(self, capfd):
+    def test_webp(self, capfd: pytest.CaptureFixture[str]) -> None:
         try:
             with Image.open("Tests/images/hopper_webp.tif") as im:
                 assert im.mode == "RGB"
@@ -971,7 +985,7 @@ class TestFileLibTiff(LibTiffTestCase):
             assert_image_equal_tofile(im, "Tests/images/tiff_16bit_RGBa_target.png")
 
     @pytest.mark.parametrize("compression", (None, "jpeg"))
-    def test_block_tile_tags(self, compression, tmp_path: Path) -> None:
+    def test_block_tile_tags(self, compression: str | None, tmp_path: Path) -> None:
         im = hopper()
         out = str(tmp_path / "temp.tif")
 
@@ -1020,7 +1034,9 @@ class TestFileLibTiff(LibTiffTestCase):
             ),
         ],
     )
-    def test_wrong_bits_per_sample(self, file_name, mode, size, tile) -> None:
+    def test_wrong_bits_per_sample(
+        self, file_name: str, mode: str, size: tuple[int, int], tile
+    ) -> None:
         with Image.open("Tests/images/" + file_name) as im:
             assert im.mode == mode
             assert im.size == size
@@ -1086,35 +1102,37 @@ class TestFileLibTiff(LibTiffTestCase):
         TiffImagePlugin.READ_LIBTIFF = False
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
-    def test_save_multistrip(self, compression, tmp_path: Path) -> None:
+    def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
         im.save(out, compression=compression)
 
         with Image.open(out) as im:
             # Assert that there are multiple strips
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert len(im.tag_v2[STRIPOFFSETS]) > 1
 
     @pytest.mark.parametrize("argument", (True, False))
-    def test_save_single_strip(self, argument, tmp_path: Path) -> None:
+    def test_save_single_strip(self, argument: bool, tmp_path: Path) -> None:
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
 
         if not argument:
             TiffImagePlugin.STRIP_SIZE = 2**18
         try:
-            arguments = {"compression": "tiff_adobe_deflate"}
+            arguments: dict[str, str | int] = {"compression": "tiff_adobe_deflate"}
             if argument:
                 arguments["strip_size"] = 2**18
             im.save(out, **arguments)
 
             with Image.open(out) as im:
+                assert isinstance(im, TiffImagePlugin.TiffImageFile)
                 assert len(im.tag_v2[STRIPOFFSETS]) == 1
         finally:
             TiffImagePlugin.STRIP_SIZE = 65536
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", None))
-    def test_save_zero(self, compression, tmp_path: Path) -> None:
+    def test_save_zero(self, compression: str | None, tmp_path: Path) -> None:
         im = Image.new("RGB", (0, 0))
         out = str(tmp_path / "temp.tif")
         with pytest.raises(SystemError):
@@ -1134,7 +1152,7 @@ class TestFileLibTiff(LibTiffTestCase):
             ("Tests/images/child_ifd_jpeg.tiff", (20,)),
         ),
     )
-    def test_get_child_images(self, path, sizes) -> None:
+    def test_get_child_images(self, path: str, sizes: tuple[int, ...]) -> None:
         with Image.open(path) as im:
             ims = im.get_child_images()
 

@@ -26,6 +26,7 @@
 
 from __future__ import annotations
 
+import abc
 import atexit
 import builtins
 import io
@@ -39,12 +40,8 @@ import tempfile
 import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
-from pathlib import Path
-
-try:
-    from defusedxml import ElementTree
-except ImportError:
-    ElementTree = None
+from types import ModuleType
+from typing import IO, TYPE_CHECKING, Any
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -58,7 +55,14 @@ from . import (
     _plugins,
 )
 from ._binary import i32le, o32be, o32le
+from ._typing import TypeGuard
 from ._util import DeferredError, is_path
+
+ElementTree: ModuleType | None
+try:
+    from defusedxml import ElementTree
+except ImportError:
+    ElementTree = None
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +76,7 @@ class DecompressionBombError(Exception):
 
 
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
-MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
+MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
 
 try:
@@ -110,13 +114,14 @@ except ImportError as v:
 
 
 USE_CFFI_ACCESS = False
+cffi: ModuleType | None
 try:
     import cffi
 except ImportError:
     cffi = None
 
 
-def isImageType(t):
+def isImageType(t: Any) -> TypeGuard[Image]:
     """
     Checks if an object is an image object.
 
@@ -211,14 +216,22 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # --------------------------------------------------------------------
 # Registries
 
-ID = []
-OPEN = {}
-MIME = {}
-SAVE = {}
-SAVE_ALL = {}
-EXTENSION = {}
-DECODERS = {}
-ENCODERS = {}
+if TYPE_CHECKING:
+    from . import ImageFile
+ID: list[str] = []
+OPEN: dict[
+    str,
+    tuple[
+        Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
+        Callable[[bytes], bool] | None,
+    ],
+] = {}
+MIME: dict[str, str] = {}
+SAVE: dict[str, Callable[[Image, IO[bytes], str | bytes], None]] = {}
+SAVE_ALL: dict[str, Callable[[Image, IO[bytes], str | bytes], None]] = {}
+EXTENSION: dict[str, str] = {}
+DECODERS: dict[str, type[ImageFile.PyDecoder]] = {}
+ENCODERS: dict[str, type[ImageFile.PyEncoder]] = {}
 
 # --------------------------------------------------------------------
 # Modes
@@ -255,7 +268,7 @@ def getmodebase(mode: str) -> str:
     return ImageMode.getmode(mode).basemode
 
 
-def getmodetype(mode):
+def getmodetype(mode: str) -> str:
     """
     Gets the storage type mode.  Given a mode, this function returns a
     single-layer mode suitable for storing individual bands.
@@ -267,7 +280,7 @@ def getmodetype(mode):
     return ImageMode.getmode(mode).basetype
 
 
-def getmodebandnames(mode):
+def getmodebandnames(mode: str) -> tuple[str, ...]:
     """
     Gets a list of individual band names.  Given a mode, this function returns
     a tuple containing the names of individual bands (use
@@ -299,7 +312,7 @@ def getmodebands(mode: str) -> int:
 _initialized = 0
 
 
-def preinit():
+def preinit() -> None:
     """
     Explicitly loads BMP, GIF, JPEG, PPM and PPM file format drivers.
 
@@ -425,7 +438,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
 
 
 class _E:
-    def __init__(self, scale, offset):
+    def __init__(self, scale, offset) -> None:
         self.scale = scale
         self.offset = offset
 
@@ -491,15 +504,15 @@ class Image:
         raise TypeError(msg)
 
     @property
-    def width(self):
+    def width(self) -> int:
         return self.size[0]
 
     @property
-    def height(self):
+    def height(self) -> int:
         return self.size[1]
 
     @property
-    def size(self):
+    def size(self) -> tuple[int, int]:
         return self._size
 
     @property
@@ -529,7 +542,7 @@ class Image:
             self.palette = ImagePalette.ImagePalette()
         return self
 
-    def _new(self, im):
+    def _new(self, im) -> Image:
         new = Image._init(im)
         if im.mode in ("P", "PA") and self.palette:
             new.palette = self.palette.copy()
@@ -554,7 +567,7 @@ class Image:
                 self._close_fp()
             self.fp = None
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the file pointer, if possible.
 
@@ -581,13 +594,13 @@ class Image:
         # object is gone.
         self.im = DeferredError(ValueError("Operation on closed image"))
 
-    def _copy(self):
+    def _copy(self) -> None:
         self.load()
         self.im = self.im.copy()
         self.pyaccess = None
         self.readonly = 0
 
-    def _ensure_mutable(self):
+    def _ensure_mutable(self) -> None:
         if self.readonly:
             self._copy()
         else:
@@ -627,7 +640,7 @@ class Image:
             and self.tobytes() == other.tobytes()
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
             self.__class__.__module__,
             self.__class__.__name__,
@@ -637,7 +650,7 @@ class Image:
             id(self),
         )
 
-    def _repr_pretty_(self, p, cycle):
+    def _repr_pretty_(self, p, cycle) -> None:
         """IPython plain text display support"""
 
         # Same as __repr__ but without unpredictable id(self),
@@ -700,7 +713,7 @@ class Image:
                     pass
                 else:
                     if parse_version(numpy.__version__) < parse_version("1.23"):
-                        warnings.warn(e)
+                        warnings.warn(str(e))
             raise
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
@@ -709,7 +722,7 @@ class Image:
         im_data = self.tobytes()  # load image first
         return [self.info, self.mode, self.size, self.getpalette(), im_data]
 
-    def __setstate__(self, state):
+    def __setstate__(self, state) -> None:
         self._prepare()
         info, mode, size, palette, data = state
         self.info = info
@@ -772,7 +785,7 @@ class Image:
 
         return b"".join(output)
 
-    def tobitmap(self, name="image"):
+    def tobitmap(self, name: str = "image") -> bytes:
         """
         Returns the image converted to an X11 bitmap.
 
@@ -884,7 +897,12 @@ class Image:
         pass
 
     def convert(
-        self, mode=None, matrix=None, dither=None, palette=Palette.WEB, colors=256
+        self,
+        mode: str | None = None,
+        matrix: tuple[float, ...] | None = None,
+        dither: Dither | None = None,
+        palette: Palette = Palette.WEB,
+        colors: int = 256,
     ) -> Image:
         """
         Returns a converted copy of this image. For the "P" mode, this
@@ -892,9 +910,8 @@ class Image:
         omitted, a mode is chosen so that all information in the image
         and the palette can be represented without a palette.
 
-        The current version supports all possible conversions between
-        "L", "RGB" and "CMYK". The ``matrix`` argument only supports "L"
-        and "RGB".
+        This supports all possible conversions between "L", "RGB" and "CMYK". The
+        ``matrix`` argument only supports "L" and "RGB".
 
         When translating a color image to grayscale (mode "L"),
         the library uses the ITU-R 601-2 luma transform::
@@ -976,8 +993,8 @@ class Image:
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if (self.mode in ("1", "L", "I") and mode in ("LA", "RGBA")) or (
-                self.mode == "RGB" and mode == "RGBA"
+            if (self.mode in ("1", "L", "I", "I;16") and mode in ("LA", "RGBA")) or (
+                self.mode == "RGB" and mode in ("La", "LA", "RGBa", "RGBA")
             ):
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
@@ -1116,12 +1133,12 @@ class Image:
 
     def quantize(
         self,
-        colors=256,
-        method=None,
-        kmeans=0,
+        colors: int = 256,
+        method: Quantize | None = None,
+        kmeans: int = 0,
         palette=None,
-        dither=Dither.FLOYDSTEINBERG,
-    ):
+        dither: Dither = Dither.FLOYDSTEINBERG,
+    ) -> Image:
         """
         Convert the image to 'P' mode with the specified number
         of colors.
@@ -1139,7 +1156,7 @@ class Image:
                        The exception to this is RGBA images. :data:`Quantize.MEDIANCUT`
                        and :data:`Quantize.MAXCOVERAGE` do not support RGBA images, so
                        :data:`Quantize.FASTOCTREE` is used by default instead.
-        :param kmeans: Integer
+        :param kmeans: Integer greater than or equal to zero.
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
         :param dither: Dithering method, used when converting from
@@ -1182,6 +1199,10 @@ class Image:
             new_im.palette = palette.palette.copy()
             return new_im
 
+        if kmeans < 0:
+            msg = "kmeans must not be negative"
+            raise ValueError(msg)
+
         im = self._new(self.im.quantize(colors, method, kmeans))
 
         from . import ImagePalette
@@ -1205,7 +1226,7 @@ class Image:
 
     __copy__ = copy
 
-    def crop(self, box=None) -> Image:
+    def crop(self, box: tuple[int, int, int, int] | None = None) -> Image:
         """
         Returns a rectangular region from this image. The box is a
         4-tuple defining the left, upper, right, and lower pixel
@@ -1336,7 +1357,7 @@ class Image:
         self.load()
         return self.im.getbbox(alpha_only)
 
-    def getcolors(self, maxcolors=256):
+    def getcolors(self, maxcolors: int = 256):
         """
         Returns a list of colors used in this image.
 
@@ -1359,7 +1380,7 @@ class Image:
             return out
         return self.im.getcolors(maxcolors)
 
-    def getdata(self, band=None):
+    def getdata(self, band: int | None = None):
         """
         Returns the contents of this image as a sequence object
         containing pixel values.  The sequence object is flattened, so
@@ -1382,7 +1403,7 @@ class Image:
             return self.im.getband(band)
         return self.im  # could be abused
 
-    def getextrema(self):
+    def getextrema(self) -> tuple[float, float] | tuple[tuple[int, int], ...]:
         """
         Gets the minimum and maximum pixel values for each band in
         the image.
@@ -1428,7 +1449,7 @@ class Image:
             root = ElementTree.fromstring(xmp_tags)
             return {get_name(root.tag): get_value(root)}
 
-    def getexif(self):
+    def getexif(self) -> Exif:
         """
         Gets EXIF data from the image.
 
@@ -1436,7 +1457,6 @@ class Image:
         """
         if self._exif is None:
             self._exif = Exif()
-            self._exif._loaded = False
         elif self._exif._loaded:
             return self._exif
         self._exif._loaded = True
@@ -1464,7 +1484,7 @@ class Image:
 
         return self._exif
 
-    def _reload_exif(self):
+    def _reload_exif(self) -> None:
         if self._exif is None or not self._exif._loaded:
             return
         self._exif._loaded = False
@@ -1523,7 +1543,7 @@ class Image:
         self.load()
         return self.im.ptr
 
-    def getpalette(self, rawmode="RGB"):
+    def getpalette(self, rawmode: str | None = "RGB") -> list[int] | None:
         """
         Returns the image palette as a list.
 
@@ -1601,7 +1621,7 @@ class Image:
             return self.pyaccess.getpixel(xy)
         return self.im.getpixel(tuple(xy))
 
-    def getprojection(self):
+    def getprojection(self) -> tuple[list[int], list[int]]:
         """
         Get projection to x and y axes
 
@@ -1613,7 +1633,7 @@ class Image:
         x, y = self.im.getprojection()
         return list(x), list(y)
 
-    def histogram(self, mask=None, extrema=None):
+    def histogram(self, mask: Image | None = None, extrema=None) -> list[int]:
         """
         Returns a histogram for the image. The histogram is returned as a
         list of pixel counts, one for each pixel value in the source
@@ -1802,7 +1822,7 @@ class Image:
         result = alpha_composite(background, overlay)
         self.paste(result, box)
 
-    def point(self, lut, mode=None):
+    def point(self, lut, mode: str | None = None) -> Image:
         """
         Maps this image through a lookup table or function.
 
@@ -1819,9 +1839,8 @@ class Image:
                class Example(Image.ImagePointHandler):
                  def point(self, data):
                    # Return result
-        :param mode: Output mode (default is same as input).  In the
-           current version, this can only be used if the source image
-           has mode "L" or "P", and the output has mode "1" or the
+        :param mode: Output mode (default is same as input). This can only be used if
+           the source image has mode "L" or "P", and the output has mode "1" or the
            source image mode is "I" and the output mode is "L".
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
@@ -1926,7 +1945,7 @@ class Image:
 
         self.im.putdata(data, scale, offset)
 
-    def putpalette(self, data, rawmode="RGB"):
+    def putpalette(self, data, rawmode="RGB") -> None:
         """
         Attaches a palette to this image.  The image must be a "P", "PA", "L"
         or "LA" image.
@@ -2106,7 +2125,7 @@ class Image:
             min(self.size[1], math.ceil(box[3] + support_y)),
         )
 
-    def resize(self, size, resample=None, box=None, reducing_gap=None):
+    def resize(self, size, resample=None, box=None, reducing_gap=None) -> Image:
         """
         Returns a resized copy of this image.
 
@@ -2198,10 +2217,11 @@ class Image:
             if factor_x > 1 or factor_y > 1:
                 reduce_box = self._get_safe_box(size, resample, box)
                 factor = (factor_x, factor_y)
-                if callable(self.reduce):
-                    self = self.reduce(factor, box=reduce_box)
-                else:
-                    self = Image.reduce(self, factor, box=reduce_box)
+                self = (
+                    self.reduce(factor, box=reduce_box)
+                    if callable(self.reduce)
+                    else Image.reduce(self, factor, box=reduce_box)
+                )
                 box = (
                     (box[0] - reduce_box[0]) / factor_x,
                     (box[1] - reduce_box[1]) / factor_y,
@@ -2380,7 +2400,7 @@ class Image:
         implement the ``seek``, ``tell``, and ``write``
         methods, and be opened in binary mode.
 
-        :param fp: A filename (string), pathlib.Path object or file object.
+        :param fp: A filename (string), os.PathLike object or file object.
         :param format: Optional format override.  If omitted, the
            format to use is determined from the filename extension.
            If a file object was used instead of a filename, this
@@ -2393,13 +2413,10 @@ class Image:
            may have been created, and may contain partial data.
         """
 
-        filename = ""
+        filename: str | bytes = ""
         open_fp = False
-        if isinstance(fp, Path):
-            filename = str(fp)
-            open_fp = True
-        elif is_path(fp):
-            filename = fp
+        if is_path(fp):
+            filename = os.path.realpath(os.fspath(fp))
             open_fp = True
         elif fp == sys.stdout:
             try:
@@ -2408,7 +2425,7 @@ class Image:
                 pass
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
-            filename = fp.name
+            filename = os.path.realpath(os.fspath(fp.name))
 
         # may mutate self!
         self._ensure_mutable()
@@ -2419,7 +2436,8 @@ class Image:
 
         preinit()
 
-        ext = os.path.splitext(filename)[1].lower()
+        filename_ext = os.path.splitext(filename)[1].lower()
+        ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
 
         if not format:
             if ext not in EXTENSION:
@@ -2461,7 +2479,7 @@ class Image:
         if open_fp:
             fp.close()
 
-    def seek(self, frame) -> Image:
+    def seek(self, frame: int) -> None:
         """
         Seeks to the given frame in this sequence file. If you seek
         beyond the end of the sequence, the method raises an
@@ -2483,7 +2501,7 @@ class Image:
             msg = "no more images in file"
             raise EOFError(msg)
 
-    def show(self, title=None):
+    def show(self, title: str | None = None) -> None:
         """
         Displays this image. This method is mainly intended for debugging purposes.
 
@@ -2521,12 +2539,10 @@ class Image:
 
         self.load()
         if self.im.bands == 1:
-            ims = [self.copy()]
-        else:
-            ims = map(self._new, self.im.split())
-        return tuple(ims)
+            return (self.copy(),)
+        return tuple(map(self._new, self.im.split()))
 
-    def getchannel(self, channel):
+    def getchannel(self, channel: int | str) -> Image:
         """
         Returns an image containing a single channel of the source image.
 
@@ -2601,13 +2617,13 @@ class Image:
 
         provided_size = tuple(map(math.floor, size))
 
-        def preserve_aspect_ratio():
+        def preserve_aspect_ratio() -> tuple[int, int] | None:
             def round_aspect(number, key):
                 return max(min(math.floor(number), math.ceil(number), key=key), 1)
 
             x, y = provided_size
             if x >= self.width and y >= self.height:
-                return
+                return None
 
             aspect = self.width / self.height
             if x / y >= aspect:
@@ -2820,7 +2836,7 @@ class Image:
 
         self.im.transform2(box, image.im, method, data, resample, fill)
 
-    def transpose(self, method):
+    def transpose(self, method: Transpose) -> Image:
         """
         Transpose image (flip or rotate in 90 degree steps)
 
@@ -2872,7 +2888,9 @@ class ImagePointHandler:
     (for use with :py:meth:`~PIL.Image.Image.point`)
     """
 
-    pass
+    @abc.abstractmethod
+    def point(self, im: Image) -> Image:
+        pass
 
 
 class ImageTransformHandler:
@@ -2881,7 +2899,14 @@ class ImageTransformHandler:
     (for use with :py:meth:`~PIL.Image.Image.transform`)
     """
 
-    pass
+    @abc.abstractmethod
+    def transform(
+        self,
+        size: tuple[int, int],
+        image: Image,
+        **options: dict[str, str | int | tuple[int, ...] | list[int]],
+    ) -> Image:
+        pass
 
 
 # --------------------------------------------------------------------
@@ -2918,7 +2943,9 @@ def _check_size(size):
     return True
 
 
-def new(mode, size, color=0) -> Image:
+def new(
+    mode: str, size: tuple[int, int], color: float | tuple[float, ...] | str | None = 0
+) -> Image:
     """
     Creates a new image with the given mode and size.
 
@@ -3012,11 +3039,10 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     If you have an entire image file in a string, wrap it in a
     :py:class:`~io.BytesIO` object, and use :py:func:`~PIL.Image.open` to load it.
 
-    In the current version, the default parameters used for the "raw" decoder
-    differs from that used for :py:func:`~PIL.Image.frombytes`.  This is a
-    bug, and will probably be fixed in a future release.  The current release
-    issues a warning if you do this; to disable the warning, you should provide
-    the full set of parameters.  See below for details.
+    The default parameters used for the "raw" decoder differs from that used for
+    :py:func:`~PIL.Image.frombytes`. This is a bug, and will probably be fixed in a
+    future release. The current release issues a warning if you do this; to disable
+    the warning, you should provide the full set of parameters. See below for details.
 
     :param mode: The image mode. See: :ref:`concept-modes`.
     :param size: The image size.
@@ -3188,7 +3214,7 @@ _fromarray_typemap = {
 }
 
 
-def _decompression_bomb_check(size):
+def _decompression_bomb_check(size: tuple[int, int]) -> None:
     if MAX_IMAGE_PIXELS is None:
         return
 
@@ -3219,7 +3245,7 @@ def open(fp, mode="r", formats=None) -> Image:
     :py:meth:`~PIL.Image.Image.load` method).  See
     :py:func:`~PIL.Image.new`. See :ref:`file-handling`.
 
-    :param fp: A filename (string), pathlib.Path object or a file object.
+    :param fp: A filename (string), os.PathLike object or a file object.
        The file object must implement ``file.read``,
        ``file.seek``, and ``file.tell`` methods,
        and be opened in binary mode. The file object will also seek to zero
@@ -3256,11 +3282,9 @@ def open(fp, mode="r", formats=None) -> Image:
         raise TypeError(msg)
 
     exclusive_fp = False
-    filename = ""
-    if isinstance(fp, Path):
-        filename = str(fp.resolve())
-    elif is_path(fp):
-        filename = fp
+    filename: str | bytes = ""
+    if is_path(fp):
+        filename = os.path.realpath(os.fspath(fp))
 
     if filename:
         fp = builtins.open(filename, "rb")
@@ -3332,7 +3356,7 @@ def open(fp, mode="r", formats=None) -> Image:
 # Image processing.
 
 
-def alpha_composite(im1, im2):
+def alpha_composite(im1: Image, im2: Image) -> Image:
     """
     Alpha composite im2 over im1.
 
@@ -3347,7 +3371,7 @@ def alpha_composite(im1, im2):
     return im1._new(core.alpha_composite(im1.im, im2.im))
 
 
-def blend(im1, im2, alpha):
+def blend(im1: Image, im2: Image, alpha: float) -> Image:
     """
     Creates a new image by interpolating between two input images, using
     a constant alpha::
@@ -3370,7 +3394,7 @@ def blend(im1, im2, alpha):
     return im1._new(core.blend(im1.im, im2.im, alpha))
 
 
-def composite(image1, image2, mask):
+def composite(image1: Image, image2: Image, mask: Image) -> Image:
     """
     Create composite image by blending images using a transparency mask.
 
@@ -3434,7 +3458,11 @@ def merge(mode, bands):
 # Plugin registry
 
 
-def register_open(id, factory, accept=None) -> None:
+def register_open(
+    id,
+    factory: Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
+    accept: Callable[[bytes], bool] | None = None,
+) -> None:
     """
     Register an image file plugin.  This function should not be used
     in application code.
@@ -3476,7 +3504,7 @@ def register_save(id: str, driver) -> None:
     SAVE[id.upper()] = driver
 
 
-def register_save_all(id, driver):
+def register_save_all(id, driver) -> None:
     """
     Registers an image function to save all the frames
     of a multiframe format.  This function should not be
@@ -3520,28 +3548,26 @@ def registered_extensions():
     return EXTENSION
 
 
-def register_decoder(name: str, decoder) -> None:
+def register_decoder(name: str, decoder: type[ImageFile.PyDecoder]) -> None:
     """
     Registers an image decoder.  This function should not be
     used in application code.
 
     :param name: The name of the decoder
-    :param decoder: A callable(mode, args) that returns an
-                    ImageFile.PyDecoder object
+    :param decoder: An ImageFile.PyDecoder object
 
     .. versionadded:: 4.1.0
     """
     DECODERS[name] = decoder
 
 
-def register_encoder(name, encoder):
+def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
     """
     Registers an image encoder.  This function should not be
     used in application code.
 
     :param name: The name of the encoder
-    :param encoder: A callable(mode, args) that returns an
-                    ImageFile.PyEncoder object
+    :param encoder: An ImageFile.PyEncoder object
 
     .. versionadded:: 4.1.0
     """
@@ -3552,7 +3578,7 @@ def register_encoder(name, encoder):
 # Simple display support.
 
 
-def _show(image, **options):
+def _show(image, **options) -> None:
     from . import ImageShow
 
     ImageShow.show(image, **options)
@@ -3608,7 +3634,7 @@ def radial_gradient(mode):
 # Resources
 
 
-def _apply_env_variables(env=None):
+def _apply_env_variables(env=None) -> None:
     if env is None:
         env = os.environ
 
@@ -3644,7 +3670,13 @@ _apply_env_variables()
 atexit.register(core.clear_cache)
 
 
-class Exif(MutableMapping):
+if TYPE_CHECKING:
+    _ExifBase = MutableMapping[int, Any]
+else:
+    _ExifBase = MutableMapping
+
+
+class Exif(_ExifBase):
     """
     This class provides read and write access to EXIF image data::
 
@@ -3680,6 +3712,7 @@ class Exif(MutableMapping):
 
     endian = None
     bigtiff = False
+    _loaded = False
 
     def __init__(self):
         self._data = {}
@@ -3701,7 +3734,7 @@ class Exif(MutableMapping):
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, offset):
+    def _get_ifd_dict(self, offset, group=None):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
@@ -3711,7 +3744,7 @@ class Exif(MutableMapping):
         else:
             from . import TiffImagePlugin
 
-            info = TiffImagePlugin.ImageFileDirectory_v2(self.head)
+            info = TiffImagePlugin.ImageFileDirectory_v2(self.head, group=group)
             info.load(self.fp)
             return self._fixup_dict(info)
 
@@ -3783,19 +3816,19 @@ class Exif(MutableMapping):
 
         # get EXIF extension
         if ExifTags.IFD.Exif in self:
-            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif])
+            ifd = self._get_ifd_dict(self[ExifTags.IFD.Exif], ExifTags.IFD.Exif)
             if ifd:
                 merged_dict.update(ifd)
 
         # GPS
         if ExifTags.IFD.GPSInfo in self:
             merged_dict[ExifTags.IFD.GPSInfo] = self._get_ifd_dict(
-                self[ExifTags.IFD.GPSInfo]
+                self[ExifTags.IFD.GPSInfo], ExifTags.IFD.GPSInfo
             )
 
         return merged_dict
 
-    def tobytes(self, offset=8):
+    def tobytes(self, offset: int = 8) -> bytes:
         from . import TiffImagePlugin
 
         head = self._get_head()
@@ -3824,7 +3857,7 @@ class Exif(MutableMapping):
             elif tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
                 offset = self._hidden_data.get(tag, self.get(tag))
                 if offset is not None:
-                    self._ifds[tag] = self._get_ifd_dict(offset)
+                    self._ifds[tag] = self._get_ifd_dict(offset, tag)
             elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
@@ -3906,7 +3939,7 @@ class Exif(MutableMapping):
                         self._ifds[tag] = makernote
                 else:
                     # Interop
-                    self._ifds[tag] = self._get_ifd_dict(tag_data)
+                    self._ifds[tag] = self._get_ifd_dict(tag_data, tag)
         ifd = self._ifds.get(tag, {})
         if tag == ExifTags.IFD.Exif and self._hidden_data:
             ifd = {
@@ -3916,13 +3949,13 @@ class Exif(MutableMapping):
             }
         return ifd
 
-    def hide_offsets(self):
+    def hide_offsets(self) -> None:
         for tag in (ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo):
             if tag in self:
                 self._hidden_data[tag] = self[tag]
                 del self[tag]
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self._info is not None:
             # Load all keys into self._data
             for tag in self._info:
@@ -3930,7 +3963,7 @@ class Exif(MutableMapping):
 
         return str(self._data)
 
-    def __len__(self):
+    def __len__(self) -> int:
         keys = set(self._data)
         if self._info is not None:
             keys.update(self._info)
@@ -3942,15 +3975,15 @@ class Exif(MutableMapping):
             del self._info[tag]
         return self._data[tag]
 
-    def __contains__(self, tag):
+    def __contains__(self, tag) -> bool:
         return tag in self._data or (self._info is not None and tag in self._info)
 
-    def __setitem__(self, tag, value):
+    def __setitem__(self, tag, value) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         self._data[tag] = value
 
-    def __delitem__(self, tag):
+    def __delitem__(self, tag: int) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         else:

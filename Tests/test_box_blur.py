@@ -23,11 +23,11 @@ def test_imageops_box_blur() -> None:
     assert isinstance(i, Image.Image)
 
 
-def box_blur(image, radius: int = 1, n: int = 1):
+def box_blur(image: Image.Image, radius: float = 1, n: int = 1) -> Image.Image:
     return image._new(image.im.box_blur((radius, radius), n))
 
 
-def assert_image(im, data, delta: int = 0) -> None:
+def assert_image(im: Image.Image, data: list[list[int]], delta: int = 0) -> None:
     it = iter(im.getdata())
     for data_row in data:
         im_row = [next(it) for _ in range(im.size[0])]
@@ -37,7 +37,13 @@ def assert_image(im, data, delta: int = 0) -> None:
         next(it)
 
 
-def assert_blur(im, radius, data, passes: int = 1, delta: int = 0) -> None:
+def assert_blur(
+    im: Image.Image,
+    radius: float,
+    data: list[list[int]],
+    passes: int = 1,
+    delta: int = 0,
+) -> None:
     # check grayscale image
     assert_image(box_blur(im, radius, passes), data, delta)
     rgba = Image.merge("RGBA", (im, im, im, im))

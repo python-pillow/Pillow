@@ -4,12 +4,14 @@ import datetime
 import os
 import re
 import shutil
+import sys
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import pytest
 
-from PIL import Image, ImageMode, features
+from PIL import Image, ImageMode, ImageWin, features
 
 from .helper import (
     assert_image,
@@ -17,6 +19,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    is_pypy,
 )
 
 try:
@@ -212,6 +215,10 @@ def test_display_profile() -> None:
     # try fetching the profile for the current display device
     ImageCms.get_display_profile()
 
+    if sys.platform == "win32":
+        ImageCms.get_display_profile(ImageWin.HDC(0))
+        ImageCms.get_display_profile(ImageWin.HWND(0))
+
 
 def test_lab_color_profile() -> None:
     ImageCms.createProfile("LAB", 5000)
@@ -237,7 +244,7 @@ def test_invalid_color_temperature() -> None:
 
 
 @pytest.mark.parametrize("flag", ("my string", -1))
-def test_invalid_flag(flag) -> None:
+def test_invalid_flag(flag: str | int) -> None:
     with hopper() as im:
         with pytest.raises(
             ImageCms.PyCMSError, match="flags must be an integer between 0 and "
@@ -335,17 +342,21 @@ def test_extended_information() -> None:
     o = ImageCms.getOpenProfile(SRGB)
     p = o.profile
 
-    def assert_truncated_tuple_equal(tup1, tup2, digits: int = 10) -> None:
+    def assert_truncated_tuple_equal(
+        tup1: tuple[Any, ...], tup2: tuple[Any, ...], digits: int = 10
+    ) -> None:
         # Helper function to reduce precision of tuples of floats
         # recursively and then check equality.
         power = 10**digits
 
-        def truncate_tuple(tuple_or_float):
+        def truncate_tuple(tuple_value: tuple[Any, ...]) -> tuple[Any, ...]:
             return tuple(
-                truncate_tuple(val)
-                if isinstance(val, tuple)
-                else int(val * power) / power
-                for val in tuple_or_float
+                (
+                    truncate_tuple(val)
+                    if isinstance(val, tuple)
+                    else int(val * power) / power
+                )
+                for val in tuple_value
             )
 
         assert truncate_tuple(tup1) == truncate_tuple(tup2)
@@ -491,19 +502,39 @@ def test_non_ascii_path(tmp_path: Path) -> None:
 
 
 def test_profile_typesafety() -> None:
-    """Profile init type safety
-
-    prepatch, these would segfault, postpatch they should emit a typeerror
-    """
-
+    # does not segfault
     with pytest.raises(TypeError, match="Invalid type for Profile"):
         ImageCms.ImageCmsProfile(0).tobytes()
     with pytest.raises(TypeError, match="Invalid type for Profile"):
         ImageCms.ImageCmsProfile(1).tobytes()
 
+    # also check core function
+    with pytest.raises(TypeError):
+        ImageCms.core.profile_tobytes(0)
+    with pytest.raises(TypeError):
+        ImageCms.core.profile_tobytes(1)
 
-def assert_aux_channel_preserved(mode, transform_in_place, preserved_channel) -> None:
-    def create_test_image():
+    if not is_pypy():
+        # core profile should not be directly instantiable
+        with pytest.raises(TypeError):
+            ImageCms.core.CmsProfile()
+        with pytest.raises(TypeError):
+            ImageCms.core.CmsProfile(0)
+
+
+@pytest.mark.skipif(is_pypy(), reason="fails on PyPy")
+def test_transform_typesafety() -> None:
+    # core transform should not be directly instantiable
+    with pytest.raises(TypeError):
+        ImageCms.core.CmsTransform()
+    with pytest.raises(TypeError):
+        ImageCms.core.CmsTransform(0)
+
+
+def assert_aux_channel_preserved(
+    mode: str, transform_in_place: bool, preserved_channel: str
+) -> None:
+    def create_test_image() -> Image.Image:
         # set up test image with something interesting in the tested aux channel.
         # fmt: off
         nine_grid_deltas = [
@@ -630,8 +661,13 @@ def test_auxiliary_channels_isolated() -> None:
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 
+def test_long_modes() -> None:
+    p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
+    ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
+
+
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
-def test_rgb_lab(mode) -> None:
+def test_rgb_lab(mode: str) -> None:
     im = Image.new(mode, (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (0, 128, 128)

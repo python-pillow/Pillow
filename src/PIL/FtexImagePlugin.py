@@ -50,6 +50,7 @@ bytes for that mipmap level.
 
 Note: All data is stored in little-Endian (Intel) byte order.
 """
+
 from __future__ import annotations
 
 import struct

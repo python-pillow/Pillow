@@ -4,7 +4,7 @@ import warnings
 
 import pytest
 
-from PIL import Image, PsdImagePlugin
+from PIL import Image, PsdImagePlugin, UnidentifiedImageError
 
 from .helper import assert_image_equal_tofile, assert_image_similar, hopper, is_pypy
 
@@ -113,6 +113,11 @@ def test_rgba() -> None:
         assert_image_equal_tofile(im, "Tests/images/imagedraw_square.png")
 
 
+def test_negative_top_left_layer() -> None:
+    with Image.open("Tests/images/negative_top_left_layer.psd") as im:
+        assert im.layers[0][2] == (-50, -50, 50, 50)
+
+
 def test_layer_skip() -> None:
     with Image.open("Tests/images/five_channels.psd") as im:
         assert im.n_frames == 1
@@ -147,17 +152,17 @@ def test_combined_larger_than_size() -> None:
     [
         (
             "Tests/images/timeout-1ee28a249896e05b83840ae8140622de8e648ba9.psd",
-            Image.UnidentifiedImageError,
+            UnidentifiedImageError,
         ),
         (
             "Tests/images/timeout-598843abc37fc080ec36a2699ebbd44f795d3a6f.psd",
-            Image.UnidentifiedImageError,
+            UnidentifiedImageError,
         ),
         ("Tests/images/timeout-c8efc3fded6426986ba867a399791bae544f59bc.psd", OSError),
         ("Tests/images/timeout-dedc7a4ebd856d79b4359bbcc79e8ef231ce38f6.psd", OSError),
     ],
 )
-def test_crashes(test_file, raises) -> None:
+def test_crashes(test_file: str, raises) -> None:
     with open(test_file, "rb") as f:
         with pytest.raises(raises):
             with Image.open(f):

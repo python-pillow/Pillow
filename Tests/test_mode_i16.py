@@ -11,7 +11,7 @@ from .helper import hopper
 original = hopper().resize((32, 32)).convert("I")
 
 
-def verify(im1) -> None:
+def verify(im1: Image.Image) -> None:
     im2 = original.copy()
     assert im1.size == im2.size
     pix1 = im1.load()
@@ -27,7 +27,7 @@ def verify(im1) -> None:
 
 
 @pytest.mark.parametrize("mode", ("L", "I;16", "I;16B", "I;16L", "I"))
-def test_basic(tmp_path: Path, mode) -> None:
+def test_basic(tmp_path: Path, mode: str) -> None:
     # PIL 1.1 has limited support for 16-bit image data.  Check that
     # create/copy/transform and save works as expected.
 
@@ -78,7 +78,7 @@ def test_basic(tmp_path: Path, mode) -> None:
 
 
 def test_tobytes() -> None:
-    def tobytes(mode):
+    def tobytes(mode: str) -> bytes:
         return Image.new(mode, (1, 1), 1).tobytes()
 
     order = 1 if Image._ENDIAN == "<" else -1

@@ -84,6 +84,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
     def test_grabclipboard_file(self) -> None:
         p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
+        assert p.stdin is not None
         p.stdin.write(rb'Set-Clipboard -Path "Tests\images\hopper.gif"')
         p.communicate()
 
@@ -94,6 +95,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
     def test_grabclipboard_png(self) -> None:
         p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
+        assert p.stdin is not None
         p.stdin.write(
             rb"""$bytes = [System.IO.File]::ReadAllBytes("Tests\images\hopper.png")
 $ms = new-object System.IO.MemoryStream(, $bytes)
@@ -113,9 +115,21 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
         reason="Linux with wl-clipboard only",
     )
     @pytest.mark.parametrize("ext", ("gif", "png", "ico"))
-    def test_grabclipboard_wl_clipboard(self, ext) -> None:
+    def test_grabclipboard_wl_clipboard(self, ext: str) -> None:
         image_path = "Tests/images/hopper." + ext
         with open(image_path, "rb") as fp:
             subprocess.call(["wl-copy"], stdin=fp)
         im = ImageGrab.grabclipboard()
         assert_image_equal_tofile(im, image_path)
+
+    @pytest.mark.skipif(
+        (
+            sys.platform != "linux"
+            or not all(shutil.which(cmd) for cmd in ("wl-paste", "wl-copy"))
+        ),
+        reason="Linux with wl-clipboard only",
+    )
+    @pytest.mark.parametrize("arg", ("text", "--clear"))
+    def test_grabclipboard_wl_clipboard_errors(self, arg: str) -> None:
+        subprocess.call(["wl-copy", arg])
+        assert ImageGrab.grabclipboard() is None

@@ -9,6 +9,7 @@ The contents of this file are hereby released in the public domain (CC0)
 Full text of the CC0 license:
 https://creativecommons.org/publicdomain/zero/1.0/
 """
+
 from __future__ import annotations
 
 import io
@@ -269,13 +270,17 @@ class D3DFMT(IntEnum):
 # Backward compatibility layer
 module = sys.modules[__name__]
 for item in DDSD:
+    assert item.name is not None
     setattr(module, "DDSD_" + item.name, item.value)
-for item in DDSCAPS:
-    setattr(module, "DDSCAPS_" + item.name, item.value)
-for item in DDSCAPS2:
-    setattr(module, "DDSCAPS2_" + item.name, item.value)
-for item in DDPF:
-    setattr(module, "DDPF_" + item.name, item.value)
+for item1 in DDSCAPS:
+    assert item1.name is not None
+    setattr(module, "DDSCAPS_" + item1.name, item1.value)
+for item2 in DDSCAPS2:
+    assert item2.name is not None
+    setattr(module, "DDSCAPS2_" + item2.name, item2.value)
+for item3 in DDPF:
+    assert item3.name is not None
+    setattr(module, "DDPF_" + item3.name, item3.value)
 
 DDS_FOURCC = DDPF.FOURCC
 DDS_RGB = DDPF.RGB
@@ -492,7 +497,8 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
 
         data = bytearray()
         bytecount = bitcount // 8
-        while len(data) < self.state.xsize * self.state.ysize * len(masks):
+        dest_length = self.state.xsize * self.state.ysize * len(masks)
+        while len(data) < dest_length:
             value = int.from_bytes(self.fd.read(bytecount), "little")
             for i, mask in enumerate(masks):
                 masked_value = value & mask
@@ -500,7 +506,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
                 data += o8(
                     int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
                 )
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
         return -1, 0
 
 

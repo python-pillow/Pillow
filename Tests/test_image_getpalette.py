@@ -6,7 +6,7 @@ from .helper import hopper
 
 
 def test_palette() -> None:
-    def palette(mode):
+    def palette(mode: str) -> list[int] | None:
         p = hopper(mode).getpalette()
         if p:
             return p[:10]

@@ -5,6 +5,8 @@ import re
 import warnings
 from io import BytesIO
 from pathlib import Path
+from types import ModuleType
+from typing import Any, cast
 
 import pytest
 
@@ -32,6 +34,7 @@ from .helper import (
     skip_unless_feature,
 )
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:
@@ -42,16 +45,22 @@ TEST_FILE = "Tests/images/hopper.jpg"
 
 @skip_unless_feature("jpg")
 class TestFileJpeg:
-    def roundtrip(self, im, **options):
+    def roundtrip_with_bytes(
+        self, im: Image.Image, **options: Any
+    ) -> tuple[JpegImagePlugin.JpegImageFile, int]:
         out = BytesIO()
         im.save(out, "JPEG", **options)
         test_bytes = out.tell()
         out.seek(0)
-        im = Image.open(out)
-        im.bytes = test_bytes  # for testing only
-        return im
+        reloaded = cast(JpegImagePlugin.JpegImageFile, Image.open(out))
+        return reloaded, test_bytes
 
-    def gen_random_image(self, size, mode: str = "RGB"):
+    def roundtrip(
+        self, im: Image.Image, **options: Any
+    ) -> JpegImagePlugin.JpegImageFile:
+        return self.roundtrip_with_bytes(im, **options)[0]
+
+    def gen_random_image(self, size: tuple[int, int], mode: str = "RGB") -> Image.Image:
         """Generates a very hard to compress file
         :param size: tuple
         :param mode: optional image mode
@@ -71,7 +80,7 @@ class TestFileJpeg:
             assert im.get_format_mimetype() == "image/jpeg"
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
-    def test_zero(self, size, tmp_path: Path) -> None:
+    def test_zero(self, size: tuple[int, int], tmp_path: Path) -> None:
         f = str(tmp_path / "temp.jpg")
         im = Image.new("RGB", size)
         with pytest.raises(ValueError):
@@ -108,13 +117,11 @@ class TestFileJpeg:
                     assert "comment" not in reloaded.info
 
             # Test that a comment argument overrides the default comment
-            for comment in ("Test comment text", b"Text comment text"):
+            for comment in ("Test comment text", b"Test comment text"):
                 out = BytesIO()
                 im.save(out, format="JPEG", comment=comment)
                 with Image.open(out) as reloaded:
-                    if not isinstance(comment, bytes):
-                        comment = comment.encode()
-                    assert reloaded.info["comment"] == comment
+                    assert reloaded.info["comment"] == b"Test comment text"
 
     def test_cmyk(self) -> None:
         # Test CMYK handling.  Thanks to Tim and Charlie for test data,
@@ -145,7 +152,7 @@ class TestFileJpeg:
             assert k > 0.9
 
     def test_rgb(self) -> None:
-        def getchannels(im):
+        def getchannels(im: Image.Image) -> tuple[int, int, int]:
             return tuple(v[0] for v in im.layer)
 
         im = hopper()
@@ -161,8 +168,8 @@ class TestFileJpeg:
         "test_image_path",
         [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
     )
-    def test_dpi(self, test_image_path) -> None:
-        def test(xdpi, ydpi=None):
+    def test_dpi(self, test_image_path: str) -> None:
+        def test(xdpi: int, ydpi: int | None = None):
             with Image.open(test_image_path) as im:
                 im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
@@ -207,7 +214,7 @@ class TestFileJpeg:
             ImageFile.MAXBLOCK * 4 + 3,  # large block
         ),
     )
-    def test_icc_big(self, n) -> None:
+    def test_icc_big(self, n: int) -> None:
         # Make sure that the "extra" support handles large blocks
         # The ICC APP marker can store 65519 bytes per marker, so
         # using a 4-byte test code should allow us to detect out of
@@ -245,13 +252,13 @@ class TestFileJpeg:
             im.save(f, progressive=True, quality=94, exif=b" " * 43668)
 
     def test_optimize(self) -> None:
-        im1 = self.roundtrip(hopper())
-        im2 = self.roundtrip(hopper(), optimize=0)
-        im3 = self.roundtrip(hopper(), optimize=1)
+        im1, im1_bytes = self.roundtrip_with_bytes(hopper())
+        im2, im2_bytes = self.roundtrip_with_bytes(hopper(), optimize=0)
+        im3, im3_bytes = self.roundtrip_with_bytes(hopper(), optimize=1)
         assert_image_equal(im1, im2)
         assert_image_equal(im1, im3)
-        assert im1.bytes >= im2.bytes
-        assert im1.bytes >= im3.bytes
+        assert im1_bytes >= im2_bytes
+        assert im1_bytes >= im3_bytes
 
     def test_optimize_large_buffer(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/148
@@ -261,15 +268,15 @@ class TestFileJpeg:
         im.save(f, format="JPEG", optimize=True)
 
     def test_progressive(self) -> None:
-        im1 = self.roundtrip(hopper())
+        im1, im1_bytes = self.roundtrip_with_bytes(hopper())
         im2 = self.roundtrip(hopper(), progressive=False)
-        im3 = self.roundtrip(hopper(), progressive=True)
+        im3, im3_bytes = self.roundtrip_with_bytes(hopper(), progressive=True)
         assert not im1.info.get("progressive")
         assert not im2.info.get("progressive")
         assert im3.info.get("progressive")
 
         assert_image_equal(im1, im3)
-        assert im1.bytes >= im3.bytes
+        assert im1_bytes >= im3_bytes
 
     def test_progressive_large_buffer(self, tmp_path: Path) -> None:
         f = str(tmp_path / "temp.jpg")
@@ -340,6 +347,7 @@ class TestFileJpeg:
             assert exif.get_ifd(0x8825) == {}
 
             transposed = ImageOps.exif_transpose(im)
+        assert transposed is not None
         exif = transposed.getexif()
         assert exif.get_ifd(0x8825) == {}
 
@@ -418,14 +426,14 @@ class TestFileJpeg:
         assert im3.info.get("progression")
 
     def test_quality(self) -> None:
-        im1 = self.roundtrip(hopper())
-        im2 = self.roundtrip(hopper(), quality=50)
+        im1, im1_bytes = self.roundtrip_with_bytes(hopper())
+        im2, im2_bytes = self.roundtrip_with_bytes(hopper(), quality=50)
         assert_image(im1, im2.mode, im2.size)
-        assert im1.bytes >= im2.bytes
+        assert im1_bytes >= im2_bytes
 
-        im3 = self.roundtrip(hopper(), quality=0)
+        im3, im3_bytes = self.roundtrip_with_bytes(hopper(), quality=0)
         assert_image(im1, im3.mode, im3.size)
-        assert im2.bytes > im3.bytes
+        assert im2_bytes > im3_bytes
 
     def test_smooth(self) -> None:
         im1 = self.roundtrip(hopper())
@@ -433,7 +441,7 @@ class TestFileJpeg:
         assert_image(im1, im2.mode, im2.size)
 
     def test_subsampling(self) -> None:
-        def getsampling(im):
+        def getsampling(im: Image.Image):
             layer = im.layer
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
 
@@ -441,25 +449,25 @@ class TestFileJpeg:
         for subsampling in (-1, 3):  # (default, invalid)
             im = self.roundtrip(hopper(), subsampling=subsampling)
             assert getsampling(im) == (2, 2, 1, 1, 1, 1)
-        for subsampling in (0, "4:4:4"):
-            im = self.roundtrip(hopper(), subsampling=subsampling)
+        for subsampling1 in (0, "4:4:4"):
+            im = self.roundtrip(hopper(), subsampling=subsampling1)
             assert getsampling(im) == (1, 1, 1, 1, 1, 1)
-        for subsampling in (1, "4:2:2"):
-            im = self.roundtrip(hopper(), subsampling=subsampling)
+        for subsampling1 in (1, "4:2:2"):
+            im = self.roundtrip(hopper(), subsampling=subsampling1)
             assert getsampling(im) == (2, 1, 1, 1, 1, 1)
-        for subsampling in (2, "4:2:0", "4:1:1"):
-            im = self.roundtrip(hopper(), subsampling=subsampling)
+        for subsampling1 in (2, "4:2:0", "4:1:1"):
+            im = self.roundtrip(hopper(), subsampling=subsampling1)
             assert getsampling(im) == (2, 2, 1, 1, 1, 1)
 
         # RGB colorspace
-        for subsampling in (-1, 0, "4:4:4"):
+        for subsampling1 in (-1, 0, "4:4:4"):
             # "4:4:4" doesn't really make sense for RGB, but the conversion
             # to an integer happens at a higher level
-            im = self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling)
+            im = self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling1)
             assert getsampling(im) == (1, 1, 1, 1, 1, 1)
-        for subsampling in (1, "4:2:2", 2, "4:2:0", 3):
+        for subsampling1 in (1, "4:2:2", 2, "4:2:0", 3):
             with pytest.raises(OSError):
-                self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling)
+                self.roundtrip(hopper(), keep_rgb=True, subsampling=subsampling1)
 
         with pytest.raises(TypeError):
             self.roundtrip(hopper(), subsampling="1:1:1")
@@ -530,7 +538,7 @@ class TestFileJpeg:
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
     def test_qtables(self, tmp_path: Path) -> None:
-        def _n_qtables_helper(n, test_file) -> None:
+        def _n_qtables_helper(n: int, test_file: str) -> None:
             with Image.open(test_file) as im:
                 f = str(tmp_path / "temp.jpg")
                 im.save(f, qtables=[[n] * 64] * n)
@@ -666,7 +674,7 @@ class TestFileJpeg:
         "blocks, rows, markers",
         ((0, 0, 0), (1, 0, 15), (3, 0, 5), (8, 0, 1), (0, 1, 3), (0, 2, 1)),
     )
-    def test_restart_markers(self, blocks, rows, markers) -> None:
+    def test_restart_markers(self, blocks: int, rows: int, markers: int) -> None:
         im = Image.new("RGB", (32, 32))  # 16 MCUs
         out = BytesIO()
         im.save(
@@ -724,13 +732,13 @@ class TestFileJpeg:
             assert im.format == "JPEG"
 
     @pytest.mark.parametrize("mode", ("1", "L", "RGB", "RGBX", "CMYK", "YCbCr"))
-    def test_save_correct_modes(self, mode) -> None:
+    def test_save_correct_modes(self, mode: str) -> None:
         out = BytesIO()
         img = Image.new(mode, (20, 20))
         img.save(out, "JPEG")
 
     @pytest.mark.parametrize("mode", ("LA", "La", "RGBA", "RGBa", "P"))
-    def test_save_wrong_modes(self, mode) -> None:
+    def test_save_wrong_modes(self, mode: str) -> None:
         # ref https://github.com/python-pillow/Pillow/issues/2005
         out = BytesIO()
         img = Image.new(mode, (20, 20))
@@ -817,7 +825,7 @@ class TestFileJpeg:
         with Image.open("Tests/images/no-dpi-in-exif.jpg") as im:
             # Act / Assert
             # "When the image resolution is unknown, 72 [dpi] is designated."
-            # https://exiv2.org/tags.html
+            # https://web.archive.org/web/20240227115053/https://exiv2.org/tags.html
             assert im.info.get("dpi") == (72, 72)
 
     def test_invalid_exif(self) -> None:
@@ -982,16 +990,10 @@ class TestFileJpeg:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
-            def decode(self, buffer):
+            def decode(self, buffer: bytes) -> tuple[int, int]:
                 return 0, 0
 
-        decoder = InfiniteMockPyDecoder(None)
-
-        def closure(mode, *args):
-            decoder.__init__(mode, *args)
-            return decoder
-
-        Image.register_decoder("INFINITE", closure)
+        Image.register_decoder("INFINITE", InfiniteMockPyDecoder)
 
         with Image.open(TEST_FILE) as im:
             im.tile = [

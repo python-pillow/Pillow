@@ -1,3 +1,10 @@
+skip_commits:
+  files:
+    - ".github/**/*"
+    - ".gitmodules"
+    - "docs/**/*"
+    - "wheels/**/*"
+
 version: '{build}'
 clone_folder: c:\pillow
 init:
@@ -6,6 +13,7 @@ init:
 # Uncomment previous line to get RDP access during the build.
 
 environment:
+  COVERAGE_CORE: sysmon
   EXECUTABLE: python.exe
   TEST_OPTIONS:
   DEPLOY: YES
@@ -26,7 +34,7 @@ install:
 - xcopy /S /Y c:\test-images-main\* c:\pillow\tests\images
 - curl -fsSL -o nasm-win64.zip https://raw.githubusercontent.com/python-pillow/pillow-depends/main/nasm-2.16.01-win64.zip
 - 7z x nasm-win64.zip -oc:\
-- choco install ghostscript --version=10.0.0.20230317
+- choco install ghostscript --version=10.3.0
 - path c:\nasm-2.16.01;C:\Program Files\gs\gs10.00.0\bin;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |

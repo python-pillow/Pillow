@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import io
 import struct
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
@@ -163,7 +164,7 @@ Image.register_decoder("MSP", MspDecoder)
 # write MSP files (uncompressed only)
 
 
-def _save(im: Image.Image, fp: io.BytesIO, filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as MSP"
         raise OSError(msg)

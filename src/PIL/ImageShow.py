@@ -138,6 +138,17 @@ class WindowsViewer(Viewer):
             f'&& del /f "{file}"'
         )
 
+    def show_file(self, path: str, **options: Any) -> int:
+        """
+        Display given file.
+        """
+        subprocess.Popen(
+            self.get_command(path, **options),
+            shell=True,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW"),
+        )  # nosec
+        return 1
+
 
 if sys.platform == "win32":
     register(WindowsViewer)
@@ -184,7 +195,7 @@ class UnixViewer(Viewer):
 
     @abc.abstractmethod
     def get_command_ex(self, file: str, **options: Any) -> tuple[str, str]:
-        pass  # pragma: no cover
+        pass
 
     def get_command(self, file: str, **options: Any) -> str:
         command = self.get_command_ex(file, **options)[0]
