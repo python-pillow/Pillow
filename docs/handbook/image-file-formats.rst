@@ -1488,7 +1488,7 @@ QOI
 
 .. versionadded:: 9.5.0
 
-Pillow identifies and reads images in Quite OK Image format.
+Pillow reads images in Quite OK Image format, using a Python decoder.
 
 SUN
 ^^^
