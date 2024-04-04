@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any
+from typing import IO, TYPE_CHECKING, Any, Literal, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -55,7 +55,7 @@ from . import (
     _plugins,
 )
 from ._binary import i32le, o32be, o32le
-from ._typing import TypeGuard
+from ._typing import StrOrBytesPath, TypeGuard
 from ._util import DeferredError, is_path
 
 ElementTree: ModuleType | None
@@ -357,7 +357,7 @@ def preinit() -> None:
     _initialized = 1
 
 
-def init():
+def init() -> bool:
     """
     Explicitly initializes the Python Imaging Library. This function
     loads all available file format drivers.
@@ -368,7 +368,7 @@ def init():
 
     global _initialized
     if _initialized >= 2:
-        return 0
+        return False
 
     parent_name = __name__.rpartition(".")[0]
     for plugin in _plugins:
@@ -380,7 +380,8 @@ def init():
 
     if OPEN or SAVE:
         _initialized = 2
-        return 1
+        return True
+    return False
 
 
 # --------------------------------------------------------------------
@@ -3222,7 +3223,11 @@ def _decompression_bomb_check(size: tuple[int, int]) -> None:
         )
 
 
-def open(fp, mode="r", formats=None) -> Image:
+def open(
+    fp: StrOrBytesPath | IO[bytes],
+    mode: Literal["r"] = "r",
+    formats: list[str] | tuple[str, ...] | None = None,
+) -> ImageFile.ImageFile:
     """
     Opens and identifies the given image file.
 
@@ -3253,10 +3258,10 @@ def open(fp, mode="r", formats=None) -> Image:
     """
 
     if mode != "r":
-        msg = f"bad mode {repr(mode)}"
+        msg = f"bad mode {repr(mode)}"  # type: ignore[unreachable]
         raise ValueError(msg)
     elif isinstance(fp, io.StringIO):
-        msg = (
+        msg = (  # type: ignore[unreachable]
             "StringIO cannot be used to open an image. "
             "Binary data must be used instead."
         )
@@ -3265,7 +3270,7 @@ def open(fp, mode="r", formats=None) -> Image:
     if formats is None:
         formats = ID
     elif not isinstance(formats, (list, tuple)):
-        msg = "formats must be a list or tuple"
+        msg = "formats must be a list or tuple"  # type: ignore[unreachable]
         raise TypeError(msg)
 
     exclusive_fp = False
@@ -3276,6 +3281,8 @@ def open(fp, mode="r", formats=None) -> Image:
     if filename:
         fp = builtins.open(filename, "rb")
         exclusive_fp = True
+    else:
+        fp = cast(IO[bytes], fp)
 
     try:
         fp.seek(0)
@@ -3287,9 +3294,14 @@ def open(fp, mode="r", formats=None) -> Image:
 
     preinit()
 
-    accept_warnings = []
+    accept_warnings: list[str | bytes] = []
 
-    def _open_core(fp, filename, prefix, formats):
+    def _open_core(
+        fp: IO[bytes],
+        filename: str | bytes,
+        prefix: bytes,
+        formats: list[str] | tuple[str, ...],
+    ) -> ImageFile.ImageFile | None:
         for i in formats:
             i = i.upper()
             if i not in OPEN:
@@ -3298,7 +3310,7 @@ def open(fp, mode="r", formats=None) -> Image:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
                 if type(result) in [str, bytes]:
-                    accept_warnings.append(result)
+                    accept_warnings.append(result)  # type: ignore[arg-type]
                 elif result:
                     fp.seek(0)
                     im = factory(fp, filename)
@@ -3318,7 +3330,7 @@ def open(fp, mode="r", formats=None) -> Image:
     im = _open_core(fp, filename, prefix, formats)
 
     if im is None and formats is ID:
-        checked_formats = formats.copy()
+        checked_formats = ID.copy()
         if init():
             im = _open_core(
                 fp,
@@ -3334,7 +3346,7 @@ def open(fp, mode="r", formats=None) -> Image:
     if exclusive_fp:
         fp.close()
     for message in accept_warnings:
-        warnings.warn(message)
+        warnings.warn(message)  # type: ignore[arg-type]
     msg = "cannot identify image file %r" % (filename if filename else fp)
     raise UnidentifiedImageError(msg)
 
