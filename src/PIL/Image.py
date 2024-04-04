@@ -3222,7 +3222,7 @@ def _decompression_bomb_check(size: tuple[int, int]) -> None:
         )
 
 
-def open(fp, mode="r", formats=None) -> Image:
+def open(fp, mode="r", formats=None) -> ImageFile.ImageFile:
     """
     Opens and identifies the given image file.
 
