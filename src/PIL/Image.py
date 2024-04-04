@@ -2374,7 +2374,9 @@ class Image:
             (w, h), Transform.AFFINE, matrix, resample, fillcolor=fillcolor
         )
 
-    def save(self, fp, format=None, **params) -> None:
+    def save(
+        self, fp: StrOrBytesPath | IO[bytes], format: str | None = None, **params: Any
+    ) -> None:
         """
         Saves this image under the given filename.  If no format is
         specified, the format to use is determined from the filename
@@ -2455,6 +2457,8 @@ class Image:
                 fp = builtins.open(filename, "r+b")
             else:
                 fp = builtins.open(filename, "w+b")
+        else:
+            fp = cast(IO[bytes], fp)
 
         try:
             save_handler(self, fp, filename)
