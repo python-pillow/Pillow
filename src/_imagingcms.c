@@ -390,7 +390,7 @@ _buildTransform(
 
     Py_END_ALLOW_THREADS
 
-        if (!hTransform) {
+    if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build transform");
     }
 
@@ -424,7 +424,7 @@ _buildProofTransform(
 
     Py_END_ALLOW_THREADS
 
-        if (!hTransform) {
+    if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build proof transform");
     }
 
