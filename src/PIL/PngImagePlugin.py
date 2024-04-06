@@ -689,7 +689,7 @@ class PngStream(ChunkStream):
 # PNG reader
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:8] == _MAGIC
 
 

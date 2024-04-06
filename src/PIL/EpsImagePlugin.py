@@ -195,7 +195,7 @@ class PSFile:
         return b"".join(s).decode("latin-1")
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"%!PS" or (len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5)
 
 

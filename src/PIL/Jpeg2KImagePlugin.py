@@ -176,6 +176,10 @@ def _parse_jp2_header(fp):
                 mode = "RGB"
             elif nc == 4:
                 mode = "RGBA"
+        elif tbox == b"colr" and nc == 4:
+            meth, _, _, enumcs = header.read_fields(">BBBI")
+            if meth == 1 and enumcs == 12:
+                mode = "CMYK"
         elif tbox == b"pclr" and mode in ("L", "LA"):
             ne, npc = header.read_fields(">HB")
             bitdepths = header.read_fields(">" + ("B" * npc))
@@ -313,7 +317,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         return ImageFile.ImageFile.load(self)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return (
         prefix[:4] == b"\xff\x4f\xff\x51"
         or prefix[:12] == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"

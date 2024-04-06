@@ -13,7 +13,7 @@ from . import Image, ImageFile
 from ._binary import i32be as i32
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"qoif"
 
 
