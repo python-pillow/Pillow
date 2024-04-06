@@ -704,12 +704,12 @@ def applyTransform(
     """
     (pyCMS) Applies a transform to a given image.
 
-    If ``im.mode != transform.inMode``, a :exc:`PyCMSError` is raised.
+    If ``im.mode != transform.input_mode``, a :exc:`PyCMSError` is raised.
 
-    If ``inPlace`` is ``True`` and ``transform.inMode != transform.outMode``, a
+    If ``inPlace`` is ``True`` and ``transform.input_mode != transform.output_mode``, a
     :exc:`PyCMSError` is raised.
 
-    If ``im.mode``, ``transform.inMode`` or ``transform.outMode`` is not
+    If ``im.mode``, ``transform.input_mode`` or ``transform.output_mode`` is not
     supported by pyCMSdll or the profiles you used for the transform, a
     :exc:`PyCMSError` is raised.
 
@@ -723,13 +723,13 @@ def applyTransform(
 
     If you want to modify im in-place instead of receiving a new image as
     the return value, set ``inPlace`` to ``True``.  This can only be done if
-    ``transform.inMode`` and ``transform.outMode`` are the same, because we can't
-    change the mode in-place (the buffer sizes for some modes are
+    ``transform.input_mode`` and ``transform.output_mode`` are the same, because we
+    can't change the mode in-place (the buffer sizes for some modes are
     different).  The default behavior is to return a new :py:class:`~PIL.Image.Image`
-    object of the same dimensions in mode ``transform.outMode``.
+    object of the same dimensions in mode ``transform.output_mode``.
 
-    :param im: An :py:class:`~PIL.Image.Image` object, and im.mode must be the same
-        as the ``inMode`` supported by the transform.
+    :param im: An :py:class:`~PIL.Image.Image` object, and ``im.mode`` must be the same
+        as the ``input_mode`` supported by the transform.
     :param transform: A valid CmsTransform class object
     :param inPlace: Bool.  If ``True``, ``im`` is modified in place and ``None`` is
         returned, if ``False``, a new :py:class:`~PIL.Image.Image` object with the
