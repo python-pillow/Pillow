@@ -728,8 +728,8 @@ def applyTransform(
     different).  The default behavior is to return a new :py:class:`~PIL.Image.Image`
     object of the same dimensions in mode ``transform.output_mode``.
 
-    :param im: An :py:class:`~PIL.Image.Image` object, and im.mode must be the same
-        as the ``inMode`` supported by the transform.
+    :param im: An :py:class:`~PIL.Image.Image` object, and ``im.mode`` must be the same
+        as the ``input_mode`` supported by the transform.
     :param transform: A valid CmsTransform class object
     :param inPlace: Bool.  If ``True``, ``im`` is modified in place and ``None`` is
         returned, if ``False``, a new :py:class:`~PIL.Image.Image` object with the
