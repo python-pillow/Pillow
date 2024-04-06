@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+10.4.0 (unreleased)
+-------------------
+
+- Support reading CMYK JPEG2000 images #7947
+  [radarhere]
+
 10.3.0 (2024-04-01)
 -------------------
 
