@@ -223,7 +223,7 @@ OPEN: dict[
     str,
     tuple[
         Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
-        Callable[[bytes], bool] | None,
+        Callable[[bytes], bool | str] | None,
     ],
 ] = {}
 MIME: dict[str, str] = {}
@@ -3298,7 +3298,7 @@ def open(
 
     preinit()
 
-    accept_warnings: list[str | bytes] = []
+    accept_warnings: list[str] = []
 
     def _open_core(
         fp: IO[bytes],
@@ -3313,8 +3313,8 @@ def open(
             try:
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
-                if type(result) in [str, bytes]:
-                    accept_warnings.append(result)  # type: ignore[arg-type]
+                if isinstance(result, str):
+                    accept_warnings.append(result)
                 elif result:
                     fp.seek(0)
                     im = factory(fp, filename)
@@ -3350,7 +3350,7 @@ def open(
     if exclusive_fp:
         fp.close()
     for message in accept_warnings:
-        warnings.warn(message)  # type: ignore[arg-type]
+        warnings.warn(message)
     msg = "cannot identify image file %r" % (filename if filename else fp)
     raise UnidentifiedImageError(msg)
 
@@ -3464,7 +3464,7 @@ def merge(mode, bands):
 def register_open(
     id,
     factory: Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
-    accept: Callable[[bytes], bool] | None = None,
+    accept: Callable[[bytes], bool | str] | None = None,
 ) -> None:
     """
     Register an image file plugin.  This function should not be used

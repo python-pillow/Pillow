@@ -48,7 +48,7 @@ BIT2MODE = {
 }
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:2] == b"BM"
 
 
