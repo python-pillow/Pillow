@@ -13,7 +13,7 @@ import sysconfig
 import tempfile
 from functools import lru_cache
 from io import BytesIO
-from typing import Any, Callable, NamedTuple, Sequence
+from typing import Any, Callable, Sequence
 
 import pytest
 from packaging.version import parse as parse_version
@@ -29,38 +29,31 @@ elif "GITHUB_ACTIONS" in os.environ:
     uploader = "github_actions"
 
 
-class ImageModeInfo(NamedTuple):
-    name: str
-    pixel_size: int
-
-
-image_modes = (
-    ImageModeInfo("1", 1),
-    ImageModeInfo("L", 1),
-    ImageModeInfo("LA", 4),
-    ImageModeInfo("La", 4),
-    ImageModeInfo("P", 1),
-    ImageModeInfo("PA", 4),
-    ImageModeInfo("F", 4),
-    ImageModeInfo("I", 4),
-    ImageModeInfo("I;16", 2),
-    ImageModeInfo("I;16L", 2),
-    ImageModeInfo("I;16B", 2),
-    ImageModeInfo("I;16N", 2),
-    ImageModeInfo("RGB", 4),
-    ImageModeInfo("RGBA", 4),
-    ImageModeInfo("RGBa", 4),
-    ImageModeInfo("RGBX", 4),
-    ImageModeInfo("BGR;15", 2),
-    ImageModeInfo("BGR;16", 2),
-    ImageModeInfo("BGR;24", 3),
-    ImageModeInfo("CMYK", 4),
-    ImageModeInfo("YCbCr", 4),
-    ImageModeInfo("HSV", 4),
-    ImageModeInfo("LAB", 4),
+image_mode_names = (
+    "1",
+    "L",
+    "LA",
+    "La",
+    "P",
+    "PA",
+    "F",
+    "I",
+    "I;16",
+    "I;16L",
+    "I;16B",
+    "I;16N",
+    "RGB",
+    "RGBA",
+    "RGBa",
+    "RGBX",
+    "BGR;15",
+    "BGR;16",
+    "BGR;24",
+    "CMYK",
+    "YCbCr",
+    "HSV",
+    "LAB",
 )
-
-image_mode_names = [mode.name for mode in image_modes]
 
 
 def upload(a: Image.Image, b: Image.Image) -> str | None:

@@ -23,14 +23,12 @@ from PIL import (
 )
 
 from .helper import (
-    ImageModeInfo,
     assert_image_equal,
     assert_image_equal_tofile,
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
     image_mode_names,
-    image_modes,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -1036,13 +1034,20 @@ class TestImageBytes:
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", image_modes)
-    def test_getdata_putdata(self, mode: ImageModeInfo) -> None:
-        im = Image.new(mode.name, (2, 2))
-        source_bytes = bytes(range(im.width * im.height * mode.pixel_size))
+    @pytest.mark.parametrize("mode", image_mode_names)
+    def test_getdata_putdata(self, mode: str) -> None:
+        # create an image with 1 pixel to get its pixel size
+        im = Image.new(mode, (1, 1))
+        pixel_size = len(im.tobytes())
+
+        # create a new image with incrementing byte values
+        im = Image.new(mode, (2, 2))
+        source_bytes = bytes(range(im.width * im.height * pixel_size))
         im.frombytes(source_bytes)
 
-        reloaded = Image.new(mode.name, im.size)
+        # copy the data from the previous image to a new image
+        # and check that they are the same
+        reloaded = Image.new(mode, im.size)
         reloaded.putdata(im.getdata())
         assert_image_equal(im, reloaded)
 
