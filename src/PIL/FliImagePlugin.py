@@ -27,7 +27,7 @@ from ._binary import o8
 # decoder
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return (
         len(prefix) >= 6
         and i16(prefix, 4) in [0xAF11, 0xAF12]

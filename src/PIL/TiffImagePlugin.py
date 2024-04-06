@@ -277,7 +277,7 @@ PREFIXES = [
 ]
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] in PREFIXES
 
 

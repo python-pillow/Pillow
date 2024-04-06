@@ -344,7 +344,7 @@ MARKER = {
 }
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
     return prefix[:3] == b"\xFF\xD8\xFF"
 

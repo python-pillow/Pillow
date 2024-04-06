@@ -29,7 +29,7 @@ from . import Image, ImageFile
 from ._binary import i32be as i32
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return len(prefix) >= 8 and i32(prefix, 0) >= 20 and i32(prefix, 4) in (1, 2)
 
 

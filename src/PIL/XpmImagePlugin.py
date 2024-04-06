@@ -24,7 +24,7 @@ from ._binary import o8
 xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:9] == b"/* XPM */"
 
 

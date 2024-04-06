@@ -60,7 +60,7 @@ LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 # Identify/read GIF files
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:6] in [b"GIF87a", b"GIF89a"]
 
 

@@ -562,7 +562,7 @@ def _save(im, fp, filename):
     )
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"DDS "
 
 
