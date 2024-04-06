@@ -289,6 +289,16 @@ def test_rgba(ext: str) -> None:
         assert im.mode == "RGBA"
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@skip_unless_feature_version("jpg_2000", "2.5.1")
+def test_cmyk() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue205.jp2") as im:
+        assert im.mode == "CMYK"
+        assert im.getpixel((0, 0)) == (185, 134, 0, 0)
+
+
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
 def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
