@@ -10,7 +10,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_image_equal, hopper, image_mode_names, is_win32
+from .helper import assert_image_equal, hopper, is_win32, modes
 
 # CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
 # https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
@@ -205,7 +205,7 @@ class TestImageGetPixel(AccessTest):
         with pytest.raises(error):
             im.getpixel((-1, -1))
 
-    @pytest.mark.parametrize("mode", image_mode_names)
+    @pytest.mark.parametrize("mode", modes)
     def test_basic(self, mode: str) -> None:
         self.check(mode)
 

@@ -28,15 +28,15 @@ from .helper import (
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
-    image_mode_names,
     is_win32,
     mark_if_feature_version,
+    modes,
     skip_unless_feature,
 )
 
 
 class TestImage:
-    @pytest.mark.parametrize("mode", image_mode_names)
+    @pytest.mark.parametrize("mode", modes)
     def test_image_modes_success(self, mode: str) -> None:
         Image.new(mode, (1, 1))
 
@@ -1017,7 +1017,7 @@ class TestImage:
 
 
 class TestImageBytes:
-    @pytest.mark.parametrize("mode", image_mode_names)
+    @pytest.mark.parametrize("mode", modes)
     def test_roundtrip_bytes_constructor(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
@@ -1025,7 +1025,7 @@ class TestImageBytes:
         reloaded = Image.frombytes(mode, im.size, source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", image_mode_names)
+    @pytest.mark.parametrize("mode", modes)
     def test_roundtrip_bytes_method(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
@@ -1034,7 +1034,7 @@ class TestImageBytes:
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", image_mode_names)
+    @pytest.mark.parametrize("mode", modes)
     def test_getdata_putdata(self, mode: str) -> None:
         im = hopper(mode)
         reloaded = Image.new(mode, im.size)

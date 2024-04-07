@@ -29,7 +29,7 @@ elif "GITHUB_ACTIONS" in os.environ:
     uploader = "github_actions"
 
 
-image_mode_names = (
+modes = (
     "1",
     "L",
     "LA",
