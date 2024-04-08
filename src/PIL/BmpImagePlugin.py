@@ -53,7 +53,7 @@ def _accept(prefix: bytes) -> bool:
 
 
 def _dib_accept(prefix):
-    return i32(prefix) in [12, 40, 52, 64, 108, 124]
+    return i32(prefix) in [12, 40, 52, 56, 64, 108, 124]
 
 
 # =============================================================================
@@ -95,7 +95,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # --------------------------------------------- Windows Bitmap v2 to v5
         # v3, OS/2 v2, v4, v5
-        elif file_info["header_size"] in (40, 52, 64, 108, 124):
+        elif file_info["header_size"] in (40, 52, 56, 64, 108, 124):
             file_info["y_flip"] = header_data[7] == 0xFF
             file_info["direction"] = 1 if file_info["y_flip"] else -1
             file_info["width"] = i32(header_data, 0)
