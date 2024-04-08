@@ -83,8 +83,9 @@ class BmpImageFile(ImageFile.ImageFile):
         # read the rest of the bmp header, without its size
         header_data = ImageFile._safe_read(self.fp, file_info["header_size"] - 4)
 
-        # -------------------------------------------------- IBM OS/2 Bitmap v1
+        # ------------------------------- Windows Bitmap v2, IBM OS/2 Bitmap v1
         # ----- This format has different offsets because of width/height types
+        # 12: BITMAPCOREHEADER/OS21XBITMAPHEADER
         if file_info["header_size"] == 12:
             file_info["width"] = i16(header_data, 0)
             file_info["height"] = i16(header_data, 2)
@@ -93,8 +94,13 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info["compression"] = self.RAW
             file_info["palette_padding"] = 3
 
-        # --------------------------------------------- Windows Bitmap v2 to v5
-        # v3, OS/2 v2, v4, v5
+        # --------------------------------------------- Windows Bitmap v3 to v5
+        #  40: BITMAPINFOHEADER
+        #  52: BITMAPV2HEADER
+        #  56: BITMAPV3HEADER
+        #  64: BITMAPCOREHEADER2/OS22XBITMAPHEADER
+        # 108: BITMAPV4HEADER
+        # 124: BITMAPV5HEADER
         elif file_info["header_size"] in (40, 52, 56, 64, 108, 124):
             file_info["y_flip"] = header_data[7] == 0xFF
             file_info["direction"] = 1 if file_info["y_flip"] else -1
