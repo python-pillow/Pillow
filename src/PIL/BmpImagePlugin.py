@@ -53,7 +53,7 @@ def _accept(prefix: bytes) -> bool:
 
 
 def _dib_accept(prefix):
-    return i32(prefix) in [12, 40, 64, 108, 124]
+    return i32(prefix) in [12, 40, 52, 64, 108, 124]
 
 
 # =============================================================================
@@ -95,7 +95,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # --------------------------------------------- Windows Bitmap v2 to v5
         # v3, OS/2 v2, v4, v5
-        elif file_info["header_size"] in (40, 64, 108, 124):
+        elif file_info["header_size"] in (40, 52, 64, 108, 124):
             file_info["y_flip"] = header_data[7] == 0xFF
             file_info["direction"] = 1 if file_info["y_flip"] else -1
             file_info["width"] = i32(header_data, 0)
@@ -117,10 +117,13 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info["palette_padding"] = 4
             self.info["dpi"] = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
             if file_info["compression"] == self.BITFIELDS:
-                if len(header_data) >= 52:
-                    for idx, mask in enumerate(
-                        ["r_mask", "g_mask", "b_mask", "a_mask"]
-                    ):
+                if len(header_data) >= 48:
+                    masks = ["r_mask", "g_mask", "b_mask"]
+                    if len(header_data) >= 52:
+                        masks.append("a_mask")
+                    else:
+                        file_info["a_mask"] = 0x0
+                    for idx, mask in enumerate(masks):
                         file_info[mask] = i32(header_data, 36 + idx * 4)
                 else:
                     # 40 byte headers only have the three components in the

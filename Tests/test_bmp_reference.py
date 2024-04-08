@@ -44,6 +44,7 @@ def test_questionable() -> None:
         "pal8os2sp.bmp",
         "pal8rletrns.bmp",
         "rgb32bf-xbgr.bmp",
+        "rgb32h52.bmp",
     ]
     for f in get_files("q"):
         try:
