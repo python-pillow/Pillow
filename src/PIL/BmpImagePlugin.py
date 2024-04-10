@@ -123,8 +123,8 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info["palette_padding"] = 4
             self.info["dpi"] = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
             if file_info["compression"] == self.BITFIELDS:
+                masks = ["r_mask", "g_mask", "b_mask"]
                 if len(header_data) >= 48:
-                    masks = ["r_mask", "g_mask", "b_mask"]
                     if len(header_data) >= 52:
                         masks.append("a_mask")
                     else:
@@ -141,7 +141,7 @@ class BmpImageFile(ImageFile.ImageFile):
                     # location, but it is listed as a reserved component,
                     # and it is not generally an alpha channel
                     file_info["a_mask"] = 0x0
-                    for mask in ["r_mask", "g_mask", "b_mask"]:
+                    for mask in masks:
                         file_info[mask] = i32(read(4))
                 file_info["rgb_mask"] = (
                     file_info["r_mask"],
