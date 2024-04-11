@@ -284,7 +284,7 @@ class TestCoreResampleAlphaCorrect:
             used_colors = {px[x, y][0] for x in range(i.size[0])}
             assert 256 == len(used_colors), (
                 "All colors should be present in resized image. "
-                f"Only {len(used_colors)} on {y} line."
+                f"Only {len(used_colors)} on line {y}."
             )
 
     @pytest.mark.xfail(reason="Current implementation isn't precise enough")
