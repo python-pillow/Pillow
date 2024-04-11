@@ -16,24 +16,17 @@ from __future__ import annotations
 
 import sys
 from functools import lru_cache
+from typing import NamedTuple
 
 
-class ModeDescriptor:
+class ModeDescriptor(NamedTuple):
     """Wrapper for mode strings."""
 
-    def __init__(
-        self,
-        mode: str,
-        bands: tuple[str, ...],
-        basemode: str,
-        basetype: str,
-        typestr: str,
-    ) -> None:
-        self.mode = mode
-        self.bands = bands
-        self.basemode = basemode
-        self.basetype = basetype
-        self.typestr = typestr
+    mode: str
+    bands: tuple[str, ...]
+    basemode: str
+    basetype: str
+    typestr: str
 
     def __str__(self) -> str:
         return self.mode
