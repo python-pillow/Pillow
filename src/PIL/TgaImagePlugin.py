@@ -36,7 +36,7 @@ MODES = {
     (3, 1): "1",
     (3, 8): "L",
     (3, 16): "LA",
-    (2, 16): "BGR;15",
+    (2, 16): "BGRA;15",
     (2, 24): "BGR",
     (2, 32): "BGRA",
 }
@@ -118,7 +118,7 @@ class TgaImageFile(ImageFile.ImageFile):
             start, size, mapdepth = i16(s, 3), i16(s, 5), s[7]
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
-                    "BGR;15", b"\0" * 2 * start + self.fp.read(2 * size)
+                    "BGRA;15", b"\0" * 2 * start + self.fp.read(2 * size)
                 )
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
