@@ -120,6 +120,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.palette = ImagePalette.raw(
                     "BGRA;15", b"\0" * 2 * start + self.fp.read(2 * size)
                 )
+                self.palette.mode = "RGBA"
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
                     "BGR", b"\0" * 3 * start + self.fp.read(3 * size)
