@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Add support for reading BITMAPV2INFOHEADER and BITMAPV3INFOHEADER #7956
+  [Cirras, radarhere]
+
 - Support reading CMYK JPEG2000 images #7947
   [radarhere]
 
