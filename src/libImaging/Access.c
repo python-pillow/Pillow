@@ -86,9 +86,9 @@ get_pixel_BGR15(Imaging im, int x, int y, void *color) {
     UINT8 *in = (UINT8 *)&im->image8[y][x * 2];
     UINT16 pixel = in[0] + (in[1] << 8);
     char *out = color;
-    out[0] = (pixel & 31) * 255 / 31;
-    out[1] = ((pixel >> 5) & 31) * 255 / 31;
-    out[2] = ((pixel >> 10) & 31) * 255 / 31;
+    out[0] = (pixel >> 10) & 31;
+    out[1] = (pixel >> 5) & 31;
+    out[2] = pixel & 31;
 }
 
 static void
@@ -96,9 +96,9 @@ get_pixel_BGR16(Imaging im, int x, int y, void *color) {
     UINT8 *in = (UINT8 *)&im->image8[y][x * 2];
     UINT16 pixel = in[0] + (in[1] << 8);
     char *out = color;
-    out[0] = (pixel & 31) * 255 / 31;
-    out[1] = ((pixel >> 5) & 63) * 255 / 63;
-    out[2] = ((pixel >> 11) & 31) * 255 / 31;
+    out[0] = (pixel >> 11) & 31;
+    out[1] = (pixel >> 5) & 63;
+    out[2] = pixel & 31;
 }
 
 static void

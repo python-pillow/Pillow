@@ -80,7 +80,7 @@ def test_mode_F() -> None:
 
 @pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
 def test_mode_BGR(mode: str) -> None:
-    data = [(16, 32, 49), (32, 32, 98)]
+    data = [(1, 2, 3), (10, 11, 12)]
     im = Image.new(mode, (1, 2))
     im.putdata(data)
 

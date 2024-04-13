@@ -605,18 +605,18 @@ getink(PyObject *color, Imaging im, char *ink) {
                     return NULL;
                 }
                 if (!strcmp(im->mode, "BGR;15")) {
-                    UINT16 v = ((((UINT16)r) << 7) & 0x7c00) +
-                               ((((UINT16)g) << 2) & 0x03e0) +
-                               ((((UINT16)b) >> 3) & 0x001f);
+                    UINT16 v = ((((UINT16)b) << 10) & 0x7c00) +
+                               ((((UINT16)g) << 5) & 0x03e0) +
+                               ((((UINT16)r) >> 0) & 0x001f);
 
                     ink[0] = (UINT8)v;
                     ink[1] = (UINT8)(v >> 8);
                     ink[2] = ink[3] = 0;
                     return ink;
                 } else if (!strcmp(im->mode, "BGR;16")) {
-                    UINT16 v = ((((UINT16)r) << 8) & 0xf800) +
-                               ((((UINT16)g) << 3) & 0x07e0) +
-                               ((((UINT16)b) >> 3) & 0x001f);
+                    UINT16 v = ((((UINT16)b) << 11) & 0xf800) +
+                               ((((UINT16)g) << 5) & 0x07e0) +
+                               ((((UINT16)r) >> 0) & 0x001f);
                     ink[0] = (UINT8)v;
                     ink[1] = (UINT8)(v >> 8);
                     ink[2] = ink[3] = 0;

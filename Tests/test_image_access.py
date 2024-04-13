@@ -137,10 +137,6 @@ class TestImageGetPixel(AccessTest):
         bands = Image.getmodebands(mode)
         if bands == 1:
             return 1
-        if mode in ("BGR;15", "BGR;16"):
-            # These modes have less than 8 bits per band,
-            # so (1, 2, 3) cannot be roundtripped.
-            return (16, 32, 49)
         return tuple(range(1, bands + 1))
 
     def check(self, mode: str, expected_color_int: int | None = None) -> None:
