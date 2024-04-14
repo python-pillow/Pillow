@@ -3,10 +3,12 @@ from __future__ import annotations
 from fractions import Fraction
 from pathlib import Path
 
-from PIL import Image, TiffImagePlugin, features
+import pytest
+
+from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import IFDRational
 
-from .helper import hopper
+from .helper import hopper, skip_unless_feature
 
 
 def _test_equal(num, denom, target) -> None:
@@ -52,18 +54,17 @@ def test_nonetype() -> None:
     assert xres and yres
 
 
-def test_ifd_rational_save(tmp_path: Path) -> None:
-    methods = [True]
-    if features.check("libtiff"):
-        methods.append(False)
+@pytest.mark.parametrize(
+    "libtiff", (pytest.param(True, marks=skip_unless_feature("libtiff")), False)
+)
+def test_ifd_rational_save(tmp_path: Path, libtiff: bool) -> None:
+    im = hopper()
+    out = str(tmp_path / "temp.tiff")
+    res = IFDRational(301, 1)
 
-    for libtiff in methods:
-        TiffImagePlugin.WRITE_LIBTIFF = libtiff
+    TiffImagePlugin.WRITE_LIBTIFF = libtiff
+    im.save(out, dpi=(res, res), compression="raw")
+    TiffImagePlugin.WRITE_LIBTIFF = False
 
-        im = hopper()
-        out = str(tmp_path / "temp.tiff")
-        res = IFDRational(301, 1)
-        im.save(out, dpi=(res, res), compression="raw")
-
-        with Image.open(out) as reloaded:
-            assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])
+    with Image.open(out) as reloaded:
+        assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])
