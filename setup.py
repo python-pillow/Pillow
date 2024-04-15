@@ -1018,7 +1018,7 @@ The headers or library files could not be found for {str(err)},
 a required dependency when compiling Pillow from source.
 
 Please see the install instructions at:
-   https://pillow.readthedocs.io/en/latest/installation.html
+   https://pillow.readthedocs.io/en/latest/installation/basic-installation.html
 
 """
     sys.stderr.write(msg)
