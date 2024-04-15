@@ -66,7 +66,11 @@ image_mode_names = [name for name, _ in image_modes]
 class TestImage:
     @pytest.mark.parametrize("mode", image_mode_names)
     def test_image_modes_success(self, mode: str) -> None:
-        Image.new(mode, (1, 1))
+        if mode.startswith("BGR;"):
+            with pytest.warns(DeprecationWarning):
+                Image.new(mode, (1, 1))
+        else:
+            Image.new(mode, (1, 1))
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
@@ -1050,7 +1054,11 @@ class TestImageBytes:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        reloaded = Image.frombytes(mode, im.size, source_bytes)
+        if mode.startswith("BGR;"):
+            with pytest.warns(DeprecationWarning):
+                reloaded = Image.frombytes(mode, im.size, source_bytes)
+        else:
+            reloaded = Image.frombytes(mode, im.size, source_bytes)
         assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize("mode", image_mode_names)
@@ -1058,17 +1066,29 @@ class TestImageBytes:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        reloaded = Image.new(mode, im.size)
+        if mode.startswith("BGR;"):
+            with pytest.warns(DeprecationWarning):
+                reloaded = Image.new(mode, im.size)
+        else:
+            reloaded = Image.new(mode, im.size)
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize(("mode", "pixelsize"), image_modes)
     def test_getdata_putdata(self, mode: str, pixelsize: int) -> None:
-        im = Image.new(mode, (2, 2))
+        if mode.startswith("BGR;"):
+            with pytest.warns(DeprecationWarning):
+                im = Image.new(mode, (2, 2))
+        else:
+            im = Image.new(mode, (2, 2))
         source_bytes = bytes(range(im.width * im.height * pixelsize))
         im.frombytes(source_bytes)
 
-        reloaded = Image.new(mode, im.size)
+        if mode.startswith("BGR;"):
+            with pytest.warns(DeprecationWarning):
+                reloaded = Image.new(mode, im.size)
+        else:
+            reloaded = Image.new(mode, im.size)
         reloaded.putdata(im.getdata())
         assert_image_equal(im, reloaded)
 
