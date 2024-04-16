@@ -3079,7 +3079,9 @@ class SupportsArrayInterface(Protocol):
     An object that has an ``__array_interface__`` dictionary.
     """
 
-    __array_interface__: dict[str, Any]
+    @property
+    def __array_interface__(self) -> dict[str, Any]:
+        raise NotImplementedError()
 
 
 def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
