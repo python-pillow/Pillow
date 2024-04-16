@@ -51,10 +51,7 @@ class Stat:
         :param mask: An optional mask.
         """
         if isinstance(image_or_list, Image.Image):
-            if mask:
-                self.h = image_or_list.histogram(mask)
-            else:
-                self.h = image_or_list.histogram()
+            self.h = image_or_list.histogram(mask)
         else:
             self.h = image_or_list
         if not isinstance(self.h, list):
