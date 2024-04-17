@@ -70,8 +70,6 @@ def test_getdata_roundtrip(
     ),
 )
 def test_putdata_long_integers(value: int, pixel: tuple[int, int, int, int]) -> None:
-    # see bug-200802-systemerror
-
     im = Image.new("RGBA", (1, 1))
     im.putdata([value])
     assert im.getpixel((0, 0)) == pixel
