@@ -34,7 +34,6 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_inline_tabs",
-    "sphinx_removed_in",
     "sphinxext.opengraph",
 ]
 
