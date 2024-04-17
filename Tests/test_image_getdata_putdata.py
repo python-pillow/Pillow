@@ -61,21 +61,20 @@ def test_getdata_roundtrip(
     assert len(list(data)) == data_size
 
 
-def test_putdata_long_integers() -> None:
+@pytest.mark.parametrize(
+    "value, pixel",
+    (
+        (0xFFFFFFFF, (255, 255, 255, 255)),
+        (-1, (255, 255, 255, 255)),
+        (sys.maxsize, (255, 255, 255, 255 if sys.maxsize > 2**32 else 127)),
+    ),
+)
+def test_putdata_long_integers(value: int, pixel: tuple[int, int, int, int]) -> None:
     # see bug-200802-systemerror
-    def put(value: int) -> float | tuple[int, ...] | None:
-        im = Image.new("RGBA", (1, 1))
-        im.putdata([value])
-        return im.getpixel((0, 0))
 
-    assert put(0xFFFFFFFF) == (255, 255, 255, 255)
-    assert put(0xFFFFFFFF) == (255, 255, 255, 255)
-    assert put(-1) == (255, 255, 255, 255)
-    assert put(-1) == (255, 255, 255, 255)
-    if sys.maxsize > 2**32:
-        assert put(sys.maxsize) == (255, 255, 255, 255)
-    else:
-        assert put(sys.maxsize) == (255, 255, 255, 127)
+    im = Image.new("RGBA", (1, 1))
+    im.putdata([value])
+    assert im.getpixel((0, 0)) == pixel
 
 
 def test_putdata_pypy_performance() -> None:
