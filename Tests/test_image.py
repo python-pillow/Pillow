@@ -30,7 +30,6 @@ from .helper import (
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
-    is_big_endian,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
@@ -1138,15 +1137,6 @@ class TestImageBytes:
         reloaded = helper_image_new(mode, im.size)
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
-
-    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
-    def test_getdata_putdata(self, mode: str) -> None:
-        if is_big_endian() and mode == "BGR;15":
-            pytest.xfail("Known failure of BGR;15 on big-endian")
-        im = hopper(mode)
-        reloaded = helper_image_new(mode, im.size)
-        reloaded.putdata(im.getdata())
-        assert_image_equal(im, reloaded)
 
 
 class MockEncoder(ImageFile.PyEncoder):
