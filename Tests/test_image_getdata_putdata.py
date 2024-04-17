@@ -38,20 +38,27 @@ def test_putdata_sanity() -> None:
     assert_image_equal(im1, im2)
 
 
-def test_getdata_roundtrip() -> None:
-    def getdata(mode: str) -> tuple[float | tuple[int, ...], int, int]:
-        im = hopper(mode).resize((32, 30), Image.Resampling.NEAREST)
-        data = im.getdata()
-        return data[0], len(data), len(list(data))
-
-    assert getdata("1") == (0, 960, 960)
-    assert getdata("L") == (17, 960, 960)
-    assert getdata("I") == (17, 960, 960)
-    assert getdata("F") == (17.0, 960, 960)
-    assert getdata("RGB") == ((11, 13, 52), 960, 960)
-    assert getdata("RGBA") == ((11, 13, 52, 255), 960, 960)
-    assert getdata("CMYK") == ((244, 242, 203, 0), 960, 960)
-    assert getdata("YCbCr") == ((16, 147, 123), 960, 960)
+@pytest.mark.parametrize(
+    "mode, first_pixel, data_size",
+    (
+        ("1", 0, 960),
+        ("L", 17, 960),
+        ("I", 17, 960),
+        ("F", 17.0, 960),
+        ("RGB", (11, 13, 52), 960),
+        ("RGBA", (11, 13, 52, 255), 960),
+        ("CMYK", (244, 242, 203, 0), 960),
+        ("YCbCr", (16, 147, 123), 960),
+    ),
+)
+def test_getdata_roundtrip(
+    mode: str, first_pixel: float | tuple[int, ...], data_size: int
+) -> None:
+    im = hopper(mode).resize((32, 30), Image.Resampling.NEAREST)
+    data = im.getdata()
+    assert data[0] == first_pixel
+    assert len(data) == data_size
+    assert len(list(data)) == data_size
 
 
 def test_putdata_long_integers() -> None:
