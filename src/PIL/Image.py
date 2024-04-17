@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, cast
+from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -3018,7 +3018,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args) -> Image:
     return im
 
 
-def frombuffer(mode, size, data, decoder_name="raw", *args):
+def frombuffer(mode, size, data, decoder_name="raw", *args) -> Image:
     """
     Creates an image memory referencing pixel data in a byte buffer.
 
@@ -3074,7 +3074,17 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     return frombytes(mode, size, data, decoder_name, args)
 
 
-def fromarray(obj, mode=None):
+class SupportsArrayInterface(Protocol):
+    """
+    An object that has an ``__array_interface__`` dictionary.
+    """
+
+    @property
+    def __array_interface__(self) -> dict[str, Any]:
+        raise NotImplementedError()
+
+
+def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     """
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol)::
@@ -3153,8 +3163,11 @@ def fromarray(obj, mode=None):
     if strides is not None:
         if hasattr(obj, "tobytes"):
             obj = obj.tobytes()
-        else:
+        elif hasattr(obj, "tostring"):
             obj = obj.tostring()
+        else:
+            msg = "'strides' requires either tobytes() or tostring()"
+            raise ValueError(msg)
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
