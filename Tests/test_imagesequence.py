@@ -60,10 +60,9 @@ def test_tiff() -> None:
 
 
 @skip_unless_feature("libtiff")
-def test_libtiff() -> None:
-    TiffImagePlugin.READ_LIBTIFF = True
+def test_libtiff(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
     _test_multipage_tiff()
-    TiffImagePlugin.READ_LIBTIFF = False
 
 
 def test_consecutive() -> None:
