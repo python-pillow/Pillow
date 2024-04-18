@@ -735,24 +735,31 @@ class TestFileLibTiff(LibTiffTestCase):
             assert icc_libtiff is not None
         assert icc == icc_libtiff
 
-    def test_write_icc(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-        def check_write(libtiff: bool) -> None:
-            monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", libtiff)
+    @pytest.mark.parametrize(
+        "libtiff",
+        (
+            pytest.param(
+                True,
+                marks=pytest.mark.skipif(
+                    not Image.core.libtiff_support_custom_tags,
+                    reason="Custom tags not supported by older libtiff",
+                ),
+            ),
+            False,
+        ),
+    )
+    def test_write_icc(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", libtiff)
 
-            with Image.open("Tests/images/hopper.iccprofile.tif") as img:
-                icc_profile = img.info["icc_profile"]
+        with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+            icc_profile = img.info["icc_profile"]
 
-                out = str(tmp_path / "temp.tif")
-                img.save(out, icc_profile=icc_profile)
-            with Image.open(out) as reloaded:
-                assert icc_profile == reloaded.info["icc_profile"]
-
-        libtiffs = [False]
-        if Image.core.libtiff_support_custom_tags:
-            libtiffs.append(True)
-
-        for libtiff in libtiffs:
-            check_write(libtiff)
+            out = str(tmp_path / "temp.tif")
+            img.save(out, icc_profile=icc_profile)
+        with Image.open(out) as reloaded:
+            assert icc_profile == reloaded.info["icc_profile"]
 
     def test_multipage_compression(self) -> None:
         with Image.open("Tests/images/compression.tif") as im:
