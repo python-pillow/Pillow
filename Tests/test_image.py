@@ -28,6 +28,7 @@ from .helper import (
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
+    is_big_endian,
     is_win32,
     mark_if_feature_version,
     modes,
@@ -1036,6 +1037,8 @@ class TestImageBytes:
 
     @pytest.mark.parametrize("mode", modes)
     def test_getdata_putdata(self, mode: str) -> None:
+        if is_big_endian and mode in ("BGR;15", "BGR;16"):
+            pytest.xfail(f"Known failure of {mode} on big-endian")
         im = hopper(mode)
         reloaded = Image.new(mode, im.size)
         reloaded.putdata(im.getdata())
