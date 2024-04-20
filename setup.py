@@ -103,6 +103,7 @@ _LIB_IMAGING = (
     "JpegDecode",
     "JpegEncode",
     "Matrix",
+    "Mode",
     "ModeFilter",
     "Negative",
     "Offset",
