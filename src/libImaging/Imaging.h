@@ -11,6 +11,7 @@
  */
 
 #include "ImPlatform.h"
+#include "Mode.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -69,9 +70,6 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 #define IMAGING_TYPE_FLOAT32 2
 #define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
 
-#define IMAGING_MODE_LENGTH \
-    6 + 1 /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
-
 typedef struct {
     char *ptr;
     int size;
@@ -79,12 +77,11 @@ typedef struct {
 
 struct ImagingMemoryInstance {
     /* Format */
-    char mode[IMAGING_MODE_LENGTH]; /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK",
-                                       "YCbCr", "BGR;xy") */
-    int type;                       /* Data type (IMAGING_TYPE_*) */
-    int depth;                      /* Depth (ignored in this version) */
-    int bands;                      /* Number of bands (1, 2, 3, or 4) */
-    int xsize;                      /* Image dimension. */
+    const Mode *mode; /* Image mode (IMAGING_MODE_*) */
+    int type;  /* Data type (IMAGING_TYPE_*) */
+    int depth; /* Depth (ignored in this version) */
+    int bands; /* Number of bands (1, 2, 3, or 4) */
+    int xsize; /* Image dimension. */
     int ysize;
 
     /* Colour palette (for "P" images only) */
@@ -123,15 +120,15 @@ struct ImagingMemoryInstance {
 #define IMAGING_PIXEL_FLOAT32(im, x, y) (((FLOAT32 *)(im)->image32[y])[x])
 
 struct ImagingAccessInstance {
-    const char *mode;
+    const Mode *mode;
     void (*get_pixel)(Imaging im, int x, int y, void *pixel);
     void (*put_pixel)(Imaging im, int x, int y, const void *pixel);
 };
 
 struct ImagingHistogramInstance {
     /* Format */
-    char mode[IMAGING_MODE_LENGTH]; /* Band names (of corresponding source image) */
-    int bands;                      /* Number of bands (1, 3, or 4) */
+    const Mode *mode; /* Mode of corresponding source image */
+    int bands; /* Number of bands (1, 3, or 4) */
 
     /* Data */
     long *histogram; /* Histogram (bands*256 longs) */
@@ -139,7 +136,7 @@ struct ImagingHistogramInstance {
 
 struct ImagingPaletteInstance {
     /* Format */
-    char mode[IMAGING_MODE_LENGTH]; /* Band names */
+    const Mode *mode;
 
     /* Data */
     int size;
