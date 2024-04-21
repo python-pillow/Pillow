@@ -185,7 +185,9 @@ class TestFileLibTiff(LibTiffTestCase):
             assert field in reloaded, f"{field} not in metadata"
 
     @pytest.mark.valgrind_known_error(reason="Known invalid metadata")
-    def test_additional_metadata(self, tmp_path: Path) -> None:
+    def test_additional_metadata(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         # these should not crash. Seriously dummy data, most of it doesn't make
         # any sense, so we're running up against limits where we're asking
         # libtiff to do stupid things.
@@ -236,11 +238,9 @@ class TestFileLibTiff(LibTiffTestCase):
             del new_ifd[338]
 
             out = str(tmp_path / "temp.tif")
-            TiffImagePlugin.WRITE_LIBTIFF = True
+            monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
 
             im.save(out, tiffinfo=new_ifd)
-
-        TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_custom_metadata(self, tmp_path: Path) -> None:
         class Tc(NamedTuple):
@@ -343,24 +343,24 @@ class TestFileLibTiff(LibTiffTestCase):
             # Should not segfault
             im.save(outfile)
 
-    def test_xmlpacket_tag(self, tmp_path: Path) -> None:
-        TiffImagePlugin.WRITE_LIBTIFF = True
+    def test_xmlpacket_tag(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
 
         out = str(tmp_path / "temp.tif")
         hopper().save(out, tiffinfo={700: b"xmlpacket tag"})
-        TiffImagePlugin.WRITE_LIBTIFF = False
 
         with Image.open(out) as reloaded:
             if 700 in reloaded.tag_v2:
                 assert reloaded.tag_v2[700] == b"xmlpacket tag"
 
-    def test_int_dpi(self, tmp_path: Path) -> None:
+    def test_int_dpi(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         # issue #1765
         im = hopper("RGB")
         out = str(tmp_path / "temp.tif")
-        TiffImagePlugin.WRITE_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
         im.save(out, dpi=(72, 72))
-        TiffImagePlugin.WRITE_LIBTIFF = False
         with Image.open(out) as reloaded:
             assert reloaded.info["dpi"] == (72.0, 72.0)
 
@@ -422,13 +422,13 @@ class TestFileLibTiff(LibTiffTestCase):
             assert "temp.tif" == reread.tag_v2[269]
             assert "temp.tif" == reread.tag[269][0]
 
-    def test_12bit_rawmode(self) -> None:
+    def test_12bit_rawmode(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Are we generating the same interpretation
         of the image as Imagemagick is?"""
-        TiffImagePlugin.READ_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/12bit.cropped.tif") as im:
             im.load()
-            TiffImagePlugin.READ_LIBTIFF = False
+            monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", False)
             # to make the target --
             # convert 12bit.cropped.tif -depth 16 tmp.tif
             # convert tmp.tif -evaluate RightShift 4 12in16bit2.tif
@@ -514,12 +514,13 @@ class TestFileLibTiff(LibTiffTestCase):
         assert_image_equal_tofile(im, out)
 
     @pytest.mark.parametrize("im", (hopper("P"), Image.new("P", (1, 1), "#000")))
-    def test_palette_save(self, im: Image.Image, tmp_path: Path) -> None:
+    def test_palette_save(
+        self, im: Image.Image, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         out = str(tmp_path / "temp.tif")
 
-        TiffImagePlugin.WRITE_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
         im.save(out)
-        TiffImagePlugin.WRITE_LIBTIFF = False
 
         with Image.open(out) as reloaded:
             # colormap/palette tag
@@ -548,9 +549,9 @@ class TestFileLibTiff(LibTiffTestCase):
         with pytest.raises(OSError):
             os.close(fn)
 
-    def test_multipage(self) -> None:
+    def test_multipage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # issue #862
-        TiffImagePlugin.READ_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/multipage.tiff") as im:
             # file is a multipage tiff,  10x10 green, 10x10 red, 20x20 blue
 
@@ -569,11 +570,9 @@ class TestFileLibTiff(LibTiffTestCase):
             assert im.size == (20, 20)
             assert im.convert("RGB").getpixel((0, 0)) == (0, 0, 255)
 
-        TiffImagePlugin.READ_LIBTIFF = False
-
-    def test_multipage_nframes(self) -> None:
+    def test_multipage_nframes(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # issue #862
-        TiffImagePlugin.READ_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/multipage.tiff") as im:
             frames = im.n_frames
             assert frames == 3
@@ -582,10 +581,8 @@ class TestFileLibTiff(LibTiffTestCase):
                 # Should not raise ValueError: I/O operation on closed file
                 im.load()
 
-        TiffImagePlugin.READ_LIBTIFF = False
-
-    def test_multipage_seek_backwards(self) -> None:
-        TiffImagePlugin.READ_LIBTIFF = True
+    def test_multipage_seek_backwards(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/multipage.tiff") as im:
             im.seek(1)
             im.load()
@@ -593,24 +590,21 @@ class TestFileLibTiff(LibTiffTestCase):
             im.seek(0)
             assert im.convert("RGB").getpixel((0, 0)) == (0, 128, 0)
 
-        TiffImagePlugin.READ_LIBTIFF = False
-
-    def test__next(self) -> None:
-        TiffImagePlugin.READ_LIBTIFF = True
+    def test__next(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/hopper.tif") as im:
             assert not im.tag.next
             im.load()
             assert not im.tag.next
 
-    def test_4bit(self) -> None:
+    def test_4bit(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Arrange
         test_file = "Tests/images/hopper_gray_4bpp.tif"
         original = hopper("L")
 
         # Act
-        TiffImagePlugin.READ_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open(test_file) as im:
-            TiffImagePlugin.READ_LIBTIFF = False
 
             # Assert
             assert im.size == (128, 128)
@@ -650,12 +644,12 @@ class TestFileLibTiff(LibTiffTestCase):
                     assert im2.mode == "L"
                     assert_image_equal(im, im2)
 
-    def test_save_bytesio(self) -> None:
+    def test_save_bytesio(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # PR 1011
         # Test TIFF saving to io.BytesIO() object.
 
-        TiffImagePlugin.WRITE_LIBTIFF = True
-        TiffImagePlugin.READ_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
 
         # Generate test image
         pilim = hopper()
@@ -671,9 +665,6 @@ class TestFileLibTiff(LibTiffTestCase):
         save_bytesio("raw")
         save_bytesio("packbits")
         save_bytesio("tiff_lzw")
-
-        TiffImagePlugin.WRITE_LIBTIFF = False
-        TiffImagePlugin.READ_LIBTIFF = False
 
     def test_save_ycbcr(self, tmp_path: Path) -> None:
         im = hopper("YCbCr")
@@ -694,15 +685,16 @@ class TestFileLibTiff(LibTiffTestCase):
             if Image.core.libtiff_support_custom_tags:
                 assert reloaded.tag_v2[34665] == 125456
 
-    def test_crashing_metadata(self, tmp_path: Path) -> None:
+    def test_crashing_metadata(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         # issue 1597
         with Image.open("Tests/images/rdf.tif") as im:
             out = str(tmp_path / "temp.tif")
 
-            TiffImagePlugin.WRITE_LIBTIFF = True
+            monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
             # this shouldn't crash
             im.save(out, format="TIFF")
-        TiffImagePlugin.WRITE_LIBTIFF = False
 
     def test_page_number_x_0(self, tmp_path: Path) -> None:
         # Issue 973
@@ -733,36 +725,41 @@ class TestFileLibTiff(LibTiffTestCase):
         # Should not raise PermissionError.
         os.remove(tmpfile)
 
-    def test_read_icc(self) -> None:
+    def test_read_icc(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:
             icc = img.info.get("icc_profile")
             assert icc is not None
-        TiffImagePlugin.READ_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/hopper.iccprofile.tif") as img:
             icc_libtiff = img.info.get("icc_profile")
             assert icc_libtiff is not None
-        TiffImagePlugin.READ_LIBTIFF = False
         assert icc == icc_libtiff
 
-    def test_write_icc(self, tmp_path: Path) -> None:
-        def check_write(libtiff: bool) -> None:
-            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+    @pytest.mark.parametrize(
+        "libtiff",
+        (
+            pytest.param(
+                True,
+                marks=pytest.mark.skipif(
+                    not Image.core.libtiff_support_custom_tags,
+                    reason="Custom tags not supported by older libtiff",
+                ),
+            ),
+            False,
+        ),
+    )
+    def test_write_icc(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", libtiff)
 
-            with Image.open("Tests/images/hopper.iccprofile.tif") as img:
-                icc_profile = img.info["icc_profile"]
+        with Image.open("Tests/images/hopper.iccprofile.tif") as img:
+            icc_profile = img.info["icc_profile"]
 
-                out = str(tmp_path / "temp.tif")
-                img.save(out, icc_profile=icc_profile)
-            with Image.open(out) as reloaded:
-                assert icc_profile == reloaded.info["icc_profile"]
-
-        libtiffs = []
-        if Image.core.libtiff_support_custom_tags:
-            libtiffs.append(True)
-        libtiffs.append(False)
-
-        for libtiff in libtiffs:
-            check_write(libtiff)
+            out = str(tmp_path / "temp.tif")
+            img.save(out, icc_profile=icc_profile)
+        with Image.open(out) as reloaded:
+            assert icc_profile == reloaded.info["icc_profile"]
 
     def test_multipage_compression(self) -> None:
         with Image.open("Tests/images/compression.tif") as im:
@@ -840,12 +837,13 @@ class TestFileLibTiff(LibTiffTestCase):
 
             assert_image_equal_tofile(im, "Tests/images/copyleft.png", mode="RGB")
 
-    def test_sampleformat_write(self, tmp_path: Path) -> None:
+    def test_sampleformat_write(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         im = Image.new("F", (1, 1))
         out = str(tmp_path / "temp.tif")
-        TiffImagePlugin.WRITE_LIBTIFF = True
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
         im.save(out)
-        TiffImagePlugin.WRITE_LIBTIFF = False
 
         with Image.open(out) as reloaded:
             assert reloaded.mode == "F"
@@ -1091,15 +1089,14 @@ class TestFileLibTiff(LibTiffTestCase):
         with Image.open(out) as im:
             im.load()
 
-    def test_realloc_overflow(self) -> None:
-        TiffImagePlugin.READ_LIBTIFF = True
+    def test_realloc_overflow(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", True)
         with Image.open("Tests/images/tiff_overflow_rows_per_strip.tif") as im:
             with pytest.raises(OSError) as e:
                 im.load()
 
             # Assert that the error code is IMAGING_CODEC_MEMORY
             assert str(e.value) == "-9"
-        TiffImagePlugin.READ_LIBTIFF = False
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:
