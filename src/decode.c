@@ -293,7 +293,7 @@ static PyTypeObject ImagingDecoderType = {
 /* -------------------------------------------------------------------- */
 
 int
-get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmode) {
+get_unpacker(ImagingDecoderObject *decoder, const Mode *mode, const RawMode *rawmode) {
     int bits;
     ImagingShuffler unpack;
 
@@ -463,11 +463,13 @@ PyObject *
 PyImaging_HexDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &rawmode)) {
+    char *mode_name, *rawmode_name;
+    if (!PyArg_ParseTuple(args, "ss", &mode_name, &rawmode_name)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -496,15 +498,18 @@ PyImaging_HexDecoderNew(PyObject *self, PyObject *args) {
 PyObject *
 PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
-    char *mode;
-    char *rawmode;
+    char *mode_name;
+    char *rawmode_name;
     char *compname;
     int fp;
     uint32_t ifdoffset;
 
-    if (!PyArg_ParseTuple(args, "sssiI", &mode, &rawmode, &compname, &fp, &ifdoffset)) {
+    if (!PyArg_ParseTuple(args, "sssiI", &mode_name, &rawmode_name, &compname, &fp, &ifdoffset)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     TRACE(("new tiff decoder %s\n", compname));
 
@@ -538,11 +543,14 @@ PyObject *
 PyImaging_PackbitsDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &rawmode)) {
+    char *mode_name;
+    char *rawmode_name;
+    if (!PyArg_ParseTuple(args, "ss", &mode_name, &rawmode_name)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -572,7 +580,7 @@ PyImaging_PcdDecoderNew(PyObject *self, PyObject *args) {
     }
 
     /* Unpack from PhotoYCC to RGB */
-    if (get_unpacker(decoder, "RGB", "YCC;P") < 0) {
+    if (get_unpacker(decoder, IMAGING_MODE_RGB, IMAGING_RAWMODE_YCC_P) < 0) {
         return NULL;
     }
 
@@ -589,12 +597,14 @@ PyObject *
 PyImaging_PcxDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int stride;
-    if (!PyArg_ParseTuple(args, "ssi", &mode, &rawmode, &stride)) {
+    if (!PyArg_ParseTuple(args, "ssi", &mode_name, &rawmode_name, &stride)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -620,13 +630,15 @@ PyObject *
 PyImaging_RawDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int stride = 0;
     int ystep = 1;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &stride, &ystep)) {
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode_name, &rawmode_name, &stride, &ystep)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     decoder = PyImaging_DecoderNew(sizeof(RAWSTATE));
     if (decoder == NULL) {
@@ -654,13 +666,15 @@ PyObject *
 PyImaging_SgiRleDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int ystep = 1;
     int bpc = 1;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &ystep, &bpc)) {
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode_name, &rawmode_name, &ystep, &bpc)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     decoder = PyImaging_DecoderNew(sizeof(SGISTATE));
     if (decoder == NULL) {
@@ -688,11 +702,13 @@ PyObject *
 PyImaging_SunRleDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
-    if (!PyArg_ParseTuple(args, "ss", &mode, &rawmode)) {
+    char *mode_name, *rawmode_name;
+    if (!PyArg_ParseTuple(args, "ss", &mode_name, &rawmode_name)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -716,13 +732,15 @@ PyObject *
 PyImaging_TgaRleDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int ystep = 1;
     int depth = 8;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &ystep, &depth)) {
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode_name, &rawmode_name, &ystep, &depth)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     decoder = PyImaging_DecoderNew(0);
     if (decoder == NULL) {
@@ -754,7 +772,7 @@ PyImaging_XbmDecoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (get_unpacker(decoder, "1", "1;R") < 0) {
+    if (get_unpacker(decoder, IMAGING_MODE_1, IMAGING_RAWMODE_1_R) < 0) {
         return NULL;
     }
 
@@ -775,12 +793,14 @@ PyObject *
 PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;
+    char *mode_name, *rawmode_name;
     int interlaced = 0;
-    if (!PyArg_ParseTuple(args, "ss|i", &mode, &rawmode, &interlaced)) {
+    if (!PyArg_ParseTuple(args, "ss|i", &mode_name, &rawmode_name, &interlaced)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * const rawmode = findRawMode(rawmode_name);
 
     decoder = PyImaging_DecoderNew(sizeof(ZIPSTATE));
     if (decoder == NULL) {
@@ -825,15 +845,18 @@ PyObject *
 PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *rawmode;  /* what we want from the decoder */
-    char *jpegmode; /* what's in the file */
+    char *mode_name;
+    char *rawmode_name; /* what we want from the decoder */
+    char *jpegmode;     /* what's in the file */
     int scale = 1;
     int draft = 0;
 
-    if (!PyArg_ParseTuple(args, "ssz|ii", &mode, &rawmode, &jpegmode, &scale, &draft)) {
+    if (!PyArg_ParseTuple(args, "ssz|ii", &mode_name, &rawmode_name, &jpegmode, &scale, &draft)) {
         return NULL;
     }
+
+    const Mode * const mode = findMode(mode_name);
+    const RawMode * rawmode = findRawMode(rawmode_name);
 
     if (!jpegmode) {
         jpegmode = "";
@@ -847,8 +870,8 @@ PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
     // libjpeg-turbo supports different output formats.
     // We are choosing Pillow's native format (3 color bytes + 1 padding)
     // to avoid extra conversion in Unpack.c.
-    if (ImagingJpegUseJCSExtensions() && strcmp(rawmode, "RGB") == 0) {
-        rawmode = "RGBX";
+    if (ImagingJpegUseJCSExtensions() && rawmode == IMAGING_RAWMODE_RGB) {
+        rawmode = IMAGING_RAWMODE_RGBX;
     }
 
     if (get_unpacker(decoder, mode, rawmode) < 0) {
@@ -858,11 +881,13 @@ PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
     decoder->decode = ImagingJpegDecode;
     decoder->cleanup = ImagingJpegDecodeCleanup;
 
-    strncpy(((JPEGSTATE *)decoder->state.context)->rawmode, rawmode, 8);
-    strncpy(((JPEGSTATE *)decoder->state.context)->jpegmode, jpegmode, 8);
+    JPEGSTATE *jpeg_decoder_state_context = (JPEGSTATE *)decoder->state.context;
 
-    ((JPEGSTATE *)decoder->state.context)->scale = scale;
-    ((JPEGSTATE *)decoder->state.context)->draft = draft;
+    jpeg_decoder_state_context->rawmode = rawmode;
+    strncpy(jpeg_decoder_state_context->jpegmode, jpegmode, 8);
+
+    jpeg_decoder_state_context->scale = scale;
+    jpeg_decoder_state_context->draft = draft;
 
     return (PyObject *)decoder;
 }

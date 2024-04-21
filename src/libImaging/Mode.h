@@ -43,6 +43,7 @@ typedef struct {
     const char * const name;
 } RawMode;
 
+// Non-rawmode aliases.
 extern const RawMode * const IMAGING_RAWMODE_1;
 extern const RawMode * const IMAGING_RAWMODE_CMYK;
 extern const RawMode * const IMAGING_RAWMODE_F;
@@ -60,15 +61,21 @@ extern const RawMode * const IMAGING_RAWMODE_RGBX;
 extern const RawMode * const IMAGING_RAWMODE_RGBa;
 extern const RawMode * const IMAGING_RAWMODE_YCbCr;
 
+// BGR modes.
 extern const RawMode * const IMAGING_RAWMODE_BGR_15;
 extern const RawMode * const IMAGING_RAWMODE_BGR_16;
 extern const RawMode * const IMAGING_RAWMODE_BGR_24;
 extern const RawMode * const IMAGING_RAWMODE_BGR_32;
 
+// I;16 modes.
 extern const RawMode * const IMAGING_RAWMODE_I_16;
 extern const RawMode * const IMAGING_RAWMODE_I_16L;
 extern const RawMode * const IMAGING_RAWMODE_I_16B;
 extern const RawMode * const IMAGING_RAWMODE_I_16N;
+
+// Rawmodes
+extern const RawMode * const IMAGING_RAWMODE_1_R;
+extern const RawMode * const IMAGING_RAWMODE_YCC_P;
 
 const RawMode * findRawMode(const char * const name);
 
