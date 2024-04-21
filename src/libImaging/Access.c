@@ -224,3 +224,6 @@ ImagingAccessNew(const Imaging im) {
 
 void
 _ImagingAccessDelete(Imaging im, ImagingAccess access) {}
+
+void
+ImagingAccessFree() {}
