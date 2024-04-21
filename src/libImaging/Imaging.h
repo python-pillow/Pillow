@@ -173,21 +173,21 @@ extern void
 ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size);
 
 extern Imaging
-ImagingNew(const char *mode, int xsize, int ysize);
+ImagingNew(const Mode *mode, int xsize, int ysize);
 extern Imaging
-ImagingNewDirty(const char *mode, int xsize, int ysize);
+ImagingNewDirty(const Mode *mode, int xsize, int ysize);
 extern Imaging
-ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn);
+ImagingNew2Dirty(const Mode *mode, Imaging imOut, Imaging imIn);
 extern void
 ImagingDelete(Imaging im);
 
 extern Imaging
-ImagingNewBlock(const char *mode, int xsize, int ysize);
+ImagingNewBlock(const Mode *mode, int xsize, int ysize);
 
 extern Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize);
+ImagingNewPrologue(const Mode *mode, int xsize, int ysize);
 extern Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int structure_size);
+ImagingNewPrologueSubtype(const Mode *mode, int xsize, int ysize, int structure_size);
 
 extern void
 ImagingCopyPalette(Imaging destination, Imaging source);
@@ -204,7 +204,7 @@ _ImagingAccessDelete(Imaging im, ImagingAccess access);
 #define ImagingAccessDelete(im, access) /* nop, for now */
 
 extern ImagingPalette
-ImagingPaletteNew(const char *mode);
+ImagingPaletteNew(const Mode *mode);
 extern ImagingPalette
 ImagingPaletteNewBrowser(void);
 extern ImagingPalette
@@ -280,13 +280,13 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging
 ImagingCopy(Imaging im);
 extern Imaging
-ImagingConvert(Imaging im, const char *mode, ImagingPalette palette, int dither);
+ImagingConvert(Imaging im, const Mode *mode, ImagingPalette palette, int dither);
 extern Imaging
-ImagingConvertInPlace(Imaging im, const char *mode);
+ImagingConvertInPlace(Imaging im, const Mode *mode);
 extern Imaging
-ImagingConvertMatrix(Imaging im, const char *mode, float m[]);
+ImagingConvertMatrix(Imaging im, const Mode *mode, float m[]);
 extern Imaging
-ImagingConvertTransparent(Imaging im, const char *mode, int r, int g, int b);
+ImagingConvertTransparent(Imaging im, const Mode *mode, int r, int g, int b);
 extern Imaging
 ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging
@@ -300,9 +300,9 @@ ImagingFill2(
 extern Imaging
 ImagingFillBand(Imaging im, int band, int color);
 extern Imaging
-ImagingFillLinearGradient(const char *mode);
+ImagingFillLinearGradient(const Mode *mode);
 extern Imaging
-ImagingFillRadialGradient(const char *mode);
+ImagingFillRadialGradient(const Mode *mode);
 extern Imaging
 ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 offset);
 extern Imaging
@@ -316,7 +316,7 @@ ImagingGaussianBlur(
 extern Imaging
 ImagingGetBand(Imaging im, int band);
 extern Imaging
-ImagingMerge(const char *mode, Imaging bands[4]);
+ImagingMerge(const Mode *mode, Imaging bands[4]);
 extern int
 ImagingSplit(Imaging im, Imaging bands[4]);
 extern int
@@ -343,7 +343,7 @@ ImagingOffset(Imaging im, int xoffset, int yoffset);
 extern int
 ImagingPaste(Imaging into, Imaging im, Imaging mask, int x0, int y0, int x1, int y1);
 extern Imaging
-ImagingPoint(Imaging im, const char *tablemode, const void *table);
+ImagingPoint(Imaging im, const Mode *tablemode, const void *table);
 extern Imaging
 ImagingPointTransform(Imaging imIn, double scale, double offset);
 extern Imaging
@@ -671,9 +671,9 @@ extern void
 ImagingConvertYCbCr2RGB(UINT8 *out, const UINT8 *in, int pixels);
 
 extern ImagingShuffler
-ImagingFindUnpacker(const char *mode, const char *rawmode, int *bits_out);
+ImagingFindUnpacker(const Mode *mode, const RawMode *rawmode, int *bits_out);
 extern ImagingShuffler
-ImagingFindPacker(const char *mode, const char *rawmode, int *bits_out);
+ImagingFindPacker(const Mode *mode, const RawMode *rawmode, int *bits_out);
 
 struct ImagingCodecStateInstance {
     int count;
