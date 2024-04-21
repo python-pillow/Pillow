@@ -78,7 +78,7 @@ OPEN = {
     "LA image": ("LA", "LA;L"),
     "PA image": ("LA", "PA;L"),
     "RGBA image": ("RGBA", "RGBA;L"),
-    "RGBX image": ("RGBX", "RGBX;L"),
+    "RGBX image": ("RGB", "RGBX;L"),
     "CMYK image": ("CMYK", "CMYK;L"),
     "YCC image": ("YCbCr", "YCbCr;L"),
 }
