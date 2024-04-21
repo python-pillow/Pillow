@@ -60,11 +60,11 @@
     return imOut;
 
 static Imaging
-create(Imaging im1, Imaging im2, char *mode) {
+create(Imaging im1, Imaging im2, const Mode *mode) {
     int xsize, ysize;
 
     if (!im1 || !im2 || im1->type != IMAGING_TYPE_UINT8 ||
-        (mode != NULL && (strcmp(im1->mode, "1") || strcmp(im2->mode, "1")))) {
+        (mode != NULL && (im1->mode != mode || im2->mode != mode))) {
         return (Imaging)ImagingError_ModeError();
     }
     if (im1->type != im2->type || im1->bands != im2->bands) {
@@ -114,17 +114,17 @@ ImagingChopSubtract(Imaging imIn1, Imaging imIn2, float scale, int offset) {
 
 Imaging
 ImagingChopAnd(Imaging imIn1, Imaging imIn2) {
-    CHOP2((in1[x] && in2[x]) ? 255 : 0, "1");
+    CHOP2((in1[x] && in2[x]) ? 255 : 0, IMAGING_MODE_1);
 }
 
 Imaging
 ImagingChopOr(Imaging imIn1, Imaging imIn2) {
-    CHOP2((in1[x] || in2[x]) ? 255 : 0, "1");
+    CHOP2((in1[x] || in2[x]) ? 255 : 0, IMAGING_MODE_1);
 }
 
 Imaging
 ImagingChopXor(Imaging imIn1, Imaging imIn2) {
-    CHOP2(((in1[x] != 0) ^ (in2[x] != 0)) ? 255 : 0, "1");
+    CHOP2(((in1[x] != 0) ^ (in2[x] != 0)) ? 255 : 0, IMAGING_MODE_1);
 }
 
 Imaging
