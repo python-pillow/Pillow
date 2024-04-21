@@ -11,38 +11,9 @@
 
 #include "Imaging.h"
 
-/* use make_hash.py from the pillow-scripts repository to calculate these values */
-#define ACCESS_TABLE_SIZE 35
-#define ACCESS_TABLE_HASH 8940
+#define ACCESS_TABLE_SIZE 24
+static struct ImagingAccessInstance ACCESS_TABLE[ACCESS_TABLE_SIZE];
 
-static struct ImagingAccessInstance access_table[ACCESS_TABLE_SIZE];
-
-static inline UINT32
-hash(const char *mode) {
-    UINT32 i = ACCESS_TABLE_HASH;
-    while (*mode) {
-        i = ((i << 5) + i) ^ (UINT8)*mode++;
-    }
-    return i % ACCESS_TABLE_SIZE;
-}
-
-static ImagingAccess
-add_item(const char *mode) {
-    UINT32 i = hash(mode);
-    /* printf("hash %s => %d\n", mode, i); */
-    if (access_table[i].mode && strcmp(access_table[i].mode, mode) != 0) {
-        fprintf(
-            stderr,
-            "AccessInit: hash collision: %d for both %s and %s\n",
-            i,
-            mode,
-            access_table[i].mode
-        );
-        exit(1);
-    }
-    access_table[i].mode = mode;
-    return &access_table[i];
-}
 
 /* fetch individual pixel */
 
@@ -184,54 +155,71 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
     memcpy(&im->image32[y][x], color, sizeof(INT32));
 }
 
+
+static void
+set_access_table_item(
+    const int index,
+    const Mode * const mode,
+    void (*get_pixel)(Imaging im, int x, int y, void *pixel),
+    void (*put_pixel)(Imaging im, int x, int y, const void *pixel)
+) {
+    ACCESS_TABLE[index].mode = mode;
+    ACCESS_TABLE[index].get_pixel = get_pixel;
+    ACCESS_TABLE[index].put_pixel = put_pixel;
+}
+
 void
 ImagingAccessInit(void) {
-#define ADD(mode_, get_pixel_, put_pixel_)      \
-    {                                           \
-        ImagingAccess access = add_item(mode_); \
-        access->get_pixel = get_pixel_;         \
-        access->put_pixel = put_pixel_;         \
-    }
-
-    /* populate access table */
-    ADD("1", get_pixel_8, put_pixel_8);
-    ADD("L", get_pixel_8, put_pixel_8);
-    ADD("LA", get_pixel_32_2bands, put_pixel_32);
-    ADD("La", get_pixel_32_2bands, put_pixel_32);
-    ADD("I", get_pixel_32, put_pixel_32);
-    ADD("I;16", get_pixel_16L, put_pixel_16L);
-    ADD("I;16L", get_pixel_16L, put_pixel_16L);
-    ADD("I;16B", get_pixel_16B, put_pixel_16B);
+    int i = 0;
+    set_access_table_item(i++, IMAGING_MODE_1, get_pixel_8, put_pixel_8);
+    set_access_table_item(i++, IMAGING_MODE_L, get_pixel_8, put_pixel_8);
+    set_access_table_item(i++, IMAGING_MODE_LA, get_pixel_32_2bands, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_La, get_pixel_32_2bands, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_I, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_I_16, get_pixel_16L, put_pixel_16L);
+    set_access_table_item(i++, IMAGING_MODE_I_16L, get_pixel_16L, put_pixel_16L);
+    set_access_table_item(i++, IMAGING_MODE_I_16B, get_pixel_16B, put_pixel_16B);
 #ifdef WORDS_BIGENDIAN
-    ADD("I;16N", get_pixel_16B, put_pixel_16B);
+    set_access_table_item(i++, IMAGING_MODE_I_16N, get_pixel_16B, put_pixel_16B);
 #else
-    ADD("I;16N", get_pixel_16L, put_pixel_16L);
+    set_access_table_item(i++, IMAGING_MODE_I_16N, get_pixel_16L, put_pixel_16L);
 #endif
-    ADD("I;32L", get_pixel_32L, put_pixel_32L);
-    ADD("I;32B", get_pixel_32B, put_pixel_32B);
-    ADD("F", get_pixel_32, put_pixel_32);
-    ADD("P", get_pixel_8, put_pixel_8);
-    ADD("PA", get_pixel_32_2bands, put_pixel_32);
-    ADD("BGR;15", get_pixel_BGR15, put_pixel_BGR1516);
-    ADD("BGR;16", get_pixel_BGR16, put_pixel_BGR1516);
-    ADD("BGR;24", get_pixel_BGR24, put_pixel_BGR24);
-    ADD("RGB", get_pixel_32, put_pixel_32);
-    ADD("RGBA", get_pixel_32, put_pixel_32);
-    ADD("RGBa", get_pixel_32, put_pixel_32);
-    ADD("RGBX", get_pixel_32, put_pixel_32);
-    ADD("CMYK", get_pixel_32, put_pixel_32);
-    ADD("YCbCr", get_pixel_32, put_pixel_32);
-    ADD("LAB", get_pixel_32, put_pixel_32);
-    ADD("HSV", get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_I_32L, get_pixel_32L, put_pixel_32L);
+    set_access_table_item(i++, IMAGING_MODE_I_32B, get_pixel_32B, put_pixel_32B);
+    set_access_table_item(i++, IMAGING_MODE_F, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_P, get_pixel_8, put_pixel_8);
+    set_access_table_item(i++, IMAGING_MODE_PA, get_pixel_32_2bands, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_BGR_15, get_pixel_BGR15, put_pixel_BGR1516);
+    set_access_table_item(i++, IMAGING_MODE_BGR_16, get_pixel_BGR16, put_pixel_BGR1516);
+    set_access_table_item(i++, IMAGING_MODE_BGR_24, get_pixel_BGR24, put_pixel_BGR24);
+    set_access_table_item(i++, IMAGING_MODE_RGB, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_RGBA, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_RGBa, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_RGBX, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_CMYK, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_YCbCr, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_LAB, get_pixel_32, put_pixel_32);
+    set_access_table_item(i++, IMAGING_MODE_HSV, get_pixel_32, put_pixel_32);
+
+    if (i != ACCESS_TABLE_SIZE) {
+        fprintf(
+            stderr,
+            "AccessInit: incorrect number of items added to ACCESS_TABLE; expected %i but got %i\n",
+            ACCESS_TABLE_SIZE,
+            i);
+        exit(1);
+    }
 }
 
 ImagingAccess
-ImagingAccessNew(Imaging im) {
-    ImagingAccess access = &access_table[hash(im->mode)];
-    if (im->mode[0] != access->mode[0] || strcmp(im->mode, access->mode) != 0) {
-        return NULL;
+ImagingAccessNew(const Imaging im) {
+    int i;
+    for (i = 0; i < ACCESS_TABLE_SIZE; i++) {
+        if (im->mode == ACCESS_TABLE[i].mode) {
+            return &ACCESS_TABLE[i];
+        }
     }
-    return access;
+    return NULL;
 }
 
 void
