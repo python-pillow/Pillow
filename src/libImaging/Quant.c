@@ -1471,7 +1471,7 @@ quantize(
     fflush(stdout);
     timer = clock();
 #endif
-    if (kmeans) {
+    if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nPaletteEntries, qp, kmeans - 1);
     }
 #ifndef NO_OUTPUT
@@ -1627,7 +1627,7 @@ quantize2(
             pixelData, nPixels, p, nQuantPixels, avgDist, avgDistSortKey, qp)) {
         goto error_4;
     }
-    if (kmeans) {
+    if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nQuantPixels, qp, kmeans - 1);
     }
 

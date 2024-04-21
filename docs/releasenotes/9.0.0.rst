@@ -24,6 +24,41 @@ success of Python.
 
 Thank you, Fredrik.
 
+Security
+========
+
+Ensure JpegImagePlugin stops at the end of a truncated file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``JpegImagePlugin`` may append an EOF marker to the end of a truncated file, so that
+the last segment of the data will still be processed by the decoder.
+
+If the EOF marker is not detected as such however, this could lead to an infinite
+loop where ``JpegImagePlugin`` keeps trying to end the file.
+
+Remove consecutive duplicate tiles that only differ by their offset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To prevent attempts to slow down loading times for images, if an image has consecutive
+duplicate tiles that only differ by their offset, only load the last tile. Credit to
+Google's `OSS-Fuzz`_ project for finding this issue.
+
+:cve:`2022-22817`: Restrict builtins available to ImageMath.eval
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To limit :py:class:`PIL.ImageMath` to working with images, Pillow
+will now restrict the builtins available to :py:meth:`!PIL.ImageMath.eval`. This will
+help prevent problems arising if users evaluate arbitrary expressions, such as
+``ImageMath.eval("exec(exit())")``.
+
+:cve:`2022-22815`, :cve:`2022-22816`: ImagePath.Path array handling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:cve:`2022-22815` (:cwe:`126`) and :cve:`2022-22816` (:cwe:`665`) were found when
+initializing ``ImagePath.Path``.
+
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz
+
 Backwards Incompatible Changes
 ==============================
 
@@ -96,41 +131,6 @@ Support has been added for the "title" argument in
 :py:func:`.ImageShow.show()` use the ``display`` command line tool, the "title"
 argument will also now be supported, e.g. ``im.show(title="My Image")`` and
 ``ImageShow.show(im, title="My Image")``.
-
-Security
-========
-
-Ensure JpegImagePlugin stops at the end of a truncated file
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``JpegImagePlugin`` may append an EOF marker to the end of a truncated file, so that
-the last segment of the data will still be processed by the decoder.
-
-If the EOF marker is not detected as such however, this could lead to an infinite
-loop where ``JpegImagePlugin`` keeps trying to end the file.
-
-Remove consecutive duplicate tiles that only differ by their offset
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To prevent attempts to slow down loading times for images, if an image has consecutive
-duplicate tiles that only differ by their offset, only load the last tile. Credit to
-Google's `OSS-Fuzz`_ project for finding this issue.
-
-Restrict builtins available to ImageMath.eval
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:cve:`2022-22817`: To limit :py:class:`PIL.ImageMath` to working with images, Pillow
-will now restrict the builtins available to :py:meth:`PIL.ImageMath.eval`. This will
-help prevent problems arising if users evaluate arbitrary expressions, such as
-``ImageMath.eval("exec(exit())")``.
-
-Fixed ImagePath.Path array handling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:cve:`2022-22815` (:cwe:`126`) and :cve:`2022-22816` (:cwe:`665`) were
-found when initializing ``ImagePath.Path``.
-
-.. _OSS-Fuzz: https://github.com/google/oss-fuzz
 
 Other Changes
 =============

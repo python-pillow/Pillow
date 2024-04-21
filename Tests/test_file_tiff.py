@@ -113,6 +113,10 @@ class TestFileTiff:
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
+    def test_seek_too_large(self):
+        with pytest.raises(ValueError, match="Unable to seek to frame"):
+            Image.open("Tests/images/seek_too_large.tif")
+
     def test_set_legacy_api(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         with pytest.raises(Exception) as e:
@@ -623,6 +627,7 @@ class TestFileTiff:
         im.save(outfile, tiffinfo={278: 256})
 
         with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[278] == 256
 
     def test_strip_raw(self) -> None:

@@ -138,6 +138,17 @@ class WindowsViewer(Viewer):
             f'&& del /f "{file}"'
         )
 
+    def show_file(self, path: str, **options: Any) -> int:
+        """
+        Display given file.
+        """
+        subprocess.Popen(
+            self.get_command(path, **options),
+            shell=True,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW"),
+        )  # nosec
+        return 1
+
 
 if sys.platform == "win32":
     register(WindowsViewer)
@@ -188,7 +199,7 @@ class UnixViewer(Viewer):
 
     def get_command(self, file: str, **options: Any) -> str:
         command = self.get_command_ex(file, **options)[0]
-        return f"({command} {quote(file)}"
+        return f"{command} {quote(file)}"
 
 
 class XDGViewer(UnixViewer):

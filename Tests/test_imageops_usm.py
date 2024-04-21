@@ -28,8 +28,8 @@ def test_filter_api(test_images: dict[str, Image.Image]) -> None:
     assert i.mode == "RGB"
     assert i.size == (128, 128)
 
-    test_filter = ImageFilter.UnsharpMask(2.0, 125, 8)
-    i = im.filter(test_filter)
+    test_filter2 = ImageFilter.UnsharpMask(2.0, 125, 8)
+    i = im.filter(test_filter2)
     assert i.mode == "RGB"
     assert i.size == (128, 128)
 

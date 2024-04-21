@@ -105,7 +105,7 @@ def _save(im: Image.Image, fp: BytesIO, filename: str):
         fp.seek(current)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == _MAGIC
 
 

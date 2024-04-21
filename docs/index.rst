@@ -1,7 +1,7 @@
 Pillow
 ======
 
-Pillow is the friendly PIL fork by `Jeffrey A. Clark (Alex) and contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and contributors.
+Pillow is the friendly PIL fork by `Jeffrey A. Clark and contributors <https://github.com/python-pillow/Pillow/graphs/contributors>`_. PIL is the Python Imaging Library by Fredrik Lundh and contributors.
 
 Pillow for enterprise is available via the Tidelift Subscription. `Learn more <https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=docs&utm_campaign=enterprise>`_.
 
@@ -93,7 +93,7 @@ The core image library is designed for fast access to data stored in a few basic
 .. toctree::
    :maxdepth: 2
 
-   installation.rst
+   installation/index.rst
    handbook/index.rst
    reference/index.rst
    porting.rst

@@ -91,6 +91,16 @@ def test_fromarray() -> None:
         Image.fromarray(wrapped)
 
 
+def test_fromarray_strides_without_tobytes() -> None:
+    class Wrapper:
+        def __init__(self, arr_params: dict[str, Any]) -> None:
+            self.__array_interface__ = arr_params
+
+    with pytest.raises(ValueError):
+        wrapped = Wrapper({"shape": (1, 1), "strides": (1, 1)})
+        Image.fromarray(wrapped, "L")
+
+
 def test_fromarray_palette() -> None:
     # Arrange
     i = im.convert("L")

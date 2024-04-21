@@ -19,7 +19,7 @@ from PIL import Image
 # 7
 # 160
 
-# one of string.whitespace is not freely convertable into ascii.
+# one of string.whitespace is not freely convertible into ascii.
 
 path = "Tests/images/hopper.jpg"
 

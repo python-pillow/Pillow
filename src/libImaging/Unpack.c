@@ -791,6 +791,17 @@ ImagingUnpackBGRX(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
+ImagingUnpackBGXR(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        UINT32 iv = MAKE_UINT32(in[3], in[1], in[0], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4;
+        _out += 4;
+    }
+}
+
+static void
 ImagingUnpackXRGB(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* RGB, leading pad */
@@ -1086,6 +1097,17 @@ unpackBGRA16B(UINT8 *_out, const UINT8 *in, int pixels) {
         UINT32 iv = MAKE_UINT32(in[4], in[2], in[0], in[6]);
         memcpy(_out, &iv, sizeof(iv));
         in += 8;
+        _out += 4;
+    }
+}
+
+static void
+unpackBGAR(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        UINT32 iv = MAKE_UINT32(in[3], in[1], in[0], in[2]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4;
         _out += 4;
     }
 }
@@ -1584,6 +1606,7 @@ static struct {
     {"RGB", "RGBA;L", 32, unpackRGBAL},
     {"RGB", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGB", "BGRX", 32, ImagingUnpackBGRX},
+    {"RGB", "BGXR", 32, ImagingUnpackBGXR},
     {"RGB", "XRGB", 32, ImagingUnpackXRGB},
     {"RGB", "XBGR", 32, ImagingUnpackXBGR},
     {"RGB", "YCC;P", 24, ImagingUnpackYCC},
@@ -1624,6 +1647,7 @@ static struct {
     {"RGBA", "BGRA", 32, unpackBGRA},
     {"RGBA", "BGRA;16L", 64, unpackBGRA16L},
     {"RGBA", "BGRA;16B", 64, unpackBGRA16B},
+    {"RGBA", "BGAR", 32, unpackBGAR},
     {"RGBA", "ARGB", 32, unpackARGB},
     {"RGBA", "ABGR", 32, unpackABGR},
     {"RGBA", "YCCA;P", 32, ImagingUnpackYCCA},

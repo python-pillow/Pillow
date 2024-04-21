@@ -24,7 +24,7 @@ from ._binary import o8
 xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:9] == b"/* XPM */"
 
 
@@ -103,7 +103,7 @@ class XpmImageFile(ImageFile.ImageFile):
 
         self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))]
 
-    def load_read(self, bytes):
+    def load_read(self, read_bytes):
         #
         # load all image data in one chunk
 

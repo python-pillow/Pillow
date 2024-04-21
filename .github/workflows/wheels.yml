@@ -5,6 +5,7 @@ on:
     paths:
       - ".ci/requirements-cibw.txt"
       - ".github/workflows/wheel*"
+      - "setup.py"
       - "wheels/*"
       - "winbuild/build_prepare.py"
       - "winbuild/fribidi.cmake"
@@ -14,6 +15,7 @@ on:
     paths:
       - ".ci/requirements-cibw.txt"
       - ".github/workflows/wheel*"
+      - "setup.py"
       - "wheels/*"
       - "winbuild/build_prepare.py"
       - "winbuild/fribidi.cmake"
@@ -99,7 +101,7 @@ jobs:
             cibw_arch: x86_64
             macosx_deployment_target: "10.10"
           - name: "macOS arm64"
-            os: macos-latest
+            os: macos-14
             cibw_arch: arm64
             macosx_deployment_target: "11.0"
           - name: "manylinux2014 and musllinux x86_64"
@@ -132,7 +134,7 @@ jobs:
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_SKIP: pp38-*
-          CIBW_TEST_SKIP: "*-macosx_arm64"
+          CIBW_TEST_SKIP: cp38-macosx_arm64
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
       - uses: actions/upload-artifact@v4

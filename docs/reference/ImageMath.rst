@@ -4,9 +4,12 @@
 :py:mod:`~PIL.ImageMath` Module
 ===============================
 
-The :py:mod:`~PIL.ImageMath` module can be used to evaluate “image expressions”. The
-module provides a single :py:meth:`~PIL.ImageMath.eval` function, which takes
-an expression string and one or more images.
+The :py:mod:`~PIL.ImageMath` module can be used to evaluate “image expressions”, that
+can take a number of images and generate a result.
+
+:py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
+images, use the :py:meth:`~PIL.Image.Image.split` method or :py:func:`~PIL.Image.merge`
+function.
 
 Example: Using the :py:mod:`~PIL.ImageMath` module
 --------------------------------------------------
@@ -17,35 +20,69 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
 
     with Image.open("image1.jpg") as im1:
         with Image.open("image2.jpg") as im2:
+            out = ImageMath.lambda_eval(
+              lambda args: args["convert"](args["min"](args["a"], args["b"]), 'L'),
+              a=im1,
+              b=im2
+            )
+            out = ImageMath.unsafe_eval(
+              "convert(min(a, b), 'L')",
+              a=im1,
+              b=im2
+            )
 
-            out = ImageMath.eval("convert(min(a, b), 'L')", a=im1, b=im2)
-            out.save("result.png")
+.. py:function:: lambda_eval(expression, options)
 
-.. py:function:: eval(expression, environment)
+    Returns the result of an image function.
 
-    Evaluate expression in the given environment.
+    :param expression: A function that receives a dictionary.
+    :param options: Values to add to the function's dictionary, mapping image
+                    names to Image instances. You can use one or more keyword
+                    arguments instead of a dictionary, as shown in the above
+                    example. Note that the names must be valid Python
+                    identifiers.
+    :return: An image, an integer value, a floating point value,
+             or a pixel tuple, depending on the expression.
 
-    In the current version, :py:mod:`~PIL.ImageMath` only supports
-    single-layer images. To process multi-band images, use the
-    :py:meth:`~PIL.Image.Image.split` method or :py:func:`~PIL.Image.merge`
-    function.
+.. py:function:: unsafe_eval(expression, options)
+
+    Evaluates an image expression.
+
+    .. danger::
+        This uses Python's ``eval()`` function to process the expression string,
+        and carries the security risks of doing so. It is not
+        recommended to process expressions without considering this.
+        :py:meth:`lambda_eval` is a more secure alternative.
+
+    :py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
+    images, use the :py:meth:`~PIL.Image.Image.split` method or
+    :py:func:`~PIL.Image.merge` function.
 
     :param expression: A string which uses the standard Python expression
                        syntax. In addition to the standard operators, you can
                        also use the functions described below.
-    :param environment: A dictionary that maps image names to Image instances.
-                        You can use one or more keyword arguments instead of a
-                        dictionary, as shown in the above example. Note that
-                        the names must be valid Python identifiers.
+    :param options: Values to add to the function's dictionary, mapping image
+                    names to Image instances. You can use one or more keyword
+                    arguments instead of a dictionary, as shown in the above
+                    example. Note that the names must be valid Python
+                    identifiers.
     :return: An image, an integer value, a floating point value,
              or a pixel tuple, depending on the expression.
 
 Expression syntax
 -----------------
 
-Expressions are standard Python expressions, but they’re evaluated in a
-non-standard environment. You can use PIL methods as usual, plus the following
-set of operators and functions:
+* :py:meth:`lambda_eval` expressions are functions that receive a dictionary
+  containing images and operators.
+
+* :py:meth:`unsafe_eval` expressions are standard Python expressions,
+  but they’re evaluated in a non-standard environment.
+
+.. danger::
+  :py:meth:`unsafe_eval` uses Python's ``eval()`` function to process the
+  expression string, and carries the security risks of doing so.
+  It is not recommended to process expressions without considering this.
+  :py:meth:`lambda_eval` is a more secure alternative.
 
 Standard Operators
 ^^^^^^^^^^^^^^^^^^

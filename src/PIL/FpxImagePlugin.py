@@ -41,7 +41,7 @@ MODES = {
 # --------------------------------------------------------------------
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:8] == olefile.MAGIC
 
 

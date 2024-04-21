@@ -237,7 +237,7 @@ class TestCoreResampleConsistency:
         im = Image.new(mode, (512, 9), fill)
         return im.resize((9, 512), Image.Resampling.LANCZOS), im.load()[0, 0]
 
-    def run_case(self, case: tuple[Image.Image, Image.Image]) -> None:
+    def run_case(self, case: tuple[Image.Image, int | tuple[int, ...]]) -> None:
         channel, color = case
         px = channel.load()
         for x in range(channel.size[0]):
@@ -284,7 +284,7 @@ class TestCoreResampleAlphaCorrect:
             used_colors = {px[x, y][0] for x in range(i.size[0])}
             assert 256 == len(used_colors), (
                 "All colors should be present in resized image. "
-                f"Only {len(used_colors)} on {y} line."
+                f"Only {len(used_colors)} on line {y}."
             )
 
     @pytest.mark.xfail(reason="Current implementation isn't precise enough")

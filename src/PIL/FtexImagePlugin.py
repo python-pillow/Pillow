@@ -107,7 +107,7 @@ class FtexImageFile(ImageFile.ImageFile):
         pass
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == MAGIC
 
 

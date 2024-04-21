@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, _util
 
-from .helper import PillowLeakTestCase, skip_unless_feature
+from .helper import PillowLeakTestCase, features, skip_unless_feature
+
+original_core = ImageFont.core
 
 
 class TestTTypeFontLeak(PillowLeakTestCase):
@@ -31,5 +33,11 @@ class TestDefaultFontLeak(TestTTypeFontLeak):
     mem_limit = 1024  # k
 
     def test_leak(self) -> None:
-        default_font = ImageFont.load_default()
+        if features.check_module("freetype2"):
+            ImageFont.core = _util.DeferredError(ImportError)
+        try:
+            default_font = ImageFont.load_default()
+        finally:
+            ImageFont.core = original_core
+
         self._test_font(default_font)

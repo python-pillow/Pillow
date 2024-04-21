@@ -1,14 +1,11 @@
 8.4.0
 -----
 
-API Changes
-===========
-
 Deprecations
-^^^^^^^^^^^^
+============
 
 ImagePalette size parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``size`` parameter will be removed in Pillow 10.0.0 (2023-07-01).
 

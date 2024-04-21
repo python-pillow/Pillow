@@ -60,7 +60,7 @@ LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 # Identify/read GIF files
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:6] in [b"GIF87a", b"GIF89a"]
 
 
@@ -629,7 +629,7 @@ def _write_multiple_frames(im, fp, palette):
                             "duration"
                         ]
                     continue
-                if encoderinfo.get("disposal") == 2:
+                if im_frames[-1]["encoderinfo"].get("disposal") == 2:
                     if background_im is None:
                         color = im.encoderinfo.get(
                             "transparency", im.info.get("transparency", (0, 0, 0))
@@ -637,8 +637,8 @@ def _write_multiple_frames(im, fp, palette):
                         background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
                         background_im.putpalette(im_frames[0]["im"].palette)
-                    delta, bbox = _getbbox(background_im, im_frame)
-                if encoderinfo.get("optimize") and im_frame.mode != "1":
+                    bbox = _getbbox(background_im, im_frame)[1]
+                elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         try:
                             encoderinfo["transparency"] = (
@@ -652,8 +652,17 @@ def _write_multiple_frames(im, fp, palette):
                         fill = Image.new("P", delta.size, encoderinfo["transparency"])
                         if delta.mode == "RGBA":
                             r, g, b, a = delta.split()
-                            mask = ImageMath.eval(
-                                "convert(max(max(max(r, g), b), a) * 255, '1')",
+                            mask = ImageMath.lambda_eval(
+                                lambda args: args["convert"](
+                                    args["max"](
+                                        args["max"](
+                                            args["max"](args["r"], args["g"]), args["b"]
+                                        ),
+                                        args["a"],
+                                    )
+                                    * 255,
+                                    "1",
+                                ),
                                 r=r,
                                 g=g,
                                 b=b,
@@ -665,7 +674,10 @@ def _write_multiple_frames(im, fp, palette):
                                 delta_l = Image.new("L", delta.size)
                                 delta_l.putdata(delta.getdata())
                                 delta = delta_l
-                            mask = ImageMath.eval("convert(im * 255, '1')", im=delta)
+                            mask = ImageMath.lambda_eval(
+                                lambda args: args["convert"](args["im"] * 255, "1"),
+                                im=delta,
+                            )
                         diff_frame.paste(fill, mask=ImageOps.invert(mask))
             else:
                 bbox = None

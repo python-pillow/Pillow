@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
@@ -63,6 +63,11 @@ def test_sanity(mode: str, tmp_path: Path) -> None:
                     assert_image_equal(original_im, reference_im)
 
                     roundtrip(original_im)
+
+
+def test_palette_depth_8(tmp_path: Path) -> None:
+    with pytest.raises(UnidentifiedImageError):
+        Image.open("Tests/images/p_8.tga")
 
 
 def test_palette_depth_16(tmp_path: Path) -> None:
@@ -131,6 +136,11 @@ def test_small_palette(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         assert reloaded.getpalette() == colors
+
+
+def test_missing_palette() -> None:
+    with Image.open("Tests/images/dilation4.lut") as im:
+        assert im.mode == "L"
 
 
 def test_save_wrong_mode(tmp_path: Path) -> None:

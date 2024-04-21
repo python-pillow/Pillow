@@ -16,6 +16,7 @@ from PIL import (
     ExifTags,
     Image,
     ImageDraw,
+    ImageFile,
     ImagePalette,
     UnidentifiedImageError,
     features,
@@ -32,36 +33,38 @@ from .helper import (
     skip_unless_feature,
 )
 
+# name, pixel size
+image_modes = (
+    ("1", 1),
+    ("L", 1),
+    ("LA", 4),
+    ("La", 4),
+    ("P", 1),
+    ("PA", 4),
+    ("F", 4),
+    ("I", 4),
+    ("I;16", 2),
+    ("I;16L", 2),
+    ("I;16B", 2),
+    ("I;16N", 2),
+    ("RGB", 4),
+    ("RGBA", 4),
+    ("RGBa", 4),
+    ("RGBX", 4),
+    ("BGR;15", 2),
+    ("BGR;16", 2),
+    ("BGR;24", 3),
+    ("CMYK", 4),
+    ("YCbCr", 4),
+    ("HSV", 4),
+    ("LAB", 4),
+)
+
+image_mode_names = [name for name, _ in image_modes]
+
 
 class TestImage:
-    @pytest.mark.parametrize(
-        "mode",
-        (
-            "1",
-            "P",
-            "PA",
-            "L",
-            "LA",
-            "La",
-            "F",
-            "I",
-            "I;16",
-            "I;16L",
-            "I;16B",
-            "I;16N",
-            "RGB",
-            "RGBX",
-            "RGBA",
-            "RGBa",
-            "BGR;15",
-            "BGR;16",
-            "BGR;24",
-            "CMYK",
-            "YCbCr",
-            "LAB",
-            "HSV",
-        ),
-    )
+    @pytest.mark.parametrize("mode", image_mode_names)
     def test_image_modes_success(self, mode: str) -> None:
         Image.new(mode, (1, 1))
 
@@ -138,13 +141,13 @@ class TestImage:
         assert im.height == 2
 
         with pytest.raises(AttributeError):
-            im.size = (3, 4)
+            im.size = (3, 4)  # type: ignore[misc]
 
     def test_set_mode(self) -> None:
         im = Image.new("RGB", (1, 1))
 
         with pytest.raises(AttributeError):
-            im.mode = "P"
+            im.mode = "P"  # type: ignore[misc]
 
     def test_invalid_image(self) -> None:
         im = io.BytesIO(b"")
@@ -1041,25 +1044,49 @@ class TestImage:
             assert im.fp is None
 
 
-class MockEncoder:
-    args: tuple[str, ...]
+class TestImageBytes:
+    @pytest.mark.parametrize("mode", image_mode_names)
+    def test_roundtrip_bytes_constructor(self, mode: str) -> None:
+        im = hopper(mode)
+        source_bytes = im.tobytes()
+
+        reloaded = Image.frombytes(mode, im.size, source_bytes)
+        assert reloaded.tobytes() == source_bytes
+
+    @pytest.mark.parametrize("mode", image_mode_names)
+    def test_roundtrip_bytes_method(self, mode: str) -> None:
+        im = hopper(mode)
+        source_bytes = im.tobytes()
+
+        reloaded = Image.new(mode, im.size)
+        reloaded.frombytes(source_bytes)
+        assert reloaded.tobytes() == source_bytes
+
+    @pytest.mark.parametrize(("mode", "pixelsize"), image_modes)
+    def test_getdata_putdata(self, mode: str, pixelsize: int) -> None:
+        im = Image.new(mode, (2, 2))
+        source_bytes = bytes(range(im.width * im.height * pixelsize))
+        im.frombytes(source_bytes)
+
+        reloaded = Image.new(mode, im.size)
+        reloaded.putdata(im.getdata())
+        assert_image_equal(im, reloaded)
 
 
-def mock_encode(*args: str) -> MockEncoder:
-    encoder = MockEncoder()
-    encoder.args = args
-    return encoder
+class MockEncoder(ImageFile.PyEncoder):
+    pass
 
 
 class TestRegistry:
     def test_encode_registry(self) -> None:
-        Image.register_encoder("MOCK", mock_encode)
+        Image.register_encoder("MOCK", MockEncoder)
         assert "MOCK" in Image.ENCODERS
 
         enc = Image._getencoder("RGB", "MOCK", ("args",), extra=("extra",))
 
         assert isinstance(enc, MockEncoder)
-        assert enc.args == ("RGB", "args", "extra")
+        assert enc.mode == "RGB"
+        assert enc.args == ("args", "extra")
 
     def test_encode_registry_fail(self) -> None:
         with pytest.raises(OSError):

@@ -224,14 +224,17 @@ def test_writing_other_types_to_bytes(value: int | IFDRational, tmp_path: Path) 
         assert reloaded.tag_v2[700] == b"\x01"
 
 
-def test_writing_other_types_to_undefined(tmp_path: Path) -> None:
+@pytest.mark.parametrize("value", (1, IFDRational(1)))
+def test_writing_other_types_to_undefined(
+    value: int | IFDRational, tmp_path: Path
+) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     tag = TiffTags.TAGS_V2[33723]
     assert tag.type == TiffTags.UNDEFINED
 
-    info[33723] = 1
+    info[33723] = value
 
     out = str(tmp_path / "temp.tiff")
     im.save(out, tiffinfo=info)

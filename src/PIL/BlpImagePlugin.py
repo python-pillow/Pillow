@@ -241,7 +241,7 @@ class BLPFormatError(NotImplementedError):
     pass
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] in (b"BLP1", b"BLP2")
 
 
@@ -341,7 +341,7 @@ class BLP1Decoder(_BLPBaseDecoder):
             if self._blp_encoding in (4, 5):
                 palette = self._read_palette()
                 data = self._read_bgra(palette)
-                self.set_as_raw(bytes(data))
+                self.set_as_raw(data)
             else:
                 msg = f"Unsupported BLP encoding {repr(self._blp_encoding)}"
                 raise BLPFormatError(msg)
@@ -412,7 +412,7 @@ class BLP2Decoder(_BLPBaseDecoder):
             msg = f"Unknown BLP compression {repr(self._blp_compression)}"
             raise BLPFormatError(msg)
 
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
 
 
 class BLPEncoder(ImageFile.PyEncoder):
