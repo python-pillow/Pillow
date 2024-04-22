@@ -68,6 +68,9 @@ const Mode * const MODES[] = {
 };
 
 const Mode * findMode(const char * const name) {
+    if (name == NULL) {
+        return NULL;
+    }
     const Mode * mode;
     for (int i = 0; (mode = MODES[i]); i++) {
         if (strcmp(mode->name, name) == 0) {
@@ -433,6 +436,9 @@ const RawMode * const RAWMODES[] = {
 };
 
 const RawMode * findRawMode(const char * const name) {
+    if (name == NULL) {
+        return NULL;
+    }
     const RawMode * rawmode;
     for (int i = 0; (rawmode = RAWMODES[i]); i++) {
         if (strcmp(rawmode->name, name) == 0) {
