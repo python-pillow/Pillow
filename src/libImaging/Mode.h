@@ -79,7 +79,9 @@ extern const RawMode * const IMAGING_RAWMODE_I_32B;
 
 // Rawmodes
 extern const RawMode * const IMAGING_RAWMODE_1_R;
+extern const RawMode * const IMAGING_RAWMODE_CMYK_I;
 extern const RawMode * const IMAGING_RAWMODE_YCC_P;
+extern const RawMode * const IMAGING_RAWMODE_YCbCrK;
 
 const RawMode * findRawMode(const char * const name);
 
