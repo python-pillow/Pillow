@@ -1684,13 +1684,13 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         return (Imaging)ImagingError_ValueError("bad number of colors");
     }
 
-    if (strcmp(im->mode, "L") != 0 && strcmp(im->mode, "P") != 0 &&
-        strcmp(im->mode, "RGB") != 0 && strcmp(im->mode, "RGBA") != 0) {
+    if (im->mode != IMAGING_MODE_L && im->mode != IMAGING_MODE_P &&
+        im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBA) {
         return ImagingError_ModeError();
     }
 
     /* only octree and imagequant supports RGBA */
-    if (!strcmp(im->mode, "RGBA") && mode != 2 && mode != 3) {
+    if (im->mode == IMAGING_MODE_RGBA && mode != 2 && mode != 3) {
         return ImagingError_ModeError();
     }
 
@@ -1708,7 +1708,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     /* FIXME: maybe we could load the hash tables directly from the
        image data? */
 
-    if (!strcmp(im->mode, "L")) {
+    if (im->mode == IMAGING_MODE_L) {
         /* grayscale */
 
         /* FIXME: converting a "L" image to "P" with 256 colors
@@ -1721,7 +1721,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
             }
         }
 
-    } else if (!strcmp(im->mode, "P")) {
+    } else if (im->mode == IMAGING_MODE_P) {
         /* palette */
 
         pp = im->palette->palette;
@@ -1736,10 +1736,10 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
             }
         }
 
-    } else if (!strcmp(im->mode, "RGB") || !strcmp(im->mode, "RGBA")) {
+    } else if (im->mode == IMAGING_MODE_RGB || im->mode == IMAGING_MODE_RGBA) {
         /* true colour */
 
-        withAlpha = !strcmp(im->mode, "RGBA");
+        withAlpha = im->mode == IMAGING_MODE_RGBA;
         int transparency = 0;
         unsigned char r = 0, g = 0, b = 0;
         for (i = y = 0; y < im->ysize; y++) {
@@ -1830,7 +1830,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     ImagingSectionLeave(&cookie);
 
     if (result > 0) {
-        imOut = ImagingNewDirty("P", im->xsize, im->ysize);
+        imOut = ImagingNewDirty(IMAGING_MODE_P, im->xsize, im->ysize);
         ImagingSectionEnter(&cookie);
 
         for (i = y = 0; y < im->ysize; y++) {
@@ -1855,7 +1855,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         }
 
         if (withAlpha) {
-            strcpy(imOut->palette->mode, "RGBA");
+            imOut->palette->mode = IMAGING_MODE_RGBA;
         }
 
         free(palette);
