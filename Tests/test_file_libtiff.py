@@ -242,7 +242,24 @@ class TestFileLibTiff(LibTiffTestCase):
 
             im.save(out, tiffinfo=new_ifd)
 
-    def test_custom_metadata(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize(
+        "libtiff",
+        (
+            pytest.param(
+                True,
+                marks=pytest.mark.skipif(
+                    not getattr(Image.core, "libtiff_support_custom_tags", False),
+                    reason="Custom tags not supported by older libtiff",
+                ),
+            ),
+            False,
+        ),
+    )
+    def test_custom_metadata(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
+    ) -> None:
+        monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", libtiff)
+
         class Tc(NamedTuple):
             value: Any
             type: int
@@ -281,53 +298,43 @@ class TestFileLibTiff(LibTiffTestCase):
             )
         }
 
-        libtiffs = [False]
-        if Image.core.libtiff_support_custom_tags:
-            libtiffs.append(True)
+        def check_tags(
+            tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str]
+        ) -> None:
+            im = hopper()
 
-        for libtiff in libtiffs:
-            TiffImagePlugin.WRITE_LIBTIFF = libtiff
+            out = str(tmp_path / "temp.tif")
+            im.save(out, tiffinfo=tiffinfo)
 
-            def check_tags(
-                tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str]
-            ) -> None:
-                im = hopper()
+            with Image.open(out) as reloaded:
+                for tag, value in tiffinfo.items():
+                    reloaded_value = reloaded.tag_v2[tag]
+                    if (
+                        isinstance(reloaded_value, TiffImagePlugin.IFDRational)
+                        and libtiff
+                    ):
+                        # libtiff does not support real RATIONALS
+                        assert round(abs(float(reloaded_value) - float(value)), 7) == 0
+                        continue
 
-                out = str(tmp_path / "temp.tif")
-                im.save(out, tiffinfo=tiffinfo)
+                    assert reloaded_value == value
 
-                with Image.open(out) as reloaded:
-                    for tag, value in tiffinfo.items():
-                        reloaded_value = reloaded.tag_v2[tag]
-                        if (
-                            isinstance(reloaded_value, TiffImagePlugin.IFDRational)
-                            and libtiff
-                        ):
-                            # libtiff does not support real RATIONALS
-                            assert (
-                                round(abs(float(reloaded_value) - float(value)), 7) == 0
-                            )
-                            continue
+        # Test with types
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        for tag, tagdata in custom.items():
+            ifd[tag] = tagdata.value
+            ifd.tagtype[tag] = tagdata.type
+        check_tags(ifd)
 
-                        assert reloaded_value == value
-
-            # Test with types
-            ifd = TiffImagePlugin.ImageFileDirectory_v2()
-            for tag, tagdata in custom.items():
-                ifd[tag] = tagdata.value
-                ifd.tagtype[tag] = tagdata.type
-            check_tags(ifd)
-
-            # Test without types. This only works for some types, int for example are
-            # always encoded as LONG and not SIGNED_LONG.
-            check_tags(
-                {
-                    tag: tagdata.value
-                    for tag, tagdata in custom.items()
-                    if tagdata.supported_by_default
-                }
-            )
-        TiffImagePlugin.WRITE_LIBTIFF = False
+        # Test without types. This only works for some types, int for example are
+        # always encoded as LONG and not SIGNED_LONG.
+        check_tags(
+            {
+                tag: tagdata.value
+                for tag, tagdata in custom.items()
+                if tagdata.supported_by_default
+            }
+        )
 
     def test_osubfiletype(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
