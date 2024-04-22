@@ -114,7 +114,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     break;
                 case 24:
                     context->cinfo.input_components = 3;
-                    if (strcmp(im->mode, "YCbCr") == 0) {
+                    if (im->mode == IMAGING_MODE_YCbCr) {
                         context->cinfo.in_color_space = JCS_YCbCr;
                     } else {
                         context->cinfo.in_color_space = JCS_RGB;
@@ -124,7 +124,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     context->cinfo.input_components = 4;
                     context->cinfo.in_color_space = JCS_CMYK;
 #ifdef JCS_EXTENSIONS
-                    if (strcmp(context->rawmode, "RGBX") == 0) {
+                    if (context->rawmode == IMAGING_RAWMODE_RGBX) {
                         context->cinfo.in_color_space = JCS_EXT_RGBX;
                     }
 #endif
