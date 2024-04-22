@@ -4371,6 +4371,7 @@ setup_module(PyObject *m) {
     ImagingAccessInit();
     ImagingConvertInit();
     ImagingPackInit();
+    ImagingUnpackInit();
 
 #ifdef HAVE_LIBJPEG
     {
@@ -4480,6 +4481,7 @@ free_module(void *m) {
     ImagingAccessFree();
     ImagingConvertFree();
     ImagingPackFree();
+    ImagingUnpackFree();
 }
 
 PyMODINIT_FUNC
