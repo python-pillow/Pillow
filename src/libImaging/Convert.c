@@ -1682,7 +1682,7 @@ ImagingConvertInPlace(Imaging imIn, const Mode *mode) {
 /* ------------------ */
 
 void
-ImagingConvertInit() {
+ImagingConvertInit(void) {
     const struct Converter temp[] = {
         {IMAGING_MODE_1, IMAGING_MODE_L, bit2l},
         {IMAGING_MODE_1, IMAGING_MODE_I, bit2i},
@@ -1824,6 +1824,6 @@ ImagingConvertInit() {
 }
 
 void
-ImagingConvertFree() {
+ImagingConvertFree(void) {
     free(converters);
 }
