@@ -100,13 +100,13 @@ ImageMath eval()
 ``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
 :py:meth:`~PIL.ImageMath.unsafe_eval` instead.
 
-Support for libtiff earlier than 4
+Support for LibTIFF earlier than 4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.4.0
 
-Support for libtiff earlier than 4 has been deprecated. Upgrade to a newer version of
-libtiff instead.
+Support for LibTIFF earlier than version 4 has been deprecated.
+Upgrade to a newer version of LibTIFF instead.
 
 Removed features
 ----------------
