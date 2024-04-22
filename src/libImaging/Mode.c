@@ -68,10 +68,9 @@ const Mode * const MODES[] = {
 };
 
 const Mode * findMode(const char * const name) {
-    int i = 0;
     const Mode * mode;
-    while ((mode = MODES[i++]) != NULL) {
-        if (!strcmp(mode->name, name)) {
+    for (int i = 0; (mode = MODES[i]); i++) {
+        if (strcmp(mode->name, name) == 0) {
             return mode;
         }
     }
@@ -434,11 +433,9 @@ const RawMode * const RAWMODES[] = {
 };
 
 const RawMode * findRawMode(const char * const name) {
-    int i = 0;
     const RawMode * rawmode;
-    while ((rawmode = RAWMODES[i++]) != NULL) {
-        const RawMode * const rawmode = RAWMODES[i];
-        if (!strcmp(rawmode->name, name)) {
+    for (int i = 0; (rawmode = RAWMODES[i]); i++) {
+        if (strcmp(rawmode->name, name) == 0) {
             return rawmode;
         }
     }
