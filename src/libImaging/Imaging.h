@@ -176,6 +176,11 @@ ImagingConvertInit(void);
 extern void
 ImagingConvertFree(void);
 
+extern void
+ImagingPackInit(void);
+extern void
+ImagingPackFree(void);
+
 /* Objects */
 /* ------- */
 
