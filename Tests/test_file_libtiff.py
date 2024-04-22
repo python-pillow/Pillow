@@ -741,7 +741,7 @@ class TestFileLibTiff(LibTiffTestCase):
             pytest.param(
                 True,
                 marks=pytest.mark.skipif(
-                    not Image.core.libtiff_support_custom_tags,
+                    not getattr(Image.core, "libtiff_support_custom_tags", False),
                     reason="Custom tags not supported by older libtiff",
                 ),
             ),
