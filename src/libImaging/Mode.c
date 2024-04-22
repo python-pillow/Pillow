@@ -152,3 +152,10 @@ const RawMode * findRawMode(const char * const name) {
     }
     return NULL;
 }
+
+int isModeI16(const Mode * const mode) {
+    return mode == IMAGING_MODE_I_16
+    || mode == IMAGING_MODE_I_16L
+    || mode == IMAGING_MODE_I_16B
+    || mode == IMAGING_MODE_I_16N;
+}

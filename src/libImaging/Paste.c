@@ -67,8 +67,8 @@ paste_mask_1(
     int x, y;
 
     if (imOut->image8) {
-        int in_i16 = strncmp(imIn->mode, "I;16", 4) == 0;
-        int out_i16 = strncmp(imOut->mode, "I;16", 4) == 0;
+        int in_i16 = isModeI16(imIn->mode);
+        int out_i16 = isModeI16(imOut->mode);
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             if (out_i16) {
@@ -437,7 +437,7 @@ fill_mask_L(
     unsigned int tmp1;
 
     if (imOut->image8) {
-        int i16 = strncmp(imOut->mode, "I;16", 4) == 0;
+        int i16 = isModeI16(imOut->mode);
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
             if (i16) {
