@@ -56,6 +56,7 @@ from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._deprecate import deprecate
 from .TiffTags import TYPES
 
 logger = logging.getLogger(__name__)
@@ -275,6 +276,9 @@ PREFIXES = [
     b"MM\x00\x2B",  # BigTIFF with big-endian byte order
     b"II\x2B\x00",  # BigTIFF with little-endian byte order
 ]
+
+if not getattr(Image.core, "libtiff_support_custom_tags", True):
+    deprecate("Support for libtiff earlier than 4", 12)
 
 
 def _accept(prefix: bytes) -> bool:
