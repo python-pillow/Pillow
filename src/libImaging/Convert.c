@@ -1826,4 +1826,5 @@ ImagingConvertInit(void) {
 void
 ImagingConvertFree(void) {
     free(converters);
+    converters = NULL;
 }
