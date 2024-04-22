@@ -196,22 +196,22 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
 
             /* rawmode indicates what we want from the decoder.  if not
                set, conversions are disabled */
-            if (strcmp(context->rawmode, "L") == 0) {
+            if (context->rawmode == IMAGING_RAWMODE_L) {
                 context->cinfo.out_color_space = JCS_GRAYSCALE;
-            } else if (strcmp(context->rawmode, "RGB") == 0) {
+            } else if (context->rawmode == IMAGING_RAWMODE_RGB) {
                 context->cinfo.out_color_space = JCS_RGB;
             }
 #ifdef JCS_EXTENSIONS
-            else if (strcmp(context->rawmode, "RGBX") == 0) {
+            else if (context->rawmode == IMAGING_RAWMODE_RGBX) {
                 context->cinfo.out_color_space = JCS_EXT_RGBX;
             }
 #endif
-            else if (strcmp(context->rawmode, "CMYK") == 0 ||
-                     strcmp(context->rawmode, "CMYK;I") == 0) {
+            else if (context->rawmode == IMAGING_RAWMODE_CMYK ||
+                     context->rawmode == IMAGING_RAWMODE_CMYK_I) {
                 context->cinfo.out_color_space = JCS_CMYK;
-            } else if (strcmp(context->rawmode, "YCbCr") == 0) {
+            } else if (context->rawmode == IMAGING_RAWMODE_YCbCr) {
                 context->cinfo.out_color_space = JCS_YCbCr;
-            } else if (strcmp(context->rawmode, "YCbCrK") == 0) {
+            } else if (context->rawmode == IMAGING_RAWMODE_YCbCrK) {
                 context->cinfo.out_color_space = JCS_YCCK;
             } else {
                 /* Disable decoder conversions */
