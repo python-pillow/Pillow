@@ -278,7 +278,7 @@ PREFIXES = [
 ]
 
 if not getattr(Image.core, "libtiff_support_custom_tags", True):
-    deprecate("Support for libtiff earlier than 4", 12)
+    deprecate("Support for LibTIFF earlier than version 4", 12)
 
 
 def _accept(prefix: bytes) -> bool:
