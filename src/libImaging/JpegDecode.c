@@ -48,7 +48,7 @@ char *libjpeg_turbo_version = NULL;
 #endif
 
 int
-ImagingJpegUseJCSExtensions() {
+ImagingJpegUseJCSExtensions(void) {
     int use_jcs_extensions = 0;
 #ifdef JCS_EXTENSIONS
 #if defined(LIBJPEG_TURBO_VERSION_NUMBER)
