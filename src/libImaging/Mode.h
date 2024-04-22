@@ -2,10 +2,6 @@
 #define __MODE_H__
 
 
-// Maximum length (including null terminator) for both mode and rawmode names.
-#define IMAGING_MODE_LENGTH 6+1
-
-
 typedef struct {
     const char * const name;
 } Mode;
