@@ -21,13 +21,13 @@
 #include <math.h>
 
 ImagingPalette
-ImagingPaletteNew(const char *mode) {
+ImagingPaletteNew(const Mode *mode) {
     /* Create a palette object */
 
     int i;
     ImagingPalette palette;
 
-    if (strcmp(mode, "RGB") && strcmp(mode, "RGBA")) {
+    if (mode != IMAGING_MODE_RGB && mode != IMAGING_MODE_RGBA) {
         return (ImagingPalette)ImagingError_ModeError();
     }
 
@@ -36,8 +36,7 @@ ImagingPaletteNew(const char *mode) {
         return (ImagingPalette)ImagingError_MemoryError();
     }
 
-    strncpy(palette->mode, mode, IMAGING_MODE_LENGTH - 1);
-    palette->mode[IMAGING_MODE_LENGTH - 1] = 0;
+    palette->mode = mode;
 
     palette->size = 0;
     for (i = 0; i < 256; i++) {
@@ -54,7 +53,7 @@ ImagingPaletteNewBrowser(void) {
     int i, r, g, b;
     ImagingPalette palette;
 
-    palette = ImagingPaletteNew("RGB");
+    palette = ImagingPaletteNew(IMAGING_MODE_RGB);
     if (!palette) {
         return NULL;
     }
