@@ -42,7 +42,7 @@
  */
 
 Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
+ImagingNewPrologueSubtype(const Mode *mode, int xsize, int ysize, int size) {
     Imaging im;
 
     /* linesize overflow check, roughly the current largest space req'd */
@@ -61,57 +61,56 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
 
     im->type = IMAGING_TYPE_UINT8;
 
-    if (strcmp(mode, "1") == 0) {
+    if (mode == IMAGING_MODE_1) {
         /* 1-bit images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
 
-    } else if (strcmp(mode, "P") == 0) {
+    } else if (mode == IMAGING_MODE_P) {
         /* 8-bit palette mapped images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
-        im->palette = ImagingPaletteNew("RGB");
+        im->palette = ImagingPaletteNew(IMAGING_MODE_RGB);
 
-    } else if (strcmp(mode, "PA") == 0) {
+    } else if (mode == IMAGING_MODE_PA) {
         /* 8-bit palette with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
-        im->palette = ImagingPaletteNew("RGB");
+        im->palette = ImagingPaletteNew(IMAGING_MODE_RGB);
 
-    } else if (strcmp(mode, "L") == 0) {
+    } else if (mode == IMAGING_MODE_L) {
         /* 8-bit grayscale (luminance) images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
 
-    } else if (strcmp(mode, "LA") == 0) {
+    } else if (mode == IMAGING_MODE_LA) {
         /* 8-bit grayscale (luminance) with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "La") == 0) {
+    } else if (mode == IMAGING_MODE_La) {
         /* 8-bit grayscale (luminance) with premultiplied alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "F") == 0) {
+    } else if (mode == IMAGING_MODE_F) {
         /* 32-bit floating point images */
         im->bands = 1;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_FLOAT32;
 
-    } else if (strcmp(mode, "I") == 0) {
+    } else if (mode == IMAGING_MODE_I) {
         /* 32-bit integer images */
         im->bands = 1;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_INT32;
 
-    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
-               strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
+    } else if (isModeI16(mode)) {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
@@ -119,13 +118,13 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->linesize = xsize * 2;
         im->type = IMAGING_TYPE_SPECIAL;
 
-    } else if (strcmp(mode, "RGB") == 0) {
+    } else if (mode == IMAGING_MODE_RGB) {
         /* 24-bit true colour images */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "BGR;15") == 0) {
+    } else if (mode == IMAGING_MODE_BGR_15) {
         /* EXPERIMENTAL */
         /* 15-bit reversed true colour */
         im->bands = 3;
@@ -133,7 +132,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->linesize = (xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
-    } else if (strcmp(mode, "BGR;16") == 0) {
+    } else if (mode == IMAGING_MODE_BGR_16) {
         /* EXPERIMENTAL */
         /* 16-bit reversed true colour */
         im->bands = 3;
@@ -141,7 +140,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->linesize = (xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
-    } else if (strcmp(mode, "BGR;24") == 0) {
+    } else if (mode == IMAGING_MODE_BGR_24) {
         /* EXPERIMENTAL */
         /* 24-bit reversed true colour */
         im->bands = 3;
@@ -149,40 +148,40 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->linesize = (xsize * 3 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
-    } else if (strcmp(mode, "RGBX") == 0) {
+    } else if (mode == IMAGING_MODE_RGBX) {
         /* 32-bit true colour images with padding */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "RGBA") == 0) {
+    } else if (mode == IMAGING_MODE_RGBA) {
         /* 32-bit true colour images with alpha */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "RGBa") == 0) {
+    } else if (mode == IMAGING_MODE_RGBa) {
         /* 32-bit true colour images with premultiplied alpha */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "CMYK") == 0) {
+    } else if (mode == IMAGING_MODE_CMYK) {
         /* 32-bit colour separation */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "YCbCr") == 0) {
+    } else if (mode == IMAGING_MODE_YCbCr) {
         /* 24-bit video format */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "LAB") == 0) {
+    } else if (mode == IMAGING_MODE_LAB) {
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
 
-    } else if (strcmp(mode, "HSV") == 0) {
+    } else if (mode == IMAGING_MODE_HSV) {
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
         im->bands = 3;
@@ -195,7 +194,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     }
 
     /* Setup image descriptor */
-    strcpy(im->mode, mode);
+    im->mode = mode;
 
     /* Pointer array (allocate at least one line, to avoid MemoryError
        exceptions on platforms where calloc(0, x) returns NULL) */
@@ -226,7 +225,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
 }
 
 Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize) {
+ImagingNewPrologue(const Mode *mode, int xsize, int ysize) {
     return ImagingNewPrologueSubtype(
         mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
     );
@@ -492,7 +491,7 @@ ImagingAllocateBlock(Imaging im) {
  */
 
 Imaging
-ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
+ImagingNewInternal(const Mode *mode, int xsize, int ysize, int dirty) {
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
@@ -528,17 +527,17 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
 }
 
 Imaging
-ImagingNew(const char *mode, int xsize, int ysize) {
+ImagingNew(const Mode *mode, int xsize, int ysize) {
     return ImagingNewInternal(mode, xsize, ysize, 0);
 }
 
 Imaging
-ImagingNewDirty(const char *mode, int xsize, int ysize) {
+ImagingNewDirty(const Mode *mode, int xsize, int ysize) {
     return ImagingNewInternal(mode, xsize, ysize, 1);
 }
 
 Imaging
-ImagingNewBlock(const char *mode, int xsize, int ysize) {
+ImagingNewBlock(const Mode *mode, int xsize, int ysize) {
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
@@ -559,12 +558,12 @@ ImagingNewBlock(const char *mode, int xsize, int ysize) {
 }
 
 Imaging
-ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn) {
+ImagingNew2Dirty(const Mode *mode, Imaging imOut, Imaging imIn) {
     /* allocate or validate output image */
 
     if (imOut) {
         /* make sure images match */
-        if (strcmp(imOut->mode, mode) != 0 || imOut->xsize != imIn->xsize ||
+        if (imOut->mode != mode || imOut->xsize != imIn->xsize ||
             imOut->ysize != imIn->ysize) {
             return ImagingError_Mismatch();
         }
