@@ -18,7 +18,7 @@
 #define CLIPF(v) ((v <= 0.0) ? 0 : (v >= 255.0F) ? 255 : (UINT8)v)
 
 Imaging
-ImagingConvertMatrix(Imaging im, const char *mode, float m[]) {
+ImagingConvertMatrix(Imaging im, const Mode *mode, float m[]) {
     Imaging imOut;
     int x, y;
     ImagingSectionCookie cookie;
@@ -28,8 +28,8 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[]) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (strcmp(mode, "L") == 0) {
-        imOut = ImagingNewDirty("L", im->xsize, im->ysize);
+    if (mode == IMAGING_MODE_L) {
+        imOut = ImagingNewDirty(IMAGING_MODE_L, im->xsize, im->ysize);
         if (!imOut) {
             return NULL;
         }
@@ -46,8 +46,7 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[]) {
             }
         }
         ImagingSectionLeave(&cookie);
-
-    } else if (strlen(mode) == 3) {
+    } else if (strlen(mode->name) == 3) {
         imOut = ImagingNewDirty(mode, im->xsize, im->ysize);
         if (!imOut) {
             return NULL;
