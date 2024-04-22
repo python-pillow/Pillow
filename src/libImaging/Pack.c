@@ -815,4 +815,5 @@ ImagingPackInit(void) {
 void
 ImagingPackFree(void) {
     free(packers);
+    packers = NULL;
 }
