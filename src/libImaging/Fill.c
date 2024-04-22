@@ -68,11 +68,14 @@ ImagingFill(Imaging im, const void *colour) {
 }
 
 Imaging
-ImagingFillLinearGradient(const char *mode) {
+ImagingFillLinearGradient(const Mode *mode) {
     Imaging im;
     int y;
 
-    if (strlen(mode) != 1) {
+    if (mode != IMAGING_MODE_1 && mode != IMAGING_MODE_F &&
+        mode != IMAGING_MODE_I && mode != IMAGING_MODE_L &&
+        mode != IMAGING_MODE_P
+    ) {
         return (Imaging)ImagingError_ModeError();
     }
 
@@ -102,12 +105,15 @@ ImagingFillLinearGradient(const char *mode) {
 }
 
 Imaging
-ImagingFillRadialGradient(const char *mode) {
+ImagingFillRadialGradient(const Mode *mode) {
     Imaging im;
     int x, y;
     int d;
 
-    if (strlen(mode) != 1) {
+    if (mode != IMAGING_MODE_1 && mode != IMAGING_MODE_F &&
+        mode != IMAGING_MODE_I && mode != IMAGING_MODE_L &&
+        mode != IMAGING_MODE_P
+    ) {
         return (Imaging)ImagingError_ModeError();
     }
 
