@@ -838,8 +838,8 @@ def getProfileName(profile: _CmsProfileCompatible) -> str:
 
         if not (model or manufacturer):
             return (profile.profile.profile_description or "") + "\n"
-        if not manufacturer or len(model) > 30:  # type: ignore[arg-type]
-            return model + "\n"  # type: ignore[operator]
+        if not manufacturer or (model and len(model) > 30):
+            return f"{model}\n"
         return f"{model} - {manufacturer}\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
