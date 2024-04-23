@@ -1824,7 +1824,13 @@ _putpalette(ImagingObject *self, PyObject *args) {
 
     ImagingPaletteDelete(self->image->palette);
 
-    self->image->mode = strlen(self->image->mode->name) == 2 ? IMAGING_MODE_PA : IMAGING_MODE_P;
+    if (self->image->mode == IMAGING_MODE_LA) {
+        self->image->mode = IMAGING_MODE_PA;
+    } else if (self->image->mode == IMAGING_MODE_L) {
+        self->image->mode = IMAGING_MODE_P;
+    } else {
+        // The image already has a palette mode so we don't need to change it.
+    }
 
     self->image->palette = ImagingPaletteNew(palette_mode);
 
