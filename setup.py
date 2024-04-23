@@ -1009,9 +1009,9 @@ for src_file in _LIB_IMAGING:
     files.append(os.path.join("src/libImaging", src_file + ".c"))
 ext_modules = [
     Extension("PIL._imaging", files),
-    Extension("PIL._imagingft", ["src/_imagingft.c"]),
+    Extension("PIL._imagingft", ["src/_imagingft.c", "src/libImaging/Mode.c"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
-    Extension("PIL._webp", ["src/_webp.c"]),
+    Extension("PIL._webp", ["src/_webp.c", "src/libImaging/Mode.c"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
