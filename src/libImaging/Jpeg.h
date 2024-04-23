@@ -28,8 +28,8 @@ typedef struct {
 typedef struct {
     /* CONFIGURATION */
 
-    /* Jpeg file mode (empty if not known) */
-    char jpegmode[8 + 1];
+    /* Jpeg file mode (NULL if not known) */
+    const RawMode *jpegmode;
 
     /* Converter output mode (input to the shuffler) */
     /* If NULL, convert conversions are disabled */

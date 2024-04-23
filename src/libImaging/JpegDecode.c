@@ -182,15 +182,15 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
 
             /* jpegmode indicates what's in the file; if not set, we'll
                trust the decoder */
-            if (strcmp(context->jpegmode, "L") == 0) {
+            if (context->jpegmode == IMAGING_RAWMODE_L) {
                 context->cinfo.jpeg_color_space = JCS_GRAYSCALE;
-            } else if (strcmp(context->jpegmode, "RGB") == 0) {
+            } else if (context->jpegmode == IMAGING_RAWMODE_RGB) {
                 context->cinfo.jpeg_color_space = JCS_RGB;
-            } else if (strcmp(context->jpegmode, "CMYK") == 0) {
+            } else if (context->jpegmode == IMAGING_RAWMODE_CMYK) {
                 context->cinfo.jpeg_color_space = JCS_CMYK;
-            } else if (strcmp(context->jpegmode, "YCbCr") == 0) {
+            } else if (context->jpegmode == IMAGING_RAWMODE_YCbCr) {
                 context->cinfo.jpeg_color_space = JCS_YCbCr;
-            } else if (strcmp(context->jpegmode, "YCbCrK") == 0) {
+            } else if (context->jpegmode == IMAGING_RAWMODE_YCbCrK) {
                 context->cinfo.jpeg_color_space = JCS_YCCK;
             }
 
