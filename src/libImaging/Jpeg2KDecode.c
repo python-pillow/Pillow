@@ -71,7 +71,7 @@ typedef void (*j2k_unpacker_t)(
 );
 
 struct j2k_decode_unpacker {
-    const char *mode;
+    const ModeID mode;
     OPJ_COLOR_SPACE color_space;
     unsigned components;
     /* bool indicating if unpacker supports subsampling */
@@ -599,25 +599,25 @@ j2ku_sycca_rgba(
 }
 
 static const struct j2k_decode_unpacker j2k_unpackers[] = {
-    {"L", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_l},
-    {"P", OPJ_CLRSPC_SRGB, 1, 0, j2ku_gray_l},
-    {"PA", OPJ_CLRSPC_SRGB, 2, 0, j2ku_graya_la},
-    {"I;16", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
-    {"I;16B", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
-    {"LA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
-    {"RGB", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
-    {"RGB", OPJ_CLRSPC_GRAY, 2, 0, j2ku_gray_rgb},
-    {"RGB", OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
-    {"RGB", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
-    {"RGB", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgb_rgb},
-    {"RGB", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycc_rgb},
-    {"RGBA", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
-    {"RGBA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
-    {"RGBA", OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
-    {"RGBA", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
-    {"RGBA", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgba_rgba},
-    {"RGBA", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycca_rgba},
-    {"CMYK", OPJ_CLRSPC_CMYK, 4, 1, j2ku_srgba_rgba},
+    {IMAGING_MODE_L, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_l},
+    {IMAGING_MODE_P, OPJ_CLRSPC_SRGB, 1, 0, j2ku_gray_l},
+    {IMAGING_MODE_PA, OPJ_CLRSPC_SRGB, 2, 0, j2ku_graya_la},
+    {IMAGING_MODE_I_16, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
+    {IMAGING_MODE_I_16B, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
+    {IMAGING_MODE_LA, OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_GRAY, 2, 0, j2ku_gray_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgb_rgb},
+    {IMAGING_MODE_RGB, OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycc_rgb},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_rgb},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_SRGB, 3, 1, j2ku_srgb_rgb},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgba_rgba},
+    {IMAGING_MODE_RGBA, OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycca_rgba},
+    {IMAGING_MODE_CMYK, OPJ_CLRSPC_CMYK, 4, 1, j2ku_srgba_rgba},
 };
 
 /* -------------------------------------------------------------------- */
@@ -770,7 +770,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
         if (color_space == j2k_unpackers[n].color_space &&
             image->numcomps == j2k_unpackers[n].components &&
             (j2k_unpackers[n].subsampling || (subsampling == -1)) &&
-            strcmp(getModeData(im->mode)->name, j2k_unpackers[n].mode) == 0) {
+            im->mode == j2k_unpackers[n].mode) {
             unpack = j2k_unpackers[n].unpacker;
             break;
         }
