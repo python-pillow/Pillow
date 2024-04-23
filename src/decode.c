@@ -291,17 +291,18 @@ PyObject *
 PyImaging_BitDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
+    const char *mode_name;
     int bits = 8;
     int pad = 8;
     int fill = 0;
     int sign = 0;
     int ystep = 1;
-    if (!PyArg_ParseTuple(args, "s|iiiii", &mode, &bits, &pad, &fill, &sign, &ystep)) {
+    if (!PyArg_ParseTuple(args, "s|iiiii", &mode_name, &bits, &pad, &fill, &sign, &ystep)) {
         return NULL;
     }
 
-    if (strcmp(mode, "F") != 0) {
+    const ModeID mode = findModeID(mode_name);
+    if (mode != IMAGING_MODE_F) {
         PyErr_SetString(PyExc_ValueError, "bad image mode");
         return NULL;
     }
@@ -331,34 +332,36 @@ PyObject *
 PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
-    char *actual;
+    char *mode_name;
     int n = 0;
     char *pixel_format = "";
-    if (!PyArg_ParseTuple(args, "si|s", &mode, &n, &pixel_format)) {
+    if (!PyArg_ParseTuple(args, "si|s", &mode_name, &n, &pixel_format)) {
         return NULL;
     }
+
+    const ModeID mode = findModeID(mode_name);
+    ModeID actual;
 
     switch (n) {
         case 1: /* BC1: 565 color, 1-bit alpha */
         case 2: /* BC2: 565 color, 4-bit alpha */
         case 3: /* BC3: 565 color, 2-endpoint 8-bit interpolated alpha */
         case 7: /* BC7: 4-channel 8-bit via everything */
-            actual = "RGBA";
+            actual = IMAGING_MODE_RGBA;
             break;
         case 4: /* BC4: 1-channel 8-bit via 1 BC3 alpha block */
-            actual = "L";
+            actual = IMAGING_MODE_L;
             break;
         case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
         case 6: /* BC6: 3-channel 16-bit float */
-            actual = "RGB";
+            actual = IMAGING_MODE_RGB;
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "block compression type unknown");
             return NULL;
     }
 
-    if (strcmp(mode, actual) != 0) {
+    if (mode != actual) {
         PyErr_SetString(PyExc_ValueError, "bad image mode");
         return NULL;
     }
@@ -401,15 +404,16 @@ PyObject *
 PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
-    char *mode;
+    const char *mode_name;
     int bits = 8;
     int interlace = 0;
     int transparency = -1;
-    if (!PyArg_ParseTuple(args, "s|iii", &mode, &bits, &interlace, &transparency)) {
+    if (!PyArg_ParseTuple(args, "s|iii", &mode_name, &bits, &interlace, &transparency)) {
         return NULL;
     }
 
-    if (strcmp(mode, "L") != 0 && strcmp(mode, "P") != 0) {
+    const ModeID mode = findModeID(mode_name);
+    if (mode != IMAGING_MODE_L && mode != IMAGING_MODE_P) {
         PyErr_SetString(PyExc_ValueError, "bad image mode");
         return NULL;
     }
