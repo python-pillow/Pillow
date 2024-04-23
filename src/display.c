@@ -47,7 +47,7 @@ typedef struct {
 static PyTypeObject ImagingDisplayType;
 
 static ImagingDisplayObject *
-_new(const char *mode, int xsize, int ysize) {
+_new(const Mode * const mode, int xsize, int ysize) {
     ImagingDisplayObject *display;
 
     if (PyType_Ready(&ImagingDisplayType) < 0) {
@@ -235,7 +235,7 @@ static struct PyMethodDef methods[] = {
 
 static PyObject *
 _getattr_mode(ImagingDisplayObject *self, void *closure) {
-    return Py_BuildValue("s", self->dib->mode);
+    return Py_BuildValue("s", self->dib->mode->name);
 }
 
 static PyObject *
@@ -258,13 +258,14 @@ static PyTypeObject ImagingDisplayType = {
 PyObject *
 PyImaging_DisplayWin32(PyObject *self, PyObject *args) {
     ImagingDisplayObject *display;
-    char *mode;
+    char *mode_name;
     int xsize, ysize;
 
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize)) {
+    if (!PyArg_ParseTuple(args, "s(ii)", &mode_name, &xsize, &ysize)) {
         return NULL;
     }
 
+    const Mode * const mode = findMode(mode_name);
     display = _new(mode, xsize, ysize);
     if (display == NULL) {
         return NULL;
@@ -275,12 +276,9 @@ PyImaging_DisplayWin32(PyObject *self, PyObject *args) {
 
 PyObject *
 PyImaging_DisplayModeWin32(PyObject *self, PyObject *args) {
-    char *mode;
     int size[2];
-
-    mode = ImagingGetModeDIB(size);
-
-    return Py_BuildValue("s(ii)", mode, size[0], size[1]);
+    const Mode * const mode = ImagingGetModeDIB(size);
+    return Py_BuildValue("s(ii)", mode->name, size[0], size[1]);
 }
 
 /* -------------------------------------------------------------------- */
