@@ -68,7 +68,7 @@ ImagingFill(Imaging im, const void *colour) {
 }
 
 Imaging
-ImagingFillLinearGradient(const Mode *mode) {
+ImagingFillLinearGradient(const ModeID mode) {
     Imaging im;
     int y;
 
@@ -105,7 +105,7 @@ ImagingFillLinearGradient(const Mode *mode) {
 }
 
 Imaging
-ImagingFillRadialGradient(const Mode *mode) {
+ImagingFillRadialGradient(const ModeID mode) {
     Imaging im;
     int x, y;
     int d;

@@ -770,7 +770,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
         if (color_space == j2k_unpackers[n].color_space &&
             image->numcomps == j2k_unpackers[n].components &&
             (j2k_unpackers[n].subsampling || (subsampling == -1)) &&
-            strcmp(im->mode->name, j2k_unpackers[n].mode) == 0) {
+            strcmp(getModeData(im->mode)->name, j2k_unpackers[n].mode) == 0) {
             unpack = j2k_unpackers[n].unpacker;
             break;
         }

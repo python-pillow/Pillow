@@ -128,7 +128,7 @@ im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
 }
 
 Imaging
-ImagingPoint(Imaging imIn, const Mode *mode, const void *table) {
+ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
     /* lookup table transform */
 
     ImagingSectionCookie cookie;
@@ -140,7 +140,7 @@ ImagingPoint(Imaging imIn, const Mode *mode, const void *table) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (!mode) {
+    if (mode == IMAGING_MODE_UNKNOWN) {
         mode = imIn->mode;
     }
 

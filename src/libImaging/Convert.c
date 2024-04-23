@@ -1122,7 +1122,7 @@ pa2ycbcr(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 }
 
 static Imaging
-frompalette(Imaging imOut, Imaging imIn, const Mode *mode) {
+frompalette(Imaging imOut, Imaging imIn, const ModeID mode) {
     ImagingSectionCookie cookie;
     int alpha;
     int y;
@@ -1192,7 +1192,7 @@ frompalette(Imaging imOut, Imaging imIn, const Mode *mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut, Imaging imIn, const Mode *mode, ImagingPalette inpalette, int dither
+    Imaging imOut, Imaging imIn, const ModeID mode, ImagingPalette inpalette, int dither
 ) {
     ImagingSectionCookie cookie;
     int alpha;
@@ -1488,25 +1488,151 @@ tobilevel(Imaging imOut, Imaging imIn) {
 /* Conversion handlers */
 /* ------------------- */
 
-static struct Converter {
-    const Mode *from;
-    const Mode *to;
+static struct {
+    const ModeID from;
+    const ModeID to;
     ImagingShuffler convert;
-} *converters = NULL;
+} converters[] = {
+    {IMAGING_MODE_1, IMAGING_MODE_L, bit2l},
+    {IMAGING_MODE_1, IMAGING_MODE_I, bit2i},
+    {IMAGING_MODE_1, IMAGING_MODE_F, bit2f},
+    {IMAGING_MODE_1, IMAGING_MODE_RGB, bit2rgb},
+    {IMAGING_MODE_1, IMAGING_MODE_RGBA, bit2rgb},
+    {IMAGING_MODE_1, IMAGING_MODE_RGBX, bit2rgb},
+    {IMAGING_MODE_1, IMAGING_MODE_CMYK, bit2cmyk},
+    {IMAGING_MODE_1, IMAGING_MODE_YCbCr, bit2ycbcr},
+    {IMAGING_MODE_1, IMAGING_MODE_HSV, bit2hsv},
+
+    {IMAGING_MODE_L, IMAGING_MODE_1, l2bit},
+    {IMAGING_MODE_L, IMAGING_MODE_LA, l2la},
+    {IMAGING_MODE_L, IMAGING_MODE_I, l2i},
+    {IMAGING_MODE_L, IMAGING_MODE_F, l2f},
+    {IMAGING_MODE_L, IMAGING_MODE_RGB, l2rgb},
+    {IMAGING_MODE_L, IMAGING_MODE_RGBA, l2rgb},
+    {IMAGING_MODE_L, IMAGING_MODE_RGBX, l2rgb},
+    {IMAGING_MODE_L, IMAGING_MODE_CMYK, l2cmyk},
+    {IMAGING_MODE_L, IMAGING_MODE_YCbCr, l2ycbcr},
+    {IMAGING_MODE_L, IMAGING_MODE_HSV, l2hsv},
+
+    {IMAGING_MODE_LA, IMAGING_MODE_L, la2l},
+    {IMAGING_MODE_LA, IMAGING_MODE_La, lA2la},
+    {IMAGING_MODE_LA, IMAGING_MODE_RGB, la2rgb},
+    {IMAGING_MODE_LA, IMAGING_MODE_RGBA, la2rgb},
+    {IMAGING_MODE_LA, IMAGING_MODE_RGBX, la2rgb},
+    {IMAGING_MODE_LA, IMAGING_MODE_CMYK, la2cmyk},
+    {IMAGING_MODE_LA, IMAGING_MODE_YCbCr, la2ycbcr},
+    {IMAGING_MODE_LA, IMAGING_MODE_HSV, la2hsv},
+
+    {IMAGING_MODE_La, IMAGING_MODE_LA, la2lA},
+
+    {IMAGING_MODE_I, IMAGING_MODE_L, i2l},
+    {IMAGING_MODE_I, IMAGING_MODE_F, i2f},
+    {IMAGING_MODE_I, IMAGING_MODE_RGB, i2rgb},
+    {IMAGING_MODE_I, IMAGING_MODE_RGBA, i2rgb},
+    {IMAGING_MODE_I, IMAGING_MODE_RGBX, i2rgb},
+    {IMAGING_MODE_I, IMAGING_MODE_HSV, i2hsv},
+
+    {IMAGING_MODE_F, IMAGING_MODE_L, f2l},
+    {IMAGING_MODE_F, IMAGING_MODE_I, f2i},
+
+    {IMAGING_MODE_RGB, IMAGING_MODE_1, rgb2bit},
+    {IMAGING_MODE_RGB, IMAGING_MODE_L, rgb2l},
+    {IMAGING_MODE_RGB, IMAGING_MODE_LA, rgb2la},
+    {IMAGING_MODE_RGB, IMAGING_MODE_La, rgb2la},
+    {IMAGING_MODE_RGB, IMAGING_MODE_I, rgb2i},
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16, rgb2i16l},
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16L, rgb2i16l},
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16B, rgb2i16b},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16N, rgb2i16b},
+#else
+    {IMAGING_MODE_RGB, IMAGING_MODE_I_16N, rgb2i16l},
+#endif
+    {IMAGING_MODE_RGB, IMAGING_MODE_F, rgb2f},
+    {IMAGING_MODE_RGB, IMAGING_MODE_BGR_15, rgb2bgr15},
+    {IMAGING_MODE_RGB, IMAGING_MODE_BGR_16, rgb2bgr16},
+    {IMAGING_MODE_RGB, IMAGING_MODE_BGR_24, rgb2bgr24},
+    {IMAGING_MODE_RGB, IMAGING_MODE_RGBA, rgb2rgba},
+    {IMAGING_MODE_RGB, IMAGING_MODE_RGBa, rgb2rgba},
+    {IMAGING_MODE_RGB, IMAGING_MODE_RGBX, rgb2rgba},
+    {IMAGING_MODE_RGB, IMAGING_MODE_CMYK, rgb2cmyk},
+    {IMAGING_MODE_RGB, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
+    {IMAGING_MODE_RGB, IMAGING_MODE_HSV, rgb2hsv},
+
+    {IMAGING_MODE_RGBA, IMAGING_MODE_1, rgb2bit},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_L, rgb2l},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_LA, rgba2la},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_I, rgb2i},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_F, rgb2f},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGBa, rgbA2rgba},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_RGBX, rgb2rgba},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_CMYK, rgb2cmyk},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
+    {IMAGING_MODE_RGBA, IMAGING_MODE_HSV, rgb2hsv},
+
+    {IMAGING_MODE_RGBa, IMAGING_MODE_RGBA, rgba2rgbA},
+    {IMAGING_MODE_RGBa, IMAGING_MODE_RGB, rgba2rgb_},
+
+    {IMAGING_MODE_RGBX, IMAGING_MODE_1, rgb2bit},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_L, rgb2l},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_LA, rgb2la},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_I, rgb2i},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_F, rgb2f},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgba2rgb},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_CMYK, rgb2cmyk},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
+    {IMAGING_MODE_RGBX, IMAGING_MODE_HSV, rgb2hsv},
+
+    {IMAGING_MODE_CMYK, IMAGING_MODE_RGB, cmyk2rgb},
+    {IMAGING_MODE_CMYK, IMAGING_MODE_RGBA, cmyk2rgb},
+    {IMAGING_MODE_CMYK, IMAGING_MODE_RGBX, cmyk2rgb},
+    {IMAGING_MODE_CMYK, IMAGING_MODE_HSV, cmyk2hsv},
+
+    {IMAGING_MODE_YCbCr, IMAGING_MODE_L, ycbcr2l},
+    {IMAGING_MODE_YCbCr, IMAGING_MODE_LA, ycbcr2la},
+    {IMAGING_MODE_YCbCr, IMAGING_MODE_RGB, ImagingConvertYCbCr2RGB},
+
+    {IMAGING_MODE_HSV, IMAGING_MODE_RGB, hsv2rgb},
+
+    {IMAGING_MODE_I, IMAGING_MODE_I_16, I_I16L},
+    {IMAGING_MODE_I_16, IMAGING_MODE_I, I16L_I},
+    {IMAGING_MODE_I_16, IMAGING_MODE_RGB, I16_RGB},
+    {IMAGING_MODE_L, IMAGING_MODE_I_16, L_I16L},
+    {IMAGING_MODE_I_16, IMAGING_MODE_L, I16L_L},
+
+    {IMAGING_MODE_I, IMAGING_MODE_I_16L, I_I16L},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_I, I16L_I},
+    {IMAGING_MODE_I, IMAGING_MODE_I_16B, I_I16B},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_I, I16B_I},
+
+    {IMAGING_MODE_L, IMAGING_MODE_I_16L, L_I16L},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_L, I16L_L},
+    {IMAGING_MODE_L, IMAGING_MODE_I_16B, L_I16B},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_L, I16B_L},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_L, IMAGING_MODE_I_16N, L_I16B},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_L, I16B_L},
+#else
+    {IMAGING_MODE_L, IMAGING_MODE_I_16N, L_I16L},
+    {IMAGING_MODE_I_16N, IMAGING_MODE_L, I16L_L},
+#endif
+
+    {IMAGING_MODE_I_16, IMAGING_MODE_F, I16L_F},
+    {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
+    {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F}
+};
 
 static Imaging
-convert(
-    Imaging imOut, Imaging imIn, const Mode *mode, ImagingPalette palette, int dither
-) {
+convert(Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
-    int y;
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (!mode) {
+    if (mode == IMAGING_MODE_UNKNOWN) {
         /* Map palette image to full depth */
         if (!imIn->palette) {
             return (Imaging)ImagingError_ModeError();
@@ -1536,10 +1662,9 @@ convert(
     /* standard conversion machinery */
 
     convert = NULL;
-
-    for (y = 0; converters[y].from; y++) {
-        if (imIn->mode == converters[y].from && mode == converters[y].to) {
-            convert = converters[y].convert;
+    for (size_t i = 0; i < sizeof(converters) / sizeof(*converters); i++) {
+        if (imIn->mode == converters[i].from && mode == converters[i].to) {
+            convert = converters[i].convert;
             break;
         }
     }
@@ -1550,7 +1675,11 @@ convert(
 #else
         static char buf[100];
         snprintf(
-            buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode->name, mode->name
+            buf,
+            100,
+            "conversion from %.10s to %.10s not supported",
+            getModeData(imIn->mode)->name,
+            getModeData(mode)->name
         );
         return (Imaging)ImagingError_ValueError(buf);
 #endif
@@ -1562,7 +1691,7 @@ convert(
     }
 
     ImagingSectionEnter(&cookie);
-    for (y = 0; y < imIn->ysize; y++) {
+    for (int y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
     }
     ImagingSectionLeave(&cookie);
@@ -1571,7 +1700,7 @@ convert(
 }
 
 Imaging
-ImagingConvert(Imaging imIn, const Mode *mode, ImagingPalette palette, int dither) {
+ImagingConvert(Imaging imIn, const ModeID mode, ImagingPalette palette, int dither) {
     return convert(NULL, imIn, mode, palette, dither);
 }
 
@@ -1581,7 +1710,7 @@ ImagingConvert2(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingConvertTransparent(Imaging imIn, const Mode *mode, int r, int g, int b) {
+ImagingConvertTransparent(Imaging imIn, const ModeID mode, int r, int g, int b) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
     Imaging imOut = NULL;
@@ -1630,8 +1759,8 @@ ImagingConvertTransparent(Imaging imIn, const Mode *mode, int r, int g, int b) {
             buf,
             100,
             "conversion from %.10s to %.10s not supported in convert_transparent",
-            imIn->mode->name,
-            mode->name
+            getModeData(imIn->mode)->name,
+            getModeData(mode)->name
         );
         return (Imaging)ImagingError_ValueError(buf);
     }
@@ -1654,7 +1783,7 @@ ImagingConvertTransparent(Imaging imIn, const Mode *mode, int r, int g, int b) {
 }
 
 Imaging
-ImagingConvertInPlace(Imaging imIn, const Mode *mode) {
+ImagingConvertInPlace(Imaging imIn, const ModeID mode) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
     int y;
@@ -1675,156 +1804,4 @@ ImagingConvertInPlace(Imaging imIn, const Mode *mode) {
     ImagingSectionLeave(&cookie);
 
     return imIn;
-}
-
-/* ------------------ */
-/* Converter mappings */
-/* ------------------ */
-
-void
-ImagingConvertInit(void) {
-    const struct Converter temp[] = {
-        {IMAGING_MODE_1, IMAGING_MODE_L, bit2l},
-        {IMAGING_MODE_1, IMAGING_MODE_I, bit2i},
-        {IMAGING_MODE_1, IMAGING_MODE_F, bit2f},
-        {IMAGING_MODE_1, IMAGING_MODE_RGB, bit2rgb},
-        {IMAGING_MODE_1, IMAGING_MODE_RGBA, bit2rgb},
-        {IMAGING_MODE_1, IMAGING_MODE_RGBX, bit2rgb},
-        {IMAGING_MODE_1, IMAGING_MODE_CMYK, bit2cmyk},
-        {IMAGING_MODE_1, IMAGING_MODE_YCbCr, bit2ycbcr},
-        {IMAGING_MODE_1, IMAGING_MODE_HSV, bit2hsv},
-
-        {IMAGING_MODE_L, IMAGING_MODE_1, l2bit},
-        {IMAGING_MODE_L, IMAGING_MODE_LA, l2la},
-        {IMAGING_MODE_L, IMAGING_MODE_I, l2i},
-        {IMAGING_MODE_L, IMAGING_MODE_F, l2f},
-        {IMAGING_MODE_L, IMAGING_MODE_RGB, l2rgb},
-        {IMAGING_MODE_L, IMAGING_MODE_RGBA, l2rgb},
-        {IMAGING_MODE_L, IMAGING_MODE_RGBX, l2rgb},
-        {IMAGING_MODE_L, IMAGING_MODE_CMYK, l2cmyk},
-        {IMAGING_MODE_L, IMAGING_MODE_YCbCr, l2ycbcr},
-        {IMAGING_MODE_L, IMAGING_MODE_HSV, l2hsv},
-
-        {IMAGING_MODE_LA, IMAGING_MODE_L, la2l},
-        {IMAGING_MODE_LA, IMAGING_MODE_La, lA2la},
-        {IMAGING_MODE_LA, IMAGING_MODE_RGB, la2rgb},
-        {IMAGING_MODE_LA, IMAGING_MODE_RGBA, la2rgb},
-        {IMAGING_MODE_LA, IMAGING_MODE_RGBX, la2rgb},
-        {IMAGING_MODE_LA, IMAGING_MODE_CMYK, la2cmyk},
-        {IMAGING_MODE_LA, IMAGING_MODE_YCbCr, la2ycbcr},
-        {IMAGING_MODE_LA, IMAGING_MODE_HSV, la2hsv},
-
-        {IMAGING_MODE_La, IMAGING_MODE_LA, la2lA},
-
-        {IMAGING_MODE_I, IMAGING_MODE_L, i2l},
-        {IMAGING_MODE_I, IMAGING_MODE_F, i2f},
-        {IMAGING_MODE_I, IMAGING_MODE_RGB, i2rgb},
-        {IMAGING_MODE_I, IMAGING_MODE_RGBA, i2rgb},
-        {IMAGING_MODE_I, IMAGING_MODE_RGBX, i2rgb},
-        {IMAGING_MODE_I, IMAGING_MODE_HSV, i2hsv},
-
-        {IMAGING_MODE_F, IMAGING_MODE_L, f2l},
-        {IMAGING_MODE_F, IMAGING_MODE_I, f2i},
-
-        {IMAGING_MODE_RGB, IMAGING_MODE_1, rgb2bit},
-        {IMAGING_MODE_RGB, IMAGING_MODE_L, rgb2l},
-        {IMAGING_MODE_RGB, IMAGING_MODE_LA, rgb2la},
-        {IMAGING_MODE_RGB, IMAGING_MODE_La, rgb2la},
-        {IMAGING_MODE_RGB, IMAGING_MODE_I, rgb2i},
-        {IMAGING_MODE_RGB, IMAGING_MODE_I_16, rgb2i16l},
-        {IMAGING_MODE_RGB, IMAGING_MODE_I_16L, rgb2i16l},
-        {IMAGING_MODE_RGB, IMAGING_MODE_I_16B, rgb2i16b},
-#ifdef WORDS_BIGENDIAN
-        {IMAGING_MODE_RGB, IMAGING_MODE_I_16N, rgb2i16b},
-#else
-        {IMAGING_MODE_RGB, IMAGING_MODE_I_16N, rgb2i16l},
-#endif
-        {IMAGING_MODE_RGB, IMAGING_MODE_F, rgb2f},
-        {IMAGING_MODE_RGB, IMAGING_MODE_BGR_15, rgb2bgr15},
-        {IMAGING_MODE_RGB, IMAGING_MODE_BGR_16, rgb2bgr16},
-        {IMAGING_MODE_RGB, IMAGING_MODE_BGR_24, rgb2bgr24},
-        {IMAGING_MODE_RGB, IMAGING_MODE_RGBA, rgb2rgba},
-        {IMAGING_MODE_RGB, IMAGING_MODE_RGBa, rgb2rgba},
-        {IMAGING_MODE_RGB, IMAGING_MODE_RGBX, rgb2rgba},
-        {IMAGING_MODE_RGB, IMAGING_MODE_CMYK, rgb2cmyk},
-        {IMAGING_MODE_RGB, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
-        {IMAGING_MODE_RGB, IMAGING_MODE_HSV, rgb2hsv},
-
-        {IMAGING_MODE_RGBA, IMAGING_MODE_1, rgb2bit},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_L, rgb2l},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_LA, rgba2la},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_I, rgb2i},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_F, rgb2f},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_RGB, rgba2rgb},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_RGBa, rgbA2rgba},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_RGBX, rgb2rgba},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_CMYK, rgb2cmyk},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
-        {IMAGING_MODE_RGBA, IMAGING_MODE_HSV, rgb2hsv},
-
-        {IMAGING_MODE_RGBa, IMAGING_MODE_RGBA, rgba2rgbA},
-        {IMAGING_MODE_RGBa, IMAGING_MODE_RGB, rgba2rgb_},
-
-        {IMAGING_MODE_RGBX, IMAGING_MODE_1, rgb2bit},
-        {IMAGING_MODE_RGBX, IMAGING_MODE_L, rgb2l},
-        {IMAGING_MODE_RGBX, IMAGING_MODE_LA, rgb2la},
-        {IMAGING_MODE_RGBX, IMAGING_MODE_I, rgb2i},
-        {IMAGING_MODE_RGBX, IMAGING_MODE_F, rgb2f},
-        {IMAGING_MODE_RGBX, IMAGING_MODE_RGB, rgba2rgb},
-        {IMAGING_MODE_RGBX, IMAGING_MODE_CMYK, rgb2cmyk},
-        {IMAGING_MODE_RGBX, IMAGING_MODE_YCbCr, ImagingConvertRGB2YCbCr},
-        {IMAGING_MODE_RGBX, IMAGING_MODE_HSV, rgb2hsv},
-
-        {IMAGING_MODE_CMYK, IMAGING_MODE_RGB, cmyk2rgb},
-        {IMAGING_MODE_CMYK, IMAGING_MODE_RGBA, cmyk2rgb},
-        {IMAGING_MODE_CMYK, IMAGING_MODE_RGBX, cmyk2rgb},
-        {IMAGING_MODE_CMYK, IMAGING_MODE_HSV, cmyk2hsv},
-
-        {IMAGING_MODE_YCbCr, IMAGING_MODE_L, ycbcr2l},
-        {IMAGING_MODE_YCbCr, IMAGING_MODE_LA, ycbcr2la},
-        {IMAGING_MODE_YCbCr, IMAGING_MODE_RGB, ImagingConvertYCbCr2RGB},
-
-        {IMAGING_MODE_HSV, IMAGING_MODE_RGB, hsv2rgb},
-
-        {IMAGING_MODE_I, IMAGING_MODE_I_16, I_I16L},
-        {IMAGING_MODE_I_16, IMAGING_MODE_I, I16L_I},
-        {IMAGING_MODE_I_16, IMAGING_MODE_RGB, I16_RGB},
-        {IMAGING_MODE_L, IMAGING_MODE_I_16, L_I16L},
-        {IMAGING_MODE_I_16, IMAGING_MODE_L, I16L_L},
-
-        {IMAGING_MODE_I, IMAGING_MODE_I_16L, I_I16L},
-        {IMAGING_MODE_I_16L, IMAGING_MODE_I, I16L_I},
-        {IMAGING_MODE_I, IMAGING_MODE_I_16B, I_I16B},
-        {IMAGING_MODE_I_16B, IMAGING_MODE_I, I16B_I},
-
-        {IMAGING_MODE_L, IMAGING_MODE_I_16L, L_I16L},
-        {IMAGING_MODE_I_16L, IMAGING_MODE_L, I16L_L},
-        {IMAGING_MODE_L, IMAGING_MODE_I_16B, L_I16B},
-        {IMAGING_MODE_I_16B, IMAGING_MODE_L, I16B_L},
-#ifdef WORDS_BIGENDIAN
-        {IMAGING_MODE_L, IMAGING_MODE_I_16N, L_I16B},
-        {IMAGING_MODE_I_16N, IMAGING_MODE_L, I16B_L},
-#else
-        {IMAGING_MODE_L, IMAGING_MODE_I_16N, L_I16L},
-        {IMAGING_MODE_I_16N, IMAGING_MODE_L, I16L_L},
-#endif
-
-        {IMAGING_MODE_I_16, IMAGING_MODE_F, I16L_F},
-        {IMAGING_MODE_I_16L, IMAGING_MODE_F, I16L_F},
-        {IMAGING_MODE_I_16B, IMAGING_MODE_F, I16B_F},
-
-        {NULL}
-    };
-    converters = malloc(sizeof(temp));
-    if (converters == NULL) {
-        fprintf(stderr, "ConvertInit: failed to allocate memory for converter table\n");
-        exit(1);
-    }
-    memcpy(converters, temp, sizeof(temp));
-}
-
-void
-ImagingConvertFree(void) {
-    free(converters);
-    converters = NULL;
 }

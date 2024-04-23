@@ -151,54 +151,41 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
     memcpy(&im->image32[y][x], color, sizeof(INT32));
 }
 
-static struct ImagingAccessInstance *accessors = NULL;
-
-void
-ImagingAccessInit(void) {
-    const struct ImagingAccessInstance temp[] = {
-        {IMAGING_MODE_1, get_pixel_8, put_pixel_8},
-        {IMAGING_MODE_L, get_pixel_8, put_pixel_8},
-        {IMAGING_MODE_LA, get_pixel_32_2bands, put_pixel_32},
-        {IMAGING_MODE_La, get_pixel_32_2bands, put_pixel_32},
-        {IMAGING_MODE_I, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_I_16, get_pixel_16L, put_pixel_16L},
-        {IMAGING_MODE_I_16L, get_pixel_16L, put_pixel_16L},
-        {IMAGING_MODE_I_16B, get_pixel_16B, put_pixel_16B},
+static struct ImagingAccessInstance accessors[] = {
+    {IMAGING_MODE_1, get_pixel_8, put_pixel_8},
+    {IMAGING_MODE_L, get_pixel_8, put_pixel_8},
+    {IMAGING_MODE_LA, get_pixel_32_2bands, put_pixel_32},
+    {IMAGING_MODE_La, get_pixel_32_2bands, put_pixel_32},
+    {IMAGING_MODE_I, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_I_16, get_pixel_16L, put_pixel_16L},
+    {IMAGING_MODE_I_16L, get_pixel_16L, put_pixel_16L},
+    {IMAGING_MODE_I_16B, get_pixel_16B, put_pixel_16B},
 #ifdef WORDS_BIGENDIAN
-        {IMAGING_MODE_I_16N, get_pixel_16B, put_pixel_16B},
+    {IMAGING_MODE_I_16N, get_pixel_16B, put_pixel_16B},
 #else
-        {IMAGING_MODE_I_16N, get_pixel_16L, put_pixel_16L},
+    {IMAGING_MODE_I_16N, get_pixel_16L, put_pixel_16L},
 #endif
-        {IMAGING_MODE_I_32L, get_pixel_32L, put_pixel_32L},
-        {IMAGING_MODE_I_32B, get_pixel_32B, put_pixel_32B},
-        {IMAGING_MODE_F, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_P, get_pixel_8, put_pixel_8},
-        {IMAGING_MODE_PA, get_pixel_32_2bands, put_pixel_32},
-        {IMAGING_MODE_BGR_15, get_pixel_BGR15, put_pixel_BGR1516},
-        {IMAGING_MODE_BGR_16, get_pixel_BGR16, put_pixel_BGR1516},
-        {IMAGING_MODE_BGR_24, get_pixel_BGR24, put_pixel_BGR24},
-        {IMAGING_MODE_RGB, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_RGBA, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_RGBa, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_RGBX, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_CMYK, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_YCbCr, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_LAB, get_pixel_32, put_pixel_32},
-        {IMAGING_MODE_HSV, get_pixel_32, put_pixel_32},
-        {NULL}
-    };
-    accessors = malloc(sizeof(temp));
-    if (accessors == NULL) {
-        fprintf(stderr, "AccessInit: failed to allocate memory for accessors table\n");
-        exit(1);
-    }
-    memcpy(accessors, temp, sizeof(temp));
-}
+    {IMAGING_MODE_I_32L, get_pixel_32L, put_pixel_32L},
+    {IMAGING_MODE_I_32B, get_pixel_32B, put_pixel_32B},
+    {IMAGING_MODE_F, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_P, get_pixel_8, put_pixel_8},
+    {IMAGING_MODE_PA, get_pixel_32_2bands, put_pixel_32},
+    {IMAGING_MODE_BGR_15, get_pixel_BGR15, put_pixel_BGR1516},
+    {IMAGING_MODE_BGR_16, get_pixel_BGR16, put_pixel_BGR1516},
+    {IMAGING_MODE_BGR_24, get_pixel_BGR24, put_pixel_BGR24},
+    {IMAGING_MODE_RGB, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_RGBA, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_RGBa, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_RGBX, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_CMYK, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_YCbCr, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_LAB, get_pixel_32, put_pixel_32},
+    {IMAGING_MODE_HSV, get_pixel_32, put_pixel_32}
+};
 
 ImagingAccess
 ImagingAccessNew(const Imaging im) {
-    int i;
-    for (i = 0; accessors[i].mode; i++) {
+    for (size_t i = 0; i < sizeof(accessors) / sizeof(*accessors); i++) {
         if (im->mode == accessors[i].mode) {
             return &accessors[i];
         }
@@ -208,9 +195,3 @@ ImagingAccessNew(const Imaging im) {
 
 void
 _ImagingAccessDelete(Imaging im, ImagingAccess access) {}
-
-void
-ImagingAccessFree(void) {
-    free(accessors);
-    accessors = NULL;
-}

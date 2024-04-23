@@ -18,28 +18,28 @@
 
 #include "Imaging.h"
 
-#define CHOP(operation)                         \
-    int x, y;                                   \
-    Imaging imOut;                              \
-    imOut = create(imIn1, imIn2, NULL);         \
-    if (!imOut) {                               \
-        return NULL;                            \
-    }                                           \
-    for (y = 0; y < imOut->ysize; y++) {        \
-        UINT8 *out = (UINT8 *)imOut->image[y];  \
-        UINT8 *in1 = (UINT8 *)imIn1->image[y];  \
-        UINT8 *in2 = (UINT8 *)imIn2->image[y];  \
-        for (x = 0; x < imOut->linesize; x++) { \
-            int temp = operation;               \
-            if (temp <= 0) {                    \
-                out[x] = 0;                     \
-            } else if (temp >= 255) {           \
-                out[x] = 255;                   \
-            } else {                            \
-                out[x] = temp;                  \
-            }                                   \
-        }                                       \
-    }                                           \
+#define CHOP(operation)                                 \
+    int x, y;                                           \
+    Imaging imOut;                                      \
+    imOut = create(imIn1, imIn2, IMAGING_MODE_UNKNOWN); \
+    if (!imOut) {                                       \
+        return NULL;                                    \
+    }                                                   \
+    for (y = 0; y < imOut->ysize; y++) {                \
+        UINT8 *out = (UINT8 *)imOut->image[y];          \
+        UINT8 *in1 = (UINT8 *)imIn1->image[y];          \
+        UINT8 *in2 = (UINT8 *)imIn2->image[y];          \
+        for (x = 0; x < imOut->linesize; x++) {         \
+            int temp = operation;                       \
+            if (temp <= 0) {                            \
+                out[x] = 0;                             \
+            } else if (temp >= 255) {                   \
+                out[x] = 255;                           \
+            } else {                                    \
+                out[x] = temp;                          \
+            }                                           \
+        }                                               \
+    }                                                   \
     return imOut;
 
 #define CHOP2(operation, mode)                  \
@@ -60,11 +60,11 @@
     return imOut;
 
 static Imaging
-create(Imaging im1, Imaging im2, const Mode *mode) {
+create(Imaging im1, Imaging im2, const ModeID mode) {
     int xsize, ysize;
 
     if (!im1 || !im2 || im1->type != IMAGING_TYPE_UINT8 ||
-        (mode != NULL && (im1->mode != mode || im2->mode != mode))) {
+        (mode != IMAGING_MODE_UNKNOWN && (im1->mode != mode || im2->mode != mode))) {
         return (Imaging)ImagingError_ModeError();
     }
     if (im1->type != im2->type || im1->bands != im2->bands) {
@@ -129,12 +129,12 @@ ImagingChopXor(Imaging imIn1, Imaging imIn2) {
 
 Imaging
 ImagingChopAddModulo(Imaging imIn1, Imaging imIn2) {
-    CHOP2(in1[x] + in2[x], NULL);
+    CHOP2(in1[x] + in2[x], IMAGING_MODE_UNKNOWN);
 }
 
 Imaging
 ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2) {
-    CHOP2(in1[x] - in2[x], NULL);
+    CHOP2(in1[x] - in2[x], IMAGING_MODE_UNKNOWN);
 }
 
 Imaging
@@ -142,7 +142,7 @@ ImagingChopSoftLight(Imaging imIn1, Imaging imIn2) {
     CHOP2(
         (((255 - in1[x]) * (in1[x] * in2[x])) / 65536) +
             (in1[x] * (255 - ((255 - in1[x]) * (255 - in2[x]) / 255))) / 255,
-        NULL
+        IMAGING_MODE_UNKNOWN
     );
 }
 
@@ -151,7 +151,7 @@ ImagingChopHardLight(Imaging imIn1, Imaging imIn2) {
     CHOP2(
         (in2[x] < 128) ? ((in1[x] * in2[x]) / 127)
                        : 255 - (((255 - in2[x]) * (255 - in1[x])) / 127),
-        NULL
+        IMAGING_MODE_UNKNOWN
     );
 }
 
@@ -160,6 +160,6 @@ ImagingOverlay(Imaging imIn1, Imaging imIn2) {
     CHOP2(
         (in1[x] < 128) ? ((in1[x] * in2[x]) / 127)
                        : 255 - (((255 - in1[x]) * (255 - in2[x])) / 127),
-        NULL
+        IMAGING_MODE_UNKNOWN
     );
 }

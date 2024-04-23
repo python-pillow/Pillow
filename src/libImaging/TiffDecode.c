@@ -638,7 +638,7 @@ ImagingLibTiffDecode(
     );
     TRACE(
         ("Image: mode %s, type %d, bands: %d, xsize %d, ysize %d \n",
-         im->mode->name,
+         getModeData(im->mode)->name,
          im->type,
          im->bands,
          im->xsize,
@@ -972,7 +972,7 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     );
     TRACE(
         ("Image: mode %s, type %d, bands: %d, xsize %d, ysize %d \n",
-         im->mode->name,
+         getModeData(im->mode)->name,
          im->type,
          im->bands,
          im->xsize,

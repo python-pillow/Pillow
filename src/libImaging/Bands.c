@@ -240,7 +240,7 @@ ImagingFillBand(Imaging imOut, int band, int color) {
 }
 
 Imaging
-ImagingMerge(const Mode *mode, Imaging bands[4]) {
+ImagingMerge(const ModeID mode, Imaging bands[4]) {
     int i, x, y;
     int bandsCount = 0;
     Imaging imOut;

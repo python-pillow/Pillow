@@ -524,17 +524,146 @@ band3(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
-static struct Packer {
-    const Mode *mode;
-    const RawMode *rawmode;
+static struct {
+    const ModeID mode;
+    const RawModeID rawmode;
     int bits;
     ImagingShuffler pack;
-} *packers = NULL;
+} packers[] = {
+    /* bilevel */
+    {IMAGING_MODE_1, IMAGING_RAWMODE_1, 1, pack1},
+    {IMAGING_MODE_1, IMAGING_RAWMODE_1_I, 1, pack1I},
+    {IMAGING_MODE_1, IMAGING_RAWMODE_1_R, 1, pack1R},
+    {IMAGING_MODE_1, IMAGING_RAWMODE_1_IR, 1, pack1IR},
+    {IMAGING_MODE_1, IMAGING_RAWMODE_L, 8, pack1L},
+
+    /* grayscale */
+    {IMAGING_MODE_L, IMAGING_RAWMODE_L, 8, copy1},
+    {IMAGING_MODE_L, IMAGING_RAWMODE_L_16, 16, packL16},
+    {IMAGING_MODE_L, IMAGING_RAWMODE_L_16B, 16, packL16B},
+
+    /* grayscale w. alpha */
+    {IMAGING_MODE_LA, IMAGING_RAWMODE_LA, 16, packLA},
+    {IMAGING_MODE_LA, IMAGING_RAWMODE_LA_L, 16, packLAL},
+
+    /* grayscale w. alpha premultiplied */
+    {IMAGING_MODE_La, IMAGING_RAWMODE_La, 16, packLA},
+
+    /* palette */
+    {IMAGING_MODE_P, IMAGING_RAWMODE_P_1, 1, pack1},
+    {IMAGING_MODE_P, IMAGING_RAWMODE_P_2, 2, packP2},
+    {IMAGING_MODE_P, IMAGING_RAWMODE_P_4, 4, packP4},
+    {IMAGING_MODE_P, IMAGING_RAWMODE_P, 8, copy1},
+
+    /* palette w. alpha */
+    {IMAGING_MODE_PA, IMAGING_RAWMODE_PA, 16, packLA},
+    {IMAGING_MODE_PA, IMAGING_RAWMODE_PA_L, 16, packLAL},
+
+    /* true colour */
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB, 24, ImagingPackRGB},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBX, 32, copy4},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBA, 32, copy4},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_XRGB, 32, ImagingPackXRGB},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR, 24, ImagingPackBGR},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGRX, 32, ImagingPackBGRX},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_XBGR, 32, ImagingPackXBGR},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_L, 24, packRGBL},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_R, 8, band0},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_G, 8, band1},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_B, 8, band2},
+
+    /* true colour w. alpha */
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA, 32, copy4},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_L, 32, packRGBXL},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGB, 24, ImagingPackRGB},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGR, 24, ImagingPackBGR},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRA, 32, ImagingPackBGRA},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_ABGR, 32, ImagingPackABGR},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRa, 32, ImagingPackBGRa},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_R, 8, band0},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_G, 8, band1},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_B, 8, band2},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_A, 8, band3},
+
+    /* true colour w. alpha premultiplied */
+    {IMAGING_MODE_RGBa, IMAGING_RAWMODE_RGBa, 32, copy4},
+    {IMAGING_MODE_RGBa, IMAGING_RAWMODE_BGRa, 32, ImagingPackBGRA},
+    {IMAGING_MODE_RGBa, IMAGING_RAWMODE_aBGR, 32, ImagingPackABGR},
+
+    /* true colour w. padding */
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGBX, 32, copy4},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGBX_L, 32, packRGBXL},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGB, 24, ImagingPackRGB},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR, 24, ImagingPackBGR},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGRX, 32, ImagingPackBGRX},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_XBGR, 32, ImagingPackXBGR},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_R, 8, band0},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_G, 8, band1},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_B, 8, band2},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_X, 8, band3},
+
+    /* colour separation */
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_CMYK, 32, copy4},
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_CMYK_I, 32, copy4I},
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_CMYK_L, 32, packRGBXL},
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_C, 8, band0},
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_M, 8, band1},
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_Y, 8, band2},
+    {IMAGING_MODE_CMYK, IMAGING_RAWMODE_K, 8, band3},
+
+    /* video (YCbCr) */
+    {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCr, 24, ImagingPackRGB},
+    {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCr_L, 24, packRGBL},
+    {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCrX, 32, copy4},
+    {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCrK, 32, copy4},
+    {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_Y, 8, band0},
+    {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_Cb, 8, band1},
+    {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_Cr, 8, band2},
+
+    /* LAB Color */
+    {IMAGING_MODE_LAB, IMAGING_RAWMODE_LAB, 24, ImagingPackLAB},
+    {IMAGING_MODE_LAB, IMAGING_RAWMODE_L, 8, band0},
+    {IMAGING_MODE_LAB, IMAGING_RAWMODE_A, 8, band1},
+    {IMAGING_MODE_LAB, IMAGING_RAWMODE_B, 8, band2},
+
+    /* HSV */
+    {IMAGING_MODE_HSV, IMAGING_RAWMODE_HSV, 24, ImagingPackRGB},
+    {IMAGING_MODE_HSV, IMAGING_RAWMODE_H, 8, band0},
+    {IMAGING_MODE_HSV, IMAGING_RAWMODE_S, 8, band1},
+    {IMAGING_MODE_HSV, IMAGING_RAWMODE_V, 8, band2},
+
+    /* integer */
+    {IMAGING_MODE_I, IMAGING_RAWMODE_I, 32, copy4},
+    {IMAGING_MODE_I, IMAGING_RAWMODE_I_16B, 16, packI16B},
+    {IMAGING_MODE_I, IMAGING_RAWMODE_I_32S, 32, packI32S},
+    {IMAGING_MODE_I, IMAGING_RAWMODE_I_32NS, 32, copy4},
+
+    /* floating point */
+    {IMAGING_MODE_F, IMAGING_RAWMODE_F, 32, copy4},
+    {IMAGING_MODE_F, IMAGING_RAWMODE_F_32F, 32, packI32S},
+    {IMAGING_MODE_F, IMAGING_RAWMODE_F_32NF, 32, copy4},
+
+    /* storage modes */
+    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16, 16, copy2},
+#ifdef WORDS_BIGENDIAN
+    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16B, 16, packI16N_I16},
+#else
+    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16B, 16, packI16N_I16B},
+#endif
+    {IMAGING_MODE_I_16B, IMAGING_RAWMODE_I_16B, 16, copy2},
+    {IMAGING_MODE_I_16L, IMAGING_RAWMODE_I_16L, 16, copy2},
+    {IMAGING_MODE_I_16N, IMAGING_RAWMODE_I_16N, 16, copy2},
+    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16N, 16, packI16N_I16}, // LibTiff native->image endian.
+    {IMAGING_MODE_I_16L, IMAGING_RAWMODE_I_16N, 16, packI16N_I16},
+    {IMAGING_MODE_I_16B, IMAGING_RAWMODE_I_16N, 16, packI16N_I16B},
+    {IMAGING_MODE_BGR_15, IMAGING_RAWMODE_BGR_15, 16, copy2},
+    {IMAGING_MODE_BGR_16, IMAGING_RAWMODE_BGR_16, 16, copy2},
+    {IMAGING_MODE_BGR_24, IMAGING_RAWMODE_BGR_24, 24, copy3}
+};
 
 ImagingShuffler
-ImagingFindPacker(const Mode *mode, const RawMode *rawmode, int *bits_out) {
-    int i;
-    for (i = 0; packers[i].mode; i++) {
+ImagingFindPacker(const ModeID mode, const RawModeID rawmode, int *bits_out) {
+    for (size_t i = 0; i < sizeof(packers) / sizeof(*packers); i++) {
         if (packers[i].mode == mode && packers[i].rawmode == rawmode) {
             if (bits_out) {
                 *bits_out = packers[i].bits;
@@ -543,153 +672,4 @@ ImagingFindPacker(const Mode *mode, const RawMode *rawmode, int *bits_out) {
         }
     }
     return NULL;
-}
-
-void
-ImagingPackInit(void) {
-    const struct Packer temp[] = {
-        /* bilevel */
-        {IMAGING_MODE_1, IMAGING_RAWMODE_1, 1, pack1},
-        {IMAGING_MODE_1, IMAGING_RAWMODE_1_I, 1, pack1I},
-        {IMAGING_MODE_1, IMAGING_RAWMODE_1_R, 1, pack1R},
-        {IMAGING_MODE_1, IMAGING_RAWMODE_1_IR, 1, pack1IR},
-        {IMAGING_MODE_1, IMAGING_RAWMODE_L, 8, pack1L},
-
-        /* grayscale */
-        {IMAGING_MODE_L, IMAGING_RAWMODE_L, 8, copy1},
-        {IMAGING_MODE_L, IMAGING_RAWMODE_L_16, 16, packL16},
-        {IMAGING_MODE_L, IMAGING_RAWMODE_L_16B, 16, packL16B},
-
-        /* grayscale w. alpha */
-        {IMAGING_MODE_LA, IMAGING_RAWMODE_LA, 16, packLA},
-        {IMAGING_MODE_LA, IMAGING_RAWMODE_LA_L, 16, packLAL},
-
-        /* grayscale w. alpha premultiplied */
-        {IMAGING_MODE_La, IMAGING_RAWMODE_La, 16, packLA},
-
-        /* palette */
-        {IMAGING_MODE_P, IMAGING_RAWMODE_P_1, 1, pack1},
-        {IMAGING_MODE_P, IMAGING_RAWMODE_P_2, 2, packP2},
-        {IMAGING_MODE_P, IMAGING_RAWMODE_P_4, 4, packP4},
-        {IMAGING_MODE_P, IMAGING_RAWMODE_P, 8, copy1},
-
-        /* palette w. alpha */
-        {IMAGING_MODE_PA, IMAGING_RAWMODE_PA, 16, packLA},
-        {IMAGING_MODE_PA, IMAGING_RAWMODE_PA_L, 16, packLAL},
-
-        /* true colour */
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB, 24, ImagingPackRGB},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBX, 32, copy4},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBA, 32, copy4},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_XRGB, 32, ImagingPackXRGB},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR, 24, ImagingPackBGR},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGRX, 32, ImagingPackBGRX},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_XBGR, 32, ImagingPackXBGR},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_L, 24, packRGBL},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_R, 8, band0},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_G, 8, band1},
-        {IMAGING_MODE_RGB, IMAGING_RAWMODE_B, 8, band2},
-
-        /* true colour w. alpha */
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA, 32, copy4},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_L, 32, packRGBXL},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGB, 24, ImagingPackRGB},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGR, 24, ImagingPackBGR},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRA, 32, ImagingPackBGRA},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_ABGR, 32, ImagingPackABGR},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRa, 32, ImagingPackBGRa},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_R, 8, band0},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_G, 8, band1},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_B, 8, band2},
-        {IMAGING_MODE_RGBA, IMAGING_RAWMODE_A, 8, band3},
-
-        /* true colour w. alpha premultiplied */
-        {IMAGING_MODE_RGBa, IMAGING_RAWMODE_RGBa, 32, copy4},
-        {IMAGING_MODE_RGBa, IMAGING_RAWMODE_BGRa, 32, ImagingPackBGRA},
-        {IMAGING_MODE_RGBa, IMAGING_RAWMODE_aBGR, 32, ImagingPackABGR},
-
-        /* true colour w. padding */
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGBX, 32, copy4},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGBX_L, 32, packRGBXL},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGB, 24, ImagingPackRGB},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR, 24, ImagingPackBGR},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGRX, 32, ImagingPackBGRX},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_XBGR, 32, ImagingPackXBGR},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_R, 8, band0},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_G, 8, band1},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_B, 8, band2},
-        {IMAGING_MODE_RGBX, IMAGING_RAWMODE_X, 8, band3},
-
-        /* colour separation */
-        {IMAGING_MODE_CMYK, IMAGING_RAWMODE_CMYK, 32, copy4},
-        {IMAGING_MODE_CMYK, IMAGING_RAWMODE_CMYK_I, 32, copy4I},
-        {IMAGING_MODE_CMYK, IMAGING_RAWMODE_CMYK_L, 32, packRGBXL},
-        {IMAGING_MODE_CMYK, IMAGING_RAWMODE_C, 8, band0},
-        {IMAGING_MODE_CMYK, IMAGING_RAWMODE_M, 8, band1},
-        {IMAGING_MODE_CMYK, IMAGING_RAWMODE_Y, 8, band2},
-        {IMAGING_MODE_CMYK, IMAGING_RAWMODE_K, 8, band3},
-
-        /* video (YCbCr) */
-        {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCr, 24, ImagingPackRGB},
-        {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCr_L, 24, packRGBL},
-        {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCrX, 32, copy4},
-        {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_YCbCrK, 32, copy4},
-        {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_Y, 8, band0},
-        {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_Cb, 8, band1},
-        {IMAGING_MODE_YCbCr, IMAGING_RAWMODE_Cr, 8, band2},
-
-        /* LAB Color */
-        {IMAGING_MODE_LAB, IMAGING_RAWMODE_LAB, 24, ImagingPackLAB},
-        {IMAGING_MODE_LAB, IMAGING_RAWMODE_L, 8, band0},
-        {IMAGING_MODE_LAB, IMAGING_RAWMODE_A, 8, band1},
-        {IMAGING_MODE_LAB, IMAGING_RAWMODE_B, 8, band2},
-
-        /* HSV */
-        {IMAGING_MODE_HSV, IMAGING_RAWMODE_HSV, 24, ImagingPackRGB},
-        {IMAGING_MODE_HSV, IMAGING_RAWMODE_H, 8, band0},
-        {IMAGING_MODE_HSV, IMAGING_RAWMODE_S, 8, band1},
-        {IMAGING_MODE_HSV, IMAGING_RAWMODE_V, 8, band2},
-
-        /* integer */
-        {IMAGING_MODE_I, IMAGING_RAWMODE_I, 32, copy4},
-        {IMAGING_MODE_I, IMAGING_RAWMODE_I_16B, 16, packI16B},
-        {IMAGING_MODE_I, IMAGING_RAWMODE_I_32S, 32, packI32S},
-        {IMAGING_MODE_I, IMAGING_RAWMODE_I_32NS, 32, copy4},
-
-        /* floating point */
-        {IMAGING_MODE_F, IMAGING_RAWMODE_F, 32, copy4},
-        {IMAGING_MODE_F, IMAGING_RAWMODE_F_32F, 32, packI32S},
-        {IMAGING_MODE_F, IMAGING_RAWMODE_F_32NF, 32, copy4},
-
-        /* storage modes */
-        {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16, 16, copy2},
-#ifdef WORDS_BIGENDIAN
-        {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16B, 16, packI16N_I16},
-#else
-        {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16B, 16, packI16N_I16B},
-#endif
-        {IMAGING_MODE_I_16B, IMAGING_RAWMODE_I_16B, 16, copy2},
-        {IMAGING_MODE_I_16L, IMAGING_RAWMODE_I_16L, 16, copy2},
-        {IMAGING_MODE_I_16N, IMAGING_RAWMODE_I_16N, 16, copy2},
-        {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16N, 16, packI16N_I16}, // LibTiff native->image endian.
-        {IMAGING_MODE_I_16L, IMAGING_RAWMODE_I_16N, 16, packI16N_I16},
-        {IMAGING_MODE_I_16B, IMAGING_RAWMODE_I_16N, 16, packI16N_I16B},
-        {IMAGING_MODE_BGR_15, IMAGING_RAWMODE_BGR_15, 16, copy2},
-        {IMAGING_MODE_BGR_16, IMAGING_RAWMODE_BGR_16, 16, copy2},
-        {IMAGING_MODE_BGR_24, IMAGING_RAWMODE_BGR_24, 24, copy3},
-
-        {NULL} /* sentinel */
-    };
-    packers = malloc(sizeof(temp));
-    if (packers == NULL) {
-        fprintf(stderr, "PackInit: failed to allocate memory for packers table\n");
-        exit(1);
-    }
-    memcpy(packers, temp, sizeof(temp));
-}
-
-void
-ImagingPackFree(void) {
-    free(packers);
-    packers = NULL;
 }
