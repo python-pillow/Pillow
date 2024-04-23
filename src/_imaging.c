@@ -3737,7 +3737,7 @@ _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
         self->image->image32,
         "image",
         self->image->image);
-};
+}
 
 static struct PyGetSetDef getsetters[] = {
     {"mode", (getter)_getattr_mode},
