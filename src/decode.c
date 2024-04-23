@@ -820,20 +820,17 @@ PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
 
     char *mode_name;
     char *rawmode_name; /* what we want from the decoder */
-    char *jpegmode;     /* what's in the file */
+    char *jpegmode_name; /* what's in the file */
     int scale = 1;
     int draft = 0;
 
-    if (!PyArg_ParseTuple(args, "ssz|ii", &mode_name, &rawmode_name, &jpegmode, &scale, &draft)) {
+    if (!PyArg_ParseTuple(args, "ssz|ii", &mode_name, &rawmode_name, &jpegmode_name, &scale, &draft)) {
         return NULL;
     }
 
     const Mode * const mode = findMode(mode_name);
     const RawMode * rawmode = findRawMode(rawmode_name);
-
-    if (!jpegmode) {
-        jpegmode = "";
-    }
+    const RawMode * const jpegmode = findRawMode(jpegmode_name);
 
     decoder = PyImaging_DecoderNew(sizeof(JPEGSTATE));
     if (decoder == NULL) {
@@ -857,7 +854,7 @@ PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
     JPEGSTATE *jpeg_decoder_state_context = (JPEGSTATE *)decoder->state.context;
 
     jpeg_decoder_state_context->rawmode = rawmode;
-    strncpy(jpeg_decoder_state_context->jpegmode, jpegmode, 8);
+    jpeg_decoder_state_context->jpegmode = jpegmode;
 
     jpeg_decoder_state_context->scale = scale;
     jpeg_decoder_state_context->draft = draft;
