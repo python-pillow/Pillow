@@ -7,7 +7,6 @@ Based on https://github.com/jaraco/rst.linker, with thanks to Jason R. Coombs.
 from __future__ import annotations
 
 import datetime as dt
-import os
 import re
 import subprocess
 from typing import TYPE_CHECKING
@@ -22,11 +21,10 @@ VERSION_TITLE_REGEX = re.compile(r"^(\d+\.\d+\.\d+)\n-+\n")
 def get_date_for(git_version: str) -> dt.datetime | None:
     cmd = ["git", "log", "-1", "--format=%ai", git_version]
     try:
-        with open(os.devnull, "w", encoding="utf-8") as devnull:
-            out = subprocess.check_output(
-                cmd, stderr=devnull, text=True, encoding="utf-8"
-            )
-            ts = out.strip()
+        out = subprocess.check_output(
+            cmd, stderr=subprocess.DEVNULL, text=True, encoding="utf-8"
+        )
+        ts = out.strip()
         return dt.datetime.fromisoformat(ts)
     except subprocess.CalledProcessError:
         return None
