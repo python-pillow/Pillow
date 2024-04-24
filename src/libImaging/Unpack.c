@@ -1582,6 +1582,7 @@ static struct {
     {"P", "P", 8, copy1},
     {"P", "P;R", 8, unpackLR},
     {"P", "L", 8, copy1},
+    {"P", "PX", 16, unpackL16B},
 
     /* palette w. alpha */
     {"PA", "PA", 16, unpackLA},

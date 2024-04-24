@@ -107,6 +107,14 @@ BGR;15, BGR 16 and BGR;24
 
 The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
 
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+Support for LibTIFF earlier than version 4 has been deprecated.
+Upgrade to a newer version of LibTIFF instead.
+
 Removed features
 ----------------
 

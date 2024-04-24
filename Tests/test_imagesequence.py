@@ -47,23 +47,16 @@ def test_iterator_min_frame() -> None:
             assert i[index] == next(i)
 
 
-def _test_multipage_tiff() -> None:
+@pytest.mark.parametrize(
+    "libtiff", (pytest.param(True, marks=skip_unless_feature("libtiff")), False)
+)
+def test_multipage_tiff(monkeypatch: pytest.MonkeyPatch, libtiff: bool) -> None:
+    monkeypatch.setattr(TiffImagePlugin, "READ_LIBTIFF", libtiff)
     with Image.open("Tests/images/multipage.tiff") as im:
         for index, frame in enumerate(ImageSequence.Iterator(im)):
             frame.load()
             assert index == im.tell()
             frame.convert("RGB")
-
-
-def test_tiff() -> None:
-    _test_multipage_tiff()
-
-
-@skip_unless_feature("libtiff")
-def test_libtiff() -> None:
-    TiffImagePlugin.READ_LIBTIFF = True
-    _test_multipage_tiff()
-    TiffImagePlugin.READ_LIBTIFF = False
 
 
 def test_consecutive() -> None:

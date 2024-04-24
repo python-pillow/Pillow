@@ -97,7 +97,7 @@ jobs:
       matrix:
         include:
           - name: "macOS x86_64"
-            os: macos-latest
+            os: macos-13
             cibw_arch: x86_64
             macosx_deployment_target: "10.10"
           - name: "macOS arm64"
