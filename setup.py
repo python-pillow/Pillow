@@ -938,6 +938,17 @@ class pil_build_ext(build_ext):
 
         self.summary_report(feature)
 
+    def build_extension(self, ext):
+        # Append the extension name (not including "PIL.") to the temp build directory
+        # so that each module builds to its own directory. We need to make a (shallow)
+        # copy of 'self' here so that we don't overwrite this value when running in
+        # parallel.
+        import copy
+
+        self_copy = copy.copy(self)
+        self_copy.build_temp = os.path.join(self.build_temp, ext.name[4:])
+        build_ext.build_extension(self_copy, ext)
+
     def summary_report(self, feature: ext_feature) -> None:
         print("-" * 68)
         print("PIL SETUP SUMMARY")
