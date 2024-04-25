@@ -59,9 +59,6 @@ Pillow also provides limited support for a few additional modes, including:
     * ``I;16L`` (16-bit little endian unsigned integer pixels)
     * ``I;16B`` (16-bit big endian unsigned integer pixels)
     * ``I;16N`` (16-bit native endian unsigned integer pixels)
-    * ``BGR;15`` (15-bit reversed true colour)
-    * ``BGR;16`` (16-bit reversed true colour)
-    * ``BGR;24`` (24-bit reversed true colour)
 
 Premultiplied alpha is where the values for each other channel have been
 multiplied by the alpha. For example, an RGBA pixel of ``(10, 20, 30, 127)``

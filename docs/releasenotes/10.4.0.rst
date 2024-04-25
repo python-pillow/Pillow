@@ -1,0 +1,59 @@
+10.4.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+Deprecations
+============
+
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
+
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support for LibTIFF earlier than version 4 has been deprecated.
+Upgrade to a newer version of LibTIFF instead.
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO

@@ -427,7 +427,6 @@ error:
 
 PyObject *
 PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
-    int clip;
     HANDLE handle = NULL;
     int size;
     void *data;
