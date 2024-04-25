@@ -62,17 +62,17 @@ def test_getdata_roundtrip(
 
 
 @pytest.mark.parametrize(
-    "value, pixel",
+    "value, expected",
     (
         (0xFFFFFFFF, (255, 255, 255, 255)),
         (-1, (255, 255, 255, 255)),
         (sys.maxsize, (255, 255, 255, 255 if sys.maxsize > 2**32 else 127)),
     ),
 )
-def test_putdata_long_integers(value: int, pixel: tuple[int, int, int, int]) -> None:
+def test_putdata_long_integers(value: int, expected: tuple[int, int, int, int]) -> None:
     im = Image.new("RGBA", (1, 1))
     im.putdata([value])
-    assert im.getpixel((0, 0)) == pixel
+    assert im.getpixel((0, 0)) == expected
 
 
 def test_putdata_pypy_performance() -> None:
