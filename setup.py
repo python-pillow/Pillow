@@ -234,11 +234,18 @@ def _find_include_file(self: pil_build_ext, include: str) -> int:
 
 
 def _find_library_file(self: pil_build_ext, library: str) -> str | None:
-    ret = self.compiler.find_library_file(self.compiler.library_dirs, library)
+    ret = self.compiler.find_library_file(
+        self.compiler.library_dirs, library, debug=debug_build()
+    )
     if ret:
         _dbg("Found library %s at %s", (library, ret))
-    else:
-        _dbg("Couldn't find library %s in %s", (library, self.compiler.library_dirs))
+        # we are only interested in the library name including a possible debug suffix
+        lib_name_base = os.path.basename(ret).split(".")[0]
+        # as the library prefix differs depending on library type and platform,
+        # we ignore it by looking for the actual library name
+        start_index = lib_name_base.find(library)
+        return lib_name_base[start_index:]
+    _dbg("Couldn't find library %s in %s", (library, self.compiler.library_dirs))
     return ret
 
 
@@ -695,20 +702,23 @@ class pil_build_ext(build_ext):
         if feature.want("zlib"):
             _dbg("Looking for zlib")
             if _find_include_file(self, "zlib.h"):
-                if _find_library_file(self, "z"):
-                    feature.set("zlib", "z")
-                elif sys.platform == "win32" and _find_library_file(self, "zlib"):
-                    feature.set("zlib", "zlib")  # alternative name
-                elif sys.platform == "win32" and _find_library_file(self, "zdll"):
-                    feature.set("zlib", "zdll")  # dll import library
+                lib_zlib = _find_library_file(self, "z")
+                if lib_zlib is None and sys.platform == "win32":
+                    # alternative name
+                    lib_zlib = _find_library_file(self, "zlib")
+                    if lib_zlib is None:
+                        # dll import library
+                        lib_zlib = _find_library_file(self, "zdll")
+                feature.set("zlib", lib_zlib)
 
         if feature.want("jpeg"):
             _dbg("Looking for jpeg")
             if _find_include_file(self, "jpeglib.h"):
-                if _find_library_file(self, "jpeg"):
-                    feature.set("jpeg", "jpeg")
-                elif sys.platform == "win32" and _find_library_file(self, "libjpeg"):
-                    feature.set("jpeg", "libjpeg")  # alternative name
+                lib_jpeg = _find_library_file(self, "jpeg")
+                if lib_jpeg is None and sys.platform == "win32":
+                    # alternative name
+                    lib_jpeg = _find_library_file(self, "libjpeg")
+                feature.set("jpeg", lib_jpeg)
 
         feature.set("openjpeg_version", None)
         if feature.want("jpeg2000"):
@@ -738,35 +748,40 @@ class pil_build_ext(build_ext):
                                 (best_version, best_path),
                             )
 
-            if best_version and _find_library_file(self, "openjp2"):
-                # Add the directory to the include path so we can include
-                # <openjpeg.h> rather than having to cope with the versioned
-                # include path
-                _add_directory(self.compiler.include_dirs, best_path, 0)
-                feature.set("jpeg2000", "openjp2")
+            if best_version:
+                lib_jpeg2k = _find_library_file(self, "openjp2")
+                if lib_jpeg2k is not None:
+                    # Add the directory to the include path so we can include
+                    # <openjpeg.h> rather than having to cope with the versioned
+                    # include path
+                    _add_directory(self.compiler.include_dirs, best_path, 0)
+                feature.set("jpeg2000", lib_jpeg2k)
                 feature.set("openjpeg_version", ".".join(str(x) for x in best_version))
 
         if feature.want("imagequant"):
             _dbg("Looking for imagequant")
             if _find_include_file(self, "libimagequant.h"):
-                if _find_library_file(self, "imagequant"):
-                    feature.set("imagequant", "imagequant")
-                elif _find_library_file(self, "libimagequant"):
-                    feature.set("imagequant", "libimagequant")
+                lib_imagequant = _find_library_file(
+                    self, "imagequant"
+                ) or _find_library_file(self, "libimagequant")
+                if lib_imagequant is not None:
+                    feature.set("imagequant", lib_imagequant)
 
         if feature.want("tiff"):
             _dbg("Looking for tiff")
             if _find_include_file(self, "tiff.h"):
-                if _find_library_file(self, "tiff"):
-                    feature.set("tiff", "tiff")
-                if sys.platform in ["win32", "darwin"] and _find_library_file(
-                    self, "libtiff"
-                ):
-                    feature.set("tiff", "libtiff")
+                lib_tiff = None
+                if sys.platform in ["win32", "darwin"]:
+                    lib_tiff = _find_library_file(self, "libtiff")
+                if lib_tiff is None:
+                    lib_tiff = _find_library_file(self, "tiff")
+                if lib_tiff is not None:
+                    feature.set("tiff", lib_tiff)
 
         if feature.want("freetype"):
             _dbg("Looking for freetype")
-            if _find_library_file(self, "freetype"):
+            lib_freetype = _find_library_file(self, "freetype")
+            if lib_freetype is not None:
                 # look for freetype2 include files
                 freetype_version = 0
                 for subdir in self.compiler.include_dirs:
@@ -783,7 +798,7 @@ class pil_build_ext(build_ext):
                         freetype_version = 21
                         break
                 if freetype_version:
-                    feature.set("freetype", "freetype")
+                    feature.set("freetype", lib_freetype)
                     if subdir:
                         _add_directory(self.compiler.include_dirs, subdir, 0)
 
@@ -791,10 +806,11 @@ class pil_build_ext(build_ext):
             if not feature.want_vendor("raqm"):  # want system Raqm
                 _dbg("Looking for Raqm")
                 if _find_include_file(self, "raqm.h"):
-                    if _find_library_file(self, "raqm"):
-                        feature.set("raqm", "raqm")
-                    elif _find_library_file(self, "libraqm"):
-                        feature.set("raqm", "libraqm")
+                    lib_raqm = _find_library_file(self, "raqm") or _find_library_file(
+                        self, "libraqm"
+                    )
+                    if lib_raqm is not None:
+                        feature.set("raqm", lib_raqm)
             else:  # want to build Raqm from src/thirdparty
                 _dbg("Looking for HarfBuzz")
                 feature.set("harfbuzz", None)
@@ -802,8 +818,9 @@ class pil_build_ext(build_ext):
                 if hb_dir:
                     if isinstance(hb_dir, str):
                         _add_directory(self.compiler.include_dirs, hb_dir, 0)
-                    if _find_library_file(self, "harfbuzz"):
-                        feature.set("harfbuzz", "harfbuzz")
+                    lib_harfbuzz = _find_library_file(self, "harfbuzz")
+                    if lib_harfbuzz is not None:
+                        feature.set("harfbuzz", lib_harfbuzz)
                 if feature.get("harfbuzz"):
                     if not feature.want_vendor("fribidi"):  # want system FriBiDi
                         _dbg("Looking for FriBiDi")
@@ -814,8 +831,9 @@ class pil_build_ext(build_ext):
                                 _add_directory(
                                     self.compiler.include_dirs, fribidi_dir, 0
                                 )
-                            if _find_library_file(self, "fribidi"):
-                                feature.set("fribidi", "fribidi")
+                            lib_fribidi = _find_library_file(self, "fribidi")
+                            if lib_fribidi is not None:
+                                feature.set("fribidi", lib_fribidi)
                                 feature.set("raqm", True)
                     else:  # want to build FriBiDi shim from src/thirdparty
                         feature.set("raqm", True)
@@ -823,11 +841,11 @@ class pil_build_ext(build_ext):
         if feature.want("lcms"):
             _dbg("Looking for lcms")
             if _find_include_file(self, "lcms2.h"):
-                if _find_library_file(self, "lcms2"):
-                    feature.set("lcms", "lcms2")
-                elif _find_library_file(self, "lcms2_static"):
-                    # alternate Windows name.
-                    feature.set("lcms", "lcms2_static")
+                lib_lcms2 = _find_library_file(self, "lcms2") or _find_library_file(
+                    self, "lcms2_static"  # alternate Windows name
+                )
+                if lib_lcms2 is not None:
+                    feature.set("lcms", lib_lcms2)
 
         if feature.want("webp"):
             _dbg("Looking for webp")
@@ -841,20 +859,22 @@ class pil_build_ext(build_ext):
                         _find_library_file(self, prefix + library)
                         for library in ("webp", "webpmux", "webpdemux")
                     ):
-                        feature.set("webp", prefix + "webp")
+                        feature.set("webp", _find_library_file(self, prefix + "webp"))
                         break
 
         if feature.want("xcb"):
             _dbg("Looking for xcb")
             if _find_include_file(self, "xcb/xcb.h"):
-                if _find_library_file(self, "xcb"):
-                    feature.set("xcb", "xcb")
+                lib_xcb = _find_library_file(self, "xcb")
+                if lib_xcb is not None:
+                    feature.set("xcb", lib_xcb)
 
         if feature.want("avif"):
             _dbg("Looking for avif")
             if _find_include_file(self, "avif/avif.h"):
-                if _find_library_file(self, "avif"):
-                    feature.set("avif", "avif")
+                lib_avif = _find_library_file(self, "avif")
+                if lib_avif is not None:
+                    feature.set("avif", lib_avif)
 
         for f in feature:
             if not feature.get(f) and feature.require(f):
@@ -908,7 +928,7 @@ class pil_build_ext(build_ext):
 
         if feature.get("freetype"):
             srcs = []
-            libs = ["freetype"]
+            libs = [feature.get("freetype")]
             defs = []
             if feature.get("raqm"):
                 if not feature.want_vendor("raqm"):  # using system Raqm
