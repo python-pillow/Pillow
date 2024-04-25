@@ -100,6 +100,13 @@ ImageMath eval()
 ``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
 :py:meth:`~PIL.ImageMath.unsafe_eval` instead.
 
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
+
 Support for LibTIFF earlier than 4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

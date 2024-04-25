@@ -300,7 +300,12 @@ def _cached_hopper(mode: str) -> Image.Image:
         im = hopper("L")
     else:
         im = hopper()
-    return im.convert(mode)
+    if mode.startswith("BGR;"):
+        with pytest.warns(DeprecationWarning):
+            im = im.convert(mode)
+    else:
+        im = im.convert(mode)
+    return im
 
 
 def djpeg_available() -> bool:

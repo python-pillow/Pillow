@@ -36,10 +36,19 @@ from .helper import (
 )
 
 
+# Deprecation helper
+def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
+    if mode.startswith("BGR;"):
+        with pytest.warns(DeprecationWarning):
+            return Image.new(mode, size)
+    else:
+        return Image.new(mode, size)
+
+
 class TestImage:
     @pytest.mark.parametrize("mode", modes)
     def test_image_modes_success(self, mode: str) -> None:
-        Image.new(mode, (1, 1))
+        helper_image_new(mode, (1, 1))
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
@@ -1023,7 +1032,11 @@ class TestImageBytes:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        reloaded = Image.frombytes(mode, im.size, source_bytes)
+        if mode.startswith("BGR;"):
+            with pytest.warns(DeprecationWarning):
+                reloaded = Image.frombytes(mode, im.size, source_bytes)
+        else:
+            reloaded = Image.frombytes(mode, im.size, source_bytes)
         assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize("mode", modes)
@@ -1031,7 +1044,7 @@ class TestImageBytes:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        reloaded = Image.new(mode, im.size)
+        reloaded = helper_image_new(mode, im.size)
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
@@ -1040,7 +1053,7 @@ class TestImageBytes:
         if is_big_endian and mode == "BGR;15":
             pytest.xfail("Known failure of BGR;15 on big-endian")
         im = hopper(mode)
-        reloaded = Image.new(mode, im.size)
+        reloaded = helper_image_new(mode, im.size)
         reloaded.putdata(im.getdata())
         assert_image_equal(im, reloaded)
 

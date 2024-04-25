@@ -55,6 +55,7 @@ from . import (
     _plugins,
 )
 from ._binary import i32le, o32be, o32le
+from ._deprecate import deprecate
 from ._typing import StrOrBytesPath, TypeGuard
 from ._util import DeferredError, is_path
 
@@ -938,6 +939,9 @@ class Image:
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
+
+        if mode in ("BGR;15", "BGR;16", "BGR;24"):
+            deprecate(mode, 12)
 
         self.load()
 
@@ -2955,6 +2959,9 @@ def new(
        None, the image is not initialised.
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
+
+    if mode in ("BGR;15", "BGR;16", "BGR;24"):
+        deprecate(mode, 12)
 
     _check_size(size)
 

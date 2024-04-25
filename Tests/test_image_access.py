@@ -207,7 +207,11 @@ class TestImageGetPixel(AccessTest):
 
     @pytest.mark.parametrize("mode", modes)
     def test_basic(self, mode: str) -> None:
-        self.check(mode)
+        if mode.startswith("BGR;"):
+            with pytest.warns(DeprecationWarning):
+                self.check(mode)
+        else:
+            self.check(mode)
 
     def test_list(self) -> None:
         im = hopper()
