@@ -93,7 +93,6 @@ _LIB_IMAGING = (
     "JpegDecode",
     "JpegEncode",
     "Matrix",
-    "Mode",
     "ModeFilter",
     "Negative",
     "Offset",
@@ -938,17 +937,6 @@ class pil_build_ext(build_ext):
 
         self.summary_report(feature)
 
-    def build_extension(self, ext):
-        # Append the extension name (not including "PIL.") to the temp build directory
-        # so that each module builds to its own directory. We need to make a (shallow)
-        # copy of 'self' here so that we don't overwrite this value when running in
-        # parallel.
-        import copy
-
-        self_copy = copy.copy(self)
-        self_copy.build_temp = os.path.join(self.build_temp, ext.name[4:])
-        build_ext.build_extension(self_copy, ext)
-
     def summary_report(self, feature: ext_feature) -> None:
         print("-" * 68)
         print("PIL SETUP SUMMARY")
@@ -1013,16 +1001,20 @@ def debug_build() -> bool:
     return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
+libraries = [
+    ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
+]
+
 files = ["src/_imaging.c"]
 for src_file in _IMAGING:
     files.append("src/" + src_file + ".c")
 for src_file in _LIB_IMAGING:
     files.append(os.path.join("src/libImaging", src_file + ".c"))
 ext_modules = [
-    Extension("PIL._imaging", files),
-    Extension("PIL._imagingft", ["src/_imagingft.c", "src/libImaging/Mode.c"]),
+    Extension("PIL._imaging", files, libraries=["pil_imaging_mode"]),
+    Extension("PIL._imagingft", ["src/_imagingft.c"], libraries=["pil_imaging_mode"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
-    Extension("PIL._webp", ["src/_webp.c", "src/libImaging/Mode.c"]),
+    Extension("PIL._webp", ["src/_webp.c"], libraries=["pil_imaging_mode"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
@@ -1038,6 +1030,7 @@ try:
     setup(
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
+        libraries=libraries,
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
