@@ -63,14 +63,19 @@ image_modes = (
 image_mode_names = [name for name, _ in image_modes]
 
 
+# Deprecation helper
+def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
+    if mode.startswith("BGR;"):
+        with pytest.warns(DeprecationWarning):
+            return Image.new(mode, size)
+    else:
+        return Image.new(mode, size)
+
+
 class TestImage:
     @pytest.mark.parametrize("mode", image_mode_names)
     def test_image_modes_success(self, mode: str) -> None:
-        if mode.startswith("BGR;"):
-            with pytest.warns(DeprecationWarning):
-                Image.new(mode, (1, 1))
-        else:
-            Image.new(mode, (1, 1))
+        helper_image_new(mode, (1, 1))
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
@@ -1066,29 +1071,17 @@ class TestImageBytes:
         im = hopper(mode)
         source_bytes = im.tobytes()
 
-        if mode.startswith("BGR;"):
-            with pytest.warns(DeprecationWarning):
-                reloaded = Image.new(mode, im.size)
-        else:
-            reloaded = Image.new(mode, im.size)
+        reloaded = helper_image_new(mode, im.size)
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
     @pytest.mark.parametrize(("mode", "pixelsize"), image_modes)
     def test_getdata_putdata(self, mode: str, pixelsize: int) -> None:
-        if mode.startswith("BGR;"):
-            with pytest.warns(DeprecationWarning):
-                im = Image.new(mode, (2, 2))
-        else:
-            im = Image.new(mode, (2, 2))
+        im = helper_image_new(mode, (2, 2))
         source_bytes = bytes(range(im.width * im.height * pixelsize))
         im.frombytes(source_bytes)
 
-        if mode.startswith("BGR;"):
-            with pytest.warns(DeprecationWarning):
-                reloaded = Image.new(mode, im.size)
-        else:
-            reloaded = Image.new(mode, im.size)
+        reloaded = helper_image_new(mode, im.size)
         reloaded.putdata(im.getdata())
         assert_image_equal(im, reloaded)
 
