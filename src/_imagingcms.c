@@ -385,7 +385,7 @@ _buildTransform(
             iRenderingIntent,
             cmsFLAGS);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
         if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build transform");
@@ -419,7 +419,7 @@ _buildProofTransform(
             iProofIntent,
             cmsFLAGS);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
         if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build proof transform");
