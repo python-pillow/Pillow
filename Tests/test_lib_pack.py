@@ -216,7 +216,10 @@ class TestLibPack:
             )
 
     def test_I16(self) -> None:
-        self.assert_pack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+        if sys.byteorder == "little":
+            self.assert_pack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+        else:
+            self.assert_pack("I;16N", "I;16N", 2, 0x0102, 0x0304, 0x0506)
 
     def test_F_float(self) -> None:
         self.assert_pack("F", "F;32F", 4, 1.539989614439558e-36, 4.063216068939723e-34)

@@ -29,6 +29,33 @@ elif "GITHUB_ACTIONS" in os.environ:
     uploader = "github_actions"
 
 
+modes = (
+    "1",
+    "L",
+    "LA",
+    "La",
+    "P",
+    "PA",
+    "F",
+    "I",
+    "I;16",
+    "I;16L",
+    "I;16B",
+    "I;16N",
+    "RGB",
+    "RGBA",
+    "RGBa",
+    "RGBX",
+    "BGR;15",
+    "BGR;16",
+    "BGR;24",
+    "CMYK",
+    "YCbCr",
+    "HSV",
+    "LAB",
+)
+
+
 def upload(a: Image.Image, b: Image.Image) -> str | None:
     if uploader == "show":
         # local img.show for errors.
