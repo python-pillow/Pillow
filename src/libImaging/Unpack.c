@@ -764,10 +764,129 @@ ImagingUnpackBGR16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 
+static void
+ImagingUnpackXRGB1555(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* XRGB, 1/5/5/5 bits per pixel, little-endian */
+    for (int i = 0; i < pixels; i++) {
+        const UINT16 pixel = ((UINT16)in[1] << 8) | in[0];
+        const UINT8 r = (pixel >> 10) & 31;
+        const UINT8 g = (pixel >> 5) & 31;
+        const UINT8 b = pixel & 31;
+        out[R] = (r << 3) | (r >> 2);
+        out[G] = (g << 3) | (g >> 2);
+        out[B] = (b << 3) | (b >> 2);
+        out[A] = 255;
+        out += 4;
+        in += 2;
+    }
+}
+
+static void
+ImagingUnpackARGB1555(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* ARGB, 1/5/5/5 bits per pixel, little-endian */
+    for (int i = 0; i < pixels; i++) {
+        const UINT16 pixel = ((UINT16)in[1] << 8) | in[0];
+        const UINT8 r = (pixel >> 10) & 31;
+        const UINT8 g = (pixel >> 5) & 31;
+        const UINT8 b = pixel & 31;
+        out[R] = (r << 3) | (r >> 2);
+        out[G] = (g << 3) | (g >> 2);
+        out[B] = (b << 3) | (b >> 2);
+        out[A] = (pixel >> 15) * 255;
+        out += 4;
+        in += 2;
+    }
+}
+
+static void
+ImagingUnpackARGB1555Z(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* ARGB, 1/5/5/5 bits per pixel, little-endian, inverted alpha */
+    for (int i = 0; i < pixels; i++) {
+        const UINT16 pixel = ((UINT16)in[1] << 8) | in[0];
+        const UINT8 r = (pixel >> 10) & 31;
+        const UINT8 g = (pixel >> 5) & 31;
+        const UINT8 b = pixel & 31;
+        out[R] = (r << 3) | (r >> 2);
+        out[G] = (g << 3) | (g >> 2);
+        out[B] = (b << 3) | (b >> 2);
+        out[A] = ~((pixel >> 15) * 255);
+        out += 4;
+        in += 2;
+    }
+}
+
+static void
+ImagingUnpackXBGR1555(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* XBGR, 1/5/5/5 bits per pixel, little-endian */
+    for (int i = 0; i < pixels; i++) {
+        const UINT16 pixel = ((UINT16)in[1] << 8) | in[0];
+        const UINT8 b = (pixel >> 10) & 31;
+        const UINT8 g = (pixel >> 5) & 31;
+        const UINT8 r = pixel & 31;
+        out[R] = (r << 3) | (r >> 2);
+        out[G] = (g << 3) | (g >> 2);
+        out[B] = (b << 3) | (b >> 2);
+        out[A] = 255;
+        out += 4;
+        in += 2;
+    }
+}
+
+static void
+ImagingUnpackABGR1555(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* ABGR, 1/5/5/5 bits per pixel, little-endian */
+    for (int i = 0; i < pixels; i++) {
+        const UINT16 pixel = ((UINT16)in[1] << 8) | in[0];
+        const UINT8 b = (pixel >> 10) & 31;
+        const UINT8 g = (pixel >> 5) & 31;
+        const UINT8 r = pixel & 31;
+        out[R] = (r << 3) | (r >> 2);
+        out[G] = (g << 3) | (g >> 2);
+        out[B] = (b << 3) | (b >> 2);
+        out[A] = (pixel >> 15) * 255;
+        out += 4;
+        in += 2;
+    }
+}
+
+static void
+ImagingUnpackRGB565(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* RGB, 5/6/5 bits per pixel, little-endian */
+    for (int i = 0; i < pixels; i++) {
+        const UINT16 pixel = ((UINT16)in[1] << 8) | in[0];
+        const UINT8 r = (pixel >> 11) & 31;
+        const UINT8 g = (pixel >> 5) & 63;
+        const UINT8 b = pixel & 31;
+        out[R] = (r << 3) | (r >> 2);
+        out[G] = (g << 2) | (g >> 4);
+        out[B] = (b << 3) | (b >> 2);
+        out[A] = 255;
+        out += 4;
+        in += 2;
+    }
+}
+
+static void
+ImagingUnpackBGR565(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* BGR, 5/6/5 bits per pixel, little-endian */
+    for (int i = 0; i < pixels; i++) {
+        const UINT16 pixel = ((UINT16)in[1] << 8) | in[0];
+        const UINT8 b = (pixel >> 11) & 31;
+        const UINT8 g = (pixel >> 5) & 63;
+        const UINT8 r = pixel & 31;
+        out[R] = (r << 3) | (r >> 2);
+        out[G] = (g << 2) | (g >> 4);
+        out[B] = (b << 3) | (b >> 2);
+        out[A] = 255;
+        out += 4;
+        in += 2;
+    }
+}
+
 void
 ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
-    /* RGB, 4 bits per pixel */
+    /* RGB, 4 bits per pixel, little-endian */
     for (i = 0; i < pixels; i++) {
         pixel = in[0] + (in[1] << 8);
         out[R] = (pixel & 15) * 17;
@@ -782,13 +901,46 @@ ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels) {
 void
 ImagingUnpackRGBA4B(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
-    /* RGBA, 4 bits per pixel */
+    /* RGBA, 4 bits per pixel, little-endian */
     for (i = 0; i < pixels; i++) {
         pixel = in[0] + (in[1] << 8);
         out[R] = (pixel & 15) * 17;
         out[G] = ((pixel >> 4) & 15) * 17;
         out[B] = ((pixel >> 8) & 15) * 17;
         out[A] = ((pixel >> 12) & 15) * 17;
+        out += 4;
+        in += 2;
+    }
+}
+
+static void
+ImagingUnpackXBGR4(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* XBGR, 4 bits per pixel, little-endian */
+    for (int i = 0; i < pixels; i++) {
+        const UINT8 b = in[1] & 0x0F;
+        const UINT8 g = in[0] & 0xF0;
+        const UINT8 r = in[0] & 0x0F;
+        out[R] = (r << 4) | r;
+        out[G] = g | (g >> 4);
+        out[B] = (b << 4) | b;
+        out[A] = 255;
+        out += 4;
+        in += 2;
+    }
+}
+
+static void
+ImagingUnpackABGR4(UINT8 *out, const UINT8 *in, const int pixels) {
+    /* ABGR, 4 bits per pixel, little-endian */
+    for (int i = 0; i < pixels; i++) {
+        const UINT8 a = in[1] & 0xF0;
+        const UINT8 b = in[1] & 0x0F;
+        const UINT8 g = in[0] & 0xF0;
+        const UINT8 r = in[0] & 0x0F;
+        out[R] = (r << 4) | r;
+        out[G] = g | (g >> 4);
+        out[B] = (b << 4) | b;
+        out[A] = a | (a >> 4);
         out += 4;
         in += 2;
     }
@@ -1615,13 +1767,22 @@ static struct {
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_16B, 48, unpackRGB16B},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR, 24, ImagingUnpackBGR},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_15, 16, ImagingUnpackRGB15},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_XRGB_1555, 16, ImagingUnpackXRGB1555},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_ARGB_1555, 16, ImagingUnpackARGB1555},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_ARGB_1555Z, 16, ImagingUnpackARGB1555Z},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_15, 16, ImagingUnpackBGR15},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_XBGR_1555, 16, ImagingUnpackXBGR1555},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_ABGR_1555, 16, ImagingUnpackABGR1555},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_16, 16, ImagingUnpackRGB16},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_565, 16, ImagingUnpackRGB565},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_16, 16, ImagingUnpackBGR16},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_565, 16, ImagingUnpackBGR565},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_4B, 16, ImagingUnpackRGB4B},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_XBGR_4, 16, ImagingUnpackXBGR4},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_ABGR_4, 16, ImagingUnpackABGR4},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_5, 16, ImagingUnpackBGR15}, /* compat */
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBX_16L, 64, unpackRGBA16L},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBX_16B, 64, unpackRGBA16B},
-    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_4B, 16, ImagingUnpackRGB4B},
-    {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_5, 16, ImagingUnpackBGR15}, /* compat */
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBX, 32, copy4},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBX_L, 32, unpackRGBAL},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGBXX, 40, copy4skip1},
@@ -1647,6 +1808,9 @@ static struct {
     /* true colour w. alpha */
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_LA, 16, unpackRGBALA},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_LA_16B, 32, unpackRGBALA16B},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_ARGB_1555, 16, ImagingUnpackARGB1555},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_ARGB_1555Z, 16, ImagingUnpackARGB1555Z},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_ABGR_1555, 16, ImagingUnpackABGR1555},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA, 32, copy4},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBAX, 40, copy4skip1},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBAXX, 48, copy4skip2},
@@ -1663,6 +1827,7 @@ static struct {
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRA_15, 16, ImagingUnpackBGRA15},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRA_15Z, 16, ImagingUnpackBGRA15Z},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_4B, 16, ImagingUnpackRGBA4B},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_ABGR_4, 16, ImagingUnpackABGR4},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_16L, 64, unpackRGBA16L},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_16B, 64, unpackRGBA16B},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRA, 32, unpackBGRA},
@@ -1727,8 +1892,13 @@ static struct {
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGB_16B, 48, unpackRGB16B},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR, 24, ImagingUnpackBGR},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGB_15, 16, ImagingUnpackRGB15},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_XRGB_1555, 16, ImagingUnpackXRGB1555},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGB_565, 16, ImagingUnpackRGB565},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR_15, 16, ImagingUnpackBGR15},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_XBGR_1555, 16, ImagingUnpackXBGR1555},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR_565, 16, ImagingUnpackBGR565},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGB_4B, 16, ImagingUnpackRGB4B},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_XBGR_4, 16, ImagingUnpackXBGR4},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR_5, 16, ImagingUnpackBGR15}, /* compat */
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGBX, 32, copy4},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGBXX, 40, copy4skip1},
