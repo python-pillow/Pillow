@@ -282,6 +282,30 @@ ImagingPackRGB(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
+ImagingPackRGB15(UINT8 *out, const UINT8 *in, int pixels) {
+    for (int i = 0; i < pixels; out += 2, in += 4, i++) {
+        /* XRGB, 1/5/5/5 bits per pixel, little-endian */
+        const UINT8 r = (UINT16)in[0] * 31 / 255;
+        const UINT8 g = (UINT16)in[1] * 31 / 255;
+        const UINT8 b = (UINT16)in[2] * 31 / 255;
+        out[1] = 0x80 | (r << 2) | (g >> 3);
+        out[0] = (g << 5) | b;
+    }
+}
+
+void
+ImagingPackRGB16(UINT8 *out, const UINT8 *in, int pixels) {
+    for (int i = 0; i < pixels; out += 2, in += 4, i++) {
+        /* RGB, 5/6/5 bits per pixel, little-endian */
+        const UINT8 r = (UINT16)in[0] * 31 / 255;
+        const UINT8 g = (UINT16)in[1] * 63 / 255;
+        const UINT8 b = (UINT16)in[2] * 31 / 255;
+        out[1] = (r << 3) | (g >> 3);
+        out[0] = (g << 5) | b;
+    }
+}
+
+void
 ImagingPackXRGB(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* XRGB, triplets with left padding */
@@ -305,6 +329,30 @@ ImagingPackBGR(UINT8 *out, const UINT8 *in, int pixels) {
         out[2] = in[R];
         out += 3;
         in += 4;
+    }
+}
+
+void
+ImagingPackBGR15(UINT8 *out, const UINT8 *in, int pixels) {
+    for (int i = 0; i < pixels; out += 2, in += 4, i++) {
+        /* XBGR, 1/5/5/5 bits per pixel, little-endian */
+        const UINT8 r = (UINT16)in[0] * 31 / 255;
+        const UINT8 g = (UINT16)in[1] * 31 / 255;
+        const UINT8 b = (UINT16)in[2] * 31 / 255;
+        out[1] = 0x80 | (b << 2) | (g >> 3);
+        out[0] = (g << 5) | r;
+    }
+}
+
+void
+ImagingPackBGR16(UINT8 *out, const UINT8 *in, int pixels) {
+    for (int i = 0; i < pixels; out += 2, in += 4, i++) {
+        /* BGR, 5/6/5 bits per pixel, little-endian */
+        const UINT8 r = (UINT16)in[0] * 31 / 255;
+        const UINT8 g = (UINT16)in[1] * 63 / 255;
+        const UINT8 b = (UINT16)in[2] * 31 / 255;
+        out[1] = (b << 3) | (g >> 3);
+        out[0] = (g << 5) | r;
     }
 }
 
@@ -573,10 +621,14 @@ static struct {
 
     /* true colour */
     {"RGB", "RGB", 24, ImagingPackRGB},
+    {"RGB", "RGB;15", 16, ImagingPackRGB15},
+    {"RGB", "RGB;16", 16, ImagingPackRGB16},
     {"RGB", "RGBX", 32, copy4},
     {"RGB", "RGBA", 32, copy4},
     {"RGB", "XRGB", 32, ImagingPackXRGB},
     {"RGB", "BGR", 24, ImagingPackBGR},
+    {"RGB", "BGR;15", 16, ImagingPackBGR15},
+    {"RGB", "BGR;16", 16, ImagingPackBGR16},
     {"RGB", "BGRX", 32, ImagingPackBGRX},
     {"RGB", "XBGR", 32, ImagingPackXBGR},
     {"RGB", "RGB;L", 24, packRGBL},

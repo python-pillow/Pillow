@@ -67,6 +67,10 @@ class TestLibPack:
 
     def test_RGB(self) -> None:
         self.assert_pack("RGB", "RGB", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
+        self.assert_pack("RGB", "RGB;15", b"\xe0\x81\x00\x88", (8, 131, 0), (24, 0, 8))
+        self.assert_pack("RGB", "BGR;15", b"\xe0\x81\x00\x88", (0, 131, 8), (8, 0, 24))
+        self.assert_pack("RGB", "RGB;16", b"\xe0\x01\xe0\x13", (8, 64, 0), (24, 129, 0))
+        self.assert_pack("RGB", "BGR;16", b"\xe0\x01\xe0\x13", (0, 64, 8), (0, 129, 24))
         self.assert_pack(
             "RGB", "RGBX", b"\x01\x02\x03\xff\x05\x06\x07\xff", (1, 2, 3), (5, 6, 7)
         )
