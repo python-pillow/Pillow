@@ -212,31 +212,43 @@ cms_transform_dealloc(CmsTransformObject *self) {
 /* internal functions */
 
 static cmsUInt32Number
-findLCMStype(char *PILmode) {
-    if (strcmp(PILmode, "RGB") == 0 || strcmp(PILmode, "RGBA") == 0 ||
-        strcmp(PILmode, "RGBX") == 0) {
-        return TYPE_RGBA_8;
+findLCMStype(const char *const mode_name) {
+    const ModeID mode = findModeID(mode_name);
+    switch (mode) {
+        case IMAGING_MODE_RGB:
+        case IMAGING_MODE_RGBA:
+        case IMAGING_MODE_RGBX:
+            return TYPE_RGBA_8;
+        case IMAGING_MODE_CMYK:
+            return TYPE_CMYK_8;
+        case IMAGING_MODE_I_16:
+        case IMAGING_MODE_I_16L:
+            return TYPE_GRAY_16;
+        case IMAGING_MODE_I_16B:
+            return TYPE_GRAY_16_SE;
+        case IMAGING_MODE_YCbCr:
+            return TYPE_YCbCr_8;
+        case IMAGING_MODE_LAB:
+            // LabX equivalent like ALab, but not reversed -- no #define in lcms2
+            return (
+                COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1)
+            );
+        default:
+            // This function only accepts a subset of the imaging modes Pillow has.
+            break;
     }
-    if (strcmp(PILmode, "RGBA;16B") == 0) {
+    // The following modes are not valid PIL Image modes.
+    if (strcmp(mode_name, "RGBA;16B") == 0) {
         return TYPE_RGBA_16;
     }
-    if (strcmp(PILmode, "CMYK") == 0) {
-        return TYPE_CMYK_8;
-    }
-    if (strcmp(PILmode, "I;16") == 0 || strcmp(PILmode, "I;16L") == 0 ||
-        strcmp(PILmode, "L;16") == 0) {
+    if (strcmp(mode_name, "L;16") == 0) {
         return TYPE_GRAY_16;
     }
-    if (strcmp(PILmode, "I;16B") == 0 || strcmp(PILmode, "L;16B") == 0) {
+    if (strcmp(mode_name, "L;16B") == 0) {
         return TYPE_GRAY_16_SE;
     }
-    if (strcmp(PILmode, "YCbCr") == 0 || strcmp(PILmode, "YCCA") == 0 ||
-        strcmp(PILmode, "YCC") == 0) {
+    if (strcmp(mode_name, "YCCA") == 0 || strcmp(mode_name, "YCC") == 0) {
         return TYPE_YCbCr_8;
-    }
-    if (strcmp(PILmode, "LAB") == 0) {
-        // LabX equivalent like ALab, but not reversed -- no #define in lcms2
-        return (COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1));
     }
     /* presume "1" or "L" by default */
     return TYPE_GRAY_8;
