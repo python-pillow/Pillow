@@ -1050,7 +1050,7 @@ class TestImageBytes:
 
     @pytest.mark.parametrize("mode", modes)
     def test_getdata_putdata(self, mode: str) -> None:
-        if is_big_endian and mode == "BGR;15":
+        if is_big_endian() and mode == "BGR;15":
             pytest.xfail("Known failure of BGR;15 on big-endian")
         im = hopper(mode)
         reloaded = helper_image_new(mode, im.size)
