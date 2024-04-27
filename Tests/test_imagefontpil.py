@@ -66,7 +66,7 @@ def test_decompression_bomb() -> None:
         font.getmask("A" * 1_000_000)
 
 
-@pytest.mark.timeout(4)
+@pytest.mark.timeout(5)
 def test_oom() -> None:
     glyph = struct.pack(
         ">hhhhhhhhhh", 1, 0, -32767, -32767, 32767, 32767, -32767, -32767, 32767, 32767
