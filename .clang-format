@@ -9,6 +9,7 @@ BinPackParameters: false
 BreakBeforeBraces: Attach
 ColumnLimit: 88
 DerivePointerAlignment: false
+IndentGotoLabels: false
 IndentWidth: 4
 Language: Cpp
 PointerAlignment: Right

@@ -82,7 +82,7 @@ glzwe(
     UINT32 end_of_data) {
     switch (st->entry_state) {
         case LZW_TRY_IN1:
-        get_first_byte:
+get_first_byte:
             if (!*in_avail) {
                 if (end_of_data) {
                     goto end_of_data;
@@ -94,7 +94,7 @@ glzwe(
             (*in_avail)--;
 
         case LZW_TRY_IN2:
-        encode_loop:
+encode_loop:
             if (!*in_avail) {
                 if (end_of_data) {
                     st->code = st->head;
@@ -127,7 +127,7 @@ glzwe(
             st->code = st->head;
             st->put_state = PUT_HEAD;
             goto put_code;
-        insert_code_or_clear: /* jump here after put_code */
+insert_code_or_clear: /* jump here after put_code */
             if (st->next_code < CODE_LIMIT) {
                 st->codes[st->probe] =
                     (st->next_code << 20) | (st->head << 8) | st->tail;
@@ -140,7 +140,7 @@ glzwe(
                 st->code = st->clear_code;
                 st->put_state = PUT_CLEAR;
                 goto put_code;
-            reset_after_clear: /* jump here after put_code */
+reset_after_clear: /* jump here after put_code */
                 glzwe_reset(st);
             }
             st->head = st->tail;
@@ -150,9 +150,9 @@ glzwe(
             glzwe_reset(st);
             st->code = st->clear_code;
             st->put_state = PUT_INIT_CLEAR;
-        put_code:
+put_code:
             st->code_bits_left = st->code_width;
-        check_buf_bits:
+check_buf_bits:
             if (!st->buf_bits_left) { /* out buffer full */
 
                 case LZW_TRY_OUT1:
@@ -190,11 +190,11 @@ glzwe(
                     return GLZW_INTERNAL_ERROR;
             }
 
-        end_of_data:
+end_of_data:
             st->code = st->end_code;
             st->put_state = PUT_END;
             goto put_code;
-        flush_code_buffer: /* jump here after put_code */
+flush_code_buffer: /* jump here after put_code */
             if (st->buf_bits_left < 8) {
                 case LZW_TRY_OUT2:
                     if (!*out_avail) {
