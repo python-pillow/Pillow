@@ -414,8 +414,7 @@ _decodeTile(
     if (tile_bytes_size > ((tile_length * state->bits / planes + 7) / 8) * tile_width) {
         // If the tile size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFTileSize returns the equivalent size for a tile of data as it
-        // would be returned in a
-        //        call to TIFFReadTile ...
+        // would be returned in a call to TIFFReadTile ...
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
@@ -507,8 +506,7 @@ _decodeStrip(
     if (strip_size > (unpacker_row_byte_size * rows_per_strip)) {
         // If the strip size as expected by LibTiff isn't what we're expecting, abort.
         // man:   TIFFStripSize returns the equivalent size for a strip of data as it
-        // would be returned in a
-        //        call to TIFFReadEncodedStrip ...
+        // would be returned in a call to TIFFReadEncodedStrip ...
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
