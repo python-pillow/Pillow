@@ -117,23 +117,19 @@ def test_putdata_mode_BGR(mode: str) -> None:
     assert list(im.getdata()) == data
 
 
-def test_putdata_array_B() -> None:
+@pytest.mark.parametrize(
+    "mode, type, value",
+    (
+        ("L", "B", 0),  # B = unsigned char
+        ("F", "f", 0.0),  # f = float
+    ),
+)
+def test_putdata_array(mode: str, type: str, value: float) -> None:
     # shouldn't segfault
     # see https://github.com/python-pillow/Pillow/issues/1008
 
-    arr = array("B", [0]) * 15000
-    im = Image.new("L", (150, 100))
-    im.putdata(arr)
-
-    assert len(im.getdata()) == len(arr)
-
-
-def test_putdata_array_F() -> None:
-    # shouldn't segfault
-    # see https://github.com/python-pillow/Pillow/issues/1008
-
-    im = Image.new("F", (150, 100))
-    arr = array("f", [0.0]) * 15000
+    im = Image.new(mode, (150, 100))
+    arr = array(type, [value]) * 15000
     im.putdata(arr)
 
     assert len(im.getdata()) == len(arr)
