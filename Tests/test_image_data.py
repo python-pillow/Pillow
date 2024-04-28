@@ -86,24 +86,23 @@ def test_putdata_mode_with_L_with_float() -> None:
     assert im.getpixel((0, 0)) == 2
 
 
-@pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B"))
-def test_putdata_mode_I(mode: str) -> None:
+@pytest.mark.parametrize(
+    "mode, scale, offset",
+    (
+        ("I", 2, 256),
+        ("I;16", 2, 256),
+        ("I;16L", 2, 256),
+        ("I;16B", 2, 256),
+        ("F", 2.0, 256.0),
+    ),
+)
+def test_putdata_scale_and_offset(mode: str, scale: float, offset: float) -> None:
     src = hopper("L")
     data = list(src.getdata())
     im = Image.new(mode, src.size, 0)
-    im.putdata(data, 2, 256)
+    im.putdata(data, scale, offset)
 
-    target = [2 * elt + 256 for elt in data]
-    assert list(im.getdata()) == target
-
-
-def test_putdata_mode_F() -> None:
-    src = hopper("L")
-    data = list(src.getdata())
-    im = Image.new("F", src.size, 0)
-    im.putdata(data, 2.0, 256.0)
-
-    target = [2.0 * float(elt) + 256.0 for elt in data]
+    target = [scale * val + offset for val in data]
     assert list(im.getdata()) == target
 
 
