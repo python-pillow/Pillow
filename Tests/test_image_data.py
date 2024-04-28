@@ -106,16 +106,6 @@ def test_putdata_scale_and_offset(mode: str, scale: float, offset: float) -> Non
     assert list(im.getdata()) == target
 
 
-@pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
-def test_putdata_mode_BGR(mode: str) -> None:
-    data = [(16, 32, 49), (32, 32, 98)]
-    with pytest.warns(DeprecationWarning):
-        im = Image.new(mode, (1, 2))
-    im.putdata(data)
-
-    assert list(im.getdata()) == data
-
-
 @pytest.mark.parametrize(
     "mode, type, value",
     (
