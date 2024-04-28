@@ -346,7 +346,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             jpeg_finish_compress(&context->cinfo);
 
-        cleanup:
+cleanup:
             /* Clean up */
             if (context->comment) {
                 free(context->comment);
