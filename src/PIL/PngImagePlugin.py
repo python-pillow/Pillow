@@ -783,7 +783,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self.seek(frame)
         return self._text
 
-    def verify(self):
+    def verify(self) -> None:
         """Verify PNG file"""
 
         if self.fp is None:

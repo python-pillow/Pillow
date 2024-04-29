@@ -424,13 +424,15 @@ class JpegImageFile(ImageFile.ImageFile):
 
         return s
 
-    def draft(self, mode, size):
+    def draft(
+        self, mode: str, size: tuple[int, int]
+    ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
-            return
+            return None
 
         # Protect from second call
         if self.decoderconfig:
-            return
+            return None
 
         d, e, o, a = self.tile[0]
         scale = 1
