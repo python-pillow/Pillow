@@ -22,11 +22,17 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from typing import Union, cast
 
 from . import Image
 
 
-def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None):
+def grab(
+    bbox: tuple[int, int, int, int] | None = None,
+    include_layered_windows: bool = False,
+    all_screens: bool = False,
+    xdisplay: str | None = None,
+) -> Image.Image:
     if xdisplay is None:
         if sys.platform == "darwin":
             fh, filepath = tempfile.mkstemp(".png")
@@ -36,7 +42,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 left, top, right, bottom = bbox
                 args += ["-R", f"{left},{top},{right-left},{bottom-top}"]
             subprocess.call(args + ["-x", filepath])
-            im = Image.open(filepath)
+            im: Image.Image = Image.open(filepath)
             im.load()
             os.unlink(filepath)
             if bbox:
@@ -63,6 +69,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
+    xdisplay = cast(Union[str, None], xdisplay)  # type: ignore[redundant-cast, unused-ignore]
     try:
         if not Image.core.HAVE_XCB:
             msg = "Pillow was built without XCB support"
@@ -77,7 +84,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             subprocess.call(["gnome-screenshot", "-f", filepath])
-            im = Image.open(filepath)
+            im: Image.Image = Image.open(filepath)
             im.load()
             os.unlink(filepath)
             if bbox:
@@ -94,7 +101,7 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
         return im
 
 
-def grabclipboard():
+def grabclipboard() -> Image.Image | list[str] | None:
     if sys.platform == "darwin":
         fh, filepath = tempfile.mkstemp(".png")
         os.close(fh)

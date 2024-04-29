@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import sys
+from typing import TYPE_CHECKING
 
 from ._deprecate import deprecate
 
@@ -50,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 
 class PyAccess:
-    def __init__(self, img, readonly=False):
+    def __init__(self, img: Image.Image, readonly: bool = False) -> None:
         deprecate("PyAccess", 11)
         vals = dict(img.im.unsafe_ptrs)
         self.readonly = readonly
@@ -70,14 +71,15 @@ class PyAccess:
         # logger.debug("%s", vals)
         self._post_init()
 
-    def _post_init(self):
+    def _post_init(self) -> None:
         pass
 
-    def __setitem__(self, xy, color):
+    def __setitem__(self, xy: tuple[int, int], color: float | tuple[int, ...]) -> None:
         """
         Modifies the pixel at x,y. The color is given as a single
         numerical value for single band images, and a tuple for
-        multi-band images
+        multi-band images. In addition to this, RGB and RGBA tuples
+        are accepted for P and PA images.
 
         :param xy: The pixel coordinate, given as (x, y). See
            :ref:`coordinate-system`.
@@ -104,11 +106,11 @@ class PyAccess:
                 color = color[:3]
             color = self._palette.getcolor(color, self._img)
             if self._im.mode == "PA":
-                color = (color, alpha)
+                color = (color, alpha)  # type: ignore[assignment]
 
         return self.set_pixel(x, y, color)
 
-    def __getitem__(self, xy):
+    def __getitem__(self, xy: tuple[int, int]) -> float | tuple[int, ...]:
         """
         Returns the pixel at x,y. The pixel is returned as a single
         value for single band images or a tuple for multiple band
@@ -130,12 +132,18 @@ class PyAccess:
     putpixel = __setitem__
     getpixel = __getitem__
 
-    def check_xy(self, xy):
+    def check_xy(self, xy: tuple[int, int]) -> tuple[int, int]:
         (x, y) = xy
         if not (0 <= x < self.xsize and 0 <= y < self.ysize):
             msg = "pixel location out of range"
             raise ValueError(msg)
         return xy
+
+    def get_pixel(self, x: int, y: int) -> float | tuple[int, ...]:
+        raise NotImplementedError()
+
+    def set_pixel(self, x: int, y: int, color: float | tuple[int, ...]) -> None:
+        raise NotImplementedError()
 
 
 class _PyAccess32_2(PyAccess):
@@ -144,7 +152,7 @@ class _PyAccess32_2(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> tuple[int, int]:
         pixel = self.pixels[y][x]
         return pixel.r, pixel.a
 
@@ -161,7 +169,7 @@ class _PyAccess32_3(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> tuple[int, int, int]:
         pixel = self.pixels[y][x]
         return pixel.r, pixel.g, pixel.b
 
@@ -180,7 +188,7 @@ class _PyAccess32_4(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> tuple[int, int, int, int]:
         pixel = self.pixels[y][x]
         return pixel.r, pixel.g, pixel.b, pixel.a
 
@@ -199,7 +207,7 @@ class _PyAccess8(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = self.image8
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> int:
         return self.pixels[y][x]
 
     def set_pixel(self, x, y, color):
@@ -217,7 +225,7 @@ class _PyAccessI16_N(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("unsigned short **", self.image)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> int:
         return self.pixels[y][x]
 
     def set_pixel(self, x, y, color):
@@ -235,7 +243,7 @@ class _PyAccessI16_L(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_I16 **", self.image)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> int:
         pixel = self.pixels[y][x]
         return pixel.l + pixel.r * 256
 
@@ -256,7 +264,7 @@ class _PyAccessI16_B(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_I16 **", self.image)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> int:
         pixel = self.pixels[y][x]
         return pixel.l * 256 + pixel.r
 
@@ -277,7 +285,7 @@ class _PyAccessI32_N(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = self.image32
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> int:
         return self.pixels[y][x]
 
     def set_pixel(self, x, y, color):
@@ -296,7 +304,7 @@ class _PyAccessI32_Swap(PyAccess):
         chars[0], chars[1], chars[2], chars[3] = chars[3], chars[2], chars[1], chars[0]
         return ffi.cast("int *", chars)[0]
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> int:
         return self.reverse(self.pixels[y][x])
 
     def set_pixel(self, x, y, color):
@@ -309,7 +317,7 @@ class _PyAccessF(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("float **", self.image32)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> float:
         return self.pixels[y][x]
 
     def set_pixel(self, x, y, color):
@@ -357,9 +365,13 @@ else:
     mode_map["I;32B"] = _PyAccessI32_N
 
 
-def new(img, readonly=False):
+def new(img: Image.Image, readonly: bool = False) -> PyAccess | None:
     access_type = mode_map.get(img.mode, None)
     if not access_type:
         logger.debug("PyAccess Not Implemented: %s", img.mode)
         return None
     return access_type(img, readonly)
+
+
+if TYPE_CHECKING:
+    from . import Image

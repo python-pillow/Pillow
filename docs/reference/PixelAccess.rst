@@ -44,42 +44,7 @@ Access using negative indexes is also possible. ::
 -----------------------------
 
 .. class:: PixelAccess
+  :canonical: PIL.Image.PixelAccess
 
-  .. method:: __setitem__(self, xy, color):
-
-        Modifies the pixel at x,y. The color is given as a single
-        numerical value for single band images, and a tuple for
-        multi-band images
-
-        :param xy: The pixel coordinate, given as (x, y).
-        :param color: The pixel value according to its mode. e.g. tuple (r, g, b) for RGB mode)
-
-  .. method:: __getitem__(self, xy):
-
-       Returns the pixel at x,y. The pixel is returned as a single
-        value for single band images or a tuple for multiple band
-        images
-
-        :param xy: The pixel coordinate, given as (x, y).
-        :returns: a pixel value for single band images, a tuple of
-          pixel values for multiband images.
-
-  .. method:: putpixel(self, xy, color):
-
-        Modifies the pixel at x,y. The color is given as a single
-        numerical value for single band images, and a tuple for
-        multi-band images. In addition to this, RGB and RGBA tuples
-        are accepted for P and PA images.
-
-        :param xy: The pixel coordinate, given as (x, y).
-        :param color: The pixel value according to its mode. e.g. tuple (r, g, b) for RGB mode)
-
-  .. method:: getpixel(self, xy):
-
-       Returns the pixel at x,y. The pixel is returned as a single
-        value for single band images or a tuple for multiple band
-        images
-
-        :param xy: The pixel coordinate, given as (x, y).
-        :returns: a pixel value for single band images, a tuple of
-          pixel values for multiband images.
+  .. automethod:: PIL.Image.PixelAccess.__getitem__
+  .. automethod:: PIL.Image.PixelAccess.__setitem__

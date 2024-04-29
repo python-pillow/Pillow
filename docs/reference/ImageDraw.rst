@@ -679,23 +679,7 @@ Methods
     :param hints: An optional list of hints.
     :returns: A (drawing context, drawing resource factory) tuple.
 
-.. py:method:: floodfill(image, xy, value, border=None, thresh=0)
-
-    .. warning:: This method is experimental.
-
-    Fills a bounded region with a given color.
-
-    :param image: Target image.
-    :param xy: Seed position (a 2-item coordinate tuple).
-    :param value: Fill color.
-    :param border: Optional border value.  If given, the region consists of
-        pixels with a color different from the border color.  If not given,
-        the region consists of pixels having the same color as the seed
-        pixel.
-    :param thresh: Optional threshold value which specifies a maximum
-        tolerable difference of a pixel value from the 'background' in
-        order for it to be replaced. Useful for filling regions of non-
-        homogeneous, but similar, colors.
+.. autofunction:: PIL.ImageDraw.floodfill
 
 .. _BCP 47 language code: https://www.w3.org/International/articles/language-tags/
 .. _OpenType docs: https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist

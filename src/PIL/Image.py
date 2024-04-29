@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, cast
+from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, SupportsInt, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -482,6 +482,31 @@ def _getscaleoffset(expr):
 # Implementation wrapper
 
 
+class PixelAccess(Protocol):
+    def __getitem__(self, xy: tuple[int, int]) -> float | tuple[int, ...]:
+        """
+        Returns the pixel at x,y. The pixel is returned as a single
+        value for single band images or a tuple for multi-band images.
+
+        :param xy: The pixel coordinate, given as (x, y).
+        :returns: a pixel value for single band images, a tuple of
+                  pixel values for multiband images.
+        """
+        raise NotImplementedError()
+
+    def __setitem__(self, xy: tuple[int, int], color: float | tuple[int, ...]) -> None:
+        """
+        Modifies the pixel at x,y. The color is given as a single
+        numerical value for single band images, and a tuple for
+        multi-band images.
+
+        :param xy: The pixel coordinate, given as (x, y).
+        :param color: The pixel value according to its mode,
+                      e.g. tuple (r, g, b) for RGB mode.
+        """
+        raise NotImplementedError()
+
+
 class Image:
     """
     This class represents an image object.  To create
@@ -834,7 +859,7 @@ class Image:
             msg = "cannot decode image data"
             raise ValueError(msg)
 
-    def load(self):
+    def load(self) -> PixelAccess | None:
         """
         Allocates storage for the image and loads the pixel data.  In
         normal cases, you don't need to call this method, since the
@@ -847,7 +872,7 @@ class Image:
         operations. See :ref:`file-handling` for more information.
 
         :returns: An image access object.
-        :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
+        :rtype: :py:class:`.PixelAccess` or :py:class:`.PyAccess`
         """
         if self.im is not None and self.palette and self.palette.dirty:
             # realize palette
@@ -876,6 +901,7 @@ class Image:
                 if self.pyaccess:
                     return self.pyaccess
             return self.im.pixel_access(self.readonly)
+        return None
 
     def verify(self):
         """
@@ -1485,7 +1511,7 @@ class Image:
         self._exif._loaded = False
         self.getexif()
 
-    def get_child_images(self):
+    def get_child_images(self) -> list[ImageFile.ImageFile]:
         child_images = []
         exif = self.getexif()
         ifds = []
@@ -1509,10 +1535,7 @@ class Image:
             fp = self.fp
             thumbnail_offset = ifd.get(513)
             if thumbnail_offset is not None:
-                try:
-                    thumbnail_offset += self._exif_offset
-                except AttributeError:
-                    pass
+                thumbnail_offset += getattr(self, "_exif_offset", 0)
                 self.fp.seek(thumbnail_offset)
                 data = self.fp.read(ifd.get(514))
                 fp = io.BytesIO(data)
@@ -1578,7 +1601,7 @@ class Image:
             or "transparency" in self.info
         )
 
-    def apply_transparency(self):
+    def apply_transparency(self) -> None:
         """
         If a P mode image has a "transparency" key in the info dictionary,
         remove the key and instead apply the transparency to the palette.
@@ -1590,6 +1613,7 @@ class Image:
         from . import ImagePalette
 
         palette = self.getpalette("RGBA")
+        assert palette is not None
         transparency = self.info["transparency"]
         if isinstance(transparency, bytes):
             for i, alpha in enumerate(transparency):
@@ -1601,7 +1625,9 @@ class Image:
 
         del self.info["transparency"]
 
-    def getpixel(self, xy):
+    def getpixel(
+        self, xy: tuple[SupportsInt, SupportsInt]
+    ) -> float | tuple[int, ...] | None:
         """
         Returns the pixel value at a given position.
 
@@ -1865,7 +1891,7 @@ class Image:
             lut = [round(i) for i in lut]
         return self._new(self.im.point(lut, mode))
 
-    def putalpha(self, alpha):
+    def putalpha(self, alpha: Image | int) -> None:
         """
         Adds or replaces the alpha layer in this image.  If the image
         does not have an alpha layer, it's converted to "LA" or "RGBA".
@@ -1912,6 +1938,7 @@ class Image:
                 alpha = alpha.convert("L")
         else:
             # constant alpha
+            alpha = cast(int, alpha)  # see python/typing#1013
             try:
                 self.im.fillband(band, alpha)
             except (AttributeError, ValueError):
@@ -1975,7 +2002,7 @@ class Image:
         self.palette.mode = "RGB"
         self.load()  # install new palette
 
-    def putpixel(self, xy, value):
+    def putpixel(self, xy: tuple[int, int], value: float | tuple[int, ...]) -> None:
         """
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
@@ -2015,7 +2042,7 @@ class Image:
                 value = value[:3]
             value = self.palette.getcolor(value, self)
             if self.mode == "PA":
-                value = (value, alpha)
+                value = (value, alpha)  # type: ignore[assignment]
         return self.im.putpixel(xy, value)
 
     def remap_palette(self, dest_map, source_palette=None):
