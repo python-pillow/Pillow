@@ -84,7 +84,7 @@ def grab(
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             subprocess.call(["gnome-screenshot", "-f", filepath])
-            im: Image.Image = Image.open(filepath)
+            im: Image.Image = Image.open(filepath)  # type: ignore[no-redef, unused-ignore]
             im.load()
             os.unlink(filepath)
             if bbox:
