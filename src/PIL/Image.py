@@ -41,7 +41,16 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, SupportsInt, cast
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    Protocol,
+    Sequence,
+    SupportsInt,
+    cast,
+)
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -903,7 +912,7 @@ class Image:
             return self.im.pixel_access(self.readonly)
         return None
 
-    def verify(self):
+    def verify(self) -> None:
         """
         Verifies the contents of a file. For data read from a file, this
         method attempts to determine if the file is broken, without
@@ -1293,7 +1302,9 @@ class Image:
 
         return im.crop((x0, y0, x1, y1))
 
-    def draft(self, mode, size):
+    def draft(
+        self, mode: str, size: tuple[int, int]
+    ) -> tuple[str, tuple[int, int, float, float]] | None:
         """
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
@@ -1316,7 +1327,7 @@ class Image:
         """
         pass
 
-    def _expand(self, xmargin, ymargin=None):
+    def _expand(self, xmargin: int, ymargin: int | None = None) -> Image:
         if ymargin is None:
             ymargin = xmargin
         self.load()
@@ -3477,7 +3488,7 @@ def eval(image, *args):
     return image.point(args[0])
 
 
-def merge(mode, bands):
+def merge(mode: str, bands: Sequence[Image]) -> Image:
     """
     Merge a set of single band images into a new multiband image.
 
