@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, cast
+from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -55,6 +55,7 @@ from . import (
     _plugins,
 )
 from ._binary import i32le, o32be, o32le
+from ._deprecate import deprecate
 from ._typing import StrOrBytesPath, TypeGuard
 from ._util import DeferredError, is_path
 
@@ -876,7 +877,7 @@ class Image:
                     return self.pyaccess
             return self.im.pixel_access(self.readonly)
 
-    def verify(self):
+    def verify(self) -> None:
         """
         Verifies the contents of a file. For data read from a file, this
         method attempts to determine if the file is broken, without
@@ -938,6 +939,9 @@ class Image:
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
+
+        if mode in ("BGR;15", "BGR;16", "BGR;24"):
+            deprecate(mode, 12)
 
         self.load()
 
@@ -1263,7 +1267,9 @@ class Image:
 
         return im.crop((x0, y0, x1, y1))
 
-    def draft(self, mode, size):
+    def draft(
+        self, mode: str, size: tuple[int, int]
+    ) -> tuple[str, tuple[int, int, float, float]] | None:
         """
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
@@ -1286,7 +1292,7 @@ class Image:
         """
         pass
 
-    def _expand(self, xmargin, ymargin=None):
+    def _expand(self, xmargin: int, ymargin: int | None = None) -> Image:
         if ymargin is None:
             ymargin = xmargin
         self.load()
@@ -2956,6 +2962,9 @@ def new(
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
+    if mode in ("BGR;15", "BGR;16", "BGR;24"):
+        deprecate(mode, 12)
+
     _check_size(size)
 
     if color is None:
@@ -3443,7 +3452,7 @@ def eval(image, *args):
     return image.point(args[0])
 
 
-def merge(mode, bands):
+def merge(mode: str, bands: Sequence[Image]) -> Image:
     """
     Merge a set of single band images into a new multiband image.
 

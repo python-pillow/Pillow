@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Deprecate BGR;15, BGR;16 and BGR;24 modes #7978
+  [radarhere, hugovk]
+
+- Fix ImagingAccess for I;16N on big-endian #7921
+  [Yay295, radarhere]
+
 - Support reading P mode TIFF images with padding #7996
   [radarhere]
 
