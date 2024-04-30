@@ -163,7 +163,7 @@ class ImageFile(Image.Image):
         self.tile = []
         super().__setstate__(state)
 
-    def verify(self):
+    def verify(self) -> None:
         """Check file integrity"""
 
         # raise exception if something's wrong.  must be called
