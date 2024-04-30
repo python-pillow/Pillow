@@ -49,6 +49,9 @@ except ImportError as ex:
 
 logger = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from . import Image
+
 
 class PyAccess:
     def __init__(self, img: Image.Image, readonly: bool = False) -> None:
@@ -371,7 +374,3 @@ def new(img: Image.Image, readonly: bool = False) -> PyAccess | None:
         logger.debug("PyAccess Not Implemented: %s", img.mode)
         return None
     return access_type(img, readonly)
-
-
-if TYPE_CHECKING:
-    from . import Image
