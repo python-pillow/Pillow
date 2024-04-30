@@ -3251,6 +3251,7 @@ def open(
     fp: StrOrBytesPath | IO[bytes],
     mode: Literal["r"] = "r",
     formats: list[str] | tuple[str, ...] | None = None,
+    warn_possible_formats: bool = False,
 ) -> ImageFile.ImageFile:
     """
     Opens and identifies the given image file.
@@ -3272,6 +3273,8 @@ def open(
        Pass ``None`` to try all supported formats. You can print the set of
        available formats by running ``python3 -m PIL`` or using
        the :py:func:`PIL.features.pilinfo` function.
+    :param warn_possible_formats: If an image cannot be identified, raise warnings
+       from formats that attempted to read the data.
     :returns: An :py:class:`~PIL.Image.Image` object.
     :exception FileNotFoundError: If the file cannot be found.
     :exception PIL.UnidentifiedImageError: If the image cannot be opened and
@@ -3318,7 +3321,7 @@ def open(
 
     preinit()
 
-    accept_warnings: list[str] = []
+    warning_messages: list[str] = []
 
     def _open_core(
         fp: IO[bytes],
@@ -3334,16 +3337,18 @@ def open(
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
                 if isinstance(result, str):
-                    accept_warnings.append(result)
+                    warning_messages.append(result)
                 elif result:
                     fp.seek(0)
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError, struct.error):
+            except (SyntaxError, IndexError, TypeError, struct.error) as e:
                 # Leave disabled by default, spams the logs with image
                 # opening failures that are entirely expected.
                 # logger.debug("", exc_info=True)
+                if warn_possible_formats:
+                    warning_messages.append(i + " opening failed. " + str(e))
                 continue
             except BaseException:
                 if exclusive_fp:
@@ -3369,7 +3374,7 @@ def open(
 
     if exclusive_fp:
         fp.close()
-    for message in accept_warnings:
+    for message in warning_messages:
         warnings.warn(message)
     msg = "cannot identify image file %r" % (filename if filename else fp)
     raise UnidentifiedImageError(msg)
