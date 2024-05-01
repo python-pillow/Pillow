@@ -1933,8 +1933,7 @@ class Image:
         The new layer must be either "L" or "1".
 
         :param alpha: The new alpha layer.  This can either be an "L" or "1"
-           image having the same size as this image, or an integer or
-           other color value.
+           image having the same size as this image, or an integer.
         """
 
         self._ensure_mutable()
