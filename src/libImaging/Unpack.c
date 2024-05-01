@@ -1699,16 +1699,26 @@ static struct {
     int bits;
     ImagingShuffler unpack;
 } unpackers[] = {
-    /* raw mode syntax is "<mode>;<bits><flags>" where "bits" defaults
-       depending on mode (1 for "1", 8 for "P" and "L", etc), and
-       "flags" should be given in alphabetical order.  if both bits
-       and flags have their default values, the ; should be left out */
 
-    /* flags: "I" inverted data; "R" reversed bit order; "B" big
-       endian byte order (default is little endian); "L" line
-       interleave, "S" signed, "F" floating point, "Z" inverted alpha */
+    // The rawmode syntax is "<mode>;<bits><flags>".
+    // "bits" defaults depending on mode (1 for "1", 8 for "P" and "L", etc.).
+    // "flags" should be given in alphabetical order.
+    // If both bits and flags have their default values, the ; should be left out.
 
-    /* exception: rawmodes "I" and "F" are always native endian byte order */
+    // Flags:
+    // "B" big endian byte order (default is little endian)
+    // "F" floating point
+    // "I" inverted data
+    // "L" line interleaved
+    // "N" native endian byte order
+    // "R" reversed bit order
+    // "S" signed
+    // "Z" inverted alpha
+
+    // Exceptions:
+    // Some RGB/BGR rawmodes have different sized bands,
+    //   so the size of each band is listed consecutively.
+    // Rawmodes "I" and "F" default to native endian byte order.
 
     /* bilevel */
     {IMAGING_MODE_1, IMAGING_RAWMODE_1, 1, unpack1},
