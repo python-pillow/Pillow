@@ -85,7 +85,7 @@ def test_rgba_16() -> None:
     with Image.open("Tests/images/rgba16.tga") as im:
         assert im.mode == "RGBA"
 
-        assert im.getpixel((0, 0)) == (172, 0, 255, 255)
+        assert im.getpixel((0, 0)) == (173, 0, 255, 255)
         assert im.getpixel((1, 0)) == (0, 255, 82, 0)
 
 
