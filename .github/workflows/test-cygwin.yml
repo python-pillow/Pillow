@@ -55,6 +55,7 @@ jobs:
           packages: >
             gcc-g++
             ghostscript
+            git
             ImageMagick
             jpeg
             libfreetype-devel
