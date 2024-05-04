@@ -283,7 +283,7 @@ class BmpImageFile(ImageFile.ImageFile):
             )
         ]
 
-    def _open(self):
+    def _open(self) -> None:
         """Open file, check magic number and read header"""
         # read 14 bytes: magic number, filesize, reserved, header final offset
         head_data = self.fp.read(14)
@@ -376,7 +376,7 @@ class DibImageFile(BmpImageFile):
     format = "DIB"
     format_description = "Windows Bitmap"
 
-    def _open(self):
+    def _open(self) -> None:
         self._bitmap()
 
 

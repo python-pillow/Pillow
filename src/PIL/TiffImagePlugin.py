@@ -1143,7 +1143,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.seek(current)
         return self._n_frames
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         """Select a given frame as current image"""
         if not self._seek_check(frame):
             return
@@ -1198,7 +1198,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__frame = frame
         self._setup()
 
-    def tell(self):
+    def tell(self) -> int:
         """Return the current frame number"""
         return self.__frame
 
@@ -1237,7 +1237,7 @@ class TiffImageFile(ImageFile.ImageFile):
             return self._load_libtiff()
         return super().load()
 
-    def load_end(self):
+    def load_end(self) -> None:
         # allow closing if we're on the first frame, there's no next
         # This is the ImageFile.load path only, libtiff specific below.
         if not self.is_animated:
@@ -1942,7 +1942,7 @@ class AppendingTiffWriter:
         self.beginning = self.f.tell()
         self.setup()
 
-    def setup(self):
+    def setup(self) -> None:
         # Reset everything.
         self.f.seek(self.beginning, os.SEEK_SET)
 
@@ -1967,7 +1967,7 @@ class AppendingTiffWriter:
         self.skipIFDs()
         self.goToEnd()
 
-    def finalize(self):
+    def finalize(self) -> None:
         if self.isFirst:
             return
 
@@ -1990,7 +1990,7 @@ class AppendingTiffWriter:
         self.f.seek(ifd_offset)
         self.fixIFD()
 
-    def newFrame(self):
+    def newFrame(self) -> None:
         # Call this to finish a frame.
         self.finalize()
         self.setup()
@@ -2013,7 +2013,7 @@ class AppendingTiffWriter:
         self.f.seek(offset, whence)
         return self.tell()
 
-    def goToEnd(self):
+    def goToEnd(self) -> None:
         self.f.seek(0, os.SEEK_END)
         pos = self.f.tell()
 
@@ -2029,7 +2029,7 @@ class AppendingTiffWriter:
         self.shortFmt = self.endian + "H"
         self.tagFormat = self.endian + "HHL"
 
-    def skipIFDs(self):
+    def skipIFDs(self) -> None:
         while True:
             ifd_offset = self.readLong()
             if ifd_offset == 0:
@@ -2084,11 +2084,11 @@ class AppendingTiffWriter:
             msg = f"wrote only {bytes_written} bytes but wanted 4"
             raise RuntimeError(msg)
 
-    def close(self):
+    def close(self) -> None:
         self.finalize()
         self.f.close()
 
-    def fixIFD(self):
+    def fixIFD(self) -> None:
         num_tags = self.readShort()
 
         for i in range(num_tags):

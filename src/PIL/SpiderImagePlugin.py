@@ -97,7 +97,7 @@ class SpiderImageFile(ImageFile.ImageFile):
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # check header
         n = 27 * 4  # read 27 float values
         f = self.fp.read(n)
@@ -165,13 +165,13 @@ class SpiderImageFile(ImageFile.ImageFile):
         return self._nimages > 1
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
-    def tell(self):
+    def tell(self) -> int:
         if self.imgnumber < 1:
             return 0
         else:
             return self.imgnumber - 1
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if self.istack == 0:
             msg = "attempt to seek in a non-stack file"
             raise EOFError(msg)

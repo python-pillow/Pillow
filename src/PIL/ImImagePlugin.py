@@ -278,7 +278,7 @@ class ImImageFile(ImageFile.ImageFile):
     def is_animated(self):
         return self.info[FRAMES] > 1
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
@@ -296,7 +296,7 @@ class ImImageFile(ImageFile.ImageFile):
 
         self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
 
-    def tell(self):
+    def tell(self) -> int:
         return self.frame
 
 

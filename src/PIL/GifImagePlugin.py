@@ -76,7 +76,7 @@ class GifImageFile(ImageFile.ImageFile):
 
     global_palette = None
 
-    def data(self):
+    def data(self) -> bytes | None:
         s = self.fp.read(1)
         if s and s[0]:
             return self.fp.read(s[0])
@@ -88,7 +88,7 @@ class GifImageFile(ImageFile.ImageFile):
                 return True
         return False
 
-    def _open(self):
+    def _open(self) -> None:
         # Screen
         s = self.fp.read(13)
         if not _accept(s):
@@ -147,7 +147,7 @@ class GifImageFile(ImageFile.ImageFile):
                     self.seek(current)
         return self._is_animated
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
@@ -417,7 +417,7 @@ class GifImageFile(ImageFile.ImageFile):
             elif k in self.info:
                 del self.info[k]
 
-    def load_prepare(self):
+    def load_prepare(self) -> None:
         temp_mode = "P" if self._frame_palette else "L"
         self._prev_im = None
         if self.__frame == 0:
@@ -437,7 +437,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         super().load_prepare()
 
-    def load_end(self):
+    def load_end(self) -> None:
         if self.__frame == 0:
             if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
                 if self._frame_transparency is not None:
@@ -463,7 +463,7 @@ class GifImageFile(ImageFile.ImageFile):
         else:
             self.im.paste(frame_im, self.dispose_extent)
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
 
