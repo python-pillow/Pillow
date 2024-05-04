@@ -218,7 +218,7 @@ def loadImageSeries(filelist=None):
                 im = im.convert2byte()
         except Exception:
             if not isSpiderImage(img):
-                print(img + " is not a Spider image file")
+                print(f"{img} is not a Spider image file")
             continue
         im.info["filename"] = img
         imglist.append(im)
@@ -299,10 +299,10 @@ if __name__ == "__main__":
         sys.exit()
 
     with Image.open(filename) as im:
-        print("image: " + str(im))
-        print("format: " + str(im.format))
-        print("size: " + str(im.size))
-        print("mode: " + str(im.mode))
+        print(f"image: {im}")
+        print(f"format: {im.format}")
+        print(f"size: {im.size}")
+        print(f"mode: {im.mode}")
         print("max, min: ", end=" ")
         print(im.getextrema())
 

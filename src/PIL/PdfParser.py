@@ -145,7 +145,7 @@ class XrefTable:
             generation = self.deleted_entries[key]
         else:
             msg = (
-                "object ID " + str(key) + " cannot be deleted because it doesn't exist"
+                f"object ID {key} cannot be deleted because it doesn't exist"
             )
             raise IndexError(msg)
 
@@ -884,7 +884,7 @@ class PdfParser:
         if m:
             return cls.get_literal_string(data, m.end())
         # return None, offset  # fallback (only for debugging)
-        msg = "unrecognized object: " + repr(data[offset : offset + 32])
+        msg = f"unrecognized object: {repr(data[offset : offset + 32])}"
         raise PdfFormatError(msg)
 
     re_lit_str_token = re.compile(

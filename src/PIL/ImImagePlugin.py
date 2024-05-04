@@ -196,7 +196,7 @@ class ImImageFile(ImageFile.ImageFile):
                     n += 1
 
             else:
-                msg = "Syntax error in IM header: " + s.decode("ascii", "replace")
+                msg = f"Syntax error in IM header: {s.decode('ascii', 'replace')}"
                 raise SyntaxError(msg)
 
         if not n:
