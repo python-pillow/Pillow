@@ -225,7 +225,7 @@ class PdfName:
         return hash(self.name)
 
     def __repr__(self):
-        return f"PdfName({repr(self.name)})"
+        return f"{self.__class__.__name__}({repr(self.name)})"
 
     @classmethod
     def from_pdf_stream(cls, data):
