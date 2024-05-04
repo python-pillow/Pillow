@@ -144,9 +144,7 @@ class XrefTable:
         elif key in self.deleted_entries:
             generation = self.deleted_entries[key]
         else:
-            msg = (
-                f"object ID {key} cannot be deleted because it doesn't exist"
-            )
+            msg = f"object ID {key} cannot be deleted because it doesn't exist"
             raise IndexError(msg)
 
     def __contains__(self, key):
