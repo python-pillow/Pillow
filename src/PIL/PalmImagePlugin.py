@@ -142,7 +142,7 @@ def _save(im, fp, filename):
 
         # we ignore the palette here
         im.mode = "P"
-        rawmode = "P;" + str(bpp)
+        rawmode = f"P;{bpp}"
         version = 1
 
     elif im.mode == "1":
