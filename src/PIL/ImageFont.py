@@ -158,7 +158,9 @@ class ImageFont:
         Image._decompression_bomb_check(self.font.getsize(text))
         return self.font.getmask(text, mode)
 
-    def getbbox(self, text: str, *args: object, **kwargs: object) -> tuple[int, int, int, int]:
+    def getbbox(
+        self, text: str, *args: object, **kwargs: object
+    ) -> tuple[int, int, int, int]:
         """
         Returns bounding box (in pixels) of given text.
 
@@ -274,7 +276,9 @@ class FreeTypeFont:
         """
         return self.font.ascent, self.font.descent
 
-    def getlength(self, text: str, mode="", direction=None, features=None, language=None) -> float:
+    def getlength(
+        self, text: str, mode="", direction=None, features=None, language=None
+    ) -> float:
         """
         Returns length (in pixels with 1/64 precision) of given text when rendered
         in font with provided direction, features, and language.
@@ -744,7 +748,13 @@ def load(filename: str) -> ImageFont:
     return f
 
 
-def truetype(font: StrOrBytesPath | BinaryIO | None = None, size: float = 10, index: int = 0, encoding: str = "", layout_engine: Layout | None = None) -> FreeTypeFont:
+def truetype(
+    font: StrOrBytesPath | BinaryIO | None = None,
+    size: float = 10,
+    index: int = 0,
+    encoding: str = "",
+    layout_engine: Layout | None = None,
+) -> FreeTypeFont:
     """
     Load a TrueType or OpenType font from a file or file-like object,
     and create a font object.
