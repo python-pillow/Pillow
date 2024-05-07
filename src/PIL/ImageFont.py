@@ -33,11 +33,14 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
-from typing import BinaryIO
+from typing import TYPE_CHECKING, BinaryIO
 
 from . import Image
 from ._typing import StrOrBytesPath
 from ._util import is_directory, is_path
+
+if TYPE_CHECKING:
+    from _imagingft import Font
 
 
 class Layout(IntEnum):
@@ -56,7 +59,7 @@ except ImportError as ex:
     core = DeferredError.new(ex)
 
 
-def _string_length_check(text):
+def _string_length_check(text: str | bytes) -> None:
     if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
         msg = "too many characters in string"
         raise ValueError(msg)
@@ -81,7 +84,9 @@ def _string_length_check(text):
 class ImageFont:
     """PIL font wrapper"""
 
-    def _load_pilfont(self, filename):
+    font: Font
+
+    def _load_pilfont(self, filename: str) -> None:
         with open(filename, "rb") as fp:
             image = None
             for ext in (".png", ".gif", ".pbm"):
@@ -153,7 +158,7 @@ class ImageFont:
         Image._decompression_bomb_check(self.font.getsize(text))
         return self.font.getmask(text, mode)
 
-    def getbbox(self, text, *args, **kwargs):
+    def getbbox(self, text: str, *args: object, **kwargs: object) -> tuple[int, int, int, int]:
         """
         Returns bounding box (in pixels) of given text.
 
@@ -171,7 +176,7 @@ class ImageFont:
         width, height = self.font.getsize(text)
         return 0, 0, width, height
 
-    def getlength(self, text, *args, **kwargs):
+    def getlength(self, text: str, *args: object, **kwargs: object) -> int:
         """
         Returns length (in pixels) of given text.
         This is the amount by which following text should be offset.
@@ -254,7 +259,7 @@ class FreeTypeFont:
         path, size, index, encoding, layout_engine = state
         self.__init__(path, size, index, encoding, layout_engine)
 
-    def getname(self):
+    def getname(self) -> tuple[str, str]:
         """
         :return: A tuple of the font family (e.g. Helvetica) and the font style
             (e.g. Bold)
@@ -269,7 +274,7 @@ class FreeTypeFont:
         """
         return self.font.ascent, self.font.descent
 
-    def getlength(self, text, mode="", direction=None, features=None, language=None):
+    def getlength(self, text: str, mode="", direction=None, features=None, language=None) -> float:
         """
         Returns length (in pixels with 1/64 precision) of given text when rendered
         in font with provided direction, features, and language.
@@ -343,14 +348,14 @@ class FreeTypeFont:
 
     def getbbox(
         self,
-        text,
+        text: str,
         mode="",
         direction=None,
         features=None,
         language=None,
         stroke_width=0,
         anchor=None,
-    ):
+    ) -> tuple[int, int, int, int]:
         """
         Returns bounding box (in pixels) of given text relative to given anchor
         when rendered in font with provided direction, features, and language.
@@ -725,7 +730,7 @@ class TransposedFont:
         return self.font.getlength(text, *args, **kwargs)
 
 
-def load(filename):
+def load(filename: str) -> ImageFont:
     """
     Load a font file.  This function loads a font object from the given
     bitmap font file, and returns the corresponding font object.
@@ -739,7 +744,7 @@ def load(filename):
     return f
 
 
-def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
+def truetype(font: StrOrBytesPath | BinaryIO | None = None, size: float = 10, index: int = 0, encoding: str = "", layout_engine: Layout | None = None) -> FreeTypeFont:
     """
     Load a TrueType or OpenType font from a file or file-like object,
     and create a font object.
@@ -800,7 +805,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     :exception ValueError: If the font size is not greater than zero.
     """
 
-    def freetype(font):
+    def freetype(font: StrOrBytesPath | BinaryIO | None) -> FreeTypeFont:
         return FreeTypeFont(font, size, index, encoding, layout_engine)
 
     try:
@@ -850,7 +855,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
         raise
 
 
-def load_path(filename):
+def load_path(filename: str | bytes) -> ImageFont:
     """
     Load font file. Same as :py:func:`~PIL.ImageFont.load`, but searches for a
     bitmap font along the Python path.

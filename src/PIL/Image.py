@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, cast
+from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, cast, overload
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -481,6 +481,8 @@ def _getscaleoffset(expr):
 # --------------------------------------------------------------------
 # Implementation wrapper
 
+class _GetDataTransform(Protocol):
+    def getdata(self) -> tuple[Transform, Sequence[int]]: ...
 
 class Image:
     """
@@ -1687,7 +1689,7 @@ class Image:
             return self.im.entropy(extrema)
         return self.im.entropy()
 
-    def paste(self, im, box=None, mask=None) -> None:
+    def paste(self, im: Image | str | int | tuple[int, ...], box: tuple[int, int, int, int] | tuple[int, int] | None = None, mask: Image | None = None) -> None:
         """
         Pastes another image into this image. The box argument is either
         a 2-tuple giving the upper left corner, a 4-tuple defining the
@@ -2122,7 +2124,7 @@ class Image:
             min(self.size[1], math.ceil(box[3] + support_y)),
         )
 
-    def resize(self, size, resample=None, box=None, reducing_gap=None) -> Image:
+    def resize(self, size: tuple[int, int], resample: Resampling | None = None, box: tuple[float, float, float, float] | None = None, reducing_gap: float | None = None) -> Image:
         """
         Returns a resized copy of this image.
 
@@ -2228,7 +2230,7 @@ class Image:
 
         return self._new(self.im.resize(size, resample, box))
 
-    def reduce(self, factor, box=None):
+    def reduce(self, factor: int | tuple[int, int], box: tuple[int, int, int, int] | None = None) -> Image:
         """
         Returns a copy of the image reduced ``factor`` times.
         If the size of the image is not dividable by ``factor``,
@@ -2263,13 +2265,13 @@ class Image:
 
     def rotate(
         self,
-        angle,
-        resample=Resampling.NEAREST,
-        expand=0,
-        center=None,
-        translate=None,
-        fillcolor=None,
-    ):
+        angle: float,
+        resample: Resampling = Resampling.NEAREST,
+        expand: bool = False,
+        center: tuple[int, int] | None = None,
+        translate: tuple[int, int] | None = None,
+        fillcolor: float | tuple[float, ...] | str | None = None,
+    ) -> Image:
         """
         Returns a rotated copy of this image.  This method returns a
         copy of this image, rotated the given number of degrees counter
@@ -2576,7 +2578,7 @@ class Image:
         """
         return 0
 
-    def thumbnail(self, size, resample=Resampling.BICUBIC, reducing_gap=2.0):
+    def thumbnail(self, size: tuple[int, int], resample: Resampling = Resampling.BICUBIC, reducing_gap: float = 2.0) -> None:
         """
         Make this image into a thumbnail.  This method modifies the
         image to contain a thumbnail version of itself, no larger than
@@ -2664,14 +2666,34 @@ class Image:
 
     # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
+    @overload
     def transform(
         self,
-        size,
-        method,
-        data=None,
-        resample=Resampling.NEAREST,
-        fill=1,
-        fillcolor=None,
+        size: tuple[int, int],
+        method: Transform | ImageTransformHandler,
+        data: Sequence[int],
+        resample: Resampling = Resampling.NEAREST,
+        fill: int = 1,
+        fillcolor: float | tuple[float, ...] | str | None = None,
+    ) -> Image: ...
+    @overload
+    def transform(
+        self,
+        size: tuple[int, int],
+        method: _GetDataTransform,
+        data: None = None,
+        resample: Resampling = Resampling.NEAREST,
+        fill: int = 1,
+        fillcolor: float | tuple[float, ...] | str | None = None,
+    ) -> Image: ...
+    def transform(
+        self,
+        size: tuple[int, int],
+        method: Transform | ImageTransformHandler | _GetDataTransform,
+        data: Sequence[int] | None = None,
+        resample: Resampling = Resampling.NEAREST,
+        fill: int = 1,
+        fillcolor: float | tuple[float, ...] | str | None = None,
     ) -> Image:
         """
         Transforms this image.  This method creates a new image with the

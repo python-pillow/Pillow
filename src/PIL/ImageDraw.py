@@ -34,10 +34,11 @@ from __future__ import annotations
 import math
 import numbers
 import struct
-from typing import Sequence, cast
+from typing import AnyStr, Sequence, cast
 
 from . import Image, ImageColor
 from ._typing import Coords
+from .ImageFont import FreeTypeFont, ImageFont
 
 """
 A simple 2D drawing interface for PIL images.
@@ -92,7 +93,7 @@ class ImageDraw:
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = False
 
-    def getfont(self):
+    def getfont(self) -> FreeTypeFont | ImageFont:
         """
         Get the current default font.
 
@@ -450,12 +451,12 @@ class ImageDraw:
                     right[3] -= r + 1
                 self.draw.draw_rectangle(right, ink, 1)
 
-    def _multiline_check(self, text) -> bool:
+    def _multiline_check(self, text: str | bytes) -> bool:
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
 
-    def _multiline_split(self, text) -> list[str | bytes]:
+    def _multiline_split(self, text: AnyStr) -> list[AnyStr]:
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return text.split(split_character)
@@ -469,7 +470,7 @@ class ImageDraw:
 
     def text(
         self,
-        xy,
+        xy: tuple[int, int],
         text,
         fill=None,
         font=None,
@@ -591,7 +592,7 @@ class ImageDraw:
 
     def multiline_text(
         self,
-        xy,
+        xy: tuple[int, int],
         text,
         fill=None,
         font=None,
@@ -678,15 +679,15 @@ class ImageDraw:
 
     def textlength(
         self,
-        text,
-        font=None,
+        text: str,
+        font: FreeTypeFont | ImageFont | None = None,
         direction=None,
         features=None,
         language=None,
         embedded_color=False,
         *,
         font_size=None,
-    ):
+    ) -> float:
         """Get the length of a given string, in pixels with 1/64 precision."""
         if self._multiline_check(text):
             msg = "can't measure length of multiline text"
