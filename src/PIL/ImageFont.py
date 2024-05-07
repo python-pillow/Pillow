@@ -35,11 +35,14 @@ from enum import IntEnum
 from io import BytesIO
 from typing import TYPE_CHECKING, BinaryIO
 
+from PIL import ImageFile
+
 from . import Image
 from ._typing import StrOrBytesPath
 from ._util import is_directory, is_path
 
 if TYPE_CHECKING:
+    from ._imaging import ImagingFont
     from ._imagingft import Font
 
 
@@ -84,11 +87,11 @@ def _string_length_check(text: str | bytes) -> None:
 class ImageFont:
     """PIL font wrapper"""
 
-    font: Font
+    font: ImagingFont
 
     def _load_pilfont(self, filename: str) -> None:
         with open(filename, "rb") as fp:
-            image = None
+            image: ImageFile.ImageFile | None = None
             for ext in (".png", ".gif", ".pbm"):
                 if image:
                     image.close()
@@ -198,6 +201,8 @@ class ImageFont:
 class FreeTypeFont:
     """FreeType font wrapper (requires _imagingft service)"""
 
+    font: Font
+
     def __init__(
         self,
         font: StrOrBytesPath | BinaryIO | None = None,
@@ -261,7 +266,7 @@ class FreeTypeFont:
         path, size, index, encoding, layout_engine = state
         self.__init__(path, size, index, encoding, layout_engine)
 
-    def getname(self) -> tuple[str, str]:
+    def getname(self) -> tuple[str | None, str | None]:
         """
         :return: A tuple of the font family (e.g. Helvetica) and the font style
             (e.g. Bold)
@@ -876,6 +881,7 @@ def load_path(filename: str | bytes) -> ImageFont:
     """
     for directory in sys.path:
         if is_directory(directory):
+            assert isinstance(directory, str)
             if not isinstance(filename, str):
                 filename = filename.decode("utf-8")
             try:
@@ -900,6 +906,7 @@ def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
 
     :return: A font object.
     """
+    f: FreeTypeFont | ImageFont
     if core.__class__.__name__ == "module" or size is not None:
         f = truetype(
             BytesIO(

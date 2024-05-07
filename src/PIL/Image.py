@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, cast, overload
+from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -483,7 +483,9 @@ def _getscaleoffset(expr):
 
 
 class _GetDataTransform(Protocol):
-    def getdata(self) -> tuple[Transform, Sequence[float]]: ...
+    def getdata(
+        self,
+    ) -> tuple[Transform, Sequence[Any]]: ...
 
 
 class Image:
@@ -2690,41 +2692,11 @@ class Image:
 
     # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.
-    @overload
-    def transform(
-        self,
-        size: tuple[int, int],
-        method: Transform | ImageTransformHandler,
-        data: Sequence[float],
-        resample: int = Resampling.NEAREST,
-        fill: int = 1,
-        fillcolor: float | tuple[float, ...] | str | None = None,
-    ) -> Image: ...
-    @overload
-    def transform(
-        self,
-        size: tuple[int, int],
-        method: _GetDataTransform,
-        data: None = None,
-        resample: int = Resampling.NEAREST,
-        fill: int = 1,
-        fillcolor: float | tuple[float, ...] | str | None = None,
-    ) -> Image: ...
-    @overload
     def transform(
         self,
         size: tuple[int, int],
         method: Transform | ImageTransformHandler | _GetDataTransform,
-        data: Sequence[float] | None = None,
-        resample: int = Resampling.NEAREST,
-        fill: int = 1,
-        fillcolor: float | tuple[float, ...] | str | None = None,
-    ) -> Image: ...
-    def transform(
-        self,
-        size: tuple[int, int],
-        method: Transform | ImageTransformHandler | _GetDataTransform,
-        data: Sequence[float] | None = None,
+        data: Sequence[Any] | None = None,
         resample: int = Resampling.NEAREST,
         fill: int = 1,
         fillcolor: float | tuple[float, ...] | str | None = None,
@@ -2803,7 +2775,7 @@ class Image:
         im.info = self.info.copy()
         if method == Transform.MESH:
             # list of quads
-            for box, quad in data:
+            for box, quad in cast(Sequence[tuple[float, float]], data):
                 im.__transformer(
                     box, self, Transform.QUAD, quad, resample, fillcolor is None
                 )
@@ -2961,7 +2933,7 @@ class ImageTransformHandler:
         self,
         size: tuple[int, int],
         image: Image,
-        **options: dict[str, str | int | tuple[int, ...] | list[int]],
+        **options: dict[str, str | int | tuple[int, ...] | list[int]] | int,
     ) -> Image:
         pass
 
@@ -3830,7 +3802,7 @@ class Exif(_ExifBase):
             return self._fixup_dict(info)
 
     def _get_head(self):
-        version = b"\x2B" if self.bigtiff else b"\x2A"
+        version = b"\x2b" if self.bigtiff else b"\x2a"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
         else:

@@ -118,7 +118,7 @@ class ImageDraw:
             self.font = ImageFont.load_default()
         return self.font
 
-    def _getfont(self, font_size: float | None):
+    def _getfont(self, font_size: float | None) -> FreeTypeFont | ImageFont:
         if font_size is not None:
             from . import ImageFont
 
@@ -451,13 +451,13 @@ class ImageDraw:
                     right[3] -= r + 1
                 self.draw.draw_rectangle(right, ink, 1)
 
-    def _multiline_check(self, text: str | bytes) -> bool:
-        split_character = "\n" if isinstance(text, str) else b"\n"
+    def _multiline_check(self, text: AnyStr) -> bool:
+        split_character = cast(AnyStr, "\n" if isinstance(text, str) else b"\n")
 
         return split_character in text
 
     def _multiline_split(self, text: AnyStr) -> list[AnyStr]:
-        split_character = "\n" if isinstance(text, str) else b"\n"
+        split_character = cast(AnyStr, "\n" if isinstance(text, str) else b"\n")
 
         return text.split(split_character)
 
@@ -470,10 +470,10 @@ class ImageDraw:
 
     def text(
         self,
-        xy: tuple[int, int],
-        text,
+        xy: tuple[float, float],
+        text: str,
         fill=None,
-        font=None,
+        font: FreeTypeFont | ImageFont | None = None,
         anchor=None,
         spacing=4,
         align="left",
@@ -527,7 +527,7 @@ class ImageDraw:
                 coord.append(int(xy[i]))
                 start.append(math.modf(xy[i])[0])
             try:
-                mask, offset = font.getmask2(
+                mask, offset = font.getmask2(  # type: ignore[union-attr,misc]
                     text,
                     mode,
                     direction=direction,
@@ -543,7 +543,7 @@ class ImageDraw:
                 coord = [coord[0] + offset[0], coord[1] + offset[1]]
             except AttributeError:
                 try:
-                    mask = font.getmask(
+                    mask = font.getmask(  # type: ignore[misc]
                         text,
                         mode,
                         direction,
@@ -592,7 +592,7 @@ class ImageDraw:
 
     def multiline_text(
         self,
-        xy: tuple[int, int],
+        xy: tuple[float, float],
         text,
         fill=None,
         font=None,
@@ -625,7 +625,7 @@ class ImageDraw:
             font = self._getfont(font_size)
 
         widths = []
-        max_width = 0
+        max_width: float = 0
         lines = self._multiline_split(text)
         line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:
@@ -779,7 +779,7 @@ class ImageDraw:
             font = self._getfont(font_size)
 
         widths = []
-        max_width = 0
+        max_width: float = 0
         lines = self._multiline_split(text)
         line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:
