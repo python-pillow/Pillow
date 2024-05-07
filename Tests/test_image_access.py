@@ -415,7 +415,9 @@ class TestEmbeddable:
 
 int main(int argc, char* argv[])
 {
-    char *home = "%s";
+    char *home = \""""
+                + sys.prefix.replace("\\", "\\\\")
+                + """\";
     wchar_t *whome = Py_DecodeLocale(home, NULL);
     Py_SetPythonHome(whome);
 
@@ -432,7 +434,6 @@ int main(int argc, char* argv[])
     return 0;
 }
         """
-                % sys.prefix.replace("\\", "\\\\")
             )
 
         compiler = getattr(build_ext, "new_compiler")()
