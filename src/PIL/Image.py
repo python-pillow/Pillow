@@ -483,7 +483,7 @@ def _getscaleoffset(expr):
 
 
 class _GetDataTransform(Protocol):
-    def getdata(self) -> tuple[Transform, Sequence[int]]: ...
+    def getdata(self) -> tuple[Transform, Sequence[float]]: ...
 
 
 class Image:
@@ -2134,7 +2134,7 @@ class Image:
     def resize(
         self,
         size: tuple[int, int],
-        resample: Resampling | None = None,
+        resample: int | None = None,
         box: tuple[float, float, float, float] | None = None,
         reducing_gap: float | None = None,
     ) -> Image:
@@ -2202,13 +2202,13 @@ class Image:
             msg = "reducing_gap must be 1.0 or greater"
             raise ValueError(msg)
 
-        size = tuple(size)
+        size = cast(tuple[int, int], tuple(size))
 
         self.load()
         if box is None:
             box = (0, 0) + self.size
         else:
-            box = tuple(box)
+            box = cast(tuple[float, float, float, float], tuple(box))
 
         if self.size == size and box == (0, 0) + self.size:
             return self.copy()
@@ -2266,7 +2266,7 @@ class Image:
         if box is None:
             box = (0, 0) + self.size
         else:
-            box = tuple(box)
+            box = cast(tuple[int, int, int, int], tuple(box))
 
         if factor == (1, 1) and box == (0, 0) + self.size:
             return self.copy()
@@ -2283,7 +2283,7 @@ class Image:
     def rotate(
         self,
         angle: float,
-        resample: Resampling = Resampling.NEAREST,
+        resample: int = Resampling.NEAREST,
         expand: bool = False,
         center: tuple[int, int] | None = None,
         translate: tuple[int, int] | None = None,
@@ -2598,7 +2598,7 @@ class Image:
     def thumbnail(
         self,
         size: tuple[int, int],
-        resample: Resampling = Resampling.BICUBIC,
+        resample: int = Resampling.BICUBIC,
         reducing_gap: float = 2.0,
     ) -> None:
         """
@@ -2661,20 +2661,22 @@ class Image:
 
         box = None
         if reducing_gap is not None:
-            size = preserve_aspect_ratio()
-            if size is None:
+            preserved_size = preserve_aspect_ratio()
+            if preserved_size is None:
                 return
+            size = preserved_size
 
-            res = self.draft(None, (size[0] * reducing_gap, size[1] * reducing_gap))
+            res = self.draft(None, (size[0] * reducing_gap, size[1] * reducing_gap))  # type: ignore[arg-type]
             if res is not None:
                 box = res[1]
         if box is None:
             self.load()
 
             # load() may have changed the size of the image
-            size = preserve_aspect_ratio()
-            if size is None:
+            preserved_size = preserve_aspect_ratio()
+            if preserved_size is None:
                 return
+            size = preserved_size
 
         if self.size != size:
             im = self.resize(size, resample, box=box, reducing_gap=reducing_gap)
@@ -2693,8 +2695,8 @@ class Image:
         self,
         size: tuple[int, int],
         method: Transform | ImageTransformHandler,
-        data: Sequence[int],
-        resample: Resampling = Resampling.NEAREST,
+        data: Sequence[float],
+        resample: int = Resampling.NEAREST,
         fill: int = 1,
         fillcolor: float | tuple[float, ...] | str | None = None,
     ) -> Image: ...
@@ -2704,7 +2706,17 @@ class Image:
         size: tuple[int, int],
         method: _GetDataTransform,
         data: None = None,
-        resample: Resampling = Resampling.NEAREST,
+        resample: int = Resampling.NEAREST,
+        fill: int = 1,
+        fillcolor: float | tuple[float, ...] | str | None = None,
+    ) -> Image: ...
+    @overload
+    def transform(
+        self,
+        size: tuple[int, int],
+        method: Transform | ImageTransformHandler | _GetDataTransform,
+        data: Sequence[float] | None = None,
+        resample: int = Resampling.NEAREST,
         fill: int = 1,
         fillcolor: float | tuple[float, ...] | str | None = None,
     ) -> Image: ...
@@ -2712,8 +2724,8 @@ class Image:
         self,
         size: tuple[int, int],
         method: Transform | ImageTransformHandler | _GetDataTransform,
-        data: Sequence[int] | None = None,
-        resample: Resampling = Resampling.NEAREST,
+        data: Sequence[float] | None = None,
+        resample: int = Resampling.NEAREST,
         fill: int = 1,
         fillcolor: float | tuple[float, ...] | str | None = None,
     ) -> Image:

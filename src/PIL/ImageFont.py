@@ -40,7 +40,7 @@ from ._typing import StrOrBytesPath
 from ._util import is_directory, is_path
 
 if TYPE_CHECKING:
-    from _imagingft import Font
+    from ._imagingft import Font
 
 
 class Layout(IntEnum):
