@@ -825,8 +825,9 @@ class PdfParser:
                 try:
                     stream_len = int(result[b"Length"])
                 except (TypeError, KeyError, ValueError) as e:
-                    msg = "bad or missing Length in stream dict (%r)" % result.get(
-                        b"Length", None
+                    msg = (
+                        "bad or missing Length in stream dict "
+                        f"({result.get(b'Length')})"
                     )
                     raise PdfFormatError(msg) from e
                 stream_data = data[m.end() : m.end() + stream_len]
