@@ -61,7 +61,7 @@ class _Operand:
             out = Image.new(mode or im_1.mode, im_1.size, None)
             im_1.load()
             try:
-                op = getattr(_imagingmath, op + "_" + im_1.mode)
+                op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
@@ -89,7 +89,7 @@ class _Operand:
             im_1.load()
             im_2.load()
             try:
-                op = getattr(_imagingmath, op + "_" + im_1.mode)
+                op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
