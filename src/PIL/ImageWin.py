@@ -196,7 +196,7 @@ class Window:
         )
 
     def __dispatcher(self, action, *args):
-        return getattr(self, "ui_handle_" + action)(*args)
+        return getattr(self, f"ui_handle_{action}")(*args)
 
     def ui_handle_clear(self, dc, x0, y0, x1, y1):
         pass

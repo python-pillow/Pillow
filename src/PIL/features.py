@@ -89,7 +89,7 @@ def check_codec(feature):
 
     codec, lib = codecs[feature]
 
-    return codec + "_encoder" in dir(Image.core)
+    return f"{codec}_encoder" in dir(Image.core)
 
 
 def version_codec(feature):
@@ -105,7 +105,7 @@ def version_codec(feature):
 
     codec, lib = codecs[feature]
 
-    version = getattr(Image.core, lib + "_version")
+    version = getattr(Image.core, f"{lib}_version")
 
     if feature == "libtiff":
         return version.split("\n")[0].split("Version ")[1]
