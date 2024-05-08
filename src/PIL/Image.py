@@ -2775,7 +2775,7 @@ class Image:
         im.info = self.info.copy()
         if method == Transform.MESH:
             # list of quads
-            for box, quad in cast(Sequence[tuple[float, float]], data):
+            for box, quad in cast("Sequence[tuple[float, float]]", data):
                 im.__transformer(
                     box, self, Transform.QUAD, quad, resample, fillcolor is None
                 )
