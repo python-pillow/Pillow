@@ -2204,7 +2204,7 @@ class Image:
             msg = "reducing_gap must be 1.0 or greater"
             raise ValueError(msg)
 
-        size = cast(tuple[int, int], tuple(size))
+        size = cast("tuple[int, int]", tuple(size))
 
         self.load()
         if box is None:
