@@ -469,7 +469,7 @@ def _register_basic(idx_fmt_name):
 
     idx, fmt, name = idx_fmt_name
     TYPES[idx] = name
-    size = struct.calcsize("=" + fmt)
+    size = struct.calcsize(f"={fmt}")
     _load_dispatch[idx] = (  # noqa: F821
         size,
         lambda self, data, legacy_api=True: (
@@ -987,8 +987,8 @@ ImageFileDirectory_v2._load_dispatch = _load_dispatch
 ImageFileDirectory_v2._write_dispatch = _write_dispatch
 for idx, name in TYPES.items():
     name = name.replace(" ", "_")
-    setattr(ImageFileDirectory_v2, "load_" + name, _load_dispatch[idx][1])
-    setattr(ImageFileDirectory_v2, "write_" + name, _write_dispatch[idx])
+    setattr(ImageFileDirectory_v2, f"load_{name}", _load_dispatch[idx][1])
+    setattr(ImageFileDirectory_v2, f"write_{name}", _write_dispatch[idx])
 del _load_dispatch, _write_dispatch, idx, name
 
 
@@ -2025,9 +2025,9 @@ class AppendingTiffWriter:
 
     def setEndian(self, endian):
         self.endian = endian
-        self.longFmt = self.endian + "L"
-        self.shortFmt = self.endian + "H"
-        self.tagFormat = self.endian + "HHL"
+        self.longFmt = f"{self.endian}L"
+        self.shortFmt = f"{self.endian}H"
+        self.tagFormat = f"{self.endian}HHL"
 
     def skipIFDs(self):
         while True:

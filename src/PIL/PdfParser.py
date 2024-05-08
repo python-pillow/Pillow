@@ -144,9 +144,7 @@ class XrefTable:
         elif key in self.deleted_entries:
             generation = self.deleted_entries[key]
         else:
-            msg = (
-                "object ID " + str(key) + " cannot be deleted because it doesn't exist"
-            )
+            msg = f"object ID {key} cannot be deleted because it doesn't exist"
             raise IndexError(msg)
 
     def __contains__(self, key):
@@ -225,7 +223,7 @@ class PdfName:
         return hash(self.name)
 
     def __repr__(self):
-        return f"PdfName({repr(self.name)})"
+        return f"{self.__class__.__name__}({repr(self.name)})"
 
     @classmethod
     def from_pdf_stream(cls, data):
@@ -884,7 +882,7 @@ class PdfParser:
         if m:
             return cls.get_literal_string(data, m.end())
         # return None, offset  # fallback (only for debugging)
-        msg = "unrecognized object: " + repr(data[offset : offset + 32])
+        msg = f"unrecognized object: {repr(data[offset : offset + 32])}"
         raise PdfFormatError(msg)
 
     re_lit_str_token = re.compile(
