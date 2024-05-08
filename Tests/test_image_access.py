@@ -409,15 +409,14 @@ class TestEmbeddable:
         from setuptools.command import build_ext
 
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
+            home = sys.prefix.replace("\\", "\\\\")
             fh.write(
-                """
+                f"""
 #include "Python.h"
 
 int main(int argc, char* argv[])
-{
-    char *home = \""""
-                + sys.prefix.replace("\\", "\\\\")
-                + """\";
+{{
+    char *home = "{home}";
     wchar_t *whome = Py_DecodeLocale(home, NULL);
     Py_SetPythonHome(whome);
 
@@ -432,7 +431,7 @@ int main(int argc, char* argv[])
     PyMem_RawFree(whome);
 
     return 0;
-}
+}}
         """
             )
 
