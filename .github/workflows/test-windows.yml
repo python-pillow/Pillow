@@ -213,11 +213,12 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3.1.5
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: GHA_Windows
         name: ${{ runner.os }} Python ${{ matrix.python-version }}
+        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:
