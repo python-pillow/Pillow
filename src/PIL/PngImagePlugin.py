@@ -189,7 +189,7 @@ class ChunkStream:
         """Call the appropriate chunk handler"""
 
         logger.debug("STREAM %r %s %s", cid, pos, length)
-        return getattr(self, "chunk_" + cid.decode("ascii"))(pos, length)
+        return getattr(self, f"chunk_{cid.decode('ascii')}")(pos, length)
 
     def crc(self, cid, data):
         """Read and verify checksum"""
@@ -783,7 +783,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self.seek(frame)
         return self._text
 
-    def verify(self):
+    def verify(self) -> None:
         """Verify PNG file"""
 
         if self.fp is None:

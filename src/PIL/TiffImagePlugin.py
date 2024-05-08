@@ -56,6 +56,7 @@ from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._deprecate import deprecate
 from .TiffTags import TYPES
 
 logger = logging.getLogger(__name__)
@@ -244,6 +245,7 @@ OPEN_INFO = {
     (MM, 3, (1,), 2, (4,), ()): ("P", "P;4R"),
     (II, 3, (1,), 1, (8,), ()): ("P", "P"),
     (MM, 3, (1,), 1, (8,), ()): ("P", "P"),
+    (II, 3, (1,), 1, (8, 8), (0,)): ("P", "PX"),
     (II, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (MM, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (II, 3, (1,), 2, (8,), ()): ("P", "P;R"),
@@ -275,6 +277,9 @@ PREFIXES = [
     b"MM\x00\x2B",  # BigTIFF with big-endian byte order
     b"II\x2B\x00",  # BigTIFF with little-endian byte order
 ]
+
+if not getattr(Image.core, "libtiff_support_custom_tags", True):
+    deprecate("Support for LibTIFF earlier than version 4", 12)
 
 
 def _accept(prefix: bytes) -> bool:
@@ -464,7 +469,7 @@ def _register_basic(idx_fmt_name):
 
     idx, fmt, name = idx_fmt_name
     TYPES[idx] = name
-    size = struct.calcsize("=" + fmt)
+    size = struct.calcsize(f"={fmt}")
     _load_dispatch[idx] = (  # noqa: F821
         size,
         lambda self, data, legacy_api=True: (
@@ -982,8 +987,8 @@ ImageFileDirectory_v2._load_dispatch = _load_dispatch
 ImageFileDirectory_v2._write_dispatch = _write_dispatch
 for idx, name in TYPES.items():
     name = name.replace(" ", "_")
-    setattr(ImageFileDirectory_v2, "load_" + name, _load_dispatch[idx][1])
-    setattr(ImageFileDirectory_v2, "write_" + name, _write_dispatch[idx])
+    setattr(ImageFileDirectory_v2, f"load_{name}", _load_dispatch[idx][1])
+    setattr(ImageFileDirectory_v2, f"write_{name}", _write_dispatch[idx])
 del _load_dispatch, _write_dispatch, idx, name
 
 
@@ -2020,9 +2025,9 @@ class AppendingTiffWriter:
 
     def setEndian(self, endian):
         self.endian = endian
-        self.longFmt = self.endian + "L"
-        self.shortFmt = self.endian + "H"
-        self.tagFormat = self.endian + "HHL"
+        self.longFmt = f"{self.endian}L"
+        self.shortFmt = f"{self.endian}H"
+        self.tagFormat = f"{self.endian}HHL"
 
     def skipIFDs(self):
         while True:

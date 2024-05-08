@@ -346,7 +346,7 @@ class Interop(IntEnum):
     InteropVersion = 2
     RelatedImageFileFormat = 4096
     RelatedImageWidth = 4097
-    RleatedImageHeight = 4098
+    RelatedImageHeight = 4098
 
 
 class IFD(IntEnum):
