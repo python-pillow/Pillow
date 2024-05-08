@@ -283,6 +283,20 @@ MODES = [
 # may have to modify the stride calculation in map.c too!
 _MAPMODES = ("L", "P", "RGBX", "RGBA", "CMYK", "I;16", "I;16L", "I;16B")
 
+# map of old deprecated rawmode to new replacement rawmode
+_DEPRECATED_RAWMODES = {
+    "RGB;15": "XBGR;1555",
+    "RGB;16": "BGR;565",
+    "BGR;5": "XRGB;1555",
+    "BGR;15": "XRGB;1555",
+    "BGR;16": "RGB;565",
+    "RGB;4B": "XBGR;4",
+    "RGBA;4B": "ABGR;4",
+    "RGBA;15": "ABGR;1555",
+    "BGRA;15": "ARGB;1555",
+    "BGRA;15Z": "ARGB;1555Z",
+}
+
 
 def getmodebase(mode: str) -> str:
     """
@@ -425,6 +439,13 @@ def _getdecoder(
         args = ()
     elif not isinstance(args, tuple):
         args = (args,)
+
+    if decoder_name == "raw" and args[0] in _DEPRECATED_RAWMODES:
+        deprecate(
+            f"rawmode {args[0]}",
+            12,
+            replacement=f"rawmode {_DEPRECATED_RAWMODES[args[0]]}",
+        )
 
     try:
         decoder = DECODERS[decoder_name]
@@ -1636,6 +1657,12 @@ class Image:
             mode = self.im.getpalettemode()
         except ValueError:
             return None  # no palette
+        if rawmode in _DEPRECATED_RAWMODES:
+            deprecate(
+                f"rawmode {rawmode}",
+                12,
+                replacement=f"rawmode {_DEPRECATED_RAWMODES[rawmode]}",
+            )
         if rawmode is None:
             rawmode = mode
         return list(self.im.getpalette(mode, rawmode))
