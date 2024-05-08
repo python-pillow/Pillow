@@ -2210,7 +2210,7 @@ class Image:
         if box is None:
             box = (0, 0) + self.size
         else:
-            box = cast(tuple[float, float, float, float], tuple(box))
+            box = cast("tuple[float, float, float, float]", tuple(box))
 
         if self.size == size and box == (0, 0) + self.size:
             return self.copy()
@@ -2268,7 +2268,7 @@ class Image:
         if box is None:
             box = (0, 0) + self.size
         else:
-            box = cast(tuple[int, int, int, int], tuple(box))
+            box = cast("tuple[int, int, int, int]", tuple(box))
 
         if factor == (1, 1) and box == (0, 0) + self.size:
             return self.copy()
