@@ -109,7 +109,7 @@ class WebPImageFile(ImageFile.ImageFile):
         """
         return self._getxmp(self.info["xmp"]) if "xmp" in self.info else {}
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
@@ -174,7 +174,7 @@ class WebPImageFile(ImageFile.ImageFile):
     def load_seek(self, pos):
         pass
 
-    def tell(self):
+    def tell(self) -> int:
         if not _webp.HAVE_WEBPANIM:
             return super().tell()
 

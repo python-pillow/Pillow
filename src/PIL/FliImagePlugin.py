@@ -123,7 +123,7 @@ class FliImageFile(ImageFile.ImageFile):
                 palette[i] = (r, g, b)
                 i += 1
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
@@ -162,7 +162,7 @@ class FliImageFile(ImageFile.ImageFile):
 
         self.__offset += framesize
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
 

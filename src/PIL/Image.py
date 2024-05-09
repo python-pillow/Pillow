@@ -1298,7 +1298,10 @@ class Image:
         self.load()
         return self._new(self.im.expand(xmargin, ymargin))
 
-    def filter(self, filter):
+    if TYPE_CHECKING:
+        from . import ImageFilter
+
+    def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
         Filters this image using the given filter.  For a list of
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
@@ -1310,7 +1313,7 @@ class Image:
 
         self.load()
 
-        if isinstance(filter, Callable):
+        if callable(filter):
             filter = filter()
         if not hasattr(filter, "filter"):
             msg = "filter argument should be ImageFilter.Filter instance or class"

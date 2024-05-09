@@ -253,7 +253,7 @@ class BlpImageFile(ImageFile.ImageFile):
     format = "BLP"
     format_description = "Blizzard Mipmap Format"
 
-    def _open(self):
+    def _open(self) -> None:
         self.magic = self.fp.read(4)
 
         self.fp.seek(5, os.SEEK_CUR)
@@ -333,7 +333,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
 
 
 class BLP1Decoder(_BLPBaseDecoder):
-    def _load(self):
+    def _load(self) -> None:
         if self._blp_compression == Format.JPEG:
             self._decode_jpeg_stream()
 
@@ -418,7 +418,7 @@ class BLP2Decoder(_BLPBaseDecoder):
 class BLPEncoder(ImageFile.PyEncoder):
     _pushes_fd = True
 
-    def _write_palette(self):
+    def _write_palette(self) -> bytes:
         data = b""
         palette = self.im.getpalette("RGBA", "RGBA")
         for i in range(len(palette) // 4):

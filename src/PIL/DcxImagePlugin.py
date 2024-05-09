@@ -63,7 +63,7 @@ class DcxImageFile(PcxImageFile):
         self.is_animated = self.n_frames > 1
         self.seek(0)
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         self.frame = frame
@@ -71,7 +71,7 @@ class DcxImageFile(PcxImageFile):
         self.fp.seek(self._offset[frame])
         PcxImageFile._open(self)
 
-    def tell(self):
+    def tell(self) -> int:
         return self.frame
 
 
