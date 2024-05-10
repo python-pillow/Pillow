@@ -482,7 +482,7 @@ def _getscaleoffset(expr):
 # Implementation wrapper
 
 
-class GetDataTransform(Protocol):
+class SupportsGetData(Protocol):
     def getdata(
         self,
     ) -> tuple[Transform, Sequence[Any]]: ...
@@ -2695,7 +2695,7 @@ class Image:
     def transform(
         self,
         size: tuple[int, int],
-        method: Transform | ImageTransformHandler | GetDataTransform,
+        method: Transform | ImageTransformHandler | SupportsGetData,
         data: Sequence[Any] | None = None,
         resample: int = Resampling.NEAREST,
         fill: int = 1,
