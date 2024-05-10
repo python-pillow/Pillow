@@ -365,6 +365,12 @@ Classes
 .. autoclass:: PIL.Image.ImagePointHandler
 .. autoclass:: PIL.Image.ImageTransformHandler
 
+Protocols
+---------
+
+.. autoclass:: SupportsGetData
+    :show-inheritance:
+
 Constants
 ---------
 
