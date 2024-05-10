@@ -100,11 +100,12 @@ jobs:
         MATRIX_DOCKER: ${{ matrix.docker }}
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3.1.5
+      uses: codecov/codecov-action@v4
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
         gcov: true
+        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:
