@@ -249,7 +249,28 @@ def _conv_type_shape(im):
     return shape, m.typestr
 
 
-MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
+MODES = [
+    "1",
+    "CMYK",
+    "F",
+    "HSV",
+    "I",
+    "I;16",
+    "I;16B",
+    "I;16L",
+    "I;16N",
+    "L",
+    "LA",
+    "La",
+    "LAB",
+    "P",
+    "PA",
+    "RGB",
+    "RGBA",
+    "RGBa",
+    "RGBX",
+    "YCbCr",
+]
 
 # raw modes that may be memory mapped.  NOTE: if you change this, you
 # may have to modify the stride calculation in map.c too!
