@@ -3802,7 +3802,7 @@ class Exif(_ExifBase):
             return self._fixup_dict(info)
 
     def _get_head(self):
-        version = b"\x2b" if self.bigtiff else b"\x2a"
+        version = b"\x2B" if self.bigtiff else b"\x2A"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
         else:
