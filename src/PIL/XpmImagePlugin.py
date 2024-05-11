@@ -36,7 +36,7 @@ class XpmImageFile(ImageFile.ImageFile):
     format = "XPM"
     format_description = "X11 Pixel Map"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(9)):
             msg = "not an XPM file"
             raise SyntaxError(msg)

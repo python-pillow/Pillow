@@ -37,7 +37,7 @@ class GribStubImageFile(ImageFile.StubImageFile):
     format = "GRIB"
     format_description = "GRIB"
 
-    def _open(self):
+    def _open(self) -> None:
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(8)):

@@ -128,7 +128,7 @@ class PhotoImage:
         if image:
             self.paste(image)
 
-    def __del__(self):
+    def __del__(self) -> None:
         name = self.__photo.name
         self.__photo.name = None
         try:
@@ -219,7 +219,7 @@ class BitmapImage:
             kw["data"] = image.tobitmap()
         self.__photo = tkinter.BitmapImage(**kw)
 
-    def __del__(self):
+    def __del__(self) -> None:
         name = self.__photo.name
         self.__photo.name = None
         try:

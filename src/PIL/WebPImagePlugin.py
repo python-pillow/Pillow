@@ -43,7 +43,7 @@ class WebPImageFile(ImageFile.ImageFile):
     __loaded = 0
     __logical_frame = 0
 
-    def _open(self):
+    def _open(self) -> None:
         if not _webp.HAVE_WEBPANIM:
             # Legacy mode
             data, width, height, self._mode, icc_profile, exif = _webp.WebPDecode(

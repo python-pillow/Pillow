@@ -79,7 +79,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     format = "WMF"
     format_description = "Windows Metafile"
 
-    def _open(self):
+    def _open(self) -> None:
         self._inch = None
 
         # check placable header

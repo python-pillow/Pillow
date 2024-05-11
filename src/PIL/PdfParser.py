@@ -409,28 +409,28 @@ class PdfParser:
         self.close()
         return False  # do not suppress exceptions
 
-    def start_writing(self):
+    def start_writing(self) -> None:
         self.close_buf()
         self.seek_end()
 
-    def close_buf(self):
+    def close_buf(self) -> None:
         try:
             self.buf.close()
         except AttributeError:
             pass
         self.buf = None
 
-    def close(self):
+    def close(self) -> None:
         if self.should_close_buf:
             self.close_buf()
         if self.f is not None and self.should_close_file:
             self.f.close()
             self.f = None
 
-    def seek_end(self):
+    def seek_end(self) -> None:
         self.f.seek(0, os.SEEK_END)
 
-    def write_header(self):
+    def write_header(self) -> None:
         self.f.write(b"%PDF-1.4\n")
 
     def write_comment(self, s):
@@ -450,7 +450,7 @@ class PdfParser:
         )
         return self.root_ref
 
-    def rewrite_pages(self):
+    def rewrite_pages(self) -> None:
         pages_tree_nodes_to_delete = []
         for i, page_ref in enumerate(self.orig_pages):
             page_info = self.cached_objects[page_ref]
@@ -529,7 +529,7 @@ class PdfParser:
         f.write(b"endobj\n")
         return ref
 
-    def del_root(self):
+    def del_root(self) -> None:
         if self.root_ref is None:
             return
         del self.xref_table[self.root_ref.object_id]
@@ -547,7 +547,7 @@ class PdfParser:
             except ValueError:  # cannot mmap an empty file
                 return b""
 
-    def read_pdf_info(self):
+    def read_pdf_info(self) -> None:
         self.file_size_total = len(self.buf)
         self.file_size_this = self.file_size_total - self.start_offset
         self.read_trailer()
