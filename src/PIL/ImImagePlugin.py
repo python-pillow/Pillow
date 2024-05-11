@@ -119,7 +119,7 @@ class ImImageFile(ImageFile.ImageFile):
     format_description = "IFUNC Image Memory"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 

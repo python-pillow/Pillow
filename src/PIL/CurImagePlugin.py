@@ -37,7 +37,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
     format = "CUR"
     format_description = "Windows Cursor"
 
-    def _open(self):
+    def _open(self) -> None:
         offset = self.fp.tell()
 
         # check magic

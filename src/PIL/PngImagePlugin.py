@@ -179,7 +179,7 @@ class ChunkStream:
     def __exit__(self, *args):
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         self.queue = self.fp = None
 
     def push(self, cid, pos, length):
@@ -370,14 +370,14 @@ class PngStream(ChunkStream):
             )
             raise ValueError(msg)
 
-    def save_rewind(self):
+    def save_rewind(self) -> None:
         self.rewind_state = {
             "info": self.im_info.copy(),
             "tile": self.im_tile,
             "seq_num": self._seq_num,
         }
 
-    def rewind(self):
+    def rewind(self) -> None:
         self.im_info = self.rewind_state["info"].copy()
         self.im_tile = self.rewind_state["tile"]
         self._seq_num = self.rewind_state["seq_num"]

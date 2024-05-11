@@ -237,7 +237,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         return ImageFile.ImageFile.load(self)
 
-    def close(self):
+    def close(self) -> None:
         self.ole.close()
         super().close()
 
