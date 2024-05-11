@@ -35,13 +35,12 @@ from enum import IntEnum
 from io import BytesIO
 from typing import TYPE_CHECKING, BinaryIO
 
-from PIL import ImageFile
-
 from . import Image
 from ._typing import StrOrBytesPath
 from ._util import is_directory, is_path
 
 if TYPE_CHECKING:
+    from . import ImageFile
     from ._imaging import ImagingFont
     from ._imagingft import Font
 
