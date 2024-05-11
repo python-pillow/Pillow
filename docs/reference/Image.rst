@@ -78,8 +78,6 @@ Constructing images
 ^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: new
-.. autoclass:: SupportsArrayInterface
-    :show-inheritance:
 .. autofunction:: fromarray
 .. autofunction:: frombytes
 .. autofunction:: frombuffer
@@ -368,6 +366,8 @@ Classes
 Protocols
 ---------
 
+.. autoclass:: SupportsArrayInterface
+    :show-inheritance:
 .. autoclass:: SupportsGetData
     :show-inheritance:
 
