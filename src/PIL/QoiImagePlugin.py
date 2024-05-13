@@ -21,7 +21,7 @@ class QoiImageFile(ImageFile.ImageFile):
     format = "QOI"
     format_description = "Quite OK Image"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(4)):
             msg = "not a QOI file"
             raise SyntaxError(msg)

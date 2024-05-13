@@ -84,7 +84,7 @@ class LutBuilder:
                 ],
             }
             if op_name not in known_patterns:
-                msg = "Unknown pattern " + op_name + "!"
+                msg = f"Unknown pattern {op_name}!"
                 raise Exception(msg)
 
             self.patterns = known_patterns[op_name]

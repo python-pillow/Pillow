@@ -144,9 +144,7 @@ class XrefTable:
         elif key in self.deleted_entries:
             generation = self.deleted_entries[key]
         else:
-            msg = (
-                "object ID " + str(key) + " cannot be deleted because it doesn't exist"
-            )
+            msg = f"object ID {key} cannot be deleted because it doesn't exist"
             raise IndexError(msg)
 
     def __contains__(self, key):
@@ -225,7 +223,7 @@ class PdfName:
         return hash(self.name)
 
     def __repr__(self):
-        return f"PdfName({repr(self.name)})"
+        return f"{self.__class__.__name__}({repr(self.name)})"
 
     @classmethod
     def from_pdf_stream(cls, data):
@@ -411,28 +409,28 @@ class PdfParser:
         self.close()
         return False  # do not suppress exceptions
 
-    def start_writing(self):
+    def start_writing(self) -> None:
         self.close_buf()
         self.seek_end()
 
-    def close_buf(self):
+    def close_buf(self) -> None:
         try:
             self.buf.close()
         except AttributeError:
             pass
         self.buf = None
 
-    def close(self):
+    def close(self) -> None:
         if self.should_close_buf:
             self.close_buf()
         if self.f is not None and self.should_close_file:
             self.f.close()
             self.f = None
 
-    def seek_end(self):
+    def seek_end(self) -> None:
         self.f.seek(0, os.SEEK_END)
 
-    def write_header(self):
+    def write_header(self) -> None:
         self.f.write(b"%PDF-1.4\n")
 
     def write_comment(self, s):
@@ -452,7 +450,7 @@ class PdfParser:
         )
         return self.root_ref
 
-    def rewrite_pages(self):
+    def rewrite_pages(self) -> None:
         pages_tree_nodes_to_delete = []
         for i, page_ref in enumerate(self.orig_pages):
             page_info = self.cached_objects[page_ref]
@@ -531,7 +529,7 @@ class PdfParser:
         f.write(b"endobj\n")
         return ref
 
-    def del_root(self):
+    def del_root(self) -> None:
         if self.root_ref is None:
             return
         del self.xref_table[self.root_ref.object_id]
@@ -549,7 +547,7 @@ class PdfParser:
             except ValueError:  # cannot mmap an empty file
                 return b""
 
-    def read_pdf_info(self):
+    def read_pdf_info(self) -> None:
         self.file_size_total = len(self.buf)
         self.file_size_this = self.file_size_total - self.start_offset
         self.read_trailer()
@@ -825,11 +823,10 @@ class PdfParser:
             m = cls.re_stream_start.match(data, offset)
             if m:
                 try:
-                    stream_len = int(result[b"Length"])
-                except (TypeError, KeyError, ValueError) as e:
-                    msg = "bad or missing Length in stream dict (%r)" % result.get(
-                        b"Length", None
-                    )
+                    stream_len_str = result.get(b"Length")
+                    stream_len = int(stream_len_str)
+                except (TypeError, ValueError) as e:
+                    msg = f"bad or missing Length in stream dict ({stream_len_str})"
                     raise PdfFormatError(msg) from e
                 stream_data = data[m.end() : m.end() + stream_len]
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
@@ -884,7 +881,7 @@ class PdfParser:
         if m:
             return cls.get_literal_string(data, m.end())
         # return None, offset  # fallback (only for debugging)
-        msg = "unrecognized object: " + repr(data[offset : offset + 32])
+        msg = f"unrecognized object: {repr(data[offset : offset + 32])}"
         raise PdfFormatError(msg)
 
     re_lit_str_token = re.compile(

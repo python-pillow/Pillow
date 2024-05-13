@@ -249,7 +249,28 @@ def _conv_type_shape(im):
     return shape, m.typestr
 
 
-MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
+MODES = [
+    "1",
+    "CMYK",
+    "F",
+    "HSV",
+    "I",
+    "I;16",
+    "I;16B",
+    "I;16L",
+    "I;16N",
+    "L",
+    "LA",
+    "La",
+    "LAB",
+    "P",
+    "PA",
+    "RGB",
+    "RGBA",
+    "RGBa",
+    "RGBX",
+    "YCbCr",
+]
 
 # raw modes that may be memory mapped.  NOTE: if you change this, you
 # may have to modify the stride calculation in map.c too!
@@ -405,7 +426,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
     try:
         # get decoder
-        decoder = getattr(core, decoder_name + "_decoder")
+        decoder = getattr(core, f"{decoder_name}_decoder")
     except AttributeError as e:
         msg = f"decoder {decoder_name} not available"
         raise OSError(msg) from e
@@ -428,7 +449,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
 
     try:
         # get encoder
-        encoder = getattr(core, encoder_name + "_encoder")
+        encoder = getattr(core, f"{encoder_name}_encoder")
     except AttributeError as e:
         msg = f"encoder {encoder_name} not available"
         raise OSError(msg) from e
@@ -603,7 +624,7 @@ class Image:
     ) -> str:
         suffix = ""
         if format:
-            suffix = "." + format
+            suffix = f".{format}"
 
         if not file:
             f, filename = tempfile.mkstemp(suffix)
@@ -1298,7 +1319,10 @@ class Image:
         self.load()
         return self._new(self.im.expand(xmargin, ymargin))
 
-    def filter(self, filter):
+    if TYPE_CHECKING:
+        from . import ImageFilter
+
+    def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
         Filters this image using the given filter.  For a list of
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
@@ -1310,7 +1334,7 @@ class Image:
 
         self.load()
 
-        if isinstance(filter, Callable):
+        if callable(filter):
             filter = filter()
         if not hasattr(filter, "filter"):
             msg = "filter argument should be ImageFilter.Filter instance or class"
@@ -2180,7 +2204,7 @@ class Image:
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
                 )
             ]
-            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            msg += f" Use {', '.join(filters[:-1])} or {filters[-1]}"
             raise ValueError(msg)
 
         if reducing_gap is not None and reducing_gap < 1.0:
@@ -2825,7 +2849,7 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                 )
             ]
-            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            msg += f" Use {', '.join(filters[:-1])} or {filters[-1]}"
             raise ValueError(msg)
 
         image.load()
@@ -3223,8 +3247,8 @@ _fromarray_typemap = {
     ((1, 1, 3), "|u1"): ("RGB", "RGB"),
     ((1, 1, 4), "|u1"): ("RGBA", "RGBA"),
     # shortcuts:
-    ((1, 1), _ENDIAN + "i4"): ("I", "I"),
-    ((1, 1), _ENDIAN + "f4"): ("F", "F"),
+    ((1, 1), f"{_ENDIAN}i4"): ("I", "I"),
+    ((1, 1), f"{_ENDIAN}f4"): ("F", "F"),
 }
 
 

@@ -196,7 +196,7 @@ class Window:
         )
 
     def __dispatcher(self, action, *args):
-        return getattr(self, "ui_handle_" + action)(*args)
+        return getattr(self, f"ui_handle_{action}")(*args)
 
     def ui_handle_clear(self, dc, x0, y0, x1, y1):
         pass
@@ -204,7 +204,7 @@ class Window:
     def ui_handle_damage(self, x0, y0, x1, y1):
         pass
 
-    def ui_handle_destroy(self):
+    def ui_handle_destroy(self) -> None:
         pass
 
     def ui_handle_repair(self, dc, x0, y0, x1, y1):
@@ -213,7 +213,7 @@ class Window:
     def ui_handle_resize(self, width, height):
         pass
 
-    def mainloop(self):
+    def mainloop(self) -> None:
         Image.core.eventloop()
 
 
