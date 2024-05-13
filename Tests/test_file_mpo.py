@@ -226,6 +226,11 @@ def test_eoferror() -> None:
         im.seek(n_frames - 1)
 
 
+def test_ultra_hdr() -> None:
+    with Image.open("Tests/images/ultrahdr.jpg") as im:
+        assert im.format == "JPEG"
+
+
 @pytest.mark.parametrize("test_file", test_files)
 def test_image_grab(test_file: str) -> None:
     with Image.open(test_file) as im:

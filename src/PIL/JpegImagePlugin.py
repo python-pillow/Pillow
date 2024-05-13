@@ -843,6 +843,10 @@ def jpeg_factory(fp=None, filename=None):
     try:
         mpheader = im._getmp()
         if mpheader[45057] > 1:
+            for segment, content in im.applist:
+                if segment == "APP1" and b' hdrgm:Version="' in content:
+                    # Ultra HDR images are not yet supported
+                    return im
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
 
