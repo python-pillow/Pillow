@@ -66,7 +66,7 @@ class ImagePalette:
     def colors(self, colors):
         self._colors = colors
 
-    def copy(self):
+    def copy(self) -> ImagePalette:
         new = ImagePalette()
 
         new.mode = self.mode
@@ -77,7 +77,7 @@ class ImagePalette:
 
         return new
 
-    def getdata(self):
+    def getdata(self) -> tuple[str, bytes]:
         """
         Get palette contents in format suitable for the low-level
         ``im.putpalette`` primitive.
@@ -88,7 +88,7 @@ class ImagePalette:
             return self.rawmode, self.palette
         return self.mode, self.tobytes()
 
-    def tobytes(self):
+    def tobytes(self) -> bytes:
         """Convert palette to bytes.
 
         .. warning:: This method is experimental.

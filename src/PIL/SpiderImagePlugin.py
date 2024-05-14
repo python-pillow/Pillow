@@ -37,6 +37,7 @@ from __future__ import annotations
 import os
 import struct
 import sys
+from typing import TYPE_CHECKING
 
 from . import Image, ImageFile
 
@@ -157,11 +158,11 @@ class SpiderImageFile(ImageFile.ImageFile):
         self._fp = self.fp  # FIXME: hack
 
     @property
-    def n_frames(self):
+    def n_frames(self) -> int:
         return self._nimages
 
     @property
-    def is_animated(self):
+    def is_animated(self) -> bool:
         return self._nimages > 1
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
@@ -191,8 +192,11 @@ class SpiderImageFile(ImageFile.ImageFile):
         b = -m * minimum
         return self.point(lambda i, m=m, b=b: i * m + b).convert("L")
 
+    if TYPE_CHECKING:
+        from . import ImageTk
+
     # returns a ImageTk.PhotoImage object, after rescaling to 0..255
-    def tkPhotoImage(self):
+    def tkPhotoImage(self) -> ImageTk.PhotoImage:
         from . import ImageTk
 
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)

@@ -63,12 +63,12 @@ class BoxReader:
         data = self._read_bytes(size)
         return struct.unpack(field_format, data)
 
-    def read_boxes(self):
+    def read_boxes(self) -> BoxReader:
         size = self.remaining_in_box
         data = self._read_bytes(size)
         return BoxReader(io.BytesIO(data), size)
 
-    def has_next_box(self):
+    def has_next_box(self) -> bool:
         if self.has_length:
             return self.fp.tell() + self.remaining_in_box < self.length
         else:
