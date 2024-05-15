@@ -103,7 +103,7 @@ class FtexImageFile(ImageFile.ImageFile):
         self.fp.close()
         self.fp = BytesIO(data)
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
 

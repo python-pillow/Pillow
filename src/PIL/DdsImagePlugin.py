@@ -472,7 +472,7 @@ class DdsImageFile(ImageFile.ImageFile):
         else:
             self.tile = [ImageFile._Tile("raw", extents, 0, rawmode or self.mode)]
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
 
