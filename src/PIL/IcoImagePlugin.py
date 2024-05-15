@@ -302,7 +302,7 @@ class IcoImageFile(ImageFile.ImageFile):
     format = "ICO"
     format_description = "Windows Icon"
 
-    def _open(self):
+    def _open(self) -> None:
         self.ico = IcoFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
         self.size = self.ico.entry[0]["dim"]

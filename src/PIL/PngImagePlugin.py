@@ -179,7 +179,7 @@ class ChunkStream:
     def __exit__(self, *args):
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         self.queue = self.fp = None
 
     def push(self, cid, pos, length):
@@ -370,14 +370,14 @@ class PngStream(ChunkStream):
             )
             raise ValueError(msg)
 
-    def save_rewind(self):
+    def save_rewind(self) -> None:
         self.rewind_state = {
             "info": self.im_info.copy(),
             "tile": self.im_tile,
             "seq_num": self._seq_num,
         }
 
-    def rewind(self):
+    def rewind(self) -> None:
         self.im_info = self.rewind_state["info"].copy()
         self.im_tile = self.rewind_state["tile"]
         self._seq_num = self.rewind_state["seq_num"]
@@ -800,7 +800,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.fp.close()
         self.fp = None
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
@@ -909,10 +909,10 @@ class PngImageFile(ImageFile.ImageFile):
         else:
             self.dispose = None
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
-    def load_prepare(self):
+    def load_prepare(self) -> None:
         """internal: prepare to read PNG file"""
 
         if self.info.get("interlace"):
@@ -954,7 +954,7 @@ class PngImageFile(ImageFile.ImageFile):
 
         return self.fp.read(read_bytes)
 
-    def load_end(self):
+    def load_end(self) -> None:
         """internal: finished reading image data"""
         if self.__idat != 0:
             self.fp.read(self.__idat)

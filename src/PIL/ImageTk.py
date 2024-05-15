@@ -128,7 +128,7 @@ class PhotoImage:
         if image:
             self.paste(image)
 
-    def __del__(self):
+    def __del__(self) -> None:
         name = self.__photo.name
         self.__photo.name = None
         try:
@@ -136,7 +136,7 @@ class PhotoImage:
         except Exception:
             pass  # ignore internal errors
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Get the Tkinter photo image identifier.  This method is automatically
         called by Tkinter whenever a PhotoImage object is passed to a Tkinter
@@ -146,7 +146,7 @@ class PhotoImage:
         """
         return str(self.__photo)
 
-    def width(self):
+    def width(self) -> int:
         """
         Get the width of the image.
 
@@ -154,7 +154,7 @@ class PhotoImage:
         """
         return self.__size[0]
 
-    def height(self):
+    def height(self) -> int:
         """
         Get the height of the image.
 
@@ -219,7 +219,7 @@ class BitmapImage:
             kw["data"] = image.tobitmap()
         self.__photo = tkinter.BitmapImage(**kw)
 
-    def __del__(self):
+    def __del__(self) -> None:
         name = self.__photo.name
         self.__photo.name = None
         try:
@@ -227,7 +227,7 @@ class BitmapImage:
         except Exception:
             pass  # ignore internal errors
 
-    def width(self):
+    def width(self) -> int:
         """
         Get the width of the image.
 
@@ -235,7 +235,7 @@ class BitmapImage:
         """
         return self.__size[0]
 
-    def height(self):
+    def height(self) -> int:
         """
         Get the height of the image.
 
@@ -243,7 +243,7 @@ class BitmapImage:
         """
         return self.__size[1]
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Get the Tkinter bitmap image identifier.  This method is automatically
         called by Tkinter whenever a BitmapImage object is passed to a Tkinter

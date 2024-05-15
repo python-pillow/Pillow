@@ -34,11 +34,10 @@ from __future__ import annotations
 import math
 import numbers
 import struct
-from typing import AnyStr, Sequence, cast
+from typing import TYPE_CHECKING, AnyStr, Sequence, cast
 
 from . import Image, ImageColor
 from ._typing import Coords
-from .ImageFont import FreeTypeFont, ImageFont
 
 """
 A simple 2D drawing interface for PIL images.
@@ -93,7 +92,10 @@ class ImageDraw:
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = False
 
-    def getfont(self) -> FreeTypeFont | ImageFont:
+    if TYPE_CHECKING:
+        from . import ImageFont
+
+    def getfont(self) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
         """
         Get the current default font.
 
@@ -118,7 +120,9 @@ class ImageDraw:
             self.font = ImageFont.load_default()
         return self.font
 
-    def _getfont(self, font_size: float | None) -> FreeTypeFont | ImageFont:
+    def _getfont(
+        self, font_size: float | None
+    ) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
         if font_size is not None:
             from . import ImageFont
 
@@ -473,7 +477,7 @@ class ImageDraw:
         xy: tuple[float, float],
         text: str,
         fill=None,
-        font: FreeTypeFont | ImageFont | None = None,
+        font: ImageFont.FreeTypeFont | ImageFont.ImageFont | None = None,
         anchor=None,
         spacing=4,
         align="left",
@@ -680,7 +684,7 @@ class ImageDraw:
     def textlength(
         self,
         text: str,
-        font: FreeTypeFont | ImageFont | None = None,
+        font: ImageFont.FreeTypeFont | ImageFont.ImageFont | None = None,
         direction=None,
         features=None,
         language=None,

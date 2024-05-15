@@ -150,11 +150,12 @@ jobs:
         .ci/after_success.sh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3.1.5
+      uses: codecov/codecov-action@v4
       with:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
         gcov: true
+        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:
