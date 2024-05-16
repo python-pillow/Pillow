@@ -374,6 +374,11 @@ Constants
     Set to 89,478,485, approximately 0.25GB for a 24-bit (3 bpp) image.
     See :py:meth:`~PIL.Image.open` for more information about how this is used.
 
+.. data:: WARN_POSSIBLE_FORMATS
+
+    Set to false. If true, when an image cannot be identified, warnings will be raised
+    from formats that attempted to read the data.
+
 Transpose methods
 ^^^^^^^^^^^^^^^^^
 

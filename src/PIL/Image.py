@@ -76,6 +76,8 @@ class DecompressionBombError(Exception):
     pass
 
 
+WARN_POSSIBLE_FORMATS: bool = False
+
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
 MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
 
@@ -3344,7 +3346,7 @@ def open(
 
     preinit()
 
-    accept_warnings: list[str] = []
+    warning_messages: list[str] = []
 
     def _open_core(
         fp: IO[bytes],
@@ -3360,16 +3362,15 @@ def open(
                 factory, accept = OPEN[i]
                 result = not accept or accept(prefix)
                 if isinstance(result, str):
-                    accept_warnings.append(result)
+                    warning_messages.append(result)
                 elif result:
                     fp.seek(0)
                     im = factory(fp, filename)
                     _decompression_bomb_check(im.size)
                     return im
-            except (SyntaxError, IndexError, TypeError, struct.error):
-                # Leave disabled by default, spams the logs with image
-                # opening failures that are entirely expected.
-                # logger.debug("", exc_info=True)
+            except (SyntaxError, IndexError, TypeError, struct.error) as e:
+                if WARN_POSSIBLE_FORMATS:
+                    warning_messages.append(i + " opening failed. " + str(e))
                 continue
             except BaseException:
                 if exclusive_fp:
@@ -3395,7 +3396,7 @@ def open(
 
     if exclusive_fp:
         fp.close()
-    for message in accept_warnings:
+    for message in warning_messages:
         warnings.warn(message)
     msg = "cannot identify image file %r" % (filename if filename else fp)
     raise UnidentifiedImageError(msg)

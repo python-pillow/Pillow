@@ -116,6 +116,17 @@ class TestImage:
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
 
+    def test_open_verbose_failure(self) -> None:
+        im = io.BytesIO(b"")
+        Image.WARN_POSSIBLE_FORMATS = True
+        try:
+            with pytest.warns(UserWarning):
+                with pytest.raises(UnidentifiedImageError):
+                    with Image.open(im):
+                        pass
+        finally:
+            Image.WARN_POSSIBLE_FORMATS = False
+
     def test_width_height(self) -> None:
         im = Image.new("RGB", (1, 2))
         assert im.width == 1
