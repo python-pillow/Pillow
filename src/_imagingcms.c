@@ -622,7 +622,7 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
 static PyObject *
 cms_get_display_profile_win32(PyObject *self, PyObject *args) {
     char filename[MAX_PATH];
-    cmsUInt32Number filename_size;
+    DWORD filename_size;
     BOOL ok;
 
     HANDLE handle = 0;
