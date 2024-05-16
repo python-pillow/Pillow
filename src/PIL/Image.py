@@ -3371,7 +3371,6 @@ def open(
             except (SyntaxError, IndexError, TypeError, struct.error) as e:
                 if WARN_POSSIBLE_FORMATS:
                     warning_messages.append(i + " opening failed. " + str(e))
-                continue
             except BaseException:
                 if exclusive_fp:
                     fp.close()
