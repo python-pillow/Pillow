@@ -76,7 +76,9 @@ class TestFileJpegXl:
             image.load()
             image.getdata()
 
-            assert_image_similar_tofile(image, "Tests/images/jxl/16bit_subcutaneous.cropped.png", 1.0)
+            assert_image_similar_tofile(
+                image, "Tests/images/jxl/16bit_subcutaneous.cropped.png", 1.0
+            )
 
     def test_JpegXlDecode_with_invalid_args(self) -> None:
         """
