@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import abc
 import functools
+from typing import Sequence
 
 
 class Filter:
@@ -79,7 +80,7 @@ class RankFilter(Filter):
 
     name = "Rank"
 
-    def __init__(self, size, rank):
+    def __init__(self, size: int, rank: int) -> None:
         self.size = size
         self.rank = rank
 
@@ -101,7 +102,7 @@ class MedianFilter(RankFilter):
 
     name = "Median"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = size * size // 2
 
@@ -116,7 +117,7 @@ class MinFilter(RankFilter):
 
     name = "Min"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = 0
 
@@ -131,7 +132,7 @@ class MaxFilter(RankFilter):
 
     name = "Max"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = size * size - 1
 
@@ -147,7 +148,7 @@ class ModeFilter(Filter):
 
     name = "Mode"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
 
     def filter(self, image):
@@ -165,7 +166,7 @@ class GaussianBlur(MultibandFilter):
 
     name = "GaussianBlur"
 
-    def __init__(self, radius=2):
+    def __init__(self, radius: float | Sequence[float] = 2) -> None:
         self.radius = radius
 
     def filter(self, image):
@@ -228,7 +229,9 @@ class UnsharpMask(MultibandFilter):
 
     name = "UnsharpMask"
 
-    def __init__(self, radius=2, percent=150, threshold=3):
+    def __init__(
+        self, radius: float = 2, percent: int = 150, threshold: int = 3
+    ) -> None:
         self.radius = radius
         self.percent = percent
         self.threshold = threshold

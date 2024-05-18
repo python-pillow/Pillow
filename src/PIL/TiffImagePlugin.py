@@ -1202,7 +1202,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Return the current frame number"""
         return self.__frame
 
-    def getxmp(self):
+    def getxmp(self) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.

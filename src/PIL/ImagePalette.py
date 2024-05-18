@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 import array
-from typing import Sequence
+from typing import IO, Sequence
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
 
@@ -166,7 +166,7 @@ class ImagePalette:
             msg = f"unknown color specifier: {repr(color)}"
             raise ValueError(msg)
 
-    def save(self, fp):
+    def save(self, fp: str | IO[str]) -> None:
         """Save palette to text file.
 
         .. warning:: This method is experimental.
@@ -213,29 +213,29 @@ def make_linear_lut(black, white):
     raise NotImplementedError(msg)  # FIXME
 
 
-def make_gamma_lut(exp):
+def make_gamma_lut(exp: float) -> list[int]:
     return [int(((i / 255.0) ** exp) * 255.0 + 0.5) for i in range(256)]
 
 
-def negative(mode="RGB"):
+def negative(mode: str = "RGB") -> ImagePalette:
     palette = list(range(256 * len(mode)))
     palette.reverse()
     return ImagePalette(mode, [i // len(mode) for i in palette])
 
 
-def random(mode="RGB"):
+def random(mode: str = "RGB") -> ImagePalette:
     from random import randint
 
     palette = [randint(0, 255) for _ in range(256 * len(mode))]
     return ImagePalette(mode, palette)
 
 
-def sepia(white="#fff0c0"):
+def sepia(white: str = "#fff0c0") -> ImagePalette:
     bands = [make_linear_lut(0, band) for band in ImageColor.getrgb(white)]
     return ImagePalette("RGB", [bands[i % 3][i // 3] for i in range(256 * 3)])
 
 
-def wedge(mode="RGB"):
+def wedge(mode: str = "RGB") -> ImagePalette:
     palette = list(range(256 * len(mode)))
     return ImagePalette(mode, [i // len(mode) for i in palette])
 

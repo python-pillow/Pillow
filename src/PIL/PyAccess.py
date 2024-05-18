@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import sys
+from typing import TYPE_CHECKING
 
 from ._deprecate import deprecate
 
@@ -48,9 +49,12 @@ except ImportError as ex:
 
 logger = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from . import Image
+
 
 class PyAccess:
-    def __init__(self, img, readonly=False):
+    def __init__(self, img: Image.Image, readonly: bool = False) -> None:
         deprecate("PyAccess", 11)
         vals = dict(img.im.unsafe_ptrs)
         self.readonly = readonly
@@ -130,7 +134,7 @@ class PyAccess:
     putpixel = __setitem__
     getpixel = __getitem__
 
-    def check_xy(self, xy):
+    def check_xy(self, xy: tuple[int, int]) -> tuple[int, int]:
         (x, y) = xy
         if not (0 <= x < self.xsize and 0 <= y < self.ysize):
             msg = "pixel location out of range"
@@ -161,7 +165,7 @@ class _PyAccess32_3(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> tuple[int, int, int]:
         pixel = self.pixels[y][x]
         return pixel.r, pixel.g, pixel.b
 
@@ -180,7 +184,7 @@ class _PyAccess32_4(PyAccess):
     def _post_init(self, *args, **kwargs):
         self.pixels = ffi.cast("struct Pixel_RGBA **", self.image32)
 
-    def get_pixel(self, x, y):
+    def get_pixel(self, x: int, y: int) -> tuple[int, int, int, int]:
         pixel = self.pixels[y][x]
         return pixel.r, pixel.g, pixel.b, pixel.a
 

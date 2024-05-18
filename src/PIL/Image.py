@@ -1948,7 +1948,9 @@ class Image:
 
         self.im.putband(alpha.im, band)
 
-    def putdata(self, data, scale=1.0, offset=0.0):
+    def putdata(
+        self, data: Sequence[float], scale: float = 1.0, offset: float = 0.0
+    ) -> None:
         """
         Copies pixel data from a flattened sequence object into the image. The
         values should start at the upper left corner (0, 0), continue to the

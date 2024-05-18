@@ -55,7 +55,7 @@ class AlphaEncoding(IntEnum):
     DXT5 = 7
 
 
-def unpack_565(i):
+def unpack_565(i: int) -> tuple[int, int, int]:
     return ((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3
 
 
@@ -284,7 +284,8 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             raise OSError(msg) from e
         return -1, 0
 
-    def _read_blp_header(self):
+    def _read_blp_header(self) -> None:
+        assert self.fd is not None
         self.fd.seek(4)
         (self._blp_compression,) = struct.unpack("<i", self._safe_read(4))
 
@@ -303,10 +304,10 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
         self._blp_offsets = struct.unpack("<16I", self._safe_read(16 * 4))
         self._blp_lengths = struct.unpack("<16I", self._safe_read(16 * 4))
 
-    def _safe_read(self, length):
+    def _safe_read(self, length: int) -> bytes:
         return ImageFile._safe_read(self.fd, length)
 
-    def _read_palette(self):
+    def _read_palette(self) -> list[tuple[int, int, int, int]]:
         ret = []
         for i in range(256):
             try:
@@ -349,29 +350,30 @@ class BLP1Decoder(_BLPBaseDecoder):
             msg = f"Unsupported BLP compression {repr(self._blp_encoding)}"
             raise BLPFormatError(msg)
 
-    def _decode_jpeg_stream(self):
+    def _decode_jpeg_stream(self) -> None:
         from .JpegImagePlugin import JpegImageFile
 
         (jpeg_header_size,) = struct.unpack("<I", self._safe_read(4))
         jpeg_header = self._safe_read(jpeg_header_size)
+        assert self.fd is not None
         self._safe_read(self._blp_offsets[0] - self.fd.tell())  # What IS this?
         data = self._safe_read(self._blp_lengths[0])
         data = jpeg_header + data
-        data = BytesIO(data)
-        image = JpegImageFile(data)
+        image = JpegImageFile(BytesIO(data))
         Image._decompression_bomb_check(image.size)
         if image.mode == "CMYK":
             decoder_name, extents, offset, args = image.tile[0]
             image.tile = [(decoder_name, extents, offset, (args[0], "CMYK"))]
         r, g, b = image.convert("RGB").split()
-        image = Image.merge("RGB", (b, g, r))
-        self.set_as_raw(image.tobytes())
+        reversed_image = Image.merge("RGB", (b, g, r))
+        self.set_as_raw(reversed_image.tobytes())
 
 
 class BLP2Decoder(_BLPBaseDecoder):
-    def _load(self):
+    def _load(self) -> None:
         palette = self._read_palette()
 
+        assert self.fd is not None
         self.fd.seek(self._blp_offsets[0])
 
         if self._blp_compression == 1:

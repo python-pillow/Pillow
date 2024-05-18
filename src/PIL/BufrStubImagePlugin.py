@@ -15,7 +15,7 @@ from . import Image, ImageFile
 _handler = None
 
 
-def register_handler(handler):
+def register_handler(handler: ImageFile.StubHandler) -> None:
     """
     Install application-specific BUFR image handler.
 
@@ -54,7 +54,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
         if loader:
             loader.open(self)
 
-    def _load(self):
+    def _load(self) -> ImageFile.StubHandler | None:
         return _handler
 
 
