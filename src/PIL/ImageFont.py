@@ -61,7 +61,7 @@ except ImportError as ex:
     core = DeferredError.new(ex)
 
 
-def _string_length_check(text: str | bytes) -> None:
+def _string_length_check(text: str) -> None:
     if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
         msg = "too many characters in string"
         raise ValueError(msg)
