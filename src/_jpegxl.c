@@ -33,6 +33,11 @@ void _pil_jxl_get_pixel_format(JxlPixelFormat *pf, const JxlBasicInfo *bi) {
 // TODO: floating point mode
 char* _pil_jxl_get_mode(const JxlBasicInfo *bi) {
 
+    // 16-bit single channel images are supported
+    if (bi->bits_per_sample == 16 && bi->num_color_channels == 1 &&
+        bi->alpha_bits == 0 && !bi->alpha_premultiplied
+    ) return "I;16";
+
     // PIL doesn't support high bit depth images
     // it will throw an exception but that's for your own good
     // you wouldn't want to see distorted image
@@ -261,7 +266,9 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
             _PIL_JXL_CHECK("JxlDecoderGetBasicInfo");
 
             _pil_jxl_get_pixel_format(&decp->pixel_format, &decp->basic_info);
-            if (decp->pixel_format.data_type != JXL_TYPE_UINT8) {
+            if (decp->pixel_format.data_type != JXL_TYPE_UINT8 &&
+                decp->pixel_format.data_type != JXL_TYPE_UINT16) {
+
                 // only 8 bit integer value images are supported for now
                 PyErr_SetString(PyExc_NotImplementedError,
                     "unsupported pixel data type");
