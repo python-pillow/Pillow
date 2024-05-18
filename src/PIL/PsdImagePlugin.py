@@ -57,7 +57,7 @@ class PsdImageFile(ImageFile.ImageFile):
     format_description = "Adobe Photoshop"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         read = self.fp.read
 
         #
@@ -141,23 +141,22 @@ class PsdImageFile(ImageFile.ImageFile):
         self.frame = 1
         self._min_frame = 1
 
-    def seek(self, layer):
+    def seek(self, layer: int) -> None:
         if not self._seek_check(layer):
             return
 
         # seek to given layer (1..max)
         try:
-            name, mode, bbox, tile = self.layers[layer - 1]
+            _, mode, _, tile = self.layers[layer - 1]
             self._mode = mode
             self.tile = tile
             self.frame = layer
             self.fp = self._fp
-            return name, bbox
         except IndexError as e:
             msg = "no such layer"
             raise EOFError(msg) from e
 
-    def tell(self):
+    def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)
         return self.frame
 

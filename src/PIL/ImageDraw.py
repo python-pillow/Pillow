@@ -34,7 +34,7 @@ from __future__ import annotations
 import math
 import numbers
 import struct
-from typing import Sequence, cast
+from typing import TYPE_CHECKING, Sequence, cast
 
 from . import Image, ImageColor
 from ._typing import Coords
@@ -92,7 +92,10 @@ class ImageDraw:
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = False
 
-    def getfont(self):
+    if TYPE_CHECKING:
+        from . import ImageFont
+
+    def getfont(self) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
         """
         Get the current default font.
 

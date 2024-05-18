@@ -208,7 +208,7 @@ class CurImageFile(IcoImagePlugin.IcoImageFile):
     format = "CUR"
     format_description = "Windows Cursor"
 
-    def _open(self):
+    def _open(self) -> None:
         self.ico = CurFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
         self.info["hotspots"] = self.ico.hotspots()

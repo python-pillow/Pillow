@@ -163,7 +163,7 @@ class ImageFile(Image.Image):
         self.tile = []
         super().__setstate__(state)
 
-    def verify(self):
+    def verify(self) -> None:
         """Check file integrity"""
 
         # raise exception if something's wrong.  must be called
@@ -311,7 +311,7 @@ class ImageFile(Image.Image):
 
         return Image.Image.load(self)
 
-    def load_prepare(self):
+    def load_prepare(self) -> None:
         # create image memory if necessary
         if not self.im or self.im.mode != self.mode or self.im.size != self.size:
             self.im = Image.core.new(self.mode, self.size)
@@ -319,16 +319,16 @@ class ImageFile(Image.Image):
         if self.mode == "P":
             Image.Image.load(self)
 
-    def load_end(self):
+    def load_end(self) -> None:
         # may be overridden
         pass
 
     # may be defined for contained formats
-    # def load_seek(self, pos):
+    # def load_seek(self, pos: int) -> None:
     #     pass
 
     # may be defined for blocked formats (e.g. PNG)
-    # def load_read(self, read_bytes):
+    # def load_read(self, read_bytes: int) -> bytes:
     #     pass
 
     def _seek_check(self, frame):
@@ -390,7 +390,7 @@ class Parser:
     offset = 0
     finished = 0
 
-    def reset(self):
+    def reset(self) -> None:
         """
         (Consumer) Reset the parser.  Note that you can only call this
         method immediately after you've created a parser; parser
@@ -605,7 +605,7 @@ def _safe_read(fp, size):
 
 
 class PyCodecState:
-    def __init__(self):
+    def __init__(self) -> None:
         self.xsize = 0
         self.ysize = 0
         self.xoff = 0
@@ -634,7 +634,7 @@ class PyCodec:
         """
         self.args = args
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Override to perform codec specific cleanup
 

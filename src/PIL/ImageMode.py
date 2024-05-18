@@ -18,6 +18,8 @@ import sys
 from functools import lru_cache
 from typing import NamedTuple
 
+from ._deprecate import deprecate
+
 
 class ModeDescriptor(NamedTuple):
     """Wrapper for mode strings."""
@@ -42,8 +44,8 @@ def getmode(mode: str) -> ModeDescriptor:
         # Bits need to be extended to bytes
         "1": ("L", "L", ("1",), "|b1"),
         "L": ("L", "L", ("L",), "|u1"),
-        "I": ("L", "I", ("I",), endian + "i4"),
-        "F": ("L", "F", ("F",), endian + "f4"),
+        "I": ("L", "I", ("I",), f"{endian}i4"),
+        "F": ("L", "F", ("F",), f"{endian}f4"),
         "P": ("P", "L", ("P",), "|u1"),
         "RGB": ("RGB", "L", ("R", "G", "B"), "|u1"),
         "RGBX": ("RGB", "L", ("R", "G", "B", "X"), "|u1"),
@@ -63,6 +65,8 @@ def getmode(mode: str) -> ModeDescriptor:
         "PA": ("RGB", "L", ("P", "A"), "|u1"),
     }
     if mode in modes:
+        if mode in ("BGR;15", "BGR;16", "BGR;24"):
+            deprecate(mode, 12)
         base_mode, base_type, bands, type_str = modes[mode]
         return ModeDescriptor(mode, bands, base_mode, base_type, type_str)
 
@@ -74,8 +78,8 @@ def getmode(mode: str) -> ModeDescriptor:
         "I;16LS": "<i2",
         "I;16B": ">u2",
         "I;16BS": ">i2",
-        "I;16N": endian + "u2",
-        "I;16NS": endian + "i2",
+        "I;16N": f"{endian}u2",
+        "I;16NS": f"{endian}i2",
         "I;32": "<u4",
         "I;32B": ">u4",
         "I;32L": "<u4",

@@ -336,9 +336,7 @@ def test_readline_psfile(tmp_path: Path) -> None:
     strings = ["something", "else", "baz", "bif"]
 
     def _test_readline(t: EpsImagePlugin.PSFile, ending: str) -> None:
-        ending = "Failure with line ending: %s" % (
-            "".join("%s" % ord(s) for s in ending)
-        )
+        ending = f"Failure with line ending: {''.join(str(ord(s)) for s in ending)}"
         assert t.readline().strip("\r\n") == "something", ending
         assert t.readline().strip("\r\n") == "else", ending
         assert t.readline().strip("\r\n") == "baz", ending
