@@ -565,13 +565,13 @@ bilinear_filter32RGB(void *out, Imaging im, double xin, double yin) {
 #undef BILINEAR_HEAD
 #undef BILINEAR_BODY
 
-#define BICUBIC(v, v1, v2, v3, v4, d)              \
-    {                                              \
-        double p1 = v2;                            \
-        double p2 = -v1 + v3;                      \
-        double p3 = 2 * (v1 - v2) + v3 - v4;       \
-        double p4 = -v1 + v2 - v3 + v4;            \
-        v = p1 + (d) * (p2 + (d) * (p3 + (d)*p4)); \
+#define BICUBIC(v, v1, v2, v3, v4, d)                \
+    {                                                \
+        double p1 = v2;                              \
+        double p2 = -v1 + v3;                        \
+        double p3 = 2 * (v1 - v2) + v3 - v4;         \
+        double p4 = -v1 + v2 - v3 + v4;              \
+        v = p1 + (d) * (p2 + (d) * (p3 + (d) * p4)); \
     }
 
 #define BICUBIC_HEAD(type)                                                \
@@ -966,7 +966,7 @@ affine_fixed(
     ysize = (int)imIn->ysize;
 
 /* use 16.16 fixed point arithmetics */
-#define FIX(v) FLOOR((v)*65536.0 + 0.5)
+#define FIX(v) FLOOR((v) * 65536.0 + 0.5)
 
     a0 = FIX(a[0]);
     a1 = FIX(a[1]);
