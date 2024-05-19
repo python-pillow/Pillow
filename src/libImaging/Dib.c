@@ -95,7 +95,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
     }
 
     dib->bitmap =
-        CreateDIBSection(dib->dc, dib->info, DIB_RGB_COLORS, &dib->bits, NULL, 0);
+        CreateDIBSection(dib->dc, dib->info, DIB_RGB_COLORS, (void **)&dib->bits, NULL, 0);
     if (!dib->bitmap) {
         free(dib->info);
         free(dib);
