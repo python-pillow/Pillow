@@ -1005,7 +1005,8 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     }
 
     if (state->state == 1 && !clientstate->fp) {
-        int read = (int)_tiffReadProc((thandle_t)clientstate, (tdata_t)buffer, (tsize_t)bytes);
+        int read =
+            (int)_tiffReadProc((thandle_t)clientstate, (tdata_t)buffer, (tsize_t)bytes);
         TRACE(
             ("Buffer: %p: %c%c%c%c\n",
              buffer,
