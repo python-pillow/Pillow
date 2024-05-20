@@ -897,6 +897,10 @@ class TestImage:
                     assert tag not in exif.get_ifd(0x8769)
                 assert exif.get_ifd(0xA005)
 
+    def test_empty_xmp(self) -> None:
+        with Image.open("Tests/images/hopper.gif") as im:
+            assert im.getxmp() == {}
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
         im = Image.new("RGB", size)

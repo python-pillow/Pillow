@@ -197,6 +197,7 @@ This helps to get the bounding box coordinates of the input image::
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
+.. automethod:: PIL.Image.Image.getxmp
 .. automethod:: PIL.Image.Image.histogram
 .. automethod:: PIL.Image.Image.paste
 .. automethod:: PIL.Image.Image.point

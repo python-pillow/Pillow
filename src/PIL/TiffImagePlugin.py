@@ -1192,6 +1192,10 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
+        if XMP in self.tag_v2:
+            self.info["xmp"] = self.tag_v2[XMP]
+        elif "xmp" in self.info:
+            del self.info["xmp"]
         self._reload_exif()
         # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
@@ -1201,15 +1205,6 @@ class TiffImageFile(ImageFile.ImageFile):
     def tell(self) -> int:
         """Return the current frame number"""
         return self.__frame
-
-    def getxmp(self):
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
-
-        :returns: XMP tags in a dictionary.
-        """
-        return self._getxmp(self.tag_v2[XMP]) if XMP in self.tag_v2 else {}
 
     def get_photoshop_blocks(self):
         """

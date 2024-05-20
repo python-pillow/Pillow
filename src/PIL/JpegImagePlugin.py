@@ -94,6 +94,8 @@ def APP(self, marker):
         else:
             self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
+    elif marker == 0xFFE1 and s[:29] == b"http://ns.adobe.com/xap/1.0/\x00":
+        self.info["xmp"] = s.split(b"\x00")[1]
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
@@ -498,21 +500,6 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def _getmp(self):
         return _getmp(self)
-
-    def getxmp(self):
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
-
-        :returns: XMP tags in a dictionary.
-        """
-
-        for segment, content in self.applist:
-            if segment == "APP1":
-                marker, xmp_tags = content.split(b"\x00")[:2]
-                if marker == b"http://ns.adobe.com/xap/1.0/":
-                    return self._getxmp(xmp_tags)
-        return {}
 
 
 def _getexif(self):

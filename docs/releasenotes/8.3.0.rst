@@ -18,9 +18,9 @@ is not secure.
 
 - :py:meth:`~PIL.Image.Image.getexif` has used ``xml`` to potentially retrieve
   orientation data since Pillow 7.2.0. It has been refactored to use ``re`` instead.
-- :py:meth:`~PIL.JpegImagePlugin.JpegImageFile.getxmp` was added in Pillow 8.2.0. It
-  will now use ``defusedxml`` instead. If the dependency is not present, an empty
-  dictionary will be returned and a warning raised.
+- ``getxmp()`` was added to :py:class:`~PIL.JpegImagePlugin.JpegImageFile` in Pillow
+  8.2.0. It will now use ``defusedxml`` instead. If the dependency is not present, an
+  empty dictionary will be returned and a warning raised.
 
 Deprecations
 ============

@@ -606,6 +606,8 @@ class PngStream(ChunkStream):
                     return s
             else:
                 return s
+        if k == b"XML:com.adobe.xmp":
+            self.im_info["xmp"] = v
         try:
             k = k.decode("latin-1", "strict")
             lang = lang.decode("utf-8", "strict")
@@ -1031,19 +1033,6 @@ class PngImageFile(ImageFile.ImageFile):
             self.load()
 
         return super().getexif()
-
-    def getxmp(self):
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
-
-        :returns: XMP tags in a dictionary.
-        """
-        return (
-            self._getxmp(self.info["XML:com.adobe.xmp"])
-            if "XML:com.adobe.xmp" in self.info
-            else {}
-        )
 
 
 # --------------------------------------------------------------------

@@ -1439,7 +1439,14 @@ class Image:
             return tuple(self.im.getband(i).getextrema() for i in range(self.im.bands))
         return self.im.getextrema()
 
-    def _getxmp(self, xmp_tags):
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+
+        :returns: XMP tags in a dictionary.
+        """
+
         def get_name(tag):
             return re.sub("^{[^}]+}", "", tag)
 
@@ -1466,9 +1473,10 @@ class Image:
         if ElementTree is None:
             warnings.warn("XMP data cannot be read without defusedxml dependency")
             return {}
-        else:
-            root = ElementTree.fromstring(xmp_tags)
-            return {get_name(root.tag): get_value(root)}
+        if "xmp" not in self.info:
+            return {}
+        root = ElementTree.fromstring(self.info["xmp"])
+        return {get_name(root.tag): get_value(root)}
 
     def getexif(self) -> Exif:
         """

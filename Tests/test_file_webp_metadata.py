@@ -129,6 +129,7 @@ def test_getxmp() -> None:
             ):
                 assert im.getxmp() == {}
         else:
+            assert "xmp" in im.info
             assert (
                 im.getxmp()["xmpmeta"]["xmptk"]
                 == "Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        "

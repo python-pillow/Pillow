@@ -717,6 +717,9 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
                     exif_image.info["XML:com.adobe.xmp"] = re.sub(
                         pattern, "", exif_image.info["XML:com.adobe.xmp"]
                     )
+                    exif_image.info["xmp"] = re.sub(
+                        pattern.encode(), b"", exif_image.info["xmp"]
+                    )
         if not in_place:
             return transposed_image
     elif not in_place:
