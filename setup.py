@@ -23,8 +23,7 @@ from setuptools.command.build_ext import build_ext
 def get_version():
     version_file = "src/PIL/_version.py"
     with open(version_file, encoding="utf-8") as f:
-        exec(compile(f.read(), version_file, "exec"))
-    return locals()["__version__"]
+        return f.read().split('"')[1]
 
 
 configuration = {}
