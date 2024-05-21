@@ -30,7 +30,7 @@ typedef struct {
                    * Should be uint32 for libtiff 3.9.x
                    * uint64 for libtiff 4.0.x
                    */
-    TIFF *tiff; /* Used in write */
+    TIFF *tiff;   /* Used in write */
     toff_t eof;
     int flrealloc; /* may we realloc */
 } TIFFSTATE;
