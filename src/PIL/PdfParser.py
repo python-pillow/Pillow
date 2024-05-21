@@ -87,10 +87,10 @@ class IndirectReferenceTuple(NamedTuple):
 
 
 class IndirectReference(IndirectReferenceTuple):
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.object_id} {self.generation} R"
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return self.__str__().encode("us-ascii")
 
     def __eq__(self, other):
@@ -108,7 +108,7 @@ class IndirectReference(IndirectReferenceTuple):
 
 
 class IndirectObjectDef(IndirectReference):
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.object_id} {self.generation} obj"
 
 
@@ -150,7 +150,7 @@ class XrefTable:
     def __contains__(self, key):
         return key in self.existing_entries or key in self.new_entries
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(
             set(self.existing_entries.keys())
             | set(self.new_entries.keys())
@@ -211,7 +211,7 @@ class PdfName:
         else:
             self.name = name.encode("us-ascii")
 
-    def name_as_str(self):
+    def name_as_str(self) -> str:
         return self.name.decode("us-ascii")
 
     def __eq__(self, other):
@@ -222,7 +222,7 @@ class PdfName:
     def __hash__(self):
         return hash(self.name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({repr(self.name)})"
 
     @classmethod
@@ -231,7 +231,7 @@ class PdfName:
 
     allowed_chars = set(range(33, 127)) - {ord(c) for c in "#%/()<>[]{}"}
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         result = bytearray(b"/")
         for b in self.name:
             if b in self.allowed_chars:
@@ -242,7 +242,7 @@ class PdfName:
 
 
 class PdfArray(List[Any]):
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b"[ " + b" ".join(pdf_repr(x) for x in self) + b" ]"
 
 
@@ -286,7 +286,7 @@ class PdfDict(_DictBase):
                 value = time.gmtime(calendar.timegm(value) + offset)
         return value
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         out = bytearray(b"<<")
         for key, value in self.items():
             if value is None:
@@ -304,7 +304,7 @@ class PdfBinary:
     def __init__(self, data):
         self.data = data
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b"<%s>" % b"".join(b"%02X" % b for b in self.data)
 
 

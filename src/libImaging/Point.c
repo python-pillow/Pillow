@@ -134,7 +134,7 @@ ImagingPoint(Imaging imIn, const char *mode, const void *table) {
     ImagingSectionCookie cookie;
     Imaging imOut;
     im_point_context context;
-    void (*point)(Imaging imIn, Imaging imOut, im_point_context * context);
+    void (*point)(Imaging imIn, Imaging imOut, im_point_context *context);
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();

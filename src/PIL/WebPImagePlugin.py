@@ -144,7 +144,7 @@ class WebPImageFile(ImageFile.ImageFile):
         timestamp -= duration
         return data, timestamp, duration
 
-    def _seek(self, frame):
+    def _seek(self, frame: int) -> None:
         if self.__physical_frame == frame:
             return  # Nothing to do
         if frame < self.__physical_frame:
@@ -171,7 +171,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
         return super().load()
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
     def tell(self) -> int:

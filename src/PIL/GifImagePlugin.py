@@ -82,7 +82,7 @@ class GifImageFile(ImageFile.ImageFile):
             return self.fp.read(s[0])
         return None
 
-    def _is_palette_needed(self, p):
+    def _is_palette_needed(self, p: bytes) -> bool:
         for i in range(0, len(p), 3):
             if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
                 return True
@@ -474,7 +474,7 @@ class GifImageFile(ImageFile.ImageFile):
 RAWMODE = {"1": "L", "L": "L", "P": "P"}
 
 
-def _normalize_mode(im):
+def _normalize_mode(im: Image.Image) -> Image.Image:
     """
     Takes an image (or frame), returns an image in a mode that is appropriate
     for saving in a Gif.
@@ -887,7 +887,7 @@ def _get_optimize(im, info):
                 return used_palette_colors
 
 
-def _get_color_table_size(palette_bytes):
+def _get_color_table_size(palette_bytes: bytes) -> int:
     # calculate the palette size for the header
     if not palette_bytes:
         return 0
@@ -897,7 +897,7 @@ def _get_color_table_size(palette_bytes):
         return math.ceil(math.log(len(palette_bytes) // 3, 2)) - 1
 
 
-def _get_header_palette(palette_bytes):
+def _get_header_palette(palette_bytes: bytes) -> bytes:
     """
     Returns the palette, null padded to the next power of 2 (*3) bytes
     suitable for direct inclusion in the GIF header
@@ -915,7 +915,7 @@ def _get_header_palette(palette_bytes):
     return palette_bytes
 
 
-def _get_palette_bytes(im):
+def _get_palette_bytes(im: Image.Image) -> bytes:
     """
     Gets the palette for inclusion in the gif header
 
