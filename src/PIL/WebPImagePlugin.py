@@ -171,7 +171,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
         return super().load()
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
     def tell(self) -> int:

@@ -313,12 +313,12 @@ _gaussian_blur_radius(float radius, int passes) {
 }
 
 Imaging
-ImagingGaussianBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int passes) {
+ImagingGaussianBlur(
+    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes) {
     return ImagingBoxBlur(
-      imOut,
-      imIn,
-      _gaussian_blur_radius(xradius, passes),
-      _gaussian_blur_radius(yradius, passes),
-      passes
-    );
+        imOut,
+        imIn,
+        _gaussian_blur_radius(xradius, passes),
+        _gaussian_blur_radius(yradius, passes),
+        passes);
 }
