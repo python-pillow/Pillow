@@ -213,11 +213,8 @@ cms_transform_dealloc(CmsTransformObject *self) {
 
 static cmsUInt32Number
 findLCMStype(char *PILmode) {
-    if (
-        strcmp(PILmode, "RGB") == 0 ||
-        strcmp(PILmode, "RGBA") == 0 ||
-        strcmp(PILmode, "RGBX") == 0
-    ) {
+    if (strcmp(PILmode, "RGB") == 0 || strcmp(PILmode, "RGBA") == 0 ||
+        strcmp(PILmode, "RGBX") == 0) {
         return TYPE_RGBA_8;
     }
     if (strcmp(PILmode, "RGBA;16B") == 0) {
@@ -232,10 +229,7 @@ findLCMStype(char *PILmode) {
     if (strcmp(PILmode, "L;16B") == 0) {
         return TYPE_GRAY_16_SE;
     }
-    if (
-        strcmp(PILmode, "YCCA") == 0 ||
-        strcmp(PILmode, "YCC") == 0
-    ) {
+    if (strcmp(PILmode, "YCCA") == 0 || strcmp(PILmode, "YCC") == 0) {
         return TYPE_YCbCr_8;
     }
     if (strcmp(PILmode, "LAB") == 0) {
@@ -391,7 +385,7 @@ _buildTransform(
             iRenderingIntent,
             cmsFLAGS);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
     if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build transform");
@@ -425,7 +419,7 @@ _buildProofTransform(
             iProofIntent,
             cmsFLAGS);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
     if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build proof transform");

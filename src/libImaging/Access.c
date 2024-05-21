@@ -185,11 +185,11 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
 
 void
 ImagingAccessInit() {
-#define ADD(mode_, get_pixel_, put_pixel_)        \
-    {                                             \
-        ImagingAccess access = add_item(mode_);   \
-        access->get_pixel = get_pixel_;           \
-        access->put_pixel = put_pixel_;           \
+#define ADD(mode_, get_pixel_, put_pixel_)      \
+    {                                           \
+        ImagingAccess access = add_item(mode_); \
+        access->get_pixel = get_pixel_;         \
+        access->put_pixel = put_pixel_;         \
     }
 
     /* populate access table */

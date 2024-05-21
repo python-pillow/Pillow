@@ -34,28 +34,36 @@ enum { INIT, ENCODE, FINISH };
  */
 
 /* Return values */
-#define GLZW_OK                 0
-#define GLZW_NO_INPUT_AVAIL     1
-#define GLZW_NO_OUTPUT_AVAIL    2
-#define GLZW_INTERNAL_ERROR     3
+#define GLZW_OK 0
+#define GLZW_NO_INPUT_AVAIL 1
+#define GLZW_NO_OUTPUT_AVAIL 2
+#define GLZW_INTERNAL_ERROR 3
 
-#define CODE_LIMIT              4096
+#define CODE_LIMIT 4096
 
 /* Values of entry_state */
-enum { LZW_INITIAL, LZW_TRY_IN1, LZW_TRY_IN2, LZW_TRY_OUT1, LZW_TRY_OUT2,
-    LZW_FINISHED };
+enum {
+    LZW_INITIAL,
+    LZW_TRY_IN1,
+    LZW_TRY_IN2,
+    LZW_TRY_OUT1,
+    LZW_TRY_OUT2,
+    LZW_FINISHED
+};
 
 /* Values of control_state */
 enum { PUT_HEAD, PUT_INIT_CLEAR, PUT_CLEAR, PUT_LAST_HEAD, PUT_END };
 
-static void glzwe_reset(GIFENCODERSTATE *st) {
+static void
+glzwe_reset(GIFENCODERSTATE *st) {
     st->next_code = st->end_code + 1;
     st->max_code = 2 * st->clear_code - 1;
     st->code_width = st->bits + 1;
     memset(st->codes, 0, sizeof(st->codes));
 }
 
-static void glzwe_init(GIFENCODERSTATE *st) {
+static void
+glzwe_init(GIFENCODERSTATE *st) {
     st->clear_code = 1 << st->bits;
     st->end_code = st->clear_code + 1;
     glzwe_reset(st);
@@ -64,156 +72,157 @@ static void glzwe_init(GIFENCODERSTATE *st) {
     st->code_buffer = 0;
 }
 
-static int glzwe(GIFENCODERSTATE *st, const UINT8 *in_ptr, UINT8 *out_ptr,
-        UINT32 *in_avail, UINT32 *out_avail,
-        UINT32 end_of_data) {
+static int
+glzwe(
+    GIFENCODERSTATE *st,
+    const UINT8 *in_ptr,
+    UINT8 *out_ptr,
+    UINT32 *in_avail,
+    UINT32 *out_avail,
+    UINT32 end_of_data) {
     switch (st->entry_state) {
-
-    case LZW_TRY_IN1:
+        case LZW_TRY_IN1:
 get_first_byte:
-        if (!*in_avail) {
-            if (end_of_data) {
-                goto end_of_data;
+            if (!*in_avail) {
+                if (end_of_data) {
+                    goto end_of_data;
+                }
+                st->entry_state = LZW_TRY_IN1;
+                return GLZW_NO_INPUT_AVAIL;
             }
-            st->entry_state = LZW_TRY_IN1;
-            return GLZW_NO_INPUT_AVAIL;
-        }
-        st->head = *in_ptr++;
-        (*in_avail)--;
+            st->head = *in_ptr++;
+            (*in_avail)--;
 
-    case LZW_TRY_IN2:
+        case LZW_TRY_IN2:
 encode_loop:
-        if (!*in_avail) {
-            if (end_of_data) {
-                st->code = st->head;
-                st->put_state = PUT_LAST_HEAD;
-                goto put_code;
+            if (!*in_avail) {
+                if (end_of_data) {
+                    st->code = st->head;
+                    st->put_state = PUT_LAST_HEAD;
+                    goto put_code;
+                }
+                st->entry_state = LZW_TRY_IN2;
+                return GLZW_NO_INPUT_AVAIL;
             }
-            st->entry_state = LZW_TRY_IN2;
-            return GLZW_NO_INPUT_AVAIL;
-        }
-        st->tail = *in_ptr++;
-        (*in_avail)--;
+            st->tail = *in_ptr++;
+            (*in_avail)--;
 
-        /* Knuth TAOCP vol 3 sec. 6.4 algorithm D. */
-        /* Hash found experimentally to be pretty good. */
-        /* This works ONLY with TABLE_SIZE a power of 2. */
-        st->probe = ((st->head ^ (st->tail << 6)) * 31) & (TABLE_SIZE - 1);
-        while (st->codes[st->probe]) {
-            if ((st->codes[st->probe] & 0xFFFFF) ==
-                                        ((st->head << 8) | st->tail)) {
-                st->head = st->codes[st->probe] >> 20;
-                goto encode_loop;
-            } else {
-        /* Reprobe decrement must be non-zero and relatively prime to table
-         * size. So, any odd positive number for power-of-2 size. */
-                if ((st->probe -= ((st->tail << 2) | 1)) < 0) {
-                    st->probe += TABLE_SIZE;
+            /* Knuth TAOCP vol 3 sec. 6.4 algorithm D. */
+            /* Hash found experimentally to be pretty good. */
+            /* This works ONLY with TABLE_SIZE a power of 2. */
+            st->probe = ((st->head ^ (st->tail << 6)) * 31) & (TABLE_SIZE - 1);
+            while (st->codes[st->probe]) {
+                if ((st->codes[st->probe] & 0xFFFFF) == ((st->head << 8) | st->tail)) {
+                    st->head = st->codes[st->probe] >> 20;
+                    goto encode_loop;
+                } else {
+                    // Reprobe decrement must be non-zero and relatively prime to table
+                    // size. So, any odd positive number for power-of-2 size.
+                    if ((st->probe -= ((st->tail << 2) | 1)) < 0) {
+                        st->probe += TABLE_SIZE;
+                    }
                 }
             }
-        }
-        /* Key not found, probe is at empty slot. */
-        st->code = st->head;
-        st->put_state = PUT_HEAD;
-        goto put_code;
-insert_code_or_clear: /* jump here after put_code */
-        if (st->next_code < CODE_LIMIT) {
-            st->codes[st->probe] = (st->next_code << 20) |
-                                    (st->head << 8) | st->tail;
-            if (st->next_code > st->max_code) {
-                st->max_code = st->max_code * 2 + 1;
-                st->code_width++;
-            }
-            st->next_code++;
-        } else {
-            st->code = st->clear_code;
-            st->put_state = PUT_CLEAR;
+            /* Key not found, probe is at empty slot. */
+            st->code = st->head;
+            st->put_state = PUT_HEAD;
             goto put_code;
+insert_code_or_clear: /* jump here after put_code */
+            if (st->next_code < CODE_LIMIT) {
+                st->codes[st->probe] =
+                    (st->next_code << 20) | (st->head << 8) | st->tail;
+                if (st->next_code > st->max_code) {
+                    st->max_code = st->max_code * 2 + 1;
+                    st->code_width++;
+                }
+                st->next_code++;
+            } else {
+                st->code = st->clear_code;
+                st->put_state = PUT_CLEAR;
+                goto put_code;
 reset_after_clear: /* jump here after put_code */
-            glzwe_reset(st);
-        }
-        st->head = st->tail;
-        goto encode_loop;
-
-    case LZW_INITIAL:
-        glzwe_reset(st);
-        st->code = st->clear_code;
-        st->put_state = PUT_INIT_CLEAR;
-put_code:
-        st->code_bits_left = st->code_width;
-check_buf_bits:
-        if (!st->buf_bits_left) {   /* out buffer full */
-
-    case LZW_TRY_OUT1:
-            if (!*out_avail) {
-                st->entry_state = LZW_TRY_OUT1;
-                return GLZW_NO_OUTPUT_AVAIL;
+                glzwe_reset(st);
             }
-            *out_ptr++ = st->code_buffer;
-            (*out_avail)--;
-            st->code_buffer = 0;
-            st->buf_bits_left = 8;
-        }
-        /* code bits to pack */
-        UINT32 n = st->buf_bits_left < st->code_bits_left
-                        ? st->buf_bits_left : st->code_bits_left;
-        st->code_buffer |=
-                        (st->code & ((1 << n) - 1)) << (8 - st->buf_bits_left);
-        st->code >>= n;
-        st->buf_bits_left -= n;
-        st->code_bits_left -= n;
-        if (st->code_bits_left) {
-            goto check_buf_bits;
-        }
-        switch (st->put_state) {
-        case PUT_INIT_CLEAR:
-            goto get_first_byte;
-        case PUT_HEAD:
-            goto insert_code_or_clear;
-        case PUT_CLEAR:
-            goto reset_after_clear;
-        case PUT_LAST_HEAD:
-            goto end_of_data;
-        case PUT_END:
-            goto flush_code_buffer;
-        default:
-            return GLZW_INTERNAL_ERROR;
-        }
+            st->head = st->tail;
+            goto encode_loop;
+
+        case LZW_INITIAL:
+            glzwe_reset(st);
+            st->code = st->clear_code;
+            st->put_state = PUT_INIT_CLEAR;
+put_code:
+            st->code_bits_left = st->code_width;
+check_buf_bits:
+            if (!st->buf_bits_left) { /* out buffer full */
+
+                case LZW_TRY_OUT1:
+                    if (!*out_avail) {
+                        st->entry_state = LZW_TRY_OUT1;
+                        return GLZW_NO_OUTPUT_AVAIL;
+                    }
+                    *out_ptr++ = st->code_buffer;
+                    (*out_avail)--;
+                    st->code_buffer = 0;
+                    st->buf_bits_left = 8;
+            }
+            /* code bits to pack */
+            UINT32 n = st->buf_bits_left < st->code_bits_left ? st->buf_bits_left
+                                                              : st->code_bits_left;
+            st->code_buffer |= (st->code & ((1 << n) - 1)) << (8 - st->buf_bits_left);
+            st->code >>= n;
+            st->buf_bits_left -= n;
+            st->code_bits_left -= n;
+            if (st->code_bits_left) {
+                goto check_buf_bits;
+            }
+            switch (st->put_state) {
+                case PUT_INIT_CLEAR:
+                    goto get_first_byte;
+                case PUT_HEAD:
+                    goto insert_code_or_clear;
+                case PUT_CLEAR:
+                    goto reset_after_clear;
+                case PUT_LAST_HEAD:
+                    goto end_of_data;
+                case PUT_END:
+                    goto flush_code_buffer;
+                default:
+                    return GLZW_INTERNAL_ERROR;
+            }
 
 end_of_data:
-        st->code = st->end_code;
-        st->put_state = PUT_END;
-        goto put_code;
+            st->code = st->end_code;
+            st->put_state = PUT_END;
+            goto put_code;
 flush_code_buffer: /* jump here after put_code */
-        if (st->buf_bits_left < 8) {
-
-    case LZW_TRY_OUT2:
-            if (!*out_avail) {
-                st->entry_state = LZW_TRY_OUT2;
-                return GLZW_NO_OUTPUT_AVAIL;
+            if (st->buf_bits_left < 8) {
+                case LZW_TRY_OUT2:
+                    if (!*out_avail) {
+                        st->entry_state = LZW_TRY_OUT2;
+                        return GLZW_NO_OUTPUT_AVAIL;
+                    }
+                    *out_ptr++ = st->code_buffer;
+                    (*out_avail)--;
             }
-            *out_ptr++ = st->code_buffer;
-            (*out_avail)--;
-        }
-        st->entry_state = LZW_FINISHED;
-        return GLZW_OK;
+            st->entry_state = LZW_FINISHED;
+            return GLZW_OK;
 
-    case LZW_FINISHED:
-        return GLZW_OK;
+        case LZW_FINISHED:
+            return GLZW_OK;
 
-    default:
-        return GLZW_INTERNAL_ERROR;
+        default:
+            return GLZW_INTERNAL_ERROR;
     }
 }
 /* -END- GIF LZW encoder. */
 
 int
-ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes) {
-    UINT8* ptr;
-    UINT8* sub_block_ptr;
-    UINT8* sub_block_limit;
-    UINT8* buf_limit;
-    GIFENCODERSTATE *context = (GIFENCODERSTATE*) state->context;
+ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+    UINT8 *ptr;
+    UINT8 *sub_block_ptr;
+    UINT8 *sub_block_limit;
+    UINT8 *buf_limit;
+    GIFENCODERSTATE *context = (GIFENCODERSTATE *)state->context;
     int r;
 
     UINT32 in_avail, in_used;
@@ -278,9 +287,9 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes) {
                 return ptr - buf;
             }
             sub_block_ptr = ptr;
-            sub_block_limit = sub_block_ptr +
-                (256 < buf_limit - sub_block_ptr ?
-                 256 : buf_limit - sub_block_ptr);
+            sub_block_limit =
+                sub_block_ptr +
+                (256 < buf_limit - sub_block_ptr ? 256 : buf_limit - sub_block_ptr);
             *ptr++ = 0;
         }
 
@@ -301,9 +310,9 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes) {
             /* get another line of data */
             state->shuffle(
                 state->buffer,
-                (UINT8*) im->image[state->y + state->yoff] +
-                state->xoff * im->pixelsize, state->xsize
-            );
+                (UINT8 *)im->image[state->y + state->yoff] +
+                    state->xoff * im->pixelsize,
+                state->xsize);
             state->x = 0;
 
             /* step forward, according to the interlace settings */
@@ -331,10 +340,15 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8* buf, int bytes) {
             }
         }
 
-        in_avail = state->xsize - state->x;   /* bytes left in line */
+        in_avail = state->xsize - state->x; /* bytes left in line */
         out_avail = sub_block_limit - ptr;  /* bytes left in sub-block */
-        r = glzwe(context, &state->buffer[state->x], ptr, &in_avail,
-                &out_avail, state->state == FINISH);
+        r = glzwe(
+            context,
+            &state->buffer[state->x],
+            ptr,
+            &in_avail,
+            &out_avail,
+            state->state == FINISH);
         out_used = sub_block_limit - ptr - out_avail;
         *sub_block_ptr += out_used;
         ptr += out_used;
