@@ -408,7 +408,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 msg = "no marker found"
                 raise SyntaxError(msg)
 
-    def load_read(self, read_bytes):
+    def load_read(self, read_bytes: int) -> bytes:
         """
         internal: read more image data
         For premature EOF and LOAD_TRUNCATED_IMAGES adds EOI marker

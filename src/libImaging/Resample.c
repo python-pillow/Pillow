@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-#define ROUND_UP(f) ((int)((f) >= 0.0 ? (f) + 0.5F : (f)-0.5F))
+#define ROUND_UP(f) ((int)((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
 
 struct filter {
     double (*filter)(double x);

@@ -124,7 +124,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         # for now we can only handle reading and individual frame extraction
         self.readonly = 1
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         self._fp.seek(pos)
 
     def seek(self, frame: int) -> None:

@@ -381,7 +381,7 @@ class IFDRational(Rational):
         f = self._val.limit_denominator(max_denominator)
         return f.numerator, f.denominator
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(float(self._val))
 
     def __hash__(self):
@@ -603,7 +603,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self._next = None
         self._offset = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(dict(self))
 
     def named(self):
@@ -617,7 +617,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
             for code, value in self.items()
         }
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(set(self._tagdata) | set(self._tags_v2))
 
     def __getitem__(self, tag):
@@ -1041,7 +1041,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ifd.next = original.next  # an indicator for multipage tiffs
         return ifd
 
-    def to_v2(self):
+    def to_v2(self) -> ImageFileDirectory_v2:
         """Returns an
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
         instance with the same data as is contained in the original
@@ -1061,7 +1061,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __contains__(self, tag):
         return tag in self._tags_v1 or tag in self._tagdata
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(set(self._tagdata) | set(self._tags_v1))
 
     def __iter__(self):
@@ -1154,7 +1154,7 @@ class TiffImageFile(ImageFile.ImageFile):
         Image._decompression_bomb_check(self.size)
         self.im = Image.core.new(self.mode, self.size)
 
-    def _seek(self, frame):
+    def _seek(self, frame: int) -> None:
         self.fp = self._fp
 
         # reset buffered io handle in case fp
@@ -2003,7 +2003,7 @@ class AppendingTiffWriter:
             self.close()
         return False
 
-    def tell(self):
+    def tell(self) -> int:
         return self.f.tell() - self.offsetOfNewPage
 
     def seek(self, offset, whence=io.SEEK_SET):

@@ -1163,8 +1163,10 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     ((JPEGENCODERSTATE *)encoder->state.context)->streamtype = streamtype;
     ((JPEGENCODERSTATE *)encoder->state.context)->xdpi = xdpi;
     ((JPEGENCODERSTATE *)encoder->state.context)->ydpi = ydpi;
-    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_blocks = restart_marker_blocks;
-    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_rows = restart_marker_rows;
+    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_blocks =
+        restart_marker_blocks;
+    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_rows =
+        restart_marker_rows;
     ((JPEGENCODERSTATE *)encoder->state.context)->comment = comment;
     ((JPEGENCODERSTATE *)encoder->state.context)->comment_size = comment_size;
     ((JPEGENCODERSTATE *)encoder->state.context)->extra = extra;
@@ -1333,9 +1335,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     if (comment && comment_size > 0) {
         /* Size is stored as as an uint16, subtract 4 bytes for the header */
         if (comment_size >= 65532) {
-            PyErr_SetString(
-                PyExc_ValueError,
-                "JPEG 2000 comment is too long");
+            PyErr_SetString(PyExc_ValueError, "JPEG 2000 comment is too long");
             Py_DECREF(encoder);
             return NULL;
         }

@@ -271,11 +271,11 @@ class ImImageFile(ImageFile.ImageFile):
             self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
 
     @property
-    def n_frames(self):
+    def n_frames(self) -> int:
         return self.info[FRAMES]
 
     @property
-    def is_animated(self):
+    def is_animated(self) -> bool:
         return self.info[FRAMES] > 1
 
     def seek(self, frame: int) -> None:
