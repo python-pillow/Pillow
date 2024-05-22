@@ -114,7 +114,7 @@ def _save(im, fp, filename):
         fp.seek(current)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == _MAGIC
 
 
@@ -302,7 +302,7 @@ class IcoImageFile(ImageFile.ImageFile):
     format = "ICO"
     format_description = "Windows Icon"
 
-    def _open(self):
+    def _open(self) -> None:
         self.ico = IcoFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
         self.size = self.ico.entry[0]["dim"]
@@ -329,6 +329,8 @@ class IcoImageFile(ImageFile.ImageFile):
         self.im = im.im
         self.pyaccess = None
         self._mode = im.mode
+        if im.palette:
+            self.palette = im.palette
         if im.size != self.size:
             warnings.warn("Image was not the expected size")
 
@@ -339,7 +341,7 @@ class IcoImageFile(ImageFile.ImageFile):
 
             self.size = im.size
 
-    def load_seek(self):
+    def load_seek(self, pos: int) -> None:
         # Flag the ImageFile.Parser so that it
         # just does all the decode at the end.
         pass

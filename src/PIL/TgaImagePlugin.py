@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -49,8 +50,10 @@ class TgaImageFile(ImageFile.ImageFile):
     format = "TGA"
     format_description = "Targa"
 
-    def _open(self):
+    def _open(self) -> None:
         # process header
+        assert self.fp is not None
+
         s = self.fp.read(18)
 
         id_len = s[0]
@@ -82,7 +85,7 @@ class TgaImageFile(ImageFile.ImageFile):
             elif depth == 16:
                 self._mode = "LA"
         elif imagetype in (1, 9):
-            self._mode = "P"
+            self._mode = "P" if colormaptype else "L"
         elif imagetype in (2, 10):
             self._mode = "RGB"
             if depth == 32:
@@ -125,6 +128,9 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.palette = ImagePalette.raw(
                     "BGRA", b"\0" * 4 * start + self.fp.read(4 * size)
                 )
+            else:
+                msg = "unknown TGA map depth"
+                raise SyntaxError(msg)
 
         # setup tile descriptor
         try:
@@ -151,8 +157,9 @@ class TgaImageFile(ImageFile.ImageFile):
         except KeyError:
             pass  # cannot decode
 
-    def load_end(self):
+    def load_end(self) -> None:
         if self._flip_horizontally:
+            assert self.im is not None
             self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
@@ -171,7 +178,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:
@@ -194,6 +201,7 @@ def _save(im, fp, filename):
         warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
+        assert im.im is not None
         palette = im.im.getpalette("RGB", "BGR")
         colormaplength, colormapentry = len(palette) // 3, 24
     else:

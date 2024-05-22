@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # > pyroma .
 # ------------------------------
 # Checking .
@@ -24,8 +23,10 @@ from setuptools.command.build_ext import build_ext
 def get_version():
     version_file = "src/PIL/_version.py"
     with open(version_file, encoding="utf-8") as f:
-        exec(compile(f.read(), version_file, "exec"))
-    return locals()["__version__"]
+        return f.read().split('"')[1]
+
+
+configuration = {}
 
 
 PILLOW_VERSION = get_version()
@@ -335,15 +336,24 @@ class pil_build_ext(build_ext):
         + [("add-imaging-libs=", None, "Add libs to _imaging build")]
     )
 
+    @staticmethod
+    def check_configuration(option, value):
+        return True if value in configuration.get(option, []) else None
+
     def initialize_options(self):
-        self.disable_platform_guessing = None
+        self.disable_platform_guessing = self.check_configuration(
+            "platform-guessing", "disable"
+        )
         self.add_imaging_libs = ""
         build_ext.initialize_options(self)
         for x in self.feature:
-            setattr(self, f"disable_{x}", None)
-            setattr(self, f"enable_{x}", None)
+            setattr(self, f"disable_{x}", self.check_configuration(x, "disable"))
+            setattr(self, f"enable_{x}", self.check_configuration(x, "enable"))
         for x in ("raqm", "fribidi"):
-            setattr(self, f"vendor_{x}", None)
+            setattr(self, f"vendor_{x}", self.check_configuration(x, "vendor"))
+        if self.check_configuration("debug", "true"):
+            self.debug = True
+        self.parallel = configuration.get("parallel", [None])[-1]
 
     def finalize_options(self):
         build_ext.finalize_options(self)
@@ -571,6 +581,9 @@ class pil_build_ext(build_ext):
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
                 _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
+                for extension in self.extensions:
+                    extension.extra_compile_args = ["-Wno-nullability-completeness"]
         elif (
             sys.platform.startswith("linux")
             or sys.platform.startswith("gnu")
@@ -986,6 +999,12 @@ ext_modules = [
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
 ]
 
+
+# parse configuration from _custom_build/backend.py
+while sys.argv[-1].startswith("--pillow-configuration="):
+    _, key, value = sys.argv.pop().split("=", 2)
+    configuration.setdefault(key, []).append(value)
+
 try:
     setup(
         cmdclass={"build_ext": pil_build_ext},
@@ -999,7 +1018,7 @@ The headers or library files could not be found for {str(err)},
 a required dependency when compiling Pillow from source.
 
 Please see the install instructions at:
-   https://pillow.readthedocs.io/en/latest/installation.html
+   https://pillow.readthedocs.io/en/latest/installation/basic-installation.html
 
 """
     sys.stderr.write(msg)

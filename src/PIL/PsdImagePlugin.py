@@ -24,6 +24,7 @@ from ._binary import i8
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import si16be as si16
+from ._binary import si32be as si32
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -43,7 +44,7 @@ MODES = {
 # read PSD images
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"8BPS"
 
 
@@ -56,7 +57,7 @@ class PsdImageFile(ImageFile.ImageFile):
     format_description = "Adobe Photoshop"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         read = self.fp.read
 
         #
@@ -140,23 +141,22 @@ class PsdImageFile(ImageFile.ImageFile):
         self.frame = 1
         self._min_frame = 1
 
-    def seek(self, layer):
+    def seek(self, layer: int) -> None:
         if not self._seek_check(layer):
             return
 
         # seek to given layer (1..max)
         try:
-            name, mode, bbox, tile = self.layers[layer - 1]
+            _, mode, _, tile = self.layers[layer - 1]
             self._mode = mode
             self.tile = tile
             self.frame = layer
             self.fp = self._fp
-            return name, bbox
         except IndexError as e:
             msg = "no such layer"
             raise EOFError(msg) from e
 
-    def tell(self):
+    def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)
         return self.frame
 
@@ -177,22 +177,21 @@ def _layerinfo(fp, ct_bytes):
 
     for _ in range(abs(ct)):
         # bounding box
-        y0 = i32(read(4))
-        x0 = i32(read(4))
-        y1 = i32(read(4))
-        x1 = i32(read(4))
+        y0 = si32(read(4))
+        x0 = si32(read(4))
+        y1 = si32(read(4))
+        x1 = si32(read(4))
 
         # image info
         mode = []
         ct_types = i16(read(2))
-        types = list(range(ct_types))
-        if len(types) > 4:
-            fp.seek(len(types) * 6 + 12, io.SEEK_CUR)
+        if ct_types > 4:
+            fp.seek(ct_types * 6 + 12, io.SEEK_CUR)
             size = i32(read(4))
             fp.seek(size, io.SEEK_CUR)
             continue
 
-        for _ in types:
+        for _ in range(ct_types):
             type = i16(read(2))
 
             if type == 65535:

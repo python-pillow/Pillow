@@ -29,7 +29,7 @@ def register_handler(handler):
 # Image adapter
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"BUFR" or prefix[:4] == b"ZCZC"
 
 
@@ -37,7 +37,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
     format = "BUFR"
     format_description = "BUFR"
 
-    def _open(self):
+    def _open(self) -> None:
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(4)):

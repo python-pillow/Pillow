@@ -21,7 +21,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import i32be as i32
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return len(prefix) >= 4 and i32(prefix) == 0x59A66A95
 
 
@@ -33,7 +33,7 @@ class SunImageFile(ImageFile.ImageFile):
     format = "SUN"
     format_description = "Sun Raster File"
 
-    def _open(self):
+    def _open(self) -> None:
         # The Sun Raster file header is 32 bytes in length
         # and has the following format:
 
@@ -48,6 +48,8 @@ class SunImageFile(ImageFile.ImageFile):
         #         DWORD ColorMapType;     /* Type of color map */
         #         DWORD ColorMapLength;   /* Size of the color map in bytes */
         #     } SUNRASTER;
+
+        assert self.fp is not None
 
         # HEAD
         s = self.fp.read(32)

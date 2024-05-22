@@ -427,7 +427,6 @@ error:
 
 PyObject *
 PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
-    int clip;
     HANDLE handle = NULL;
     int size;
     void *data;
@@ -717,7 +716,7 @@ PyImaging_DrawWmf(PyObject *self, PyObject *args) {
     HDC dc;
     RECT rect;
     PyObject *buffer = NULL;
-    char *ptr;
+    void *ptr;
 
     char *data;
     Py_ssize_t datasize;

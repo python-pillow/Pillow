@@ -4,15 +4,17 @@
 Security
 ========
 
-This release addresses several security problems.
+This release fixes several buffer overflow issues and a DOS attack vulnerability.
 
-:cve:`2019-19911` is regarding FPX images. If an image reports that it has a large
-number of bands, a large amount of resources will be used when trying to process the
-image. This is fixed by limiting the number of bands to those usable by Pillow.
+:cve:`2020-5310`, :cve:`2020-5311`, :cve:`2020-5312`, :cve:`2020-5313`: Overflow checks added
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Buffer overruns were found when processing an SGI (:cve:`2020-5311`),
-PCX (:cve:`2020-5312`) or FLI image (:cve:`2020-5313`). Checks have been added
-to prevent this.
+Overflow checks have been added when calculating the size of a memory block to be reallocated
+in the processing of TIFF, SGI, PCX and FLI images.
 
-:cve:`2020-5310`: Overflow checks have been added when calculating the size of a
-memory block to be reallocated in the processing of a TIFF image.
+:cve:`2019-19911`: DOS attack vulnerability
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If an FPX image reports that it has a large number of bands, a large amount of
+resources will be used when trying to process the image. This is fixed by
+limiting the number of bands to those usable by Pillow.

@@ -110,7 +110,7 @@
 
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i) + 1])
 #define L16(p, i) ((((int)p[(i) + 1]) << 8) + p[(i)])
-#define S16(v) ((v) < 32768 ? (v) : ((v)-65536))
+#define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
 /* -------------------------------------------------------------------- */
 /* OBJECT ADMINISTRATION                        */
@@ -533,7 +533,9 @@ getink(PyObject *color, Imaging im, char *ink) {
                 /* unsigned integer, single layer */
                 if (rIsInt != 1) {
                     if (tupleSize != 1) {
-                        PyErr_SetString(PyExc_TypeError, "color must be int or single-element tuple");
+                        PyErr_SetString(
+                            PyExc_TypeError,
+                            "color must be int or single-element tuple");
                         return NULL;
                     } else if (!PyArg_ParseTuple(color, "L", &r)) {
                         return NULL;
@@ -552,7 +554,9 @@ getink(PyObject *color, Imaging im, char *ink) {
                     a = 255;
                     if (im->bands == 2) {
                         if (tupleSize != 1 && tupleSize != 2) {
-                            PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or two elements");
+                            PyErr_SetString(
+                                PyExc_TypeError,
+                                "color must be int, or tuple of one or two elements");
                             return NULL;
                         } else if (!PyArg_ParseTuple(color, "L|i", &r, &a)) {
                             return NULL;
@@ -560,7 +564,10 @@ getink(PyObject *color, Imaging im, char *ink) {
                         g = b = r;
                     } else {
                         if (tupleSize != 3 && tupleSize != 4) {
-                            PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one, three or four elements");
+                            PyErr_SetString(
+                                PyExc_TypeError,
+                                "color must be int, or tuple of one, three or four "
+                                "elements");
                             return NULL;
                         } else if (!PyArg_ParseTuple(color, "Lii|i", &r, &g, &b, &a)) {
                             return NULL;
@@ -599,7 +606,9 @@ getink(PyObject *color, Imaging im, char *ink) {
                     g = (UINT8)(r >> 8);
                     r = (UINT8)r;
                 } else if (tupleSize != 3) {
-                    PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or three elements");
+                    PyErr_SetString(
+                        PyExc_TypeError,
+                        "color must be int, or tuple of one or three elements");
                     return NULL;
                 } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
                     return NULL;
@@ -1537,14 +1546,14 @@ _putdata(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-#define set_value_to_item(seq, i) \
-op = PySequence_Fast_GET_ITEM(seq, i); \
-if (PySequence_Check(op)) { \
-    PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
-    return NULL; \
-} else { \
-    value = PyFloat_AsDouble(op); \
-}
+#define set_value_to_item(seq, i)                                       \
+    op = PySequence_Fast_GET_ITEM(seq, i);                              \
+    if (PySequence_Check(op)) {                                         \
+        PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
+        return NULL;                                                    \
+    } else {                                                            \
+        value = PyFloat_AsDouble(op);                                   \
+    }
     if (image->image8) {
         if (PyBytes_Check(data)) {
             unsigned char *p;
@@ -1578,7 +1587,17 @@ if (PySequence_Check(op)) { \
                 int bigendian = 0;
                 if (image->type == IMAGING_TYPE_SPECIAL) {
                     // I;16*
-                    bigendian = strcmp(image->mode, "I;16B") == 0;
+                    if (strcmp(image->mode, "I;16N") == 0) {
+#ifdef WORDS_BIGENDIAN
+                        bigendian = 1;
+#else
+                        bigendian = 0;
+#endif
+                    } else if (strcmp(image->mode, "I;16B") == 0) {
+                        bigendian = 1;
+                    } else {
+                        bigendian = 0;
+                    }
                 }
                 for (i = x = y = 0; i < n; i++) {
                     set_value_to_item(seq, i);
@@ -1586,8 +1605,10 @@ if (PySequence_Check(op)) { \
                         value = value * scale + offset;
                     }
                     if (image->type == IMAGING_TYPE_SPECIAL) {
-                        image->image8[y][x * 2 + (bigendian ? 1 : 0)] = CLIP8((int)value % 256);
-                        image->image8[y][x * 2 + (bigendian ? 0 : 1)] = CLIP8((int)value >> 8);
+                        image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
+                            CLIP8((int)value % 256);
+                        image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
+                            CLIP8((int)value >> 8);
                     } else {
                         image->image8[y][x] = (UINT8)CLIP8(value);
                     }
@@ -1629,8 +1650,7 @@ if (PySequence_Check(op)) { \
                 for (i = x = y = 0; i < n; i++) {
                     double value;
                     set_value_to_item(seq, i);
-                    IMAGING_PIXEL_INT32(image, x, y) =
-                        (INT32)(value * scale + offset);
+                    IMAGING_PIXEL_INT32(image, x, y) = (INT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -2649,6 +2669,26 @@ _font_new(PyObject *self_, PyObject *args) {
         self->glyphs[i].sy0 = S16(B16(glyphdata, 14));
         self->glyphs[i].sx1 = S16(B16(glyphdata, 16));
         self->glyphs[i].sy1 = S16(B16(glyphdata, 18));
+
+        // Do not allow glyphs to extend beyond bitmap image
+        // Helps prevent DOS by stopping cropped images being larger than the original
+        if (self->glyphs[i].sx0 < 0) {
+            self->glyphs[i].dx0 -= self->glyphs[i].sx0;
+            self->glyphs[i].sx0 = 0;
+        }
+        if (self->glyphs[i].sy0 < 0) {
+            self->glyphs[i].dy0 -= self->glyphs[i].sy0;
+            self->glyphs[i].sy0 = 0;
+        }
+        if (self->glyphs[i].sx1 > self->bitmap->xsize) {
+            self->glyphs[i].dx1 -= self->glyphs[i].sx1 - self->bitmap->xsize;
+            self->glyphs[i].sx1 = self->bitmap->xsize;
+        }
+        if (self->glyphs[i].sy1 > self->bitmap->ysize) {
+            self->glyphs[i].dy1 -= self->glyphs[i].sy1 - self->bitmap->ysize;
+            self->glyphs[i].sy1 = self->bitmap->ysize;
+        }
+
         if (self->glyphs[i].dy0 < y0) {
             y0 = self->glyphs[i].dy0;
         }
@@ -2721,7 +2761,7 @@ _font_text_asBytes(PyObject *encoded_string, unsigned char **text) {
 static PyObject *
 _font_getmask(ImagingFontObject *self, PyObject *args) {
     Imaging im;
-    Imaging bitmap;
+    Imaging bitmap = NULL;
     int x, b;
     int i = 0;
     int status;
@@ -2730,7 +2770,7 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
     PyObject *encoded_string;
 
     unsigned char *text;
-    char *mode = "";
+    char *mode;
 
     if (!PyArg_ParseTuple(args, "O|s:getmask", &encoded_string, &mode)) {
         return NULL;
@@ -2753,10 +2793,13 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
     b = self->baseline;
     for (x = 0; text[i]; i++) {
         glyph = &self->glyphs[text[i]];
-        bitmap =
-            ImagingCrop(self->bitmap, glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1);
-        if (!bitmap) {
-            goto failed;
+        if (i == 0 || text[i] != text[i - 1]) {
+            ImagingDelete(bitmap);
+            bitmap = ImagingCrop(
+                self->bitmap, glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1);
+            if (!bitmap) {
+                goto failed;
+            }
         }
         status = ImagingPaste(
             im,
@@ -2766,17 +2809,18 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
             glyph->dy0 + b,
             glyph->dx1 + x,
             glyph->dy1 + b);
-        ImagingDelete(bitmap);
         if (status < 0) {
             goto failed;
         }
         x = x + glyph->dx;
         b = b + glyph->dy;
     }
+    ImagingDelete(bitmap);
     free(text);
     return PyImagingNew(im);
 
 failed:
+    ImagingDelete(bitmap);
     free(text);
     ImagingDelete(im);
     Py_RETURN_NONE;
@@ -3281,7 +3325,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, width, self->blend) < 0) {
+    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, width, self->blend) <
+        0) {
         free(ixy);
         return NULL;
     }
@@ -3703,7 +3748,7 @@ _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
         self->image->image32,
         "image",
         self->image->image);
-};
+}
 
 static struct PyGetSetDef getsetters[] = {
     {"mode", (getter)_getattr_mode},
@@ -4380,7 +4425,8 @@ setup_module(PyObject *m) {
     PyModule_AddObject(m, "HAVE_XCB", have_xcb);
 
     PyObject *pillow_version = PyUnicode_FromString(version);
-    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None);
+    PyDict_SetItemString(
+        d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None);
     Py_XDECREF(pillow_version);
 
     return 0;

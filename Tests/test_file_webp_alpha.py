@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+from pathlib import Path
+
 import pytest
 
 from PIL import Image
@@ -13,12 +16,12 @@ from .helper import (
 _webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
-def setup_module():
+def setup_module() -> None:
     if _webp.WebPDecoderBuggyAlpha():
         pytest.skip("Buggy early version of WebP installed, not testing transparency")
 
 
-def test_read_rgba():
+def test_read_rgba() -> None:
     """
     Can we read an RGBA mode file without error?
     Does it have the bits we expect?
@@ -38,7 +41,7 @@ def test_read_rgba():
         assert_image_similar_tofile(image, "Tests/images/transparent.png", 20.0)
 
 
-def test_write_lossless_rgb(tmp_path):
+def test_write_lossless_rgb(tmp_path: Path) -> None:
     """
     Can we write an RGBA mode file with lossless compression without error?
     Does it have the bits we expect?
@@ -67,7 +70,7 @@ def test_write_lossless_rgb(tmp_path):
         assert_image_equal(image, pil_image)
 
 
-def test_write_rgba(tmp_path):
+def test_write_rgba(tmp_path: Path) -> None:
     """
     Can we write a RGBA mode file to WebP without error.
     Does it have the bits we expect?
@@ -98,7 +101,7 @@ def test_write_rgba(tmp_path):
             assert_image_similar(image, pil_image, 1.0)
 
 
-def test_keep_rgb_values_when_transparent(tmp_path):
+def test_keep_rgb_values_when_transparent(tmp_path: Path) -> None:
     """
     Saving transparent pixels should retain their original RGB values
     when using the "exact" parameter.
@@ -127,7 +130,7 @@ def test_keep_rgb_values_when_transparent(tmp_path):
         assert_image_equal(reloaded.convert("RGB"), image)
 
 
-def test_write_unsupported_mode_PA(tmp_path):
+def test_write_unsupported_mode_PA(tmp_path: Path) -> None:
     """
     Saving a palette-based file with transparency to WebP format
     should work, and be similar to the original file.
@@ -148,3 +151,15 @@ def test_write_unsupported_mode_PA(tmp_path):
             target = im.convert("RGBA")
 
         assert_image_similar(image, target, 25.0)
+
+
+def test_alpha_quality(tmp_path: Path) -> None:
+    with Image.open("Tests/images/transparent.png") as im:
+        out = str(tmp_path / "temp.webp")
+        im.save(out)
+
+        out_quality = str(tmp_path / "quality.webp")
+        im.save(out_quality, alpha_quality=50)
+        with Image.open(out) as reloaded:
+            with Image.open(out_quality) as reloaded_quality:
+                assert reloaded.tobytes() != reloaded_quality.tobytes()

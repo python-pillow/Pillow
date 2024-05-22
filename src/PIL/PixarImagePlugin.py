@@ -27,7 +27,7 @@ from ._binary import i16le as i16
 # helpers
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"\200\350\000\000"
 
 
@@ -39,8 +39,10 @@ class PixarImageFile(ImageFile.ImageFile):
     format = "PIXAR"
     format_description = "PIXAR raster image"
 
-    def _open(self):
+    def _open(self) -> None:
         # assuming a 4-byte magic label
+        assert self.fp is not None
+
         s = self.fp.read(4)
         if not _accept(s):
             msg = "not a PIXAR file"

@@ -128,14 +128,7 @@ PyImagingPhotoPut(
     block.pixelPtr = (unsigned char *)im->block;
 
     TK_PHOTO_PUT_BLOCK(
-        interp,
-        photo,
-        &block,
-        0,
-        0,
-        block.width,
-        block.height,
-        TK_PHOTO_COMPOSITE_SET);
+        interp, photo, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
 
     return TCL_OK;
 }
@@ -287,7 +280,7 @@ load_tkinter_funcs(void) {
      * Return 0 for success, non-zero for failure.
      */
 
-    HMODULE* hMods = NULL;
+    HMODULE *hMods = NULL;
     HANDLE hProcess;
     DWORD cbNeeded;
     unsigned int i;
@@ -313,7 +306,7 @@ load_tkinter_funcs(void) {
 #endif
         return 1;
     }
-    if (!(hMods = (HMODULE*) malloc(cbNeeded))) {
+    if (!(hMods = (HMODULE *)malloc(cbNeeded))) {
         PyErr_NoMemory();
         return 1;
     }
@@ -345,7 +338,7 @@ load_tkinter_funcs(void) {
     } else if (found_tk == 0) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tk routines");
     }
-    return (int) ((found_tcl != 1) || (found_tk != 1));
+    return (int)((found_tcl != 1) || (found_tk != 1));
 }
 
 #else /* not Windows */
@@ -400,8 +393,8 @@ _func_loader(void *lib) {
         return 1;
     }
     return (
-        (TK_PHOTO_PUT_BLOCK =
-             (Tk_PhotoPutBlock_t)_dfunc(lib, "Tk_PhotoPutBlock")) == NULL);
+        (TK_PHOTO_PUT_BLOCK = (Tk_PhotoPutBlock_t)_dfunc(lib, "Tk_PhotoPutBlock")) ==
+        NULL);
 }
 
 int

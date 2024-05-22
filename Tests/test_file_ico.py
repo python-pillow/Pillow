@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 import io
 import os
+from pathlib import Path
 
 import pytest
 
@@ -11,7 +13,7 @@ from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 TEST_ICO_FILE = "Tests/images/hopper.ico"
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open(TEST_ICO_FILE) as im:
         im.load()
     assert im.mode == "RGBA"
@@ -20,29 +22,40 @@ def test_sanity():
     assert im.get_format_mimetype() == "image/x-icon"
 
 
-def test_load():
+def test_load() -> None:
     with Image.open(TEST_ICO_FILE) as im:
         assert im.load()[0, 0] == (1, 1, 9, 255)
 
 
-def test_mask():
+def test_mask() -> None:
     with Image.open("Tests/images/hopper_mask.ico") as im:
         assert_image_equal_tofile(im, "Tests/images/hopper_mask.png")
 
 
-def test_black_and_white():
+def test_black_and_white() -> None:
     with Image.open("Tests/images/black_and_white.ico") as im:
         assert im.mode == "RGBA"
         assert im.size == (16, 16)
 
 
-def test_invalid_file():
+def test_palette(tmp_path: Path) -> None:
+    temp_file = str(tmp_path / "temp.ico")
+
+    im = Image.new("P", (16, 16))
+    im.save(temp_file)
+
+    with Image.open(temp_file) as reloaded:
+        assert reloaded.mode == "P"
+        assert reloaded.palette is not None
+
+
+def test_invalid_file() -> None:
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
             IcoImagePlugin.IcoImageFile(fp)
 
 
-def test_save_to_bytes():
+def test_save_to_bytes() -> None:
     output = io.BytesIO()
     im = hopper()
     im.save(output, "ico", sizes=[(32, 32), (64, 64)])
@@ -72,7 +85,7 @@ def test_save_to_bytes():
         )
 
 
-def test_getpixel(tmp_path):
+def test_getpixel(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.ico")
 
     im = hopper()
@@ -85,7 +98,7 @@ def test_getpixel(tmp_path):
         assert reloaded.getpixel((0, 0)) == (18, 20, 62)
 
 
-def test_no_duplicates(tmp_path):
+def test_no_duplicates(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.ico")
     temp_file2 = str(tmp_path / "temp2.ico")
 
@@ -99,7 +112,7 @@ def test_no_duplicates(tmp_path):
     assert os.path.getsize(temp_file) == os.path.getsize(temp_file2)
 
 
-def test_different_bit_depths(tmp_path):
+def test_different_bit_depths(tmp_path: Path) -> None:
     temp_file = str(tmp_path / "temp.ico")
     temp_file2 = str(tmp_path / "temp2.ico")
 
@@ -133,7 +146,7 @@ def test_different_bit_depths(tmp_path):
 
 
 @pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
-def test_save_to_bytes_bmp(mode):
+def test_save_to_bytes_bmp(mode: str) -> None:
     output = io.BytesIO()
     im = hopper(mode)
     im.save(output, "ico", bitmap_format="bmp", sizes=[(32, 32), (64, 64)])
@@ -161,13 +174,13 @@ def test_save_to_bytes_bmp(mode):
         assert_image_equal(reloaded, im)
 
 
-def test_incorrect_size():
+def test_incorrect_size() -> None:
     with Image.open(TEST_ICO_FILE) as im:
         with pytest.raises(ValueError):
             im.size = (1, 1)
 
 
-def test_save_256x256(tmp_path):
+def test_save_256x256(tmp_path: Path) -> None:
     """Issue #2264 https://github.com/python-pillow/Pillow/issues/2264"""
     # Arrange
     with Image.open("Tests/images/hopper_256x256.ico") as im:
@@ -180,7 +193,7 @@ def test_save_256x256(tmp_path):
         assert im_saved.size == (256, 256)
 
 
-def test_only_save_relevant_sizes(tmp_path):
+def test_only_save_relevant_sizes(tmp_path: Path) -> None:
     """Issue #2266 https://github.com/python-pillow/Pillow/issues/2266
     Should save in 16x16, 24x24, 32x32, 48x48 sizes
     and not in 16x16, 24x24, 32x32, 48x48, 48x48, 48x48, 48x48 sizes
@@ -196,7 +209,7 @@ def test_only_save_relevant_sizes(tmp_path):
         assert im_saved.info["sizes"] == {(16, 16), (24, 24), (32, 32), (48, 48)}
 
 
-def test_save_append_images(tmp_path):
+def test_save_append_images(tmp_path: Path) -> None:
     # append_images should be used for scaled down versions of the image
     im = hopper("RGBA")
     provided_im = Image.new("RGBA", (32, 32), (255, 0, 0))
@@ -210,7 +223,7 @@ def test_save_append_images(tmp_path):
         assert_image_equal(reread, provided_im)
 
 
-def test_unexpected_size():
+def test_unexpected_size() -> None:
     # This image has been manually hexedited to state that it is 16x32
     # while the image within is still 16x16
     with pytest.warns(UserWarning):
@@ -218,7 +231,7 @@ def test_unexpected_size():
             assert im.size == (16, 16)
 
 
-def test_draw_reloaded(tmp_path):
+def test_draw_reloaded(tmp_path: Path) -> None:
     with Image.open(TEST_ICO_FILE) as im:
         outfile = str(tmp_path / "temp_saved_hopper_draw.ico")
 

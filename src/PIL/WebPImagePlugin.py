@@ -23,7 +23,7 @@ _VP8_MODES_BY_IDENTIFIER = {
 }
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool | str:
     is_riff_file_format = prefix[:4] == b"RIFF"
     is_webp_file = prefix[8:12] == b"WEBP"
     is_valid_vp8_mode = prefix[12:16] in _VP8_MODES_BY_IDENTIFIER
@@ -34,6 +34,7 @@ def _accept(prefix):
                 "image file could not be identified because WEBP support not installed"
             )
         return True
+    return False
 
 
 class WebPImageFile(ImageFile.ImageFile):
@@ -42,7 +43,7 @@ class WebPImageFile(ImageFile.ImageFile):
     __loaded = 0
     __logical_frame = 0
 
-    def _open(self):
+    def _open(self) -> None:
         if not _webp.HAVE_WEBPANIM:
             # Legacy mode
             data, width, height, self._mode, icc_profile, exif = _webp.WebPDecode(
@@ -108,7 +109,7 @@ class WebPImageFile(ImageFile.ImageFile):
         """
         return self._getxmp(self.info["xmp"]) if "xmp" in self.info else {}
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
@@ -143,7 +144,7 @@ class WebPImageFile(ImageFile.ImageFile):
         timestamp -= duration
         return data, timestamp, duration
 
-    def _seek(self, frame):
+    def _seek(self, frame: int) -> None:
         if self.__physical_frame == frame:
             return  # Nothing to do
         if frame < self.__physical_frame:
@@ -170,10 +171,10 @@ class WebPImageFile(ImageFile.ImageFile):
 
         return super().load()
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
-    def tell(self):
+    def tell(self) -> int:
         if not _webp.HAVE_WEBPANIM:
             return super().tell()
 
@@ -217,6 +218,7 @@ def _save_all(im, fp, filename):
     verbose = False
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
+    alpha_quality = im.encoderinfo.get("alpha_quality", 100)
     method = im.encoderinfo.get("method", 0)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", "")
@@ -296,6 +298,7 @@ def _save_all(im, fp, filename):
                     rawmode,
                     lossless,
                     quality,
+                    alpha_quality,
                     method,
                 )
 
@@ -310,7 +313,7 @@ def _save_all(im, fp, filename):
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, 0)
+    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, alpha_quality, 0)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
@@ -324,6 +327,7 @@ def _save_all(im, fp, filename):
 def _save(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
+    alpha_quality = im.encoderinfo.get("alpha_quality", 100)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", b"")
     if isinstance(exif, Image.Exif):
@@ -343,6 +347,7 @@ def _save(im, fp, filename):
         im.size[1],
         lossless,
         float(quality),
+        float(alpha_quality),
         im.mode,
         icc_profile,
         method,

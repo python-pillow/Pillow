@@ -44,6 +44,77 @@ ImageFile.raise_oserror
 error codes returned by a codec's ``decode()`` method, which ImageFile already does
 automatically.
 
+IptcImageFile helper functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.2.0
+
+The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
+``IptcImageFile.PAD`` have been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). These are undocumented helper functions intended
+for internal use, so there is no replacement. They can each be replaced
+by a single line of code using builtin functions in Python.
+
+ImageCms constants and versions() function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.3.0
+
+A number of constants and a function in :py:mod:`.ImageCms` have been deprecated.
+This includes a table of flags based on LittleCMS version 1 which has been
+replaced with a new class :py:class:`.ImageCms.Flags` based on LittleCMS 2 flags.
+
+============================================  ====================================================
+Deprecated                                    Use instead
+============================================  ====================================================
+``ImageCms.DESCRIPTION``                      No replacement
+``ImageCms.VERSION``                          ``PIL.__version__``
+``ImageCms.FLAGS["MATRIXINPUT"]``             :py:attr:`.ImageCms.Flags.CLUT_POST_LINEARIZATION`
+``ImageCms.FLAGS["MATRIXOUTPUT"]``            :py:attr:`.ImageCms.Flags.FORCE_CLUT`
+``ImageCms.FLAGS["MATRIXONLY"]``              No replacement
+``ImageCms.FLAGS["NOWHITEONWHITEFIXUP"]``     :py:attr:`.ImageCms.Flags.NOWHITEONWHITEFIXUP`
+``ImageCms.FLAGS["NOPRELINEARIZATION"]``      :py:attr:`.ImageCms.Flags.CLUT_PRE_LINEARIZATION`
+``ImageCms.FLAGS["GUESSDEVICECLASS"]``        :py:attr:`.ImageCms.Flags.GUESSDEVICECLASS`
+``ImageCms.FLAGS["NOTCACHE"]``                :py:attr:`.ImageCms.Flags.NOCACHE`
+``ImageCms.FLAGS["NOTPRECALC"]``              :py:attr:`.ImageCms.Flags.NOOPTIMIZE`
+``ImageCms.FLAGS["NULLTRANSFORM"]``           :py:attr:`.ImageCms.Flags.NULLTRANSFORM`
+``ImageCms.FLAGS["HIGHRESPRECALC"]``          :py:attr:`.ImageCms.Flags.HIGHRESPRECALC`
+``ImageCms.FLAGS["LOWRESPRECALC"]``           :py:attr:`.ImageCms.Flags.LOWRESPRECALC`
+``ImageCms.FLAGS["GAMUTCHECK"]``              :py:attr:`.ImageCms.Flags.GAMUTCHECK`
+``ImageCms.FLAGS["WHITEBLACKCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["BLACKPOINTCOMPENSATION"]``  :py:attr:`.ImageCms.Flags.BLACKPOINTCOMPENSATION`
+``ImageCms.FLAGS["SOFTPROOFING"]``            :py:attr:`.ImageCms.Flags.SOFTPROOFING`
+``ImageCms.FLAGS["PRESERVEBLACK"]``           :py:attr:`.ImageCms.Flags.NONEGATIVES`
+``ImageCms.FLAGS["NODEFAULTRESOURCEDEF"]``    :py:attr:`.ImageCms.Flags.NODEFAULTRESOURCEDEF`
+``ImageCms.FLAGS["GRIDPOINTS"]``              :py:attr:`.ImageCms.Flags.GRIDPOINTS()`
+``ImageCms.versions()``                       :py:func:`PIL.features.version_module` with
+                                              ``feature="littlecms2"``, :py:data:`sys.version` or
+                                              :py:data:`sys.version_info`, and ``PIL.__version__``
+============================================  ====================================================
+
+ImageMath eval()
+^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.3.0
+
+``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
+:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
+
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
+
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+Support for LibTIFF earlier than version 4 has been deprecated.
+Upgrade to a newer version of LibTIFF instead.
+
 Removed features
 ----------------
 
@@ -107,7 +178,7 @@ Constants
 .. versionremoved:: 10.0.0
 
 A number of constants have been removed.
-Instead, ``enum.IntEnum`` classes have been added.
+Instead, :py:class:`enum.IntEnum` classes have been added.
 
 .. note::
 
@@ -184,10 +255,10 @@ Previous code::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width, height = draw.textsize("Hello world")
+    width, height = draw.textsize("Hello world", font)
 
     width, height = font.getsize_multiline("Hello\nworld")
-    width, height = draw.multiline_textsize("Hello\nworld")
+    width, height = draw.multiline_textsize("Hello\nworld", font)
 
 Use instead::
 
@@ -199,10 +270,42 @@ Use instead::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width = draw.textlength("Hello world")
+    width = draw.textlength("Hello world", font)
 
-    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
+    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld", font)
     width, height = right - left, bottom - top
+
+Previously, the ``size`` methods returned a ``height`` that included the vertical
+offset of the text, while the new ``bbox`` methods distinguish this as a ``top``
+offset.
+
+.. image:: ./example/size_vs_bbox.png
+    :alt: In bbox methods, top measures the vertical distance above the text, while bottom measures that plus the vertical distance of the text itself. In size methods, height also measures the vertical distance above the text plus the vertical distance of the text itself.
+    :align: center
+
+If you are using these methods for aligning text, consider using :ref:`text-anchors` instead
+which avoid issues that can occur with non-English text or unusual fonts.
+For example, instead of the following code::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width, height = draw.textsize("Hello world", font)
+    x, y = (100 - width) / 2, (100 - height) / 2
+    draw.text((x, y), "Hello world", font=font)
+
+Use instead::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    draw.text((100 / 2, 100 / 2), "Hello world", font=font, anchor="mm")
 
 FreeTypeFont.getmask2 fill parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -327,8 +430,8 @@ ImageCms.CmsProfile attributes
 .. deprecated:: 3.2.0
 .. versionremoved:: 8.0.0
 
-Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed. From 6.0.0,
-they issued a :py:exc:`DeprecationWarning`:
+Some attributes in :py:class:`PIL.ImageCms.core.CmsProfile` have been removed.
+From 6.0.0, they issued a :py:exc:`DeprecationWarning`:
 
 ========================  ===================================================
 Removed                   Use instead
@@ -456,3 +559,27 @@ PIL.OleFileIO
 the upstream :pypi:`olefile` Python package, and replaced with an :py:exc:`ImportError` in 5.0.0
 (2018-01). The deprecated file has now been removed from Pillow. If needed, install from
 PyPI (eg. ``python3 -m pip install olefile``).
+
+import _imaging
+~~~~~~~~~~~~~~~
+
+.. versionremoved:: 2.1.0
+
+Pillow >= 2.1.0 no longer supports ``import _imaging``.
+Please use ``from PIL.Image import core as _imaging`` instead.
+
+Pillow and PIL
+~~~~~~~~~~~~~~
+
+.. versionremoved:: 1.0.0
+
+Pillow and PIL cannot co-exist in the same environment.
+Before installing Pillow, please uninstall PIL.
+
+import Image
+~~~~~~~~~~~~
+
+.. versionremoved:: 1.0.0
+
+Pillow >= 1.0 no longer supports ``import Image``.
+Please use ``from PIL import Image`` instead.

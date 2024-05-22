@@ -14,6 +14,8 @@ expected to be backported to earlier versions.
 .. toctree::
   :maxdepth: 2
 
+  10.4.0
+  10.3.0
   10.2.0
   10.1.0
   10.0.1
@@ -68,4 +70,8 @@ expected to be backported to earlier versions.
   3.0.0
   2.8.0
   2.7.0
+  2.6.0
+  2.5.2
+  2.3.2
+  2.3.1
   versioning

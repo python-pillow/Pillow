@@ -19,19 +19,26 @@ from __future__ import annotations
 
 import sys
 from io import BytesIO
+from typing import Callable
 
 from . import Image
 from ._util import is_path
 
+qt_version: str | None
 qt_versions = [
     ["6", "PyQt6"],
     ["side6", "PySide6"],
 ]
 
 # If a version has already been imported, attempt it first
-qt_versions.sort(key=lambda qt_version: qt_version[1] in sys.modules, reverse=True)
-for qt_version, qt_module in qt_versions:
+qt_versions.sort(key=lambda version: version[1] in sys.modules, reverse=True)
+for version, qt_module in qt_versions:
     try:
+        QBuffer: type
+        QIODevice: type
+        QImage: type
+        QPixmap: type
+        qRgba: Callable[[int, int, int, int], int]
         if qt_module == "PyQt6":
             from PyQt6.QtCore import QBuffer, QIODevice
             from PyQt6.QtGui import QImage, QPixmap, qRgba
@@ -41,6 +48,7 @@ for qt_version, qt_module in qt_versions:
     except (ImportError, RuntimeError):
         continue
     qt_is_installed = True
+    qt_version = version
     break
 else:
     qt_is_installed = False

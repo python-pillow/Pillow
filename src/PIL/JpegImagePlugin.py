@@ -87,10 +87,12 @@ def APP(self, marker):
                 self.info["dpi"] = jfif_density
             self.info["jfif_unit"] = jfif_unit
             self.info["jfif_density"] = jfif_density
-    elif marker == 0xFFE1 and s[:5] == b"Exif\0":
-        if "exif" not in self.info:
-            # extract EXIF information (incomplete)
-            self.info["exif"] = s  # FIXME: value will change
+    elif marker == 0xFFE1 and s[:6] == b"Exif\0\0":
+        # extract EXIF information
+        if "exif" in self.info:
+            self.info["exif"] += s[6:]
+        else:
+            self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
@@ -342,7 +344,7 @@ MARKER = {
 }
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
     return prefix[:3] == b"\xFF\xD8\xFF"
 
@@ -406,7 +408,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 msg = "no marker found"
                 raise SyntaxError(msg)
 
-    def load_read(self, read_bytes):
+    def load_read(self, read_bytes: int) -> bytes:
         """
         internal: read more image data
         For premature EOF and LOAD_TRUNCATED_IMAGES adds EOI marker
@@ -422,13 +424,15 @@ class JpegImageFile(ImageFile.ImageFile):
 
         return s
 
-    def draft(self, mode, size):
+    def draft(
+        self, mode: str, size: tuple[int, int]
+    ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
-            return
+            return None
 
         # Protect from second call
         if self.decoderconfig:
-            return
+            return None
 
         d, e, o, a = self.tile[0]
         scale = 1
@@ -458,7 +462,7 @@ class JpegImageFile(ImageFile.ImageFile):
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
         return self.mode, box
 
-    def load_djpeg(self):
+    def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
         f, path = tempfile.mkstemp()
@@ -783,6 +787,7 @@ def _save(im, fp, filename):
         progressive,
         info.get("smooth", 0),
         optimize,
+        info.get("keep_rgb", False),
         info.get("streamtype", 0),
         dpi[0],
         dpi[1],

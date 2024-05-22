@@ -28,6 +28,7 @@ BLP files come in many different flavours:
   - DXT3 compression is used if alpha_encoding == 1.
   - DXT5 compression is used if alpha_encoding == 7.
 """
+
 from __future__ import annotations
 
 import os
@@ -240,7 +241,7 @@ class BLPFormatError(NotImplementedError):
     pass
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] in (b"BLP1", b"BLP2")
 
 
@@ -252,7 +253,7 @@ class BlpImageFile(ImageFile.ImageFile):
     format = "BLP"
     format_description = "Blizzard Mipmap Format"
 
-    def _open(self):
+    def _open(self) -> None:
         self.magic = self.fp.read(4)
 
         self.fp.seek(5, os.SEEK_CUR)
@@ -332,7 +333,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
 
 
 class BLP1Decoder(_BLPBaseDecoder):
-    def _load(self):
+    def _load(self) -> None:
         if self._blp_compression == Format.JPEG:
             self._decode_jpeg_stream()
 
@@ -340,7 +341,7 @@ class BLP1Decoder(_BLPBaseDecoder):
             if self._blp_encoding in (4, 5):
                 palette = self._read_palette()
                 data = self._read_bgra(palette)
-                self.set_as_raw(bytes(data))
+                self.set_as_raw(data)
             else:
                 msg = f"Unsupported BLP encoding {repr(self._blp_encoding)}"
                 raise BLPFormatError(msg)
@@ -411,13 +412,13 @@ class BLP2Decoder(_BLPBaseDecoder):
             msg = f"Unknown BLP compression {repr(self._blp_compression)}"
             raise BLPFormatError(msg)
 
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
 
 
 class BLPEncoder(ImageFile.PyEncoder):
     _pushes_fd = True
 
-    def _write_palette(self):
+    def _write_palette(self) -> bytes:
         data = b""
         palette = self.im.getpalette("RGBA", "RGBA")
         for i in range(len(palette) // 4):

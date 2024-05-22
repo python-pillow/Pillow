@@ -11,9 +11,9 @@ or the clipboard to a PIL image memory.
 
 .. py:function:: grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None)
 
-    Take a snapshot of the screen. The pixels inside the bounding box are
-    returned as an "RGBA" on macOS, or an "RGB" image otherwise.
-    If the bounding box is omitted, the entire screen is copied.
+    Take a snapshot of the screen. The pixels inside the bounding box are returned as
+    an "RGBA" on macOS, or an "RGB" image otherwise. If the bounding box is omitted,
+    the entire screen is copied, and on macOS, it will be at 2x if on a Retina screen.
 
     On Linux, if ``xdisplay`` is ``None`` and the default X11 display does not return
     a snapshot of the screen, ``gnome-screenshot`` will be used as fallback if it is
@@ -22,7 +22,10 @@ or the clipboard to a PIL image memory.
     .. versionadded:: 1.1.3 (Windows), 3.0.0 (macOS), 7.1.0 (Linux)
 
     :param bbox: What region to copy. Default is the entire screen.
-                 Note that on Windows OS, the top-left point may be negative if ``all_screens=True`` is used.
+                 On macOS, this is not increased to 2x for Retina screens, so the full
+                 width of a Retina screen would be 1440, not 2880.
+                 On Windows, the top-left point may be negative if ``all_screens=True``
+                 is used.
     :param include_layered_windows: Includes layered windows. Windows OS only.
 
         .. versionadded:: 6.1.0

@@ -1,13 +1,17 @@
 from __future__ import annotations
+
 import datetime
 import os
 import re
 import shutil
+import sys
 from io import BytesIO
+from pathlib import Path
+from typing import Any
 
 import pytest
 
-from PIL import Image, ImageMode, features
+from PIL import Image, ImageMode, ImageWin, features
 
 from .helper import (
     assert_image,
@@ -15,6 +19,7 @@ from .helper import (
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    is_pypy,
 )
 
 try:
@@ -31,7 +36,7 @@ SRGB = "Tests/icc/sRGB_IEC61966-2-1_black_scaled.icc"
 HAVE_PROFILE = os.path.exists(SRGB)
 
 
-def setup_module():
+def setup_module() -> None:
     try:
         from PIL import ImageCms
 
@@ -41,16 +46,16 @@ def setup_module():
         pytest.skip(str(v))
 
 
-def skip_missing():
+def skip_missing() -> None:
     if not HAVE_PROFILE:
         pytest.skip("SRGB profile not available")
 
 
-def test_sanity():
+def test_sanity() -> None:
     # basic smoke test.
     # this mostly follows the cms_test outline.
-
-    v = ImageCms.versions()  # should return four strings
+    with pytest.warns(DeprecationWarning):
+        v = ImageCms.versions()  # should return four strings
     assert v[0] == "1.0.0 pil"
     assert list(map(type, v)) == [str, str, str, str]
 
@@ -90,7 +95,17 @@ def test_sanity():
     hopper().point(t)
 
 
-def test_name():
+def test_flags() -> None:
+    assert ImageCms.Flags.NONE == 0
+    assert ImageCms.Flags.GRIDPOINTS(0) == ImageCms.Flags.NONE
+    assert ImageCms.Flags.GRIDPOINTS(256) == ImageCms.Flags.NONE
+
+    assert ImageCms.Flags.GRIDPOINTS(255) == (255 << 16)
+    assert ImageCms.Flags.GRIDPOINTS(-1) == ImageCms.Flags.GRIDPOINTS(255)
+    assert ImageCms.Flags.GRIDPOINTS(511) == ImageCms.Flags.GRIDPOINTS(255)
+
+
+def test_name() -> None:
     skip_missing()
     # get profile information for file
     assert (
@@ -99,7 +114,7 @@ def test_name():
     )
 
 
-def test_info():
+def test_info() -> None:
     skip_missing()
     assert ImageCms.getProfileInfo(SRGB).splitlines() == [
         "sRGB IEC61966-2-1 black scaled",
@@ -109,7 +124,7 @@ def test_info():
     ]
 
 
-def test_copyright():
+def test_copyright() -> None:
     skip_missing()
     assert (
         ImageCms.getProfileCopyright(SRGB).strip()
@@ -117,12 +132,12 @@ def test_copyright():
     )
 
 
-def test_manufacturer():
+def test_manufacturer() -> None:
     skip_missing()
     assert ImageCms.getProfileManufacturer(SRGB).strip() == ""
 
 
-def test_model():
+def test_model() -> None:
     skip_missing()
     assert (
         ImageCms.getProfileModel(SRGB).strip()
@@ -130,14 +145,14 @@ def test_model():
     )
 
 
-def test_description():
+def test_description() -> None:
     skip_missing()
     assert (
         ImageCms.getProfileDescription(SRGB).strip() == "sRGB IEC61966-2-1 black scaled"
     )
 
 
-def test_intent():
+def test_intent() -> None:
     skip_missing()
     assert ImageCms.getDefaultIntent(SRGB) == 0
     support = ImageCms.isIntentSupported(
@@ -146,7 +161,7 @@ def test_intent():
     assert support == 1
 
 
-def test_profile_object():
+def test_profile_object() -> None:
     # same, using profile object
     p = ImageCms.createProfile("sRGB")
     # assert ImageCms.getProfileName(p).strip() == "sRGB built-in - (lcms internal)"
@@ -159,7 +174,7 @@ def test_profile_object():
     assert support == 1
 
 
-def test_extensions():
+def test_extensions() -> None:
     # extensions
 
     with Image.open("Tests/images/rgb.jpg") as i:
@@ -170,7 +185,7 @@ def test_extensions():
     )
 
 
-def test_exceptions():
+def test_exceptions() -> None:
     # Test mode mismatch
     psRGB = ImageCms.createProfile("sRGB")
     pLab = ImageCms.createProfile("LAB")
@@ -196,17 +211,21 @@ def test_exceptions():
         ImageCms.isIntentSupported(SRGB, None, None)
 
 
-def test_display_profile():
+def test_display_profile() -> None:
     # try fetching the profile for the current display device
     ImageCms.get_display_profile()
 
+    if sys.platform == "win32":
+        ImageCms.get_display_profile(ImageWin.HDC(0))
+        ImageCms.get_display_profile(ImageWin.HWND(0))
 
-def test_lab_color_profile():
+
+def test_lab_color_profile() -> None:
     ImageCms.createProfile("LAB", 5000)
     ImageCms.createProfile("LAB", 6500)
 
 
-def test_unsupported_color_space():
+def test_unsupported_color_space() -> None:
     with pytest.raises(
         ImageCms.PyCMSError,
         match=re.escape(
@@ -216,7 +235,7 @@ def test_unsupported_color_space():
         ImageCms.createProfile("unsupported")
 
 
-def test_invalid_color_temperature():
+def test_invalid_color_temperature() -> None:
     with pytest.raises(
         ImageCms.PyCMSError,
         match='Color temperature must be numeric, "invalid" not valid',
@@ -225,7 +244,7 @@ def test_invalid_color_temperature():
 
 
 @pytest.mark.parametrize("flag", ("my string", -1))
-def test_invalid_flag(flag):
+def test_invalid_flag(flag: str | int) -> None:
     with hopper() as im:
         with pytest.raises(
             ImageCms.PyCMSError, match="flags must be an integer between 0 and "
@@ -233,7 +252,7 @@ def test_invalid_flag(flag):
             ImageCms.profileToProfile(im, "foo", "bar", flags=flag)
 
 
-def test_simple_lab():
+def test_simple_lab() -> None:
     i = Image.new("RGB", (10, 10), (128, 128, 128))
 
     psRGB = ImageCms.createProfile("sRGB")
@@ -257,7 +276,7 @@ def test_simple_lab():
     assert list(b_data) == [128] * 100
 
 
-def test_lab_color():
+def test_lab_color() -> None:
     psRGB = ImageCms.createProfile("sRGB")
     pLab = ImageCms.createProfile("LAB")
     t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
@@ -272,7 +291,7 @@ def test_lab_color():
     assert_image_similar_tofile(i, "Tests/images/hopper.Lab.tif", 3.5)
 
 
-def test_lab_srgb():
+def test_lab_srgb() -> None:
     psRGB = ImageCms.createProfile("sRGB")
     pLab = ImageCms.createProfile("LAB")
     t = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
@@ -289,7 +308,7 @@ def test_lab_srgb():
     assert "sRGB" in ImageCms.getProfileDescription(profile)
 
 
-def test_lab_roundtrip():
+def test_lab_roundtrip() -> None:
     # check to see if we're at least internally consistent.
     psRGB = ImageCms.createProfile("sRGB")
     pLab = ImageCms.createProfile("LAB")
@@ -306,7 +325,7 @@ def test_lab_roundtrip():
     assert_image_similar(hopper(), out, 2)
 
 
-def test_profile_tobytes():
+def test_profile_tobytes() -> None:
     with Image.open("Tests/images/rgb.jpg") as i:
         p = ImageCms.getOpenProfile(BytesIO(i.info["icc_profile"]))
 
@@ -318,22 +337,26 @@ def test_profile_tobytes():
     assert ImageCms.getProfileDescription(p) == ImageCms.getProfileDescription(p2)
 
 
-def test_extended_information():
+def test_extended_information() -> None:
     skip_missing()
     o = ImageCms.getOpenProfile(SRGB)
     p = o.profile
 
-    def assert_truncated_tuple_equal(tup1, tup2, digits=10):
+    def assert_truncated_tuple_equal(
+        tup1: tuple[Any, ...], tup2: tuple[Any, ...], digits: int = 10
+    ) -> None:
         # Helper function to reduce precision of tuples of floats
         # recursively and then check equality.
         power = 10**digits
 
-        def truncate_tuple(tuple_or_float):
+        def truncate_tuple(tuple_value: tuple[Any, ...]) -> tuple[Any, ...]:
             return tuple(
-                truncate_tuple(val)
-                if isinstance(val, tuple)
-                else int(val * power) / power
-                for val in tuple_or_float
+                (
+                    truncate_tuple(val)
+                    if isinstance(val, tuple)
+                    else int(val * power) / power
+                )
+                for val in tuple_value
             )
 
         assert truncate_tuple(tup1) == truncate_tuple(tup2)
@@ -465,7 +488,7 @@ def test_extended_information():
     assert p.xcolor_space == "RGB "
 
 
-def test_non_ascii_path(tmp_path):
+def test_non_ascii_path(tmp_path: Path) -> None:
     skip_missing()
     tempfile = str(tmp_path / ("temp_" + chr(128) + ".icc"))
     try:
@@ -478,20 +501,40 @@ def test_non_ascii_path(tmp_path):
     assert p.model == "IEC 61966-2-1 Default RGB Colour Space - sRGB"
 
 
-def test_profile_typesafety():
-    """Profile init type safety
-
-    prepatch, these would segfault, postpatch they should emit a typeerror
-    """
-
+def test_profile_typesafety() -> None:
+    # does not segfault
     with pytest.raises(TypeError, match="Invalid type for Profile"):
         ImageCms.ImageCmsProfile(0).tobytes()
     with pytest.raises(TypeError, match="Invalid type for Profile"):
         ImageCms.ImageCmsProfile(1).tobytes()
 
+    # also check core function
+    with pytest.raises(TypeError):
+        ImageCms.core.profile_tobytes(0)
+    with pytest.raises(TypeError):
+        ImageCms.core.profile_tobytes(1)
 
-def assert_aux_channel_preserved(mode, transform_in_place, preserved_channel):
-    def create_test_image():
+    if not is_pypy():
+        # core profile should not be directly instantiable
+        with pytest.raises(TypeError):
+            ImageCms.core.CmsProfile()
+        with pytest.raises(TypeError):
+            ImageCms.core.CmsProfile(0)
+
+
+@pytest.mark.skipif(is_pypy(), reason="fails on PyPy")
+def test_transform_typesafety() -> None:
+    # core transform should not be directly instantiable
+    with pytest.raises(TypeError):
+        ImageCms.core.CmsTransform()
+    with pytest.raises(TypeError):
+        ImageCms.core.CmsTransform(0)
+
+
+def assert_aux_channel_preserved(
+    mode: str, transform_in_place: bool, preserved_channel: str
+) -> None:
+    def create_test_image() -> Image.Image:
         # set up test image with something interesting in the tested aux channel.
         # fmt: off
         nine_grid_deltas = [
@@ -545,31 +588,31 @@ def assert_aux_channel_preserved(mode, transform_in_place, preserved_channel):
     assert_image_equal(source_image_aux, result_image_aux)
 
 
-def test_preserve_auxiliary_channels_rgba():
+def test_preserve_auxiliary_channels_rgba() -> None:
     assert_aux_channel_preserved(
         mode="RGBA", transform_in_place=False, preserved_channel="A"
     )
 
 
-def test_preserve_auxiliary_channels_rgba_in_place():
+def test_preserve_auxiliary_channels_rgba_in_place() -> None:
     assert_aux_channel_preserved(
         mode="RGBA", transform_in_place=True, preserved_channel="A"
     )
 
 
-def test_preserve_auxiliary_channels_rgbx():
+def test_preserve_auxiliary_channels_rgbx() -> None:
     assert_aux_channel_preserved(
         mode="RGBX", transform_in_place=False, preserved_channel="X"
     )
 
 
-def test_preserve_auxiliary_channels_rgbx_in_place():
+def test_preserve_auxiliary_channels_rgbx_in_place() -> None:
     assert_aux_channel_preserved(
         mode="RGBX", transform_in_place=True, preserved_channel="X"
     )
 
 
-def test_auxiliary_channels_isolated():
+def test_auxiliary_channels_isolated() -> None:
     # test data in aux channels does not affect non-aux channels
     aux_channel_formats = [
         # format, profile, color-only format, source test image
@@ -618,8 +661,13 @@ def test_auxiliary_channels_isolated():
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 
+def test_long_modes() -> None:
+    p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
+    ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
+
+
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
-def test_rgb_lab(mode):
+def test_rgb_lab(mode: str) -> None:
     im = Image.new(mode, (1, 1))
     converted_im = im.convert("LAB")
     assert converted_im.getpixel((0, 0)) == (0, 128, 128)
@@ -627,3 +675,12 @@ def test_rgb_lab(mode):
     im = Image.new("LAB", (1, 1), (255, 0, 0))
     converted_im = im.convert(mode)
     assert converted_im.getpixel((0, 0))[:3] == (0, 255, 255)
+
+
+def test_deprecation() -> None:
+    with pytest.warns(DeprecationWarning):
+        assert ImageCms.DESCRIPTION.strip().startswith("pyCMS")
+    with pytest.warns(DeprecationWarning):
+        assert ImageCms.VERSION == "1.0.0 pil"
+    with pytest.warns(DeprecationWarning):
+        assert isinstance(ImageCms.FLAGS, dict)

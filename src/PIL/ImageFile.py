@@ -32,7 +32,7 @@ import io
 import itertools
 import struct
 import sys
-from typing import NamedTuple
+from typing import IO, Any, NamedTuple
 
 from . import Image
 from ._deprecate import deprecate
@@ -91,10 +91,10 @@ def _tilesort(t):
 
 
 class _Tile(NamedTuple):
-    encoder_name: str
+    codec_name: str
     extents: tuple[int, int, int, int]
     offset: int
-    args: tuple | str | None
+    args: tuple[Any, ...] | str | None
 
 
 #
@@ -163,7 +163,7 @@ class ImageFile(Image.Image):
         self.tile = []
         super().__setstate__(state)
 
-    def verify(self):
+    def verify(self) -> None:
         """Check file integrity"""
 
         # raise exception if something's wrong.  must be called
@@ -311,7 +311,7 @@ class ImageFile(Image.Image):
 
         return Image.Image.load(self)
 
-    def load_prepare(self):
+    def load_prepare(self) -> None:
         # create image memory if necessary
         if not self.im or self.im.mode != self.mode or self.im.size != self.size:
             self.im = Image.core.new(self.mode, self.size)
@@ -319,16 +319,16 @@ class ImageFile(Image.Image):
         if self.mode == "P":
             Image.Image.load(self)
 
-    def load_end(self):
+    def load_end(self) -> None:
         # may be overridden
         pass
 
     # may be defined for contained formats
-    # def load_seek(self, pos):
+    # def load_seek(self, pos: int) -> None:
     #     pass
 
     # may be defined for blocked formats (e.g. PNG)
-    # def load_read(self, bytes):
+    # def load_read(self, read_bytes: int) -> bytes:
     #     pass
 
     def _seek_check(self, frame):
@@ -384,13 +384,13 @@ class Parser:
     """
 
     incremental = None
-    image = None
+    image: Image.Image | None = None
     data = None
     decoder = None
     offset = 0
     finished = 0
 
-    def reset(self):
+    def reset(self) -> None:
         """
         (Consumer) Reset the parser.  Note that you can only call this
         method immediately after you've created a parser; parser
@@ -514,7 +514,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im, fp, tile, bufsize=0):
+def _save(im, fp, tile, bufsize=0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.
@@ -605,7 +605,7 @@ def _safe_read(fp, size):
 
 
 class PyCodecState:
-    def __init__(self):
+    def __init__(self) -> None:
         self.xsize = 0
         self.ysize = 0
         self.xoff = 0
@@ -616,6 +616,8 @@ class PyCodecState:
 
 
 class PyCodec:
+    fd: IO[bytes] | None
+
     def __init__(self, mode, *args):
         self.im = None
         self.state = PyCodecState()
@@ -632,7 +634,7 @@ class PyCodec:
         """
         self.args = args
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Override to perform codec specific cleanup
 
@@ -713,7 +715,7 @@ class PyDecoder(PyCodec):
         msg = "unavailable in base decoder"
         raise NotImplementedError(msg)
 
-    def set_as_raw(self, data, rawmode=None):
+    def set_as_raw(self, data: bytes, rawmode=None) -> None:
         """
         Convenience method to set the internal image from a stream of raw data
 

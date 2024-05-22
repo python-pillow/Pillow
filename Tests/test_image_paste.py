@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import pytest
 
 from PIL import Image
@@ -7,13 +8,11 @@ from .helper import CachedProperty, assert_image_equal
 
 
 class TestImagingPaste:
-    masks = {}
     size = 128
 
-    def assert_9points_image(self, im, expected):
-        expected = [
-            point[0] if im.mode == "L" else point[: len(im.mode)] for point in expected
-        ]
+    def assert_9points_image(
+        self, im: Image.Image, expected: list[tuple[int, int, int, int]]
+    ) -> None:
         px = im.load()
         actual = [
             px[0, 0],
@@ -26,9 +25,17 @@ class TestImagingPaste:
             px[self.size // 2, self.size - 1],
             px[self.size - 1, self.size - 1],
         ]
-        assert actual == expected
+        assert actual == [
+            point[0] if im.mode == "L" else point[: len(im.mode)] for point in expected
+        ]
 
-    def assert_9points_paste(self, im, im2, mask, expected):
+    def assert_9points_paste(
+        self,
+        im: Image.Image,
+        im2: Image.Image | str | tuple[int, ...],
+        mask: Image.Image,
+        expected: list[tuple[int, int, int, int]],
+    ) -> None:
         im3 = im.copy()
         im3.paste(im2, (0, 0), mask)
         self.assert_9points_image(im3, expected)
@@ -38,7 +45,7 @@ class TestImagingPaste:
         self.assert_9points_image(im, expected)
 
     @CachedProperty
-    def mask_1(self):
+    def mask_1(self) -> Image.Image:
         mask = Image.new("1", (self.size, self.size))
         px = mask.load()
         for y in range(mask.height):
@@ -47,11 +54,11 @@ class TestImagingPaste:
         return mask
 
     @CachedProperty
-    def mask_L(self):
+    def mask_L(self) -> Image.Image:
         return self.gradient_L.transpose(Image.Transpose.ROTATE_270)
 
     @CachedProperty
-    def gradient_L(self):
+    def gradient_L(self) -> Image.Image:
         gradient = Image.new("L", (self.size, self.size))
         px = gradient.load()
         for y in range(gradient.height):
@@ -60,7 +67,7 @@ class TestImagingPaste:
         return gradient
 
     @CachedProperty
-    def gradient_RGB(self):
+    def gradient_RGB(self) -> Image.Image:
         return Image.merge(
             "RGB",
             [
@@ -71,7 +78,7 @@ class TestImagingPaste:
         )
 
     @CachedProperty
-    def gradient_LA(self):
+    def gradient_LA(self) -> Image.Image:
         return Image.merge(
             "LA",
             [
@@ -81,7 +88,7 @@ class TestImagingPaste:
         )
 
     @CachedProperty
-    def gradient_RGBA(self):
+    def gradient_RGBA(self) -> Image.Image:
         return Image.merge(
             "RGBA",
             [
@@ -93,7 +100,7 @@ class TestImagingPaste:
         )
 
     @CachedProperty
-    def gradient_RGBa(self):
+    def gradient_RGBa(self) -> Image.Image:
         return Image.merge(
             "RGBa",
             [
@@ -105,7 +112,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_image_solid(self, mode):
+    def test_image_solid(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "red")
         im2 = getattr(self, "gradient_" + mode)
 
@@ -115,7 +122,7 @@ class TestImagingPaste:
         assert_image_equal(im, im2)
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_image_mask_1(self, mode):
+    def test_image_mask_1(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "white")
         im2 = getattr(self, "gradient_" + mode)
 
@@ -137,7 +144,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_image_mask_L(self, mode):
+    def test_image_mask_L(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "white")
         im2 = getattr(self, "gradient_" + mode)
 
@@ -159,7 +166,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_image_mask_LA(self, mode):
+    def test_image_mask_LA(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "white")
         im2 = getattr(self, "gradient_" + mode)
 
@@ -181,7 +188,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_image_mask_RGBA(self, mode):
+    def test_image_mask_RGBA(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "white")
         im2 = getattr(self, "gradient_" + mode)
 
@@ -203,7 +210,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_image_mask_RGBa(self, mode):
+    def test_image_mask_RGBa(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "white")
         im2 = getattr(self, "gradient_" + mode)
 
@@ -225,7 +232,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_color_solid(self, mode):
+    def test_color_solid(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), "black")
 
         rect = (12, 23, 128 + 12, 128 + 23)
@@ -238,7 +245,7 @@ class TestImagingPaste:
             assert sum(head[:255]) == 0
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_color_mask_1(self, mode):
+    def test_color_mask_1(self, mode: str) -> None:
         im = Image.new(mode, (200, 200), (50, 60, 70, 80)[: len(mode)])
         color = (10, 20, 30, 40)[: len(mode)]
 
@@ -260,7 +267,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_color_mask_L(self, mode):
+    def test_color_mask_L(self, mode: str) -> None:
         im = getattr(self, "gradient_" + mode).copy()
         color = "white"
 
@@ -282,7 +289,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_color_mask_RGBA(self, mode):
+    def test_color_mask_RGBA(self, mode: str) -> None:
         im = getattr(self, "gradient_" + mode).copy()
         color = "white"
 
@@ -304,7 +311,7 @@ class TestImagingPaste:
         )
 
     @pytest.mark.parametrize("mode", ["RGBA", "RGB", "L"])
-    def test_color_mask_RGBa(self, mode):
+    def test_color_mask_RGBa(self, mode: str) -> None:
         im = getattr(self, "gradient_" + mode).copy()
         color = "white"
 
@@ -325,7 +332,7 @@ class TestImagingPaste:
             ],
         )
 
-    def test_different_sizes(self):
+    def test_different_sizes(self) -> None:
         im = Image.new("RGB", (100, 100))
         im2 = Image.new("RGB", (50, 50))
 

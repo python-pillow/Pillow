@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import array
+from typing import Sequence
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
 
@@ -34,11 +35,11 @@ class ImagePalette:
         Defaults to an empty palette.
     """
 
-    def __init__(self, mode="RGB", palette=None):
+    def __init__(self, mode: str = "RGB", palette: Sequence[int] | None = None) -> None:
         self.mode = mode
         self.rawmode = None  # if set, palette contains raw data
         self.palette = palette or bytearray()
-        self.dirty = None
+        self.dirty: int | None = None
 
     @property
     def palette(self):
@@ -65,7 +66,7 @@ class ImagePalette:
     def colors(self, colors):
         self._colors = colors
 
-    def copy(self):
+    def copy(self) -> ImagePalette:
         new = ImagePalette()
 
         new.mode = self.mode
@@ -76,7 +77,7 @@ class ImagePalette:
 
         return new
 
-    def getdata(self):
+    def getdata(self) -> tuple[str, bytes]:
         """
         Get palette contents in format suitable for the low-level
         ``im.putpalette`` primitive.
@@ -87,7 +88,7 @@ class ImagePalette:
             return self.rawmode, self.palette
         return self.mode, self.tobytes()
 
-    def tobytes(self):
+    def tobytes(self) -> bytes:
         """Convert palette to bytes.
 
         .. warning:: This method is experimental.
@@ -127,7 +128,7 @@ class ImagePalette:
                 raise ValueError(msg) from e
         return index
 
-    def getcolor(self, color, image=None):
+    def getcolor(self, color, image=None) -> int:
         """Given an rgb tuple, allocate palette entry.
 
         .. warning:: This method is experimental.
@@ -192,7 +193,7 @@ class ImagePalette:
 # Internal
 
 
-def raw(rawmode, data):
+def raw(rawmode, data) -> ImagePalette:
     palette = ImagePalette()
     palette.rawmode = rawmode
     palette.palette = data

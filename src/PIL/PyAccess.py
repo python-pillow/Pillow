@@ -25,6 +25,7 @@ import sys
 
 from ._deprecate import deprecate
 
+FFI: type
 try:
     from cffi import FFI
 
@@ -43,7 +44,7 @@ except ImportError as ex:
     # anything in core.
     from ._util import DeferredError
 
-    FFI = ffi = DeferredError(ex)
+    FFI = ffi = DeferredError.new(ex)
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class PyAccess:
         # logger.debug("%s", vals)
         self._post_init()
 
-    def _post_init(self):
+    def _post_init(self) -> None:
         pass
 
     def __setitem__(self, xy, color):

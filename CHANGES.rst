@@ -2,8 +2,212 @@
 Changelog (Pillow)
 ==================
 
-10.2.0 (unreleased)
+10.4.0 (unreleased)
 -------------------
+
+- Deprecate BGR;15, BGR;16 and BGR;24 modes #7978
+  [radarhere, hugovk]
+
+- Fix ImagingAccess for I;16N on big-endian #7921
+  [Yay295, radarhere]
+
+- Support reading P mode TIFF images with padding #7996
+  [radarhere]
+
+- Deprecate support for libtiff < 4 #7998
+  [radarhere, hugovk]
+
+- Corrected ImageShow UnixViewer command #7987
+  [radarhere]
+
+- Use functools.cached_property in ImageStat #7952
+  [nulano, hugovk, radarhere]
+
+- Add support for reading BITMAPV2INFOHEADER and BITMAPV3INFOHEADER #7956
+  [Cirras, radarhere]
+
+- Support reading CMYK JPEG2000 images #7947
+  [radarhere]
+
+10.3.0 (2024-04-01)
+-------------------
+
+- CVE-2024-28219: Use ``strncpy`` to avoid buffer overflow #7928
+  [radarhere, hugovk]
+
+- Deprecate ``eval()``, replacing it with ``lambda_eval()`` and ``unsafe_eval()`` #7927
+  [radarhere, hugovk]
+
+- Raise ``ValueError`` if seeking to greater than offset-sized integer in TIFF #7883
+  [radarhere]
+
+- Add ``--report`` argument to ``__main__.py`` to omit supported formats #7818
+  [nulano, radarhere, hugovk]
+
+- Added RGB to I;16, I;16L, I;16B and I;16N conversion #7918, #7920
+  [radarhere]
+
+- Fix editable installation with custom build backend and configuration options #7658
+  [nulano, radarhere]
+
+- Fix putdata() for I;16N on big-endian #7209
+  [Yay295, hugovk, radarhere]
+
+- Determine MPO size from markers, not EXIF data #7884
+  [radarhere]
+
+- Improved conversion from RGB to RGBa, LA and La #7888
+  [radarhere]
+
+- Support FITS images with GZIP_1 compression #7894
+  [radarhere]
+
+- Use I;16 mode for 9-bit JPEG 2000 images #7900
+  [scaramallion, radarhere]
+
+- Raise ValueError if kmeans is negative #7891
+  [radarhere]
+
+- Remove TIFF tag OSUBFILETYPE when saving using libtiff #7893
+  [radarhere]
+
+- Raise ValueError for negative values when loading P1-P3 PPM images #7882
+  [radarhere]
+
+- Added reading of JPEG2000 palettes #7870
+  [radarhere]
+
+- Added alpha_quality argument when saving WebP images #7872
+  [radarhere]
+
+- Fixed joined corners for ImageDraw rounded_rectangle() non-integer dimensions #7881
+  [radarhere]
+
+- Stop reading EPS image at EOF marker #7753
+  [radarhere]
+
+- PSD layer co-ordinates may be negative #7706
+  [radarhere]
+
+- Use subprocess with CREATE_NO_WINDOW flag in ImageShow WindowsViewer #7791
+  [radarhere]
+
+- When saving GIF frame that restores to background color, do not fill identical pixels #7788
+  [radarhere]
+
+- Fixed reading PNG iCCP compression method #7823
+  [radarhere]
+
+- Allow writing IFDRational to UNDEFINED tag #7840
+  [radarhere]
+
+- Fix logged tag name when loading Exif data #7842
+  [radarhere]
+
+- Use maximum frame size in IHDR chunk when saving APNG images #7821
+  [radarhere]
+
+- Prevent opening P TGA images without a palette #7797
+  [radarhere]
+
+- Use palette when loading ICO images #7798
+  [radarhere]
+
+- Use consistent arguments for load_read and load_seek #7713
+  [radarhere]
+
+- Turn off nullability warnings for macOS SDK #7827
+  [radarhere]
+
+- Fix shift-sign issue in Convert.c #7838
+  [r-barnes, radarhere]
+
+- Open 16-bit grayscale PNGs as I;16 #7849
+  [radarhere]
+
+- Handle truncated chunks at the end of PNG images #7709
+  [lajiyuan, radarhere]
+
+- Match mask size to pasted image size in GifImagePlugin #7779
+  [radarhere]
+
+- Release GIL while calling ``WebPAnimDecoderGetNext`` #7782
+  [evanmiller, radarhere]
+
+- Fixed reading FLI/FLC images with a prefix chunk #7804
+  [twolife]
+
+- Update wl-paste handling and return None for some errors in grabclipboard() on Linux #7745
+  [nik012003, radarhere]
+
+- Remove execute bit from ``setup.py`` #7760
+  [hugovk]
+
+- Do not support using test-image-results to upload images after test failures #7739
+  [radarhere]
+
+- Changed ImageMath.ops to be static #7721
+  [radarhere]
+
+- Fix APNG info after seeking backwards more than twice #7701
+  [esoma, radarhere]
+
+- Deprecate ImageCms constants and versions() function #7702
+  [nulano, radarhere]
+
+- Added PerspectiveTransform #7699
+  [radarhere]
+
+- Add support for reading and writing grayscale PFM images #7696
+  [nulano, hugovk]
+
+- Add LCMS2 flags to ImageCms #7676
+  [nulano, radarhere, hugovk]
+
+- Rename x64 to AMD64 in winbuild #7693
+  [nulano]
+
+10.2.0 (2024-01-02)
+-------------------
+
+- Add ``keep_rgb`` option when saving JPEG to prevent conversion of RGB colorspace #7553
+  [bgilbert, radarhere]
+
+- Trim glyph size in ImageFont.getmask() #7669, #7672
+  [radarhere, nulano]
+
+- Deprecate IptcImagePlugin helpers #7664
+  [nulano, hugovk, radarhere]
+
+- Allow uncompressed TIFF images to be saved in chunks #7650
+  [radarhere]
+
+- Concatenate multiple JPEG EXIF markers #7496
+  [radarhere]
+
+- Changed IPTC tile tuple to match other plugins #7661
+  [radarhere]
+
+- Do not assign new fp attribute when exiting context manager #7566
+  [radarhere]
+
+- Support arbitrary masks for uncompressed RGB DDS images #7589
+  [radarhere, akx]
+
+- Support setting ROWSPERSTRIP tag #7654
+  [radarhere]
+
+- Apply ImageFont.MAX_STRING_LENGTH to ImageFont.getmask() #7662
+  [radarhere]
+
+- Optimise ``ImageColor`` using ``functools.lru_cache`` #7657
+  [hugovk]
+
+- Restricted environment keys for ImageMath.eval() #7655
+  [wiredfool, radarhere]
+
+- Optimise ``ImageMode.getmode`` using ``functools.lru_cache`` #7641
+  [hugovk, radarhere]
 
 - Fix incorrect color blending for overlapping glyphs #7497
   [ZachNagengast, nulano, radarhere]
@@ -4169,7 +4373,7 @@ Changelog (Pillow)
 - Documentation changes, URL update, transpose, release checklist
   [radarhere]
 
-- Fixed saving to nonexistant files specified by pathlib.Path objects #1748 (fixes #1747)
+- Fixed saving to nonexistent files specified by pathlib.Path objects #1748 (fixes #1747)
   [radarhere]
 
 - Round Image.crop arguments to the nearest integer #1745 (fixes #1744)
@@ -7380,7 +7584,7 @@ The test suite includes 400 individual tests.
 - A handbook is available (distributed separately).
 
 - The coordinate system is changed so that (0,0) is now located
-  in the upper left corner.  This is in compliancy with ISO 12087
+  in the upper left corner.  This is in compliance with ISO 12087
   and 90% of all other image processing and graphics libraries.
 
 - Modes "1" (bilevel) and "P" (palette) have been introduced.  Note

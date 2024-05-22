@@ -16,31 +16,31 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.2
-HARFBUZZ_VERSION=8.3.0
-LIBPNG_VERSION=1.6.40
-JPEGTURBO_VERSION=3.0.1
-OPENJPEG_VERSION=2.5.0
+HARFBUZZ_VERSION=8.4.0
+LIBPNG_VERSION=1.6.43
+JPEGTURBO_VERSION=3.0.2
+OPENJPEG_VERSION=2.5.2
 XZ_VERSION=5.4.5
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
 if [[ -n "$IS_MACOS" ]]; then
-    GIFLIB_VERSION=5.1.4
+    GIFLIB_VERSION=5.2.2
 else
     GIFLIB_VERSION=5.2.1
 fi
 if [[ -n "$IS_MACOS" ]] || [[ "$MB_ML_VER" != 2014 ]]; then
-    ZLIB_VERSION=1.3
+    ZLIB_VERSION=1.3.1
 else
     ZLIB_VERSION=1.2.8
 fi
 LIBWEBP_VERSION=1.3.2
 BZIP2_VERSION=1.0.8
-LIBXCB_VERSION=1.16
+LIBXCB_VERSION=1.16.1
 BROTLI_VERSION=1.1.0
 
 if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "x86_64" ]]; then
     function build_openjpeg {
-        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz openjpeg-2.5.0.tar.gz)
+        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz openjpeg-${OPENJPEG_VERSION}.tar.gz)
         (cd $out_dir \
             && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
             && make install)
@@ -62,7 +62,7 @@ function build_brotli {
 
 function build {
     if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
-        export BUILD_PREFIX="/usr/local"
+        sudo chown -R runner /usr/local
     fi
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
@@ -72,13 +72,11 @@ function build {
 
     build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
+        build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
+        build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
+        build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
         if [[ "$CIBW_ARCHS" == "arm64" ]]; then
-            build_simple xorgproto 2023.2 https://www.x.org/pub/individual/proto
-            build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
-            build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
-            if [ -f /Library/Frameworks/Python.framework/Versions/Current/share/pkgconfig/xcb-proto.pc ]; then
-                cp /Library/Frameworks/Python.framework/Versions/Current/share/pkgconfig/xcb-proto.pc /Library/Frameworks/Python.framework/Versions/Current/lib/pkgconfig/xcb-proto.pc
-            fi
+            cp /usr/local/share/pkgconfig/xcb-proto.pc /usr/local/lib/pkgconfig
         fi
     else
         sed s/\${pc_sysrootdir\}// /usr/local/share/pkgconfig/xcb-proto.pc > /usr/local/lib/pkgconfig/xcb-proto.pc
@@ -89,12 +87,10 @@ function build {
     build_tiff
     build_libpng
     build_lcms2
-    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
-        for dylib in libjpeg.dylib libtiff.dylib liblcms2.dylib; do
-            cp $BUILD_PREFIX/lib/$dylib /opt/arm64-builds/lib
-        done
-    fi
     build_openjpeg
+    if [ -f /usr/local/lib64/libopenjp2.so ]; then
+        cp /usr/local/lib64/libopenjp2.so /usr/local/lib
+    fi
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
@@ -130,14 +126,19 @@ curl -fsSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-de
 untar pillow-depends-main.zip
 
 if [[ -n "$IS_MACOS" ]]; then
-  # webp, libtiff, libxcb cause a conflict with building webp, libtiff, libxcb
-  # libxdmcp causes an issue on macOS < 11
-  # if php is installed, brew tries to reinstall these after installing openblas
+  # libtiff and libxcb cause a conflict with building libtiff and libxcb
+  # libxau and libxdmcp cause an issue on macOS < 11
   # remove cairo to fix building harfbuzz on arm64
   # remove lcms2 and libpng to fix building openjpeg on arm64
-  # remove zstd to avoid inclusion on x86_64
+  # remove jpeg-turbo to avoid inclusion on arm64
+  # remove webp and zstd to avoid inclusion on x86_64
   # curl from brew requires zstd, use system curl
-  brew remove --ignore-dependencies webp libpng libtiff libxcb libxdmcp curl php cairo lcms2 ghostscript zstd
+  brew remove --ignore-dependencies libpng libtiff libxcb libxau libxdmcp curl cairo lcms2 zstd
+  if [[ "$CIBW_ARCHS" == "arm64" ]]; then
+    brew remove --ignore-dependencies jpeg-turbo
+  else
+    brew remove --ignore-dependencies webp
+  fi
 
   brew install pkg-config
 fi

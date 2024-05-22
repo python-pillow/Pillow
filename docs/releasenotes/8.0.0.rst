@@ -30,7 +30,7 @@ Image.fromstring, im.fromstring and im.tostring
 ImageCms.CmsProfile attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Some attributes in :py:class:`PIL.ImageCms.CmsProfile` have been removed:
+Some attributes in :py:class:`PIL.ImageCms.core.CmsProfile` have been removed:
 
 ========================  ===================================================
 Removed                   Use instead

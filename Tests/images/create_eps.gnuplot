@@ -1,5 +1,3 @@
-#!/usr/bin/gnuplot
-
 #This is the script that was used to create our sample EPS files
 #We used the following version of the gnuplot program
 #G N U P L O T

@@ -1,6 +1,27 @@
 8.3.0
 -----
 
+Security
+========
+
+:cve:`2021-34552`: Fix buffer overflow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+PIL since 1.1.4 and Pillow since 1.0 allowed parameters passed into a convert
+function to trigger buffer overflow in ``Convert.c``.
+
+Parsing XML
+^^^^^^^^^^^
+
+Pillow previously parsed XMP data using Python's ``xml`` module. However, this module
+is not secure.
+
+- :py:meth:`~PIL.Image.Image.getexif` has used ``xml`` to potentially retrieve
+  orientation data since Pillow 7.2.0. It has been refactored to use ``re`` instead.
+- :py:meth:`~PIL.JpegImagePlugin.JpegImageFile.getxmp` was added in Pillow 8.2.0. It
+  will now use ``defusedxml`` instead. If the dependency is not present, an empty
+  dictionary will be returned and a warning raised.
+
 Deprecations
 ============
 
@@ -78,28 +99,6 @@ By default, Pillow saves ICO files in the PNG format. They can now also be saved
 format, through the new ``bitmap_format`` argument::
 
     im.save("out.ico", bitmap_format="bmp")
-
-Security
-========
-
-Buffer overflow
-^^^^^^^^^^^^^^^
-
-This release addresses :cve:`2021-34552`. PIL since 1.1.4 and Pillow since 1.0
-allowed parameters passed into a convert function to trigger buffer overflow in
-Convert.c.
-
-Parsing XML
-^^^^^^^^^^^
-
-Pillow previously parsed XMP data using Python's ``xml`` module. However, this module
-is not secure.
-
-- :py:meth:`~PIL.Image.Image.getexif` has used ``xml`` to potentially retrieve
-  orientation data since Pillow 7.2.0. It has been refactored to use ``re`` instead.
-- :py:meth:`~PIL.JpegImagePlugin.JpegImageFile.getxmp` was added in Pillow 8.2.0. It
-  will now use ``defusedxml`` instead. If the dependency is not present, an empty
-  dictionary will be returned and a warning raised.
 
 Other Changes
 =============

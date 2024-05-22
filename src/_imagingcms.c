@@ -52,7 +52,7 @@ https://www.cazabon.com\n\
 
 */
 
-/* known to-do list with current version:
+/* known to-do list:
 
    Verify that PILmode->littleCMStype conversion in findLCMStype is correct for all
    PIL modes (it probably isn't for the more obscure ones)
@@ -143,7 +143,7 @@ cms_profile_tobytes(PyObject *self, PyObject *args) {
     cmsHPROFILE *profile;
 
     PyObject *ret;
-    if (!PyArg_ParseTuple(args, "O", &CmsProfile)) {
+    if (!PyArg_ParseTuple(args, "O!", &CmsProfile_Type, &CmsProfile)) {
         return NULL;
     }
 
@@ -181,9 +181,7 @@ cms_profile_dealloc(CmsProfileObject *self) {
 /* a transform represents the mapping between two profiles */
 
 typedef struct {
-    PyObject_HEAD char mode_in[8];
-    char mode_out[8];
-    cmsHTRANSFORM transform;
+    PyObject_HEAD cmsHTRANSFORM transform;
 } CmsTransformObject;
 
 static PyTypeObject CmsTransform_Type;
@@ -191,7 +189,7 @@ static PyTypeObject CmsTransform_Type;
 #define CmsTransform_Check(op) (Py_TYPE(op) == &CmsTransform_Type)
 
 static PyObject *
-cms_transform_new(cmsHTRANSFORM transform, char *mode_in, char *mode_out) {
+cms_transform_new(cmsHTRANSFORM transform) {
     CmsTransformObject *self;
 
     self = PyObject_New(CmsTransformObject, &CmsTransform_Type);
@@ -200,9 +198,6 @@ cms_transform_new(cmsHTRANSFORM transform, char *mode_in, char *mode_out) {
     }
 
     self->transform = transform;
-
-    strcpy(self->mode_in, mode_in);
-    strcpy(self->mode_out, mode_out);
 
     return (PyObject *)self;
 }
@@ -218,35 +213,31 @@ cms_transform_dealloc(CmsTransformObject *self) {
 
 static cmsUInt32Number
 findLCMStype(char *PILmode) {
-    if (strcmp(PILmode, "RGB") == 0) {
+    if (strcmp(PILmode, "RGB") == 0 || strcmp(PILmode, "RGBA") == 0 ||
+        strcmp(PILmode, "RGBX") == 0) {
         return TYPE_RGBA_8;
-    } else if (strcmp(PILmode, "RGBA") == 0) {
-        return TYPE_RGBA_8;
-    } else if (strcmp(PILmode, "RGBX") == 0) {
-        return TYPE_RGBA_8;
-    } else if (strcmp(PILmode, "RGBA;16B") == 0) {
+    }
+    if (strcmp(PILmode, "RGBA;16B") == 0) {
         return TYPE_RGBA_16;
-    } else if (strcmp(PILmode, "CMYK") == 0) {
+    }
+    if (strcmp(PILmode, "CMYK") == 0) {
         return TYPE_CMYK_8;
-    } else if (strcmp(PILmode, "L") == 0) {
-        return TYPE_GRAY_8;
-    } else if (strcmp(PILmode, "L;16") == 0) {
+    }
+    if (strcmp(PILmode, "L;16") == 0) {
         return TYPE_GRAY_16;
-    } else if (strcmp(PILmode, "L;16B") == 0) {
+    }
+    if (strcmp(PILmode, "L;16B") == 0) {
         return TYPE_GRAY_16_SE;
-    } else if (strcmp(PILmode, "YCCA") == 0) {
+    }
+    if (strcmp(PILmode, "YCCA") == 0 || strcmp(PILmode, "YCC") == 0) {
         return TYPE_YCbCr_8;
-    } else if (strcmp(PILmode, "YCC") == 0) {
-        return TYPE_YCbCr_8;
-    } else if (strcmp(PILmode, "LAB") == 0) {
+    }
+    if (strcmp(PILmode, "LAB") == 0) {
         // LabX equivalent like ALab, but not reversed -- no #define in lcms2
         return (COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1));
     }
-
-    else {
-        /* take a wild guess... but you probably should fail instead. */
-        return TYPE_GRAY_8; /* so there's no buffer overrun... */
-    }
+    /* presume "L" by default */
+    return TYPE_GRAY_8;
 }
 
 #define Cms_Min(a, b) ((a) < (b) ? (a) : (b))
@@ -394,9 +385,9 @@ _buildTransform(
             iRenderingIntent,
             cmsFLAGS);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
-        if (!hTransform) {
+    if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build transform");
     }
 
@@ -428,9 +419,9 @@ _buildProofTransform(
             iProofIntent,
             cmsFLAGS);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
-        if (!hTransform) {
+    if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build proof transform");
     }
 
@@ -477,7 +468,7 @@ buildTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform, sInMode, sOutMode);
+    return cms_transform_new(transform);
 }
 
 static PyObject *
@@ -524,7 +515,7 @@ buildProofTransform(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return cms_transform_new(transform, sInMode, sOutMode);
+    return cms_transform_new(transform);
 }
 
 static PyObject *
@@ -625,7 +616,7 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
 static PyObject *
 cms_get_display_profile_win32(PyObject *self, PyObject *args) {
     char filename[MAX_PATH];
-    cmsUInt32Number filename_size;
+    DWORD filename_size;
     BOOL ok;
 
     HANDLE handle = 0;
@@ -1421,9 +1412,9 @@ static struct PyGetSetDef cms_profile_getsetters[] = {
     {NULL}};
 
 static PyTypeObject CmsProfile_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "PIL._imagingcms.CmsProfile", /*tp_name*/
-    sizeof(CmsProfileObject),                                    /*tp_basicsize*/
-    0,                                                           /*tp_itemsize*/
+    PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsProfile", /*tp_name*/
+    sizeof(CmsProfileObject),                                      /*tp_basicsize*/
+    0,                                                             /*tp_itemsize*/
     /* methods */
     (destructor)cms_profile_dealloc, /*tp_dealloc*/
     0,                               /*tp_vectorcall_offset*/
@@ -1457,25 +1448,10 @@ static struct PyMethodDef cms_transform_methods[] = {
     {"apply", (PyCFunction)cms_transform_apply, 1}, {NULL, NULL} /* sentinel */
 };
 
-static PyObject *
-cms_transform_getattr_inputMode(CmsTransformObject *self, void *closure) {
-    return PyUnicode_FromString(self->mode_in);
-}
-
-static PyObject *
-cms_transform_getattr_outputMode(CmsTransformObject *self, void *closure) {
-    return PyUnicode_FromString(self->mode_out);
-}
-
-static struct PyGetSetDef cms_transform_getsetters[] = {
-    {"inputMode", (getter)cms_transform_getattr_inputMode},
-    {"outputMode", (getter)cms_transform_getattr_outputMode},
-    {NULL}};
-
 static PyTypeObject CmsTransform_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "CmsTransform", /*tp_name*/
-    sizeof(CmsTransformObject),                    /*tp_basicsize*/
-    0,                                             /*tp_itemsize*/
+    PyVarObject_HEAD_INIT(NULL, 0) "PIL.ImageCms.core.CmsTransform", /*tp_name*/
+    sizeof(CmsTransformObject),                                      /*tp_basicsize*/
+    0,                                                               /*tp_itemsize*/
     /* methods */
     (destructor)cms_transform_dealloc, /*tp_dealloc*/
     0,                                 /*tp_vectorcall_offset*/
@@ -1502,7 +1478,7 @@ static PyTypeObject CmsTransform_Type = {
     0,                                 /*tp_iternext*/
     cms_transform_methods,             /*tp_methods*/
     0,                                 /*tp_members*/
-    cms_transform_getsetters,          /*tp_getset*/
+    0,                                 /*tp_getset*/
 };
 
 static int
@@ -1511,14 +1487,15 @@ setup_module(PyObject *m) {
     PyObject *v;
     int vn;
 
-    CmsProfile_Type.tp_new = PyType_GenericNew;
-
     /* Ready object types */
     PyType_Ready(&CmsProfile_Type);
     PyType_Ready(&CmsTransform_Type);
 
     Py_INCREF(&CmsProfile_Type);
     PyModule_AddObject(m, "CmsProfile", (PyObject *)&CmsProfile_Type);
+
+    Py_INCREF(&CmsTransform_Type);
+    PyModule_AddObject(m, "CmsTransform", (PyObject *)&CmsTransform_Type);
 
     d = PyModule_GetDict(m);
 

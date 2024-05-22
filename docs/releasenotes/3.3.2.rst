@@ -1,9 +1,11 @@
-
 3.3.2
-=====
+-----
+
+Security
+========
 
 Integer overflow in Map.c
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow prior to 3.3.2 may experience integer overflow errors in map.c
 when reading specially crafted image files. This may lead to memory
@@ -26,7 +28,7 @@ memory without duplicating the image first.
 This issue was found by Cris Neckar at Divergent Security.
 
 Sign Extension in Storage.c
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pillow prior to 3.3.2 and PIL 1.1.7 (at least) do not check for
 negative image sizes in ``ImagingNew`` in ``Storage.c``. A negative

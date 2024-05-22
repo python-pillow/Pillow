@@ -29,7 +29,7 @@ from . import Image, ImageFile
 from ._binary import i32be as i32
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return len(prefix) >= 8 and i32(prefix, 0) >= 20 and i32(prefix, 4) in (1, 2)
 
 
@@ -41,7 +41,7 @@ class GbrImageFile(ImageFile.ImageFile):
     format = "GBR"
     format_description = "GIMP brush file"
 
-    def _open(self):
+    def _open(self) -> None:
         header_size = i32(self.fp.read(4))
         if header_size < 20:
             msg = "not a GIMP brush"

@@ -60,7 +60,7 @@ LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 # Identify/read GIF files
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:6] in [b"GIF87a", b"GIF89a"]
 
 
@@ -76,19 +76,19 @@ class GifImageFile(ImageFile.ImageFile):
 
     global_palette = None
 
-    def data(self):
+    def data(self) -> bytes | None:
         s = self.fp.read(1)
         if s and s[0]:
             return self.fp.read(s[0])
         return None
 
-    def _is_palette_needed(self, p):
+    def _is_palette_needed(self, p: bytes) -> bool:
         for i in range(0, len(p), 3):
             if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
                 return True
         return False
 
-    def _open(self):
+    def _open(self) -> None:
         # Screen
         s = self.fp.read(13)
         if not _accept(s):
@@ -147,7 +147,7 @@ class GifImageFile(ImageFile.ImageFile):
                     self.seek(current)
         return self._is_animated
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
@@ -417,7 +417,7 @@ class GifImageFile(ImageFile.ImageFile):
             elif k in self.info:
                 del self.info[k]
 
-    def load_prepare(self):
+    def load_prepare(self) -> None:
         temp_mode = "P" if self._frame_palette else "L"
         self._prev_im = None
         if self.__frame == 0:
@@ -437,7 +437,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         super().load_prepare()
 
-    def load_end(self):
+    def load_end(self) -> None:
         if self.__frame == 0:
             if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
                 if self._frame_transparency is not None:
@@ -463,7 +463,7 @@ class GifImageFile(ImageFile.ImageFile):
         else:
             self.im.paste(frame_im, self.dispose_extent)
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
 
@@ -474,7 +474,7 @@ class GifImageFile(ImageFile.ImageFile):
 RAWMODE = {"1": "L", "L": "L", "P": "P"}
 
 
-def _normalize_mode(im):
+def _normalize_mode(im: Image.Image) -> Image.Image:
     """
     Takes an image (or frame), returns an image in a mode that is appropriate
     for saving in a Gif.
@@ -629,7 +629,7 @@ def _write_multiple_frames(im, fp, palette):
                             "duration"
                         ]
                     continue
-                if encoderinfo.get("disposal") == 2:
+                if im_frames[-1]["encoderinfo"].get("disposal") == 2:
                     if background_im is None:
                         color = im.encoderinfo.get(
                             "transparency", im.info.get("transparency", (0, 0, 0))
@@ -637,25 +637,32 @@ def _write_multiple_frames(im, fp, palette):
                         background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
                         background_im.putpalette(im_frames[0]["im"].palette)
-                    delta, bbox = _getbbox(background_im, im_frame)
-                if encoderinfo.get("optimize") and im_frame.mode != "1":
+                    bbox = _getbbox(background_im, im_frame)[1]
+                elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
                         try:
-                            encoderinfo[
-                                "transparency"
-                            ] = im_frame.palette._new_color_index(im_frame)
+                            encoderinfo["transparency"] = (
+                                im_frame.palette._new_color_index(im_frame)
+                            )
                         except ValueError:
                             pass
                     if "transparency" in encoderinfo:
                         # When the delta is zero, fill the image with transparency
                         diff_frame = im_frame.copy()
-                        fill = Image.new(
-                            "P", diff_frame.size, encoderinfo["transparency"]
-                        )
+                        fill = Image.new("P", delta.size, encoderinfo["transparency"])
                         if delta.mode == "RGBA":
                             r, g, b, a = delta.split()
-                            mask = ImageMath.eval(
-                                "convert(max(max(max(r, g), b), a) * 255, '1')",
+                            mask = ImageMath.lambda_eval(
+                                lambda args: args["convert"](
+                                    args["max"](
+                                        args["max"](
+                                            args["max"](args["r"], args["g"]), args["b"]
+                                        ),
+                                        args["a"],
+                                    )
+                                    * 255,
+                                    "1",
+                                ),
                                 r=r,
                                 g=g,
                                 b=b,
@@ -667,7 +674,10 @@ def _write_multiple_frames(im, fp, palette):
                                 delta_l = Image.new("L", delta.size)
                                 delta_l.putdata(delta.getdata())
                                 delta = delta_l
-                            mask = ImageMath.eval("convert(im * 255, '1')", im=delta)
+                            mask = ImageMath.lambda_eval(
+                                lambda args: args["convert"](args["im"] * 255, "1"),
+                                im=delta,
+                            )
                         diff_frame.paste(fill, mask=ImageOps.invert(mask))
             else:
                 bbox = None
@@ -877,7 +887,7 @@ def _get_optimize(im, info):
                 return used_palette_colors
 
 
-def _get_color_table_size(palette_bytes):
+def _get_color_table_size(palette_bytes: bytes) -> int:
     # calculate the palette size for the header
     if not palette_bytes:
         return 0
@@ -887,7 +897,7 @@ def _get_color_table_size(palette_bytes):
         return math.ceil(math.log(len(palette_bytes) // 3, 2)) - 1
 
 
-def _get_header_palette(palette_bytes):
+def _get_header_palette(palette_bytes: bytes) -> bytes:
     """
     Returns the palette, null padded to the next power of 2 (*3) bytes
     suitable for direct inclusion in the GIF header
@@ -905,7 +915,7 @@ def _get_header_palette(palette_bytes):
     return palette_bytes
 
 
-def _get_palette_bytes(im):
+def _get_palette_bytes(im: Image.Image) -> bytes:
     """
     Gets the palette for inclusion in the gif header
 
