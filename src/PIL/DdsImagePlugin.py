@@ -379,6 +379,7 @@ class DdsImageFile(ImageFile.ImageFile):
         elif pfflags & DDPF.PALETTEINDEXED8:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
+            self.palette.mode = "RGBA"
         elif pfflags & DDPF.FOURCC:
             offset = header_size + 4
             if fourcc == D3DFMT.DXT1:

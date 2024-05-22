@@ -873,7 +873,7 @@ class Image:
         if self.im is not None and self.palette and self.palette.dirty:
             # realize palette
             mode, arr = self.palette.getdata()
-            self.im.putpalette(mode, arr)
+            self.im.putpalette(self.palette.mode, mode, arr)
             self.palette.dirty = 0
             self.palette.rawmode = None
             if "transparency" in self.info and mode in ("LA", "PA"):
@@ -883,9 +883,9 @@ class Image:
                     self.im.putpalettealphas(self.info["transparency"])
                 self.palette.mode = "RGBA"
             else:
-                palette_mode = "RGBA" if mode.startswith("RGBA") else "RGB"
-                self.palette.mode = palette_mode
-                self.palette.palette = self.im.getpalette(palette_mode, palette_mode)
+                self.palette.palette = self.im.getpalette(
+                    self.palette.mode, self.palette.mode
+                )
 
         if self.im is not None:
             if cffi and USE_CFFI_ACCESS:
@@ -1998,7 +1998,7 @@ class Image:
             palette = ImagePalette.raw(rawmode, data)
         self._mode = "PA" if "A" in self.mode else "P"
         self.palette = palette
-        self.palette.mode = "RGB"
+        self.palette.mode = "RGBA" if "A" in rawmode else "RGB"
         self.load()  # install new palette
 
     def putpixel(self, xy, value):
@@ -2113,7 +2113,7 @@ class Image:
         # m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
         # or just force it.
         # UNDONE -- this is part of the general issue with palettes
-        m_im.im.putpalette(palette_mode + ";L", m_im.palette.tobytes())
+        m_im.im.putpalette(palette_mode, palette_mode + ";L", m_im.palette.tobytes())
 
         m_im = m_im.convert("L")
 

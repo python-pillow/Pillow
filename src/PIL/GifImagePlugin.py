@@ -429,7 +429,7 @@ class GifImageFile(ImageFile.ImageFile):
             self._prev_im = self.im
             if self._frame_palette:
                 self.im = Image.core.fill("P", self.size, self._frame_transparency or 0)
-                self.im.putpalette(*self._frame_palette.getdata())
+                self.im.putpalette("RGB", *self._frame_palette.getdata())
             else:
                 self.im = None
         self._mode = temp_mode
