@@ -108,15 +108,15 @@ struct ImagingMemoryInstance {
 
 #define IMAGING_PIXEL_1(im, x, y) ((im)->image8[(y)][(x)])
 #define IMAGING_PIXEL_L(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_LA(im, x, y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_LA(im, x, y) ((im)->image[(y)][(x) * 4])
 #define IMAGING_PIXEL_P(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_PA(im, x, y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_PA(im, x, y) ((im)->image[(y)][(x) * 4])
 #define IMAGING_PIXEL_I(im, x, y) ((im)->image32[(y)][(x)])
 #define IMAGING_PIXEL_F(im, x, y) (((FLOAT32 *)(im)->image32[y])[x])
-#define IMAGING_PIXEL_RGB(im, x, y) ((im)->image[(y)][(x)*4])
-#define IMAGING_PIXEL_RGBA(im, x, y) ((im)->image[(y)][(x)*4])
-#define IMAGING_PIXEL_CMYK(im, x, y) ((im)->image[(y)][(x)*4])
-#define IMAGING_PIXEL_YCbCr(im, x, y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_RGB(im, x, y) ((im)->image[(y)][(x) * 4])
+#define IMAGING_PIXEL_RGBA(im, x, y) ((im)->image[(y)][(x) * 4])
+#define IMAGING_PIXEL_CMYK(im, x, y) ((im)->image[(y)][(x) * 4])
+#define IMAGING_PIXEL_YCbCr(im, x, y) ((im)->image[(y)][(x) * 4])
 
 #define IMAGING_PIXEL_UINT8(im, x, y) ((im)->image8[(y)][(x)])
 #define IMAGING_PIXEL_INT32(im, x, y) ((im)->image32[(y)][(x)])
@@ -161,7 +161,7 @@ typedef struct ImagingMemoryArena {
     int stats_reallocated_blocks; /* Number of blocks which were actually reallocated
                                      after retrieving */
     int stats_freed_blocks;       /* Number of freed blocks */
-} * ImagingMemoryArena;
+} *ImagingMemoryArena;
 
 /* Objects */
 /* ------- */
@@ -309,7 +309,8 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging
-ImagingGaussianBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int passes);
+ImagingGaussianBlur(
+    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes);
 extern Imaging
 ImagingGetBand(Imaging im, int band);
 extern Imaging
@@ -487,7 +488,8 @@ ImagingDrawPieslice(
 extern int
 ImagingDrawPoint(Imaging im, int x, int y, const void *ink, int op);
 extern int
-ImagingDrawPolygon(Imaging im, int points, int *xy, const void *ink, int fill, int width, int op);
+ImagingDrawPolygon(
+    Imaging im, int points, int *xy, const void *ink, int fill, int width, int op);
 extern int
 ImagingDrawRectangle(
     Imaging im,

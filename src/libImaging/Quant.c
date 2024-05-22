@@ -260,8 +260,7 @@ mergesort_pixels(PixelList *head, int i) {
         return head;
     }
     for (c = t = head; c && t;
-         c = c->next[i], t = (t->next[i]) ? t->next[i]->next[i] : NULL)
-        ;
+         c = c->next[i], t = (t->next[i]) ? t->next[i]->next[i] : NULL);
     if (c) {
         if (c->prev[i]) {
             c->prev[i]->next[i] = NULL;
@@ -354,12 +353,10 @@ splitlists(
         for (_i = 0; _i < 3; _i++) {
             for (_nextCount[_i] = 0, _nextTest = h[_i];
                  _nextTest && _nextTest->next[_i];
-                 _nextTest = _nextTest->next[_i], _nextCount[_i]++)
-                ;
+                 _nextTest = _nextTest->next[_i], _nextCount[_i]++);
             for (_prevCount[_i] = 0, _prevTest = t[_i];
                  _prevTest && _prevTest->prev[_i];
-                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++)
-                ;
+                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++);
             if (_nextTest != t[_i]) {
                 printf("next-list of axis %d does not end at tail\n", _i);
                 exit(1);
@@ -368,10 +365,8 @@ splitlists(
                 printf("prev-list of axis %d does not end at head\n", _i);
                 exit(1);
             }
-            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i])
-                ;
-            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i])
-                ;
+            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i]);
+            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i]);
             if (_nextTest != h[_i]) {
                 printf("next-list of axis %d does not loop back to head\n", _i);
                 exit(1);
@@ -548,22 +543,18 @@ split(BoxNode *node) {
         for (_i = 0; _i < 3; _i++) {
             for (_nextCount[_i] = 0, _nextTest = node->head[_i];
                  _nextTest && _nextTest->next[_i];
-                 _nextTest = _nextTest->next[_i], _nextCount[_i]++)
-                ;
+                 _nextTest = _nextTest->next[_i], _nextCount[_i]++);
             for (_prevCount[_i] = 0, _prevTest = node->tail[_i];
                  _prevTest && _prevTest->prev[_i];
-                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++)
-                ;
+                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++);
             if (_nextTest != node->tail[_i]) {
                 printf("next-list of axis %d does not end at tail\n", _i);
             }
             if (_prevTest != node->head[_i]) {
                 printf("prev-list of axis %d does not end at head\n", _i);
             }
-            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i])
-                ;
-            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i])
-                ;
+            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i]);
+            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i]);
             if (_nextTest != node->head[_i]) {
                 printf("next-list of axis %d does not loop back to head\n", _i);
             }
@@ -668,8 +659,7 @@ median_cut(PixelList *hl[3], uint32_t imPixelCount, int nPixels) {
         return NULL;
     }
     for (i = 0; i < 3; i++) {
-        for (tl[i] = hl[i]; tl[i] && tl[i]->next[i]; tl[i] = tl[i]->next[i])
-            ;
+        for (tl[i] = hl[i]; tl[i] && tl[i]->next[i]; tl[i] = tl[i]->next[i]);
         root->head[i] = hl[i];
         root->tail[i] = tl[i];
     }
@@ -832,16 +822,9 @@ build_distance_tables(
     }
     for (i = 0; i < nEntries; i++) {
         for (j = 0; j < nEntries; j++) {
-            dwi[j] = (DistanceWithIndex){
-                &(avgDist[i * nEntries + j]),
-                j
-            };
+            dwi[j] = (DistanceWithIndex){&(avgDist[i * nEntries + j]), j};
         }
-        qsort(
-            dwi,
-            nEntries,
-            sizeof(DistanceWithIndex),
-            _distance_index_cmp);
+        qsort(dwi, nEntries, sizeof(DistanceWithIndex), _distance_index_cmp);
         for (j = 0; j < nEntries; j++) {
             avgDistSortKey[i * nEntries + j] = dwi[j].distance;
         }
@@ -1213,7 +1196,7 @@ k_means(
             compute_palette_from_quantized_pixels(
                 pixelData, nPixels, paletteData, nPaletteEntries, avg, count, qp);
             if (!build_distance_tables(
-                avgDist, avgDistSortKey, paletteData, nPaletteEntries)) {
+                    avgDist, avgDistSortKey, paletteData, nPaletteEntries)) {
                 goto error_3;
             }
             built = 1;
@@ -1452,15 +1435,17 @@ quantize(
                 hashtable_insert(h2, pixelData[i], bestmatch);
             }
             if (qp[i] != bestmatch) {
-                printf ("discrepancy in matching algorithms pixel %d [%d %d] %f %f\n",
-                    i,qp[i],bestmatch,
-                    sqrt((double)(_SQR(pixelData[i].c.r-p[qp[i]].c.r)+
-                                  _SQR(pixelData[i].c.g-p[qp[i]].c.g)+
-                                  _SQR(pixelData[i].c.b-p[qp[i]].c.b))),
-                    sqrt((double)(_SQR(pixelData[i].c.r-p[bestmatch].c.r)+
-                                  _SQR(pixelData[i].c.g-p[bestmatch].c.g)+
-                                  _SQR(pixelData[i].c.b-p[bestmatch].c.b)))
-                   );
+                printf(
+                    "discrepancy in matching algorithms pixel %d [%d %d] %f %f\n",
+                    i,
+                    qp[i],
+                    bestmatch,
+                    sqrt((double)(_SQR(pixelData[i].c.r - p[qp[i]].c.r) +
+                                  _SQR(pixelData[i].c.g - p[qp[i]].c.g) +
+                                  _SQR(pixelData[i].c.b - p[qp[i]].c.b))),
+                    sqrt((double)(_SQR(pixelData[i].c.r - p[bestmatch].c.r) +
+                                  _SQR(pixelData[i].c.g - p[bestmatch].c.g) +
+                                  _SQR(pixelData[i].c.b - p[bestmatch].c.b))));
             }
         }
         hashtable_free(h2);
@@ -1471,7 +1456,7 @@ quantize(
     fflush(stdout);
     timer = clock();
 #endif
-    if (kmeans) {
+    if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nPaletteEntries, qp, kmeans - 1);
     }
 #ifndef NO_OUTPUT
@@ -1627,7 +1612,7 @@ quantize2(
             pixelData, nPixels, p, nQuantPixels, avgDist, avgDistSortKey, qp)) {
         goto error_4;
     }
-    if (kmeans) {
+    if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nQuantPixels, qp, kmeans - 1);
     }
 

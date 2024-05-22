@@ -1234,10 +1234,14 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     If present and true, instructs the WebP writer to use lossless compression.
 
 **quality**
-    Integer, 0-100, Defaults to 80. For lossy, 0 gives the smallest
+    Integer, 0-100, defaults to 80. For lossy, 0 gives the smallest
     size and 100 the largest. For lossless, this parameter is the amount
     of effort put into the compression: 0 is the fastest, but gives larger
     files compared to the slowest, but best, 100.
+
+**alpha_quality**
+    Integer, 0-100, defaults to 100. For lossy compression only. 0 gives the
+    smallest size and 100 is lossless.
 
 **method**
     Quality/speed trade-off (0=fast, 6=slower-better). Defaults to 4.
@@ -1335,7 +1339,8 @@ FITS
 
 .. versionadded:: 9.1.0
 
-Pillow identifies and reads FITS files, commonly used for astronomy.
+Pillow identifies and reads FITS files, commonly used for astronomy. Uncompressed and
+GZIP_1 compressed images can be read.
 
 FLI, FLC
 ^^^^^^^^
@@ -1351,9 +1356,8 @@ The :py:meth:`~PIL.Image.open` method sets the following
 FPX
 ^^^
 
-Pillow reads Kodak FlashPix files. In the current version, only the highest
-resolution image is read from the file, and the viewing transform is not taken
-into account.
+Pillow reads Kodak FlashPix files. Only the highest resolution image is read from the
+file, and the viewing transform is not taken into account.
 
 To enable FPX support, you must install :pypi:`olefile`.
 
@@ -1484,7 +1488,9 @@ QOI
 
 .. versionadded:: 9.5.0
 
-Pillow identifies and reads images in Quite OK Image format.
+Pillow reads images in Quite OK Image format using a Python decoder. If you wish to
+write code specifically for this format, :pypi:`qoi` is an alternative library that
+uses C to decode the image and interfaces with NumPy.
 
 SUN
 ^^^

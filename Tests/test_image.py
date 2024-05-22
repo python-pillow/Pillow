@@ -28,43 +28,26 @@ from .helper import (
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
+    is_big_endian,
     is_win32,
     mark_if_feature_version,
     skip_unless_feature,
 )
 
 
+# Deprecation helper
+def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
+    if mode.startswith("BGR;"):
+        with pytest.warns(DeprecationWarning):
+            return Image.new(mode, size)
+    else:
+        return Image.new(mode, size)
+
+
 class TestImage:
-    @pytest.mark.parametrize(
-        "mode",
-        (
-            "1",
-            "P",
-            "PA",
-            "L",
-            "LA",
-            "La",
-            "F",
-            "I",
-            "I;16",
-            "I;16L",
-            "I;16B",
-            "I;16N",
-            "RGB",
-            "RGBX",
-            "RGBA",
-            "RGBa",
-            "BGR;15",
-            "BGR;16",
-            "BGR;24",
-            "CMYK",
-            "YCbCr",
-            "LAB",
-            "HSV",
-        ),
-    )
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_image_modes_success(self, mode: str) -> None:
-        Image.new(mode, (1, 1))
+        helper_image_new(mode, (1, 1))
 
     @pytest.mark.parametrize("mode", ("", "bad", "very very long"))
     def test_image_modes_fail(self, mode: str) -> None:
@@ -1040,6 +1023,38 @@ class TestImage:
                 copy.close()
             assert len(caplog.records) == 0
             assert im.fp is None
+
+
+class TestImageBytes:
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    def test_roundtrip_bytes_constructor(self, mode: str) -> None:
+        im = hopper(mode)
+        source_bytes = im.tobytes()
+
+        if mode.startswith("BGR;"):
+            with pytest.warns(DeprecationWarning):
+                reloaded = Image.frombytes(mode, im.size, source_bytes)
+        else:
+            reloaded = Image.frombytes(mode, im.size, source_bytes)
+        assert reloaded.tobytes() == source_bytes
+
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    def test_roundtrip_bytes_method(self, mode: str) -> None:
+        im = hopper(mode)
+        source_bytes = im.tobytes()
+
+        reloaded = helper_image_new(mode, im.size)
+        reloaded.frombytes(source_bytes)
+        assert reloaded.tobytes() == source_bytes
+
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
+    def test_getdata_putdata(self, mode: str) -> None:
+        if is_big_endian() and mode == "BGR;15":
+            pytest.xfail("Known failure of BGR;15 on big-endian")
+        im = hopper(mode)
+        reloaded = helper_image_new(mode, im.size)
+        reloaded.putdata(im.getdata())
+        assert_image_equal(im, reloaded)
 
 
 class MockEncoder(ImageFile.PyEncoder):

@@ -56,6 +56,7 @@ from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
+from ._deprecate import deprecate
 from .TiffTags import TYPES
 
 logger = logging.getLogger(__name__)
@@ -74,6 +75,7 @@ MM = b"MM"  # big-endian (Motorola style)
 # Read TIFF files
 
 # a few tag names, just to make the code below a bit more readable
+OSUBFILETYPE = 255
 IMAGEWIDTH = 256
 IMAGELENGTH = 257
 BITSPERSAMPLE = 258
@@ -243,6 +245,7 @@ OPEN_INFO = {
     (MM, 3, (1,), 2, (4,), ()): ("P", "P;4R"),
     (II, 3, (1,), 1, (8,), ()): ("P", "P"),
     (MM, 3, (1,), 1, (8,), ()): ("P", "P"),
+    (II, 3, (1,), 1, (8, 8), (0,)): ("P", "PX"),
     (II, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (MM, 3, (1,), 1, (8, 8), (2,)): ("PA", "PA"),
     (II, 3, (1,), 2, (8,), ()): ("P", "P;R"),
@@ -275,8 +278,11 @@ PREFIXES = [
     b"II\x2B\x00",  # BigTIFF with little-endian byte order
 ]
 
+if not getattr(Image.core, "libtiff_support_custom_tags", True):
+    deprecate("Support for LibTIFF earlier than version 4", 12)
 
-def _accept(prefix):
+
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] in PREFIXES
 
 
@@ -375,7 +381,7 @@ class IFDRational(Rational):
         f = self._val.limit_denominator(max_denominator)
         return f.numerator, f.denominator
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(float(self._val))
 
     def __hash__(self):
@@ -463,7 +469,7 @@ def _register_basic(idx_fmt_name):
 
     idx, fmt, name = idx_fmt_name
     TYPES[idx] = name
-    size = struct.calcsize("=" + fmt)
+    size = struct.calcsize(f"={fmt}")
     _load_dispatch[idx] = (  # noqa: F821
         size,
         lambda self, data, legacy_api=True: (
@@ -597,7 +603,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self._next = None
         self._offset = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(dict(self))
 
     def named(self):
@@ -611,7 +617,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
             for code, value in self.items()
         }
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(set(self._tagdata) | set(self._tags_v2))
 
     def __getitem__(self, tag):
@@ -981,8 +987,8 @@ ImageFileDirectory_v2._load_dispatch = _load_dispatch
 ImageFileDirectory_v2._write_dispatch = _write_dispatch
 for idx, name in TYPES.items():
     name = name.replace(" ", "_")
-    setattr(ImageFileDirectory_v2, "load_" + name, _load_dispatch[idx][1])
-    setattr(ImageFileDirectory_v2, "write_" + name, _write_dispatch[idx])
+    setattr(ImageFileDirectory_v2, f"load_{name}", _load_dispatch[idx][1])
+    setattr(ImageFileDirectory_v2, f"write_{name}", _write_dispatch[idx])
 del _load_dispatch, _write_dispatch, idx, name
 
 
@@ -1035,7 +1041,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ifd.next = original.next  # an indicator for multipage tiffs
         return ifd
 
-    def to_v2(self):
+    def to_v2(self) -> ImageFileDirectory_v2:
         """Returns an
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v2`
         instance with the same data as is contained in the original
@@ -1055,7 +1061,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __contains__(self, tag):
         return tag in self._tags_v1 or tag in self._tagdata
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(set(self._tagdata) | set(self._tags_v1))
 
     def __iter__(self):
@@ -1137,7 +1143,7 @@ class TiffImageFile(ImageFile.ImageFile):
             self.seek(current)
         return self._n_frames
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         """Select a given frame as current image"""
         if not self._seek_check(frame):
             return
@@ -1148,7 +1154,7 @@ class TiffImageFile(ImageFile.ImageFile):
         Image._decompression_bomb_check(self.size)
         self.im = Image.core.new(self.mode, self.size)
 
-    def _seek(self, frame):
+    def _seek(self, frame: int) -> None:
         self.fp = self._fp
 
         # reset buffered io handle in case fp
@@ -1166,6 +1172,9 @@ class TiffImageFile(ImageFile.ImageFile):
                 self.__next,
                 self.fp.tell(),
             )
+            if self.__next >= 2**63:
+                msg = "Unable to seek to frame"
+                raise ValueError(msg)
             self.fp.seek(self.__next)
             self._frame_pos.append(self.__next)
             logger.debug("Loading tags, location: %s", self.fp.tell())
@@ -1189,7 +1198,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__frame = frame
         self._setup()
 
-    def tell(self):
+    def tell(self) -> int:
         """Return the current frame number"""
         return self.__frame
 
@@ -1228,7 +1237,7 @@ class TiffImageFile(ImageFile.ImageFile):
             return self._load_libtiff()
         return super().load()
 
-    def load_end(self):
+    def load_end(self) -> None:
         # allow closing if we're on the first frame, there's no next
         # This is the ImageFile.load path only, libtiff specific below.
         if not self.is_animated:
@@ -1784,11 +1793,13 @@ def _save(im, fp, filename):
         types = {}
         # STRIPOFFSETS and STRIPBYTECOUNTS are added by the library
         # based on the data in the strip.
+        # OSUBFILETYPE is deprecated.
         # The other tags expect arrays with a certain length (fixed or depending on
         # BITSPERSAMPLE, etc), passing arrays with a different length will result in
         # segfaults. Block these tags until we add extra validation.
         # SUBIFD may also cause a segfault.
         blocklist += [
+            OSUBFILETYPE,
             REFERENCEBLACKWHITE,
             STRIPBYTECOUNTS,
             STRIPOFFSETS,
@@ -1931,7 +1942,7 @@ class AppendingTiffWriter:
         self.beginning = self.f.tell()
         self.setup()
 
-    def setup(self):
+    def setup(self) -> None:
         # Reset everything.
         self.f.seek(self.beginning, os.SEEK_SET)
 
@@ -1956,7 +1967,7 @@ class AppendingTiffWriter:
         self.skipIFDs()
         self.goToEnd()
 
-    def finalize(self):
+    def finalize(self) -> None:
         if self.isFirst:
             return
 
@@ -1979,7 +1990,7 @@ class AppendingTiffWriter:
         self.f.seek(ifd_offset)
         self.fixIFD()
 
-    def newFrame(self):
+    def newFrame(self) -> None:
         # Call this to finish a frame.
         self.finalize()
         self.setup()
@@ -1992,7 +2003,7 @@ class AppendingTiffWriter:
             self.close()
         return False
 
-    def tell(self):
+    def tell(self) -> int:
         return self.f.tell() - self.offsetOfNewPage
 
     def seek(self, offset, whence=io.SEEK_SET):
@@ -2002,7 +2013,7 @@ class AppendingTiffWriter:
         self.f.seek(offset, whence)
         return self.tell()
 
-    def goToEnd(self):
+    def goToEnd(self) -> None:
         self.f.seek(0, os.SEEK_END)
         pos = self.f.tell()
 
@@ -2014,11 +2025,11 @@ class AppendingTiffWriter:
 
     def setEndian(self, endian):
         self.endian = endian
-        self.longFmt = self.endian + "L"
-        self.shortFmt = self.endian + "H"
-        self.tagFormat = self.endian + "HHL"
+        self.longFmt = f"{self.endian}L"
+        self.shortFmt = f"{self.endian}H"
+        self.tagFormat = f"{self.endian}HHL"
 
-    def skipIFDs(self):
+    def skipIFDs(self) -> None:
         while True:
             ifd_offset = self.readLong()
             if ifd_offset == 0:
@@ -2073,11 +2084,11 @@ class AppendingTiffWriter:
             msg = f"wrote only {bytes_written} bytes but wanted 4"
             raise RuntimeError(msg)
 
-    def close(self):
+    def close(self) -> None:
         self.finalize()
         self.f.close()
 
-    def fixIFD(self):
+    def fixIFD(self) -> None:
         num_tags = self.readShort()
 
         for i in range(num_tags):

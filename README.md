@@ -6,9 +6,9 @@
 
 ## Python Imaging Library (Fork)
 
-Pillow is the friendly PIL fork by [Jeffrey A. Clark (Alex) and
+Pillow is the friendly PIL fork by [Jeffrey A. Clark and
 contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
-PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
+PIL is the Python Imaging Library by Fredrik Lundh and contributors.
 As of 2019, Pillow development is
 [supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise).
 
@@ -101,7 +101,7 @@ The core image library is designed for fast access to data stored in a few basic
 ## More Information
 
 - [Documentation](https://pillow.readthedocs.io/)
-  - [Installation](https://pillow.readthedocs.io/en/latest/installation.html)
+  - [Installation](https://pillow.readthedocs.io/en/latest/installation/basic-installation.html)
   - [Handbook](https://pillow.readthedocs.io/en/latest/handbook/index.html)
 - [Contribute](https://github.com/python-pillow/Pillow/blob/main/.github/CONTRIBUTING.md)
   - [Issues](https://github.com/python-pillow/Pillow/issues)

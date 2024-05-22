@@ -37,6 +37,8 @@ def test_version() -> None:
         else:
             assert function(name) == version
             if name != "PIL":
+                if name == "zlib" and version is not None:
+                    version = version.replace(".zlib-ng", "")
                 assert version is None or re.search(r"\d+(\.\d+)*$", version)
 
     for module in features.modules:
@@ -117,9 +119,10 @@ def test_unsupported_module() -> None:
         features.version_module(module)
 
 
-def test_pilinfo() -> None:
+@pytest.mark.parametrize("supported_formats", (True, False))
+def test_pilinfo(supported_formats) -> None:
     buf = io.StringIO()
-    features.pilinfo(buf)
+    features.pilinfo(buf, supported_formats=supported_formats)
     out = buf.getvalue()
     lines = out.splitlines()
     assert lines[0] == "-" * 68
@@ -129,9 +132,15 @@ def test_pilinfo() -> None:
     while lines[0].startswith("    "):
         lines = lines[1:]
     assert lines[0] == "-" * 68
-    assert lines[1].startswith("Python modules loaded from ")
-    assert lines[2].startswith("Binary modules loaded from ")
-    assert lines[3] == "-" * 68
+    assert lines[1].startswith("Python executable is")
+    lines = lines[2:]
+    if lines[0].startswith("Environment Python files loaded from"):
+        lines = lines[1:]
+    assert lines[0].startswith("System Python files loaded from")
+    assert lines[1] == "-" * 68
+    assert lines[2].startswith("Python Pillow modules loaded from ")
+    assert lines[3].startswith("Binary Pillow modules loaded from ")
+    assert lines[4] == "-" * 68
     jpeg = (
         "\n"
         + "-" * 68
@@ -142,4 +151,4 @@ def test_pilinfo() -> None:
         + "-" * 68
         + "\n"
     )
-    assert jpeg in out
+    assert supported_formats == (jpeg in out)

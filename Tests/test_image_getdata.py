@@ -14,7 +14,7 @@ def test_sanity() -> None:
     assert data[0] == (20, 20, 70)
 
 
-def test_roundtrip() -> None:
+def test_mode() -> None:
     def getdata(mode: str) -> tuple[float | tuple[int, ...], int, int]:
         im = hopper(mode).resize((32, 30), Image.Resampling.NEAREST)
         data = im.getdata()

@@ -289,6 +289,16 @@ def test_rgba(ext: str) -> None:
         assert im.mode == "RGBA"
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@skip_unless_feature_version("jpg_2000", "2.5.1")
+def test_cmyk() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue205.jp2") as im:
+        assert im.mode == "CMYK"
+        assert im.getpixel((0, 0)) == (185, 134, 0, 0)
+
+
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
 def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
@@ -364,6 +374,16 @@ def test_subsampling_decode(name: str) -> None:
         assert_image_similar(im, expected, epsilon)
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+def test_pclr() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue104_jpxstream.jp2") as im:
+        assert im.mode == "P"
+        assert len(im.palette.colors) == 256
+        assert im.palette.colors[(255, 255, 255)] == 0
+
+
 def test_comment() -> None:
     with Image.open("Tests/images/comment.jp2") as im:
         assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
@@ -436,3 +456,9 @@ def test_plt_marker() -> None:
         hdr = out.read(2)
         length = _binary.i16be(hdr)
         out.seek(length - 2, os.SEEK_CUR)
+
+
+def test_9bit():
+    with Image.open("Tests/images/9bit.j2k") as im:
+        assert im.mode == "I;16"
+        assert im.size == (128, 128)

@@ -344,7 +344,7 @@ MARKER = {
 }
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
     return prefix[:3] == b"\xFF\xD8\xFF"
 
@@ -408,7 +408,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 msg = "no marker found"
                 raise SyntaxError(msg)
 
-    def load_read(self, read_bytes):
+    def load_read(self, read_bytes: int) -> bytes:
         """
         internal: read more image data
         For premature EOF and LOAD_TRUNCATED_IMAGES adds EOI marker
@@ -424,13 +424,15 @@ class JpegImageFile(ImageFile.ImageFile):
 
         return s
 
-    def draft(self, mode, size):
+    def draft(
+        self, mode: str, size: tuple[int, int]
+    ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
-            return
+            return None
 
         # Protect from second call
         if self.decoderconfig:
-            return
+            return None
 
         d, e, o, a = self.tile[0]
         scale = 1
@@ -460,7 +462,7 @@ class JpegImageFile(ImageFile.ImageFile):
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
         return self.mode, box
 
-    def load_djpeg(self):
+    def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
         f, path = tempfile.mkstemp()

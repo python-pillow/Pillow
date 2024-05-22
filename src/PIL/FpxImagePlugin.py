@@ -41,7 +41,7 @@ MODES = {
 # --------------------------------------------------------------------
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:8] == olefile.MAGIC
 
 
@@ -237,7 +237,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         return ImageFile.ImageFile.load(self)
 
-    def close(self):
+    def close(self) -> None:
         self.ole.close()
         super().close()
 

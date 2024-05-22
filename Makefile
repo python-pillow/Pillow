@@ -2,7 +2,6 @@
 
 .PHONY: clean
 clean:
-	python3 setup.py clean
 	rm src/PIL/*.so || true
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
@@ -78,8 +77,6 @@ release-test:
 	python3 selftest.py
 	python3 -m pytest Tests
 	python3 -m pip install .
-	-rm dist/*.egg
-	-rmdir dist
 	python3 -m pytest -qq
 	python3 -m check_manifest
 	python3 -m pyroma .

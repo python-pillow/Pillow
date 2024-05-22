@@ -57,7 +57,7 @@ def dump(c: Sequence[int | bytes]) -> None:
     """.. deprecated:: 10.2.0"""
     deprecate("IptcImagePlugin.dump", 12)
     for i in c:
-        print("%02x" % _i8(i), end=" ")
+        print(f"{_i8(i):02x}", end=" ")
     print()
 
 

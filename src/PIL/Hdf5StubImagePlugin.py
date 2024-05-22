@@ -29,7 +29,7 @@ def register_handler(handler):
 # Image adapter
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:8] == b"\x89HDF\r\n\x1a\n"
 
 
@@ -37,7 +37,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
     format = "HDF5"
     format_description = "HDF5"
 
-    def _open(self):
+    def _open(self) -> None:
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(8)):

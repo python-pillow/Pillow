@@ -47,7 +47,7 @@ Google's `OSS-Fuzz`_ project for finding this issue.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To limit :py:class:`PIL.ImageMath` to working with images, Pillow
-will now restrict the builtins available to :py:meth:`PIL.ImageMath.eval`. This will
+will now restrict the builtins available to :py:meth:`!PIL.ImageMath.eval`. This will
 help prevent problems arising if users evaluate arbitrary expressions, such as
 ``ImageMath.eval("exec(exit())")``.
 

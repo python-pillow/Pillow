@@ -252,7 +252,7 @@ class IcnsImageFile(ImageFile.ImageFile):
     format = "ICNS"
     format_description = "Mac OS icns resource"
 
-    def _open(self):
+    def _open(self) -> None:
         self.icns = IcnsFile(self.fp)
         self._mode = "RGBA"
         self.info["sizes"] = self.icns.itersizes()
@@ -374,7 +374,7 @@ def _save(im, fp, filename):
         fp.flush()
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == MAGIC
 
 

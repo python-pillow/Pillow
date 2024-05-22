@@ -70,7 +70,7 @@ class PyAccess:
         # logger.debug("%s", vals)
         self._post_init()
 
-    def _post_init(self):
+    def _post_init(self) -> None:
         pass
 
     def __setitem__(self, xy, color):

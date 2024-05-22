@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import builtins
 from types import CodeType
-from typing import Any
+from typing import Any, Callable
 
 from . import Image, _imagingmath
+from ._deprecate import deprecate
 
 
 class _Operand:
@@ -60,7 +61,7 @@ class _Operand:
             out = Image.new(mode or im_1.mode, im_1.size, None)
             im_1.load()
             try:
-                op = getattr(_imagingmath, op + "_" + im_1.mode)
+                op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
@@ -88,7 +89,7 @@ class _Operand:
             im_1.load()
             im_2.load()
             try:
-                op = getattr(_imagingmath, op + "_" + im_1.mode)
+                op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
@@ -235,9 +236,55 @@ ops = {
 }
 
 
-def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
+def lambda_eval(
+    expression: Callable[[dict[str, Any]], Any],
+    options: dict[str, Any] = {},
+    **kw: Any,
+) -> Any:
     """
-    Evaluates an image expression.
+    Returns the result of an image function.
+
+    :py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
+    images, use the :py:meth:`~PIL.Image.Image.split` method or
+    :py:func:`~PIL.Image.merge` function.
+
+    :param expression: A function that receives a dictionary.
+    :param options: Values to add to the function's dictionary. You
+                    can either use a dictionary, or one or more keyword
+                    arguments.
+    :return: The expression result. This is usually an image object, but can
+             also be an integer, a floating point value, or a pixel tuple,
+             depending on the expression.
+    """
+
+    args: dict[str, Any] = ops.copy()
+    args.update(options)
+    args.update(kw)
+    for k, v in args.items():
+        if hasattr(v, "im"):
+            args[k] = _Operand(v)
+
+    out = expression(args)
+    try:
+        return out.im
+    except AttributeError:
+        return out
+
+
+def unsafe_eval(
+    expression: str,
+    options: dict[str, Any] = {},
+    **kw: Any,
+) -> Any:
+    """
+    Evaluates an image expression. This uses Python's ``eval()`` function to process
+    the expression string, and carries the security risks of doing so. It is not
+    recommended to process expressions without considering this.
+    :py:meth:`~lambda_eval` is a more secure alternative.
+
+    :py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
+    images, use the :py:meth:`~PIL.Image.Image.split` method or
+    :py:func:`~PIL.Image.merge` function.
 
     :param expression: A string containing a Python-style expression.
     :param options: Values to add to the evaluation context.  You
@@ -250,12 +297,12 @@ def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
 
     # build execution namespace
     args: dict[str, Any] = ops.copy()
-    for k in list(_dict.keys()) + list(kw.keys()):
+    for k in list(options.keys()) + list(kw.keys()):
         if "__" in k or hasattr(builtins, k):
             msg = f"'{k}' not allowed"
             raise ValueError(msg)
 
-    args.update(_dict)
+    args.update(options)
     args.update(kw)
     for k, v in args.items():
         if hasattr(v, "im"):
@@ -279,3 +326,32 @@ def eval(expression: str, _dict: dict[str, Any] = {}, **kw: Any) -> Any:
         return out.im
     except AttributeError:
         return out
+
+
+def eval(
+    expression: str,
+    _dict: dict[str, Any] = {},
+    **kw: Any,
+) -> Any:
+    """
+    Evaluates an image expression.
+
+    Deprecated. Use lambda_eval() or unsafe_eval() instead.
+
+    :param expression: A string containing a Python-style expression.
+    :param _dict: Values to add to the evaluation context.  You
+                  can either use a dictionary, or one or more keyword
+                  arguments.
+    :return: The evaluated expression. This is usually an image object, but can
+             also be an integer, a floating point value, or a pixel tuple,
+             depending on the expression.
+
+    ..  deprecated:: 10.3.0
+    """
+
+    deprecate(
+        "ImageMath.eval",
+        12,
+        "ImageMath.lambda_eval or ImageMath.unsafe_eval",
+    )
+    return unsafe_eval(expression, _dict, **kw)

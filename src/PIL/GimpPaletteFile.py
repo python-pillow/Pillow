@@ -53,5 +53,5 @@ class GimpPaletteFile:
 
         self.palette = b"".join(self.palette)
 
-    def getpalette(self):
+    def getpalette(self) -> tuple[bytes, str]:
         return self.palette, self.rawmode

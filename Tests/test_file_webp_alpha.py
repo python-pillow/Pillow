@@ -151,3 +151,15 @@ def test_write_unsupported_mode_PA(tmp_path: Path) -> None:
             target = im.convert("RGBA")
 
         assert_image_similar(image, target, 25.0)
+
+
+def test_alpha_quality(tmp_path: Path) -> None:
+    with Image.open("Tests/images/transparent.png") as im:
+        out = str(tmp_path / "temp.webp")
+        im.save(out)
+
+        out_quality = str(tmp_path / "quality.webp")
+        im.save(out_quality, alpha_quality=50)
+        with Image.open(out) as reloaded:
+            with Image.open(out_quality) as reloaded_quality:
+                assert reloaded.tobytes() != reloaded_quality.tobytes()

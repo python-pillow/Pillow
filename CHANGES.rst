@@ -2,8 +2,83 @@
 Changelog (Pillow)
 ==================
 
-10.3.0 (unreleased)
+10.4.0 (unreleased)
 -------------------
+
+- Deprecate BGR;15, BGR;16 and BGR;24 modes #7978
+  [radarhere, hugovk]
+
+- Fix ImagingAccess for I;16N on big-endian #7921
+  [Yay295, radarhere]
+
+- Support reading P mode TIFF images with padding #7996
+  [radarhere]
+
+- Deprecate support for libtiff < 4 #7998
+  [radarhere, hugovk]
+
+- Corrected ImageShow UnixViewer command #7987
+  [radarhere]
+
+- Use functools.cached_property in ImageStat #7952
+  [nulano, hugovk, radarhere]
+
+- Add support for reading BITMAPV2INFOHEADER and BITMAPV3INFOHEADER #7956
+  [Cirras, radarhere]
+
+- Support reading CMYK JPEG2000 images #7947
+  [radarhere]
+
+10.3.0 (2024-04-01)
+-------------------
+
+- CVE-2024-28219: Use ``strncpy`` to avoid buffer overflow #7928
+  [radarhere, hugovk]
+
+- Deprecate ``eval()``, replacing it with ``lambda_eval()`` and ``unsafe_eval()`` #7927
+  [radarhere, hugovk]
+
+- Raise ``ValueError`` if seeking to greater than offset-sized integer in TIFF #7883
+  [radarhere]
+
+- Add ``--report`` argument to ``__main__.py`` to omit supported formats #7818
+  [nulano, radarhere, hugovk]
+
+- Added RGB to I;16, I;16L, I;16B and I;16N conversion #7918, #7920
+  [radarhere]
+
+- Fix editable installation with custom build backend and configuration options #7658
+  [nulano, radarhere]
+
+- Fix putdata() for I;16N on big-endian #7209
+  [Yay295, hugovk, radarhere]
+
+- Determine MPO size from markers, not EXIF data #7884
+  [radarhere]
+
+- Improved conversion from RGB to RGBa, LA and La #7888
+  [radarhere]
+
+- Support FITS images with GZIP_1 compression #7894
+  [radarhere]
+
+- Use I;16 mode for 9-bit JPEG 2000 images #7900
+  [scaramallion, radarhere]
+
+- Raise ValueError if kmeans is negative #7891
+  [radarhere]
+
+- Remove TIFF tag OSUBFILETYPE when saving using libtiff #7893
+  [radarhere]
+
+- Raise ValueError for negative values when loading P1-P3 PPM images #7882
+  [radarhere]
+
+- Added reading of JPEG2000 palettes #7870
+  [radarhere]
+
+- Added alpha_quality argument when saving WebP images #7872
+  [radarhere]
 
 - Fixed joined corners for ImageDraw rounded_rectangle() non-integer dimensions #7881
   [radarhere]
@@ -4298,7 +4373,7 @@ Changelog (Pillow)
 - Documentation changes, URL update, transpose, release checklist
   [radarhere]
 
-- Fixed saving to nonexistant files specified by pathlib.Path objects #1748 (fixes #1747)
+- Fixed saving to nonexistent files specified by pathlib.Path objects #1748 (fixes #1747)
   [radarhere]
 
 - Round Image.crop arguments to the nearest integer #1745 (fixes #1744)
@@ -7509,7 +7584,7 @@ The test suite includes 400 individual tests.
 - A handbook is available (distributed separately).
 
 - The coordinate system is changed so that (0,0) is now located
-  in the upper left corner.  This is in compliancy with ISO 12087
+  in the upper left corner.  This is in compliance with ISO 12087
   and 90% of all other image processing and graphics libraries.
 
 - Modes "1" (bilevel) and "P" (palette) have been introduced.  Note

@@ -27,7 +27,7 @@ from ._binary import o8
 # decoder
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return (
         len(prefix) >= 6
         and i16(prefix, 4) in [0xAF11, 0xAF12]
@@ -123,7 +123,7 @@ class FliImageFile(ImageFile.ImageFile):
                 palette[i] = (r, g, b)
                 i += 1
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
@@ -132,7 +132,7 @@ class FliImageFile(ImageFile.ImageFile):
         for f in range(self.__frame + 1, frame + 1):
             self._seek(f)
 
-    def _seek(self, frame):
+    def _seek(self, frame: int) -> None:
         if frame == 0:
             self.__frame = -1
             self._fp.seek(self.__rewind)
@@ -162,7 +162,7 @@ class FliImageFile(ImageFile.ImageFile):
 
         self.__offset += framesize
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
 

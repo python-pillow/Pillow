@@ -271,16 +271,16 @@ class D3DFMT(IntEnum):
 module = sys.modules[__name__]
 for item in DDSD:
     assert item.name is not None
-    setattr(module, "DDSD_" + item.name, item.value)
+    setattr(module, f"DDSD_{item.name}", item.value)
 for item1 in DDSCAPS:
     assert item1.name is not None
-    setattr(module, "DDSCAPS_" + item1.name, item1.value)
+    setattr(module, f"DDSCAPS_{item1.name}", item1.value)
 for item2 in DDSCAPS2:
     assert item2.name is not None
-    setattr(module, "DDSCAPS2_" + item2.name, item2.value)
+    setattr(module, f"DDSCAPS2_{item2.name}", item2.value)
 for item3 in DDPF:
     assert item3.name is not None
-    setattr(module, "DDPF_" + item3.name, item3.value)
+    setattr(module, f"DDPF_{item3.name}", item3.value)
 
 DDS_FOURCC = DDPF.FOURCC
 DDS_RGB = DDPF.RGB
@@ -331,7 +331,7 @@ class DdsImageFile(ImageFile.ImageFile):
     format = "DDS"
     format_description = "DirectDraw Surface"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(4)):
             msg = "not a DDS file"
             raise SyntaxError(msg)
@@ -472,7 +472,7 @@ class DdsImageFile(ImageFile.ImageFile):
         else:
             self.tile = [ImageFile._Tile("raw", extents, 0, rawmode or self.mode)]
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
 
@@ -497,7 +497,8 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
 
         data = bytearray()
         bytecount = bitcount // 8
-        while len(data) < self.state.xsize * self.state.ysize * len(masks):
+        dest_length = self.state.xsize * self.state.ysize * len(masks)
+        while len(data) < dest_length:
             value = int.from_bytes(self.fd.read(bytecount), "little")
             for i, mask in enumerate(masks):
                 masked_value = value & mask
@@ -505,7 +506,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
                 data += o8(
                     int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
                 )
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
         return -1, 0
 
 
@@ -561,7 +562,7 @@ def _save(im, fp, filename):
     )
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"DDS "
 
 

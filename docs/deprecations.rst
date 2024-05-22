@@ -92,6 +92,29 @@ Deprecated                                    Use instead
                                               :py:data:`sys.version_info`, and ``PIL.__version__``
 ============================================  ====================================================
 
+ImageMath eval()
+^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.3.0
+
+``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
+:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
+
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
+
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+Support for LibTIFF earlier than version 4 has been deprecated.
+Upgrade to a newer version of LibTIFF instead.
+
 Removed features
 ----------------
 
