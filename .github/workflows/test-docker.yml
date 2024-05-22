@@ -1,9 +1,30 @@
 name: Test Docker
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -15,37 +36,37 @@ jobs:
         docker: [
           # Run slower jobs first to give them a headstart and reduce waiting time
           ubuntu-22.04-jammy-arm64v8,
-          ubuntu-22.04-jammy-ppc64le,
-          ubuntu-22.04-jammy-s390x,
+          ubuntu-24.04-noble-ppc64le,
+          ubuntu-24.04-noble-s390x,
           # Then run the remainder
           alpine,
           amazon-2-amd64,
+          amazon-2023-amd64,
           arch,
-          centos-7-amd64,
-          centos-stream-8-amd64,
           centos-stream-9-amd64,
-          debian-10-buster-x86,
-          debian-11-bullseye-x86,
-          fedora-35-amd64,
-          fedora-36-amd64,
+          debian-11-bullseye-amd64,
+          debian-12-bookworm-x86,
+          debian-12-bookworm-amd64,
+          fedora-39-amd64,
+          fedora-40-amd64,
           gentoo,
-          ubuntu-18.04-bionic-amd64,
           ubuntu-20.04-focal-amd64,
           ubuntu-22.04-jammy-amd64,
+          ubuntu-24.04-noble-amd64,
         ]
         dockerTag: [main]
         include:
           - docker: "ubuntu-22.04-jammy-arm64v8"
             qemu-arch: "aarch64"
-          - docker: "ubuntu-22.04-jammy-ppc64le"
+          - docker: "ubuntu-24.04-noble-ppc64le"
             qemu-arch: "ppc64le"
-          - docker: "ubuntu-22.04-jammy-s390x"
+          - docker: "ubuntu-24.04-noble-s390x"
             qemu-arch: "s390x"
 
     name: ${{ matrix.docker }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
@@ -61,8 +82,8 @@ jobs:
 
     - name: Docker build
       run: |
-        # The Pillow user in the docker container is UID 1000
-        sudo chown -R 1000 $GITHUB_WORKSPACE
+        # The Pillow user in the docker container is UID 1001
+        sudo chown -R 1001 $GITHUB_WORKSPACE
         docker run --name pillow_container  -v $GITHUB_WORKSPACE:/Pillow pythonpillow/${{ matrix.docker }}:${{ matrix.dockerTag }}
         sudo chown -R runner $GITHUB_WORKSPACE
 
@@ -79,10 +100,12 @@ jobs:
         MATRIX_DOCKER: ${{ matrix.docker }}
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v4
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
+        gcov: true
+        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:

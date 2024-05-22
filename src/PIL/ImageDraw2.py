@@ -22,12 +22,9 @@
 
 .. seealso:: :py:mod:`PIL.ImageDraw`
 """
-
-
-import warnings
+from __future__ import annotations
 
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
-from ._deprecate import deprecate
 
 
 class Pen:
@@ -172,19 +169,6 @@ class Draw:
             xy = ImagePath.Path(xy)
             xy.transform(self.transform)
         self.draw.text(xy, text, font=font.font, fill=font.color)
-
-    def textsize(self, text, font):
-        """
-        .. deprecated:: 9.2.0
-
-        Return the size of the given string, in pixels.
-
-        .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.textsize`
-        """
-        deprecate("textsize", 10, "textbbox or textlength")
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            return self.draw.textsize(text, font=font.font)
 
     def textbbox(self, xy, text, font):
         """

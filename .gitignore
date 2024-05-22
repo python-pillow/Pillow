@@ -79,7 +79,7 @@ docs/_build/
 # JetBrains
 .idea
 
-# Extra test images installed from pillow-depends/test_images
+# Extra test images installed from python-pillow/test-images
 Tests/images/README.md
 Tests/images/crash_1.tif
 Tests/images/crash_2.tif

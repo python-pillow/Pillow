@@ -20,17 +20,18 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import os
 import struct
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import o8
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return len(prefix) >= 2 and i16(prefix) == 474
 
 
@@ -49,18 +50,19 @@ MODES = {
 ##
 # Image plugin for SGI images.
 class SgiImageFile(ImageFile.ImageFile):
-
     format = "SGI"
     format_description = "SGI Image File Format"
 
-    def _open(self):
-
+    def _open(self) -> None:
         # HEAD
+        assert self.fp is not None
+
         headlen = 512
         s = self.fp.read(headlen)
 
         if not _accept(s):
-            raise ValueError("Not an SGI image file")
+            msg = "Not an SGI image file"
+            raise ValueError(msg)
 
         # compression : verbatim or RLE
         compression = s[2]
@@ -91,10 +93,11 @@ class SgiImageFile(ImageFile.ImageFile):
             pass
 
         if rawmode == "":
-            raise ValueError("Unsupported SGI image mode")
+            msg = "Unsupported SGI image mode"
+            raise ValueError(msg)
 
         self._size = xsize, ysize
-        self.mode = rawmode.split(";")[0]
+        self._mode = rawmode.split(";")[0]
         if self.mode == "RGB":
             self.custom_mimetype = "image/rgb"
 
@@ -122,9 +125,10 @@ class SgiImageFile(ImageFile.ImageFile):
             ]
 
 
-def _save(im, fp, filename):
-    if im.mode != "RGB" and im.mode != "RGBA" and im.mode != "L":
-        raise ValueError("Unsupported SGI image mode")
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+    if im.mode not in {"RGB", "RGBA", "L"}:
+        msg = "Unsupported SGI image mode"
+        raise ValueError(msg)
 
     # Get the keyword arguments
     info = im.encoderinfo
@@ -133,7 +137,8 @@ def _save(im, fp, filename):
     bpc = info.get("bpc", 1)
 
     if bpc not in (1, 2):
-        raise ValueError("Unsupported number of bytes per pixel")
+        msg = "Unsupported number of bytes per pixel"
+        raise ValueError(msg)
 
     # Flip the image, since the origin of SGI file is the bottom-left corner
     orientation = -1
@@ -153,22 +158,21 @@ def _save(im, fp, filename):
     # Z Dimension: Number of channels
     z = len(im.mode)
 
-    if dim == 1 or dim == 2:
+    if dim in {1, 2}:
         z = 1
 
     # assert we've got the right number of bands.
     if len(im.getbands()) != z:
-        raise ValueError(
-            f"incorrect number of bands in SGI write: {z} vs {len(im.getbands())}"
-        )
+        msg = f"incorrect number of bands in SGI write: {z} vs {len(im.getbands())}"
+        raise ValueError(msg)
 
     # Minimum Byte value
     pinmin = 0
     # Maximum Byte value (255 = 8bits per pixel)
     pinmax = 255
     # Image name (79 characters max, truncated below in write)
-    img_name = os.path.splitext(os.path.basename(filename))[0]
-    img_name = img_name.encode("ascii", "ignore")
+    filename = os.path.basename(filename)
+    img_name = os.path.splitext(filename)[0].encode("ascii", "ignore")
     # Standard representation of pixel in the file
     colormap = 0
     fp.write(struct.pack(">h", magic_number))
@@ -200,7 +204,10 @@ def _save(im, fp, filename):
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
+        assert self.im is not None
+
         rawmode, stride, orientation = self.args
         pagesize = self.state.xsize * self.state.ysize
         zsize = len(self.mode)

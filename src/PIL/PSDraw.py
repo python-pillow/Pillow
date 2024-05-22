@@ -14,6 +14,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import sys
 
@@ -53,7 +54,7 @@ class PSDraw:
         self.fp.write(b"%%EndProlog\n")
         self.isofont = {}
 
-    def end_document(self):
+    def end_document(self) -> None:
         """Ends printing. (Write PostScript DSC footer.)"""
         self.fp.write(b"%%EndDocument\nrestore showpage\n%%End\n")
         if hasattr(self.fp, "flush"):
@@ -109,7 +110,7 @@ class PSDraw:
             if im.mode == "1":
                 dpi = 200  # fax
             else:
-                dpi = 100  # greyscale
+                dpi = 100  # grayscale
         # image size (on paper)
         x = im.size[0] * 72 / dpi
         y = im.size[1] * 72 / dpi

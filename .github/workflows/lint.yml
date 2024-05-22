@@ -2,8 +2,15 @@ name: Lint
 
 on: [push, pull_request, workflow_dispatch]
 
+env:
+  FORCE_COLOR: 1
+
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -13,10 +20,10 @@ jobs:
     name: Lint
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: pre-commit cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pre-commit
         key: lint-pre-commit-${{ hashFiles('**/.pre-commit-config.yaml') }}
@@ -24,9 +31,9 @@ jobs:
           lint-pre-commit-
 
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.10"
+        python-version: "3.x"
         cache: pip
         cache-dependency-path: "setup.py"
 
@@ -42,3 +49,6 @@ jobs:
       run: tox -e lint
       env:
         PRE_COMMIT_COLOR: always
+
+    - name: Mypy
+      run: tox -e mypy

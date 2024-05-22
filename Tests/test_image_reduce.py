@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from PIL import Image, ImageMath, ImageMode
@@ -38,60 +40,66 @@ gradients_image = Image.open("Tests/images/radial_gradients.png")
 gradients_image.load()
 
 
-def test_args_factor():
+@pytest.mark.parametrize(
+    "size, expected",
+    (
+        (3, (4, 4)),
+        ((3, 1), (4, 10)),
+        ((1, 3), (10, 4)),
+    ),
+)
+def test_args_factor(size: int | tuple[int, int], expected: tuple[int, int]) -> None:
     im = Image.new("L", (10, 10))
-
-    assert (4, 4) == im.reduce(3).size
-    assert (4, 10) == im.reduce((3, 1)).size
-    assert (10, 4) == im.reduce((1, 3)).size
-
-    with pytest.raises(ValueError):
-        im.reduce(0)
-    with pytest.raises(TypeError):
-        im.reduce(2.0)
-    with pytest.raises(ValueError):
-        im.reduce((0, 10))
+    assert expected == im.reduce(size).size
 
 
-def test_args_box():
+@pytest.mark.parametrize(
+    "size, expected_error", ((0, ValueError), (2.0, TypeError), ((0, 10), ValueError))
+)
+def test_args_factor_error(size: float | tuple[int, int], expected_error) -> None:
     im = Image.new("L", (10, 10))
-
-    assert (5, 5) == im.reduce(2, (0, 0, 10, 10)).size
-    assert (1, 1) == im.reduce(2, (5, 5, 6, 6)).size
-
-    with pytest.raises(TypeError):
-        im.reduce(2, "stri")
-    with pytest.raises(TypeError):
-        im.reduce(2, 2)
-    with pytest.raises(ValueError):
-        im.reduce(2, (0, 0, 11, 10))
-    with pytest.raises(ValueError):
-        im.reduce(2, (0, 0, 10, 11))
-    with pytest.raises(ValueError):
-        im.reduce(2, (-1, 0, 10, 10))
-    with pytest.raises(ValueError):
-        im.reduce(2, (0, -1, 10, 10))
-    with pytest.raises(ValueError):
-        im.reduce(2, (0, 5, 10, 5))
-    with pytest.raises(ValueError):
-        im.reduce(2, (5, 0, 5, 10))
+    with pytest.raises(expected_error):
+        im.reduce(size)
 
 
-def test_unsupported_modes():
+@pytest.mark.parametrize(
+    "size, expected",
+    (
+        ((0, 0, 10, 10), (5, 5)),
+        ((5, 5, 6, 6), (1, 1)),
+    ),
+)
+def test_args_box(size: tuple[int, int, int, int], expected: tuple[int, int]) -> None:
+    im = Image.new("L", (10, 10))
+    assert expected == im.reduce(2, size).size
+
+
+@pytest.mark.parametrize(
+    "size, expected_error",
+    (
+        ("stri", TypeError),
+        ((0, 0, 11, 10), ValueError),
+        ((0, 0, 10, 11), ValueError),
+        ((-1, 0, 10, 10), ValueError),
+        ((0, -1, 10, 10), ValueError),
+        ((0, 5, 10, 5), ValueError),
+        ((5, 0, 5, 10), ValueError),
+    ),
+)
+def test_args_box_error(size: str | tuple[int, int, int, int], expected_error) -> None:
+    im = Image.new("L", (10, 10))
+    with pytest.raises(expected_error):
+        im.reduce(2, size).size
+
+
+@pytest.mark.parametrize("mode", ("P", "1", "I;16"))
+def test_unsupported_modes(mode: str) -> None:
     im = Image.new("P", (10, 10))
     with pytest.raises(ValueError):
         im.reduce(3)
 
-    im = Image.new("1", (10, 10))
-    with pytest.raises(ValueError):
-        im.reduce(3)
 
-    im = Image.new("I;16", (10, 10))
-    with pytest.raises(ValueError):
-        im.reduce(3)
-
-
-def get_image(mode):
+def get_image(mode: str) -> Image.Image:
     mode_info = ImageMode.getmode(mode)
     if mode_info.basetype == "L":
         bands = [gradients_image]
@@ -111,14 +119,19 @@ def get_image(mode):
     return im.crop((0, 0, im.width, im.height - 5))
 
 
-def compare_reduce_with_box(im, factor):
+def compare_reduce_with_box(im: Image.Image, factor: int | tuple[int, int]) -> None:
     box = (11, 13, 146, 164)
     reduced = im.reduce(factor, box=box)
     reference = im.crop(box).reduce(factor)
     assert reduced == reference
 
 
-def compare_reduce_with_reference(im, factor, average_diff=0.4, max_diff=1):
+def compare_reduce_with_reference(
+    im: Image.Image,
+    factor: int | tuple[int, int],
+    average_diff: float = 0.4,
+    max_diff: int = 1,
+) -> None:
     """Image.reduce() should look very similar to Image.resize(BOX).
 
     A reference image is compiled from a large source area
@@ -163,7 +176,9 @@ def compare_reduce_with_reference(im, factor, average_diff=0.4, max_diff=1):
     assert_compare_images(reduced, reference, average_diff, max_diff)
 
 
-def assert_compare_images(a, b, max_average_diff, max_diff=255):
+def assert_compare_images(
+    a: Image.Image, b: Image.Image, max_average_diff: float, max_diff: int = 255
+) -> None:
     assert a.mode == b.mode, f"got mode {repr(a.mode)}, expected {repr(b.mode)}"
     assert a.size == b.size, f"got size {repr(a.size)}, expected {repr(b.size)}"
 
@@ -171,7 +186,9 @@ def assert_compare_images(a, b, max_average_diff, max_diff=255):
 
     bands = ImageMode.getmode(a.mode).bands
     for band, ach, bch in zip(bands, a.split(), b.split()):
-        ch_diff = ImageMath.eval("convert(abs(a - b), 'L')", a=ach, b=bch)
+        ch_diff = ImageMath.lambda_eval(
+            lambda args: args["convert"](abs(args["a"] - args["b"]), "L"), a=ach, b=bch
+        )
         ch_hist = ch_diff.histogram()
 
         average_diff = sum(i * num for i, num in enumerate(ch_hist)) / (
@@ -190,73 +207,79 @@ def assert_compare_images(a, b, max_average_diff, max_diff=255):
         )
 
 
-def test_mode_L():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_L(factor: int | tuple[int, int]) -> None:
     im = get_image("L")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_LA():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_LA(factor: int | tuple[int, int]) -> None:
     im = get_image("LA")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor, 0.8, 5)
+    compare_reduce_with_reference(im, factor, 0.8, 5)
 
+
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_LA_opaque(factor: int | tuple[int, int]) -> None:
+    im = get_image("LA")
     # With opaque alpha, an error should be way smaller.
     im.putalpha(Image.new("L", im.size, 255))
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_La():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_La(factor: int | tuple[int, int]) -> None:
     im = get_image("La")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_RGB():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_RGB(factor: int | tuple[int, int]) -> None:
     im = get_image("RGB")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_RGBA():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_RGBA(factor: int | tuple[int, int]) -> None:
     im = get_image("RGBA")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor, 0.8, 5)
+    compare_reduce_with_reference(im, factor, 0.8, 5)
 
+
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_RGBA_opaque(factor: int | tuple[int, int]) -> None:
+    im = get_image("RGBA")
     # With opaque alpha, an error should be way smaller.
     im.putalpha(Image.new("L", im.size, 255))
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_RGBa():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_RGBa(factor: int | tuple[int, int]) -> None:
     im = get_image("RGBa")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_I():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_I(factor: int | tuple[int, int]) -> None:
     im = get_image("I")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor)
+    compare_reduce_with_box(im, factor)
 
 
-def test_mode_F():
+@pytest.mark.parametrize("factor", remarkable_factors)
+def test_mode_F(factor: int | tuple[int, int]) -> None:
     im = get_image("F")
-    for factor in remarkable_factors:
-        compare_reduce_with_reference(im, factor, 0, 0)
-        compare_reduce_with_box(im, factor)
+    compare_reduce_with_reference(im, factor, 0, 0)
+    compare_reduce_with_box(im, factor)
 
 
 @skip_unless_feature("jpg_2000")
-def test_jpeg2k():
+def test_jpeg2k() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert im.reduce(2).size == (320, 240)

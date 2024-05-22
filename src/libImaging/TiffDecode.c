@@ -14,6 +14,10 @@
 
 #ifdef HAVE_LIBTIFF
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h> /* lseek */
+#endif
+
 #ifndef uint
 #define uint uint32
 #endif
@@ -24,7 +28,7 @@
  *
  * This cast is safe, as the top 32-bits of HFILE are guaranteed to be zero,
  * see
- * https://docs.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
+ * https://learn.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
  */
 #ifndef USE_WIN32_FILEIO
 #define fd_to_tiff_fd(fd) (fd)
@@ -56,7 +60,11 @@ _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     dump_state(state);
 
     if (state->loc > state->eof) {
-        TIFFError("_tiffReadProc", "Invalid Read at loc %" PRIu64 ", eof: %" PRIu64, state->loc, state->eof);
+        TIFFError(
+            "_tiffReadProc",
+            "Invalid Read at loc %" PRIu64 ", eof: %" PRIu64,
+            state->loc,
+            state->eof);
         return 0;
     }
     to_read = min(size, min(state->size, (tsize_t)state->eof) - (tsize_t)state->loc);
@@ -213,7 +221,12 @@ ImagingLibTiffInit(ImagingCodecState state, int fp, uint32_t offset) {
 }
 
 int
-_pickUnpackers(Imaging im, ImagingCodecState state, TIFF *tiff, uint16_t planarconfig, ImagingShuffler *unpackers) {
+_pickUnpackers(
+    Imaging im,
+    ImagingCodecState state,
+    TIFF *tiff,
+    uint16_t planarconfig,
+    ImagingShuffler *unpackers) {
     // if number of bands is 1, there is no difference with contig case
     if (planarconfig == PLANARCONFIG_SEPARATE && im->bands > 1) {
         uint16_t bits_per_sample = 8;
@@ -228,10 +241,14 @@ _pickUnpackers(Imaging im, ImagingCodecState state, TIFF *tiff, uint16_t planarc
         // We'll pick appropriate set of unpackers depending on planar_configuration
         // It does not matter if data is RGB(A), CMYK or LUV really,
         // we just copy it plane by plane
-        unpackers[0] = ImagingFindUnpacker("RGBA", bits_per_sample == 16 ? "R;16N" : "R", NULL);
-        unpackers[1] = ImagingFindUnpacker("RGBA", bits_per_sample == 16 ? "G;16N" : "G", NULL);
-        unpackers[2] = ImagingFindUnpacker("RGBA", bits_per_sample == 16 ? "B;16N" : "B", NULL);
-        unpackers[3] = ImagingFindUnpacker("RGBA", bits_per_sample == 16 ? "A;16N" : "A", NULL);
+        unpackers[0] =
+            ImagingFindUnpacker("RGBA", bits_per_sample == 16 ? "R;16N" : "R", NULL);
+        unpackers[1] =
+            ImagingFindUnpacker("RGBA", bits_per_sample == 16 ? "G;16N" : "G", NULL);
+        unpackers[2] =
+            ImagingFindUnpacker("RGBA", bits_per_sample == 16 ? "B;16N" : "B", NULL);
+        unpackers[3] =
+            ImagingFindUnpacker("RGBA", bits_per_sample == 16 ? "A;16N" : "A", NULL);
 
         return im->bands;
     } else {
@@ -243,10 +260,10 @@ _pickUnpackers(Imaging im, ImagingCodecState state, TIFF *tiff, uint16_t planarc
 
 int
 _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
-    // To avoid dealing with YCbCr subsampling and other complications, let libtiff handle it
-    // Use a TIFFRGBAImage wrapping the tiff image, and let libtiff handle
-    // all of the conversion. Metadata read from the TIFFRGBAImage could
-    // be different from the metadata that the base tiff returns.
+    // To avoid dealing with YCbCr subsampling and other complications, let libtiff
+    // handle it Use a TIFFRGBAImage wrapping the tiff image, and let libtiff handle all
+    // of the conversion. Metadata read from the TIFFRGBAImage could be different from
+    // the metadata that the base tiff returns.
 
     INT32 current_row;
     UINT8 *new_data;
@@ -255,17 +272,16 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
     TIFFRGBAImage img;
     char emsg[1024] = "";
 
-    // Since using TIFFRGBAImage* functions, we can read whole tiff into rastrr in one call
-    // Let's select smaller block size. Multiplying image width by (tile length OR rows per strip)
-    // gives us manageable block size in pixels
+    // Since using TIFFRGBAImage* functions, we can read whole tiff into rastrr in one
+    // call Let's select smaller block size. Multiplying image width by (tile length OR
+    // rows per strip) gives us manageable block size in pixels
     if (TIFFIsTiled(tiff)) {
         ret = TIFFGetFieldDefaulted(tiff, TIFFTAG_TILELENGTH, &rows_per_block);
-    }
-    else {
+    } else {
         ret = TIFFGetFieldDefaulted(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_block);
     }
 
-    if (ret != 1 || rows_per_block==(UINT32)(-1)) {
+    if (ret != 1 || rows_per_block == (UINT32)(-1)) {
         rows_per_block = state->ysize;
     }
 
@@ -353,7 +369,12 @@ decodergba_err:
 }
 
 int
-_decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, ImagingShuffler *unpackers) {
+_decodeTile(
+    Imaging im,
+    ImagingCodecState state,
+    TIFF *tiff,
+    int planes,
+    ImagingShuffler *unpackers) {
     INT32 x, y, tile_y, current_tile_length, current_tile_width;
     UINT32 tile_width, tile_length;
     tsize_t tile_bytes_size, row_byte_size;
@@ -392,8 +413,8 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
 
     if (tile_bytes_size > ((tile_length * state->bits / planes + 7) / 8) * tile_width) {
         // If the tile size as expected by LibTiff isn't what we're expecting, abort.
-        // man:   TIFFTileSize returns the equivalent size for a tile of data as it would be returned in a
-        //        call to TIFFReadTile ...
+        // man:   TIFFTileSize returns the equivalent size for a tile of data as it
+        // would be returned in a call to TIFFReadTile ...
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
@@ -424,19 +445,24 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
 
                 TRACE(("Read tile at %dx%d; \n\n", x, y));
 
-                current_tile_width = min((INT32) tile_width, state->xsize - x);
-                current_tile_length =  min((INT32) tile_length, state->ysize - y);
+                current_tile_width = min((INT32)tile_width, state->xsize - x);
+                current_tile_length = min((INT32)tile_length, state->ysize - y);
                 // iterate over each line in the tile and stuff data into image
                 for (tile_y = 0; tile_y < current_tile_length; tile_y++) {
-                    TRACE(("Writing tile data at %dx%d using tile_width: %d; \n", tile_y + y, x, current_tile_width));
+                    TRACE(
+                        ("Writing tile data at %dx%d using tile_width: %d; \n",
+                         tile_y + y,
+                         x,
+                         current_tile_width));
 
                     // UINT8 * bbb = state->buffer + tile_y * row_byte_size;
-                    // TRACE(("chars: %x%x%x%x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
+                    // TRACE(("chars: %x%x%x%x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1],
+                    // ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
 
-                    shuffler((UINT8*) im->image[tile_y + y] + x * im->pixelsize,
-                             state->buffer + tile_y * row_byte_size,
-                             current_tile_width
-                             );
+                    shuffler(
+                        (UINT8 *)im->image[tile_y + y] + x * im->pixelsize,
+                        state->buffer + tile_y * row_byte_size,
+                        current_tile_width);
                 }
             }
         }
@@ -446,7 +472,12 @@ _decodeTile(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imaging
 }
 
 int
-_decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, ImagingShuffler *unpackers) {
+_decodeStrip(
+    Imaging im,
+    ImagingCodecState state,
+    TIFF *tiff,
+    int planes,
+    ImagingShuffler *unpackers) {
     INT32 strip_row = 0;
     UINT8 *new_data;
     UINT32 rows_per_strip;
@@ -454,7 +485,7 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
     tsize_t strip_size, row_byte_size, unpacker_row_byte_size;
 
     ret = TIFFGetField(tiff, TIFFTAG_ROWSPERSTRIP, &rows_per_strip);
-    if (ret != 1 || rows_per_strip==(UINT32)(-1)) {
+    if (ret != 1 || rows_per_strip == (UINT32)(-1)) {
         rows_per_strip = state->ysize;
     }
 
@@ -474,8 +505,8 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
     unpacker_row_byte_size = (state->xsize * state->bits / planes + 7) / 8;
     if (strip_size > (unpacker_row_byte_size * rows_per_strip)) {
         // If the strip size as expected by LibTiff isn't what we're expecting, abort.
-        // man:   TIFFStripSize returns the equivalent size for a strip of data as it would be returned in a
-        //        call to TIFFReadEncodedStrip ...
+        // man:   TIFFStripSize returns the equivalent size for a strip of data as it
+        // would be returned in a call to TIFFReadEncodedStrip ...
         state->errcode = IMAGING_CODEC_BROKEN;
         return -1;
     }
@@ -509,8 +540,13 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
         int plane;
         for (plane = 0; plane < planes; plane++) {
             ImagingShuffler shuffler = unpackers[plane];
-            if (TIFFReadEncodedStrip(tiff, TIFFComputeStrip(tiff, state->y, plane), (tdata_t)state->buffer, strip_size) == -1) {
-                TRACE(("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0)));
+            if (TIFFReadEncodedStrip(
+                    tiff,
+                    TIFFComputeStrip(tiff, state->y, plane),
+                    (tdata_t)state->buffer,
+                    strip_size) == -1) {
+                TRACE(
+                    ("Decode Error, strip %d\n", TIFFComputeStrip(tiff, state->y, 0)));
                 state->errcode = IMAGING_CODEC_BROKEN;
                 return -1;
             }
@@ -519,16 +555,17 @@ _decodeStrip(Imaging im, ImagingCodecState state, TIFF *tiff, int planes, Imagin
 
             // iterate over each row in the strip and stuff data into image
             for (strip_row = 0;
-                 strip_row < min((INT32) rows_per_strip, state->ysize - state->y);
+                 strip_row < min((INT32)rows_per_strip, state->ysize - state->y);
                  strip_row++) {
                 TRACE(("Writing data into line %d ; \n", state->y + strip_row));
 
-                // UINT8 * bbb = state->buffer + strip_row * (state->bytes / rows_per_strip);
-                // TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0], ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
+                // UINT8 * bbb = state->buffer + strip_row * (state->bytes /
+                // rows_per_strip); TRACE(("chars: %x %x %x %x\n", ((UINT8 *)bbb)[0],
+                // ((UINT8 *)bbb)[1], ((UINT8 *)bbb)[2], ((UINT8 *)bbb)[3]));
 
                 shuffler(
-                    (UINT8*) im->image[state->y + state->yoff + strip_row] +
-                    state->xoff * im->pixelsize,
+                    (UINT8 *)im->image[state->y + state->yoff + strip_row] +
+                        state->xoff * im->pixelsize,
                     state->buffer + strip_row * row_byte_size,
                     state->xsize);
             }
@@ -662,7 +699,6 @@ ImagingLibTiffDecode(
         goto decode_err;
     }
 
-
     TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric);
     TIFFGetField(tiff, TIFFTAG_COMPRESSION, &compression);
     TIFFGetFieldDefaulted(tiff, TIFFTAG_PLANARCONFIG, &planarconfig);
@@ -671,16 +707,17 @@ ImagingLibTiffDecode(
     // Let LibTiff read them as RGBA
     readAsRGBA = photometric == PHOTOMETRIC_YCBCR;
 
-    if (readAsRGBA && compression == COMPRESSION_JPEG && planarconfig == PLANARCONFIG_CONTIG) {
-        // If using new JPEG compression, let libjpeg do RGB conversion for performance reasons
+    if (readAsRGBA && compression == COMPRESSION_JPEG &&
+        planarconfig == PLANARCONFIG_CONTIG) {
+        // If using new JPEG compression, let libjpeg do RGB conversion for performance
+        // reasons
         TIFFSetField(tiff, TIFFTAG_JPEGCOLORMODE, JPEGCOLORMODE_RGB);
         readAsRGBA = 0;
     }
 
     if (readAsRGBA) {
         _decodeAsRGBA(im, state, tiff);
-    }
-    else {
+    } else {
         planes = _pickUnpackers(im, state, tiff, planarconfig, unpackers);
         if (planes <= 0) {
             goto decode_err;
@@ -688,8 +725,7 @@ ImagingLibTiffDecode(
 
         if (TIFFIsTiled(tiff)) {
             _decodeTile(im, state, tiff, planes, unpackers);
-        }
-        else {
+        } else {
             _decodeStrip(im, state, tiff, planes, unpackers);
         }
 
@@ -698,20 +734,20 @@ ImagingLibTiffDecode(
             // so we have to convert it to RGBA
             if (planes > 3 && strcmp(im->mode, "RGBA") == 0) {
                 uint16_t extrasamples;
-                uint16_t* sampleinfo;
+                uint16_t *sampleinfo;
                 ImagingShuffler shuffle;
                 INT32 y;
 
-                TIFFGetFieldDefaulted(tiff, TIFFTAG_EXTRASAMPLES, &extrasamples, &sampleinfo);
+                TIFFGetFieldDefaulted(
+                    tiff, TIFFTAG_EXTRASAMPLES, &extrasamples, &sampleinfo);
 
-                if (extrasamples >= 1 &&
-                    (sampleinfo[0] == EXTRASAMPLE_UNSPECIFIED || sampleinfo[0] == EXTRASAMPLE_ASSOCALPHA)
-                    ) {
+                if (extrasamples >= 1 && (sampleinfo[0] == EXTRASAMPLE_UNSPECIFIED ||
+                                          sampleinfo[0] == EXTRASAMPLE_ASSOCALPHA)) {
                     shuffle = ImagingFindUnpacker("RGBA", "RGBa", NULL);
 
                     for (y = state->yoff; y < state->ysize; y++) {
-                        UINT8* ptr = (UINT8*) im->image[y + state->yoff] +
-                            state->xoff * im->pixelsize;
+                        UINT8 *ptr = (UINT8 *)im->image[y + state->yoff] +
+                                     state->xoff * im->pixelsize;
                         shuffle(ptr, ptr, state->xsize);
                     }
                 }
@@ -719,8 +755,17 @@ ImagingLibTiffDecode(
         }
     }
 
- decode_err:
-    TIFFClose(tiff);
+decode_err:
+    // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
+    if (clientstate->fp) {
+        // Pillow will manage the closing of the file rather than libtiff
+        // So only call TIFFCleanup
+        TIFFCleanup(tiff);
+    } else {
+        // When tif_closeproc refers to our custom _tiffCloseProc though,
+        // that is fine, as it does not close the file
+        TIFFClose(tiff);
+    }
     TRACE(("Done Decoding, Returning \n"));
     // Returning -1 here to force ImageFile.load to break, rather than
     // even think about looping back around.
@@ -771,11 +816,11 @@ ImagingLibTiffEncodeInit(ImagingCodecState state, char *filename, int fp) {
         TRACE(("Opening using fd: %d for writing \n", clientstate->fp));
         clientstate->tiff = TIFFFdOpen(fd_to_tiff_fd(clientstate->fp), filename, mode);
     } else {
-        // malloc a buffer to write the tif, we're going to need to realloc or something
+        // calloc a buffer to write the tif, we're going to need to realloc or something
         // if we need bigger.
         TRACE(("Opening a buffer for writing \n"));
-        /* malloc check ok, small constant allocation */
-        clientstate->data = malloc(bufsize);
+        /* calloc check ok, small constant allocation */
+        clientstate->data = calloc(bufsize, 1);
         clientstate->size = bufsize;
         clientstate->flrealloc = 1;
 
@@ -916,7 +961,7 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     dump_state(clientstate);
 
     if (state->state == 0) {
-        TRACE(("Encoding line bt line"));
+        TRACE(("Encoding line by line"));
         while (state->y < state->ysize) {
             state->shuffle(
                 state->buffer,
@@ -960,7 +1005,8 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
     }
 
     if (state->state == 1 && !clientstate->fp) {
-        int read = (int)_tiffReadProc(clientstate, (tdata_t)buffer, (tsize_t)bytes);
+        int read =
+            (int)_tiffReadProc((thandle_t)clientstate, (tdata_t)buffer, (tsize_t)bytes);
         TRACE(
             ("Buffer: %p: %c%c%c%c\n",
              buffer,

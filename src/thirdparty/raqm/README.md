@@ -11,7 +11,7 @@ It currently provides bidirectional text support (using [FriBiDi][1] or
 As a result, Raqm can support most writing systems covered by Unicode.
 
 The documentation can be accessed on the web at:
-> http://host-oman.github.io/libraqm/
+> https://host-oman.github.io/libraqm/
 
 Raqm (Arabic: رَقْم) is writing, also number or digit and the Arabic word for
 digital (رَقَمِيّ) shares the same root, so it is a play on “digital writing”.
@@ -81,5 +81,5 @@ The following projects have patches to support complex text layout using Raqm:
 [1]: https://github.com/fribidi/fribidi
 [2]: https://github.com/Tehreer/SheenBidi
 [3]: https://github.com/harfbuzz/harfbuzz
-[4]: https://www.freetype.org
+[4]: https://freetype.org/
 [5]: https://www.gtk.org/gtk-doc

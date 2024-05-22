@@ -22,9 +22,11 @@
 # Figure 206. Windows Paint Version 2: "LinS" Format. Used in Windows V2.03
 #
 # See also: https://www.fileformat.info/format/mspaint/egff.htm
+from __future__ import annotations
 
 import io
 import struct
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
@@ -34,7 +36,7 @@ from ._binary import o16le as o16
 # read MSP files
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] in [b"DanM", b"LinS"]
 
 
@@ -44,25 +46,27 @@ def _accept(prefix):
 
 
 class MspImageFile(ImageFile.ImageFile):
-
     format = "MSP"
     format_description = "Windows Paint"
 
-    def _open(self):
-
+    def _open(self) -> None:
         # Header
+        assert self.fp is not None
+
         s = self.fp.read(32)
         if not _accept(s):
-            raise SyntaxError("not an MSP file")
+            msg = "not an MSP file"
+            raise SyntaxError(msg)
 
         # Header checksum
         checksum = 0
         for i in range(0, 32, 2):
             checksum = checksum ^ i16(s, i)
         if checksum != 0:
-            raise SyntaxError("bad MSP checksum")
+            msg = "bad MSP checksum"
+            raise SyntaxError(msg)
 
-        self.mode = "1"
+        self._mode = "1"
         self._size = i16(s, 4), i16(s, 6)
 
         if s[:4] == b"DanM":
@@ -108,7 +112,8 @@ class MspDecoder(ImageFile.PyDecoder):
 
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
 
         img = io.BytesIO()
         blank_line = bytearray((0xFF,) * ((self.state.xsize + 7) // 8))
@@ -118,7 +123,8 @@ class MspDecoder(ImageFile.PyDecoder):
                 f"<{self.state.ysize}H", self.fd.read(self.state.ysize * 2)
             )
         except struct.error as e:
-            raise OSError("Truncated MSP file in row map") from e
+            msg = "Truncated MSP file in row map"
+            raise OSError(msg) from e
 
         for x, rowlen in enumerate(rowmap):
             try:
@@ -127,9 +133,8 @@ class MspDecoder(ImageFile.PyDecoder):
                     continue
                 row = self.fd.read(rowlen)
                 if len(row) != rowlen:
-                    raise OSError(
-                        "Truncated MSP file, expected %d bytes on row %s", (rowlen, x)
-                    )
+                    msg = f"Truncated MSP file, expected {rowlen} bytes on row {x}"
+                    raise OSError(msg)
                 idx = 0
                 while idx < rowlen:
                     runtype = row[idx]
@@ -144,7 +149,8 @@ class MspDecoder(ImageFile.PyDecoder):
                         idx += runcount
 
             except struct.error as e:
-                raise OSError(f"Corrupted MSP file in row {x}") from e
+                msg = f"Corrupted MSP file in row {x}"
+                raise OSError(msg) from e
 
         self.set_as_raw(img.getvalue(), ("1", 0, 1))
 
@@ -158,10 +164,10 @@ Image.register_decoder("MSP", MspDecoder)
 # write MSP files (uncompressed only)
 
 
-def _save(im, fp, filename):
-
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode != "1":
-        raise OSError(f"cannot write mode {im.mode} as MSP")
+        msg = f"cannot write mode {im.mode} as MSP"
+        raise OSError(msg)
 
     # create MSP header
     header = [0] * 16

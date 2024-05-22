@@ -8,6 +8,10 @@ on:
 permissions:
   issues: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   stale:
     if: github.repository_owner == 'python-pillow'
@@ -16,7 +20,7 @@ jobs:
 
     steps:
     - name: "Check issues"
-      uses: actions/stale@v5
+      uses: actions/stale@v9
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         only-labels: "Awaiting OP Action"

@@ -24,10 +24,6 @@ typedef struct {
 } lum;
 
 typedef struct {
-    FLOAT32 r, g, b;
-} rgb32f;
-
-typedef struct {
     UINT16 c0, c1;
     UINT32 lut;
 } bc1_color;
@@ -87,7 +83,6 @@ decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
     g1 = p[1].g;
     b1 = p[1].b;
 
-
     /* NOTE: BC2 and BC3 reuse BC1 color blocks but always act like c0 > c1 */
     if (col.c0 > col.c1 || separate_alpha) {
         p[2].r = (2 * r0 + 1 * r1) / 3;
@@ -122,8 +117,8 @@ decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o, int sign) {
     if (sign == 1) {
         bc5s_alpha b;
         memcpy(&b, src, sizeof(bc5s_alpha));
-        a0 = (b.a0 + 255) / 2;
-        a1 = (b.a1 + 255) / 2;
+        a0 = b.a0 + 128;
+        a1 = b.a1 + 128;
         lut1 = b.lut[0] | (b.lut[1] << 8) | (b.lut[2] << 16);
         lut2 = b.lut[3] | (b.lut[4] << 8) | (b.lut[5] << 16);
     } else {
@@ -358,8 +353,7 @@ decode_bc7_block(rgba *col, const UINT8 *src) {
         }
         return;
     }
-    while (!(mode & (1 << bit++)))
-        ;
+    while (!(mode & (1 << bit++)));
     mode = bit - 1;
     info = &bc7_modes[mode];
     /* color selection bits: {subset}{endpoint} */
@@ -536,53 +530,53 @@ static const bc6_mode_info bc6_modes[] = {
 
 /* Table.F, encoded as a sequence of bit indices */
 static const UINT8 bc6_bit_packings[][75] = {
-    {116, 132, 176, 0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   16,  17,
+    {116, 132, 180, 0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   16,  17,
      18,  19,  20,  21,  22,  23,  24,  25,  32,  33,  34,  35,  36,  37,  38,
      39,  40,  41,  48,  49,  50,  51,  52,  164, 112, 113, 114, 115, 64,  65,
-     66,  67,  68,  172, 160, 161, 162, 163, 80,  81,  82,  83,  84,  173, 128,
-     129, 130, 131, 96,  97,  98,  99,  100, 174, 144, 145, 146, 147, 148, 175},
-    {117, 164, 165, 0,  1,   2,   3,   4,   5,   6,   172, 173, 132, 16,  17,
-     18,  19,  20,  21, 22,  133, 174, 116, 32,  33,  34,  35,  36,  37,  38,
-     175, 177, 176, 48, 49,  50,  51,  52,  53,  112, 113, 114, 115, 64,  65,
+     66,  67,  68,  176, 160, 161, 162, 163, 80,  81,  82,  83,  84,  177, 128,
+     129, 130, 131, 96,  97,  98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
+    {117, 164, 165, 0,  1,   2,   3,   4,   5,   6,   176, 177, 132, 16,  17,
+     18,  19,  20,  21, 22,  133, 178, 116, 32,  33,  34,  35,  36,  37,  38,
+     179, 181, 180, 48, 49,  50,  51,  52,  53,  112, 113, 114, 115, 64,  65,
      66,  67,  68,  69, 160, 161, 162, 163, 80,  81,  82,  83,  84,  85,  128,
      129, 130, 131, 96, 97,  98,  99,  100, 101, 144, 145, 146, 147, 148, 149},
     {0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   16,  17,  18,  19,  20,
      21,  22,  23,  24,  25,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,
      48,  49,  50,  51,  52,  10,  112, 113, 114, 115, 64,  65,  66,  67,  26,
-     172, 160, 161, 162, 163, 80,  81,  82,  83,  42,  173, 128, 129, 130, 131,
-     96,  97,  98,  99,  100, 174, 144, 145, 146, 147, 148, 175},
+     176, 160, 161, 162, 163, 80,  81,  82,  83,  42,  177, 128, 129, 130, 131,
+     96,  97,  98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
     {0,  1,   2,   3,   4,   5,   6,   7,   8,   9,   16,  17,  18,  19,  20,
      21, 22,  23,  24,  25,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,
      48, 49,  50,  51,  10,  164, 112, 113, 114, 115, 64,  65,  66,  67,  68,
-     26, 160, 161, 162, 163, 80,  81,  82,  83,  42,  173, 128, 129, 130, 131,
-     96, 97,  98,  99,  172, 174, 144, 145, 146, 147, 116, 175},
+     26, 160, 161, 162, 163, 80,  81,  82,  83,  42,  177, 128, 129, 130, 131,
+     96, 97,  98,  99,  176, 178, 144, 145, 146, 147, 116, 179},
     {0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   16,  17,  18,  19,  20,
      21,  22,  23,  24,  25,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,
      48,  49,  50,  51,  10,  132, 112, 113, 114, 115, 64,  65,  66,  67,  26,
-     172, 160, 161, 162, 163, 80,  81,  82,  83,  84,  42,  128, 129, 130, 131,
-     96,  97,  98,  99,  173, 174, 144, 145, 146, 147, 176, 175},
+     176, 160, 161, 162, 163, 80,  81,  82,  83,  84,  42,  128, 129, 130, 131,
+     96,  97,  98,  99,  177, 178, 144, 145, 146, 147, 180, 179},
     {0,   1,   2,   3,   4,   5,   6,   7,   8,   132, 16,  17,  18,  19,  20,
-     21,  22,  23,  24,  116, 32,  33,  34,  35,  36,  37,  38,  39,  40,  176,
+     21,  22,  23,  24,  116, 32,  33,  34,  35,  36,  37,  38,  39,  40,  180,
      48,  49,  50,  51,  52,  164, 112, 113, 114, 115, 64,  65,  66,  67,  68,
-     172, 160, 161, 162, 163, 80,  81,  82,  83,  84,  173, 128, 129, 130, 131,
-     96,  97,  98,  99,  100, 174, 144, 145, 146, 147, 148, 175},
+     176, 160, 161, 162, 163, 80,  81,  82,  83,  84,  177, 128, 129, 130, 131,
+     96,  97,  98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
     {0,   1,   2,   3,   4,   5,   6,   7,   164, 132, 16,  17,  18,  19,  20,
-     21,  22,  23,  174, 116, 32,  33,  34,  35,  36,  37,  38,  39,  175, 176,
+     21,  22,  23,  178, 116, 32,  33,  34,  35,  36,  37,  38,  39,  179, 180,
      48,  49,  50,  51,  52,  53,  112, 113, 114, 115, 64,  65,  66,  67,  68,
-     172, 160, 161, 162, 163, 80,  81,  82,  83,  84,  173, 128, 129, 130, 131,
+     176, 160, 161, 162, 163, 80,  81,  82,  83,  84,  177, 128, 129, 130, 131,
      96,  97,  98,  99,  100, 101, 144, 145, 146, 147, 148, 149},
-    {0,  1,   2,   3,   4,   5,   6,   7,   172, 132, 16,  17,  18,  19,  20,
-     21, 22,  23,  117, 116, 32,  33,  34,  35,  36,  37,  38,  39,  165, 176,
+    {0,  1,   2,   3,   4,   5,   6,   7,   176, 132, 16,  17,  18,  19,  20,
+     21, 22,  23,  117, 116, 32,  33,  34,  35,  36,  37,  38,  39,  165, 180,
      48, 49,  50,  51,  52,  164, 112, 113, 114, 115, 64,  65,  66,  67,  68,
-     69, 160, 161, 162, 163, 80,  81,  82,  83,  84,  173, 128, 129, 130, 131,
-     96, 97,  98,  99,  100, 174, 144, 145, 146, 147, 148, 175},
-    {0,   1,   2,   3,   4,   5,   6,   7,   173, 132, 16,  17,  18,  19,  20,
-     21,  22,  23,  133, 116, 32,  33,  34,  35,  36,  37,  38,  39,  177, 176,
+     69, 160, 161, 162, 163, 80,  81,  82,  83,  84,  177, 128, 129, 130, 131,
+     96, 97,  98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
+    {0,   1,   2,   3,   4,   5,   6,   7,   177, 132, 16,  17,  18,  19,  20,
+     21,  22,  23,  133, 116, 32,  33,  34,  35,  36,  37,  38,  39,  181, 180,
      48,  49,  50,  51,  52,  164, 112, 113, 114, 115, 64,  65,  66,  67,  68,
-     172, 160, 161, 162, 163, 80,  81,  82,  83,  84,  85,  128, 129, 130, 131,
-     96,  97,  98,  99,  100, 174, 144, 145, 146, 147, 148, 175},
-    {0,  1,   2,   3,   4,   5,   164, 172, 173, 132, 16,  17,  18,  19,  20,
-     21, 117, 133, 174, 116, 32,  33,  34,  35,  36,  37,  165, 175, 177, 176,
+     176, 160, 161, 162, 163, 80,  81,  82,  83,  84,  85,  128, 129, 130, 131,
+     96,  97,  98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
+    {0,  1,   2,   3,   4,   5,   164, 176, 177, 132, 16,  17,  18,  19,  20,
+     21, 117, 133, 178, 116, 32,  33,  34,  35,  36,  37,  165, 179, 181, 180,
      48, 49,  50,  51,  52,  53,  112, 113, 114, 115, 64,  65,  66,  67,  68,
      69, 160, 161, 162, 163, 80,  81,  82,  83,  84,  85,  128, 129, 130, 131,
      96, 97,  98,  99,  100, 101, 144, 145, 146, 147, 148, 149},
@@ -681,20 +675,31 @@ bc6_finalize(int v, int sign) {
     }
 }
 
+static UINT8
+bc6_clamp(float value) {
+    if (value < 0.0f) {
+        return 0;
+    } else if (value > 1.0f) {
+        return 255;
+    } else {
+        return (UINT8)(value * 255.0f);
+    }
+}
+
 static void
-bc6_lerp(rgb32f *col, int *e0, int *e1, int s, int sign) {
+bc6_lerp(rgba *col, int *e0, int *e1, int s, int sign) {
     int r, g, b;
     int t = 64 - s;
     r = (e0[0] * t + e1[0] * s) >> 6;
     g = (e0[1] * t + e1[1] * s) >> 6;
     b = (e0[2] * t + e1[2] * s) >> 6;
-    col->r = bc6_finalize(r, sign);
-    col->g = bc6_finalize(g, sign);
-    col->b = bc6_finalize(b, sign);
+    col->r = bc6_clamp(bc6_finalize(r, sign));
+    col->g = bc6_clamp(bc6_finalize(g, sign));
+    col->b = bc6_clamp(bc6_finalize(b, sign));
 }
 
 static void
-decode_bc6_block(rgb32f *col, const UINT8 *src, int sign) {
+decode_bc6_block(rgba *col, const UINT8 *src, int sign) {
     UINT16 endpoints[12]; /* storage for r0, g0, b0, r1, ... */
     int ueps[12];
     int i, i0, ib2, di, dw, mask, numep, s;
@@ -744,21 +749,16 @@ decode_bc6_block(rgb32f *col, const UINT8 *src, int sign) {
     }
     if (sign || info->tr) { /* sign-extend e1,2,3 if signed or deltas */
         for (i = 3; i < numep; i += 3) {
-            bc6_sign_extend(&endpoints[i + 0], info->rb);
+            bc6_sign_extend(&endpoints[i], info->rb);
             bc6_sign_extend(&endpoints[i + 1], info->gb);
             bc6_sign_extend(&endpoints[i + 2], info->bb);
         }
     }
     if (info->tr) { /* apply deltas */
-        for (i = 3; i < numep; i++) {
+        for (i = 3; i < numep; i += 3) {
             endpoints[i] = (endpoints[i] + endpoints[0]) & mask;
-        }
-        if (sign) {
-            for (i = 3; i < numep; i += 3) {
-                bc6_sign_extend(&endpoints[i + 0], info->rb);
-                bc6_sign_extend(&endpoints[i + 1], info->gb);
-                bc6_sign_extend(&endpoints[i + 2], info->bb);
-            }
+            endpoints[i + 1] = (endpoints[i + 1] + endpoints[1]) & mask;
+            endpoints[i + 2] = (endpoints[i + 2] + endpoints[2]) & mask;
         }
     }
     for (i = 0; i < numep; i++) {
@@ -824,7 +824,13 @@ put_block(Imaging im, ImagingCodecState state, const char *col, int sz, int C) {
 
 static int
 decode_bcn(
-    Imaging im, ImagingCodecState state, const UINT8 *src, int bytes, int N, int C, char *pixel_format) {
+    Imaging im,
+    ImagingCodecState state,
+    const UINT8 *src,
+    int bytes,
+    int N,
+    int C,
+    char *pixel_format) {
     int ymax = state->ysize + state->yoff;
     const UINT8 *ptr = src;
     switch (N) {
@@ -847,11 +853,12 @@ decode_bcn(
         DECODE_LOOP(2, 16, rgba);
         DECODE_LOOP(3, 16, rgba);
         DECODE_LOOP(4, 8, lum);
-        case 5:
+        case 5: {
+            int sign = strcmp(pixel_format, "BC5S") == 0 ? 1 : 0;
             while (bytes >= 16) {
                 rgba col[16];
-                memset(col, 0, 16 * sizeof(col[0]));
-                decode_bc5_block(col, ptr, strcmp(pixel_format, "BC5S") == 0 ? 1 : 0);
+                memset(col, sign ? 128 : 0, 16 * sizeof(col[0]));
+                decode_bc5_block(col, ptr, sign);
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;
                 bytes -= 16;
@@ -860,10 +867,12 @@ decode_bcn(
                 }
             }
             break;
-        case 6:
+        }
+        case 6: {
+            int sign = strcmp(pixel_format, "BC6HS") == 0 ? 1 : 0;
             while (bytes >= 16) {
-                rgb32f col[16];
-                decode_bc6_block(col, ptr, (state->state >> 4) & 1);
+                rgba col[16];
+                decode_bc6_block(col, ptr, sign);
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;
                 bytes -= 16;
@@ -872,7 +881,8 @@ decode_bcn(
                 }
             }
             break;
-        DECODE_LOOP(7, 16, rgba);
+        }
+            DECODE_LOOP(7, 16, rgba);
 #undef DECODE_LOOP
     }
     return (int)(ptr - src);

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from .helper import hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     im = hopper()
     type_repr = repr(type(im.getim()))
 

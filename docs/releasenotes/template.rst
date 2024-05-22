@@ -1,5 +1,18 @@
-x.y.z
------
+xx.y.z
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
 
 Backwards Incompatible Changes
 ==============================
@@ -25,14 +38,6 @@ TODO
 
 API Additions
 =============
-
-TODO
-^^^^
-
-TODO
-
-Security
-========
 
 TODO
 ^^^^

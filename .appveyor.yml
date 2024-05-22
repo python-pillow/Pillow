@@ -1,3 +1,10 @@
+skip_commits:
+  files:
+    - ".github/**/*"
+    - ".gitmodules"
+    - "docs/**/*"
+    - "wheels/**/*"
+
 version: '{build}'
 clone_folder: c:\pillow
 init:
@@ -6,52 +13,53 @@ init:
 # Uncomment previous line to get RDP access during the build.
 
 environment:
+  COVERAGE_CORE: sysmon
   EXECUTABLE: python.exe
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/Python310
+  - PYTHON: C:/Python312
     ARCHITECTURE: x86
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-  - PYTHON: C:/Python37-x64
-    ARCHITECTURE: x64
+  - PYTHON: C:/Python38-x64
+    ARCHITECTURE: AMD64
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 
 
 install:
 - '%PYTHON%\%EXECUTABLE% --version'
-- curl -fsSL -o pillow-depends.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
-- 7z x pillow-depends.zip -oc:\
-- mv c:\pillow-depends-main c:\pillow-depends
-- xcopy /S /Y c:\pillow-depends\test_images\* c:\pillow\tests\images
-- 7z x ..\pillow-depends\nasm-2.15.05-win64.zip -oc:\
-- ..\pillow-depends\gs9561w32.exe /S
-- path c:\nasm-2.15.05;C:\Program Files (x86)\gs\gs9.56.1\bin;%PATH%
+- '%PYTHON%\%EXECUTABLE% -m pip install --upgrade pip'
+- curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
+- 7z x pillow-test-images.zip -oc:\
+- xcopy /S /Y c:\test-images-main\* c:\pillow\tests\images
+- curl -fsSL -o nasm-win64.zip https://raw.githubusercontent.com/python-pillow/pillow-depends/main/nasm-2.16.01-win64.zip
+- 7z x nasm-win64.zip -oc:\
+- choco install ghostscript --version=10.3.0
+- path c:\nasm-2.16.01;C:\Program Files\gs\gs10.00.0\bin;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |
-        c:\python37\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
+        c:\python38\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
         c:\pillow\winbuild\build\build_dep_all.cmd
         $host.SetShouldExit(0)
 - path C:\pillow\winbuild\build\bin;%PATH%
 
 build_script:
-- ps: |
-        c:\pillow\winbuild\build\build_pillow.cmd install
-        $host.SetShouldExit(0)
 - cd c:\pillow
+- winbuild\build\build_env.cmd
+- '%PYTHON%\%EXECUTABLE% -m pip install -v -C raqm=vendor -C fribidi=vendor .'
 - '%PYTHON%\%EXECUTABLE% selftest.py --installed'
 
 test_script:
 - cd c:\pillow
-- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov pytest-timeout'
+- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov pytest-timeout defusedxml numpy olefile pyroma'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
 - '%PYTHON%\%EXECUTABLE% -c "from PIL import Image"'
 - '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'
 #- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
 
 after_test:
-- python -m pip install codecov
-- codecov --file coverage.xml --name %PYTHON% --flags AppVeyor
+- curl -Os https://uploader.codecov.io/latest/windows/codecov.exe
+- .\codecov.exe --file coverage.xml --name %PYTHON% --flags AppVeyor
 
 matrix:
   fast_finish: true
@@ -60,18 +68,15 @@ cache:
 - '%LOCALAPPDATA%\pip\Cache'
 
 artifacts:
-- path: pillow\dist\*.egg
+- path: pillow\*.egg
   name: egg
-- path: pillow\dist\*.wheel
+- path: pillow\*.whl
   name: wheel
 
 before_deploy:
   - cd c:\pillow
-  - '%PYTHON%\%EXECUTABLE% -m pip install wheel'
-  - cd c:\pillow\winbuild\
-  - c:\pillow\winbuild\build\build_pillow.cmd bdist_wheel
-  - cd c:\pillow
-  - ps: Get-ChildItem .\dist\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+  - '%PYTHON%\%EXECUTABLE% -m pip wheel -v -C raqm=vendor -C fribidi=vendor .'
+  - ps: Get-ChildItem .\*.whl | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
 deploy:
   provider: S3

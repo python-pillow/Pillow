@@ -13,7 +13,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import re
 
@@ -30,41 +30,51 @@ field = re.compile(rb"([a-z]*) ([^ \r\n]*)")
 
 
 class ImtImageFile(ImageFile.ImageFile):
-
     format = "IMT"
     format_description = "IM Tools"
 
-    def _open(self):
-
+    def _open(self) -> None:
         # Quick rejection: if there's not a LF among the first
         # 100 bytes, this is (probably) not a text header.
 
-        if b"\n" not in self.fp.read(100):
-            raise SyntaxError("not an IM file")
-        self.fp.seek(0)
+        assert self.fp is not None
+
+        buffer = self.fp.read(100)
+        if b"\n" not in buffer:
+            msg = "not an IM file"
+            raise SyntaxError(msg)
 
         xsize = ysize = 0
 
         while True:
-
-            s = self.fp.read(1)
+            if buffer:
+                s = buffer[:1]
+                buffer = buffer[1:]
+            else:
+                s = self.fp.read(1)
             if not s:
                 break
 
             if s == b"\x0C":
-
                 # image data begins
                 self.tile = [
-                    ("raw", (0, 0) + self.size, self.fp.tell(), (self.mode, 0, 1))
+                    (
+                        "raw",
+                        (0, 0) + self.size,
+                        self.fp.tell() - len(buffer),
+                        (self.mode, 0, 1),
+                    )
                 ]
 
                 break
 
             else:
-
                 # read key/value pair
-                # FIXME: dangerous, may read whole file
-                s = s + self.fp.readline()
+                if b"\n" not in buffer:
+                    buffer += self.fp.read(100)
+                lines = buffer.split(b"\n")
+                s += lines.pop(0)
+                buffer = b"\n".join(lines)
                 if len(s) == 1 or len(s) > 100:
                     break
                 if s[0] == ord(b"*"):
@@ -74,14 +84,14 @@ class ImtImageFile(ImageFile.ImageFile):
                 if not m:
                     break
                 k, v = m.group(1, 2)
-                if k == "width":
+                if k == b"width":
                     xsize = int(v)
                     self._size = xsize, ysize
-                elif k == "height":
+                elif k == b"height":
                     ysize = int(v)
                     self._size = xsize, ysize
-                elif k == "pixel" and v == "n8":
-                    self.mode = "L"
+                elif k == b"pixel" and v == b"n8":
+                    self._mode = "L"
 
 
 #

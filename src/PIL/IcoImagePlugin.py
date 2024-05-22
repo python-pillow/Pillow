@@ -20,7 +20,7 @@
 # Icon format references:
 #   * https://en.wikipedia.org/wiki/ICO_(file_format)
 #   * https://msdn.microsoft.com/en-us/library/ms997538.aspx
-
+from __future__ import annotations
 
 import warnings
 from io import BytesIO
@@ -114,7 +114,7 @@ def _save(im, fp, filename):
         fp.seek(current)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == _MAGIC
 
 
@@ -127,7 +127,8 @@ class IcoFile:
         # check magic
         s = buf.read(6)
         if not _accept(s):
-            raise SyntaxError("not an ICO file")
+            msg = "not an ICO file"
+            raise SyntaxError(msg)
 
         self.buf = buf
         self.entry = []
@@ -173,9 +174,7 @@ class IcoFile:
 
         self.entry = sorted(self.entry, key=lambda x: x["color_depth"])
         # ICO images are usually squares
-        # self.entry = sorted(self.entry, key=lambda x: x['width'])
-        self.entry = sorted(self.entry, key=lambda x: x["square"])
-        self.entry.reverse()
+        self.entry = sorted(self.entry, key=lambda x: x["square"], reverse=True)
 
     def sizes(self):
         """
@@ -184,7 +183,7 @@ class IcoFile:
         return {(h["width"], h["height"]) for h in self.entry}
 
     def getentryindex(self, size, bpp=False):
-        for (i, h) in enumerate(self.entry):
+        for i, h in enumerate(self.entry):
             if size == h["dim"] and (bpp is False or bpp == h["color_depth"]):
                 return i
         return 0
@@ -303,7 +302,7 @@ class IcoImageFile(ImageFile.ImageFile):
     format = "ICO"
     format_description = "Windows Icon"
 
-    def _open(self):
+    def _open(self) -> None:
         self.ico = IcoFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
         self.size = self.ico.entry[0]["dim"]
@@ -316,7 +315,8 @@ class IcoImageFile(ImageFile.ImageFile):
     @size.setter
     def size(self, value):
         if value not in self.info["sizes"]:
-            raise ValueError("This is not one of the allowed sizes of this image")
+            msg = "This is not one of the allowed sizes of this image"
+            raise ValueError(msg)
         self._size = value
 
     def load(self):
@@ -327,7 +327,10 @@ class IcoImageFile(ImageFile.ImageFile):
         # if tile is PNG, it won't really be loaded yet
         im.load()
         self.im = im.im
-        self.mode = im.mode
+        self.pyaccess = None
+        self._mode = im.mode
+        if im.palette:
+            self.palette = im.palette
         if im.size != self.size:
             warnings.warn("Image was not the expected size")
 
@@ -338,7 +341,7 @@ class IcoImageFile(ImageFile.ImageFile):
 
             self.size = im.size
 
-    def load_seek(self):
+    def load_seek(self, pos: int) -> None:
         # Flag the ImageFile.Parser so that it
         # just does all the decode at the end.
         pass

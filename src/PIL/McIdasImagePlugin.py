@@ -15,14 +15,15 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import struct
 
 from . import Image, ImageFile
 
 
-def _accept(s):
-    return s[:8] == b"\x00\x00\x00\x00\x00\x00\x00\x04"
+def _accept(prefix: bytes) -> bool:
+    return prefix[:8] == b"\x00\x00\x00\x00\x00\x00\x00\x04"
 
 
 ##
@@ -30,16 +31,17 @@ def _accept(s):
 
 
 class McIdasImageFile(ImageFile.ImageFile):
-
     format = "MCIDAS"
     format_description = "McIdas area file"
 
-    def _open(self):
-
+    def _open(self) -> None:
         # parse area file directory
+        assert self.fp is not None
+
         s = self.fp.read(256)
         if not _accept(s) or len(s) != 256:
-            raise SyntaxError("not an McIdas area file")
+            msg = "not an McIdas area file"
+            raise SyntaxError(msg)
 
         self.area_descriptor_raw = s
         self.area_descriptor = w = [0] + list(struct.unpack("!64i", s))
@@ -56,9 +58,10 @@ class McIdasImageFile(ImageFile.ImageFile):
             mode = "I"
             rawmode = "I;32B"
         else:
-            raise SyntaxError("unsupported McIdas format")
+            msg = "unsupported McIdas format"
+            raise SyntaxError(msg)
 
-        self.mode = mode
+        self._mode = mode
         self._size = w[10], w[9]
 
         offset = w[34] + w[15]

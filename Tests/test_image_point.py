@@ -1,11 +1,11 @@
-import pytest
+from __future__ import annotations
 
-from PIL import Image
+import pytest
 
 from .helper import assert_image_equal, hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     im = hopper()
 
     with pytest.raises(ValueError):
@@ -39,7 +39,7 @@ def test_sanity():
         im.point(lambda x: x // 2)
 
 
-def test_16bit_lut():
+def test_16bit_lut() -> None:
     """Tests for 16 bit -> 8 bit lut for converting I->L images
     see https://github.com/python-pillow/Pillow/issues/440
     """
@@ -47,7 +47,7 @@ def test_16bit_lut():
     im.point(list(range(256)) * 256, "L")
 
 
-def test_f_lut():
+def test_f_lut() -> None:
     """Tests for floating point lut of 8bit gray image"""
     im = hopper("L")
     lut = [0.5 * float(x) for x in range(256)]
@@ -58,12 +58,7 @@ def test_f_lut():
     assert_image_equal(out.convert("L"), im.point(int_lut, "L"))
 
 
-def test_f_mode():
+def test_f_mode() -> None:
     im = hopper("F")
     with pytest.raises(ValueError):
         im.point(None)
-
-
-def test_coerce_e_deprecation():
-    with pytest.warns(DeprecationWarning):
-        assert Image.coerce_e(2).data == 2

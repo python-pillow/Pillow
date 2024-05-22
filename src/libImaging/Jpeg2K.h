@@ -85,6 +85,9 @@ typedef struct {
     /* Set multiple component transformation */
     char mct;
 
+    /* Signed */
+    int sgnd;
+
     /* Progression order (LRCP/RLCP/RPCL/PCRL/CPRL) */
     OPJ_PROG_ORDER progression;
 
@@ -93,6 +96,12 @@ typedef struct {
 
     /* PRIVATE CONTEXT (set by decoder) */
     const char *error_msg;
+
+    /* Custom comment */
+    char *comment;
+
+    /* Include PLT marker segment */
+    int plt;
 
 } JPEG2KENCODESTATE;
 

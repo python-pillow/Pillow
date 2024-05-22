@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from io import BytesIO
 
 from . import Image, ImageFile
@@ -21,7 +23,7 @@ _VP8_MODES_BY_IDENTIFIER = {
 }
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool | str:
     is_riff_file_format = prefix[:4] == b"RIFF"
     is_webp_file = prefix[8:12] == b"WEBP"
     is_valid_vp8_mode = prefix[12:16] in _VP8_MODES_BY_IDENTIFIER
@@ -32,19 +34,19 @@ def _accept(prefix):
                 "image file could not be identified because WEBP support not installed"
             )
         return True
+    return False
 
 
 class WebPImageFile(ImageFile.ImageFile):
-
     format = "WEBP"
     format_description = "WebP image"
     __loaded = 0
     __logical_frame = 0
 
-    def _open(self):
+    def _open(self) -> None:
         if not _webp.HAVE_WEBPANIM:
             # Legacy mode
-            data, width, height, self.mode, icc_profile, exif = _webp.WebPDecode(
+            data, width, height, self._mode, icc_profile, exif = _webp.WebPDecode(
                 self.fp.read()
             )
             if icc_profile:
@@ -75,7 +77,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self.info["background"] = (bg_r, bg_g, bg_b, bg_a)
         self.n_frames = frame_count
         self.is_animated = self.n_frames > 1
-        self.mode = "RGB" if mode == "RGBX" else mode
+        self._mode = "RGB" if mode == "RGBX" else mode
         self.rawmode = mode
         self.tile = []
 
@@ -98,7 +100,16 @@ class WebPImageFile(ImageFile.ImageFile):
             return None
         return self.getexif()._get_merged_dict()
 
-    def seek(self, frame):
+    def getxmp(self):
+        """
+        Returns a dictionary containing the XMP tags.
+        Requires defusedxml to be installed.
+
+        :returns: XMP tags in a dictionary.
+        """
+        return self._getxmp(self.info["xmp"]) if "xmp" in self.info else {}
+
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
@@ -121,7 +132,8 @@ class WebPImageFile(ImageFile.ImageFile):
         if ret is None:
             self._reset()  # Reset just to be safe
             self.seek(0)
-            raise EOFError("failed to decode next frame in WebP file")
+            msg = "failed to decode next frame in WebP file"
+            raise EOFError(msg)
 
         # Compute duration
         data, timestamp = ret
@@ -132,7 +144,7 @@ class WebPImageFile(ImageFile.ImageFile):
         timestamp -= duration
         return data, timestamp, duration
 
-    def _seek(self, frame):
+    def _seek(self, frame: int) -> None:
         if self.__physical_frame == frame:
             return  # Nothing to do
         if frame < self.__physical_frame:
@@ -159,7 +171,10 @@ class WebPImageFile(ImageFile.ImageFile):
 
         return super().load()
 
-    def tell(self):
+    def load_seek(self, pos: int) -> None:
+        pass
+
+    def tell(self) -> int:
         if not _webp.HAVE_WEBPANIM:
             return super().tell()
 
@@ -203,6 +218,7 @@ def _save_all(im, fp, filename):
     verbose = False
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
+    alpha_quality = im.encoderinfo.get("alpha_quality", 100)
     method = im.encoderinfo.get("method", 0)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
     exif = im.encoderinfo.get("exif", "")
@@ -224,9 +240,8 @@ def _save_all(im, fp, filename):
         or len(background) != 4
         or not all(0 <= v < 256 for v in background)
     ):
-        raise OSError(
-            f"Background color is not an RGBA tuple clamped to (0-255): {background}"
-        )
+        msg = f"Background color is not an RGBA tuple clamped to (0-255): {background}"
+        raise OSError(msg)
 
     # Convert to packed uint
     bg_r, bg_g, bg_b, bg_a = background
@@ -277,12 +292,13 @@ def _save_all(im, fp, filename):
                 # Append the frame to the animation encoder
                 enc.add(
                     frame.tobytes("raw", rawmode),
-                    timestamp,
+                    round(timestamp),
                     frame.size[0],
                     frame.size[1],
                     rawmode,
                     lossless,
                     quality,
+                    alpha_quality,
                     method,
                 )
 
@@ -297,12 +313,13 @@ def _save_all(im, fp, filename):
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, timestamp, 0, 0, "", lossless, quality, 0)
+    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, alpha_quality, 0)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
     if data is None:
-        raise OSError("cannot write file as WebP (encoder returned None)")
+        msg = "cannot write file as WebP (encoder returned None)"
+        raise OSError(msg)
 
     fp.write(data)
 
@@ -310,20 +327,19 @@ def _save_all(im, fp, filename):
 def _save(im, fp, filename):
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
+    alpha_quality = im.encoderinfo.get("alpha_quality", 100)
     icc_profile = im.encoderinfo.get("icc_profile") or ""
-    exif = im.encoderinfo.get("exif", "")
+    exif = im.encoderinfo.get("exif", b"")
     if isinstance(exif, Image.Exif):
         exif = exif.tobytes()
+    if exif.startswith(b"Exif\x00\x00"):
+        exif = exif[6:]
     xmp = im.encoderinfo.get("xmp", "")
     method = im.encoderinfo.get("method", 4)
+    exact = 1 if im.encoderinfo.get("exact") else 0
 
     if im.mode not in _VALID_WEBP_LEGACY_MODES:
-        alpha = (
-            "A" in im.mode
-            or "a" in im.mode
-            or (im.mode == "P" and "transparency" in im.info)
-        )
-        im = im.convert("RGBA" if alpha else "RGB")
+        im = im.convert("RGBA" if im.has_transparency_data else "RGB")
 
     data = _webp.WebPEncode(
         im.tobytes(),
@@ -331,14 +347,17 @@ def _save(im, fp, filename):
         im.size[1],
         lossless,
         float(quality),
+        float(alpha_quality),
         im.mode,
         icc_profile,
         method,
+        exact,
         exif,
         xmp,
     )
     if data is None:
-        raise OSError("cannot write file as WebP (encoder returned None)")
+        msg = "cannot write file as WebP (encoder returned None)"
+        raise OSError(msg)
 
     fp.write(data)
 

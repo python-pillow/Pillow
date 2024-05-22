@@ -178,12 +178,11 @@ _anim_encoder_new(PyObject *self, PyObject *args) {
     return NULL;
 }
 
-PyObject *
+void
 _anim_encoder_dealloc(PyObject *self) {
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPPictureFree(&(encp->frame));
     WebPAnimEncoderDelete(encp->enc);
-    Py_RETURN_NONE;
 }
 
 PyObject *
@@ -196,6 +195,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     char *mode;
     int lossless;
     float quality_factor;
+    float alpha_quality_factor;
     int method;
     WebPConfig config;
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
@@ -204,7 +204,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "z#iiisifi",
+            "z#iiisiffi",
             (char **)&rgb,
             &size,
             &timestamp,
@@ -213,6 +213,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
             &mode,
             &lossless,
             &quality_factor,
+            &alpha_quality_factor,
             &method)) {
         return NULL;
     }
@@ -230,6 +231,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     }
     config.lossless = lossless;
     config.quality = quality_factor;
+    config.alpha_quality = alpha_quality_factor;
     config.method = method;
 
     // Validate the config
@@ -400,12 +402,11 @@ _anim_decoder_new(PyObject *self, PyObject *args) {
     return NULL;
 }
 
-PyObject *
+void
 _anim_decoder_dealloc(PyObject *self) {
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
     WebPDataClear(&(decp->data));
     WebPAnimDecoderDelete(decp->dec);
-    Py_RETURN_NONE;
 }
 
 PyObject *
@@ -450,11 +451,16 @@ PyObject *
 _anim_decoder_get_next(PyObject *self) {
     uint8_t *buf;
     int timestamp;
+    int ok;
     PyObject *bytes;
     PyObject *ret;
+    ImagingSectionCookie cookie;
     WebPAnimDecoderObject *decp = (WebPAnimDecoderObject *)self;
 
-    if (!WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp)) {
+    ImagingSectionEnter(&cookie);
+    ok = WebPAnimDecoderGetNext(decp->dec, &buf, &timestamp);
+    ImagingSectionLeave(&cookie);
+    if (!ok) {
         PyErr_SetString(PyExc_OSError, "failed to read next frame");
         return NULL;
     }
@@ -489,18 +495,18 @@ static struct PyMethodDef _anim_encoder_methods[] = {
 // WebPAnimEncoder type definition
 static PyTypeObject WebPAnimEncoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimEncoder", /*tp_name */
-    sizeof(WebPAnimEncoderObject),                    /*tp_size */
+    sizeof(WebPAnimEncoderObject),                    /*tp_basicsize */
     0,                                                /*tp_itemsize */
     /* methods */
     (destructor)_anim_encoder_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_print*/
+    0,                                 /*tp_vectorcall_offset*/
     0,                                 /*tp_getattr*/
     0,                                 /*tp_setattr*/
-    0,                                 /*tp_compare*/
+    0,                                 /*tp_as_async*/
     0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number */
-    0,                                 /*tp_as_sequence */
-    0,                                 /*tp_as_mapping */
+    0,                                 /*tp_as_number*/
+    0,                                 /*tp_as_sequence*/
+    0,                                 /*tp_as_mapping*/
     0,                                 /*tp_hash*/
     0,                                 /*tp_call*/
     0,                                 /*tp_str*/
@@ -532,18 +538,18 @@ static struct PyMethodDef _anim_decoder_methods[] = {
 // WebPAnimDecoder type definition
 static PyTypeObject WebPAnimDecoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimDecoder", /*tp_name */
-    sizeof(WebPAnimDecoderObject),                    /*tp_size */
+    sizeof(WebPAnimDecoderObject),                    /*tp_basicsize */
     0,                                                /*tp_itemsize */
     /* methods */
     (destructor)_anim_decoder_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_print*/
+    0,                                 /*tp_vectorcall_offset*/
     0,                                 /*tp_getattr*/
     0,                                 /*tp_setattr*/
-    0,                                 /*tp_compare*/
+    0,                                 /*tp_as_async*/
     0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number */
-    0,                                 /*tp_as_sequence */
-    0,                                 /*tp_as_mapping */
+    0,                                 /*tp_as_number*/
+    0,                                 /*tp_as_sequence*/
+    0,                                 /*tp_as_mapping*/
     0,                                 /*tp_hash*/
     0,                                 /*tp_call*/
     0,                                 /*tp_str*/
@@ -575,7 +581,9 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     int height;
     int lossless;
     float quality_factor;
+    float alpha_quality_factor;
     int method;
+    int exact;
     uint8_t *rgb;
     uint8_t *icc_bytes;
     uint8_t *exif_bytes;
@@ -597,17 +605,19 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "y#iiifss#is#s#",
+            "y#iiiffss#iis#s#",
             (char **)&rgb,
             &size,
             &width,
             &height,
             &lossless,
             &quality_factor,
+            &alpha_quality_factor,
             &mode,
             &icc_bytes,
             &icc_size,
             &method,
+            &exact,
             &exif_bytes,
             &exif_size,
             &xmp_bytes,
@@ -632,7 +642,12 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     }
     config.lossless = lossless;
     config.quality = quality_factor;
+    config.alpha_quality = alpha_quality_factor;
     config.method = method;
+#if WEBP_ENCODER_ABI_VERSION >= 0x0209
+    // the "exact" flag is only available in libwebp 0.5.0 and later
+    config.exact = exact;
+#endif
 
     // Validate the config
     if (!WebPValidateConfig(&config)) {
@@ -945,20 +960,14 @@ addAnimFlagToModule(PyObject *m) {
 
 void
 addTransparencyFlagToModule(PyObject *m) {
-    PyModule_AddObject(
-        m, "HAVE_TRANSPARENCY", PyBool_FromLong(!WebPDecoderBuggyAlpha()));
+    PyObject *have_transparency = PyBool_FromLong(!WebPDecoderBuggyAlpha());
+    if (PyModule_AddObject(m, "HAVE_TRANSPARENCY", have_transparency)) {
+        Py_DECREF(have_transparency);
+    }
 }
 
 static int
 setup_module(PyObject *m) {
-    PyObject *d = PyModule_GetDict(m);
-    addMuxFlagToModule(m);
-    addAnimFlagToModule(m);
-    addTransparencyFlagToModule(m);
-
-    PyDict_SetItemString(
-        d, "webpdecoder_version", PyUnicode_FromString(WebPDecoderVersion_str()));
-
 #ifdef HAVE_WEBPANIM
     /* Ready object types */
     if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
@@ -966,6 +975,15 @@ setup_module(PyObject *m) {
         return -1;
     }
 #endif
+    PyObject *d = PyModule_GetDict(m);
+    addMuxFlagToModule(m);
+    addAnimFlagToModule(m);
+    addTransparencyFlagToModule(m);
+
+    PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
+    PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
+    Py_XDECREF(v);
+
     return 0;
 }
 
@@ -983,6 +1001,7 @@ PyInit__webp(void) {
 
     m = PyModule_Create(&module_def);
     if (setup_module(m) < 0) {
+        Py_DECREF(m);
         return NULL;
     }
 

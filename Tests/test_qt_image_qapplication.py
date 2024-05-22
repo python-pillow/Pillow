@@ -1,12 +1,12 @@
-import warnings
+from __future__ import annotations
+
+from pathlib import Path
 
 import pytest
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", category=DeprecationWarning)
-    from PIL import ImageQt
+from PIL import Image, ImageQt
 
-from .helper import assert_image_equal, assert_image_equal_tofile, hopper
+from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import QPixmap
@@ -19,17 +19,9 @@ if ImageQt.qt_is_installed:
         from PySide6.QtCore import QPoint
         from PySide6.QtGui import QImage, QPainter, QRegion
         from PySide6.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
-    elif ImageQt.qt_version == "5":
-        from PyQt5.QtCore import QPoint
-        from PyQt5.QtGui import QImage, QPainter, QRegion
-        from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
-    elif ImageQt.qt_version == "side2":
-        from PySide2.QtCore import QPoint
-        from PySide2.QtGui import QImage, QPainter, QRegion
-        from PySide2.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
 
     class Example(QWidget):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
             img = hopper().resize((1000, 1000))
@@ -45,14 +37,14 @@ if ImageQt.qt_is_installed:
             lbl.setPixmap(pixmap1.copy())
 
 
-def roundtrip(expected):
+def roundtrip(expected: Image.Image) -> None:
     result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))
     # Qt saves all pixmaps as rgb
-    assert_image_equal(result, expected.convert("RGB"))
+    assert_image_similar(result, expected.convert("RGB"), 1)
 
 
 @pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
-def test_sanity(tmp_path):
+def test_sanity(tmp_path: Path) -> None:
     # Segfault test
     app = QApplication([])
     ex = Example()

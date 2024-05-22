@@ -1,2 +1,4 @@
 # Master version for Pillow
-__version__ = "9.3.0.dev0"
+from __future__ import annotations
+
+__version__ = "10.4.0.dev0"

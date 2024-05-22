@@ -33,12 +33,6 @@
 #include FT_COLOR_H
 #endif
 
-#define KEEP_PY_UNICODE
-
-#if !defined(FT_LOAD_TARGET_MONO)
-#define FT_LOAD_TARGET_MONO FT_LOAD_MONOCHROME
-#endif
-
 /* -------------------------------------------------------------------- */
 /* error table */
 
@@ -53,17 +47,17 @@
     ;
 
 #ifdef HAVE_RAQM
-# ifdef HAVE_RAQM_SYSTEM
-#  include <raqm.h>
-# else
-#  include "thirdparty/raqm/raqm.h"
-#  ifdef HAVE_FRIBIDI_SYSTEM
-#   include <fribidi.h>
-#  else
-#   include "thirdparty/fribidi-shim/fribidi.h"
-#   include <hb.h>
-#  endif
-# endif
+#ifdef HAVE_RAQM_SYSTEM
+#include <raqm.h>
+#else
+#include "thirdparty/raqm/raqm.h"
+#ifdef HAVE_FRIBIDI_SYSTEM
+#include <fribidi.h>
+#else
+#include "thirdparty/fribidi-shim/fribidi.h"
+#include <hb.h>
+#endif
+#endif
 #endif
 
 static int have_raqm = 0;
@@ -122,7 +116,9 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     int error = 0;
 
     char *filename = NULL;
-    Py_ssize_t size;
+    float size;
+    FT_Size_RequestRec req;
+    FT_Long width;
     Py_ssize_t index = 0;
     Py_ssize_t layout_engine = 0;
     unsigned char *encoding;
@@ -136,10 +132,31 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         return NULL;
     }
 
+#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION > 11
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
     if (!PyArg_ParseTupleAndKeywords(
             args,
             kw,
-            "etn|nsy#n",
+            "etf|nsy#n",
+            kwlist,
+            config.filesystem_encoding,
+            &filename,
+            &size,
+            &index,
+            &encoding,
+            &font_bytes,
+            &font_bytes_size,
+            &layout_engine)) {
+        PyConfig_Clear(&config);
+        return NULL;
+    }
+    PyConfig_Clear(&config);
+#else
+    if (!PyArg_ParseTupleAndKeywords(
+            args,
+            kw,
+            "etf|nsy#n",
             kwlist,
             Py_FileSystemDefaultEncoding,
             &filename,
@@ -151,6 +168,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
             &layout_engine)) {
         return NULL;
     }
+#endif
 
     self = PyObject_New(FontObject, &Font_Type);
     if (!self) {
@@ -171,7 +189,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         /* Don't free this before FT_Done_Face */
         self->font_bytes = PyMem_Malloc(font_bytes_size);
         if (!self->font_bytes) {
-            error = 65;  // Out of Memory in Freetype.
+            error = FT_Err_Out_Of_Memory;
         }
         if (!error) {
             memcpy(self->font_bytes, font_bytes, (size_t)font_bytes_size);
@@ -185,7 +203,13 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     }
 
     if (!error) {
-        error = FT_Set_Pixel_Sizes(self->face, 0, size);
+        width = size * 64;
+        req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
+        req.width = width;
+        req.height = width;
+        req.horiResolution = 0;
+        req.vertResolution = 0;
+        error = FT_Request_Size(self->face, &req);
     }
 
     if (!error && encoding && strlen((char *)encoding) == 4) {
@@ -230,9 +254,7 @@ text_layout_raqm(
     const char *dir,
     PyObject *features,
     const char *lang,
-    GlyphInfo **glyph_info,
-    int mask,
-    int color) {
+    GlyphInfo **glyph_info) {
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
     raqm_glyph_t *glyphs = NULL;
@@ -303,7 +325,7 @@ text_layout_raqm(
             goto failed;
         }
 
-        len = PySequence_Size(seq);
+        len = PySequence_Fast_GET_SIZE(seq);
         for (j = 0; j < len; j++) {
             PyObject *item = PySequence_Fast_GET_ITEM(seq, j);
             char *feature = NULL;
@@ -311,23 +333,26 @@ text_layout_raqm(
             PyObject *bytes;
 
             if (!PyUnicode_Check(item)) {
+                Py_DECREF(seq);
                 PyErr_SetString(PyExc_TypeError, "expected a string");
                 goto failed;
             }
-
-            if (PyUnicode_Check(item)) {
-                bytes = PyUnicode_AsUTF8String(item);
-                if (bytes == NULL) {
-                    goto failed;
-                }
-                feature = PyBytes_AS_STRING(bytes);
-                size = PyBytes_GET_SIZE(bytes);
+            bytes = PyUnicode_AsUTF8String(item);
+            if (bytes == NULL) {
+                Py_DECREF(seq);
+                goto failed;
             }
+            feature = PyBytes_AS_STRING(bytes);
+            size = PyBytes_GET_SIZE(bytes);
             if (!raqm_add_font_feature(rq, feature, size)) {
+                Py_DECREF(seq);
+                Py_DECREF(bytes);
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
                 goto failed;
             }
+            Py_DECREF(bytes);
         }
+        Py_DECREF(seq);
     }
 
     if (!raqm_set_freetype_face(rq, self->face)) {
@@ -417,11 +442,9 @@ text_layout_fallback(
     if (mask) {
         load_flags |= FT_LOAD_TARGET_MONO;
     }
-#ifdef FT_LOAD_COLOR
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-#endif
     for (i = 0; font_getchar(string, i, &ch); i++) {
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
@@ -467,8 +490,7 @@ text_layout(
     size_t count;
 #ifdef HAVE_RAQM
     if (have_raqm && self->layout_engine == LAYOUT_RAQM) {
-        count = text_layout_raqm(
-            string, self, dir, features, lang, glyph_info,  mask, color);
+        count = text_layout_raqm(string, self, dir, features, lang, glyph_info);
     } else
 #endif
     {
@@ -526,75 +548,35 @@ font_getlength(FontObject *self, PyObject *args) {
     return PyLong_FromLong(length);
 }
 
-static PyObject *
-font_getsize(FontObject *self, PyObject *args) {
+static int
+bounding_box_and_anchors(
+    FT_Face face,
+    const char *anchor,
+    int horizontal_dir,
+    GlyphInfo *glyph_info,
+    size_t count,
+    int load_flags,
+    int *width,
+    int *height,
+    int *x_offset,
+    int *y_offset) {
     int position; /* pen position along primary axis, in 26.6 precision */
     int advanced; /* pen position along primary axis, in pixels */
     int px, py;   /* position of current glyph, in pixels */
     int x_min, x_max, y_min, y_max; /* text bounding box, in pixels */
     int x_anchor, y_anchor;         /* offset of point drawn at (0, 0), in pixels */
-    int load_flags;                 /* FreeType load_flags parameter */
     int error;
-    FT_Face face;
     FT_Glyph glyph;
-    FT_BBox bbox;                 /* glyph bounding box */
-    GlyphInfo *glyph_info = NULL; /* computed text layout */
-    size_t i, count;              /* glyph_info index and length */
-    int horizontal_dir;           /* is primary axis horizontal? */
-    int mask = 0;                 /* is FT_LOAD_TARGET_MONO enabled? */
-    int color = 0;                /* is FT_LOAD_COLOR enabled? */
-    const char *mode = NULL;
-    const char *dir = NULL;
-    const char *lang = NULL;
-    const char *anchor = NULL;
-    PyObject *features = Py_None;
-    PyObject *string;
-
-    /* calculate size and bearing for a given string */
-
-    if (!PyArg_ParseTuple(
-            args, "O|zzOzz:getsize", &string, &mode, &dir, &features, &lang, &anchor)) {
-        return NULL;
-    }
-
-    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
-
-    mask = mode && strcmp(mode, "1") == 0;
-    color = mode && strcmp(mode, "RGBA") == 0;
-
-    if (anchor == NULL) {
-        anchor = horizontal_dir ? "la" : "lt";
-    }
-    if (strlen(anchor) != 2) {
-        goto bad_anchor;
-    }
-
-    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
-
-    load_flags = FT_LOAD_DEFAULT;
-    if (mask) {
-        load_flags |= FT_LOAD_TARGET_MONO;
-    }
-#ifdef FT_LOAD_COLOR
-    if (color) {
-        load_flags |= FT_LOAD_COLOR;
-    }
-#endif
-
+    FT_BBox bbox; /* glyph bounding box */
+    size_t i;     /* glyph_info index */
     /*
      * text bounds are given by:
      *   - bounding boxes of individual glyphs
      *   - pen line, i.e. 0 to `advanced` along primary axis
      *     this means point (0, 0) is part of the text bounding box
      */
-    face = NULL;
     position = x_min = x_max = y_min = y_max = 0;
     for (i = 0; i < count; i++) {
-        face = self->face;
-
         if (horizontal_dir) {
             px = PIXEL(position + glyph_info[i].x_offset);
             py = PIXEL(glyph_info[i].y_offset);
@@ -617,12 +599,14 @@ font_getsize(FontObject *self, PyObject *args) {
 
         error = FT_Load_Glyph(face, glyph_info[i].index, load_flags);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            return 1;
         }
 
         error = FT_Get_Glyph(face->glyph, &glyph);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            return 1;
         }
 
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
@@ -646,13 +630,15 @@ font_getsize(FontObject *self, PyObject *args) {
         FT_Done_Glyph(glyph);
     }
 
-    if (glyph_info) {
-        PyMem_Free(glyph_info);
-        glyph_info = NULL;
+    if (anchor == NULL) {
+        anchor = horizontal_dir ? "la" : "lt";
+    }
+    if (strlen(anchor) != 2) {
+        goto bad_anchor;
     }
 
     x_anchor = y_anchor = 0;
-    if (face) {
+    if (count) {
         if (horizontal_dir) {
             switch (anchor[0]) {
                 case 'l':  // left
@@ -670,15 +656,14 @@ font_getsize(FontObject *self, PyObject *args) {
             }
             switch (anchor[1]) {
                 case 'a':  // ascender
-                    y_anchor = PIXEL(self->face->size->metrics.ascender);
+                    y_anchor = PIXEL(face->size->metrics.ascender);
                     break;
                 case 't':  // top
                     y_anchor = y_max;
                     break;
                 case 'm':  // middle (ascender + descender) / 2
                     y_anchor = PIXEL(
-                        (self->face->size->metrics.ascender +
-                         self->face->size->metrics.descender) /
+                        (face->size->metrics.ascender + face->size->metrics.descender) /
                         2);
                     break;
                 case 's':  // horizontal baseline
@@ -688,7 +673,7 @@ font_getsize(FontObject *self, PyObject *args) {
                     y_anchor = y_min;
                     break;
                 case 'd':  // descender
-                    y_anchor = PIXEL(self->face->size->metrics.descender);
+                    y_anchor = PIXEL(face->size->metrics.descender);
                     break;
                 default:
                     goto bad_anchor;
@@ -728,17 +713,79 @@ font_getsize(FontObject *self, PyObject *args) {
             }
         }
     }
-
-    return Py_BuildValue(
-        "(ii)(ii)",
-        (x_max - x_min),
-        (y_max - y_min),
-        (-x_anchor + x_min),
-        -(-y_anchor + y_max));
+    *width = x_max - x_min;
+    *height = y_max - y_min;
+    *x_offset = -x_anchor + x_min;
+    *y_offset = -(-y_anchor + y_max);
+    return 0;
 
 bad_anchor:
     PyErr_Format(PyExc_ValueError, "bad anchor specified: %s", anchor);
-    return NULL;
+    return 1;
+}
+
+static PyObject *
+font_getsize(FontObject *self, PyObject *args) {
+    int width, height, x_offset, y_offset;
+    int load_flags; /* FreeType load_flags parameter */
+    int error;
+    GlyphInfo *glyph_info = NULL; /* computed text layout */
+    size_t count;                 /* glyph_info length */
+    int horizontal_dir;           /* is primary axis horizontal? */
+    int mask = 0;                 /* is FT_LOAD_TARGET_MONO enabled? */
+    int color = 0;                /* is FT_LOAD_COLOR enabled? */
+    const char *mode = NULL;
+    const char *dir = NULL;
+    const char *lang = NULL;
+    const char *anchor = NULL;
+    PyObject *features = Py_None;
+    PyObject *string;
+
+    /* calculate size and bearing for a given string */
+
+    if (!PyArg_ParseTuple(
+            args, "O|zzOzz:getsize", &string, &mode, &dir, &features, &lang, &anchor)) {
+        return NULL;
+    }
+
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    mask = mode && strcmp(mode, "1") == 0;
+    color = mode && strcmp(mode, "RGBA") == 0;
+
+    count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    load_flags = FT_LOAD_DEFAULT;
+    if (mask) {
+        load_flags |= FT_LOAD_TARGET_MONO;
+    }
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+
+    error = bounding_box_and_anchors(
+        self->face,
+        anchor,
+        horizontal_dir,
+        glyph_info,
+        count,
+        load_flags,
+        &width,
+        &height,
+        &x_offset,
+        &y_offset);
+    if (glyph_info) {
+        PyMem_Free(glyph_info);
+        glyph_info = NULL;
+    }
+    if (error) {
+        return NULL;
+    }
+
+    return Py_BuildValue("(ii)(ii)", width, height, x_offset, y_offset);
 }
 
 static PyObject *
@@ -762,6 +809,7 @@ font_render(FontObject *self, PyObject *args) {
     unsigned int bitmap_y;          /* glyph bitmap y index */
     unsigned char *source;          /* glyph bitmap source buffer */
     unsigned char convert_scale;    /* scale factor for non-8bpp bitmaps */
+    PyObject *image;
     Imaging im;
     Py_ssize_t id;
     int mask = 0;  /* is FT_LOAD_TARGET_MONO enabled? */
@@ -772,23 +820,32 @@ font_render(FontObject *self, PyObject *args) {
     const char *mode = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
+    const char *anchor = NULL;
     PyObject *features = Py_None;
     PyObject *string;
+    PyObject *fill;
+    float x_start = 0;
+    float y_start = 0;
+    int width, height, x_offset, y_offset;
+    int horizontal_dir; /* is primary axis horizontal? */
 
     /* render string into given buffer (the buffer *must* have
        the right size, or this will crash) */
 
     if (!PyArg_ParseTuple(
             args,
-            "On|zzOziL:render",
+            "OO|zzOzizLffO:render",
             &string,
-            &id,
+            &fill,
             &mode,
             &dir,
             &features,
             &lang,
             &stroke_width,
-            &foreground_ink_long)) {
+            &anchor,
+            &foreground_ink_long,
+            &x_start,
+            &y_start)) {
         return NULL;
     }
 
@@ -814,14 +871,60 @@ font_render(FontObject *self, PyObject *args) {
     if (PyErr_Occurred()) {
         return NULL;
     }
-    if (count == 0) {
-        Py_RETURN_NONE;
+
+    load_flags = stroke_width ? FT_LOAD_NO_BITMAP : FT_LOAD_DEFAULT;
+    if (mask) {
+        load_flags |= FT_LOAD_TARGET_MONO;
+    }
+    if (color) {
+        load_flags |= FT_LOAD_COLOR;
+    }
+
+    horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
+
+    error = bounding_box_and_anchors(
+        self->face,
+        anchor,
+        horizontal_dir,
+        glyph_info,
+        count,
+        load_flags,
+        &width,
+        &height,
+        &x_offset,
+        &y_offset);
+    if (error) {
+        PyMem_Del(glyph_info);
+        return NULL;
+    }
+
+    width += stroke_width * 2 + ceil(x_start);
+    height += stroke_width * 2 + ceil(y_start);
+    image = PyObject_CallFunction(fill, "ii", width, height);
+    if (image == Py_None) {
+        PyMem_Del(glyph_info);
+        return Py_BuildValue("N(ii)", image, 0, 0);
+    } else if (image == NULL) {
+        PyMem_Del(glyph_info);
+        return NULL;
+    }
+    PyObject *imageId = PyObject_GetAttrString(image, "id");
+    id = PyLong_AsSsize_t(imageId);
+    Py_XDECREF(imageId);
+    im = (Imaging)id;
+
+    x_offset -= stroke_width;
+    y_offset -= stroke_width;
+    if (count == 0 || width == 0 || height == 0) {
+        PyMem_Del(glyph_info);
+        return Py_BuildValue("N(ii)", image, x_offset, y_offset);
     }
 
     if (stroke_width) {
         error = FT_Stroker_New(library, &stroker);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         FT_Stroker_Set(
@@ -831,17 +934,6 @@ font_render(FontObject *self, PyObject *args) {
             FT_STROKER_LINEJOIN_ROUND,
             0);
     }
-
-    im = (Imaging)id;
-    load_flags = stroke_width ? FT_LOAD_NO_BITMAP : FT_LOAD_DEFAULT;
-    if (mask) {
-        load_flags |= FT_LOAD_TARGET_MONO;
-    }
-#ifdef FT_LOAD_COLOR
-    if (color) {
-        load_flags |= FT_LOAD_COLOR;
-    }
-#endif
 
     /*
      * calculate x_min and y_max
@@ -855,7 +947,8 @@ font_render(FontObject *self, PyObject *args) {
         error =
             FT_Load_Glyph(self->face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         glyph_slot = self->face->glyph;
@@ -873,8 +966,8 @@ font_render(FontObject *self, PyObject *args) {
     }
 
     /* set pen position to text origin */
-    x = (-x_min + stroke_width) << 6;
-    y = (-y_max + (-stroke_width)) << 6;
+    x = (-x_min + stroke_width + x_start) * 64;
+    y = (-y_max + (-stroke_width) - y_start) * 64;
 
     if (stroker == NULL) {
         load_flags |= FT_LOAD_RENDER;
@@ -886,7 +979,8 @@ font_render(FontObject *self, PyObject *args) {
 
         error = FT_Load_Glyph(self->face, glyph_info[i].index, load_flags);
         if (error) {
-            return geterror(error);
+            geterror(error);
+            goto glyph_error;
         }
 
         glyph_slot = self->face->glyph;
@@ -900,7 +994,8 @@ font_render(FontObject *self, PyObject *args) {
                 error = FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, &origin, 1);
             }
             if (error) {
-                return geterror(error);
+                geterror(error);
+                goto glyph_error;
             }
 
             bitmap_glyph = (FT_BitmapGlyph)glyph;
@@ -912,6 +1007,12 @@ font_render(FontObject *self, PyObject *args) {
             bitmap = glyph_slot->bitmap;
             xx = px + glyph_slot->bitmap_left;
             yy = -(py + glyph_slot->bitmap_top);
+        }
+
+        // Null buffer, is dereferenced in FT_Bitmap_Convert
+        if (!bitmap.buffer && bitmap.rows) {
+            PyErr_SetString(PyExc_OSError, "Bitmap missing for glyph");
+            goto glyph_error;
         }
 
         /* convert non-8bpp bitmaps */
@@ -945,15 +1046,13 @@ font_render(FontObject *self, PyObject *args) {
                 /* bitmap is now FT_PIXEL_MODE_GRAY, fall through */
             case FT_PIXEL_MODE_GRAY:
                 break;
-#ifdef FT_LOAD_COLOR
             case FT_PIXEL_MODE_BGRA:
                 if (color) {
                     break;
                 }
                 /* we didn't ask for color, fall through to default */
-#endif
             default:
-                PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
                 goto glyph_error;
         }
 
@@ -973,8 +1072,8 @@ font_render(FontObject *self, PyObject *args) {
             if (yy >= 0 && yy < im->ysize) {
                 /* blend this glyph into the buffer */
                 int k;
-                unsigned char v;
                 unsigned char *target;
+                unsigned int tmp;
                 if (color) {
                     /* target[RGB] returns the color, target[A] returns the mask */
                     /* target bands get split again in ImageDraw.text */
@@ -982,45 +1081,84 @@ font_render(FontObject *self, PyObject *args) {
                 } else {
                     target = im->image8[yy] + xx;
                 }
-#ifdef FT_LOAD_COLOR
                 if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
                     /* paste color glyph */
                     for (k = x0; k < x1; k++) {
-                        if (target[k * 4 + 3] < source[k * 4 + 3]) {
-                            /* unpremultiply BGRa to RGBA */
-                            target[k * 4 + 0] = CLIP8(
-                                (255 * (int)source[k * 4 + 2]) / source[k * 4 + 3]);
-                            target[k * 4 + 1] = CLIP8(
-                                (255 * (int)source[k * 4 + 1]) / source[k * 4 + 3]);
-                            target[k * 4 + 2] = CLIP8(
-                                (255 * (int)source[k * 4 + 0]) / source[k * 4 + 3]);
-                            target[k * 4 + 3] = source[k * 4 + 3];
+                        unsigned int src_alpha = source[k * 4 + 3];
+
+                        /* paste only if source has data */
+                        if (src_alpha > 0) {
+                            /* unpremultiply BGRa */
+                            int src_red =
+                                CLIP8((255 * (int)source[k * 4 + 2]) / src_alpha);
+                            int src_green =
+                                CLIP8((255 * (int)source[k * 4 + 1]) / src_alpha);
+                            int src_blue =
+                                CLIP8((255 * (int)source[k * 4 + 0]) / src_alpha);
+
+                            /* blend required if target has data */
+                            if (target[k * 4 + 3] > 0) {
+                                /* blend RGBA colors */
+                                target[k * 4 + 0] =
+                                    BLEND(src_alpha, target[k * 4 + 0], src_red, tmp);
+                                target[k * 4 + 1] =
+                                    BLEND(src_alpha, target[k * 4 + 1], src_green, tmp);
+                                target[k * 4 + 2] =
+                                    BLEND(src_alpha, target[k * 4 + 2], src_blue, tmp);
+                                target[k * 4 + 3] = CLIP8(
+                                    src_alpha +
+                                    MULDIV255(
+                                        target[k * 4 + 3], (255 - src_alpha), tmp));
+                            } else {
+                                /* paste unpremultiplied RGBA values */
+                                target[k * 4 + 0] = src_red;
+                                target[k * 4 + 1] = src_green;
+                                target[k * 4 + 2] = src_blue;
+                                target[k * 4 + 3] = src_alpha;
+                            }
                         }
                     }
-                } else
-#endif
-                    if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+                } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
                     if (color) {
                         unsigned char *ink = (unsigned char *)&foreground_ink;
                         for (k = x0; k < x1; k++) {
-                            v = source[k] * convert_scale;
-                            if (target[k * 4 + 3] < v) {
-                                target[k * 4 + 0] = ink[0];
-                                target[k * 4 + 1] = ink[1];
-                                target[k * 4 + 2] = ink[2];
-                                target[k * 4 + 3] = v;
+                            unsigned int src_alpha = source[k] * convert_scale;
+                            if (src_alpha > 0) {
+                                if (target[k * 4 + 3] > 0) {
+                                    target[k * 4 + 0] = BLEND(
+                                        src_alpha, target[k * 4 + 0], ink[0], tmp);
+                                    target[k * 4 + 1] = BLEND(
+                                        src_alpha, target[k * 4 + 1], ink[1], tmp);
+                                    target[k * 4 + 2] = BLEND(
+                                        src_alpha, target[k * 4 + 2], ink[2], tmp);
+                                    target[k * 4 + 3] = CLIP8(
+                                        src_alpha +
+                                        MULDIV255(
+                                            target[k * 4 + 3], (255 - src_alpha), tmp));
+                                } else {
+                                    target[k * 4 + 0] = ink[0];
+                                    target[k * 4 + 1] = ink[1];
+                                    target[k * 4 + 2] = ink[2];
+                                    target[k * 4 + 3] = src_alpha;
+                                }
                             }
                         }
                     } else {
                         for (k = x0; k < x1; k++) {
-                            v = source[k] * convert_scale;
-                            if (target[k] < v) {
-                                target[k] = v;
+                            unsigned int src_alpha = source[k] * convert_scale;
+                            if (src_alpha > 0) {
+                                target[k] =
+                                    target[k] > 0
+                                        ? CLIP8(
+                                              src_alpha +
+                                              MULDIV255(
+                                                  target[k], (255 - src_alpha), tmp))
+                                        : src_alpha;
                             }
                         }
                     }
                 } else {
-                    PyErr_SetString(PyExc_IOError, "unsupported bitmap pixel mode");
+                    PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
                     goto glyph_error;
                 }
             }
@@ -1038,9 +1176,10 @@ font_render(FontObject *self, PyObject *args) {
     }
     FT_Stroker_Done(stroker);
     PyMem_Del(glyph_info);
-    Py_RETURN_NONE;
+    return Py_BuildValue("N(ii)", image, x_offset, y_offset);
 
 glyph_error:
+    Py_DECREF(image);
     if (stroker != NULL) {
         FT_Done_Glyph(glyph);
     }
@@ -1069,11 +1208,17 @@ font_getvarnames(FontObject *self) {
 
     num_namedstyles = master->num_namedstyles;
     list_names = PyList_New(num_namedstyles);
+    if (list_names == NULL) {
+        FT_Done_MM_Var(library, master);
+        return NULL;
+    }
 
     name_count = FT_Get_Sfnt_Name_Count(self->face);
     for (i = 0; i < name_count; i++) {
         error = FT_Get_Sfnt_Name(self->face, i, &name);
         if (error) {
+            Py_DECREF(list_names);
+            FT_Done_MM_Var(library, master);
             return geterror(error);
         }
 
@@ -1112,25 +1257,45 @@ font_getvaraxes(FontObject *self) {
     name_count = FT_Get_Sfnt_Name_Count(self->face);
 
     list_axes = PyList_New(num_axis);
+    if (list_axes == NULL) {
+        FT_Done_MM_Var(library, master);
+        return NULL;
+    }
     for (i = 0; i < num_axis; i++) {
         axis = master->axis[i];
 
         list_axis = PyDict_New();
-        PyDict_SetItemString(
-            list_axis, "minimum", PyLong_FromLong(axis.minimum / 65536));
-        PyDict_SetItemString(list_axis, "default", PyLong_FromLong(axis.def / 65536));
-        PyDict_SetItemString(
-            list_axis, "maximum", PyLong_FromLong(axis.maximum / 65536));
+        if (list_axis == NULL) {
+            Py_DECREF(list_axes);
+            FT_Done_MM_Var(library, master);
+            return NULL;
+        }
+        PyObject *minimum = PyLong_FromLong(axis.minimum / 65536);
+        PyDict_SetItemString(list_axis, "minimum", minimum ? minimum : Py_None);
+        Py_XDECREF(minimum);
+
+        PyObject *def = PyLong_FromLong(axis.def / 65536);
+        PyDict_SetItemString(list_axis, "default", def ? def : Py_None);
+        Py_XDECREF(def);
+
+        PyObject *maximum = PyLong_FromLong(axis.maximum / 65536);
+        PyDict_SetItemString(list_axis, "maximum", maximum ? maximum : Py_None);
+        Py_XDECREF(maximum);
 
         for (j = 0; j < name_count; j++) {
             error = FT_Get_Sfnt_Name(self->face, j, &name);
             if (error) {
+                Py_DECREF(list_axis);
+                Py_DECREF(list_axes);
+                FT_Done_MM_Var(library, master);
                 return geterror(error);
             }
 
             if (name.name_id == axis.strid) {
                 axis_name = Py_BuildValue("y#", name.string, name.string_len);
-                PyDict_SetItemString(list_axis, "name", axis_name);
+                PyDict_SetItemString(
+                    list_axis, "name", axis_name ? axis_name : Py_None);
+                Py_XDECREF(axis_name);
                 break;
             }
         }
@@ -1179,7 +1344,7 @@ font_setvaraxes(FontObject *self, PyObject *args) {
     }
 
     num_coords = PyObject_Length(axes);
-    coords = malloc(2 * sizeof(coords));
+    coords = (FT_Fixed *)malloc(num_coords * sizeof(FT_Fixed));
     if (coords == NULL) {
         return PyErr_NoMemory();
     }
@@ -1292,19 +1457,19 @@ static struct PyGetSetDef font_getsetters[] = {
     {NULL}};
 
 static PyTypeObject Font_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "Font",
-    sizeof(FontObject),
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0) "Font", /*tp_name*/
+    sizeof(FontObject),                    /*tp_basicsize*/
+    0,                                     /*tp_itemsize*/
     /* methods */
-    (destructor)font_dealloc, /* tp_dealloc */
-    0,                        /* tp_print */
+    (destructor)font_dealloc, /*tp_dealloc*/
+    0,                        /*tp_vectorcall_offset*/
     0,                        /*tp_getattr*/
     0,                        /*tp_setattr*/
-    0,                        /*tp_compare*/
+    0,                        /*tp_as_async*/
     0,                        /*tp_repr*/
-    0,                        /*tp_as_number */
-    0,                        /*tp_as_sequence */
-    0,                        /*tp_as_mapping */
+    0,                        /*tp_as_number*/
+    0,                        /*tp_as_sequence*/
+    0,                        /*tp_as_mapping*/
     0,                        /*tp_hash*/
     0,                        /*tp_call*/
     0,                        /*tp_str*/
@@ -1345,7 +1510,8 @@ setup_module(PyObject *m) {
     FT_Library_Version(library, &major, &minor, &patch);
 
     v = PyUnicode_FromFormat("%d.%d.%d", major, minor, patch);
-    PyDict_SetItemString(d, "freetype2_version", v);
+    PyDict_SetItemString(d, "freetype2_version", v ? v : Py_None);
+    Py_XDECREF(v);
 
 #ifdef HAVE_RAQM
 #if defined(HAVE_RAQM_SYSTEM) || defined(HAVE_FRIBIDI_SYSTEM)
@@ -1363,35 +1529,34 @@ setup_module(PyObject *m) {
     PyDict_SetItemString(d, "HAVE_RAQM", v);
     PyDict_SetItemString(d, "HAVE_FRIBIDI", v);
     PyDict_SetItemString(d, "HAVE_HARFBUZZ", v);
+    Py_DECREF(v);
     if (have_raqm) {
+        v = NULL;
 #ifdef RAQM_VERSION_MAJOR
         v = PyUnicode_FromString(raqm_version_string());
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "raqm_version", v);
+        PyDict_SetItemString(d, "raqm_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
+        v = NULL;
 #ifdef FRIBIDI_MAJOR_VERSION
         {
             const char *a = strchr(fribidi_version_info, ')');
             const char *b = strchr(fribidi_version_info, '\n');
             if (a && b && a + 2 < b) {
                 v = PyUnicode_FromStringAndSize(a + 2, b - (a + 2));
-            } else {
-                v = Py_None;
             }
         }
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "fribidi_version", v);
+        PyDict_SetItemString(d, "fribidi_version", v ? v : Py_None);
+        Py_XDECREF(v);
 
+        v = NULL;
 #ifdef HB_VERSION_STRING
         v = PyUnicode_FromString(hb_version_string());
-#else
-        v = Py_None;
 #endif
-        PyDict_SetItemString(d, "harfbuzz_version", v);
+        PyDict_SetItemString(d, "harfbuzz_version", v ? v : Py_None);
+        Py_XDECREF(v);
     }
 
     return 0;

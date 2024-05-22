@@ -20,61 +20,82 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
-import functools
 import math
-import operator
+from functools import cached_property
+
+from . import Image
 
 
 class Stat:
-    def __init__(self, image_or_list, mask=None):
-        try:
-            if mask:
-                self.h = image_or_list.histogram(mask)
-            else:
-                self.h = image_or_list.histogram()
-        except AttributeError:
-            self.h = image_or_list  # assume it to be a histogram list
-        if not isinstance(self.h, list):
-            raise TypeError("first argument must be image or list")
+    def __init__(
+        self, image_or_list: Image.Image | list[int], mask: Image.Image | None = None
+    ) -> None:
+        """
+        Calculate statistics for the given image. If a mask is included,
+        only the regions covered by that mask are included in the
+        statistics. You can also pass in a previously calculated histogram.
+
+        :param image: A PIL image, or a precalculated histogram.
+
+            .. note::
+
+                For a PIL image, calculations rely on the
+                :py:meth:`~PIL.Image.Image.histogram` method. The pixel counts are
+                grouped into 256 bins, even if the image has more than 8 bits per
+                channel. So ``I`` and ``F`` mode images have a maximum ``mean``,
+                ``median`` and ``rms`` of 255, and cannot have an ``extrema`` maximum
+                of more than 255.
+
+        :param mask: An optional mask.
+        """
+        if isinstance(image_or_list, Image.Image):
+            self.h = image_or_list.histogram(mask)
+        elif isinstance(image_or_list, list):
+            self.h = image_or_list
+        else:
+            msg = "first argument must be image or list"  # type: ignore[unreachable]
+            raise TypeError(msg)
         self.bands = list(range(len(self.h) // 256))
 
-    def __getattr__(self, id):
-        """Calculate missing attribute"""
-        if id[:4] == "_get":
-            raise AttributeError(id)
-        # calculate missing attribute
-        v = getattr(self, "_get" + id)()
-        setattr(self, id, v)
-        return v
+    @cached_property
+    def extrema(self) -> list[tuple[int, int]]:
+        """
+        Min/max values for each band in the image.
 
-    def _getextrema(self):
-        """Get min/max values for each band in the image"""
+        .. note::
+            This relies on the :py:meth:`~PIL.Image.Image.histogram` method, and
+            simply returns the low and high bins used. This is correct for
+            images with 8 bits per channel, but fails for other modes such as
+            ``I`` or ``F``. Instead, use :py:meth:`~PIL.Image.Image.getextrema` to
+            return per-band extrema for the image. This is more correct and
+            efficient because, for non-8-bit modes, the histogram method uses
+            :py:meth:`~PIL.Image.Image.getextrema` to determine the bins used.
+        """
 
-        def minmax(histogram):
-            n = 255
-            x = 0
+        def minmax(histogram: list[int]) -> tuple[int, int]:
+            res_min, res_max = 255, 0
             for i in range(256):
                 if histogram[i]:
-                    n = min(n, i)
-                    x = max(x, i)
-            return n, x  # returns (255, 0) if there's no data in the histogram
+                    res_min = i
+                    break
+            for i in range(255, -1, -1):
+                if histogram[i]:
+                    res_max = i
+                    break
+            return res_min, res_max
 
-        v = []
-        for i in range(0, len(self.h), 256):
-            v.append(minmax(self.h[i:]))
-        return v
+        return [minmax(self.h[i:]) for i in range(0, len(self.h), 256)]
 
-    def _getcount(self):
-        """Get total number of pixels in each layer"""
+    @cached_property
+    def count(self) -> list[int]:
+        """Total number of pixels for each band in the image."""
+        return [sum(self.h[i : i + 256]) for i in range(0, len(self.h), 256)]
 
-        v = []
-        for i in range(0, len(self.h), 256):
-            v.append(functools.reduce(operator.add, self.h[i : i + 256]))
-        return v
-
-    def _getsum(self):
-        """Get sum of all pixels in each layer"""
+    @cached_property
+    def sum(self) -> list[float]:
+        """Sum of all pixels for each band in the image."""
 
         v = []
         for i in range(0, len(self.h), 256):
@@ -84,8 +105,9 @@ class Stat:
             v.append(layer_sum)
         return v
 
-    def _getsum2(self):
-        """Get squared sum of all pixels in each layer"""
+    @cached_property
+    def sum2(self) -> list[float]:
+        """Squared sum of all pixels for each band in the image."""
 
         v = []
         for i in range(0, len(self.h), 256):
@@ -95,16 +117,14 @@ class Stat:
             v.append(sum2)
         return v
 
-    def _getmean(self):
-        """Get average pixel level for each layer"""
+    @cached_property
+    def mean(self) -> list[float]:
+        """Average (arithmetic mean) pixel level for each band in the image."""
+        return [self.sum[i] / self.count[i] for i in self.bands]
 
-        v = []
-        for i in self.bands:
-            v.append(self.sum[i] / self.count[i])
-        return v
-
-    def _getmedian(self):
-        """Get median pixel level for each layer"""
+    @cached_property
+    def median(self) -> list[int]:
+        """Median pixel level for each band in the image."""
 
         v = []
         for i in self.bands:
@@ -118,30 +138,23 @@ class Stat:
             v.append(j)
         return v
 
-    def _getrms(self):
-        """Get RMS for each layer"""
+    @cached_property
+    def rms(self) -> list[float]:
+        """RMS (root-mean-square) for each band in the image."""
+        return [math.sqrt(self.sum2[i] / self.count[i]) for i in self.bands]
 
-        v = []
-        for i in self.bands:
-            v.append(math.sqrt(self.sum2[i] / self.count[i]))
-        return v
+    @cached_property
+    def var(self) -> list[float]:
+        """Variance for each band in the image."""
+        return [
+            (self.sum2[i] - (self.sum[i] ** 2.0) / self.count[i]) / self.count[i]
+            for i in self.bands
+        ]
 
-    def _getvar(self):
-        """Get variance for each layer"""
-
-        v = []
-        for i in self.bands:
-            n = self.count[i]
-            v.append((self.sum2[i] - (self.sum[i] ** 2.0) / n) / n)
-        return v
-
-    def _getstddev(self):
-        """Get standard deviation for each layer"""
-
-        v = []
-        for i in self.bands:
-            v.append(math.sqrt(self.var[i]))
-        return v
+    @cached_property
+    def stddev(self) -> list[float]:
+        """Standard deviation for each band in the image."""
+        return [math.sqrt(self.var[i]) for i in self.bands]
 
 
 Global = Stat  # compatibility

@@ -24,12 +24,12 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import tkinter
 from io import BytesIO
 
 from . import Image
-from ._deprecate import deprecate
 
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
@@ -68,21 +68,7 @@ def _pyimagingtkcall(command, photo, id):
         # may raise an error if it cannot attach to Tkinter
         from . import _imagingtk
 
-        try:
-            if hasattr(tk, "interp"):
-                # Required for PyPy, which always has CFFI installed
-                from cffi import FFI
-
-                ffi = FFI()
-
-                # PyPy is using an FFI CDATA element
-                # (Pdb) self.tk.interp
-                #  <cdata 'Tcl_Interp *' 0x3061b50>
-                _imagingtk.tkinit(int(ffi.cast("uintptr_t", tk.interp)), 1)
-            else:
-                _imagingtk.tkinit(tk.interpaddr(), 1)
-        except AttributeError:
-            _imagingtk.tkinit(id(tk), 0)
+        _imagingtk.tkinit(tk.interpaddr())
         tk.call(command, photo, id)
 
 
@@ -111,7 +97,6 @@ class PhotoImage:
     """
 
     def __init__(self, image=None, size=None, **kw):
-
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
@@ -121,6 +106,7 @@ class PhotoImage:
             mode = image.mode
             if mode == "P":
                 # palette mapped data
+                image.apply_transparency()
                 image.load()
                 try:
                     mode = image.palette.mode
@@ -142,7 +128,7 @@ class PhotoImage:
         if image:
             self.paste(image)
 
-    def __del__(self):
+    def __del__(self) -> None:
         name = self.__photo.name
         self.__photo.name = None
         try:
@@ -150,7 +136,7 @@ class PhotoImage:
         except Exception:
             pass  # ignore internal errors
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Get the Tkinter photo image identifier.  This method is automatically
         called by Tkinter whenever a PhotoImage object is passed to a Tkinter
@@ -160,7 +146,7 @@ class PhotoImage:
         """
         return str(self.__photo)
 
-    def width(self):
+    def width(self) -> int:
         """
         Get the width of the image.
 
@@ -168,7 +154,7 @@ class PhotoImage:
         """
         return self.__size[0]
 
-    def height(self):
+    def height(self) -> int:
         """
         Get the height of the image.
 
@@ -176,7 +162,7 @@ class PhotoImage:
         """
         return self.__size[1]
 
-    def paste(self, im, box=None):
+    def paste(self, im):
         """
         Paste a PIL image into the photo image.  Note that this can
         be very slow if the photo image is displayed.
@@ -184,13 +170,7 @@ class PhotoImage:
         :param im: A PIL image. The size must match the target region.  If the
                    mode does not match, the image is converted to the mode of
                    the bitmap image.
-        :param box: Deprecated. This parameter will be removed in Pillow 10
-                    (2023-07-01).
         """
-
-        if box is not None:
-            deprecate("The box parameter", 10, None)
-
         # convert to blittable
         im.load()
         image = im.im
@@ -222,7 +202,6 @@ class BitmapImage:
     """
 
     def __init__(self, image=None, **kw):
-
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
@@ -240,7 +219,7 @@ class BitmapImage:
             kw["data"] = image.tobitmap()
         self.__photo = tkinter.BitmapImage(**kw)
 
-    def __del__(self):
+    def __del__(self) -> None:
         name = self.__photo.name
         self.__photo.name = None
         try:
@@ -248,7 +227,7 @@ class BitmapImage:
         except Exception:
             pass  # ignore internal errors
 
-    def width(self):
+    def width(self) -> int:
         """
         Get the width of the image.
 
@@ -256,7 +235,7 @@ class BitmapImage:
         """
         return self.__size[0]
 
-    def height(self):
+    def height(self) -> int:
         """
         Get the height of the image.
 
@@ -264,7 +243,7 @@ class BitmapImage:
         """
         return self.__size[1]
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Get the Tkinter bitmap image identifier.  This method is automatically
         called by Tkinter whenever a BitmapImage object is passed to a Tkinter
@@ -297,7 +276,8 @@ def _show(image, title):
             super().__init__(master, image=self.image, bg="black", bd=0)
 
     if not tkinter._default_root:
-        raise OSError("tkinter not initialized")
+        msg = "tkinter not initialized"
+        raise OSError(msg)
     top = tkinter.Toplevel()
     if title:
         top.title(title)

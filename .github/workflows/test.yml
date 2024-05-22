@@ -1,9 +1,34 @@
 name: Test
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COVERAGE_CORE: sysmon
+  FORCE_COLOR: 1
 
 jobs:
   build:
@@ -12,45 +37,62 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          "macos-latest",
+          "macos-14",
           "ubuntu-latest",
         ]
         python-version: [
-          "pypy-3.8",
-          "pypy-3.7",
-          "3.11-dev",
+          "pypy3.10",
+          "pypy3.9",
+          "3.13",
+          "3.12",
+          "3.11",
           "3.10",
           "3.9",
           "3.8",
-          "3.7",
         ]
         include:
-        - python-version: "3.7"
+        - python-version: "3.11"
           PYTHONOPTIMIZE: 1
           REVERSE: "--reverse"
-        - python-version: "3.8"
+        - python-version: "3.10"
           PYTHONOPTIMIZE: 2
-        # Include new variables for Codecov
-        - os: ubuntu-latest
-          codecov-flag: GHA_Ubuntu
-        - os: macos-latest
-          codecov-flag: GHA_macOS
+        # M1 only available for 3.10+
+        - os: "macos-13"
+          python-version: "3.9"
+        - os: "macos-13"
+          python-version: "3.8"
+        exclude:
+        - os: "macos-14"
+          python-version: "3.9"
+        - os: "macos-14"
+          python-version: "3.8"
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
         cache: pip
-        cache-dependency-path: ".ci/*.sh"
+        cache-dependency-path: |
+          ".ci/*.sh"
+          "pyproject.toml"
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
+
+    - name: Cache libimagequant
+      if: startsWith(matrix.os, 'ubuntu')
+      uses: actions/cache@v4
+      id: cache-libimagequant
+      with:
+        path: ~/cache-libimagequant
+        key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
 
     - name: Install Linux dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -58,6 +100,7 @@ jobs:
         .ci/install.sh
       env:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+        GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
 
     - name: Install macOS dependencies
       if: startsWith(matrix.os, 'macOS')
@@ -65,6 +108,10 @@ jobs:
         .github/workflows/macos-install.sh
       env:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
+
+    - name: Register gcc problem matcher
+      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'"
+      run: echo "::add-matcher::.github/problem-matchers/gcc.json"
 
     - name: Build
       run: |
@@ -76,7 +123,9 @@ jobs:
           python3 -m pip install pytest-reverse
         fi
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-          xvfb-run -s '-screen 0 1024x768x24' .ci/test.sh
+          xvfb-run -s '-screen 0 1024x768x24' sway&
+          export WAYLAND_DISPLAY=wayland-1
+          .ci/test.sh
         else
           .ci/test.sh
         fi
@@ -90,26 +139,23 @@ jobs:
         mkdir -p Tests/errors
 
     - name: Upload errors
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: errors
         path: Tests/errors
-
-    - name: Docs
-      if: startsWith(matrix.os, 'ubuntu') && matrix.python-version == 3.10
-      run: |
-        python3 -m pip install furo sphinx-copybutton sphinx-issues sphinx-removed-in sphinxext-opengraph
-        make doccheck
 
     - name: After success
       run: |
         .ci/after_success.sh
 
     - name: Upload coverage
-      run: bash <(curl -s https://codecov.io/bash) -F ${{ matrix.codecov-flag }}
-      env:
-        CODECOV_NAME: ${{ matrix.os }} Python ${{ matrix.python-version }}
+      uses: codecov/codecov-action@v4
+      with:
+        flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
+        name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+        gcov: true
+        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:

@@ -1,0 +1,69 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+      - "src/PIL/**"
+  pull_request:
+    paths:
+      - ".github/workflows/docs.yml"
+      - "docs/**"
+      - "src/PIL/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    name: Docs
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+        cache: pip
+        cache-dependency-path: |
+          ".ci/*.sh"
+          "pyproject.toml"
+
+    - name: Build system information
+      run: python3 .github/workflows/system-info.py
+
+    - name: Cache libimagequant
+      uses: actions/cache@v4
+      id: cache-libimagequant
+      with:
+        path: ~/cache-libimagequant
+        key: ${{ runner.os }}-libimagequant-${{ hashFiles('depends/install_imagequant.sh') }}
+
+    - name: Install Linux dependencies
+      run: |
+        .ci/install.sh
+      env:
+        GHA_PYTHON_VERSION: "3.x"
+        GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
+
+    - name: Build
+      run: |
+        .ci/build.sh
+
+    - name: Docs
+      run: |
+        make doccheck

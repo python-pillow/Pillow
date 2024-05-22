@@ -21,8 +21,8 @@ vector data. Path objects can be passed to the methods on the
 
     The path object implements most parts of the Python sequence interface, and
     behaves like a list of (x, y) pairs. You can use len(), item access, and
-    slicing as usual. However, the current version does not support slice
-    assignment, or item and slice deletion.
+    slicing as usual. However, this does not support slice assignment, or item
+    and slice deletion.
 
     :param xy: A sequence. The sequence can contain 2-tuples [(x, y), ...]
                or a flat list of numbers [x, y, ...].
@@ -48,7 +48,7 @@ vector data. Path objects can be passed to the methods on the
 
     Maps the path through a function.
 
-.. py:method:: PIL.ImagePath.Path.tolist(flat=0)
+.. py:method:: PIL.ImagePath.Path.tolist(flat=False)
 
     Converts the path to a Python list [(x, y), …].
 
@@ -60,9 +60,7 @@ vector data. Path objects can be passed to the methods on the
 .. py:method:: PIL.ImagePath.Path.transform(matrix)
 
     Transforms the path in place, using an affine transform. The matrix is a
-    6-tuple (a, b, c, d, e, f), and each point is mapped as follows:
-
-    .. code-block:: python
+    6-tuple (a, b, c, d, e, f), and each point is mapped as follows::
 
         xOut = xIn * a + yIn * b + c
         yOut = xIn * d + yIn * e + f

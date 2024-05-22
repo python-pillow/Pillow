@@ -31,6 +31,7 @@
  */
 
 #include "Imaging.h"
+#include "Convert.h"
 
 #define R 0
 #define G 1
@@ -790,6 +791,17 @@ ImagingUnpackBGRX(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
+ImagingUnpackBGXR(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        UINT32 iv = MAKE_UINT32(in[3], in[1], in[0], 255);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4;
+        _out += 4;
+    }
+}
+
+static void
 ImagingUnpackXRGB(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
     /* RGB, leading pad */
@@ -818,7 +830,7 @@ ImagingUnpackXBGR(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* greyscale with alpha */
+    /* grayscale with alpha */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[1]);
         memcpy(_out, &iv, sizeof(iv));
@@ -830,7 +842,7 @@ unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels) {
 static void
 unpackRGBALA16B(UINT8 *_out, const UINT8 *in, int pixels) {
     int i;
-    /* 16-bit greyscale with alpha, big-endian */
+    /* 16-bit grayscale with alpha, big-endian */
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[0], in[0], in[0], in[2]);
         memcpy(_out, &iv, sizeof(iv));
@@ -1089,6 +1101,17 @@ unpackBGRA16B(UINT8 *_out, const UINT8 *in, int pixels) {
     }
 }
 
+static void
+unpackBGAR(UINT8 *_out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        UINT32 iv = MAKE_UINT32(in[3], in[1], in[0], in[2]);
+        memcpy(_out, &iv, sizeof(iv));
+        in += 4;
+        _out += 4;
+    }
+}
+
 /* Unpack to "CMYK" image */
 
 static void
@@ -1107,7 +1130,7 @@ unpackCMYKI(UINT8 *_out, const UINT8 *in, int pixels) {
 /* There are two representations of LAB images for whatever precision:
    L: Uint (in PS, it's 0-100)
    A: Int (in ps, -128 .. 128, or elsewhere 0..255, with 128 as middle.
-           Channels in PS display a 0 value as middle grey,
+           Channels in PS display a 0 value as middle gray,
            LCMS appears to use 128 as the 0 value for these channels)
    B: Int (as above)
 
@@ -1149,6 +1172,16 @@ unpackI16N_I16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 static void
+unpackI16B_I16(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[1];
+        out[1] = in[0];
+        in += 2;
+        out += 2;
+    }
+}
+static void
 unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     for (i = 0; i < pixels; i++) {
@@ -1161,7 +1194,7 @@ unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
 
 static void
 unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels) {
-    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer greyscale tiffs.
+    /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer grayscale tiffs.
 
         According to the TIFF spec:
 
@@ -1226,6 +1259,12 @@ static void
 copy2(UINT8 *out, const UINT8 *in, int pixels) {
     /* I;16 */
     memcpy(out, in, pixels * 2);
+}
+
+static void
+copy3(UINT8 *out, const UINT8 *in, int pixels) {
+    /* BGR;24 */
+    memcpy(out, in, pixels * 3);
 }
 
 static void
@@ -1398,90 +1437,90 @@ band3I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band016B(UINT8* out, const UINT8* in, int pixels)
-{
+band016B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 0 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[0] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band116B(UINT8* out, const UINT8* in, int pixels)
-{
+band116B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 1 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[1] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band216B(UINT8* out, const UINT8* in, int pixels)
-{
+band216B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 2 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[2] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band316B(UINT8* out, const UINT8* in, int pixels)
-{
+band316B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 3 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[3] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band016L(UINT8* out, const UINT8* in, int pixels)
-{
+band016L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 0 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[0] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band116L(UINT8* out, const UINT8* in, int pixels)
-{
+band116L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 1 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[1] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band216L(UINT8* out, const UINT8* in, int pixels)
-{
+band216L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 2 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[2] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band316L(UINT8* out, const UINT8* in, int pixels)
-{
+band316L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 3 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[3] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
@@ -1510,7 +1549,7 @@ static struct {
     {"1", "1;IR", 1, unpack1IR},
     {"1", "1;8", 8, unpack18},
 
-    /* greyscale */
+    /* grayscale */
     {"L", "L;2", 2, unpackL2},
     {"L", "L;2I", 2, unpackL2I},
     {"L", "L;2R", 2, unpackL2R},
@@ -1527,11 +1566,11 @@ static struct {
     {"L", "L;16", 16, unpackL16},
     {"L", "L;16B", 16, unpackL16B},
 
-    /* greyscale w. alpha */
+    /* grayscale w. alpha */
     {"LA", "LA", 16, unpackLA},
     {"LA", "LA;L", 16, unpackLAL},
 
-    /* greyscale w. alpha premultiplied */
+    /* grayscale w. alpha premultiplied */
     {"La", "La", 16, unpackLA},
 
     /* palette */
@@ -1542,10 +1581,13 @@ static struct {
     {"P", "P;4L", 4, unpackP4L},
     {"P", "P", 8, copy1},
     {"P", "P;R", 8, unpackLR},
+    {"P", "L", 8, copy1},
+    {"P", "PX", 16, unpackL16B},
 
     /* palette w. alpha */
     {"PA", "PA", 16, unpackLA},
     {"PA", "PA;L", 16, unpackLAL},
+    {"PA", "LA", 16, unpackLA},
 
     /* true colour */
     {"RGB", "RGB", 24, ImagingUnpackRGB},
@@ -1565,6 +1607,7 @@ static struct {
     {"RGB", "RGBA;L", 32, unpackRGBAL},
     {"RGB", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGB", "BGRX", 32, ImagingUnpackBGRX},
+    {"RGB", "BGXR", 32, ImagingUnpackBGXR},
     {"RGB", "XRGB", 32, ImagingUnpackXRGB},
     {"RGB", "XBGR", 32, ImagingUnpackXBGR},
     {"RGB", "YCC;P", 24, ImagingUnpackYCC},
@@ -1577,6 +1620,11 @@ static struct {
     {"RGB", "R;16B", 16, band016B},
     {"RGB", "G;16B", 16, band116B},
     {"RGB", "B;16B", 16, band216B},
+    {"RGB", "CMYK", 32, cmyk2rgb},
+
+    {"BGR;15", "BGR;15", 16, copy2},
+    {"BGR;16", "BGR;16", 16, copy2},
+    {"BGR;24", "BGR;24", 24, copy3},
 
     /* true colour w. alpha */
     {"RGBA", "LA", 16, unpackRGBALA},
@@ -1600,6 +1648,7 @@ static struct {
     {"RGBA", "BGRA", 32, unpackBGRA},
     {"RGBA", "BGRA;16L", 64, unpackBGRA16L},
     {"RGBA", "BGRA;16B", 64, unpackBGRA16B},
+    {"RGBA", "BGAR", 32, unpackBGAR},
     {"RGBA", "ARGB", 32, unpackARGB},
     {"RGBA", "ABGR", 32, unpackABGR},
     {"RGBA", "YCCA;P", 32, ImagingUnpackYCCA},
@@ -1637,7 +1686,6 @@ static struct {
     {"RGB", "R;16N", 16, band016L},
     {"RGB", "G;16N", 16, band116L},
     {"RGB", "B;16N", 16, band216L},
-
 
     {"RGBA", "R;16N", 16, band016L},
     {"RGBA", "G;16N", 16, band116L},
@@ -1762,7 +1810,9 @@ static struct {
     {"I;16", "I;16", 16, copy2},
     {"I;16B", "I;16B", 16, copy2},
     {"I;16L", "I;16L", 16, copy2},
+    {"I;16N", "I;16N", 16, copy2},
 
+    {"I;16", "I;16B", 16, unpackI16B_I16},
     {"I;16", "I;16N", 16, unpackI16N_I16},   // LibTiff native->image endian.
     {"I;16L", "I;16N", 16, unpackI16N_I16},  // LibTiff native->image endian.
     {"I;16B", "I;16N", 16, unpackI16N_I16B},

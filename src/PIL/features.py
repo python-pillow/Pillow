@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import os
 import sys
@@ -16,7 +18,7 @@ modules = {
 }
 
 
-def check_module(feature):
+def check_module(feature: str) -> bool:
     """
     Checks if a module is available.
 
@@ -24,19 +26,23 @@ def check_module(feature):
     :returns: ``True`` if available, ``False`` otherwise.
     :raises ValueError: If the module is not defined in this version of Pillow.
     """
-    if not (feature in modules):
-        raise ValueError(f"Unknown module {feature}")
+    if feature not in modules:
+        msg = f"Unknown module {feature}"
+        raise ValueError(msg)
 
     module, ver = modules[feature]
 
     try:
         __import__(module)
         return True
-    except ImportError:
+    except ModuleNotFoundError:
+        return False
+    except ImportError as ex:
+        warnings.warn(str(ex))
         return False
 
 
-def version_module(feature):
+def version_module(feature: str) -> str | None:
     """
     :param feature: The module to check for.
     :returns:
@@ -48,13 +54,10 @@ def version_module(feature):
 
     module, ver = modules[feature]
 
-    if ver is None:
-        return None
-
     return getattr(__import__(module, fromlist=[ver]), ver)
 
 
-def get_supported_modules():
+def get_supported_modules() -> list[str]:
     """
     :returns: A list of all supported modules.
     """
@@ -69,7 +72,7 @@ codecs = {
 }
 
 
-def check_codec(feature):
+def check_codec(feature: str) -> bool:
     """
     Checks if a codec is available.
 
@@ -78,14 +81,15 @@ def check_codec(feature):
     :raises ValueError: If the codec is not defined in this version of Pillow.
     """
     if feature not in codecs:
-        raise ValueError(f"Unknown codec {feature}")
+        msg = f"Unknown codec {feature}"
+        raise ValueError(msg)
 
     codec, lib = codecs[feature]
 
-    return codec + "_encoder" in dir(Image.core)
+    return f"{codec}_encoder" in dir(Image.core)
 
 
-def version_codec(feature):
+def version_codec(feature: str) -> str | None:
     """
     :param feature: The codec to check for.
     :returns:
@@ -98,7 +102,7 @@ def version_codec(feature):
 
     codec, lib = codecs[feature]
 
-    version = getattr(Image.core, lib + "_version")
+    version = getattr(Image.core, f"{lib}_version")
 
     if feature == "libtiff":
         return version.split("\n")[0].split("Version ")[1]
@@ -106,7 +110,7 @@ def version_codec(feature):
     return version
 
 
-def get_supported_codecs():
+def get_supported_codecs() -> list[str]:
     """
     :returns: A list of all supported codecs.
     """
@@ -126,7 +130,7 @@ features = {
 }
 
 
-def check_feature(feature):
+def check_feature(feature: str) -> bool | None:
     """
     Checks if a feature is available.
 
@@ -135,18 +139,22 @@ def check_feature(feature):
     :raises ValueError: If the feature is not defined in this version of Pillow.
     """
     if feature not in features:
-        raise ValueError(f"Unknown feature {feature}")
+        msg = f"Unknown feature {feature}"
+        raise ValueError(msg)
 
     module, flag, ver = features[feature]
 
     try:
         imported_module = __import__(module, fromlist=["PIL"])
         return getattr(imported_module, flag)
-    except ImportError:
+    except ModuleNotFoundError:
+        return None
+    except ImportError as ex:
+        warnings.warn(str(ex))
         return None
 
 
-def version_feature(feature):
+def version_feature(feature: str) -> str | None:
     """
     :param feature: The feature to check for.
     :returns: The version number as a string, or ``None`` if not available.
@@ -163,14 +171,14 @@ def version_feature(feature):
     return getattr(__import__(module, fromlist=[ver]), ver)
 
 
-def get_supported_features():
+def get_supported_features() -> list[str]:
     """
     :returns: A list of all supported features.
     """
     return [f for f in features if check_feature(f)]
 
 
-def check(feature):
+def check(feature: str) -> bool | None:
     """
     :param feature: A module, codec, or feature name.
     :returns:
@@ -188,7 +196,7 @@ def check(feature):
     return False
 
 
-def version(feature):
+def version(feature: str) -> str | None:
     """
     :param feature:
         The module, codec, or feature to check for.
@@ -204,7 +212,7 @@ def version(feature):
     return None
 
 
-def get_supported():
+def get_supported() -> list[str]:
     """
     :returns: A list of all supported modules, features, and codecs.
     """
@@ -219,6 +227,9 @@ def pilinfo(out=None, supported_formats=True):
     """
     Prints information about this installation of Pillow.
     This function can be called with ``python3 -m PIL``.
+    It can also be called with ``python3 -m PIL.report`` or ``python3 -m PIL --report``
+    to have "supported_formats" set to ``False``, omitting the list of all supported
+    image file formats.
 
     :param out:
         The output stream to print to. Defaults to ``sys.stdout`` if ``None``.
@@ -238,12 +249,17 @@ def pilinfo(out=None, supported_formats=True):
     for py_version in py_version[1:]:
         print(f"       {py_version.strip()}", file=out)
     print("-" * 68, file=out)
+    print(f"Python executable is {sys.executable or 'unknown'}", file=out)
+    if sys.prefix != sys.base_prefix:
+        print(f"Environment Python files loaded from {sys.prefix}", file=out)
+    print(f"System Python files loaded from {sys.base_prefix}", file=out)
+    print("-" * 68, file=out)
     print(
-        f"Python modules loaded from {os.path.dirname(Image.__file__)}",
+        f"Python Pillow modules loaded from {os.path.dirname(Image.__file__)}",
         file=out,
     )
     print(
-        f"Binary modules loaded from {os.path.dirname(Image.core.__file__)}",
+        f"Binary Pillow modules loaded from {os.path.dirname(Image.core.__file__)}",
         file=out,
     )
     print("-" * 68, file=out)

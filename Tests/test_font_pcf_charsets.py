@@ -1,4 +1,10 @@
+from __future__ import annotations
+
 import os
+from pathlib import Path
+from typing import TypedDict
+
+import pytest
 
 from PIL import FontFile, Image, ImageDraw, ImageFont, PcfFontFile
 
@@ -10,7 +16,14 @@ from .helper import (
 
 fontname = "Tests/fonts/ter-x20b.pcf"
 
-charsets = {
+
+class Charset(TypedDict):
+    glyph_count: int
+    message: str
+    image1: str
+
+
+charsets: dict[str, Charset] = {
     "iso8859-1": {
         "glyph_count": 223,
         "message": "hello, world",
@@ -32,7 +45,7 @@ charsets = {
 pytestmark = skip_unless_feature("zlib")
 
 
-def save_font(request, tmp_path, encoding):
+def save_font(request: pytest.FixtureRequest, tmp_path: Path, encoding: str) -> str:
     with open(fontname, "rb") as test_file:
         font = PcfFontFile.PcfFontFile(test_file, encoding)
     assert isinstance(font, FontFile.FontFile)
@@ -41,7 +54,7 @@ def save_font(request, tmp_path, encoding):
 
     tempname = str(tmp_path / "temp.pil")
 
-    def delete_tempfile():
+    def delete_tempfile() -> None:
         try:
             os.remove(tempname[:-4] + ".pbm")
         except OSError:
@@ -59,23 +72,13 @@ def save_font(request, tmp_path, encoding):
     return tempname
 
 
-def _test_sanity(request, tmp_path, encoding):
+@pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
+def test_sanity(request: pytest.FixtureRequest, tmp_path: Path, encoding: str) -> None:
     save_font(request, tmp_path, encoding)
 
 
-def test_sanity_iso8859_1(request, tmp_path):
-    _test_sanity(request, tmp_path, "iso8859-1")
-
-
-def test_sanity_iso8859_2(request, tmp_path):
-    _test_sanity(request, tmp_path, "iso8859-2")
-
-
-def test_sanity_cp1250(request, tmp_path):
-    _test_sanity(request, tmp_path, "cp1250")
-
-
-def _test_draw(request, tmp_path, encoding):
+@pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
+def test_draw(request: pytest.FixtureRequest, tmp_path: Path, encoding: str) -> None:
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     im = Image.new("L", (150, 30), "white")
@@ -85,19 +88,10 @@ def _test_draw(request, tmp_path, encoding):
     assert_image_similar_tofile(im, charsets[encoding]["image1"], 0)
 
 
-def test_draw_iso8859_1(request, tmp_path):
-    _test_draw(request, tmp_path, "iso8859-1")
-
-
-def test_draw_iso8859_2(request, tmp_path):
-    _test_draw(request, tmp_path, "iso8859-2")
-
-
-def test_draw_cp1250(request, tmp_path):
-    _test_draw(request, tmp_path, "cp1250")
-
-
-def _test_textsize(request, tmp_path, encoding):
+@pytest.mark.parametrize("encoding", ("iso8859-1", "iso8859-2", "cp1250"))
+def test_textsize(
+    request: pytest.FixtureRequest, tmp_path: Path, encoding: str
+) -> None:
     tempname = save_font(request, tmp_path, encoding)
     font = ImageFont.load(tempname)
     for i in range(255):
@@ -112,15 +106,3 @@ def _test_textsize(request, tmp_path, encoding):
         msg = message[: i + 1]
         assert font.getlength(msg) == len(msg) * 10
         assert font.getbbox(msg) == (0, 0, len(msg) * 10, 20)
-
-
-def test_textsize_iso8859_1(request, tmp_path):
-    _test_textsize(request, tmp_path, "iso8859-1")
-
-
-def test_textsize_iso8859_2(request, tmp_path):
-    _test_textsize(request, tmp_path, "iso8859-2")
-
-
-def test_textsize_cp1250(request, tmp_path):
-    _test_textsize(request, tmp_path, "cp1250")

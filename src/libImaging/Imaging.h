@@ -109,15 +109,15 @@ struct ImagingMemoryInstance {
 
 #define IMAGING_PIXEL_1(im, x, y) ((im)->image8[(y)][(x)])
 #define IMAGING_PIXEL_L(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_LA(im, x, y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_LA(im, x, y) ((im)->image[(y)][(x) * 4])
 #define IMAGING_PIXEL_P(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_PA(im, x, y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_PA(im, x, y) ((im)->image[(y)][(x) * 4])
 #define IMAGING_PIXEL_I(im, x, y) ((im)->image32[(y)][(x)])
 #define IMAGING_PIXEL_F(im, x, y) (((FLOAT32 *)(im)->image32[y])[x])
-#define IMAGING_PIXEL_RGB(im, x, y) ((im)->image[(y)][(x)*4])
-#define IMAGING_PIXEL_RGBA(im, x, y) ((im)->image[(y)][(x)*4])
-#define IMAGING_PIXEL_CMYK(im, x, y) ((im)->image[(y)][(x)*4])
-#define IMAGING_PIXEL_YCbCr(im, x, y) ((im)->image[(y)][(x)*4])
+#define IMAGING_PIXEL_RGB(im, x, y) ((im)->image[(y)][(x) * 4])
+#define IMAGING_PIXEL_RGBA(im, x, y) ((im)->image[(y)][(x) * 4])
+#define IMAGING_PIXEL_CMYK(im, x, y) ((im)->image[(y)][(x) * 4])
+#define IMAGING_PIXEL_YCbCr(im, x, y) ((im)->image[(y)][(x) * 4])
 
 #define IMAGING_PIXEL_UINT8(im, x, y) ((im)->image8[(y)][(x)])
 #define IMAGING_PIXEL_INT32(im, x, y) ((im)->image32[(y)][(x)])
@@ -125,7 +125,6 @@ struct ImagingMemoryInstance {
 
 struct ImagingAccessInstance {
     const char *mode;
-    void *(*line)(Imaging im, int x, int y);
     void (*get_pixel)(Imaging im, int x, int y, void *pixel);
     void (*put_pixel)(Imaging im, int x, int y, const void *pixel);
 };
@@ -163,7 +162,7 @@ typedef struct ImagingMemoryArena {
     int stats_reallocated_blocks; /* Number of blocks which were actually reallocated
                                      after retrieving */
     int stats_freed_blocks;       /* Number of freed blocks */
-} * ImagingMemoryArena;
+} *ImagingMemoryArena;
 
 /* Objects */
 /* ------- */
@@ -292,7 +291,7 @@ ImagingConvertTransparent(Imaging im, const char *mode, int r, int g, int b);
 extern Imaging
 ImagingCrop(Imaging im, int x0, int y0, int x1, int y1);
 extern Imaging
-ImagingExpand(Imaging im, int x, int y, int mode);
+ImagingExpand(Imaging im, int x, int y);
 extern Imaging
 ImagingFill(Imaging im, const void *ink);
 extern int
@@ -311,7 +310,8 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging
-ImagingGaussianBlur(Imaging imOut, Imaging imIn, float radius, int passes);
+ImagingGaussianBlur(
+    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes);
 extern Imaging
 ImagingGetBand(Imaging im, int band);
 extern Imaging
@@ -319,7 +319,7 @@ ImagingMerge(const char *mode, Imaging bands[4]);
 extern int
 ImagingSplit(Imaging im, Imaging bands[4]);
 extern int
-ImagingGetBBox(Imaging im, int bbox[4]);
+ImagingGetBBox(Imaging im, int bbox[4], int alpha_only);
 typedef struct {
     int x, y;
     INT32 count;
@@ -378,7 +378,7 @@ ImagingTransform(
 extern Imaging
 ImagingUnsharpMask(Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging
-ImagingBoxBlur(Imaging imOut, Imaging imIn, float radius, int n);
+ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n);
 extern Imaging
 ImagingColorLUT3D_linear(
     Imaging imOut,
@@ -489,7 +489,8 @@ ImagingDrawPieslice(
 extern int
 ImagingDrawPoint(Imaging im, int x, int y, const void *ink, int op);
 extern int
-ImagingDrawPolygon(Imaging im, int points, int *xy, const void *ink, int fill, int width, int op);
+ImagingDrawPolygon(
+    Imaging im, int points, int *xy, const void *ink, int fill, int width, int op);
 extern int
 ImagingDrawRectangle(
     Imaging im,

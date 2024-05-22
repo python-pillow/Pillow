@@ -15,13 +15,13 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32be as i32
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return len(prefix) >= 4 and i32(prefix) == 0x59A66A95
 
 
@@ -30,12 +30,10 @@ def _accept(prefix):
 
 
 class SunImageFile(ImageFile.ImageFile):
-
     format = "SUN"
     format_description = "Sun Raster File"
 
-    def _open(self):
-
+    def _open(self) -> None:
         # The Sun Raster file header is 32 bytes in length
         # and has the following format:
 
@@ -51,10 +49,13 @@ class SunImageFile(ImageFile.ImageFile):
         #         DWORD ColorMapLength;   /* Size of the color map in bytes */
         #     } SUNRASTER;
 
+        assert self.fp is not None
+
         # HEAD
         s = self.fp.read(32)
         if not _accept(s):
-            raise SyntaxError("not an SUN raster file")
+            msg = "not an SUN raster file"
+            raise SyntaxError(msg)
 
         offset = 32
 
@@ -67,35 +68,38 @@ class SunImageFile(ImageFile.ImageFile):
         palette_length = i32(s, 28)
 
         if depth == 1:
-            self.mode, rawmode = "1", "1;I"
+            self._mode, rawmode = "1", "1;I"
         elif depth == 4:
-            self.mode, rawmode = "L", "L;4"
+            self._mode, rawmode = "L", "L;4"
         elif depth == 8:
-            self.mode = rawmode = "L"
+            self._mode = rawmode = "L"
         elif depth == 24:
             if file_type == 3:
-                self.mode, rawmode = "RGB", "RGB"
+                self._mode, rawmode = "RGB", "RGB"
             else:
-                self.mode, rawmode = "RGB", "BGR"
+                self._mode, rawmode = "RGB", "BGR"
         elif depth == 32:
             if file_type == 3:
-                self.mode, rawmode = "RGB", "RGBX"
+                self._mode, rawmode = "RGB", "RGBX"
             else:
-                self.mode, rawmode = "RGB", "BGRX"
+                self._mode, rawmode = "RGB", "BGRX"
         else:
-            raise SyntaxError("Unsupported Mode/Bit Depth")
+            msg = "Unsupported Mode/Bit Depth"
+            raise SyntaxError(msg)
 
         if palette_length:
             if palette_length > 1024:
-                raise SyntaxError("Unsupported Color Palette Length")
+                msg = "Unsupported Color Palette Length"
+                raise SyntaxError(msg)
 
             if palette_type != 1:
-                raise SyntaxError("Unsupported Palette Type")
+                msg = "Unsupported Palette Type"
+                raise SyntaxError(msg)
 
             offset = offset + palette_length
             self.palette = ImagePalette.raw("RGB;L", self.fp.read(palette_length))
             if self.mode == "L":
-                self.mode = "P"
+                self._mode = "P"
                 rawmode = rawmode.replace("L", "P")
 
         # 16 bit boundaries on stride
@@ -124,7 +128,8 @@ class SunImageFile(ImageFile.ImageFile):
         elif file_type == 2:
             self.tile = [("sun_rle", (0, 0) + self.size, offset, rawmode)]
         else:
-            raise SyntaxError("Unsupported Sun Raster file type")
+            msg = "Unsupported Sun Raster file type"
+            raise SyntaxError(msg)
 
 
 #

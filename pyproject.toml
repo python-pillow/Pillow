@@ -1,0 +1,147 @@
+[build-system]
+build-backend = "backend"
+requires = [
+  "setuptools>=67.8",
+]
+backend-path = [
+  "_custom_build",
+]
+
+[project]
+name = "pillow"
+description = "Python Imaging Library (Fork)"
+readme = "README.md"
+keywords = [
+  "Imaging",
+]
+license = {text = "HPND"}
+authors = [{name = "Jeffrey A. Clark", email = "aclark@aclark.net"}]
+requires-python = ">=3.8"
+classifiers = [
+  "Development Status :: 6 - Mature",
+  "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+  "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+  "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+  "Topic :: Multimedia :: Graphics :: Viewers",
+  "Typing :: Typed",
+]
+dynamic = [
+  "version",
+]
+[project.optional-dependencies]
+docs = [
+  "furo",
+  "olefile",
+  "sphinx>=7.3",
+  "sphinx-copybutton",
+  "sphinx-inline-tabs",
+  "sphinxext-opengraph",
+]
+fpx = [
+  "olefile",
+]
+mic = [
+  "olefile",
+]
+tests = [
+  "check-manifest",
+  "coverage",
+  "defusedxml",
+  "markdown2",
+  "olefile",
+  "packaging",
+  "pyroma",
+  "pytest",
+  "pytest-cov",
+  "pytest-timeout",
+]
+typing = [
+  'typing-extensions; python_version < "3.10"',
+]
+xmp = [
+  "defusedxml",
+]
+[project.urls]
+Changelog = "https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst"
+Documentation = "https://pillow.readthedocs.io"
+Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
+Homepage = "https://python-pillow.org"
+Mastodon = "https://fosstodon.org/@pillow"
+"Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
+Source = "https://github.com/python-pillow/Pillow"
+
+[tool.setuptools]
+packages = ["PIL"]
+include-package-data = true
+package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+version = {attr = "PIL.__version__"}
+
+[tool.cibuildwheel]
+before-all = ".github/workflows/wheels-dependencies.sh"
+build-verbosity = 1
+config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
+test-command = "cd {project} && .github/workflows/wheels-test.sh"
+test-extras = "tests"
+
+[tool.ruff]
+fix = true
+
+[tool.ruff.lint]
+select = [
+  "C4", # flake8-comprehensions
+  "E", # pycodestyle errors
+  "EM", # flake8-errmsg
+  "F", # pyflakes errors
+  "I", # isort
+  "ISC", # flake8-implicit-str-concat
+  "LOG", # flake8-logging
+  "PGH", # pygrep-hooks
+  "PYI", # flake8-pyi
+  "RUF100", # unused noqa (yesqa)
+  "UP", # pyupgrade
+  "W", # pycodestyle warnings
+  "YTT", # flake8-2020
+]
+ignore = [
+  "E203", # Whitespace before ':'
+  "E221", # Multiple spaces before operator
+  "E226", # Missing whitespace around arithmetic operator
+  "E241", # Multiple spaces after ','
+  "PYI026", # flake8-pyi: typing.TypeAlias added in Python 3.10
+  "PYI034", # flake8-pyi: typing.Self added in Python 3.11
+]
+
+[tool.ruff.lint.per-file-ignores]
+"Tests/oss-fuzz/fuzz_font.py" = ["I002"]
+"Tests/oss-fuzz/fuzz_pillow.py" = ["I002"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["PIL"]
+required-imports = ["from __future__ import annotations"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --color=yes"
+testpaths = ["Tests"]
+
+[tool.mypy]
+python_version = "3.8"
+pretty = true
+disallow_any_generics = true
+enable_error_code = "ignore-without-code"
+extra_checks = true
+follow_imports = "silent"
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_ignores = true

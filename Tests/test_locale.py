@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import locale
 
 import pytest
@@ -17,12 +19,12 @@ from PIL import Image
 # 7
 # 160
 
-# one of string.whitespace is not freely convertable into ascii.
+# one of string.whitespace is not freely convertible into ascii.
 
 path = "Tests/images/hopper.jpg"
 
 
-def test_sanity():
+def test_sanity() -> None:
     with Image.open(path):
         pass
     try:

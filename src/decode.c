@@ -116,12 +116,11 @@ _dealloc(ImagingDecoderObject *decoder) {
 
 static PyObject *
 _decode(ImagingDecoderObject *decoder, PyObject *args) {
-    UINT8 *buffer;
-    Py_ssize_t bufsize;
+    Py_buffer buffer;
     int status;
     ImagingSectionCookie cookie;
 
-    if (!PyArg_ParseTuple(args, "y#", &buffer, &bufsize)) {
+    if (!PyArg_ParseTuple(args, "y*", &buffer)) {
         return NULL;
     }
 
@@ -129,12 +128,13 @@ _decode(ImagingDecoderObject *decoder, PyObject *args) {
         ImagingSectionEnter(&cookie);
     }
 
-    status = decoder->decode(decoder->im, &decoder->state, buffer, bufsize);
+    status = decoder->decode(decoder->im, &decoder->state, buffer.buf, buffer.len);
 
     if (!decoder->pulls_fd) {
         ImagingSectionLeave(&cookie);
     }
 
+    PyBuffer_Release(&buffer);
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
 
@@ -258,18 +258,18 @@ static struct PyGetSetDef getseters[] = {
 
 static PyTypeObject ImagingDecoderType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingDecoder", /*tp_name*/
-    sizeof(ImagingDecoderObject),                    /*tp_size*/
+    sizeof(ImagingDecoderObject),                    /*tp_basicsize*/
     0,                                               /*tp_itemsize*/
     /* methods */
     (destructor)_dealloc, /*tp_dealloc*/
-    0,                    /*tp_print*/
+    0,                    /*tp_vectorcall_offset*/
     0,                    /*tp_getattr*/
     0,                    /*tp_setattr*/
-    0,                    /*tp_compare*/
+    0,                    /*tp_as_async*/
     0,                    /*tp_repr*/
-    0,                    /*tp_as_number */
-    0,                    /*tp_as_sequence */
-    0,                    /*tp_as_mapping */
+    0,                    /*tp_as_number*/
+    0,                    /*tp_as_sequence*/
+    0,                    /*tp_as_mapping*/
     0,                    /*tp_hash*/
     0,                    /*tp_call*/
     0,                    /*tp_str*/
@@ -376,11 +376,8 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
             actual = "L";
             break;
         case 5: /* BC5: 2-channel 8-bit via 2 BC3 alpha blocks */
-            actual = "RGB";
-            break;
         case 6: /* BC6: 3-channel 16-bit float */
-            /* TODO: support 4-channel floating point images */
-            actual = "RGBAF";
+            actual = "RGB";
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "block compression type unknown");

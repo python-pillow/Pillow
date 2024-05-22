@@ -260,8 +260,7 @@ mergesort_pixels(PixelList *head, int i) {
         return head;
     }
     for (c = t = head; c && t;
-         c = c->next[i], t = (t->next[i]) ? t->next[i]->next[i] : NULL)
-        ;
+         c = c->next[i], t = (t->next[i]) ? t->next[i]->next[i] : NULL);
     if (c) {
         if (c->prev[i]) {
             c->prev[i]->next[i] = NULL;
@@ -341,7 +340,10 @@ splitlists(
 
     PixelList *l, *r, *c, *n;
     int i;
-    int nRight, nLeft;
+    int nRight;
+#ifndef NO_OUTPUT
+    int nLeft;
+#endif
     int splitColourVal;
 
 #ifdef TEST_SPLIT
@@ -351,12 +353,10 @@ splitlists(
         for (_i = 0; _i < 3; _i++) {
             for (_nextCount[_i] = 0, _nextTest = h[_i];
                  _nextTest && _nextTest->next[_i];
-                 _nextTest = _nextTest->next[_i], _nextCount[_i]++)
-                ;
+                 _nextTest = _nextTest->next[_i], _nextCount[_i]++);
             for (_prevCount[_i] = 0, _prevTest = t[_i];
                  _prevTest && _prevTest->prev[_i];
-                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++)
-                ;
+                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++);
             if (_nextTest != t[_i]) {
                 printf("next-list of axis %d does not end at tail\n", _i);
                 exit(1);
@@ -365,10 +365,8 @@ splitlists(
                 printf("prev-list of axis %d does not end at head\n", _i);
                 exit(1);
             }
-            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i])
-                ;
-            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i])
-                ;
+            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i]);
+            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i]);
             if (_nextTest != h[_i]) {
                 printf("next-list of axis %d does not loop back to head\n", _i);
                 exit(1);
@@ -396,12 +394,17 @@ splitlists(
     }
 #endif
     nCount[0] = nCount[1] = 0;
-    nLeft = nRight = 0;
+    nRight = 0;
+#ifndef NO_OUTPUT
+    nLeft = 0;
+#endif
     for (left = 0, c = h[axis]; c;) {
         left = left + c->count;
         nCount[0] += c->count;
         c->flag = 0;
+#ifndef NO_OUTPUT
         nLeft++;
+#endif
         c = c->next[axis];
         if (left * 2 > pixelCount) {
             break;
@@ -414,7 +417,9 @@ splitlists(
                 break;
             }
             c->flag = 0;
+#ifndef NO_OUTPUT
             nLeft++;
+#endif
             nCount[0] += c->count;
         }
     }
@@ -430,7 +435,9 @@ splitlists(
             }
             c->flag = 1;
             nRight++;
+#ifndef NO_OUTPUT
             nLeft--;
+#endif
             nCount[0] -= c->count;
             nCount[1] += c->count;
         }
@@ -536,22 +543,18 @@ split(BoxNode *node) {
         for (_i = 0; _i < 3; _i++) {
             for (_nextCount[_i] = 0, _nextTest = node->head[_i];
                  _nextTest && _nextTest->next[_i];
-                 _nextTest = _nextTest->next[_i], _nextCount[_i]++)
-                ;
+                 _nextTest = _nextTest->next[_i], _nextCount[_i]++);
             for (_prevCount[_i] = 0, _prevTest = node->tail[_i];
                  _prevTest && _prevTest->prev[_i];
-                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++)
-                ;
+                 _prevTest = _prevTest->prev[_i], _prevCount[_i]++);
             if (_nextTest != node->tail[_i]) {
                 printf("next-list of axis %d does not end at tail\n", _i);
             }
             if (_prevTest != node->head[_i]) {
                 printf("prev-list of axis %d does not end at head\n", _i);
             }
-            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i])
-                ;
-            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i])
-                ;
+            for (; _nextTest && _nextTest->prev[_i]; _nextTest = _nextTest->prev[_i]);
+            for (; _prevTest && _prevTest->next[_i]; _prevTest = _prevTest->next[_i]);
             if (_nextTest != node->head[_i]) {
                 printf("next-list of axis %d does not loop back to head\n", _i);
             }
@@ -656,8 +659,7 @@ median_cut(PixelList *hl[3], uint32_t imPixelCount, int nPixels) {
         return NULL;
     }
     for (i = 0; i < 3; i++) {
-        for (tl[i] = hl[i]; tl[i] && tl[i]->next[i]; tl[i] = tl[i]->next[i])
-            ;
+        for (tl[i] = hl[i]; tl[i] && tl[i]->next[i]; tl[i] = tl[i]->next[i]);
         root->head[i] = hl[i];
         root->tail[i] = tl[i];
     }
@@ -820,16 +822,9 @@ build_distance_tables(
     }
     for (i = 0; i < nEntries; i++) {
         for (j = 0; j < nEntries; j++) {
-            dwi[j] = (DistanceWithIndex){
-                &(avgDist[i * nEntries + j]),
-                j
-            };
+            dwi[j] = (DistanceWithIndex){&(avgDist[i * nEntries + j]), j};
         }
-        qsort(
-            dwi,
-            nEntries,
-            sizeof(DistanceWithIndex),
-            _distance_index_cmp);
+        qsort(dwi, nEntries, sizeof(DistanceWithIndex), _distance_index_cmp);
         for (j = 0; j < nEntries; j++) {
             avgDistSortKey[i * nEntries + j] = dwi[j].distance;
         }
@@ -1201,7 +1196,7 @@ k_means(
             compute_palette_from_quantized_pixels(
                 pixelData, nPixels, paletteData, nPaletteEntries, avg, count, qp);
             if (!build_distance_tables(
-                avgDist, avgDistSortKey, paletteData, nPaletteEntries)) {
+                    avgDist, avgDistSortKey, paletteData, nPaletteEntries)) {
                 goto error_3;
             }
             built = 1;
@@ -1440,15 +1435,17 @@ quantize(
                 hashtable_insert(h2, pixelData[i], bestmatch);
             }
             if (qp[i] != bestmatch) {
-                printf ("discrepancy in matching algorithms pixel %d [%d %d] %f %f\n",
-                    i,qp[i],bestmatch,
-                    sqrt((double)(_SQR(pixelData[i].c.r-p[qp[i]].c.r)+
-                                  _SQR(pixelData[i].c.g-p[qp[i]].c.g)+
-                                  _SQR(pixelData[i].c.b-p[qp[i]].c.b))),
-                    sqrt((double)(_SQR(pixelData[i].c.r-p[bestmatch].c.r)+
-                                  _SQR(pixelData[i].c.g-p[bestmatch].c.g)+
-                                  _SQR(pixelData[i].c.b-p[bestmatch].c.b)))
-                   );
+                printf(
+                    "discrepancy in matching algorithms pixel %d [%d %d] %f %f\n",
+                    i,
+                    qp[i],
+                    bestmatch,
+                    sqrt((double)(_SQR(pixelData[i].c.r - p[qp[i]].c.r) +
+                                  _SQR(pixelData[i].c.g - p[qp[i]].c.g) +
+                                  _SQR(pixelData[i].c.b - p[qp[i]].c.b))),
+                    sqrt((double)(_SQR(pixelData[i].c.r - p[bestmatch].c.r) +
+                                  _SQR(pixelData[i].c.g - p[bestmatch].c.g) +
+                                  _SQR(pixelData[i].c.b - p[bestmatch].c.b))));
             }
         }
         hashtable_free(h2);
@@ -1459,7 +1456,7 @@ quantize(
     fflush(stdout);
     timer = clock();
 #endif
-    if (kmeans) {
+    if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nPaletteEntries, qp, kmeans - 1);
     }
 #ifndef NO_OUTPUT
@@ -1615,7 +1612,7 @@ quantize2(
             pixelData, nPixels, p, nQuantPixels, avgDist, avgDistSortKey, qp)) {
         goto error_4;
     }
-    if (kmeans) {
+    if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nQuantPixels, qp, kmeans - 1);
     }
 
@@ -1685,7 +1682,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
        image data? */
 
     if (!strcmp(im->mode, "L")) {
-        /* greyscale */
+        /* grayscale */
 
         /* FIXME: converting a "L" image to "P" with 256 colors
            should be done by a simple copy... */
@@ -1717,7 +1714,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
         withAlpha = !strcmp(im->mode, "RGBA");
         int transparency = 0;
-        unsigned char r, g, b;
+        unsigned char r = 0, g = 0, b = 0;
         for (i = y = 0; y < im->ysize; y++) {
             for (x = 0; x < im->xsize; x++, i++) {
                 p[i].v = im->image32[y][x];
@@ -1813,6 +1810,7 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
         free(newData);
 
+        imOut->palette->size = (int)paletteLength;
         pp = imOut->palette->palette;
 
         for (i = j = 0; i < (int)paletteLength; i++) {
@@ -1820,16 +1818,9 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
             *pp++ = palette[i].c.g;
             *pp++ = palette[i].c.b;
             if (withAlpha) {
-                *pp++ = palette[i].c.a;
-            } else {
-                *pp++ = 255;
+                *pp = palette[i].c.a;
             }
-        }
-        for (; i < 256; i++) {
-            *pp++ = 0;
-            *pp++ = 0;
-            *pp++ = 0;
-            *pp++ = 255;
+            pp++;
         }
 
         if (withAlpha) {

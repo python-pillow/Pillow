@@ -1,9 +1,33 @@
 name: Test Windows
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COVERAGE_CORE: sysmon
 
 jobs:
   build:
@@ -11,62 +35,72 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
-        architecture: ["x86", "x64"]
-        include:
-          # PyPy 7.3.4+ only ships 64-bit binaries for Windows
-          - python-version: "pypy-3.7"
-            architecture: "x64"
-          - python-version: "pypy-3.8"
-            architecture: "x64"
+        python-version: ["pypy3.10", "pypy3.9", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     timeout-minutes: 30
 
-    name: Python ${{ matrix.python-version }} ${{ matrix.architecture }}
+    name: Python ${{ matrix.python-version }}
 
     steps:
     - name: Checkout Pillow
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Checkout cached dependencies
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
+    - name: Checkout extra test images
+      uses: actions/checkout@v4
+      with:
+        repository: python-pillow/test-images
+        path: Tests\test-images
+
     # sets env: pythonLocation
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        architecture: ${{ matrix.architecture }}
+        allow-prereleases: true
         cache: pip
         cache-dependency-path: ".github/workflows/test-windows.yml"
 
     - name: Print build system information
       run: python3 .github/workflows/system-info.py
 
-    - name: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
-      run: python3 -m pip install wheel pytest pytest-cov pytest-timeout defusedxml
+    - name: Install Python dependencies
+      run: >
+        python3 -m pip install
+        coverage>=7.4.2
+        defusedxml
+        olefile
+        pyroma
+        pytest
+        pytest-cov
+        pytest-timeout
 
     - name: Install dependencies
       id: install
       run: |
-        7z x winbuild\depends\nasm-2.15.05-win64.zip "-o$env:RUNNER_WORKSPACE\"
-        echo "$env:RUNNER_WORKSPACE\nasm-2.15.05" >> $env:GITHUB_PATH
+        choco install nasm --no-progress
+        echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        winbuild\depends\gs9561w32.exe /S
-        echo "C:\Program Files (x86)\gs\gs9.56.1\bin" >> $env:GITHUB_PATH
+        choco install ghostscript --version=10.3.0 --no-progress
+        echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
 
-        xcopy /S /Y winbuild\depends\test_images\* Tests\images\
+        # Install extra test images
+        xcopy /S /Y Tests\test-images\* Tests\images
 
         # make cache key depend on VS version
-        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" | find """catalog_buildVersion""" | ForEach-Object { $a = $_.split(" ")[1]; echo "::set-output name=vs::$a" }
+        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
+          | find """catalog_buildVersion""" `
+          | ForEach-Object { $a = $_.split(" ")[1]; echo "vs=$a" >> $env:GITHUB_OUTPUT }
       shell: pwsh
 
     - name: Cache build
       id: build-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: winbuild\build
         key:
@@ -75,7 +109,7 @@ jobs:
     - name: Prepare build
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: |
-        & python.exe winbuild\build_prepare.py -v --python=$env:pythonLocation --srcdir
+        & python.exe winbuild\build_prepare.py -v
       shell: pwsh
 
     - name: Build dependencies / libjpeg-turbo
@@ -86,18 +120,27 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_zlib.cmd"
 
-    - name: Build dependencies / LibTiff
+    - name: Build dependencies / xz
       if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\build_dep_libtiff.cmd"
+      run: "& winbuild\\build\\build_dep_xz.cmd"
 
     - name: Build dependencies / WebP
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libwebp.cmd"
 
+    - name: Build dependencies / LibTiff
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libtiff.cmd"
+
     # for FreeType CBDT/SBIX font support
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
+
+    # for FreeType WOFF2 font support
+    - name: Build dependencies / brotli
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_brotli.cmd"
 
     - name: Build dependencies / FreeType
       if: steps.build-cache.outputs.cache-hit != 'true'
@@ -126,7 +169,7 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_fribidi.cmd"
 
-    # trim ~150MB x 9
+    # trim ~150MB for each job
     - name: Optimize build cache
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: rmdir /S /Q winbuild\build\src
@@ -134,9 +177,8 @@ jobs:
 
     - name: Build Pillow
       run: |
-        $FLAGS=""
-        if ('${{ github.event_name }}' -ne 'pull_request') { $FLAGS="--disable-imagequant" }
-        & winbuild\build\build_pillow.cmd $FLAGS install
+        $FLAGS="-C raqm=vendor -C fribidi=vendor"
+        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS ."
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
@@ -159,7 +201,7 @@ jobs:
       shell: bash
 
     - name: Upload errors
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: errors
@@ -171,25 +213,12 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: GHA_Windows
-        name: ${{ runner.os }} Python ${{ matrix.python-version }} ${{ matrix.architecture }}
-
-    - name: Build wheel
-      id: wheel
-      if: "github.event_name != 'pull_request'"
-      run: |
-        for /f "tokens=3 delims=/" %%a in ("${{ github.ref }}") do echo ::set-output name=dist::dist-%%a
-        winbuild\\build\\build_pillow.cmd --disable-imagequant bdist_wheel
-      shell: cmd
-
-    - uses: actions/upload-artifact@v3
-      if: "github.event_name != 'pull_request'"
-      with:
-        name: ${{ steps.wheel.outputs.dist }}
-        path: dist\*.whl
+        name: ${{ runner.os }} Python ${{ matrix.python-version }}
+        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:

@@ -155,18 +155,18 @@ static struct PyMethodDef _outline_methods[] = {
 
 static PyTypeObject OutlineType = {
     PyVarObject_HEAD_INIT(NULL, 0) "Outline", /*tp_name*/
-    sizeof(OutlineObject),                    /*tp_size*/
+    sizeof(OutlineObject),                    /*tp_basicsize*/
     0,                                        /*tp_itemsize*/
     /* methods */
     (destructor)_outline_dealloc, /*tp_dealloc*/
-    0,                            /*tp_print*/
+    0,                            /*tp_vectorcall_offset*/
     0,                            /*tp_getattr*/
     0,                            /*tp_setattr*/
-    0,                            /*tp_compare*/
+    0,                            /*tp_as_async*/
     0,                            /*tp_repr*/
-    0,                            /*tp_as_number */
-    0,                            /*tp_as_sequence */
-    0,                            /*tp_as_mapping */
+    0,                            /*tp_as_number*/
+    0,                            /*tp_as_sequence*/
+    0,                            /*tp_as_mapping*/
     0,                            /*tp_hash*/
     0,                            /*tp_call*/
     0,                            /*tp_str*/

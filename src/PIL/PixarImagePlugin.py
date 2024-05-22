@@ -18,6 +18,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
@@ -26,7 +27,7 @@ from ._binary import i16le as i16
 # helpers
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"\200\350\000\000"
 
 
@@ -35,16 +36,17 @@ def _accept(prefix):
 
 
 class PixarImageFile(ImageFile.ImageFile):
-
     format = "PIXAR"
     format_description = "PIXAR raster image"
 
-    def _open(self):
-
+    def _open(self) -> None:
         # assuming a 4-byte magic label
+        assert self.fp is not None
+
         s = self.fp.read(4)
         if not _accept(s):
-            raise SyntaxError("not a PIXAR file")
+            msg = "not a PIXAR file"
+            raise SyntaxError(msg)
 
         # read rest of header
         s = s + self.fp.read(508)
@@ -55,7 +57,7 @@ class PixarImageFile(ImageFile.ImageFile):
         mode = i16(s, 424), i16(s, 426)
 
         if mode == (14, 2):
-            self.mode = "RGB"
+            self._mode = "RGB"
         # FIXME: to be continued...
 
         # create tile descriptor (assuming "dumped")

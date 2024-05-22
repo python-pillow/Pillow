@@ -16,12 +16,15 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import re
+from functools import lru_cache
 
 from . import Image
 
 
+@lru_cache
 def getrgb(color):
     """
      Convert a color string to an RGB or RGBA tuple. If the string cannot be
@@ -33,7 +36,8 @@ def getrgb(color):
     :return: ``(red, green, blue[, alpha])``
     """
     if len(color) > 100:
-        raise ValueError("color specifier is too long")
+        msg = "color specifier is too long"
+        raise ValueError(msg)
     color = color.lower()
 
     rgb = colormap.get(color, None)
@@ -115,14 +119,18 @@ def getrgb(color):
     m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color)
     if m:
         return int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
-    raise ValueError(f"unknown color specifier: {repr(color)}")
+    msg = f"unknown color specifier: {repr(color)}"
+    raise ValueError(msg)
 
 
-def getcolor(color, mode):
+@lru_cache
+def getcolor(color, mode: str) -> tuple[int, ...]:
     """
-    Same as :py:func:`~PIL.ImageColor.getrgb`, but converts the RGB value to a
-    greyscale value if ``mode`` is not color or a palette image. If the string
-    cannot be parsed, this function raises a :py:exc:`ValueError` exception.
+    Same as :py:func:`~PIL.ImageColor.getrgb` for most modes. However, if
+    ``mode`` is HSV, converts the RGB value to a HSV value, or if ``mode`` is
+    not color or a palette image, converts the RGB value to a grayscale value.
+    If the string cannot be parsed, this function raises a :py:exc:`ValueError`
+    exception.
 
     .. versionadded:: 1.1.4
 
@@ -135,7 +143,13 @@ def getcolor(color, mode):
     if len(color) == 4:
         color, alpha = color[:3], color[3]
 
-    if Image.getmodebase(mode) == "L":
+    if mode == "HSV":
+        from colorsys import rgb_to_hsv
+
+        r, g, b = color
+        h, s, v = rgb_to_hsv(r / 255, g / 255, b / 255)
+        return int(h * 255), int(s * 255), int(v * 255)
+    elif Image.getmodebase(mode) == "L":
         r, g, b = color
         # ITU-R Recommendation 601-2 for nonlinear RGB
         # scaled to 24 bits to match the convert's implementation.

@@ -1,0 +1,135 @@
+9.4.0
+-----
+
+Security
+========
+
+Fix memory DOS in ImageFont
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A corrupt or specially crafted TTF font could have font metrics that lead to
+unreasonably large sizes when rendering text in font. ``ImageFont.py`` did not
+check the image size before allocating memory for it. This dates to the PIL
+fork. Pillow 8.2.0 added a check for large sizes, but did not consider the
+case where one dimension is zero.
+
+Null pointer dereference crash in ImageFont
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pillow attempted to dereference a null pointer in ``ImageFont``, leading to a
+crash. An error is now raised instead. This has been present since
+Pillow 8.0.0.
+
+API Additions
+=============
+
+Added start position for getmask and getmask2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Text may render differently when starting at fractional coordinates, so
+:py:meth:`.FreeTypeFont.getmask` and :py:meth:`.FreeTypeFont.getmask2` now
+support a ``start`` argument. This tuple of horizontal and vertical offset
+will be used internally by :py:meth:`.ImageDraw.text` to more accurately place
+text at the ``xy`` coordinates.
+
+Added the ``exact`` encoding option for WebP
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``exact`` encoding option for WebP is now supported. The WebP encoder
+removes the hidden RGB values for better compression by default in libwebp 0.5
+or later. By setting this option to ``True``, the encoder will keep the hidden
+RGB values.
+
+Added ``signed`` option when saving JPEG2000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the ``signed`` keyword argument is present and true when saving JPEG2000
+images, then tell the encoder to save the image as signed.
+
+Added IFD, Interop and LightSource ExifTags enums
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:data:`~PIL.ExifTags.IFD` has been added, allowing enums to be used with
+:py:meth:`~PIL.Image.Exif.get_ifd`::
+
+    from PIL import Image, ExifTags
+    im = Image.open("Tests/images/flower.jpg")
+    print(im.getexif().get_ifd(ExifTags.IFD.Exif))
+
+``IFD1`` can also be used with :py:meth:`~PIL.Image.Exif.get_ifd`, but it should
+not be used in other contexts, as the enum value is only internally meaningful.
+
+:py:data:`~PIL.ExifTags.Interop` has been added for tags within the Interop IFD::
+
+    from PIL import Image, ExifTags
+    im = Image.open("Tests/images/flower.jpg")
+    interop_ifd = im.getexif().get_ifd(ExifTags.IFD.Interop)
+    print(interop_ifd.get(ExifTags.Interop.InteropIndex))  # R98
+
+:py:data:`~PIL.ExifTags.LightSource` has been added for values within the LightSource
+tag::
+
+    from PIL import Image, ExifTags
+    im = Image.open("Tests/images/iptc.jpg")
+    exif_ifd = im.getexif().get_ifd(ExifTags.IFD.Exif)
+    print(ExifTags.LightSource(exif_ifd[0x9208]))  # LightSource.Unknown
+
+getxmp()
+^^^^^^^^
+
+`XMP data <https://en.wikipedia.org/wiki/Extensible_Metadata_Platform>`_ can now be
+decoded for WEBP images through ``getxmp()``.
+
+Writing JPEG comments
+^^^^^^^^^^^^^^^^^^^^^
+
+When saving a JPEG image, a comment can now be written from
+:py:attr:`~PIL.Image.Image.info`, or by using an argument when saving::
+
+    im.save(out, comment="Test comment")
+
+Other Changes
+=============
+
+Added support for DDS L and LA images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added to read and write L and LA DDS images in the uncompressed
+format, known as "luminance" textures.
+
+.. _restored-image-constants:
+
+Constants
+^^^^^^^^^
+
+In Pillow 9.1.0, the following constants were deprecated. That has been reversed and
+these constants will now remain available.
+
+- ``Image.NONE``
+- ``Image.NEAREST``
+- ``Image.ORDERED``
+- ``Image.RASTERIZE``
+- ``Image.FLOYDSTEINBERG``
+- ``Image.WEB``
+- ``Image.ADAPTIVE``
+- ``Image.AFFINE``
+- ``Image.EXTENT``
+- ``Image.PERSPECTIVE``
+- ``Image.QUAD``
+- ``Image.MESH``
+- ``Image.FLIP_LEFT_RIGHT``
+- ``Image.FLIP_TOP_BOTTOM``
+- ``Image.ROTATE_90``
+- ``Image.ROTATE_180``
+- ``Image.ROTATE_270``
+- ``Image.TRANSPOSE``
+- ``Image.TRANSVERSE``
+- ``Image.BOX``
+- ``Image.BILINEAR``
+- ``Image.HAMMING``
+- ``Image.BICUBIC``
+- ``Image.LANCZOS``
+- ``Image.MEDIANCUT``
+- ``Image.MAXCOVERAGE``
+- ``Image.FASTOCTREE``
+- ``Image.LIBIMAGEQUANT``

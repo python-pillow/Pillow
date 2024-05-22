@@ -22,4 +22,3 @@ and that the name of ICC shall not be used in advertising or publicity
 pertaining to distribution of the software without specific, written
 prior permission. ICC makes no representations about the suitability
 of this software for any purpose.
-

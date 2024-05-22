@@ -16,12 +16,21 @@
 # This module provides constants and clear-text names for various
 # well-known TIFF tags.
 ##
+from __future__ import annotations
 
-from collections import namedtuple
+from typing import NamedTuple
 
 
-class TagInfo(namedtuple("_TagInfo", "value name type length enum")):
-    __slots__ = []
+class _TagInfo(NamedTuple):
+    value: int | None
+    name: str
+    type: int | None
+    length: int | None
+    enum: dict[str, int]
+
+
+class TagInfo(_TagInfo):
+    __slots__: list[str] = []
 
     def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
         return super().__new__(cls, value, name, type, length, enum or {})
@@ -56,7 +65,7 @@ def lookup(tag, group=None):
 ##
 # Map tag numbers to tag info.
 #
-#  id: (Name, Type, Length, enum_values)
+#  id: (Name, Type, Length[, enum_values])
 #
 # The length here differs from the length in the tiff spec.  For
 # numbers, the tiff spec is for the number of fields returned. We
@@ -160,6 +169,7 @@ TAGS_V2 = {
     323: ("TileLength", LONG, 1),
     324: ("TileOffsets", LONG, 0),
     325: ("TileByteCounts", LONG, 0),
+    330: ("SubIFDs", LONG, 0),
     332: ("InkSet", SHORT, 1),
     333: ("InkNames", ASCII, 1),
     334: ("NumberOfInks", SHORT, 1),
@@ -194,6 +204,7 @@ TAGS_V2 = {
     34675: ("ICCProfile", UNDEFINED, 1),
     34853: ("GPSInfoIFD", LONG, 1),
     36864: ("ExifVersion", UNDEFINED, 1),
+    37724: ("ImageSourceData", UNDEFINED, 1),
     40965: ("InteroperabilityIFD", LONG, 1),
     41730: ("CFAPattern", UNDEFINED, 1),
     # MPInfo
@@ -231,7 +242,39 @@ TAGS_V2_GROUPS = {
         41730: ("CFAPattern", UNDEFINED, 1),
     },
     # GPSInfoIFD
-    34853: {},
+    34853: {
+        0: ("GPSVersionID", BYTE, 4),
+        1: ("GPSLatitudeRef", ASCII, 2),
+        2: ("GPSLatitude", RATIONAL, 3),
+        3: ("GPSLongitudeRef", ASCII, 2),
+        4: ("GPSLongitude", RATIONAL, 3),
+        5: ("GPSAltitudeRef", BYTE, 1),
+        6: ("GPSAltitude", RATIONAL, 1),
+        7: ("GPSTimeStamp", RATIONAL, 3),
+        8: ("GPSSatellites", ASCII, 0),
+        9: ("GPSStatus", ASCII, 2),
+        10: ("GPSMeasureMode", ASCII, 2),
+        11: ("GPSDOP", RATIONAL, 1),
+        12: ("GPSSpeedRef", ASCII, 2),
+        13: ("GPSSpeed", RATIONAL, 1),
+        14: ("GPSTrackRef", ASCII, 2),
+        15: ("GPSTrack", RATIONAL, 1),
+        16: ("GPSImgDirectionRef", ASCII, 2),
+        17: ("GPSImgDirection", RATIONAL, 1),
+        18: ("GPSMapDatum", ASCII, 0),
+        19: ("GPSDestLatitudeRef", ASCII, 2),
+        20: ("GPSDestLatitude", RATIONAL, 3),
+        21: ("GPSDestLongitudeRef", ASCII, 2),
+        22: ("GPSDestLongitude", RATIONAL, 3),
+        23: ("GPSDestBearingRef", ASCII, 2),
+        24: ("GPSDestBearing", RATIONAL, 1),
+        25: ("GPSDestDistanceRef", ASCII, 2),
+        26: ("GPSDestDistance", RATIONAL, 1),
+        27: ("GPSProcessingMethod", UNDEFINED, 0),
+        28: ("GPSAreaInformation", UNDEFINED, 0),
+        29: ("GPSDateStamp", ASCII, 11),
+        30: ("GPSDifferential", SHORT, 1),
+    },
     # InteroperabilityIFD
     40965: {1: ("InteropIndex", ASCII, 1), 2: ("InteropVersion", UNDEFINED, 1)},
 }
@@ -279,7 +322,7 @@ TAGS = {
     34910: "HylaFAX FaxRecvTime",
     36864: "ExifVersion",
     36867: "DateTimeOriginal",
-    36868: "DateTImeDigitized",
+    36868: "DateTimeDigitized",
     37121: "ComponentsConfiguration",
     37122: "CompressedBitsPerPixel",
     37724: "ImageSourceData",
@@ -393,7 +436,7 @@ def _populate():
 
         TAGS_V2[k] = TagInfo(k, *v)
 
-    for group, tags in TAGS_V2_GROUPS.items():
+    for tags in TAGS_V2_GROUPS.values():
         for k, v in tags.items():
             tags[k] = TagInfo(k, *v)
 
@@ -402,23 +445,7 @@ _populate()
 ##
 # Map type numbers to type names -- defined in ImageFileDirectory.
 
-TYPES = {}
-
-# was:
-# TYPES = {
-#     1: "byte",
-#     2: "ascii",
-#     3: "short",
-#     4: "long",
-#     5: "rational",
-#     6: "signed byte",
-#     7: "undefined",
-#     8: "signed short",
-#     9: "signed long",
-#     10: "signed rational",
-#     11: "float",
-#     12: "double",
-# }
+TYPES: dict[int, str] = {}
 
 #
 # These tags are handled by default in libtiff, without

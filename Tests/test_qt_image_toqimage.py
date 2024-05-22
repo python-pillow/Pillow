@@ -1,10 +1,10 @@
-import warnings
+from __future__ import annotations
+
+from pathlib import Path
 
 import pytest
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", category=DeprecationWarning)
-    from PIL import ImageQt
+from PIL import ImageQt
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
@@ -16,32 +16,32 @@ if ImageQt.qt_is_installed:
     from PIL.ImageQt import QImage
 
 
-def test_sanity(tmp_path):
-    for mode in ("RGB", "RGBA", "L", "P", "1"):
-        src = hopper(mode)
-        data = ImageQt.toqimage(src)
+@pytest.mark.parametrize("mode", ("RGB", "RGBA", "L", "P", "1"))
+def test_sanity(mode: str, tmp_path: Path) -> None:
+    src = hopper(mode)
+    data = ImageQt.toqimage(src)
 
-        assert isinstance(data, QImage)
-        assert not data.isNull()
+    assert isinstance(data, QImage)
+    assert not data.isNull()
 
-        # reload directly from the qimage
-        rt = ImageQt.fromqimage(data)
-        if mode in ("L", "P", "1"):
-            assert_image_equal(rt, src.convert("RGB"))
-        else:
-            assert_image_equal(rt, src)
+    # reload directly from the qimage
+    rt = ImageQt.fromqimage(data)
+    if mode in ("L", "P", "1"):
+        assert_image_equal(rt, src.convert("RGB"))
+    else:
+        assert_image_equal(rt, src)
 
-        if mode == "1":
-            # BW appears to not save correctly on QT4 and QT5
-            # kicks out errors on console:
-            #     libpng warning: Invalid color type/bit depth combination
-            #                     in IHDR
-            #     libpng error: Invalid IHDR data
-            continue
+    if mode == "1":
+        # BW appears to not save correctly on Qt
+        # kicks out errors on console:
+        #     libpng warning: Invalid color type/bit depth combination
+        #                     in IHDR
+        #     libpng error: Invalid IHDR data
+        return
 
-        # Test saving the file
-        tempfile = str(tmp_path / f"temp_{mode}.png")
-        data.save(tempfile)
+    # Test saving the file
+    tempfile = str(tmp_path / f"temp_{mode}.png")
+    data.save(tempfile)
 
-        # Check that it actually worked.
-        assert_image_equal_tofile(src, tempfile)
+    # Check that it actually worked.
+    assert_image_equal_tofile(src, tempfile)

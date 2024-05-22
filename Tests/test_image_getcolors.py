@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from .helper import hopper
 
 
-def test_getcolors():
-    def getcolors(mode, limit=None):
+def test_getcolors() -> None:
+    def getcolors(mode: str, limit: int | None = None) -> int | None:
         im = hopper(mode)
         if limit:
             colors = im.getcolors(limit)
@@ -37,7 +39,7 @@ def test_getcolors():
 # --------------------------------------------------------------------
 
 
-def test_pack():
+def test_pack() -> None:
     # Pack problems for small tables (@PIL209)
 
     im = hopper().quantize(3).convert("RGB")

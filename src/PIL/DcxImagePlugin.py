@@ -20,6 +20,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 from . import Image
 from ._binary import i32le as i32
@@ -28,7 +29,7 @@ from .PcxImagePlugin import PcxImageFile
 MAGIC = 0x3ADE68B1  # QUIZ: what's this value, then?
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return len(prefix) >= 4 and i32(prefix) == MAGIC
 
 
@@ -37,17 +38,16 @@ def _accept(prefix):
 
 
 class DcxImageFile(PcxImageFile):
-
     format = "DCX"
     format_description = "Intel DCX"
     _close_exclusive_fp_after_loading = False
 
     def _open(self):
-
         # Header
         s = self.fp.read(4)
         if not _accept(s):
-            raise SyntaxError("not a DCX file")
+            msg = "not a DCX file"
+            raise SyntaxError(msg)
 
         # Component directory
         self._offset = []
@@ -63,7 +63,7 @@ class DcxImageFile(PcxImageFile):
         self.is_animated = self.n_frames > 1
         self.seek(0)
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         self.frame = frame
@@ -71,7 +71,7 @@ class DcxImageFile(PcxImageFile):
         self.fp.seek(self._offset[frame])
         PcxImageFile._open(self)
 
-    def tell(self):
+    def tell(self) -> int:
         return self.frame
 
 

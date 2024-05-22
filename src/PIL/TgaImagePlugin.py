@@ -15,9 +15,10 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import warnings
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -46,13 +47,13 @@ MODES = {
 
 
 class TgaImageFile(ImageFile.ImageFile):
-
     format = "TGA"
     format_description = "Targa"
 
-    def _open(self):
-
+    def _open(self) -> None:
         # process header
+        assert self.fp is not None
+
         s = self.fp.read(18)
 
         id_len = s[0]
@@ -73,23 +74,25 @@ class TgaImageFile(ImageFile.ImageFile):
             or self.size[1] <= 0
             or depth not in (1, 8, 16, 24, 32)
         ):
-            raise SyntaxError("not a TGA file")
+            msg = "not a TGA file"
+            raise SyntaxError(msg)
 
         # image mode
         if imagetype in (3, 11):
-            self.mode = "L"
+            self._mode = "L"
             if depth == 1:
-                self.mode = "1"  # ???
+                self._mode = "1"  # ???
             elif depth == 16:
-                self.mode = "LA"
+                self._mode = "LA"
         elif imagetype in (1, 9):
-            self.mode = "P"
+            self._mode = "P" if colormaptype else "L"
         elif imagetype in (2, 10):
-            self.mode = "RGB"
+            self._mode = "RGB"
             if depth == 32:
-                self.mode = "RGBA"
+                self._mode = "RGBA"
         else:
-            raise SyntaxError("unknown TGA mode")
+            msg = "unknown TGA mode"
+            raise SyntaxError(msg)
 
         # orientation
         orientation = flags & 0x30
@@ -99,7 +102,8 @@ class TgaImageFile(ImageFile.ImageFile):
         elif orientation in [0, 0x10]:
             orientation = -1
         else:
-            raise SyntaxError("unknown TGA orientation")
+            msg = "unknown TGA orientation"
+            raise SyntaxError(msg)
 
         self.info["orientation"] = orientation
 
@@ -124,6 +128,9 @@ class TgaImageFile(ImageFile.ImageFile):
                 self.palette = ImagePalette.raw(
                     "BGRA", b"\0" * 4 * start + self.fp.read(4 * size)
                 )
+            else:
+                msg = "unknown TGA map depth"
+                raise SyntaxError(msg)
 
         # setup tile descriptor
         try:
@@ -150,8 +157,9 @@ class TgaImageFile(ImageFile.ImageFile):
         except KeyError:
             pass  # cannot decode
 
-    def load_end(self):
+    def load_end(self) -> None:
         if self._flip_horizontally:
+            assert self.im is not None
             self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
@@ -170,12 +178,12 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
-
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:
-        raise OSError(f"cannot write mode {im.mode} as TGA") from e
+        msg = f"cannot write mode {im.mode} as TGA"
+        raise OSError(msg) from e
 
     if "rle" in im.encoderinfo:
         rle = im.encoderinfo["rle"]
@@ -193,9 +201,11 @@ def _save(im, fp, filename):
         warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
-        colormapfirst, colormaplength, colormapentry = 0, 256, 24
+        assert im.im is not None
+        palette = im.im.getpalette("RGB", "BGR")
+        colormaplength, colormapentry = len(palette) // 3, 24
     else:
-        colormapfirst, colormaplength, colormapentry = 0, 0, 0
+        colormaplength, colormapentry = 0, 0
 
     if im.mode in ("LA", "RGBA"):
         flags = 8
@@ -210,7 +220,7 @@ def _save(im, fp, filename):
         o8(id_len)
         + o8(colormaptype)
         + o8(imagetype)
-        + o16(colormapfirst)
+        + o16(0)  # colormapfirst
         + o16(colormaplength)
         + o8(colormapentry)
         + o16(0)
@@ -225,7 +235,7 @@ def _save(im, fp, filename):
         fp.write(id_section)
 
     if colormaptype:
-        fp.write(im.im.getpalette("RGB", "BGR"))
+        fp.write(palette)
 
     if rle:
         ImageFile._save(

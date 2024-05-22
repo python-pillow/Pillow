@@ -1,38 +1,51 @@
 name: Test MinGW
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
+      - "docs/**"
+      - "wheels/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COVERAGE_CORE: sysmon
+
 jobs:
   build:
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        mingw: ["MINGW32", "MINGW64"]
-        include:
-          - mingw: "MINGW32"
-            name: "MSYS2 MinGW 32-bit"
-            package: "mingw-w64-i686"
-          - mingw: "MINGW64"
-            name: "MSYS2 MinGW 64-bit"
-            package: "mingw-w64-x86_64"
 
     defaults:
       run:
         shell: bash.exe --login -eo pipefail "{0}"
     env:
-      MSYSTEM: ${{ matrix.mingw }}
+      MSYSTEM: MINGW64
       CHERE_INVOKING: 1
 
     timeout-minutes: 30
-    name: ${{ matrix.name }}
+    name: "MinGW"
 
     steps:
       - name: Checkout Pillow
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up shell
         run: echo "C:\msys64\usr\bin\" >> $env:GITHUB_PATH
@@ -41,30 +54,29 @@ jobs:
       - name: Install dependencies
         run: |
           pacman -S --noconfirm \
-              ${{ matrix.package }}-python3-cffi \
-              ${{ matrix.package }}-python3-numpy \
-              ${{ matrix.package }}-python3-olefile \
-              ${{ matrix.package }}-python3-pip \
-              ${{ matrix.package }}-python-pyqt6 \
-              ${{ matrix.package }}-python3-setuptools \
-              ${{ matrix.package }}-freetype \
-              ${{ matrix.package }}-gcc \
-              ${{ matrix.package }}-ghostscript \
-              ${{ matrix.package }}-lcms2 \
-              ${{ matrix.package }}-libimagequant \
-              ${{ matrix.package }}-libjpeg-turbo \
-              ${{ matrix.package }}-libraqm \
-              ${{ matrix.package }}-libtiff \
-              ${{ matrix.package }}-libwebp \
-              ${{ matrix.package }}-openjpeg2 \
-              subversion
+              mingw-w64-x86_64-freetype \
+              mingw-w64-x86_64-gcc \
+              mingw-w64-x86_64-ghostscript \
+              mingw-w64-x86_64-lcms2 \
+              mingw-w64-x86_64-libimagequant \
+              mingw-w64-x86_64-libjpeg-turbo \
+              mingw-w64-x86_64-libraqm \
+              mingw-w64-x86_64-libtiff \
+              mingw-w64-x86_64-libwebp \
+              mingw-w64-x86_64-openjpeg2 \
+              mingw-w64-x86_64-python3-cffi \
+              mingw-w64-x86_64-python3-numpy \
+              mingw-w64-x86_64-python3-olefile \
+              mingw-w64-x86_64-python3-setuptools \
+              mingw-w64-x86_64-python-pyqt6
 
+          python3 -m ensurepip
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: CFLAGS="-coverage" python3 -m pip install --global-option="build_ext" .
+        run: SETUPTOOLS_USE_DISTUTILS="stdlib" CFLAGS="-coverage" python3 -m pip install .
 
       - name: Test Pillow
         run: |
@@ -73,18 +85,9 @@ jobs:
           python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
 
       - name: Upload coverage
-        run: |
-          python3 -m pip install codecov
-          bash <(curl -s https://codecov.io/bash) -F GHA_Windows
-        env:
-          CODECOV_NAME: ${{ matrix.name }}
-
-  success:
-    permissions:
-      contents: none
-    needs: build
-    runs-on: ubuntu-latest
-    name: MinGW Test Successful
-    steps:
-      - name: Success
-        run: echo MinGW Test Successful
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: GHA_Windows
+          name: "MSYS2 MinGW"
+          token: ${{ secrets.CODECOV_ORG_TOKEN }}

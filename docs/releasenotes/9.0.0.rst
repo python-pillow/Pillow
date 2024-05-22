@@ -24,6 +24,41 @@ success of Python.
 
 Thank you, Fredrik.
 
+Security
+========
+
+Ensure JpegImagePlugin stops at the end of a truncated file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``JpegImagePlugin`` may append an EOF marker to the end of a truncated file, so that
+the last segment of the data will still be processed by the decoder.
+
+If the EOF marker is not detected as such however, this could lead to an infinite
+loop where ``JpegImagePlugin`` keeps trying to end the file.
+
+Remove consecutive duplicate tiles that only differ by their offset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To prevent attempts to slow down loading times for images, if an image has consecutive
+duplicate tiles that only differ by their offset, only load the last tile. Credit to
+Google's `OSS-Fuzz`_ project for finding this issue.
+
+:cve:`2022-22817`: Restrict builtins available to ImageMath.eval
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To limit :py:class:`PIL.ImageMath` to working with images, Pillow
+will now restrict the builtins available to :py:meth:`!PIL.ImageMath.eval`. This will
+help prevent problems arising if users evaluate arbitrary expressions, such as
+``ImageMath.eval("exec(exit())")``.
+
+:cve:`2022-22815`, :cve:`2022-22816`: ImagePath.Path array handling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:cve:`2022-22815` (:cwe:`126`) and :cve:`2022-22816` (:cwe:`665`) were found when
+initializing ``ImagePath.Path``.
+
+.. _OSS-Fuzz: https://github.com/google/oss-fuzz
+
 Backwards Incompatible Changes
 ==============================
 
@@ -43,7 +78,7 @@ FreeType 2.7
 Support for FreeType 2.7 has been removed; FreeType 2.8 is the minimum supported.
 
 We recommend upgrading to at least `FreeType`_ 2.10.4, which fixed a severe
-vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 
 .. _FreeType: https://freetype.org/
 
@@ -63,7 +98,7 @@ a custom :py:class:`~PIL.ImageShow.Viewer` class.
 ImageFile.raise_ioerror
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
+:py:exc:`IOError` was merged into :py:exc:`OSError` in Python 3.3. So, ``ImageFile.raise_ioerror``
 has been removed. Use ``ImageFile.raise_oserror`` instead.
 
 
@@ -97,41 +132,6 @@ Support has been added for the "title" argument in
 argument will also now be supported, e.g. ``im.show(title="My Image")`` and
 ``ImageShow.show(im, title="My Image")``.
 
-Security
-========
-
-Ensure JpegImagePlugin stops at the end of a truncated file
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``JpegImagePlugin`` may append an EOF marker to the end of a truncated file, so that
-the last segment of the data will still be processed by the decoder.
-
-If the EOF marker is not detected as such however, this could lead to an infinite
-loop where ``JpegImagePlugin`` keeps trying to end the file.
-
-Remove consecutive duplicate tiles that only differ by their offset
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To prevent attempts to slow down loading times for images, if an image has consecutive
-duplicate tiles that only differ by their offset, only load the last tile. Credit to
-Google's `OSS-Fuzz`_ project for finding this issue.
-
-Restrict builtins available to ImageMath.eval
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:cve:`CVE-2022-22817`: To limit :py:class:`PIL.ImageMath` to working with images, Pillow
-will now restrict the builtins available to :py:meth:`PIL.ImageMath.eval`. This will
-help prevent problems arising if users evaluate arbitrary expressions, such as
-``ImageMath.eval("exec(exit())")``.
-
-Fixed ImagePath.Path array handling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-:cve:`CVE-2022-22815` (:cwe:`CWE-126`) and :cve:`CVE-2022-22816` (:cwe:`CWE-665`) were
-found when initializing ``ImagePath.Path``.
-
-.. _OSS-Fuzz: https://github.com/google/oss-fuzz
-
 Other Changes
 =============
 
@@ -155,9 +155,7 @@ altered slightly with this change.
 Added support for pickling TrueType fonts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TrueType fonts may now be pickled and unpickled. For example:
-
-.. code-block:: python
+TrueType fonts may now be pickled and unpickled. For example::
 
     import pickle
     from PIL import ImageFont

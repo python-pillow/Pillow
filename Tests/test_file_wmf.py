@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 import pytest
 
 from PIL import Image, WmfImagePlugin
@@ -5,8 +9,7 @@ from PIL import Image, WmfImagePlugin
 from .helper import assert_image_similar_tofile, hopper
 
 
-def test_load_raw():
-
+def test_load_raw() -> None:
     # Test basic EMF open and rendering
     with Image.open("Tests/images/drawing.emf") as im:
         if hasattr(Image.core, "drawwmf"):
@@ -24,17 +27,17 @@ def test_load_raw():
             assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref.png", 2.0)
 
 
-def test_load():
+def test_load() -> None:
     with Image.open("Tests/images/drawing.emf") as im:
         if hasattr(Image.core, "drawwmf"):
             assert im.load()[0, 0] == (255, 255, 255)
 
 
-def test_register_handler(tmp_path):
+def test_register_handler(tmp_path: Path) -> None:
     class TestHandler:
         methodCalled = False
 
-        def save(self, im, fp, filename):
+        def save(self, im, fp, filename) -> None:
             self.methodCalled = True
 
     handler = TestHandler()
@@ -50,12 +53,12 @@ def test_register_handler(tmp_path):
     WmfImagePlugin.register_handler(original_handler)
 
 
-def test_load_float_dpi():
+def test_load_float_dpi() -> None:
     with Image.open("Tests/images/drawing.emf") as im:
         assert im.info["dpi"] == 1423.7668161434979
 
 
-def test_load_set_dpi():
+def test_load_set_dpi() -> None:
     with Image.open("Tests/images/drawing.wmf") as im:
         assert im.size == (82, 82)
 
@@ -66,10 +69,10 @@ def test_load_set_dpi():
             assert_image_similar_tofile(im, "Tests/images/drawing_wmf_ref_144.png", 2.1)
 
 
-def test_save(tmp_path):
+@pytest.mark.parametrize("ext", (".wmf", ".emf"))
+def test_save(ext, tmp_path: Path) -> None:
     im = hopper()
 
-    for ext in [".wmf", ".emf"]:
-        tmpfile = str(tmp_path / ("temp" + ext))
-        with pytest.raises(OSError):
-            im.save(tmpfile)
+    tmpfile = str(tmp_path / ("temp" + ext))
+    with pytest.raises(OSError):
+        im.save(tmpfile)

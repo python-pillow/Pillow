@@ -119,17 +119,7 @@ typedef struct Tk_PhotoImageBlock {
 } Tk_PhotoImageBlock;
 
 /* Typedefs derived from function signatures in Tk header */
-/* Tk_PhotoPutBlock for Tk <= 8.4 */
-typedef void (*Tk_PhotoPutBlock_84_t)(
-    Tk_PhotoHandle handle,
-    Tk_PhotoImageBlock *blockPtr,
-    int x,
-    int y,
-    int width,
-    int height,
-    int compRule);
-/* Tk_PhotoPutBlock for Tk >= 8.5 */
-typedef int (*Tk_PhotoPutBlock_85_t)(
+typedef int (*Tk_PhotoPutBlock_t)(
     Tcl_Interp *interp,
     Tk_PhotoHandle handle,
     Tk_PhotoImageBlock *blockPtr,
@@ -138,8 +128,6 @@ typedef int (*Tk_PhotoPutBlock_85_t)(
     int width,
     int height,
     int compRule);
-/* Tk_PhotoSetSize for Tk <= 8.4 */
-typedef void (*Tk_PhotoSetSize_84_t)(Tk_PhotoHandle handle, int width, int height);
 /* Tk_FindPhoto */
 typedef Tk_PhotoHandle (*Tk_FindPhoto_t)(Tcl_Interp *interp, const char *imageName);
 /* Tk_PhotoGetImage */

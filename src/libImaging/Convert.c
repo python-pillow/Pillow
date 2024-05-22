@@ -43,13 +43,6 @@
 #define L(rgb) ((INT32)(rgb)[0] * 299 + (INT32)(rgb)[1] * 587 + (INT32)(rgb)[2] * 114)
 #define L24(rgb) ((rgb)[0] * 19595 + (rgb)[1] * 38470 + (rgb)[2] * 7471 + 0x8000)
 
-#ifndef round
-double
-round(double x) {
-    return floor(x + 0.5);
-}
-#endif
-
 /* ------------------- */
 /* 1 (bit) conversions */
 /* ------------------- */
@@ -254,6 +247,24 @@ rgb2i(UINT8 *out_, const UINT8 *in, int xsize) {
     for (x = 0; x < xsize; x++, in += 4, out_ += 4) {
         INT32 v = L24(in) >> 16;
         memcpy(out_, &v, sizeof(v));
+    }
+}
+
+static void
+rgb2i16l(UINT8 *out_, const UINT8 *in, int xsize) {
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        *out_++ = L24(in) >> 16;
+        *out_++ = 0;
+    }
+}
+
+static void
+rgb2i16b(UINT8 *out_, const UINT8 *in, int xsize) {
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        *out_++ = 0;
+        *out_++ = L24(in) >> 16;
     }
 }
 
@@ -486,27 +497,47 @@ rgba2rgbA(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
+static void
+rgba2rgb_(UINT8 *out, const UINT8 *in, int xsize) {
+    int x;
+    unsigned int alpha;
+    for (x = 0; x < xsize; x++, in += 4) {
+        alpha = in[3];
+        if (alpha == 255 || alpha == 0) {
+            *out++ = in[0];
+            *out++ = in[1];
+            *out++ = in[2];
+        } else {
+            *out++ = CLIP8((255 * in[0]) / alpha);
+            *out++ = CLIP8((255 * in[1]) / alpha);
+            *out++ = CLIP8((255 * in[2]) / alpha);
+        }
+        *out++ = 255;
+    }
+}
+
 /*
- * Conversion of RGB + single transparent color to RGBA,
- * where any pixel that matches the color will have the
- * alpha channel set to 0
+ * Conversion of RGB + single transparent color either to
+ * RGBA or LA, where any pixel matching the color will have the alpha channel set to 0,
+ * or RGBa or La, where any pixel matching the color will have all channels set to 0
  */
 
 static void
-rgbT2rgba(UINT8 *out, int xsize, int r, int g, int b) {
+rgbT2a(UINT8 *out, UINT8 *in, int xsize, int r, int g, int b, int premultiplied) {
 #ifdef WORDS_BIGENDIAN
     UINT32 trns = ((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | 0xff;
-    UINT32 repl = trns & 0xffffff00;
+    UINT32 repl = premultiplied ? 0 : (trns & 0xffffff00);
 #else
-    UINT32 trns = (0xff << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
-    UINT32 repl = trns & 0x00ffffff;
+    UINT32 trns = (0xffU << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
+    UINT32 repl = premultiplied ? 0 : (trns & 0x00ffffff);
 #endif
 
     int i;
 
-    for (i = 0; i < xsize; i++, out += sizeof(trns)) {
+    UINT8 *ref = in != NULL ? in : out;
+    for (i = 0; i < xsize; i++, ref += sizeof(trns), out += sizeof(trns)) {
         UINT32 v;
-        memcpy(&v, out, sizeof(v));
+        memcpy(&v, ref, sizeof(v));
         if (v == trns) {
             memcpy(out, &repl, sizeof(repl));
         }
@@ -552,7 +583,7 @@ rgb2cmyk(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
-static void
+void
 cmyk2rgb(UINT8 *out, const UINT8 *in, int xsize) {
     int x, nk, tmp;
     for (x = 0; x < xsize; x++) {
@@ -866,6 +897,18 @@ I16B_L(UINT8 *out, const UINT8 *in, int xsize) {
     }
 }
 
+static void
+I16_RGB(UINT8 *out, const UINT8 *in, int xsize) {
+    int x;
+    for (x = 0; x < xsize; x++, in += 2) {
+        UINT8 v = in[1] == 0 ? in[0] : 255;
+        *out++ = v;
+        *out++ = v;
+        *out++ = v;
+        *out++ = 255;
+    }
+}
+
 static struct {
     const char *from;
     const char *to;
@@ -917,12 +960,22 @@ static struct {
     {"RGB", "1", rgb2bit},
     {"RGB", "L", rgb2l},
     {"RGB", "LA", rgb2la},
+    {"RGB", "La", rgb2la},
     {"RGB", "I", rgb2i},
+    {"RGB", "I;16", rgb2i16l},
+    {"RGB", "I;16L", rgb2i16l},
+    {"RGB", "I;16B", rgb2i16b},
+#ifdef WORDS_BIGENDIAN
+    {"RGB", "I;16N", rgb2i16b},
+#else
+    {"RGB", "I;16N", rgb2i16l},
+#endif
     {"RGB", "F", rgb2f},
     {"RGB", "BGR;15", rgb2bgr15},
     {"RGB", "BGR;16", rgb2bgr16},
     {"RGB", "BGR;24", rgb2bgr24},
     {"RGB", "RGBA", rgb2rgba},
+    {"RGB", "RGBa", rgb2rgba},
     {"RGB", "RGBX", rgb2rgba},
     {"RGB", "CMYK", rgb2cmyk},
     {"RGB", "YCbCr", ImagingConvertRGB2YCbCr},
@@ -941,6 +994,7 @@ static struct {
     {"RGBA", "HSV", rgb2hsv},
 
     {"RGBa", "RGBA", rgba2rgbA},
+    {"RGBa", "RGB", rgba2rgb_},
 
     {"RGBX", "1", rgb2bit},
     {"RGBX", "L", rgb2l},
@@ -965,6 +1019,7 @@ static struct {
 
     {"I", "I;16", I_I16L},
     {"I;16", "I", I16L_I},
+    {"I;16", "RGB", I16_RGB},
     {"L", "I;16", L_I16L},
     {"I;16", "L", I16L_L},
 
@@ -977,6 +1032,13 @@ static struct {
     {"I;16L", "L", I16L_L},
     {"L", "I;16B", L_I16B},
     {"I;16B", "L", I16B_L},
+#ifdef WORDS_BIGENDIAN
+    {"L", "I;16N", L_I16B},
+    {"I;16N", "L", I16B_L},
+#else
+    {"L", "I;16N", L_I16L},
+    {"I;16N", "L", I16L_L},
+#endif
 
     {"I;16", "F", I16L_F},
     {"I;16L", "F", I16L_F},
@@ -993,7 +1055,7 @@ static struct {
 static void
 p2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++) {
         *out++ = (L(&palette->palette[in[x] * 4]) >= 128000) ? 255 : 0;
     }
@@ -1002,7 +1064,7 @@ p2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
         *out++ = (L(&palette->palette[in[0] * 4]) >= 128000) ? 255 : 0;
     }
@@ -1011,7 +1073,7 @@ pa2bit(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 p2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++) {
         *out++ = L24(&palette->palette[in[x] * 4]) >> 16;
     }
@@ -1020,9 +1082,17 @@ p2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2l(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4) {
         *out++ = L24(&palette->palette[in[0] * 4]) >> 16;
+    }
+}
+
+static void
+pa2p(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
+    int x;
+    for (x = 0; x < xsize; x++, in += 4) {
+        *out++ = in[0];
     }
 }
 
@@ -1042,7 +1112,7 @@ p2pa(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 p2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, out += 4) {
         const UINT8 *rgba = &palette->palette[*in++ * 4];
         out[0] = out[1] = out[2] = L24(rgba) >> 16;
@@ -1053,7 +1123,7 @@ p2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
 static void
 pa2la(UINT8 *out, const UINT8 *in, int xsize, ImagingPalette palette) {
     int x;
-    /* FIXME: precalculate greyscale palette? */
+    /* FIXME: precalculate grayscale palette? */
     for (x = 0; x < xsize; x++, in += 4, out += 4) {
         out[0] = out[1] = out[2] = L24(&palette->palette[in[0] * 4]) >> 16;
         out[3] = in[3];
@@ -1209,6 +1279,8 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
         convert = alpha ? pa2l : p2l;
     } else if (strcmp(mode, "LA") == 0) {
         convert = alpha ? pa2la : p2la;
+    } else if (strcmp(mode, "P") == 0) {
+        convert = pa2p;
     } else if (strcmp(mode, "PA") == 0) {
         convert = p2pa;
     } else if (strcmp(mode, "I") == 0) {
@@ -1232,6 +1304,10 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
     if (!imOut) {
         return NULL;
+    }
+    if (strcmp(mode, "P") == 0 || strcmp(mode, "PA") == 0) {
+        ImagingPaletteDelete(imOut->palette);
+        imOut->palette = ImagingPaletteDuplicate(imIn->palette);
     }
 
     ImagingSectionEnter(&cookie);
@@ -1261,7 +1337,6 @@ topalette(
     int alpha;
     int x, y;
     ImagingPalette palette = inpalette;
-    ;
 
     /* Map L or RGB/RGBX/RGBA to palette image */
     if (strcmp(imIn->mode, "L") != 0 && strncmp(imIn->mode, "RGB", 3) != 0) {
@@ -1273,7 +1348,14 @@ topalette(
     if (palette == NULL) {
         /* FIXME: make user configurable */
         if (imIn->bands == 1) {
-            palette = ImagingPaletteNew("RGB"); /* Initialised to grey ramp */
+            palette = ImagingPaletteNew("RGB");
+
+            palette->size = 256;
+            int i;
+            for (i = 0; i < 256; i++) {
+                palette->palette[i * 4] = palette->palette[i * 4 + 1] =
+                    palette->palette[i * 4 + 2] = (UINT8)i;
+            }
         } else {
             palette = ImagingPaletteNewBrowser(); /* Standard colour cube */
         }
@@ -1295,9 +1377,9 @@ topalette(
     imOut->palette = ImagingPaletteDuplicate(palette);
 
     if (imIn->bands == 1) {
-        /* greyscale image */
+        /* grayscale image */
 
-        /* Greyscale palette: copy data as is */
+        /* Grayscale palette: copy data as is */
         ImagingSectionEnter(&cookie);
         for (y = 0; y < imIn->ysize; y++) {
             if (alpha) {
@@ -1594,7 +1676,8 @@ convert(
         return (Imaging)ImagingError_ValueError("conversion not supported");
 #else
         static char buf[100];
-        snprintf(buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode);
+        snprintf(
+            buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode);
         return (Imaging)ImagingError_ValueError(buf);
 #endif
     }
@@ -1628,25 +1711,40 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
     Imaging imOut = NULL;
+    int premultiplied = 0;
+    // If the transparency matches pixels in the source image, not the converted image
+    UINT8 *source;
+    int source_transparency = 0;
     int y;
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (strcmp(imIn->mode, "RGB") == 0 && strcmp(mode, "RGBA") == 0) {
+    if (strcmp(imIn->mode, "RGB") == 0 &&
+        (strcmp(mode, "RGBA") == 0 || strcmp(mode, "RGBa") == 0)) {
         convert = rgb2rgba;
-    } else if ((strcmp(imIn->mode, "1") == 0 ||
-                strcmp(imIn->mode, "I") == 0 ||
-                strcmp(imIn->mode, "L") == 0
-               ) && (
-                strcmp(mode, "RGBA") == 0 ||
-                strcmp(mode, "LA") == 0
-               )) {
+        if (strcmp(mode, "RGBa") == 0) {
+            premultiplied = 1;
+        }
+    } else if (
+        strcmp(imIn->mode, "RGB") == 0 &&
+        (strcmp(mode, "LA") == 0 || strcmp(mode, "La") == 0)) {
+        convert = rgb2la;
+        source_transparency = 1;
+        if (strcmp(mode, "La") == 0) {
+            premultiplied = 1;
+        }
+    } else if (
+        (strcmp(imIn->mode, "1") == 0 || strcmp(imIn->mode, "I") == 0 ||
+         strcmp(imIn->mode, "I;16") == 0 || strcmp(imIn->mode, "L") == 0) &&
+        (strcmp(mode, "RGBA") == 0 || strcmp(mode, "LA") == 0)) {
         if (strcmp(imIn->mode, "1") == 0) {
             convert = bit2rgb;
         } else if (strcmp(imIn->mode, "I") == 0) {
             convert = i2rgb;
+        } else if (strcmp(imIn->mode, "I;16") == 0) {
+            convert = I16_RGB;
         } else {
             convert = l2rgb;
         }
@@ -1670,7 +1768,9 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
     ImagingSectionEnter(&cookie);
     for (y = 0; y < imIn->ysize; y++) {
         (*convert)((UINT8 *)imOut->image[y], (UINT8 *)imIn->image[y], imIn->xsize);
-        rgbT2rgba((UINT8 *)imOut->image[y], imIn->xsize, r, g, b);
+
+        source = source_transparency ? (UINT8 *)imIn->image[y] : NULL;
+        rgbT2a((UINT8 *)imOut->image[y], source, imIn->xsize, r, g, b, premultiplied);
     }
     ImagingSectionLeave(&cookie);
 

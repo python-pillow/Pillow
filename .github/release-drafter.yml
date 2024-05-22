@@ -13,6 +13,8 @@ categories:
     label: "Removal"
   - title: "Testing"
     label: "Testing"
+  - title: "Type hints"
+    label: "Type hints"
 
 exclude-labels:
   - "changelog: skip"

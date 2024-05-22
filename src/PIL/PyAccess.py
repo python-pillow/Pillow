@@ -13,16 +13,19 @@
 
 # Notes:
 #
-#  * Implements the pixel access object following Access.
-#  * Does not implement the line functions, as they don't appear to be used
+#  * Implements the pixel access object following Access.c
 #  * Taking only the tuple form, which is used from python.
 #    * Fill.c uses the integer form, but it's still going to use the old
 #      Access.c implementation.
 #
+from __future__ import annotations
 
 import logging
 import sys
 
+from ._deprecate import deprecate
+
+FFI: type
 try:
     from cffi import FFI
 
@@ -41,13 +44,14 @@ except ImportError as ex:
     # anything in core.
     from ._util import DeferredError
 
-    FFI = ffi = DeferredError(ex)
+    FFI = ffi = DeferredError.new(ex)
 
 logger = logging.getLogger(__name__)
 
 
 class PyAccess:
     def __init__(self, img, readonly=False):
+        deprecate("PyAccess", 11)
         vals = dict(img.im.unsafe_ptrs)
         self.readonly = readonly
         self.image8 = ffi.cast("unsigned char **", vals["image8"])
@@ -58,7 +62,7 @@ class PyAccess:
 
         # Keep pointer to im object to prevent dereferencing.
         self._im = img.im
-        if self._im.mode == "P":
+        if self._im.mode in ("P", "PA"):
             self._palette = img.palette
 
         # Debugging is polluting test traces, only useful here
@@ -66,7 +70,7 @@ class PyAccess:
         # logger.debug("%s", vals)
         self._post_init()
 
-    def _post_init(self):
+    def _post_init(self) -> None:
         pass
 
     def __setitem__(self, xy, color):
@@ -80,7 +84,8 @@ class PyAccess:
         :param color: The pixel value.
         """
         if self.readonly:
-            raise ValueError("Attempt to putpixel a read only image")
+            msg = "Attempt to putpixel a read only image"
+            raise ValueError(msg)
         (x, y) = xy
         if x < 0:
             x = self.xsize + x
@@ -89,12 +94,17 @@ class PyAccess:
         (x, y) = self.check_xy((x, y))
 
         if (
-            self._im.mode == "P"
+            self._im.mode in ("P", "PA")
             and isinstance(color, (list, tuple))
             and len(color) in [3, 4]
         ):
-            # RGB or RGBA value for a P image
+            # RGB or RGBA value for a P or PA image
+            if self._im.mode == "PA":
+                alpha = color[3] if len(color) == 4 else 255
+                color = color[:3]
             color = self._palette.getcolor(color, self._img)
+            if self._im.mode == "PA":
+                color = (color, alpha)
 
         return self.set_pixel(x, y, color)
 
@@ -123,7 +133,8 @@ class PyAccess:
     def check_xy(self, xy):
         (x, y) = xy
         if not (0 <= x < self.xsize and 0 <= y < self.ysize):
-            raise ValueError("pixel location out of range")
+            msg = "pixel location out of range"
+            raise ValueError(msg)
         return xy
 
 
@@ -235,7 +246,7 @@ class _PyAccessI16_L(PyAccess):
         except TypeError:
             color = min(color[0], 65535)
 
-        pixel.l = color & 0xFF  # noqa: E741
+        pixel.l = color & 0xFF
         pixel.r = color >> 8
 
 
@@ -256,7 +267,7 @@ class _PyAccessI16_B(PyAccess):
         except Exception:
             color = min(color[0], 65535)
 
-        pixel.l = color >> 8  # noqa: E741
+        pixel.l = color >> 8
         pixel.r = color & 0xFF
 
 
@@ -314,6 +325,7 @@ mode_map = {
     "1": _PyAccess8,
     "L": _PyAccess8,
     "P": _PyAccess8,
+    "I;16N": _PyAccessI16_N,
     "LA": _PyAccess32_2,
     "La": _PyAccess32_2,
     "PA": _PyAccess32_2,

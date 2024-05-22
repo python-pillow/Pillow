@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from PIL import Image, ImageDraw, ImageFont
 
 font = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 16)
 
 
-def test(anchor):
+def test(anchor: str) -> Image.Image:
     im = Image.new("RGBA", (200, 100), "white")
     d = ImageDraw.Draw(im)
     d.line(((100, 0), (100, 100)), "gray")

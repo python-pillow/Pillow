@@ -25,6 +25,7 @@ Reference
    ImageShow
    ImageStat
    ImageTk
+   ImageTransform
    ImageWin
    ExifTags
    TiffTags

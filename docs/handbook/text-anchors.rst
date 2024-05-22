@@ -29,7 +29,7 @@ For example, in the following image, the text is ``ms`` (middle-baseline) aligne
   :alt: ms (middle-baseline) aligned text.
   :align: left
 
-.. code-block:: python
+::
 
     from PIL import Image, ImageDraw, ImageFont
 

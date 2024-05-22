@@ -48,14 +48,11 @@
  * Global vars for Tcl / Tk functions.  We load these symbols from the tkinter
  * extension module or loaded Tcl / Tk libraries at run-time.
  */
-static int TK_LT_85 = 0;
 static Tcl_CreateCommand_t TCL_CREATE_COMMAND;
 static Tcl_AppendResult_t TCL_APPEND_RESULT;
 static Tk_FindPhoto_t TK_FIND_PHOTO;
 static Tk_PhotoGetImage_t TK_PHOTO_GET_IMAGE;
-static Tk_PhotoPutBlock_84_t TK_PHOTO_PUT_BLOCK_84;
-static Tk_PhotoSetSize_84_t TK_PHOTO_SET_SIZE_84;
-static Tk_PhotoPutBlock_85_t TK_PHOTO_PUT_BLOCK_85;
+static Tk_PhotoPutBlock_t TK_PHOTO_PUT_BLOCK;
 
 static Imaging
 ImagingFind(const char *name) {
@@ -130,26 +127,8 @@ PyImagingPhotoPut(
     block.pitch = im->linesize;
     block.pixelPtr = (unsigned char *)im->block;
 
-    if (TK_LT_85) { /* Tk 8.4 */
-        TK_PHOTO_PUT_BLOCK_84(
-            photo, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
-        if (strcmp(im->mode, "RGBA") == 0) {
-            /* Tk workaround: we need apply ToggleComplexAlphaIfNeeded */
-            /* (fixed in Tk 8.5a3) */
-            TK_PHOTO_SET_SIZE_84(photo, block.width, block.height);
-        }
-    } else {
-        /* Tk >=8.5 */
-        TK_PHOTO_PUT_BLOCK_85(
-            interp,
-            photo,
-            &block,
-            0,
-            0,
-            block.width,
-            block.height,
-            TK_PHOTO_COMPOSITE_SET);
-    }
+    TK_PHOTO_PUT_BLOCK(
+        interp, photo, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
 
     return TCL_OK;
 }
@@ -290,16 +269,7 @@ get_tk(HMODULE hMod) {
     if ((TK_FIND_PHOTO = (Tk_FindPhoto_t)_dfunc(hMod, "Tk_FindPhoto")) == NULL) {
         return -1;
     };
-    TK_LT_85 = GetProcAddress(hMod, "Tk_PhotoPutBlock_Panic") == NULL;
-    /* Tk_PhotoPutBlock_Panic defined as of 8.5.0 */
-    if (TK_LT_85) {
-        TK_PHOTO_PUT_BLOCK_84 = (Tk_PhotoPutBlock_84_t)func;
-        return ((TK_PHOTO_SET_SIZE_84 =
-                     (Tk_PhotoSetSize_84_t)_dfunc(hMod, "Tk_PhotoSetSize")) == NULL)
-                   ? -1
-                   : 1;
-    }
-    TK_PHOTO_PUT_BLOCK_85 = (Tk_PhotoPutBlock_85_t)func;
+    TK_PHOTO_PUT_BLOCK = (Tk_PhotoPutBlock_t)func;
     return 1;
 }
 
@@ -310,7 +280,7 @@ load_tkinter_funcs(void) {
      * Return 0 for success, non-zero for failure.
      */
 
-    HMODULE hMods[1024];
+    HMODULE *hMods = NULL;
     HANDLE hProcess;
     DWORD cbNeeded;
     unsigned int i;
@@ -327,33 +297,48 @@ load_tkinter_funcs(void) {
     /* Returns pseudo-handle that does not need to be closed */
     hProcess = GetCurrentProcess();
 
+    /* Allocate module handlers array */
+    if (!EnumProcessModules(hProcess, NULL, 0, &cbNeeded)) {
+#if defined(__CYGWIN__)
+        PyErr_SetString(PyExc_OSError, "Call to EnumProcessModules failed");
+#else
+        PyErr_SetFromWindowsErr(0);
+#endif
+        return 1;
+    }
+    if (!(hMods = (HMODULE *)malloc(cbNeeded))) {
+        PyErr_NoMemory();
+        return 1;
+    }
+
     /* Iterate through modules in this process looking for Tcl / Tk names */
-    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
+    if (EnumProcessModules(hProcess, hMods, cbNeeded, &cbNeeded)) {
         for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
             if (!found_tcl) {
                 found_tcl = get_tcl(hMods[i]);
                 if (found_tcl == -1) {
-                    return 1;
+                    break;
                 }
             }
             if (!found_tk) {
                 found_tk = get_tk(hMods[i]);
                 if (found_tk == -1) {
-                    return 1;
+                    break;
                 }
             }
             if (found_tcl && found_tk) {
-                return 0;
+                break;
             }
         }
     }
 
+    free(hMods);
     if (found_tcl == 0) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tcl routines");
-    } else {
+    } else if (found_tk == 0) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tk routines");
     }
-    return 1;
+    return (int)((found_tcl != 1) || (found_tk != 1));
 }
 
 #else /* not Windows */
@@ -363,17 +348,6 @@ load_tkinter_funcs(void) {
  * tkinter uses these symbols, and the symbols are therefore visible in the
  * tkinter dynamic library (module).
  */
-
-/* From module __file__ attribute to char *string for dlopen. */
-char *
-fname2char(PyObject *fname) {
-    PyObject *bytes;
-    bytes = PyUnicode_EncodeFSDefault(fname);
-    if (bytes == NULL) {
-        return NULL;
-    }
-    return PyBytes_AsString(bytes);
-}
 
 #include <dlfcn.h>
 
@@ -418,18 +392,9 @@ _func_loader(void *lib) {
     if ((TK_FIND_PHOTO = (Tk_FindPhoto_t)_dfunc(lib, "Tk_FindPhoto")) == NULL) {
         return 1;
     }
-    /* Tk_PhotoPutBlock_Panic defined as of 8.5.0 */
-    TK_LT_85 = (dlsym(lib, "Tk_PhotoPutBlock_Panic") == NULL);
-    if (TK_LT_85) {
-        return (
-            ((TK_PHOTO_PUT_BLOCK_84 =
-                  (Tk_PhotoPutBlock_84_t)_dfunc(lib, "Tk_PhotoPutBlock")) == NULL) ||
-            ((TK_PHOTO_SET_SIZE_84 =
-                  (Tk_PhotoSetSize_84_t)_dfunc(lib, "Tk_PhotoSetSize")) == NULL));
-    }
     return (
-        (TK_PHOTO_PUT_BLOCK_85 =
-             (Tk_PhotoPutBlock_85_t)_dfunc(lib, "Tk_PhotoPutBlock")) == NULL);
+        (TK_PHOTO_PUT_BLOCK = (Tk_PhotoPutBlock_t)_dfunc(lib, "Tk_PhotoPutBlock")) ==
+        NULL);
 }
 
 int
@@ -442,7 +407,7 @@ load_tkinter_funcs(void) {
     int ret = -1;
     void *main_program, *tkinter_lib;
     char *tkinter_libname;
-    PyObject *pModule = NULL, *pString = NULL;
+    PyObject *pModule = NULL, *pString = NULL, *pBytes = NULL;
 
     /* Try loading from the main program namespace first */
     main_program = dlopen(NULL, RTLD_LAZY);
@@ -462,7 +427,12 @@ load_tkinter_funcs(void) {
     if (pString == NULL) {
         goto exit;
     }
-    tkinter_libname = fname2char(pString);
+    /* From module __file__ attribute to char *string for dlopen. */
+    pBytes = PyUnicode_EncodeFSDefault(pString);
+    if (pBytes == NULL) {
+        goto exit;
+    }
+    tkinter_libname = PyBytes_AsString(pBytes);
     if (tkinter_libname == NULL) {
         goto exit;
     }
@@ -478,6 +448,7 @@ exit:
     dlclose(main_program);
     Py_XDECREF(pModule);
     Py_XDECREF(pString);
+    Py_XDECREF(pBytes);
     return ret;
 }
 #endif /* end not Windows */

@@ -9,9 +9,7 @@ Windows.
 
 ImageWin can be used with PythonWin and other user interface toolkits that
 provide access to Windows device contexts or window handles. For example,
-Tkinter makes the window handle available via the winfo_id method:
-
-.. code-block:: python
+Tkinter makes the window handle available via the winfo_id method::
 
     from PIL import ImageWin
 

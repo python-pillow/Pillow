@@ -16,6 +16,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 from . import Image
 
@@ -54,9 +55,9 @@ class Dib:
     "L", "P", or "RGB".
 
     If the display requires a palette, this constructor creates a suitable
-    palette and associates it with the image. For an "L" image, 128 greylevels
+    palette and associates it with the image. For an "L" image, 128 graylevels
     are allocated. For an "RGB" image, a 6x6x6 colour cube is used, together
-    with 20 greylevels.
+    with 20 graylevels.
 
     To make sure that palettes work properly under Windows, you must call the
     ``palette`` method upon certain events from Windows.
@@ -195,7 +196,7 @@ class Window:
         )
 
     def __dispatcher(self, action, *args):
-        return getattr(self, "ui_handle_" + action)(*args)
+        return getattr(self, f"ui_handle_{action}")(*args)
 
     def ui_handle_clear(self, dc, x0, y0, x1, y1):
         pass
@@ -203,7 +204,7 @@ class Window:
     def ui_handle_damage(self, x0, y0, x1, y1):
         pass
 
-    def ui_handle_destroy(self):
+    def ui_handle_destroy(self) -> None:
         pass
 
     def ui_handle_repair(self, dc, x0, y0, x1, y1):
@@ -212,7 +213,7 @@ class Window:
     def ui_handle_resize(self, width, height):
         pass
 
-    def mainloop(self):
+    def mainloop(self) -> None:
         Image.core.eventloop()
 
 

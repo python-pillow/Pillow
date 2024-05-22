@@ -24,6 +24,11 @@ ImagingFill(Imaging im, const void *colour) {
     int x, y;
     ImagingSectionCookie cookie;
 
+    /* 0-width or 0-height image. No need to do anything */
+    if (!im->linesize || !im->ysize) {
+        return im;
+    }
+
     if (im->type == IMAGING_TYPE_SPECIAL) {
         /* use generic API */
         ImagingAccess access = ImagingAccessNew(im);
