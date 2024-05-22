@@ -15,8 +15,6 @@
 
 #include "Bcn.h"
 
-
-
 #define LOAD16(p) (p)[0] | ((p)[1] << 8)
 
 #define LOAD32(p) (p)[0] | ((p)[1] << 8) | ((p)[2] << 16) | ((p)[3] << 24)
