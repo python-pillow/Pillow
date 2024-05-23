@@ -53,7 +53,9 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Python 3.13 beta
+^^^^^^^^^^^^^^^^
 
-TODO
+To help others prepare for Python 3.13, wheels have been built against the 3.13 beta as
+a preview. This is not official support for Python 3.13, but simply an opportunity for
+users to test how Pillow works with the beta and report any problems.
