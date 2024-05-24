@@ -86,7 +86,7 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        choco install ghostscript --version=10.3.0 --no-progress
+        choco install ghostscript --version=10.3.1 --no-progress
         echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
