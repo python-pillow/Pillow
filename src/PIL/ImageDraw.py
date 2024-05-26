@@ -181,6 +181,15 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_ellipse(xy, ink, 0, width)
 
+    def circle(self, xy: Coords, radius, fill=None, outline=None, width=1) -> None:
+        """Draw a circle given center coordinates and a radius."""
+        ink, fill = self._getink(outline, fill)
+        ellipse_xy = (xy[0]-radius, xy[1]-radius, xy[0]+radius, xy[1]+radius)
+        if fill is not None:
+            self.draw.draw_ellipse(ellipse_xy, fill, 1)
+        if ink is not None and ink != fill and width != 0:
+            self.draw.draw_ellipse(ellipse_xy, ink, 0, width)
+
     def line(self, xy: Coords, fill=None, width=0, joint=None) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]

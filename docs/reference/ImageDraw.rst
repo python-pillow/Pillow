@@ -240,6 +240,19 @@ Methods
 
         .. versionadded:: 5.3.0
 
+.. py:method:: ImageDraw.circle(xy, radius, fill=None, outline=None, width=1)
+
+    Draws a circle given the center coordinates and a radius.
+
+    :param xy: One point to define the circle center. Sequence:
+        ``[x, y]``
+    :param radius: Radius of the circle
+    :param outline: Color to use for the outline.
+    :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
+        .. versionadded:: ?.?.?
+
 .. py:method:: ImageDraw.line(xy, fill=None, width=0, joint=None)
 
     Draws a line between the coordinates in the ``xy`` list.
