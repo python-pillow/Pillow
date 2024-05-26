@@ -1294,7 +1294,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
 
     # get the corresponding PNG mode
     try:
-        rawmode, mode = _OUTMODES[mode]
+        rawmode, rawmode_depth_type = _OUTMODES[mode]
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
@@ -1309,7 +1309,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
         b"IHDR",
         o32(size[0]),  # 0: size
         o32(size[1]),
-        mode,  # 8: depth/type
+        rawmode_depth_type,  # 8: depth/type
         b"\0",  # 10: compression
         b"\0",  # 11: filter category
         b"\0",  # 12: interlace flag
