@@ -1050,22 +1050,22 @@ class PngImageFile(ImageFile.ImageFile):
 # PNG writer
 
 _OUTMODES = {
-    # supported PIL modes, and corresponding rawmodes/bits/color combinations
-    "1": ("1", b"\x01\x00"),
-    "L;1": ("L;1", b"\x01\x00"),
-    "L;2": ("L;2", b"\x02\x00"),
-    "L;4": ("L;4", b"\x04\x00"),
-    "L": ("L", b"\x08\x00"),
-    "LA": ("LA", b"\x08\x04"),
-    "I": ("I;16B", b"\x10\x00"),
-    "I;16": ("I;16B", b"\x10\x00"),
-    "I;16B": ("I;16B", b"\x10\x00"),
-    "P;1": ("P;1", b"\x01\x03"),
-    "P;2": ("P;2", b"\x02\x03"),
-    "P;4": ("P;4", b"\x04\x03"),
-    "P": ("P", b"\x08\x03"),
-    "RGB": ("RGB", b"\x08\x02"),
-    "RGBA": ("RGBA", b"\x08\x06"),
+    # supported PIL modes, and corresponding rawmode, bit depth and color type
+    "1": ("1", b"\x01", b"\x00"),
+    "L;1": ("L;1", b"\x01", b"\x00"),
+    "L;2": ("L;2", b"\x02", b"\x00"),
+    "L;4": ("L;4", b"\x04", b"\x00"),
+    "L": ("L", b"\x08", b"\x00"),
+    "LA": ("LA", b"\x08", b"\x04"),
+    "I": ("I;16B", b"\x10", b"\x00"),
+    "I;16": ("I;16B", b"\x10", b"\x00"),
+    "I;16B": ("I;16B", b"\x10", b"\x00"),
+    "P;1": ("P;1", b"\x01", b"\x03"),
+    "P;2": ("P;2", b"\x02", b"\x03"),
+    "P;4": ("P;4", b"\x04", b"\x03"),
+    "P": ("P", b"\x08", b"\x03"),
+    "RGB": ("RGB", b"\x08", b"\x02"),
+    "RGBA": ("RGBA", b"\x08", b"\x06"),
 }
 
 
@@ -1294,7 +1294,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
 
     # get the corresponding PNG mode
     try:
-        rawmode, mode = _OUTMODES[mode]
+        rawmode, bit_depth, color_type = _OUTMODES[mode]
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
@@ -1309,7 +1309,8 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
         b"IHDR",
         o32(size[0]),  # 0: size
         o32(size[1]),
-        mode,  # 8: depth/type
+        bit_depth,
+        color_type,
         b"\0",  # 10: compression
         b"\0",  # 11: filter category
         b"\0",  # 12: interlace flag
