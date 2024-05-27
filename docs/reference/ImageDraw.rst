@@ -253,8 +253,6 @@ Methods
     :param fill: Color to use for the fill.
     :param width: The line width, in pixels.
 
-        .. versionadded:: 10.4.0
-
 .. py:method:: ImageDraw.line(xy, fill=None, width=0, joint=None)
 
     Draws a line between the coordinates in the ``xy`` list.
