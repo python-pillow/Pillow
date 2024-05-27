@@ -227,6 +227,18 @@ Methods
 
         .. versionadded:: 5.3.0
 
+.. py:method:: ImageDraw.circle(xy, radius, fill=None, outline=None, width=1)
+
+    Draws a circle with a given radius centering on a point.
+
+    .. versionadded:: 10.4.0
+
+    :param xy: The point for the center of the circle, e.g. ``(x, y)``.
+    :param radius: Radius of the circle.
+    :param outline: Color to use for the outline.
+    :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
 .. py:method:: ImageDraw.ellipse(xy, fill=None, outline=None, width=1)
 
     Draws an ellipse inside the given bounding box.
@@ -239,19 +251,6 @@ Methods
     :param width: The line width, in pixels.
 
         .. versionadded:: 5.3.0
-
-.. py:method:: ImageDraw.circle(xy, radius, fill=None, outline=None, width=1)
-
-    Draws a circle given the center coordinates and a radius.
-
-    .. versionadded:: 10.4.0
-
-    :param xy: One point to define the circle center. Sequence:
-        ``[x, y]``
-    :param radius: Radius of the circle
-    :param outline: Color to use for the outline.
-    :param fill: Color to use for the fill.
-    :param width: The line width, in pixels.
 
 .. py:method:: ImageDraw.line(xy, fill=None, width=0, joint=None)
 
