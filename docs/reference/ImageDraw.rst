@@ -243,7 +243,7 @@ Methods
 .. py:method:: ImageDraw.circle(xy, radius, fill=None, outline=None, width=1)
 
     Draws a circle given the center coordinates and a radius.
-    
+
     .. versionadded:: 10.4.0
 
     :param xy: One point to define the circle center. Sequence:
