@@ -45,6 +45,10 @@ TODO
 API Additions
 =============
 
+Added PIL.ImageDraw.circle()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Given the circle center coordinate pair and a radius, plots a circle using PIL.ImageDraw.ellipse()
+
 TODO
 ^^^^
 
