@@ -181,7 +181,9 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_ellipse(xy, ink, 0, width)
 
-    def circle(self, xy: Coords, radius, fill=None, outline=None, width=1) -> None:
+    def circle(
+        self, xy: Sequence[float], radius: float, fill=None, outline=None, width=1
+    ) -> None:
         """Draw a circle given center coordinates and a radius."""
         ellipse_xy = (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius)
         self.ellipse(ellipse_xy, fill, outline, width)
