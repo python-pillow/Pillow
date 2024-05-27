@@ -9,51 +9,54 @@ from PIL import Image, ImageDraw, ImageFont, _util, features
 
 from .helper import assert_image_equal_tofile
 
-original_core = ImageFont.core
+fonts = [ImageFont.load_default_imagefont()]
+if not features.check_module("freetype2"):
+    default_font = ImageFont.load_default()
+    if isinstance(default_font, ImageFont.ImageFont):
+        fonts.append(default_font)
 
 
-def setup_module() -> None:
-    if features.check_module("freetype2"):
-        ImageFont.core = _util.DeferredError(ImportError)
-
-
-def teardown_module() -> None:
-    ImageFont.core = original_core
-
-
-def test_default_font() -> None:
+@pytest.mark.parametrize("font", fonts)
+def test_default_font(font: ImageFont.ImageFont) -> None:
     # Arrange
     txt = 'This is a "better than nothing" default font.'
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
 
     # Act
-    default_font = ImageFont.load_default()
-    draw.text((10, 10), txt, font=default_font)
+    draw.text((10, 10), txt, font=font)
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/default_font.png")
 
 
-def test_size_without_freetype() -> None:
-    with pytest.raises(ImportError):
-        ImageFont.load_default(size=14)
+def test_without_freetype() -> None:
+    original_core = ImageFont.core
+    if features.check_module("freetype2"):
+        ImageFont.core = _util.DeferredError(ImportError)
+    try:
+        assert isinstance(ImageFont.load_default(), ImageFont.ImageFont)
+
+        with pytest.raises(ImportError):
+            ImageFont.load_default(size=14)
+    finally:
+        ImageFont.core = original_core
 
 
-def test_unicode() -> None:
+@pytest.mark.parametrize("font", fonts)
+def test_unicode(font: ImageFont.ImageFont) -> None:
     # should not segfault, should return UnicodeDecodeError
     # issue #2826
-    font = ImageFont.load_default()
     with pytest.raises(UnicodeEncodeError):
         font.getbbox("’")
 
 
-def test_textbbox() -> None:
+@pytest.mark.parametrize("font", fonts)
+def test_textbbox(font: ImageFont.ImageFont) -> None:
     im = Image.new("RGB", (200, 200))
     d = ImageDraw.Draw(im)
-    default_font = ImageFont.load_default()
-    assert d.textlength("test", font=default_font) == 24
-    assert d.textbbox((0, 0), "test", font=default_font) == (0, 0, 24, 11)
+    assert d.textlength("test", font=font) == 24
+    assert d.textbbox((0, 0), "test", font=font) == (0, 0, 24, 11)
 
 
 def test_decompression_bomb() -> None:
