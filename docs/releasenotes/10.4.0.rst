@@ -45,9 +45,12 @@ TODO
 API Additions
 =============
 
-Added PIL.ImageDraw.circle()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Given the circle center coordinate pair and a radius, plots a circle using PIL.ImageDraw.ellipse()
+ImageDraw.circle
+^^^^^^^^^^^^^^^^
+
+Added :py:meth:`~PIL.ImageDraw.ImageDraw.circle`. It provides the same functionality as
+:py:meth:`~PIL.ImageDraw.ImageDraw.ellipse`, but instead of taking a bounding box, it
+takes a center point and radius.
 
 TODO
 ^^^^
