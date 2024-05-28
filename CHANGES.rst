@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Added ImageDraw circle() #8085
+  [void4, hugovk, radarhere]
+
 - Add mypy target to Makefile #8077
   [Yay295]
 
