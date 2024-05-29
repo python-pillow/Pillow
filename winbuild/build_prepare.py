@@ -120,7 +120,7 @@ V = {
     "LIBWEBP": "1.3.2",
     "OPENJPEG": "2.5.2",
     "TIFF": "4.6.0",
-    "XZ": "5.4.5",
+    "XZ": "5.6.2",
     "ZLIB": "1.3.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
