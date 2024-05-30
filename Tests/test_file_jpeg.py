@@ -70,7 +70,9 @@ class TestFileJpeg:
 
     def test_sanity(self) -> None:
         # internal version number
-        assert re.search(r"\d+\.\d+$", features.version_codec("jpg"))
+        version = features.version_codec("jpg")
+        assert version is not None
+        assert re.search(r"\d+\.\d+$", version)
 
         with Image.open(TEST_FILE) as im:
             im.load()
