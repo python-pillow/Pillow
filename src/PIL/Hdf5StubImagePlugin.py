@@ -37,7 +37,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
     format = "HDF5"
     format_description = "HDF5"
 
-    def _open(self):
+    def _open(self) -> None:
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(8)):

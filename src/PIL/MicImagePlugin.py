@@ -38,7 +38,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
     format_description = "Microsoft Image Composer"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # read the OLE directory and see if this is a likely
         # to be a Microsoft Image Composer file
 
@@ -88,7 +88,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
     def tell(self):
         return self.frame
 
-    def close(self):
+    def close(self) -> None:
         self.__fp.close()
         self.ole.close()
         super().close()

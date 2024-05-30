@@ -119,7 +119,7 @@ class ImImageFile(ImageFile.ImageFile):
     format_description = "IFUNC Image Memory"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
@@ -271,14 +271,14 @@ class ImImageFile(ImageFile.ImageFile):
             self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
 
     @property
-    def n_frames(self):
+    def n_frames(self) -> int:
         return self.info[FRAMES]
 
     @property
-    def is_animated(self):
+    def is_animated(self) -> bool:
         return self.info[FRAMES] > 1
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
@@ -296,7 +296,7 @@ class ImImageFile(ImageFile.ImageFile):
 
         self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
 
-    def tell(self):
+    def tell(self) -> int:
         return self.frame
 
 

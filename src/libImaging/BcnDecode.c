@@ -83,7 +83,6 @@ decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
     g1 = p[1].g;
     b1 = p[1].b;
 
-
     /* NOTE: BC2 and BC3 reuse BC1 color blocks but always act like c0 > c1 */
     if (col.c0 > col.c1 || separate_alpha) {
         p[2].r = (2 * r0 + 1 * r1) / 3;
@@ -354,8 +353,7 @@ decode_bc7_block(rgba *col, const UINT8 *src) {
         }
         return;
     }
-    while (!(mode & (1 << bit++)))
-        ;
+    while (!(mode & (1 << bit++)));
     mode = bit - 1;
     info = &bc7_modes[mode];
     /* color selection bits: {subset}{endpoint} */
@@ -546,7 +544,7 @@ static const UINT8 bc6_bit_packings[][75] = {
      21,  22,  23,  24,  25,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,
      48,  49,  50,  51,  52,  10,  112, 113, 114, 115, 64,  65,  66,  67,  26,
      176, 160, 161, 162, 163, 80,  81,  82,  83,  42,  177, 128, 129, 130, 131,
-     96,  97, 98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
+     96,  97,  98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
     {0,  1,   2,   3,   4,   5,   6,   7,   8,   9,   16,  17,  18,  19,  20,
      21, 22,  23,  24,  25,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,
      48, 49,  50,  51,  10,  164, 112, 113, 114, 115, 64,  65,  66,  67,  68,
@@ -684,7 +682,7 @@ bc6_clamp(float value) {
     } else if (value > 1.0f) {
         return 255;
     } else {
-        return (UINT8) (value * 255.0f);
+        return (UINT8)(value * 255.0f);
     }
 }
 
@@ -826,7 +824,13 @@ put_block(Imaging im, ImagingCodecState state, const char *col, int sz, int C) {
 
 static int
 decode_bcn(
-    Imaging im, ImagingCodecState state, const UINT8 *src, int bytes, int N, int C, char *pixel_format) {
+    Imaging im,
+    ImagingCodecState state,
+    const UINT8 *src,
+    int bytes,
+    int N,
+    int C,
+    char *pixel_format) {
     int ymax = state->ysize + state->yoff;
     const UINT8 *ptr = src;
     switch (N) {
@@ -849,8 +853,7 @@ decode_bcn(
         DECODE_LOOP(2, 16, rgba);
         DECODE_LOOP(3, 16, rgba);
         DECODE_LOOP(4, 8, lum);
-        case 5:
-        {
+        case 5: {
             int sign = strcmp(pixel_format, "BC5S") == 0 ? 1 : 0;
             while (bytes >= 16) {
                 rgba col[16];
@@ -865,8 +868,7 @@ decode_bcn(
             }
             break;
         }
-        case 6:
-        {
+        case 6: {
             int sign = strcmp(pixel_format, "BC6HS") == 0 ? 1 : 0;
             while (bytes >= 16) {
                 rgba col[16];
@@ -880,7 +882,7 @@ decode_bcn(
             }
             break;
         }
-        DECODE_LOOP(7, 16, rgba);
+            DECODE_LOOP(7, 16, rgba);
 #undef DECODE_LOOP
     }
     return (int)(ptr - src);

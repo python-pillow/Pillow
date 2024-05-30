@@ -60,10 +60,13 @@ def test_sanity() -> None:
     assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
-    assert re.search(r"\d+\.\d+(\.\d+)?$", features.version_module("littlecms2"))
+    version = features.version_module("littlecms2")
+    assert version is not None
+    assert re.search(r"\d+\.\d+(\.\d+)?$", version)
 
     skip_missing()
     i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
+    assert i is not None
     assert_image(i, "RGB", (128, 128))
 
     i = hopper()
@@ -72,23 +75,27 @@ def test_sanity() -> None:
 
     t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
     i = ImageCms.applyTransform(hopper(), t)
+    assert i is not None
     assert_image(i, "RGB", (128, 128))
 
     with hopper() as i:
         t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
         ImageCms.applyTransform(hopper(), t, inPlace=True)
+        assert i is not None
         assert_image(i, "RGB", (128, 128))
 
     p = ImageCms.createProfile("sRGB")
     o = ImageCms.getOpenProfile(SRGB)
     t = ImageCms.buildTransformFromOpenProfiles(p, o, "RGB", "RGB")
     i = ImageCms.applyTransform(hopper(), t)
+    assert i is not None
     assert_image(i, "RGB", (128, 128))
 
     t = ImageCms.buildProofTransform(SRGB, SRGB, SRGB, "RGB", "RGB")
     assert t.inputMode == "RGB"
     assert t.outputMode == "RGB"
     i = ImageCms.applyTransform(hopper(), t)
+    assert i is not None
     assert_image(i, "RGB", (128, 128))
 
     # test PointTransform convenience API
@@ -260,7 +267,7 @@ def test_simple_lab() -> None:
     t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
 
     i_lab = ImageCms.applyTransform(i, t)
-
+    assert i_lab is not None
     assert i_lab.mode == "LAB"
 
     k = i_lab.getpixel((0, 0))
@@ -284,6 +291,7 @@ def test_lab_color() -> None:
     # Need to add a type mapping for some PIL type to TYPE_Lab_8 in findLCMSType, and
     # have that mapping work back to a PIL mode (likely RGB).
     i = ImageCms.applyTransform(hopper(), t)
+    assert i is not None
     assert_image(i, "LAB", (128, 128))
 
     # i.save('temp.lab.tif')  # visually verified vs PS.
@@ -298,6 +306,7 @@ def test_lab_srgb() -> None:
 
     with Image.open("Tests/images/hopper.Lab.tif") as img:
         img_srgb = ImageCms.applyTransform(img, t)
+    assert img_srgb is not None
 
     # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 
@@ -317,11 +326,11 @@ def test_lab_roundtrip() -> None:
     t2 = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
     i = ImageCms.applyTransform(hopper(), t)
-
+    assert i is not None
     assert i.info["icc_profile"] == ImageCmsProfile(pLab).tobytes()
 
     out = ImageCms.applyTransform(i, t2)
-
+    assert out is not None
     assert_image_similar(hopper(), out, 2)
 
 
@@ -657,7 +666,7 @@ def test_auxiliary_channels_isolated() -> None:
                 reference_image = ImageCms.applyTransform(
                     source_image.convert(src_format[2]), reference_transform
                 )
-
+                assert reference_image is not None
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 

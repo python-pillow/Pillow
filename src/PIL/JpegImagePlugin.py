@@ -408,7 +408,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 msg = "no marker found"
                 raise SyntaxError(msg)
 
-    def load_read(self, read_bytes):
+    def load_read(self, read_bytes: int) -> bytes:
         """
         internal: read more image data
         For premature EOF and LOAD_TRUNCATED_IMAGES adds EOI marker
@@ -462,7 +462,7 @@ class JpegImageFile(ImageFile.ImageFile):
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
         return self.mode, box
 
-    def load_djpeg(self):
+    def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
         f, path = tempfile.mkstemp()

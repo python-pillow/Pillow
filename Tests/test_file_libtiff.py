@@ -52,7 +52,9 @@ class LibTiffTestCase:
 
 class TestFileLibTiff(LibTiffTestCase):
     def test_version(self) -> None:
-        assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("libtiff"))
+        version = features.version_codec("libtiff")
+        assert version is not None
+        assert re.search(r"\d+\.\d+\.\d+$", version)
 
     def test_g4_tiff(self, tmp_path: Path) -> None:
         """Test the ordinary file path load path"""

@@ -16,11 +16,14 @@
 #
 from __future__ import annotations
 
+import abc
 import functools
 
 
 class Filter:
-    pass
+    @abc.abstractmethod
+    def filter(self, image):
+        pass
 
 
 class MultibandFilter(Filter):
@@ -541,7 +544,7 @@ class Color3DLUT(MultibandFilter):
             _copy_table=False,
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         r = [
             f"{self.__class__.__name__} from {self.table.__class__.__name__}",
             "size={:d}x{:d}x{:d}".format(*self.size),

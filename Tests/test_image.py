@@ -31,7 +31,6 @@ from .helper import (
     is_big_endian,
     is_win32,
     mark_if_feature_version,
-    modes,
     skip_unless_feature,
 )
 
@@ -46,7 +45,7 @@ def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
 
 
 class TestImage:
-    @pytest.mark.parametrize("mode", modes)
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_image_modes_success(self, mode: str) -> None:
         helper_image_new(mode, (1, 1))
 
@@ -1027,7 +1026,7 @@ class TestImage:
 
 
 class TestImageBytes:
-    @pytest.mark.parametrize("mode", modes)
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_roundtrip_bytes_constructor(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
@@ -1039,7 +1038,7 @@ class TestImageBytes:
             reloaded = Image.frombytes(mode, im.size, source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", modes)
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_roundtrip_bytes_method(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
@@ -1048,7 +1047,7 @@ class TestImageBytes:
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", modes)
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_getdata_putdata(self, mode: str) -> None:
         if is_big_endian() and mode == "BGR;15":
             pytest.xfail("Known failure of BGR;15 on big-endian")

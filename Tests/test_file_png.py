@@ -85,9 +85,9 @@ class TestFilePng:
 
     def test_sanity(self, tmp_path: Path) -> None:
         # internal version number
-        assert re.search(
-            r"\d+(\.\d+){1,3}(\.zlib\-ng)?$", features.version_codec("zlib")
-        )
+        version = features.version_codec("zlib")
+        assert version is not None
+        assert re.search(r"\d+(\.\d+){1,3}(\.zlib\-ng)?$", version)
 
         test_file = str(tmp_path / "temp.png")
 

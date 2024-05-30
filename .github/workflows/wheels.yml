@@ -46,6 +46,7 @@ jobs:
           - cp310
           - cp311
           - cp312
+          - cp313
         spec:
           - manylinux2014
           - manylinux_2_28
@@ -80,6 +81,7 @@ jobs:
           CIBW_ARCHS: "aarch64"
           # Likewise, select only one Python version per job to speed this up.
           CIBW_BUILD: "${{ matrix.python-version }}-${{ matrix.spec == 'musllinux' && 'musllinux' || 'manylinux' }}*"
+          CIBW_PRERELEASE_PYTHONS: True
           # Extra options for manylinux.
           CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.spec }}
           CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.spec }}
@@ -133,6 +135,7 @@ jobs:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
+          CIBW_PRERELEASE_PYTHONS: True
           CIBW_SKIP: pp38-*
           CIBW_TEST_SKIP: cp38-macosx_arm64
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
@@ -204,6 +207,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
+          CIBW_PRERELEASE_PYTHONS: True
           CIBW_SKIP: pp38-*
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm

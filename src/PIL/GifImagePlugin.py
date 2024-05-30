@@ -30,6 +30,7 @@ import math
 import os
 import subprocess
 from enum import IntEnum
+from functools import cached_property
 
 from . import (
     Image,
@@ -76,19 +77,19 @@ class GifImageFile(ImageFile.ImageFile):
 
     global_palette = None
 
-    def data(self):
+    def data(self) -> bytes | None:
         s = self.fp.read(1)
         if s and s[0]:
             return self.fp.read(s[0])
         return None
 
-    def _is_palette_needed(self, p):
+    def _is_palette_needed(self, p: bytes) -> bool:
         for i in range(0, len(p), 3):
             if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
                 return True
         return False
 
-    def _open(self):
+    def _open(self) -> None:
         # Screen
         s = self.fp.read(13)
         if not _accept(s):
@@ -112,8 +113,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
-        self._n_frames = None
-        self._is_animated = None
+        self._n_frames: int | None = None
         self._seek(0)  # get ready to read first frame
 
     @property
@@ -128,26 +128,25 @@ class GifImageFile(ImageFile.ImageFile):
             self.seek(current)
         return self._n_frames
 
-    @property
-    def is_animated(self):
-        if self._is_animated is None:
-            if self._n_frames is not None:
-                self._is_animated = self._n_frames != 1
-            else:
-                current = self.tell()
-                if current:
-                    self._is_animated = True
-                else:
-                    try:
-                        self._seek(1, False)
-                        self._is_animated = True
-                    except EOFError:
-                        self._is_animated = False
+    @cached_property
+    def is_animated(self) -> bool:
+        if self._n_frames is not None:
+            return self._n_frames != 1
 
-                    self.seek(current)
-        return self._is_animated
+        current = self.tell()
+        if current:
+            return True
 
-    def seek(self, frame):
+        try:
+            self._seek(1, False)
+            is_animated = True
+        except EOFError:
+            is_animated = False
+
+        self.seek(current)
+        return is_animated
+
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
@@ -417,7 +416,7 @@ class GifImageFile(ImageFile.ImageFile):
             elif k in self.info:
                 del self.info[k]
 
-    def load_prepare(self):
+    def load_prepare(self) -> None:
         temp_mode = "P" if self._frame_palette else "L"
         self._prev_im = None
         if self.__frame == 0:
@@ -437,7 +436,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         super().load_prepare()
 
-    def load_end(self):
+    def load_end(self) -> None:
         if self.__frame == 0:
             if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
                 if self._frame_transparency is not None:
@@ -463,7 +462,7 @@ class GifImageFile(ImageFile.ImageFile):
         else:
             self.im.paste(frame_im, self.dispose_extent)
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
 
@@ -474,7 +473,7 @@ class GifImageFile(ImageFile.ImageFile):
 RAWMODE = {"1": "L", "L": "L", "P": "P"}
 
 
-def _normalize_mode(im):
+def _normalize_mode(im: Image.Image) -> Image.Image:
     """
     Takes an image (or frame), returns an image in a mode that is appropriate
     for saving in a Gif.
@@ -887,7 +886,7 @@ def _get_optimize(im, info):
                 return used_palette_colors
 
 
-def _get_color_table_size(palette_bytes):
+def _get_color_table_size(palette_bytes: bytes) -> int:
     # calculate the palette size for the header
     if not palette_bytes:
         return 0
@@ -897,7 +896,7 @@ def _get_color_table_size(palette_bytes):
         return math.ceil(math.log(len(palette_bytes) // 3, 2)) - 1
 
 
-def _get_header_palette(palette_bytes):
+def _get_header_palette(palette_bytes: bytes) -> bytes:
     """
     Returns the palette, null padded to the next power of 2 (*3) bytes
     suitable for direct inclusion in the GIF header
@@ -915,7 +914,7 @@ def _get_header_palette(palette_bytes):
     return palette_bytes
 
 
-def _get_palette_bytes(im):
+def _get_palette_bytes(im: Image.Image) -> bytes:
     """
     Gets the palette for inclusion in the gif header
 

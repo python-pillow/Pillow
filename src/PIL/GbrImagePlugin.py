@@ -41,7 +41,7 @@ class GbrImageFile(ImageFile.ImageFile):
     format = "GBR"
     format_description = "GIMP brush file"
 
-    def _open(self):
+    def _open(self) -> None:
         header_size = i32(self.fp.read(4))
         if header_size < 20:
             msg = "not a GIMP brush"
