@@ -2074,9 +2074,8 @@ class Image:
             if self.mode == "PA":
                 alpha = value[3] if len(value) == 4 else 255
                 value = value[:3]
-            value = self.palette.getcolor(value, self)
-            if self.mode == "PA":
-                value = (value, alpha)  # type: ignore[assignment]
+            palette_index = self.palette.getcolor(value, self)
+            value = (palette_index, alpha) if self.mode == "PA" else palette_index
         return self.im.putpixel(xy, value)
 
     def remap_palette(self, dest_map, source_palette=None):

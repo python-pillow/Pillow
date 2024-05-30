@@ -33,6 +33,7 @@ def grab(
     all_screens: bool = False,
     xdisplay: str | None = None,
 ) -> Image.Image:
+    im: Image.Image
     if xdisplay is None:
         if sys.platform == "darwin":
             fh, filepath = tempfile.mkstemp(".png")
@@ -42,7 +43,7 @@ def grab(
                 left, top, right, bottom = bbox
                 args += ["-R", f"{left},{top},{right-left},{bottom-top}"]
             subprocess.call(args + ["-x", filepath])
-            im: Image.Image = Image.open(filepath)
+            im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
             if bbox:
@@ -84,7 +85,7 @@ def grab(
             fh, filepath = tempfile.mkstemp(".png")
             os.close(fh)
             subprocess.call(["gnome-screenshot", "-f", filepath])
-            im: Image.Image = Image.open(filepath)  # type: ignore[no-redef, unused-ignore]
+            im = Image.open(filepath)
             im.load()
             os.unlink(filepath)
             if bbox:

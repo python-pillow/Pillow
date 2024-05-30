@@ -107,9 +107,8 @@ class PyAccess:
             if self._im.mode == "PA":
                 alpha = color[3] if len(color) == 4 else 255
                 color = color[:3]
-            color = self._palette.getcolor(color, self._img)
-            if self._im.mode == "PA":
-                color = (color, alpha)  # type: ignore[assignment]
+            palette_index = self._palette.getcolor(color, self._img)
+            color = (palette_index, alpha) if self._im.mode == "PA" else palette_index
 
         return self.set_pixel(x, y, color)
 
