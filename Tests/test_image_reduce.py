@@ -102,7 +102,7 @@ def test_unsupported_modes(mode: str) -> None:
 def get_image(mode: str) -> Image.Image:
     mode_info = ImageMode.getmode(mode)
     if mode_info.basetype == "L":
-        bands = [gradients_image]
+        bands: list[Image.Image] = [gradients_image]
         for _ in mode_info.bands[1:]:
             # rotate previous image
             band = bands[-1].transpose(Image.Transpose.ROTATE_90)
