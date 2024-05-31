@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+
+11.0.0 (unreleased)
+
+- Support tiff 16bit tiff #1888
+  [mocomakers]
+
 10.4.0 (unreleased)
 -------------------
 

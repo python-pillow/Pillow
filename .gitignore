@@ -92,3 +92,13 @@ Tests/images/sunraster
 
 # pyinstaller
 *.spec
+
+# Virtual Environment
+venv/
+
+# Depedancies
+depends/*.tar.gz
+depends/libraqm*/
+winbuild/depends/
+
+*.whl

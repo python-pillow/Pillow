@@ -2902,6 +2902,10 @@ class Image:
             raise ImportError(msg)
         return ImageQt.toqpixmap(self)
 
+    # TODO: REMOVE THIS
+    def simpleTest(self):
+        # Demonstrate a quick change
+        print("Test has passed")
 
 # --------------------------------------------------------------------
 # Abstract handlers.
