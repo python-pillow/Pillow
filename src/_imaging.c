@@ -94,8 +94,8 @@
 #include <math.h>
 
 /* Configuration stuff. Feel free to undef things you don't need. */
-#define WITH_IMAGECHOPS  /* ImageChops support */
-#define WITH_IMAGEDRAW   /* ImageDraw support */
+#define WITH_IMAGECHOPS /* ImageChops support */
+#define WITH_IMAGEDRAW  /* ImageDraw support */
 // XXX hack202406 disable unmodified code path
 // #define WITH_MAPPING     /* use memory mapping to read some file formats */
 #define WITH_IMAGEPATH   /* ImagePath stuff */
