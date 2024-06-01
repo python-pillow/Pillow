@@ -61,10 +61,11 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
     int xsize, ysize;
     int stride;
     int ystep;
+    int depth = -1, bands = -1;
 
     if (!PyArg_ParseTuple(
             args,
-            "O(ii)sn(sii)",
+            "O(ii)sn(sii)|ii",
             &target,
             &xsize,
             &ysize,
@@ -72,7 +73,9 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
             &offset,
             &mode,
             &stride,
-            &ystep)) {
+            &ystep,
+            &depth,
+            &bands)) {
         return NULL;
     }
 
@@ -82,10 +85,12 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
     }
 
     if (stride <= 0) {
-        if (!strcmp(mode, "L") || !strcmp(mode, "P")) {
+        if (strcmp(mode, "L") == 0 || strcmp(mode, "P") == 0) {
             stride = xsize;
-        } else if (!strncmp(mode, "I;16", 4)) {
+        } else if (strncmp(mode, "I;16", 4) == 0) {
             stride = xsize * 2;
+        } else if (strcmp(mode, IMAGING_MODE_MB) == 0) {
+            stride = xsize * depth * bands;
         } else {
             stride = xsize * 4;
         }
@@ -120,7 +125,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
     }
 
     im = ImagingNewPrologueSubtype(
-        mode, xsize, ysize, -1, -1, sizeof(ImagingBufferInstance));
+        mode, xsize, ysize, depth, bands, sizeof(ImagingBufferInstance));
     if (!im) {
         PyBuffer_Release(&view);
         return NULL;

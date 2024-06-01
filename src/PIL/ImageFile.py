@@ -206,9 +206,6 @@ class ImageFile(Image.Image):
         except AttributeError:
             seek = self.fp.seek
 
-        # XXX hack202406 disable unmodified code path
-        use_mmap = False
-
         if use_mmap:
             # try memory mapping
             decoder_name, extents, offset, args = self.tile[0]
@@ -230,7 +227,7 @@ class ImageFile(Image.Image):
                         msg = "buffer is not large enough"
                         raise OSError(msg)
                     self.im = Image.core.map_buffer(
-                        self.map, self.size, decoder_name, offset, args
+                        self.map, self.size, decoder_name, offset, args, *self.newconfig
                     )
                     readonly = 1
                     # After trashing self.im,
