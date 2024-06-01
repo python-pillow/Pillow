@@ -198,7 +198,7 @@ ImagingNewPrologueSubtype(
         }
         im->bands = bands;
         im->depth = depth;
-        im->pixelsize = depth * bands;
+        im->pixelsize = depth / CHAR_BIT * bands;
         im->linesize = xsize * im->pixelsize;
         im->type = IMAGING_TYPE_MB;
 

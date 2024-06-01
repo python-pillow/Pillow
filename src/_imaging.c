@@ -435,7 +435,8 @@ float16tofloat32(const FLOAT16 in) {
 
 static inline PyObject *
 getpixel_mb(Imaging im, ImagingAccess access, int x, int y) {
-    UINT8 pixel[im->pixelsize];
+    UINT8 pixel[sizeof(INT32) * 6];
+    assert(im->pixelsize <= sizeof(pixel));
     access->get_pixel(im, x, y, &pixel);
 
     PyObject *tuple = PyTuple_New(im->bands);
