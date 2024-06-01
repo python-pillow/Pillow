@@ -117,6 +117,8 @@ class ImageFile(Image.Image):
 
         self.readonly = 1  # until we know better
 
+        self.newconfig = ()
+
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
 
@@ -317,7 +319,7 @@ class ImageFile(Image.Image):
     def load_prepare(self) -> None:
         # create image memory if necessary
         if not self.im or self.im.mode != self.mode or self.im.size != self.size:
-            self.im = Image.core.new(self.mode, self.size)
+            self.im = Image.core.new(self.mode, self.size, *self.newconfig)
         # create palette (optional)
         if self.mode == "P":
             Image.Image.load(self)

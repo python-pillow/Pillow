@@ -310,7 +310,7 @@ getbands(const char *mode) {
     int bands;
 
     /* FIXME: add primitive to libImaging to avoid extra allocation */
-    im = ImagingNew(mode, 0, 0);
+    im = ImagingNew(mode, 0, 0, -1, -1);
     if (!im) {
         return -1;
     }
@@ -435,6 +435,35 @@ float16tofloat32(const FLOAT16 in) {
 }
 
 static inline PyObject *
+getpixel_mb(Imaging im, ImagingAccess access, int x, int y) {
+    UINT8 pixel[im->pixelsize];
+    access->get_pixel(im, x, y, &pixel);
+
+    PyObject *tuple = PyTuple_New(im->bands);
+    if (tuple == NULL) {
+        return NULL;
+    }
+
+    UINT8 *pos = pixel;
+    for (int i = 0; i < im->bands; ++i) {
+        switch (im->depth) {
+            case CHAR_BIT:
+                PyTuple_SET_ITEM(tuple, i, PyLong_FromLong(*pos));
+                break;
+            case 2 * CHAR_BIT:
+                PyTuple_SET_ITEM(tuple, i, PyLong_FromLong(*(UINT16 *)pos));
+                break;
+            case 4 * CHAR_BIT:
+                PyTuple_SET_ITEM(tuple, i, PyLong_FromLong(*(INT32 *)pos));
+                break;
+        }
+        pos += im->depth / CHAR_BIT;
+    }
+
+    return tuple;
+}
+
+static inline PyObject *
 getpixel(Imaging im, ImagingAccess access, int x, int y) {
     union {
         UINT8 b[4];
@@ -453,6 +482,10 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
         PyErr_SetString(PyExc_IndexError, outside_image);
         return NULL;
+    }
+
+    if (im->type == IMAGING_TYPE_MB) {
+        return getpixel_mb(im, access, x, y);
     }
 
     access->get_pixel(im, x, y, &pixel);
@@ -685,13 +718,13 @@ _fill(PyObject *self, PyObject *args) {
 static PyObject *
 _new(PyObject *self, PyObject *args) {
     char *mode;
-    int xsize, ysize;
+    int xsize, ysize, depth = -1, bands = -1;
 
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize)) {
+    if (!PyArg_ParseTuple(args, "s(ii)|ii", &mode, &xsize, &ysize, &depth, &bands)) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingNew(mode, xsize, ysize));
+    return PyImagingNew(ImagingNew(mode, xsize, ysize, depth, bands));
 }
 
 static PyObject *
@@ -1714,7 +1747,8 @@ _quantize(ImagingObject *self, PyObject *args) {
 
     if (!self->image->xsize || !self->image->ysize) {
         /* no content; return an empty image */
-        return PyImagingNew(ImagingNew("P", self->image->xsize, self->image->ysize));
+        return PyImagingNew(
+            ImagingNew("P", self->image->xsize, self->image->ysize, -1, -1));
     }
 
     return PyImagingNew(ImagingQuantize(self->image, colours, method, kmeans));
@@ -2782,7 +2816,7 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
+    im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize, -1, -1);
     if (!im) {
         free(text);
         return ImagingError_MemoryError();

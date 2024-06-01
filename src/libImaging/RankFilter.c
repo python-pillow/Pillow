@@ -84,7 +84,8 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
         return (Imaging)ImagingError_ValueError("bad rank value");
     }
 
-    imOut = ImagingNew(im->mode, im->xsize - 2 * margin, im->ysize - 2 * margin);
+    imOut =
+        ImagingNew(im->mode, im->xsize - 2 * margin, im->ysize - 2 * margin, -1, -1);
     if (!imOut) {
         return NULL;
     }

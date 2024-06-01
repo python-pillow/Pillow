@@ -291,10 +291,32 @@ static PyTypeObject ImagingDecoderType = {
 
 /* -------------------------------------------------------------------- */
 
-int
+static void
+mb_shuffle_passthru(UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state) {
+    state->shuffle(dst, src, state->xsize);
+}
+
+static void
+shuffle_mb_unavail(UINT8 *dst, const UINT8 *src, int pixels) {
+    abort();
+}
+
+static void
+mb_shuffle(UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state) {
+    memcpy(dst, src, state->xsize * im->pixelsize);
+}
+
+static int
 get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmode) {
     int bits;
     ImagingShuffler unpack;
+
+    if (strcmp(mode, IMAGING_MODE_MB) == 0) {
+        decoder->state.shuffle = shuffle_mb_unavail;
+        decoder->state.mb_shuffle = mb_shuffle;
+        decoder->state.bits = -1;
+        return 0;
+    }
 
     unpack = ImagingFindUnpacker(mode, rawmode, &bits);
     if (!unpack) {
@@ -304,6 +326,7 @@ get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmod
     }
 
     decoder->state.shuffle = unpack;
+    decoder->state.mb_shuffle = mb_shuffle_passthru;
     decoder->state.bits = bits;
 
     return 0;

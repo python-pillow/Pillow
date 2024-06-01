@@ -42,7 +42,8 @@
  */
 
 Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
+ImagingNewPrologueSubtype(
+    const char *mode, int xsize, int ysize, int depth, int bands, int size) {
     Imaging im;
 
     /* linesize overflow check, roughly the current largest space req'd */
@@ -190,6 +191,17 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->pixelsize = 4;
         im->linesize = xsize * 4;
 
+    } else if (strcmp(mode, IMAGING_MODE_MB) == 0) {
+        if (bands <= 0 || depth <= 0) {
+            return (Imaging)ImagingError_ValueError(
+                "multi-band missing bands and depth");
+        }
+        im->bands = bands;
+        im->depth = depth;
+        im->pixelsize = depth * bands;
+        im->linesize = xsize * im->pixelsize;
+        im->type = IMAGING_TYPE_MB;
+
     } else {
         free(im);
         return (Imaging)ImagingError_ValueError("unrecognized image mode");
@@ -225,9 +237,9 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
 }
 
 Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize) {
+ImagingNewPrologue(const char *mode, int xsize, int ysize, int depth, int bands) {
     return ImagingNewPrologueSubtype(
-        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance));
+        mode, xsize, ysize, depth, bands, sizeof(struct ImagingMemoryInstance));
 }
 
 void
@@ -485,15 +497,16 @@ ImagingAllocateBlock(Imaging im) {
  * Create a new, internally allocated, image.
  */
 
-Imaging
-ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
+static Imaging
+ImagingNewInternal(
+    const char *mode, int xsize, int ysize, int depth, int bands, int dirty) {
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
         return (Imaging)ImagingError_ValueError("bad image size");
     }
 
-    im = ImagingNewPrologue(mode, xsize, ysize);
+    im = ImagingNewPrologue(mode, xsize, ysize, depth, bands);
     if (!im) {
         return NULL;
     }
@@ -514,13 +527,13 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
 }
 
 Imaging
-ImagingNew(const char *mode, int xsize, int ysize) {
-    return ImagingNewInternal(mode, xsize, ysize, 0);
+ImagingNew(const char *mode, int xsize, int ysize, int depth, int bands) {
+    return ImagingNewInternal(mode, xsize, ysize, depth, bands, 0);
 }
 
 Imaging
 ImagingNewDirty(const char *mode, int xsize, int ysize) {
-    return ImagingNewInternal(mode, xsize, ysize, 1);
+    return ImagingNewInternal(mode, xsize, ysize, -1, -1, 1);
 }
 
 Imaging
@@ -531,7 +544,7 @@ ImagingNewBlock(const char *mode, int xsize, int ysize) {
         return (Imaging)ImagingError_ValueError("bad image size");
     }
 
-    im = ImagingNewPrologue(mode, xsize, ysize);
+    im = ImagingNewPrologue(mode, xsize, ysize, -1, -1);
     if (!im) {
         return NULL;
     }

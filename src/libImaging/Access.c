@@ -133,6 +133,11 @@ get_pixel_32B(Imaging im, int x, int y, void *color) {
 #endif
 }
 
+static void
+get_pixel_mb(Imaging im, int x, int y, void *color) {
+    memcpy(color, &im->image[y][x * im->pixelsize], im->pixelsize);
+}
+
 /* store individual pixel */
 
 static void
@@ -183,6 +188,11 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
     memcpy(&im->image32[y][x], color, sizeof(INT32));
 }
 
+static void
+put_pixel_mb(Imaging im, int x, int y, void *color) {
+    memcpy(&im->image[y][x * im->pixelsize], color, im->pixelsize);
+}
+
 void
 ImagingAccessInit() {
 #define ADD(mode_, get_pixel_, put_pixel_)      \
@@ -222,6 +232,7 @@ ImagingAccessInit() {
     ADD("YCbCr", get_pixel_32, put_pixel_32);
     ADD("LAB", get_pixel_32, put_pixel_32);
     ADD("HSV", get_pixel_32, put_pixel_32);
+    ADD("MB", get_pixel_mb, put_pixel_mb);
 }
 
 ImagingAccess

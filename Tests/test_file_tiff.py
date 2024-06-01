@@ -877,14 +877,14 @@ class TestFileTiff:
     def test_open_tiff_uint16_multiband(self):
         """Test opening multiband TIFFs and reading all channels."""
         base_value = 4660
-        for i in range(2, 6):
+        for i in range(1, 6):
             infile = f"Tests/images/uint16_{i}_{base_value}.tif"
             im = Image.open(infile)
             im.load()
-            pixel = [base_value + j for j in range(0, i)]
+            pixel = tuple([base_value + j for j in range(0, i)])
             actual_pixel = im.getpixel((0, 0))
             if isinstance(actual_pixel, int):
-                actual_pixel = [actual_pixel]
+                actual_pixel = (actual_pixel,)
             assert actual_pixel == pixel
 
 
