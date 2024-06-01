@@ -18,7 +18,7 @@ def test_crop(mode: str) -> None:
 
 
 def test_wide_crop() -> None:
-    def crop(*bbox: int) -> tuple[int, ...]:
+    def crop(bbox: tuple[int, int, int, int]) -> tuple[int, ...]:
         i = im.crop(bbox)
         h = i.histogram()
         while h and not h[-1]:
@@ -27,23 +27,23 @@ def test_wide_crop() -> None:
 
     im = Image.new("L", (100, 100), 1)
 
-    assert crop(0, 0, 100, 100) == (0, 10000)
-    assert crop(25, 25, 75, 75) == (0, 2500)
+    assert crop((0, 0, 100, 100)) == (0, 10000)
+    assert crop((25, 25, 75, 75)) == (0, 2500)
 
     # sides
-    assert crop(-25, 0, 25, 50) == (1250, 1250)
-    assert crop(0, -25, 50, 25) == (1250, 1250)
-    assert crop(75, 0, 125, 50) == (1250, 1250)
-    assert crop(0, 75, 50, 125) == (1250, 1250)
+    assert crop((-25, 0, 25, 50)) == (1250, 1250)
+    assert crop((0, -25, 50, 25)) == (1250, 1250)
+    assert crop((75, 0, 125, 50)) == (1250, 1250)
+    assert crop((0, 75, 50, 125)) == (1250, 1250)
 
-    assert crop(-25, 25, 125, 75) == (2500, 5000)
-    assert crop(25, -25, 75, 125) == (2500, 5000)
+    assert crop((-25, 25, 125, 75)) == (2500, 5000)
+    assert crop((25, -25, 75, 125)) == (2500, 5000)
 
     # corners
-    assert crop(-25, -25, 25, 25) == (1875, 625)
-    assert crop(75, -25, 125, 25) == (1875, 625)
-    assert crop(75, 75, 125, 125) == (1875, 625)
-    assert crop(-25, 75, 25, 125) == (1875, 625)
+    assert crop((-25, -25, 25, 25)) == (1875, 625)
+    assert crop((75, -25, 125, 25)) == (1875, 625)
+    assert crop((75, 75, 125, 125)) == (1875, 625)
+    assert crop((-25, 75, 25, 125)) == (1875, 625)
 
 
 @pytest.mark.parametrize("box", ((8, 2, 2, 8), (2, 8, 8, 2), (8, 8, 2, 2)))

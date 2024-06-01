@@ -247,7 +247,7 @@ def test_invalid_color_temperature() -> None:
         ImageCms.PyCMSError,
         match='Color temperature must be numeric, "invalid" not valid',
     ):
-        ImageCms.createProfile("LAB", "invalid")
+        ImageCms.createProfile("LAB", "invalid")  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("flag", ("my string", -1))
@@ -256,7 +256,7 @@ def test_invalid_flag(flag: str | int) -> None:
         with pytest.raises(
             ImageCms.PyCMSError, match="flags must be an integer between 0 and "
         ):
-            ImageCms.profileToProfile(im, "foo", "bar", flags=flag)
+            ImageCms.profileToProfile(im, "foo", "bar", flags=flag)  # type: ignore[arg-type]
 
 
 def test_simple_lab() -> None:
@@ -588,11 +588,13 @@ def assert_aux_channel_preserved(
     )
 
     # apply transform
+    result_image: Image.Image | None
     if transform_in_place:
         ImageCms.applyTransform(source_image, t, inPlace=True)
         result_image = source_image
     else:
         result_image = ImageCms.applyTransform(source_image, t, inPlace=False)
+    assert result_image is not None
     result_image_aux = result_image.getchannel(preserved_channel)
 
     assert_image_equal(source_image_aux, result_image_aux)
@@ -650,6 +652,7 @@ def test_auxiliary_channels_isolated() -> None:
                 )
 
                 # test conversion from aux-ful source
+                test_image: Image.Image | None
                 if transform_in_place:
                     test_image = source_image.copy()
                     ImageCms.applyTransform(test_image, test_transform, inPlace=True)
@@ -657,6 +660,7 @@ def test_auxiliary_channels_isolated() -> None:
                     test_image = ImageCms.applyTransform(
                         source_image, test_transform, inPlace=False
                     )
+                assert test_image is not None
 
                 # reference conversion from aux-less source
                 reference_transform = ImageCms.buildTransform(
