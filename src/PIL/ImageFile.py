@@ -206,6 +206,9 @@ class ImageFile(Image.Image):
         except AttributeError:
             seek = self.fp.seek
 
+        # XXX hack202406 disable unmodified code path
+        use_mmap = False
+
         if use_mmap:
             # try memory mapping
             decoder_name, extents, offset, args = self.tile[0]
