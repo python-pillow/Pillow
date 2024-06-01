@@ -68,9 +68,12 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 #define IMAGING_TYPE_INT32 1
 #define IMAGING_TYPE_FLOAT32 2
 #define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
+#define IMAGING_TYPE_MB 4      /* multi-band format */
 
 #define IMAGING_MODE_LENGTH \
     6 + 1 /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
+
+#define IMAGING_MODE_MB "MB" /* multi-band format */
 
 typedef struct {
     char *ptr;
@@ -80,9 +83,9 @@ typedef struct {
 struct ImagingMemoryInstance {
     /* Format */
     char mode[IMAGING_MODE_LENGTH]; /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK",
-                                       "YCbCr", "BGR;xy") */
+                                       "YCbCr", "BGR;xy", "MB") */
     int type;                       /* Data type (IMAGING_TYPE_*) */
-    int depth;                      /* Depth (ignored in this version) */
+    int depth;                      /* Sample size (1, 2, or 4) in multi-band format */
     int bands;                      /* Number of bands (1, 2, 3, or 4) */
     int xsize;                      /* Image dimension. */
     int ysize;
@@ -173,7 +176,7 @@ extern void
 ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size);
 
 extern Imaging
-ImagingNew(const char *mode, int xsize, int ysize);
+ImagingNew(const char *mode, int xsize, int ysize, int depth, int bands);
 extern Imaging
 ImagingNewDirty(const char *mode, int xsize, int ysize);
 extern Imaging
@@ -185,9 +188,10 @@ extern Imaging
 ImagingNewBlock(const char *mode, int xsize, int ysize);
 
 extern Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize);
+ImagingNewPrologue(const char *mode, int xsize, int ysize, int depth, int bands);
 extern Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int structure_size);
+ImagingNewPrologueSubtype(
+    const char *mode, int xsize, int ysize, int depth, int bands, int structure_size);
 
 extern void
 ImagingCopyPalette(Imaging destination, Imaging source);
@@ -663,6 +667,8 @@ struct ImagingCodecStateInstance {
     int ystep;
     int xsize, ysize, xoff, yoff;
     ImagingShuffler shuffle;
+    void (*mb_shuffle)(
+        UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state);
     int bits, bytes;
     UINT8 *buffer;
     void *context;
