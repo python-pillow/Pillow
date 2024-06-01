@@ -189,7 +189,7 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
 }
 
 static void
-put_pixel_mb(Imaging im, int x, int y, void *color) {
+put_pixel_mb(Imaging im, int x, int y, const void *color) {
     memcpy(&im->image[y][x * im->pixelsize], color, im->pixelsize);
 }
 
