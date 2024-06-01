@@ -1417,8 +1417,6 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- size: %s", self.size)
 
         sample_format = self.tag_v2.get(SAMPLEFORMAT, (1,))
-        logger.debug("- sample_format: %s", sample_format)
-
         bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
         extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
         if photo in (2, 6, 8):  # RGB, YCbCr, LAB
