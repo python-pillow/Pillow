@@ -303,7 +303,33 @@ shuffle_mb_unavail(UINT8 *dst, const UINT8 *src, int pixels) {
 
 static void
 mb_shuffle(UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state) {
-    memcpy(dst, src, state->xsize * im->pixelsize);
+    int size = state->xsize * im->pixelsize;
+#ifdef WORDS_BIGENDIAN
+    switch (im->depth) {
+        default:
+            abort();
+            return;
+        case 4 * CHAR_BIT: {
+            for (int i = 0; i < size; i += 4) {
+                dst[i] = src[i + 3];
+                dst[i + 1] = src[i + 2];
+                dst[i + 2] = src[i + 1];
+                dst[i + 3] = src[i];
+            }
+            return;
+        }
+        case 2 * CHAR_BIT: {
+            for (int i = 0; i < size; i += 2) {
+                dst[i] = src[i + 1];
+                dst[i + 1] = src[i];
+            }
+            return;
+            case CHAR_BIT:
+                // fallthrough
+        }
+    }
+#endif
+    memcpy(dst, src, size);
 }
 
 static int
