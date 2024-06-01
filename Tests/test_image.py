@@ -25,6 +25,7 @@ from PIL import (
 from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
+    assert_image_similar,
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
@@ -193,7 +194,8 @@ class TestImage:
         with tempfile.TemporaryFile() as fp:
             im.save(fp, "JPEG")
             fp.seek(0)
-            assert_image_similar_tofile(im, fp, 20)
+            with Image.open(fp) as reloaded:
+                assert_image_similar(im, reloaded, 20)
 
     def test_unknown_extension(self, tmp_path: Path) -> None:
         im = hopper()
