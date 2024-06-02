@@ -754,7 +754,7 @@ def applyTransform(
 
 
 def createProfile(
-    colorSpace: Literal["LAB", "XYZ", "sRGB"], colorTemp: SupportsFloat = -1
+    colorSpace: Literal["LAB", "XYZ", "sRGB"], colorTemp: SupportsFloat = 0
 ) -> core.CmsProfile:
     """
     (pyCMS) Creates a profile.
