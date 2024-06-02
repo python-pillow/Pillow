@@ -1585,9 +1585,8 @@ files. Different encoding methods are used, depending on the image mode.
 
 * 1 mode images are saved using TIFF encoding, or JPEG encoding if libtiff support is
   unavailable
-* L, RGB and CMYK mode images use JPEG encoding
+* L, LA, RGB, RGBA and CMYK mode images use JPEG encoding
 * P mode images use HEX encoding
-* LA and RGBA mode images use JPEG2000 encoding
 
 .. _pdf-saving:
 

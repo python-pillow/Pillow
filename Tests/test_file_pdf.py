@@ -12,7 +12,7 @@ import pytest
 
 from PIL import Image, PdfParser, features
 
-from .helper import hopper, mark_if_feature_version, skip_unless_feature
+from .helper import hopper, mark_if_feature_version
 
 
 def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
@@ -41,14 +41,8 @@ def helper_save_as_pdf(tmp_path: Path, mode: str, **kwargs: Any) -> str:
     return outfile
 
 
-@pytest.mark.parametrize("mode", ("L", "P", "RGB", "CMYK"))
+@pytest.mark.parametrize("mode", ("L", "LA", "P", "RGB", "RGBA", "CMYK"))
 def test_save(tmp_path: Path, mode: str) -> None:
-    helper_save_as_pdf(tmp_path, mode)
-
-
-@skip_unless_feature("jpg_2000")
-@pytest.mark.parametrize("mode", ("LA", "RGBA"))
-def test_save_alpha(tmp_path: Path, mode: str) -> None:
     helper_save_as_pdf(tmp_path, mode)
 
 

@@ -54,6 +54,7 @@ def _write_image(im, filename, existing_pdf, image_refs):
 
     params = None
     decode = None
+    smask = None
 
     #
     # Get image characteristics
@@ -81,16 +82,16 @@ def _write_image(im, filename, existing_pdf, image_refs):
             filter = "DCTDecode"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceGray")
         procset = "ImageB"  # grayscale
-    elif im.mode == "L":
+    elif im.mode in ("L", "LA"):
         filter = "DCTDecode"
         # params = f"<< /Predictor 15 /Columns {width-2} >>"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceGray")
         procset = "ImageB"  # grayscale
-    elif im.mode == "LA":
-        filter = "JPXDecode"
-        # params = f"<< /Predictor 15 /Columns {width-2} >>"
-        procset = "ImageB"  # grayscale
-        dict_obj["SMaskInData"] = 1
+        if im.mode == "LA":
+            smask = im
+
+            im = im.convert("L")
+            im.encoderinfo = {}
     elif im.mode == "P":
         filter = "ASCIIHexDecode"
         palette = im.getpalette()
@@ -103,19 +104,16 @@ def _write_image(im, filename, existing_pdf, image_refs):
         procset = "ImageI"  # indexed color
 
         if "transparency" in im.info:
-            smask = im.convert("LA").getchannel("A")
-            smask.encoderinfo = {}
-
-            image_ref = _write_image(smask, filename, existing_pdf, image_refs)[0]
-            dict_obj["SMask"] = image_ref
-    elif im.mode == "RGB":
+            smask = im.convert("LA")
+    elif im.mode in ("RGB", "RGBA"):
         filter = "DCTDecode"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceRGB")
         procset = "ImageC"  # color images
-    elif im.mode == "RGBA":
-        filter = "JPXDecode"
-        procset = "ImageC"  # color images
-        dict_obj["SMaskInData"] = 1
+        if im.mode == "RGBA":
+            smask = im
+
+            im = im.convert("RGB")
+            im.encoderinfo = {}
     elif im.mode == "CMYK":
         filter = "DCTDecode"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceCMYK")
@@ -124,6 +122,13 @@ def _write_image(im, filename, existing_pdf, image_refs):
     else:
         msg = f"cannot save mode {im.mode}"
         raise ValueError(msg)
+
+    if smask:
+        smask = smask.getchannel("A")
+        smask.encoderinfo = {}
+
+        image_ref = _write_image(smask, filename, existing_pdf, image_refs)[0]
+        dict_obj["SMask"] = image_ref
 
     #
     # image
@@ -142,9 +147,6 @@ def _write_image(im, filename, existing_pdf, image_refs):
         )
     elif filter == "DCTDecode":
         Image.SAVE["JPEG"](im, op, filename)
-    elif filter == "JPXDecode":
-        del dict_obj["BitsPerComponent"]
-        Image.SAVE["JPEG2000"](im, op, filename)
     else:
         msg = f"unsupported PDF filter ({filter})"
         raise ValueError(msg)
@@ -236,7 +238,9 @@ def _save(im, fp, filename, save_all=False):
         number_of_pages += im_number_of_pages
         for i in range(im_number_of_pages):
             image_refs.append(existing_pdf.next_object_id(0))
-            if im.mode == "P" and "transparency" in im.info:
+            if im.mode in ("LA", "RGBA") or (
+                im.mode == "P" and "transparency" in im.info
+            ):
                 image_refs.append(existing_pdf.next_object_id(0))
 
             page_refs.append(existing_pdf.next_object_id(0))
