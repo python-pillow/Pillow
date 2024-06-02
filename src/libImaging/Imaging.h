@@ -42,10 +42,20 @@ extern "C" {
  * LA       4           L, -, -, A
  * PA       4           P, -, -, A
  * I;16     2           I (16-bit integer, native byte order)
+ * MB       variable
  *
  * "P" is an 8-bit palette mode, which should be mapped through the
  * palette member to get an output image.  Check palette->mode to
  * find the corresponding "real" mode.
+ *
+ * "MB" is an experimental multi-band mode for multi-channel image where each sample is
+ * more than UINT8. In this mode,
+ * - im->depth is size of each sample in bits. Valid values are 8, 16, and 32. Currently
+ * each sample is assumed to be a uint; further refactoring will be needed to support
+ * int and float.
+ * - im->type is set to IMAGING_TYPE_MB.
+ * - Neither im->image8 nor im->image32 is set. All operators must access im->image
+ * directly.
  *
  * For information on how to access Imaging objects from your own C
  * extensions, see http://www.effbot.org/zone/pil-extending.htm
@@ -75,11 +85,12 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 
 #define IMAGING_MODE_MB "MB" /* multi-band format */
 
+/* Parameters of various ImagingNew* functions. */
 typedef struct {
     int xsize;
     int ysize;
-    int depth;
-    int bands;
+    int depth; /** MB mode only. */
+    int bands; /** MB mode only. */
 } ImagingNewParams;
 
 typedef struct {
