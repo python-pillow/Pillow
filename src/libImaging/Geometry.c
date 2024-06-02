@@ -17,7 +17,7 @@
 Imaging
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
-    int x, y, xr;
+    // int x, y, xr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
         return (Imaging)ImagingError_ModeError();
@@ -28,31 +28,17 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
 
     ImagingCopyPalette(imOut, imIn);
 
-#define FLIP_LEFT_RIGHT(INT, image)               \
-    for (y = 0; y < imIn->ysize; y++) {           \
-        INT *in = (INT *)imIn->image[y];          \
-        INT *out = (INT *)imOut->image[y];        \
-        xr = imIn->xsize - 1;                     \
-        for (x = 0; x < imIn->xsize; x++, xr--) { \
-            out[xr] = in[x];                      \
-        }                                         \
-    }
-
     ImagingSectionEnter(&cookie);
-
-    if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
-            FLIP_LEFT_RIGHT(UINT16, image8)
-        } else {
-            FLIP_LEFT_RIGHT(UINT8, image8)
+    for (int y = 0; y < imIn->ysize; ++y) {
+        char *in = imIn->image[y];
+        char *out = imOut->image[y];
+        int xr = imIn->linesize - imIn->pixelsize;
+        for (int x = 0; x < imIn->linesize;
+             x += imIn->pixelsize, xr -= imIn->pixelsize) {
+            memcpy(out + xr, in + x, imIn->pixelsize);
         }
-    } else {
-        FLIP_LEFT_RIGHT(INT32, image32)
     }
-
     ImagingSectionLeave(&cookie);
-
-#undef FLIP_LEFT_RIGHT
 
     return imOut;
 }

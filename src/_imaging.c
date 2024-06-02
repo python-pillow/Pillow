@@ -2143,14 +2143,16 @@ _transpose(ImagingObject *self, PyObject *args) {
         case 1: /* flip top bottom */
         case 3: /* rotate 180 */
             imOut = ImagingNewDirty(
-                imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
+                imIn->mode,
+                (ImagingNewParams){imIn->xsize, imIn->ysize, imIn->depth, imIn->bands});
             break;
         case 2: /* rotate 90 */
         case 4: /* rotate 270 */
         case 5: /* transpose */
         case 6: /* transverse */
             imOut = ImagingNewDirty(
-                imIn->mode, (ImagingNewParams){imIn->ysize, imIn->xsize});
+                imIn->mode,
+                (ImagingNewParams){imIn->ysize, imIn->xsize, imIn->depth, imIn->bands});
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "No such transpose operation");
