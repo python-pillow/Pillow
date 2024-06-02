@@ -309,7 +309,7 @@ getbands(const char *mode) {
     int bands;
 
     /* FIXME: add primitive to libImaging to avoid extra allocation */
-    im = ImagingNew(mode, 0, 0, -1, -1);
+    im = ImagingNew(mode, (ImagingNewParams){0, 0});
     if (!im) {
         return -1;
     }
@@ -697,7 +697,7 @@ _fill(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    im = ImagingNewDirty(mode, xsize, ysize);
+    im = ImagingNewDirty(mode, (ImagingNewParams){xsize, ysize});
     if (!im) {
         return NULL;
     }
@@ -724,7 +724,8 @@ _new(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingNew(mode, xsize, ysize, depth, bands));
+    return PyImagingNew(
+        ImagingNew(mode, (ImagingNewParams){xsize, ysize, depth, bands}));
 }
 
 static PyObject *
@@ -940,7 +941,8 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    imOut = ImagingNewDirty(mode, self->image->xsize, self->image->ysize);
+    imOut = ImagingNewDirty(
+        mode, (ImagingNewParams){self->image->xsize, self->image->ysize});
     if (!imOut) {
         free(prepared_table);
         return NULL;
@@ -1127,7 +1129,7 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
     }
 
     imIn = self->image;
-    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }
@@ -1747,8 +1749,8 @@ _quantize(ImagingObject *self, PyObject *args) {
 
     if (!self->image->xsize || !self->image->ysize) {
         /* no content; return an empty image */
-        return PyImagingNew(
-            ImagingNew("P", self->image->xsize, self->image->ysize, -1, -1));
+        return PyImagingNew(ImagingNew(
+            "P", (ImagingNewParams){self->image->xsize, self->image->ysize}));
     }
 
     return PyImagingNew(ImagingQuantize(self->image, colours, method, kmeans));
@@ -1955,7 +1957,7 @@ _resize(ImagingObject *self, PyObject *args) {
         a[2] = box[0];
         a[5] = box[1];
 
-        imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
+        imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){xsize, ysize});
 
         imOut = ImagingTransform(
             imOut, imIn, IMAGING_TRANSFORM_AFFINE, 0, 0, xsize, ysize, a, filter, 1);
@@ -2140,13 +2142,15 @@ _transpose(ImagingObject *self, PyObject *args) {
         case 0: /* flip left right */
         case 1: /* flip top bottom */
         case 3: /* rotate 180 */
-            imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+            imOut = ImagingNewDirty(
+                imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
             break;
         case 2: /* rotate 90 */
         case 4: /* rotate 270 */
         case 5: /* transpose */
         case 6: /* transverse */
-            imOut = ImagingNewDirty(imIn->mode, imIn->ysize, imIn->xsize);
+            imOut = ImagingNewDirty(
+                imIn->mode, (ImagingNewParams){imIn->ysize, imIn->xsize});
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "No such transpose operation");
@@ -2195,7 +2199,7 @@ _unsharp_mask(ImagingObject *self, PyObject *args) {
     }
 
     imIn = self->image;
-    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }
@@ -2220,7 +2224,7 @@ _box_blur(ImagingObject *self, PyObject *args) {
     }
 
     imIn = self->image;
-    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }
@@ -2816,7 +2820,8 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize, -1, -1);
+    im = ImagingNew(
+        self->bitmap->mode, (ImagingNewParams){textwidth(self, text), self->ysize});
     if (!im) {
         free(text);
         return ImagingError_MemoryError();

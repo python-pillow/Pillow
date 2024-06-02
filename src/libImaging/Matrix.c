@@ -29,7 +29,7 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[]) {
     }
 
     if (strcmp(mode, "L") == 0) {
-        imOut = ImagingNewDirty("L", im->xsize, im->ysize);
+        imOut = ImagingNewDirty("L", (ImagingNewParams){im->xsize, im->ysize});
         if (!imOut) {
             return NULL;
         }
@@ -48,7 +48,7 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[]) {
         ImagingSectionLeave(&cookie);
 
     } else if (strlen(mode) == 3) {
-        imOut = ImagingNewDirty(mode, im->xsize, im->ysize);
+        imOut = ImagingNewDirty(mode, (ImagingNewParams){im->xsize, im->ysize});
         if (!imOut) {
             return NULL;
         }
