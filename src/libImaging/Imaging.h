@@ -76,6 +76,13 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 #define IMAGING_MODE_MB "MB" /* multi-band format */
 
 typedef struct {
+    int xsize;
+    int ysize;
+    int depth;
+    int bands;
+} ImagingNewParams;
+
+typedef struct {
     char *ptr;
     int size;
 } ImagingMemoryBlock;
@@ -176,9 +183,9 @@ extern void
 ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size);
 
 extern Imaging
-ImagingNew(const char *mode, int xsize, int ysize, int depth, int bands);
+ImagingNew(const char *mode, ImagingNewParams p);
 extern Imaging
-ImagingNewDirty(const char *mode, int xsize, int ysize);
+ImagingNewDirty(const char *mode, ImagingNewParams p);
 extern Imaging
 ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn);
 extern void
@@ -188,10 +195,9 @@ extern Imaging
 ImagingNewBlock(const char *mode, int xsize, int ysize);
 
 extern Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize, int depth, int bands);
+ImagingNewPrologue(const char *mode, ImagingNewParams p);
 extern Imaging
-ImagingNewPrologueSubtype(
-    const char *mode, int xsize, int ysize, int depth, int bands, int structure_size);
+ImagingNewPrologueSubtype(const char *mode, ImagingNewParams p, int structure_size);
 
 extern void
 ImagingCopyPalette(Imaging destination, Imaging source);

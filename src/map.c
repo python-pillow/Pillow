@@ -125,7 +125,9 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
     }
 
     im = ImagingNewPrologueSubtype(
-        mode, xsize, ysize, depth, bands, sizeof(ImagingBufferInstance));
+        mode,
+        (ImagingNewParams){xsize, ysize, depth, bands},
+        sizeof(ImagingBufferInstance));
     if (!im) {
         PyBuffer_Release(&view);
         return NULL;

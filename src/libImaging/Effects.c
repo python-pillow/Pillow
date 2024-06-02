@@ -36,7 +36,7 @@ ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
         return (Imaging)ImagingError_ValueError(NULL);
     }
 
-    im = ImagingNewDirty("L", xsize, ysize);
+    im = ImagingNewDirty("L", (ImagingNewParams){xsize, ysize});
     if (!im) {
         return NULL;
     }
@@ -80,7 +80,7 @@ ImagingEffectNoise(int xsize, int ysize, float sigma) {
     int nextok;
     double this, next;
 
-    imOut = ImagingNewDirty("L", xsize, ysize);
+    imOut = ImagingNewDirty("L", (ImagingNewParams){xsize, ysize});
     if (!imOut) {
         return NULL;
     }
@@ -120,7 +120,7 @@ ImagingEffectSpread(Imaging imIn, int distance) {
     Imaging imOut;
     int x, y;
 
-    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
 
     if (!imOut) {
         return NULL;

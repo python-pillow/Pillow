@@ -42,12 +42,11 @@
  */
 
 Imaging
-ImagingNewPrologueSubtype(
-    const char *mode, int xsize, int ysize, int depth, int bands, int size) {
+ImagingNewPrologueSubtype(const char *mode, ImagingNewParams p, int size) {
     Imaging im;
 
     /* linesize overflow check, roughly the current largest space req'd */
-    if (xsize > (INT_MAX / 4) - 1) {
+    if (p.xsize > (INT_MAX / 4) - 1) {
         return (Imaging)ImagingError_MemoryError();
     }
 
@@ -57,58 +56,58 @@ ImagingNewPrologueSubtype(
     }
 
     /* Setup image descriptor */
-    im->xsize = xsize;
-    im->ysize = ysize;
+    im->xsize = p.xsize;
+    im->ysize = p.ysize;
 
     im->type = IMAGING_TYPE_UINT8;
 
     if (strcmp(mode, "1") == 0) {
         /* 1-bit images */
         im->bands = im->pixelsize = 1;
-        im->linesize = xsize;
+        im->linesize = p.xsize;
 
     } else if (strcmp(mode, "P") == 0) {
         /* 8-bit palette mapped images */
         im->bands = im->pixelsize = 1;
-        im->linesize = xsize;
+        im->linesize = p.xsize;
         im->palette = ImagingPaletteNew("RGB");
 
     } else if (strcmp(mode, "PA") == 0) {
         /* 8-bit palette with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
         im->palette = ImagingPaletteNew("RGB");
 
     } else if (strcmp(mode, "L") == 0) {
         /* 8-bit grayscale (luminance) images */
         im->bands = im->pixelsize = 1;
-        im->linesize = xsize;
+        im->linesize = p.xsize;
 
     } else if (strcmp(mode, "LA") == 0) {
         /* 8-bit grayscale (luminance) with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "La") == 0) {
         /* 8-bit grayscale (luminance) with premultiplied alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "F") == 0) {
         /* 32-bit floating point images */
         im->bands = 1;
         im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
         im->type = IMAGING_TYPE_FLOAT32;
 
     } else if (strcmp(mode, "I") == 0) {
         /* 32-bit integer images */
         im->bands = 1;
         im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
         im->type = IMAGING_TYPE_INT32;
 
     } else if (
@@ -118,21 +117,21 @@ ImagingNewPrologueSubtype(
         /* 16-bit raw integer images */
         im->bands = 1;
         im->pixelsize = 2;
-        im->linesize = xsize * 2;
+        im->linesize = p.xsize * 2;
         im->type = IMAGING_TYPE_SPECIAL;
 
     } else if (strcmp(mode, "RGB") == 0) {
         /* 24-bit true colour images */
         im->bands = 3;
         im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "BGR;15") == 0) {
         /* EXPERIMENTAL */
         /* 15-bit reversed true colour */
         im->bands = 3;
         im->pixelsize = 2;
-        im->linesize = (xsize * 2 + 3) & -4;
+        im->linesize = (p.xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
     } else if (strcmp(mode, "BGR;16") == 0) {
@@ -140,7 +139,7 @@ ImagingNewPrologueSubtype(
         /* 16-bit reversed true colour */
         im->bands = 3;
         im->pixelsize = 2;
-        im->linesize = (xsize * 2 + 3) & -4;
+        im->linesize = (p.xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
     } else if (strcmp(mode, "BGR;24") == 0) {
@@ -148,58 +147,58 @@ ImagingNewPrologueSubtype(
         /* 24-bit reversed true colour */
         im->bands = 3;
         im->pixelsize = 3;
-        im->linesize = (xsize * 3 + 3) & -4;
+        im->linesize = (p.xsize * 3 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
 
     } else if (strcmp(mode, "RGBX") == 0) {
         /* 32-bit true colour images with padding */
         im->bands = im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "RGBA") == 0) {
         /* 32-bit true colour images with alpha */
         im->bands = im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "RGBa") == 0) {
         /* 32-bit true colour images with premultiplied alpha */
         im->bands = im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "CMYK") == 0) {
         /* 32-bit colour separation */
         im->bands = im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "YCbCr") == 0) {
         /* 24-bit video format */
         im->bands = 3;
         im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "LAB") == 0) {
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
         im->bands = 3;
         im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, "HSV") == 0) {
         /* 24-bit color, luminance, + 2 color channels */
         /* L is uint8, a,b are int8 */
         im->bands = 3;
         im->pixelsize = 4;
-        im->linesize = xsize * 4;
+        im->linesize = p.xsize * 4;
 
     } else if (strcmp(mode, IMAGING_MODE_MB) == 0) {
-        if (bands <= 0 || depth <= 0) {
+        if (p.bands <= 0 || p.depth <= 0) {
             return (Imaging)ImagingError_ValueError(
                 "multi-band missing bands and depth");
         }
-        im->bands = bands;
-        im->depth = depth;
-        im->pixelsize = depth / CHAR_BIT * bands;
-        im->linesize = xsize * im->pixelsize;
+        im->bands = p.bands;
+        im->depth = p.depth;
+        im->pixelsize = p.depth / CHAR_BIT * p.bands;
+        im->linesize = p.xsize * im->pixelsize;
         im->type = IMAGING_TYPE_MB;
 
     } else {
@@ -212,7 +211,7 @@ ImagingNewPrologueSubtype(
 
     /* Pointer array (allocate at least one line, to avoid MemoryError
        exceptions on platforms where calloc(0, x) returns NULL) */
-    im->image = (char **)calloc((ysize > 0) ? ysize : 1, sizeof(void *));
+    im->image = (char **)calloc((p.ysize > 0) ? p.ysize : 1, sizeof(void *));
 
     if (!im->image) {
         free(im);
@@ -237,9 +236,8 @@ ImagingNewPrologueSubtype(
 }
 
 Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize, int depth, int bands) {
-    return ImagingNewPrologueSubtype(
-        mode, xsize, ysize, depth, bands, sizeof(struct ImagingMemoryInstance));
+ImagingNewPrologue(const char *mode, ImagingNewParams p) {
+    return ImagingNewPrologueSubtype(mode, p, sizeof(struct ImagingMemoryInstance));
 }
 
 void
@@ -498,15 +496,14 @@ ImagingAllocateBlock(Imaging im) {
  */
 
 static Imaging
-ImagingNewInternal(
-    const char *mode, int xsize, int ysize, int depth, int bands, int dirty) {
+ImagingNewInternal(const char *mode, ImagingNewParams p, int dirty) {
     Imaging im;
 
-    if (xsize < 0 || ysize < 0) {
+    if (p.xsize < 0 || p.ysize < 0) {
         return (Imaging)ImagingError_ValueError("bad image size");
     }
 
-    im = ImagingNewPrologue(mode, xsize, ysize, depth, bands);
+    im = ImagingNewPrologue(mode, p);
     if (!im) {
         return NULL;
     }
@@ -527,13 +524,13 @@ ImagingNewInternal(
 }
 
 Imaging
-ImagingNew(const char *mode, int xsize, int ysize, int depth, int bands) {
-    return ImagingNewInternal(mode, xsize, ysize, depth, bands, 0);
+ImagingNew(const char *mode, ImagingNewParams p) {
+    return ImagingNewInternal(mode, p, 0);
 }
 
 Imaging
-ImagingNewDirty(const char *mode, int xsize, int ysize) {
-    return ImagingNewInternal(mode, xsize, ysize, -1, -1, 1);
+ImagingNewDirty(const char *mode, ImagingNewParams p) {
+    return ImagingNewInternal(mode, p, 1);
 }
 
 Imaging
@@ -544,7 +541,7 @@ ImagingNewBlock(const char *mode, int xsize, int ysize) {
         return (Imaging)ImagingError_ValueError("bad image size");
     }
 
-    im = ImagingNewPrologue(mode, xsize, ysize, -1, -1);
+    im = ImagingNewPrologue(mode, (ImagingNewParams){xsize, ysize});
     if (!im) {
         return NULL;
     }
@@ -564,12 +561,15 @@ ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn) {
     if (imOut) {
         /* make sure images match */
         if (strcmp(imOut->mode, mode) != 0 || imOut->xsize != imIn->xsize ||
-            imOut->ysize != imIn->ysize) {
+            imOut->ysize != imIn->ysize || imOut->depth != imIn->depth ||
+            imOut->bands != imIn->bands) {
             return ImagingError_Mismatch();
         }
     } else {
         /* create new image */
-        imOut = ImagingNewDirty(mode, imIn->xsize, imIn->ysize);
+        imOut = ImagingNewDirty(
+            mode,
+            (ImagingNewParams){imIn->xsize, imIn->ysize, imIn->depth, imIn->bands});
         if (!imOut) {
             return NULL;
         }
