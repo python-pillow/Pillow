@@ -905,6 +905,9 @@ class TestFileTiff:
             im2 = im.crop((2, 2, 7, 7))
             check_image(im2, 5, 5, pixel)
 
+            im3 = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            check_image(im3, 10, 10, pixel)
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 class TestFileTiffW32:
