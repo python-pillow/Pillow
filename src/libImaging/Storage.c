@@ -561,8 +561,9 @@ ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn) {
     if (imOut) {
         /* make sure images match */
         if (strcmp(imOut->mode, mode) != 0 || imOut->xsize != imIn->xsize ||
-            imOut->ysize != imIn->ysize || imOut->depth != imIn->depth ||
-            imOut->bands != imIn->bands) {
+            imOut->ysize != imIn->ysize ||
+            (strcmp(mode, IMAGING_MODE_MB) == 0 &&
+             (imOut->depth != imIn->depth || imOut->bands != imIn->bands))) {
             return ImagingError_Mismatch();
         }
     } else {
