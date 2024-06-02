@@ -1089,7 +1089,7 @@ def isIntentSupported(
         raise PyCMSError(v) from v
 
 
-def versions() -> tuple[str, str, str, str]:
+def versions() -> tuple[str, str | None, str, str]:
     """
     (pyCMS) Fetches versions.
     """
