@@ -1,5 +1,7 @@
 from typing import Any, TypedDict
 
+from . import _imaging
+
 class _Axis(TypedDict):
     minimum: int | None
     default: int | None
@@ -37,21 +39,28 @@ class Font:
         x_start=...,
         y_start=...,
         /,
-    ) -> tuple[Any, tuple[int, int]]: ...
+    ) -> tuple[_imaging.ImagingCore, tuple[int, int]]: ...
     def getsize(
-        self, string: str, mode=..., dir=..., features=..., lang=..., anchor=..., /
+        self,
+        string: str | bytes | bytearray,
+        mode=...,
+        dir=...,
+        features=...,
+        lang=...,
+        anchor=...,
+        /,
     ) -> tuple[tuple[int, int], tuple[int, int]]: ...
     def getlength(
         self, string: str, mode=..., dir=..., features=..., lang=..., /
-    ) -> int: ...
-    def getvarnames(self) -> list[str]: ...
-    def getvaraxes(self) -> list[_Axis]: ...
+    ) -> float: ...
+    def getvarnames(self) -> list[bytes]: ...
+    def getvaraxes(self) -> list[_Axis] | None: ...
     def setvarname(self, instance_index: int, /) -> None: ...
     def setvaraxes(self, axes: list[float], /) -> None: ...
 
 def getfont(
-    filename: str | bytes | bytearray,
-    size,
+    filename: str | bytes,
+    size: float,
     index=...,
     encoding=...,
     font_bytes=...,
