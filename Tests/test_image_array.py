@@ -86,8 +86,8 @@ def test_fromarray() -> None:
     assert test("RGBX") == ("RGBA", (128, 100), True)
 
     # Test mode is None with no "typestr" in the array interface
+    wrapped = Wrapper(hopper("L"), {"shape": (100, 128)})
     with pytest.raises(TypeError):
-        wrapped = Wrapper(test("L"), {"shape": (100, 128)})
         Image.fromarray(wrapped)
 
 

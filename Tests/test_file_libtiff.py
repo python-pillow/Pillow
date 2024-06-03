@@ -668,7 +668,8 @@ class TestFileLibTiff(LibTiffTestCase):
             pilim.save(buffer_io, format="tiff", compression=compression)
             buffer_io.seek(0)
 
-            assert_image_similar_tofile(pilim, buffer_io, 0)
+            with Image.open(buffer_io) as saved_im:
+                assert_image_similar(pilim, saved_im, 0)
 
         save_bytesio()
         save_bytesio("raw")

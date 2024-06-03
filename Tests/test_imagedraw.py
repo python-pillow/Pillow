@@ -1083,8 +1083,8 @@ def test_line_horizontal() -> None:
     )
 
 
+@pytest.mark.xfail(reason="failing test")
 def test_line_h_s1_w2() -> None:
-    pytest.skip("failing")
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 5, 14, 6), BLACK, 2)
     assert_image_equal_tofile(

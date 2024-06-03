@@ -2,7 +2,7 @@ import datetime
 import sys
 from typing import Literal, SupportsFloat, TypedDict
 
-littlecms_version: str
+littlecms_version: str | None
 
 _Tuple3f = tuple[float, float, float]
 _Tuple2x3f = tuple[_Tuple3f, _Tuple3f]
