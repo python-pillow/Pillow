@@ -908,7 +908,13 @@ def getdraw(im=None, hints=None):
     return im, handler
 
 
-def floodfill(image: Image.Image, xy, value, border=None, thresh=0) -> None:
+def floodfill(
+    image: Image.Image,
+    xy: tuple[int, int],
+    value: float | tuple[int, ...],
+    border: float | tuple[int, ...] | None = None,
+    thresh: float = 0,
+) -> None:
     """
     (experimental) Fills a bounded region with a given color.
 

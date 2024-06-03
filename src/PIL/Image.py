@@ -1511,7 +1511,7 @@ class Image:
         self._exif._loaded = False
         self.getexif()
 
-    def get_child_images(self):
+    def get_child_images(self) -> list[ImageFile.ImageFile]:
         child_images = []
         exif = self.getexif()
         ifds = []
@@ -1535,10 +1535,7 @@ class Image:
             fp = self.fp
             thumbnail_offset = ifd.get(513)
             if thumbnail_offset is not None:
-                try:
-                    thumbnail_offset += self._exif_offset
-                except AttributeError:
-                    pass
+                thumbnail_offset += getattr(self, "_exif_offset", 0)
                 self.fp.seek(thumbnail_offset)
                 data = self.fp.read(ifd.get(514))
                 fp = io.BytesIO(data)
@@ -1604,7 +1601,7 @@ class Image:
             or "transparency" in self.info
         )
 
-    def apply_transparency(self):
+    def apply_transparency(self) -> None:
         """
         If a P mode image has a "transparency" key in the info dictionary,
         remove the key and instead apply the transparency to the palette.
@@ -1616,6 +1613,7 @@ class Image:
         from . import ImagePalette
 
         palette = self.getpalette("RGBA")
+        assert palette is not None
         transparency = self.info["transparency"]
         if isinstance(transparency, bytes):
             for i, alpha in enumerate(transparency):
