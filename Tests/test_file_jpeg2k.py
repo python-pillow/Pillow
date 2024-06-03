@@ -48,7 +48,9 @@ def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
 
 def test_sanity() -> None:
     # Internal version number
-    assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("jpg_2000"))
+    version = features.version_codec("jpg_2000")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()

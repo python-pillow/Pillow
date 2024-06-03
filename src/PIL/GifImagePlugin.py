@@ -30,6 +30,7 @@ import math
 import os
 import subprocess
 from enum import IntEnum
+from functools import cached_property
 
 from . import (
     Image,
@@ -112,8 +113,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
-        self._n_frames = None
-        self._is_animated = None
+        self._n_frames: int | None = None
         self._seek(0)  # get ready to read first frame
 
     @property
@@ -128,24 +128,23 @@ class GifImageFile(ImageFile.ImageFile):
             self.seek(current)
         return self._n_frames
 
-    @property
-    def is_animated(self):
-        if self._is_animated is None:
-            if self._n_frames is not None:
-                self._is_animated = self._n_frames != 1
-            else:
-                current = self.tell()
-                if current:
-                    self._is_animated = True
-                else:
-                    try:
-                        self._seek(1, False)
-                        self._is_animated = True
-                    except EOFError:
-                        self._is_animated = False
+    @cached_property
+    def is_animated(self) -> bool:
+        if self._n_frames is not None:
+            return self._n_frames != 1
 
-                    self.seek(current)
-        return self._is_animated
+        current = self.tell()
+        if current:
+            return True
+
+        try:
+            self._seek(1, False)
+            is_animated = True
+        except EOFError:
+            is_animated = False
+
+        self.seek(current)
+        return is_animated
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):

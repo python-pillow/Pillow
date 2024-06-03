@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os.path
+from typing import Sequence
 
 import pytest
 
@@ -263,6 +264,21 @@ def test_chord_too_fat() -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_chord_too_fat.png")
+
+
+@pytest.mark.parametrize("mode", ("RGB", "L"))
+@pytest.mark.parametrize("xy", ((W / 2, H / 2), [W / 2, H / 2]))
+def test_circle(mode: str, xy: Sequence[float]) -> None:
+    # Arrange
+    im = Image.new(mode, (W, H))
+    draw = ImageDraw.Draw(im)
+    expected = f"Tests/images/imagedraw_ellipse_{mode}.png"
+
+    # Act
+    draw.circle(xy, 25, fill="green", outline="blue")
+
+    # Assert
+    assert_image_similar_tofile(im, expected, 1)
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -1067,8 +1083,8 @@ def test_line_horizontal() -> None:
     )
 
 
+@pytest.mark.xfail(reason="failing test")
 def test_line_h_s1_w2() -> None:
-    pytest.skip("failing")
     img, draw = create_base_image_draw((20, 20))
     draw.line((5, 5, 14, 6), BLACK, 2)
     assert_image_equal_tofile(

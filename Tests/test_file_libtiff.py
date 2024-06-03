@@ -52,7 +52,9 @@ class LibTiffTestCase:
 
 class TestFileLibTiff(LibTiffTestCase):
     def test_version(self) -> None:
-        assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("libtiff"))
+        version = features.version_codec("libtiff")
+        assert version is not None
+        assert re.search(r"\d+\.\d+\.\d+$", version)
 
     def test_g4_tiff(self, tmp_path: Path) -> None:
         """Test the ordinary file path load path"""
@@ -666,7 +668,8 @@ class TestFileLibTiff(LibTiffTestCase):
             pilim.save(buffer_io, format="tiff", compression=compression)
             buffer_io.seek(0)
 
-            assert_image_similar_tofile(pilim, buffer_io, 0)
+            with Image.open(buffer_io) as saved_im:
+                assert_image_similar(pilim, saved_im, 0)
 
         save_bytesio()
         save_bytesio("raw")
