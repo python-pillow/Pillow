@@ -2875,7 +2875,7 @@ class Image:
         self.load()
         return self._new(self.im.transpose(method))
 
-    def effect_spread(self, distance):
+    def effect_spread(self, distance: int) -> Image:
         """
         Randomly spread pixels in an image.
 
@@ -3012,7 +3012,7 @@ def new(
     return im._new(core.fill(mode, size, color))
 
 
-def frombytes(mode, size, data, decoder_name="raw", *args) -> Image:
+def frombytes(mode, size, data, decoder_name: str = "raw", *args) -> Image:
     """
     Creates a copy of an image memory from pixel data in a buffer.
 
@@ -3051,7 +3051,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args) -> Image:
     return im
 
 
-def frombuffer(mode, size, data, decoder_name="raw", *args) -> Image:
+def frombuffer(mode: str, size, data, decoder_name: str = "raw", *args) -> Image:
     """
     Creates an image memory referencing pixel data in a byte buffer.
 
@@ -3553,7 +3553,7 @@ def register_save(id: str, driver) -> None:
     SAVE[id.upper()] = driver
 
 
-def register_save_all(id, driver) -> None:
+def register_save_all(id: str, driver) -> None:
     """
     Registers an image function to save all the frames
     of a multiframe format.  This function should not be
@@ -3565,7 +3565,7 @@ def register_save_all(id, driver) -> None:
     SAVE_ALL[id.upper()] = driver
 
 
-def register_extension(id, extension) -> None:
+def register_extension(id: str, extension: str) -> None:
     """
     Registers an image extension.  This function should not be
     used in application code.
@@ -3576,7 +3576,7 @@ def register_extension(id, extension) -> None:
     EXTENSION[extension.lower()] = id.upper()
 
 
-def register_extensions(id, extensions) -> None:
+def register_extensions(id: str, extensions: list[str]) -> None:
     """
     Registers image extensions.  This function should not be
     used in application code.
@@ -3588,7 +3588,7 @@ def register_extensions(id, extensions) -> None:
         register_extension(id, extension)
 
 
-def registered_extensions():
+def registered_extensions() -> dict[str, str]:
     """
     Returns a dictionary containing all file extensions belonging
     to registered plugins
@@ -3650,7 +3650,7 @@ def effect_mandelbrot(size, extent, quality):
     return Image()._new(core.effect_mandelbrot(size, extent, quality))
 
 
-def effect_noise(size, sigma):
+def effect_noise(size: tuple[int, int], sigma: float) -> Image:
     """
     Generate Gaussian noise centered around 128.
 
@@ -3661,7 +3661,7 @@ def effect_noise(size, sigma):
     return Image()._new(core.effect_noise(size, sigma))
 
 
-def linear_gradient(mode):
+def linear_gradient(mode: str) -> Image:
     """
     Generate 256x256 linear gradient from black to white, top to bottom.
 
@@ -3670,7 +3670,7 @@ def linear_gradient(mode):
     return Image()._new(core.linear_gradient(mode))
 
 
-def radial_gradient(mode):
+def radial_gradient(mode: str) -> Image:
     """
     Generate 256x256 radial gradient from black to white, centre to edge.
 

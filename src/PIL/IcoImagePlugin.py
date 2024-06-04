@@ -25,6 +25,7 @@ from __future__ import annotations
 import warnings
 from io import BytesIO
 from math import ceil, log
+from typing import IO
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i16le as i16
@@ -39,7 +40,7 @@ from ._binary import o32le as o32
 _MAGIC = b"\0\0\1\0"
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     fp.write(_MAGIC)  # (2+2)
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
     sizes = im.encoderinfo.get(
@@ -194,7 +195,7 @@ class IcoFile:
         """
         return self.frame(self.getentryindex(size, bpp))
 
-    def frame(self, idx):
+    def frame(self, idx: int) -> Image.Image:
         """
         Get an image from frame idx
         """
@@ -205,6 +206,7 @@ class IcoFile:
         data = self.buf.read(8)
         self.buf.seek(header["offset"])
 
+        im: Image.Image
         if data[:8] == PngImagePlugin._MAGIC:
             # png frame
             im = PngImagePlugin.PngImageFile(self.buf)

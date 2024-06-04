@@ -16,6 +16,7 @@ import io
 import struct
 import sys
 from enum import IntEnum, IntFlag
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
@@ -510,7 +511,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
         return -1, 0
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)
