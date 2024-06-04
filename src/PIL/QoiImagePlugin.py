@@ -38,7 +38,7 @@ class QoiImageFile(ImageFile.ImageFile):
 class QoiDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def _add_to_previous_pixels(self, value):
+    def _add_to_previous_pixels(self, value: bytes | bytearray) -> None:
         self._previous_pixel = value
 
         r, g, b, a = value

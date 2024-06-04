@@ -117,7 +117,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Set logical frame to requested position
         self.__logical_frame = frame
 
-    def _reset(self, reset=True):
+    def _reset(self, reset: bool = True) -> None:
         if reset:
             self._decoder.reset()
         self.__physical_frame = 0

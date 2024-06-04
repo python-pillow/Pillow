@@ -35,6 +35,7 @@ import os
 import struct
 from enum import IntEnum
 from io import BytesIO
+from typing import IO
 
 from . import Image, ImageFile
 
@@ -448,7 +449,7 @@ class BLPEncoder(ImageFile.PyEncoder):
         return len(data), 0, data
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode != "P":
         msg = "Unsupported BLP image mode"
         raise ValueError(msg)

@@ -228,7 +228,7 @@ class EpsImageFile(ImageFile.ImageFile):
         reading_trailer_comments = False
         trailer_reached = False
 
-        def check_required_header_comments():
+        def check_required_header_comments() -> None:
             if "PS-Adobe" not in self.info:
                 msg = 'EPS header missing "%!PS-Adobe" comment'
                 raise SyntaxError(msg)
