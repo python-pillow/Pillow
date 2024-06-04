@@ -18,7 +18,8 @@ from __future__ import annotations
 
 import abc
 import functools
-from typing import Sequence
+from types import ModuleType
+from typing import Any, Sequence
 
 
 class Filter:
@@ -57,7 +58,13 @@ class Kernel(BuiltinFilter):
 
     name = "Kernel"
 
-    def __init__(self, size, kernel, scale=None, offset=0):
+    def __init__(
+        self,
+        size: tuple[int, int],
+        kernel: Sequence[float],
+        scale: float | None = None,
+        offset: float = 0,
+    ) -> None:
         if scale is None:
             # default scale is sum of kernel
             scale = functools.reduce(lambda a, b: a + b, kernel)
@@ -194,10 +201,8 @@ class BoxBlur(MultibandFilter):
 
     name = "BoxBlur"
 
-    def __init__(self, radius):
-        xy = radius
-        if not isinstance(xy, (tuple, list)):
-            xy = (xy, xy)
+    def __init__(self, radius: float | Sequence[float]) -> None:
+        xy = radius if isinstance(radius, (tuple, list)) else (radius, radius)
         if xy[0] < 0 or xy[1] < 0:
             msg = "radius must be >= 0"
             raise ValueError(msg)
@@ -381,7 +386,9 @@ class Color3DLUT(MultibandFilter):
 
     name = "Color 3D LUT"
 
-    def __init__(self, size, table, channels=3, target_mode=None, **kwargs):
+    def __init__(
+        self, size, table, channels: int = 3, target_mode: str | None = None, **kwargs
+    ):
         if channels not in (3, 4):
             msg = "Only 3 or 4 output channels are supported"
             raise ValueError(msg)
@@ -395,7 +402,7 @@ class Color3DLUT(MultibandFilter):
         items = size[0] * size[1] * size[2]
         wrong_size = False
 
-        numpy = None
+        numpy: ModuleType | None = None
         if hasattr(table, "shape"):
             try:
                 import numpy
@@ -442,7 +449,7 @@ class Color3DLUT(MultibandFilter):
         self.table = table
 
     @staticmethod
-    def _check_size(size):
+    def _check_size(size: Any) -> list[int]:
         try:
             _, _, _ = size
         except ValueError as e:

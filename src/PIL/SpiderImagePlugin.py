@@ -233,7 +233,7 @@ def loadImageSeries(filelist=None):
 # For saving images in Spider format
 
 
-def makeSpiderHeader(im):
+def makeSpiderHeader(im: Image.Image) -> list[bytes]:
     nsam, nrow = im.size
     lenbyt = nsam * 4  # There are labrec records in the header
     labrec = int(1024 / lenbyt)
