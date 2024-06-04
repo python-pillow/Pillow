@@ -42,6 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
+from typing import Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -54,7 +55,7 @@ from .JpegPresets import presets
 # Parser
 
 
-def Skip(self, marker):
+def Skip(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     ImageFile._safe_read(self.fp, n)
 
@@ -191,7 +192,7 @@ def APP(self, marker):
             self.info["dpi"] = 72, 72
 
 
-def COM(self, marker):
+def COM(self: JpegImageFile, marker: int) -> None:
     #
     # Comment marker.  Store these in the APP dictionary.
     n = i16(self.fp.read(2)) - 2
@@ -202,7 +203,7 @@ def COM(self, marker):
     self.applist.append(("COM", s))
 
 
-def SOF(self, marker):
+def SOF(self: JpegImageFile, marker: int) -> None:
     #
     # Start of frame marker.  Defines the size and mode of the
     # image.  JPEG is colour blind, so we use some simple
@@ -250,7 +251,7 @@ def SOF(self, marker):
         self.layer.append((t[0], t[1] // 16, t[1] & 15, t[2]))
 
 
-def DQT(self, marker):
+def DQT(self: JpegImageFile, marker: int) -> None:
     #
     # Define quantization table.  Note that there might be more
     # than one table in each marker.
@@ -493,13 +494,13 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self.tile = []
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, Any] | None:
         return _getexif(self)
 
     def _getmp(self):
         return _getmp(self)
 
-    def getxmp(self):
+    def getxmp(self) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
@@ -515,7 +516,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return {}
 
 
-def _getexif(self):
+def _getexif(self) -> dict[str, Any] | None:
     if "exif" not in self.info:
         return None
     return self.getexif()._get_merged_dict()
