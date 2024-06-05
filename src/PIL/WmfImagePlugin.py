@@ -20,6 +20,8 @@
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 from __future__ import annotations
 
+from typing import IO
+
 from . import Image, ImageFile
 from ._binary import i16le as word
 from ._binary import si16le as short
@@ -161,7 +163,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         return super().load()
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if _handler is None or not hasattr(_handler, "save"):
         msg = "WMF save handler not installed"
         raise OSError(msg)

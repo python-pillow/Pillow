@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import os
 import re
+from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 
@@ -103,7 +104,7 @@ for j in range(2, 33):
 split = re.compile(rb"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 
-def number(s):
+def number(s: Any) -> float:
     try:
         return int(s)
     except ValueError:
@@ -325,7 +326,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:

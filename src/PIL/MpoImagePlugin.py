@@ -22,6 +22,7 @@ from __future__ import annotations
 import itertools
 import os
 import struct
+from typing import IO
 
 from . import (
     Image,
@@ -32,7 +33,7 @@ from . import (
 from ._binary import o32le
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     JpegImagePlugin._save(im, fp, filename)
 
 

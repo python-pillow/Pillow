@@ -31,6 +31,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
+from typing import IO
 
 from . import (
     Image,
@@ -336,14 +337,13 @@ class GifImageFile(ImageFile.ImageFile):
                         self._mode = "RGB"
                         self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
 
-        def _rgb(color):
+        def _rgb(color: int) -> tuple[int, int, int]:
             if self._frame_palette:
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
-                color = tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
+                return tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
             else:
-                color = (color, color, color)
-            return color
+                return (color, color, color)
 
         self.dispose_extent = frame_dispose_extent
         try:
@@ -709,11 +709,13 @@ def _write_multiple_frames(im, fp, palette):
     return True
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     _save(im, fp, filename, save_all=True)
 
 
-def _save(im, fp, filename, save_all=False):
+def _save(
+    im: Image.Image, fp: IO[bytes], filename: str, save_all: bool = False
+) -> None:
     # header
     if "palette" in im.encoderinfo or "palette" in im.info:
         palette = im.encoderinfo.get("palette", im.info.get("palette"))
@@ -730,7 +732,7 @@ def _save(im, fp, filename, save_all=False):
         fp.flush()
 
 
-def get_interlace(im):
+def get_interlace(im: Image.Image) -> int:
     interlace = im.encoderinfo.get("interlace", 1)
 
     # workaround for @PIL153

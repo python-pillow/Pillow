@@ -37,7 +37,7 @@ from __future__ import annotations
 import os
 import struct
 import sys
-from typing import TYPE_CHECKING
+from typing import IO, TYPE_CHECKING
 
 from . import Image, ImageFile
 
@@ -263,7 +263,7 @@ def makeSpiderHeader(im: Image.Image) -> list[bytes]:
     return [struct.pack("f", v) for v in hdr]
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode[0] != "F":
         im = im.convert("F")
 
@@ -279,7 +279,7 @@ def _save(im, fp, filename):
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
 
-def _save_spider(im, fp, filename):
+def _save_spider(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     # get the filename extension and register it with Image
     ext = os.path.splitext(filename)[1]
     Image.register_extension(SpiderImageFile.format, ext)

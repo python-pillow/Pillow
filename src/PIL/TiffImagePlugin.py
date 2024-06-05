@@ -1995,7 +1995,7 @@ class AppendingTiffWriter:
         self.finalize()
         self.setup()
 
-    def __enter__(self):
+    def __enter__(self) -> AppendingTiffWriter:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -2023,7 +2023,7 @@ class AppendingTiffWriter:
             self.f.write(bytes(pad_bytes))
         self.offsetOfNewPage = self.f.tell()
 
-    def setEndian(self, endian):
+    def setEndian(self, endian: str) -> None:
         self.endian = endian
         self.longFmt = f"{self.endian}L"
         self.shortFmt = f"{self.endian}H"
