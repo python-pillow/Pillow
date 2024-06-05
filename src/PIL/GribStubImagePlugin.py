@@ -17,7 +17,7 @@ from . import Image, ImageFile
 _handler = None
 
 
-def register_handler(handler: ImageFile.StubHandler) -> None:
+def register_handler(handler: ImageFile.StubHandler | None) -> None:
     """
     Install application-specific GRIB image handler.
 

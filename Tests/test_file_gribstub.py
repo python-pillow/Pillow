@@ -5,7 +5,7 @@ from typing import IO
 
 import pytest
 
-from PIL import GribStubImagePlugin, Image
+from PIL import GribStubImagePlugin, Image, ImageFile
 
 from .helper import hopper
 
@@ -51,7 +51,7 @@ def test_save(tmp_path: Path) -> None:
 
 
 def test_handler(tmp_path: Path) -> None:
-    class TestHandler:
+    class TestHandler(ImageFile.StubHandler):
         opened = False
         loaded = False
         saved = False

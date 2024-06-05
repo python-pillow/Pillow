@@ -124,7 +124,7 @@ def test_unsupported_module() -> None:
 
 
 @pytest.mark.parametrize("supported_formats", (True, False))
-def test_pilinfo(supported_formats) -> None:
+def test_pilinfo(supported_formats: bool) -> None:
     buf = io.StringIO()
     features.pilinfo(buf, supported_formats=supported_formats)
     out = buf.getvalue()
