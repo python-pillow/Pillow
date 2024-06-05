@@ -28,7 +28,7 @@ from ._binary import si32le as _long
 _handler = None
 
 
-def register_handler(handler):
+def register_handler(handler: ImageFile.StubHandler) -> None:
     """
     Install application-specific WMF image handler.
 
@@ -41,12 +41,12 @@ def register_handler(handler):
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
 
-    class WmfHandler:
-        def open(self, im):
+    class WmfHandler(ImageFile.StubHandler):
+        def open(self, im: ImageFile.StubImageFile) -> None:
             im._mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
 
-        def load(self, im):
+        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             im.fp.seek(0)  # rewind
             return Image.frombytes(
                 "RGB",
@@ -147,7 +147,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         if loader:
             loader.open(self)
 
-    def _load(self):
+    def _load(self) -> ImageFile.StubHandler | None:
         return _handler
 
     def load(self, dpi=None):

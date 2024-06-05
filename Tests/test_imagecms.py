@@ -7,7 +7,7 @@ import shutil
 import sys
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, cast
 
 import pytest
 
@@ -60,10 +60,13 @@ def test_sanity() -> None:
     assert list(map(type, v)) == [str, str, str, str]
 
     # internal version number
-    assert re.search(r"\d+\.\d+(\.\d+)?$", features.version_module("littlecms2"))
+    version = features.version_module("littlecms2")
+    assert version is not None
+    assert re.search(r"\d+\.\d+(\.\d+)?$", version)
 
     skip_missing()
     i = ImageCms.profileToProfile(hopper(), SRGB, SRGB)
+    assert i is not None
     assert_image(i, "RGB", (128, 128))
 
     i = hopper()
@@ -72,23 +75,27 @@ def test_sanity() -> None:
 
     t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
     i = ImageCms.applyTransform(hopper(), t)
+    assert i is not None
     assert_image(i, "RGB", (128, 128))
 
     with hopper() as i:
         t = ImageCms.buildTransform(SRGB, SRGB, "RGB", "RGB")
         ImageCms.applyTransform(hopper(), t, inPlace=True)
+        assert i is not None
         assert_image(i, "RGB", (128, 128))
 
     p = ImageCms.createProfile("sRGB")
     o = ImageCms.getOpenProfile(SRGB)
     t = ImageCms.buildTransformFromOpenProfiles(p, o, "RGB", "RGB")
     i = ImageCms.applyTransform(hopper(), t)
+    assert i is not None
     assert_image(i, "RGB", (128, 128))
 
     t = ImageCms.buildProofTransform(SRGB, SRGB, SRGB, "RGB", "RGB")
     assert t.inputMode == "RGB"
     assert t.outputMode == "RGB"
     i = ImageCms.applyTransform(hopper(), t)
+    assert i is not None
     assert_image(i, "RGB", (128, 128))
 
     # test PointTransform convenience API
@@ -202,13 +209,13 @@ def test_exceptions() -> None:
         ImageCms.buildTransform("foo", "bar", "RGB", "RGB")
 
     with pytest.raises(ImageCms.PyCMSError, match="Invalid type for Profile"):
-        ImageCms.getProfileName(None)
+        ImageCms.getProfileName(None)  # type: ignore[arg-type]
     skip_missing()
 
     # Python <= 3.9: "an integer is required (got type NoneType)"
     # Python > 3.9: "'NoneType' object cannot be interpreted as an integer"
     with pytest.raises(ImageCms.PyCMSError, match="integer"):
-        ImageCms.isIntentSupported(SRGB, None, None)
+        ImageCms.isIntentSupported(SRGB, None, None)  # type: ignore[arg-type]
 
 
 def test_display_profile() -> None:
@@ -232,7 +239,7 @@ def test_unsupported_color_space() -> None:
             "Color space not supported for on-the-fly profile creation (unsupported)"
         ),
     ):
-        ImageCms.createProfile("unsupported")
+        ImageCms.createProfile("unsupported")  # type: ignore[arg-type]
 
 
 def test_invalid_color_temperature() -> None:
@@ -240,7 +247,7 @@ def test_invalid_color_temperature() -> None:
         ImageCms.PyCMSError,
         match='Color temperature must be numeric, "invalid" not valid',
     ):
-        ImageCms.createProfile("LAB", "invalid")
+        ImageCms.createProfile("LAB", "invalid")  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("flag", ("my string", -1))
@@ -249,7 +256,7 @@ def test_invalid_flag(flag: str | int) -> None:
         with pytest.raises(
             ImageCms.PyCMSError, match="flags must be an integer between 0 and "
         ):
-            ImageCms.profileToProfile(im, "foo", "bar", flags=flag)
+            ImageCms.profileToProfile(im, "foo", "bar", flags=flag)  # type: ignore[arg-type]
 
 
 def test_simple_lab() -> None:
@@ -260,7 +267,7 @@ def test_simple_lab() -> None:
     t = ImageCms.buildTransform(psRGB, pLab, "RGB", "LAB")
 
     i_lab = ImageCms.applyTransform(i, t)
-
+    assert i_lab is not None
     assert i_lab.mode == "LAB"
 
     k = i_lab.getpixel((0, 0))
@@ -284,6 +291,7 @@ def test_lab_color() -> None:
     # Need to add a type mapping for some PIL type to TYPE_Lab_8 in findLCMSType, and
     # have that mapping work back to a PIL mode (likely RGB).
     i = ImageCms.applyTransform(hopper(), t)
+    assert i is not None
     assert_image(i, "LAB", (128, 128))
 
     # i.save('temp.lab.tif')  # visually verified vs PS.
@@ -298,6 +306,7 @@ def test_lab_srgb() -> None:
 
     with Image.open("Tests/images/hopper.Lab.tif") as img:
         img_srgb = ImageCms.applyTransform(img, t)
+    assert img_srgb is not None
 
     # img_srgb.save('temp.srgb.tif') # visually verified vs ps.
 
@@ -317,11 +326,11 @@ def test_lab_roundtrip() -> None:
     t2 = ImageCms.buildTransform(pLab, psRGB, "LAB", "RGB")
 
     i = ImageCms.applyTransform(hopper(), t)
-
+    assert i is not None
     assert i.info["icc_profile"] == ImageCmsProfile(pLab).tobytes()
 
     out = ImageCms.applyTransform(i, t2)
-
+    assert out is not None
     assert_image_similar(hopper(), out, 2)
 
 
@@ -343,7 +352,7 @@ def test_extended_information() -> None:
     p = o.profile
 
     def assert_truncated_tuple_equal(
-        tup1: tuple[Any, ...], tup2: tuple[Any, ...], digits: int = 10
+        tup1: tuple[Any, ...] | None, tup2: tuple[Any, ...], digits: int = 10
     ) -> None:
         # Helper function to reduce precision of tuples of floats
         # recursively and then check equality.
@@ -359,6 +368,7 @@ def test_extended_information() -> None:
                 for val in tuple_value
             )
 
+        assert tup1 is not None
         assert truncate_tuple(tup1) == truncate_tuple(tup2)
 
     assert p.attributes == 4294967296
@@ -504,22 +514,22 @@ def test_non_ascii_path(tmp_path: Path) -> None:
 def test_profile_typesafety() -> None:
     # does not segfault
     with pytest.raises(TypeError, match="Invalid type for Profile"):
-        ImageCms.ImageCmsProfile(0).tobytes()
+        ImageCms.ImageCmsProfile(0)  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="Invalid type for Profile"):
-        ImageCms.ImageCmsProfile(1).tobytes()
+        ImageCms.ImageCmsProfile(1)  # type: ignore[arg-type]
 
     # also check core function
     with pytest.raises(TypeError):
-        ImageCms.core.profile_tobytes(0)
+        ImageCms.core.profile_tobytes(0)  # type: ignore[arg-type]
     with pytest.raises(TypeError):
-        ImageCms.core.profile_tobytes(1)
+        ImageCms.core.profile_tobytes(1)  # type: ignore[arg-type]
 
     if not is_pypy():
         # core profile should not be directly instantiable
         with pytest.raises(TypeError):
             ImageCms.core.CmsProfile()
         with pytest.raises(TypeError):
-            ImageCms.core.CmsProfile(0)
+            ImageCms.core.CmsProfile(0)  # type: ignore[call-arg]
 
 
 @pytest.mark.skipif(is_pypy(), reason="fails on PyPy")
@@ -528,7 +538,7 @@ def test_transform_typesafety() -> None:
     with pytest.raises(TypeError):
         ImageCms.core.CmsTransform()
     with pytest.raises(TypeError):
-        ImageCms.core.CmsTransform(0)
+        ImageCms.core.CmsTransform(0)  # type: ignore[call-arg]
 
 
 def assert_aux_channel_preserved(
@@ -578,11 +588,13 @@ def assert_aux_channel_preserved(
     )
 
     # apply transform
+    result_image: Image.Image | None
     if transform_in_place:
         ImageCms.applyTransform(source_image, t, inPlace=True)
         result_image = source_image
     else:
         result_image = ImageCms.applyTransform(source_image, t, inPlace=False)
+    assert result_image is not None
     result_image_aux = result_image.getchannel(preserved_channel)
 
     assert_image_equal(source_image_aux, result_image_aux)
@@ -628,7 +640,8 @@ def test_auxiliary_channels_isolated() -> None:
                     continue
 
                 # convert with and without AUX data, test colors are equal
-                source_profile = ImageCms.createProfile(src_format[1])
+                src_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], src_format[1])
+                source_profile = ImageCms.createProfile(src_colorSpace)
                 destination_profile = ImageCms.createProfile(dst_format[1])
                 source_image = src_format[3]
                 test_transform = ImageCms.buildTransform(
@@ -639,6 +652,7 @@ def test_auxiliary_channels_isolated() -> None:
                 )
 
                 # test conversion from aux-ful source
+                test_image: Image.Image | None
                 if transform_in_place:
                     test_image = source_image.copy()
                     ImageCms.applyTransform(test_image, test_transform, inPlace=True)
@@ -646,6 +660,7 @@ def test_auxiliary_channels_isolated() -> None:
                     test_image = ImageCms.applyTransform(
                         source_image, test_transform, inPlace=False
                     )
+                assert test_image is not None
 
                 # reference conversion from aux-less source
                 reference_transform = ImageCms.buildTransform(
@@ -657,7 +672,7 @@ def test_auxiliary_channels_isolated() -> None:
                 reference_image = ImageCms.applyTransform(
                     source_image.convert(src_format[2]), reference_transform
                 )
-
+                assert reference_image is not None
                 assert_image_equal(test_image.convert(dst_format[2]), reference_image)
 
 

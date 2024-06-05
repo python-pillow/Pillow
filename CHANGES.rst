@@ -5,6 +5,15 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Added ImageDraw circle() #8085
+  [void4, hugovk, radarhere]
+
+- Add mypy target to Makefile #8077
+  [Yay295]
+
+- Added more modes to Image.MODES #7984
+  [radarhere]
+
 - Deprecate BGR;15, BGR;16 and BGR;24 modes #7978
   [radarhere, hugovk]
 

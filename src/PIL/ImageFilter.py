@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import abc
 import functools
+from types import ModuleType
+from typing import Any, Sequence
 
 
 class Filter:
@@ -56,7 +58,13 @@ class Kernel(BuiltinFilter):
 
     name = "Kernel"
 
-    def __init__(self, size, kernel, scale=None, offset=0):
+    def __init__(
+        self,
+        size: tuple[int, int],
+        kernel: Sequence[float],
+        scale: float | None = None,
+        offset: float = 0,
+    ) -> None:
         if scale is None:
             # default scale is sum of kernel
             scale = functools.reduce(lambda a, b: a + b, kernel)
@@ -79,7 +87,7 @@ class RankFilter(Filter):
 
     name = "Rank"
 
-    def __init__(self, size, rank):
+    def __init__(self, size: int, rank: int) -> None:
         self.size = size
         self.rank = rank
 
@@ -101,7 +109,7 @@ class MedianFilter(RankFilter):
 
     name = "Median"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = size * size // 2
 
@@ -116,7 +124,7 @@ class MinFilter(RankFilter):
 
     name = "Min"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = 0
 
@@ -131,7 +139,7 @@ class MaxFilter(RankFilter):
 
     name = "Max"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = size * size - 1
 
@@ -147,7 +155,7 @@ class ModeFilter(Filter):
 
     name = "Mode"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
 
     def filter(self, image):
@@ -165,7 +173,7 @@ class GaussianBlur(MultibandFilter):
 
     name = "GaussianBlur"
 
-    def __init__(self, radius=2):
+    def __init__(self, radius: float | Sequence[float] = 2) -> None:
         self.radius = radius
 
     def filter(self, image):
@@ -193,10 +201,8 @@ class BoxBlur(MultibandFilter):
 
     name = "BoxBlur"
 
-    def __init__(self, radius):
-        xy = radius
-        if not isinstance(xy, (tuple, list)):
-            xy = (xy, xy)
+    def __init__(self, radius: float | Sequence[float]) -> None:
+        xy = radius if isinstance(radius, (tuple, list)) else (radius, radius)
         if xy[0] < 0 or xy[1] < 0:
             msg = "radius must be >= 0"
             raise ValueError(msg)
@@ -228,7 +234,9 @@ class UnsharpMask(MultibandFilter):
 
     name = "UnsharpMask"
 
-    def __init__(self, radius=2, percent=150, threshold=3):
+    def __init__(
+        self, radius: float = 2, percent: int = 150, threshold: int = 3
+    ) -> None:
         self.radius = radius
         self.percent = percent
         self.threshold = threshold
@@ -378,7 +386,9 @@ class Color3DLUT(MultibandFilter):
 
     name = "Color 3D LUT"
 
-    def __init__(self, size, table, channels=3, target_mode=None, **kwargs):
+    def __init__(
+        self, size, table, channels: int = 3, target_mode: str | None = None, **kwargs
+    ):
         if channels not in (3, 4):
             msg = "Only 3 or 4 output channels are supported"
             raise ValueError(msg)
@@ -392,7 +402,7 @@ class Color3DLUT(MultibandFilter):
         items = size[0] * size[1] * size[2]
         wrong_size = False
 
-        numpy = None
+        numpy: ModuleType | None = None
         if hasattr(table, "shape"):
             try:
                 import numpy
@@ -439,7 +449,7 @@ class Color3DLUT(MultibandFilter):
         self.table = table
 
     @staticmethod
-    def _check_size(size):
+    def _check_size(size: Any) -> list[int]:
         try:
             _, _, _ = size
         except ValueError as e:

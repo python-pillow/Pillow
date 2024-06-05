@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from typing import Any
 
 from . import Image, ImageFile
 
@@ -95,7 +96,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Initialize seek state
         self._reset(reset=False)
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, Any] | None:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
@@ -107,7 +108,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Set logical frame to requested position
         self.__logical_frame = frame
 
-    def _reset(self, reset=True):
+    def _reset(self, reset: bool = True) -> None:
         if reset:
             self._decoder.reset()
         self.__physical_frame = 0

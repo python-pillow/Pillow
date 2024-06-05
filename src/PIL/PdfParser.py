@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, List, NamedTuple, Union
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
 # on page 656
-def encode_text(s):
+def encode_text(s: str) -> bytes:
     return codecs.BOM_UTF16_BE + s.encode("utf_16_be")
 
 
@@ -103,7 +103,7 @@ class IndirectReference(IndirectReferenceTuple):
     def __ne__(self, other):
         return not (self == other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.object_id, self.generation))
 
 
@@ -219,7 +219,7 @@ class PdfName:
             isinstance(other, PdfName) and other.name == self.name
         ) or other == self.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name)
 
     def __repr__(self) -> str:
@@ -402,7 +402,7 @@ class PdfParser:
         if f:
             self.seek_end()
 
-    def __enter__(self):
+    def __enter__(self) -> PdfParser:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -436,7 +436,7 @@ class PdfParser:
     def write_comment(self, s):
         self.f.write(f"% {s}\n".encode())
 
-    def write_catalog(self):
+    def write_catalog(self) -> IndirectReference:
         self.del_root()
         self.root_ref = self.next_object_id(self.f.tell())
         self.pages_ref = self.next_object_id(0)

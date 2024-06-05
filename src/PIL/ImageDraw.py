@@ -181,6 +181,13 @@ class ImageDraw:
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_ellipse(xy, ink, 0, width)
 
+    def circle(
+        self, xy: Sequence[float], radius: float, fill=None, outline=None, width=1
+    ) -> None:
+        """Draw a circle given center coordinates and a radius."""
+        ellipse_xy = (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius)
+        self.ellipse(ellipse_xy, fill, outline, width)
+
     def line(self, xy: Coords, fill=None, width=0, joint=None) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
@@ -901,7 +908,13 @@ def getdraw(im=None, hints=None):
     return im, handler
 
 
-def floodfill(image: Image.Image, xy, value, border=None, thresh=0) -> None:
+def floodfill(
+    image: Image.Image,
+    xy: tuple[int, int],
+    value: float | tuple[int, ...],
+    border: float | tuple[int, ...] | None = None,
+    thresh: float = 0,
+) -> None:
     """
     (experimental) Fills a bounded region with a given color.
 
