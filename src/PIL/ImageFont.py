@@ -33,11 +33,11 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
-from typing import TYPE_CHECKING, BinaryIO
+from typing import IO, TYPE_CHECKING, Any, BinaryIO
 
 from . import Image
 from ._typing import StrOrBytesPath
-from ._util import is_directory, is_path
+from ._util import is_path
 
 if TYPE_CHECKING:
     from . import ImageFile
@@ -61,7 +61,7 @@ except ImportError as ex:
     core = DeferredError.new(ex)
 
 
-def _string_length_check(text: str) -> None:
+def _string_length_check(text: str | bytes | bytearray) -> None:
     if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
         msg = "too many characters in string"
         raise ValueError(msg)
@@ -113,7 +113,7 @@ class ImageFont:
             self._load_pilfont_data(fp, image)
             image.close()
 
-    def _load_pilfont_data(self, file, image):
+    def _load_pilfont_data(self, file: IO[bytes], image: Image.Image) -> None:
         # read PILfont header
         if file.readline() != b"PILfont\n":
             msg = "Not a PILfont file"
@@ -161,7 +161,7 @@ class ImageFont:
         return self.font.getmask(text, mode)
 
     def getbbox(
-        self, text: str, *args: object, **kwargs: object
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
     ) -> tuple[int, int, int, int]:
         """
         Returns bounding box (in pixels) of given text.
@@ -180,7 +180,9 @@ class ImageFont:
         width, height = self.font.getsize(text)
         return 0, 0, width, height
 
-    def getlength(self, text: str, *args: object, **kwargs: object) -> int:
+    def getlength(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> int:
         """
         Returns length (in pixels) of given text.
         This is the amount by which following text should be offset.
@@ -357,13 +359,13 @@ class FreeTypeFont:
     def getbbox(
         self,
         text: str,
-        mode="",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        anchor=None,
-    ) -> tuple[int, int, int, int]:
+        mode: str = "",
+        direction: str | None = None,
+        features: str | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        anchor: str | None = None,
+    ) -> tuple[float, float, float, float]:
         """
         Returns bounding box (in pixels) of given text relative to given anchor
         when rendered in font with provided direction, features, and language.
@@ -513,7 +515,7 @@ class FreeTypeFont:
 
     def getmask2(
         self,
-        text,
+        text: str,
         mode="",
         direction=None,
         features=None,
@@ -641,7 +643,7 @@ class FreeTypeFont:
             layout_engine=layout_engine or self.layout_engine,
         )
 
-    def get_variation_names(self):
+    def get_variation_names(self) -> list[bytes]:
         """
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.
@@ -683,10 +685,11 @@ class FreeTypeFont:
             msg = "FreeType 2.9.1 or greater is required"
             raise NotImplementedError(msg) from e
         for axis in axes:
-            axis["name"] = axis["name"].replace(b"\x00", b"")
+            if axis["name"]:
+                axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
-    def set_variation_by_axes(self, axes):
+    def set_variation_by_axes(self, axes: list[float]) -> None:
         """
         :param axes: A list of values for each axis.
         :exception OSError: If the font is not a variation font.
@@ -731,7 +734,7 @@ class TransposedFont:
             return 0, 0, height, width
         return 0, 0, width, height
 
-    def getlength(self, text, *args, **kwargs):
+    def getlength(self, text: str, *args, **kwargs) -> float:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
@@ -878,15 +881,13 @@ def load_path(filename: str | bytes) -> ImageFont:
     :return: A font object.
     :exception OSError: If the file could not be read.
     """
+    if not isinstance(filename, str):
+        filename = filename.decode("utf-8")
     for directory in sys.path:
-        if is_directory(directory):
-            assert isinstance(directory, str)
-            if not isinstance(filename, str):
-                filename = filename.decode("utf-8")
-            try:
-                return load(os.path.join(directory, filename))
-            except OSError:
-                pass
+        try:
+            return load(os.path.join(directory, filename))
+        except OSError:
+            pass
     msg = "cannot find font file"
     raise OSError(msg)
 

@@ -456,14 +456,12 @@ class ImageDraw:
                 self.draw.draw_rectangle(right, ink, 1)
 
     def _multiline_check(self, text: AnyStr) -> bool:
-        split_character = cast(AnyStr, "\n" if isinstance(text, str) else b"\n")
+        split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
 
     def _multiline_split(self, text: AnyStr) -> list[AnyStr]:
-        split_character = cast(AnyStr, "\n" if isinstance(text, str) else b"\n")
-
-        return text.split(split_character)
+        return text.split("\n" if isinstance(text, str) else b"\n")
 
     def _multiline_spacing(self, font, spacing, stroke_width):
         return (
@@ -477,7 +475,12 @@ class ImageDraw:
         xy: tuple[float, float],
         text: str,
         fill=None,
-        font: ImageFont.FreeTypeFont | ImageFont.ImageFont | None = None,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         anchor=None,
         spacing=4,
         align="left",
@@ -597,9 +600,14 @@ class ImageDraw:
     def multiline_text(
         self,
         xy: tuple[float, float],
-        text,
+        text: str,
         fill=None,
-        font=None,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         anchor=None,
         spacing=4,
         align="left",
@@ -684,7 +692,12 @@ class ImageDraw:
     def textlength(
         self,
         text: str,
-        font: ImageFont.FreeTypeFont | ImageFont.ImageFont | None = None,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         direction=None,
         features=None,
         language=None,

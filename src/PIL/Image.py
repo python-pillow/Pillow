@@ -506,7 +506,7 @@ def _getscaleoffset(expr):
 class SupportsGetData(Protocol):
     def getdata(
         self,
-    ) -> tuple[Transform, Sequence[Any]]: ...
+    ) -> tuple[Transform, Sequence[int]]: ...
 
 
 class Image:
@@ -1295,7 +1295,7 @@ class Image:
         return im.crop((x0, y0, x1, y1))
 
     def draft(
-        self, mode: str, size: tuple[int, int]
+        self, mode: str | None, size: tuple[int, int]
     ) -> tuple[str, tuple[int, int, float, float]] | None:
         """
         Configures the image file loader so it returns a version of the
@@ -1719,7 +1719,7 @@ class Image:
 
     def paste(
         self,
-        im: Image | str | int | tuple[int, ...],
+        im: Image | str | float | tuple[int, ...],
         box: tuple[int, int, int, int] | tuple[int, int] | None = None,
         mask: Image | None = None,
     ) -> None:
@@ -1750,7 +1750,7 @@ class Image:
         See :py:meth:`~PIL.Image.Image.alpha_composite` if you want to
         combine images with respect to their alpha channels.
 
-        :param im: Source image or pixel value (integer or tuple).
+        :param im: Source image or pixel value (integer, float or tuple).
         :param box: An optional 4-tuple giving the region to paste into.
            If a 2-tuple is used instead, it's treated as the upper left
            corner.  If omitted or None, the source is pasted into the
@@ -2228,13 +2228,9 @@ class Image:
             msg = "reducing_gap must be 1.0 or greater"
             raise ValueError(msg)
 
-        size = cast("tuple[int, int]", tuple(size))
-
         self.load()
         if box is None:
             box = (0, 0) + self.size
-        else:
-            box = cast("tuple[float, float, float, float]", tuple(box))
 
         if self.size == size and box == (0, 0) + self.size:
             return self.copy()
@@ -2291,8 +2287,6 @@ class Image:
 
         if box is None:
             box = (0, 0) + self.size
-        else:
-            box = cast("tuple[int, int, int, int]", tuple(box))
 
         if factor == (1, 1) and box == (0, 0) + self.size:
             return self.copy()
@@ -2692,7 +2686,9 @@ class Image:
                 return
             size = preserved_size
 
-            res = self.draft(None, (size[0] * reducing_gap, size[1] * reducing_gap))  # type: ignore[arg-type]
+            res = self.draft(
+                None, (int(size[0] * reducing_gap), int(size[1] * reducing_gap))
+            )
             if res is not None:
                 box = res[1]
         if box is None:
@@ -2799,7 +2795,7 @@ class Image:
         im.info = self.info.copy()
         if method == Transform.MESH:
             # list of quads
-            for box, quad in cast("Sequence[tuple[float, float]]", data):
+            for box, quad in data:
                 im.__transformer(
                     box, self, Transform.QUAD, quad, resample, fillcolor is None
                 )
@@ -2957,7 +2953,7 @@ class ImageTransformHandler:
         self,
         size: tuple[int, int],
         image: Image,
-        **options: dict[str, str | int | tuple[int, ...] | list[int]] | int,
+        **options: str | int | tuple[int, ...] | list[int],
     ) -> Image:
         pass
 
