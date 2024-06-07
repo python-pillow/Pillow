@@ -42,7 +42,7 @@ gs_binary: str | bool | None = None
 gs_windows_binary = None
 
 
-def has_ghostscript():
+def has_ghostscript() -> bool:
     global gs_binary, gs_windows_binary
     if gs_binary is None:
         if sys.platform.startswith("win"):
@@ -178,7 +178,7 @@ class PSFile:
         self.char = None
         self.fp.seek(offset, whence)
 
-    def readline(self):
+    def readline(self) -> str:
         s = [self.char or b""]
         self.char = None
 
@@ -212,7 +212,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
     mode_map = {1: "L", 2: "LAB", 3: "RGB", 4: "CMYK"}
 
-    def _open(self):
+    def _open(self) -> None:
         (length, offset) = self._find_offset(self.fp)
 
         # go to offset - start of "%!PS"
@@ -228,7 +228,7 @@ class EpsImageFile(ImageFile.ImageFile):
         reading_trailer_comments = False
         trailer_reached = False
 
-        def check_required_header_comments():
+        def check_required_header_comments() -> None:
             if "PS-Adobe" not in self.info:
                 msg = 'EPS header missing "%!PS-Adobe" comment'
                 raise SyntaxError(msg)
@@ -404,7 +404,7 @@ class EpsImageFile(ImageFile.ImageFile):
             self.tile = []
         return Image.Image.load(self)
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         # we can't incrementally load, so force ImageFile.parser to
         # use our custom load method by defining this method.
         pass

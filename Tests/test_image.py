@@ -25,13 +25,13 @@ from PIL import (
 from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
+    assert_image_similar,
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
     is_big_endian,
     is_win32,
     mark_if_feature_version,
-    modes,
     skip_unless_feature,
 )
 
@@ -46,7 +46,7 @@ def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
 
 
 class TestImage:
-    @pytest.mark.parametrize("mode", modes)
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_image_modes_success(self, mode: str) -> None:
         helper_image_new(mode, (1, 1))
 
@@ -100,10 +100,18 @@ class TestImage:
         JPGFILE = "Tests/images/hopper.jpg"
 
         with pytest.raises(TypeError):
-            with Image.open(PNGFILE, formats=123):
+            with Image.open(PNGFILE, formats=123):  # type: ignore[arg-type]
                 pass
 
-        for formats in [["JPEG"], ("JPEG",), ["jpeg"], ["Jpeg"], ["jPeG"], ["JpEg"]]:
+        format_list: list[list[str] | tuple[str, ...]] = [
+            ["JPEG"],
+            ("JPEG",),
+            ["jpeg"],
+            ["Jpeg"],
+            ["jPeG"],
+            ["JpEg"],
+        ]
+        for formats in format_list:
             with pytest.raises(UnidentifiedImageError):
                 with Image.open(PNGFILE, formats=formats):
                     pass
@@ -139,7 +147,7 @@ class TestImage:
 
     def test_bad_mode(self) -> None:
         with pytest.raises(ValueError):
-            with Image.open("filename", "bad mode"):
+            with Image.open("filename", "bad mode"):  # type: ignore[arg-type]
                 pass
 
     def test_stringio(self) -> None:
@@ -186,7 +194,8 @@ class TestImage:
         with tempfile.TemporaryFile() as fp:
             im.save(fp, "JPEG")
             fp.seek(0)
-            assert_image_similar_tofile(im, fp, 20)
+            with Image.open(fp) as reloaded:
+                assert_image_similar(im, reloaded, 20)
 
     def test_unknown_extension(self, tmp_path: Path) -> None:
         im = hopper()
@@ -498,9 +507,11 @@ class TestImage:
     def test_check_size(self) -> None:
         # Checking that the _check_size function throws value errors when we want it to
         with pytest.raises(ValueError):
-            Image.new("RGB", 0)  # not a tuple
+            # not a tuple
+            Image.new("RGB", 0)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            Image.new("RGB", (0,))  # Tuple too short
+            # tuple too short
+            Image.new("RGB", (0,))  # type: ignore[arg-type]
         with pytest.raises(ValueError):
             Image.new("RGB", (-1, -1))  # w,h < 0
 
@@ -1027,7 +1038,7 @@ class TestImage:
 
 
 class TestImageBytes:
-    @pytest.mark.parametrize("mode", modes)
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_roundtrip_bytes_constructor(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
@@ -1039,7 +1050,7 @@ class TestImageBytes:
             reloaded = Image.frombytes(mode, im.size, source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", modes)
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_roundtrip_bytes_method(self, mode: str) -> None:
         im = hopper(mode)
         source_bytes = im.tobytes()
@@ -1048,7 +1059,7 @@ class TestImageBytes:
         reloaded.frombytes(source_bytes)
         assert reloaded.tobytes() == source_bytes
 
-    @pytest.mark.parametrize("mode", modes)
+    @pytest.mark.parametrize("mode", Image.MODES + ["BGR;15", "BGR;16", "BGR;24"])
     def test_getdata_putdata(self, mode: str) -> None:
         if is_big_endian() and mode == "BGR;15":
             pytest.xfail("Known failure of BGR;15 on big-endian")

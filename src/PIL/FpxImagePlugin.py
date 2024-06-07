@@ -70,7 +70,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         self._open_index(1)
 
-    def _open_index(self, index=1):
+    def _open_index(self, index: int = 1) -> None:
         #
         # get the Image Contents Property Set
 
@@ -85,7 +85,7 @@ class FpxImageFile(ImageFile.ImageFile):
         size = max(self.size)
         i = 1
         while size > 64:
-            size = size / 2
+            size = size // 2
             i += 1
         self.maxid = i - 1
 
@@ -118,7 +118,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         self._open_subimage(1, self.maxid)
 
-    def _open_subimage(self, index=1, subimage=0):
+    def _open_subimage(self, index: int = 1, subimage: int = 0) -> None:
         #
         # setup tile descriptors for a given subimage
 
@@ -237,7 +237,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         return ImageFile.ImageFile.load(self)
 
-    def close(self):
+    def close(self) -> None:
         self.ole.close()
         super().close()
 

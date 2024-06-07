@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 import os
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -52,7 +53,7 @@ def _accept(prefix: bytes) -> bool:
     return prefix[:2] == b"BM"
 
 
-def _dib_accept(prefix):
+def _dib_accept(prefix: bytes) -> bool:
     return i32(prefix) in [12, 40, 52, 56, 64, 108, 124]
 
 
@@ -283,7 +284,7 @@ class BmpImageFile(ImageFile.ImageFile):
             )
         ]
 
-    def _open(self):
+    def _open(self) -> None:
         """Open file, check magic number and read header"""
         # read 14 bytes: magic number, filesize, reserved, header final offset
         head_data = self.fp.read(14)
@@ -376,7 +377,7 @@ class DibImageFile(BmpImageFile):
     format = "DIB"
     format_description = "Windows Bitmap"
 
-    def _open(self):
+    def _open(self) -> None:
         self._bitmap()
 
 
@@ -394,11 +395,13 @@ SAVE = {
 }
 
 
-def _dib_save(im, fp, filename):
+def _dib_save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     _save(im, fp, filename, False)
 
 
-def _save(im, fp, filename, bitmap_header=True):
+def _save(
+    im: Image.Image, fp: IO[bytes], filename: str, bitmap_header: bool = True
+) -> None:
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError as e:

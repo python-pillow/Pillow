@@ -160,10 +160,6 @@ class ImageFont:
         .. versionadded:: 9.2.0
 
         :param text: Text to render.
-        :param mode: Used by some graphics drivers to indicate what mode the
-                     driver prefers; if empty, the renderer may return either
-                     mode. Note that the mode is always a string, to simplify
-                     C-level implementations.
 
         :return: ``(left, top, right, bottom)`` bounding box
         """
@@ -261,7 +257,7 @@ class FreeTypeFont:
         """
         return self.font.family, self.font.style
 
-    def getmetrics(self):
+    def getmetrics(self) -> tuple[int, int]:
         """
         :return: A tuple of the font ascent (the distance from the baseline to
             the highest outline point) and descent (the distance from the
@@ -628,7 +624,7 @@ class FreeTypeFont:
             layout_engine=layout_engine or self.layout_engine,
         )
 
-    def get_variation_names(self):
+    def get_variation_names(self) -> list[bytes]:
         """
         :returns: A list of the named styles in a variation font.
         :exception OSError: If the font is not a variation font.

@@ -29,33 +29,6 @@ elif "GITHUB_ACTIONS" in os.environ:
     uploader = "github_actions"
 
 
-modes = (
-    "1",
-    "L",
-    "LA",
-    "La",
-    "P",
-    "PA",
-    "F",
-    "I",
-    "I;16",
-    "I;16L",
-    "I;16B",
-    "I;16N",
-    "RGB",
-    "RGBA",
-    "RGBa",
-    "RGBX",
-    "BGR;15",
-    "BGR;16",
-    "BGR;24",
-    "CMYK",
-    "YCbCr",
-    "HSV",
-    "LAB",
-)
-
-
 def upload(a: Image.Image, b: Image.Image) -> str | None:
     if uploader == "show":
         # local img.show for errors.
@@ -201,12 +174,13 @@ def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
 def skip_unless_feature_version(
     feature: str, required: str, reason: str | None = None
 ) -> pytest.MarkDecorator:
-    if not features.check(feature):
+    version = features.version(feature)
+    if version is None:
         return pytest.mark.skip(f"{feature} not available")
     if reason is None:
         reason = f"{feature} is older than {required}"
     version_required = parse_version(required)
-    version_available = parse_version(features.version(feature))
+    version_available = parse_version(version)
     return pytest.mark.skipif(version_available < version_required, reason=reason)
 
 
@@ -216,12 +190,13 @@ def mark_if_feature_version(
     version_blacklist: str,
     reason: str | None = None,
 ) -> pytest.MarkDecorator:
-    if not features.check(feature):
+    version = features.version(feature)
+    if version is None:
         return pytest.mark.pil_noop_mark()
     if reason is None:
         reason = f"{feature} is {version_blacklist}"
     version_required = parse_version(version_blacklist)
-    version_available = parse_version(features.version(feature))
+    version_available = parse_version(version)
     if (
         version_available.major == version_required.major
         and version_available.minor == version_required.minor
@@ -247,16 +222,11 @@ class PillowLeakTestCase:
         from resource import RUSAGE_SELF, getrusage
 
         mem = getrusage(RUSAGE_SELF).ru_maxrss
-        if sys.platform == "darwin":
-            # man 2 getrusage:
-            #     ru_maxrss
-            # This is the maximum resident set size utilized (in bytes).
-            return mem / 1024  # Kb
-        # linux
-        # man 2 getrusage
-        #        ru_maxrss (since Linux 2.6.32)
-        #  This is the maximum resident set size used (in kilobytes).
-        return mem  # Kb
+        # man 2 getrusage:
+        #     ru_maxrss
+        # This is the maximum resident set size utilized
+        # in bytes on macOS, in kilobytes on Linux
+        return mem / 1024 if sys.platform == "darwin" else mem
 
     def _test_leak(self, core: Callable[[], None]) -> None:
         start_mem = self._get_mem_usage()

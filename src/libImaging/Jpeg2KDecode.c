@@ -183,9 +183,9 @@ j2ku_gray_i(
                 UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
                 for (x = 0; x < w; ++x) {
                     UINT16 pixel = j2ku_shift(offset + *data++, shift);
-                    #ifdef WORDS_BIGENDIAN
-                        pixel = (pixel >> 8) | (pixel << 8);
-                    #endif
+#ifdef WORDS_BIGENDIAN
+                    pixel = (pixel >> 8) | (pixel << 8);
+#endif
                     *row++ = pixel;
                 }
             }
@@ -778,7 +778,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
                         color_space = OPJ_CLRSPC_SYCC;
                         break;
                 }
-            break;
+                break;
         }
     }
 
@@ -864,7 +864,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
          a, and then a malicious file could have a smaller tile_bytes
         */
 
-        for (n=0; n < tile_info.nb_comps; n++) {
+        for (n = 0; n < tile_info.nb_comps; n++) {
             // see csize /acsize calcs
             int csize = (image->comps[n].prec + 7) >> 3;
             csize = (csize == 3) ? 4 : csize;

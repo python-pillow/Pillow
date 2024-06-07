@@ -716,7 +716,7 @@ PyImaging_DrawWmf(PyObject *self, PyObject *args) {
     HDC dc;
     RECT rect;
     PyObject *buffer = NULL;
-    char *ptr;
+    void *ptr;
 
     char *data;
     Py_ssize_t datasize;

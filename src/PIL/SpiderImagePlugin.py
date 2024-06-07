@@ -37,6 +37,7 @@ from __future__ import annotations
 import os
 import struct
 import sys
+from typing import IO, TYPE_CHECKING
 
 from . import Image, ImageFile
 
@@ -97,7 +98,7 @@ class SpiderImageFile(ImageFile.ImageFile):
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # check header
         n = 27 * 4  # read 27 float values
         f = self.fp.read(n)
@@ -157,21 +158,21 @@ class SpiderImageFile(ImageFile.ImageFile):
         self._fp = self.fp  # FIXME: hack
 
     @property
-    def n_frames(self):
+    def n_frames(self) -> int:
         return self._nimages
 
     @property
-    def is_animated(self):
+    def is_animated(self) -> bool:
         return self._nimages > 1
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
-    def tell(self):
+    def tell(self) -> int:
         if self.imgnumber < 1:
             return 0
         else:
             return self.imgnumber - 1
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if self.istack == 0:
             msg = "attempt to seek in a non-stack file"
             raise EOFError(msg)
@@ -191,8 +192,11 @@ class SpiderImageFile(ImageFile.ImageFile):
         b = -m * minimum
         return self.point(lambda i, m=m, b=b: i * m + b).convert("L")
 
+    if TYPE_CHECKING:
+        from . import ImageTk
+
     # returns a ImageTk.PhotoImage object, after rescaling to 0..255
-    def tkPhotoImage(self):
+    def tkPhotoImage(self) -> ImageTk.PhotoImage:
         from . import ImageTk
 
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
@@ -229,7 +233,7 @@ def loadImageSeries(filelist=None):
 # For saving images in Spider format
 
 
-def makeSpiderHeader(im):
+def makeSpiderHeader(im: Image.Image) -> list[bytes]:
     nsam, nrow = im.size
     lenbyt = nsam * 4  # There are labrec records in the header
     labrec = int(1024 / lenbyt)
@@ -259,7 +263,7 @@ def makeSpiderHeader(im):
     return [struct.pack("f", v) for v in hdr]
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     if im.mode[0] != "F":
         im = im.convert("F")
 
@@ -275,7 +279,7 @@ def _save(im, fp, filename):
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
 
-def _save_spider(im, fp, filename):
+def _save_spider(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     # get the filename extension and register it with Image
     ext = os.path.splitext(filename)[1]
     Image.register_extension(SpiderImageFile.format, ext)
