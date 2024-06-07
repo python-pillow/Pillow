@@ -35,7 +35,7 @@ else
 fi
 LIBWEBP_VERSION=1.3.2
 BZIP2_VERSION=1.0.8
-LIBXCB_VERSION=1.16.1
+LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
 
 if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "x86_64" ]]; then
@@ -70,7 +70,7 @@ function build {
     fi
     build_new_zlib
 
-    build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
+    build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
