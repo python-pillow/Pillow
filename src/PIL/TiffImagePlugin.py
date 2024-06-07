@@ -1816,11 +1816,15 @@ def _save(im, fp, filename):
         if hasattr(im, "tag"):
             legacy_ifd = im.tag.to_v2()
 
-        # SAMPLEFORMAT is determined by the image format and should not be copied
-        # from legacy_ifd.
         supplied_tags = {**getattr(im, "tag_v2", {}), **legacy_ifd}
-        if SAMPLEFORMAT in supplied_tags:
-            del supplied_tags[SAMPLEFORMAT]
+        for tag in (
+            # IFD offset that may not be correct in the saved image
+            EXIFIFD,
+            # Determined by the image format and should not be copied from legacy_ifd.
+            SAMPLEFORMAT,
+        ):
+            if tag in supplied_tags:
+                del supplied_tags[tag]
 
         for tag, value in itertools.chain(ifd.items(), supplied_tags.items()):
             # Libtiff can only process certain core items without adding
