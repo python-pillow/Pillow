@@ -18,6 +18,7 @@ from __future__ import annotations
 import io
 import os
 import struct
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette, _binary
 
@@ -328,7 +329,7 @@ def _accept(prefix: bytes) -> bool:
 # Save support
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     # Get the keyword arguments
     info = im.encoderinfo
 
