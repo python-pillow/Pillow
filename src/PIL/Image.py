@@ -2883,7 +2883,7 @@ class Image:
         if image.mode in ("1", "P"):
             resample = Resampling.NEAREST
 
-        self.im.transform2(box, image.im, method, data, resample, fill)
+        self.im.transform(box, image.im, method, data, resample, fill)
 
     def transpose(self, method: Transpose) -> Image:
         """
