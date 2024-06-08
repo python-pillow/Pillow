@@ -1437,90 +1437,90 @@ band3I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band016B(UINT8* out, const UINT8* in, int pixels)
-{
+band016B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 0 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[0] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band116B(UINT8* out, const UINT8* in, int pixels)
-{
+band116B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 1 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[1] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band216B(UINT8* out, const UINT8* in, int pixels)
-{
+band216B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 2 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[2] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band316B(UINT8* out, const UINT8* in, int pixels)
-{
+band316B(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 3 only, big endian */
     for (i = 0; i < pixels; i++) {
         out[3] = in[0];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band016L(UINT8* out, const UINT8* in, int pixels)
-{
+band016L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 0 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[0] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band116L(UINT8* out, const UINT8* in, int pixels)
-{
+band116L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 1 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[1] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band216L(UINT8* out, const UINT8* in, int pixels)
-{
+band216L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 2 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[2] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
 static void
-band316L(UINT8* out, const UINT8* in, int pixels)
-{
+band316L(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
     /* band 3 only, little endian */
     for (i = 0; i < pixels; i++) {
         out[3] = in[1];
-        out += 4; in += 2;
+        out += 4;
+        in += 2;
     }
 }
 
@@ -1582,6 +1582,7 @@ static struct {
     {"P", "P", 8, copy1},
     {"P", "P;R", 8, unpackLR},
     {"P", "L", 8, copy1},
+    {"P", "PX", 16, unpackL16B},
 
     /* palette w. alpha */
     {"PA", "PA", 16, unpackLA},
@@ -1685,7 +1686,6 @@ static struct {
     {"RGB", "R;16N", 16, band016L},
     {"RGB", "G;16N", 16, band116L},
     {"RGB", "B;16N", 16, band216L},
-
 
     {"RGBA", "R;16N", 16, band016L},
     {"RGBA", "G;16N", 16, band116L},

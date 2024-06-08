@@ -30,13 +30,15 @@ def test_version() -> None:
     # Check the correctness of the convenience function
     # and the format of version numbers
 
-    def test(name: str, function: Callable[[str], bool]) -> None:
+    def test(name: str, function: Callable[[str], str | None]) -> None:
         version = features.version(name)
         if not features.check(name):
             assert version is None
         else:
             assert function(name) == version
             if name != "PIL":
+                if name == "zlib" and version is not None:
+                    version = version.replace(".zlib-ng", "")
                 assert version is None or re.search(r"\d+(\.\d+)*$", version)
 
     for module in features.modules:
@@ -65,12 +67,16 @@ def test_webp_anim() -> None:
 
 @skip_unless_feature("libjpeg_turbo")
 def test_libjpeg_turbo_version() -> None:
-    assert re.search(r"\d+\.\d+\.\d+$", features.version("libjpeg_turbo"))
+    version = features.version("libjpeg_turbo")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
 
 @skip_unless_feature("libimagequant")
 def test_libimagequant_version() -> None:
-    assert re.search(r"\d+\.\d+\.\d+$", features.version("libimagequant"))
+    version = features.version("libimagequant")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
 
 @pytest.mark.parametrize("feature", features.modules)

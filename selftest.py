@@ -165,9 +165,9 @@ if __name__ == "__main__":
     print("Running selftest:")
     status = doctest.testmod(sys.modules[__name__])
     if status[0]:
-        print("*** %s tests of %d failed." % status)
+        print(f"*** {status[0]} tests of {status[1]} failed.")
         exit_status = 1
     else:
-        print("--- %s tests passed." % status[1])
+        print(f"--- {status[1]} tests passed.")
 
     sys.exit(exit_status)

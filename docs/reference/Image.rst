@@ -78,6 +78,8 @@ Constructing images
 ^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: new
+.. autoclass:: SupportsArrayInterface
+    :show-inheritance:
 .. autofunction:: fromarray
 .. autofunction:: frombytes
 .. autofunction:: frombuffer

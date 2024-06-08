@@ -84,7 +84,7 @@ class LutBuilder:
                 ],
             }
             if op_name not in known_patterns:
-                msg = "Unknown pattern " + op_name + "!"
+                msg = f"Unknown pattern {op_name}!"
                 raise Exception(msg)
 
             self.patterns = known_patterns[op_name]
@@ -200,7 +200,7 @@ class MorphOp:
         elif patterns is not None:
             self.lut = LutBuilder(patterns=patterns).build_lut()
 
-    def apply(self, image: Image.Image):
+    def apply(self, image: Image.Image) -> tuple[int, Image.Image]:
         """Run a single morphological operation on an image
 
         Returns a tuple of the number of changed pixels and the
@@ -216,7 +216,7 @@ class MorphOp:
         count = _imagingmorph.apply(bytes(self.lut), image.im.id, outimage.im.id)
         return count, outimage
 
-    def match(self, image: Image.Image):
+    def match(self, image: Image.Image) -> list[tuple[int, int]]:
         """Get a list of coordinates matching the morphological operation on
         an image.
 
@@ -231,7 +231,7 @@ class MorphOp:
             raise ValueError(msg)
         return _imagingmorph.match(bytes(self.lut), image.im.id)
 
-    def get_on_pixels(self, image: Image.Image):
+    def get_on_pixels(self, image: Image.Image) -> list[tuple[int, int]]:
         """Get a list of all turned on pixels in a binary image
 
         Returns a list of tuples of (x,y) coordinates

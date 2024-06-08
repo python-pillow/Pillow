@@ -34,7 +34,7 @@ from __future__ import annotations
 import math
 import numbers
 import struct
-from typing import Sequence, cast
+from typing import TYPE_CHECKING, Sequence, cast
 
 from . import Image, ImageColor
 from ._typing import Coords
@@ -92,7 +92,10 @@ class ImageDraw:
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = False
 
-    def getfont(self):
+    if TYPE_CHECKING:
+        from . import ImageFont
+
+    def getfont(self) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
         """
         Get the current default font.
 
@@ -177,6 +180,13 @@ class ImageDraw:
             self.draw.draw_ellipse(xy, fill, 1)
         if ink is not None and ink != fill and width != 0:
             self.draw.draw_ellipse(xy, ink, 0, width)
+
+    def circle(
+        self, xy: Sequence[float], radius: float, fill=None, outline=None, width=1
+    ) -> None:
+        """Draw a circle given center coordinates and a radius."""
+        ellipse_xy = (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius)
+        self.ellipse(ellipse_xy, fill, outline, width)
 
     def line(self, xy: Coords, fill=None, width=0, joint=None) -> None:
         """Draw a line, or a connected sequence of line segments."""
@@ -898,7 +908,13 @@ def getdraw(im=None, hints=None):
     return im, handler
 
 
-def floodfill(image: Image.Image, xy, value, border=None, thresh=0) -> None:
+def floodfill(
+    image: Image.Image,
+    xy: tuple[int, int],
+    value: float | tuple[int, ...],
+    border: float | tuple[int, ...] | None = None,
+    thresh: float = 0,
+) -> None:
     """
     (experimental) Fills a bounded region with a given color.
 

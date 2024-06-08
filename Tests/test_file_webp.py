@@ -49,7 +49,9 @@ class TestFileWebp:
     def test_version(self) -> None:
         _webp.WebPDecoderVersion()
         _webp.WebPDecoderBuggyAlpha()
-        assert re.search(r"\d+\.\d+\.\d+$", features.version_module("webp"))
+        version = features.version_module("webp")
+        assert version is not None
+        assert re.search(r"\d+\.\d+\.\d+$", version)
 
     def test_read_rgb(self) -> None:
         """

@@ -46,9 +46,9 @@ def test_sanity(filter_to_apply: ImageFilter.Filter, mode: str) -> None:
 
 @pytest.mark.parametrize("mode", ("L", "I", "RGB", "CMYK"))
 def test_sanity_error(mode: str) -> None:
+    im = hopper(mode)
     with pytest.raises(TypeError):
-        im = hopper(mode)
-        im.filter("hello")
+        im.filter("hello")  # type: ignore[arg-type]
 
 
 # crashes on small images

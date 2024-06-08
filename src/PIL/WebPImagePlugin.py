@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from typing import Any
 
 from . import Image, ImageFile
 
@@ -43,7 +44,7 @@ class WebPImageFile(ImageFile.ImageFile):
     __loaded = 0
     __logical_frame = 0
 
-    def _open(self):
+    def _open(self) -> None:
         if not _webp.HAVE_WEBPANIM:
             # Legacy mode
             data, width, height, self._mode, icc_profile, exif = _webp.WebPDecode(
@@ -95,12 +96,12 @@ class WebPImageFile(ImageFile.ImageFile):
         # Initialize seek state
         self._reset(reset=False)
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, Any] | None:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
 
-    def getxmp(self):
+    def getxmp(self) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
@@ -109,14 +110,14 @@ class WebPImageFile(ImageFile.ImageFile):
         """
         return self._getxmp(self.info["xmp"]) if "xmp" in self.info else {}
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
         # Set logical frame to requested position
         self.__logical_frame = frame
 
-    def _reset(self, reset=True):
+    def _reset(self, reset: bool = True) -> None:
         if reset:
             self._decoder.reset()
         self.__physical_frame = 0
@@ -144,7 +145,7 @@ class WebPImageFile(ImageFile.ImageFile):
         timestamp -= duration
         return data, timestamp, duration
 
-    def _seek(self, frame):
+    def _seek(self, frame: int) -> None:
         if self.__physical_frame == frame:
             return  # Nothing to do
         if frame < self.__physical_frame:
@@ -171,10 +172,10 @@ class WebPImageFile(ImageFile.ImageFile):
 
         return super().load()
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
-    def tell(self):
+    def tell(self) -> int:
         if not _webp.HAVE_WEBPANIM:
             return super().tell()
 

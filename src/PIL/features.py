@@ -18,7 +18,7 @@ modules = {
 }
 
 
-def check_module(feature):
+def check_module(feature: str) -> bool:
     """
     Checks if a module is available.
 
@@ -42,7 +42,7 @@ def check_module(feature):
         return False
 
 
-def version_module(feature):
+def version_module(feature: str) -> str | None:
     """
     :param feature: The module to check for.
     :returns:
@@ -54,13 +54,10 @@ def version_module(feature):
 
     module, ver = modules[feature]
 
-    if ver is None:
-        return None
-
     return getattr(__import__(module, fromlist=[ver]), ver)
 
 
-def get_supported_modules():
+def get_supported_modules() -> list[str]:
     """
     :returns: A list of all supported modules.
     """
@@ -75,7 +72,7 @@ codecs = {
 }
 
 
-def check_codec(feature):
+def check_codec(feature: str) -> bool:
     """
     Checks if a codec is available.
 
@@ -89,10 +86,10 @@ def check_codec(feature):
 
     codec, lib = codecs[feature]
 
-    return codec + "_encoder" in dir(Image.core)
+    return f"{codec}_encoder" in dir(Image.core)
 
 
-def version_codec(feature):
+def version_codec(feature: str) -> str | None:
     """
     :param feature: The codec to check for.
     :returns:
@@ -105,7 +102,7 @@ def version_codec(feature):
 
     codec, lib = codecs[feature]
 
-    version = getattr(Image.core, lib + "_version")
+    version = getattr(Image.core, f"{lib}_version")
 
     if feature == "libtiff":
         return version.split("\n")[0].split("Version ")[1]
@@ -113,7 +110,7 @@ def version_codec(feature):
     return version
 
 
-def get_supported_codecs():
+def get_supported_codecs() -> list[str]:
     """
     :returns: A list of all supported codecs.
     """
@@ -133,7 +130,7 @@ features = {
 }
 
 
-def check_feature(feature):
+def check_feature(feature: str) -> bool | None:
     """
     Checks if a feature is available.
 
@@ -157,7 +154,7 @@ def check_feature(feature):
         return None
 
 
-def version_feature(feature):
+def version_feature(feature: str) -> str | None:
     """
     :param feature: The feature to check for.
     :returns: The version number as a string, or ``None`` if not available.
@@ -174,14 +171,14 @@ def version_feature(feature):
     return getattr(__import__(module, fromlist=[ver]), ver)
 
 
-def get_supported_features():
+def get_supported_features() -> list[str]:
     """
     :returns: A list of all supported features.
     """
     return [f for f in features if check_feature(f)]
 
 
-def check(feature):
+def check(feature: str) -> bool | None:
     """
     :param feature: A module, codec, or feature name.
     :returns:
@@ -199,7 +196,7 @@ def check(feature):
     return False
 
 
-def version(feature):
+def version(feature: str) -> str | None:
     """
     :param feature:
         The module, codec, or feature to check for.
@@ -215,7 +212,7 @@ def version(feature):
     return None
 
 
-def get_supported():
+def get_supported() -> list[str]:
     """
     :returns: A list of all supported modules, features, and codecs.
     """

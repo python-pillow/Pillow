@@ -34,7 +34,7 @@ class BoxReader:
         self.length = length
         self.remaining_in_box = -1
 
-    def _can_read(self, num_bytes):
+    def _can_read(self, num_bytes: int) -> bool:
         if self.has_length and self.fp.tell() + num_bytes > self.length:
             # Outside box: ensure we don't read past the known file length
             return False
@@ -44,7 +44,7 @@ class BoxReader:
         else:
             return True  # No length known, just read
 
-    def _read_bytes(self, num_bytes):
+    def _read_bytes(self, num_bytes: int) -> bytes:
         if not self._can_read(num_bytes):
             msg = "Not enough data in header"
             raise SyntaxError(msg)
@@ -63,18 +63,18 @@ class BoxReader:
         data = self._read_bytes(size)
         return struct.unpack(field_format, data)
 
-    def read_boxes(self):
+    def read_boxes(self) -> BoxReader:
         size = self.remaining_in_box
         data = self._read_bytes(size)
         return BoxReader(io.BytesIO(data), size)
 
-    def has_next_box(self):
+    def has_next_box(self) -> bool:
         if self.has_length:
             return self.fp.tell() + self.remaining_in_box < self.length
         else:
             return True
 
-    def next_box_type(self):
+    def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
@@ -215,7 +215,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     format = "JPEG2000"
     format_description = "JPEG 2000 (ISO 15444)"
 
-    def _open(self):
+    def _open(self) -> None:
         sig = self.fp.read(4)
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
@@ -267,7 +267,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             )
         ]
 
-    def _parse_comment(self):
+    def _parse_comment(self) -> None:
         hdr = self.fp.read(2)
         length = _binary.i16be(hdr)
         self.fp.seek(length - 2, os.SEEK_CUR)

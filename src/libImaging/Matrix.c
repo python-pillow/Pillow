@@ -24,11 +24,11 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[]) {
     ImagingSectionCookie cookie;
 
     /* Assume there's enough data in the buffer */
-    if (!im) {
+    if (!im || im->bands != 3) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (strcmp(mode, "L") == 0 && im->bands == 3) {
+    if (strcmp(mode, "L") == 0) {
         imOut = ImagingNewDirty("L", im->xsize, im->ysize);
         if (!imOut) {
             return NULL;
@@ -47,7 +47,7 @@ ImagingConvertMatrix(Imaging im, const char *mode, float m[]) {
         }
         ImagingSectionLeave(&cookie);
 
-    } else if (strlen(mode) == 3 && im->bands == 3) {
+    } else if (strlen(mode) == 3) {
         imOut = ImagingNewDirty(mode, im->xsize, im->ysize);
         if (!imOut) {
             return NULL;

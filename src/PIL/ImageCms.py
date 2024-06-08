@@ -754,7 +754,7 @@ def applyTransform(
 
 
 def createProfile(
-    colorSpace: Literal["LAB", "XYZ", "sRGB"], colorTemp: SupportsFloat = -1
+    colorSpace: Literal["LAB", "XYZ", "sRGB"], colorTemp: SupportsFloat = 0
 ) -> core.CmsProfile:
     """
     (pyCMS) Creates a profile.
@@ -777,7 +777,7 @@ def createProfile(
     :param colorSpace: String, the color space of the profile you wish to
         create.
         Currently only "LAB", "XYZ", and "sRGB" are supported.
-    :param colorTemp: Positive integer for the white point for the profile, in
+    :param colorTemp: Positive number for the white point for the profile, in
         degrees Kelvin (i.e. 5000, 6500, 9600, etc.).  The default is for D50
         illuminant if omitted (5000k).  colorTemp is ONLY applied to LAB
         profiles, and is ignored for XYZ and sRGB.
@@ -838,8 +838,8 @@ def getProfileName(profile: _CmsProfileCompatible) -> str:
 
         if not (model or manufacturer):
             return (profile.profile.profile_description or "") + "\n"
-        if not manufacturer or len(model) > 30:  # type: ignore[arg-type]
-            return model + "\n"  # type: ignore[operator]
+        if not manufacturer or (model and len(model) > 30):
+            return f"{model}\n"
         return f"{model} - {manufacturer}\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
@@ -1089,7 +1089,7 @@ def isIntentSupported(
         raise PyCMSError(v) from v
 
 
-def versions() -> tuple[str, str, str, str]:
+def versions() -> tuple[str, str | None, str, str]:
     """
     (pyCMS) Fetches versions.
     """

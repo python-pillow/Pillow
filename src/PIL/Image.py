@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, cast
+from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -55,6 +55,7 @@ from . import (
     _plugins,
 )
 from ._binary import i32le, o32be, o32le
+from ._deprecate import deprecate
 from ._typing import StrOrBytesPath, TypeGuard
 from ._util import DeferredError, is_path
 
@@ -248,7 +249,28 @@ def _conv_type_shape(im):
     return shape, m.typestr
 
 
-MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
+MODES = [
+    "1",
+    "CMYK",
+    "F",
+    "HSV",
+    "I",
+    "I;16",
+    "I;16B",
+    "I;16L",
+    "I;16N",
+    "L",
+    "LA",
+    "La",
+    "LAB",
+    "P",
+    "PA",
+    "RGB",
+    "RGBA",
+    "RGBa",
+    "RGBX",
+    "YCbCr",
+]
 
 # raw modes that may be memory mapped.  NOTE: if you change this, you
 # may have to modify the stride calculation in map.c too!
@@ -404,7 +426,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
     try:
         # get decoder
-        decoder = getattr(core, decoder_name + "_decoder")
+        decoder = getattr(core, f"{decoder_name}_decoder")
     except AttributeError as e:
         msg = f"decoder {decoder_name} not available"
         raise OSError(msg) from e
@@ -427,7 +449,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
 
     try:
         # get encoder
-        encoder = getattr(core, encoder_name + "_encoder")
+        encoder = getattr(core, f"{encoder_name}_encoder")
     except AttributeError as e:
         msg = f"encoder {encoder_name} not available"
         raise OSError(msg) from e
@@ -602,7 +624,7 @@ class Image:
     ) -> str:
         suffix = ""
         if format:
-            suffix = "." + format
+            suffix = f".{format}"
 
         if not file:
             f, filename = tempfile.mkstemp(suffix)
@@ -876,7 +898,7 @@ class Image:
                     return self.pyaccess
             return self.im.pixel_access(self.readonly)
 
-    def verify(self):
+    def verify(self) -> None:
         """
         Verifies the contents of a file. For data read from a file, this
         method attempts to determine if the file is broken, without
@@ -938,6 +960,9 @@ class Image:
         :rtype: :py:class:`~PIL.Image.Image`
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
+
+        if mode in ("BGR;15", "BGR;16", "BGR;24"):
+            deprecate(mode, 12)
 
         self.load()
 
@@ -1263,7 +1288,9 @@ class Image:
 
         return im.crop((x0, y0, x1, y1))
 
-    def draft(self, mode, size):
+    def draft(
+        self, mode: str, size: tuple[int, int]
+    ) -> tuple[str, tuple[int, int, float, float]] | None:
         """
         Configures the image file loader so it returns a version of the
         image that as closely as possible matches the given mode and
@@ -1286,13 +1313,16 @@ class Image:
         """
         pass
 
-    def _expand(self, xmargin, ymargin=None):
+    def _expand(self, xmargin: int, ymargin: int | None = None) -> Image:
         if ymargin is None:
             ymargin = xmargin
         self.load()
         return self._new(self.im.expand(xmargin, ymargin))
 
-    def filter(self, filter):
+    if TYPE_CHECKING:
+        from . import ImageFilter
+
+    def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
         Filters this image using the given filter.  For a list of
         available filters, see the :py:mod:`~PIL.ImageFilter` module.
@@ -1304,7 +1334,7 @@ class Image:
 
         self.load()
 
-        if isinstance(filter, Callable):
+        if callable(filter):
             filter = filter()
         if not hasattr(filter, "filter"):
             msg = "filter argument should be ImageFilter.Filter instance or class"
@@ -1481,7 +1511,7 @@ class Image:
         self._exif._loaded = False
         self.getexif()
 
-    def get_child_images(self):
+    def get_child_images(self) -> list[ImageFile.ImageFile]:
         child_images = []
         exif = self.getexif()
         ifds = []
@@ -1505,10 +1535,7 @@ class Image:
             fp = self.fp
             thumbnail_offset = ifd.get(513)
             if thumbnail_offset is not None:
-                try:
-                    thumbnail_offset += self._exif_offset
-                except AttributeError:
-                    pass
+                thumbnail_offset += getattr(self, "_exif_offset", 0)
                 self.fp.seek(thumbnail_offset)
                 data = self.fp.read(ifd.get(514))
                 fp = io.BytesIO(data)
@@ -1574,7 +1601,7 @@ class Image:
             or "transparency" in self.info
         )
 
-    def apply_transparency(self):
+    def apply_transparency(self) -> None:
         """
         If a P mode image has a "transparency" key in the info dictionary,
         remove the key and instead apply the transparency to the palette.
@@ -1586,6 +1613,7 @@ class Image:
         from . import ImagePalette
 
         palette = self.getpalette("RGBA")
+        assert palette is not None
         transparency = self.info["transparency"]
         if isinstance(transparency, bytes):
             for i, alpha in enumerate(transparency):
@@ -1918,7 +1946,9 @@ class Image:
 
         self.im.putband(alpha.im, band)
 
-    def putdata(self, data, scale=1.0, offset=0.0):
+    def putdata(
+        self, data: Sequence[float], scale: float = 1.0, offset: float = 0.0
+    ) -> None:
         """
         Copies pixel data from a flattened sequence object into the image. The
         values should start at the upper left corner (0, 0), continue to the
@@ -2174,7 +2204,7 @@ class Image:
                     (Resampling.HAMMING, "Image.Resampling.HAMMING"),
                 )
             ]
-            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            msg += f" Use {', '.join(filters[:-1])} or {filters[-1]}"
             raise ValueError(msg)
 
         if reducing_gap is not None and reducing_gap < 1.0:
@@ -2819,7 +2849,7 @@ class Image:
                     (Resampling.BICUBIC, "Image.Resampling.BICUBIC"),
                 )
             ]
-            msg += " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+            msg += f" Use {', '.join(filters[:-1])} or {filters[-1]}"
             raise ValueError(msg)
 
         image.load()
@@ -2845,7 +2875,7 @@ class Image:
         self.load()
         return self._new(self.im.transpose(method))
 
-    def effect_spread(self, distance):
+    def effect_spread(self, distance: int) -> Image:
         """
         Randomly spread pixels in an image.
 
@@ -2956,6 +2986,9 @@ def new(
     :returns: An :py:class:`~PIL.Image.Image` object.
     """
 
+    if mode in ("BGR;15", "BGR;16", "BGR;24"):
+        deprecate(mode, 12)
+
     _check_size(size)
 
     if color is None:
@@ -2979,7 +3012,7 @@ def new(
     return im._new(core.fill(mode, size, color))
 
 
-def frombytes(mode, size, data, decoder_name="raw", *args) -> Image:
+def frombytes(mode, size, data, decoder_name: str = "raw", *args) -> Image:
     """
     Creates a copy of an image memory from pixel data in a buffer.
 
@@ -3018,7 +3051,7 @@ def frombytes(mode, size, data, decoder_name="raw", *args) -> Image:
     return im
 
 
-def frombuffer(mode, size, data, decoder_name="raw", *args):
+def frombuffer(mode: str, size, data, decoder_name: str = "raw", *args) -> Image:
     """
     Creates an image memory referencing pixel data in a byte buffer.
 
@@ -3074,7 +3107,17 @@ def frombuffer(mode, size, data, decoder_name="raw", *args):
     return frombytes(mode, size, data, decoder_name, args)
 
 
-def fromarray(obj, mode=None):
+class SupportsArrayInterface(Protocol):
+    """
+    An object that has an ``__array_interface__`` dictionary.
+    """
+
+    @property
+    def __array_interface__(self) -> dict[str, Any]:
+        raise NotImplementedError()
+
+
+def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     """
     Creates an image memory from an object exporting the array interface
     (using the buffer protocol)::
@@ -3153,8 +3196,11 @@ def fromarray(obj, mode=None):
     if strides is not None:
         if hasattr(obj, "tobytes"):
             obj = obj.tobytes()
-        else:
+        elif hasattr(obj, "tostring"):
             obj = obj.tostring()
+        else:
+            msg = "'strides' requires either tobytes() or tostring()"
+            raise ValueError(msg)
 
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
@@ -3201,8 +3247,8 @@ _fromarray_typemap = {
     ((1, 1, 3), "|u1"): ("RGB", "RGB"),
     ((1, 1, 4), "|u1"): ("RGBA", "RGBA"),
     # shortcuts:
-    ((1, 1), _ENDIAN + "i4"): ("I", "I"),
-    ((1, 1), _ENDIAN + "f4"): ("F", "F"),
+    ((1, 1), f"{_ENDIAN}i4"): ("I", "I"),
+    ((1, 1), f"{_ENDIAN}f4"): ("F", "F"),
 }
 
 
@@ -3430,7 +3476,7 @@ def eval(image, *args):
     return image.point(args[0])
 
 
-def merge(mode, bands):
+def merge(mode: str, bands: Sequence[Image]) -> Image:
     """
     Merge a set of single band images into a new multiband image.
 
@@ -3507,7 +3553,7 @@ def register_save(id: str, driver) -> None:
     SAVE[id.upper()] = driver
 
 
-def register_save_all(id, driver) -> None:
+def register_save_all(id: str, driver) -> None:
     """
     Registers an image function to save all the frames
     of a multiframe format.  This function should not be
@@ -3519,7 +3565,7 @@ def register_save_all(id, driver) -> None:
     SAVE_ALL[id.upper()] = driver
 
 
-def register_extension(id, extension) -> None:
+def register_extension(id: str, extension: str) -> None:
     """
     Registers an image extension.  This function should not be
     used in application code.
@@ -3530,7 +3576,7 @@ def register_extension(id, extension) -> None:
     EXTENSION[extension.lower()] = id.upper()
 
 
-def register_extensions(id, extensions) -> None:
+def register_extensions(id: str, extensions: list[str]) -> None:
     """
     Registers image extensions.  This function should not be
     used in application code.
@@ -3542,7 +3588,7 @@ def register_extensions(id, extensions) -> None:
         register_extension(id, extension)
 
 
-def registered_extensions():
+def registered_extensions() -> dict[str, str]:
     """
     Returns a dictionary containing all file extensions belonging
     to registered plugins
@@ -3604,7 +3650,7 @@ def effect_mandelbrot(size, extent, quality):
     return Image()._new(core.effect_mandelbrot(size, extent, quality))
 
 
-def effect_noise(size, sigma):
+def effect_noise(size: tuple[int, int], sigma: float) -> Image:
     """
     Generate Gaussian noise centered around 128.
 
@@ -3615,7 +3661,7 @@ def effect_noise(size, sigma):
     return Image()._new(core.effect_noise(size, sigma))
 
 
-def linear_gradient(mode):
+def linear_gradient(mode: str) -> Image:
     """
     Generate 256x256 linear gradient from black to white, top to bottom.
 
@@ -3624,7 +3670,7 @@ def linear_gradient(mode):
     return Image()._new(core.linear_gradient(mode))
 
 
-def radial_gradient(mode):
+def radial_gradient(mode: str) -> Image:
     """
     Generate 256x256 radial gradient from black to white, centre to edge.
 

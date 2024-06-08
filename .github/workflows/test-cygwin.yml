@@ -55,6 +55,7 @@ jobs:
           packages: >
             gcc-g++
             ghostscript
+            git
             ImageMagick
             jpeg
             libfreetype-devel
@@ -132,11 +133,12 @@ jobs:
           bash.exe .ci/after_success.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3.1.5
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
           flags: GHA_Cygwin
           name: Cygwin Python 3.${{ matrix.python-minor-version }}
+          token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:

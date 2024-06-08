@@ -213,34 +213,31 @@ cms_transform_dealloc(CmsTransformObject *self) {
 
 static cmsUInt32Number
 findLCMStype(char *PILmode) {
-    if (strcmp(PILmode, "RGB") == 0) {
+    if (strcmp(PILmode, "RGB") == 0 || strcmp(PILmode, "RGBA") == 0 ||
+        strcmp(PILmode, "RGBX") == 0) {
         return TYPE_RGBA_8;
-    } else if (strcmp(PILmode, "RGBA") == 0) {
-        return TYPE_RGBA_8;
-    } else if (strcmp(PILmode, "RGBX") == 0) {
-        return TYPE_RGBA_8;
-    } else if (strcmp(PILmode, "RGBA;16B") == 0) {
+    }
+    if (strcmp(PILmode, "RGBA;16B") == 0) {
         return TYPE_RGBA_16;
-    } else if (strcmp(PILmode, "CMYK") == 0) {
+    }
+    if (strcmp(PILmode, "CMYK") == 0) {
         return TYPE_CMYK_8;
-    } else if (strcmp(PILmode, "L") == 0) {
-        return TYPE_GRAY_8;
-    } else if (strcmp(PILmode, "L;16") == 0) {
+    }
+    if (strcmp(PILmode, "L;16") == 0) {
         return TYPE_GRAY_16;
-    } else if (strcmp(PILmode, "L;16B") == 0) {
+    }
+    if (strcmp(PILmode, "L;16B") == 0) {
         return TYPE_GRAY_16_SE;
-    } else if (strcmp(PILmode, "YCCA") == 0) {
+    }
+    if (strcmp(PILmode, "YCCA") == 0 || strcmp(PILmode, "YCC") == 0) {
         return TYPE_YCbCr_8;
-    } else if (strcmp(PILmode, "YCC") == 0) {
-        return TYPE_YCbCr_8;
-    } else if (strcmp(PILmode, "LAB") == 0) {
+    }
+    if (strcmp(PILmode, "LAB") == 0) {
         // LabX equivalent like ALab, but not reversed -- no #define in lcms2
         return (COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1));
     }
-    else {
-        /* take a wild guess... */
-        return TYPE_GRAY_8;
-    }
+    /* presume "L" by default */
+    return TYPE_GRAY_8;
 }
 
 #define Cms_Min(a, b) ((a) < (b) ? (a) : (b))
@@ -388,7 +385,7 @@ _buildTransform(
             iRenderingIntent,
             cmsFLAGS);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
     if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build transform");
@@ -422,7 +419,7 @@ _buildProofTransform(
             iProofIntent,
             cmsFLAGS);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
     if (!hTransform) {
         PyErr_SetString(PyExc_ValueError, "cannot build proof transform");
@@ -619,7 +616,7 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
 static PyObject *
 cms_get_display_profile_win32(PyObject *self, PyObject *args) {
     char filename[MAX_PATH];
-    cmsUInt32Number filename_size;
+    DWORD filename_size;
     BOOL ok;
 
     HANDLE handle = 0;

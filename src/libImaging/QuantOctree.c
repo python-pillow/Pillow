@@ -38,7 +38,7 @@ typedef struct _ColorBucket {
     uint64_t g;
     uint64_t b;
     uint64_t a;
-} * ColorBucket;
+} *ColorBucket;
 
 typedef struct _ColorCube {
     unsigned int rBits, gBits, bBits, aBits;
@@ -47,7 +47,7 @@ typedef struct _ColorCube {
 
     unsigned long size;
     ColorBucket buckets;
-} * ColorCube;
+} *ColorCube;
 
 #define MAX(a, b) (a) > (b) ? (a) : (b)
 

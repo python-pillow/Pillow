@@ -145,8 +145,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     case JCS_EXT_RGBX:
 #endif
                         switch (context->subsampling) {
-                            case -1:  /* Default */
-                            case 0:   /* No subsampling */
+                            case -1: /* Default */
+                            case 0:  /* No subsampling */
                                 break;
                             default:
                                 /* Would subsample the green and blue
@@ -305,7 +305,11 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         case 4:
 
             if (context->comment) {
-                jpeg_write_marker(&context->cinfo, JPEG_COM, (unsigned char *)context->comment, context->comment_size);
+                jpeg_write_marker(
+                    &context->cinfo,
+                    JPEG_COM,
+                    (unsigned char *)context->comment,
+                    context->comment_size);
             }
             state->state++;
 

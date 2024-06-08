@@ -16,9 +16,9 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.2
-HARFBUZZ_VERSION=8.4.0
+HARFBUZZ_VERSION=8.5.0
 LIBPNG_VERSION=1.6.43
-JPEGTURBO_VERSION=3.0.2
+JPEGTURBO_VERSION=3.0.3
 OPENJPEG_VERSION=2.5.2
 XZ_VERSION=5.4.5
 TIFF_VERSION=4.6.0
@@ -33,9 +33,9 @@ if [[ -n "$IS_MACOS" ]] || [[ "$MB_ML_VER" != 2014 ]]; then
 else
     ZLIB_VERSION=1.2.8
 fi
-LIBWEBP_VERSION=1.3.2
+LIBWEBP_VERSION=1.4.0
 BZIP2_VERSION=1.0.8
-LIBXCB_VERSION=1.16.1
+LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
 
 if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "x86_64" ]]; then
@@ -70,7 +70,7 @@ function build {
     fi
     build_new_zlib
 
-    build_simple xcb-proto 1.16.0 https://xorg.freedesktop.org/archive/individual/proto
+    build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib

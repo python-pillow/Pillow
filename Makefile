@@ -2,7 +2,6 @@
 
 .PHONY: clean
 clean:
-	python3 setup.py clean
 	rm src/PIL/*.so || true
 	rm -r build || true
 	find . -name __pycache__ | xargs rm -r || true
@@ -119,3 +118,8 @@ lint-fix:
 	python3 -m black .
 	python3 -c "import ruff" > /dev/null 2>&1 || python3 -m pip install ruff
 	python3 -m ruff --fix .
+
+.PHONY: mypy
+mypy:
+	python3 -c "import tox" > /dev/null 2>&1 || python3 -m pip install tox
+	python3 -m tox -e mypy

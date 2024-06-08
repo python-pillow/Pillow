@@ -82,12 +82,6 @@ get_pixel_16B(Imaging im, int x, int y, void *color) {
 }
 
 static void
-get_pixel_16(Imaging im, int x, int y, void *color) {
-    UINT8 *in = (UINT8 *)&im->image[y][x + x];
-    memcpy(color, in, sizeof(UINT16));
-}
-
-static void
 get_pixel_BGR15(Imaging im, int x, int y, void *color) {
     UINT8 *in = (UINT8 *)&im->image8[y][x * 2];
     UINT16 pixel = in[0] + (in[1] << 8);
@@ -191,11 +185,11 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
 
 void
 ImagingAccessInit() {
-#define ADD(mode_, get_pixel_, put_pixel_)        \
-    {                                             \
-        ImagingAccess access = add_item(mode_);   \
-        access->get_pixel = get_pixel_;           \
-        access->put_pixel = put_pixel_;           \
+#define ADD(mode_, get_pixel_, put_pixel_)      \
+    {                                           \
+        ImagingAccess access = add_item(mode_); \
+        access->get_pixel = get_pixel_;         \
+        access->put_pixel = put_pixel_;         \
     }
 
     /* populate access table */
@@ -207,7 +201,11 @@ ImagingAccessInit() {
     ADD("I;16", get_pixel_16L, put_pixel_16L);
     ADD("I;16L", get_pixel_16L, put_pixel_16L);
     ADD("I;16B", get_pixel_16B, put_pixel_16B);
-    ADD("I;16N", get_pixel_16, put_pixel_16L);
+#ifdef WORDS_BIGENDIAN
+    ADD("I;16N", get_pixel_16B, put_pixel_16B);
+#else
+    ADD("I;16N", get_pixel_16L, put_pixel_16L);
+#endif
     ADD("I;32L", get_pixel_32L, put_pixel_32L);
     ADD("I;32B", get_pixel_32B, put_pixel_32B);
     ADD("F", get_pixel_32, put_pixel_32);
