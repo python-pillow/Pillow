@@ -6,7 +6,7 @@ class _Axis(TypedDict):
     minimum: int | None
     default: int | None
     maximum: int | None
-    name: str | None
+    name: bytes | None
 
 class Font:
     @property

@@ -361,7 +361,7 @@ class FreeTypeFont:
         text: str,
         mode: str = "",
         direction: str | None = None,
-        features: str | None = None,
+        features: list[str] | None = None,
         language: str | None = None,
         stroke_width: float = 0,
         anchor: str | None = None,

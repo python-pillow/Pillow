@@ -2303,8 +2303,8 @@ class Image:
     def rotate(
         self,
         angle: float,
-        resample: int = Resampling.NEAREST,
-        expand: bool = False,
+        resample: Resampling = Resampling.NEAREST,
+        expand: int | bool = False,
         center: tuple[int, int] | None = None,
         translate: tuple[int, int] | None = None,
         fillcolor: float | tuple[float, ...] | str | None = None,
@@ -2617,8 +2617,8 @@ class Image:
 
     def thumbnail(
         self,
-        size: tuple[int, int],
-        resample: int = Resampling.BICUBIC,
+        size: tuple[float, float],
+        resample: Resampling = Resampling.BICUBIC,
         reducing_gap: float = 2.0,
     ) -> None:
         """
@@ -2953,7 +2953,7 @@ class ImageTransformHandler:
         self,
         size: tuple[int, int],
         image: Image,
-        **options: str | int | tuple[int, ...] | list[int],
+        **options: Any,
     ) -> Image:
         pass
 

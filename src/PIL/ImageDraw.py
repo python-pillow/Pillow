@@ -95,7 +95,9 @@ class ImageDraw:
     if TYPE_CHECKING:
         from . import ImageFont
 
-    def getfont(self) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    def getfont(
+        self,
+    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
         """
         Get the current default font.
 
@@ -122,14 +124,13 @@ class ImageDraw:
 
     def _getfont(
         self, font_size: float | None
-    ) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
         if font_size is not None:
             from . import ImageFont
 
-            font = ImageFont.load_default(font_size)
+            return ImageFont.load_default(font_size)
         else:
-            font = self.getfont()
-        return font
+            return self.getfont()
 
     def _getink(self, ink, fill=None) -> tuple[int | None, int | None]:
         if ink is None and fill is None:

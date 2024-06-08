@@ -424,7 +424,6 @@ See :ref:`concept-filters` for details.
 .. autoclass:: Resampling
     :members:
     :undoc-members:
-    :noindex:
 
 Dither modes
 ^^^^^^^^^^^^
