@@ -34,7 +34,7 @@ from __future__ import annotations
 import math
 import numbers
 import struct
-from typing import TYPE_CHECKING, Sequence, cast
+from typing import TYPE_CHECKING, AnyStr, Sequence, cast
 
 from . import Image, ImageColor
 from ._typing import Coords
@@ -95,7 +95,9 @@ class ImageDraw:
     if TYPE_CHECKING:
         from . import ImageFont
 
-    def getfont(self) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    def getfont(
+        self,
+    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
         """
         Get the current default font.
 
@@ -120,14 +122,15 @@ class ImageDraw:
             self.font = ImageFont.load_default()
         return self.font
 
-    def _getfont(self, font_size: float | None):
+    def _getfont(
+        self, font_size: float | None
+    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
         if font_size is not None:
             from . import ImageFont
 
-            font = ImageFont.load_default(font_size)
+            return ImageFont.load_default(font_size)
         else:
-            font = self.getfont()
-        return font
+            return self.getfont()
 
     def _getink(self, ink, fill=None) -> tuple[int | None, int | None]:
         if ink is None and fill is None:
@@ -460,15 +463,13 @@ class ImageDraw:
                     right[3] -= r + 1
                 self.draw.draw_rectangle(right, ink, 1)
 
-    def _multiline_check(self, text) -> bool:
+    def _multiline_check(self, text: AnyStr) -> bool:
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
 
-    def _multiline_split(self, text) -> list[str | bytes]:
-        split_character = "\n" if isinstance(text, str) else b"\n"
-
-        return text.split(split_character)
+    def _multiline_split(self, text: AnyStr) -> list[AnyStr]:
+        return text.split("\n" if isinstance(text, str) else b"\n")
 
     def _multiline_spacing(self, font, spacing, stroke_width):
         return (
@@ -479,10 +480,15 @@ class ImageDraw:
 
     def text(
         self,
-        xy,
-        text,
+        xy: tuple[float, float],
+        text: str,
         fill=None,
-        font=None,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         anchor=None,
         spacing=4,
         align="left",
@@ -536,7 +542,7 @@ class ImageDraw:
                 coord.append(int(xy[i]))
                 start.append(math.modf(xy[i])[0])
             try:
-                mask, offset = font.getmask2(
+                mask, offset = font.getmask2(  # type: ignore[union-attr,misc]
                     text,
                     mode,
                     direction=direction,
@@ -552,7 +558,7 @@ class ImageDraw:
                 coord = [coord[0] + offset[0], coord[1] + offset[1]]
             except AttributeError:
                 try:
-                    mask = font.getmask(
+                    mask = font.getmask(  # type: ignore[misc]
                         text,
                         mode,
                         direction,
@@ -601,10 +607,15 @@ class ImageDraw:
 
     def multiline_text(
         self,
-        xy,
-        text,
+        xy: tuple[float, float],
+        text: str,
         fill=None,
-        font=None,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         anchor=None,
         spacing=4,
         align="left",
@@ -634,7 +645,7 @@ class ImageDraw:
             font = self._getfont(font_size)
 
         widths = []
-        max_width = 0
+        max_width: float = 0
         lines = self._multiline_split(text)
         line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:
@@ -688,15 +699,20 @@ class ImageDraw:
 
     def textlength(
         self,
-        text,
-        font=None,
+        text: str,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         direction=None,
         features=None,
         language=None,
         embedded_color=False,
         *,
         font_size=None,
-    ):
+    ) -> float:
         """Get the length of a given string, in pixels with 1/64 precision."""
         if self._multiline_check(text):
             msg = "can't measure length of multiline text"
@@ -788,7 +804,7 @@ class ImageDraw:
             font = self._getfont(font_size)
 
         widths = []
-        max_width = 0
+        max_width: float = 0
         lines = self._multiline_split(text)
         line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:

@@ -426,7 +426,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return s
 
     def draft(
-        self, mode: str, size: tuple[int, int]
+        self, mode: str | None, size: tuple[int, int]
     ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
             return None
