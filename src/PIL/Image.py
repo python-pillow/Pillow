@@ -2305,7 +2305,7 @@ class Image:
         angle: float,
         resample: Resampling = Resampling.NEAREST,
         expand: int | bool = False,
-        center: tuple[int, int] | None = None,
+        center: tuple[float, float] | None = None,
         translate: tuple[int, int] | None = None,
         fillcolor: float | tuple[float, ...] | str | None = None,
     ) -> Image:
@@ -2373,10 +2373,7 @@ class Image:
         else:
             post_trans = translate
         if center is None:
-            # FIXME These should be rounded to ints?
-            rotn_center = (w / 2.0, h / 2.0)
-        else:
-            rotn_center = center
+            center = (w / 2, h / 2)
 
         angle = -math.radians(angle)
         matrix = [
@@ -2393,10 +2390,10 @@ class Image:
             return a * x + b * y + c, d * x + e * y + f
 
         matrix[2], matrix[5] = transform(
-            -rotn_center[0] - post_trans[0], -rotn_center[1] - post_trans[1], matrix
+            -center[0] - post_trans[0], -center[1] - post_trans[1], matrix
         )
-        matrix[2] += rotn_center[0]
-        matrix[5] += rotn_center[1]
+        matrix[2] += center[0]
+        matrix[5] += center[1]
 
         if expand:
             # calculate output size
