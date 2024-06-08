@@ -1719,7 +1719,7 @@ class Image:
 
     def paste(
         self,
-        im: Image | str | float | tuple[int, ...],
+        im: Image | str | float | tuple[float, ...],
         box: tuple[int, int, int, int] | tuple[int, int] | None = None,
         mask: Image | None = None,
     ) -> None:
