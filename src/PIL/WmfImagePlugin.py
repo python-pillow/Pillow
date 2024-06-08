@@ -30,7 +30,7 @@ from ._binary import si32le as _long
 _handler = None
 
 
-def register_handler(handler: ImageFile.StubHandler) -> None:
+def register_handler(handler: ImageFile.StubHandler | None) -> None:
     """
     Install application-specific WMF image handler.
 

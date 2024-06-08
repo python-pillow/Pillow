@@ -259,6 +259,7 @@ class TestCffi(AccessTest):
         caccess = im.im.pixel_access(False)
         with pytest.warns(DeprecationWarning):
             access = PyAccess.new(im, False)
+        assert access is not None
 
         w, h = im.size
         for x in range(0, w, 10):
@@ -289,6 +290,7 @@ class TestCffi(AccessTest):
         caccess = im.im.pixel_access(False)
         with pytest.warns(DeprecationWarning):
             access = PyAccess.new(im, False)
+        assert access is not None
 
         w, h = im.size
         for x in range(0, w, 10):
@@ -299,6 +301,8 @@ class TestCffi(AccessTest):
         # Attempt to set the value on a read-only image
         with pytest.warns(DeprecationWarning):
             access = PyAccess.new(im, True)
+        assert access is not None
+
         with pytest.raises(ValueError):
             access[(0, 0)] = color
 
@@ -341,6 +345,8 @@ class TestCffi(AccessTest):
             im = Image.new(mode, (1, 1))
             with pytest.warns(DeprecationWarning):
                 access = PyAccess.new(im, False)
+                assert access is not None
+
                 access.putpixel((0, 0), color)
 
                 if len(color) == 3:

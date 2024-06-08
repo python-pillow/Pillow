@@ -58,7 +58,6 @@ def test_blur_formats(test_images: dict[str, ImageFile.ImageFile]) -> None:
     blur = ImageFilter.GaussianBlur
     with pytest.raises(ValueError):
         im.convert("1").filter(blur)
-    blur(im.convert("L"))
     with pytest.raises(ValueError):
         im.convert("I").filter(blur)
     with pytest.raises(ValueError):
