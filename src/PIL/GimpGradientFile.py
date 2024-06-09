@@ -128,16 +128,7 @@ class GimpGradientFile(GradientFile):
 
         count = int(line)
 
-        gradient: list[
-            tuple[
-                float,
-                float,
-                float,
-                list[float],
-                list[float],
-                Callable[[float, float], float],
-            ]
-        ] = []
+        self.gradient = []
 
         for i in range(count):
             s = fp.readline().split()
@@ -155,6 +146,4 @@ class GimpGradientFile(GradientFile):
                 msg = "cannot handle HSV colour space"
                 raise OSError(msg)
 
-            gradient.append((x0, x1, xm, rgb0, rgb1, segment))
-
-        self.gradient = gradient
+            self.gradient.append((x0, x1, xm, rgb0, rgb1, segment))
