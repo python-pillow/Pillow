@@ -1562,7 +1562,11 @@ def test_compute_regular_polygon_vertices(
     ],
 )
 def test_compute_regular_polygon_vertices_input_error_handling(
-    n_sides, bounding_circle, rotation, expected_error, error_message
+    n_sides: int,
+    bounding_circle: int | tuple[int | tuple[int] | str, ...],
+    rotation: int | str,
+    expected_error: type[Exception],
+    error_message: str,
 ) -> None:
     with pytest.raises(expected_error) as e:
         ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)

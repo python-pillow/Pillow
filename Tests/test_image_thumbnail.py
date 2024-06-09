@@ -16,7 +16,7 @@ from .helper import (
 
 def test_sanity() -> None:
     im = hopper()
-    assert im.thumbnail((100, 100)) is None
+    assert im.thumbnail((100, 100)) is None  # type: ignore[func-returns-value]
 
     assert im.size == (100, 100)
 
