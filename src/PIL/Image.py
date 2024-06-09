@@ -2470,7 +2470,7 @@ class Image:
 
         save_all = params.pop("save_all", False)
         self.encoderinfo = params
-        self.encoderconfig = ()
+        self.encoderconfig: tuple[Any, ...] = ()
 
         preinit()
 

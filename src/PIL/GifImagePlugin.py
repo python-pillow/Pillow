@@ -558,7 +558,11 @@ def _normalize_palette(im, palette, info):
     return im
 
 
-def _write_single_frame(im, fp, palette):
+def _write_single_frame(
+    im: Image.Image,
+    fp: IO[bytes],
+    palette: bytes | bytearray | list[int] | ImagePalette.ImagePalette,
+) -> None:
     im_out = _normalize_mode(im)
     for k, v in im_out.info.items():
         im.encoderinfo.setdefault(k, v)
@@ -579,7 +583,9 @@ def _write_single_frame(im, fp, palette):
     fp.write(b"\0")  # end of image data
 
 
-def _getbbox(base_im, im_frame):
+def _getbbox(
+    base_im: Image.Image, im_frame: Image.Image
+) -> tuple[Image.Image, tuple[int, int, int, int]]:
     if _get_palette_bytes(im_frame) != _get_palette_bytes(base_im):
         im_frame = im_frame.convert("RGBA")
         base_im = base_im.convert("RGBA")
@@ -790,7 +796,7 @@ def _write_local_header(fp, im, offset, flags):
     fp.write(o8(8))  # bits
 
 
-def _save_netpbm(im, fp, filename):
+def _save_netpbm(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     # Unused by default.
     # To use, uncomment the register_save call at the end of the file.
     #
@@ -821,6 +827,7 @@ def _save_netpbm(im, fp, filename):
                 )
 
                 # Allow ppmquant to receive SIGPIPE if ppmtogif exits
+                assert quant_proc.stdout is not None
                 quant_proc.stdout.close()
 
                 retcode = quant_proc.wait()
@@ -1080,7 +1087,7 @@ def getdata(im, offset=(0, 0), **params):
     class Collector:
         data = []
 
-        def write(self, data):
+        def write(self, data: bytes) -> None:
             self.data.append(data)
 
     im.load()  # make sure raster data is available

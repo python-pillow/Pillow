@@ -50,7 +50,7 @@ import warnings
 from collections.abc import MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import TYPE_CHECKING, Any, Callable
+from typing import IO, TYPE_CHECKING, Any, Callable
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
@@ -2149,7 +2149,7 @@ class AppendingTiffWriter:
                 self.rewriteLastLong(offset)
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     encoderinfo = im.encoderinfo.copy()
     encoderconfig = im.encoderconfig
     append_images = list(encoderinfo.get("append_images", []))
