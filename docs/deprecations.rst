@@ -115,6 +115,13 @@ Support for LibTIFF earlier than 4
 Support for LibTIFF earlier than version 4 has been deprecated.
 Upgrade to a newer version of LibTIFF instead.
 
+ImageDraw.getdraw hints argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+The ``hints`` argument in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
+
 Removed features
 ----------------
 

@@ -37,6 +37,7 @@ import struct
 from typing import TYPE_CHECKING, AnyStr, Sequence, cast
 
 from . import Image, ImageColor
+from ._deprecate import deprecate
 from ._typing import Coords
 
 """
@@ -902,26 +903,17 @@ except AttributeError:
 
 def getdraw(im=None, hints=None):
     """
-    (Experimental) A more advanced 2D drawing interface for PIL images,
-    based on the WCK interface.
-
     :param im: The image to draw in.
-    :param hints: An optional list of hints.
+    :param hints: An optional list of hints. Deprecated.
     :returns: A (drawing context, drawing resource factory) tuple.
     """
-    # FIXME: this needs more work!
-    # FIXME: come up with a better 'hints' scheme.
-    handler = None
-    if not hints or "nicest" in hints:
-        try:
-            from . import _imagingagg as handler
-        except ImportError:
-            pass
-    if handler is None:
-        from . import ImageDraw2 as handler
+    if hints is not None:
+        deprecate("'hints' argument", 12)
+    from . import ImageDraw2
+
     if im:
-        im = handler.Draw(im)
-    return im, handler
+        im = ImageDraw2.Draw(im)
+    return im, ImageDraw2
 
 
 def floodfill(
