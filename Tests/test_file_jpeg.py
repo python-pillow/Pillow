@@ -870,7 +870,7 @@ class TestFileJpeg:
 
     def test_multiple_exif(self) -> None:
         with Image.open("Tests/images/multiple_exif.jpg") as im:
-            assert im.info["exif"] == b"Exif\x00\x00firstsecond"
+            assert im.getexif()[270] == "firstsecond"
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
