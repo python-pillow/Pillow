@@ -908,7 +908,7 @@ def getdraw(im=None, hints=None):
     :returns: A (drawing context, drawing resource factory) tuple.
     """
     if hints is not None:
-        deprecate("'hints' argument", 12)
+        deprecate("'hints' parameter", 12)
     from . import ImageDraw2
 
     if im:
