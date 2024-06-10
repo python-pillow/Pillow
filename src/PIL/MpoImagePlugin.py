@@ -33,7 +33,7 @@ from . import (
 from ._binary import o32le
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     JpegImagePlugin._save(im, fp, filename)
 
 

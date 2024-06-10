@@ -511,7 +511,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
         return -1, 0
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)

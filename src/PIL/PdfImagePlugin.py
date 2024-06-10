@@ -40,7 +40,7 @@ from . import Image, ImageFile, ImageSequence, PdfParser, __version__, features
 #  5. page contents
 
 
-def _save_all(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 

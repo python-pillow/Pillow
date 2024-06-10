@@ -329,11 +329,13 @@ def _accept(prefix: bytes) -> bool:
 # Save support
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # Get the keyword arguments
     info = im.encoderinfo
 
-    if filename.endswith(".j2k") or info.get("no_jp2", False):
+    if isinstance(filename, str):
+        filename = filename.encode()
+    if filename.endswith(b".j2k") or info.get("no_jp2", False):
         kind = "j2k"
     else:
         kind = "jp2"

@@ -626,7 +626,7 @@ class Image:
             self.load()
 
     def _dump(
-        self, file: str | None = None, format: str | None = None, **options
+        self, file: str | None = None, format: str | None = None, **options: Any
     ) -> str:
         suffix = ""
         if format:
@@ -649,10 +649,12 @@ class Image:
 
         return filename
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if self.__class__ is not other.__class__:
+            return False
+        assert isinstance(other, Image)
         return (
-            self.__class__ is other.__class__
-            and self.mode == other.mode
+            self.mode == other.mode
             and self.size == other.size
             and self.info == other.info
             and self.getpalette() == other.getpalette()
@@ -2965,7 +2967,7 @@ class ImageTransformHandler:
 # Debugging
 
 
-def _wedge():
+def _wedge() -> Image:
     """Create grayscale wedge (for debugging only)"""
 
     return Image()._new(core.wedge("L"))
@@ -3566,7 +3568,9 @@ def register_mime(id: str, mimetype: str) -> None:
     MIME[id.upper()] = mimetype
 
 
-def register_save(id: str, driver) -> None:
+def register_save(
+    id: str, driver: Callable[[Image, IO[bytes], str | bytes], None]
+) -> None:
     """
     Registers an image save function.  This function should not be
     used in application code.
@@ -3577,7 +3581,9 @@ def register_save(id: str, driver) -> None:
     SAVE[id.upper()] = driver
 
 
-def register_save_all(id: str, driver) -> None:
+def register_save_all(
+    id: str, driver: Callable[[Image, IO[bytes], str | bytes], None]
+) -> None:
     """
     Registers an image function to save all the frames
     of a multiframe format.  This function should not be
@@ -3651,7 +3657,7 @@ def register_encoder(name: str, encoder: type[ImageFile.PyEncoder]) -> None:
 # Simple display support.
 
 
-def _show(image, **options) -> None:
+def _show(image: Image, **options: Any) -> None:
     from . import ImageShow
 
     ImageShow.show(image, **options)
@@ -3661,7 +3667,9 @@ def _show(image, **options) -> None:
 # Effects
 
 
-def effect_mandelbrot(size, extent, quality):
+def effect_mandelbrot(
+    size: tuple[int, int], extent: tuple[int, int, int, int], quality: int
+) -> Image:
     """
     Generate a Mandelbrot set covering the given extent.
 

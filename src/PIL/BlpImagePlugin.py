@@ -31,6 +31,7 @@ BLP files come in many different flavours:
 
 from __future__ import annotations
 
+import abc
 import os
 import struct
 from enum import IntEnum
@@ -276,7 +277,7 @@ class BlpImageFile(ImageFile.ImageFile):
 class _BLPBaseDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
         try:
             self._read_blp_header()
             self._load()
@@ -284,6 +285,10 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             msg = "Truncated BLP file"
             raise OSError(msg) from e
         return -1, 0
+
+    @abc.abstractmethod
+    def _load(self) -> None:
+        pass
 
     def _read_blp_header(self) -> None:
         assert self.fd is not None
@@ -318,7 +323,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             ret.append((b, g, r, a))
         return ret
 
-    def _read_bgra(self, palette):
+    def _read_bgra(self, palette: list[tuple[int, int, int, int]]) -> bytearray:
         data = bytearray()
         _data = BytesIO(self._safe_read(self._blp_lengths[0]))
         while True:
@@ -327,7 +332,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             except struct.error:
                 break
             b, g, r, a = palette[offset]
-            d = (r, g, b)
+            d: tuple[int, ...] = (r, g, b)
             if self._blp_alpha_depth:
                 d += (a,)
             data.extend(d)
@@ -431,7 +436,7 @@ class BLPEncoder(ImageFile.PyEncoder):
             data += b"\x00" * 4
         return data
 
-    def encode(self, bufsize):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         palette_data = self._write_palette()
 
         offset = 20 + 16 * 4 * 2 + len(palette_data)
@@ -449,7 +454,7 @@ class BLPEncoder(ImageFile.PyEncoder):
         return len(data), 0, data
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "P":
         msg = "Unsupported BLP image mode"
         raise ValueError(msg)

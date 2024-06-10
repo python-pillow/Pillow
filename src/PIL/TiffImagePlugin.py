@@ -387,7 +387,7 @@ class IFDRational(Rational):
     def __hash__(self):
         return self._val.__hash__()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         val = self._val
         if isinstance(other, IFDRational):
             other = other._val
@@ -2149,7 +2149,7 @@ class AppendingTiffWriter:
                 self.rewriteLastLong(offset)
 
 
-def _save_all(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderinfo = im.encoderinfo.copy()
     encoderconfig = im.encoderconfig
     append_images = list(encoderinfo.get("append_images", []))

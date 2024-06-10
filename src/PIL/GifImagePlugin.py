@@ -715,12 +715,12 @@ def _write_multiple_frames(im, fp, palette):
     return True
 
 
-def _save_all(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 
 def _save(
-    im: Image.Image, fp: IO[bytes], filename: str, save_all: bool = False
+    im: Image.Image, fp: IO[bytes], filename: str | bytes, save_all: bool = False
 ) -> None:
     # header
     if "palette" in im.encoderinfo or "palette" in im.info:
@@ -796,7 +796,7 @@ def _write_local_header(fp, im, offset, flags):
     fp.write(o8(8))  # bits
 
 
-def _save_netpbm(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save_netpbm(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # Unused by default.
     # To use, uncomment the register_save call at the end of the file.
     #
