@@ -263,7 +263,7 @@ def makeSpiderHeader(im: Image.Image) -> list[bytes]:
     return [struct.pack("f", v) for v in hdr]
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode[0] != "F":
         im = im.convert("F")
 
@@ -279,9 +279,10 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
 
 
-def _save_spider(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # get the filename extension and register it with Image
-    ext = os.path.splitext(filename)[1]
+    filename_ext = os.path.splitext(filename)[1]
+    ext = filename_ext.decode() if isinstance(filename_ext, bytes) else filename_ext
     Image.register_extension(SpiderImageFile.format, ext)
     _save(im, fp, filename)
 

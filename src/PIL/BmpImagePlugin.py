@@ -395,12 +395,12 @@ SAVE = {
 }
 
 
-def _dib_save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _dib_save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, False)
 
 
 def _save(
-    im: Image.Image, fp: IO[bytes], filename: str, bitmap_header: bool = True
+    im: Image.Image, fp: IO[bytes], filename: str | bytes, bitmap_header: bool = True
 ) -> None:
     try:
         rawmode, bits, colors = SAVE[im.mode]
