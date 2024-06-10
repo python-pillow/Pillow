@@ -363,6 +363,14 @@ Classes
 .. autoclass:: PIL.Image.ImagePointHandler
 .. autoclass:: PIL.Image.ImageTransformHandler
 
+Protocols
+---------
+
+.. autoclass:: SupportsArrayInterface
+    :show-inheritance:
+.. autoclass:: SupportsGetData
+    :show-inheritance:
+
 Constants
 ---------
 
@@ -416,7 +424,6 @@ See :ref:`concept-filters` for details.
 .. autoclass:: Resampling
     :members:
     :undoc-members:
-    :noindex:
 
 Dither modes
 ^^^^^^^^^^^^

@@ -31,7 +31,7 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
               b=im2
             )
 
-.. py:function:: lambda_eval(expression, environment)
+.. py:function:: lambda_eval(expression, options)
 
     Returns the result of an image function.
 
@@ -44,7 +44,7 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
     :return: An image, an integer value, a floating point value,
              or a pixel tuple, depending on the expression.
 
-.. py:function:: unsafe_eval(expression, environment)
+.. py:function:: unsafe_eval(expression, options)
 
     Evaluates an image expression.
 

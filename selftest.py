@@ -139,7 +139,9 @@ def testimage() -> None:
     In 1.1.6, you can use the ImageMath module to do image
     calculations.
 
-    >>> im = ImageMath.eval("float(im + 20)", im=im.convert("L"))
+    >>> im = ImageMath.lambda_eval( \
+      lambda args: args["float"](args["im"] + 20), im=im.convert("L") \
+    )
     >>> im.mode, im.size
     ('F', (128, 128))
 
@@ -163,9 +165,9 @@ if __name__ == "__main__":
     print("Running selftest:")
     status = doctest.testmod(sys.modules[__name__])
     if status[0]:
-        print("*** %s tests of %d failed." % status)
+        print(f"*** {status[0]} tests of {status[1]} failed.")
         exit_status = 1
     else:
-        print("--- %s tests passed." % status[1])
+        print(f"--- {status[1]} tests passed.")
 
     sys.exit(exit_status)

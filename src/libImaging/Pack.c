@@ -339,7 +339,7 @@ ImagingPackXBGR(UINT8 *out, const UINT8 *in, int pixels) {
 void
 ImagingPackBGRA(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
-    /* BGRX, reversed bytes with right padding */
+    /* BGRA, reversed bytes with right alpha */
     for (i = 0; i < pixels; i++) {
         out[0] = in[B];
         out[1] = in[G];
@@ -353,7 +353,7 @@ ImagingPackBGRA(UINT8 *out, const UINT8 *in, int pixels) {
 void
 ImagingPackABGR(UINT8 *out, const UINT8 *in, int pixels) {
     int i;
-    /* XBGR, reversed bytes with left padding */
+    /* ABGR, reversed bytes with left alpha */
     for (i = 0; i < pixels; i++) {
         out[0] = in[A];
         out[1] = in[B];

@@ -30,6 +30,8 @@ import math
 import os
 import subprocess
 from enum import IntEnum
+from functools import cached_property
+from typing import IO
 
 from . import (
     Image,
@@ -60,7 +62,7 @@ LOADING_STRATEGY = LoadingStrategy.RGB_AFTER_FIRST
 # Identify/read GIF files
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:6] in [b"GIF87a", b"GIF89a"]
 
 
@@ -76,19 +78,19 @@ class GifImageFile(ImageFile.ImageFile):
 
     global_palette = None
 
-    def data(self):
+    def data(self) -> bytes | None:
         s = self.fp.read(1)
         if s and s[0]:
             return self.fp.read(s[0])
         return None
 
-    def _is_palette_needed(self, p):
+    def _is_palette_needed(self, p: bytes) -> bool:
         for i in range(0, len(p), 3):
             if not (i // 3 == p[i] == p[i + 1] == p[i + 2]):
                 return True
         return False
 
-    def _open(self):
+    def _open(self) -> None:
         # Screen
         s = self.fp.read(13)
         if not _accept(s):
@@ -112,8 +114,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
-        self._n_frames = None
-        self._is_animated = None
+        self._n_frames: int | None = None
         self._seek(0)  # get ready to read first frame
 
     @property
@@ -128,26 +129,25 @@ class GifImageFile(ImageFile.ImageFile):
             self.seek(current)
         return self._n_frames
 
-    @property
-    def is_animated(self):
-        if self._is_animated is None:
-            if self._n_frames is not None:
-                self._is_animated = self._n_frames != 1
-            else:
-                current = self.tell()
-                if current:
-                    self._is_animated = True
-                else:
-                    try:
-                        self._seek(1, False)
-                        self._is_animated = True
-                    except EOFError:
-                        self._is_animated = False
+    @cached_property
+    def is_animated(self) -> bool:
+        if self._n_frames is not None:
+            return self._n_frames != 1
 
-                    self.seek(current)
-        return self._is_animated
+        current = self.tell()
+        if current:
+            return True
 
-    def seek(self, frame):
+        try:
+            self._seek(1, False)
+            is_animated = True
+        except EOFError:
+            is_animated = False
+
+        self.seek(current)
+        return is_animated
+
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
@@ -337,14 +337,13 @@ class GifImageFile(ImageFile.ImageFile):
                         self._mode = "RGB"
                         self.im = self.im.convert("RGB", Image.Dither.FLOYDSTEINBERG)
 
-        def _rgb(color):
+        def _rgb(color: int) -> tuple[int, int, int]:
             if self._frame_palette:
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
-                color = tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
+                return tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
             else:
-                color = (color, color, color)
-            return color
+                return (color, color, color)
 
         self.dispose_extent = frame_dispose_extent
         try:
@@ -417,7 +416,7 @@ class GifImageFile(ImageFile.ImageFile):
             elif k in self.info:
                 del self.info[k]
 
-    def load_prepare(self):
+    def load_prepare(self) -> None:
         temp_mode = "P" if self._frame_palette else "L"
         self._prev_im = None
         if self.__frame == 0:
@@ -437,7 +436,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         super().load_prepare()
 
-    def load_end(self):
+    def load_end(self) -> None:
         if self.__frame == 0:
             if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
                 if self._frame_transparency is not None:
@@ -463,7 +462,7 @@ class GifImageFile(ImageFile.ImageFile):
         else:
             self.im.paste(frame_im, self.dispose_extent)
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
 
@@ -474,7 +473,7 @@ class GifImageFile(ImageFile.ImageFile):
 RAWMODE = {"1": "L", "L": "L", "P": "P"}
 
 
-def _normalize_mode(im):
+def _normalize_mode(im: Image.Image) -> Image.Image:
     """
     Takes an image (or frame), returns an image in a mode that is appropriate
     for saving in a Gif.
@@ -559,7 +558,11 @@ def _normalize_palette(im, palette, info):
     return im
 
 
-def _write_single_frame(im, fp, palette):
+def _write_single_frame(
+    im: Image.Image,
+    fp: IO[bytes],
+    palette: bytes | bytearray | list[int] | ImagePalette.ImagePalette,
+) -> None:
     im_out = _normalize_mode(im)
     for k, v in im_out.info.items():
         im.encoderinfo.setdefault(k, v)
@@ -580,7 +583,9 @@ def _write_single_frame(im, fp, palette):
     fp.write(b"\0")  # end of image data
 
 
-def _getbbox(base_im, im_frame):
+def _getbbox(
+    base_im: Image.Image, im_frame: Image.Image
+) -> tuple[Image.Image, tuple[int, int, int, int]]:
     if _get_palette_bytes(im_frame) != _get_palette_bytes(base_im):
         im_frame = im_frame.convert("RGBA")
         base_im = base_im.convert("RGBA")
@@ -710,11 +715,13 @@ def _write_multiple_frames(im, fp, palette):
     return True
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     _save(im, fp, filename, save_all=True)
 
 
-def _save(im, fp, filename, save_all=False):
+def _save(
+    im: Image.Image, fp: IO[bytes], filename: str, save_all: bool = False
+) -> None:
     # header
     if "palette" in im.encoderinfo or "palette" in im.info:
         palette = im.encoderinfo.get("palette", im.info.get("palette"))
@@ -731,7 +738,7 @@ def _save(im, fp, filename, save_all=False):
         fp.flush()
 
 
-def get_interlace(im):
+def get_interlace(im: Image.Image) -> int:
     interlace = im.encoderinfo.get("interlace", 1)
 
     # workaround for @PIL153
@@ -789,7 +796,7 @@ def _write_local_header(fp, im, offset, flags):
     fp.write(o8(8))  # bits
 
 
-def _save_netpbm(im, fp, filename):
+def _save_netpbm(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     # Unused by default.
     # To use, uncomment the register_save call at the end of the file.
     #
@@ -820,6 +827,7 @@ def _save_netpbm(im, fp, filename):
                 )
 
                 # Allow ppmquant to receive SIGPIPE if ppmtogif exits
+                assert quant_proc.stdout is not None
                 quant_proc.stdout.close()
 
                 retcode = quant_proc.wait()
@@ -887,7 +895,7 @@ def _get_optimize(im, info):
                 return used_palette_colors
 
 
-def _get_color_table_size(palette_bytes):
+def _get_color_table_size(palette_bytes: bytes) -> int:
     # calculate the palette size for the header
     if not palette_bytes:
         return 0
@@ -897,7 +905,7 @@ def _get_color_table_size(palette_bytes):
         return math.ceil(math.log(len(palette_bytes) // 3, 2)) - 1
 
 
-def _get_header_palette(palette_bytes):
+def _get_header_palette(palette_bytes: bytes) -> bytes:
     """
     Returns the palette, null padded to the next power of 2 (*3) bytes
     suitable for direct inclusion in the GIF header
@@ -915,7 +923,7 @@ def _get_header_palette(palette_bytes):
     return palette_bytes
 
 
-def _get_palette_bytes(im):
+def _get_palette_bytes(im: Image.Image) -> bytes:
     """
     Gets the palette for inclusion in the gif header
 
@@ -1079,7 +1087,7 @@ def getdata(im, offset=(0, 0), **params):
     class Collector:
         data = []
 
-        def write(self, data):
+        def write(self, data: bytes) -> None:
             self.data.append(data)
 
     im.load()  # make sure raster data is available

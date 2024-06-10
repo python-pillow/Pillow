@@ -71,7 +71,7 @@ class FtexImageFile(ImageFile.ImageFile):
     format = "FTEX"
     format_description = "Texture File Format (IW2:EOC)"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(4)):
             msg = "not an FTEX file"
             raise SyntaxError(msg)
@@ -103,11 +103,11 @@ class FtexImageFile(ImageFile.ImageFile):
         self.fp.close()
         self.fp = BytesIO(data)
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == MAGIC
 
 

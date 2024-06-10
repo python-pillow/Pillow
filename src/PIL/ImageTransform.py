@@ -14,7 +14,7 @@
 #
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Any, Sequence
 
 from . import Image
 
@@ -34,7 +34,7 @@ class Transform(Image.ImageTransformHandler):
         self,
         size: tuple[int, int],
         image: Image.Image,
-        **options: dict[str, str | int | tuple[int, ...] | list[int]],
+        **options: Any,
     ) -> Image.Image:
         """Perform the transform. Called from :py:meth:`.Image.transform`."""
         # can be overridden

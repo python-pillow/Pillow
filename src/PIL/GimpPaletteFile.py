@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import re
+from typing import IO
 
 from ._binary import o8
 
@@ -25,8 +26,8 @@ class GimpPaletteFile:
 
     rawmode = "RGB"
 
-    def __init__(self, fp):
-        self.palette = [o8(i) * 3 for i in range(256)]
+    def __init__(self, fp: IO[bytes]) -> None:
+        palette = [o8(i) * 3 for i in range(256)]
 
         if fp.readline()[:12] != b"GIMP Palette":
             msg = "not a GIMP palette file"
@@ -49,9 +50,9 @@ class GimpPaletteFile:
                 msg = "bad palette entry"
                 raise ValueError(msg)
 
-            self.palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
+            palette[i] = o8(v[0]) + o8(v[1]) + o8(v[2])
 
-        self.palette = b"".join(self.palette)
+        self.palette = b"".join(palette)
 
-    def getpalette(self):
+    def getpalette(self) -> tuple[bytes, str]:
         return self.palette, self.rawmode

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, List, NamedTuple, Union
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
 # on page 656
-def encode_text(s):
+def encode_text(s: str) -> bytes:
     return codecs.BOM_UTF16_BE + s.encode("utf_16_be")
 
 
@@ -87,10 +87,10 @@ class IndirectReferenceTuple(NamedTuple):
 
 
 class IndirectReference(IndirectReferenceTuple):
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.object_id} {self.generation} R"
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return self.__str__().encode("us-ascii")
 
     def __eq__(self, other):
@@ -103,12 +103,12 @@ class IndirectReference(IndirectReferenceTuple):
     def __ne__(self, other):
         return not (self == other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.object_id, self.generation))
 
 
 class IndirectObjectDef(IndirectReference):
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.object_id} {self.generation} obj"
 
 
@@ -144,15 +144,13 @@ class XrefTable:
         elif key in self.deleted_entries:
             generation = self.deleted_entries[key]
         else:
-            msg = (
-                "object ID " + str(key) + " cannot be deleted because it doesn't exist"
-            )
+            msg = f"object ID {key} cannot be deleted because it doesn't exist"
             raise IndexError(msg)
 
     def __contains__(self, key):
         return key in self.existing_entries or key in self.new_entries
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(
             set(self.existing_entries.keys())
             | set(self.new_entries.keys())
@@ -213,7 +211,7 @@ class PdfName:
         else:
             self.name = name.encode("us-ascii")
 
-    def name_as_str(self):
+    def name_as_str(self) -> str:
         return self.name.decode("us-ascii")
 
     def __eq__(self, other):
@@ -221,11 +219,11 @@ class PdfName:
             isinstance(other, PdfName) and other.name == self.name
         ) or other == self.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name)
 
-    def __repr__(self):
-        return f"PdfName({repr(self.name)})"
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({repr(self.name)})"
 
     @classmethod
     def from_pdf_stream(cls, data):
@@ -233,7 +231,7 @@ class PdfName:
 
     allowed_chars = set(range(33, 127)) - {ord(c) for c in "#%/()<>[]{}"}
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         result = bytearray(b"/")
         for b in self.name:
             if b in self.allowed_chars:
@@ -244,7 +242,7 @@ class PdfName:
 
 
 class PdfArray(List[Any]):
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b"[ " + b" ".join(pdf_repr(x) for x in self) + b" ]"
 
 
@@ -288,7 +286,7 @@ class PdfDict(_DictBase):
                 value = time.gmtime(calendar.timegm(value) + offset)
         return value
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         out = bytearray(b"<<")
         for key, value in self.items():
             if value is None:
@@ -306,7 +304,7 @@ class PdfBinary:
     def __init__(self, data):
         self.data = data
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b"<%s>" % b"".join(b"%02X" % b for b in self.data)
 
 
@@ -404,41 +402,41 @@ class PdfParser:
         if f:
             self.seek_end()
 
-    def __enter__(self):
+    def __enter__(self) -> PdfParser:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
         return False  # do not suppress exceptions
 
-    def start_writing(self):
+    def start_writing(self) -> None:
         self.close_buf()
         self.seek_end()
 
-    def close_buf(self):
+    def close_buf(self) -> None:
         try:
             self.buf.close()
         except AttributeError:
             pass
         self.buf = None
 
-    def close(self):
+    def close(self) -> None:
         if self.should_close_buf:
             self.close_buf()
         if self.f is not None and self.should_close_file:
             self.f.close()
             self.f = None
 
-    def seek_end(self):
+    def seek_end(self) -> None:
         self.f.seek(0, os.SEEK_END)
 
-    def write_header(self):
+    def write_header(self) -> None:
         self.f.write(b"%PDF-1.4\n")
 
     def write_comment(self, s):
         self.f.write(f"% {s}\n".encode())
 
-    def write_catalog(self):
+    def write_catalog(self) -> IndirectReference:
         self.del_root()
         self.root_ref = self.next_object_id(self.f.tell())
         self.pages_ref = self.next_object_id(0)
@@ -452,7 +450,7 @@ class PdfParser:
         )
         return self.root_ref
 
-    def rewrite_pages(self):
+    def rewrite_pages(self) -> None:
         pages_tree_nodes_to_delete = []
         for i, page_ref in enumerate(self.orig_pages):
             page_info = self.cached_objects[page_ref]
@@ -531,7 +529,7 @@ class PdfParser:
         f.write(b"endobj\n")
         return ref
 
-    def del_root(self):
+    def del_root(self) -> None:
         if self.root_ref is None:
             return
         del self.xref_table[self.root_ref.object_id]
@@ -549,7 +547,7 @@ class PdfParser:
             except ValueError:  # cannot mmap an empty file
                 return b""
 
-    def read_pdf_info(self):
+    def read_pdf_info(self) -> None:
         self.file_size_total = len(self.buf)
         self.file_size_this = self.file_size_total - self.start_offset
         self.read_trailer()
@@ -825,11 +823,10 @@ class PdfParser:
             m = cls.re_stream_start.match(data, offset)
             if m:
                 try:
-                    stream_len = int(result[b"Length"])
-                except (TypeError, KeyError, ValueError) as e:
-                    msg = "bad or missing Length in stream dict (%r)" % result.get(
-                        b"Length", None
-                    )
+                    stream_len_str = result.get(b"Length")
+                    stream_len = int(stream_len_str)
+                except (TypeError, ValueError) as e:
+                    msg = f"bad or missing Length in stream dict ({stream_len_str})"
                     raise PdfFormatError(msg) from e
                 stream_data = data[m.end() : m.end() + stream_len]
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
@@ -884,7 +881,7 @@ class PdfParser:
         if m:
             return cls.get_literal_string(data, m.end())
         # return None, offset  # fallback (only for debugging)
-        msg = "unrecognized object: " + repr(data[offset : offset + 32])
+        msg = f"unrecognized object: {repr(data[offset : offset + 32])}"
         raise PdfFormatError(msg)
 
     re_lit_str_token = re.compile(

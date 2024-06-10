@@ -18,6 +18,7 @@ from __future__ import annotations
 import io
 import os
 import struct
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette, _binary
 
@@ -34,7 +35,7 @@ class BoxReader:
         self.length = length
         self.remaining_in_box = -1
 
-    def _can_read(self, num_bytes):
+    def _can_read(self, num_bytes: int) -> bool:
         if self.has_length and self.fp.tell() + num_bytes > self.length:
             # Outside box: ensure we don't read past the known file length
             return False
@@ -44,7 +45,7 @@ class BoxReader:
         else:
             return True  # No length known, just read
 
-    def _read_bytes(self, num_bytes):
+    def _read_bytes(self, num_bytes: int) -> bytes:
         if not self._can_read(num_bytes):
             msg = "Not enough data in header"
             raise SyntaxError(msg)
@@ -63,18 +64,18 @@ class BoxReader:
         data = self._read_bytes(size)
         return struct.unpack(field_format, data)
 
-    def read_boxes(self):
+    def read_boxes(self) -> BoxReader:
         size = self.remaining_in_box
         data = self._read_bytes(size)
         return BoxReader(io.BytesIO(data), size)
 
-    def has_next_box(self):
+    def has_next_box(self) -> bool:
         if self.has_length:
             return self.fp.tell() + self.remaining_in_box < self.length
         else:
             return True
 
-    def next_box_type(self):
+    def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
@@ -176,6 +177,10 @@ def _parse_jp2_header(fp):
                 mode = "RGB"
             elif nc == 4:
                 mode = "RGBA"
+        elif tbox == b"colr" and nc == 4:
+            meth, _, _, enumcs = header.read_fields(">BBBI")
+            if meth == 1 and enumcs == 12:
+                mode = "CMYK"
         elif tbox == b"pclr" and mode in ("L", "LA"):
             ne, npc = header.read_fields(">HB")
             bitdepths = header.read_fields(">" + ("B" * npc))
@@ -211,7 +216,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     format = "JPEG2000"
     format_description = "JPEG 2000 (ISO 15444)"
 
-    def _open(self):
+    def _open(self) -> None:
         sig = self.fp.read(4)
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
@@ -263,7 +268,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             )
         ]
 
-    def _parse_comment(self):
+    def _parse_comment(self) -> None:
         hdr = self.fp.read(2)
         length = _binary.i16be(hdr)
         self.fp.seek(length - 2, os.SEEK_CUR)
@@ -313,7 +318,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         return ImageFile.ImageFile.load(self)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return (
         prefix[:4] == b"\xff\x4f\xff\x51"
         or prefix[:12] == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
@@ -324,7 +329,7 @@ def _accept(prefix):
 # Save support
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     # Get the keyword arguments
     info = im.encoderinfo
 

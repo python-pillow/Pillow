@@ -111,7 +111,9 @@ def test_load_first_unless_jpeg() -> None:
     with Image.open("Tests/images/hopper.jpg") as im:
         draft = im.draft
 
-        def im_draft(mode: str, size: tuple[int, int]):
+        def im_draft(
+            mode: str, size: tuple[int, int]
+        ) -> tuple[str, tuple[int, int, float, float]] | None:
             result = draft(mode, size)
             assert result is not None
 

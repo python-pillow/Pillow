@@ -13,7 +13,7 @@ from . import Image, ImageFile
 from ._binary import i32be as i32
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"qoif"
 
 
@@ -21,7 +21,7 @@ class QoiImageFile(ImageFile.ImageFile):
     format = "QOI"
     format_description = "Quite OK Image"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(4)):
             msg = "not a QOI file"
             raise SyntaxError(msg)
@@ -38,7 +38,7 @@ class QoiImageFile(ImageFile.ImageFile):
 class QoiDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def _add_to_previous_pixels(self, value):
+    def _add_to_previous_pixels(self, value: bytes | bytearray) -> None:
         self._previous_pixel = value
 
         r, g, b, a = value

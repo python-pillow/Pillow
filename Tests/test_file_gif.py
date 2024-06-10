@@ -1252,10 +1252,11 @@ def test_palette_save_L(tmp_path: Path) -> None:
 
     im = hopper("P")
     im_l = Image.frombytes("L", im.size, im.tobytes())
-    palette = bytes(im.getpalette())
+    palette = im.getpalette()
+    assert palette is not None
 
     out = str(tmp_path / "temp.gif")
-    im_l.save(out, palette=palette)
+    im_l.save(out, palette=bytes(palette))
 
     with Image.open(out) as reloaded:
         assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))

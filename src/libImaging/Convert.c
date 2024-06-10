@@ -254,9 +254,8 @@ static void
 rgb2i16l(UINT8 *out_, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in += 4) {
-        UINT8 v = CLIP16(L24(in) >> 16);
-        *out_++ = v;
-        *out_++ = v >> 8;
+        *out_++ = L24(in) >> 16;
+        *out_++ = 0;
     }
 }
 
@@ -264,9 +263,8 @@ static void
 rgb2i16b(UINT8 *out_, const UINT8 *in, int xsize) {
     int x;
     for (x = 0; x < xsize; x++, in += 4) {
-        UINT8 v = CLIP16(L24(in) >> 16);
-        *out_++ = v >> 8;
-        *out_++ = v;
+        *out_++ = 0;
+        *out_++ = L24(in) >> 16;
     }
 }
 
@@ -520,8 +518,8 @@ rgba2rgb_(UINT8 *out, const UINT8 *in, int xsize) {
 
 /*
  * Conversion of RGB + single transparent color either to
- * RGBA or LA, where any pixel matching the color will have the alpha channel set to 0, or
- * RGBa or La, where any pixel matching the color will have all channels set to 0
+ * RGBA or LA, where any pixel matching the color will have the alpha channel set to 0,
+ * or RGBa or La, where any pixel matching the color will have all channels set to 0
  */
 
 static void
@@ -1678,7 +1676,8 @@ convert(
         return (Imaging)ImagingError_ValueError("conversion not supported");
 #else
         static char buf[100];
-        snprintf(buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode);
+        snprintf(
+            buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode);
         return (Imaging)ImagingError_ValueError(buf);
 #endif
     }
@@ -1722,25 +1721,24 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (strcmp(imIn->mode, "RGB") == 0 && (strcmp(mode, "RGBA") == 0 || strcmp(mode, "RGBa") == 0)) {
+    if (strcmp(imIn->mode, "RGB") == 0 &&
+        (strcmp(mode, "RGBA") == 0 || strcmp(mode, "RGBa") == 0)) {
         convert = rgb2rgba;
         if (strcmp(mode, "RGBa") == 0) {
             premultiplied = 1;
         }
-    } else if (strcmp(imIn->mode, "RGB") == 0 && (strcmp(mode, "LA") == 0 || strcmp(mode, "La") == 0)) {
+    } else if (
+        strcmp(imIn->mode, "RGB") == 0 &&
+        (strcmp(mode, "LA") == 0 || strcmp(mode, "La") == 0)) {
         convert = rgb2la;
         source_transparency = 1;
         if (strcmp(mode, "La") == 0) {
             premultiplied = 1;
         }
-    } else if ((strcmp(imIn->mode, "1") == 0 ||
-                strcmp(imIn->mode, "I") == 0 ||
-                strcmp(imIn->mode, "I;16") == 0 ||
-                strcmp(imIn->mode, "L") == 0
-               ) && (
-                strcmp(mode, "RGBA") == 0 ||
-                strcmp(mode, "LA") == 0
-               )) {
+    } else if (
+        (strcmp(imIn->mode, "1") == 0 || strcmp(imIn->mode, "I") == 0 ||
+         strcmp(imIn->mode, "I;16") == 0 || strcmp(imIn->mode, "L") == 0) &&
+        (strcmp(mode, "RGBA") == 0 || strcmp(mode, "LA") == 0)) {
         if (strcmp(imIn->mode, "1") == 0) {
             convert = bit2rgb;
         } else if (strcmp(imIn->mode, "I") == 0) {

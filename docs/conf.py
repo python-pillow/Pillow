@@ -22,19 +22,19 @@ import PIL
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = "2.4"
+needs_sphinx = "7.3"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "dater",
     "sphinx.ext.autodoc",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_inline_tabs",
-    "sphinx_removed_in",
     "sphinxext.opengraph",
 ]
 
@@ -121,12 +121,7 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [
-    # Sphinx does not understand typing.Literal[-1]
-    # Will be fixed in a future version.
-    # https://github.com/sphinx-doc/sphinx/pull/11904
-    ("py:obj", "typing.Literal[-1, 1]"),
-]
+# nitpick_ignore = []
 
 
 # -- Options for HTML output ----------------------------------------------

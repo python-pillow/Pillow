@@ -110,7 +110,7 @@
 
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i) + 1])
 #define L16(p, i) ((((int)p[(i) + 1]) << 8) + p[(i)])
-#define S16(v) ((v) < 32768 ? (v) : ((v)-65536))
+#define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
 /* -------------------------------------------------------------------- */
 /* OBJECT ADMINISTRATION                        */
@@ -533,7 +533,9 @@ getink(PyObject *color, Imaging im, char *ink) {
                 /* unsigned integer, single layer */
                 if (rIsInt != 1) {
                     if (tupleSize != 1) {
-                        PyErr_SetString(PyExc_TypeError, "color must be int or single-element tuple");
+                        PyErr_SetString(
+                            PyExc_TypeError,
+                            "color must be int or single-element tuple");
                         return NULL;
                     } else if (!PyArg_ParseTuple(color, "L", &r)) {
                         return NULL;
@@ -552,7 +554,9 @@ getink(PyObject *color, Imaging im, char *ink) {
                     a = 255;
                     if (im->bands == 2) {
                         if (tupleSize != 1 && tupleSize != 2) {
-                            PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or two elements");
+                            PyErr_SetString(
+                                PyExc_TypeError,
+                                "color must be int, or tuple of one or two elements");
                             return NULL;
                         } else if (!PyArg_ParseTuple(color, "L|i", &r, &a)) {
                             return NULL;
@@ -560,7 +564,10 @@ getink(PyObject *color, Imaging im, char *ink) {
                         g = b = r;
                     } else {
                         if (tupleSize != 3 && tupleSize != 4) {
-                            PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one, three or four elements");
+                            PyErr_SetString(
+                                PyExc_TypeError,
+                                "color must be int, or tuple of one, three or four "
+                                "elements");
                             return NULL;
                         } else if (!PyArg_ParseTuple(color, "Lii|i", &r, &g, &b, &a)) {
                             return NULL;
@@ -599,7 +606,9 @@ getink(PyObject *color, Imaging im, char *ink) {
                     g = (UINT8)(r >> 8);
                     r = (UINT8)r;
                 } else if (tupleSize != 3) {
-                    PyErr_SetString(PyExc_TypeError, "color must be int, or tuple of one or three elements");
+                    PyErr_SetString(
+                        PyExc_TypeError,
+                        "color must be int, or tuple of one or three elements");
                     return NULL;
                 } else if (!PyArg_ParseTuple(color, "iiL", &b, &g, &r)) {
                     return NULL;
@@ -1537,14 +1546,14 @@ _putdata(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-#define set_value_to_item(seq, i) \
-op = PySequence_Fast_GET_ITEM(seq, i); \
-if (PySequence_Check(op)) { \
-    PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
-    return NULL; \
-} else { \
-    value = PyFloat_AsDouble(op); \
-}
+#define set_value_to_item(seq, i)                                       \
+    op = PySequence_Fast_GET_ITEM(seq, i);                              \
+    if (PySequence_Check(op)) {                                         \
+        PyErr_SetString(PyExc_TypeError, "sequence must be flattened"); \
+        return NULL;                                                    \
+    } else {                                                            \
+        value = PyFloat_AsDouble(op);                                   \
+    }
     if (image->image8) {
         if (PyBytes_Check(data)) {
             unsigned char *p;
@@ -1596,8 +1605,10 @@ if (PySequence_Check(op)) { \
                         value = value * scale + offset;
                     }
                     if (image->type == IMAGING_TYPE_SPECIAL) {
-                        image->image8[y][x * 2 + (bigendian ? 1 : 0)] = CLIP8((int)value % 256);
-                        image->image8[y][x * 2 + (bigendian ? 0 : 1)] = CLIP8((int)value >> 8);
+                        image->image8[y][x * 2 + (bigendian ? 1 : 0)] =
+                            CLIP8((int)value % 256);
+                        image->image8[y][x * 2 + (bigendian ? 0 : 1)] =
+                            CLIP8((int)value >> 8);
                     } else {
                         image->image8[y][x] = (UINT8)CLIP8(value);
                     }
@@ -1639,8 +1650,7 @@ if (PySequence_Check(op)) { \
                 for (i = x = y = 0; i < n; i++) {
                     double value;
                     set_value_to_item(seq, i);
-                    IMAGING_PIXEL_INT32(image, x, y) =
-                        (INT32)(value * scale + offset);
+                    IMAGING_PIXEL_INT32(image, x, y) = (INT32)(value * scale + offset);
                     if (++x >= (int)image->xsize) {
                         x = 0, y++;
                     }
@@ -2018,7 +2028,7 @@ im_setmode(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_transform2(ImagingObject *self, PyObject *args) {
+_transform(ImagingObject *self, PyObject *args) {
     static const char *wrong_number = "wrong number of matrix entries";
 
     Imaging imOut;
@@ -2785,8 +2795,8 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         glyph = &self->glyphs[text[i]];
         if (i == 0 || text[i] != text[i - 1]) {
             ImagingDelete(bitmap);
-            bitmap =
-                ImagingCrop(self->bitmap, glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1);
+            bitmap = ImagingCrop(
+                self->bitmap, glyph->sx0, glyph->sy0, glyph->sx1, glyph->sy1);
             if (!bitmap) {
                 goto failed;
             }
@@ -3315,7 +3325,8 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, width, self->blend) < 0) {
+    if (ImagingDrawPolygon(self->image->image, n, ixy, &ink, fill, width, self->blend) <
+        0) {
         free(ixy);
         return NULL;
     }
@@ -3636,7 +3647,7 @@ static struct PyMethodDef methods[] = {
     {"resize", (PyCFunction)_resize, METH_VARARGS},
     {"reduce", (PyCFunction)_reduce, METH_VARARGS},
     {"transpose", (PyCFunction)_transpose, METH_VARARGS},
-    {"transform2", (PyCFunction)_transform2, METH_VARARGS},
+    {"transform", (PyCFunction)_transform, METH_VARARGS},
 
     {"isblock", (PyCFunction)_isblock, METH_NOARGS},
 
@@ -3737,7 +3748,7 @@ _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
         self->image->image32,
         "image",
         self->image->image);
-};
+}
 
 static struct PyGetSetDef getsetters[] = {
     {"mode", (getter)_getattr_mode},
@@ -4411,7 +4422,8 @@ setup_module(PyObject *m) {
     PyModule_AddObject(m, "HAVE_XCB", have_xcb);
 
     PyObject *pillow_version = PyUnicode_FromString(version);
-    PyDict_SetItemString(d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None);
+    PyDict_SetItemString(
+        d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None);
     Py_XDECREF(pillow_version);
 
     return 0;

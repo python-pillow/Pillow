@@ -2,6 +2,42 @@
 Changelog (Pillow)
 ==================
 
+10.4.0 (unreleased)
+-------------------
+
+- Added ImageDraw circle() #8085
+  [void4, hugovk, radarhere]
+
+- Add mypy target to Makefile #8077
+  [Yay295]
+
+- Added more modes to Image.MODES #7984
+  [radarhere]
+
+- Deprecate BGR;15, BGR;16 and BGR;24 modes #7978
+  [radarhere, hugovk]
+
+- Fix ImagingAccess for I;16N on big-endian #7921
+  [Yay295, radarhere]
+
+- Support reading P mode TIFF images with padding #7996
+  [radarhere]
+
+- Deprecate support for libtiff < 4 #7998
+  [radarhere, hugovk]
+
+- Corrected ImageShow UnixViewer command #7987
+  [radarhere]
+
+- Use functools.cached_property in ImageStat #7952
+  [nulano, hugovk, radarhere]
+
+- Add support for reading BITMAPV2INFOHEADER and BITMAPV3INFOHEADER #7956
+  [Cirras, radarhere]
+
+- Support reading CMYK JPEG2000 images #7947
+  [radarhere]
+
 10.3.0 (2024-04-01)
 -------------------
 

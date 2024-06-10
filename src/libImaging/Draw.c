@@ -48,7 +48,7 @@
  * This guarantees that ROUND_UP|DOWN(f) == -ROUND_UP|DOWN(-f)
  */
 #define ROUND_UP(f) ((int)((f) >= 0.0 ? floor((f) + 0.5F) : -floor(fabs(f) + 0.5F)))
-#define ROUND_DOWN(f) ((int)((f) >= 0.0 ? ceil((f)-0.5F) : -ceil(fabs(f) - 0.5F)))
+#define ROUND_DOWN(f) ((int)((f) >= 0.0 ? ceil((f) - 0.5F) : -ceil(fabs(f) - 0.5F)))
 
 /* -------------------------------------------------------------------- */
 /* Primitives                                                           */
@@ -439,7 +439,14 @@ draw_horizontal_lines(
  * Filled polygon draw function using scan line algorithm.
  */
 static inline int
-polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler hline, int hasAlpha) {
+polygon_generic(
+    Imaging im,
+    int n,
+    Edge *e,
+    int ink,
+    int eofill,
+    hline_handler hline,
+    int hasAlpha) {
     Edge **edge_table;
     float *xx;
     int edge_count = 0;
@@ -499,7 +506,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
                     // Needed to draw consistent polygons
                     xx[j] = xx[j - 1];
                     j++;
-                } else if (current->dx != 0 && roundf(xx[j-1]) == xx[j-1]) {
+                } else if (current->dx != 0 && roundf(xx[j - 1]) == xx[j - 1]) {
                     // Connect discontiguous corners
                     for (k = 0; k < i; k++) {
                         Edge *other_edge = edge_table[k];
@@ -510,23 +517,38 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
                         // Check if the two edges join to make a corner
                         if (((ymin == current->ymin && ymin == other_edge->ymin) ||
                              (ymin == current->ymax && ymin == other_edge->ymax)) &&
-                            xx[j-1] == (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
+                            xx[j - 1] == (ymin - other_edge->y0) * other_edge->dx +
+                                             other_edge->x0) {
                             // Determine points from the edges on the next row
                             // Or if this is the last row, check the previous row
                             int offset = ymin == ymax ? -1 : 1;
-                            adjacent_line_x = (ymin + offset - current->y0) * current->dx + current->x0;
-                            adjacent_line_x_other_edge = (ymin + offset - other_edge->y0) * other_edge->dx + other_edge->x0;
+                            adjacent_line_x =
+                                (ymin + offset - current->y0) * current->dx +
+                                current->x0;
+                            adjacent_line_x_other_edge =
+                                (ymin + offset - other_edge->y0) * other_edge->dx +
+                                other_edge->x0;
                             if (ymin == current->ymax) {
                                 if (current->dx > 0) {
-                                    xx[k] = fmax(adjacent_line_x, adjacent_line_x_other_edge) + 1;
+                                    xx[k] = fmax(
+                                                adjacent_line_x,
+                                                adjacent_line_x_other_edge) +
+                                            1;
                                 } else {
-                                    xx[k] = fmin(adjacent_line_x, adjacent_line_x_other_edge) - 1;
+                                    xx[k] = fmin(
+                                                adjacent_line_x,
+                                                adjacent_line_x_other_edge) -
+                                            1;
                                 }
                             } else {
                                 if (current->dx > 0) {
-                                    xx[k] = fmin(adjacent_line_x, adjacent_line_x_other_edge);
+                                    xx[k] = fmin(
+                                        adjacent_line_x, adjacent_line_x_other_edge);
                                 } else {
-                                    xx[k] = fmax(adjacent_line_x, adjacent_line_x_other_edge) + 1;
+                                    xx[k] = fmax(
+                                                adjacent_line_x,
+                                                adjacent_line_x_other_edge) +
+                                            1;
                                 }
                             }
                             break;
@@ -552,7 +574,8 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
 
                 int x_start = ROUND_UP(xx[i - 1]);
                 if (x_pos > x_start) {
-                    // Line would be partway through x_pos, so increase the starting point
+                    // Line would be partway through x_pos, so increase the starting
+                    // point
                     x_start = x_pos;
                     if (x_end < x_start) {
                         // Line would now end before it started
@@ -776,7 +799,8 @@ ImagingDrawRectangle(
 }
 
 int
-ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, int width, int op) {
+ImagingDrawPolygon(
+    Imaging im, int count, int *xy, const void *ink_, int fill, int width, int op) {
     int i, n, x0, y0, x1, y1;
     DRAW *draw;
     INT32 ink;
@@ -803,7 +827,7 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
             if (y0 == y1 && i != 0 && y0 == xy[i * 2 - 1]) {
                 // This is a horizontal line,
                 // that immediately follows another horizontal line
-                Edge *last_e = &e[n-1];
+                Edge *last_e = &e[n - 1];
                 if (x1 > x0 && x0 > xy[i * 2 - 2]) {
                     // They are both increasing in x
                     last_e->xmax = x1;
@@ -826,14 +850,24 @@ ImagingDrawPolygon(Imaging im, int count, int *xy, const void *ink_, int fill, i
         /* Outline */
         if (width == 1) {
             for (i = 0; i < count - 1; i++) {
-                draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink);
+                draw->line(
+                    im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink);
             }
             draw->line(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink);
         } else {
             for (i = 0; i < count - 1; i++) {
-                ImagingDrawWideLine(im, xy[i * 2], xy[i * 2 + 1], xy[i * 2 + 2], xy[i * 2 + 3], ink_, width, op);
+                ImagingDrawWideLine(
+                    im,
+                    xy[i * 2],
+                    xy[i * 2 + 1],
+                    xy[i * 2 + 2],
+                    xy[i * 2 + 3],
+                    ink_,
+                    width,
+                    op);
             }
-            ImagingDrawWideLine(im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink_, width, op);
+            ImagingDrawWideLine(
+                im, xy[i * 2], xy[i * 2 + 1], xy[0], xy[1], ink_, width, op);
         }
     }
 
