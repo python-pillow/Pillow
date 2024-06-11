@@ -18,9 +18,12 @@
 from __future__ import annotations
 
 import array
-from typing import IO, Sequence
+from typing import IO, TYPE_CHECKING, Sequence
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
+
+if TYPE_CHECKING:
+    from . import Image
 
 
 class ImagePalette:
@@ -128,7 +131,11 @@ class ImagePalette:
                 raise ValueError(msg) from e
         return index
 
-    def getcolor(self, color, image=None) -> int:
+    def getcolor(
+        self,
+        color: tuple[int, int, int] | tuple[int, int, int, int],
+        image: Image.Image | None = None,
+    ) -> int:
         """Given an rgb tuple, allocate palette entry.
 
         .. warning:: This method is experimental.
@@ -163,7 +170,7 @@ class ImagePalette:
                 self.dirty = 1
                 return index
         else:
-            msg = f"unknown color specifier: {repr(color)}"
+            msg = f"unknown color specifier: {repr(color)}"  # type: ignore[unreachable]
             raise ValueError(msg)
 
     def save(self, fp: str | IO[str]) -> None:

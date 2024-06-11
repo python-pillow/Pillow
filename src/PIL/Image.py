@@ -41,7 +41,7 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, cast
+from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, Tuple, cast
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -1367,7 +1367,7 @@ class Image:
         """
         return ImageMode.getmode(self.mode).bands
 
-    def getbbox(self, *, alpha_only: bool = True) -> tuple[int, int, int, int]:
+    def getbbox(self, *, alpha_only: bool = True) -> tuple[int, int, int, int] | None:
         """
         Calculates the bounding box of the non-zero regions in the
         image.
@@ -3029,12 +3029,18 @@ def new(
         color = ImageColor.getcolor(color, mode)
 
     im = Image()
-    if mode == "P" and isinstance(color, (list, tuple)) and len(color) in [3, 4]:
-        # RGB or RGBA value for a P image
-        from . import ImagePalette
+    if (
+        mode == "P"
+        and isinstance(color, (list, tuple))
+        and all(isinstance(i, int) for i in color)
+    ):
+        color_ints: tuple[int, ...] = cast(Tuple[int, ...], tuple(color))
+        if len(color_ints) == 3 or len(color_ints) == 4:
+            # RGB or RGBA value for a P image
+            from . import ImagePalette
 
-        im.palette = ImagePalette.ImagePalette()
-        color = im.palette.getcolor(color)
+            im.palette = ImagePalette.ImagePalette()
+            color = im.palette.getcolor(color_ints)
     return im._new(core.fill(mode, size, color))
 
 
