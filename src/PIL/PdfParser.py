@@ -404,9 +404,8 @@ class PdfParser:
     def __enter__(self) -> PdfParser:
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, *args: object) -> None:
         self.close()
-        return False  # do not suppress exceptions
 
     def start_writing(self) -> None:
         self.close_buf()

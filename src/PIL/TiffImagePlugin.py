@@ -717,7 +717,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
             # Unspec'd, and length > 1
             dest[tag] = values
 
-    def __delitem__(self, tag):
+    def __delitem__(self, tag: int) -> None:
         self._tags_v2.pop(tag, None)
         self._tags_v1.pop(tag, None)
         self._tagdata.pop(tag, None)
@@ -1106,7 +1106,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         super().__init__(fp, filename)
 
-    def _open(self):
+    def _open(self) -> None:
         """Open the first image in a TIFF file"""
 
         # Header
@@ -1123,8 +1123,8 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__first = self.__next = self.tag_v2.next
         self.__frame = -1
         self._fp = self.fp
-        self._frame_pos = []
-        self._n_frames = None
+        self._frame_pos: list[int] = []
+        self._n_frames: int | None = None
 
         logger.debug("*** TiffImageFile._open ***")
         logger.debug("- __first: %s", self.__first)
@@ -1998,10 +1998,9 @@ class AppendingTiffWriter:
     def __enter__(self) -> AppendingTiffWriter:
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, *args: object) -> None:
         if self.close_fp:
             self.close()
-        return False
 
     def tell(self) -> int:
         return self.f.tell() - self.offsetOfNewPage
@@ -2043,42 +2042,42 @@ class AppendingTiffWriter:
     def write(self, data):
         return self.f.write(data)
 
-    def readShort(self):
+    def readShort(self) -> int:
         (value,) = struct.unpack(self.shortFmt, self.f.read(2))
         return value
 
-    def readLong(self):
+    def readLong(self) -> int:
         (value,) = struct.unpack(self.longFmt, self.f.read(4))
         return value
 
-    def rewriteLastShortToLong(self, value):
+    def rewriteLastShortToLong(self, value: int) -> None:
         self.f.seek(-2, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
         if bytes_written is not None and bytes_written != 4:
             msg = f"wrote only {bytes_written} bytes but wanted 4"
             raise RuntimeError(msg)
 
-    def rewriteLastShort(self, value):
+    def rewriteLastShort(self, value: int) -> None:
         self.f.seek(-2, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
         if bytes_written is not None and bytes_written != 2:
             msg = f"wrote only {bytes_written} bytes but wanted 2"
             raise RuntimeError(msg)
 
-    def rewriteLastLong(self, value):
+    def rewriteLastLong(self, value: int) -> None:
         self.f.seek(-4, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
         if bytes_written is not None and bytes_written != 4:
             msg = f"wrote only {bytes_written} bytes but wanted 4"
             raise RuntimeError(msg)
 
-    def writeShort(self, value):
+    def writeShort(self, value: int) -> None:
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
         if bytes_written is not None and bytes_written != 2:
             msg = f"wrote only {bytes_written} bytes but wanted 2"
             raise RuntimeError(msg)
 
-    def writeLong(self, value):
+    def writeLong(self, value: int) -> None:
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
         if bytes_written is not None and bytes_written != 4:
             msg = f"wrote only {bytes_written} bytes but wanted 4"
@@ -2097,9 +2096,9 @@ class AppendingTiffWriter:
             field_size = self.fieldSizes[field_type]
             total_size = field_size * count
             is_local = total_size <= 4
+            offset: int | None
             if not is_local:
-                offset = self.readLong()
-                offset += self.offsetOfNewPage
+                offset = self.readLong() + self.offsetOfNewPage
                 self.rewriteLastLong(offset)
 
             if tag in self.Tags:

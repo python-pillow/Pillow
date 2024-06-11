@@ -480,7 +480,8 @@ class DdsImageFile(ImageFile.ImageFile):
 class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
         bitcount, masks = self.args
 
         # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
