@@ -138,7 +138,7 @@ class PSDraw:
             sx = x / im.size[0]
             sy = y / im.size[1]
             self.fp.write(b"%f %f scale\n" % (sx, sy))
-        EpsImagePlugin._save(im, self.fp, None, 0)
+        EpsImagePlugin._save(im, self.fp, "", 0)
         self.fp.write(b"\ngrestore\n")
 
 

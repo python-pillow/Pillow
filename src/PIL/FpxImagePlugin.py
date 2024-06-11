@@ -241,7 +241,7 @@ class FpxImageFile(ImageFile.ImageFile):
         self.ole.close()
         super().close()
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.ole.close()
         super().__exit__()
 

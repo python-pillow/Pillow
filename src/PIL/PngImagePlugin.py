@@ -178,7 +178,7 @@ class ChunkStream:
     def __enter__(self) -> ChunkStream:
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def close(self) -> None:

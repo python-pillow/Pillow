@@ -61,7 +61,9 @@ def unpack_565(i: int) -> tuple[int, int, int]:
     return ((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3
 
 
-def decode_dxt1(data, alpha=False):
+def decode_dxt1(
+    data: bytes, alpha: bool = False
+) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
@@ -69,9 +71,9 @@ def decode_dxt1(data, alpha=False):
     blocks = len(data) // 8  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
+    for block_index in range(blocks):
         # Decode next 8-byte block.
-        idx = block * 8
+        idx = block_index * 8
         color0, color1, bits = struct.unpack_from("<HHI", data, idx)
 
         r0, g0, b0 = unpack_565(color0)
@@ -116,7 +118,7 @@ def decode_dxt1(data, alpha=False):
     return ret
 
 
-def decode_dxt3(data):
+def decode_dxt3(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
@@ -124,8 +126,8 @@ def decode_dxt3(data):
     blocks = len(data) // 16  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
-        idx = block * 16
+    for block_index in range(blocks):
+        idx = block_index * 16
         block = data[idx : idx + 16]
         # Decode next 16-byte block.
         bits = struct.unpack_from("<8B", block)
@@ -169,7 +171,7 @@ def decode_dxt3(data):
     return ret
 
 
-def decode_dxt5(data):
+def decode_dxt5(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4 * width pixels)
     """
@@ -177,8 +179,8 @@ def decode_dxt5(data):
     blocks = len(data) // 16  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
-        idx = block * 16
+    for block_index in range(blocks):
+        idx = block_index * 16
         block = data[idx : idx + 16]
         # Decode next 16-byte block.
         a0, a1 = struct.unpack_from("<BB", block)

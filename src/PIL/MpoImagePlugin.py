@@ -37,19 +37,14 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     JpegImagePlugin._save(im, fp, filename)
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     append_images = im.encoderinfo.get("append_images", [])
-    if not append_images:
-        try:
-            animated = im.is_animated
-        except AttributeError:
-            animated = False
-        if not animated:
-            _save(im, fp, filename)
-            return
+    if not append_images and not getattr(im, "is_animated", False):
+        _save(im, fp, filename)
+        return
 
     mpf_offset = 28
-    offsets = []
+    offsets: list[int] = []
     for imSequence in itertools.chain([im], append_images):
         for im_frame in ImageSequence.Iterator(imSequence):
             if not offsets:
