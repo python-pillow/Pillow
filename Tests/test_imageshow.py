@@ -94,3 +94,31 @@ def test_ipythonviewer() -> None:
 
     im = hopper()
     assert test_viewer.show(im) == 1
+
+def test_viewer_exceptions() -> None:
+    viewer = ImageShow.Viewer()
+
+    with pytest.raises(NotImplementedError):
+        viewer.show_image(Image.new("L", (1, 1)))
+
+    with pytest.raises(NotImplementedError):
+        viewer.save_image(Image.new("L", (1, 1)))
+
+def test_viewer_show_edge_cases() -> None:
+    class TestViewer(ImageShow.Viewer):
+        def show_image(self, image: Image.Image, **options: Any) -> bool:
+            self.methodCalled = True
+            return True
+
+    viewer = TestViewer()
+    ImageShow.register(viewer)
+
+    for mode in ["", "special characters", "a" * 1000]:
+        viewer.methodCalled = False
+        with hopper(mode) as im:
+            assert ImageShow.show(im)
+        assert viewer.methodCalled
+
+    # Restore original state
+    ImageShow._viewers.pop(0)
+    

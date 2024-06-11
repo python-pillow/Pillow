@@ -41,6 +41,8 @@ def test_is_animated() -> None:
 def test_tell() -> None:
     with Image.open(TEST_FILE) as im:
         assert im.tell() == 0
+        im.seek(1)
+        assert im.tell() == 1
 
 
 def test_seek() -> None:

@@ -95,6 +95,10 @@ def test_fromarray_strides_without_tobytes() -> None:
     class Wrapper:
         def __init__(self, arr_params: dict[str, Any]) -> None:
             self.__array_interface__ = arr_params
+            self.data = numpy.zeros(arr_params['shape'], dtype=numpy.uint8).tobytes()
+
+        def tostring(self):
+            return self.data
 
     with pytest.raises(ValueError):
         wrapped = Wrapper({"shape": (1, 1), "strides": (1, 1)})
