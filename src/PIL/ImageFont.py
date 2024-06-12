@@ -775,10 +775,15 @@ def truetype(
 
     :param font: A filename or file-like object containing a TrueType font.
                  If the file is not found in this filename, the loader may also
-                 search in other directories, such as the :file:`fonts/`
-                 directory on Windows or :file:`/Library/Fonts/`,
-                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
-                 macOS.
+                 search in other directories, such as:
+
+                 * The :file:`fonts/` directory on Windows,
+                 * :file:`/Library/Fonts/`, :file:`/System/Library/Fonts/`
+                   and :file:`~/Library/Fonts/` on macOS.
+                 * :file:`~/.local/share/fonts`, :file:`/usr/local/share/fonts`,
+                   and :file:`/usr/share/fonts` on Linux; or those specified by
+                   the ``XDG_DATA_HOME`` and ``XDG_DATA_DIRS`` environment variables
+                   for user-installed and system-wide fonts, respectively.
 
     :param size: The requested size, in pixels.
     :param index: Which font face to load (default is first available face).
