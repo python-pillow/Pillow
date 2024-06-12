@@ -383,8 +383,7 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
         float *pq;
 
         if (len > 0) {
-            if ((size_t)len >
-                sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0])) {
+            if ((size_t)len > sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0])) {
                 len = sizeof(params.tcp_rates) / sizeof(params.tcp_rates[0]);
             }
 
@@ -464,7 +463,8 @@ j2k_encode_entry(Imaging im, ImagingCodecState state) {
     }
 
     if (!context->num_resolutions) {
-        while (tile_width < (1U << (params.numresolution - 1U)) || tile_height < (1U << (params.numresolution - 1U))) {
+        while (tile_width < (1U << (params.numresolution - 1U)) ||
+               tile_height < (1U << (params.numresolution - 1U))) {
             params.numresolution -= 1;
         }
     }

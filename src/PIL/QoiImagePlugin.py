@@ -13,7 +13,7 @@ from . import Image, ImageFile
 from ._binary import i32be as i32
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"qoif"
 
 
@@ -21,7 +21,7 @@ class QoiImageFile(ImageFile.ImageFile):
     format = "QOI"
     format_description = "Quite OK Image"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(4)):
             msg = "not a QOI file"
             raise SyntaxError(msg)
@@ -37,17 +37,20 @@ class QoiImageFile(ImageFile.ImageFile):
 
 class QoiDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
+    _previous_pixel: bytes | bytearray | None = None
+    _previously_seen_pixels: dict[int, bytes | bytearray] = {}
 
-    def _add_to_previous_pixels(self, value):
+    def _add_to_previous_pixels(self, value: bytes | bytearray) -> None:
         self._previous_pixel = value
 
         r, g, b, a = value
         hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
         self._previously_seen_pixels[hash_value] = value
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
+
         self._previously_seen_pixels = {}
-        self._previous_pixel = None
         self._add_to_previous_pixels(bytearray((0, 0, 0, 255)))
 
         data = bytearray()
@@ -55,7 +58,8 @@ class QoiDecoder(ImageFile.PyDecoder):
         dest_length = self.state.xsize * self.state.ysize * bands
         while len(data) < dest_length:
             byte = self.fd.read(1)[0]
-            if byte == 0b11111110:  # QOI_OP_RGB
+            value: bytes | bytearray
+            if byte == 0b11111110 and self._previous_pixel:  # QOI_OP_RGB
                 value = bytearray(self.fd.read(3)) + self._previous_pixel[3:]
             elif byte == 0b11111111:  # QOI_OP_RGBA
                 value = self.fd.read(4)
@@ -66,7 +70,7 @@ class QoiDecoder(ImageFile.PyDecoder):
                     value = self._previously_seen_pixels.get(
                         op_index, bytearray((0, 0, 0, 0))
                     )
-                elif op == 1:  # QOI_OP_DIFF
+                elif op == 1 and self._previous_pixel:  # QOI_OP_DIFF
                     value = bytearray(
                         (
                             (self._previous_pixel[0] + ((byte & 0b00110000) >> 4) - 2)
@@ -77,7 +81,7 @@ class QoiDecoder(ImageFile.PyDecoder):
                             self._previous_pixel[3],
                         )
                     )
-                elif op == 2:  # QOI_OP_LUMA
+                elif op == 2 and self._previous_pixel:  # QOI_OP_LUMA
                     second_byte = self.fd.read(1)[0]
                     diff_green = (byte & 0b00111111) - 32
                     diff_red = ((second_byte & 0b11110000) >> 4) - 8
@@ -90,7 +94,7 @@ class QoiDecoder(ImageFile.PyDecoder):
                         )
                     )
                     value += self._previous_pixel[3:]
-                elif op == 3:  # QOI_OP_RUN
+                elif op == 3 and self._previous_pixel:  # QOI_OP_RUN
                     run_length = (byte & 0b00111111) + 1
                     value = self._previous_pixel
                     if bands == 3:

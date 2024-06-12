@@ -42,10 +42,9 @@ dynamic = [
 docs = [
   "furo",
   "olefile",
-  "sphinx>=2.4",
+  "sphinx>=7.3",
   "sphinx-copybutton",
   "sphinx-inline-tabs",
-  "sphinx-removed-in",
   "sphinxext-opengraph",
 ]
 fpx = [

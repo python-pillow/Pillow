@@ -16,7 +16,6 @@
 from __future__ import annotations
 
 import io
-from types import TracebackType
 
 from . import ContainerIO
 
@@ -61,12 +60,7 @@ class TarIO(ContainerIO.ContainerIO[bytes]):
     def __enter__(self) -> TarIO:
         return self
 
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
-    ) -> None:
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def close(self) -> None:

@@ -53,6 +53,10 @@ class BitStream:
         return v
 
 
+def _accept(prefix: bytes) -> bool:
+    return prefix[:4] == b"\x00\x00\x01\xb3"
+
+
 ##
 # Image plugin for MPEG streams.  This plugin can identify a stream,
 # but it cannot read it.
@@ -77,7 +81,7 @@ class MpegImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 # Registry stuff
 
-Image.register_open(MpegImageFile.format, MpegImageFile)
+Image.register_open(MpegImageFile.format, MpegImageFile, _accept)
 
 Image.register_extensions(MpegImageFile.format, [".mpg", ".mpeg"])
 

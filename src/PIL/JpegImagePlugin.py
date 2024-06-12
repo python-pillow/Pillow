@@ -42,6 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
+from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -54,7 +55,7 @@ from .JpegPresets import presets
 # Parser
 
 
-def Skip(self, marker):
+def Skip(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     ImageFile._safe_read(self.fp, n)
 
@@ -191,7 +192,7 @@ def APP(self, marker):
             self.info["dpi"] = 72, 72
 
 
-def COM(self, marker):
+def COM(self: JpegImageFile, marker: int) -> None:
     #
     # Comment marker.  Store these in the APP dictionary.
     n = i16(self.fp.read(2)) - 2
@@ -202,7 +203,7 @@ def COM(self, marker):
     self.applist.append(("COM", s))
 
 
-def SOF(self, marker):
+def SOF(self: JpegImageFile, marker: int) -> None:
     #
     # Start of frame marker.  Defines the size and mode of the
     # image.  JPEG is colour blind, so we use some simple
@@ -250,7 +251,7 @@ def SOF(self, marker):
         self.layer.append((t[0], t[1] // 16, t[1] & 15, t[2]))
 
 
-def DQT(self, marker):
+def DQT(self: JpegImageFile, marker: int) -> None:
     #
     # Define quantization table.  Note that there might be more
     # than one table in each marker.
@@ -344,7 +345,7 @@ MARKER = {
 }
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
     return prefix[:3] == b"\xFF\xD8\xFF"
 
@@ -408,7 +409,7 @@ class JpegImageFile(ImageFile.ImageFile):
                 msg = "no marker found"
                 raise SyntaxError(msg)
 
-    def load_read(self, read_bytes):
+    def load_read(self, read_bytes: int) -> bytes:
         """
         internal: read more image data
         For premature EOF and LOAD_TRUNCATED_IMAGES adds EOI marker
@@ -424,13 +425,15 @@ class JpegImageFile(ImageFile.ImageFile):
 
         return s
 
-    def draft(self, mode, size):
+    def draft(
+        self, mode: str | None, size: tuple[int, int]
+    ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
-            return
+            return None
 
         # Protect from second call
         if self.decoderconfig:
-            return
+            return None
 
         d, e, o, a = self.tile[0]
         scale = 1
@@ -460,7 +463,7 @@ class JpegImageFile(ImageFile.ImageFile):
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
         return self.mode, box
 
-    def load_djpeg(self):
+    def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
 
         f, path = tempfile.mkstemp()
@@ -491,13 +494,13 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self.tile = []
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, Any] | None:
         return _getexif(self)
 
     def _getmp(self):
         return _getmp(self)
 
-    def getxmp(self):
+    def getxmp(self) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
@@ -513,7 +516,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return {}
 
 
-def _getexif(self):
+def _getexif(self) -> dict[str, Any] | None:
     if "exif" not in self.info:
         return None
     return self.getexif()._get_merged_dict()
@@ -641,7 +644,7 @@ def get_sampling(im):
     return samplings.get(sampling, -1)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.width == 0 or im.height == 0:
         msg = "cannot write empty image as JPEG"
         raise ValueError(msg)
@@ -824,7 +827,7 @@ def _save(im, fp, filename):
     ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
 
 
-def _save_cjpeg(im, fp, filename):
+def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])

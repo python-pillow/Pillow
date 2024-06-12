@@ -162,24 +162,24 @@ PyPath_Flatten(PyObject *data, double **pxy) {
         return -1;
     }
 
-#define assign_item_to_array(op, decref) \
-if (PyFloat_Check(op)) { \
-    xy[j++] = PyFloat_AS_DOUBLE(op); \
-} else if (PyLong_Check(op)) { \
-    xy[j++] = (float)PyLong_AS_LONG(op); \
-} else if (PyNumber_Check(op)) { \
-    xy[j++] = PyFloat_AsDouble(op); \
-} else if (PyArg_ParseTuple(op, "dd", &x, &y)) { \
-    xy[j++] = x; \
-    xy[j++] = y; \
-} else { \
-    PyErr_SetString(PyExc_ValueError, "incorrect coordinate type"); \
-    if (decref) { \
-        Py_DECREF(op); \
-    } \
-    free(xy); \
-    return -1; \
-}
+#define assign_item_to_array(op, decref)                                \
+    if (PyFloat_Check(op)) {                                            \
+        xy[j++] = PyFloat_AS_DOUBLE(op);                                \
+    } else if (PyLong_Check(op)) {                                      \
+        xy[j++] = (float)PyLong_AS_LONG(op);                            \
+    } else if (PyNumber_Check(op)) {                                    \
+        xy[j++] = PyFloat_AsDouble(op);                                 \
+    } else if (PyArg_ParseTuple(op, "dd", &x, &y)) {                    \
+        xy[j++] = x;                                                    \
+        xy[j++] = y;                                                    \
+    } else {                                                            \
+        PyErr_SetString(PyExc_ValueError, "incorrect coordinate type"); \
+        if (decref) {                                                   \
+            Py_DECREF(op);                                              \
+        }                                                               \
+        free(xy);                                                       \
+        return -1;                                                      \
+    }
 
     /* Copy table to path array */
     if (PyList_Check(data)) {

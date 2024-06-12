@@ -20,6 +20,8 @@
 # http://wvware.sourceforge.net/caolan/ora-wmf.html
 from __future__ import annotations
 
+from typing import IO
+
 from . import Image, ImageFile
 from ._binary import i16le as word
 from ._binary import si16le as short
@@ -28,7 +30,7 @@ from ._binary import si32le as _long
 _handler = None
 
 
-def register_handler(handler):
+def register_handler(handler: ImageFile.StubHandler | None) -> None:
     """
     Install application-specific WMF image handler.
 
@@ -41,12 +43,12 @@ def register_handler(handler):
 if hasattr(Image.core, "drawwmf"):
     # install default handler (windows only)
 
-    class WmfHandler:
-        def open(self, im):
+    class WmfHandler(ImageFile.StubHandler):
+        def open(self, im: ImageFile.StubImageFile) -> None:
             im._mode = "RGB"
             self.bbox = im.info["wmf_bbox"]
 
-        def load(self, im):
+        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             im.fp.seek(0)  # rewind
             return Image.frombytes(
                 "RGB",
@@ -65,7 +67,7 @@ if hasattr(Image.core, "drawwmf"):
 # Read WMF file
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return (
         prefix[:6] == b"\xd7\xcd\xc6\x9a\x00\x00" or prefix[:4] == b"\x01\x00\x00\x00"
     )
@@ -79,7 +81,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     format = "WMF"
     format_description = "Windows Metafile"
 
-    def _open(self):
+    def _open(self) -> None:
         self._inch = None
 
         # check placable header
@@ -147,7 +149,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         if loader:
             loader.open(self)
 
-    def _load(self):
+    def _load(self) -> ImageFile.StubHandler | None:
         return _handler
 
     def load(self, dpi=None):
@@ -161,7 +163,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
         return super().load()
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if _handler is None or not hasattr(_handler, "save"):
         msg = "WMF save handler not installed"
         raise OSError(msg)

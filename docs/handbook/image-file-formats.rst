@@ -1488,7 +1488,9 @@ QOI
 
 .. versionadded:: 9.5.0
 
-Pillow identifies and reads images in Quite OK Image format.
+Pillow reads images in Quite OK Image format using a Python decoder. If you wish to
+write code specifically for this format, :pypi:`qoi` is an alternative library that
+uses C to decode the image and interfaces with NumPy.
 
 SUN
 ^^^

@@ -48,7 +48,9 @@ def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
 
 def test_sanity() -> None:
     # Internal version number
-    assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("jpg_2000"))
+    version = features.version_codec("jpg_2000")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
@@ -287,6 +289,16 @@ def test_rgba(ext: str) -> None:
 
         # Assert
         assert im.mode == "RGBA"
+
+
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@skip_unless_feature_version("jpg_2000", "2.5.1")
+def test_cmyk() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue205.jp2") as im:
+        assert im.mode == "CMYK"
+        assert im.getpixel((0, 0)) == (185, 134, 0, 0)
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
