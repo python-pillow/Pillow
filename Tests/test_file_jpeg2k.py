@@ -5,7 +5,7 @@ import re
 from io import BytesIO
 from pathlib import Path
 from typing import Any
-from conftest import branch_coverage
+from conftest import branch_coverage1
 
 import pytest
 
@@ -447,15 +447,15 @@ def test_plt_marker() -> None:
 
         jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:
-            branch_coverage["1"] = True
+            branch_coverage1["1"] = True
             # SOC has no length
             continue
         elif jp2_boxid == 0xFF58:
-            branch_coverage["2"] = True
+            branch_coverage1["2"] = True
             # PLT
             return
         elif jp2_boxid == 0xFF93:
-            branch_coverage["3"] = True
+            branch_coverage1["3"] = True
             pytest.fail("SOD without finding PLT first")
 
         hdr = out.read(2)

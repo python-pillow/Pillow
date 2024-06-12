@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from PIL import Image
-from conftest import branch_coverage
+from conftest import branch_coverage1
 
 from .helper import (
     assert_image_equal,
@@ -26,13 +26,13 @@ def rotate(
     out = im.rotate(angle, center=center, translate=translate, expand=1)
     assert out.mode == mode
     if angle % 180 == 0:
-        branch_coverage["1"] = True
+        branch_coverage1["1"] = True
         assert out.size == im.size
     elif im.size == (0, 0):
-        branch_coverage["2"] = True
+        branch_coverage1["2"] = True
         assert out.size == im.size
     else:
-        branch_coverage["3"] = True
+        branch_coverage1["3"] = True
         assert out.size != im.size
 
 
