@@ -48,7 +48,6 @@ from typing import (
     Literal,
     Protocol,
     Sequence,
-    SupportsInt,
     Tuple,
     cast,
 )
