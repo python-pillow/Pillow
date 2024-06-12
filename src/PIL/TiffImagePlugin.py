@@ -50,7 +50,7 @@ import warnings
 from collections.abc import MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import IO, TYPE_CHECKING, Any, Callable
+from typing import IO, TYPE_CHECKING, Any, Callable, NoReturn
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
@@ -384,7 +384,7 @@ class IFDRational(Rational):
     def __repr__(self) -> str:
         return str(float(self._val))
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self._val.__hash__()
 
     def __eq__(self, other: object) -> bool:
@@ -551,7 +551,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
     _load_dispatch: dict[int, Callable[[ImageFileDirectory_v2, bytes, bool], Any]] = {}
     _write_dispatch: dict[int, Callable[..., Any]] = {}
 
-    def __init__(self, ifh=b"II\052\0\0\0\0\0", prefix=None, group=None):
+    def __init__(
+        self,
+        ifh: bytes = b"II\052\0\0\0\0\0",
+        prefix: bytes | None = None,
+        group: int | None = None,
+    ) -> None:
         """Initialize an ImageFileDirectory.
 
         To construct an ImageFileDirectory from a real file, pass the 8-byte
@@ -575,7 +580,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
             raise SyntaxError(msg)
         self._bigtiff = ifh[2] == 43
         self.group = group
-        self.tagtype = {}
+        self.tagtype: dict[int, int] = {}
         """ Dictionary of tag types """
         self.reset()
         (self.next,) = (
@@ -587,18 +592,18 @@ class ImageFileDirectory_v2(_IFDv2Base):
     offset = property(lambda self: self._offset)
 
     @property
-    def legacy_api(self):
+    def legacy_api(self) -> bool:
         return self._legacy_api
 
     @legacy_api.setter
-    def legacy_api(self, value):
+    def legacy_api(self, value: bool) -> NoReturn:
         msg = "Not allowing setting of legacy api"
         raise Exception(msg)
 
-    def reset(self):
-        self._tags_v1 = {}  # will remain empty if legacy_api is false
-        self._tags_v2 = {}  # main tag storage
-        self._tagdata = {}
+    def reset(self) -> None:
+        self._tags_v1: dict[int, Any] = {}  # will remain empty if legacy_api is false
+        self._tags_v2: dict[int, Any] = {}  # main tag storage
+        self._tagdata: dict[int, bytes] = {}
         self.tagtype = {}  # added 2008-06-05 by Florian Hoech
         self._next = None
         self._offset = None
@@ -2039,7 +2044,7 @@ class AppendingTiffWriter:
             num_tags = self.readShort()
             self.f.seek(num_tags * 12, os.SEEK_CUR)
 
-    def write(self, data):
+    def write(self, data: bytes) -> int | None:
         return self.f.write(data)
 
     def readShort(self) -> int:
@@ -2122,7 +2127,9 @@ class AppendingTiffWriter:
                 # skip the locally stored value that is not an offset
                 self.f.seek(4, os.SEEK_CUR)
 
-    def fixOffsets(self, count, isShort=False, isLong=False):
+    def fixOffsets(
+        self, count: int, isShort: bool = False, isLong: bool = False
+    ) -> None:
         if not isShort and not isLong:
             msg = "offset is neither short nor long"
             raise RuntimeError(msg)
