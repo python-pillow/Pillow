@@ -44,6 +44,7 @@ def test_direct() -> None:
     caccess = im.im.pixel_access(False)
     access = PyAccess.new(im, False)
 
+    assert access is not None
     assert caccess[(0, 0)] == access[(0, 0)]
 
     print(f"Size: {im.width}x{im.height}")

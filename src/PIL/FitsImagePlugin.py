@@ -122,7 +122,7 @@ class FitsImageFile(ImageFile.ImageFile):
 class FitsGzipDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
         assert self.fd is not None
         value = gzip.decompress(self.fd.read())
 

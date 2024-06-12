@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import os
 import struct
+from typing import IO
 
 from . import (
     Image,
@@ -31,24 +32,19 @@ from . import (
 from ._binary import o32le
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     JpegImagePlugin._save(im, fp, filename)
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     append_images = im.encoderinfo.get("append_images", [])
-    if not append_images:
-        try:
-            animated = im.is_animated
-        except AttributeError:
-            animated = False
-        if not animated:
-            _save(im, fp, filename)
-            im._save_all_progress()
-            return
+    if not append_images and not getattr(im, "is_animated", False):
+        _save(im, fp, filename)
+        im._save_all_progress()
+        return
 
     mpf_offset = 28
-    offsets = []
+    offsets: list[int] = []
     imSequences = [im] + list(append_images)
     progress = im.encoderinfo.get("progress")
     if progress:
@@ -110,7 +106,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         self.fp.seek(0)  # prep the fp in order to pass the JPEG test
         JpegImagePlugin.JpegImageFile._open(self)
         self._after_jpeg_open()
@@ -134,10 +130,10 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         # for now we can only handle reading and individual frame extraction
         self.readonly = 1
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         self._fp.seek(pos)
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         self.fp = self._fp
@@ -159,7 +155,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.tile = [("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])]
         self.__frame = frame
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
     @staticmethod

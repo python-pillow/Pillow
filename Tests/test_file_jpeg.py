@@ -70,7 +70,9 @@ class TestFileJpeg:
 
     def test_sanity(self) -> None:
         # internal version number
-        assert re.search(r"\d+\.\d+$", features.version_codec("jpg"))
+        version = features.version_codec("jpg")
+        assert version is not None
+        assert re.search(r"\d+\.\d+$", version)
 
         with Image.open(TEST_FILE) as im:
             im.load()
@@ -152,7 +154,7 @@ class TestFileJpeg:
             assert k > 0.9
 
     def test_rgb(self) -> None:
-        def getchannels(im: Image.Image) -> tuple[int, int, int]:
+        def getchannels(im: JpegImagePlugin.JpegImageFile) -> tuple[int, int, int]:
             return tuple(v[0] for v in im.layer)
 
         im = hopper()
@@ -169,7 +171,7 @@ class TestFileJpeg:
         [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
     )
     def test_dpi(self, test_image_path: str) -> None:
-        def test(xdpi: int, ydpi: int | None = None):
+        def test(xdpi: int, ydpi: int | None = None) -> tuple[int, int] | None:
             with Image.open(test_image_path) as im:
                 im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
@@ -441,7 +443,7 @@ class TestFileJpeg:
         assert_image(im1, im2.mode, im2.size)
 
     def test_subsampling(self) -> None:
-        def getsampling(im: Image.Image):
+        def getsampling(im: JpegImagePlugin.JpegImageFile):
             layer = im.layer
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
 

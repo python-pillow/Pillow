@@ -22,6 +22,7 @@ import io
 import os
 import struct
 import sys
+from typing import IO
 
 from . import Image, ImageFile, PngImagePlugin, features
 
@@ -252,7 +253,7 @@ class IcnsImageFile(ImageFile.ImageFile):
     format = "ICNS"
     format_description = "Mac OS icns resource"
 
-    def _open(self):
+    def _open(self) -> None:
         self.icns = IcnsFile(self.fp)
         self._mode = "RGBA"
         self.info["sizes"] = self.icns.itersizes()
@@ -312,7 +313,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         return px
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     """
     Saves the image as a series of PNG files,
     that are then combined into a .icns file.
@@ -346,35 +347,33 @@ def _save(im, fp, filename):
     entries = []
     for type, size in sizes.items():
         stream = size_streams[size]
-        entries.append(
-            {"type": type, "size": HEADERSIZE + len(stream), "stream": stream}
-        )
+        entries.append((type, HEADERSIZE + len(stream), stream))
 
     # Header
     fp.write(MAGIC)
     file_length = HEADERSIZE  # Header
     file_length += HEADERSIZE + 8 * len(entries)  # TOC
-    file_length += sum(entry["size"] for entry in entries)
+    file_length += sum(entry[1] for entry in entries)
     fp.write(struct.pack(">i", file_length))
 
     # TOC
     fp.write(b"TOC ")
     fp.write(struct.pack(">i", HEADERSIZE + len(entries) * HEADERSIZE))
     for entry in entries:
-        fp.write(entry["type"])
-        fp.write(struct.pack(">i", entry["size"]))
+        fp.write(entry[0])
+        fp.write(struct.pack(">i", entry[1]))
 
     # Data
     for entry in entries:
-        fp.write(entry["type"])
-        fp.write(struct.pack(">i", entry["size"]))
-        fp.write(entry["stream"])
+        fp.write(entry[0])
+        fp.write(struct.pack(">i", entry[1]))
+        fp.write(entry[2])
 
     if hasattr(fp, "flush"):
         fp.flush()
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == MAGIC
 
 

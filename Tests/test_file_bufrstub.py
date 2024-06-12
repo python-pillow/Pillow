@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import IO
 
 import pytest
 
-from PIL import BufrStubImagePlugin, Image
+from PIL import BufrStubImagePlugin, Image, ImageFile
 
 from .helper import hopper
 
@@ -50,20 +51,20 @@ def test_save(tmp_path: Path) -> None:
 
 
 def test_handler(tmp_path: Path) -> None:
-    class TestHandler:
+    class TestHandler(ImageFile.StubHandler):
         opened = False
         loaded = False
         saved = False
 
-        def open(self, im) -> None:
+        def open(self, im: ImageFile.StubImageFile) -> None:
             self.opened = True
 
-        def load(self, im):
+        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             self.loaded = True
             im.fp.close()
             return Image.new("RGB", (1, 1))
 
-        def save(self, im, fp, filename) -> None:
+        def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             self.saved = True
 
     handler = TestHandler()

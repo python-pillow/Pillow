@@ -28,6 +28,7 @@
 #
 from __future__ import annotations
 
+import abc
 import io
 import itertools
 import struct
@@ -163,7 +164,7 @@ class ImageFile(Image.Image):
         self.tile = []
         super().__setstate__(state)
 
-    def verify(self):
+    def verify(self) -> None:
         """Check file integrity"""
 
         # raise exception if something's wrong.  must be called
@@ -311,7 +312,7 @@ class ImageFile(Image.Image):
 
         return Image.Image.load(self)
 
-    def load_prepare(self):
+    def load_prepare(self) -> None:
         # create image memory if necessary
         if not self.im or self.im.mode != self.mode or self.im.size != self.size:
             self.im = Image.core.new(self.mode, self.size)
@@ -319,16 +320,16 @@ class ImageFile(Image.Image):
         if self.mode == "P":
             Image.Image.load(self)
 
-    def load_end(self):
+    def load_end(self) -> None:
         # may be overridden
         pass
 
     # may be defined for contained formats
-    # def load_seek(self, pos):
+    # def load_seek(self, pos: int) -> None:
     #     pass
 
     # may be defined for blocked formats (e.g. PNG)
-    # def load_read(self, read_bytes):
+    # def load_read(self, read_bytes: int) -> bytes:
     #     pass
 
     def _seek_check(self, frame):
@@ -345,6 +346,15 @@ class ImageFile(Image.Image):
             raise EOFError(msg)
 
         return self.tell() != frame
+
+
+class StubHandler:
+    def open(self, im: StubImageFile) -> None:
+        pass
+
+    @abc.abstractmethod
+    def load(self, im: StubImageFile) -> Image.Image:
+        pass
 
 
 class StubImageFile(ImageFile):
@@ -390,7 +400,7 @@ class Parser:
     offset = 0
     finished = 0
 
-    def reset(self):
+    def reset(self) -> None:
         """
         (Consumer) Reset the parser.  Note that you can only call this
         method immediately after you've created a parser; parser
@@ -477,7 +487,7 @@ class Parser:
     def __enter__(self):
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def close(self):
@@ -605,7 +615,7 @@ def _safe_read(fp, size):
 
 
 class PyCodecState:
-    def __init__(self):
+    def __init__(self) -> None:
         self.xsize = 0
         self.ysize = 0
         self.xoff = 0
@@ -634,7 +644,7 @@ class PyCodec:
         """
         self.args = args
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Override to perform codec specific cleanup
 
@@ -753,7 +763,7 @@ class PyEncoder(PyCodec):
     def pushes_fd(self):
         return self._pushes_fd
 
-    def encode(self, bufsize):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         """
         Override to perform the encoding process.
 

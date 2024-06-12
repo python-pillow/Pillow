@@ -94,8 +94,8 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
         return (ImagingDIB)ImagingError_MemoryError();
     }
 
-    dib->bitmap =
-        CreateDIBSection(dib->dc, dib->info, DIB_RGB_COLORS, &dib->bits, NULL, 0);
+    dib->bitmap = CreateDIBSection(
+        dib->dc, dib->info, DIB_RGB_COLORS, (void **)&dib->bits, NULL, 0);
     if (!dib->bitmap) {
         free(dib->info);
         free(dib);

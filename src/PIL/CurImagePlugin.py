@@ -25,7 +25,7 @@ from ._binary import i32le as i32
 # --------------------------------------------------------------------
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"\0\0\2\0"
 
 
@@ -37,7 +37,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
     format = "CUR"
     format_description = "Windows Cursor"
 
-    def _open(self):
+    def _open(self) -> None:
         offset = self.fp.tell()
 
         # check magic

@@ -23,8 +23,7 @@ from setuptools.command.build_ext import build_ext
 def get_version():
     version_file = "src/PIL/_version.py"
     with open(version_file, encoding="utf-8") as f:
-        exec(compile(f.read(), version_file, "exec"))
-    return locals()["__version__"]
+        return f.read().split('"')[1]
 
 
 configuration = {}
@@ -1018,7 +1017,7 @@ The headers or library files could not be found for {str(err)},
 a required dependency when compiling Pillow from source.
 
 Please see the install instructions at:
-   https://pillow.readthedocs.io/en/latest/installation.html
+   https://pillow.readthedocs.io/en/latest/installation/basic-installation.html
 
 """
     sys.stderr.write(msg)

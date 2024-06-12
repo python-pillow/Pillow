@@ -49,7 +49,9 @@ class TestFileWebp:
     def test_version(self) -> None:
         _webp.WebPDecoderVersion()
         _webp.WebPDecoderBuggyAlpha()
-        assert re.search(r"\d+\.\d+\.\d+$", features.version_module("webp"))
+        version = features.version_module("webp")
+        assert version is not None
+        assert re.search(r"\d+\.\d+\.\d+$", version)
 
     def test_read_rgb(self) -> None:
         """
@@ -247,7 +249,9 @@ class TestFileWebp:
         (0, (0,), (-1, 0, 1, 2), (253, 254, 255, 256)),
     )
     @skip_unless_feature("webp_anim")
-    def test_invalid_background(self, background, tmp_path: Path) -> None:
+    def test_invalid_background(
+        self, background: int | tuple[int, ...], tmp_path: Path
+    ) -> None:
         temp_file = str(tmp_path / "temp.webp")
         im = hopper()
         with pytest.raises(OSError):

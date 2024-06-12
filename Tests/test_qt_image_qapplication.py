@@ -46,7 +46,7 @@ def roundtrip(expected: Image.Image) -> None:
 @pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
 def test_sanity(tmp_path: Path) -> None:
     # Segfault test
-    app = QApplication([])
+    app: QApplication | None = QApplication([])
     ex = Example()
     assert app  # Silence warning
     assert ex  # Silence warning
