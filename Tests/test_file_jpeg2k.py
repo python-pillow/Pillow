@@ -5,6 +5,7 @@ import re
 from io import BytesIO
 from pathlib import Path
 from typing import Any
+from conftest import branch_coverage
 
 import pytest
 
@@ -35,7 +36,6 @@ test_card.load()
 # OpenJPEG 2.0.0 outputs this debugging message sometimes; we should
 # ignore it---it doesn't represent a test failure.
 # 'Not enough memory to handle tile data'
-
 
 def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
     out = BytesIO()
@@ -447,12 +447,15 @@ def test_plt_marker() -> None:
 
         jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:
+            branch_coverage["1"] = True
             # SOC has no length
             continue
         elif jp2_boxid == 0xFF58:
+            branch_coverage["2"] = True
             # PLT
             return
         elif jp2_boxid == 0xFF93:
+            branch_coverage["3"] = True
             pytest.fail("SOD without finding PLT first")
 
         hdr = out.read(2)
@@ -464,3 +467,4 @@ def test_9bit():
     with Image.open("Tests/images/9bit.j2k") as im:
         assert im.mode == "I;16"
         assert im.size == (128, 128)
+
