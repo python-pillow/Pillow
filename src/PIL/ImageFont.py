@@ -837,12 +837,19 @@ def truetype(
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS")
-            if not lindirs:
-                # According to the freedesktop spec, XDG_DATA_DIRS should
-                # default to /usr/share
-                lindirs = "/usr/share"
-            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+            data_home = os.environ.get("XDG_DATA_HOME")
+            if not data_home:
+                # The freedesktop spec defines the following default directory for
+                # when XDG_DATA_HOME is unset or empty. This user-level directory
+                # takes precedence over system-level directories.
+                data_home = os.path.expanduser("~/.local/share")
+            dirs.append(os.path.join(data_home, "fonts"))
+
+            data_dirs = os.environ.get("XDG_DATA_DIRS")
+            if not data_dirs:
+                # Similarly, defaults are defined for the system-level directories
+                data_dirs = "/usr/local/share:/usr/share"
+            dirs += [os.path.join(ddir, "fonts") for ddir in data_dirs.split(":")]
         elif sys.platform == "darwin":
             dirs += [
                 "/Library/Fonts",
