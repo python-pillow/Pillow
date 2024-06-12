@@ -1676,7 +1676,7 @@ class Image:
         del self.info["transparency"]
 
     def getpixel(
-        self, xy: tuple[SupportsInt, SupportsInt]
+        self, xy: tuple[int, int] | list[int]
     ) -> float | tuple[int, ...] | None:
         """
         Returns the pixel value at a given position.
@@ -2058,7 +2058,9 @@ class Image:
         self.palette.mode = "RGB"
         self.load()  # install new palette
 
-    def putpixel(self, xy: tuple[int, int], value: float | tuple[int, ...]) -> None:
+    def putpixel(
+        self, xy: tuple[int, int], value: float | tuple[int, ...] | list[int]
+    ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for

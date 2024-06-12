@@ -77,7 +77,11 @@ class PyAccess:
     def _post_init(self) -> None:
         pass
 
-    def __setitem__(self, xy: tuple[int, int], color: float | tuple[int, ...]) -> None:
+    def __setitem__(
+        self,
+        xy: tuple[int, int] | list[int],
+        color: float | tuple[int, ...] | list[int],
+    ) -> None:
         """
         Modifies the pixel at x,y. The color is given as a single
         numerical value for single band images, and a tuple for
@@ -112,7 +116,7 @@ class PyAccess:
 
         return self.set_pixel(x, y, color)
 
-    def __getitem__(self, xy: tuple[int, int]) -> float | tuple[int, ...]:
+    def __getitem__(self, xy: tuple[int, int] | list[int]) -> float | tuple[int, ...]:
         """
         Returns the pixel at x,y. The pixel is returned as a single
         value for single band images or a tuple for multiple band
