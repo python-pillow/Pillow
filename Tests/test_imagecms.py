@@ -678,7 +678,8 @@ def test_auxiliary_channels_isolated() -> None:
 
 def test_long_modes() -> None:
     p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
-    ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
+    with pytest.warns(DeprecationWarning):
+        ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
 
 
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
@@ -699,3 +700,9 @@ def test_deprecation() -> None:
         assert ImageCms.VERSION == "1.0.0 pil"
     with pytest.warns(DeprecationWarning):
         assert isinstance(ImageCms.FLAGS, dict)
+
+    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
+    with pytest.warns(DeprecationWarning):
+        ImageCms.ImageCmsTransform(profile, profile, "RGBA;16B", "RGB")
+    with pytest.warns(DeprecationWarning):
+        ImageCms.ImageCmsTransform(profile, profile, "RGB", "RGBA;16B")
