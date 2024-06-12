@@ -30,7 +30,7 @@ from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
 class Pen:
     """Stores an outline color and width."""
 
-    def __init__(self, color, width=1, opacity=255):
+    def __init__(self, color: str, width: int = 1, opacity: int = 255) -> None:
         self.color = ImageColor.getrgb(color)
         self.width = width
 
@@ -38,7 +38,7 @@ class Pen:
 class Brush:
     """Stores a fill color"""
 
-    def __init__(self, color, opacity=255):
+    def __init__(self, color: str, opacity: int = 255) -> None:
         self.color = ImageColor.getrgb(color)
 
 
@@ -63,7 +63,7 @@ class Draw:
         self.image = image
         self.transform = None
 
-    def flush(self):
+    def flush(self) -> Image.Image:
         return self.image
 
     def render(self, op, xy, pen, brush=None):

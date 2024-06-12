@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from typing import IO, Any
 
 from . import Image, ImageFile
 
@@ -95,12 +96,12 @@ class WebPImageFile(ImageFile.ImageFile):
         # Initialize seek state
         self._reset(reset=False)
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, Any] | None:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
 
-    def getxmp(self):
+    def getxmp(self) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
@@ -116,7 +117,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Set logical frame to requested position
         self.__logical_frame = frame
 
-    def _reset(self, reset=True):
+    def _reset(self, reset: bool = True) -> None:
         if reset:
             self._decoder.reset()
         self.__physical_frame = 0
@@ -181,7 +182,7 @@ class WebPImageFile(ImageFile.ImageFile):
         return self.__logical_frame
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderinfo = im.encoderinfo.copy()
     append_images = list(encoderinfo.get("append_images", []))
 
@@ -194,7 +195,7 @@ def _save_all(im, fp, filename):
         _save(im, fp, filename)
         return
 
-    background = (0, 0, 0, 0)
+    background: int | tuple[int, ...] = (0, 0, 0, 0)
     if "background" in encoderinfo:
         background = encoderinfo["background"]
     elif "background" in im.info:
@@ -324,7 +325,7 @@ def _save_all(im, fp, filename):
     fp.write(data)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
     alpha_quality = im.encoderinfo.get("alpha_quality", 100)

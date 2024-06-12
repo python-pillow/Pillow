@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 import os
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -52,7 +53,7 @@ def _accept(prefix: bytes) -> bool:
     return prefix[:2] == b"BM"
 
 
-def _dib_accept(prefix):
+def _dib_accept(prefix: bytes) -> bool:
     return i32(prefix) in [12, 40, 52, 56, 64, 108, 124]
 
 
@@ -300,7 +301,8 @@ class BmpImageFile(ImageFile.ImageFile):
 class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
         rle4 = self.args[1]
         data = bytearray()
         x = 0
@@ -394,11 +396,13 @@ SAVE = {
 }
 
 
-def _dib_save(im, fp, filename):
+def _dib_save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, False)
 
 
-def _save(im, fp, filename, bitmap_header=True):
+def _save(
+    im: Image.Image, fp: IO[bytes], filename: str | bytes, bitmap_header: bool = True
+) -> None:
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError as e:

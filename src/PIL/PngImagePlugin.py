@@ -39,7 +39,7 @@ import struct
 import warnings
 import zlib
 from enum import IntEnum
-from typing import IO
+from typing import IO, Any
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -178,7 +178,7 @@ class ChunkStream:
     def __enter__(self) -> ChunkStream:
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def close(self) -> None:
@@ -1019,7 +1019,7 @@ class PngImageFile(ImageFile.ImageFile):
                 if self.pyaccess:
                     self.pyaccess = None
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, Any] | None:
         if "exif" not in self.info:
             self.load()
         if "exif" not in self.info and "Raw profile type exif" not in self.info:
@@ -1032,7 +1032,7 @@ class PngImageFile(ImageFile.ImageFile):
 
         return super().getexif()
 
-    def getxmp(self):
+    def getxmp(self) -> dict[str, Any]:
         """
         Returns a dictionary containing the XMP tags.
         Requires defusedxml to be installed.
@@ -1234,7 +1234,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
             seq_num = fdat_chunks.seq_num
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 

@@ -171,7 +171,7 @@ class TestFileJpeg:
         [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
     )
     def test_dpi(self, test_image_path: str) -> None:
-        def test(xdpi: int, ydpi: int | None = None):
+        def test(xdpi: int, ydpi: int | None = None) -> tuple[int, int] | None:
             with Image.open(test_image_path) as im:
                 im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
