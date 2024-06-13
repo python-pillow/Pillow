@@ -176,7 +176,7 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": f"{SF_PROJECTS}/lzmautils/files/xz-{V['XZ']}.tar.gz/download",
+        "url": f"https://github.com/tukaani-project/xz/releases/download/v{V['XZ']}/xz-{V['XZ']}.tar.gz",
         "filename": f"xz-{V['XZ']}.tar.gz",
         "dir": f"xz-{V['XZ']}",
         "license": "COPYING",
