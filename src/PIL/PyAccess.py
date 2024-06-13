@@ -148,7 +148,9 @@ class PyAccess:
     def get_pixel(self, x: int, y: int) -> float | tuple[int, ...]:
         raise NotImplementedError()
 
-    def set_pixel(self, x: int, y: int, color: float | tuple[int, ...]) -> None:
+    def set_pixel(
+        self, x: int, y: int, color: float | tuple[int, ...] | list[int]
+    ) -> None:
         raise NotImplementedError()
 
 
