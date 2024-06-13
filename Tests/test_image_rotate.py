@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from PIL import Image
+from conftest import branch_coverage1
 
 from .helper import (
     assert_image_equal,
@@ -25,10 +26,13 @@ def rotate(
     out = im.rotate(angle, center=center, translate=translate, expand=1)
     assert out.mode == mode
     if angle % 180 == 0:
+        branch_coverage1["1"] = True
         assert out.size == im.size
     elif im.size == (0, 0):
+        branch_coverage1["2"] = True
         assert out.size == im.size
     else:
+        branch_coverage1["3"] = True
         assert out.size != im.size
 
 
@@ -154,3 +158,4 @@ def test_alpha_rotate_with_fill() -> None:
     im = im.rotate(45, expand=1, fillcolor=(255, 0, 0, 255))
     corner = im.getpixel((0, 0))
     assert corner == (255, 0, 0, 255)
+
