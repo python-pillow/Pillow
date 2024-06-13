@@ -46,7 +46,7 @@ ImageFont.truetype
 ^^^^^^^^^^^^^^^^^^
 
 :py:func:`~PIL.ImageFont.truetype` now searches for fonts in the directory indicated
-by the ``XDG_DATA_HOME`` envirnorment variable in addition to those specified in
+by the ``XDG_DATA_HOME`` environment variable in addition to those specified in
 ``XDG_DATA_DIRS``.  Additionally, the default for ``XDG_DATA_DIRS`` has been updated
 to match the freedesktop spec.
 
