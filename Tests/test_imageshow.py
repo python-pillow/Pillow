@@ -4,6 +4,8 @@ from typing import Any
 
 import pytest
 
+from conftest import branch_coverage2
+
 from PIL import Image, ImageShow
 
 from .helper import hopper, is_win32, on_ci
@@ -30,6 +32,7 @@ def test_viewer_show(order: int) -> None:
     class TestViewer(ImageShow.Viewer):
         def show_image(self, image: Image.Image, **options: Any) -> bool:
             self.methodCalled = True
+            branch_coverage2["1"] = True
             return True
 
     viewer = TestViewer()
@@ -39,11 +42,12 @@ def test_viewer_show(order: int) -> None:
         viewer.methodCalled = False
         with hopper(mode) as im:
             assert ImageShow.show(im)
+            branch_coverage2["2"] = True
         assert viewer.methodCalled
 
     # Restore original state
     ImageShow._viewers.pop(0)
-
+    branch_coverage2["3"] = True
 
 @pytest.mark.skipif(
     not on_ci() or is_win32(),
@@ -74,7 +78,7 @@ def test_viewer() -> None:
     with pytest.raises(NotImplementedError):
         viewer.get_command("")
 
-
+ 
 @pytest.mark.parametrize("viewer", ImageShow._viewers)
 def test_viewers(viewer: ImageShow.Viewer) -> None:
     try:
@@ -88,12 +92,16 @@ def test_ipythonviewer() -> None:
     for viewer in ImageShow._viewers:
         if isinstance(viewer, ImageShow.IPythonViewer):
             test_viewer = viewer
+            branch_coverage2["4"] = True
             break
     else:
+        branch_coverage2["5"] = True
         pytest.fail()
 
     im = hopper()
     assert test_viewer.show(im) == 1
+
+
 def test_viewer_exceptions() -> None:
     class TestViewerException(ImageShow.Viewer):
         pass
@@ -117,4 +125,4 @@ def test_viewer_show_edge_cases() -> None:
         with hopper(mode) as im:
             assert ImageShow.show(im)
         assert viewer.methodCalled
-        
+
