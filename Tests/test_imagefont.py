@@ -1096,6 +1096,23 @@ def test_too_many_characters(font: ImageFont.FreeTypeFont) -> None:
         imagefont.getmask("A" * 1_000_001)
 
 
+def test_bytes(font: ImageFont.FreeTypeFont) -> None:
+    assert font.getlength(b"test") == font.getlength("test")
+
+    assert font.getbbox(b"test") == font.getbbox("test")
+
+    assert_image_equal(
+        Image.Image()._new(font.getmask(b"test")),
+        Image.Image()._new(font.getmask("test")),
+    )
+
+    assert_image_equal(
+        Image.Image()._new(font.getmask2(b"test")[0]),
+        Image.Image()._new(font.getmask2("test")[0]),
+    )
+    assert font.getmask2(b"test")[1] == font.getmask2("test")[1]
+
+
 @pytest.mark.parametrize(
     "test_file",
     [

@@ -279,7 +279,7 @@ class FreeTypeFont:
         return self.font.ascent, self.font.descent
 
     def getlength(
-        self, text: str, mode="", direction=None, features=None, language=None
+        self, text: str | bytes, mode="", direction=None, features=None, language=None
     ) -> float:
         """
         Returns length (in pixels with 1/64 precision) of given text when rendered
@@ -354,7 +354,7 @@ class FreeTypeFont:
 
     def getbbox(
         self,
-        text: str,
+        text: str | bytes,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -511,7 +511,7 @@ class FreeTypeFont:
 
     def getmask2(
         self,
-        text: str,
+        text: str | bytes,
         mode="",
         direction=None,
         features=None,
@@ -730,7 +730,7 @@ class TransposedFont:
             return 0, 0, height, width
         return 0, 0, width, height
 
-    def getlength(self, text: str, *args, **kwargs) -> float:
+    def getlength(self, text: str | bytes, *args, **kwargs) -> float:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
