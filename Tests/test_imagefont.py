@@ -564,7 +564,7 @@ def test_find_font(
     # catching syntax like errors
     monkeypatch.setattr(sys, "platform", platform)
     if platform == "linux":
-        monkeypatch.setenv("XDG_DATA_HOME", "/home/__pillow__/.local/share")
+        monkeypatch.setenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
         monkeypatch.setenv("XDG_DATA_DIRS", "/usr/share/:/usr/local/share/")
 
     def fake_walker(path: str) -> list[tuple[str, list[str], list[str]]]:
