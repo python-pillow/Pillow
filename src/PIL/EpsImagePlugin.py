@@ -230,6 +230,11 @@ class EpsImageFile(ImageFile.ImageFile):
         trailer_reached = False
 
         def check_required_header_comments() -> None:
+            """
+            The EPS spec requires that some headers exist.
+            This should be checked after all headers have been read,
+            or at the end of the file if that comes first.
+            """
             if "PS-Adobe" not in self.info:
                 msg = 'EPS header missing "%!PS-Adobe" comment'
                 raise SyntaxError(msg)
@@ -270,6 +275,8 @@ class EpsImageFile(ImageFile.ImageFile):
             if byte == b"":
                 # if we didn't read a byte we must be at the end of the file
                 if bytes_read == 0:
+                    if reading_header_comments:
+                        check_required_header_comments()
                     break
             elif byte in b"\r\n":
                 # if we read a line ending character, ignore it and parse what
@@ -364,8 +371,6 @@ class EpsImageFile(ImageFile.ImageFile):
             elif bytes_mv[:9] == b"%%Trailer":
                 trailer_reached = True
             bytes_read = 0
-
-        check_required_header_comments()
 
         if not self._size:
             msg = "cannot determine EPS bounding box"
