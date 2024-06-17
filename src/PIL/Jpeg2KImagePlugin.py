@@ -97,7 +97,7 @@ class BoxReader:
         return tbox
 
 
-def _parse_codestream(fp):
+def _parse_codestream(fp) -> tuple[tuple[int, int], str]:
     """Parse the JPEG 2000 codestream to extract the size and component
     count from the SIZ marker segment, returning a PIL (size, mode) tuple."""
 
@@ -122,7 +122,8 @@ def _parse_codestream(fp):
     elif csiz == 4:
         mode = "RGBA"
     else:
-        mode = ""
+        msg = "unable to determine J2K image mode"
+        raise SyntaxError(msg)
 
     return size, mode
 
@@ -236,10 +237,6 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             else:
                 msg = "not a JPEG 2000 file"
                 raise SyntaxError(msg)
-
-        if self.size is None or not self.mode:
-            msg = "unable to determine size/mode"
-            raise SyntaxError(msg)
 
         self._reduce = 0
         self.layers = 0
