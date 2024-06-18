@@ -38,7 +38,9 @@ def test_version() -> None:
             assert function(name) == version
             if name != "PIL":
                 if name == "zlib" and version is not None:
-                    version = version.replace(".zlib-ng", "")
+                    version = re.sub(".zlib-ng$", "", version)
+                elif name == "libtiff" and version is not None:
+                    version = re.sub("t$", "", version)
                 assert version is None or re.search(r"\d+(\.\d+)*$", version)
 
     for module in features.modules:
@@ -124,7 +126,7 @@ def test_unsupported_module() -> None:
 
 
 @pytest.mark.parametrize("supported_formats", (True, False))
-def test_pilinfo(supported_formats) -> None:
+def test_pilinfo(supported_formats: bool) -> None:
     buf = io.StringIO()
     features.pilinfo(buf, supported_formats=supported_formats)
     out = buf.getvalue()

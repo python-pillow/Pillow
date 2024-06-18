@@ -152,7 +152,7 @@ class TestImage:
 
     def test_stringio(self) -> None:
         with pytest.raises(ValueError):
-            with Image.open(io.StringIO()):
+            with Image.open(io.StringIO()):  # type: ignore[arg-type]
                 pass
 
     def test_pathlib(self, tmp_path: Path) -> None:

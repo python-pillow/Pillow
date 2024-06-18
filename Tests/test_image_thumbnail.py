@@ -16,7 +16,7 @@ from .helper import (
 
 def test_sanity() -> None:
     im = hopper()
-    assert im.thumbnail((100, 100)) is None
+    im.thumbnail((100, 100))
 
     assert im.size == (100, 100)
 
@@ -111,7 +111,9 @@ def test_load_first_unless_jpeg() -> None:
     with Image.open("Tests/images/hopper.jpg") as im:
         draft = im.draft
 
-        def im_draft(mode: str, size: tuple[int, int]):
+        def im_draft(
+            mode: str, size: tuple[int, int]
+        ) -> tuple[str, tuple[int, int, float, float]] | None:
             result = draft(mode, size)
             assert result is not None
 

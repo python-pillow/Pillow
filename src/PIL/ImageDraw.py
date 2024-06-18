@@ -34,10 +34,15 @@ from __future__ import annotations
 import math
 import numbers
 import struct
-from typing import TYPE_CHECKING, Sequence, cast
+from types import ModuleType
+from typing import TYPE_CHECKING, AnyStr, Sequence, cast
 
 from . import Image, ImageColor
+from ._deprecate import deprecate
 from ._typing import Coords
+
+if TYPE_CHECKING:
+    from . import ImageDraw2, ImageFont
 
 """
 A simple 2D drawing interface for PIL images.
@@ -92,10 +97,9 @@ class ImageDraw:
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = False
 
-    if TYPE_CHECKING:
-        from . import ImageFont
-
-    def getfont(self) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    def getfont(
+        self,
+    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
         """
         Get the current default font.
 
@@ -120,14 +124,15 @@ class ImageDraw:
             self.font = ImageFont.load_default()
         return self.font
 
-    def _getfont(self, font_size: float | None):
+    def _getfont(
+        self, font_size: float | None
+    ) -> ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont:
         if font_size is not None:
             from . import ImageFont
 
-            font = ImageFont.load_default(font_size)
+            return ImageFont.load_default(font_size)
         else:
-            font = self.getfont()
-        return font
+            return self.getfont()
 
     def _getink(self, ink, fill=None) -> tuple[int | None, int | None]:
         if ink is None and fill is None:
@@ -216,7 +221,9 @@ class ImageDraw:
                         # This is a straight line, so no joint is required
                         continue
 
-                    def coord_at_angle(coord, angle):
+                    def coord_at_angle(
+                        coord: Sequence[float], angle: float
+                    ) -> tuple[float, float]:
                         x, y = coord
                         angle -= 90
                         distance = width / 2 - 1
@@ -460,15 +467,13 @@ class ImageDraw:
                     right[3] -= r + 1
                 self.draw.draw_rectangle(right, ink, 1)
 
-    def _multiline_check(self, text) -> bool:
+    def _multiline_check(self, text: AnyStr) -> bool:
         split_character = "\n" if isinstance(text, str) else b"\n"
 
         return split_character in text
 
-    def _multiline_split(self, text) -> list[str | bytes]:
-        split_character = "\n" if isinstance(text, str) else b"\n"
-
-        return text.split(split_character)
+    def _multiline_split(self, text: AnyStr) -> list[AnyStr]:
+        return text.split("\n" if isinstance(text, str) else b"\n")
 
     def _multiline_spacing(self, font, spacing, stroke_width):
         return (
@@ -479,10 +484,15 @@ class ImageDraw:
 
     def text(
         self,
-        xy,
-        text,
+        xy: tuple[float, float],
+        text: str,
         fill=None,
-        font=None,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         anchor=None,
         spacing=4,
         align="left",
@@ -536,7 +546,7 @@ class ImageDraw:
                 coord.append(int(xy[i]))
                 start.append(math.modf(xy[i])[0])
             try:
-                mask, offset = font.getmask2(
+                mask, offset = font.getmask2(  # type: ignore[union-attr,misc]
                     text,
                     mode,
                     direction=direction,
@@ -552,7 +562,7 @@ class ImageDraw:
                 coord = [coord[0] + offset[0], coord[1] + offset[1]]
             except AttributeError:
                 try:
-                    mask = font.getmask(
+                    mask = font.getmask(  # type: ignore[misc]
                         text,
                         mode,
                         direction,
@@ -601,10 +611,15 @@ class ImageDraw:
 
     def multiline_text(
         self,
-        xy,
-        text,
+        xy: tuple[float, float],
+        text: str,
         fill=None,
-        font=None,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         anchor=None,
         spacing=4,
         align="left",
@@ -634,7 +649,7 @@ class ImageDraw:
             font = self._getfont(font_size)
 
         widths = []
-        max_width = 0
+        max_width: float = 0
         lines = self._multiline_split(text)
         line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:
@@ -688,15 +703,20 @@ class ImageDraw:
 
     def textlength(
         self,
-        text,
-        font=None,
+        text: str,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
         direction=None,
         features=None,
         language=None,
         embedded_color=False,
         *,
         font_size=None,
-    ):
+    ) -> float:
         """Get the length of a given string, in pixels with 1/64 precision."""
         if self._multiline_check(text):
             msg = "can't measure length of multiline text"
@@ -788,7 +808,7 @@ class ImageDraw:
             font = self._getfont(font_size)
 
         widths = []
-        max_width = 0
+        max_width: float = 0
         lines = self._multiline_split(text)
         line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:
@@ -860,7 +880,7 @@ class ImageDraw:
         return bbox
 
 
-def Draw(im, mode: str | None = None) -> ImageDraw:
+def Draw(im: Image.Image, mode: str | None = None) -> ImageDraw:
     """
     A simple 2D drawing interface for PIL images.
 
@@ -872,7 +892,7 @@ def Draw(im, mode: str | None = None) -> ImageDraw:
        defaults to the mode of the image.
     """
     try:
-        return im.getdraw(mode)
+        return getattr(im, "getdraw")(mode)
     except AttributeError:
         return ImageDraw(im, mode)
 
@@ -884,28 +904,20 @@ except AttributeError:
     Outline = None
 
 
-def getdraw(im=None, hints=None):
+def getdraw(
+    im: Image.Image | None = None, hints: list[str] | None = None
+) -> tuple[ImageDraw2.Draw | None, ModuleType]:
     """
-    (Experimental) A more advanced 2D drawing interface for PIL images,
-    based on the WCK interface.
-
     :param im: The image to draw in.
-    :param hints: An optional list of hints.
+    :param hints: An optional list of hints. Deprecated.
     :returns: A (drawing context, drawing resource factory) tuple.
     """
-    # FIXME: this needs more work!
-    # FIXME: come up with a better 'hints' scheme.
-    handler = None
-    if not hints or "nicest" in hints:
-        try:
-            from . import _imagingagg as handler
-        except ImportError:
-            pass
-    if handler is None:
-        from . import ImageDraw2 as handler
-    if im:
-        im = handler.Draw(im)
-    return im, handler
+    if hints is not None:
+        deprecate("'hints' parameter", 12)
+    from . import ImageDraw2
+
+    draw = ImageDraw2.Draw(im) if im is not None else None
+    return draw, ImageDraw2
 
 
 def floodfill(
@@ -1093,11 +1105,13 @@ def _compute_regular_polygon_vertices(
     return [_compute_polygon_vertex(angle) for angle in angles]
 
 
-def _color_diff(color1, color2: float | tuple[int, ...]) -> float:
+def _color_diff(
+    color1: float | tuple[int, ...], color2: float | tuple[int, ...]
+) -> float:
     """
     Uses 1-norm distance to calculate difference between two values.
     """
-    if isinstance(color2, tuple):
-        return sum(abs(color1[i] - color2[i]) for i in range(0, len(color2)))
-    else:
-        return abs(color1 - color2)
+    first = color1 if isinstance(color1, tuple) else (color1,)
+    second = color2 if isinstance(color2, tuple) else (color2,)
+
+    return sum(abs(first[i] - second[i]) for i in range(0, len(second)))

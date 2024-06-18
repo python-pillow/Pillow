@@ -497,7 +497,7 @@ def expand(
     color = _color(fill, image.mode)
     if image.palette:
         palette = ImagePalette.ImagePalette(palette=image.getpalette())
-        if isinstance(color, tuple):
+        if isinstance(color, tuple) and (len(color) == 3 or len(color) == 4):
             color = palette.getcolor(color)
     else:
         palette = None

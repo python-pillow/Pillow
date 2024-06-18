@@ -2028,7 +2028,7 @@ im_setmode(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_transform2(ImagingObject *self, PyObject *args) {
+_transform(ImagingObject *self, PyObject *args) {
     static const char *wrong_number = "wrong number of matrix entries";
 
     Imaging imOut;
@@ -3647,7 +3647,7 @@ static struct PyMethodDef methods[] = {
     {"resize", (PyCFunction)_resize, METH_VARARGS},
     {"reduce", (PyCFunction)_reduce, METH_VARARGS},
     {"transpose", (PyCFunction)_transpose, METH_VARARGS},
-    {"transform2", (PyCFunction)_transform2, METH_VARARGS},
+    {"transform", (PyCFunction)_transform, METH_VARARGS},
 
     {"isblock", (PyCFunction)_isblock, METH_NOARGS},
 

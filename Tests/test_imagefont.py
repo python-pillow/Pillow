@@ -224,7 +224,7 @@ def test_render_multiline(font: ImageFont.FreeTypeFont) -> None:
     draw = ImageDraw.Draw(im)
     line_spacing = font.getbbox("A")[3] + 4
     lines = TEST_TEXT.split("\n")
-    y = 0
+    y: float = 0
     for line in lines:
         draw.text((0, y), line, font=font)
         y += line_spacing
