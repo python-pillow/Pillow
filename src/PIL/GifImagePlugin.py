@@ -458,6 +458,8 @@ class GifImageFile(ImageFile.ImageFile):
             frame_im = self.im.convert("RGBA")
         else:
             frame_im = self.im.convert("RGB")
+
+        assert self.dispose_extent is not None
         frame_im = self._crop(frame_im, self.dispose_extent)
 
         self.im = self._prev_im

@@ -115,7 +115,11 @@ class FitsImageFile(ImageFile.ImageFile):
         elif number_of_bits in (-32, -64):
             self._mode = "F"
 
-        args = (self.mode, 0, -1) if decoder_name == "raw" else (number_of_bits,)
+        args: tuple[str | int, ...]
+        if decoder_name == "raw":
+            args = (self.mode, 0, -1)
+        else:
+            args = (number_of_bits,)
         return decoder_name, offset, args
 
 

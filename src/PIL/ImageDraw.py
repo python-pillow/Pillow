@@ -34,11 +34,15 @@ from __future__ import annotations
 import math
 import numbers
 import struct
+from types import ModuleType
 from typing import TYPE_CHECKING, AnyStr, Sequence, cast
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
 from ._typing import Coords
+
+if TYPE_CHECKING:
+    from . import ImageDraw2, ImageFont
 
 """
 A simple 2D drawing interface for PIL images.
@@ -92,9 +96,6 @@ class ImageDraw:
         else:
             self.fontmode = "L"  # aliasing is okay for other modes
         self.fill = False
-
-    if TYPE_CHECKING:
-        from . import ImageFont
 
     def getfont(
         self,
@@ -879,7 +880,7 @@ class ImageDraw:
         return bbox
 
 
-def Draw(im, mode: str | None = None) -> ImageDraw:
+def Draw(im: Image.Image, mode: str | None = None) -> ImageDraw:
     """
     A simple 2D drawing interface for PIL images.
 
@@ -891,7 +892,7 @@ def Draw(im, mode: str | None = None) -> ImageDraw:
        defaults to the mode of the image.
     """
     try:
-        return im.getdraw(mode)
+        return getattr(im, "getdraw")(mode)
     except AttributeError:
         return ImageDraw(im, mode)
 
@@ -903,7 +904,9 @@ except AttributeError:
     Outline = None
 
 
-def getdraw(im=None, hints=None):
+def getdraw(
+    im: Image.Image | None = None, hints: list[str] | None = None
+) -> tuple[ImageDraw2.Draw | None, ModuleType]:
     """
     :param im: The image to draw in.
     :param hints: An optional list of hints. Deprecated.
@@ -913,9 +916,8 @@ def getdraw(im=None, hints=None):
         deprecate("'hints' parameter", 12)
     from . import ImageDraw2
 
-    if im:
-        im = ImageDraw2.Draw(im)
-    return im, ImageDraw2
+    draw = ImageDraw2.Draw(im) if im is not None else None
+    return draw, ImageDraw2
 
 
 def floodfill(

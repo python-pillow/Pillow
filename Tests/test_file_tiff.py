@@ -113,7 +113,7 @@ class TestFileTiff:
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
-    def test_seek_too_large(self):
+    def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
             Image.open("Tests/images/seek_too_large.tif")
 

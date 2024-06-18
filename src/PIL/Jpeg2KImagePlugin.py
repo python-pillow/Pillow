@@ -122,7 +122,7 @@ def _parse_codestream(fp):
     elif csiz == 4:
         mode = "RGBA"
     else:
-        mode = None
+        mode = ""
 
     return size, mode
 
@@ -237,7 +237,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 msg = "not a JPEG 2000 file"
                 raise SyntaxError(msg)
 
-        if self.size is None or self.mode is None:
+        if self.size is None or not self.mode:
             msg = "unable to determine size/mode"
             raise SyntaxError(msg)
 

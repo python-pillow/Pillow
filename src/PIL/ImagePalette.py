@@ -54,7 +54,7 @@ class ImagePalette:
         self._palette = palette
 
     @property
-    def colors(self):
+    def colors(self) -> dict[tuple[int, int, int] | tuple[int, int, int, int], int]:
         if self._colors is None:
             mode_len = len(self.mode)
             self._colors = {}
@@ -66,7 +66,9 @@ class ImagePalette:
         return self._colors
 
     @colors.setter
-    def colors(self, colors):
+    def colors(
+        self, colors: dict[tuple[int, int, int] | tuple[int, int, int, int], int]
+    ) -> None:
         self._colors = colors
 
     def copy(self) -> ImagePalette:
@@ -107,11 +109,13 @@ class ImagePalette:
     # Declare tostring as an alias for tobytes
     tostring = tobytes
 
-    def _new_color_index(self, image=None, e=None):
+    def _new_color_index(
+        self, image: Image.Image | None = None, e: Exception | None = None
+    ) -> int:
         if not isinstance(self.palette, bytearray):
             self._palette = bytearray(self.palette)
         index = len(self.palette) // 3
-        special_colors = ()
+        special_colors: tuple[int | tuple[int, ...] | None, ...] = ()
         if image:
             special_colors = (
                 image.info.get("background"),
