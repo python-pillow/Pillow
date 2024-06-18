@@ -178,7 +178,7 @@ class ChunkStream:
     def __enter__(self) -> ChunkStream:
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def close(self) -> None:
@@ -1234,7 +1234,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
             seq_num = fdat_chunks.seq_num
 
 
-def _save_all(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 

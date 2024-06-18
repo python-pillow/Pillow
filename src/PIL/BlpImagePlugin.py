@@ -31,6 +31,7 @@ BLP files come in many different flavours:
 
 from __future__ import annotations
 
+import abc
 import os
 import struct
 from enum import IntEnum
@@ -60,7 +61,9 @@ def unpack_565(i: int) -> tuple[int, int, int]:
     return ((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3
 
 
-def decode_dxt1(data, alpha=False):
+def decode_dxt1(
+    data: bytes, alpha: bool = False
+) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
@@ -68,9 +71,9 @@ def decode_dxt1(data, alpha=False):
     blocks = len(data) // 8  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
+    for block_index in range(blocks):
         # Decode next 8-byte block.
-        idx = block * 8
+        idx = block_index * 8
         color0, color1, bits = struct.unpack_from("<HHI", data, idx)
 
         r0, g0, b0 = unpack_565(color0)
@@ -115,7 +118,7 @@ def decode_dxt1(data, alpha=False):
     return ret
 
 
-def decode_dxt3(data):
+def decode_dxt3(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
@@ -123,8 +126,8 @@ def decode_dxt3(data):
     blocks = len(data) // 16  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
-        idx = block * 16
+    for block_index in range(blocks):
+        idx = block_index * 16
         block = data[idx : idx + 16]
         # Decode next 16-byte block.
         bits = struct.unpack_from("<8B", block)
@@ -168,7 +171,7 @@ def decode_dxt3(data):
     return ret
 
 
-def decode_dxt5(data):
+def decode_dxt5(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4 * width pixels)
     """
@@ -176,8 +179,8 @@ def decode_dxt5(data):
     blocks = len(data) // 16  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
-        idx = block * 16
+    for block_index in range(blocks):
+        idx = block_index * 16
         block = data[idx : idx + 16]
         # Decode next 16-byte block.
         a0, a1 = struct.unpack_from("<BB", block)
@@ -276,7 +279,7 @@ class BlpImageFile(ImageFile.ImageFile):
 class _BLPBaseDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
         try:
             self._read_blp_header()
             self._load()
@@ -284,6 +287,10 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             msg = "Truncated BLP file"
             raise OSError(msg) from e
         return -1, 0
+
+    @abc.abstractmethod
+    def _load(self) -> None:
+        pass
 
     def _read_blp_header(self) -> None:
         assert self.fd is not None
@@ -318,7 +325,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             ret.append((b, g, r, a))
         return ret
 
-    def _read_bgra(self, palette):
+    def _read_bgra(self, palette: list[tuple[int, int, int, int]]) -> bytearray:
         data = bytearray()
         _data = BytesIO(self._safe_read(self._blp_lengths[0]))
         while True:
@@ -327,7 +334,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             except struct.error:
                 break
             b, g, r, a = palette[offset]
-            d = (r, g, b)
+            d: tuple[int, ...] = (r, g, b)
             if self._blp_alpha_depth:
                 d += (a,)
             data.extend(d)
@@ -431,7 +438,7 @@ class BLPEncoder(ImageFile.PyEncoder):
             data += b"\x00" * 4
         return data
 
-    def encode(self, bufsize):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         palette_data = self._write_palette()
 
         offset = 20 + 16 * 4 * 2 + len(palette_data)
@@ -449,7 +456,7 @@ class BLPEncoder(ImageFile.PyEncoder):
         return len(data), 0, data
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "P":
         msg = "Unsupported BLP image mode"
         raise ValueError(msg)

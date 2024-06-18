@@ -40,7 +40,7 @@ from ._binary import o32le as o32
 _MAGIC = b"\0\0\1\0"
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(_MAGIC)  # (2+2)
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
     sizes = im.encoderinfo.get(

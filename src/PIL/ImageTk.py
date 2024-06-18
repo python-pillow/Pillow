@@ -37,7 +37,7 @@ from . import Image
 _pilbitmap_ok = None
 
 
-def _pilbitmap_check():
+def _pilbitmap_check() -> int:
     global _pilbitmap_ok
     if _pilbitmap_ok is None:
         try:
@@ -162,7 +162,7 @@ class PhotoImage:
         """
         return self.__size[1]
 
-    def paste(self, im):
+    def paste(self, im: Image.Image) -> None:
         """
         Paste a PIL image into the photo image.  Note that this can
         be very slow if the photo image is displayed.
@@ -254,7 +254,7 @@ class BitmapImage:
         return str(self.__photo)
 
 
-def getimage(photo):
+def getimage(photo: PhotoImage) -> Image.Image:
     """Copies the contents of a PhotoImage to a PIL image memory."""
     im = Image.new("RGBA", (photo.width(), photo.height()))
     block = im.im

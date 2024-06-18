@@ -93,7 +93,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         self.ole.close()
         super().close()
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.__fp.close()
         self.ole.close()
         super().__exit__()

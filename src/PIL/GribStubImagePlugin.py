@@ -60,7 +60,7 @@ class GribStubImageFile(ImageFile.StubImageFile):
         return _handler
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if _handler is None or not hasattr(_handler, "save"):
         msg = "GRIB save handler not installed"
         raise OSError(msg)

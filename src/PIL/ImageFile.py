@@ -487,7 +487,7 @@ class Parser:
     def __enter__(self):
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def close(self):
@@ -763,7 +763,7 @@ class PyEncoder(PyCodec):
     def pushes_fd(self):
         return self._pushes_fd
 
-    def encode(self, bufsize):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         """
         Override to perform the encoding process.
 

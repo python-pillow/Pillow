@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import Any
+from typing import IO, Any
 
 from . import Image, ImageFile
 
@@ -182,7 +182,7 @@ class WebPImageFile(ImageFile.ImageFile):
         return self.__logical_frame
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderinfo = im.encoderinfo.copy()
     append_images = list(encoderinfo.get("append_images", []))
 
@@ -195,7 +195,7 @@ def _save_all(im, fp, filename):
         _save(im, fp, filename)
         return
 
-    background = (0, 0, 0, 0)
+    background: int | tuple[int, ...] = (0, 0, 0, 0)
     if "background" in encoderinfo:
         background = encoderinfo["background"]
     elif "background" in im.info:
@@ -325,7 +325,7 @@ def _save_all(im, fp, filename):
     fp.write(data)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     lossless = im.encoderinfo.get("lossless", False)
     quality = im.encoderinfo.get("quality", 80)
     alpha_quality = im.encoderinfo.get("alpha_quality", 100)

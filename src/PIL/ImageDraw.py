@@ -37,6 +37,7 @@ import struct
 from typing import TYPE_CHECKING, AnyStr, Sequence, cast
 
 from . import Image, ImageColor
+from ._deprecate import deprecate
 from ._typing import Coords
 
 """
@@ -219,7 +220,9 @@ class ImageDraw:
                         # This is a straight line, so no joint is required
                         continue
 
-                    def coord_at_angle(coord, angle):
+                    def coord_at_angle(
+                        coord: Sequence[float], angle: float
+                    ) -> tuple[float, float]:
                         x, y = coord
                         angle -= 90
                         distance = width / 2 - 1
@@ -902,26 +905,17 @@ except AttributeError:
 
 def getdraw(im=None, hints=None):
     """
-    (Experimental) A more advanced 2D drawing interface for PIL images,
-    based on the WCK interface.
-
     :param im: The image to draw in.
-    :param hints: An optional list of hints.
+    :param hints: An optional list of hints. Deprecated.
     :returns: A (drawing context, drawing resource factory) tuple.
     """
-    # FIXME: this needs more work!
-    # FIXME: come up with a better 'hints' scheme.
-    handler = None
-    if not hints or "nicest" in hints:
-        try:
-            from . import _imagingagg as handler
-        except ImportError:
-            pass
-    if handler is None:
-        from . import ImageDraw2 as handler
+    if hints is not None:
+        deprecate("'hints' parameter", 12)
+    from . import ImageDraw2
+
     if im:
-        im = handler.Draw(im)
-    return im, handler
+        im = ImageDraw2.Draw(im)
+    return im, ImageDraw2
 
 
 def floodfill(
@@ -1109,11 +1103,13 @@ def _compute_regular_polygon_vertices(
     return [_compute_polygon_vertex(angle) for angle in angles]
 
 
-def _color_diff(color1, color2: float | tuple[int, ...]) -> float:
+def _color_diff(
+    color1: float | tuple[int, ...], color2: float | tuple[int, ...]
+) -> float:
     """
     Uses 1-norm distance to calculate difference between two values.
     """
-    if isinstance(color2, tuple):
-        return sum(abs(color1[i] - color2[i]) for i in range(0, len(color2)))
-    else:
-        return abs(color1 - color2)
+    first = color1 if isinstance(color1, tuple) else (color1,)
+    second = color2 if isinstance(color2, tuple) else (color2,)
+
+    return sum(abs(first[i] - second[i]) for i in range(0, len(second)))

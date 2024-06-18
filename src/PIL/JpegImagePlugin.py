@@ -42,7 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import Any
+from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -644,7 +644,7 @@ def get_sampling(im):
     return samplings.get(sampling, -1)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.width == 0 or im.height == 0:
         msg = "cannot write empty image as JPEG"
         raise ValueError(msg)
@@ -827,7 +827,7 @@ def _save(im, fp, filename):
     ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
 
 
-def _save_cjpeg(im, fp, filename):
+def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])

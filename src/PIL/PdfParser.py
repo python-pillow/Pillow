@@ -76,7 +76,7 @@ class PdfFormatError(RuntimeError):
     pass
 
 
-def check_format_condition(condition, error_message):
+def check_format_condition(condition: bool, error_message: str) -> None:
     if not condition:
         raise PdfFormatError(error_message)
 
@@ -93,12 +93,11 @@ class IndirectReference(IndirectReferenceTuple):
     def __bytes__(self) -> bytes:
         return self.__str__().encode("us-ascii")
 
-    def __eq__(self, other):
-        return (
-            other.__class__ is self.__class__
-            and other.object_id == self.object_id
-            and other.generation == self.generation
-        )
+    def __eq__(self, other: object) -> bool:
+        if self.__class__ is not other.__class__:
+            return False
+        assert isinstance(other, IndirectReference)
+        return other.object_id == self.object_id and other.generation == self.generation
 
     def __ne__(self, other):
         return not (self == other)
@@ -405,9 +404,8 @@ class PdfParser:
     def __enter__(self) -> PdfParser:
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, *args: object) -> None:
         self.close()
-        return False  # do not suppress exceptions
 
     def start_writing(self) -> None:
         self.close_buf()

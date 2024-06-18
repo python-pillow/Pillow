@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Accept 't' suffix for libtiff version #8126, #8129
+  [radarhere]
+
+- Deprecate ImageDraw.getdraw hints parameter #8124
+  [radarhere, hugovk]
+
 - Added ImageDraw circle() #8085
   [void4, hugovk, radarhere]
 

@@ -326,7 +326,7 @@ SAVE = {
 }
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -341,6 +341,8 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
         # or: SyntaxError("not an IM file")
         # 8 characters are used for "Name: " and "\r\n"
         # Keep just the filename, ditch the potentially overlong path
+        if isinstance(filename, bytes):
+            filename = filename.decode("ascii")
         name, ext = os.path.splitext(os.path.basename(filename))
         name = "".join([name[: 92 - len(ext)], ext])
 

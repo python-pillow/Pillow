@@ -27,6 +27,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
@@ -236,7 +237,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 msg = 'EPS header missing "%%BoundingBox" comment'
                 raise SyntaxError(msg)
 
-        def _read_comment(s):
+        def _read_comment(s: str) -> bool:
             nonlocal reading_trailer_comments
             try:
                 m = split.match(s)
@@ -244,27 +245,25 @@ class EpsImageFile(ImageFile.ImageFile):
                 msg = "not an EPS file"
                 raise SyntaxError(msg) from e
 
-            if m:
-                k, v = m.group(1, 2)
-                self.info[k] = v
-                if k == "BoundingBox":
-                    if v == "(atend)":
-                        reading_trailer_comments = True
-                    elif not self._size or (
-                        trailer_reached and reading_trailer_comments
-                    ):
-                        try:
-                            # Note: The DSC spec says that BoundingBox
-                            # fields should be integers, but some drivers
-                            # put floating point values there anyway.
-                            box = [int(float(i)) for i in v.split()]
-                            self._size = box[2] - box[0], box[3] - box[1]
-                            self.tile = [
-                                ("eps", (0, 0) + self.size, offset, (length, box))
-                            ]
-                        except Exception:
-                            pass
-                return True
+            if not m:
+                return False
+
+            k, v = m.group(1, 2)
+            self.info[k] = v
+            if k == "BoundingBox":
+                if v == "(atend)":
+                    reading_trailer_comments = True
+                elif not self._size or (trailer_reached and reading_trailer_comments):
+                    try:
+                        # Note: The DSC spec says that BoundingBox
+                        # fields should be integers, but some drivers
+                        # put floating point values there anyway.
+                        box = [int(float(i)) for i in v.split()]
+                        self._size = box[2] - box[0], box[3] - box[1]
+                        self.tile = [("eps", (0, 0) + self.size, offset, (length, box))]
+                    except Exception:
+                        pass
+            return True
 
         while True:
             byte = self.fp.read(1)
@@ -413,7 +412,7 @@ class EpsImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 
 
-def _save(im, fp, filename, eps=1):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -> None:
     """EPS Writer for the Python Imaging Library."""
 
     # make sure image data is available

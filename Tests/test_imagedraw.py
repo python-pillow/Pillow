@@ -1628,3 +1628,8 @@ def test_incorrectly_ordered_coordinates(xy: tuple[int, int, int, int]) -> None:
         draw.rectangle(xy)
     with pytest.raises(ValueError):
         draw.rounded_rectangle(xy)
+
+
+def test_getdraw():
+    with pytest.warns(DeprecationWarning):
+        ImageDraw.getdraw(None, [])
