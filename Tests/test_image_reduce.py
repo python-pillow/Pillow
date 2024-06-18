@@ -56,10 +56,12 @@ def test_args_factor(size: int | tuple[int, int], expected: tuple[int, int]) -> 
 @pytest.mark.parametrize(
     "size, expected_error", ((0, ValueError), (2.0, TypeError), ((0, 10), ValueError))
 )
-def test_args_factor_error(size: float | tuple[int, int], expected_error) -> None:
+def test_args_factor_error(
+    size: float | tuple[int, int], expected_error: type[Exception]
+) -> None:
     im = Image.new("L", (10, 10))
     with pytest.raises(expected_error):
-        im.reduce(size)
+        im.reduce(size)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(
@@ -86,10 +88,12 @@ def test_args_box(size: tuple[int, int, int, int], expected: tuple[int, int]) ->
         ((5, 0, 5, 10), ValueError),
     ),
 )
-def test_args_box_error(size: str | tuple[int, int, int, int], expected_error) -> None:
+def test_args_box_error(
+    size: str | tuple[int, int, int, int], expected_error: type[Exception]
+) -> None:
     im = Image.new("L", (10, 10))
     with pytest.raises(expected_error):
-        im.reduce(2, size).size
+        im.reduce(2, size).size  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("mode", ("P", "1", "I;16"))
