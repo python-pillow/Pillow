@@ -454,7 +454,7 @@ def test_autocontrast_cutoff() -> None:
     # Test the cutoff argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
 
-        def autocontrast(cutoff: int | tuple[int, int]):
+        def autocontrast(cutoff: int | tuple[int, int]) -> list[int]:
             return ImageOps.autocontrast(img, cutoff).histogram()
 
         assert autocontrast(10) == autocontrast((10, 10))

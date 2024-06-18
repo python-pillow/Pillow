@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -8,13 +9,19 @@ from PIL import Image
 
 from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
 
-numpy = pytest.importorskip("numpy", reason="NumPy not installed")
+if TYPE_CHECKING:
+    import numpy
+    import numpy.typing
+else:
+    numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
 TEST_IMAGE_SIZE = (10, 10)
 
 
 def test_numpy_to_image() -> None:
-    def to_image(dtype, bands: int = 1, boolean: int = 0) -> Image.Image:
+    def to_image(
+        dtype: numpy.typing.DTypeLike, bands: int = 1, boolean: int = 0
+    ) -> Image.Image:
         if bands == 1:
             if boolean:
                 data = [0, 255] * 50
@@ -99,14 +106,16 @@ def test_1d_array() -> None:
     assert_image(Image.fromarray(a), "L", (1, 5))
 
 
-def _test_img_equals_nparray(img: Image.Image, np) -> None:
-    assert len(np.shape) >= 2
-    np_size = np.shape[1], np.shape[0]
+def _test_img_equals_nparray(
+    img: Image.Image, np_img: numpy.typing.NDArray[Any]
+) -> None:
+    assert len(np_img.shape) >= 2
+    np_size = np_img.shape[1], np_img.shape[0]
     assert img.size == np_size
     px = img.load()
     for x in range(0, img.size[0], int(img.size[0] / 10)):
         for y in range(0, img.size[1], int(img.size[1] / 10)):
-            assert_deep_equal(px[x, y], np[y, x])
+            assert_deep_equal(px[x, y], np_img[y, x])
 
 
 def test_16bit() -> None:
@@ -157,7 +166,7 @@ def test_save_tiff_uint16() -> None:
         ("HSV", numpy.uint8),
     ),
 )
-def test_to_array(mode: str, dtype) -> None:
+def test_to_array(mode: str, dtype: numpy.typing.DTypeLike) -> None:
     img = hopper(mode)
 
     # Resize to non-square
@@ -207,7 +216,7 @@ def test_putdata() -> None:
         numpy.float64,
     ),
 )
-def test_roundtrip_eye(dtype) -> None:
+def test_roundtrip_eye(dtype: numpy.typing.DTypeLike) -> None:
     arr = numpy.eye(10, dtype=dtype)
     numpy.testing.assert_array_equal(arr, numpy.array(Image.fromarray(arr)))
 
