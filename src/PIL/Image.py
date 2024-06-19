@@ -75,14 +75,6 @@ class DecompressionBombWarning(RuntimeWarning):
 class DecompressionBombError(Exception):
     pass
 
-branches = {
-    "1": False,
-    "2": False,
-    "3": False,
-    "4": False,
-    "5": False,
-}
-
 
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
 MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
@@ -545,6 +537,14 @@ class Image:
         self.pyaccess = None
         self._exif = None
 
+    branches = {
+        "1": False,
+        "2": False,
+        "3": False,
+        "4": False,
+        "5": False,
+        }
+
     @property
     def width(self) -> int:
         return self.size[0]
@@ -593,6 +593,7 @@ class Image:
             if getattr(self, "_exclusive_fp", False):
                 self._close_fp()
             self.fp = None
+
 
     def close(self) -> None:
         """
