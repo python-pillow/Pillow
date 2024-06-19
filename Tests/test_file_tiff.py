@@ -759,6 +759,7 @@ class TestFileTiff:
                 ):
                     assert im.getxmp() == {}
             else:
+                assert "xmp" in im.info
                 xmp = im.getxmp()
 
                 description = xmp["xmpmeta"]["RDF"]["Description"]
