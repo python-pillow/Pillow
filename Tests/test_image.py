@@ -1087,3 +1087,6 @@ class TestRegistry:
     def test_encode_registry_fail(self) -> None:
         with pytest.raises(OSError):
             Image._getencoder("RGB", "DoesNotExist", ("args",), extra=("extra",))
+
+
+
