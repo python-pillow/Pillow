@@ -75,6 +75,14 @@ class DecompressionBombWarning(RuntimeWarning):
 class DecompressionBombError(Exception):
     pass
 
+branches = {
+    "1": False,
+    "2": False,
+    "3": False,
+    "4": False,
+    "5": False,
+}
+
 
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
 MAX_IMAGE_PIXELS: int | None = int(1024 * 1024 * 1024 // 4 // 3)
@@ -3521,16 +3529,21 @@ def merge(mode: str, bands: Sequence[Image]) -> Image:
     """
 
     if getmodebands(mode) != len(bands) or "*" in mode:
+        branches["1"] = True
         msg = "wrong number of bands"
         raise ValueError(msg)
     for band in bands[1:]:
+        branches["2"] = True
         if band.mode != getmodetype(mode):
+            branches["3"] = True
             msg = "mode mismatch"
             raise ValueError(msg)
         if band.size != bands[0].size:
+            branches["4"] = True
             msg = "size mismatch"
             raise ValueError(msg)
     for band in bands:
+        branches["5"] = True
         band.load()
     return bands[0]._new(core.merge(mode, *[b.im for b in bands]))
 
