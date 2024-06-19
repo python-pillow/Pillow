@@ -3,22 +3,30 @@ import pytest
 import sys
 
 from PIL import Image
+from PIL import PdfParser
 
 pytest_plugins = ["Tests.helper"]
 
 
 def calculate_coverage(test_name):
-    branch = Image.branches
-    branches = Image.branches
-    num_branches = len(branches)
-    branch_covered = {key: value for key, value in branches.items() if value is True}
-    sum_branches = len(branch_covered)
-    coverage = (sum_branches/num_branches) * 100
-    print(f"\nBranches covered: {sum_branches}")
-    print(f"\nTotal branches: {num_branches}")
-    print("\nBRANCH COVERAGE:", coverage, "%\n")
-    return coverage
+    all_branches = {
+        "branches1": Image.branches,
+        "branches2": PdfParser.XrefTable.branches,
+        # Add more
+    }
 
+    for name, branches in all_branches.items():
+        num_branches = len(branches)
+        branch_covered = {key: value for key, value in branches.items() if value is True}
+        sum_branches = len(branch_covered)
+        coverage = (sum_branches / num_branches) * 100
+
+        print(f"\n{name} - Branches covered: {sum_branches}")
+        print(f"{name} - Total branches: {num_branches}")
+        print(f"{name} - BRANCH COVERAGE: {coverage}%\n")
+
+
+    return all_branches["branches1"]
 
 
 @pytest.hookimpl(tryfirst=True)

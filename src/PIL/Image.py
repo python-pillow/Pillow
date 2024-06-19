@@ -67,6 +67,13 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+branches = {
+    "1": False,
+    "2": False,
+    "3": False,
+    "4": False,
+    "5": False,
+    }
 
 class DecompressionBombWarning(RuntimeWarning):
     pass
@@ -536,14 +543,6 @@ class Image:
         self.readonly = 0
         self.pyaccess = None
         self._exif = None
-
-    branches = {
-        "1": False,
-        "2": False,
-        "3": False,
-        "4": False,
-        "5": False,
-        }
 
     @property
     def width(self) -> int:

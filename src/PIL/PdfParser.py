@@ -112,6 +112,14 @@ class IndirectObjectDef(IndirectReference):
 
 
 class XrefTable:
+
+    branches = {
+        "1": False,
+        "2": False,
+        "3": False,
+        "4": False,
+        }
+
     def __init__(self):
         self.existing_entries = {}  # object ID => (offset, generation)
         self.new_entries = {}  # object ID => (offset, generation)
@@ -134,15 +142,19 @@ class XrefTable:
 
     def __delitem__(self, key):
         if key in self.new_entries:
+            XrefTable.branches["1"] = True
             generation = self.new_entries[key][1] + 1
             del self.new_entries[key]
             self.deleted_entries[key] = generation
         elif key in self.existing_entries:
+            XrefTable.branches["2"] = True
             generation = self.existing_entries[key][1] + 1
             self.deleted_entries[key] = generation
         elif key in self.deleted_entries:
+            XrefTable.branches["3"] = True
             generation = self.deleted_entries[key]
         else:
+            XrefTable.branches["4"] = True
             msg = f"object ID {key} cannot be deleted because it doesn't exist"
             raise IndexError(msg)
 
