@@ -227,7 +227,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 if TYPE_CHECKING:
-    from . import ImageFile
+    from . import ImageFile, PyAccess
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -510,31 +510,6 @@ def _getscaleoffset(expr):
 
 # --------------------------------------------------------------------
 # Implementation wrapper
-
-
-class PixelAccess(Protocol):
-    def __getitem__(self, xy: tuple[int, int]) -> float | tuple[int, ...]:
-        """
-        Returns the pixel at x,y. The pixel is returned as a single
-        value for single band images or a tuple for multi-band images.
-
-        :param xy: The pixel coordinate, given as (x, y).
-        :returns: a pixel value for single band images, a tuple of
-                  pixel values for multiband images.
-        """
-        raise NotImplementedError()
-
-    def __setitem__(self, xy: tuple[int, int], color: float | tuple[int, ...]) -> None:
-        """
-        Modifies the pixel at x,y. The color is given as a single
-        numerical value for single band images, and a tuple for
-        multi-band images.
-
-        :param xy: The pixel coordinate, given as (x, y).
-        :param color: The pixel value according to its mode,
-                      e.g. tuple (r, g, b) for RGB mode.
-        """
-        raise NotImplementedError()
 
 
 class SupportsGetData(Protocol):
@@ -897,7 +872,7 @@ class Image:
             msg = "cannot decode image data"
             raise ValueError(msg)
 
-    def load(self) -> PixelAccess | None:
+    def load(self) -> core.PixelAccess | PyAccess.PyAccess | None:
         """
         Allocates storage for the image and loads the pixel data.  In
         normal cases, you don't need to call this method, since the
