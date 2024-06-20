@@ -27,7 +27,7 @@ class TestFromBytes(unittest.TestCase):
         image = Image.frombytes("L", (2, 1), data)
         self.assertEqual(image.size, (2, 1))
         self.assertEqual(image.getpixel((0, 0)), 0)
-        # self.assertEqual(image.getpixel((1, 0)), 255)
+        self.assertEqual(image.getpixel((1, 0)), 255)
 
         # Test case 5: Zero width
         data = b""
@@ -48,8 +48,8 @@ class TestFromBytes(unittest.TestCase):
         # Test case 8: s[1] == 0
         data = b"\x00\x00\xFF\xFF\x00\x00"
         s = (2, 0)
-        # with self.assertRaises(ValueError):
-        #     Image.frombytes("RGB", s, data)
+        with self.assertRaises(ValueError):
+            Image.frombytes("RGB", s, data)
 
         # Test case 5: Different size
         data = b"\x00\x00\xFF\xFF\x00\x00\xFF\xFF\x00\x00"
@@ -57,7 +57,7 @@ class TestFromBytes(unittest.TestCase):
         self.assertEqual(image.size, (3, 1))
         self.assertEqual(image.getpixel((0, 0)), (0, 0, 255))
         self.assertEqual(image.getpixel((1, 0)), (255, 0, 0))
-        # self.assertEqual(image.getpixel((2, 0)), (255, 0, 0))
+        self.assertEqual(image.getpixel((2, 0)), (255, 0, 0))
 
 if __name__ == "__main__":
     unittest.main()
