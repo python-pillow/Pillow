@@ -15,11 +15,27 @@ from .helper import (
 
 
 def test_load_blp1() -> None:
+    # Test when _blp_compression is Format.JPEG
     with Image.open("Tests/images/blp/blp1_jpeg.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp1_jpeg.png")
 
-    with Image.open("Tests/images/blp/blp1_jpeg2.blp") as im:
+    # Test when _blp_compression is 1 and _blp_encoding is 4 or 5
+    with Image.open("Tests/images/blp/blp1_encoding4.blp") as im:
         im.load()
+    with Image.open("Tests/images/blp/blp1_encoding5.blp") as im:
+        im.load()
+
+    # Test when _blp_compression is 1 but _blp_encoding is not 4 or 5
+    with pytest.raises(BLPFormatError):
+        with Image.open("Tests/images/blp/blp1_invalid_encoding.blp") as im:
+            im.load()
+
+    # Test when _blp_compression is not 1 or Format.JPEG
+    with pytest.raises(BLPFormatError):
+        with Image.open("Tests/images/blp/blp1_invalid_compression.blp") as im:
+            im.load()
+
+
 
 
 def test_load_blp2_raw() -> None:
