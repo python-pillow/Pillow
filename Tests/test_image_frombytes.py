@@ -17,3 +17,4 @@ def test_sanity(data_type: str) -> None:
     im2 = Image.frombytes(im1.mode, im1.size, data)
 
     assert_image_equal(im1, im2)
+    
