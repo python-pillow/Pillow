@@ -67,6 +67,13 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+branches = {
+    "1": False,
+    "2": False,
+    "3": False,
+    "4": False,
+    "5": False,
+    }
 
 class DecompressionBombWarning(RuntimeWarning):
     pass
@@ -74,14 +81,6 @@ class DecompressionBombWarning(RuntimeWarning):
 
 class DecompressionBombError(Exception):
     pass
-
-branches = {
-    "1": False,
-    "2": False,
-    "3": False,
-    "4": False,
-    "5": False,
-}
 
 
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
@@ -593,6 +592,7 @@ class Image:
             if getattr(self, "_exclusive_fp", False):
                 self._close_fp()
             self.fp = None
+
 
     def close(self) -> None:
         """
