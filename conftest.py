@@ -25,7 +25,6 @@ def calculate_coverage(test_name):
         print(f"{name} - Total branches: {num_branches}")
         print(f"{name} - BRANCH COVERAGE: {coverage}%\n")
 
-
     return all_branches["branches1"]
 
 
