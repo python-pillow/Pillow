@@ -60,7 +60,6 @@ from ._deprecate import deprecate
 from .TiffTags import TYPES
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  # XXX hack202406
 
 # Set these to true to force use of libtiff for reading or writing.
 READ_LIBTIFF = False
@@ -1483,7 +1482,7 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- pil mode: %s", self.mode)
         if self.mode == "MB":
             assert max(bps_tuple) == min(bps_tuple)
-            self.newconfig = (max(bps_tuple), samples_per_pixel)
+            self.mb_config = (max(bps_tuple), samples_per_pixel)
 
         self.info["compression"] = self._compression
 
