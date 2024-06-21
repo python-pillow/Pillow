@@ -248,6 +248,17 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
+    branches = {
+        "1": False,
+        "2": False,
+        "3": False,
+        "4": False,
+        "5": False,
+        "6": False,
+        "7": False,
+        "8": False,
+    }
+
     def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
@@ -257,30 +268,31 @@ class ImageCmsProfile:
         """
 
         if isinstance(profile, str):
-            branches["1"] = True
+            ImageCmsProfile.branches["1"] = True
             if sys.platform == "win32":
-                branches["2"] = True
+                ImageCmsProfile.branches["2"] = True
                 profile_bytes_path = profile.encode()
                 try:
-                    branches["3"] = True
+                    ImageCmsProfile.branches["3"] = True
                     profile_bytes_path.decode("ascii")
                 except UnicodeDecodeError:
-                    branches["4"] = True
+                    ImageCmsProfile.branches["4"] = True
                     with open(profile, "rb") as f:
-                        branches["5"] = True
+                        ImageCmsProfile.branches["5"] = True
                         self._set(core.profile_frombytes(f.read()))
                     return
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
-            branches["6"] = True
+            ImageCmsProfile.branches["6"] = True
             self._set(core.profile_frombytes(profile.read()))
         elif isinstance(profile, core.CmsProfile):
-            branches["7"] = True
+            ImageCmsProfile.branches["7"] = True
             self._set(profile)
         else:
-            branches["8"] = True
+            ImageCmsProfile.branches["8"] = True
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
+
 
     def _set(self, profile: core.CmsProfile, filename: str | None = None) -> None:
         self.profile = profile
