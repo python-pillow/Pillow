@@ -235,25 +235,21 @@ class MockPyEncoder(ImageFile.PyEncoder):
 def test_encode_to_file() -> None:
     encoder = MockPyEncoder("RGBA")
 
-    # Case: _pushes_fd is False
     with pytest.raises(NotImplementedError):
         encoder.encode_to_file(None, None)
 
-    # Case: _pushes_fd is True
     encoder._pushes_fd = True
     with pytest.raises(NotImplementedError):
         encoder.encode_to_file(None, None)
 
-    # Case: encode method called with buffer (no exception)
     buffer = BytesIO(b"\x00" * 10)
     encoder._pushes_fd = False
     encoder.encode = lambda buffer: (1, 1, b"")
     try:
         encoder.encode_to_file(buffer, None)
     except NotImplementedError:
-        pass  # NotImplementedError is expected
+        pass
 
-    # Case: encode method raises NotImplementedError
     encoder.encode = lambda buffer: (_ for _ in ()).throw(NotImplementedError)
     with pytest.raises(NotImplementedError):
         encoder.encode_to_file(buffer, None)
