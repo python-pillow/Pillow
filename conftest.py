@@ -15,7 +15,7 @@ def calculate_coverage(test_name):
     all_branches = {
         "branches1": Image.branches,
         "branches2": PdfParser.XrefTable.branches,
-        "branches3": ImageCms.ImageCmsProfile.branches,
+        "branches3": ImageCms.PyCMSError.branches,
         "branches4": McIdasImagePlugin.McIdasImageFile.branches,
         "branches5": ImageFile.PyEncoder.branches,
         # Add more

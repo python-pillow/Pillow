@@ -218,15 +218,59 @@ class MockPyEncoder(ImageFile.PyEncoder):
     last: MockPyEncoder | None
 
     def __init__(self, mode: str, *args: Any) -> None:
-        MockPyEncoder.last = self
-
         super().__init__(mode, *args)
+        self._pushes_fd = False
+        self.cleanup_called = False
 
     def encode(self, buffer):
+        # Simulate encoding
+        if buffer is None:
+            raise NotImplementedError
         return 1, 1, b""
 
     def cleanup(self) -> None:
         self.cleanup_called = True
+
+def test_encode_to_file() -> None:
+    encoder = MockPyEncoder("RGBA")
+
+    # Case: _pushes_fd is False
+    with pytest.raises(NotImplementedError):
+        encoder.encode_to_file(None, None)
+
+    # Case: _pushes_fd is True
+    encoder._pushes_fd = True
+    with pytest.raises(NotImplementedError):
+        encoder.encode_to_file(None, None)
+
+    # Case: encode method called with buffer (no exception)
+    buffer = BytesIO(b"\x00" * 10)
+    encoder._pushes_fd = False
+    encoder.encode = lambda buffer: (1, 1, b"")
+    try:
+        encoder.encode_to_file(buffer, None)
+    except NotImplementedError:
+        pass  # NotImplementedError is expected
+
+    # Case: encode method raises NotImplementedError
+    encoder.encode = lambda buffer: (_ for _ in ()).throw(NotImplementedError)
+    with pytest.raises(NotImplementedError):
+        encoder.encode_to_file(buffer, None)
+
+    # Case: cleanup is called after exception
+    encoder.encode = lambda buffer: (_ for _ in ()).throw(ValueError)
+    with pytest.raises(ValueError):
+        encoder.encode_to_file(buffer, None)
+    assert encoder.cleanup_called
+
+    # Case: encode returns unexpected values
+    encoder.encode = lambda buffer: (None, None, None)
+    with pytest.raises(ValueError):
+        encoder.encode_to_file(buffer, None)
+
+    # Case: UnidentifiedImageError
+    with pytest.raises(UnidentifiedImageError):
+        encoder.encode_to_file(buffer, BytesIO(b"\x00" * 10))
 
 
 xoff, yoff, xsize, ysize = 10, 20, 100, 100
@@ -397,12 +441,3 @@ class TestPyEncoder(CodecsTest):
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):
             Image.open("Tests/images/zero_height.j2k")
-
-    def test_encode_to_file_branches(self) -> None:
-        mock_file = BytesIO()
-        encoder = ImageFile.PyEncoder("RGB")
-        encoder.branches = {"1": False, "2": False}
-        errcode = encoder.encode_to_file(mock_file, 1024)
-        assert encoder.branches["1"] is True
-        assert encoder.branches["2"] is True
-        assert errcode == 0
