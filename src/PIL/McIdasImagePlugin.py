@@ -31,6 +31,14 @@ def _accept(prefix: bytes) -> bool:
 
 
 class McIdasImageFile(ImageFile.ImageFile):
+    branches = {
+        "1": False,
+        "2": False,
+        "3": False,
+        "4": False,
+        "5": False,
+        }
+
     format = "MCIDAS"
     format_description = "McIdas area file"
 
@@ -40,6 +48,7 @@ class McIdasImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(256)
         if not _accept(s) or len(s) != 256:
+            McIdasImageFile.branches["1"] = True
             msg = "not an McIdas area file"
             raise SyntaxError(msg)
 
@@ -48,16 +57,20 @@ class McIdasImageFile(ImageFile.ImageFile):
 
         # get mode
         if w[11] == 1:
+            McIdasImageFile.branches["2"] = True
             mode = rawmode = "L"
         elif w[11] == 2:
+            McIdasImageFile.branches["3"] = True
             # FIXME: add memory map support
             mode = "I"
             rawmode = "I;16B"
         elif w[11] == 4:
+            McIdasImageFile.branches["4"] = True
             # FIXME: add memory map support
             mode = "I"
             rawmode = "I;32B"
         else:
+            McIdasImageFile.branches["5"] = True
             msg = "unsupported McIdas format"
             raise SyntaxError(msg)
 
@@ -76,3 +89,4 @@ class McIdasImageFile(ImageFile.ImageFile):
 Image.register_open(McIdasImageFile.format, McIdasImageFile, _accept)
 
 # no default extension
+
