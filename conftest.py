@@ -13,8 +13,8 @@ def calculate_coverage(test_name):
     all_branches = {
         "branches1": Image.branches,
         "branches2": PdfParser.XrefTable.branches,
-        "branches3": SpiderImagePlugin.branches1,
-        "branches4": SpiderImagePlugin.branches2,
+        "branches3": SpiderImagePlugin.SpiderImageFile.branches1,
+        "branches4": SpiderImagePlugin.SpiderImageFile.branches2,
         # Add more
     }
 

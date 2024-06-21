@@ -42,32 +42,6 @@ from typing import IO, TYPE_CHECKING
 from . import Image, ImageFile
 
 
-branches1 = {
-    "1": False,
-    "2": False,
-    "3": False,
-    "4": False,
-    "5": False,
-    "6": False,
-    "7": False,
-    "8": False,
-    "9": False,
-    "10": False,
-    "11": False,
-    "12": False,
-    "13": False,
-    "14": False,
-}
-
-branches2 = {
-    "1": False,
-    "2": False,
-    "3": False,
-    "4": False,
-    "5": False,
-    "6": False,
-    "7": False,
-}
 
 def isInt(f):
     try:
@@ -125,34 +99,58 @@ class SpiderImageFile(ImageFile.ImageFile):
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
 
+    branches1 = {
+        "1": False,
+        "2": False,
+        "3": False,
+        "4": False,
+        "5": False,
+        "6": False,
+        "7": False,
+        "8": False,
+        "9": False,
+        "10": False,
+        "11": False,
+        "12": False,
+        "13": False,
+        "14": False
+    }
+
+    branches2 = {
+        "1": False,
+        "2": False,
+        "3": False,
+        "4": False
+    }
+
     def _open(self) -> None:
         # check header
         n = 27 * 4  # read 27 float values
         f = self.fp.read(n)
 
         try:
-            branches1["1"] = True
+            SpiderImageFile.branches1["1"] = True
             self.bigendian = 1
             t = struct.unpack(">27f", f)  # try big-endian first
             hdrlen = isSpiderHeader(t)
 
             if hdrlen == 0:
-                branches1["2"] = True
+                SpiderImageFile.branches1["2"] = True
                 self.bigendian = 0
                 t = struct.unpack("<27f", f)  # little-endian
                 hdrlen = isSpiderHeader(t)
             else:  # ADDED FOR BRANCH MARKING
-                branches1["3"] = True
+                SpiderImageFile.branches1["3"] = True
 
             if hdrlen == 0:
-                branches1["4"] = True
+                SpiderImageFile.branches1["4"] = True
                 msg = "not a valid Spider file"
                 raise SyntaxError(msg)
             else:  # ADDED FOR BRANCH MARKING
-                branches1["5"] = True
+                SpiderImageFile.branches1["5"] = True
 
         except struct.error as e:
-            branches1["6"] = True
+            SpiderImageFile.branches1["6"] = True
             msg = "not a valid Spider file"
             raise SyntaxError(msg) from e
 
@@ -160,23 +158,23 @@ class SpiderImageFile(ImageFile.ImageFile):
         iform = int(h[5])
 
         if iform != 1:
-            branches1["7"] = True
+            SpiderImageFile.branches1["7"] = True
             msg = "not a Spider 2D image"
             raise SyntaxError(msg)
         else:  # ADDED FOR BRANCH MARKING
-            branches1["8"] = True
+            SpiderImageFile.branches1["8"] = True
 
         self._size = int(h[12]), int(h[2])  # size in pixels (width, height)
         self.istack = int(h[24])
         self.imgnumber = int(h[27])
 
         if self.istack == 0 and self.imgnumber == 0:
-            branches1["9"] = True
+            SpiderImageFile.branches1["9"] = True
             # stk=0, img=0: a regular 2D image
             offset = hdrlen
             self._nimages = 1
         elif self.istack > 0 and self.imgnumber == 0:
-            branches1["10"] = True
+            SpiderImageFile.branches1["10"] = True
             # stk>0, img=0: Opening the stack for the first time
             self.imgbytes = int(h[12]) * int(h[2]) * 4
             self.hdrlen = hdrlen
@@ -185,20 +183,20 @@ class SpiderImageFile(ImageFile.ImageFile):
             offset = hdrlen * 2
             self.imgnumber = 1
         elif self.istack == 0 and self.imgnumber > 0:
-            branches1["11"] = True
+            SpiderImageFile.branches1["11"] = True
             # stk=0, img>0: an image within the stack
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
-            branches1["12"] = True
+            SpiderImageFile.branches1["12"] = True
             msg = "inconsistent stack header values"
             raise SyntaxError(msg)
 
         if self.bigendian:
-            branches1["13"] = True
+            SpiderImageFile.branches1["13"] = True
             self.rawmode = "F;32BF"
         else:
-            branches1["14"] = True
+            SpiderImageFile.branches1["14"] = True
             self.rawmode = "F;32F"
         self._mode = "F"
 
@@ -222,17 +220,17 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     def seek(self, frame: int) -> None:
         if self.istack == 0:
-            branches2["1"] = True
+            SpiderImageFile.branches2["1"] = True
             msg = "attempt to seek in a non-stack file"
             raise EOFError(msg)
         else:  # ADDED FOR BRANCH MARKING
-            branches2["2"] = True
+            SpiderImageFile.branches2["2"] = True
 
         if not self._seek_check(frame):
-            branches2["3"] = True
+            SpiderImageFile.branches2["3"] = True
             return
         else:  # ADDED FOR BRANCH MARKING
-            branches2["4"] = True
+            SpiderImageFile.branches2["4"] = True
 
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
         self.fp = self._fp
