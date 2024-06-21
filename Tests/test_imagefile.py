@@ -397,3 +397,12 @@ class TestPyEncoder(CodecsTest):
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):
             Image.open("Tests/images/zero_height.j2k")
+
+    def test_encode_to_file_branches(self) -> None:
+        mock_file = BytesIO()
+        encoder = ImageFile.PyEncoder("RGB")
+        encoder.branches = {"1": False, "2": False}
+        errcode = encoder.encode_to_file(mock_file, 1024)
+        assert encoder.branches["1"] is True
+        assert encoder.branches["2"] is True
+        assert errcode == 0

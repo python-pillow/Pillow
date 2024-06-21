@@ -699,3 +699,5 @@ def test_deprecation() -> None:
         assert ImageCms.VERSION == "1.0.0 pil"
     with pytest.warns(DeprecationWarning):
         assert isinstance(ImageCms.FLAGS, dict)
+
+
