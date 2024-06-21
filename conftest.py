@@ -4,6 +4,7 @@ import sys
 
 from PIL import Image
 from PIL import PdfParser
+from PIL import SpiderImagePlugin
 
 pytest_plugins = ["Tests.helper"]
 
@@ -12,6 +13,8 @@ def calculate_coverage(test_name):
     all_branches = {
         "branches1": Image.branches,
         "branches2": PdfParser.XrefTable.branches,
+        "branches3": SpiderImagePlugin.branches1,
+        "branches4": SpiderImagePlugin.branches2,
         # Add more
     }
 
@@ -47,4 +50,3 @@ def pytest_sessionfinish(session, exitstatus):
     coverage = calculate_coverage(test_name)
     print("\nBRANCH COVERAGE for", test_name, ":", coverage, "%\n")
 
-    
