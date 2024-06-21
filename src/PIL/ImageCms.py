@@ -29,6 +29,17 @@ from . import Image, __version__
 from ._deprecate import deprecate
 from ._typing import SupportsRead
 
+branches = {
+    "1": False,
+    "2": False,
+    "3": False,
+    "4": False,
+    "5": False,
+    "6": False,
+    "7": False,
+    "8": False,
+}
+
 try:
     from . import _imagingcms as core
 except ImportError as ex:
@@ -246,20 +257,28 @@ class ImageCmsProfile:
         """
 
         if isinstance(profile, str):
+            branches["1"] = True
             if sys.platform == "win32":
+                branches["2"] = True
                 profile_bytes_path = profile.encode()
                 try:
+                    branches["3"] = True
                     profile_bytes_path.decode("ascii")
                 except UnicodeDecodeError:
+                    branches["4"] = True
                     with open(profile, "rb") as f:
+                        branches["5"] = True
                         self._set(core.profile_frombytes(f.read()))
                     return
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
+            branches["6"] = True
             self._set(core.profile_frombytes(profile.read()))
         elif isinstance(profile, core.CmsProfile):
+            branches["7"] = True
             self._set(profile)
         else:
+            branches["8"] = True
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
 
