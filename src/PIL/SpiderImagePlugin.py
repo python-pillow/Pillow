@@ -56,6 +56,13 @@ def isInt(f):
 
 iforms = [1, 3, -11, -12, -21, -22]
 
+branches2 = {
+    "1": False,
+    "2": False,
+    "3": False,
+    "4": False
+}
+
 
 # There is no magic number to identify Spider files, so just check a
 # series of header locations to see if they have reasonable values.
@@ -114,13 +121,6 @@ class SpiderImageFile(ImageFile.ImageFile):
         "12": False,
         "13": False,
         "14": False
-    }
-
-    branches2 = {
-        "1": False,
-        "2": False,
-        "3": False,
-        "4": False
     }
 
     def _open(self) -> None:
@@ -220,17 +220,11 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     def seek(self, frame: int) -> None:
         if self.istack == 0:
-            SpiderImageFile.branches2["1"] = True
             msg = "attempt to seek in a non-stack file"
             raise EOFError(msg)
-        else:  # ADDED FOR BRANCH MARKING
-            SpiderImageFile.branches2["2"] = True
 
         if not self._seek_check(frame):
-            SpiderImageFile.branches2["3"] = True
             return
-        else:  # ADDED FOR BRANCH MARKING
-            SpiderImageFile.branches2["4"] = True
 
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
         self.fp = self._fp
@@ -319,12 +313,18 @@ def makeSpiderHeader(im: Image.Image) -> list[bytes]:
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode[0] != "F":
+        branches2["1"] = True
         im = im.convert("F")
+    else:
+        branches2["2"] = True
 
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:
+        branches2["3"] = True
         msg = "Error creating Spider header"
         raise OSError(msg)
+    else:
+        branches2["4"] = True
 
     # write the SPIDER header
     fp.writelines(hdr)
