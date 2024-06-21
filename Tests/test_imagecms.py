@@ -39,7 +39,6 @@ HAVE_PROFILE = os.path.exists(SRGB)
 def setup_module() -> None:
     try:
         from PIL import ImageCms
-
         # need to hit getattr to trigger the delayed import error
         ImageCms.core.profile_open
     except ImportError as v:
@@ -701,3 +700,26 @@ def test_deprecation() -> None:
         assert isinstance(ImageCms.FLAGS, dict)
 
 
+class TestGetOpenProfile:
+    def test_get_open_profile_with_string_path(self, tmp_path: Path) -> None:
+        # Create a dummy profile file
+        dummy_profile_path = tmp_path / "dummy.icc"
+        dummy_profile_path.write_bytes(b"Dummy ICC content")
+
+        # Test with a string path
+        profile = ImageCms.getOpenProfile(str(dummy_profile_path))
+        assert isinstance(profile, ImageCms.ImageCmsProfile)
+
+    def test_get_open_profile_with_file_object(self, tmp_path: Path) -> None:
+        # Create a dummy profile file content
+        dummy_profile_content = b"Dummy ICC content"
+        dummy_profile_file = BytesIO(dummy_profile_content)
+
+        # Test with a file-like object
+        profile = ImageCms.getOpenProfile(dummy_profile_file)
+        assert isinstance(profile, ImageCms.ImageCmsProfile)
+
+    def test_get_open_profile_with_invalid_input(self) -> None:
+        # Test with invalid input
+        with pytest.raises(TypeError):
+            ImageCms.getOpenProfile(123)  # Assuming passing an integer is invalid
