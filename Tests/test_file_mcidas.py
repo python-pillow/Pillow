@@ -39,7 +39,7 @@ def test_open_invalid_file() -> None:
 
 
 def test_open_8bit_file() -> None:
-    test_file = "Tests/images/8bit.s.tif"
+    test_file = "Tests/images/l_trns.png"
 
     with Image.open(test_file) as im:
         im.load()
@@ -50,7 +50,7 @@ def test_open_8bit_file() -> None:
 
 
 def test_open_16bit_file() -> None:
-    test_file = "Tests/images/16_bit_binary_pgm.tiff"
+    test_file = "Tests/images/rgb_trns.png"
 
     with Image.open(test_file) as im:
         im.load()
@@ -61,7 +61,7 @@ def test_open_16bit_file() -> None:
 
 
 def test_open_32bit_file() -> None:
-    test_file = "Tests/images/10ct_32bit_128.tiff"
+    test_file = "Tests/images/tga/common/200x32_la.png"
 
     with Image.open(test_file) as im:
         im.load()
@@ -72,7 +72,7 @@ def test_open_32bit_file() -> None:
 
 
 def test_open_unsupported_format() -> None:
-    test_file = "Tests/images/standard_embedded.png"
+    test_file = "Tests/images/exif_text.png"
 
     with pytest.raises(SyntaxError):
         McIdasImagePlugin.McIdasImageFile(test_file)
