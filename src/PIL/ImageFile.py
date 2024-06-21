@@ -39,6 +39,11 @@ from . import Image
 from ._deprecate import deprecate
 from ._util import is_path
 
+branches = {
+    "1": False,
+    "2": False,
+}
+
 MAXBLOCK = 65536
 
 SAFEBLOCK = 1024 * 1024
@@ -750,6 +755,11 @@ class PyDecoder(PyCodec):
 
 
 class PyEncoder(PyCodec):
+
+    branches = {
+    "1": False,
+    "2": False,
+    }
     """
     Python implementation of a format encoder. Override this class and
     add the decoding logic in the :meth:`encode` method.
@@ -801,7 +811,9 @@ class PyEncoder(PyCodec):
         """
         errcode = 0
         while errcode == 0:
+            PyEncoder.branches["1"] = True
             status, errcode, buf = self.encode(bufsize)
             if status > 0:
+                PyEncoder.branches["2"] = True
                 fh.write(buf[status:])
         return errcode
