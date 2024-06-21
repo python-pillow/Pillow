@@ -21,6 +21,13 @@ import struct
 
 from . import Image, ImageFile
 
+branches = {
+    "1": False,
+    "2": False,
+    "3": False,
+    "4": False,
+    "5": False,
+    }
 
 def _accept(prefix: bytes) -> bool:
     return prefix[:8] == b"\x00\x00\x00\x00\x00\x00\x00\x04"
@@ -40,6 +47,7 @@ class McIdasImageFile(ImageFile.ImageFile):
 
         s = self.fp.read(256)
         if not _accept(s) or len(s) != 256:
+            branches["1"] = True
             msg = "not an McIdas area file"
             raise SyntaxError(msg)
 
@@ -48,16 +56,20 @@ class McIdasImageFile(ImageFile.ImageFile):
 
         # get mode
         if w[11] == 1:
+            branches["2"] = True
             mode = rawmode = "L"
         elif w[11] == 2:
+            branches["3"] = True
             # FIXME: add memory map support
             mode = "I"
             rawmode = "I;16B"
         elif w[11] == 4:
+            branches["4"] = True
             # FIXME: add memory map support
             mode = "I"
             rawmode = "I;32B"
         else:
+            branches["5"] = True
             msg = "unsupported McIdas format"
             raise SyntaxError(msg)
 
