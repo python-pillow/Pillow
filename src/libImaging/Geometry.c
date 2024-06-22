@@ -17,7 +17,7 @@
 Imaging
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
-    // int x, y, xr;
+    int x, y, xr;
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
         return (Imaging)ImagingError_ModeError();
@@ -29,12 +29,11 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingCopyPalette(imOut, imIn);
 
     ImagingSectionEnter(&cookie);
-    for (int y = 0; y < imIn->ysize; ++y) {
+    for (y = 0; y < imIn->ysize; ++y) {
         char *in = imIn->image[y];
         char *out = imOut->image[y];
-        int xr = imIn->linesize - imIn->pixelsize;
-        for (int x = 0; x < imIn->linesize;
-             x += imIn->pixelsize, xr -= imIn->pixelsize) {
+        xr = imIn->linesize - imIn->pixelsize;
+        for (x = 0; x < imIn->linesize; x += imIn->pixelsize, xr -= imIn->pixelsize) {
             memcpy(out + xr, in + x, imIn->pixelsize);
         }
     }
