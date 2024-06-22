@@ -45,7 +45,7 @@ def test_getcolor() -> None:
 
     # Test unknown color specifier
     with pytest.raises(ValueError):
-        palette.getcolor("unknown")
+        palette.getcolor("unknown")  # type: ignore[arg-type]
 
 
 def test_getcolor_rgba_color_rgb_palette() -> None:

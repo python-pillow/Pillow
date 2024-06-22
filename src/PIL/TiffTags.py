@@ -89,7 +89,7 @@ DOUBLE = 12
 IFD = 13
 LONG8 = 16
 
-TAGS_V2 = {
+_tags_v2 = {
     254: ("NewSubfileType", LONG, 1),
     255: ("SubfileType", SHORT, 1),
     256: ("ImageWidth", LONG, 1),
@@ -425,9 +425,11 @@ TAGS = {
     50784: "Alias Layer Metadata",
 }
 
+TAGS_V2: dict[int, TagInfo] = {}
+
 
 def _populate():
-    for k, v in TAGS_V2.items():
+    for k, v in _tags_v2.items():
         # Populate legacy structure.
         TAGS[k] = v[0]
         if len(v) == 4:

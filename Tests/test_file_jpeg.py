@@ -1033,8 +1033,10 @@ class TestFileJpeg:
 
     def test_repr_jpeg(self) -> None:
         im = hopper()
+        b = im._repr_jpeg_()
+        assert b is not None
 
-        with Image.open(BytesIO(im._repr_jpeg_())) as repr_jpeg:
+        with Image.open(BytesIO(b)) as repr_jpeg:
             assert repr_jpeg.format == "JPEG"
             assert_image_similar(im, repr_jpeg, 17)
 

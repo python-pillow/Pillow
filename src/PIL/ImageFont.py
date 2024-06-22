@@ -33,11 +33,12 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
+from types import ModuleType
 from typing import IO, TYPE_CHECKING, Any, BinaryIO
 
 from . import Image
 from ._typing import StrOrBytesPath
-from ._util import is_path
+from ._util import DeferredError, is_path
 
 if TYPE_CHECKING:
     from . import ImageFile
@@ -53,11 +54,10 @@ class Layout(IntEnum):
 MAX_STRING_LENGTH = 1_000_000
 
 
+core: ModuleType | DeferredError
 try:
     from . import _imagingft as core
 except ImportError as ex:
-    from ._util import DeferredError
-
     core = DeferredError.new(ex)
 
 
@@ -199,6 +199,7 @@ class FreeTypeFont:
     """FreeType font wrapper (requires _imagingft service)"""
 
     font: Font
+    font_bytes: bytes
 
     def __init__(
         self,
@@ -209,6 +210,9 @@ class FreeTypeFont:
         layout_engine: Layout | None = None,
     ) -> None:
         # FIXME: use service provider instead
+
+        if isinstance(core, DeferredError):
+            raise core.ex
 
         if size <= 0:
             msg = "font size must be greater than 0"
@@ -903,7 +907,7 @@ def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     :return: A font object.
     """
     f: FreeTypeFont | ImageFont
-    if core.__class__.__name__ == "module" or size is not None:
+    if isinstance(core, ModuleType) or size is not None:
         f = truetype(
             BytesIO(
                 base64.b64decode(

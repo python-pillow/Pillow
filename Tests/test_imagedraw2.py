@@ -51,9 +51,10 @@ def test_sanity() -> None:
     pen = ImageDraw2.Pen("blue", width=7)
     draw.line(list(range(10)), pen)
 
-    draw, handler = ImageDraw.getdraw(im)
+    draw2, handler = ImageDraw.getdraw(im)
+    assert draw2 is not None
     pen = ImageDraw2.Pen("blue", width=7)
-    draw.line(list(range(10)), pen)
+    draw2.line(list(range(10)), pen)
 
 
 @pytest.mark.parametrize("bbox", BBOX)

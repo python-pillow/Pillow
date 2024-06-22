@@ -113,13 +113,13 @@ def test_array_F() -> None:
 def test_not_flattened() -> None:
     im = Image.new("L", (1, 1))
     with pytest.raises(TypeError):
-        im.putdata([[0]])  # type: ignore[list-item]
+        im.putdata([[0]])
     with pytest.raises(TypeError):
-        im.putdata([[0]], 2)  # type: ignore[list-item]
+        im.putdata([[0]], 2)
 
     with pytest.raises(TypeError):
         im = Image.new("I", (1, 1))
-        im.putdata([[0]])  # type: ignore[list-item]
+        im.putdata([[0]])
     with pytest.raises(TypeError):
         im = Image.new("F", (1, 1))
-        im.putdata([[0]])  # type: ignore[list-item]
+        im.putdata([[0]])

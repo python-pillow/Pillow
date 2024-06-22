@@ -24,7 +24,7 @@ class Transform(Image.ImageTransformHandler):
 
     method: Image.Transform
 
-    def __init__(self, data: Sequence[int]) -> None:
+    def __init__(self, data: Sequence[Any]) -> None:
         self.data = data
 
     def getdata(self) -> tuple[Image.Transform, Sequence[int]]:

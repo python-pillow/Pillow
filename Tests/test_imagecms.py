@@ -103,7 +103,7 @@ def test_sanity() -> None:
 
 
 def test_flags() -> None:
-    assert ImageCms.Flags.NONE == 0
+    assert ImageCms.Flags.NONE.value == 0
     assert ImageCms.Flags.GRIDPOINTS(0) == ImageCms.Flags.NONE
     assert ImageCms.Flags.GRIDPOINTS(256) == ImageCms.Flags.NONE
 
@@ -569,9 +569,9 @@ def assert_aux_channel_preserved(
             for delta in nine_grid_deltas:
                 channel_data.paste(
                     channel_pattern,
-                    tuple(
-                        paste_offset[c] + delta[c] * channel_pattern.size[c]
-                        for c in range(2)
+                    (
+                        paste_offset[0] + delta[0] * channel_pattern.size[0],
+                        paste_offset[1] + delta[1] * channel_pattern.size[1],
                     ),
                 )
             chans.append(channel_data)
@@ -642,7 +642,8 @@ def test_auxiliary_channels_isolated() -> None:
                 # convert with and without AUX data, test colors are equal
                 src_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], src_format[1])
                 source_profile = ImageCms.createProfile(src_colorSpace)
-                destination_profile = ImageCms.createProfile(dst_format[1])
+                dst_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], dst_format[1])
+                destination_profile = ImageCms.createProfile(dst_colorSpace)
                 source_image = src_format[3]
                 test_transform = ImageCms.buildTransform(
                     source_profile,

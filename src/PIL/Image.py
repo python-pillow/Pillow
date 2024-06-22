@@ -1168,7 +1168,7 @@ class Image:
     def quantize(
         self,
         colors: int = 256,
-        method: Quantize | None = None,
+        method: int | None = None,
         kmeans: int = 0,
         palette=None,
         dither: Dither = Dither.FLOYDSTEINBERG,
@@ -1309,7 +1309,7 @@ class Image:
         return im.crop((x0, y0, x1, y1))
 
     def draft(
-        self, mode: str | None, size: tuple[int, int]
+        self, mode: str | None, size: tuple[int, int] | None
     ) -> tuple[str, tuple[int, int, float, float]] | None:
         """
         Configures the image file loader so it returns a version of the
@@ -1744,7 +1744,7 @@ class Image:
     def paste(
         self,
         im: Image | str | float | tuple[float, ...],
-        box: tuple[int, int, int, int] | tuple[int, int] | None = None,
+        box: Image | tuple[int, int, int, int] | tuple[int, int] | None = None,
         mask: Image | None = None,
     ) -> None:
         """
@@ -1786,10 +1786,14 @@ class Image:
         :param mask: An optional mask image.
         """
 
-        if isImageType(box) and mask is None:
+        if isImageType(box):
+            if mask is not None:
+                msg = "If using second argument as mask, third argument must be None"
+                raise ValueError(msg)
             # abbreviated paste(im, mask) syntax
             mask = box
             box = None
+        assert not isinstance(box, Image)
 
         if box is None:
             box = (0, 0)
@@ -1995,7 +1999,10 @@ class Image:
         self.im.putband(alpha.im, band)
 
     def putdata(
-        self, data: Sequence[float], scale: float = 1.0, offset: float = 0.0
+        self,
+        data: Sequence[float] | Sequence[Sequence[int]],
+        scale: float = 1.0,
+        offset: float = 0.0,
     ) -> None:
         """
         Copies pixel data from a flattened sequence object into the image. The
@@ -2656,7 +2663,7 @@ class Image:
         self,
         size: tuple[float, float],
         resample: Resampling = Resampling.BICUBIC,
-        reducing_gap: float = 2.0,
+        reducing_gap: float | None = 2.0,
     ) -> None:
         """
         Make this image into a thumbnail.  This method modifies the
@@ -2717,11 +2724,12 @@ class Image:
             return x, y
 
         box = None
+        final_size: tuple[int, int]
         if reducing_gap is not None:
             preserved_size = preserve_aspect_ratio()
             if preserved_size is None:
                 return
-            size = preserved_size
+            final_size = preserved_size
 
             res = self.draft(
                 None, (int(size[0] * reducing_gap), int(size[1] * reducing_gap))
@@ -2735,13 +2743,13 @@ class Image:
             preserved_size = preserve_aspect_ratio()
             if preserved_size is None:
                 return
-            size = preserved_size
+            final_size = preserved_size
 
-        if self.size != size:
-            im = self.resize(size, resample, box=box, reducing_gap=reducing_gap)
+        if self.size != final_size:
+            im = self.resize(final_size, resample, box=box, reducing_gap=reducing_gap)
 
             self.im = im.im
-            self._size = size
+            self._size = final_size
             self._mode = self.im.mode
 
         self.readonly = 0
