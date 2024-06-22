@@ -32,6 +32,10 @@ from ._typing import SupportsRead
 branches = {
     "1": False,
     "2": False,
+    "3": False,
+    "4": False,
+    "5": False,
+    "6": False,
 }
 
 try:
@@ -242,17 +246,6 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
-    branches = {
-        "1": False,
-        "2": False,
-        "3": False,
-        "4": False,
-        "5": False,
-        "6": False,
-        "7": False,
-        "8": False,
-    }
-
     def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
@@ -262,28 +255,21 @@ class ImageCmsProfile:
         """
 
         if isinstance(profile, str):
-            ImageCmsProfile.branches["1"] = True
             if sys.platform == "win32":
-                ImageCmsProfile.branches["2"] = True
                 profile_bytes_path = profile.encode()
                 try:
-                    ImageCmsProfile.branches["3"] = True
                     profile_bytes_path.decode("ascii")
                 except UnicodeDecodeError:
-                    ImageCmsProfile.branches["4"] = True
                     with open(profile, "rb") as f:
-                        ImageCmsProfile.branches["5"] = True
                         self._set(core.profile_frombytes(f.read()))
                     return
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
-            ImageCmsProfile.branches["6"] = True
             self._set(core.profile_frombytes(profile.read()))
         elif isinstance(profile, core.CmsProfile):
-            ImageCmsProfile.branches["7"] = True
             self._set(profile)
         else:
-            ImageCmsProfile.branches["8"] = True
+
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
 
@@ -397,10 +383,6 @@ _CmsProfileCompatible = Union[
 
 
 class PyCMSError(Exception):
-    branches = {
-        "1": False,
-        "2": False,
-    }
     """(pyCMS) Exception class.
     This is used for all errors in the pyCMS API."""
 
@@ -522,10 +504,8 @@ def getOpenProfile(
     """
 
     try:
-        PyCMSError.branches["1"] = True
         return ImageCmsProfile(profileFilename)
     except (OSError, TypeError, ValueError) as v:
-        PyCMSError.branches["2"] = True
         raise PyCMSError(v) from v
 
 
@@ -593,22 +573,28 @@ def buildTransform(
     """
 
     if not isinstance(renderingIntent, int) or not (0 <= renderingIntent <= 3):
+        branches["1"] = True
         msg = "renderingIntent must be an integer between 0 and 3"
         raise PyCMSError(msg)
 
     if not isinstance(flags, int) or not (0 <= flags <= _MAX_FLAG):
+        branches["2"] = True
         msg = f"flags must be an integer between 0 and {_MAX_FLAG}"
         raise PyCMSError(msg)
 
     try:
+        branches["3"] = True
         if not isinstance(inputProfile, ImageCmsProfile):
+            branches["4"] = True
             inputProfile = ImageCmsProfile(inputProfile)
         if not isinstance(outputProfile, ImageCmsProfile):
+            branches["5"] = True
             outputProfile = ImageCmsProfile(outputProfile)
         return ImageCmsTransform(
             inputProfile, outputProfile, inMode, outMode, renderingIntent, flags=flags
         )
     except (OSError, TypeError, ValueError) as v:
+        branches["6"] = True
         raise PyCMSError(v) from v
 
 

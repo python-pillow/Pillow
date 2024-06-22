@@ -188,7 +188,6 @@ class PhotoImage:
 
 
 class BitmapImage:
-
     """
     A Tkinter-compatible bitmap image.  This can be used everywhere Tkinter
     expects an image object.
