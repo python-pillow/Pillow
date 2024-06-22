@@ -7,6 +7,9 @@ from unittest import mock
 from PIL import Image
 from PIL import ImageTk
 
+from unittest.mock import patch
+
+
 from .helper import assert_image_equal, hopper
 
 TK_MODES = ("1", "L", "P", "RGB", "RGBA")
@@ -100,14 +103,3 @@ def test_bitmapimage() -> None:
     # assert_image_equal(reloaded, im)
 
 
-def test_photoimage_del() -> None:
-    # Create a dummy PIL image
-    im = Image.new("RGB", (100, 100))
-
-    # Create a PhotoImage object
-    photo = ImageTk.PhotoImage(im)
-
-    # Delete the PhotoImage object
-    del photo
-
-    # No assertion needed, just ensuring that the __del__ method is executed

@@ -20,7 +20,6 @@ def calculate_coverage(test_name):
         "branches2": PdfParser.XrefTable.branches,          # duru
         "branches3": SpiderImagePlugin.branches,            # isidora
         "branches4": MpegImagePlugin.BitStream.branches,    # isidora
-        "branches5": ImageTk.BitmapImage.branches,          # deekshu
         "branches6": ImageFile.PyEncoder.branches,          # deekshu
         # Add more
     }
