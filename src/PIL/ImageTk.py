@@ -234,6 +234,7 @@ class BitmapImage:
             BitmapImage.branches["1"] = True
             self.__photo.tk.call("image", "delete", name)
         except Exception:
+            BitmapImage.branches["2"] = True
             BitmapImage
             pass  # ignore internal errors
 
