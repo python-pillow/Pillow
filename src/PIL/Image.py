@@ -440,12 +440,14 @@ def _getdecoder(
     elif not isinstance(args, tuple):
         args = (args,)
 
-    if decoder_name == "raw" and args[0] in _DEPRECATED_RAWMODES:
-        deprecate(
-            f"rawmode {args[0]}",
-            12,
-            replacement=f"rawmode {_DEPRECATED_RAWMODES[args[0]]}",
-        )
+    if decoder_name == "raw":
+        rawmode = args[0]
+        if mode != rawmode and rawmode in _DEPRECATED_RAWMODES:
+            deprecate(
+                f"rawmode {rawmode}",
+                12,
+                replacement=f"rawmode {_DEPRECATED_RAWMODES[rawmode]}",
+            )
 
     try:
         decoder = DECODERS[decoder_name]
