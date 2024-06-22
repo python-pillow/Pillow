@@ -18,8 +18,8 @@ def calculate_coverage(test_name):
         "branches2": PdfParser.XrefTable.branches,
         "branches3": SpiderImagePlugin.branches,
         "branches4": MpegImagePlugin.BitStream.branches,
-        "branches3": ImageCms.ImageCmsProfile.branches,
-        "branches4": McIdasImagePlugin.McIdasImageFile.branches,
+        "branches5": ImageCms.ImageCmsProfile.branches,
+        "branches6": McIdasImagePlugin.McIdasImageFile.branches,
         # Add more
     }
 
