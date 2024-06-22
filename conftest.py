@@ -4,6 +4,10 @@ import sys
 
 from PIL import Image
 from PIL import PdfParser
+from PIL import SpiderImagePlugin
+from PIL import MpegImagePlugin
+from PIL import ImageCms
+from PIL import McIdasImagePlugin
 from PIL import ImageTk
 from PIL import ImageFile
 
@@ -12,10 +16,12 @@ pytest_plugins = ["Tests.helper"]
 
 def calculate_coverage(test_name):
     all_branches = {
-        "branches1": Image.branches,
-        "branches2": PdfParser.XrefTable.branches,
-        "branches3": ImageTk.BitmapImage.branches,
-        "branches4": ImageFile.PyEncoder.branches,
+        "branches1": Image.branches,                        # duru
+        "branches2": PdfParser.XrefTable.branches,          # duru
+        "branches3": SpiderImagePlugin.branches,            # isidora
+        "branches4": MpegImagePlugin.BitStream.branches,    # isidora
+        "branches5": ImageTk.BitmapImage.branches,          # deekshu
+        "branches6": ImageFile.PyEncoder.branches,          # deekshu
         # Add more
     }
 
