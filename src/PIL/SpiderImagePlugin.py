@@ -56,7 +56,7 @@ def isInt(f):
 
 iforms = [1, 3, -11, -12, -21, -22]
 
-branches2 = {
+branches = {
     "1": False,
     "2": False,
     "3": False,
@@ -106,51 +106,26 @@ class SpiderImageFile(ImageFile.ImageFile):
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
 
-    branches1 = {
-        "1": False,
-        "2": False,
-        "3": False,
-        "4": False,
-        "5": False,
-        "6": False,
-        "7": False,
-        "8": False,
-        "9": False,
-        "10": False,
-        "11": False,
-        "12": False,
-        "13": False,
-        "14": False
-    }
-
     def _open(self) -> None:
         # check header
         n = 27 * 4  # read 27 float values
         f = self.fp.read(n)
 
         try:
-            SpiderImageFile.branches1["1"] = True
             self.bigendian = 1
             t = struct.unpack(">27f", f)  # try big-endian first
             hdrlen = isSpiderHeader(t)
 
             if hdrlen == 0:
-                SpiderImageFile.branches1["2"] = True
                 self.bigendian = 0
                 t = struct.unpack("<27f", f)  # little-endian
                 hdrlen = isSpiderHeader(t)
-            else:  # ADDED FOR BRANCH MARKING
-                SpiderImageFile.branches1["3"] = True
 
             if hdrlen == 0:
-                SpiderImageFile.branches1["4"] = True
                 msg = "not a valid Spider file"
                 raise SyntaxError(msg)
-            else:  # ADDED FOR BRANCH MARKING
-                SpiderImageFile.branches1["5"] = True
 
         except struct.error as e:
-            SpiderImageFile.branches1["6"] = True
             msg = "not a valid Spider file"
             raise SyntaxError(msg) from e
 
@@ -158,23 +133,18 @@ class SpiderImageFile(ImageFile.ImageFile):
         iform = int(h[5])
 
         if iform != 1:
-            SpiderImageFile.branches1["7"] = True
             msg = "not a Spider 2D image"
             raise SyntaxError(msg)
-        else:  # ADDED FOR BRANCH MARKING
-            SpiderImageFile.branches1["8"] = True
 
         self._size = int(h[12]), int(h[2])  # size in pixels (width, height)
         self.istack = int(h[24])
         self.imgnumber = int(h[27])
 
         if self.istack == 0 and self.imgnumber == 0:
-            SpiderImageFile.branches1["9"] = True
             # stk=0, img=0: a regular 2D image
             offset = hdrlen
             self._nimages = 1
         elif self.istack > 0 and self.imgnumber == 0:
-            SpiderImageFile.branches1["10"] = True
             # stk>0, img=0: Opening the stack for the first time
             self.imgbytes = int(h[12]) * int(h[2]) * 4
             self.hdrlen = hdrlen
@@ -183,20 +153,16 @@ class SpiderImageFile(ImageFile.ImageFile):
             offset = hdrlen * 2
             self.imgnumber = 1
         elif self.istack == 0 and self.imgnumber > 0:
-            SpiderImageFile.branches1["11"] = True
             # stk=0, img>0: an image within the stack
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
-            SpiderImageFile.branches1["12"] = True
             msg = "inconsistent stack header values"
             raise SyntaxError(msg)
 
         if self.bigendian:
-            SpiderImageFile.branches1["13"] = True
             self.rawmode = "F;32BF"
         else:
-            SpiderImageFile.branches1["14"] = True
             self.rawmode = "F;32F"
         self._mode = "F"
 
@@ -313,18 +279,18 @@ def makeSpiderHeader(im: Image.Image) -> list[bytes]:
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode[0] != "F":
-        branches2["1"] = True
+        branches["1"] = True
         im = im.convert("F")
     else:
-        branches2["2"] = True
+        branches["2"] = True
 
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:
-        branches2["3"] = True
+        branches["3"] = True
         msg = "Error creating Spider header"
         raise OSError(msg)
     else:
-        branches2["4"] = True
+        branches["4"] = True
 
     # write the SPIDER header
     fp.writelines(hdr)

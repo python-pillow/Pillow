@@ -21,8 +21,13 @@ from ._typing import SupportsRead
 #
 # Bitstream parser
 
-
 class BitStream:
+    branches = {
+        "1": False,
+        "2": False,
+        "3": False,
+    }
+
     def __init__(self, fp: SupportsRead[bytes]) -> None:
         self.fp = fp
         self.bits = 0
@@ -33,12 +38,19 @@ class BitStream:
 
     def peek(self, bits: int) -> int:
         while self.bits < bits:
+            BitStream.branches["1"] = True
             c = self.next()
+
             if c < 0:
+                BitStream.branches["2"] = True
                 self.bits = 0
                 continue
+            else:
+                BitStream.branches["3"] = True
+
             self.bitbuffer = (self.bitbuffer << 8) + c
             self.bits += 8
+
         return self.bitbuffer >> (self.bits - bits) & (1 << bits) - 1
 
     def skip(self, bits: int) -> None:

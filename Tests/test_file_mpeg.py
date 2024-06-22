@@ -6,6 +6,8 @@ import pytest
 
 from PIL import Image, MpegImagePlugin
 
+from unittest.mock import MagicMock, patch
+
 
 def test_identify() -> None:
     # Arrange
@@ -37,3 +39,15 @@ def test_load() -> None:
         # Act / Assert: cannot load
         with pytest.raises(OSError):
             im.load()
+
+
+def test_peek_with_negative_c() -> None:
+    fp = MagicMock()
+
+    return_values = [-1, 255]
+
+    with patch.object(MpegImagePlugin.BitStream, 'next', side_effect=return_values):
+        bitstream = MpegImagePlugin.BitStream(fp)
+        result = bitstream.peek(8)
+
+        assert result == 255

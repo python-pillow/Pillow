@@ -173,7 +173,7 @@ def test_seek_no_frame() -> None:
         im.seek(0)
 
 
-def test_save_small_header():
+def test_save_small_header() -> None:
     width, height = 10, 10
     im = Image.new("F", (width, height))
 
@@ -183,12 +183,9 @@ def test_save_small_header():
 
     with patch("PIL.SpiderImagePlugin.makeSpiderHeader", return_value=corrupted_header):
         try:
-            # Attempt to save the image
             im.save(fp, format="SPIDER")
         except OSError as e:
-            # Check if the correct exception is raised
             assert str(e) == "Error creating Spider header"
         else:
-            # If no exception is raised, the test has failed
             assert False, "Expected an OSError due to corrupted header"
 
