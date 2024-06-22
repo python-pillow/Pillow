@@ -775,10 +775,15 @@ def truetype(
 
     :param font: A filename or file-like object containing a TrueType font.
                  If the file is not found in this filename, the loader may also
-                 search in other directories, such as the :file:`fonts/`
-                 directory on Windows or :file:`/Library/Fonts/`,
-                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
-                 macOS.
+                 search in other directories, such as:
+
+                 * The :file:`fonts/` directory on Windows,
+                 * :file:`/Library/Fonts/`, :file:`/System/Library/Fonts/`
+                   and :file:`~/Library/Fonts/` on macOS.
+                 * :file:`~/.local/share/fonts`, :file:`/usr/local/share/fonts`,
+                   and :file:`/usr/share/fonts` on Linux; or those specified by
+                   the ``XDG_DATA_HOME`` and ``XDG_DATA_DIRS`` environment variables
+                   for user-installed and system-wide fonts, respectively.
 
     :param size: The requested size, in pixels.
     :param index: Which font face to load (default is first available face).
@@ -837,12 +842,21 @@ def truetype(
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS")
-            if not lindirs:
-                # According to the freedesktop spec, XDG_DATA_DIRS should
-                # default to /usr/share
-                lindirs = "/usr/share"
-            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+            data_home = os.environ.get("XDG_DATA_HOME")
+            if not data_home:
+                # The freedesktop spec defines the following default directory for
+                # when XDG_DATA_HOME is unset or empty. This user-level directory
+                # takes precedence over system-level directories.
+                data_home = os.path.expanduser("~/.local/share")
+            xdg_dirs = [data_home]
+
+            data_dirs = os.environ.get("XDG_DATA_DIRS")
+            if not data_dirs:
+                # Similarly, defaults are defined for the system-level directories
+                data_dirs = "/usr/local/share:/usr/share"
+            xdg_dirs += data_dirs.split(":")
+
+            dirs += [os.path.join(xdg_dir, "fonts") for xdg_dir in xdg_dirs]
         elif sys.platform == "darwin":
             dirs += [
                 "/Library/Fonts",
