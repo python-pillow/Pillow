@@ -215,13 +215,13 @@ class MockPyDecoder(ImageFile.PyDecoder):
 
 
 class MockPyEncoder(ImageFile.PyEncoder):
-    last = None  # Add this line
+    last = None
 
     def __init__(self, mode: str, *args: Any) -> None:
         super().__init__(mode, *args)
         self._pushes_fd = False
         self.cleanup_called = False
-        MockPyEncoder.last = self  # Update this line
+        MockPyEncoder.last = self
 
     def encode(self, buffer):
         # Simulate encoding

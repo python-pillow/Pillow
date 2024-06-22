@@ -31,6 +31,10 @@ from io import BytesIO
 
 from . import Image
 
+branches = {
+    "1": False,
+    "2": False,
+}
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
 
@@ -188,6 +192,10 @@ class PhotoImage:
 
 
 class BitmapImage:
+    branches = {
+    "1": False,
+    "2": False,
+}
     """
     A Tkinter-compatible bitmap image.  This can be used everywhere Tkinter
     expects an image object.
@@ -223,8 +231,10 @@ class BitmapImage:
         name = self.__photo.name
         self.__photo.name = None
         try:
+            BitmapImage.branches["1"] = True
             self.__photo.tk.call("image", "delete", name)
         except Exception:
+            BitmapImage
             pass  # ignore internal errors
 
     def width(self) -> int:

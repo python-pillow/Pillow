@@ -4,8 +4,7 @@ import sys
 
 from PIL import Image
 from PIL import PdfParser
-from PIL import ImageCms
-from PIL import McIdasImagePlugin
+from PIL import ImageTk
 from PIL import ImageFile
 
 pytest_plugins = ["Tests.helper"]
@@ -15,9 +14,8 @@ def calculate_coverage(test_name):
     all_branches = {
         "branches1": Image.branches,
         "branches2": PdfParser.XrefTable.branches,
-        "branches3": ImageCms.PyCMSError.branches,
-        "branches4": McIdasImagePlugin.McIdasImageFile.branches,
-        "branches5": ImageFile.PyEncoder.branches,
+        "branches3": ImageTk.BitmapImage.branches,
+        "branches4": ImageFile.PyEncoder.branches,
         # Add more
     }
 
