@@ -1,115 +1,136 @@
-<p align="center">
-    <img width="248" height="250" src="https://raw.githubusercontent.com/python-pillow/pillow-logo/main/pillow-logo-248x250.png" alt="Pillow logo">
-</p>
+# Report for Assignment 1
 
-# Pillow
+## Project chosen
 
-## Python Imaging Library (Fork)
+Name: Pillow
 
-Pillow is the friendly PIL fork by [Jeffrey A. Clark and
-contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
-PIL is the Python Imaging Library by Fredrik Lundh and contributors.
-As of 2019, Pillow development is
-[supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise).
+URL of our repository: https://github.com/jovanovicisidora/Pillow-SEP.git
 
-<table>
-    <tr>
-        <th>docs</th>
-        <td>
-            <a href="https://pillow.readthedocs.io/?badge=latest"><img
-                alt="Documentation Status"
-                src="https://readthedocs.org/projects/pillow/badge/?version=latest"></a>
-        </td>
-    </tr>
-    <tr>
-        <th>tests</th>
-        <td>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/lint.yml"><img
-                alt="GitHub Actions build status (Lint)"
-                src="https://github.com/python-pillow/Pillow/workflows/Lint/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test.yml"><img
-                alt="GitHub Actions build status (Test Linux and macOS)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml"><img
-                alt="GitHub Actions build status (Test Windows)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20Windows/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-mingw.yml"><img
-                alt="GitHub Actions build status (Test MinGW)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20MinGW/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-cygwin.yml"><img
-                alt="GitHub Actions build status (Test Cygwin)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20Cygwin/badge.svg"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
-                alt="GitHub Actions build status (Test Docker)"
-                src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
-            <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
-                alt="AppVeyor CI build status (Windows)"
-                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build"></a>
-            <a href="https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml"><img
-                alt="GitHub Actions build status (Wheels)"
-                src="https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg"></a>
-            <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
-                alt="Code coverage"
-                src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
-            <a href="https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:pillow"><img
-                alt="Fuzzing Status"
-                src="https://oss-fuzz-build-logs.storage.googleapis.com/badges/pillow.svg"></a>
-        </td>
-    </tr>
-    <tr>
-        <th>package</th>
-        <td>
-            <a href="https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow"><img
-                alt="Zenodo"
-                src="https://zenodo.org/badge/17549/python-pillow/Pillow.svg"></a>
-            <a href="https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge"><img
-                alt="Tidelift"
-                src="https://tidelift.com/badges/package/pypi/pillow?style=flat"></a>
-            <a href="https://pypi.org/project/pillow/"><img
-                alt="Newest PyPI version"
-                src="https://img.shields.io/pypi/v/pillow.svg"></a>
-            <a href="https://pypi.org/project/pillow/"><img
-                alt="Number of PyPI downloads"
-                src="https://img.shields.io/pypi/dm/pillow.svg"></a>
-            <a href="https://www.bestpractices.dev/projects/6331"><img
-                alt="OpenSSF Best Practices"
-                src="https://www.bestpractices.dev/projects/6331/badge"></a>
-        </td>
-    </tr>
-    <tr>
-        <th>social</th>
-        <td>
-            <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
-                alt="Join the chat at https://gitter.im/python-pillow/Pillow"
-                src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
-            <a href="https://fosstodon.org/@pillow"><img
-                alt="Follow on https://fosstodon.org/@pillow"
-                src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"
-                rel="me"></a>
-        </td>
-    </tr>
-</table>
+URL of the original repo: https://github.com/python-pillow/Pillow.git
 
-## Overview
+Number of lines of code and the tool used to count it:
+- Tool used: coverage.py
+- Number of lines of code: 82 KLOC
 
-The Python Imaging Library adds image processing capabilities to your Python interpreter.
+Programming language: Python
 
-This library provides extensive file format support, an efficient internal representation, and fairly powerful image processing capabilities.
+## Coverage measurement
 
-The core image library is designed for fast access to data stored in a few basic pixel formats. It should provide a solid foundation for a general image processing tool.
+### Existing tool
 
-## More Information
+<Inform the name of the existing tool that was executed and how it was executed>
 
-- [Documentation](https://pillow.readthedocs.io/)
-  - [Installation](https://pillow.readthedocs.io/en/latest/installation/basic-installation.html)
-  - [Handbook](https://pillow.readthedocs.io/en/latest/handbook/index.html)
-- [Contribute](https://github.com/python-pillow/Pillow/blob/main/.github/CONTRIBUTING.md)
-  - [Issues](https://github.com/python-pillow/Pillow/issues)
-  - [Pull requests](https://github.com/python-pillow/Pillow/pulls)
-- [Release notes](https://pillow.readthedocs.io/en/stable/releasenotes/index.html)
-- [Changelog](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst)
-  - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
+<Show the coverage results provided by the existing tool with a screenshot>
 
-## Report a Vulnerability
+We used Coverage.py. We executed the coverage tool by running the following command:
 
-To report a security vulnerability, please follow the procedure described in the [Tidelift security policy](https://tidelift.com/docs/security).
+`python3 -bb -m pytest -v -x -W always --cov PIL --cov Tests --cov-report term Tests $REVERSE`
+
+This resulted in the following output:
+
+![Coverage Tool Result](report_images/isidora_images/[BEFORE]overall_coverage.png)
+
+### Your own coverage tool
+
+<The following is supposed to be repeated for each group member>
+
+<Group member name>
+
+<Function 1 name>
+
+<Show a patch (diff) or a link to a commit made in your forked repository that shows the instrumented code to gather
+coverage measurements>
+
+<Provide a screenshot of the coverage results output by the instrumentation>
+
+<Function 2 name>
+
+<Provide the same kind of information provided for Function 1>
+
+Each member of out group has chosen two functions and has instrumented our own coverage tool. For each function we
+created a dictionary with the branch ID as key, and a boolean as the value. If the branch was accessed by the tests,
+the boolean value would be changed from False to True. In order to calculate and display the coverage, all tests use
+the shared code in **conftest.py**.
+
+**1. Deekshu**
+
+**2. Duru**
+
+**3. Isidora**
+
+- Function 1: `_save()` from **SpiderImagePlugin.py**
+
+    [Link to the commit](https://github.com/jovanovicisidora/Pillow-SEP/commit/5701d33cbb789342ca781769d4ba7cd323c9255e#diff-44debbfd4d0c5a80130a15bdcd9e0b28c1b4fef6eda0eaaef48838c954589d15)
+
+    <img src="report_images/isidora_images/our_tool_save.png" alt="Implemented Coverage Tool" width="600" />
+
+- Function 2: `Bitstream.peek()` from **MpegImagePlugin.py**
+
+    [Link to the commit](https://github.com/jovanovicisidora/Pillow-SEP/commit/70f6735620d2f8e469cbe5b60a4586c5db95624a#diff-0272f0c6b5871be3364fe2062e50944fba30dad9625c74d13340de7d3ad8d367)
+
+    <img src="report_images/isidora_images/our_tool_peek.png" alt="Implemented Coverage Tool" width="600" />
+
+**4. Sofija**
+
+## Coverage improvement
+
+### Individual tests
+
+<The following is supposed to be repeated for each group member>
+
+<Group member name>
+
+<Test 1>
+
+<Show a patch (diff) or a link to a commit made in your forked repository that shows the new/enhanced test>
+
+<Provide a screenshot of the old coverage results (the same as you already showed above)>
+
+<Provide a screenshot of the new coverage results>
+
+<State the coverage improvement with a number and elaborate on why the coverage is improved>
+
+<Test 2>
+
+<Provide the same kind of information provided for Test 1>
+
+**1. Deekshu**
+
+**2. Duru**
+
+**3. Isidora**
+
+- Function 1: `_save()` from **SpiderImagePlugin.py**
+
+    [Link to the commit](https://github.com/jovanovicisidora/Pillow-SEP/commit/70f6735620d2f8e469cbe5b60a4586c5db95624a#diff-f0eb82b90cfc005f681c774b3bf87f19b1db010750e49f850883005f4f623202)
+
+    <img src="report_images/isidora_images/[BEFORE]_save.png" alt="Coverage Before" width="600" />
+
+    <img src="report_images/isidora_images/[AFTER]_save.png" alt="Coverage After" width="600" />
+
+- Function 2: `Bitstream.peek()` from **MpegImagePlugin.py**
+
+    [Link to the commit](https://github.com/jovanovicisidora/Pillow-SEP/commit/70f6735620d2f8e469cbe5b60a4586c5db95624a#diff-48e5b5451c5cab3fbb758ae58649082b62ae6f2850393a332949643d75bd4ad2)
+
+    <img src="report_images/isidora_images/[BEFORE]peek.png" alt="Coverage Before" width="600" />
+
+    <img src="report_images/isidora_images/[AFTER]peek.png" alt="Coverage After" width="600" />
+
+**4. Sofija**
+
+### Overall
+
+First we provide a screenshot of the old coverage results by running an existing tool:
+
+![Coverage Results Before](report_images/isidora_images/[BEFORE]overall_coverage.png)
+
+Here we show the improved overall coverage with all test modifications made by out group:
+
+![Coverage Results After](path/to/image)
+
+## Statement of individual contributions
+
+Each group member had an equal contribution to the assignment. We first met together to determine
+how we can make a coverage tool that can be used across all functions (in conftest.py). Then, each
+member chose two functions to instrument our coverage tool on and to make/enhance tests for them.
+The specific functions each member chose can be seen in the report above.
