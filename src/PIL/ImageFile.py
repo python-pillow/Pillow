@@ -39,10 +39,6 @@ from . import Image
 from ._deprecate import deprecate
 from ._util import is_path
 
-branches = {
-    "1": False,
-    "2": False,
-}
 
 MAXBLOCK = 65536
 
