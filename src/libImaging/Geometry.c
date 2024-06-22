@@ -19,7 +19,8 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0 ||
+        imIn->pixelsize != imOut->pixelsize) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
@@ -47,7 +48,8 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int y, yr;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0 ||
+        imIn->pixelsize != imOut->pixelsize) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
@@ -74,7 +76,8 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, xr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0 ||
+        imIn->pixelsize != imOut->pixelsize) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
@@ -83,47 +86,37 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
 
     ImagingCopyPalette(imOut, imIn);
 
-#define ROTATE_90(INT, image)                                                         \
-    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) {                                 \
-        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) {                             \
-            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
-            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
-            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) {                     \
-                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) {                 \
-                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize                   \
-                                  ? yy + ROTATE_SMALL_CHUNK                           \
-                                  : imIn->ysize;                                      \
-                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize                   \
-                                  ? xx + ROTATE_SMALL_CHUNK                           \
-                                  : imIn->xsize;                                      \
-                    for (yyy = yy; yyy < yyysize; yyy++) {                            \
-                        INT *in = (INT *)imIn->image[yyy];                            \
-                        xr = imIn->xsize - 1 - xx;                                    \
-                        for (xxx = xx; xxx < xxxsize; xxx++, xr--) {                  \
-                            INT *out = (INT *)imOut->image[xr];                       \
-                            out[yyy] = in[xxx];                                       \
-                        }                                                             \
-                    }                                                                 \
-                }                                                                     \
-            }                                                                         \
-        }                                                                             \
-    }
-
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
-            ROTATE_90(UINT16, image8);
-        } else {
-            ROTATE_90(UINT8, image8);
+    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) {
+        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) {
+            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize;
+            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize;
+            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) {
+                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) {
+                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize
+                                  ? yy + ROTATE_SMALL_CHUNK
+                                  : imIn->ysize;
+                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize
+                                  ? xx + ROTATE_SMALL_CHUNK
+                                  : imIn->xsize;
+                    for (yyy = yy; yyy < yyysize; yyy++) {
+                        char *in = imIn->image[yyy];
+                        xr = imIn->xsize - 1 - xx;
+                        for (xxx = xx; xxx < xxxsize; xxx++, xr--) {
+                            char *out = imOut->image[xr];
+                            memcpy(
+                                out + yyy * imIn->pixelsize,
+                                in + xxx * imIn->pixelsize,
+                                imIn->pixelsize);
+                        }
+                    }
+                }
+            }
         }
-    } else {
-        ROTATE_90(INT32, image32);
     }
 
     ImagingSectionLeave(&cookie);
-
-#undef ROTATE_90
 
     return imOut;
 }
@@ -134,7 +127,8 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0 ||
+        imIn->pixelsize != imOut->pixelsize) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
@@ -143,46 +137,36 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
 
     ImagingCopyPalette(imOut, imIn);
 
-#define TRANSPOSE(INT, image)                                                         \
-    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) {                                 \
-        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) {                             \
-            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
-            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
-            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) {                     \
-                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) {                 \
-                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize                   \
-                                  ? yy + ROTATE_SMALL_CHUNK                           \
-                                  : imIn->ysize;                                      \
-                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize                   \
-                                  ? xx + ROTATE_SMALL_CHUNK                           \
-                                  : imIn->xsize;                                      \
-                    for (yyy = yy; yyy < yyysize; yyy++) {                            \
-                        INT *in = (INT *)imIn->image[yyy];                            \
-                        for (xxx = xx; xxx < xxxsize; xxx++) {                        \
-                            INT *out = (INT *)imOut->image[xxx];                      \
-                            out[yyy] = in[xxx];                                       \
-                        }                                                             \
-                    }                                                                 \
-                }                                                                     \
-            }                                                                         \
-        }                                                                             \
-    }
-
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
-            TRANSPOSE(UINT16, image8);
-        } else {
-            TRANSPOSE(UINT8, image8);
+    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) {
+        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) {
+            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize;
+            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize;
+            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) {
+                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) {
+                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize
+                                  ? yy + ROTATE_SMALL_CHUNK
+                                  : imIn->ysize;
+                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize
+                                  ? xx + ROTATE_SMALL_CHUNK
+                                  : imIn->xsize;
+                    for (yyy = yy; yyy < yyysize; yyy++) {
+                        char *in = imIn->image[yyy];
+                        for (xxx = xx; xxx < xxxsize; xxx++) {
+                            char *out = imOut->image[xxx];
+                            memcpy(
+                                out + yyy * imIn->pixelsize,
+                                in + xxx * imIn->pixelsize,
+                                imIn->pixelsize);
+                        }
+                    }
+                }
+            }
         }
-    } else {
-        TRANSPOSE(INT32, image32);
     }
 
     ImagingSectionLeave(&cookie);
-
-#undef TRANSPOSE
 
     return imOut;
 }
@@ -193,7 +177,8 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
     int x, y, xr, yr, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0 ||
+        imIn->pixelsize != imOut->pixelsize) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
@@ -202,48 +187,38 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
 
     ImagingCopyPalette(imOut, imIn);
 
-#define TRANSVERSE(INT, image)                                                        \
-    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) {                                 \
-        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) {                             \
-            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
-            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
-            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) {                     \
-                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) {                 \
-                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize                   \
-                                  ? yy + ROTATE_SMALL_CHUNK                           \
-                                  : imIn->ysize;                                      \
-                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize                   \
-                                  ? xx + ROTATE_SMALL_CHUNK                           \
-                                  : imIn->xsize;                                      \
-                    yr = imIn->ysize - 1 - yy;                                        \
-                    for (yyy = yy; yyy < yyysize; yyy++, yr--) {                      \
-                        INT *in = (INT *)imIn->image[yyy];                            \
-                        xr = imIn->xsize - 1 - xx;                                    \
-                        for (xxx = xx; xxx < xxxsize; xxx++, xr--) {                  \
-                            INT *out = (INT *)imOut->image[xr];                       \
-                            out[yr] = in[xxx];                                        \
-                        }                                                             \
-                    }                                                                 \
-                }                                                                     \
-            }                                                                         \
-        }                                                                             \
-    }
-
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
-            TRANSVERSE(UINT16, image8);
-        } else {
-            TRANSVERSE(UINT8, image8);
+    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) {
+        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) {
+            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize;
+            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize;
+            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) {
+                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) {
+                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize
+                                  ? yy + ROTATE_SMALL_CHUNK
+                                  : imIn->ysize;
+                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize
+                                  ? xx + ROTATE_SMALL_CHUNK
+                                  : imIn->xsize;
+                    yr = imIn->ysize - 1 - yy;
+                    for (yyy = yy; yyy < yyysize; yyy++, yr--) {
+                        char *in = imIn->image[yyy];
+                        xr = imIn->xsize - 1 - xx;
+                        for (xxx = xx; xxx < xxxsize; xxx++, xr--) {
+                            char *out = imOut->image[xr];
+                            memcpy(
+                                out + yr * imIn->pixelsize,
+                                in + xxx * imIn->pixelsize,
+                                imIn->pixelsize);
+                        }
+                    }
+                }
+            }
         }
-    } else {
-        TRANSVERSE(INT32, image32);
     }
 
     ImagingSectionLeave(&cookie);
-
-#undef TRANSVERSE
 
     return imOut;
 }
@@ -253,7 +228,8 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
     ImagingSectionCookie cookie;
     int x, y, xr, yr;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0 ||
+        imIn->pixelsize != imOut->pixelsize) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->xsize || imIn->ysize != imOut->ysize) {
@@ -262,32 +238,19 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
 
     ImagingCopyPalette(imOut, imIn);
 
-#define ROTATE_180(INT, image)                    \
-    for (y = 0; y < imIn->ysize; y++, yr--) {     \
-        INT *in = (INT *)imIn->image[y];          \
-        INT *out = (INT *)imOut->image[yr];       \
-        xr = imIn->xsize - 1;                     \
-        for (x = 0; x < imIn->xsize; x++, xr--) { \
-            out[xr] = in[x];                      \
-        }                                         \
-    }
-
     ImagingSectionEnter(&cookie);
 
     yr = imIn->ysize - 1;
-    if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
-            ROTATE_180(UINT16, image8)
-        } else {
-            ROTATE_180(UINT8, image8)
+    for (y = 0; y < imIn->ysize; y++, yr--) {
+        char *in = imIn->image[y];
+        char *out = imOut->image[yr];
+        xr = imIn->linesize - imIn->pixelsize;
+        for (x = 0; x < imIn->linesize; x += imIn->pixelsize, xr -= imIn->pixelsize) {
+            memcpy(out + xr, in + x, imIn->pixelsize);
         }
-    } else {
-        ROTATE_180(INT32, image32)
     }
 
     ImagingSectionLeave(&cookie);
-
-#undef ROTATE_180
 
     return imOut;
 }
@@ -298,7 +261,8 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
     int x, y, xx, yy, yr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
 
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0 ||
+        imIn->pixelsize != imOut->pixelsize) {
         return (Imaging)ImagingError_ModeError();
     }
     if (imIn->xsize != imOut->ysize || imIn->ysize != imOut->xsize) {
@@ -307,47 +271,37 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
 
     ImagingCopyPalette(imOut, imIn);
 
-#define ROTATE_270(INT, image)                                                        \
-    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) {                                 \
-        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) {                             \
-            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize; \
-            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize; \
-            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) {                     \
-                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) {                 \
-                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize                   \
-                                  ? yy + ROTATE_SMALL_CHUNK                           \
-                                  : imIn->ysize;                                      \
-                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize                   \
-                                  ? xx + ROTATE_SMALL_CHUNK                           \
-                                  : imIn->xsize;                                      \
-                    yr = imIn->ysize - 1 - yy;                                        \
-                    for (yyy = yy; yyy < yyysize; yyy++, yr--) {                      \
-                        INT *in = (INT *)imIn->image[yyy];                            \
-                        for (xxx = xx; xxx < xxxsize; xxx++) {                        \
-                            INT *out = (INT *)imOut->image[xxx];                      \
-                            out[yr] = in[xxx];                                        \
-                        }                                                             \
-                    }                                                                 \
-                }                                                                     \
-            }                                                                         \
-        }                                                                             \
-    }
-
     ImagingSectionEnter(&cookie);
 
-    if (imIn->image8) {
-        if (strncmp(imIn->mode, "I;16", 4) == 0) {
-            ROTATE_270(UINT16, image8);
-        } else {
-            ROTATE_270(UINT8, image8);
+    for (y = 0; y < imIn->ysize; y += ROTATE_CHUNK) {
+        for (x = 0; x < imIn->xsize; x += ROTATE_CHUNK) {
+            yysize = y + ROTATE_CHUNK < imIn->ysize ? y + ROTATE_CHUNK : imIn->ysize;
+            xxsize = x + ROTATE_CHUNK < imIn->xsize ? x + ROTATE_CHUNK : imIn->xsize;
+            for (yy = y; yy < yysize; yy += ROTATE_SMALL_CHUNK) {
+                for (xx = x; xx < xxsize; xx += ROTATE_SMALL_CHUNK) {
+                    yyysize = yy + ROTATE_SMALL_CHUNK < imIn->ysize
+                                  ? yy + ROTATE_SMALL_CHUNK
+                                  : imIn->ysize;
+                    xxxsize = xx + ROTATE_SMALL_CHUNK < imIn->xsize
+                                  ? xx + ROTATE_SMALL_CHUNK
+                                  : imIn->xsize;
+                    yr = imIn->ysize - 1 - yy;
+                    for (yyy = yy; yyy < yyysize; yyy++, yr--) {
+                        char *in = imIn->image[yyy];
+                        for (xxx = xx; xxx < xxxsize; xxx++) {
+                            char *out = imOut->image[xxx];
+                            memcpy(
+                                out + yr * imIn->pixelsize,
+                                in + xxx * imIn->pixelsize,
+                                imIn->pixelsize);
+                        }
+                    }
+                }
+            }
         }
-    } else {
-        ROTATE_270(INT32, image32);
     }
 
     ImagingSectionLeave(&cookie);
-
-#undef ROTATE_270
 
     return imOut;
 }

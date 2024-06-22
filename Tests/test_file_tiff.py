@@ -903,14 +903,23 @@ class TestFileTiff:
             im.load()
             check_image(im, 10, 10, pixel)
 
-            im1 = im.copy()
-            check_image(im1, 10, 10, pixel)
+            copy = im.copy()
+            check_image(copy, 10, 10, pixel)
 
-            im2 = im.crop((2, 2, 7, 7))
-            check_image(im2, 5, 5, pixel)
+            cropped = im.crop((2, 2, 8, 7))
+            check_image(cropped, 6, 5, pixel)
 
-            im3 = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-            check_image(im3, 10, 10, pixel)
+            for method, [w, h] in {
+                Image.Transpose.FLIP_LEFT_RIGHT: (6, 5),
+                Image.Transpose.FLIP_TOP_BOTTOM: (6, 5),
+                Image.Transpose.ROTATE_90: (5, 6),
+                Image.Transpose.ROTATE_180: (6, 5),
+                Image.Transpose.ROTATE_270: (5, 6),
+                Image.Transpose.TRANSPOSE: (5, 6),
+                Image.Transpose.TRANSVERSE: (5, 6),
+            }.items():
+                transposed = cropped.transpose(method)
+                check_image(transposed, w, h, pixel)
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
