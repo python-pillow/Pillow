@@ -22,7 +22,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from typing import Union, cast
 
 from . import Image
 
@@ -70,15 +69,15 @@ def grab(
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
-    xdisplay = cast(Union[str, None], xdisplay)  # type: ignore[redundant-cast, unused-ignore]
+    display_name: str | None = xdisplay
     try:
         if not Image.core.HAVE_XCB:
             msg = "Pillow was built without XCB support"
             raise OSError(msg)
-        size, data = Image.core.grabscreen_x11(xdisplay)
+        size, data = Image.core.grabscreen_x11(display_name)
     except OSError:
         if (
-            xdisplay is None
+            display_name is None
             and sys.platform not in ("darwin", "win32")
             and shutil.which("gnome-screenshot")
         ):
