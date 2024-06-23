@@ -5,6 +5,21 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Support unpacking more rawmodes to RGBA palettes #7966
+  [radarhere]
+
+- Removed support for Qt 5 #8159
+  [radarhere]
+
+- Improve ``ImageFont.freetype`` support for XDG directories on Linux #8135
+  [mamg22, radarhere]
+
+- Improved consistency of XMP handling #8069
+  [radarhere]
+
+- Use pkg-config to help find libwebp and raqm #8142
+  [radarhere]
+
 - Accept 't' suffix for libtiff version #8126, #8129
   [radarhere]
 
