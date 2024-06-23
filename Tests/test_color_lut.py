@@ -354,10 +354,10 @@ class TestColorLut3DCoreAPI:
 class TestColorLut3DFilter:
     def test_wrong_args(self) -> None:
         with pytest.raises(ValueError, match="should be either an integer"):
-            ImageFilter.Color3DLUT("small", [1])
+            ImageFilter.Color3DLUT("small", [1])  # type: ignore[arg-type]
 
         with pytest.raises(ValueError, match="should be either an integer"):
-            ImageFilter.Color3DLUT((11, 11), [1])
+            ImageFilter.Color3DLUT((11, 11), [1])  # type: ignore[arg-type]
 
         with pytest.raises(ValueError, match=r"in \[2, 65\] range"):
             ImageFilter.Color3DLUT((11, 11, 1), [1])

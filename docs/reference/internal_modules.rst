@@ -33,6 +33,10 @@ Internal Modules
 Provides a convenient way to import type hints that are not available
 on some Python versions.
 
+.. py:class:: NumpyArray
+
+    Typing alias.
+
 .. py:class:: StrOrBytesPath
 
     Typing alias.
