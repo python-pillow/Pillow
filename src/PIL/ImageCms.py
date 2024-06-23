@@ -237,6 +237,17 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
+    branches = {
+        "1": False,
+        "2": False,
+        "3": False,
+        "4": False,
+        "5": False,
+        "6": False,
+        "7": False,
+        "8": False,
+    }
+
     def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
@@ -246,22 +257,31 @@ class ImageCmsProfile:
         """
 
         if isinstance(profile, str):
+            ImageCmsProfile.branches["1"] = True
             if sys.platform == "win32":
+                ImageCmsProfile.branches["2"] = True
                 profile_bytes_path = profile.encode()
                 try:
+                    ImageCmsProfile.branches["3"] = True
                     profile_bytes_path.decode("ascii")
                 except UnicodeDecodeError:
+                    ImageCmsProfile.branches["4"] = True
                     with open(profile, "rb") as f:
+                        ImageCmsProfile.branches["5"] = True
                         self._set(core.profile_frombytes(f.read()))
                     return
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
+            ImageCmsProfile.branches["6"] = True
             self._set(core.profile_frombytes(profile.read()))
         elif isinstance(profile, core.CmsProfile):
+            ImageCmsProfile.branches["7"] = True
             self._set(profile)
         else:
+            ImageCmsProfile.branches["8"] = True
             msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
+
 
     def _set(self, profile: core.CmsProfile, filename: str | None = None) -> None:
         self.profile = profile

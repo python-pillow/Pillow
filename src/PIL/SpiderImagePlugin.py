@@ -42,6 +42,7 @@ from typing import IO, TYPE_CHECKING
 from . import Image, ImageFile
 
 
+
 def isInt(f):
     try:
         i = int(f)
@@ -54,6 +55,13 @@ def isInt(f):
 
 
 iforms = [1, 3, -11, -12, -21, -22]
+
+branches = {
+    "1": False,
+    "2": False,
+    "3": False,
+    "4": False
+}
 
 
 # There is no magic number to identify Spider files, so just check a
@@ -107,19 +115,23 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.bigendian = 1
             t = struct.unpack(">27f", f)  # try big-endian first
             hdrlen = isSpiderHeader(t)
+
             if hdrlen == 0:
                 self.bigendian = 0
                 t = struct.unpack("<27f", f)  # little-endian
                 hdrlen = isSpiderHeader(t)
+
             if hdrlen == 0:
                 msg = "not a valid Spider file"
                 raise SyntaxError(msg)
+
         except struct.error as e:
             msg = "not a valid Spider file"
             raise SyntaxError(msg) from e
 
         h = (99,) + t  # add 1 value : spider header index starts at 1
         iform = int(h[5])
+
         if iform != 1:
             msg = "not a Spider 2D image"
             raise SyntaxError(msg)
@@ -176,8 +188,10 @@ class SpiderImageFile(ImageFile.ImageFile):
         if self.istack == 0:
             msg = "attempt to seek in a non-stack file"
             raise EOFError(msg)
+
         if not self._seek_check(frame):
             return
+
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
         self.fp = self._fp
         self.fp.seek(self.stkoffset)
@@ -265,12 +279,18 @@ def makeSpiderHeader(im: Image.Image) -> list[bytes]:
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode[0] != "F":
+        branches["1"] = True
         im = im.convert("F")
+    else:
+        branches["2"] = True
 
     hdr = makeSpiderHeader(im)
     if len(hdr) < 256:
+        branches["3"] = True
         msg = "Error creating Spider header"
         raise OSError(msg)
+    else:
+        branches["4"] = True
 
     # write the SPIDER header
     fp.writelines(hdr)

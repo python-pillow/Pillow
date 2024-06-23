@@ -4,6 +4,9 @@ import tempfile
 import warnings
 from io import BytesIO
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+import unittest
+import struct
 
 import pytest
 
@@ -162,3 +165,27 @@ def test_odd_size() -> None:
     data.seek(0)
     with Image.open(data) as im2:
         assert_image_equal(im, im2)
+
+
+def test_seek_no_frame() -> None:
+    with Image.open(TEST_FILE) as im:
+        im.istack = 1
+        im.seek(0)
+
+
+def test_save_small_header() -> None:
+    width, height = 10, 10
+    im = Image.new("F", (width, height))
+
+    fp = BytesIO()
+
+    corrupted_header = [b'\x00' * 4] * 22
+
+    with patch("PIL.SpiderImagePlugin.makeSpiderHeader", return_value=corrupted_header):
+        try:
+            im.save(fp, format="SPIDER")
+        except OSError as e:
+            assert str(e) == "Error creating Spider header"
+        else:
+            assert False, "Expected an OSError due to corrupted header"
+
