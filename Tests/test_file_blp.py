@@ -98,3 +98,4 @@ def test_decode():
         # Call the decode method and verify that it raises an OSError with the expected message
         with pytest.raises(OSError, match="Truncated BLP file"):
             decoder.decode(b'')
+
