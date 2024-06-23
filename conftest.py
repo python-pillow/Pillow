@@ -8,6 +8,8 @@ from PIL import SpiderImagePlugin
 from PIL import MpegImagePlugin
 from PIL import ImageCms
 from PIL import McIdasImagePlugin
+from PIL import BlpImagePlugin
+from PIL import IcnsImagePlugin
 
 pytest_plugins = ["Tests.helper"]
 
@@ -20,6 +22,8 @@ def calculate_coverage(test_name):
         "branches4": MpegImagePlugin.BitStream.branches,
         "branches5": ImageCms.ImageCmsProfile.branches,
         "branches6": McIdasImagePlugin.McIdasImageFile.branches,
+        "branches7": BlpImagePlugin._BLPBaseDecoder.branches,
+        "branches8": IcnsImagePlugin.branches,
         # Add more
     }
 

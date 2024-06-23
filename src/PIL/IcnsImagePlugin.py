@@ -33,6 +33,10 @@ if enable_jpeg2k:
 MAGIC = b"icns"
 HEADERSIZE = 8
 
+branches = {
+    "1": False,
+    "2": False,
+}
 
 def nextheader(fobj):
     return struct.unpack(">4sI", fobj.read(HEADERSIZE))
@@ -44,8 +48,11 @@ def read_32t(fobj, start_length, size):
     fobj.seek(start)
     sig = fobj.read(4)
     if sig != b"\x00\x00\x00\x00":
+        branches["1"] = True;
         msg = "Unknown signature, expecting 0x00000000"
         raise SyntaxError(msg)
+    else:
+        branches["2"] = True;
     return read_32(fobj, (start + 4, length - 4), size)
 
 
