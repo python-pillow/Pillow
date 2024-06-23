@@ -373,7 +373,7 @@ def test_save_stdout(buffer: bool) -> None:
 
     mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-    sys.stdout = mystdout
+    sys.stdout = mystdout  # type: ignore[assignment]
 
     with Image.open(TEST_FILE) as im:
         im.save(sys.stdout, "PPM")

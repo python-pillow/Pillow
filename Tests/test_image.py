@@ -8,7 +8,7 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
-from typing import IO
+from typing import IO, Any
 
 import pytest
 
@@ -175,11 +175,19 @@ class TestImage:
     def test_fp_name(self, tmp_path: Path) -> None:
         temp_file = str(tmp_path / "temp.jpg")
 
-        class FP:
+        class FP(io.BytesIO):
             name: str
 
-            def write(self, b: bytes) -> None:
-                pass
+            if sys.version_info >= (3, 12):
+                from collections.abc import Buffer
+
+                def write(self, data: Buffer) -> int:
+                    return len(data)
+
+            else:
+
+                def write(self, data: Any) -> int:
+                    return len(data)
 
         fp = FP()
         fp.name = temp_file
