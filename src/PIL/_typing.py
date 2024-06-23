@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Protocol, Sequence, TypeVar, Union
+from typing import Any, Protocol, Sequence, TypeVar, Union
+
+try:
+    import numpy.typing as npt
+
+    NumpyArray = npt.NDArray[Any]
+except ImportError:
+    pass
 
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
@@ -10,7 +17,6 @@ else:
     try:
         from typing_extensions import TypeGuard
     except ImportError:
-        from typing import Any
 
         class TypeGuard:  # type: ignore[no-redef]
             def __class_getitem__(cls, item: Any) -> type[bool]:

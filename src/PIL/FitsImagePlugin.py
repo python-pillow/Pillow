@@ -115,14 +115,18 @@ class FitsImageFile(ImageFile.ImageFile):
         elif number_of_bits in (-32, -64):
             self._mode = "F"
 
-        args = (self.mode, 0, -1) if decoder_name == "raw" else (number_of_bits,)
+        args: tuple[str | int, ...]
+        if decoder_name == "raw":
+            args = (self.mode, 0, -1)
+        else:
+            args = (number_of_bits,)
         return decoder_name, offset, args
 
 
 class FitsGzipDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
         assert self.fd is not None
         value = gzip.decompress(self.fd.read())
 

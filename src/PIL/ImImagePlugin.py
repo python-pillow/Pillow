@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import os
 import re
+from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 
@@ -103,7 +104,7 @@ for j in range(2, 33):
 split = re.compile(rb"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 
-def number(s):
+def number(s: Any) -> float:
     try:
         return int(s)
     except ValueError:
@@ -325,7 +326,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -340,6 +341,8 @@ def _save(im, fp, filename):
         # or: SyntaxError("not an IM file")
         # 8 characters are used for "Name: " and "\r\n"
         # Keep just the filename, ditch the potentially overlong path
+        if isinstance(filename, bytes):
+            filename = filename.decode("ascii")
         name, ext = os.path.splitext(os.path.basename(filename))
         name = "".join([name[: 92 - len(ext)], ext])
 

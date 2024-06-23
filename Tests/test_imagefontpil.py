@@ -33,8 +33,11 @@ def test_default_font(font: ImageFont.ImageFont) -> None:
 def test_without_freetype() -> None:
     original_core = ImageFont.core
     if features.check_module("freetype2"):
-        ImageFont.core = _util.DeferredError(ImportError)
+        ImageFont.core = _util.DeferredError(ImportError("Disabled for testing"))
     try:
+        with pytest.raises(ImportError):
+            ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
         assert isinstance(ImageFont.load_default(), ImageFont.ImageFont)
 
         with pytest.raises(ImportError):

@@ -202,6 +202,8 @@ class TestImageFile:
 
 
 class MockPyDecoder(ImageFile.PyDecoder):
+    last: MockPyDecoder
+
     def __init__(self, mode: str, *args: Any) -> None:
         MockPyDecoder.last = self
 
@@ -213,6 +215,8 @@ class MockPyDecoder(ImageFile.PyDecoder):
 
 
 class MockPyEncoder(ImageFile.PyEncoder):
+    last: MockPyEncoder | None
+
     def __init__(self, mode: str, *args: Any) -> None:
         MockPyEncoder.last = self
 
@@ -315,6 +319,7 @@ class TestPyEncoder(CodecsTest):
             im, fp, [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 0, "RGB")]
         )
 
+        assert MockPyEncoder.last
         assert MockPyEncoder.last.state.xoff == xoff
         assert MockPyEncoder.last.state.yoff == yoff
         assert MockPyEncoder.last.state.xsize == xsize
@@ -329,6 +334,7 @@ class TestPyEncoder(CodecsTest):
         fp = BytesIO()
         ImageFile._save(im, fp, [("MOCK", None, 0, "RGB")])
 
+        assert MockPyEncoder.last
         assert MockPyEncoder.last.state.xoff == 0
         assert MockPyEncoder.last.state.yoff == 0
         assert MockPyEncoder.last.state.xsize == 200
@@ -375,7 +381,7 @@ class TestPyEncoder(CodecsTest):
     def test_encode(self) -> None:
         encoder = ImageFile.PyEncoder(None)
         with pytest.raises(NotImplementedError):
-            encoder.encode(None)
+            encoder.encode(0)
 
         bytes_consumed, errcode = encoder.encode_to_pyfd()
         assert bytes_consumed == 0

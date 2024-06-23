@@ -42,6 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
+from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -54,7 +55,7 @@ from .JpegPresets import presets
 # Parser
 
 
-def Skip(self, marker):
+def Skip(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     ImageFile._safe_read(self.fp, n)
 
@@ -94,6 +95,8 @@ def APP(self, marker):
         else:
             self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
+    elif marker == 0xFFE1 and s[:29] == b"http://ns.adobe.com/xap/1.0/\x00":
+        self.info["xmp"] = s.split(b"\x00")[1]
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
@@ -191,7 +194,7 @@ def APP(self, marker):
             self.info["dpi"] = 72, 72
 
 
-def COM(self, marker):
+def COM(self: JpegImageFile, marker: int) -> None:
     #
     # Comment marker.  Store these in the APP dictionary.
     n = i16(self.fp.read(2)) - 2
@@ -202,7 +205,7 @@ def COM(self, marker):
     self.applist.append(("COM", s))
 
 
-def SOF(self, marker):
+def SOF(self: JpegImageFile, marker: int) -> None:
     #
     # Start of frame marker.  Defines the size and mode of the
     # image.  JPEG is colour blind, so we use some simple
@@ -250,7 +253,7 @@ def SOF(self, marker):
         self.layer.append((t[0], t[1] // 16, t[1] & 15, t[2]))
 
 
-def DQT(self, marker):
+def DQT(self: JpegImageFile, marker: int) -> None:
     #
     # Define quantization table.  Note that there might be more
     # than one table in each marker.
@@ -425,7 +428,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return s
 
     def draft(
-        self, mode: str, size: tuple[int, int]
+        self, mode: str | None, size: tuple[int, int] | None
     ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
             return None
@@ -493,29 +496,14 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self.tile = []
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, Any] | None:
         return _getexif(self)
 
     def _getmp(self):
         return _getmp(self)
 
-    def getxmp(self):
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
 
-        :returns: XMP tags in a dictionary.
-        """
-
-        for segment, content in self.applist:
-            if segment == "APP1":
-                marker, xmp_tags = content.split(b"\x00")[:2]
-                if marker == b"http://ns.adobe.com/xap/1.0/":
-                    return self._getxmp(xmp_tags)
-        return {}
-
-
-def _getexif(self):
+def _getexif(self) -> dict[str, Any] | None:
     if "exif" not in self.info:
         return None
     return self.getexif()._get_merged_dict()
@@ -643,7 +631,7 @@ def get_sampling(im):
     return samplings.get(sampling, -1)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.width == 0 or im.height == 0:
         msg = "cannot write empty image as JPEG"
         raise ValueError(msg)
@@ -826,7 +814,7 @@ def _save(im, fp, filename):
     ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
 
 
-def _save_cjpeg(im, fp, filename):
+def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])

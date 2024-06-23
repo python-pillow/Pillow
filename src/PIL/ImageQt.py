@@ -152,7 +152,7 @@ def _toqclass_helper(im):
     elif im.mode == "RGBA":
         data = im.tobytes("raw", "BGRA")
         format = qt_format.Format_ARGB32
-    elif im.mode == "I;16" and hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
+    elif im.mode == "I;16":
         im = im.point(lambda i: i * 256)
 
         format = qt_format.Format_Grayscale16
@@ -196,7 +196,7 @@ if qt_is_installed:
                 self.setColorTable(im_data["colortable"])
 
 
-def toqimage(im):
+def toqimage(im) -> ImageQt:
     return ImageQt(im)
 
 

@@ -4,6 +4,7 @@ import collections
 import os
 import sys
 import warnings
+from typing import IO
 
 import PIL
 
@@ -223,7 +224,7 @@ def get_supported() -> list[str]:
     return ret
 
 
-def pilinfo(out=None, supported_formats=True):
+def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
     """
     Prints information about this installation of Pillow.
     This function can be called with ``python3 -m PIL``.
@@ -244,9 +245,9 @@ def pilinfo(out=None, supported_formats=True):
 
     print("-" * 68, file=out)
     print(f"Pillow {PIL.__version__}", file=out)
-    py_version = sys.version.splitlines()
-    print(f"Python {py_version[0].strip()}", file=out)
-    for py_version in py_version[1:]:
+    py_version_lines = sys.version.splitlines()
+    print(f"Python {py_version_lines[0].strip()}", file=out)
+    for py_version in py_version_lines[1:]:
         print(f"       {py_version.strip()}", file=out)
     print("-" * 68, file=out)
     print(f"Python executable is {sys.executable or 'unknown'}", file=out)
@@ -282,9 +283,12 @@ def pilinfo(out=None, supported_formats=True):
         ("xcb", "XCB (X protocol)"),
     ]:
         if check(name):
-            if name == "jpg" and check_feature("libjpeg_turbo"):
-                v = "libjpeg-turbo " + version_feature("libjpeg_turbo")
-            else:
+            v: str | None = None
+            if name == "jpg":
+                libjpeg_turbo_version = version_feature("libjpeg_turbo")
+                if libjpeg_turbo_version is not None:
+                    v = "libjpeg-turbo " + libjpeg_turbo_version
+            if v is None:
                 v = version(name)
             if v is not None:
                 version_static = name in ("pil", "jpg")

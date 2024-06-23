@@ -25,6 +25,7 @@ from PIL import (
 from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
+    assert_image_similar,
     assert_image_similar_tofile,
     assert_not_all_same,
     hopper,
@@ -99,10 +100,18 @@ class TestImage:
         JPGFILE = "Tests/images/hopper.jpg"
 
         with pytest.raises(TypeError):
-            with Image.open(PNGFILE, formats=123):
+            with Image.open(PNGFILE, formats=123):  # type: ignore[arg-type]
                 pass
 
-        for formats in [["JPEG"], ("JPEG",), ["jpeg"], ["Jpeg"], ["jPeG"], ["JpEg"]]:
+        format_list: list[list[str] | tuple[str, ...]] = [
+            ["JPEG"],
+            ("JPEG",),
+            ["jpeg"],
+            ["Jpeg"],
+            ["jPeG"],
+            ["JpEg"],
+        ]
+        for formats in format_list:
             with pytest.raises(UnidentifiedImageError):
                 with Image.open(PNGFILE, formats=formats):
                     pass
@@ -138,12 +147,12 @@ class TestImage:
 
     def test_bad_mode(self) -> None:
         with pytest.raises(ValueError):
-            with Image.open("filename", "bad mode"):
+            with Image.open("filename", "bad mode"):  # type: ignore[arg-type]
                 pass
 
     def test_stringio(self) -> None:
         with pytest.raises(ValueError):
-            with Image.open(io.StringIO()):
+            with Image.open(io.StringIO()):  # type: ignore[arg-type]
                 pass
 
     def test_pathlib(self, tmp_path: Path) -> None:
@@ -185,7 +194,8 @@ class TestImage:
         with tempfile.TemporaryFile() as fp:
             im.save(fp, "JPEG")
             fp.seek(0)
-            assert_image_similar_tofile(im, fp, 20)
+            with Image.open(fp) as reloaded:
+                assert_image_similar(im, reloaded, 20)
 
     def test_unknown_extension(self, tmp_path: Path) -> None:
         im = hopper()
@@ -383,13 +393,13 @@ class TestImage:
 
         # errors
         with pytest.raises(ValueError):
-            source.alpha_composite(over, "invalid source")
+            source.alpha_composite(over, "invalid destination")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, (0, 0), "invalid destination")
+            source.alpha_composite(over, (0, 0), "invalid source")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, 0)
+            source.alpha_composite(over, 0)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, (0, 0), 0)
+            source.alpha_composite(over, (0, 0), 0)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
 
@@ -497,9 +507,11 @@ class TestImage:
     def test_check_size(self) -> None:
         # Checking that the _check_size function throws value errors when we want it to
         with pytest.raises(ValueError):
-            Image.new("RGB", 0)  # not a tuple
+            # not a tuple
+            Image.new("RGB", 0)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            Image.new("RGB", (0,))  # Tuple too short
+            # tuple too short
+            Image.new("RGB", (0,))  # type: ignore[arg-type]
         with pytest.raises(ValueError):
             Image.new("RGB", (-1, -1))  # w,h < 0
 
@@ -896,6 +908,10 @@ class TestImage:
                 for tag in (0xA005, 0x927C):
                     assert tag not in exif.get_ifd(0x8769)
                 assert exif.get_ifd(0xA005)
+
+    def test_empty_xmp(self) -> None:
+        with Image.open("Tests/images/hopper.gif") as im:
+            assert im.getxmp() == {}
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:

@@ -12,8 +12,9 @@ from Tests.helper import skip_unless_feature
 
 if sys.platform.startswith("win32"):
     pytest.skip("Fuzzer is linux only", allow_module_level=True)
-if features.check("libjpeg_turbo"):
-    version = packaging.version.parse(features.version("libjpeg_turbo"))
+libjpeg_turbo_version = features.version("libjpeg_turbo")
+if libjpeg_turbo_version is not None:
+    version = packaging.version.parse(libjpeg_turbo_version)
     if version.major == 2 and version.minor == 0:
         pytestmark = pytest.mark.valgrind_known_error(
             reason="Known failing with libjpeg_turbo 2.0"

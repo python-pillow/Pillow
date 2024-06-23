@@ -78,8 +78,6 @@ Constructing images
 ^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: new
-.. autoclass:: SupportsArrayInterface
-    :show-inheritance:
 .. autofunction:: fromarray
 .. autofunction:: frombytes
 .. autofunction:: frombuffer
@@ -197,6 +195,7 @@ This helps to get the bounding box coordinates of the input image::
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
+.. automethod:: PIL.Image.Image.getxmp
 .. automethod:: PIL.Image.Image.histogram
 .. automethod:: PIL.Image.Image.paste
 .. automethod:: PIL.Image.Image.point
@@ -365,6 +364,14 @@ Classes
 .. autoclass:: PIL.Image.ImagePointHandler
 .. autoclass:: PIL.Image.ImageTransformHandler
 
+Protocols
+---------
+
+.. autoclass:: SupportsArrayInterface
+    :show-inheritance:
+.. autoclass:: SupportsGetData
+    :show-inheritance:
+
 Constants
 ---------
 
@@ -418,7 +425,6 @@ See :ref:`concept-filters` for details.
 .. autoclass:: Resampling
     :members:
     :undoc-members:
-    :noindex:
 
 Dither modes
 ^^^^^^^^^^^^

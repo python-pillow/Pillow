@@ -12,7 +12,7 @@ ORIGINAL_LIMIT = Image.MAX_IMAGE_PIXELS
 
 
 class TestDecompressionBomb:
-    def teardown_method(self, method) -> None:
+    def teardown_method(self) -> None:
         Image.MAX_IMAGE_PIXELS = ORIGINAL_LIMIT
 
     def test_no_warning_small_file(self) -> None:

@@ -144,7 +144,7 @@ SAVE = {
 }
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:

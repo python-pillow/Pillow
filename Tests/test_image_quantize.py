@@ -24,8 +24,9 @@ def test_sanity() -> None:
 def test_libimagequant_quantize() -> None:
     image = hopper()
     if is_ppc64le():
-        libimagequant = parse_version(features.version_feature("libimagequant"))
-        if libimagequant < parse_version("4"):
+        version = features.version_feature("libimagequant")
+        assert version is not None
+        if parse_version(version) < parse_version("4"):
             pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
     converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
     assert converted.mode == "P"
@@ -97,7 +98,7 @@ def test_quantize_dither_diff() -> None:
 @pytest.mark.parametrize(
     "method", (Image.Quantize.MEDIANCUT, Image.Quantize.MAXCOVERAGE)
 )
-def test_quantize_kmeans(method) -> None:
+def test_quantize_kmeans(method: Image.Quantize) -> None:
     im = hopper()
     no_kmeans = im.quantize(kmeans=0, method=method)
     kmeans = im.quantize(kmeans=1, method=method)
