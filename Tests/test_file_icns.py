@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import io
 import os
+import struct
 import warnings
 from pathlib import Path
 
 import pytest
-
+from unittest.mock import Mock, patch
 from PIL import IcnsImagePlugin, Image, _binary
 
 from .helper import assert_image_equal, assert_image_similar_tofile, skip_unless_feature
@@ -154,3 +155,22 @@ def test_icns_decompression_bomb() -> None:
     ) as im:
         with pytest.raises(Image.DecompressionBombError):
             im.load()
+
+def test_read_32t():
+    # Create a mock instance of a file-like object
+    fobj = io.BytesIO()
+
+    # Mock the file object to simulate normal execution
+    fobj.write(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+    fobj.seek(0)
+    start_length = (0, 12)
+    size = (1, 1, 1)
+    result = IcnsImagePlugin.read_32t(fobj, start_length, size)
+    assert isinstance(result, dict)
+
+    # Simulate an exception
+    fobj = io.BytesIO()
+    fobj.write(b'\x01\x00\x00\x00')
+    fobj.seek(0)
+    with pytest.raises(SyntaxError, match="Unknown signature, expecting 0x00000000"):
+        IcnsImagePlugin.read_32t(fobj, start_length, size)

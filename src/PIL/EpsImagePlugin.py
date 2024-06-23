@@ -27,6 +27,8 @@ import re
 import subprocess
 import sys
 import tempfile
+import shutil
+
 from typing import IO
 
 from . import Image, ImageFile

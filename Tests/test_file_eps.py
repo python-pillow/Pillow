@@ -3,6 +3,9 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
+import unittest
+from unittest.mock import patch, MagicMock
+
 import pytest
 
 from PIL import EpsImagePlugin, Image, UnidentifiedImageError, features
@@ -443,3 +446,40 @@ def test_invalid_data_after_eof() -> None:
 
     with Image.open(img_bytes) as img:
         assert img.mode == "RGB"
+
+# class TestHasGhostscript(unittest.TestCase):
+#     @patch('PIL.EpsImagePlugin.shutil.which')
+#     @patch('PIL.EpsImagePlugin.sys.platform', 'win32')
+#     def test_windows_with_ghostscript(self, mock_which):
+#         # Simulate each binary being found in turn
+#         for binary in ("gswin32c", "gswin64c", "gs"):
+#             with self.subTest(binary=binary):
+#                 EpsImagePlugin.gs_binary = None  # Reset global state
+#                 mock_which.side_effect = lambda x: x if x == binary else None
+#                 self.assertTrue(EpsImagePlugin.has_ghostscript())
+#                 self.assertEqual(EpsImagePlugin.gs_windows_binary, binary)
+#
+#     @patch('PIL.EpsImagePlugin.shutil.which', return_value=None)
+#     @patch('PIL.EpsImagePlugin.sys.platform', 'win32')
+#     def test_windows_without_ghostscript(self, mock_which):
+#         EpsImagePlugin.gs_binary = None  # Reset global state
+#         self.assertFalse(EpsImagePlugin.has_ghostscript())
+#         self.assertFalse(EpsImagePlugin.gs_windows_binary)
+#
+#     @patch('PIL.EpsImagePlugin.subprocess.check_call')
+#     @patch('PIL.EpsImagePlugin.sys.platform', 'linux')
+#     def test_non_windows_with_ghostscript(self, mock_check_call):
+#         EpsImagePlugin.gs_binary = None  # Reset global state
+#         mock_check_call.return_value = 0  # Simulate successful call
+#         self.assertTrue(EpsImagePlugin.has_ghostscript())
+#         self.assertEqual(EpsImagePlugin.gs_binary, "gs")
+#
+#     @patch('PIL.EpsImagePlugin.subprocess.check_call', side_effect=OSError)
+#     @patch('PIL.EpsImagePlugin.sys.platform', 'linux')
+#     def test_non_windows_without_ghostscript(self, mock_check_call):
+#         EpsImagePlugin.gs_binary = None  # Reset global state
+#         self.assertFalse(EpsImagePlugin.has_ghostscript())
+#         self.assertFalse(EpsImagePlugin.gs_binary)
+#
+# if __name__ == '__main__':
+#     unittest.main()

@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import warnings
 
+import unittest
+from unittest.mock import patch, MagicMock
+
 import pytest
 
 from PIL import FliImagePlugin, Image, ImageFile
