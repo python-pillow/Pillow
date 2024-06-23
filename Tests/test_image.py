@@ -393,13 +393,13 @@ class TestImage:
 
         # errors
         with pytest.raises(ValueError):
-            source.alpha_composite(over, "invalid source")
+            source.alpha_composite(over, "invalid destination")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, (0, 0), "invalid destination")
+            source.alpha_composite(over, (0, 0), "invalid source")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, 0)
+            source.alpha_composite(over, 0)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, (0, 0), 0)
+            source.alpha_composite(over, (0, 0), 0)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
 

@@ -209,7 +209,7 @@ def test_getlength(
         assert length == length_raqm
 
 
-def test_float_size() -> None:
+def test_float_size(layout_engine: ImageFont.Layout) -> None:
     lengths = []
     for size in (48, 48.5, 49):
         f = ImageFont.truetype(
@@ -494,8 +494,8 @@ def test_default_font() -> None:
     assert_image_equal_tofile(im, "Tests/images/default_font_freetype.png")
 
 
-@pytest.mark.parametrize("mode", (None, "1", "RGBA"))
-def test_getbbox(font: ImageFont.FreeTypeFont, mode: str | None) -> None:
+@pytest.mark.parametrize("mode", ("", "1", "RGBA"))
+def test_getbbox(font: ImageFont.FreeTypeFont, mode: str) -> None:
     assert (0, 4, 12, 16) == font.getbbox("A", mode)
 
 

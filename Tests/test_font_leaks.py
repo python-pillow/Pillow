@@ -34,7 +34,7 @@ class TestDefaultFontLeak(TestTTypeFontLeak):
 
     def test_leak(self) -> None:
         if features.check_module("freetype2"):
-            ImageFont.core = _util.DeferredError(ImportError)
+            ImageFont.core = _util.DeferredError(ImportError("Disabled for testing"))
         try:
             default_font = ImageFont.load_default()
         finally:

@@ -196,7 +196,7 @@ if qt_is_installed:
                 self.setColorTable(im_data["colortable"])
 
 
-def toqimage(im):
+def toqimage(im) -> ImageQt:
     return ImageQt(im)
 
 

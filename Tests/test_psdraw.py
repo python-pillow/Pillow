@@ -54,14 +54,10 @@ def test_stdout(buffer: bool) -> None:
     # Temporarily redirect stdout
     old_stdout = sys.stdout
 
-    if buffer:
+    class MyStdOut:
+        buffer = BytesIO()
 
-        class MyStdOut:
-            buffer = BytesIO()
-
-        mystdout = MyStdOut()
-    else:
-        mystdout = BytesIO()
+    mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
     sys.stdout = mystdout
 
@@ -71,6 +67,6 @@ def test_stdout(buffer: bool) -> None:
     # Reset stdout
     sys.stdout = old_stdout
 
-    if buffer:
+    if isinstance(mystdout, MyStdOut):
         mystdout = mystdout.buffer
     assert mystdout.getvalue() != b""

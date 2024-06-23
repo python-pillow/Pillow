@@ -381,7 +381,7 @@ class TestPyEncoder(CodecsTest):
     def test_encode(self) -> None:
         encoder = ImageFile.PyEncoder(None)
         with pytest.raises(NotImplementedError):
-            encoder.encode(None)
+            encoder.encode(0)
 
         bytes_consumed, errcode = encoder.encode_to_pyfd()
         assert bytes_consumed == 0

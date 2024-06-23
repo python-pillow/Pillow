@@ -1581,7 +1581,7 @@ def test_compute_regular_polygon_vertices_input_error_handling(
     error_message: str,
 ) -> None:
     with pytest.raises(expected_error) as e:
-        ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
+        ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)  # type: ignore[arg-type]
     assert str(e.value) == error_message
 
 

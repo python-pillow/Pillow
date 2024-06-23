@@ -535,8 +535,10 @@ class TestFilePng:
 
     def test_repr_png(self) -> None:
         im = hopper()
+        b = im._repr_png_()
+        assert b is not None
 
-        with Image.open(BytesIO(im._repr_png_())) as repr_png:
+        with Image.open(BytesIO(b)) as repr_png:
             assert repr_png.format == "PNG"
             assert_image_equal(im, repr_png)
 
@@ -768,14 +770,10 @@ class TestFilePng:
     def test_save_stdout(self, buffer: bool) -> None:
         old_stdout = sys.stdout
 
-        if buffer:
+        class MyStdOut:
+            buffer = BytesIO()
 
-            class MyStdOut:
-                buffer = BytesIO()
-
-            mystdout = MyStdOut()
-        else:
-            mystdout = BytesIO()
+        mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
         sys.stdout = mystdout
 
@@ -785,7 +783,7 @@ class TestFilePng:
         # Reset stdout
         sys.stdout = old_stdout
 
-        if buffer:
+        if isinstance(mystdout, MyStdOut):
             mystdout = mystdout.buffer
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)

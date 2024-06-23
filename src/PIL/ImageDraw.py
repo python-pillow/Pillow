@@ -62,7 +62,9 @@ directly.
 
 
 class ImageDraw:
-    font = None
+    font: (
+        ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont | None
+    ) = None
 
     def __init__(self, im: Image.Image, mode: str | None = None) -> None:
         """
