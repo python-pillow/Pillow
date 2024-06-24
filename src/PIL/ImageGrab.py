@@ -69,6 +69,7 @@ def grab(
                 left, top, right, bottom = bbox
                 im = im.crop((left - x0, top - y0, right - x0, bottom - y0))
             return im
+    # Cast to Optional[str] needed for Windows and macOS.
     display_name: str | None = xdisplay
     try:
         if not Image.core.HAVE_XCB:
