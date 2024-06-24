@@ -209,7 +209,7 @@ class MockPyDecoder(ImageFile.PyDecoder):
 
         super().__init__(mode, *args)
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
         # eof
         return -1, 0
 
@@ -222,7 +222,7 @@ class MockPyEncoder(ImageFile.PyEncoder):
 
         super().__init__(mode, *args)
 
-    def encode(self, buffer):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         return 1, 1, b""
 
     def cleanup(self) -> None:

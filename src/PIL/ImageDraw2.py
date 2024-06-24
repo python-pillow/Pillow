@@ -24,7 +24,10 @@
 """
 from __future__ import annotations
 
+from typing import BinaryIO
+
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
+from ._typing import StrOrBytesPath
 
 
 class Pen:
@@ -45,7 +48,9 @@ class Brush:
 class Font:
     """Stores a TrueType font and color"""
 
-    def __init__(self, color, file, size=12):
+    def __init__(
+        self, color: str, file: StrOrBytesPath | BinaryIO, size: float = 12
+    ) -> None:
         # FIXME: add support for bitmap fonts
         self.color = ImageColor.getrgb(color)
         self.font = ImageFont.truetype(file, size)

@@ -430,6 +430,7 @@ class BLPEncoder(ImageFile.PyEncoder):
 
     def _write_palette(self) -> bytes:
         data = b""
+        assert self.im is not None
         palette = self.im.getpalette("RGBA", "RGBA")
         for i in range(len(palette) // 4):
             r, g, b, a = palette[i * 4 : (i + 1) * 4]
@@ -444,6 +445,7 @@ class BLPEncoder(ImageFile.PyEncoder):
         offset = 20 + 16 * 4 * 2 + len(palette_data)
         data = struct.pack("<16I", offset, *((0,) * 15))
 
+        assert self.im is not None
         w, h = self.im.size
         data += struct.pack("<16I", w * h, *((0,) * 15))
 

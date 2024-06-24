@@ -105,6 +105,7 @@ def test_load_image_series() -> None:
     img_list = SpiderImagePlugin.loadImageSeries(file_list)
 
     # Assert
+    assert img_list is not None
     assert len(img_list) == 1
     assert isinstance(img_list[0], Image.Image)
     assert img_list[0].size == (128, 128)
