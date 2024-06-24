@@ -57,6 +57,14 @@ def test_sanity() -> None:
     draw2.line(list(range(10)), pen)
 
 
+def test_mode() -> None:
+    draw = ImageDraw2.Draw("L", (1, 1))
+    assert draw.image.mode == "L"
+
+    with pytest.raises(ValueError):
+        ImageDraw2.Draw("L")
+
+
 @pytest.mark.parametrize("bbox", BBOX)
 def test_ellipse(bbox: Coords) -> None:
     # Arrange
