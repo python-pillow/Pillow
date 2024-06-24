@@ -548,7 +548,7 @@ def test_find_font(
 
             def loadable_font(
                 filepath: str, size: int, index: int, encoding: str, *args: Any
-            ):
+            ) -> ImageFont.FreeTypeFont:
                 _freeTypeFont = getattr(ImageFont, "_FreeTypeFont")
                 if filepath == path_to_fake:
                     return _freeTypeFont(FONT_PATH, size, index, encoding, *args)

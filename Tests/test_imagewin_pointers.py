@@ -45,21 +45,22 @@ if is_win32():
     memcpy = ctypes.cdll.msvcrt.memcpy
     memcpy.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
 
-    CreateCompatibleDC = ctypes.windll.gdi32.CreateCompatibleDC
+    windll = getattr(ctypes, "windll")
+    CreateCompatibleDC = windll.gdi32.CreateCompatibleDC
     CreateCompatibleDC.argtypes = [ctypes.wintypes.HDC]
     CreateCompatibleDC.restype = ctypes.wintypes.HDC
 
-    DeleteDC = ctypes.windll.gdi32.DeleteDC
+    DeleteDC = windll.gdi32.DeleteDC
     DeleteDC.argtypes = [ctypes.wintypes.HDC]
 
-    SelectObject = ctypes.windll.gdi32.SelectObject
+    SelectObject = windll.gdi32.SelectObject
     SelectObject.argtypes = [ctypes.wintypes.HDC, ctypes.wintypes.HGDIOBJ]
     SelectObject.restype = ctypes.wintypes.HGDIOBJ
 
-    DeleteObject = ctypes.windll.gdi32.DeleteObject
+    DeleteObject = windll.gdi32.DeleteObject
     DeleteObject.argtypes = [ctypes.wintypes.HGDIOBJ]
 
-    CreateDIBSection = ctypes.windll.gdi32.CreateDIBSection
+    CreateDIBSection = windll.gdi32.CreateDIBSection
     CreateDIBSection.argtypes = [
         ctypes.wintypes.HDC,
         ctypes.c_void_p,

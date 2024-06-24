@@ -59,7 +59,7 @@ def test_stdout(buffer: bool) -> None:
 
     mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-    sys.stdout = mystdout
+    sys.stdout = mystdout  # type: ignore[assignment]
 
     ps = PSDraw.PSDraw()
     _create_document(ps)

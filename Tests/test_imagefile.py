@@ -351,7 +351,9 @@ class TestPyEncoder(CodecsTest):
             ImageFile._save(
                 im, fp, [("MOCK", (xoff, yoff, -10, yoff + ysize), 0, "RGB")]
             )
-        assert MockPyEncoder.last.cleanup_called
+        last: MockPyEncoder | None = MockPyEncoder.last
+        assert last
+        assert last.cleanup_called
 
         with pytest.raises(ValueError):
             ImageFile._save(

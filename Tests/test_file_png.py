@@ -775,7 +775,7 @@ class TestFilePng:
 
         mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-        sys.stdout = mystdout
+        sys.stdout = mystdout  # type: ignore[assignment]
 
         with Image.open(TEST_PNG_FILE) as im:
             im.save(sys.stdout, "PNG")
