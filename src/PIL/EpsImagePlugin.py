@@ -231,9 +231,9 @@ class EpsImageFile(ImageFile.ImageFile):
 
         def check_required_header_comments() -> None:
             """
-            The EPS spec requires that some headers exist.
-            This should be checked after all headers have been read,
-            or at the end of the file if that comes first.
+            The EPS specification requires that some headers exist.
+            This should be checked when the header comments formally end,
+            when image data starts, or when the file ends, whichever comes first.
             """
             if "PS-Adobe" not in self.info:
                 msg = 'EPS header missing "%!PS-Adobe" comment'
