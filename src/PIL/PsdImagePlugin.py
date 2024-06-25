@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import io
+from functools import cached_property
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8
@@ -118,18 +119,17 @@ class PsdImageFile(ImageFile.ImageFile):
         #
         # layer and mask information
 
-        self.layers = []
+        self._layers_position = None
 
         size = i32(read(4))
         if size:
             end = self.fp.tell() + size
             size = i32(read(4))
             if size:
-                _layer_data = io.BytesIO(ImageFile._safe_read(self.fp, size))
-                self.layers = _layerinfo(_layer_data, size)
+                self._layers_position = self.fp.tell()
+                self._layers_size = size
             self.fp.seek(end)
-        self.n_frames = len(self.layers)
-        self.is_animated = self.n_frames > 1
+        self._n_frames: int | None = None
 
         #
         # image descriptor
@@ -140,6 +140,26 @@ class PsdImageFile(ImageFile.ImageFile):
         self._fp = self.fp
         self.frame = 1
         self._min_frame = 1
+
+    @cached_property
+    def layers(self):
+        layers = []
+        if self._layers_position is not None:
+            self._fp.seek(self._layers_position)
+            _layer_data = io.BytesIO(ImageFile._safe_read(self._fp, self._layers_size))
+            layers = _layerinfo(_layer_data, self._layers_size)
+        self._n_frames = len(layers)
+        return layers
+
+    @property
+    def n_frames(self) -> int:
+        if self._n_frames is None:
+            self._n_frames = len(self.layers)
+        return self._n_frames
+
+    @property
+    def is_animated(self) -> bool:
+        return len(self.layers) > 1
 
     def seek(self, layer: int) -> None:
         if not self._seek_check(layer):
