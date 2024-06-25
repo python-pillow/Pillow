@@ -657,11 +657,12 @@ class TestFilePng:
             png.call(cid, 0, 0)
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
-    def test_specify_bits(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize("save_all", (True, False))
+    def test_specify_bits(self, save_all: bool, tmp_path: Path) -> None:
         im = hopper("P")
 
         out = str(tmp_path / "temp.png")
-        im.save(out, bits=4)
+        im.save(out, bits=4, save_all=save_all)
 
         with Image.open(out) as reloaded:
             assert len(reloaded.png.im_palette[1]) == 48
