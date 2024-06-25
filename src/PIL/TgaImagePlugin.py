@@ -36,7 +36,7 @@ MODES = {
     (3, 1): "1",
     (3, 8): "L",
     (3, 16): "LA",
-    (2, 16): "BGRA;15",
+    (2, 16): "BGRA;15Z",
     (2, 24): "BGR",
     (2, 32): "BGRA",
 }
@@ -87,9 +87,7 @@ class TgaImageFile(ImageFile.ImageFile):
         elif imagetype in (1, 9):
             self._mode = "P" if colormaptype else "L"
         elif imagetype in (2, 10):
-            self._mode = "RGB"
-            if depth == 32:
-                self._mode = "RGBA"
+            self._mode = "RGB" if depth == 24 else "RGBA"
         else:
             msg = "unknown TGA mode"
             raise SyntaxError(msg)
@@ -117,11 +115,9 @@ class TgaImageFile(ImageFile.ImageFile):
             # read palette
             start, size, mapdepth = i16(s, 3), i16(s, 5), s[7]
             if mapdepth == 16:
-                colormap = self.fp.read(2 * size)
-                palette_data = bytearray(2 * start)
-                for a, b in zip(colormap[::2], colormap[1::2]):
-                    palette_data += bytearray((a, b ^ 128))
-                self.palette = ImagePalette.raw("BGRA;15", bytes(palette_data))
+                self.palette = ImagePalette.raw(
+                    "BGRA;15Z", bytes(2 * start) + self.fp.read(2 * size)
+                )
                 self.palette.mode = "RGBA"
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
