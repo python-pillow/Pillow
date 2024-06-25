@@ -634,6 +634,19 @@ def test_polygon(points: Coords) -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon.png")
 
 
+@pytest.mark.parametrize("points", POINTS)
+def test_polygon_width_I16(points: Coords) -> None:
+    # Arrange
+    im = Image.new("I;16", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.polygon(points, outline=0xFFFF, width=2)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon_width_I.tiff")
+
+
 @pytest.mark.parametrize("mode", ("RGB", "L"))
 @pytest.mark.parametrize("kite_points", KITE_POINTS)
 def test_polygon_kite(
