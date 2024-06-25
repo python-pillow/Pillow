@@ -233,18 +233,6 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     return (PyObject *)self;
 }
 
-static int
-font_getchar(PyObject *string, int index, FT_ULong *char_out) {
-    if (PyUnicode_Check(string)) {
-        if (index >= PyUnicode_GET_LENGTH(string)) {
-            return 0;
-        }
-        *char_out = PyUnicode_READ_CHAR(string, index);
-        return 1;
-    }
-    return 0;
-}
-
 #ifdef HAVE_RAQM
 
 static size_t
@@ -266,28 +254,34 @@ text_layout_raqm(
         goto failed;
     }
 
+    Py_ssize_t size;
+    int set_text;
     if (PyUnicode_Check(string)) {
         Py_UCS4 *text = PyUnicode_AsUCS4Copy(string);
-        Py_ssize_t size = PyUnicode_GET_LENGTH(string);
+        size = PyUnicode_GET_LENGTH(string);
         if (!text || !size) {
             /* return 0 and clean up, no glyphs==no size,
                and raqm fails with empty strings */
             goto failed;
         }
-        int set_text = raqm_set_text(rq, text, size);
+        set_text = raqm_set_text(rq, text, size);
         PyMem_Free(text);
-        if (!set_text) {
-            PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
+    } else {
+        char *buffer;
+        PyBytes_AsStringAndSize(string, &buffer, &size);
+        if (!buffer || !size) {
+            /* return 0 and clean up, no glyphs==no size,
+               and raqm fails with empty strings */
             goto failed;
         }
-        if (lang) {
-            if (!raqm_set_language(rq, lang, start, size)) {
-                PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
-                goto failed;
-            }
-        }
-    } else {
-        PyErr_SetString(PyExc_TypeError, "expected string");
+        set_text = raqm_set_text_utf8(rq, buffer, size);
+    }
+    if (!set_text) {
+        PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
+        goto failed;
+    }
+    if (lang && !raqm_set_language(rq, lang, start, size)) {
+        PyErr_SetString(PyExc_ValueError, "raqm_set_language() failed");
         goto failed;
     }
 
@@ -405,13 +399,13 @@ text_layout_fallback(
     GlyphInfo **glyph_info,
     int mask,
     int color) {
-    int error, load_flags;
+    int error, load_flags, i;
+    char *buffer = NULL;
     FT_ULong ch;
     Py_ssize_t count;
     FT_GlyphSlot glyph;
     FT_Bool kerning = FT_HAS_KERNING(self->face);
     FT_UInt last_index = 0;
-    int i;
 
     if (features != Py_None || dir != NULL || lang != NULL) {
         PyErr_SetString(
@@ -419,14 +413,11 @@ text_layout_fallback(
             "setting text direction, language or font features is not supported "
             "without libraqm");
     }
-    if (!PyUnicode_Check(string)) {
-        PyErr_SetString(PyExc_TypeError, "expected string");
-        return 0;
-    }
 
-    count = 0;
-    while (font_getchar(string, count, &ch)) {
-        count++;
+    if (PyUnicode_Check(string)) {
+        count = PyUnicode_GET_LENGTH(string);
+    } else {
+        PyBytes_AsStringAndSize(string, &buffer, &count);
     }
     if (count == 0) {
         return 0;
@@ -445,7 +436,12 @@ text_layout_fallback(
     if (color) {
         load_flags |= FT_LOAD_COLOR;
     }
-    for (i = 0; font_getchar(string, i, &ch); i++) {
+    for (i = 0; i < count; i++) {
+        if (buffer) {
+            ch = buffer[i];
+        } else {
+            ch = PyUnicode_READ_CHAR(string, i);
+        }
         (*glyph_info)[i].index = FT_Get_Char_Index(self->face, ch);
         error = FT_Load_Glyph(self->face, (*glyph_info)[i].index, load_flags);
         if (error) {
