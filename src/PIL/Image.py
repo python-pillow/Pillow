@@ -1113,7 +1113,7 @@ class Image:
             if trns is not None:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(Tuple[int, int, int], trns),  # trns was converted to RGB
+                        cast(Tuple[int, ...], trns),  # trns was converted to RGB
                         new_im,
                     )
                 except Exception:
@@ -1163,12 +1163,9 @@ class Image:
             # crash fail if we leave a bytes transparency in an rgb/l mode.
             del new_im.info["transparency"]
         if trns is not None:
-            if new_im.mode == "P":
+            if new_im.mode == "P" and new_im.palette:
                 try:
-                    new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(Tuple[int, int, int], trns),  # trns was converted to RGB
-                        new_im,
-                    )
+                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
                 except ValueError as e:
                     del new_im.info["transparency"]
                     if str(e) != "cannot allocate more than 256 colors":
