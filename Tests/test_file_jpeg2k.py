@@ -337,7 +337,7 @@ def test_issue_6194() -> None:
 
 def test_unbound_local() -> None:
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
-    with pytest.raises(OSError):
+    with pytest.raises(UnidentifiedImageError):
         with Image.open("Tests/images/unbound_variable.jp2"):
             pass
 
