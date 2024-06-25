@@ -72,12 +72,13 @@ def test_palette_depth_8(tmp_path: Path) -> None:
 
 def test_palette_depth_16(tmp_path: Path) -> None:
     with Image.open("Tests/images/p_16.tga") as im:
-        assert_image_equal_tofile(im.convert("RGB"), "Tests/images/p_16.png")
+        assert im.palette.mode == "RGBA"
+        assert_image_equal_tofile(im.convert("RGBA"), "Tests/images/p_16.png")
 
         out = str(tmp_path / "temp.png")
         im.save(out)
         with Image.open(out) as reloaded:
-            assert_image_equal_tofile(reloaded.convert("RGB"), "Tests/images/p_16.png")
+            assert_image_equal_tofile(reloaded.convert("RGBA"), "Tests/images/p_16.png")
 
 
 def test_id_field() -> None:
