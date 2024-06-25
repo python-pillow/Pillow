@@ -301,7 +301,8 @@ class BmpImageFile(ImageFile.ImageFile):
 class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
         rle4 = self.args[1]
         data = bytearray()
         x = 0
@@ -395,12 +396,12 @@ SAVE = {
 }
 
 
-def _dib_save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _dib_save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, False)
 
 
 def _save(
-    im: Image.Image, fp: IO[bytes], filename: str, bitmap_header: bool = True
+    im: Image.Image, fp: IO[bytes], filename: str | bytes, bitmap_header: bool = True
 ) -> None:
     try:
         rawmode, bits, colors = SAVE[im.mode]

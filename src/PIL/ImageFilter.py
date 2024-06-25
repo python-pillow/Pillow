@@ -19,12 +19,16 @@ from __future__ import annotations
 import abc
 import functools
 from types import ModuleType
-from typing import Any, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Sequence, cast
+
+if TYPE_CHECKING:
+    from . import _imaging
+    from ._typing import NumpyArray
 
 
 class Filter:
     @abc.abstractmethod
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         pass
 
 
@@ -33,7 +37,9 @@ class MultibandFilter(Filter):
 
 
 class BuiltinFilter(MultibandFilter):
-    def filter(self, image):
+    filterargs: tuple[Any, ...]
+
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         if image.mode == "P":
             msg = "cannot filter palette images"
             raise ValueError(msg)
@@ -91,7 +97,7 @@ class RankFilter(Filter):
         self.size = size
         self.rank = rank
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         if image.mode == "P":
             msg = "cannot filter palette images"
             raise ValueError(msg)
@@ -158,7 +164,7 @@ class ModeFilter(Filter):
     def __init__(self, size: int = 3) -> None:
         self.size = size
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         return image.modefilter(self.size)
 
 
@@ -176,9 +182,9 @@ class GaussianBlur(MultibandFilter):
     def __init__(self, radius: float | Sequence[float] = 2) -> None:
         self.radius = radius
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         xy = self.radius
-        if not isinstance(xy, (tuple, list)):
+        if isinstance(xy, (int, float)):
             xy = (xy, xy)
         if xy == (0, 0):
             return image.copy()
@@ -208,9 +214,9 @@ class BoxBlur(MultibandFilter):
             raise ValueError(msg)
         self.radius = radius
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         xy = self.radius
-        if not isinstance(xy, (tuple, list)):
+        if isinstance(xy, (int, float)):
             xy = (xy, xy)
         if xy == (0, 0):
             return image.copy()
@@ -241,7 +247,7 @@ class UnsharpMask(MultibandFilter):
         self.percent = percent
         self.threshold = threshold
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         return image.unsharp_mask(self.radius, self.percent, self.threshold)
 
 
@@ -387,8 +393,13 @@ class Color3DLUT(MultibandFilter):
     name = "Color 3D LUT"
 
     def __init__(
-        self, size, table, channels: int = 3, target_mode: str | None = None, **kwargs
-    ):
+        self,
+        size: int | tuple[int, int, int],
+        table: Sequence[float] | Sequence[Sequence[int]] | NumpyArray,
+        channels: int = 3,
+        target_mode: str | None = None,
+        **kwargs: bool,
+    ) -> None:
         if channels not in (3, 4):
             msg = "Only 3 or 4 output channels are supported"
             raise ValueError(msg)
@@ -410,15 +421,16 @@ class Color3DLUT(MultibandFilter):
                 pass
 
         if numpy and isinstance(table, numpy.ndarray):
+            numpy_table: NumpyArray = table
             if copy_table:
-                table = table.copy()
+                numpy_table = numpy_table.copy()
 
-            if table.shape in [
+            if numpy_table.shape in [
                 (items * channels,),
                 (items, channels),
                 (size[2], size[1], size[0], channels),
             ]:
-                table = table.reshape(items * channels)
+                table = numpy_table.reshape(items * channels)
             else:
                 wrong_size = True
 
@@ -428,7 +440,8 @@ class Color3DLUT(MultibandFilter):
 
             # Convert to a flat list
             if table and isinstance(table[0], (list, tuple)):
-                table, raw_table = [], table
+                raw_table = cast(Sequence[Sequence[int]], table)
+                flat_table: list[int] = []
                 for pixel in raw_table:
                     if len(pixel) != channels:
                         msg = (
@@ -436,7 +449,8 @@ class Color3DLUT(MultibandFilter):
                             f"have a length of {channels}."
                         )
                         raise ValueError(msg)
-                    table.extend(pixel)
+                    flat_table.extend(pixel)
+                table = flat_table
 
         if wrong_size or len(table) != items * channels:
             msg = (
@@ -449,7 +463,7 @@ class Color3DLUT(MultibandFilter):
         self.table = table
 
     @staticmethod
-    def _check_size(size: Any) -> list[int]:
+    def _check_size(size: Any) -> tuple[int, int, int]:
         try:
             _, _, _ = size
         except ValueError as e:
@@ -457,7 +471,7 @@ class Color3DLUT(MultibandFilter):
             raise ValueError(msg) from e
         except TypeError:
             size = (size, size, size)
-        size = [int(x) for x in size]
+        size = tuple(int(x) for x in size)
         for size_1d in size:
             if not 2 <= size_1d <= 65:
                 msg = "Size should be in [2, 65] range."
@@ -465,7 +479,13 @@ class Color3DLUT(MultibandFilter):
         return size
 
     @classmethod
-    def generate(cls, size, callback, channels=3, target_mode=None):
+    def generate(
+        cls,
+        size: int | tuple[int, int, int],
+        callback: Callable[[float, float, float], tuple[float, ...]],
+        channels: int = 3,
+        target_mode: str | None = None,
+    ) -> Color3DLUT:
         """Generates new LUT using provided callback.
 
         :param size: Size of the table. Passed to the constructor.
@@ -482,7 +502,7 @@ class Color3DLUT(MultibandFilter):
             msg = "Only 3 or 4 output channels are supported"
             raise ValueError(msg)
 
-        table = [0] * (size_1d * size_2d * size_3d * channels)
+        table: list[float] = [0] * (size_1d * size_2d * size_3d * channels)
         idx_out = 0
         for b in range(size_3d):
             for g in range(size_2d):
@@ -500,7 +520,13 @@ class Color3DLUT(MultibandFilter):
             _copy_table=False,
         )
 
-    def transform(self, callback, with_normals=False, channels=None, target_mode=None):
+    def transform(
+        self,
+        callback: Callable[..., tuple[float, ...]],
+        with_normals: bool = False,
+        channels: int | None = None,
+        target_mode: str | None = None,
+    ) -> Color3DLUT:
         """Transforms the table values using provided callback and returns
         a new LUT with altered values.
 
@@ -564,7 +590,7 @@ class Color3DLUT(MultibandFilter):
             r.append(f"target_mode={self.mode}")
         return "<{}>".format(" ".join(r))
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         from . import Image
 
         return image.color_lut_3d(

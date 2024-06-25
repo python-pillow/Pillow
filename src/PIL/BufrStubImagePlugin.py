@@ -17,7 +17,7 @@ from . import Image, ImageFile
 _handler = None
 
 
-def register_handler(handler: ImageFile.StubHandler) -> None:
+def register_handler(handler: ImageFile.StubHandler | None) -> None:
     """
     Install application-specific BUFR image handler.
 
@@ -60,7 +60,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
         return _handler
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if _handler is None or not hasattr(_handler, "save"):
         msg = "BUFR save handler not installed"
         raise OSError(msg)

@@ -27,6 +27,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
@@ -229,6 +230,11 @@ class EpsImageFile(ImageFile.ImageFile):
         trailer_reached = False
 
         def check_required_header_comments() -> None:
+            """
+            The EPS specification requires that some headers exist.
+            This should be checked when the header comments formally end,
+            when image data starts, or when the file ends, whichever comes first.
+            """
             if "PS-Adobe" not in self.info:
                 msg = 'EPS header missing "%!PS-Adobe" comment'
                 raise SyntaxError(msg)
@@ -236,7 +242,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 msg = 'EPS header missing "%%BoundingBox" comment'
                 raise SyntaxError(msg)
 
-        def _read_comment(s):
+        def _read_comment(s: str) -> bool:
             nonlocal reading_trailer_comments
             try:
                 m = split.match(s)
@@ -244,33 +250,33 @@ class EpsImageFile(ImageFile.ImageFile):
                 msg = "not an EPS file"
                 raise SyntaxError(msg) from e
 
-            if m:
-                k, v = m.group(1, 2)
-                self.info[k] = v
-                if k == "BoundingBox":
-                    if v == "(atend)":
-                        reading_trailer_comments = True
-                    elif not self._size or (
-                        trailer_reached and reading_trailer_comments
-                    ):
-                        try:
-                            # Note: The DSC spec says that BoundingBox
-                            # fields should be integers, but some drivers
-                            # put floating point values there anyway.
-                            box = [int(float(i)) for i in v.split()]
-                            self._size = box[2] - box[0], box[3] - box[1]
-                            self.tile = [
-                                ("eps", (0, 0) + self.size, offset, (length, box))
-                            ]
-                        except Exception:
-                            pass
-                return True
+            if not m:
+                return False
+
+            k, v = m.group(1, 2)
+            self.info[k] = v
+            if k == "BoundingBox":
+                if v == "(atend)":
+                    reading_trailer_comments = True
+                elif not self._size or (trailer_reached and reading_trailer_comments):
+                    try:
+                        # Note: The DSC spec says that BoundingBox
+                        # fields should be integers, but some drivers
+                        # put floating point values there anyway.
+                        box = [int(float(i)) for i in v.split()]
+                        self._size = box[2] - box[0], box[3] - box[1]
+                        self.tile = [("eps", (0, 0) + self.size, offset, (length, box))]
+                    except Exception:
+                        pass
+            return True
 
         while True:
             byte = self.fp.read(1)
             if byte == b"":
                 # if we didn't read a byte we must be at the end of the file
                 if bytes_read == 0:
+                    if reading_header_comments:
+                        check_required_header_comments()
                     break
             elif byte in b"\r\n":
                 # if we read a line ending character, ignore it and parse what
@@ -366,8 +372,6 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             bytes_read = 0
 
-        check_required_header_comments()
-
         if not self._size:
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
@@ -413,7 +417,7 @@ class EpsImageFile(ImageFile.ImageFile):
 # --------------------------------------------------------------------
 
 
-def _save(im, fp, filename, eps=1):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -> None:
     """EPS Writer for the Python Imaging Library."""
 
     # make sure image data is available

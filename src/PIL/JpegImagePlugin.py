@@ -42,7 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import Any
+from typing import IO, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -95,6 +95,8 @@ def APP(self, marker):
         else:
             self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
+    elif marker == 0xFFE1 and s[:29] == b"http://ns.adobe.com/xap/1.0/\x00":
+        self.info["xmp"] = s.split(b"\x00")[1]
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
@@ -426,7 +428,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return s
 
     def draft(
-        self, mode: str, size: tuple[int, int]
+        self, mode: str | None, size: tuple[int, int] | None
     ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
             return None
@@ -499,21 +501,6 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def _getmp(self):
         return _getmp(self)
-
-    def getxmp(self) -> dict[str, Any]:
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
-
-        :returns: XMP tags in a dictionary.
-        """
-
-        for segment, content in self.applist:
-            if segment == "APP1":
-                marker, xmp_tags = content.split(b"\x00")[:2]
-                if marker == b"http://ns.adobe.com/xap/1.0/":
-                    return self._getxmp(xmp_tags)
-        return {}
 
 
 def _getexif(self) -> dict[str, Any] | None:
@@ -644,7 +631,7 @@ def get_sampling(im):
     return samplings.get(sampling, -1)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.width == 0 or im.height == 0:
         msg = "cannot write empty image as JPEG"
         raise ValueError(msg)
@@ -827,7 +814,7 @@ def _save(im, fp, filename):
     ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
 
 
-def _save_cjpeg(im, fp, filename):
+def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])

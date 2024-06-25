@@ -69,7 +69,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
     are visually similar to the originals.
     """
 
-    def check(temp_file) -> None:
+    def check(temp_file: str) -> None:
         with Image.open(temp_file) as im:
             assert im.n_frames == 2
 

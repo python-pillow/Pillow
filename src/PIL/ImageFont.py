@@ -33,11 +33,17 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
-from typing import BinaryIO
+from types import ModuleType
+from typing import IO, TYPE_CHECKING, Any, BinaryIO
 
 from . import Image
 from ._typing import StrOrBytesPath
-from ._util import is_directory, is_path
+from ._util import DeferredError, is_path
+
+if TYPE_CHECKING:
+    from . import ImageFile
+    from ._imaging import ImagingFont
+    from ._imagingft import Font
 
 
 class Layout(IntEnum):
@@ -48,15 +54,14 @@ class Layout(IntEnum):
 MAX_STRING_LENGTH = 1_000_000
 
 
+core: ModuleType | DeferredError
 try:
     from . import _imagingft as core
 except ImportError as ex:
-    from ._util import DeferredError
-
     core = DeferredError.new(ex)
 
 
-def _string_length_check(text):
+def _string_length_check(text: str | bytes | bytearray) -> None:
     if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
         msg = "too many characters in string"
         raise ValueError(msg)
@@ -81,9 +86,11 @@ def _string_length_check(text):
 class ImageFont:
     """PIL font wrapper"""
 
-    def _load_pilfont(self, filename):
+    font: ImagingFont
+
+    def _load_pilfont(self, filename: str) -> None:
         with open(filename, "rb") as fp:
-            image = None
+            image: ImageFile.ImageFile | None = None
             for ext in (".png", ".gif", ".pbm"):
                 if image:
                     image.close()
@@ -106,7 +113,7 @@ class ImageFont:
             self._load_pilfont_data(fp, image)
             image.close()
 
-    def _load_pilfont_data(self, file, image):
+    def _load_pilfont_data(self, file: IO[bytes], image: Image.Image) -> None:
         # read PILfont header
         if file.readline() != b"PILfont\n":
             msg = "Not a PILfont file"
@@ -153,7 +160,9 @@ class ImageFont:
         Image._decompression_bomb_check(self.font.getsize(text))
         return self.font.getmask(text, mode)
 
-    def getbbox(self, text, *args, **kwargs):
+    def getbbox(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> tuple[int, int, int, int]:
         """
         Returns bounding box (in pixels) of given text.
 
@@ -167,7 +176,9 @@ class ImageFont:
         width, height = self.font.getsize(text)
         return 0, 0, width, height
 
-    def getlength(self, text, *args, **kwargs):
+    def getlength(
+        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+    ) -> int:
         """
         Returns length (in pixels) of given text.
         This is the amount by which following text should be offset.
@@ -187,6 +198,9 @@ class ImageFont:
 class FreeTypeFont:
     """FreeType font wrapper (requires _imagingft service)"""
 
+    font: Font
+    font_bytes: bytes
+
     def __init__(
         self,
         font: StrOrBytesPath | BinaryIO | None = None,
@@ -196,6 +210,9 @@ class FreeTypeFont:
         layout_engine: Layout | None = None,
     ) -> None:
         # FIXME: use service provider instead
+
+        if isinstance(core, DeferredError):
+            raise core.ex
 
         if size <= 0:
             msg = "font size must be greater than 0"
@@ -250,7 +267,7 @@ class FreeTypeFont:
         path, size, index, encoding, layout_engine = state
         self.__init__(path, size, index, encoding, layout_engine)
 
-    def getname(self):
+    def getname(self) -> tuple[str | None, str | None]:
         """
         :return: A tuple of the font family (e.g. Helvetica) and the font style
             (e.g. Bold)
@@ -265,7 +282,9 @@ class FreeTypeFont:
         """
         return self.font.ascent, self.font.descent
 
-    def getlength(self, text, mode="", direction=None, features=None, language=None):
+    def getlength(
+        self, text: str, mode="", direction=None, features=None, language=None
+    ) -> float:
         """
         Returns length (in pixels with 1/64 precision) of given text when rendered
         in font with provided direction, features, and language.
@@ -339,14 +358,14 @@ class FreeTypeFont:
 
     def getbbox(
         self,
-        text,
-        mode="",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        anchor=None,
-    ):
+        text: str,
+        mode: str = "",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        anchor: str | None = None,
+    ) -> tuple[float, float, float, float]:
         """
         Returns bounding box (in pixels) of given text relative to given anchor
         when rendered in font with provided direction, features, and language.
@@ -496,7 +515,7 @@ class FreeTypeFont:
 
     def getmask2(
         self,
-        text,
+        text: str,
         mode="",
         direction=None,
         features=None,
@@ -666,10 +685,11 @@ class FreeTypeFont:
             msg = "FreeType 2.9.1 or greater is required"
             raise NotImplementedError(msg) from e
         for axis in axes:
-            axis["name"] = axis["name"].replace(b"\x00", b"")
+            if axis["name"]:
+                axis["name"] = axis["name"].replace(b"\x00", b"")
         return axes
 
-    def set_variation_by_axes(self, axes):
+    def set_variation_by_axes(self, axes: list[float]) -> None:
         """
         :param axes: A list of values for each axis.
         :exception OSError: If the font is not a variation font.
@@ -714,14 +734,14 @@ class TransposedFont:
             return 0, 0, height, width
         return 0, 0, width, height
 
-    def getlength(self, text, *args, **kwargs):
+    def getlength(self, text: str, *args, **kwargs) -> float:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
         return self.font.getlength(text, *args, **kwargs)
 
 
-def load(filename):
+def load(filename: str) -> ImageFont:
     """
     Load a font file.  This function loads a font object from the given
     bitmap font file, and returns the corresponding font object.
@@ -735,7 +755,13 @@ def load(filename):
     return f
 
 
-def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
+def truetype(
+    font: StrOrBytesPath | BinaryIO | None = None,
+    size: float = 10,
+    index: int = 0,
+    encoding: str = "",
+    layout_engine: Layout | None = None,
+) -> FreeTypeFont:
     """
     Load a TrueType or OpenType font from a file or file-like object,
     and create a font object.
@@ -753,10 +779,15 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
 
     :param font: A filename or file-like object containing a TrueType font.
                  If the file is not found in this filename, the loader may also
-                 search in other directories, such as the :file:`fonts/`
-                 directory on Windows or :file:`/Library/Fonts/`,
-                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
-                 macOS.
+                 search in other directories, such as:
+
+                 * The :file:`fonts/` directory on Windows,
+                 * :file:`/Library/Fonts/`, :file:`/System/Library/Fonts/`
+                   and :file:`~/Library/Fonts/` on macOS.
+                 * :file:`~/.local/share/fonts`, :file:`/usr/local/share/fonts`,
+                   and :file:`/usr/share/fonts` on Linux; or those specified by
+                   the ``XDG_DATA_HOME`` and ``XDG_DATA_DIRS`` environment variables
+                   for user-installed and system-wide fonts, respectively.
 
     :param size: The requested size, in pixels.
     :param index: Which font face to load (default is first available face).
@@ -796,7 +827,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
     :exception ValueError: If the font size is not greater than zero.
     """
 
-    def freetype(font):
+    def freetype(font: StrOrBytesPath | BinaryIO | None) -> FreeTypeFont:
         return FreeTypeFont(font, size, index, encoding, layout_engine)
 
     try:
@@ -815,12 +846,21 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS")
-            if not lindirs:
-                # According to the freedesktop spec, XDG_DATA_DIRS should
-                # default to /usr/share
-                lindirs = "/usr/share"
-            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+            data_home = os.environ.get("XDG_DATA_HOME")
+            if not data_home:
+                # The freedesktop spec defines the following default directory for
+                # when XDG_DATA_HOME is unset or empty. This user-level directory
+                # takes precedence over system-level directories.
+                data_home = os.path.expanduser("~/.local/share")
+            xdg_dirs = [data_home]
+
+            data_dirs = os.environ.get("XDG_DATA_DIRS")
+            if not data_dirs:
+                # Similarly, defaults are defined for the system-level directories
+                data_dirs = "/usr/local/share:/usr/share"
+            xdg_dirs += data_dirs.split(":")
+
+            dirs += [os.path.join(xdg_dir, "fonts") for xdg_dir in xdg_dirs]
         elif sys.platform == "darwin":
             dirs += [
                 "/Library/Fonts",
@@ -846,7 +886,7 @@ def truetype(font=None, size=10, index=0, encoding="", layout_engine=None):
         raise
 
 
-def load_path(filename):
+def load_path(filename: str | bytes) -> ImageFont:
     """
     Load font file. Same as :py:func:`~PIL.ImageFont.load`, but searches for a
     bitmap font along the Python path.
@@ -855,14 +895,13 @@ def load_path(filename):
     :return: A font object.
     :exception OSError: If the file could not be read.
     """
+    if not isinstance(filename, str):
+        filename = filename.decode("utf-8")
     for directory in sys.path:
-        if is_directory(directory):
-            if not isinstance(filename, str):
-                filename = filename.decode("utf-8")
-            try:
-                return load(os.path.join(directory, filename))
-            except OSError:
-                pass
+        try:
+            return load(os.path.join(directory, filename))
+        except OSError:
+            pass
     msg = "cannot find font file"
     raise OSError(msg)
 
@@ -881,7 +920,8 @@ def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
 
     :return: A font object.
     """
-    if core.__class__.__name__ == "module" or size is not None:
+    f: FreeTypeFont | ImageFont
+    if isinstance(core, ModuleType) or size is not None:
         f = truetype(
             BytesIO(
                 base64.b64decode(
