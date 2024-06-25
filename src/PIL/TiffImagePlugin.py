@@ -1658,6 +1658,16 @@ def _save(im, fp, filename):
         except Exception:
             pass  # might not be an IFD. Might not have populated type
 
+    legacy_ifd = {}
+    if hasattr(im, "tag"):
+        legacy_ifd = im.tag.to_v2()
+
+    supplied_tags = {**legacy_ifd, **getattr(im, "tag_v2", {})}
+    if SAMPLEFORMAT in supplied_tags:
+        # SAMPLEFORMAT is determined by the image format and should not be copied
+        # from legacy_ifd.
+        del supplied_tags[SAMPLEFORMAT]
+
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
     if hasattr(im, "tag_v2"):
@@ -1671,8 +1681,14 @@ def _save(im, fp, filename):
             XMP,
         ):
             if key in im.tag_v2:
-                ifd[key] = im.tag_v2[key]
-                ifd.tagtype[key] = im.tag_v2.tagtype[key]
+                if key == IPTC_NAA_CHUNK and im.tag_v2.tagtype[key] not in (
+                    TiffTags.BYTE,
+                    TiffTags.UNDEFINED,
+                ):
+                    del supplied_tags[key]
+                else:
+                    ifd[key] = im.tag_v2[key]
+                    ifd.tagtype[key] = im.tag_v2.tagtype[key]
 
     # preserve ICC profile (should also work when saving other formats
     # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
@@ -1812,16 +1828,6 @@ def _save(im, fp, filename):
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
-        legacy_ifd = {}
-        if hasattr(im, "tag"):
-            legacy_ifd = im.tag.to_v2()
-
-        # SAMPLEFORMAT is determined by the image format and should not be copied
-        # from legacy_ifd.
-        supplied_tags = {**getattr(im, "tag_v2", {}), **legacy_ifd}
-        if SAMPLEFORMAT in supplied_tags:
-            del supplied_tags[SAMPLEFORMAT]
-
         for tag, value in itertools.chain(ifd.items(), supplied_tags.items()):
             # Libtiff can only process certain core items without adding
             # them to the custom dictionary.

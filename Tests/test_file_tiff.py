@@ -621,6 +621,19 @@ class TestFileTiff:
 
             assert_image_equal_tofile(im, tmpfile)
 
+    def test_iptc(self, tmp_path: Path) -> None:
+        # Do not preserve IPTC_NAA_CHUNK by default if type is LONG
+        outfile = str(tmp_path / "temp.tif")
+        im = hopper()
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[33723] = 1
+        ifd.tagtype[33723] = 4
+        im.tag_v2 = ifd
+        im.save(outfile)
+
+        with Image.open(outfile) as im:
+            assert 33723 not in im.tag_v2
+
     def test_rowsperstrip(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
         im = hopper()
