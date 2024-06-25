@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Read IM and TIFF images as RGB, rather than RGBX #7997
+  [radarhere]
+
+- Only preserve TIFF IPTC_NAA_CHUNK tag if type is BYTE or UNDEFINED #7948
+  [radarhere]
+
 - Clarify ImageDraw2 error message when size is missing #8165
   [radarhere]
 
