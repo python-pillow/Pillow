@@ -5,6 +5,27 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Do not use first frame duration for other frames when saving APNG images #8104
+  [radarhere]
+
+- Consider I;16 pixel size when using a 1 mode mask #8112
+  [radarhere]
+
+- When saving multiple PNG frames, convert to mode rather than raw mode #8087
+  [radarhere]
+
+- Added byte support to FreeTypeFont #8141
+  [radarhere]
+
+- Allow float center for rotate operations #8114
+  [radarhere]
+
+- Do not read layers immediately when opening PSD images #8039
+  [radarhere]
+
+- Restore original thread state #8065
+  [radarhere]
+
 - Read IM and TIFF images as RGB, rather than RGBX #7997
   [radarhere]
 
