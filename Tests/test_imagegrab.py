@@ -89,6 +89,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
         p.communicate()
 
         im = ImageGrab.grabclipboard()
+        assert isinstance(im, list)
         assert len(im) == 1
         assert os.path.samefile(im[0], "Tests/images/hopper.gif")
 
@@ -105,6 +106,7 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
         p.communicate()
 
         im = ImageGrab.grabclipboard()
+        assert isinstance(im, Image.Image)
         assert_image_equal_tofile(im, "Tests/images/hopper.png")
 
     @pytest.mark.skipif(
@@ -120,6 +122,7 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
         with open(image_path, "rb") as fp:
             subprocess.call(["wl-copy"], stdin=fp)
         im = ImageGrab.grabclipboard()
+        assert isinstance(im, Image.Image)
         assert_image_equal_tofile(im, image_path)
 
     @pytest.mark.skipif(

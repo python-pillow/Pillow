@@ -41,7 +41,16 @@ import warnings
 from collections.abc import Callable, MutableMapping
 from enum import IntEnum
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, Literal, Protocol, Sequence, Tuple, cast
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    Protocol,
+    Sequence,
+    Tuple,
+    cast,
+)
 
 # VERSION was removed in Pillow 6.0.0.
 # PILLOW_VERSION was removed in Pillow 9.0.0.
@@ -218,7 +227,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 if TYPE_CHECKING:
-    from . import ImageFile
+    from . import ImageFile, PyAccess
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -871,7 +880,7 @@ class Image:
             msg = "cannot decode image data"
             raise ValueError(msg)
 
-    def load(self):
+    def load(self) -> core.PixelAccess | PyAccess.PyAccess | None:
         """
         Allocates storage for the image and loads the pixel data.  In
         normal cases, you don't need to call this method, since the
@@ -884,7 +893,7 @@ class Image:
         operations. See :ref:`file-handling` for more information.
 
         :returns: An image access object.
-        :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
+        :rtype: :py:class:`.PixelAccess` or :py:class:`.PyAccess`
         """
         if self.im is not None and self.palette and self.palette.dirty:
             # realize palette
@@ -913,6 +922,7 @@ class Image:
                 if self.pyaccess:
                     return self.pyaccess
             return self.im.pixel_access(self.readonly)
+        return None
 
     def verify(self) -> None:
         """
@@ -1102,7 +1112,10 @@ class Image:
                 del new_im.info["transparency"]
             if trns is not None:
                 try:
-                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
+                    new_im.info["transparency"] = new_im.palette.getcolor(
+                        cast(Tuple[int, int, int], trns),  # trns was converted to RGB
+                        new_im,
+                    )
                 except Exception:
                     # if we can't make a transparent color, don't leave the old
                     # transparency hanging around to mess us up.
@@ -1152,7 +1165,10 @@ class Image:
         if trns is not None:
             if new_im.mode == "P":
                 try:
-                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
+                    new_im.info["transparency"] = new_im.palette.getcolor(
+                        cast(Tuple[int, int, int], trns),  # trns was converted to RGB
+                        new_im,
+                    )
                 except ValueError as e:
                     del new_im.info["transparency"]
                     if str(e) != "cannot allocate more than 256 colors":
@@ -1657,7 +1673,9 @@ class Image:
 
         del self.info["transparency"]
 
-    def getpixel(self, xy):
+    def getpixel(
+        self, xy: tuple[int, int] | list[int]
+    ) -> float | tuple[int, ...] | None:
         """
         Returns the pixel value at a given position.
 
@@ -1941,15 +1959,14 @@ class Image:
             flatLut = [round(i) for i in flatLut]
         return self._new(self.im.point(flatLut, mode))
 
-    def putalpha(self, alpha):
+    def putalpha(self, alpha: Image | int) -> None:
         """
         Adds or replaces the alpha layer in this image.  If the image
         does not have an alpha layer, it's converted to "LA" or "RGBA".
         The new layer must be either "L" or "1".
 
         :param alpha: The new alpha layer.  This can either be an "L" or "1"
-           image having the same size as this image, or an integer or
-           other color value.
+           image having the same size as this image, or an integer.
         """
 
         self._ensure_mutable()
@@ -1988,6 +2005,7 @@ class Image:
                 alpha = alpha.convert("L")
         else:
             # constant alpha
+            alpha = cast(int, alpha)  # see python/typing#1013
             try:
                 self.im.fillband(band, alpha)
             except (AttributeError, ValueError):
@@ -2056,7 +2074,9 @@ class Image:
         self.palette.mode = "RGBA" if "A" in rawmode else "RGB"
         self.load()  # install new palette
 
-    def putpixel(self, xy, value):
+    def putpixel(
+        self, xy: tuple[int, int], value: float | tuple[int, ...] | list[int]
+    ) -> None:
         """
         Modifies the pixel at the given position. The color is given as
         a single numerical value for single-band images, and a tuple for
@@ -2094,9 +2114,8 @@ class Image:
             if self.mode == "PA":
                 alpha = value[3] if len(value) == 4 else 255
                 value = value[:3]
-            value = self.palette.getcolor(value, self)
-            if self.mode == "PA":
-                value = (value, alpha)
+            palette_index = self.palette.getcolor(value, self)
+            value = (palette_index, alpha) if self.mode == "PA" else palette_index
         return self.im.putpixel(xy, value)
 
     def remap_palette(self, dest_map, source_palette=None):
