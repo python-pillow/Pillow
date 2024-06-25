@@ -618,7 +618,7 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam) {
     if (callback) {
         /* restore thread state */
         PyEval_SaveThread();
-        PyThreadState_Swap(threadstate);
+        PyThreadState_Swap(current_threadstate);
     }
 
     return status;
