@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Clarify ImageDraw2 error message when size is missing #8165
+  [radarhere]
+
 - Support unpacking more rawmodes to RGBA palettes #7966
   [radarhere]
 
