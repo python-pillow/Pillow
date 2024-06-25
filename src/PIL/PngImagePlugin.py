@@ -1115,7 +1115,7 @@ class _fdat:
 
 
 def _write_multiple_frames(im, fp, chunk, mode, rawmode, default_image, append_images):
-    duration = im.encoderinfo.get("duration", im.info.get("duration", 0))
+    duration = im.encoderinfo.get("duration")
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal", Disposal.OP_NONE))
     blend = im.encoderinfo.get("blend", im.info.get("blend", Blend.OP_SOURCE))
@@ -1136,6 +1136,8 @@ def _write_multiple_frames(im, fp, chunk, mode, rawmode, default_image, append_i
             encoderinfo = im.encoderinfo.copy()
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
+            elif duration is None and "duration" in im_frame.info:
+                encoderinfo["duration"] = im_frame.info["duration"]
             if isinstance(disposal, (list, tuple)):
                 encoderinfo["disposal"] = disposal[frame_count]
             if isinstance(blend, (list, tuple)):
@@ -1170,15 +1172,12 @@ def _write_multiple_frames(im, fp, chunk, mode, rawmode, default_image, append_i
                     not bbox
                     and prev_disposal == encoderinfo.get("disposal")
                     and prev_blend == encoderinfo.get("blend")
+                    and "duration" in encoderinfo
                 ):
-                    previous["encoderinfo"]["duration"] += encoderinfo.get(
-                        "duration", duration
-                    )
+                    previous["encoderinfo"]["duration"] += encoderinfo["duration"]
                     continue
             else:
                 bbox = None
-            if "duration" not in encoderinfo:
-                encoderinfo["duration"] = duration
             im_frames.append({"im": im_frame, "bbox": bbox, "encoderinfo": encoderinfo})
 
     if len(im_frames) == 1 and not default_image:
@@ -1208,7 +1207,7 @@ def _write_multiple_frames(im, fp, chunk, mode, rawmode, default_image, append_i
             im_frame = im_frame.crop(bbox)
         size = im_frame.size
         encoderinfo = frame_data["encoderinfo"]
-        frame_duration = int(round(encoderinfo["duration"]))
+        frame_duration = int(round(encoderinfo.get("duration", 0)))
         frame_disposal = encoderinfo.get("disposal", disposal)
         frame_blend = encoderinfo.get("blend", blend)
         # frame control
