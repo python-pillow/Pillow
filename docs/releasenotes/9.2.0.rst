@@ -98,7 +98,7 @@ Previously, the ``size`` methods returned a ``height`` that included the vertica
 offset of the text, while the new ``bbox`` methods distinguish this as a ``top``
 offset.
 
-.. image:: ../example/size_vs_bbox.png
+.. image:: ../example/size_vs_bbox.webp
     :alt: In bbox methods, top measures the vertical distance above the text, while bottom measures that plus the vertical distance of the text itself. In size methods, height also measures the vertical distance above the text plus the vertical distance of the text itself.
     :align: center
 
