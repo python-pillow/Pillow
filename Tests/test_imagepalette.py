@@ -88,13 +88,13 @@ def test_file(tmp_path: Path) -> None:
 
     palette.save(f)
 
-    p = ImagePalette.load(f)
+    lut = ImagePalette.load(f)
 
     # load returns raw palette information
-    assert len(p[0]) == 768
-    assert p[1] == "RGB"
+    assert len(lut[0]) == 768
+    assert lut[1] == "RGB"
 
-    p = ImagePalette.raw(p[1], p[0])
+    p = ImagePalette.raw(lut[1], lut[0])
     assert isinstance(p, ImagePalette.ImagePalette)
     assert p.palette == palette.tobytes()
 
