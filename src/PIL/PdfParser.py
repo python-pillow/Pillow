@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, List, NamedTuple, Union
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
 # on page 656
-def encode_text(s):
+def encode_text(s: str) -> bytes:
     return codecs.BOM_UTF16_BE + s.encode("utf_16_be")
 
 
@@ -76,7 +76,7 @@ class PdfFormatError(RuntimeError):
     pass
 
 
-def check_format_condition(condition, error_message):
+def check_format_condition(condition: bool, error_message: str) -> None:
     if not condition:
         raise PdfFormatError(error_message)
 
@@ -93,17 +93,16 @@ class IndirectReference(IndirectReferenceTuple):
     def __bytes__(self) -> bytes:
         return self.__str__().encode("us-ascii")
 
-    def __eq__(self, other):
-        return (
-            other.__class__ is self.__class__
-            and other.object_id == self.object_id
-            and other.generation == self.generation
-        )
+    def __eq__(self, other: object) -> bool:
+        if self.__class__ is not other.__class__:
+            return False
+        assert isinstance(other, IndirectReference)
+        return other.object_id == self.object_id and other.generation == self.generation
 
     def __ne__(self, other):
         return not (self == other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.object_id, self.generation))
 
 
@@ -219,7 +218,7 @@ class PdfName:
             isinstance(other, PdfName) and other.name == self.name
         ) or other == self.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name)
 
     def __repr__(self) -> str:
@@ -402,12 +401,11 @@ class PdfParser:
         if f:
             self.seek_end()
 
-    def __enter__(self):
+    def __enter__(self) -> PdfParser:
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, *args: object) -> None:
         self.close()
-        return False  # do not suppress exceptions
 
     def start_writing(self) -> None:
         self.close_buf()
@@ -436,7 +434,7 @@ class PdfParser:
     def write_comment(self, s):
         self.f.write(f"% {s}\n".encode())
 
-    def write_catalog(self):
+    def write_catalog(self) -> IndirectReference:
         self.del_root()
         self.root_ref = self.next_object_id(self.f.tell())
         self.pages_ref = self.next_object_id(0)

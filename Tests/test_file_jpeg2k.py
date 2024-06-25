@@ -460,7 +460,7 @@ def test_plt_marker() -> None:
         out.seek(length - 2, os.SEEK_CUR)
 
 
-def test_9bit():
+def test_9bit() -> None:
     with Image.open("Tests/images/9bit.j2k") as im:
         assert im.mode == "I;16"
         assert im.size == (128, 128)

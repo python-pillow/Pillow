@@ -39,7 +39,7 @@ import struct
 import warnings
 import zlib
 from enum import IntEnum
-from typing import IO
+from typing import IO, TYPE_CHECKING, Any, NoReturn
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -47,6 +47,9 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+
+if TYPE_CHECKING:
+    from . import _imaging
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +181,7 @@ class ChunkStream:
     def __enter__(self) -> ChunkStream:
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def close(self) -> None:
@@ -249,6 +252,9 @@ class iTXt(str):
 
     """
 
+    lang: str | bytes | None
+    tkey: str | bytes | None
+
     @staticmethod
     def __new__(cls, text, lang=None, tkey=None):
         """
@@ -270,10 +276,10 @@ class PngInfo:
 
     """
 
-    def __init__(self):
-        self.chunks = []
+    def __init__(self) -> None:
+        self.chunks: list[tuple[bytes, bytes, bool]] = []
 
-    def add(self, cid, data, after_idat=False):
+    def add(self, cid: bytes, data: bytes, after_idat: bool = False) -> None:
         """Appends an arbitrary chunk. Use with caution.
 
         :param cid: a byte string, 4 bytes long.
@@ -283,12 +289,16 @@ class PngInfo:
 
         """
 
-        chunk = [cid, data]
-        if after_idat:
-            chunk.append(True)
-        self.chunks.append(tuple(chunk))
+        self.chunks.append((cid, data, after_idat))
 
-    def add_itxt(self, key, value, lang="", tkey="", zip=False):
+    def add_itxt(
+        self,
+        key: str | bytes,
+        value: str | bytes,
+        lang: str | bytes = "",
+        tkey: str | bytes = "",
+        zip: bool = False,
+    ) -> None:
         """Appends an iTXt chunk.
 
         :param key: latin-1 encodable text key name
@@ -316,7 +326,9 @@ class PngInfo:
         else:
             self.add(b"iTXt", key + b"\0\0\0" + lang + b"\0" + tkey + b"\0" + value)
 
-    def add_text(self, key, value, zip=False):
+    def add_text(
+        self, key: str | bytes, value: str | bytes | iTXt, zip: bool = False
+    ) -> None:
         """Appends a text chunk.
 
         :param key: latin-1 encodable text key name
@@ -326,7 +338,13 @@ class PngInfo:
 
         """
         if isinstance(value, iTXt):
-            return self.add_itxt(key, value, value.lang, value.tkey, zip=zip)
+            return self.add_itxt(
+                key,
+                value,
+                value.lang if value.lang is not None else b"",
+                value.tkey if value.tkey is not None else b"",
+                zip=zip,
+            )
 
         # The tEXt chunk stores latin-1 text
         if not isinstance(value, bytes):
@@ -434,7 +452,7 @@ class PngStream(ChunkStream):
             raise SyntaxError(msg)
         return s
 
-    def chunk_IDAT(self, pos, length):
+    def chunk_IDAT(self, pos: int, length: int) -> NoReturn:
         # image data
         if "bbox" in self.im_info:
             tile = [("zip", self.im_info["bbox"], pos, self.im_rawmode)]
@@ -447,7 +465,7 @@ class PngStream(ChunkStream):
         msg = "image data found"
         raise EOFError(msg)
 
-    def chunk_IEND(self, pos, length):
+    def chunk_IEND(self, pos: int, length: int) -> NoReturn:
         msg = "end of PNG image"
         raise EOFError(msg)
 
@@ -606,6 +624,8 @@ class PngStream(ChunkStream):
                     return s
             else:
                 return s
+        if k == b"XML:com.adobe.xmp":
+            self.im_info["xmp"] = v
         try:
             k = k.decode("latin-1", "strict")
             lang = lang.decode("utf-8", "strict")
@@ -821,7 +841,10 @@ class PngImageFile(ImageFile.ImageFile):
                 msg = "no more images in APNG file"
                 raise EOFError(msg) from e
 
-    def _seek(self, frame, rewind=False):
+    def _seek(self, frame: int, rewind: bool = False) -> None:
+        assert self.png is not None
+
+        self.dispose: _imaging.ImagingCore | None
         if frame == 0:
             if rewind:
                 self._fp.seek(self.__rewind)
@@ -906,14 +929,14 @@ class PngImageFile(ImageFile.ImageFile):
         if self._prev_im is None and self.dispose_op == Disposal.OP_PREVIOUS:
             self.dispose_op = Disposal.OP_BACKGROUND
 
+        self.dispose = None
         if self.dispose_op == Disposal.OP_PREVIOUS:
-            self.dispose = self._prev_im.copy()
-            self.dispose = self._crop(self.dispose, self.dispose_extent)
+            if self._prev_im:
+                self.dispose = self._prev_im.copy()
+                self.dispose = self._crop(self.dispose, self.dispose_extent)
         elif self.dispose_op == Disposal.OP_BACKGROUND:
             self.dispose = Image.core.fill(self.mode, self.size)
             self.dispose = self._crop(self.dispose, self.dispose_extent)
-        else:
-            self.dispose = None
 
     def tell(self) -> int:
         return self.__frame
@@ -1019,31 +1042,18 @@ class PngImageFile(ImageFile.ImageFile):
                 if self.pyaccess:
                     self.pyaccess = None
 
-    def _getexif(self):
+    def _getexif(self) -> dict[str, Any] | None:
         if "exif" not in self.info:
             self.load()
         if "exif" not in self.info and "Raw profile type exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
 
-    def getexif(self):
+    def getexif(self) -> Image.Exif:
         if "exif" not in self.info:
             self.load()
 
         return super().getexif()
-
-    def getxmp(self):
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
-
-        :returns: XMP tags in a dictionary.
-        """
-        return (
-            self._getxmp(self.info["XML:com.adobe.xmp"])
-            if "XML:com.adobe.xmp" in self.info
-            else {}
-        )
 
 
 # --------------------------------------------------------------------
@@ -1104,7 +1114,7 @@ class _fdat:
         self.seq_num += 1
 
 
-def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images):
+def _write_multiple_frames(im, fp, chunk, mode, rawmode, default_image, append_images):
     duration = im.encoderinfo.get("duration")
     loop = im.encoderinfo.get("loop", im.info.get("loop", 0))
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal", Disposal.OP_NONE))
@@ -1119,10 +1129,10 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
     frame_count = 0
     for im_seq in chain:
         for im_frame in ImageSequence.Iterator(im_seq):
-            if im_frame.mode == rawmode:
+            if im_frame.mode == mode:
                 im_frame = im_frame.copy()
             else:
-                im_frame = im_frame.convert(rawmode)
+                im_frame = im_frame.convert(mode)
             encoderinfo = im.encoderinfo.copy()
             if isinstance(duration, (list, tuple)):
                 encoderinfo["duration"] = duration[frame_count]
@@ -1183,8 +1193,8 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
 
     # default image IDAT (if it exists)
     if default_image:
-        if im.mode != rawmode:
-            im = im.convert(rawmode)
+        if im.mode != mode:
+            im = im.convert(mode)
         ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
 
     seq_num = 0
@@ -1233,7 +1243,7 @@ def _write_multiple_frames(im, fp, chunk, rawmode, default_image, append_images)
             seq_num = fdat_chunks.seq_num
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 
@@ -1261,6 +1271,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
         size = im.size
         mode = im.mode
 
+    outmode = mode
     if mode == "P":
         #
         # attempt to minimize storage requirements for palette images
@@ -1281,7 +1292,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
                 bits = 2
             else:
                 bits = 4
-            mode = f"{mode};{bits}"
+            outmode += f";{bits}"
 
     # encoder options
     im.encoderconfig = (
@@ -1293,7 +1304,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
 
     # get the corresponding PNG mode
     try:
-        rawmode, bit_depth, color_type = _OUTMODES[mode]
+        rawmode, bit_depth, color_type = _OUTMODES[outmode]
     except KeyError as e:
         msg = f"cannot write mode {mode} as PNG"
         raise OSError(msg) from e
@@ -1345,7 +1356,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
                 chunk(fp, cid, data)
             elif cid[1:2].islower():
                 # Private chunk
-                after_idat = info_chunk[2:3]
+                after_idat = len(info_chunk) == 3 and info_chunk[2]
                 if not after_idat:
                     chunk(fp, cid, data)
 
@@ -1414,7 +1425,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
 
     if save_all:
         im = _write_multiple_frames(
-            im, fp, chunk, rawmode, default_image, append_images
+            im, fp, chunk, mode, rawmode, default_image, append_images
         )
     if im:
         ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
@@ -1424,7 +1435,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
             cid, data = info_chunk[:2]
             if cid[1:2].islower():
                 # Private chunk
-                after_idat = info_chunk[2:3]
+                after_idat = len(info_chunk) == 3 and info_chunk[2]
                 if after_idat:
                     chunk(fp, cid, data)
 

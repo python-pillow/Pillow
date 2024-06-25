@@ -58,7 +58,6 @@ def test_blur_formats(test_images: dict[str, ImageFile.ImageFile]) -> None:
     blur = ImageFilter.GaussianBlur
     with pytest.raises(ValueError):
         im.convert("1").filter(blur)
-    blur(im.convert("L"))
     with pytest.raises(ValueError):
         im.convert("I").filter(blur)
     with pytest.raises(ValueError):
@@ -102,7 +101,7 @@ def test_blur_accuracy(test_images: dict[str, ImageFile.ImageFile]) -> None:
         assert i.im.getpixel((x, y))[c] >= 250
     # Fuzzy match.
 
-    def gp(x, y):
+    def gp(x: int, y: int) -> tuple[int, ...]:
         return i.im.getpixel((x, y))
 
     assert 236 <= gp(7, 4)[0] <= 239

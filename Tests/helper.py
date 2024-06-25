@@ -18,7 +18,7 @@ from typing import Any, Callable, Sequence
 import pytest
 from packaging.version import parse as parse_version
 
-from PIL import Image, ImageMath, features
+from PIL import Image, ImageFile, ImageMath, features
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +240,7 @@ class PillowLeakTestCase:
 # helpers
 
 
-def fromstring(data: bytes) -> Image.Image:
+def fromstring(data: bytes) -> ImageFile.ImageFile:
     return Image.open(BytesIO(data))
 
 

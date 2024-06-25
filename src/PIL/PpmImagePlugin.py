@@ -328,7 +328,7 @@ class PpmDecoder(ImageFile.PyDecoder):
 # --------------------------------------------------------------------
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode == "1":
         rawmode, head = "1;I", b"P4"
     elif im.mode == "L":

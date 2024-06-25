@@ -77,7 +77,11 @@ class PyAccess:
     def _post_init(self) -> None:
         pass
 
-    def __setitem__(self, xy, color):
+    def __setitem__(
+        self,
+        xy: tuple[int, int] | list[int],
+        color: float | tuple[int, ...] | list[int],
+    ) -> None:
         """
         Modifies the pixel at x,y. The color is given as a single
         numerical value for single band images, and a tuple for
@@ -107,13 +111,12 @@ class PyAccess:
             if self._im.mode == "PA":
                 alpha = color[3] if len(color) == 4 else 255
                 color = color[:3]
-            color = self._palette.getcolor(color, self._img)
-            if self._im.mode == "PA":
-                color = (color, alpha)
+            palette_index = self._palette.getcolor(color, self._img)
+            color = (palette_index, alpha) if self._im.mode == "PA" else palette_index
 
         return self.set_pixel(x, y, color)
 
-    def __getitem__(self, xy: tuple[int, int]) -> float | tuple[int, ...]:
+    def __getitem__(self, xy: tuple[int, int] | list[int]) -> float | tuple[int, ...]:
         """
         Returns the pixel at x,y. The pixel is returned as a single
         value for single band images or a tuple for multiple band
@@ -145,7 +148,9 @@ class PyAccess:
     def get_pixel(self, x: int, y: int) -> float | tuple[int, ...]:
         raise NotImplementedError()
 
-    def set_pixel(self, x: int, y: int, color: float | tuple[int, ...]) -> None:
+    def set_pixel(
+        self, x: int, y: int, color: float | tuple[int, ...] | list[int]
+    ) -> None:
         raise NotImplementedError()
 
 

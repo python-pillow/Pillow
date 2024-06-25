@@ -497,7 +497,7 @@ def expand(
     color = _color(fill, image.mode)
     if image.palette:
         palette = ImagePalette.ImagePalette(palette=image.getpalette())
-        if isinstance(color, tuple):
+        if isinstance(color, tuple) and (len(color) == 3 or len(color) == 4):
             color = palette.getcolor(color)
     else:
         palette = None
@@ -716,6 +716,9 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
                 ):
                     exif_image.info["XML:com.adobe.xmp"] = re.sub(
                         pattern, "", exif_image.info["XML:com.adobe.xmp"]
+                    )
+                    exif_image.info["xmp"] = re.sub(
+                        pattern.encode(), b"", exif_image.info["xmp"]
                     )
         if not in_place:
             return transposed_image

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from packaging.version import parse as parse_version
@@ -13,13 +13,16 @@ numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
 im = hopper().resize((128, 100))
 
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
 
 def test_toarray() -> None:
     def test(mode: str) -> tuple[tuple[int, ...], str, int]:
         ai = numpy.array(im.convert(mode))
         return ai.shape, ai.dtype.str, ai.nbytes
 
-    def test_with_dtype(dtype) -> None:
+    def test_with_dtype(dtype: npt.DTypeLike) -> None:
         ai = numpy.array(im, dtype=dtype)
         assert ai.dtype == dtype
 

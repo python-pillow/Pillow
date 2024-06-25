@@ -171,7 +171,7 @@ class TestFileJpeg:
         [TEST_FILE, "Tests/images/pil_sample_cmyk.jpg"],
     )
     def test_dpi(self, test_image_path: str) -> None:
-        def test(xdpi: int, ydpi: int | None = None):
+        def test(xdpi: int, ydpi: int | None = None) -> tuple[int, int] | None:
             with Image.open(test_image_path) as im:
                 im = self.roundtrip(im, dpi=(xdpi, ydpi or xdpi))
             return im.info.get("dpi")
@@ -443,7 +443,9 @@ class TestFileJpeg:
         assert_image(im1, im2.mode, im2.size)
 
     def test_subsampling(self) -> None:
-        def getsampling(im: JpegImagePlugin.JpegImageFile):
+        def getsampling(
+            im: JpegImagePlugin.JpegImageFile,
+        ) -> tuple[int, int, int, int, int, int]:
             layer = im.layer
             return layer[0][1:3] + layer[1][1:3] + layer[2][1:3]
 
@@ -699,7 +701,7 @@ class TestFileJpeg:
     def test_save_cjpeg(self, tmp_path: Path) -> None:
         with Image.open(TEST_FILE) as img:
             tempfile = str(tmp_path / "temp.jpg")
-            JpegImagePlugin._save_cjpeg(img, 0, tempfile)
+            JpegImagePlugin._save_cjpeg(img, BytesIO(), tempfile)
             # Default save quality is 75%, so a tiny bit of difference is alright
             assert_image_similar_tofile(img, tempfile, 17)
 
@@ -917,24 +919,25 @@ class TestFileJpeg:
         with Image.open("Tests/images/icc-after-SOF.jpg") as im:
             assert im.info["icc_profile"] == b"profile"
 
-    def test_jpeg_magic_number(self) -> None:
+    def test_jpeg_magic_number(self, monkeypatch: pytest.MonkeyPatch) -> None:
         size = 4097
         buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
-        buffer.max_pos = 0
+        max_pos = 0
         orig_read = buffer.read
 
-        def read(n=-1):
+        def read(n: int | None = -1) -> bytes:
+            nonlocal max_pos
             res = orig_read(n)
-            buffer.max_pos = max(buffer.max_pos, buffer.tell())
+            max_pos = max(max_pos, buffer.tell())
             return res
 
-        buffer.read = read
+        monkeypatch.setattr(buffer, "read", read)
         with pytest.raises(UnidentifiedImageError):
             with Image.open(buffer):
                 pass
 
         # Assert the entire file has not been read
-        assert 0 < buffer.max_pos < size
+        assert 0 < max_pos < size
 
     def test_getxmp(self) -> None:
         with Image.open("Tests/images/xmp_test.jpg") as im:
@@ -945,6 +948,7 @@ class TestFileJpeg:
                 ):
                     assert im.getxmp() == {}
             else:
+                assert "xmp" in im.info
                 xmp = im.getxmp()
 
                 description = xmp["xmpmeta"]["RDF"]["Description"]
@@ -1029,8 +1033,10 @@ class TestFileJpeg:
 
     def test_repr_jpeg(self) -> None:
         im = hopper()
+        b = im._repr_jpeg_()
+        assert b is not None
 
-        with Image.open(BytesIO(im._repr_jpeg_())) as repr_jpeg:
+        with Image.open(BytesIO(b)) as repr_jpeg:
             assert repr_jpeg.format == "JPEG"
             assert_image_similar(im, repr_jpeg, 17)
 

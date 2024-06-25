@@ -5,6 +5,36 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Read IM and TIFF images as RGB, rather than RGBX #7997
+  [radarhere]
+
+- Only preserve TIFF IPTC_NAA_CHUNK tag if type is BYTE or UNDEFINED #7948
+  [radarhere]
+
+- Clarify ImageDraw2 error message when size is missing #8165
+  [radarhere]
+
+- Support unpacking more rawmodes to RGBA palettes #7966
+  [radarhere]
+
+- Removed support for Qt 5 #8159
+  [radarhere]
+
+- Improve ``ImageFont.freetype`` support for XDG directories on Linux #8135
+  [mamg22, radarhere]
+
+- Improved consistency of XMP handling #8069
+  [radarhere]
+
+- Use pkg-config to help find libwebp and raqm #8142
+  [radarhere]
+
+- Accept 't' suffix for libtiff version #8126, #8129
+  [radarhere]
+
+- Deprecate ImageDraw.getdraw hints parameter #8124
+  [radarhere, hugovk]
+
 - Added ImageDraw circle() #8085
   [void4, hugovk, radarhere]
 

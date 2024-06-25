@@ -535,8 +535,10 @@ class TestFilePng:
 
     def test_repr_png(self) -> None:
         im = hopper()
+        b = im._repr_png_()
+        assert b is not None
 
-        with Image.open(BytesIO(im._repr_png_())) as repr_png:
+        with Image.open(BytesIO(b)) as repr_png:
             assert repr_png.format == "PNG"
             assert_image_equal(im, repr_png)
 
@@ -655,11 +657,12 @@ class TestFilePng:
             png.call(cid, 0, 0)
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
-    def test_specify_bits(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize("save_all", (True, False))
+    def test_specify_bits(self, save_all: bool, tmp_path: Path) -> None:
         im = hopper("P")
 
         out = str(tmp_path / "temp.png")
-        im.save(out, bits=4)
+        im.save(out, bits=4, save_all=save_all)
 
         with Image.open(out) as reloaded:
             assert len(reloaded.png.im_palette[1]) == 48
@@ -683,6 +686,7 @@ class TestFilePng:
                 ):
                     assert im.getxmp() == {}
             else:
+                assert "xmp" in im.info
                 xmp = im.getxmp()
 
                 description = xmp["xmpmeta"]["RDF"]["Description"]
@@ -767,16 +771,12 @@ class TestFilePng:
     def test_save_stdout(self, buffer: bool) -> None:
         old_stdout = sys.stdout
 
-        if buffer:
+        class MyStdOut:
+            buffer = BytesIO()
 
-            class MyStdOut:
-                buffer = BytesIO()
+        mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-            mystdout = MyStdOut()
-        else:
-            mystdout = BytesIO()
-
-        sys.stdout = mystdout
+        sys.stdout = mystdout  # type: ignore[assignment]
 
         with Image.open(TEST_PNG_FILE) as im:
             im.save(sys.stdout, "PNG")
@@ -784,7 +784,7 @@ class TestFilePng:
         # Reset stdout
         sys.stdout = old_stdout
 
-        if buffer:
+        if isinstance(mystdout, MyStdOut):
             mystdout = mystdout.buffer
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)

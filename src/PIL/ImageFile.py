@@ -28,6 +28,7 @@
 #
 from __future__ import annotations
 
+import abc
 import io
 import itertools
 import struct
@@ -64,7 +65,7 @@ Dict of known error codes returned from :meth:`.PyDecoder.decode`,
 # Helpers
 
 
-def _get_oserror(error, *, encoder):
+def _get_oserror(error: int, *, encoder: bool) -> OSError:
     try:
         msg = Image.core.getcodecstatus(error)
     except AttributeError:
@@ -75,7 +76,7 @@ def _get_oserror(error, *, encoder):
     return OSError(msg)
 
 
-def raise_oserror(error):
+def raise_oserror(error: int) -> OSError:
     deprecate(
         "raise_oserror",
         12,
@@ -153,11 +154,12 @@ class ImageFile(Image.Image):
                 self.fp.close()
             raise
 
-    def get_format_mimetype(self):
+    def get_format_mimetype(self) -> str | None:
         if self.custom_mimetype:
             return self.custom_mimetype
         if self.format is not None:
             return Image.MIME.get(self.format.upper())
+        return None
 
     def __setstate__(self, state):
         self.tile = []
@@ -347,6 +349,15 @@ class ImageFile(Image.Image):
         return self.tell() != frame
 
 
+class StubHandler:
+    def open(self, im: StubImageFile) -> None:
+        pass
+
+    @abc.abstractmethod
+    def load(self, im: StubImageFile) -> Image.Image:
+        pass
+
+
 class StubImageFile(ImageFile):
     """
     Base class for stub image loaders.
@@ -355,7 +366,7 @@ class StubImageFile(ImageFile):
     certain format, but relies on external code to load the file.
     """
 
-    def _open(self):
+    def _open(self) -> None:
         msg = "StubImageFile subclass must implement _open"
         raise NotImplementedError(msg)
 
@@ -371,7 +382,7 @@ class StubImageFile(ImageFile):
         self.__dict__ = image.__dict__
         return image.load()
 
-    def _load(self):
+    def _load(self) -> StubHandler | None:
         """(Hook) Find actual image loader."""
         msg = "StubImageFile subclass must implement _load"
         raise NotImplementedError(msg)
@@ -477,7 +488,7 @@ class Parser:
     def __enter__(self):
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def close(self):
@@ -611,7 +622,7 @@ class PyCodecState:
         self.xoff = 0
         self.yoff = 0
 
-    def extents(self):
+    def extents(self) -> tuple[int, int, int, int]:
         return self.xoff, self.yoff, self.xoff + self.xsize, self.yoff + self.ysize
 
 
@@ -651,7 +662,7 @@ class PyCodec:
         """
         self.fd = fd
 
-    def setimage(self, im, extents=None):
+    def setimage(self, im, extents: tuple[int, int, int, int] | None = None) -> None:
         """
         Called from ImageFile to set the core output image for the codec
 
@@ -700,10 +711,10 @@ class PyDecoder(PyCodec):
     _pulls_fd = False
 
     @property
-    def pulls_fd(self):
+    def pulls_fd(self) -> bool:
         return self._pulls_fd
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
         """
         Override to perform the decoding process.
 
@@ -728,6 +739,7 @@ class PyDecoder(PyCodec):
         if not rawmode:
             rawmode = self.mode
         d = Image._getdecoder(self.mode, "raw", rawmode)
+        assert self.im is not None
         d.setimage(self.im, self.state.extents())
         s = d.decode(data)
 
@@ -750,10 +762,10 @@ class PyEncoder(PyCodec):
     _pushes_fd = False
 
     @property
-    def pushes_fd(self):
+    def pushes_fd(self) -> bool:
         return self._pushes_fd
 
-    def encode(self, bufsize):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         """
         Override to perform the encoding process.
 
@@ -765,7 +777,7 @@ class PyEncoder(PyCodec):
         msg = "unavailable in base encoder"
         raise NotImplementedError(msg)
 
-    def encode_to_pyfd(self):
+    def encode_to_pyfd(self) -> tuple[int, int]:
         """
         If ``pushes_fd`` is ``True``, then this method will be used,
         and ``encode()`` will only be called once.
@@ -777,6 +789,7 @@ class PyEncoder(PyCodec):
             return 0, -8  # bad configuration
         bytes_consumed, errcode, data = self.encode(0)
         if data:
+            assert self.fd is not None
             self.fd.write(data)
         return bytes_consumed, errcode
 
