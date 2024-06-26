@@ -54,6 +54,14 @@ the shared code in **conftest.py**.
 
 **1. Deekshu**
 
+- Function 1: `buildTransform()` from **ImageCms.py**
+
+    [Link to the commit](https://github.com/python-pillow/Pillow/commit/e31adc7e40442076f65a47b457f0c73040d4e7fc#diff-bd1e1b1de6e5b72a2a01d9d5ea74efe89541f209db5b30c16b975af71e308c67)
+
+- Function 2: `encode_to_file` from **ImageFile.py**
+
+[Link to the commit](https://github.com/python-pillow/Pillow/commit/4f31cd7a31a6be2ac38773bab6f0a5451480f5b8#diff-4668a28f508bbcb68e61f9b257415dc814c22e8bb24850629fe7788ae5b7475c)
+
 **2. Duru**
 
 **3. Isidora**
@@ -96,6 +104,22 @@ the shared code in **conftest.py**.
 
 **1. Deekshu**
 
+- Function 1: `buildTransform()` from **ImageCms.py**
+
+    [Link to the commit](https://github.com/jovanovicisidora/Pillow-SEP/commit/aad549687a1cf9528453eec5e9344192dce388e1)
+
+    <img src="report_images/deekshu_images/[AFTER]buildTransform.png" alt="Coverage Before" width="600" />
+
+    <img src="report_images/deekshu_images/[AFTER]buildTransform.png" alt="Coverage After" width="600" />
+
+- Function 2: `encode_to_file` from **ImageFile.py**
+
+    [Link to the commit]() - how to show the diff patch
+
+    <img src="report_images/deekshu_images/[AFTER]encode_to_file.png" alt="Coverage Before" width="600" />
+
+    <img src="report_images/deekshu_images/[AFTER]encode_to_file.png" alt="Coverage After" width="600" />
+
 **2. Duru**
 
 **3. Isidora**
@@ -132,5 +156,5 @@ Here we show the improved overall coverage with all test modifications made by o
 
 Each group member had an equal contribution to the assignment. We first met together to determine
 how we can make a coverage tool that can be used across all functions (in conftest.py). Then, each
-member chose two functions to instrument our coverage tool on and to make/enhance tests for them.
+member chose two functions to instrument our coverage tool on and to make/enhance tests for their branch improvement.
 The specific functions each member chose can be seen in the report above.
