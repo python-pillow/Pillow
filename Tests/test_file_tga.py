@@ -81,6 +81,14 @@ def test_palette_depth_16(tmp_path: Path) -> None:
             assert_image_equal_tofile(reloaded.convert("RGBA"), "Tests/images/p_16.png")
 
 
+def test_rgba_16() -> None:
+    with Image.open("Tests/images/rgba16.tga") as im:
+        assert im.mode == "RGBA"
+
+        assert im.getpixel((0, 0)) == (172, 0, 255, 255)
+        assert im.getpixel((1, 0)) == (0, 255, 82, 0)
+
+
 def test_id_field() -> None:
     # tga file with id field
     test_file = "Tests/images/tga_id_field.tga"
