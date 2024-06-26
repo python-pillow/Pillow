@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Do not detect Ultra HDR images as MPO #8056
+  [radarhere]
+
+- Raise SyntaxError specific to JP2 #8146
+  [Yay295, radarhere]
+
 - Do not use first frame duration for other frames when saving APNG images #8104
   [radarhere]
 
