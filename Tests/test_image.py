@@ -8,6 +8,7 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
+from types import ModuleType
 from typing import IO, Any
 
 import pytest
@@ -34,6 +35,12 @@ from .helper import (
     mark_if_feature_version,
     skip_unless_feature,
 )
+
+ElementTree: ModuleType | None
+try:
+    from defusedxml import ElementTree
+except ImportError:
+    ElementTree = None
 
 
 # Deprecation helper
@@ -920,6 +927,21 @@ class TestImage:
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
             assert im.getxmp() == {}
+
+    def test_getxmp_padded(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = (
+            b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00'
+        )
+        if ElementTree is None:
+            with pytest.warns(
+                UserWarning,
+                match="XMP data cannot be read without defusedxml dependency",
+            ):
+                assert im.getxmp() == {}
+        else:
+            assert im.getxmp() == {"xmpmeta": None}
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
