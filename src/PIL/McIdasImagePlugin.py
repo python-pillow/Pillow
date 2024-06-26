@@ -21,7 +21,6 @@ import struct
 
 from . import Image, ImageFile
 
-
 def _accept(prefix: bytes) -> bool:
     return prefix[:8] == b"\x00\x00\x00\x00\x00\x00\x00\x04"
 
