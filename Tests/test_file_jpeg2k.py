@@ -335,6 +335,12 @@ def test_issue_6194() -> None:
         assert im.getpixel((5, 5)) == 31
 
 
+def test_unknown_j2k_mode() -> None:
+    with pytest.raises(UnidentifiedImageError):
+        with Image.open("Tests/images/unknown_mode.j2k"):
+            pass
+
+
 def test_unbound_local() -> None:
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
     with pytest.raises(UnidentifiedImageError):
