@@ -79,6 +79,7 @@ def test_putpalette_with_alpha_values() -> None:
     (
         ("RGBA", (1, 2, 3, 4)),
         ("RGBAX", (1, 2, 3, 4, 0)),
+        ("ARGB", (4, 1, 2, 3)),
     ),
 )
 def test_rgba_palette(mode: str, palette: tuple[int, ...]) -> None:

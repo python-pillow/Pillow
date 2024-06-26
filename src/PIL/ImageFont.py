@@ -33,11 +33,12 @@ import sys
 import warnings
 from enum import IntEnum
 from io import BytesIO
+from types import ModuleType
 from typing import IO, TYPE_CHECKING, Any, BinaryIO
 
 from . import Image
 from ._typing import StrOrBytesPath
-from ._util import is_path
+from ._util import DeferredError, is_path
 
 if TYPE_CHECKING:
     from . import ImageFile
@@ -53,11 +54,10 @@ class Layout(IntEnum):
 MAX_STRING_LENGTH = 1_000_000
 
 
+core: ModuleType | DeferredError
 try:
     from . import _imagingft as core
 except ImportError as ex:
-    from ._util import DeferredError
-
     core = DeferredError.new(ex)
 
 
@@ -199,6 +199,7 @@ class FreeTypeFont:
     """FreeType font wrapper (requires _imagingft service)"""
 
     font: Font
+    font_bytes: bytes
 
     def __init__(
         self,
@@ -209,6 +210,9 @@ class FreeTypeFont:
         layout_engine: Layout | None = None,
     ) -> None:
         # FIXME: use service provider instead
+
+        if isinstance(core, DeferredError):
+            raise core.ex
 
         if size <= 0:
             msg = "font size must be greater than 0"
@@ -279,7 +283,7 @@ class FreeTypeFont:
         return self.font.ascent, self.font.descent
 
     def getlength(
-        self, text: str, mode="", direction=None, features=None, language=None
+        self, text: str | bytes, mode="", direction=None, features=None, language=None
     ) -> float:
         """
         Returns length (in pixels with 1/64 precision) of given text when rendered
@@ -354,7 +358,7 @@ class FreeTypeFont:
 
     def getbbox(
         self,
-        text: str,
+        text: str | bytes,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -511,7 +515,7 @@ class FreeTypeFont:
 
     def getmask2(
         self,
-        text: str,
+        text: str | bytes,
         mode="",
         direction=None,
         features=None,
@@ -730,7 +734,7 @@ class TransposedFont:
             return 0, 0, height, width
         return 0, 0, width, height
 
-    def getlength(self, text: str, *args, **kwargs) -> float:
+    def getlength(self, text: str | bytes, *args, **kwargs) -> float:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
@@ -775,10 +779,15 @@ def truetype(
 
     :param font: A filename or file-like object containing a TrueType font.
                  If the file is not found in this filename, the loader may also
-                 search in other directories, such as the :file:`fonts/`
-                 directory on Windows or :file:`/Library/Fonts/`,
-                 :file:`/System/Library/Fonts/` and :file:`~/Library/Fonts/` on
-                 macOS.
+                 search in other directories, such as:
+
+                 * The :file:`fonts/` directory on Windows,
+                 * :file:`/Library/Fonts/`, :file:`/System/Library/Fonts/`
+                   and :file:`~/Library/Fonts/` on macOS.
+                 * :file:`~/.local/share/fonts`, :file:`/usr/local/share/fonts`,
+                   and :file:`/usr/share/fonts` on Linux; or those specified by
+                   the ``XDG_DATA_HOME`` and ``XDG_DATA_DIRS`` environment variables
+                   for user-installed and system-wide fonts, respectively.
 
     :param size: The requested size, in pixels.
     :param index: Which font face to load (default is first available face).
@@ -837,12 +846,21 @@ def truetype(
             if windir:
                 dirs.append(os.path.join(windir, "fonts"))
         elif sys.platform in ("linux", "linux2"):
-            lindirs = os.environ.get("XDG_DATA_DIRS")
-            if not lindirs:
-                # According to the freedesktop spec, XDG_DATA_DIRS should
-                # default to /usr/share
-                lindirs = "/usr/share"
-            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+            data_home = os.environ.get("XDG_DATA_HOME")
+            if not data_home:
+                # The freedesktop spec defines the following default directory for
+                # when XDG_DATA_HOME is unset or empty. This user-level directory
+                # takes precedence over system-level directories.
+                data_home = os.path.expanduser("~/.local/share")
+            xdg_dirs = [data_home]
+
+            data_dirs = os.environ.get("XDG_DATA_DIRS")
+            if not data_dirs:
+                # Similarly, defaults are defined for the system-level directories
+                data_dirs = "/usr/local/share:/usr/share"
+            xdg_dirs += data_dirs.split(":")
+
+            dirs += [os.path.join(xdg_dir, "fonts") for xdg_dir in xdg_dirs]
         elif sys.platform == "darwin":
             dirs += [
                 "/Library/Fonts",
@@ -903,7 +921,7 @@ def load_default(size: float | None = None) -> FreeTypeFont | ImageFont:
     :return: A font object.
     """
     f: FreeTypeFont | ImageFont
-    if core.__class__.__name__ == "module" or size is not None:
+    if isinstance(core, ModuleType) or size is not None:
         f = truetype(
             BytesIO(
                 base64.b64decode(

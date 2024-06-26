@@ -338,3 +338,8 @@ class TestImagingPaste:
 
         im.copy().paste(im2)
         im.copy().paste(im2, (0, 0))
+
+    def test_incorrect_abbreviated_form(self) -> None:
+        im = Image.new("L", (1, 1))
+        with pytest.raises(ValueError):
+            im.paste(im, im, im)

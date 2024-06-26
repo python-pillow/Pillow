@@ -95,6 +95,8 @@ def APP(self, marker):
         else:
             self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
+    elif marker == 0xFFE1 and s[:29] == b"http://ns.adobe.com/xap/1.0/\x00":
+        self.info["xmp"] = s.split(b"\x00")[1]
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
@@ -426,7 +428,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return s
 
     def draft(
-        self, mode: str | None, size: tuple[int, int]
+        self, mode: str | None, size: tuple[int, int] | None
     ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
             return None
@@ -499,21 +501,6 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def _getmp(self):
         return _getmp(self)
-
-    def getxmp(self) -> dict[str, Any]:
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
-
-        :returns: XMP tags in a dictionary.
-        """
-
-        for segment, content in self.applist:
-            if segment == "APP1":
-                marker, xmp_tags = content.split(b"\x00")[:2]
-                if marker == b"http://ns.adobe.com/xap/1.0/":
-                    return self._getxmp(xmp_tags)
-        return {}
 
 
 def _getexif(self) -> dict[str, Any] | None:
@@ -844,6 +831,10 @@ def jpeg_factory(fp=None, filename=None):
     try:
         mpheader = im._getmp()
         if mpheader[45057] > 1:
+            for segment, content in im.applist:
+                if segment == "APP1" and b' hdrgm:Version="' in content:
+                    # Ultra HDR images are not yet supported
+                    return im
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
 

@@ -113,14 +113,14 @@ class TestFileTiff:
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
-    def test_seek_too_large(self):
+    def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
             Image.open("Tests/images/seek_too_large.tif")
 
     def test_set_legacy_api(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         with pytest.raises(Exception) as e:
-            ifd.legacy_api = None
+            ifd.legacy_api = False
         assert str(e.value) == "Not allowing setting of legacy api"
 
     def test_xyres_tiff(self) -> None:
@@ -621,6 +621,19 @@ class TestFileTiff:
 
             assert_image_equal_tofile(im, tmpfile)
 
+    def test_iptc(self, tmp_path: Path) -> None:
+        # Do not preserve IPTC_NAA_CHUNK by default if type is LONG
+        outfile = str(tmp_path / "temp.tif")
+        im = hopper()
+        ifd = TiffImagePlugin.ImageFileDirectory_v2()
+        ifd[33723] = 1
+        ifd.tagtype[33723] = 4
+        im.tag_v2 = ifd
+        im.save(outfile)
+
+        with Image.open(outfile) as im:
+            assert 33723 not in im.tag_v2
+
     def test_rowsperstrip(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
         im = hopper()
@@ -810,6 +823,7 @@ class TestFileTiff:
                 ):
                     assert im.getxmp() == {}
             else:
+                assert "xmp" in im.info
                 xmp = im.getxmp()
 
                 description = xmp["xmpmeta"]["RDF"]["Description"]

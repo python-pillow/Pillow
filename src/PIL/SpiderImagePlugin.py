@@ -37,12 +37,12 @@ from __future__ import annotations
 import os
 import struct
 import sys
-from typing import IO, TYPE_CHECKING
+from typing import IO, TYPE_CHECKING, Any, Tuple, cast
 
 from . import Image, ImageFile
 
 
-def isInt(f):
+def isInt(f: Any) -> int:
     try:
         i = int(f)
         if f - i == 0:
@@ -62,7 +62,7 @@ iforms = [1, 3, -11, -12, -21, -22]
 # otherwise returns 0
 
 
-def isSpiderHeader(t):
+def isSpiderHeader(t: tuple[float, ...]) -> int:
     h = (99,) + t  # add 1 value so can use spider header index start=1
     # header values 1,2,5,12,13,22,23 should be integers
     for i in [1, 2, 5, 12, 13, 22, 23]:
@@ -82,7 +82,7 @@ def isSpiderHeader(t):
     return labbyt
 
 
-def isSpiderImage(filename):
+def isSpiderImage(filename: str) -> int:
     with open(filename, "rb") as fp:
         f = fp.read(92)  # read 23 * 4 bytes
     t = struct.unpack(">23f", f)  # try big-endian first
@@ -184,13 +184,15 @@ class SpiderImageFile(ImageFile.ImageFile):
         self._open()
 
     # returns a byte image after rescaling to 0..255
-    def convert2byte(self, depth=255):
-        (minimum, maximum) = self.getextrema()
-        m = 1
+    def convert2byte(self, depth: int = 255) -> Image.Image:
+        extrema = self.getextrema()
+        assert isinstance(extrema[0], float)
+        minimum, maximum = cast(Tuple[float, float], extrema)
+        m: float = 1
         if maximum != minimum:
             m = depth / (maximum - minimum)
         b = -m * minimum
-        return self.point(lambda i, m=m, b=b: i * m + b).convert("L")
+        return self.point(lambda i: i * m + b).convert("L")
 
     if TYPE_CHECKING:
         from . import ImageTk
@@ -207,10 +209,10 @@ class SpiderImageFile(ImageFile.ImageFile):
 
 
 # given a list of filenames, return a list of images
-def loadImageSeries(filelist=None):
+def loadImageSeries(filelist: list[str] | None = None) -> list[SpiderImageFile] | None:
     """create a list of :py:class:`~PIL.Image.Image` objects for use in a montage"""
     if filelist is None or len(filelist) < 1:
-        return
+        return None
 
     imglist = []
     for img in filelist:

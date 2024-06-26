@@ -101,7 +101,7 @@ def test_blur_accuracy(test_images: dict[str, ImageFile.ImageFile]) -> None:
         assert i.im.getpixel((x, y))[c] >= 250
     # Fuzzy match.
 
-    def gp(x, y):
+    def gp(x: int, y: int) -> tuple[int, ...]:
         return i.im.getpixel((x, y))
 
     assert 236 <= gp(7, 4)[0] <= 239

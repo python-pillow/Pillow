@@ -65,15 +65,32 @@ paste_mask_1(
     int x, y;
 
     if (imOut->image8) {
+        int in_i16 = strncmp(imIn->mode, "I;16", 4) == 0;
+        int out_i16 = strncmp(imOut->mode, "I;16", 4) == 0;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
+            if (out_i16) {
+                out += dx;
+            }
             UINT8 *in = imIn->image8[y + sy] + sx;
+            if (in_i16) {
+                in += sx;
+            }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
-                if (*mask++) {
+                if (*mask) {
                     *out = *in;
                 }
-                out++, in++;
+                if (in_i16) {
+                    in++;
+                }
+                if (out_i16) {
+                    out++;
+                    if (*mask) {
+                        *out = *in;
+                    }
+                }
+                out++, in++, mask++;
             }
         }
 
@@ -415,15 +432,16 @@ fill_mask_L(
     unsigned int tmp1;
 
     if (imOut->image8) {
+        int i16 = strncmp(imOut->mode, "I;16", 4) == 0;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
-            if (strncmp(imOut->mode, "I;16", 4) == 0) {
+            if (i16) {
                 out += dx;
             }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 *out = BLEND(*mask, *out, ink[0], tmp1);
-                if (strncmp(imOut->mode, "I;16", 4) == 0) {
+                if (i16) {
                     out++;
                     *out = BLEND(*mask, *out, ink[1], tmp1);
                 }

@@ -129,15 +129,16 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             # and invert it because
             # Palm does grayscale from white (0) to black (1)
             bpp = im.encoderinfo["bpp"]
-            im = im.point(
-                lambda x, shift=8 - bpp, maxval=(1 << bpp) - 1: maxval - (x >> shift)
-            )
+            maxval = (1 << bpp) - 1
+            shift = 8 - bpp
+            im = im.point(lambda x: maxval - (x >> shift))
         elif im.info.get("bpp") in (1, 2, 4):
             # here we assume that even though the inherent mode is 8-bit grayscale,
             # only the lower bpp bits are significant.
             # We invert them to match the Palm.
             bpp = im.info["bpp"]
-            im = im.point(lambda x, maxval=(1 << bpp) - 1: maxval - (x & maxval))
+            maxval = (1 << bpp) - 1
+            im = im.point(lambda x: maxval - (x & maxval))
         else:
             msg = f"cannot write mode {im.mode} as Palm"
             raise OSError(msg)

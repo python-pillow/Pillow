@@ -132,7 +132,7 @@ of the two lines.
 
 .. comment: Image generated with ../example/anchors.py
 
-.. image:: ../example/anchors.png
+.. image:: ../example/anchors.webp
     :alt: Text anchor examples
     :align: center
 

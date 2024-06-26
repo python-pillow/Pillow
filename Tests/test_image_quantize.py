@@ -98,7 +98,7 @@ def test_quantize_dither_diff() -> None:
 @pytest.mark.parametrize(
     "method", (Image.Quantize.MEDIANCUT, Image.Quantize.MAXCOVERAGE)
 )
-def test_quantize_kmeans(method) -> None:
+def test_quantize_kmeans(method: Image.Quantize) -> None:
     im = hopper()
     no_kmeans = im.quantize(kmeans=0, method=method)
     kmeans = im.quantize(kmeans=1, method=method)

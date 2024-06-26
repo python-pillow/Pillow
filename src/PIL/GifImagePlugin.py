@@ -432,7 +432,7 @@ class GifImageFile(ImageFile.ImageFile):
             self._prev_im = self.im
             if self._frame_palette:
                 self.im = Image.core.fill("P", self.size, self._frame_transparency or 0)
-                self.im.putpalette(*self._frame_palette.getdata())
+                self.im.putpalette("RGB", *self._frame_palette.getdata())
             else:
                 self.im = None
         self._mode = temp_mode
@@ -457,6 +457,8 @@ class GifImageFile(ImageFile.ImageFile):
             frame_im = self.im.convert("RGBA")
         else:
             frame_im = self.im.convert("RGB")
+
+        assert self.dispose_extent is not None
         frame_im = self._crop(frame_im, self.dispose_extent)
 
         self.im = self._prev_im

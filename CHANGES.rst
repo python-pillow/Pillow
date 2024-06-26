@@ -5,6 +5,51 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Do not use first frame duration for other frames when saving APNG images #8104
+  [radarhere]
+
+- Consider I;16 pixel size when using a 1 mode mask #8112
+  [radarhere]
+
+- When saving multiple PNG frames, convert to mode rather than raw mode #8087
+  [radarhere]
+
+- Added byte support to FreeTypeFont #8141
+  [radarhere]
+
+- Allow float center for rotate operations #8114
+  [radarhere]
+
+- Do not read layers immediately when opening PSD images #8039
+  [radarhere]
+
+- Restore original thread state #8065
+  [radarhere]
+
+- Read IM and TIFF images as RGB, rather than RGBX #7997
+  [radarhere]
+
+- Only preserve TIFF IPTC_NAA_CHUNK tag if type is BYTE or UNDEFINED #7948
+  [radarhere]
+
+- Clarify ImageDraw2 error message when size is missing #8165
+  [radarhere]
+
+- Support unpacking more rawmodes to RGBA palettes #7966
+  [radarhere]
+
+- Removed support for Qt 5 #8159
+  [radarhere]
+
+- Improve ``ImageFont.freetype`` support for XDG directories on Linux #8135
+  [mamg22, radarhere]
+
+- Improved consistency of XMP handling #8069
+  [radarhere]
+
+- Use pkg-config to help find libwebp and raqm #8142
+  [radarhere]
+
 - Accept 't' suffix for libtiff version #8126, #8129
   [radarhere]
 

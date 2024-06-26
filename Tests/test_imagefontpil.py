@@ -14,7 +14,7 @@ original_core = ImageFont.core
 
 def setup_module() -> None:
     if features.check_module("freetype2"):
-        ImageFont.core = _util.DeferredError(ImportError)
+        ImageFont.core = _util.DeferredError(ImportError("Disabled for testing"))
 
 
 def teardown_module() -> None:
@@ -76,3 +76,8 @@ def test_oom() -> None:
     font = ImageFont.ImageFont()
     font._load_pilfont_data(fp, Image.new("L", (1, 1)))
     font.getmask("A" * 1_000_000)
+
+
+def test_freetypefont_without_freetype() -> None:
+    with pytest.raises(ImportError):
+        ImageFont.truetype("Tests/fonts/FreeMono.ttf")

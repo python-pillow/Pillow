@@ -44,3 +44,4 @@ Access using negative indexes is also possible. ::
 
 .. autoclass:: PIL.PyAccess.PyAccess()
     :members:
+    :special-members: __getitem__, __setitem__
