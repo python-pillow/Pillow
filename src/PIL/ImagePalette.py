@@ -209,6 +209,16 @@ class ImagePalette:
 
 
 def raw(rawmode: str, data: Sequence[int] | bytes | bytearray) -> ImagePalette:
+    from . import Image
+    from ._deprecate import deprecate
+
+    if rawmode in Image._DEPRECATED_RAWMODES:
+        deprecate(
+            f"rawmode {rawmode}",
+            12,
+            replacement=f"rawmode {Image._DEPRECATED_RAWMODES[rawmode]}",
+        )
+
     palette = ImagePalette()
     palette.rawmode = rawmode
     palette.palette = data
