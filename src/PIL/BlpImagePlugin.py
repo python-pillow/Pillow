@@ -40,6 +40,7 @@ from typing import IO
 
 from . import Image, ImageFile
 
+
 class Format(IntEnum):
     JPEG = 0
 
@@ -276,22 +277,20 @@ class BlpImageFile(ImageFile.ImageFile):
 
 
 class _BLPBaseDecoder(ImageFile.PyDecoder):
-
+    branches = {
+            "1": False,
+            "2": False,
+    }
 
     _pulls_fd = True
 
     def decode(self, buffer: bytes) -> tuple[int, int]:
-        branches = {
-            "1": False,
-            "2": False,
-        }
-
         try:
-            branches["1"] = True;
+            _BLPBaseDecoder.branches["1"] = True
             self._read_blp_header()
             self._load()
         except struct.error as e:
-            branches["2"] = True;
+            _BLPBaseDecoder.branches["2"] = True
             msg = "Truncated BLP file"
             raise OSError(msg) from e
         return -1, 0
