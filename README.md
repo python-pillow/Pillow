@@ -56,7 +56,7 @@ the shared code in **conftest.py**.
 
 - Function 1: `buildTransform()` from **ImageCms.py**
 
-    [Link to the commit](https://github.com/python-pillow/Pillow/commit/e31adc7e40442076f65a47b457f0c73040d4e7fc#diff-bd1e1b1de6e5b72a2a01d9d5ea74efe89541f209db5b30c16b975af71e308c67)
+    [Link to the commit](https://github.com/jovanovicisidora/Pillow-SEP/commit/b235d0e1c19c64870155094e98477ea9377655f2#diff-bd1e1b1de6e5b72a2a01d9d5ea74efe89541f209db5b30c16b975af71e308c67)
 
     <img src="report_images/deekshu_images/[BEFORE]buildTransform.png" alt="Coverage Tool Output" width="600" />
 
@@ -118,7 +118,7 @@ the shared code in **conftest.py**.
 
 - Function 2: `encode_to_file` from **ImageFile.py**
 
-    [Link to the commit]() - how to show the diff patch
+    [Link to the commit](PENDING) - how to show the diff patch
 
     <img src="report_images/deekshu_images/[BEFORE]encode_to_file.png" alt="Coverage Before" width="600" />
 
@@ -154,7 +154,7 @@ First we provide a screenshot of the old coverage results by running an existing
 
 Here we show the improved overall coverage with all test modifications made by out group:
 
-![Coverage Results After](path/to/image)
+![Coverage Results After](PENDING)
 
 ## Statement of individual contributions
 
