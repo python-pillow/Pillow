@@ -5,6 +5,9 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Remove zero-byte end padding when parsing any XMP data #8171
+  [radarhere]
+
 - Do not detect Ultra HDR images as MPO #8056
   [radarhere]
 
