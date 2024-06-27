@@ -432,6 +432,16 @@ def test_exif_transpose() -> None:
     assert 0x0112 not in transposed_im.getexif()
 
 
+def test_exif_transpose_xml_without_xmp() -> None:
+    with Image.open("Tests/images/xmp_tags_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
+        assert "XML:com.adobe.xmp" in im.info
+
+        del im.info["xmp"]
+        transposed_im = ImageOps.exif_transpose(im)
+        assert 0x0112 not in transposed_im.getexif()
+
+
 def test_exif_transpose_in_place() -> None:
     with Image.open("Tests/images/orientation_rectangle.jpg") as im:
         assert im.size == (2, 1)
