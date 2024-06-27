@@ -96,7 +96,7 @@ def APP(self, marker):
             self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
     elif marker == 0xFFE1 and s[:29] == b"http://ns.adobe.com/xap/1.0/\x00":
-        self.info["xmp"] = s.split(b"\x00")[1]
+        self.info["xmp"] = s.split(b"\x00", 1)[1]
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
