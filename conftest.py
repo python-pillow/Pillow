@@ -6,25 +6,24 @@ from PIL import Image
 from PIL import PdfParser
 from PIL import SpiderImagePlugin
 from PIL import MpegImagePlugin
-from PIL import ImageCms
-from PIL import McIdasImagePlugin
 from PIL import BlpImagePlugin
 from PIL import IcnsImagePlugin
+from PIL import ImageFile
+from PIL import ImageCms
 
 pytest_plugins = ["Tests.helper"]
 
 
 def calculate_coverage(test_name):
     all_branches = {
-        "branches1": Image.branches,
-        "branches2": PdfParser.XrefTable.branches,
-        "branches3": SpiderImagePlugin.branches,
-        "branches4": MpegImagePlugin.BitStream.branches,
-        "branches5": ImageCms.ImageCmsProfile.branches,
-        "branches6": McIdasImagePlugin.McIdasImageFile.branches,
-        "branches7": BlpImagePlugin._BLPBaseDecoder.branches,
-        "branches8": IcnsImagePlugin.branches,
-        # Add more
+        "branches1": Image.branches,                          # duru
+        "branches2": PdfParser.XrefTable.branches,            # duru
+        "branches3": SpiderImagePlugin.branches,              # isidora
+        "branches4": MpegImagePlugin.BitStream.branches,      # isidora
+        "branches5": ImageCms.branches,                       # deekshu
+        "branches6": ImageFile.PyEncoder.branches,            # deekshu
+        "branches7": BlpImagePlugin._BLPBaseDecoder.branches, # sofija
+        "branches8": IcnsImagePlugin.branches,                # sofija
     }
 
     for name, branches in all_branches.items():
@@ -58,4 +57,3 @@ def pytest_sessionfinish(session, exitstatus):
 
     coverage = calculate_coverage(test_name)
     print("\nBRANCH COVERAGE for", test_name, ":", coverage, "%\n")
-

@@ -1,24 +1,24 @@
 from __future__ import annotations
 
 import pytest
+import tkinter as tk
+from unittest import mock
 
 from PIL import Image
+from PIL import ImageTk
+
+from unittest.mock import patch
+
 
 from .helper import assert_image_equal, hopper
 
+TK_MODES = ("1", "L", "P", "RGB", "RGBA")
+
 try:
-    import tkinter as tk
-
-    from PIL import ImageTk
-
     dir(ImageTk)
     HAS_TK = True
 except (OSError, ImportError):
-    # Skipped via pytestmark
     HAS_TK = False
-
-TK_MODES = ("1", "L", "P", "RGB", "RGBA")
-
 
 pytestmark = pytest.mark.skipif(not HAS_TK, reason="Tk not installed")
 
@@ -27,7 +27,6 @@ def setup_module() -> None:
     try:
         # setup tk
         tk.Frame()
-        # root = tk.Tk()
     except RuntimeError as v:
         pytest.skip(f"RuntimeError: {v}")
     except tk.TclError as v:
@@ -102,3 +101,5 @@ def test_bitmapimage() -> None:
 
     # reloaded = ImageTk.getimage(im_tk)
     # assert_image_equal(reloaded, im)
+
+
