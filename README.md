@@ -92,18 +92,13 @@ the shared code in **conftest.py**.
 
     <img src="report_images/sofija_images/our_tool_branch7_before.png" alt="Coverage Tool Output" width="600" />
 
-    <img src="report_images/sofija_images/our_tool_branch7_after.png" alt="Coverage Tool Output" width="600" />
-
 - Function 2: 'read_32t' from **IcnsImagePlugin.py**
 
     [Link to commit](https://github.com/jovanovicisidora/Pillow-SEP/commit/0496f0b1bcca554ea5fcad0e53a672551bd7c101#diff-bb9af648f9d6055f580440e268d715dae9a22a2c4bfd47afd18bd834c05e96d2)
 
     <img src="report_images/sofija_images/our_tool_read_32t.png" alt="Coverage Tool Output" width="600" />
 
-
     <img src="report_images/sofija_images/our_tool_branch8_before.png" alt="Coverage Tool Output" width="600" />
-
-    <img src="report_images/sofija_images/our_tool_branch8_after.png" alt="Coverage Tool Output" width="600" />
 
 ## Coverage improvement
 
@@ -175,8 +170,6 @@ the shared code in **conftest.py**.
 
     <img src="report_images/sofija_images/sofija-function1-existing-improved-branches.png" alt="Coverage After" width="600" />
 
-    <img src="report_images/sofija_images/our_tool_branch7_before.png" alt="Coverage Tool Output" width="600" />
-
     <img src="report_images/sofija_images/our_tool_branch7_after.png" alt="Coverage After" width="600" />
 
 - Function 2: 'read_32t()' from **IcnsImagePlugin.py**
@@ -186,8 +179,6 @@ the shared code in **conftest.py**.
     <img src="report_images/sofija_images/sofija-function2-existingtool-original-branches.png" alt="Coverage After" width="600" />
 
     <img src="report_images/sofija_images/sofija-function2-existing-improved-branches.png" alt="Coverage After" width="600" />
-
-    <img src="report_images/sofija_images/our_tool_branch8_before.png" alt="Coverage Tool Output" width="600" />
 
     <img src="report_images/sofija_images/our_tool_branch8_after.png" alt="Coverage After" width="600" />
 
