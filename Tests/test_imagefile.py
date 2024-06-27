@@ -215,44 +215,19 @@ class MockPyDecoder(ImageFile.PyDecoder):
 
 
 class MockPyEncoder(ImageFile.PyEncoder):
-    last = None
+    last: MockPyEncoder | None
 
     def __init__(self, mode: str, *args: Any) -> None:
-        super().__init__(mode, *args)
-        self._pushes_fd = False
-        self.cleanup_called = False
         MockPyEncoder.last = self
 
+        super().__init__(mode, *args)
+
     def encode(self, buffer):
-        # Simulate encoding
-        if buffer is None:
-            raise NotImplementedError
         return 1, 1, b""
 
     def cleanup(self) -> None:
         self.cleanup_called = True
 
-def test_encode_to_file() -> None:
-    encoder = MockPyEncoder("RGBA")
-
-    with pytest.raises(NotImplementedError):
-        encoder.encode_to_file(None, None)
-
-    encoder._pushes_fd = True
-    with pytest.raises(NotImplementedError):
-        encoder.encode_to_file(None, None)
-
-    buffer = BytesIO(b"\x00" * 10)
-    encoder._pushes_fd = False
-    encoder.encode = lambda buffer: (1, 1, b"")
-    try:
-        encoder.encode_to_file(buffer, None)
-    except NotImplementedError:
-        pass
-
-    encoder.encode = lambda buffer: (_ for _ in ()).throw(NotImplementedError)
-    with pytest.raises(NotImplementedError):
-        encoder.encode_to_file(buffer, None)
 
 xoff, yoff, xsize, ysize = 10, 20, 100, 100
 

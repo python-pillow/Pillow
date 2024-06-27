@@ -118,7 +118,7 @@ the shared code in **conftest.py**.
 
 - Function 2: `encode_to_file` from **ImageFile.py**
 
-    [Link to the commit](PENDING) - how to show the diff patch
+    [Link to the commit](https://github.com/jovanovicisidora/Pillow-SEP/commit/52965eed2de5ca44eeb6c6dfb1f11778d369c6f7) - how to show the diff patch
 
     <img src="report_images/deekshu_images/[BEFORE]encode_to_file.png" alt="Coverage Before" width="600" />
 
