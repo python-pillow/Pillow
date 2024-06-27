@@ -40,11 +40,6 @@ from typing import IO
 
 from . import Image, ImageFile
 
-branches = {
-    "1": False,
-    "2": False,
-}
-
 class Format(IntEnum):
     JPEG = 0
 
@@ -281,9 +276,16 @@ class BlpImageFile(ImageFile.ImageFile):
 
 
 class _BLPBaseDecoder(ImageFile.PyDecoder):
+
+
     _pulls_fd = True
 
     def decode(self, buffer: bytes) -> tuple[int, int]:
+        branches = {
+            "1": False,
+            "2": False,
+        }
+
         try:
             branches["1"] = True;
             self._read_blp_header()
