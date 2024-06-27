@@ -167,6 +167,7 @@ the shared code in **conftest.py**.
 
     <img src="report_images/sofija_images/sofija-function1-existing-improved-branches.png" alt="Coverage After" width="600" />
 
+    <img src="report_images/sofija_images/our_tool_branch7_after.png" alt="Coverage After" width="600" />
 
 - Function 2: 'read_32t()' from **IcnsImagePlugin.py**
 
@@ -175,6 +176,8 @@ the shared code in **conftest.py**.
     <img src="report_images/sofija_images/sofija-function2-existingtool-original-branches.png" alt="Coverage After" width="600" />
 
     <img src="report_images/sofija_images/sofija-function2-existing-improved-branches.png" alt="Coverage After" width="600" />
+
+    <img src="report_images/sofija_images/our_tool_branch8_after.png" alt="Coverage After" width="600" />
 
 ### Overall
 
