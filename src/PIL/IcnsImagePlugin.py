@@ -48,11 +48,11 @@ def read_32t(fobj, start_length, size):
     fobj.seek(start)
     sig = fobj.read(4)
     if sig != b"\x00\x00\x00\x00":
-        branches["1"] = True;
+        branches["1"] = True
         msg = "Unknown signature, expecting 0x00000000"
         raise SyntaxError(msg)
     else:
-        branches["2"] = True;
+        branches["2"] = True
     return read_32(fobj, (start + 4, length - 4), size)
 
 
