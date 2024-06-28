@@ -685,13 +685,18 @@ class TestFileLibTiff(LibTiffTestCase):
             assert reloaded.tag_v2[530] == (1, 1)
             assert reloaded.tag_v2[532] == (0, 255, 128, 255, 128, 255)
 
-    def test_exif_ifd(self, tmp_path: Path) -> None:
-        outfile = str(tmp_path / "temp.tif")
+    def test_exif_ifd(self) -> None:
+        out = io.BytesIO()
         with Image.open("Tests/images/tiff_adobe_deflate.tif") as im:
             assert im.tag_v2[34665] == 125456
-            im.save(outfile)
+            im.save(out, "TIFF")
 
-        with Image.open(outfile) as reloaded:
+            with Image.open(out) as reloaded:
+                assert 34665 not in reloaded.tag_v2
+
+            im.save(out, "TIFF", tiffinfo={34665: 125456})
+
+        with Image.open(out) as reloaded:
             if Image.core.libtiff_support_custom_tags:
                 assert reloaded.tag_v2[34665] == 125456
 
