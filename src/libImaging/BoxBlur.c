@@ -13,7 +13,8 @@ void static inline ImagingLineBoxBlur32(
     int edgeA,
     int edgeB,
     UINT32 ww,
-    UINT32 fw) {
+    UINT32 fw
+) {
     int x;
     UINT32 acc[4];
     UINT32 bulk[4];
@@ -109,7 +110,8 @@ void static inline ImagingLineBoxBlur8(
     int edgeA,
     int edgeB,
     UINT32 ww,
-    UINT32 fw) {
+    UINT32 fw
+) {
     int x;
     UINT32 acc;
     UINT32 bulk;
@@ -198,7 +200,8 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
                 edgeA,
                 edgeB,
                 ww,
-                fw);
+                fw
+            );
             if (imIn == imOut) {
                 // Commit.
                 memcpy(imOut->image8[y], lineOut, imIn->xsize);
@@ -214,7 +217,8 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
                 edgeA,
                 edgeB,
                 ww,
-                fw);
+                fw
+            );
             if (imIn == imOut) {
                 // Commit.
                 memcpy(imOut->image32[y], lineOut, imIn->xsize * 4);
@@ -314,11 +318,13 @@ _gaussian_blur_radius(float radius, int passes) {
 
 Imaging
 ImagingGaussianBlur(
-    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes) {
+    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes
+) {
     return ImagingBoxBlur(
         imOut,
         imIn,
         _gaussian_blur_radius(xradius, passes),
         _gaussian_blur_radius(yradius, passes),
-        passes);
+        passes
+    );
 }

@@ -20,13 +20,12 @@ typedef uint32_t HashVal_t;
 
 typedef uint32_t (*HashFunc)(const HashTable *, const HashKey_t);
 typedef int (*HashCmpFunc)(const HashTable *, const HashKey_t, const HashKey_t);
-typedef void (*IteratorFunc)(
-    const HashTable *, const HashKey_t, const HashVal_t, void *);
-typedef void (*IteratorUpdateFunc)(
-    const HashTable *, const HashKey_t, HashVal_t *, void *);
+typedef void (*IteratorFunc)(const HashTable *, const HashKey_t, const HashVal_t, void *);
+typedef void (*IteratorUpdateFunc)(const HashTable *, const HashKey_t, HashVal_t *, void *);
 typedef void (*ComputeFunc)(const HashTable *, const HashKey_t, HashVal_t *);
 typedef void (*CollisionFunc)(
-    const HashTable *, HashKey_t *, HashVal_t *, HashKey_t, HashVal_t);
+    const HashTable *, HashKey_t *, HashVal_t *, HashKey_t, HashVal_t
+);
 
 HashTable *
 hashtable_new(HashFunc hf, HashCmpFunc cf);
@@ -42,7 +41,8 @@ int
 hashtable_lookup(const HashTable *h, const HashKey_t key, HashVal_t *valp);
 int
 hashtable_insert_or_update_computed(
-    HashTable *h, HashKey_t key, ComputeFunc newFunc, ComputeFunc existsFunc);
+    HashTable *h, HashKey_t key, ComputeFunc newFunc, ComputeFunc existsFunc
+);
 void *
 hashtable_set_user_data(HashTable *h, void *data);
 void *

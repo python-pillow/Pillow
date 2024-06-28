@@ -125,7 +125,8 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
     unsigned char *font_bytes;
     Py_ssize_t font_bytes_size = 0;
     static char *kwlist[] = {
-        "filename", "size", "index", "encoding", "font_bytes", "layout_engine", NULL};
+        "filename", "size", "index", "encoding", "font_bytes", "layout_engine", NULL
+    };
 
     if (!library) {
         PyErr_SetString(PyExc_OSError, "failed to initialize FreeType library");
@@ -147,7 +148,8 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
             &encoding,
             &font_bytes,
             &font_bytes_size,
-            &layout_engine)) {
+            &layout_engine
+        )) {
         PyConfig_Clear(&config);
         return NULL;
     }
@@ -165,7 +167,8 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
             &encoding,
             &font_bytes,
             &font_bytes_size,
-            &layout_engine)) {
+            &layout_engine
+        )) {
         return NULL;
     }
 #endif
@@ -198,7 +201,8 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
                 (FT_Byte *)self->font_bytes,
                 font_bytes_size,
                 index,
-                &self->face);
+                &self->face
+            );
         }
     }
 
@@ -242,7 +246,8 @@ text_layout_raqm(
     const char *dir,
     PyObject *features,
     const char *lang,
-    GlyphInfo **glyph_info) {
+    GlyphInfo **glyph_info
+) {
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
     raqm_glyph_t *glyphs = NULL;
@@ -296,13 +301,14 @@ text_layout_raqm(
 #if !defined(RAQM_VERSION_ATLEAST)
             /* RAQM_VERSION_ATLEAST was added in Raqm 0.7.0 */
             PyErr_SetString(
-                PyExc_ValueError,
-                "libraqm 0.7 or greater required for 'ttb' direction");
+                PyExc_ValueError, "libraqm 0.7 or greater required for 'ttb' direction"
+            );
             goto failed;
 #endif
         } else {
             PyErr_SetString(
-                PyExc_ValueError, "direction must be either 'rtl', 'ltr' or 'ttb'");
+                PyExc_ValueError, "direction must be either 'rtl', 'ltr' or 'ttb'"
+            );
             goto failed;
         }
     }
@@ -398,7 +404,8 @@ text_layout_fallback(
     const char *lang,
     GlyphInfo **glyph_info,
     int mask,
-    int color) {
+    int color
+) {
     int error, load_flags, i;
     char *buffer = NULL;
     FT_ULong ch;
@@ -411,7 +418,8 @@ text_layout_fallback(
         PyErr_SetString(
             PyExc_KeyError,
             "setting text direction, language or font features is not supported "
-            "without libraqm");
+            "without libraqm"
+        );
     }
 
     if (PyUnicode_Check(string)) {
@@ -458,7 +466,8 @@ text_layout_fallback(
                     last_index,
                     (*glyph_info)[i].index,
                     ft_kerning_default,
-                    &delta) == 0) {
+                    &delta
+                ) == 0) {
                 (*glyph_info)[i - 1].x_advance += PIXEL(delta.x);
                 (*glyph_info)[i - 1].y_advance += PIXEL(delta.y);
             }
@@ -482,7 +491,8 @@ text_layout(
     const char *lang,
     GlyphInfo **glyph_info,
     int mask,
-    int color) {
+    int color
+) {
     size_t count;
 #ifdef HAVE_RAQM
     if (have_raqm && self->layout_engine == LAYOUT_RAQM) {
@@ -491,7 +501,8 @@ text_layout(
 #endif
     {
         count = text_layout_fallback(
-            string, self, dir, features, lang, glyph_info, mask, color);
+            string, self, dir, features, lang, glyph_info, mask, color
+        );
     }
     return count;
 }
@@ -513,7 +524,8 @@ font_getlength(FontObject *self, PyObject *args) {
     /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
-            args, "O|zzOz:getlength", &string, &mode, &dir, &features, &lang)) {
+            args, "O|zzOz:getlength", &string, &mode, &dir, &features, &lang
+        )) {
         return NULL;
     }
 
@@ -555,7 +567,8 @@ bounding_box_and_anchors(
     int *width,
     int *height,
     int *x_offset,
-    int *y_offset) {
+    int *y_offset
+) {
     int position; /* pen position along primary axis, in 26.6 precision */
     int advanced; /* pen position along primary axis, in pixels */
     int px, py;   /* position of current glyph, in pixels */
@@ -660,7 +673,8 @@ bounding_box_and_anchors(
                 case 'm':  // middle (ascender + descender) / 2
                     y_anchor = PIXEL(
                         (face->size->metrics.ascender + face->size->metrics.descender) /
-                        2);
+                        2
+                    );
                     break;
                 case 's':  // horizontal baseline
                     y_anchor = 0;
@@ -740,7 +754,8 @@ font_getsize(FontObject *self, PyObject *args) {
     /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
-            args, "O|zzOzz:getsize", &string, &mode, &dir, &features, &lang, &anchor)) {
+            args, "O|zzOzz:getsize", &string, &mode, &dir, &features, &lang, &anchor
+        )) {
         return NULL;
     }
 
@@ -772,7 +787,8 @@ font_getsize(FontObject *self, PyObject *args) {
         &width,
         &height,
         &x_offset,
-        &y_offset);
+        &y_offset
+    );
     if (glyph_info) {
         PyMem_Free(glyph_info);
         glyph_info = NULL;
@@ -841,7 +857,8 @@ font_render(FontObject *self, PyObject *args) {
             &anchor,
             &foreground_ink_long,
             &x_start,
-            &y_start)) {
+            &y_start
+        )) {
         return NULL;
     }
 
@@ -888,7 +905,8 @@ font_render(FontObject *self, PyObject *args) {
         &width,
         &height,
         &x_offset,
-        &y_offset);
+        &y_offset
+    );
     if (error) {
         PyMem_Del(glyph_info);
         return NULL;
@@ -928,7 +946,8 @@ font_render(FontObject *self, PyObject *args) {
             (FT_Fixed)stroke_width * 64,
             FT_STROKER_LINECAP_ROUND,
             FT_STROKER_LINEJOIN_ROUND,
-            0);
+            0
+        );
     }
 
     /*
@@ -1103,8 +1122,8 @@ font_render(FontObject *self, PyObject *args) {
                                     BLEND(src_alpha, target[k * 4 + 2], src_blue, tmp);
                                 target[k * 4 + 3] = CLIP8(
                                     src_alpha +
-                                    MULDIV255(
-                                        target[k * 4 + 3], (255 - src_alpha), tmp));
+                                    MULDIV255(target[k * 4 + 3], (255 - src_alpha), tmp)
+                                );
                             } else {
                                 /* paste unpremultiplied RGBA values */
                                 target[k * 4 + 0] = src_red;
@@ -1122,15 +1141,20 @@ font_render(FontObject *self, PyObject *args) {
                             if (src_alpha > 0) {
                                 if (target[k * 4 + 3] > 0) {
                                     target[k * 4 + 0] = BLEND(
-                                        src_alpha, target[k * 4 + 0], ink[0], tmp);
+                                        src_alpha, target[k * 4 + 0], ink[0], tmp
+                                    );
                                     target[k * 4 + 1] = BLEND(
-                                        src_alpha, target[k * 4 + 1], ink[1], tmp);
+                                        src_alpha, target[k * 4 + 1], ink[1], tmp
+                                    );
                                     target[k * 4 + 2] = BLEND(
-                                        src_alpha, target[k * 4 + 2], ink[2], tmp);
+                                        src_alpha, target[k * 4 + 2], ink[2], tmp
+                                    );
                                     target[k * 4 + 3] = CLIP8(
                                         src_alpha +
                                         MULDIV255(
-                                            target[k * 4 + 3], (255 - src_alpha), tmp));
+                                            target[k * 4 + 3], (255 - src_alpha), tmp
+                                        )
+                                    );
                                 } else {
                                     target[k * 4 + 0] = ink[0];
                                     target[k * 4 + 1] = ink[1];
@@ -1148,7 +1172,9 @@ font_render(FontObject *self, PyObject *args) {
                                         ? CLIP8(
                                               src_alpha +
                                               MULDIV255(
-                                                  target[k], (255 - src_alpha), tmp))
+                                                  target[k], (255 - src_alpha), tmp
+                                              )
+                                          )
                                         : src_alpha;
                             }
                         }
@@ -1290,7 +1316,8 @@ font_getvaraxes(FontObject *self) {
             if (name.name_id == axis.strid) {
                 axis_name = Py_BuildValue("y#", name.string, name.string_len);
                 PyDict_SetItemString(
-                    list_axis, "name", axis_name ? axis_name : Py_None);
+                    list_axis, "name", axis_name ? axis_name : Py_None
+                );
                 Py_XDECREF(axis_name);
                 break;
             }
@@ -1393,7 +1420,8 @@ static PyMethodDef font_methods[] = {
     {"setvarname", (PyCFunction)font_setvarname, METH_VARARGS},
     {"setvaraxes", (PyCFunction)font_setvaraxes, METH_VARARGS},
 #endif
-    {NULL, NULL}};
+    {NULL, NULL}
+};
 
 static PyObject *
 font_getattr_family(FontObject *self, void *closure) {
@@ -1450,7 +1478,8 @@ static struct PyGetSetDef font_getsetters[] = {
     {"x_ppem", (getter)font_getattr_x_ppem},
     {"y_ppem", (getter)font_getattr_y_ppem},
     {"glyphs", (getter)font_getattr_glyphs},
-    {NULL}};
+    {NULL}
+};
 
 static PyTypeObject Font_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "Font", /*tp_name*/
@@ -1486,7 +1515,8 @@ static PyTypeObject Font_Type = {
 };
 
 static PyMethodDef _functions[] = {
-    {"getfont", (PyCFunction)getfont, METH_VARARGS | METH_KEYWORDS}, {NULL, NULL}};
+    {"getfont", (PyCFunction)getfont, METH_VARARGS | METH_KEYWORDS}, {NULL, NULL}
+};
 
 static int
 setup_module(PyObject *m) {

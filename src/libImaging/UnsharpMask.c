@@ -23,7 +23,8 @@ clip8(int in) {
 
 Imaging
 ImagingUnsharpMask(
-    Imaging imOut, Imaging imIn, float radius, int percent, int threshold) {
+    Imaging imOut, Imaging imIn, float radius, int percent, int threshold
+) {
     ImagingSectionCookie cookie;
     Imaging result;
 

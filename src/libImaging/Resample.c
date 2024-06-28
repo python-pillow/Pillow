@@ -186,7 +186,8 @@ precompute_coeffs(
     int outSize,
     struct filter *filterp,
     int **boundsp,
-    double **kkp) {
+    double **kkp
+) {
     double support, scale, filterscale;
     double center, ww, ss;
     int xx, x, ksize, xmin, xmax;
@@ -284,7 +285,8 @@ normalize_coeffs_8bpc(int outSize, int ksize, double *prekk) {
 
 void
 ImagingResampleHorizontal_8bpc(
-    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *prekk) {
+    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *prekk
+) {
     ImagingSectionCookie cookie;
     int ss0, ss1, ss2, ss3;
     int xx, yy, x, xmin, xmax;
@@ -376,7 +378,8 @@ ImagingResampleHorizontal_8bpc(
 
 void
 ImagingResampleVertical_8bpc(
-    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *prekk) {
+    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *prekk
+) {
     ImagingSectionCookie cookie;
     int ss0, ss1, ss2, ss3;
     int xx, yy, y, ymin, ymax;
@@ -459,7 +462,8 @@ ImagingResampleVertical_8bpc(
 
 void
 ImagingResampleHorizontal_32bpc(
-    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk) {
+    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk
+) {
     ImagingSectionCookie cookie;
     double ss;
     int xx, yy, x, xmin, xmax;
@@ -502,7 +506,8 @@ ImagingResampleHorizontal_32bpc(
 
 void
 ImagingResampleVertical_32bpc(
-    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk) {
+    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk
+) {
     ImagingSectionCookie cookie;
     double ss;
     int xx, yy, y, ymin, ymax;
@@ -544,7 +549,8 @@ ImagingResampleVertical_32bpc(
 }
 
 typedef void (*ResampleFunction)(
-    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk);
+    Imaging imOut, Imaging imIn, int offset, int ksize, int *bounds, double *kk
+);
 
 Imaging
 ImagingResampleInner(
@@ -554,7 +560,8 @@ ImagingResampleInner(
     struct filter *filterp,
     float box[4],
     ResampleFunction ResampleHorizontal,
-    ResampleFunction ResampleVertical);
+    ResampleFunction ResampleVertical
+);
 
 Imaging
 ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
@@ -609,7 +616,8 @@ ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]) {
     }
 
     return ImagingResampleInner(
-        imIn, xsize, ysize, filterp, box, ResampleHorizontal, ResampleVertical);
+        imIn, xsize, ysize, filterp, box, ResampleHorizontal, ResampleVertical
+    );
 }
 
 Imaging
@@ -620,7 +628,8 @@ ImagingResampleInner(
     struct filter *filterp,
     float box[4],
     ResampleFunction ResampleHorizontal,
-    ResampleFunction ResampleVertical) {
+    ResampleFunction ResampleVertical
+) {
     Imaging imTemp = NULL;
     Imaging imOut = NULL;
 
@@ -634,13 +643,15 @@ ImagingResampleInner(
     need_vertical = ysize != imIn->ysize || box[1] || box[3] != ysize;
 
     ksize_horiz = precompute_coeffs(
-        imIn->xsize, box[0], box[2], xsize, filterp, &bounds_horiz, &kk_horiz);
+        imIn->xsize, box[0], box[2], xsize, filterp, &bounds_horiz, &kk_horiz
+    );
     if (!ksize_horiz) {
         return NULL;
     }
 
     ksize_vert = precompute_coeffs(
-        imIn->ysize, box[1], box[3], ysize, filterp, &bounds_vert, &kk_vert);
+        imIn->ysize, box[1], box[3], ysize, filterp, &bounds_vert, &kk_vert
+    );
     if (!ksize_vert) {
         free(bounds_horiz);
         free(kk_horiz);
@@ -662,7 +673,8 @@ ImagingResampleInner(
         imTemp = ImagingNewDirty(imIn->mode, xsize, ybox_last - ybox_first);
         if (imTemp) {
             ResampleHorizontal(
-                imTemp, imIn, ybox_first, ksize_horiz, bounds_horiz, kk_horiz);
+                imTemp, imIn, ybox_first, ksize_horiz, bounds_horiz, kk_horiz
+            );
         }
         free(bounds_horiz);
         free(kk_horiz);

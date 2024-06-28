@@ -68,7 +68,8 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                     memmove(
                         &state->buffer[i * state->xsize],
                         &state->buffer[i * stride],
-                        state->xsize);
+                        state->xsize
+                    );
                 }
             }
             /* Got a full line, unpack it */
@@ -76,7 +77,8 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 (UINT8 *)im->image[state->y + state->yoff] +
                     state->xoff * im->pixelsize,
                 state->buffer,
-                state->xsize);
+                state->xsize
+            );
 
             state->x = 0;
 

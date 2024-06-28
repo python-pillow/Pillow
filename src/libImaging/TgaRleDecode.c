@@ -93,7 +93,8 @@ ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
                     (UINT8 *)im->image[state->y + state->yoff] +
                         state->xoff * im->pixelsize,
                     state->buffer,
-                    state->xsize);
+                    state->xsize
+                );
 
                 state->x = 0;
 
