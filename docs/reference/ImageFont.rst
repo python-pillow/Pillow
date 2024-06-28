@@ -53,6 +53,7 @@ Functions
 .. autofunction:: PIL.ImageFont.load_path
 .. autofunction:: PIL.ImageFont.truetype
 .. autofunction:: PIL.ImageFont.load_default
+.. autofunction:: PIL.ImageFont.load_default_imagefont
 
 Methods
 -------
