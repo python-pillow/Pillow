@@ -3803,15 +3803,12 @@ _compare_pixels(
     const int ysize,
     const int linesize,
     const UINT8 **pixels_a,
-    const UINT8 **pixels_b
-) {
+    const UINT8 **pixels_b) {
     // Fortunately, all of the modes that have extra bytes in their pixels
     // use four bytes for their pixels.
     UINT32 mask = 0xffffffff;
-    if (
-        !strcmp(mode, "RGB") || !strcmp(mode, "YCbCr") ||
-        !strcmp(mode, "HSV") || !strcmp(mode, "LAB")
-    ) {
+    if (!strcmp(mode, "RGB") || !strcmp(mode, "YCbCr") || !strcmp(mode, "HSV") ||
+        !strcmp(mode, "LAB")) {
         // These modes have three channels in four bytes,
         // so we have to ignore the last byte.
 #ifdef WORDS_BIGENDIAN
@@ -3865,11 +3862,8 @@ image_richcompare(const ImagingObject *self, const PyObject *other, const int op
     const Imaging img_a = self->image;
     const Imaging img_b = ((ImagingObject *)other)->image;
 
-    if (
-        strcmp(img_a->mode, img_b->mode)
-        || img_a->xsize != img_b->xsize
-        || img_a->ysize != img_b->ysize
-    ) {
+    if (strcmp(img_a->mode, img_b->mode) || img_a->xsize != img_b->xsize ||
+        img_a->ysize != img_b->ysize) {
         if (op == Py_EQ) {
             Py_RETURN_FALSE;
         } else {
@@ -3884,18 +3878,14 @@ image_richcompare(const ImagingObject *self, const PyObject *other, const int op
         const UINT8 *palette_b_data = palette_b->palette;
         const UINT8 **palette_a_data_ptr = &palette_a_data;
         const UINT8 **palette_b_data_ptr = &palette_b_data;
-        if (
-            !palette_a || !palette_b
-            || palette_a->size != palette_b->size
-            || strcmp(palette_a->mode, palette_b->mode)
-            || _compare_pixels(
+        if (!palette_a || !palette_b || palette_a->size != palette_b->size ||
+            strcmp(palette_a->mode, palette_b->mode) ||
+            _compare_pixels(
                 palette_a->mode,
                 1,
                 palette_a->size * 4,
                 palette_a_data_ptr,
-                palette_b_data_ptr
-            )
-        ) {
+                palette_b_data_ptr)) {
             if (op == Py_EQ) {
                 Py_RETURN_FALSE;
             } else {
@@ -3909,9 +3899,7 @@ image_richcompare(const ImagingObject *self, const PyObject *other, const int op
             img_a->ysize,
             img_a->linesize,
             (const UINT8 **)img_a->image,
-            (const UINT8 **)img_b->image
-        )
-    ) {
+            (const UINT8 **)img_b->image)) {
         if (op == Py_EQ) {
             Py_RETURN_FALSE;
         } else {
