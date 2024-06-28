@@ -5,6 +5,12 @@ Changelog (Pillow)
 10.4.0 (unreleased)
 -------------------
 
+- Raise FileNotFoundError if show_file() path does not exist #8178
+  [radarhere]
+
+- Improved reading 16-bit TGA images with colour #7965
+  [Yay295, radarhere]
+
 - Deprecate non-image ImageCms modes #8031
   [radarhere]
 
