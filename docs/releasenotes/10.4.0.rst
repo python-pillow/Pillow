@@ -4,21 +4,16 @@
 Security
 ========
 
-TODO
-^^^^
+ImageShow.WindowsViewer.show_file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+If an attacker has control over the ``path`` passed to
+``ImageShow.WindowsViewer.show_file()``, they may be able to
+execute arbitrary shell commands.
 
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
+To prevent this, a :py:exc:`FileNotFoundError` will be raised if the ``path``
+does not exist as a file. To provide a consistent experience, the error has
+been added to all :py:class:`~PIL.ImageShow` viewers.
 
 Deprecations
 ============
@@ -46,14 +41,6 @@ ImageDraw.getdraw hints parameter
 
 The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
 
-API Changes
-===========
-
-TODO
-^^^^
-
-TODO
-
 API Additions
 =============
 
@@ -63,11 +50,6 @@ ImageDraw.circle
 Added :py:meth:`~PIL.ImageDraw.ImageDraw.circle`. It provides the same functionality as
 :py:meth:`~PIL.ImageDraw.ImageDraw.ellipse`, but instead of taking a bounding box, it
 takes a center point and radius.
-
-TODO
-^^^^
-
-TODO
 
 Other Changes
 =============
