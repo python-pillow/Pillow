@@ -487,18 +487,13 @@ class JpegImageFile(ImageFile.ImageFile):
                 dpi *= 2.54
             self.info["dpi"] = dpi, dpi
         except (
-            struct.error,
-            KeyError,
-            SyntaxError,
-            TypeError,
-            ValueError,
-            ZeroDivisionError,
+            struct.error,  # truncated EXIF
+            KeyError,  # dpi not included
+            SyntaxError,  # invalid/unreadable EXIF
+            TypeError,  # dpi is an invalid float
+            ValueError,  # dpi is an invalid float
+            ZeroDivisionError,  # invalid dpi rational value
         ):
-            # struct.error for truncated EXIF
-            # KeyError for dpi not included
-            # SyntaxError for invalid/unreadable EXIF
-            # ValueError or TypeError for dpi being an invalid float
-            # ZeroDivisionError for invalid dpi rational value
             self.info["dpi"] = 72, 72
 
     def _getmp(self):
