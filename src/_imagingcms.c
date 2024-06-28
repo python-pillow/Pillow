@@ -223,20 +223,22 @@ findLCMStype(char *PILmode) {
     if (strcmp(PILmode, "CMYK") == 0) {
         return TYPE_CMYK_8;
     }
-    if (strcmp(PILmode, "L;16") == 0) {
+    if (strcmp(PILmode, "I;16") == 0 || strcmp(PILmode, "I;16L") == 0 ||
+        strcmp(PILmode, "L;16") == 0) {
         return TYPE_GRAY_16;
     }
-    if (strcmp(PILmode, "L;16B") == 0) {
+    if (strcmp(PILmode, "I;16B") == 0 || strcmp(PILmode, "L;16B") == 0) {
         return TYPE_GRAY_16_SE;
     }
-    if (strcmp(PILmode, "YCCA") == 0 || strcmp(PILmode, "YCC") == 0) {
+    if (strcmp(PILmode, "YCbCr") == 0 || strcmp(PILmode, "YCCA") == 0 ||
+        strcmp(PILmode, "YCC") == 0) {
         return TYPE_YCbCr_8;
     }
     if (strcmp(PILmode, "LAB") == 0) {
         // LabX equivalent like ALab, but not reversed -- no #define in lcms2
         return (COLORSPACE_SH(PT_LabV2) | CHANNELS_SH(3) | BYTES_SH(1) | EXTRA_SH(1));
     }
-    /* presume "L" by default */
+    /* presume "1" or "L" by default */
     return TYPE_GRAY_8;
 }
 
