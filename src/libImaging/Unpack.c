@@ -883,36 +883,6 @@ ImagingUnpackBGR565(UINT8 *out, const UINT8 *in, const int pixels) {
     }
 }
 
-void
-ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels) {
-    int i, pixel;
-    /* RGB, 4 bits per pixel, little-endian */
-    for (i = 0; i < pixels; i++) {
-        pixel = in[0] + (in[1] << 8);
-        out[R] = (pixel & 15) * 17;
-        out[G] = ((pixel >> 4) & 15) * 17;
-        out[B] = ((pixel >> 8) & 15) * 17;
-        out[A] = 255;
-        out += 4;
-        in += 2;
-    }
-}
-
-void
-ImagingUnpackRGBA4B(UINT8 *out, const UINT8 *in, int pixels) {
-    int i, pixel;
-    /* RGBA, 4 bits per pixel, little-endian */
-    for (i = 0; i < pixels; i++) {
-        pixel = in[0] + (in[1] << 8);
-        out[R] = (pixel & 15) * 17;
-        out[G] = ((pixel >> 4) & 15) * 17;
-        out[B] = ((pixel >> 8) & 15) * 17;
-        out[A] = ((pixel >> 12) & 15) * 17;
-        out += 4;
-        in += 2;
-    }
-}
-
 static void
 ImagingUnpackXBGR4(UINT8 *out, const UINT8 *in, const int pixels) {
     /* XBGR, 4 bits per pixel, little-endian */
@@ -1791,7 +1761,7 @@ static struct {
     {"RGB", "RGB;565", 16, ImagingUnpackRGB565},
     {"RGB", "BGR;16", 16, ImagingUnpackBGR16},
     {"RGB", "BGR;565", 16, ImagingUnpackBGR565},
-    {"RGB", "RGB;4B", 16, ImagingUnpackRGB4B},
+    {"RGB", "RGB;4B", 16, ImagingUnpackXBGR4},
     {"RGB", "XBGR;4", 16, ImagingUnpackXBGR4},
     {"RGB", "ABGR;4", 16, ImagingUnpackABGR4},
     {"RGB", "BGR;5", 16, ImagingUnpackBGR15}, /* compat */
@@ -1843,7 +1813,7 @@ static struct {
     {"RGBA", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGBA", "BGRA;15", 16, ImagingUnpackBGRA15},
     {"RGBA", "BGRA;15Z", 16, ImagingUnpackBGRA15Z},
-    {"RGBA", "RGBA;4B", 16, ImagingUnpackRGBA4B},
+    {"RGBA", "RGBA;4B", 16, ImagingUnpackABGR4},
     {"RGBA", "ABGR;4", 16, ImagingUnpackABGR4},
     {"RGBA", "RGBA;16L", 64, unpackRGBA16L},
     {"RGBA", "RGBA;16B", 64, unpackRGBA16B},
@@ -1912,7 +1882,7 @@ static struct {
     {"RGBX", "BGR;15", 16, ImagingUnpackBGR15},
     {"RGBX", "XBGR;1555", 16, ImagingUnpackXBGR1555},
     {"RGBX", "BGR;565", 16, ImagingUnpackBGR565},
-    {"RGBX", "RGB;4B", 16, ImagingUnpackRGB4B},
+    {"RGBX", "RGB;4B", 16, ImagingUnpackXBGR4},
     {"RGBX", "XBGR;4", 16, ImagingUnpackXBGR4},
     {"RGBX", "BGR;5", 16, ImagingUnpackBGR15}, /* compat */
     {"RGBX", "RGBX", 32, copy4},
