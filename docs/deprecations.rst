@@ -12,16 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-PSFile
-~~~~~~
-
-.. deprecated:: 9.5.0
-
-The :py:class:`~PIL.EpsImagePlugin.PSFile` class has been deprecated and will
-be removed in Pillow 11 (2024-10-15). This class was only made as a helper to
-be used internally, so there is no replacement. If you need this functionality
-though, it is a very short class that can easily be recreated in your own code.
-
 PyAccess and Image.USE_CFFI_ACCESS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -136,6 +126,17 @@ Removed features
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+PSFile
+~~~~~~
+
+.. deprecated:: 9.5.0
+.. versionremoved:: 11.0.0
+
+The :py:class:`!PSFile` class was removed in Pillow 11 (2024-10-15).
+This class was only made as a helper to be used internally,
+so there is no replacement. If you need this functionality though,
+it is a very short class that can easily be recreated in your own code.
 
 Tk/Tcl 8.4
 ~~~~~~~~~~
