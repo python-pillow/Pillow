@@ -12,19 +12,6 @@ from PIL import Image
 
 from .helper import assert_image_equal, hopper, is_win32
 
-# CFFI imports pycparser which doesn't support PYTHONOPTIMIZE=2
-# https://github.com/eliben/pycparser/pull/198#issuecomment-317001670
-cffi: ModuleType | None
-if os.environ.get("PYTHONOPTIMIZE") == "2":
-    cffi = None
-else:
-    try:
-        import cffi
-
-        from PIL import PyAccess
-    except ImportError:
-        cffi = None
-
 numpy: ModuleType | None
 try:
     import numpy
@@ -32,21 +19,7 @@ except ImportError:
     numpy = None
 
 
-class AccessTest:
-    # Initial value
-    _init_cffi_access = Image.USE_CFFI_ACCESS
-    _need_cffi_access = False
-
-    @classmethod
-    def setup_class(cls) -> None:
-        Image.USE_CFFI_ACCESS = cls._need_cffi_access
-
-    @classmethod
-    def teardown_class(cls) -> None:
-        Image.USE_CFFI_ACCESS = cls._init_cffi_access
-
-
-class TestImagePutPixel(AccessTest):
+class TestImagePutPixel:
     def test_sanity(self) -> None:
         im1 = hopper()
         im2 = Image.new(im1.mode, im1.size, 0)
@@ -131,7 +104,7 @@ class TestImagePutPixel(AccessTest):
         assert pix[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
 
 
-class TestImageGetPixel(AccessTest):
+class TestImageGetPixel:
     @staticmethod
     def color(mode: str) -> int | tuple[int, ...]:
         bands = Image.getmodebands(mode)
@@ -144,9 +117,6 @@ class TestImageGetPixel(AccessTest):
         return tuple(range(1, bands + 1))
 
     def check(self, mode: str, expected_color_int: int | None = None) -> None:
-        if self._need_cffi_access and mode.startswith("BGR;"):
-            pytest.skip("Support not added to deprecated module for BGR;* modes")
-
         expected_color = (
             self.color(mode) if expected_color_int is None else expected_color_int
         )
@@ -171,15 +141,14 @@ class TestImageGetPixel(AccessTest):
         # Check 0x0 image with None initial color
         im = Image.new(mode, (0, 0), None)
         assert im.load() is not None
-        error = ValueError if self._need_cffi_access else IndexError
-        with pytest.raises(error):
+        with pytest.raises(IndexError):
             im.putpixel((0, 0), expected_color)
-        with pytest.raises(error):
+        with pytest.raises(IndexError):
             im.getpixel((0, 0))
         # Check negative index
-        with pytest.raises(error):
+        with pytest.raises(IndexError):
             im.putpixel((-1, -1), expected_color)
-        with pytest.raises(error):
+        with pytest.raises(IndexError):
             im.getpixel((-1, -1))
 
         # Check initial color
@@ -199,10 +168,10 @@ class TestImageGetPixel(AccessTest):
 
         # Check 0x0 image with initial color
         im = Image.new(mode, (0, 0), expected_color)
-        with pytest.raises(error):
+        with pytest.raises(IndexError):
             im.getpixel((0, 0))
         # Check negative index
-        with pytest.raises(error):
+        with pytest.raises(IndexError):
             im.getpixel((-1, -1))
 
     @pytest.mark.parametrize("mode", Image.MODES)
@@ -235,126 +204,7 @@ class TestImageGetPixel(AccessTest):
         assert im.convert("RGBA").getpixel((0, 0)) == (255, 0, 0, alpha)
 
 
-@pytest.mark.filterwarnings("ignore::DeprecationWarning")
-@pytest.mark.skipif(cffi is None, reason="No CFFI")
-class TestCffiPutPixel(TestImagePutPixel):
-    _need_cffi_access = True
-
-
-@pytest.mark.filterwarnings("ignore::DeprecationWarning")
-@pytest.mark.skipif(cffi is None, reason="No CFFI")
-class TestCffiGetPixel(TestImageGetPixel):
-    _need_cffi_access = True
-
-
-@pytest.mark.skipif(cffi is None, reason="No CFFI")
-class TestCffi(AccessTest):
-    _need_cffi_access = True
-
-    def _test_get_access(self, im: Image.Image) -> None:
-        """Do we get the same thing as the old pixel access
-
-        Using private interfaces, forcing a capi access and
-        a pyaccess for the same image"""
-        caccess = im.im.pixel_access(False)
-        with pytest.warns(DeprecationWarning):
-            access = PyAccess.new(im, False)
-        assert access is not None
-
-        w, h = im.size
-        for x in range(0, w, 10):
-            for y in range(0, h, 10):
-                assert access[(x, y)] == caccess[(x, y)]
-
-        # Access an out-of-range pixel
-        with pytest.raises(ValueError):
-            access[(access.xsize + 1, access.ysize + 1)]
-
-    def test_get_vs_c(self) -> None:
-        with pytest.warns(DeprecationWarning):
-            rgb = hopper("RGB")
-            rgb.load()
-            self._test_get_access(rgb)
-            for mode in ("RGBA", "L", "LA", "1", "P", "F"):
-                self._test_get_access(hopper(mode))
-
-            for mode in ("I;16", "I;16L", "I;16B", "I;16N", "I"):
-                im = Image.new(mode, (10, 10), 40000)
-                self._test_get_access(im)
-
-    def _test_set_access(self, im: Image.Image, color: tuple[int, ...] | float) -> None:
-        """Are we writing the correct bits into the image?
-
-        Using private interfaces, forcing a capi access and
-        a pyaccess for the same image"""
-        caccess = im.im.pixel_access(False)
-        with pytest.warns(DeprecationWarning):
-            access = PyAccess.new(im, False)
-        assert access is not None
-
-        w, h = im.size
-        for x in range(0, w, 10):
-            for y in range(0, h, 10):
-                access[(x, y)] = color
-                assert color == caccess[(x, y)]
-
-        # Attempt to set the value on a read-only image
-        with pytest.warns(DeprecationWarning):
-            access = PyAccess.new(im, True)
-        assert access is not None
-
-        with pytest.raises(ValueError):
-            access[(0, 0)] = color
-
-    def test_set_vs_c(self) -> None:
-        rgb = hopper("RGB")
-        with pytest.warns(DeprecationWarning):
-            rgb.load()
-        self._test_set_access(rgb, (255, 128, 0))
-        self._test_set_access(hopper("RGBA"), (255, 192, 128, 0))
-        self._test_set_access(hopper("L"), 128)
-        self._test_set_access(hopper("LA"), (128, 128))
-        self._test_set_access(hopper("1"), 255)
-        self._test_set_access(hopper("P"), 128)
-        self._test_set_access(hopper("PA"), (128, 128))
-        self._test_set_access(hopper("F"), 1024.0)
-
-        for mode in ("I;16", "I;16L", "I;16B", "I;16N", "I"):
-            im = Image.new(mode, (10, 10), 40000)
-            self._test_set_access(im, 45000)
-
-    @pytest.mark.filterwarnings("ignore::DeprecationWarning")
-    def test_not_implemented(self) -> None:
-        assert PyAccess.new(hopper("BGR;15")) is None
-
-    # Ref https://github.com/python-pillow/Pillow/pull/2009
-    def test_reference_counting(self) -> None:
-        size = 10
-
-        for _ in range(10):
-            # Do not save references to the image, only to the access object
-            with pytest.warns(DeprecationWarning):
-                px = Image.new("L", (size, 1), 0).load()
-            for i in range(size):
-                # Pixels can contain garbage if image is released
-                assert px[i, 0] == 0
-
-    @pytest.mark.parametrize("mode", ("P", "PA"))
-    def test_p_putpixel_rgb_rgba(self, mode: str) -> None:
-        for color in ((255, 0, 0), (255, 0, 0, 127 if mode == "PA" else 255)):
-            im = Image.new(mode, (1, 1))
-            with pytest.warns(DeprecationWarning):
-                access = PyAccess.new(im, False)
-                assert access is not None
-
-                access.putpixel((0, 0), color)
-
-                if len(color) == 3:
-                    color += (255,)
-                assert im.convert("RGBA").getpixel((0, 0)) == color
-
-
-class TestImagePutPixelError(AccessTest):
+class TestImagePutPixelError:
     IMAGE_MODES1 = ["LA", "RGB", "RGBA", "BGR;15"]
     IMAGE_MODES2 = ["L", "I", "I;16"]
     INVALID_TYPES = ["foo", 1.0, None]

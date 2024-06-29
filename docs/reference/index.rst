@@ -32,7 +32,6 @@ Reference
    JpegPresets
    PSDraw
    PixelAccess
-   PyAccess
    features
    ../PIL
    plugins

@@ -72,7 +72,6 @@ jobs:
             make
             netpbm
             perl
-            python3${{ matrix.python-minor-version }}-cffi
             python3${{ matrix.python-minor-version }}-cython
             python3${{ matrix.python-minor-version }}-devel
             python3${{ matrix.python-minor-version }}-numpy

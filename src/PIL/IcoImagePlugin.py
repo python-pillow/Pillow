@@ -329,7 +329,6 @@ class IcoImageFile(ImageFile.ImageFile):
         # if tile is PNG, it won't really be loaded yet
         im.load()
         self.im = im.im
-        self.pyaccess = None
         self._mode = im.mode
         if im.palette:
             self.palette = im.palette
