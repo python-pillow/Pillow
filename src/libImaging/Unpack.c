@@ -883,36 +883,6 @@ ImagingUnpackBGR565(UINT8 *out, const UINT8 *in, const int pixels) {
     }
 }
 
-void
-ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels) {
-    int i, pixel;
-    /* RGB, 4 bits per pixel, little-endian */
-    for (i = 0; i < pixels; i++) {
-        pixel = in[0] + (in[1] << 8);
-        out[R] = (pixel & 15) * 17;
-        out[G] = ((pixel >> 4) & 15) * 17;
-        out[B] = ((pixel >> 8) & 15) * 17;
-        out[A] = 255;
-        out += 4;
-        in += 2;
-    }
-}
-
-void
-ImagingUnpackRGBA4B(UINT8 *out, const UINT8 *in, int pixels) {
-    int i, pixel;
-    /* RGBA, 4 bits per pixel, little-endian */
-    for (i = 0; i < pixels; i++) {
-        pixel = in[0] + (in[1] << 8);
-        out[R] = (pixel & 15) * 17;
-        out[G] = ((pixel >> 4) & 15) * 17;
-        out[B] = ((pixel >> 8) & 15) * 17;
-        out[A] = ((pixel >> 12) & 15) * 17;
-        out += 4;
-        in += 2;
-    }
-}
-
 static void
 ImagingUnpackXBGR4(UINT8 *out, const UINT8 *in, const int pixels) {
     /* XBGR, 4 bits per pixel, little-endian */
@@ -1787,7 +1757,7 @@ static struct {
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_565, 16, ImagingUnpackRGB565},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_16, 16, ImagingUnpackBGR16},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_565, 16, ImagingUnpackBGR565},
-    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_4B, 16, ImagingUnpackRGB4B},
+    {IMAGING_MODE_RGB, IMAGING_RAWMODE_RGB_4B, 16, ImagingUnpackXBGR4},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_XBGR_4, 16, ImagingUnpackXBGR4},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_ABGR_4, 16, ImagingUnpackABGR4},
     {IMAGING_MODE_RGB, IMAGING_RAWMODE_BGR_5, 16, ImagingUnpackBGR15}, /* compat */
@@ -1836,7 +1806,7 @@ static struct {
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_15, 16, ImagingUnpackRGBA15},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRA_15, 16, ImagingUnpackBGRA15},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_BGRA_15Z, 16, ImagingUnpackBGRA15Z},
-    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_4B, 16, ImagingUnpackRGBA4B},
+    {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_4B, 16, ImagingUnpackABGR4},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_ABGR_4, 16, ImagingUnpackABGR4},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_16L, 64, unpackRGBA16L},
     {IMAGING_MODE_RGBA, IMAGING_RAWMODE_RGBA_16B, 64, unpackRGBA16B},
@@ -1907,7 +1877,7 @@ static struct {
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR_15, 16, ImagingUnpackBGR15},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_XBGR_1555, 16, ImagingUnpackXBGR1555},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR_565, 16, ImagingUnpackBGR565},
-    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGB_4B, 16, ImagingUnpackRGB4B},
+    {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGB_4B, 16, ImagingUnpackXBGR4},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_XBGR_4, 16, ImagingUnpackXBGR4},
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_BGR_5, 16, ImagingUnpackBGR15}, /* compat */
     {IMAGING_MODE_RGBX, IMAGING_RAWMODE_RGBX, 32, copy4},
