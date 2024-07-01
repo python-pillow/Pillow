@@ -44,7 +44,6 @@ jobs:
           amazon-2023-amd64,
           arch,
           centos-stream-9-amd64,
-          debian-11-bullseye-amd64,
           debian-12-bookworm-x86,
           debian-12-bookworm-amd64,
           fedora-39-amd64,
