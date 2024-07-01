@@ -37,8 +37,7 @@ python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 
 if [[ $(uname) != CYGWIN* ]]; then
-    # TODO Update condition when NumPy supports 3.13
-    if ! [[ "$GHA_PYTHON_VERSION" == "3.13" ]]; then python3 -m pip install numpy ; fi
+    python3 -m pip install numpy
 
     # PyQt6 doesn't support PyPy3
     if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
