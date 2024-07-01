@@ -125,14 +125,6 @@ except ImportError as v:
     raise
 
 
-USE_CFFI_ACCESS = False
-cffi: ModuleType | None
-try:
-    import cffi
-except ImportError:
-    cffi = None
-
-
 def isImageType(t: Any) -> TypeGuard[Image]:
     """
     Checks if an object is an image object.
@@ -229,7 +221,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 if TYPE_CHECKING:
-    from . import ImageFile, PyAccess
+    from . import ImageFile
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -549,7 +541,6 @@ class Image:
         self.palette = None
         self.info = {}
         self.readonly = 0
-        self.pyaccess = None
         self._exif = None
 
     @property
@@ -631,7 +622,6 @@ class Image:
     def _copy(self) -> None:
         self.load()
         self.im = self.im.copy()
-        self.pyaccess = None
         self.readonly = 0
 
     def _ensure_mutable(self) -> None:
@@ -882,7 +872,7 @@ class Image:
             msg = "cannot decode image data"
             raise ValueError(msg)
 
-    def load(self) -> core.PixelAccess | PyAccess.PyAccess | None:
+    def load(self) -> core.PixelAccess | None:
         """
         Allocates storage for the image and loads the pixel data.  In
         normal cases, you don't need to call this method, since the
@@ -895,7 +885,7 @@ class Image:
         operations. See :ref:`file-handling` for more information.
 
         :returns: An image access object.
-        :rtype: :py:class:`.PixelAccess` or :py:class:`.PyAccess`
+        :rtype: :py:class:`.PixelAccess`
         """
         if self.im is not None and self.palette and self.palette.dirty:
             # realize palette
@@ -915,14 +905,6 @@ class Image:
                 )
 
         if self.im is not None:
-            if cffi and USE_CFFI_ACCESS:
-                if self.pyaccess:
-                    return self.pyaccess
-                from . import PyAccess
-
-                self.pyaccess = PyAccess.new(self, self.readonly)
-                if self.pyaccess:
-                    return self.pyaccess
             return self.im.pixel_access(self.readonly)
         return None
 
@@ -1685,8 +1667,6 @@ class Image:
         """
 
         self.load()
-        if self.pyaccess:
-            return self.pyaccess.getpixel(xy)
         return self.im.getpixel(tuple(xy))
 
     def getprojection(self) -> tuple[list[int], list[int]]:
@@ -1983,7 +1963,6 @@ class Image:
                         msg = "alpha channel could not be added"
                         raise ValueError(msg) from e  # sanity check
                     self.im = im
-                self.pyaccess = None
                 self._mode = self.im.mode
             except KeyError as e:
                 msg = "illegal image mode"
@@ -2100,9 +2079,6 @@ class Image:
         if self.readonly:
             self._copy()
         self.load()
-
-        if self.pyaccess:
-            return self.pyaccess.putpixel(xy, value)
 
         if (
             self.mode in ("P", "PA")
@@ -2768,7 +2744,6 @@ class Image:
             self._mode = self.im.mode
 
         self.readonly = 0
-        self.pyaccess = None
 
     # FIXME: the different transform methods need further explanation
     # instead of bloating the method docs, add a separate chapter.

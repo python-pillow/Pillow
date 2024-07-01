@@ -331,7 +331,6 @@ class GifImageFile(ImageFile.ImageFile):
                     LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
                     or palette
                 ):
-                    self.pyaccess = None
                     if "transparency" in self.info:
                         self.im.putpalettealpha(self.info["transparency"], 0)
                         self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)

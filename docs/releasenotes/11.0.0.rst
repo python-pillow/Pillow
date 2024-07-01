@@ -1,0 +1,67 @@
+11.0.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards Incompatible Changes
+==============================
+
+PSFile
+^^^^^^
+
+The :py:class:`!PSFile` class was removed in Pillow 11 (2024-10-15).
+This class was only made as a helper to be used internally,
+so there is no replacement. If you need this functionality though,
+it is a very short class that can easily be recreated in your own code.
+
+PyAccess and Image.USE_CFFI_ACCESS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since Pillow's C API is now faster than PyAccess on PyPy, ``PyAccess`` has been
+removed. Pillow's C API will now be used on PyPy instead.
+
+``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, was
+similarly removed.
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+TODO
+^^^^
+
+TODO
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO
