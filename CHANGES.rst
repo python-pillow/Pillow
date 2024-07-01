@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-10.4.0 (unreleased)
+10.4.0 (2024-07-01)
 -------------------
 
 - Raise FileNotFoundError if show_file() path does not exist #8178
