@@ -698,7 +698,6 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
         transposed_image = image.transpose(method)
         if in_place:
             image.im = transposed_image.im
-            image.pyaccess = None
             image._size = transposed_image._size
         exif_image = image if in_place else transposed_image
 
