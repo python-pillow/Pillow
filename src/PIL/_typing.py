@@ -7,8 +7,8 @@ from typing import Any, Protocol, Sequence, TypeVar, Union
 try:
     import numpy.typing as npt
 
-    NumpyArray = npt.NDArray[Any]
-except ImportError:
+    NumpyArray = npt.NDArray[Any]  # requires numpy>=1.21
+except (ImportError, AttributeError):
     pass
 
 if sys.version_info >= (3, 10):
