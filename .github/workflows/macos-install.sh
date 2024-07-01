@@ -25,9 +25,7 @@ python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
-
-# TODO Update condition when NumPy supports 3.13
-if ! [[ "$GHA_PYTHON_VERSION" == "3.13" ]]; then python3 -m pip install numpy ; fi
+python3 -m pip install numpy
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd
