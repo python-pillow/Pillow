@@ -30,7 +30,7 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
     bbox[1] = -1;
     bbox[2] = bbox[3] = 0;
 
-#define	GETBBOX(image, mask)                                 \
+#define GETBBOX(image, mask)                                 \
     /* first stage: looking for any px from top */           \
     for (y = 0; y < im->ysize; y++) {                        \
         has_data = 0;                                        \
@@ -41,7 +41,8 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
                 bbox[1] = y;                                 \
                 break;                                       \
             }                                                \
-        if (has_data) break;                                 \
+        if (has_data)                                        \
+            break;                                           \
     }                                                        \
     /* Check that we got a box */                            \
     if (bbox[1] < 0)                                         \
@@ -55,7 +56,8 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
                 bbox[3] = y + 1;                             \
                 break;                                       \
             }                                                \
-        if (has_data) break;                                 \
+        if (has_data)                                        \
+            break;                                           \
     }                                                        \
     /* third stage: looking for left and right boundaries */ \
     for (y = bbox[1]; y < bbox[3]; y++) {                    \
