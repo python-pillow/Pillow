@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Any, Protocol, Sequence, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Protocol, Sequence, TypeVar, Union
 
-try:
-    import numpy.typing as npt
+if TYPE_CHECKING:
+    try:
+        import numpy.typing as npt
 
-    NumpyArray = npt.NDArray[Any]  # requires numpy>=1.21
-except (ImportError, AttributeError):
-    pass
+        NumpyArray = npt.NDArray[Any]  # requires numpy>=1.21
+    except (ImportError, AttributeError):
+        pass
 
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
