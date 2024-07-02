@@ -59,7 +59,8 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin) {
     }
 
     imOut = ImagingNewDirty(
-        imIn->mode, imIn->xsize + 2 * xmargin, imIn->ysize + 2 * ymargin);
+        imIn->mode, imIn->xsize + 2 * xmargin, imIn->ysize + 2 * ymargin
+    );
     if (!imOut) {
         return NULL;
     }
@@ -369,7 +370,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 }
             }
             memcpy(
-                out + x * sizeof(UINT32), in0 + x * sizeof(UINT32), sizeof(UINT32) * 2);
+                out + x * sizeof(UINT32), in0 + x * sizeof(UINT32), sizeof(UINT32) * 2
+            );
         }
     }
     memcpy(imOut->image[y], im->image[y], im->linesize);

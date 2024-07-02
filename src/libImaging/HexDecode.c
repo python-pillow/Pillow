@@ -49,7 +49,8 @@ ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
             if (++state->x >= state->bytes) {
                 /* Got a full line, unpack it */
                 state->shuffle(
-                    (UINT8 *)im->image[state->y], state->buffer, state->xsize);
+                    (UINT8 *)im->image[state->y], state->buffer, state->xsize
+                );
 
                 state->x = 0;
 

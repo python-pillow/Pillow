@@ -132,7 +132,8 @@ _hashtable_resize(HashTable *h) {
 
 static int
 _hashtable_insert_node(
-    HashTable *h, HashNode *node, int resize, int update, CollisionFunc cf) {
+    HashTable *h, HashNode *node, int resize, int update, CollisionFunc cf
+) {
     uint32_t hash = h->hashFunc(h, node->key) % h->length;
     HashNode **n, *nv;
     int i;
@@ -207,7 +208,8 @@ _hashtable_insert(HashTable *h, HashKey_t key, HashVal_t val, int resize, int up
 
 int
 hashtable_insert_or_update_computed(
-    HashTable *h, HashKey_t key, ComputeFunc newFunc, ComputeFunc existsFunc) {
+    HashTable *h, HashKey_t key, ComputeFunc newFunc, ComputeFunc existsFunc
+) {
     HashNode **n, *nv;
     HashNode *t;
     int i;

@@ -98,7 +98,8 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             15,
             9,
             /* compression strategy (image data are filtered)*/
-            compress_type);
+            compress_type
+        );
         if (err < 0) {
             state->errcode = IMAGING_CODEC_CONFIG;
             return -1;
@@ -108,7 +109,8 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             err = deflateSetDictionary(
                 &context->z_stream,
                 (unsigned char *)context->dictionary,
-                context->dictionary_size);
+                context->dictionary_size
+            );
             if (err < 0) {
                 state->errcode = IMAGING_CODEC_CONFIG;
                 return -1;
@@ -163,7 +165,8 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                         state->buffer + 1,
                         (UINT8 *)im->image[state->y + state->yoff] +
                             state->xoff * im->pixelsize,
-                        state->xsize);
+                        state->xsize
+                    );
 
                     state->y++;
 

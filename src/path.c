@@ -482,7 +482,8 @@ path_transform(PyPathObject *self, PyObject *args) {
     double wrap = 0.0;
 
     if (!PyArg_ParseTuple(
-            args, "(dddddd)|d:transform", &a, &b, &c, &d, &e, &f, &wrap)) {
+            args, "(dddddd)|d:transform", &a, &b, &c, &d, &e, &f, &wrap
+        )) {
         return NULL;
     }
 
@@ -563,7 +564,8 @@ path_subscript(PyPathObject *self, PyObject *item) {
         PyErr_Format(
             PyExc_TypeError,
             "Path indices must be integers, not %.200s",
-            Py_TYPE(item)->tp_name);
+            Py_TYPE(item)->tp_name
+        );
         return NULL;
     }
 }
@@ -579,7 +581,8 @@ static PySequenceMethods path_as_sequence = {
 };
 
 static PyMappingMethods path_as_mapping = {
-    (lenfunc)path_len, (binaryfunc)path_subscript, NULL};
+    (lenfunc)path_len, (binaryfunc)path_subscript, NULL
+};
 
 static PyTypeObject PyPathType = {
     PyVarObject_HEAD_INIT(NULL, 0) "Path", /*tp_name*/
