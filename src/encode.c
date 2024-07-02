@@ -25,6 +25,7 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
+#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 #include "libImaging/Gif.h"
 
@@ -671,7 +672,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         tags_size = PyList_Size(tags);
         TRACE(("tags size: %d\n", (int)tags_size));
         for (pos = 0; pos < tags_size; pos++) {
-            item = PyList_GetItem(tags, pos);
+            item = PyList_GetItemRef(tags, pos);
             if (!PyTuple_Check(item) || PyTuple_Size(item) != 2) {
                 PyErr_SetString(PyExc_ValueError, "Invalid tags list");
                 return NULL;
@@ -703,7 +704,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
     for (pos = 0; pos < tags_size; pos++) {
-        item = PyList_GetItem(tags, pos);
+        item = PyList_GetItemRef(tags, pos);
         // We already checked that tags is a 2-tuple list.
         key = PyTuple_GetItem(item, 0);
         key_int = (int)PyLong_AsLong(key);
