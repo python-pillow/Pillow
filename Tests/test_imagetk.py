@@ -70,6 +70,11 @@ def test_photoimage(mode: str) -> None:
     reloaded = ImageTk.getimage(im_tk)
     assert_image_equal(reloaded, im.convert("RGBA"))
 
+    with pytest.raises(ValueError):
+        ImageTk.PhotoImage()
+    with pytest.raises(ValueError):
+        ImageTk.PhotoImage(mode)
+
 
 def test_photoimage_apply_transparency() -> None:
     with Image.open("Tests/images/pil123p.png") as im:

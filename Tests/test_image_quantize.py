@@ -80,6 +80,7 @@ def test_quantize_no_dither2() -> None:
     assert tuple(quantized.palette.palette) == data
 
     px = quantized.load()
+    assert px is not None
     for x in range(9):
         assert px[x, 0] == (0 if x < 5 else 1)
 
@@ -118,10 +119,12 @@ def test_colors() -> None:
 def test_transparent_colors_equal() -> None:
     im = Image.new("RGBA", (1, 2), (0, 0, 0, 0))
     px = im.load()
+    assert px is not None
     px[0, 1] = (255, 255, 255, 0)
 
     converted = im.quantize()
     converted_px = converted.load()
+    assert converted_px is not None
     assert converted_px[0, 0] == converted_px[0, 1]
 
 
@@ -139,6 +142,7 @@ def test_palette(method: Image.Quantize, color: tuple[int, ...]) -> None:
 
     converted = im.quantize(method=method)
     converted_px = converted.load()
+    assert converted_px is not None
     assert converted_px[0, 0] == converted.palette.colors[color]
 
 

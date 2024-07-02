@@ -321,6 +321,7 @@ class TestColorLut3DCoreAPI:
                                   -1,  2,  2,   2,  2,  2,
                               ])).load()
         # fmt: on
+        assert transformed is not None
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
         assert transformed[255, 0] == (0, 255, 255)
@@ -341,6 +342,7 @@ class TestColorLut3DCoreAPI:
                                   -3,  5,  5,   5,  5,  5,
                               ])).load()
         # fmt: on
+        assert transformed is not None
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
         assert transformed[255, 0] == (0, 255, 255)

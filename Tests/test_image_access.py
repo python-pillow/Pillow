@@ -47,6 +47,8 @@ class TestImagePutPixel:
         pix1 = im1.load()
         pix2 = im2.load()
 
+        assert pix1 is not None
+        assert pix2 is not None
         with pytest.raises(TypeError):
             pix1[0, "0"]
         with pytest.raises(TypeError):
@@ -89,6 +91,8 @@ class TestImagePutPixel:
         pix1 = im1.load()
         pix2 = im2.load()
 
+        assert pix1 is not None
+        assert pix2 is not None
         for y in range(-1, -im1.size[1] - 1, -1):
             for x in range(-1, -im1.size[0] - 1, -1):
                 pix2[x, y] = pix1[x, y]
@@ -98,10 +102,11 @@ class TestImagePutPixel:
     @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
     def test_numpy(self) -> None:
         im = hopper()
-        pix = im.load()
+        px = im.load()
 
+        assert px is not None
         assert numpy is not None
-        assert pix[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
+        assert px[numpy.int32(1), numpy.int32(2)] == (18, 20, 59)
 
 
 class TestImageGetPixel:

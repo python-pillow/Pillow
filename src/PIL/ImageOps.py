@@ -361,7 +361,9 @@ def pad(
     else:
         out = Image.new(image.mode, size, color)
         if resized.palette:
-            out.putpalette(resized.getpalette())
+            palette = resized.getpalette()
+            if palette is not None:
+                out.putpalette(palette)
         if resized.width != size[0]:
             x = round((size[0] - resized.width) * max(0, min(centering[0], 1)))
             out.paste(resized, (x, 0))
