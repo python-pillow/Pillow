@@ -12,9 +12,10 @@ from .helper import hopper
 
 def test_sanity() -> None:
     im = hopper()
-    pix = im.load()
+    px = im.load()
 
-    assert pix[0, 0] == (20, 20, 70)
+    assert px is not None
+    assert px[0, 0] == (20, 20, 70)
 
 
 def test_close() -> None:

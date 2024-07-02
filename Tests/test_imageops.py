@@ -165,10 +165,14 @@ def test_pad() -> None:
 def test_pad_round() -> None:
     im = Image.new("1", (1, 1), 1)
     new_im = ImageOps.pad(im, (4, 1))
-    assert new_im.load()[2, 0] == 1
+    px = new_im.load()
+    assert px is not None
+    assert px[2, 0] == 1
 
     new_im = ImageOps.pad(im, (1, 4))
-    assert new_im.load()[0, 2] == 1
+    px = new_im.load()
+    assert px is not None
+    assert px[0, 2] == 1
 
 
 @pytest.mark.parametrize("mode", ("P", "PA"))
@@ -223,6 +227,7 @@ def test_expand_palette(border: int | tuple[int, int, int, int]) -> None:
         else:
             left, top, right, bottom = border
         px = im_expanded.convert("RGB").load()
+        assert px is not None
         for x in range(im_expanded.width):
             for b in range(top):
                 assert px[x, b] == (255, 0, 0)
