@@ -20,6 +20,7 @@
 
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 
 #include <ft2build.h>
@@ -1219,7 +1220,7 @@ font_getvarnames(FontObject *self) {
         }
 
         for (j = 0; j < num_namedstyles; j++) {
-            if (PyList_GetItem(list_names, j) != NULL) {
+            if (PyList_GetItemRef(list_names, j) != NULL) {
                 continue;
             }
 
