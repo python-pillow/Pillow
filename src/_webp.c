@@ -884,7 +884,7 @@ end:
 // Return the decoder's version number, packed in hexadecimal using 8bits for
 // each of major/minor/revision. E.g: v2.5.7 is 0x020507.
 PyObject *
-WebPDecoderVersion_wrapper() {
+WebPDecoderVersion_wrapper(void) {
     return Py_BuildValue("i", WebPGetDecoderVersion());
 }
 
@@ -912,7 +912,7 @@ WebPDecoderBuggyAlpha(void) {
 }
 
 PyObject *
-WebPDecoderBuggyAlpha_wrapper() {
+WebPDecoderBuggyAlpha_wrapper(void) {
     return Py_BuildValue("i", WebPDecoderBuggyAlpha());
 }
 
@@ -927,9 +927,12 @@ static PyMethodDef webpMethods[] = {
 #endif
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
-    {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_NOARGS, "WebPVersion"},
+    {"WebPDecoderVersion",
+     (PyCFunction)WebPDecoderVersion_wrapper,
+     METH_NOARGS,
+     "WebPVersion"},
     {"WebPDecoderBuggyAlpha",
-     WebPDecoderBuggyAlpha_wrapper,
+     (PyCFunction)WebPDecoderBuggyAlpha_wrapper,
      METH_NOARGS,
      "WebPDecoderBuggyAlpha"},
     {NULL, NULL}};
