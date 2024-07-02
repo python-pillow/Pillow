@@ -53,7 +53,7 @@ class FpxImageFile(ImageFile.ImageFile):
     format = "FPX"
     format_description = "FlashPix"
 
-    def _open(self):
+    def _open(self) -> None:
         #
         # read the OLE directory and see if this is a likely
         # to be a FlashPix file
@@ -64,7 +64,8 @@ class FpxImageFile(ImageFile.ImageFile):
             msg = "not an FPX file; invalid OLE file"
             raise SyntaxError(msg) from e
 
-        if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
+        root = self.ole.root
+        if not root or root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
             msg = "not an FPX file; bad root CLSID"
             raise SyntaxError(msg)
 
@@ -99,8 +100,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         s = prop[0x2000002 | id]
 
-        bands = i32(s, 4)
-        if bands > 4:
+        if not isinstance(s, bytes) or (bands := i32(s, 4)) > 4:
             msg = "Invalid number of bands"
             raise OSError(msg)
 
