@@ -74,7 +74,7 @@ create(Imaging im1, Imaging im2, char *mode) {
     xsize = (im1->xsize < im2->xsize) ? im1->xsize : im2->xsize;
     ysize = (im1->ysize < im2->ysize) ? im1->ysize : im2->ysize;
 
-    return ImagingNewDirty(im1->mode, xsize, ysize);
+    return ImagingNewDirty(im1->mode, (ImagingNewParams){xsize, ysize});
 }
 
 Imaging
