@@ -4,9 +4,9 @@ Tests for resize functionality.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from itertools import permutations
 from pathlib import Path
-from typing import Generator
 
 import pytest
 

@@ -114,7 +114,7 @@ Example
 
 The following is a simplified version of the script used on AppVeyor::
 
-    set PYTHON=C:\Python38\bin
+    set PYTHON=C:\Python39\bin
     cd /D C:\Pillow\winbuild
     %PYTHON%\python.exe build_prepare.py -v --depends C:\pillow-depends
     build\build_dep_all.cmd

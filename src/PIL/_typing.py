@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Any, Protocol, Sequence, TypeVar, Union
+from collections.abc import Sequence
+from typing import Any, Protocol, TypeVar, Union
 
 try:
     import numpy.typing as npt

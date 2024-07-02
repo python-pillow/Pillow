@@ -385,9 +385,10 @@ def test_timeout(test_file: str) -> None:
 def test_bounding_box_in_trailer() -> None:
     # Check bounding boxes are parsed in the same way
     # when specified in the header and the trailer
-    with Image.open("Tests/images/zero_bb_trailer.eps") as trailer_image, Image.open(
-        FILE1
-    ) as header_image:
+    with (
+        Image.open("Tests/images/zero_bb_trailer.eps") as trailer_image,
+        Image.open(FILE1) as header_image,
+    ):
         assert trailer_image.size == header_image.size
 
 

@@ -49,7 +49,6 @@ jobs:
           fedora-39-amd64,
           fedora-40-amd64,
           gentoo,
-          ubuntu-20.04-focal-amd64,
           ubuntu-22.04-jammy-amd64,
           ubuntu-24.04-noble-amd64,
         ]

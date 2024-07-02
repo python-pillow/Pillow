@@ -16,8 +16,8 @@
 #
 from __future__ import annotations
 
+from collections.abc import Sequence
 from io import BytesIO
-from typing import Sequence
 
 from . import Image, ImageFile
 from ._binary import i16be as i16

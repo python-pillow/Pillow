@@ -17,6 +17,12 @@ TODO
 Backwards Incompatible Changes
 ==============================
 
+Python 3.8
+^^^^^^^^^^
+
+Pillow has dropped support for Python 3.8,
+which reached end-of-life in October 2024.
+
 PSFile
 ^^^^^^
 

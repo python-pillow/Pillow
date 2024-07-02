@@ -5,8 +5,9 @@ import os
 import os.path
 import tempfile
 import time
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import pytest
 

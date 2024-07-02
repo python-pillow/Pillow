@@ -37,7 +37,7 @@ from __future__ import annotations
 import os
 import struct
 import sys
-from typing import IO, TYPE_CHECKING, Any, Tuple, cast
+from typing import IO, TYPE_CHECKING, Any, cast
 
 from . import Image, ImageFile
 
@@ -187,7 +187,7 @@ class SpiderImageFile(ImageFile.ImageFile):
     def convert2byte(self, depth: int = 255) -> Image.Image:
         extrema = self.getextrema()
         assert isinstance(extrema[0], float)
-        minimum, maximum = cast(Tuple[float, float], extrema)
+        minimum, maximum = cast(tuple[float, float], extrema)
         m: float = 1
         if maximum != minimum:
             m = depth / (maximum - minimum)

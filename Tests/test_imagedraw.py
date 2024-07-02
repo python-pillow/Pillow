@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os.path
-from typing import Sequence
+from collections.abc import Sequence
 
 import pytest
 
