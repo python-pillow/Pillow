@@ -12,7 +12,7 @@ elif [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
 else
     yum install -y fribidi
 fi
-if [ "${AUDITWHEEL_POLICY::9}" != "musllinux" ] && !([[ "$OSTYPE" == "darwin"* ]] && [[ $(python3 --version) == *"3.13."* ]]); then
+if [ "${AUDITWHEEL_POLICY::9}" != "musllinux" ]; then
     python3 -m pip install numpy
 fi
 
