@@ -38,7 +38,7 @@ import struct
 import sys
 import tempfile
 import warnings
-from collections.abc import Callable, MutableMapping
+from collections.abc import Callable, MutableMapping, Sequence
 from enum import IntEnum
 from types import ModuleType
 from typing import (
@@ -47,8 +47,6 @@ from typing import (
     Any,
     Literal,
     Protocol,
-    Sequence,
-    Tuple,
     cast,
 )
 
@@ -1097,7 +1095,7 @@ class Image:
             if trns is not None:
                 try:
                     new_im.info["transparency"] = new_im.palette.getcolor(
-                        cast(Tuple[int, ...], trns),  # trns was converted to RGB
+                        cast(tuple[int, ...], trns),  # trns was converted to RGB
                         new_im,
                     )
                 except Exception:
@@ -3075,7 +3073,7 @@ def new(
         and isinstance(color, (list, tuple))
         and all(isinstance(i, int) for i in color)
     ):
-        color_ints: tuple[int, ...] = cast(Tuple[int, ...], tuple(color))
+        color_ints: tuple[int, ...] = cast(tuple[int, ...], tuple(color))
         if len(color_ints) == 3 or len(color_ints) == 4:
             # RGB or RGBA value for a P image
             from . import ImagePalette

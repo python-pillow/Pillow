@@ -18,12 +18,11 @@ license = { text = "HPND" }
 authors = [
   { name = "Jeffrey A. Clark", email = "aclark@aclark.net" },
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
   "Development Status :: 6 - Mature",
   "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -147,7 +146,7 @@ testpaths = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 pretty = true
 disallow_any_generics = true
 enable_error_code = "ignore-without-code"

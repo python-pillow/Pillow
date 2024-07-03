@@ -21,7 +21,8 @@ from __future__ import annotations
 import functools
 import operator
 import re
-from typing import Protocol, Sequence, cast
+from collections.abc import Sequence
+from typing import Protocol, cast
 
 from . import ExifTags, Image, ImagePalette
 

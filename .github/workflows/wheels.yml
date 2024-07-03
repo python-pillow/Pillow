@@ -41,7 +41,6 @@ jobs:
         python-version:
           - pp39
           - pp310
-          - cp38
           - cp39
           - cp310
           - cp311
@@ -136,8 +135,6 @@ jobs:
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_PRERELEASE_PYTHONS: True
-          CIBW_SKIP: pp38-*
-          CIBW_TEST_SKIP: cp38-macosx_arm64
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
       - uses: actions/upload-artifact@v4
@@ -208,7 +205,6 @@ jobs:
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
           CIBW_PRERELEASE_PYTHONS: True
-          CIBW_SKIP: pp38-*
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm
             -v {project}:C:\pillow
