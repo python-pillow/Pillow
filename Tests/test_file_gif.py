@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from typing import Generator
 
 import pytest
 

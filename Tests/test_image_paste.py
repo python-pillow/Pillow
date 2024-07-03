@@ -14,6 +14,7 @@ class TestImagingPaste:
         self, im: Image.Image, expected: list[tuple[int, int, int, int]]
     ) -> None:
         px = im.load()
+        assert px is not None
         actual = [
             px[0, 0],
             px[self.size // 2, 0],
@@ -48,6 +49,7 @@ class TestImagingPaste:
     def mask_1(self) -> Image.Image:
         mask = Image.new("1", (self.size, self.size))
         px = mask.load()
+        assert px is not None
         for y in range(mask.height):
             for x in range(mask.width):
                 px[y, x] = (x + y) % 2
@@ -61,6 +63,7 @@ class TestImagingPaste:
     def gradient_L(self) -> Image.Image:
         gradient = Image.new("L", (self.size, self.size))
         px = gradient.load()
+        assert px is not None
         for y in range(gradient.height):
             for x in range(gradient.width):
                 px[y, x] = (x + y) % 255

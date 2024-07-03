@@ -851,8 +851,6 @@ class PngImageFile(ImageFile.ImageFile):
                 self.png.rewind()
                 self.__prepare_idat = self.__rewind_idat
                 self.im = None
-                if self.pyaccess:
-                    self.pyaccess = None
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
                 self.fp = self._fp
@@ -1039,8 +1037,6 @@ class PngImageFile(ImageFile.ImageFile):
                     mask = updated.convert("RGBA")
                 self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
-                if self.pyaccess:
-                    self.pyaccess = None
 
     def _getexif(self) -> dict[str, Any] | None:
         if "exif" not in self.info:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import array
 import math
 import struct
-from typing import Sequence
+from collections.abc import Sequence
 
 import pytest
 

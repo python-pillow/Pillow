@@ -68,8 +68,8 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
 .. tab:: Windows
 
     We provide Pillow binaries for Windows compiled for the matrix of supported
-    Pythons in the wheel format. These include x86, x86-64 and arm64 versions
-    (with the exception of Python 3.8 on arm64). These binaries include support
+    Pythons in the wheel format. These include x86, x86-64 and arm64 versions.
+    These binaries include support
     for all optional libraries except libimagequant and libxcb. Raqm support
     requires FriBiDi to be installed separately::
 

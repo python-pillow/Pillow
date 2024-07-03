@@ -2,8 +2,38 @@
 Changelog (Pillow)
 ==================
 
-10.4.0 (unreleased)
+10.4.0 (2024-07-01)
 -------------------
+
+- Raise FileNotFoundError if show_file() path does not exist #8178
+  [radarhere]
+
+- Improved reading 16-bit TGA images with colour #7965
+  [Yay295, radarhere]
+
+- Deprecate non-image ImageCms modes #8031
+  [radarhere]
+
+- Fixed processing multiple JPEG EXIF markers #8127
+  [radarhere]
+
+- Do not preserve EXIFIFD tag by default when saving TIFF images #8110
+  [radarhere]
+
+- Added ImageFont.load_default_imagefont() #8086
+  [radarhere]
+
+- Added Image.WARN_POSSIBLE_FORMATS #8063
+  [radarhere]
+
+- Remove zero-byte end padding when parsing any XMP data #8171
+  [radarhere]
+
+- Do not detect Ultra HDR images as MPO #8056
+  [radarhere]
+
+- Raise SyntaxError specific to JP2 #8146
+  [Yay295, radarhere]
 
 - Do not use first frame duration for other frames when saving APNG images #8104
   [radarhere]

@@ -118,6 +118,8 @@ class Viewer:
         """
         Display given file.
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError
         os.system(self.get_command(path, **options))  # nosec
         return 1
 
@@ -142,6 +144,8 @@ class WindowsViewer(Viewer):
         """
         Display given file.
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.Popen(
             self.get_command(path, **options),
             shell=True,
@@ -171,6 +175,8 @@ class MacViewer(Viewer):
         """
         Display given file.
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.call(["open", "-a", "Preview.app", path])
         executable = sys.executable or shutil.which("python3")
         if executable:
@@ -215,6 +221,8 @@ class XDGViewer(UnixViewer):
         """
         Display given file.
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.Popen(["xdg-open", path])
         return 1
 
@@ -237,6 +245,8 @@ class DisplayViewer(UnixViewer):
         """
         Display given file.
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError
         args = ["display"]
         title = options.get("title")
         if title:
@@ -259,6 +269,8 @@ class GmDisplayViewer(UnixViewer):
         """
         Display given file.
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.Popen(["gm", "display", path])
         return 1
 
@@ -275,6 +287,8 @@ class EogViewer(UnixViewer):
         """
         Display given file.
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError
         subprocess.Popen(["eog", "-n", path])
         return 1
 
@@ -299,6 +313,8 @@ class XVViewer(UnixViewer):
         """
         Display given file.
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError
         args = ["xv"]
         title = options.get("title")
         if title:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
 import pytest
 
@@ -74,6 +74,7 @@ class TestImagingCoreResampleAccuracy:
         data = data.replace(" ", "")
         sample = Image.new("L", size)
         s_px = sample.load()
+        assert s_px is not None
         w, h = size[0] // 2, size[1] // 2
         for y in range(h):
             for x in range(w):
@@ -87,6 +88,8 @@ class TestImagingCoreResampleAccuracy:
     def check_case(self, case: Image.Image, sample: Image.Image) -> None:
         s_px = sample.load()
         c_px = case.load()
+        assert s_px is not None
+        assert c_px is not None
         for y in range(case.size[1]):
             for x in range(case.size[0]):
                 if c_px[x, y] != s_px[x, y]:
@@ -98,6 +101,7 @@ class TestImagingCoreResampleAccuracy:
 
     def serialize_image(self, image: Image.Image) -> str:
         s_px = image.load()
+        assert s_px is not None
         return "\n".join(
             " ".join(f"{s_px[x, y]:02x}" for x in range(image.size[0]))
             for y in range(image.size[1])
@@ -235,11 +239,14 @@ class TestCoreResampleConsistency:
         self, mode: str, fill: tuple[int, int, int] | float
     ) -> tuple[Image.Image, tuple[int, ...]]:
         im = Image.new(mode, (512, 9), fill)
-        return im.resize((9, 512), Image.Resampling.LANCZOS), im.load()[0, 0]
+        px = im.load()
+        assert px is not None
+        return im.resize((9, 512), Image.Resampling.LANCZOS), px[0, 0]
 
     def run_case(self, case: tuple[Image.Image, int | tuple[int, ...]]) -> None:
         channel, color = case
         px = channel.load()
+        assert px is not None
         for x in range(channel.size[0]):
             for y in range(channel.size[1]):
                 if px[x, y] != color:
@@ -271,6 +278,7 @@ class TestCoreResampleAlphaCorrect:
     def make_levels_case(self, mode: str) -> Image.Image:
         i = Image.new(mode, (256, 16))
         px = i.load()
+        assert px is not None
         for y in range(i.size[1]):
             for x in range(i.size[0]):
                 pix = [x] * len(mode)
@@ -280,6 +288,7 @@ class TestCoreResampleAlphaCorrect:
 
     def run_levels_case(self, i: Image.Image) -> None:
         px = i.load()
+        assert px is not None
         for y in range(i.size[1]):
             used_colors = {px[x, y][0] for x in range(i.size[0])}
             assert 256 == len(used_colors), (
@@ -310,6 +319,7 @@ class TestCoreResampleAlphaCorrect:
     ) -> Image.Image:
         i = Image.new(mode, (64, 64), dirty_pixel)
         px = i.load()
+        assert px is not None
         xdiv4 = i.size[0] // 4
         ydiv4 = i.size[1] // 4
         for y in range(ydiv4 * 2):
@@ -319,6 +329,7 @@ class TestCoreResampleAlphaCorrect:
 
     def run_dirty_case(self, i: Image.Image, clean_pixel: tuple[int, ...]) -> None:
         px = i.load()
+        assert px is not None
         for y in range(i.size[1]):
             for x in range(i.size[0]):
                 if px[x, y][-1] != 0 and px[x, y][:-1] != clean_pixel:
@@ -406,6 +417,7 @@ class TestCoreResampleCoefficients:
             draw.rectangle((0, 0, i.size[0] // 2 - 1, 0), test_color)
 
             px = i.resize((5, i.size[1]), Image.Resampling.BICUBIC).load()
+            assert px is not None
             if px[2, 0] != test_color // 2:
                 assert test_color // 2 == px[2, 0]
 

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import os
 import warnings
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import ModuleType
-from typing import Generator
 
 import pytest
 

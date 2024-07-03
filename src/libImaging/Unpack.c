@@ -719,6 +719,21 @@ ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
+ImagingUnpackBGRA15Z(UINT8 *out, const UINT8 *in, int pixels) {
+    int i, pixel;
+    /* RGB, rearranged channels, 5/5/5/1 bits per pixel, inverted alpha */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[B] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel >> 5) & 31) * 255 / 31;
+        out[R] = ((pixel >> 10) & 31) * 255 / 31;
+        out[A] = ~((pixel >> 15) * 255);
+        out += 4;
+        in += 2;
+    }
+}
+
+void
 ImagingUnpackRGB16(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, 5/6/5 bits per pixel */
@@ -1538,7 +1553,7 @@ static struct {
 
     /* flags: "I" inverted data; "R" reversed bit order; "B" big
        endian byte order (default is little endian); "L" line
-       interleave, "S" signed, "F" floating point */
+       interleave, "S" signed, "F" floating point, "Z" inverted alpha */
 
     /* exception: rawmodes "I" and "F" are always native endian byte order */
 
@@ -1646,6 +1661,7 @@ static struct {
     {"RGBA", "RGBA;L", 32, unpackRGBAL},
     {"RGBA", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGBA", "BGRA;15", 16, ImagingUnpackBGRA15},
+    {"RGBA", "BGRA;15Z", 16, ImagingUnpackBGRA15Z},
     {"RGBA", "RGBA;4B", 16, ImagingUnpackRGBA4B},
     {"RGBA", "RGBA;16L", 64, unpackRGBA16L},
     {"RGBA", "RGBA;16B", 64, unpackRGBA16B},

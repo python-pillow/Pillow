@@ -1663,10 +1663,14 @@ def _save(im, fp, filename):
         legacy_ifd = im.tag.to_v2()
 
     supplied_tags = {**legacy_ifd, **getattr(im, "tag_v2", {})}
-    if SAMPLEFORMAT in supplied_tags:
-        # SAMPLEFORMAT is determined by the image format and should not be copied
-        # from legacy_ifd.
-        del supplied_tags[SAMPLEFORMAT]
+    for tag in (
+        # IFD offset that may not be correct in the saved image
+        EXIFIFD,
+        # Determined by the image format and should not be copied from legacy_ifd.
+        SAMPLEFORMAT,
+    ):
+        if tag in supplied_tags:
+            del supplied_tags[tag]
 
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
