@@ -61,7 +61,11 @@ TODO
 Other Changes
 =============
 
-TODO
-^^^^
+Python 3.13
+^^^^^^^^^^^
 
-TODO
+Pillow 10.4.0 had wheels built against Python 3.13 beta, available as a preview to help
+others prepare for 3.13, and to ensure Pillow could be used immediately at the release
+of 3.13.0 final (2024-10-01, :pep:`719`).
+
+Pillow 11.0.0 now officially supports Python 3.13.

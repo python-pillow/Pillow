@@ -28,6 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
   "Topic :: Multimedia :: Graphics",
@@ -135,6 +136,9 @@ lint.isort.known-first-party = [
 lint.isort.required-imports = [
   "from __future__ import annotations",
 ]
+
+[tool.pyproject-fmt]
+max_supported_python = "3.13"
 
 [tool.pytest.ini_options]
 addopts = "-ra --color=yes"
