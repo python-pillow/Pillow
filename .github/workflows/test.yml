@@ -83,6 +83,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
         nogil: ${{ matrix.disable-gil }}
 
+    - name: Set PYTHON_GIL
+      if: "${{ matrix.disable-gil }}"
+      run: |
+        echo "PYTHON_GIL=0" >> $GITHUB_ENV
+
     - name: Build system information
       run: python3 .github/workflows/system-info.py
 
