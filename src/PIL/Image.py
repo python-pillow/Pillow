@@ -63,7 +63,6 @@ from . import (
 )
 from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
-from ._typing import StrOrBytesPath, TypeGuard
 from ._util import DeferredError, is_path
 
 ElementTree: ModuleType | None
@@ -220,6 +219,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 
 if TYPE_CHECKING:
     from . import ImageFile, ImagePalette
+    from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -2203,7 +2203,7 @@ class Image:
 
     def resize(
         self,
-        size: tuple[int, int] | list[int],
+        size: tuple[int, int] | list[int] | NumpyArray,
         resample: int | None = None,
         box: tuple[float, float, float, float] | None = None,
         reducing_gap: float | None = None,
@@ -2211,7 +2211,7 @@ class Image:
         """
         Returns a resized copy of this image.
 
-        :param size: The requested size in pixels, as a 2-tuple:
+        :param size: The requested size in pixels, as a tuple or array:
            (width, height).
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
