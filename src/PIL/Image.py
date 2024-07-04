@@ -2203,7 +2203,7 @@ class Image:
 
     def resize(
         self,
-        size: tuple[int, int],
+        size: tuple[int, int] | list[int],
         resample: int | None = None,
         box: tuple[float, float, float, float] | None = None,
         reducing_gap: float | None = None,
@@ -2276,6 +2276,7 @@ class Image:
         if box is None:
             box = (0, 0) + self.size
 
+        size = tuple(size)
         if self.size == size and box == (0, 0) + self.size:
             return self.copy()
 
