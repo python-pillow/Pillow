@@ -50,19 +50,14 @@ jobs:
           "3.9",
         ]
         include:
-        - python-version: "3.11"
-          PYTHONOPTIMIZE: 1
-          REVERSE: "--reverse"
-        - python-version: "3.10"
-          PYTHONOPTIMIZE: 2
+        - { python-version: "3.11", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
+        - { python-version: "3.10", PYTHONOPTIMIZE: 2 }
         # Free-threaded
         - { os: "ubuntu-latest", python-version: "3.13-dev", disable-gil: true }
         # M1 only available for 3.10+
-        - os: "macos-13"
-          python-version: "3.9"
+        - { os: "macos-13", python-version: "3.9" }
         exclude:
-        - os: "macos-14"
-          python-version: "3.9"
+        - { os: "macos-14", python-version: "3.9" }
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
