@@ -41,11 +41,8 @@ jobs:
         python-version:
           - pp39
           - pp310
-          - cp39
-          - cp310
-          - cp311
-          - cp312
-          - cp313
+          - cp3{9,10,11}
+          - cp3{12,13}
         spec:
           - manylinux2014
           - manylinux_2_28
