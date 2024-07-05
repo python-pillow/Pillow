@@ -60,7 +60,7 @@ jobs:
         - { os: "macos-14", python-version: "3.9" }
 
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+    name: ${{ matrix.os }} Python ${{ matrix.python-version }} ${{ matrix.disable-gil && 'free-threaded' || '' }}
 
     steps:
     - uses: actions/checkout@v4
