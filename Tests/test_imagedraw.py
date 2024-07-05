@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import contextlib
 import os.path
 from collections.abc import Sequence
+from typing import Callable
 
 import pytest
 
@@ -1422,24 +1422,43 @@ def test_default_font_size() -> None:
 
     im = Image.new("RGB", (220, 25))
     draw = ImageDraw.Draw(im)
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+
+    def check(func: Callable[[], None]) -> None:
+        if freetype_support:
+            func()
+        else:
+            with pytest.raises(ImportError):
+                func()
+
+    def draw_text() -> None:
         draw.text((0, 0), text, font_size=16)
         assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
 
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+    check(draw_text)
+
+    def draw_textlength() -> None:
         assert draw.textlength(text, font_size=16) == 216
 
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+    check(draw_textlength)
+
+    def draw_textbbox() -> None:
         assert draw.textbbox((0, 0), text, font_size=16) == (0, 3, 216, 19)
+
+    check(draw_textbbox)
 
     im = Image.new("RGB", (220, 25))
     draw = ImageDraw.Draw(im)
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+
+    def draw_multiline_text() -> None:
         draw.multiline_text((0, 0), text, font_size=16)
         assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
 
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+    check(draw_multiline_text)
+
+    def draw_multiline_textbbox() -> None:
         assert draw.multiline_textbbox((0, 0), text, font_size=16) == (0, 3, 216, 19)
+
+    check(draw_multiline_textbbox)
 
 
 @pytest.mark.parametrize("bbox", BBOX)
