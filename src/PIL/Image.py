@@ -1395,7 +1395,7 @@ class Image:
 
     def getcolors(
         self, maxcolors: int = 256
-    ) -> list[tuple[int, int]] | list[tuple[int, float]] | None:
+    ) -> list[tuple[int, tuple[int, ...]]] | list[tuple[int, float]] | None:
         """
         Returns a list of colors used in this image.
 
@@ -1412,7 +1412,7 @@ class Image:
         self.load()
         if self.mode in ("1", "L", "P"):
             h = self.im.histogram()
-            out = [(h[i], i) for i in range(256) if h[i]]
+            out: list[tuple[int, float]] = [(h[i], i) for i in range(256) if h[i]]
             if len(out) > maxcolors:
                 return None
             return out

@@ -338,7 +338,7 @@ class EpsImageFile(ImageFile.ImageFile):
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
 
-    def _find_offset(self, fp):
+    def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
         s = fp.read(4)
 
         if s == b"%!PS":
@@ -361,7 +361,9 @@ class EpsImageFile(ImageFile.ImageFile):
 
         return length, offset
 
-    def load(self, scale=1, transparency=False):
+    def load(
+        self, scale: int = 1, transparency: bool = False
+    ) -> Image.core.PixelAccess | None:
         # Load EPS via Ghostscript
         if self.tile:
             self.im = Ghostscript(self.tile, self.size, self.fp, scale, transparency)

@@ -299,7 +299,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     def reduce(self, value):
         self._reduce = value
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if self.tile and self._reduce:
             power = 1 << self._reduce
             adjust = power >> 1
