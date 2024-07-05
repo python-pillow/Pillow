@@ -27,7 +27,9 @@ class TestImagePutPixel:
         for y in range(im1.size[1]):
             for x in range(im1.size[0]):
                 pos = x, y
-                im2.putpixel(pos, im1.getpixel(pos))
+                value = im1.getpixel(pos)
+                assert value is not None
+                im2.putpixel(pos, value)
 
         assert_image_equal(im1, im2)
 
@@ -37,7 +39,9 @@ class TestImagePutPixel:
         for y in range(im1.size[1]):
             for x in range(im1.size[0]):
                 pos = x, y
-                im2.putpixel(pos, im1.getpixel(pos))
+                value = im1.getpixel(pos)
+                assert value is not None
+                im2.putpixel(pos, value)
 
         assert not im2.readonly
         assert_image_equal(im1, im2)
@@ -50,9 +54,9 @@ class TestImagePutPixel:
         assert pix1 is not None
         assert pix2 is not None
         with pytest.raises(TypeError):
-            pix1[0, "0"]
+            pix1[0, "0"]  # type: ignore[index]
         with pytest.raises(TypeError):
-            pix1["0", 0]
+            pix1["0", 0]  # type: ignore[index]
 
         for y in range(im1.size[1]):
             for x in range(im1.size[0]):
@@ -71,7 +75,9 @@ class TestImagePutPixel:
         for y in range(-1, -im1.size[1] - 1, -1):
             for x in range(-1, -im1.size[0] - 1, -1):
                 pos = x, y
-                im2.putpixel(pos, im1.getpixel(pos))
+                value = im1.getpixel(pos)
+                assert value is not None
+                im2.putpixel(pos, value)
 
         assert_image_equal(im1, im2)
 
@@ -81,7 +87,9 @@ class TestImagePutPixel:
         for y in range(-1, -im1.size[1] - 1, -1):
             for x in range(-1, -im1.size[0] - 1, -1):
                 pos = x, y
-                im2.putpixel(pos, im1.getpixel(pos))
+                value = im1.getpixel(pos)
+                assert value is not None
+                im2.putpixel(pos, value)
 
         assert not im2.readonly
         assert_image_equal(im1, im2)
@@ -219,7 +227,7 @@ class TestImagePutPixelError:
         im = hopper(mode)
         for v in self.INVALID_TYPES:
             with pytest.raises(TypeError, match="color must be int or tuple"):
-                im.putpixel((0, 0), v)
+                im.putpixel((0, 0), v)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
         ("mode", "band_numbers", "match"),
@@ -253,7 +261,7 @@ class TestImagePutPixelError:
             with pytest.raises(
                 TypeError, match="color must be int or single-element tuple"
             ):
-                im.putpixel((0, 0), v)
+                im.putpixel((0, 0), v)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("mode", IMAGE_MODES1 + IMAGE_MODES2)
     def test_putpixel_overflow_error(self, mode: str) -> None:

@@ -1048,7 +1048,11 @@ class TestFileLibTiff(LibTiffTestCase):
         ],
     )
     def test_wrong_bits_per_sample(
-        self, file_name: str, mode: str, size: tuple[int, int], tile
+        self,
+        file_name: str,
+        mode: str,
+        size: tuple[int, int],
+        tile: list[tuple[str, tuple[int, int, int, int], int, tuple[Any, ...]]],
     ) -> None:
         with Image.open("Tests/images/" + file_name) as im:
             assert im.mode == mode
