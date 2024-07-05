@@ -198,6 +198,15 @@ def test_putdata() -> None:
     assert len(im.getdata()) == len(arr)
 
 
+def test_resize() -> None:
+    im = hopper()
+    size = (64, 64)
+
+    im_resized = im.resize(numpy.array(size))
+
+    assert im_resized.size == size
+
+
 @pytest.mark.parametrize(
     "dtype",
     (
