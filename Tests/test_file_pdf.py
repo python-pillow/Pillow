@@ -229,6 +229,7 @@ def test_pdf_append_fails_on_nonexistent_file() -> None:
 
 
 def check_pdf_pages_consistency(pdf: PdfParser.PdfParser) -> None:
+    assert pdf.pages_ref is not None
     pages_info = pdf.read_indirect(pdf.pages_ref)
     assert b"Parent" not in pages_info
     assert b"Kids" in pages_info
