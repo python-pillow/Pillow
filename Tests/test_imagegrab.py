@@ -60,6 +60,8 @@ class TestImageGrab:
     def test_grabclipboard(self) -> None:
         if sys.platform == "darwin":
             subprocess.call(["screencapture", "-cx"])
+
+            ImageGrab.grabclipboard()
         elif sys.platform == "win32":
             p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
             p.stdin.write(
@@ -69,6 +71,8 @@ $bmp = New-Object Drawing.Bitmap 200, 200
 [Windows.Forms.Clipboard]::SetImage($bmp)"""
             )
             p.communicate()
+
+            ImageGrab.grabclipboard()
         else:
             if not shutil.which("wl-paste") and not shutil.which("xclip"):
                 with pytest.raises(
@@ -77,9 +81,6 @@ $bmp = New-Object Drawing.Bitmap 200, 200
                     r" ImageGrab.grabclipboard\(\) on Linux",
                 ):
                     ImageGrab.grabclipboard()
-            return
-
-        ImageGrab.grabclipboard()
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
     def test_grabclipboard_file(self) -> None:

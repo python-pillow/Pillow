@@ -155,3 +155,11 @@ follow_imports = "silent"
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
+exclude = [
+  '^Tests/oss-fuzz/fuzz_font.py$',
+  '^Tests/oss-fuzz/fuzz_pillow.py$',
+  '^Tests/test_qt_image_qapplication.py$',
+  '^Tests/test_font_pcf_charsets.py$',
+  '^Tests/test_font_pcf.py$',
+  '^Tests/test_file_tar.py$',
+]

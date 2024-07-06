@@ -1886,7 +1886,7 @@ class Image:
 
     def point(
         self,
-        lut: Sequence[float] | Callable[[int], float] | ImagePointHandler,
+        lut: Sequence[float] | NumpyArray | Callable[[int], float] | ImagePointHandler,
         mode: str | None = None,
     ) -> Image:
         """
@@ -1996,7 +1996,7 @@ class Image:
 
     def putdata(
         self,
-        data: Sequence[float] | Sequence[Sequence[int]],
+        data: Sequence[float] | Sequence[Sequence[int]] | NumpyArray,
         scale: float = 1.0,
         offset: float = 0.0,
     ) -> None:
