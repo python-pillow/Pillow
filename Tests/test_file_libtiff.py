@@ -92,11 +92,22 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_g4_non_disk_file_object(self, tmp_path: Path) -> None:
         """Testing loading from non-disk non-BytesIO file object"""
         test_file = "Tests/images/hopper_g4_500.tif"
-        s = io.BytesIO()
         with open(test_file, "rb") as f:
-            s.write(f.read())
-            s.seek(0)
-        r = io.BufferedReader(s)
+            data = f.read()
+
+        class NonBytesIO(io.RawIOBase):
+            def read(self, size: int = -1) -> bytes:
+                nonlocal data
+                if size == -1:
+                    size = len(data)
+                result = data[:size]
+                data = data[size:]
+                return result
+
+            def readable(self) -> bool:
+                return True
+
+        r = io.BufferedReader(NonBytesIO())
         with Image.open(r) as im:
             assert im.size == (500, 500)
             self._assert_noerr(tmp_path, im)
@@ -1139,7 +1150,7 @@ class TestFileLibTiff(LibTiffTestCase):
             arguments: dict[str, str | int] = {"compression": "tiff_adobe_deflate"}
             if argument:
                 arguments["strip_size"] = 2**18
-            im.save(out, **arguments)
+            im.save(out, "TIFF", **arguments)
 
             with Image.open(out) as im:
                 assert isinstance(im, TiffImagePlugin.TiffImageFile)
