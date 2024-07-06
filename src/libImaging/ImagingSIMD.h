@@ -2,8 +2,13 @@
    This macro is set only on x86 and means SSE2 and above including AVX2. */
 #if defined(_M_X64) || _M_IX86_FP == 2
     #define __SSE2__
+    /* However, Microsoft compiler set __AVX2__ if /arch:AVX2 option is set */
+    #ifdef __AVX2__
+        #define __SSE4_2__
+    #endif
 #endif
 
+/* For better readability */
 #ifdef __SSE4_2__
     #define __SSE4__
 #endif
