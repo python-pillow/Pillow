@@ -31,7 +31,7 @@ def test_sanity() -> None:
 
 def test_long_integers() -> None:
     # see bug-200802-systemerror
-    def put(value: int) -> tuple[int, int, int, int]:
+    def put(value: int) -> float | tuple[int, ...] | None:
         im = Image.new("RGBA", (1, 1))
         im.putdata([value])
         return im.getpixel((0, 0))
@@ -113,13 +113,13 @@ def test_array_F() -> None:
 def test_not_flattened() -> None:
     im = Image.new("L", (1, 1))
     with pytest.raises(TypeError):
-        im.putdata([[0]])  # type: ignore[list-item]
+        im.putdata([[0]])
     with pytest.raises(TypeError):
-        im.putdata([[0]], 2)  # type: ignore[list-item]
+        im.putdata([[0]], 2)
 
     with pytest.raises(TypeError):
         im = Image.new("I", (1, 1))
-        im.putdata([[0]])  # type: ignore[list-item]
+        im.putdata([[0]])
     with pytest.raises(TypeError):
         im = Image.new("F", (1, 1))
-        im.putdata([[0]])  # type: ignore[list-item]
+        im.putdata([[0]])

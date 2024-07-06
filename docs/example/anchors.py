@@ -26,5 +26,5 @@ if __name__ == "__main__":
                 d.line(((x * 200, y * 100), (x * 200, (y + 1) * 100)), "black", 3)
             if y != 0:
                 d.line(((x * 200, y * 100), ((x + 1) * 200, y * 100)), "black", 3)
-    im.save("docs/example/anchors.png")
+    im.save("docs/example/anchors.webp")
     im.show()

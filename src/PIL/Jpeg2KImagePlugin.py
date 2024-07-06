@@ -18,7 +18,7 @@ from __future__ import annotations
 import io
 import os
 import struct
-from typing import IO, Tuple, cast
+from typing import IO, cast
 
 from . import Image, ImageFile, ImagePalette, _binary
 
@@ -82,7 +82,7 @@ class BoxReader:
         self.remaining_in_box = -1
 
         # Read the length and type of the next box
-        lbox, tbox = cast(Tuple[int, bytes], self.read_fields(">I4s"))
+        lbox, tbox = cast(tuple[int, bytes], self.read_fields(">I4s"))
         if lbox == 1:
             lbox = cast(int, self.read_fields(">Q")[0])
             hlen = 16
@@ -97,7 +97,7 @@ class BoxReader:
         return tbox
 
 
-def _parse_codestream(fp):
+def _parse_codestream(fp) -> tuple[tuple[int, int], str]:
     """Parse the JPEG 2000 codestream to extract the size and component
     count from the SIZ marker segment, returning a PIL (size, mode) tuple."""
 
@@ -122,7 +122,8 @@ def _parse_codestream(fp):
     elif csiz == 4:
         mode = "RGBA"
     else:
-        mode = ""
+        msg = "unable to determine J2K image mode"
+        raise SyntaxError(msg)
 
     return size, mode
 
@@ -237,10 +238,6 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 msg = "not a JPEG 2000 file"
                 raise SyntaxError(msg)
 
-        if self.size is None or not self.mode:
-            msg = "unable to determine size/mode"
-            raise SyntaxError(msg)
-
         self._reduce = 0
         self.layers = 0
 
@@ -302,7 +299,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     def reduce(self, value):
         self._reduce = value
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if self.tile and self._reduce:
             power = 1 << self._reduce
             adjust = power >> 1

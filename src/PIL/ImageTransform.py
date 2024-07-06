@@ -14,7 +14,8 @@
 #
 from __future__ import annotations
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from . import Image
 
@@ -24,7 +25,7 @@ class Transform(Image.ImageTransformHandler):
 
     method: Image.Transform
 
-    def __init__(self, data: Sequence[int]) -> None:
+    def __init__(self, data: Sequence[Any]) -> None:
         self.data = data
 
     def getdata(self) -> tuple[Image.Transform, Sequence[int]]:

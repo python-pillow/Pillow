@@ -201,12 +201,12 @@ OPEN_INFO = {
     (MM, 2, (1,), 2, (8, 8, 8), ()): ("RGB", "RGB;R"),
     (II, 2, (1,), 1, (8, 8, 8, 8), ()): ("RGBA", "RGBA"),  # missing ExtraSamples
     (MM, 2, (1,), 1, (8, 8, 8, 8), ()): ("RGBA", "RGBA"),  # missing ExtraSamples
-    (II, 2, (1,), 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
-    (MM, 2, (1,), 1, (8, 8, 8, 8), (0,)): ("RGBX", "RGBX"),
-    (II, 2, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGBX", "RGBXX"),
-    (MM, 2, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGBX", "RGBXX"),
-    (II, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGBX", "RGBXXX"),
-    (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGBX", "RGBXXX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8), (0,)): ("RGB", "RGBX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8), (0,)): ("RGB", "RGBX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGB", "RGBXX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8), (0, 0)): ("RGB", "RGBXX"),
+    (II, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGB", "RGBXXX"),
+    (MM, 2, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0, 0)): ("RGB", "RGBXXX"),
     (II, 2, (1,), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
     (MM, 2, (1,), 1, (8, 8, 8, 8), (1,)): ("RGBA", "RGBa"),
     (II, 2, (1,), 1, (8, 8, 8, 8, 8), (1, 0)): ("RGBA", "RGBaX"),
@@ -225,8 +225,8 @@ OPEN_INFO = {
     (MM, 2, (1,), 1, (16, 16, 16), ()): ("RGB", "RGB;16B"),
     (II, 2, (1,), 1, (16, 16, 16, 16), ()): ("RGBA", "RGBA;16L"),
     (MM, 2, (1,), 1, (16, 16, 16, 16), ()): ("RGBA", "RGBA;16B"),
-    (II, 2, (1,), 1, (16, 16, 16, 16), (0,)): ("RGBX", "RGBX;16L"),
-    (MM, 2, (1,), 1, (16, 16, 16, 16), (0,)): ("RGBX", "RGBX;16B"),
+    (II, 2, (1,), 1, (16, 16, 16, 16), (0,)): ("RGB", "RGBX;16L"),
+    (MM, 2, (1,), 1, (16, 16, 16, 16), (0,)): ("RGB", "RGBX;16B"),
     (II, 2, (1,), 1, (16, 16, 16, 16), (1,)): ("RGBA", "RGBa;16L"),
     (MM, 2, (1,), 1, (16, 16, 16, 16), (1,)): ("RGBA", "RGBa;16B"),
     (II, 2, (1,), 1, (16, 16, 16, 16), (2,)): ("RGBA", "RGBA;16L"),
@@ -1197,6 +1197,10 @@ class TiffImageFile(ImageFile.ImageFile):
             self.__frame += 1
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
+        if XMP in self.tag_v2:
+            self.info["xmp"] = self.tag_v2[XMP]
+        elif "xmp" in self.info:
+            del self.info["xmp"]
         self._reload_exif()
         # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
@@ -1206,15 +1210,6 @@ class TiffImageFile(ImageFile.ImageFile):
     def tell(self) -> int:
         """Return the current frame number"""
         return self.__frame
-
-    def getxmp(self) -> dict[str, Any]:
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
-
-        :returns: XMP tags in a dictionary.
-        """
-        return self._getxmp(self.tag_v2[XMP]) if XMP in self.tag_v2 else {}
 
     def get_photoshop_blocks(self):
         """
@@ -1237,7 +1232,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 val = val[math.ceil((10 + n + size) / 2) * 2 :]
         return blocks
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if self.tile and self.use_load_libtiff:
             return self._load_libtiff()
         return super().load()
@@ -1663,6 +1658,20 @@ def _save(im, fp, filename):
         except Exception:
             pass  # might not be an IFD. Might not have populated type
 
+    legacy_ifd = {}
+    if hasattr(im, "tag"):
+        legacy_ifd = im.tag.to_v2()
+
+    supplied_tags = {**legacy_ifd, **getattr(im, "tag_v2", {})}
+    for tag in (
+        # IFD offset that may not be correct in the saved image
+        EXIFIFD,
+        # Determined by the image format and should not be copied from legacy_ifd.
+        SAMPLEFORMAT,
+    ):
+        if tag in supplied_tags:
+            del supplied_tags[tag]
+
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
     if hasattr(im, "tag_v2"):
@@ -1676,8 +1685,14 @@ def _save(im, fp, filename):
             XMP,
         ):
             if key in im.tag_v2:
-                ifd[key] = im.tag_v2[key]
-                ifd.tagtype[key] = im.tag_v2.tagtype[key]
+                if key == IPTC_NAA_CHUNK and im.tag_v2.tagtype[key] not in (
+                    TiffTags.BYTE,
+                    TiffTags.UNDEFINED,
+                ):
+                    del supplied_tags[key]
+                else:
+                    ifd[key] = im.tag_v2[key]
+                    ifd.tagtype[key] = im.tag_v2.tagtype[key]
 
     # preserve ICC profile (should also work when saving other formats
     # which support profiles as TIFF) -- 2008-06-06 Florian Hoech
@@ -1817,16 +1832,6 @@ def _save(im, fp, filename):
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
-        legacy_ifd = {}
-        if hasattr(im, "tag"):
-            legacy_ifd = im.tag.to_v2()
-
-        # SAMPLEFORMAT is determined by the image format and should not be copied
-        # from legacy_ifd.
-        supplied_tags = {**getattr(im, "tag_v2", {}), **legacy_ifd}
-        if SAMPLEFORMAT in supplied_tags:
-            del supplied_tags[SAMPLEFORMAT]
-
         for tag, value in itertools.chain(ifd.items(), supplied_tags.items()):
             # Libtiff can only process certain core items without adding
             # them to the custom dictionary.

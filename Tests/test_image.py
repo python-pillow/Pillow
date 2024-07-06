@@ -8,7 +8,8 @@ import sys
 import tempfile
 import warnings
 from pathlib import Path
-from typing import IO
+from types import ModuleType
+from typing import IO, Any
 
 import pytest
 
@@ -34,6 +35,12 @@ from .helper import (
     mark_if_feature_version,
     skip_unless_feature,
 )
+
+ElementTree: ModuleType | None
+try:
+    from defusedxml import ElementTree
+except ImportError:
+    ElementTree = None
 
 
 # Deprecation helper
@@ -129,6 +136,15 @@ class TestImage:
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
 
+    def test_open_verbose_failure(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(Image, "WARN_POSSIBLE_FORMATS", True)
+
+        im = io.BytesIO(b"")
+        with pytest.warns(UserWarning):
+            with pytest.raises(UnidentifiedImageError):
+                with Image.open(im):
+                    pass
+
     def test_width_height(self) -> None:
         im = Image.new("RGB", (1, 2))
         assert im.width == 1
@@ -179,11 +195,19 @@ class TestImage:
     def test_fp_name(self, tmp_path: Path) -> None:
         temp_file = str(tmp_path / "temp.jpg")
 
-        class FP:
+        class FP(io.BytesIO):
             name: str
 
-            def write(self, b: bytes) -> None:
-                pass
+            if sys.version_info >= (3, 12):
+                from collections.abc import Buffer
+
+                def write(self, data: Buffer) -> int:
+                    return len(data)
+
+            else:
+
+                def write(self, data: Any) -> int:
+                    return len(data)
 
         fp = FP()
         fp.name = temp_file
@@ -352,8 +376,9 @@ class TestImage:
         img = Image.alpha_composite(dst, src)
 
         # Assert
-        img_colors = sorted(img.getcolors())
-        assert img_colors == expected_colors
+        img_colors = img.getcolors()
+        assert img_colors is not None
+        assert sorted(img_colors) == expected_colors
 
     def test_alpha_inplace(self) -> None:
         src = Image.new("RGBA", (128, 128), "blue")
@@ -397,13 +422,13 @@ class TestImage:
 
         # errors
         with pytest.raises(ValueError):
-            source.alpha_composite(over, "invalid source")
+            source.alpha_composite(over, "invalid destination")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, (0, 0), "invalid destination")
+            source.alpha_composite(over, (0, 0), "invalid source")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, 0)
+            source.alpha_composite(over, 0)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            source.alpha_composite(over, (0, 0), 0)
+            source.alpha_composite(over, (0, 0), 0)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
             source.alpha_composite(over, (0, 0), (0, -1))
 
@@ -555,6 +580,7 @@ class TestImage:
         for mode in ("I", "F", "L"):
             im = Image.new(mode, (100, 100), (5,))
             px = im.load()
+            assert px is not None
             assert px[0, 0] == 5
 
     def test_linear_gradient_wrong_mode(self) -> None:
@@ -649,7 +675,9 @@ class TestImage:
 
         im_remapped = im.remap_palette([1, 0])
         assert im_remapped.info["transparency"] == 1
-        assert len(im_remapped.getpalette()) == 6
+        palette = im_remapped.getpalette()
+        assert palette is not None
+        assert len(palette) == 6
 
         # Test unused transparency
         im.info["transparency"] = 2
@@ -680,7 +708,7 @@ class TestImage:
             else:
                 assert new_image.palette is None
 
-        _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
+        _make_new(im, im_p, ImagePalette.ImagePalette("RGB"))
         _make_new(im_p, im, None)
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())
@@ -912,6 +940,25 @@ class TestImage:
                 for tag in (0xA005, 0x927C):
                     assert tag not in exif.get_ifd(0x8769)
                 assert exif.get_ifd(0xA005)
+
+    def test_empty_xmp(self) -> None:
+        with Image.open("Tests/images/hopper.gif") as im:
+            assert im.getxmp() == {}
+
+    def test_getxmp_padded(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        im.info["xmp"] = (
+            b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+            b'<x:xmpmeta xmlns:x="adobe:ns:meta/" />\n<?xpacket end="w"?>\x00\x00'
+        )
+        if ElementTree is None:
+            with pytest.warns(
+                UserWarning,
+                match="XMP data cannot be read without defusedxml dependency",
+            ):
+                assert im.getxmp() == {}
+        else:
+            assert im.getxmp() == {"xmpmeta": None}
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:

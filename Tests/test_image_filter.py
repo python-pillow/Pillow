@@ -137,7 +137,7 @@ def test_builtinfilter_p() -> None:
     builtin_filter = ImageFilter.BuiltinFilter()
 
     with pytest.raises(ValueError):
-        builtin_filter.filter(hopper("P"))
+        builtin_filter.filter(hopper("P").im)
 
 
 def test_kernel_not_enough_coefficients() -> None:

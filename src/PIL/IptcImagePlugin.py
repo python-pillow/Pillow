@@ -16,8 +16,8 @@
 #
 from __future__ import annotations
 
+from collections.abc import Sequence
 from io import BytesIO
-from typing import Sequence
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -148,7 +148,7 @@ class IptcImageFile(ImageFile.ImageFile):
         if tag == (8, 10):
             self.tile = [("iptc", (0, 0) + self.size, offset, compression)]
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
             return ImageFile.ImageFile.load(self)
 
@@ -176,6 +176,7 @@ class IptcImageFile(ImageFile.ImageFile):
         with Image.open(o) as _im:
             _im.load()
             self.im = _im.im
+        return None
 
 
 Image.register_open(IptcImageFile.format, IptcImageFile)

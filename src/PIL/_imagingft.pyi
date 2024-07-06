@@ -27,7 +27,7 @@ class Font:
     def glyphs(self) -> int: ...
     def render(
         self,
-        string: str,
+        string: str | bytes,
         fill,
         mode=...,
         dir=...,
@@ -51,7 +51,7 @@ class Font:
         /,
     ) -> tuple[tuple[int, int], tuple[int, int]]: ...
     def getlength(
-        self, string: str, mode=..., dir=..., features=..., lang=..., /
+        self, string: str | bytes, mode=..., dir=..., features=..., lang=..., /
     ) -> float: ...
     def getvarnames(self) -> list[bytes]: ...
     def getvaraxes(self) -> list[_Axis] | None: ...

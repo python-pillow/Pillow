@@ -32,7 +32,7 @@ import subprocess
 import sys
 from enum import IntEnum
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, List, Literal, NamedTuple, Union
+from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, Union
 
 from . import (
     Image,
@@ -331,7 +331,6 @@ class GifImageFile(ImageFile.ImageFile):
                     LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
                     or palette
                 ):
-                    self.pyaccess = None
                     if "transparency" in self.info:
                         self.im.putpalettealpha(self.info["transparency"], 0)
                         self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
@@ -433,7 +432,7 @@ class GifImageFile(ImageFile.ImageFile):
             self._prev_im = self.im
             if self._frame_palette:
                 self.im = Image.core.fill("P", self.size, self._frame_transparency or 0)
-                self.im.putpalette(*self._frame_palette.getdata())
+                self.im.putpalette("RGB", *self._frame_palette.getdata())
             else:
                 self.im = None
         self._mode = temp_mode
@@ -505,7 +504,7 @@ def _normalize_mode(im: Image.Image) -> Image.Image:
     return im.convert("L")
 
 
-_Palette = Union[bytes, bytearray, List[int], ImagePalette.ImagePalette]
+_Palette = Union[bytes, bytearray, list[int], ImagePalette.ImagePalette]
 
 
 def _normalize_palette(

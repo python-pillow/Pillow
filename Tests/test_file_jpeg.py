@@ -872,7 +872,7 @@ class TestFileJpeg:
 
     def test_multiple_exif(self) -> None:
         with Image.open("Tests/images/multiple_exif.jpg") as im:
-            assert im.info["exif"] == b"Exif\x00\x00firstsecond"
+            assert im.getexif()[270] == "firstsecond"
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -948,6 +948,7 @@ class TestFileJpeg:
                 ):
                     assert im.getxmp() == {}
             else:
+                assert "xmp" in im.info
                 xmp = im.getxmp()
 
                 description = xmp["xmpmeta"]["RDF"]["Description"]
@@ -1032,8 +1033,10 @@ class TestFileJpeg:
 
     def test_repr_jpeg(self) -> None:
         im = hopper()
+        b = im._repr_jpeg_()
+        assert b is not None
 
-        with Image.open(BytesIO(im._repr_jpeg_())) as repr_jpeg:
+        with Image.open(BytesIO(b)) as repr_jpeg:
             assert repr_jpeg.format == "JPEG"
             assert_image_similar(im, repr_jpeg, 17)
 

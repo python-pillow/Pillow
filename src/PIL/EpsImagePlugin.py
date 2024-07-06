@@ -31,7 +31,6 @@ from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
-from ._deprecate import deprecate
 
 # --------------------------------------------------------------------
 
@@ -159,43 +158,6 @@ def Ghostscript(tile, size, fp, scale=1, transparency=False):
     return im
 
 
-class PSFile:
-    """
-    Wrapper for bytesio object that treats either CR or LF as end of line.
-    This class is no longer used internally, but kept for backwards compatibility.
-    """
-
-    def __init__(self, fp):
-        deprecate(
-            "PSFile",
-            11,
-            action="If you need the functionality of this class "
-            "you will need to implement it yourself.",
-        )
-        self.fp = fp
-        self.char = None
-
-    def seek(self, offset, whence=io.SEEK_SET):
-        self.char = None
-        self.fp.seek(offset, whence)
-
-    def readline(self) -> str:
-        s = [self.char or b""]
-        self.char = None
-
-        c = self.fp.read(1)
-        while (c not in b"\r\n") and len(c):
-            s.append(c)
-            c = self.fp.read(1)
-
-        self.char = self.fp.read(1)
-        # line endings can be 1 or 2 of \r \n, in either order
-        if self.char in b"\r\n":
-            self.char = None
-
-        return b"".join(s).decode("latin-1")
-
-
 def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"%!PS" or (len(prefix) >= 4 and i32(prefix) == 0xC6D3D0C5)
 
@@ -230,6 +192,11 @@ class EpsImageFile(ImageFile.ImageFile):
         trailer_reached = False
 
         def check_required_header_comments() -> None:
+            """
+            The EPS specification requires that some headers exist.
+            This should be checked when the header comments formally end,
+            when image data starts, or when the file ends, whichever comes first.
+            """
             if "PS-Adobe" not in self.info:
                 msg = 'EPS header missing "%!PS-Adobe" comment'
                 raise SyntaxError(msg)
@@ -270,6 +237,8 @@ class EpsImageFile(ImageFile.ImageFile):
             if byte == b"":
                 # if we didn't read a byte we must be at the end of the file
                 if bytes_read == 0:
+                    if reading_header_comments:
+                        check_required_header_comments()
                     break
             elif byte in b"\r\n":
                 # if we read a line ending character, ignore it and parse what
@@ -365,13 +334,11 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             bytes_read = 0
 
-        check_required_header_comments()
-
         if not self._size:
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
 
-    def _find_offset(self, fp):
+    def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
         s = fp.read(4)
 
         if s == b"%!PS":
@@ -394,7 +361,9 @@ class EpsImageFile(ImageFile.ImageFile):
 
         return length, offset
 
-    def load(self, scale=1, transparency=False):
+    def load(
+        self, scale: int = 1, transparency: bool = False
+    ) -> Image.core.PixelAccess | None:
         # Load EPS via Ghostscript
         if self.tile:
             self.im = Ghostscript(self.tile, self.size, self.fp, scale, transparency)

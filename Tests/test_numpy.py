@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import pytest
 
-from PIL import Image
+from PIL import Image, _typing
 
 from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
 
 if TYPE_CHECKING:
     import numpy
-    import numpy.typing
+    import numpy.typing as npt
 else:
     numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
@@ -19,9 +19,7 @@ TEST_IMAGE_SIZE = (10, 10)
 
 
 def test_numpy_to_image() -> None:
-    def to_image(
-        dtype: numpy.typing.DTypeLike, bands: int = 1, boolean: int = 0
-    ) -> Image.Image:
+    def to_image(dtype: npt.DTypeLike, bands: int = 1, boolean: int = 0) -> Image.Image:
         if bands == 1:
             if boolean:
                 data = [0, 255] * 50
@@ -106,13 +104,12 @@ def test_1d_array() -> None:
     assert_image(Image.fromarray(a), "L", (1, 5))
 
 
-def _test_img_equals_nparray(
-    img: Image.Image, np_img: numpy.typing.NDArray[Any]
-) -> None:
+def _test_img_equals_nparray(img: Image.Image, np_img: _typing.NumpyArray) -> None:
     assert len(np_img.shape) >= 2
     np_size = np_img.shape[1], np_img.shape[0]
     assert img.size == np_size
     px = img.load()
+    assert px is not None
     for x in range(0, img.size[0], int(img.size[0] / 10)):
         for y in range(0, img.size[1], int(img.size[1] / 10)):
             assert_deep_equal(px[x, y], np_img[y, x])
@@ -145,6 +142,7 @@ def test_save_tiff_uint16() -> None:
     img = Image.fromarray(a)
 
     img_px = img.load()
+    assert img_px is not None
     assert img_px[0, 0] == pixel_value
 
 
@@ -166,7 +164,7 @@ def test_save_tiff_uint16() -> None:
         ("HSV", numpy.uint8),
     ),
 )
-def test_to_array(mode: str, dtype: numpy.typing.DTypeLike) -> None:
+def test_to_array(mode: str, dtype: npt.DTypeLike) -> None:
     img = hopper(mode)
 
     # Resize to non-square
@@ -200,6 +198,15 @@ def test_putdata() -> None:
     assert len(im.getdata()) == len(arr)
 
 
+def test_resize() -> None:
+    im = hopper()
+    size = (64, 64)
+
+    im_resized = im.resize(numpy.array(size))
+
+    assert im_resized.size == size
+
+
 @pytest.mark.parametrize(
     "dtype",
     (
@@ -216,7 +223,7 @@ def test_putdata() -> None:
         numpy.float64,
     ),
 )
-def test_roundtrip_eye(dtype: numpy.typing.DTypeLike) -> None:
+def test_roundtrip_eye(dtype: npt.DTypeLike) -> None:
     arr = numpy.eye(10, dtype=dtype)
     numpy.testing.assert_array_equal(arr, numpy.array(Image.fromarray(arr)))
 

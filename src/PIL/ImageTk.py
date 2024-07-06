@@ -28,8 +28,9 @@ from __future__ import annotations
 
 import tkinter
 from io import BytesIO
+from typing import Any
 
-from . import Image
+from . import Image, ImageFile
 
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
@@ -49,14 +50,15 @@ def _pilbitmap_check() -> int:
     return _pilbitmap_ok
 
 
-def _get_image_from_kw(kw):
+def _get_image_from_kw(kw: dict[str, Any]) -> ImageFile.ImageFile | None:
     source = None
     if "file" in kw:
         source = kw.pop("file")
     elif "data" in kw:
         source = BytesIO(kw.pop("data"))
-    if source:
-        return Image.open(source)
+    if not source:
+        return None
+    return Image.open(source)
 
 
 def _pyimagingtkcall(command, photo, id):
@@ -96,12 +98,27 @@ class PhotoImage:
                    image file).
     """
 
-    def __init__(self, image=None, size=None, **kw):
+    def __init__(
+        self,
+        image: Image.Image | str | None = None,
+        size: tuple[int, int] | None = None,
+        **kw: Any,
+    ) -> None:
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
 
-        if hasattr(image, "mode") and hasattr(image, "size"):
+        if image is None:
+            msg = "Image is required"
+            raise ValueError(msg)
+        elif isinstance(image, str):
+            mode = image
+            image = None
+
+            if size is None:
+                msg = "If first argument is mode, size is required"
+                raise ValueError(msg)
+        else:
             # got an image instead of a mode
             mode = image.mode
             if mode == "P":
@@ -114,9 +131,6 @@ class PhotoImage:
                     mode = "RGB"  # default
             size = image.size
             kw["width"], kw["height"] = size
-        else:
-            mode = image
-            image = None
 
         if mode not in ["1", "L", "RGB", "RGBA"]:
             mode = Image.getmodebase(mode)
