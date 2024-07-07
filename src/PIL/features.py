@@ -120,7 +120,6 @@ def get_supported_codecs() -> list[str]:
 
 features = {
     "webp_anim": ("PIL._webp", "HAVE_WEBPANIM", None),
-    "webp_mux": ("PIL._webp", "HAVE_WEBPMUX", None),
     "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY", None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
@@ -272,7 +271,6 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
         ("littlecms2", "LITTLECMS2"),
         ("webp", "WEBP"),
         ("transp_webp", "WEBP Transparency"),
-        ("webp_mux", "WEBPMUX"),
         ("webp_anim", "WEBP Animation"),
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),

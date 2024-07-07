@@ -1252,16 +1252,13 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     Requires libwebp 0.5.0 or later.
 
 **icc_profile**
-    The ICC Profile to include in the saved file. Only supported if
-    the system WebP library was built with webpmux support.
+    The ICC Profile to include in the saved file.
 
 **exif**
-    The exif data to include in the saved file. Only supported if
-    the system WebP library was built with webpmux support.
+    The exif data to include in the saved file.
 
 **xmp**
-    The XMP data to include in the saved file. Only supported if
-    the system WebP library was built with webpmux support.
+    The XMP data to include in the saved file.
 
 Saving sequences
 ~~~~~~~~~~~~~~~~
