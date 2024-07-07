@@ -964,14 +964,15 @@ class TestFileTiffW32:
         """Test opening multiband TIFFs and reading all channels."""
         base_value = 4660
         for i in range(2, 6):
-            infile = "Tests/images/uint16_{}_{}.tif".format(i, base_value)
+            infile = f"Tests/images/uint16_{i}_{base_value}.tif"
             im = Image.open(infile)
             im.load()
             pixel = [base_value + j for j in range(0, i)]
-            actual_pixel = im.getpixel((0,0))
+            actual_pixel = im.getpixel((0, 0))
             if type(actual_pixel) is int:
                 actual_pixel = [actual_pixel]
             self.assertEqual(actual_pixel, pixel)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
