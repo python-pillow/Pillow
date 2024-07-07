@@ -51,11 +51,6 @@ def test_version() -> None:
         test(feature, features.version_feature)
 
 
-@skip_unless_feature("webp")
-def test_webp_anim() -> None:
-    assert features.check("webp_anim") == _webp.HAVE_WEBPANIM
-
-
 @skip_unless_feature("libjpeg_turbo")
 def test_libjpeg_turbo_version() -> None:
     version = features.version("libjpeg_turbo")

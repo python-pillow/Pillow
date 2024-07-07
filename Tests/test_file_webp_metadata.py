@@ -133,7 +133,6 @@ def test_getxmp() -> None:
             )
 
 
-@skip_unless_feature("webp_anim")
 def test_write_animated_metadata(tmp_path: Path) -> None:
     iccp_data = b"<iccp_data>"
     exif_data = b"<exif_data>"
