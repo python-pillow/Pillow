@@ -38,7 +38,7 @@ python3 -m pip install pyroma
 
 if [[ $(uname) != CYGWIN* ]]; then
     # TODO Update condition when NumPy supports free-threading
-    if [[ "$GHA_PYTHON_VERSION" == "3.13-dev" ]]; then
+    if [[ "$PYTHON_GIL" == "0" ]]; then
         python3 -m pip install numpy --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
     else
         python3 -m pip install numpy
@@ -48,7 +48,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
         sudo apt-get -qq install libegl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxkbcommon-x11-0
         # TODO Update condition when pyqt6 supports free-threading
-        if ! [[ "$GHA_PYTHON_VERSION" == "3.13-dev" ]]; then python3 -m pip install pyqt6 ; fi
+        if ! [[ "$PYTHON_GIL" == "0" ]]; then python3 -m pip install pyqt6 ; fi
     fi
 
     # Pyroma uses non-isolated build and fails with old setuptools
