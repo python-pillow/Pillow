@@ -10,11 +10,6 @@ from PIL import features
 
 from .helper import skip_unless_feature
 
-try:
-    from PIL import _webp
-except ImportError:
-    pass
-
 
 def test_check() -> None:
     # Check the correctness of the convenience function
