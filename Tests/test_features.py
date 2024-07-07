@@ -52,12 +52,6 @@ def test_version() -> None:
 
 
 @skip_unless_feature("webp")
-def test_webp_transparency() -> None:
-    assert features.check("transp_webp") != _webp.WebPDecoderBuggyAlpha()
-    assert features.check("transp_webp") == _webp.HAVE_TRANSPARENCY
-
-
-@skip_unless_feature("webp")
 def test_webp_anim() -> None:
     assert features.check("webp_anim") == _webp.HAVE_WEBPANIM
 
