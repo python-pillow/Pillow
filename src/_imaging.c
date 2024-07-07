@@ -3405,7 +3405,6 @@ static struct PyMethodDef _draw_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-
 static PyObject *
 pixel_access_new(ImagingObject *imagep, PyObject *args) {
     PixelAccessObject *self;
@@ -4215,11 +4214,11 @@ static PyMethodDef functions[] = {
     {"zip_encoder", (PyCFunction)PyImaging_ZipEncoderNew, METH_VARARGS},
 #endif
 
-/* Memory mapping */
+    /* Memory mapping */
     {"map_buffer", (PyCFunction)PyImaging_MapBuffer, METH_VARARGS},
 
-/* Display support */
 #ifdef _WIN32
+    /* Display support */
     {"display", (PyCFunction)PyImaging_DisplayWin32, METH_VARARGS},
     {"display_mode", (PyCFunction)PyImaging_DisplayModeWin32, METH_VARARGS},
     {"grabscreen_win32", (PyCFunction)PyImaging_GrabScreenWin32, METH_VARARGS},
@@ -4235,21 +4234,21 @@ static PyMethodDef functions[] = {
     /* Utilities */
     {"getcodecstatus", (PyCFunction)_getcodecstatus, METH_VARARGS},
 
-/* Special effects (experimental) */
+    /* Special effects (experimental) */
     {"effect_mandelbrot", (PyCFunction)_effect_mandelbrot, METH_VARARGS},
     {"effect_noise", (PyCFunction)_effect_noise, METH_VARARGS},
     {"linear_gradient", (PyCFunction)_linear_gradient, METH_VARARGS},
     {"radial_gradient", (PyCFunction)_radial_gradient, METH_VARARGS},
     {"wedge", (PyCFunction)_linear_gradient, METH_VARARGS}, /* Compatibility */
 
-/* Drawing support stuff */
+    /* Drawing support stuff */
     {"font", (PyCFunction)_font_new, METH_VARARGS},
     {"draw", (PyCFunction)_draw_new, METH_VARARGS},
 
-/* Experimental path stuff */
+    /* Experimental path stuff */
     {"path", (PyCFunction)PyPath_Create, METH_VARARGS},
 
-/* Experimental arrow graphics stuff */
+    /* Experimental arrow graphics stuff */
     {"outline", (PyCFunction)PyOutline_Create, METH_VARARGS},
 
     /* Resource management */
