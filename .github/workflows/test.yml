@@ -67,7 +67,7 @@ jobs:
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
-      if: "!endsWith(matrix.python-version, '-dev')"
+      if: "${{ !matrix.disable-gil }}"
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -78,7 +78,7 @@ jobs:
 
     - name: Set up Python ${{ matrix.python-version }} (free-threaded)
       uses: deadsnakes/action@v3.1.0
-      if: endsWith(matrix.python-version, '-dev')
+      if: "${{ matrix.disable-gil }}"
       with:
         python-version: ${{ matrix.python-version }}
         nogil: ${{ matrix.disable-gil }}
