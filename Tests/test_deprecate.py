@@ -9,9 +9,9 @@ from PIL import _deprecate
     "version, expected",
     [
         (
-            11,
-            "Old thing is deprecated and will be removed in Pillow 11 "
-            r"\(2024-10-15\)\. Use new thing instead\.",
+            12,
+            "Old thing is deprecated and will be removed in Pillow 12 "
+            r"\(2025-10-15\)\. Use new thing instead\.",
         ),
         (
             None,
@@ -54,18 +54,18 @@ def test_old_version(deprecated: str, plural: bool, expected: str) -> None:
 
 def test_plural() -> None:
     expected = (
-        r"Old things are deprecated and will be removed in Pillow 11 \(2024-10-15\)\. "
+        r"Old things are deprecated and will be removed in Pillow 12 \(2025-10-15\)\. "
         r"Use new thing instead\."
     )
     with pytest.warns(DeprecationWarning, match=expected):
-        _deprecate.deprecate("Old things", 11, "new thing", plural=True)
+        _deprecate.deprecate("Old things", 12, "new thing", plural=True)
 
 
 def test_replacement_and_action() -> None:
     expected = "Use only one of 'replacement' and 'action'"
     with pytest.raises(ValueError, match=expected):
         _deprecate.deprecate(
-            "Old thing", 11, replacement="new thing", action="Upgrade to new thing"
+            "Old thing", 12, replacement="new thing", action="Upgrade to new thing"
         )
 
 
@@ -78,16 +78,16 @@ def test_replacement_and_action() -> None:
 )
 def test_action(action: str) -> None:
     expected = (
-        r"Old thing is deprecated and will be removed in Pillow 11 \(2024-10-15\)\. "
+        r"Old thing is deprecated and will be removed in Pillow 12 \(2025-10-15\)\. "
         r"Upgrade to new thing\."
     )
     with pytest.warns(DeprecationWarning, match=expected):
-        _deprecate.deprecate("Old thing", 11, action=action)
+        _deprecate.deprecate("Old thing", 12, action=action)
 
 
 def test_no_replacement_or_action() -> None:
     expected = (
-        r"Old thing is deprecated and will be removed in Pillow 11 \(2024-10-15\)"
+        r"Old thing is deprecated and will be removed in Pillow 12 \(2025-10-15\)"
     )
     with pytest.warns(DeprecationWarning, match=expected):
-        _deprecate.deprecate("Old thing", 11)
+        _deprecate.deprecate("Old thing", 12)

@@ -76,6 +76,7 @@ def test_pil184() -> None:
 def test_1px_width(tmp_path: Path) -> None:
     im = Image.new("L", (1, 256))
     px = im.load()
+    assert px is not None
     for y in range(256):
         px[0, y] = y
     _roundtrip(tmp_path, im)
@@ -84,6 +85,7 @@ def test_1px_width(tmp_path: Path) -> None:
 def test_large_count(tmp_path: Path) -> None:
     im = Image.new("L", (256, 1))
     px = im.load()
+    assert px is not None
     for x in range(256):
         px[x, 0] = x // 67 * 67
     _roundtrip(tmp_path, im)
@@ -101,6 +103,7 @@ def _test_buffer_overflow(tmp_path: Path, im: Image.Image, size: int = 1024) -> 
 def test_break_in_count_overflow(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
+    assert px is not None
     for y in range(4):
         for x in range(256):
             px[x, y] = x % 128
@@ -110,6 +113,7 @@ def test_break_in_count_overflow(tmp_path: Path) -> None:
 def test_break_one_in_loop(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
+    assert px is not None
     for y in range(5):
         for x in range(256):
             px[x, y] = x % 128
@@ -119,6 +123,7 @@ def test_break_one_in_loop(tmp_path: Path) -> None:
 def test_break_many_in_loop(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
+    assert px is not None
     for y in range(4):
         for x in range(256):
             px[x, y] = x % 128
@@ -130,6 +135,7 @@ def test_break_many_in_loop(tmp_path: Path) -> None:
 def test_break_one_at_end(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
+    assert px is not None
     for y in range(5):
         for x in range(256):
             px[x, y] = x % 128
@@ -140,6 +146,7 @@ def test_break_one_at_end(tmp_path: Path) -> None:
 def test_break_many_at_end(tmp_path: Path) -> None:
     im = Image.new("L", (256, 5))
     px = im.load()
+    assert px is not None
     for y in range(5):
         for x in range(256):
             px[x, y] = x % 128
@@ -152,6 +159,7 @@ def test_break_many_at_end(tmp_path: Path) -> None:
 def test_break_padding(tmp_path: Path) -> None:
     im = Image.new("L", (257, 5))
     px = im.load()
+    assert px is not None
     for y in range(5):
         for x in range(257):
             px[x, y] = x % 128

@@ -50,7 +50,7 @@ class WalImageFile(ImageFile.ImageFile):
         if next_name:
             self.info["next_name"] = next_name
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if not self.im:
             self.im = Image.core.new(self.mode, self.size)
             self.frombytes(self.fp.read(self.size[0] * self.size[1]))

@@ -304,7 +304,7 @@ class TestPyDecoder(CodecsTest):
     def test_decode(self) -> None:
         decoder = ImageFile.PyDecoder(None)
         with pytest.raises(NotImplementedError):
-            decoder.decode(None)
+            decoder.decode(b"")
 
 
 class TestPyEncoder(CodecsTest):

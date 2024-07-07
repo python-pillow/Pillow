@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
@@ -353,7 +353,7 @@ def test_palette_434(tmp_path: Path) -> None:
 
     def roundtrip(im: Image.Image, **kwargs: bool) -> Image.Image:
         out = str(tmp_path / "temp.gif")
-        im.copy().save(out, **kwargs)
+        im.copy().save(out, "GIF", **kwargs)
         reloaded = Image.open(out)
 
         return reloaded

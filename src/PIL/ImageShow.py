@@ -26,7 +26,7 @@ from . import Image
 _viewers = []
 
 
-def register(viewer, order: int = 1) -> None:
+def register(viewer: type[Viewer] | Viewer, order: int = 1) -> None:
     """
     The :py:func:`register` function is used to register additional viewers::
 
@@ -40,11 +40,8 @@ def register(viewer, order: int = 1) -> None:
         Zero or a negative integer to prepend this viewer to the list,
         a positive integer to append it.
     """
-    try:
-        if issubclass(viewer, Viewer):
-            viewer = viewer()
-    except TypeError:
-        pass  # raised if viewer wasn't a class
+    if isinstance(viewer, type) and issubclass(viewer, Viewer):
+        viewer = viewer()
     if order > 0:
         _viewers.append(viewer)
     else:

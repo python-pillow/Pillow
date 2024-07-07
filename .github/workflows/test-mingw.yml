@@ -64,7 +64,6 @@ jobs:
               mingw-w64-x86_64-libtiff \
               mingw-w64-x86_64-libwebp \
               mingw-w64-x86_64-openjpeg2 \
-              mingw-w64-x86_64-python3-cffi \
               mingw-w64-x86_64-python3-numpy \
               mingw-w64-x86_64-python3-olefile \
               mingw-w64-x86_64-python3-setuptools \

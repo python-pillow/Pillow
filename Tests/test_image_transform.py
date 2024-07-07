@@ -192,8 +192,9 @@ class TestImageTransform:
 
         im = op(im, (40, 10))
 
-        colors = sorted(im.getcolors())
-        assert colors == sorted(
+        colors = im.getcolors()
+        assert colors is not None
+        assert sorted(colors) == sorted(
             (
                 (20 * 10, opaque),
                 (20 * 10, transparent),

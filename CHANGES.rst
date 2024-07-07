@@ -2,6 +2,21 @@
 Changelog (Pillow)
 ==================
 
+11.0.0 (unreleased)
+-------------------
+
+- Drop support for Python 3.8 #8183
+  [hugovk, radarhere]
+
+- Add support for Python 3.13 #8181
+  [hugovk, radarhere]
+
+- Fix incompatibility with NumPy 1.20 #8187
+  [neutrinoceros, radarhere]
+
+- Remove PSFile, PyAccess and USE_CFFI_ACCESS #8182
+  [hugovk, radarhere]
+
 10.4.0 (2024-07-01)
 -------------------
 

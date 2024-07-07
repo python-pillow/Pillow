@@ -21,7 +21,8 @@ from __future__ import annotations
 import functools
 import operator
 import re
-from typing import Protocol, Sequence, cast
+from collections.abc import Sequence
+from typing import Protocol, cast
 
 from . import ExifTags, Image, ImagePalette
 
@@ -361,7 +362,9 @@ def pad(
     else:
         out = Image.new(image.mode, size, color)
         if resized.palette:
-            out.putpalette(resized.getpalette())
+            palette = resized.getpalette()
+            if palette is not None:
+                out.putpalette(palette)
         if resized.width != size[0]:
             x = round((size[0] - resized.width) * max(0, min(centering[0], 1)))
             out.paste(resized, (x, 0))
@@ -698,7 +701,6 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
         transposed_image = image.transpose(method)
         if in_place:
             image.im = transposed_image.im
-            image.pyaccess = None
             image._size = transposed_image._size
         exif_image = image if in_place else transposed_image
 

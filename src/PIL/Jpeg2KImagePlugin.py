@@ -18,7 +18,7 @@ from __future__ import annotations
 import io
 import os
 import struct
-from typing import IO, Tuple, cast
+from typing import IO, cast
 
 from . import Image, ImageFile, ImagePalette, _binary
 
@@ -82,7 +82,7 @@ class BoxReader:
         self.remaining_in_box = -1
 
         # Read the length and type of the next box
-        lbox, tbox = cast(Tuple[int, bytes], self.read_fields(">I4s"))
+        lbox, tbox = cast(tuple[int, bytes], self.read_fields(">I4s"))
         if lbox == 1:
             lbox = cast(int, self.read_fields(">Q")[0])
             hlen = 16
@@ -299,7 +299,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     def reduce(self, value):
         self._reduce = value
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if self.tile and self._reduce:
             power = 1 << self._reduce
             adjust = power >> 1

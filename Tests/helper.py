@@ -11,9 +11,10 @@ import subprocess
 import sys
 import sysconfig
 import tempfile
+from collections.abc import Sequence
 from functools import lru_cache
 from io import BytesIO
-from typing import Any, Callable, Sequence
+from typing import Any, Callable
 
 import pytest
 from packaging.version import parse as parse_version
@@ -59,9 +60,7 @@ def convert_to_comparable(
     return new_a, new_b
 
 
-def assert_deep_equal(
-    a: Sequence[Any], b: Sequence[Any], msg: str | None = None
-) -> None:
+def assert_deep_equal(a: Any, b: Any, msg: str | None = None) -> None:
     try:
         assert len(a) == len(b), msg or f"got length {len(a)}, expected {len(b)}"
     except Exception:

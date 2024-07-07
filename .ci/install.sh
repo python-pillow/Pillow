@@ -28,8 +28,6 @@ fi
 
 python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade wheel
-# TODO Update condition when cffi supports 3.13
-if ! [[ "$GHA_PYTHON_VERSION" == "3.13" ]]; then PYTHONOPTIMIZE=0 python3 -m pip install cffi ; fi
 python3 -m pip install coverage
 python3 -m pip install defusedxml
 python3 -m pip install olefile
@@ -39,8 +37,7 @@ python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 
 if [[ $(uname) != CYGWIN* ]]; then
-    # TODO Update condition when NumPy supports 3.13
-    if ! [[ "$GHA_PYTHON_VERSION" == "3.13" ]]; then python3 -m pip install numpy ; fi
+    python3 -m pip install numpy
 
     # PyQt6 doesn't support PyPy3
     if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
@@ -51,7 +48,6 @@ if [[ $(uname) != CYGWIN* ]]; then
     # Pyroma uses non-isolated build and fails with old setuptools
     if [[
         $GHA_PYTHON_VERSION == pypy3.9
-        || $GHA_PYTHON_VERSION == 3.8
         || $GHA_PYTHON_VERSION == 3.9
     ]]; then
         # To match pyproject.toml
