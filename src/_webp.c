@@ -896,20 +896,6 @@ WebPDecoderVersion_str(void) {
     return version;
 }
 
-/*
- * The version of webp that ships with (0.1.3) Ubuntu 12.04 doesn't handle alpha well.
- * Files that are valid with 0.3 are reported as being invalid.
- */
-int
-WebPDecoderBuggyAlpha(void) {
-    return WebPGetDecoderVersion() == 0x0103;
-}
-
-PyObject *
-WebPDecoderBuggyAlpha_wrapper() {
-    return Py_BuildValue("i", WebPDecoderBuggyAlpha());
-}
-
 /* -------------------------------------------------------------------- */
 /* Module Setup                                                         */
 /* -------------------------------------------------------------------- */
@@ -922,10 +908,6 @@ static PyMethodDef webpMethods[] = {
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
     {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
     {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_NOARGS, "WebPVersion"},
-    {"WebPDecoderBuggyAlpha",
-     WebPDecoderBuggyAlpha_wrapper,
-     METH_NOARGS,
-     "WebPDecoderBuggyAlpha"},
     {NULL, NULL}
 };
 
@@ -941,14 +923,6 @@ addAnimFlagToModule(PyObject *m) {
     PyModule_AddObject(m, "HAVE_WEBPANIM", have_webpanim);
 }
 
-void
-addTransparencyFlagToModule(PyObject *m) {
-    PyObject *have_transparency = PyBool_FromLong(!WebPDecoderBuggyAlpha());
-    if (PyModule_AddObject(m, "HAVE_TRANSPARENCY", have_transparency)) {
-        Py_DECREF(have_transparency);
-    }
-}
-
 static int
 setup_module(PyObject *m) {
 #ifdef HAVE_WEBPANIM
@@ -960,7 +934,6 @@ setup_module(PyObject *m) {
 #endif
     PyObject *d = PyModule_GetDict(m);
     addAnimFlagToModule(m);
-    addTransparencyFlagToModule(m);
 
     PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
     PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);

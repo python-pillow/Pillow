@@ -16,11 +16,6 @@ from .helper import (
 _webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
-def setup_module() -> None:
-    if _webp.WebPDecoderBuggyAlpha():
-        pytest.skip("Buggy early version of WebP installed, not testing transparency")
-
-
 def test_read_rgba() -> None:
     """
     Can we read an RGBA mode file without error?
@@ -80,9 +75,6 @@ def test_write_rgba(tmp_path: Path) -> None:
 
     pil_image = Image.new("RGBA", (10, 10), (255, 0, 0, 20))
     pil_image.save(temp_file)
-
-    if _webp.WebPDecoderBuggyAlpha():
-        return
 
     with Image.open(temp_file) as image:
         image.load()
