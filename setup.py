@@ -795,7 +795,12 @@ class pil_build_ext(build_ext):
             _dbg("Looking for webp")
             if all(
                 _find_include_file(self, src)
-                for src in ["webp/encode.h", "webp/mux.h", "webp/demux.h"]
+                for src in [
+                    "webp/encode.h",
+                    "webp/decode.h",
+                    "webp/mux.h",
+                    "webp/demux.h",
+                ]
             ):
                 # In Google's precompiled zip it is call "libwebp":
                 if all(

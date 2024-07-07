@@ -1220,8 +1220,7 @@ using the general tags available through tiffinfo.
 WebP
 ^^^^
 
-Pillow reads and writes WebP files. The specifics of Pillow's capabilities with
-this format are currently undocumented.
+Pillow reads and writes WebP files. Requires libwebp v0.5.0 or later.
 
 .. _webp-saving:
 
@@ -1262,12 +1261,6 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 Saving sequences
 ~~~~~~~~~~~~~~~~
-
-.. note::
-
-    Support for animated WebP files will only be enabled if the system WebP
-    library is v0.5.0 or later. You can check webp animation support at
-    runtime by calling ``features.check("webp_anim")``.
 
 When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, by default
 only the first frame of a multiframe image will be saved. If the ``save_all``

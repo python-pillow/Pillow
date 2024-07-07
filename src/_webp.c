@@ -13,8 +13,8 @@
  * very early versions had some significant differences, so we require later
  * versions, before enabling animation support.
  */
-#if WEBP_MUX_ABI_VERSION >= 0x0104 && WEBP_DEMUX_ABI_VERSION >= 0x0105
-#define HAVE_WEBPANIM
+#if WEBP_MUX_ABI_VERSION < 0x0106 || WEBP_DEMUX_ABI_VERSION < 0x0107
+#error libwebp 0.5.0 and above is required. Upgrade libwebp or build with --disable-webp flag
 #endif
 
 void
@@ -86,8 +86,6 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 /* -------------------------------------------------------------------- */
 /* WebP Animation Support                                               */
 /* -------------------------------------------------------------------- */
-
-#ifdef HAVE_WEBPANIM
 
 // Encoder type
 typedef struct {
@@ -568,8 +566,6 @@ static PyTypeObject WebPAnimDecoder_Type = {
     0,                                 /*tp_getset*/
 };
 
-#endif
-
 /* -------------------------------------------------------------------- */
 /* Legacy WebP Support                                                  */
 /* -------------------------------------------------------------------- */
@@ -644,10 +640,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     config.quality = quality_factor;
     config.alpha_quality = alpha_quality_factor;
     config.method = method;
-#if WEBP_ENCODER_ABI_VERSION >= 0x0209
-    // the "exact" flag is only available in libwebp 0.5.0 and later
     config.exact = exact;
-#endif
 
     // Validate the config
     if (!WebPValidateConfig(&config)) {
@@ -763,124 +756,6 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-PyObject *
-WebPDecode_wrapper(PyObject *self, PyObject *args) {
-    PyBytesObject *webp_string;
-    const uint8_t *webp;
-    Py_ssize_t size;
-    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL, *icc_profile = NULL,
-             *exif = NULL;
-    WebPDecoderConfig config;
-    VP8StatusCode vp8_status_code = VP8_STATUS_OK;
-    char *mode = "RGB";
-
-    if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-        return NULL;
-    }
-
-    if (!WebPInitDecoderConfig(&config)) {
-        Py_RETURN_NONE;
-    }
-
-    PyBytes_AsStringAndSize((PyObject *)webp_string, (char **)&webp, &size);
-
-    vp8_status_code = WebPGetFeatures(webp, size, &config.input);
-    if (vp8_status_code == VP8_STATUS_OK) {
-        // If we don't set it, we don't get alpha.
-        // Initialized to MODE_RGB
-        if (config.input.has_alpha) {
-            config.output.colorspace = MODE_RGBA;
-            mode = "RGBA";
-        }
-
-        {
-            int copy_data = 0;
-            WebPData data = {webp, size};
-            WebPMuxFrameInfo image;
-            WebPData icc_profile_data = {0};
-            WebPData exif_data = {0};
-
-            WebPMux *mux = WebPMuxCreate(&data, copy_data);
-            if (NULL == mux) {
-                goto end;
-            }
-
-            if (WEBP_MUX_OK != WebPMuxGetFrame(mux, 1, &image)) {
-                WebPMuxDelete(mux);
-                goto end;
-            }
-
-            webp = image.bitstream.bytes;
-            size = image.bitstream.size;
-
-            vp8_status_code = WebPDecode(webp, size, &config);
-
-            if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data)) {
-                icc_profile = PyBytes_FromStringAndSize(
-                    (const char *)icc_profile_data.bytes, icc_profile_data.size
-                );
-            }
-
-            if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data)) {
-                exif = PyBytes_FromStringAndSize(
-                    (const char *)exif_data.bytes, exif_data.size
-                );
-            }
-
-            WebPDataClear(&image.bitstream);
-            WebPMuxDelete(mux);
-        }
-    }
-
-    if (vp8_status_code != VP8_STATUS_OK) {
-        goto end;
-    }
-
-    if (config.output.colorspace < MODE_YUV) {
-        bytes = PyBytes_FromStringAndSize(
-            (char *)config.output.u.RGBA.rgba, config.output.u.RGBA.size
-        );
-    } else {
-        // Skipping YUV for now. Need Test Images.
-        // UNDONE -- unclear if we'll ever get here if we set mode_rgb*
-        bytes = PyBytes_FromStringAndSize(
-            (char *)config.output.u.YUVA.y, config.output.u.YUVA.y_size
-        );
-    }
-
-    pymode = PyUnicode_FromString(mode);
-    ret = Py_BuildValue(
-        "SiiSSS",
-        bytes,
-        config.output.width,
-        config.output.height,
-        pymode,
-        NULL == icc_profile ? Py_None : icc_profile,
-        NULL == exif ? Py_None : exif
-    );
-
-end:
-    WebPFreeDecBuffer(&config.output);
-
-    Py_XDECREF(bytes);
-    Py_XDECREF(pymode);
-    Py_XDECREF(icc_profile);
-    Py_XDECREF(exif);
-
-    if (Py_None == ret) {
-        Py_RETURN_NONE;
-    }
-
-    return ret;
-}
-
-// Return the decoder's version number, packed in hexadecimal using 8bits for
-// each of major/minor/revision. E.g: v2.5.7 is 0x020507.
-PyObject *
-WebPDecoderVersion_wrapper() {
-    return Py_BuildValue("i", WebPGetDecoderVersion());
-}
-
 // Version as string
 const char *
 WebPDecoderVersion_str(void) {
@@ -901,39 +776,20 @@ WebPDecoderVersion_str(void) {
 /* -------------------------------------------------------------------- */
 
 static PyMethodDef webpMethods[] = {
-#ifdef HAVE_WEBPANIM
     {"WebPAnimDecoder", _anim_decoder_new, METH_VARARGS, "WebPAnimDecoder"},
     {"WebPAnimEncoder", _anim_encoder_new, METH_VARARGS, "WebPAnimEncoder"},
-#endif
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
-    {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
-    {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_NOARGS, "WebPVersion"},
     {NULL, NULL}
 };
 
-void
-addAnimFlagToModule(PyObject *m) {
-    PyObject *have_webpanim;
-#ifdef HAVE_WEBPANIM
-    have_webpanim = Py_True;
-#else
-    have_webpanim = Py_False;
-#endif
-    Py_INCREF(have_webpanim);
-    PyModule_AddObject(m, "HAVE_WEBPANIM", have_webpanim);
-}
-
 static int
 setup_module(PyObject *m) {
-#ifdef HAVE_WEBPANIM
+    PyObject *d = PyModule_GetDict(m);
     /* Ready object types */
     if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
         PyType_Ready(&WebPAnimEncoder_Type) < 0) {
         return -1;
     }
-#endif
-    PyObject *d = PyModule_GetDict(m);
-    addAnimFlagToModule(m);
 
     PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
     PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);

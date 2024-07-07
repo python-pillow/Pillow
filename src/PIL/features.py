@@ -119,7 +119,6 @@ def get_supported_codecs() -> list[str]:
 
 
 features = {
-    "webp_anim": ("PIL._webp", "HAVE_WEBPANIM", None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
@@ -269,7 +268,6 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
         ("freetype2", "FREETYPE2"),
         ("littlecms2", "LITTLECMS2"),
         ("webp", "WEBP"),
-        ("webp_anim", "WEBP Animation"),
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),

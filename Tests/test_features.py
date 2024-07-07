@@ -10,11 +10,6 @@ from PIL import features
 
 from .helper import skip_unless_feature
 
-try:
-    from PIL import _webp
-except ImportError:
-    pass
-
 
 def test_check() -> None:
     # Check the correctness of the convenience function
@@ -49,11 +44,6 @@ def test_version() -> None:
         test(codec, features.version_codec)
     for feature in features.features:
         test(feature, features.version_feature)
-
-
-@skip_unless_feature("webp")
-def test_webp_anim() -> None:
-    assert features.check("webp_anim") == _webp.HAVE_WEBPANIM
 
 
 @skip_unless_feature("libjpeg_turbo")

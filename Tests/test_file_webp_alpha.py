@@ -85,12 +85,7 @@ def test_write_rgba(tmp_path: Path) -> None:
         image.load()
         image.getdata()
 
-        # Early versions of WebP are known to produce higher deviations:
-        # deal with it
-        if _webp.WebPDecoderVersion() <= 0x201:
-            assert_image_similar(image, pil_image, 3.0)
-        else:
-            assert_image_similar(image, pil_image, 1.0)
+        assert_image_similar(image, pil_image, 1.0)
 
 
 def test_keep_rgb_values_when_transparent(tmp_path: Path) -> None:
