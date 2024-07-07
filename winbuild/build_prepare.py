@@ -201,7 +201,7 @@ DEPS = {
         },
         "build": [
             *cmds_cmake(
-                "webp webpdemux webpmux",
+                "webp webpmux webpdemux",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DWEBP_LINK_STATIC:BOOL=OFF",
             ),

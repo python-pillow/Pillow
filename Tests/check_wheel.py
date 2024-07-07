@@ -28,7 +28,6 @@ def test_wheel_codecs() -> None:
 def test_wheel_features() -> None:
     expected_features = {
         "webp_anim",
-        "webp_mux",
         "transp_webp",
         "raqm",
         "fribidi",

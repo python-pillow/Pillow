@@ -4,8 +4,6 @@
 #include <webp/encode.h>
 #include <webp/decode.h>
 #include <webp/types.h>
-
-#ifdef HAVE_WEBPMUX
 #include <webp/mux.h>
 #include <webp/demux.h>
 
@@ -17,8 +15,6 @@
  */
 #if WEBP_MUX_ABI_VERSION >= 0x0104 && WEBP_DEMUX_ABI_VERSION >= 0x0105
 #define HAVE_WEBPANIM
-#endif
-
 #endif
 
 void
@@ -34,8 +30,6 @@ ImagingSectionLeave(ImagingSectionCookie *cookie) {
 /* -------------------------------------------------------------------- */
 /* WebP Muxer Error Handling                                            */
 /* -------------------------------------------------------------------- */
-
-#ifdef HAVE_WEBPMUX
 
 static const char *const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
     "WEBP_MUX_NOT_FOUND",
@@ -88,8 +82,6 @@ HandleMuxError(WebPMuxError err, char *chunk) {
     }
     return NULL;
 }
-
-#endif
 
 /* -------------------------------------------------------------------- */
 /* WebP Animation Support                                               */
@@ -693,13 +685,6 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     output = writer.mem;
     ret_size = writer.size;
 
-#ifndef HAVE_WEBPMUX
-    if (ret_size > 0) {
-        PyObject *ret = PyBytes_FromStringAndSize((char *)output, ret_size);
-        free(output);
-        return ret;
-    }
-#else
     {
         /* I want to truncate the *_size items that get passed into WebP
            data. Pypy2.1.0 had some issues where the Py_ssize_t items had
@@ -775,7 +760,6 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
             return ret;
         }
     }
-#endif
     Py_RETURN_NONE;
 }
 
@@ -809,9 +793,6 @@ WebPDecode_wrapper(PyObject *self, PyObject *args) {
             mode = "RGBA";
         }
 
-#ifndef HAVE_WEBPMUX
-        vp8_status_code = WebPDecode(webp, size, &config);
-#else
         {
             int copy_data = 0;
             WebPData data = {webp, size};
@@ -849,7 +830,6 @@ WebPDecode_wrapper(PyObject *self, PyObject *args) {
             WebPDataClear(&image.bitstream);
             WebPMuxDelete(mux);
         }
-#endif
     }
 
     if (vp8_status_code != VP8_STATUS_OK) {
@@ -950,18 +930,6 @@ static PyMethodDef webpMethods[] = {
 };
 
 void
-addMuxFlagToModule(PyObject *m) {
-    PyObject *have_webpmux;
-#ifdef HAVE_WEBPMUX
-    have_webpmux = Py_True;
-#else
-    have_webpmux = Py_False;
-#endif
-    Py_INCREF(have_webpmux);
-    PyModule_AddObject(m, "HAVE_WEBPMUX", have_webpmux);
-}
-
-void
 addAnimFlagToModule(PyObject *m) {
     PyObject *have_webpanim;
 #ifdef HAVE_WEBPANIM
@@ -991,7 +959,6 @@ setup_module(PyObject *m) {
     }
 #endif
     PyObject *d = PyModule_GetDict(m);
-    addMuxFlagToModule(m);
     addAnimFlagToModule(m);
     addTransparencyFlagToModule(m);
 

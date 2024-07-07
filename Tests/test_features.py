@@ -58,11 +58,6 @@ def test_webp_transparency() -> None:
 
 
 @skip_unless_feature("webp")
-def test_webp_mux() -> None:
-    assert features.check("webp_mux") == _webp.HAVE_WEBPMUX
-
-
-@skip_unless_feature("webp")
 def test_webp_anim() -> None:
     assert features.check("webp_anim") == _webp.HAVE_WEBPANIM
 
