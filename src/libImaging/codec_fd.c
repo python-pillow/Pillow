@@ -2,7 +2,8 @@
 #include "Imaging.h"
 
 Py_ssize_t
-_imaging_read_pyFd(PyObject *fd, char *dest, Py_ssize_t bytes) {
+_imaging_read_pyFd(PyObject *fd, char *dest, Py_ssize_t bytes)
+{
     /* dest should be a buffer bytes long, returns length of read
        -1 on error */
 
@@ -33,7 +34,8 @@ err:
 }
 
 Py_ssize_t
-_imaging_write_pyFd(PyObject *fd, char *src, Py_ssize_t bytes) {
+_imaging_write_pyFd(PyObject *fd, char *src, Py_ssize_t bytes)
+{
     PyObject *result;
     PyObject *byteObj;
 
@@ -47,7 +49,8 @@ _imaging_write_pyFd(PyObject *fd, char *src, Py_ssize_t bytes) {
 }
 
 int
-_imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence) {
+_imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence)
+{
     PyObject *result;
 
     result = PyObject_CallMethod(fd, "seek", "ni", offset, whence);
@@ -57,7 +60,8 @@ _imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence) {
 }
 
 Py_ssize_t
-_imaging_tell_pyFd(PyObject *fd) {
+_imaging_tell_pyFd(PyObject *fd)
+{
     PyObject *result;
     Py_ssize_t location;
 

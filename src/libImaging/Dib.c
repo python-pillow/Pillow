@@ -26,7 +26,8 @@
 #include "ImDib.h"
 
 char *
-ImagingGetModeDIB(int size_out[2]) {
+ImagingGetModeDIB(int size_out[2])
+{
     /* Get device characteristics */
 
     HDC dc;
@@ -53,7 +54,8 @@ ImagingGetModeDIB(int size_out[2]) {
 }
 
 ImagingDIB
-ImagingNewDIB(const char *mode, int xsize, int ysize) {
+ImagingNewDIB(const char *mode, int xsize, int ysize)
+{
     /* Create a Windows bitmap */
 
     ImagingDIB dib;
@@ -207,7 +209,8 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
 }
 
 void
-ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4]) {
+ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4])
+{
     /* Paste image data into a bitmap */
 
     /* FIXME: check size! */
@@ -223,7 +226,8 @@ ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4]) {
 }
 
 void
-ImagingExposeDIB(ImagingDIB dib, void *dc) {
+ImagingExposeDIB(ImagingDIB dib, void *dc)
+{
     /* Copy bitmap to display */
 
     if (dib->palette != 0) {
@@ -233,7 +237,8 @@ ImagingExposeDIB(ImagingDIB dib, void *dc) {
 }
 
 void
-ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4]) {
+ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4])
+{
     /* Copy bitmap to printer/display */
 
     if (GetDeviceCaps((HDC)dc, RASTERCAPS) & RC_STRETCHDIB) {
@@ -273,7 +278,8 @@ ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4]) {
 }
 
 int
-ImagingQueryPaletteDIB(ImagingDIB dib, void *dc) {
+ImagingQueryPaletteDIB(ImagingDIB dib, void *dc)
+{
     /* Install bitmap palette */
 
     int n;
@@ -294,7 +300,8 @@ ImagingQueryPaletteDIB(ImagingDIB dib, void *dc) {
 }
 
 void
-ImagingDeleteDIB(ImagingDIB dib) {
+ImagingDeleteDIB(ImagingDIB dib)
+{
     /* Clean up */
 
     if (dib->palette) {

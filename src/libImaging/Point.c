@@ -26,7 +26,8 @@ typedef struct {
 } im_point_context;
 
 static void
-im_point_8_8(Imaging imOut, Imaging imIn, im_point_context *context) {
+im_point_8_8(Imaging imOut, Imaging imIn, im_point_context *context)
+{
     int x, y;
     /* 8-bit source, 8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
@@ -40,7 +41,8 @@ im_point_8_8(Imaging imOut, Imaging imIn, im_point_context *context) {
 }
 
 static void
-im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context) {
+im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context)
+{
     int x, y;
     /* 2x8-bit source, 2x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
@@ -57,7 +59,8 @@ im_point_2x8_2x8(Imaging imOut, Imaging imIn, im_point_context *context) {
 }
 
 static void
-im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context) {
+im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context)
+{
     int x, y;
     /* 3x8-bit source, 3x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
@@ -75,7 +78,8 @@ im_point_3x8_3x8(Imaging imOut, Imaging imIn, im_point_context *context) {
 }
 
 static void
-im_point_4x8_4x8(Imaging imOut, Imaging imIn, im_point_context *context) {
+im_point_4x8_4x8(Imaging imOut, Imaging imIn, im_point_context *context)
+{
     int x, y;
     /* 4x8-bit source, 4x8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
@@ -94,7 +98,8 @@ im_point_4x8_4x8(Imaging imOut, Imaging imIn, im_point_context *context) {
 }
 
 static void
-im_point_8_32(Imaging imOut, Imaging imIn, im_point_context *context) {
+im_point_8_32(Imaging imOut, Imaging imIn, im_point_context *context)
+{
     int x, y;
     /* 8-bit source, 32-bit destination */
     char *table = (char *)context->table;
@@ -108,7 +113,8 @@ im_point_8_32(Imaging imOut, Imaging imIn, im_point_context *context) {
 }
 
 static void
-im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
+im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context)
+{
     int x, y;
     /* 32-bit source, 8-bit destination */
     UINT8 *table = (UINT8 *)context->table;
@@ -128,7 +134,8 @@ im_point_32_8(Imaging imOut, Imaging imIn, im_point_context *context) {
 }
 
 Imaging
-ImagingPoint(Imaging imIn, const char *mode, const void *table) {
+ImagingPoint(Imaging imIn, const char *mode, const void *table)
+{
     /* lookup table transform */
 
     ImagingSectionCookie cookie;
@@ -202,7 +209,8 @@ mode_mismatch:
 }
 
 Imaging
-ImagingPointTransform(Imaging imIn, double scale, double offset) {
+ImagingPointTransform(Imaging imIn, double scale, double offset)
+{
     /* scale/offset transform */
 
     ImagingSectionCookie cookie;

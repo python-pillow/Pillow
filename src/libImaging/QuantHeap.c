@@ -41,13 +41,15 @@ _heap_test(Heap *);
 #endif
 
 void
-ImagingQuantHeapFree(Heap *h) {
+ImagingQuantHeapFree(Heap *h)
+{
     free(h->heap);
     free(h);
 }
 
 static int
-_heap_grow(Heap *h, unsigned int newsize) {
+_heap_grow(Heap *h, unsigned int newsize)
+{
     void *newheap;
     if (!newsize) {
         newsize = h->heapsize << 1;
@@ -73,7 +75,8 @@ _heap_grow(Heap *h, unsigned int newsize) {
 
 #ifdef DEBUG
 static int
-_heap_test(Heap *h) {
+_heap_test(Heap *h)
+{
     unsigned int k;
     for (k = 1; k * 2 <= h->heapcount; k++) {
         if (h->cf(h, h->heap[k], h->heap[k * 2]) < 0) {
@@ -90,7 +93,8 @@ _heap_test(Heap *h) {
 #endif
 
 int
-ImagingQuantHeapRemove(Heap *h, void **r) {
+ImagingQuantHeapRemove(Heap *h, void **r)
+{
     unsigned int k, l;
     void *v;
 
@@ -122,7 +126,8 @@ ImagingQuantHeapRemove(Heap *h, void **r) {
 }
 
 int
-ImagingQuantHeapAdd(Heap *h, void *val) {
+ImagingQuantHeapAdd(Heap *h, void *val)
+{
     int k;
     if (h->heapcount == h->heapsize - 1) {
         _heap_grow(h, 0);
@@ -146,7 +151,8 @@ ImagingQuantHeapAdd(Heap *h, void *val) {
 }
 
 int
-ImagingQuantHeapTop(Heap *h, void **r) {
+ImagingQuantHeapTop(Heap *h, void **r)
+{
     if (!h->heapcount) {
         return 0;
     }
@@ -155,7 +161,8 @@ ImagingQuantHeapTop(Heap *h, void **r) {
 }
 
 Heap *
-ImagingQuantHeapNew(HeapCmpFunc cf) {
+ImagingQuantHeapNew(HeapCmpFunc cf)
+{
     Heap *h;
 
     /* malloc check ok, small constant allocation */

@@ -16,19 +16,22 @@
 #define SHIFT_BITS (16 - 1)
 
 static inline UINT8
-clip8(int in) {
+clip8(int in)
+{
     return clip8_lookups[(in + PRECISION_ROUNDING) >> PRECISION_BITS];
 }
 
 static inline void
-interpolate3(INT16 out[3], const INT16 a[3], const INT16 b[3], INT16 shift) {
+interpolate3(INT16 out[3], const INT16 a[3], const INT16 b[3], INT16 shift)
+{
     out[0] = (a[0] * ((1 << SHIFT_BITS) - shift) + b[0] * shift) >> SHIFT_BITS;
     out[1] = (a[1] * ((1 << SHIFT_BITS) - shift) + b[1] * shift) >> SHIFT_BITS;
     out[2] = (a[2] * ((1 << SHIFT_BITS) - shift) + b[2] * shift) >> SHIFT_BITS;
 }
 
 static inline void
-interpolate4(INT16 out[4], const INT16 a[4], const INT16 b[4], INT16 shift) {
+interpolate4(INT16 out[4], const INT16 a[4], const INT16 b[4], INT16 shift)
+{
     out[0] = (a[0] * ((1 << SHIFT_BITS) - shift) + b[0] * shift) >> SHIFT_BITS;
     out[1] = (a[1] * ((1 << SHIFT_BITS) - shift) + b[1] * shift) >> SHIFT_BITS;
     out[2] = (a[2] * ((1 << SHIFT_BITS) - shift) + b[2] * shift) >> SHIFT_BITS;
@@ -36,7 +39,8 @@ interpolate4(INT16 out[4], const INT16 a[4], const INT16 b[4], INT16 shift) {
 }
 
 static inline int
-table_index3D(int index1D, int index2D, int index3D, int size1D, int size1D_2D) {
+table_index3D(int index1D, int index2D, int index3D, int size1D, int size1D_2D)
+{
     return index1D + index2D * size1D + index3D * size1D_2D;
 }
 
@@ -63,7 +67,8 @@ ImagingColorLUT3D_linear(
     int size1D,
     int size2D,
     int size3D,
-    INT16 *table) {
+    INT16 *table)
+{
     /* This float to int conversion doesn't have rounding
        error compensation (+0.5) for two reasons:
        1. As we don't hit the highest value,

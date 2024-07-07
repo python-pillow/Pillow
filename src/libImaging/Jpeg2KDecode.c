@@ -32,7 +32,8 @@ typedef struct {
 /* -------------------------------------------------------------------- */
 
 static void
-j2k_error(const char *msg, void *client_data) {
+j2k_error(const char *msg, void *client_data)
+{
     JPEG2KDECODESTATE *state = (JPEG2KDECODESTATE *)client_data;
     free((void *)state->error_msg);
     state->error_msg = strdup(msg);
@@ -43,7 +44,8 @@ j2k_error(const char *msg, void *client_data) {
 /* -------------------------------------------------------------------- */
 
 static OPJ_SIZE_T
-j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data) {
+j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
+{
     ImagingCodecState state = (ImagingCodecState)p_user_data;
 
     size_t len = _imaging_read_pyFd(state->fd, p_buffer, p_nb_bytes);
@@ -52,7 +54,8 @@ j2k_read(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data) {
 }
 
 static OPJ_OFF_T
-j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
+j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
+{
     off_t pos;
     ImagingCodecState state = (ImagingCodecState)p_user_data;
 
@@ -79,7 +82,8 @@ struct j2k_decode_unpacker {
 };
 
 static inline unsigned
-j2ku_shift(unsigned x, int n) {
+j2ku_shift(unsigned x, int n)
+{
     if (n < 0) {
         return x >> -n;
     } else {
@@ -89,10 +93,8 @@ j2ku_shift(unsigned x, int n) {
 
 static void
 j2ku_gray_l(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im)
+{
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -145,10 +147,8 @@ j2ku_gray_l(
 
 static void
 j2ku_gray_i(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im)
+{
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -204,10 +204,8 @@ j2ku_gray_i(
 
 static void
 j2ku_gray_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im)
+{
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -268,10 +266,8 @@ j2ku_gray_rgb(
 
 static void
 j2ku_graya_la(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im)
+{
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -347,10 +343,8 @@ j2ku_graya_la(
 
 static void
 j2ku_srgb_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im)
+{
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -413,10 +407,8 @@ j2ku_srgb_rgb(
 
 static void
 j2ku_sycc_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im)
+{
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -482,10 +474,8 @@ j2ku_sycc_rgb(
 
 static void
 j2ku_srgba_rgba(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im)
+{
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -547,10 +537,8 @@ j2ku_srgba_rgba(
 
 static void
 j2ku_sycca_rgba(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im)
+{
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -647,7 +635,8 @@ enum {
 };
 
 static int
-j2k_decode_entry(Imaging im, ImagingCodecState state) {
+j2k_decode_entry(Imaging im, ImagingCodecState state)
+{
     JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *)state->context;
     opj_stream_t *stream = NULL;
     opj_image_t *image = NULL;
@@ -945,7 +934,8 @@ quick_exit:
 }
 
 int
-ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     if (bytes) {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
@@ -975,7 +965,8 @@ ImagingJpeg2KDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t 
 /* -------------------------------------------------------------------- */
 
 int
-ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
+ImagingJpeg2KDecodeCleanup(ImagingCodecState state)
+{
     JPEG2KDECODESTATE *context = (JPEG2KDECODESTATE *)state->context;
 
     if (context->error_msg) {
@@ -988,7 +979,8 @@ ImagingJpeg2KDecodeCleanup(ImagingCodecState state) {
 }
 
 const char *
-ImagingJpeg2KVersion(void) {
+ImagingJpeg2KVersion(void)
+{
     return opj_version();
 }
 

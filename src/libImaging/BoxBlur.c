@@ -13,7 +13,8 @@ void static inline ImagingLineBoxBlur32(
     int edgeA,
     int edgeB,
     UINT32 ww,
-    UINT32 fw) {
+    UINT32 fw)
+{
     int x;
     UINT32 acc[4];
     UINT32 bulk[4];
@@ -109,7 +110,8 @@ void static inline ImagingLineBoxBlur8(
     int edgeA,
     int edgeB,
     UINT32 ww,
-    UINT32 fw) {
+    UINT32 fw)
+{
     int x;
     UINT32 acc;
     UINT32 bulk;
@@ -167,7 +169,8 @@ void static inline ImagingLineBoxBlur8(
 }
 
 Imaging
-ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
+ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius)
+{
     ImagingSectionCookie cookie;
 
     int y;
@@ -230,7 +233,8 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
 }
 
 Imaging
-ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n) {
+ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
+{
     int i;
     Imaging imTransposed;
 
@@ -296,7 +300,8 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
 }
 
 static float
-_gaussian_blur_radius(float radius, int passes) {
+_gaussian_blur_radius(float radius, int passes)
+{
     float sigma2, L, l, a;
 
     sigma2 = radius * radius / passes;
@@ -314,7 +319,8 @@ _gaussian_blur_radius(float radius, int passes) {
 
 Imaging
 ImagingGaussianBlur(
-    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes) {
+    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes)
+{
     return ImagingBoxBlur(
         imOut,
         imIn,

@@ -45,7 +45,8 @@ static int
 _hashtable_insert_node(HashTable *, HashNode *, int, int, CollisionFunc);
 
 HashTable *
-hashtable_new(HashFunc hf, HashCmpFunc cf) {
+hashtable_new(HashFunc hf, HashCmpFunc cf)
+{
     HashTable *h;
     h = malloc(sizeof(HashTable));
     if (!h) {
@@ -66,7 +67,8 @@ hashtable_new(HashFunc hf, HashCmpFunc cf) {
 }
 
 static uint32_t
-_findPrime(uint32_t start, int dir) {
+_findPrime(uint32_t start, int dir)
+{
     static int unit[] = {0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0};
     uint32_t t;
     while (start > 1) {
@@ -88,7 +90,8 @@ _findPrime(uint32_t start, int dir) {
 }
 
 static void
-_hashtable_rehash(HashTable *h, CollisionFunc cf, uint32_t newSize) {
+_hashtable_rehash(HashTable *h, CollisionFunc cf, uint32_t newSize)
+{
     HashNode **oldTable = h->table;
     uint32_t i;
     HashNode *n, *nn;
@@ -112,7 +115,8 @@ _hashtable_rehash(HashTable *h, CollisionFunc cf, uint32_t newSize) {
 }
 
 static void
-_hashtable_resize(HashTable *h) {
+_hashtable_resize(HashTable *h)
+{
     uint32_t newSize;
     uint32_t oldSize;
     oldSize = h->length;
@@ -132,7 +136,8 @@ _hashtable_resize(HashTable *h) {
 
 static int
 _hashtable_insert_node(
-    HashTable *h, HashNode *node, int resize, int update, CollisionFunc cf) {
+    HashTable *h, HashNode *node, int resize, int update, CollisionFunc cf)
+{
     uint32_t hash = h->hashFunc(h, node->key) % h->length;
     HashNode **n, *nv;
     int i;
@@ -170,7 +175,8 @@ _hashtable_insert_node(
 }
 
 static int
-_hashtable_insert(HashTable *h, HashKey_t key, HashVal_t val, int resize, int update) {
+_hashtable_insert(HashTable *h, HashKey_t key, HashVal_t val, int resize, int update)
+{
     HashNode **n, *nv;
     HashNode *t;
     int i;
@@ -207,7 +213,8 @@ _hashtable_insert(HashTable *h, HashKey_t key, HashVal_t val, int resize, int up
 
 int
 hashtable_insert_or_update_computed(
-    HashTable *h, HashKey_t key, ComputeFunc newFunc, ComputeFunc existsFunc) {
+    HashTable *h, HashKey_t key, ComputeFunc newFunc, ComputeFunc existsFunc)
+{
     HashNode **n, *nv;
     HashNode *t;
     int i;
@@ -246,12 +253,14 @@ hashtable_insert_or_update_computed(
 }
 
 int
-hashtable_insert(HashTable *h, HashKey_t key, HashVal_t val) {
+hashtable_insert(HashTable *h, HashKey_t key, HashVal_t val)
+{
     return _hashtable_insert(h, key, val, 1, 0);
 }
 
 void
-hashtable_foreach_update(HashTable *h, IteratorUpdateFunc i, void *u) {
+hashtable_foreach_update(HashTable *h, IteratorUpdateFunc i, void *u)
+{
     HashNode *n;
     uint32_t x;
 
@@ -265,7 +274,8 @@ hashtable_foreach_update(HashTable *h, IteratorUpdateFunc i, void *u) {
 }
 
 void
-hashtable_foreach(HashTable *h, IteratorFunc i, void *u) {
+hashtable_foreach(HashTable *h, IteratorFunc i, void *u)
+{
     HashNode *n;
     uint32_t x;
 
@@ -279,7 +289,8 @@ hashtable_foreach(HashTable *h, IteratorFunc i, void *u) {
 }
 
 void
-hashtable_free(HashTable *h) {
+hashtable_free(HashTable *h)
+{
     HashNode *n, *nn;
     uint32_t i;
 
@@ -296,12 +307,14 @@ hashtable_free(HashTable *h) {
 }
 
 void
-hashtable_rehash_compute(HashTable *h, CollisionFunc cf) {
+hashtable_rehash_compute(HashTable *h, CollisionFunc cf)
+{
     _hashtable_rehash(h, cf, h->length);
 }
 
 int
-hashtable_lookup(const HashTable *h, const HashKey_t key, HashVal_t *valp) {
+hashtable_lookup(const HashTable *h, const HashKey_t key, HashVal_t *valp)
+{
     uint32_t hash = h->hashFunc(h, key) % h->length;
     HashNode *n;
     int i;
@@ -319,17 +332,20 @@ hashtable_lookup(const HashTable *h, const HashKey_t key, HashVal_t *valp) {
 }
 
 uint32_t
-hashtable_get_count(const HashTable *h) {
+hashtable_get_count(const HashTable *h)
+{
     return h->count;
 }
 
 void *
-hashtable_get_user_data(const HashTable *h) {
+hashtable_get_user_data(const HashTable *h)
+{
     return h->userData;
 }
 
 void *
-hashtable_set_user_data(HashTable *h, void *data) {
+hashtable_set_user_data(HashTable *h, void *data)
+{
     void *r = h->userData;
     h->userData = data;
     return r;

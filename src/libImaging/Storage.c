@@ -42,7 +42,8 @@
  */
 
 Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
+ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size)
+{
     Imaging im;
 
     /* linesize overflow check, roughly the current largest space req'd */
@@ -225,13 +226,15 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
 }
 
 Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize) {
+ImagingNewPrologue(const char *mode, int xsize, int ysize)
+{
     return ImagingNewPrologueSubtype(
         mode, xsize, ysize, sizeof(struct ImagingMemoryInstance));
 }
 
 void
-ImagingDelete(Imaging im) {
+ImagingDelete(Imaging im)
+{
     if (!im) {
         return;
     }
@@ -271,7 +274,8 @@ struct ImagingMemoryArena ImagingDefaultArena = {
 };
 
 int
-ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max) {
+ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max)
+{
     void *p;
     /* Free already cached blocks */
     ImagingMemoryClearCache(arena, blocks_max);
@@ -298,7 +302,8 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max) {
 }
 
 void
-ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size) {
+ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size)
+{
     while (arena->blocks_cached > new_size) {
         arena->blocks_cached -= 1;
         free(arena->blocks_pool[arena->blocks_cached].ptr);
@@ -307,7 +312,8 @@ ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size) {
 }
 
 ImagingMemoryBlock
-memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty) {
+memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty)
+{
     ImagingMemoryBlock block = {NULL, 0};
 
     if (arena->blocks_cached > 0) {
@@ -344,7 +350,8 @@ memory_get_block(ImagingMemoryArena arena, int requested_size, int dirty) {
 }
 
 void
-memory_return_block(ImagingMemoryArena arena, ImagingMemoryBlock block) {
+memory_return_block(ImagingMemoryArena arena, ImagingMemoryBlock block)
+{
     if (arena->blocks_cached < arena->blocks_max) {
         // Reduce block size
         if (block.size > arena->block_size) {
@@ -360,7 +367,8 @@ memory_return_block(ImagingMemoryArena arena, ImagingMemoryBlock block) {
 }
 
 static void
-ImagingDestroyArray(Imaging im) {
+ImagingDestroyArray(Imaging im)
+{
     int y = 0;
 
     if (im->blocks) {
@@ -373,7 +381,8 @@ ImagingDestroyArray(Imaging im) {
 }
 
 Imaging
-ImagingAllocateArray(Imaging im, int dirty, int block_size) {
+ImagingAllocateArray(Imaging im, int dirty, int block_size)
+{
     int y, line_in_block, current_block;
     ImagingMemoryArena arena = &ImagingDefaultArena;
     ImagingMemoryBlock block = {NULL, 0};
@@ -442,14 +451,16 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size) {
 /* Allocate image as a single block. */
 
 static void
-ImagingDestroyBlock(Imaging im) {
+ImagingDestroyBlock(Imaging im)
+{
     if (im->block) {
         free(im->block);
     }
 }
 
 Imaging
-ImagingAllocateBlock(Imaging im) {
+ImagingAllocateBlock(Imaging im)
+{
     Py_ssize_t y, i;
 
     /* overflow check for malloc */
@@ -486,7 +497,8 @@ ImagingAllocateBlock(Imaging im) {
  */
 
 Imaging
-ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
+ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty)
+{
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
@@ -514,17 +526,20 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
 }
 
 Imaging
-ImagingNew(const char *mode, int xsize, int ysize) {
+ImagingNew(const char *mode, int xsize, int ysize)
+{
     return ImagingNewInternal(mode, xsize, ysize, 0);
 }
 
 Imaging
-ImagingNewDirty(const char *mode, int xsize, int ysize) {
+ImagingNewDirty(const char *mode, int xsize, int ysize)
+{
     return ImagingNewInternal(mode, xsize, ysize, 1);
 }
 
 Imaging
-ImagingNewBlock(const char *mode, int xsize, int ysize) {
+ImagingNewBlock(const char *mode, int xsize, int ysize)
+{
     Imaging im;
 
     if (xsize < 0 || ysize < 0) {
@@ -545,7 +560,8 @@ ImagingNewBlock(const char *mode, int xsize, int ysize) {
 }
 
 Imaging
-ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn) {
+ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn)
+{
     /* allocate or validate output image */
 
     if (imOut) {
@@ -566,7 +582,8 @@ ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn) {
 }
 
 void
-ImagingCopyPalette(Imaging destination, Imaging source) {
+ImagingCopyPalette(Imaging destination, Imaging source)
+{
     if (source->palette) {
         if (destination->palette) {
             ImagingPaletteDelete(destination->palette);

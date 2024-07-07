@@ -18,7 +18,8 @@
 #include "Imaging.h"
 
 static Imaging
-_copy(Imaging imOut, Imaging imIn) {
+_copy(Imaging imOut, Imaging imIn)
+{
     ImagingSectionCookie cookie;
     int y;
 
@@ -47,11 +48,13 @@ _copy(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingCopy(Imaging imIn) {
+ImagingCopy(Imaging imIn)
+{
     return _copy(NULL, imIn);
 }
 
 Imaging
-ImagingCopy2(Imaging imOut, Imaging imIn) {
+ImagingCopy2(Imaging imOut, Imaging imIn)
+{
     return _copy(imOut, imIn);
 }

@@ -21,7 +21,8 @@
 #define RLE_MAX_RUN 0x7f
 
 static void
-read4B(UINT32 *dest, UINT8 *buf) {
+read4B(UINT32 *dest, UINT8 *buf)
+{
     *dest = (UINT32)((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]);
 }
 
@@ -61,7 +62,8 @@ read4B(UINT32 *dest, UINT8 *buf) {
 
  */
 static int
-expandrow(UINT8 *dest, UINT8 *src, int n, int z, int xsize, UINT8 *end_of_buffer) {
+expandrow(UINT8 *dest, UINT8 *src, int n, int z, int xsize, UINT8 *end_of_buffer)
+{
     /*
      * n here is the number of rlechunks
      * z is the number of channels, for calculating the interleave
@@ -113,8 +115,8 @@ expandrow(UINT8 *dest, UINT8 *src, int n, int z, int xsize, UINT8 *end_of_buffer
 }
 
 static int
-expandrow2(
-    UINT8 *dest, const UINT8 *src, int n, int z, int xsize, UINT8 *end_of_buffer) {
+expandrow2(UINT8 *dest, const UINT8 *src, int n, int z, int xsize, UINT8 *end_of_buffer)
+{
     UINT8 pixel, count;
     int x = 0;
 
@@ -159,7 +161,8 @@ expandrow2(
 }
 
 int
-ImagingSgiRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingSgiRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     UINT8 *ptr;
     SGISTATE *c;
     int err = 0;

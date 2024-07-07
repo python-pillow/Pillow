@@ -18,7 +18,8 @@
 #include "Imaging.h"
 
 Imaging
-ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha) {
+ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha)
+{
     Imaging imOut;
     int x, y;
 

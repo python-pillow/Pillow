@@ -20,7 +20,8 @@
 #include "math.h"
 
 Imaging
-ImagingFill(Imaging im, const void *colour) {
+ImagingFill(Imaging im, const void *colour)
+{
     int x, y;
     ImagingSectionCookie cookie;
 
@@ -68,7 +69,8 @@ ImagingFill(Imaging im, const void *colour) {
 }
 
 Imaging
-ImagingFillLinearGradient(const char *mode) {
+ImagingFillLinearGradient(const char *mode)
+{
     Imaging im;
     int y;
 
@@ -102,7 +104,8 @@ ImagingFillLinearGradient(const char *mode) {
 }
 
 Imaging
-ImagingFillRadialGradient(const char *mode) {
+ImagingFillRadialGradient(const char *mode)
+{
     Imaging im;
     int x, y;
     int d;

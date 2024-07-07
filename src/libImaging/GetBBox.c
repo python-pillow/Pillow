@@ -19,7 +19,8 @@
 #include "Imaging.h"
 
 int
-ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
+ImagingGetBBox(Imaging im, int bbox[4], int alpha_only)
+{
     /* Get the bounding box for any non-zero data in the image.*/
 
     int x, y;
@@ -81,7 +82,8 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
 }
 
 int
-ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
+ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj)
+{
     /* Get projection arrays for non-zero data in the image.*/
 
     int x, y;
@@ -119,7 +121,8 @@ ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj) {
 }
 
 int
-ImagingGetExtrema(Imaging im, void *extrema) {
+ImagingGetExtrema(Imaging im, void *extrema)
+{
     int x, y;
     INT32 imin, imax;
     FLOAT32 fmin, fmax;
@@ -223,13 +226,15 @@ static ImagingColorItem *
 getcolors32(Imaging im, int maxcolors, int *size);
 
 ImagingColorItem *
-ImagingGetColors(Imaging im, int maxcolors, int *size) {
+ImagingGetColors(Imaging im, int maxcolors, int *size)
+{
     /* FIXME: add support for 8-bit images */
     return getcolors32(im, maxcolors, size);
 }
 
 static ImagingColorItem *
-getcolors32(Imaging im, int maxcolors, int *size) {
+getcolors32(Imaging im, int maxcolors, int *size)
+{
     unsigned int h;
     unsigned int i, incr;
     int colors;

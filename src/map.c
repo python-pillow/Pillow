@@ -41,7 +41,8 @@ typedef struct ImagingBufferInstance {
 } ImagingBufferInstance;
 
 static void
-mapping_destroy_buffer(Imaging im) {
+mapping_destroy_buffer(Imaging im)
+{
     ImagingBufferInstance *buffer = (ImagingBufferInstance *)im;
 
     PyBuffer_Release(&buffer->view);
@@ -49,7 +50,8 @@ mapping_destroy_buffer(Imaging im) {
 }
 
 PyObject *
-PyImaging_MapBuffer(PyObject *self, PyObject *args) {
+PyImaging_MapBuffer(PyObject *self, PyObject *args)
+{
     Py_ssize_t y, size;
     Imaging im;
 

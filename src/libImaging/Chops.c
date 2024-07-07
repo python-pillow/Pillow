@@ -60,7 +60,8 @@
     return imOut;
 
 static Imaging
-create(Imaging im1, Imaging im2, char *mode) {
+create(Imaging im1, Imaging im2, char *mode)
+{
     int xsize, ysize;
 
     if (!im1 || !im2 || im1->type != IMAGING_TYPE_UINT8 ||
@@ -78,67 +79,80 @@ create(Imaging im1, Imaging im2, char *mode) {
 }
 
 Imaging
-ImagingChopLighter(Imaging imIn1, Imaging imIn2) {
+ImagingChopLighter(Imaging imIn1, Imaging imIn2)
+{
     CHOP((in1[x] > in2[x]) ? in1[x] : in2[x]);
 }
 
 Imaging
-ImagingChopDarker(Imaging imIn1, Imaging imIn2) {
+ImagingChopDarker(Imaging imIn1, Imaging imIn2)
+{
     CHOP((in1[x] < in2[x]) ? in1[x] : in2[x]);
 }
 
 Imaging
-ImagingChopDifference(Imaging imIn1, Imaging imIn2) {
+ImagingChopDifference(Imaging imIn1, Imaging imIn2)
+{
     CHOP(abs((int)in1[x] - (int)in2[x]));
 }
 
 Imaging
-ImagingChopMultiply(Imaging imIn1, Imaging imIn2) {
+ImagingChopMultiply(Imaging imIn1, Imaging imIn2)
+{
     CHOP((int)in1[x] * (int)in2[x] / 255);
 }
 
 Imaging
-ImagingChopScreen(Imaging imIn1, Imaging imIn2) {
+ImagingChopScreen(Imaging imIn1, Imaging imIn2)
+{
     CHOP(255 - ((int)(255 - in1[x]) * (int)(255 - in2[x])) / 255);
 }
 
 Imaging
-ImagingChopAdd(Imaging imIn1, Imaging imIn2, float scale, int offset) {
+ImagingChopAdd(Imaging imIn1, Imaging imIn2, float scale, int offset)
+{
     CHOP(((int)in1[x] + (int)in2[x]) / scale + offset);
 }
 
 Imaging
-ImagingChopSubtract(Imaging imIn1, Imaging imIn2, float scale, int offset) {
+ImagingChopSubtract(Imaging imIn1, Imaging imIn2, float scale, int offset)
+{
     CHOP(((int)in1[x] - (int)in2[x]) / scale + offset);
 }
 
 Imaging
-ImagingChopAnd(Imaging imIn1, Imaging imIn2) {
+ImagingChopAnd(Imaging imIn1, Imaging imIn2)
+{
     CHOP2((in1[x] && in2[x]) ? 255 : 0, "1");
 }
 
 Imaging
-ImagingChopOr(Imaging imIn1, Imaging imIn2) {
+ImagingChopOr(Imaging imIn1, Imaging imIn2)
+{
     CHOP2((in1[x] || in2[x]) ? 255 : 0, "1");
 }
 
 Imaging
-ImagingChopXor(Imaging imIn1, Imaging imIn2) {
+ImagingChopXor(Imaging imIn1, Imaging imIn2)
+{
     CHOP2(((in1[x] != 0) ^ (in2[x] != 0)) ? 255 : 0, "1");
 }
 
 Imaging
-ImagingChopAddModulo(Imaging imIn1, Imaging imIn2) {
+ImagingChopAddModulo(Imaging imIn1, Imaging imIn2)
+{
     CHOP2(in1[x] + in2[x], NULL);
 }
 
 Imaging
-ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2) {
+ImagingChopSubtractModulo(Imaging imIn1, Imaging imIn2)
+{
     CHOP2(in1[x] - in2[x], NULL);
 }
 
 Imaging
-ImagingChopSoftLight(Imaging imIn1, Imaging imIn2) {
+ImagingChopSoftLight(Imaging imIn1, Imaging imIn2)
+{
     CHOP2(
         (((255 - in1[x]) * (in1[x] * in2[x])) / 65536) +
             (in1[x] * (255 - ((255 - in1[x]) * (255 - in2[x]) / 255))) / 255,
@@ -146,7 +160,8 @@ ImagingChopSoftLight(Imaging imIn1, Imaging imIn2) {
 }
 
 Imaging
-ImagingChopHardLight(Imaging imIn1, Imaging imIn2) {
+ImagingChopHardLight(Imaging imIn1, Imaging imIn2)
+{
     CHOP2(
         (in2[x] < 128) ? ((in1[x] * in2[x]) / 127)
                        : 255 - (((255 - in2[x]) * (255 - in1[x])) / 127),
@@ -154,7 +169,8 @@ ImagingChopHardLight(Imaging imIn1, Imaging imIn2) {
 }
 
 Imaging
-ImagingOverlay(Imaging imIn1, Imaging imIn2) {
+ImagingOverlay(Imaging imIn1, Imaging imIn2)
+{
     CHOP2(
         (in1[x] < 128) ? ((in1[x] * in2[x]) / 127)
                        : 255 - (((255 - in1[x]) * (255 - in2[x])) / 127),

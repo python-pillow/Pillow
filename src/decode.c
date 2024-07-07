@@ -57,7 +57,8 @@ typedef struct {
 static PyTypeObject ImagingDecoderType;
 
 static ImagingDecoderObject *
-PyImaging_DecoderNew(int contextsize) {
+PyImaging_DecoderNew(int contextsize)
+{
     ImagingDecoderObject *decoder;
     void *context;
 
@@ -103,7 +104,8 @@ PyImaging_DecoderNew(int contextsize) {
 }
 
 static void
-_dealloc(ImagingDecoderObject *decoder) {
+_dealloc(ImagingDecoderObject *decoder)
+{
     if (decoder->cleanup) {
         decoder->cleanup(&decoder->state);
     }
@@ -115,7 +117,8 @@ _dealloc(ImagingDecoderObject *decoder) {
 }
 
 static PyObject *
-_decode(ImagingDecoderObject *decoder, PyObject *args) {
+_decode(ImagingDecoderObject *decoder, PyObject *args)
+{
     Py_buffer buffer;
     int status;
     ImagingSectionCookie cookie;
@@ -139,7 +142,8 @@ _decode(ImagingDecoderObject *decoder, PyObject *args) {
 }
 
 static PyObject *
-_decode_cleanup(ImagingDecoderObject *decoder, PyObject *args) {
+_decode_cleanup(ImagingDecoderObject *decoder, PyObject *args)
+{
     int status = 0;
 
     if (decoder->cleanup) {
@@ -153,7 +157,8 @@ extern Imaging
 PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
-_setimage(ImagingDecoderObject *decoder, PyObject *args) {
+_setimage(ImagingDecoderObject *decoder, PyObject *args)
+{
     PyObject *op;
     Imaging im;
     ImagingCodecState state;
@@ -217,7 +222,8 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
 }
 
 static PyObject *
-_setfd(ImagingDecoderObject *decoder, PyObject *args) {
+_setfd(ImagingDecoderObject *decoder, PyObject *args)
+{
     PyObject *fd;
     ImagingCodecState state;
 
@@ -235,7 +241,8 @@ _setfd(ImagingDecoderObject *decoder, PyObject *args) {
 }
 
 static PyObject *
-_get_pulls_fd(ImagingDecoderObject *decoder, void *closure) {
+_get_pulls_fd(ImagingDecoderObject *decoder, void *closure)
+{
     return PyBool_FromLong(decoder->pulls_fd);
 }
 
@@ -292,7 +299,8 @@ static PyTypeObject ImagingDecoderType = {
 /* -------------------------------------------------------------------- */
 
 int
-get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmode) {
+get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmode)
+{
     int bits;
     ImagingShuffler unpack;
 
@@ -314,7 +322,8 @@ get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmod
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_BitDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_BitDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -354,7 +363,8 @@ PyImaging_BitDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_BcnDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -406,7 +416,8 @@ PyImaging_BcnDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_FliDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_FliDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     decoder = PyImaging_DecoderNew(0);
@@ -424,7 +435,8 @@ PyImaging_FliDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_GifDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -459,7 +471,8 @@ PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_HexDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_HexDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -493,7 +506,8 @@ PyImaging_HexDecoderNew(PyObject *self, PyObject *args) {
 #include <string.h>
 
 PyObject *
-PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
     char *mode;
     char *rawmode;
@@ -534,7 +548,8 @@ PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_PackbitsDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_PackbitsDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -562,7 +577,8 @@ PyImaging_PackbitsDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_PcdDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_PcdDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     decoder = PyImaging_DecoderNew(0);
@@ -585,7 +601,8 @@ PyImaging_PcdDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_PcxDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_PcxDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -616,7 +633,8 @@ PyImaging_PcxDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_RawDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_RawDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -650,7 +668,8 @@ PyImaging_RawDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_SgiRleDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_SgiRleDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -684,7 +703,8 @@ PyImaging_SgiRleDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_SunRleDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_SunRleDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -712,7 +732,8 @@ PyImaging_SunRleDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_TgaRleDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_TgaRleDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -745,7 +766,8 @@ PyImaging_TgaRleDecoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_XbmDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_XbmDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     decoder = PyImaging_DecoderNew(0);
@@ -771,7 +793,8 @@ PyImaging_XbmDecoderNew(PyObject *self, PyObject *args) {
 #include "libImaging/ZipCodecs.h"
 
 PyObject *
-PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_ZipDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -821,7 +844,8 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
 #include "libImaging/Jpeg.h"
 
 PyObject *
-PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_JpegDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
 
     char *mode;
@@ -876,7 +900,8 @@ PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
 #include "libImaging/Jpeg2K.h"
 
 PyObject *
-PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
+PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args)
+{
     ImagingDecoderObject *decoder;
     JPEG2KDECODESTATE *context;
 

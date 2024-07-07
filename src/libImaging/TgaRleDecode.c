@@ -17,7 +17,8 @@
 #include "Imaging.h"
 
 int
-ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingTgaRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     int n, depth;
     UINT8 *ptr;
     int extra_bytes = 0;

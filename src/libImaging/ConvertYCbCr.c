@@ -315,7 +315,8 @@ static INT16 B_Cb[] = {
     13836,  13949,  14063,  14176,  14289,  14403};
 
 void
-ImagingConvertRGB2YCbCr(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingConvertRGB2YCbCr(UINT8 *out, const UINT8 *in, int pixels)
+{
     int x;
     UINT8 a;
     int r, g, b;
@@ -339,7 +340,8 @@ ImagingConvertRGB2YCbCr(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingConvertYCbCr2RGB(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingConvertYCbCr2RGB(UINT8 *out, const UINT8 *in, int pixels)
+{
     int x;
     UINT8 a;
     int r, g, b;

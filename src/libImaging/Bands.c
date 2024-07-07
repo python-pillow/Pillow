@@ -18,7 +18,8 @@
 #include "Imaging.h"
 
 Imaging
-ImagingGetBand(Imaging imIn, int band) {
+ImagingGetBand(Imaging imIn, int band)
+{
     Imaging imOut;
     int x, y;
 
@@ -66,7 +67,8 @@ ImagingGetBand(Imaging imIn, int band) {
 }
 
 int
-ImagingSplit(Imaging imIn, Imaging bands[4]) {
+ImagingSplit(Imaging imIn, Imaging bands[4])
+{
     int i, j, x, y;
 
     /* Check arguments */
@@ -167,7 +169,8 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
 }
 
 Imaging
-ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
+ImagingPutBand(Imaging imOut, Imaging imIn, int band)
+{
     int x, y;
 
     /* Check arguments */
@@ -208,7 +211,8 @@ ImagingPutBand(Imaging imOut, Imaging imIn, int band) {
 }
 
 Imaging
-ImagingFillBand(Imaging imOut, int band, int color) {
+ImagingFillBand(Imaging imOut, int band, int color)
+{
     int x, y;
 
     /* Check arguments */
@@ -240,7 +244,8 @@ ImagingFillBand(Imaging imOut, int band, int color) {
 }
 
 Imaging
-ImagingMerge(const char *mode, Imaging bands[4]) {
+ImagingMerge(const char *mode, Imaging bands[4])
+{
     int i, x, y;
     int bandsCount = 0;
     Imaging imOut;

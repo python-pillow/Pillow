@@ -16,7 +16,8 @@
 #include "Imaging.h"
 
 int
-ImagingXbmEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+ImagingXbmEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
+{
     const char *hex = "0123456789abcdef";
 
     UINT8 *ptr = buf;

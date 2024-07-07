@@ -15,7 +15,8 @@
 /* Transpose operations                                                 */
 
 Imaging
-ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
+ImagingFlipLeftRight(Imaging imOut, Imaging imIn)
+{
     ImagingSectionCookie cookie;
     int x, y, xr;
 
@@ -58,7 +59,8 @@ ImagingFlipLeftRight(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
+ImagingFlipTopBottom(Imaging imOut, Imaging imIn)
+{
     ImagingSectionCookie cookie;
     int y, yr;
 
@@ -84,7 +86,8 @@ ImagingFlipTopBottom(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingRotate90(Imaging imOut, Imaging imIn) {
+ImagingRotate90(Imaging imOut, Imaging imIn)
+{
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
@@ -144,7 +147,8 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingTranspose(Imaging imOut, Imaging imIn) {
+ImagingTranspose(Imaging imOut, Imaging imIn)
+{
     ImagingSectionCookie cookie;
     int x, y, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
@@ -203,7 +207,8 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingTransverse(Imaging imOut, Imaging imIn) {
+ImagingTransverse(Imaging imOut, Imaging imIn)
+{
     ImagingSectionCookie cookie;
     int x, y, xr, yr, xx, yy, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
@@ -264,7 +269,8 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingRotate180(Imaging imOut, Imaging imIn) {
+ImagingRotate180(Imaging imOut, Imaging imIn)
+{
     ImagingSectionCookie cookie;
     int x, y, xr, yr;
 
@@ -308,7 +314,8 @@ ImagingRotate180(Imaging imOut, Imaging imIn) {
 }
 
 Imaging
-ImagingRotate270(Imaging imOut, Imaging imIn) {
+ImagingRotate270(Imaging imOut, Imaging imIn)
+{
     ImagingSectionCookie cookie;
     int x, y, xx, yy, yr, xxsize, yysize;
     int xxx, yyy, xxxsize, yyysize;
@@ -373,7 +380,8 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
 /* transform primitives (ImagingTransformMap) */
 
 static int
-affine_transform(double *xout, double *yout, int x, int y, void *data) {
+affine_transform(double *xout, double *yout, int x, int y, void *data)
+{
     /* full moon tonight.  your compiler will generate bogus code
        for simple expressions, unless you reorganize the code, or
        install Service Pack 3 */
@@ -396,7 +404,8 @@ affine_transform(double *xout, double *yout, int x, int y, void *data) {
 }
 
 static int
-perspective_transform(double *xout, double *yout, int x, int y, void *data) {
+perspective_transform(double *xout, double *yout, int x, int y, void *data)
+{
     double *a = (double *)data;
     double a0 = a[0];
     double a1 = a[1];
@@ -417,7 +426,8 @@ perspective_transform(double *xout, double *yout, int x, int y, void *data) {
 }
 
 static int
-quad_transform(double *xout, double *yout, int x, int y, void *data) {
+quad_transform(double *xout, double *yout, int x, int y, void *data)
+{
     /* quad warp: map quadrilateral to rectangle */
 
     double *a = (double *)data;
@@ -442,7 +452,8 @@ quad_transform(double *xout, double *yout, int x, int y, void *data) {
 /* transform filters (ImagingTransformFilter) */
 
 static int
-nearest_filter8(void *out, Imaging im, double xin, double yin) {
+nearest_filter8(void *out, Imaging im, double xin, double yin)
+{
     int x = COORD(xin);
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
@@ -453,7 +464,8 @@ nearest_filter8(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-nearest_filter16(void *out, Imaging im, double xin, double yin) {
+nearest_filter16(void *out, Imaging im, double xin, double yin)
+{
     int x = COORD(xin);
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
@@ -464,7 +476,8 @@ nearest_filter16(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-nearest_filter32(void *out, Imaging im, double xin, double yin) {
+nearest_filter32(void *out, Imaging im, double xin, double yin)
+{
     int x = COORD(xin);
     int y = COORD(yin);
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
@@ -511,7 +524,8 @@ nearest_filter32(void *out, Imaging im, double xin, double yin) {
     }
 
 static int
-bilinear_filter8(void *out, Imaging im, double xin, double yin) {
+bilinear_filter8(void *out, Imaging im, double xin, double yin)
+{
     BILINEAR_HEAD(UINT8);
     BILINEAR_BODY(UINT8, im->image8, 1, 0);
     ((UINT8 *)out)[0] = (UINT8)v1;
@@ -519,7 +533,8 @@ bilinear_filter8(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-bilinear_filter32I(void *out, Imaging im, double xin, double yin) {
+bilinear_filter32I(void *out, Imaging im, double xin, double yin)
+{
     INT32 k;
     BILINEAR_HEAD(INT32);
     BILINEAR_BODY(INT32, im->image32, 1, 0);
@@ -529,7 +544,8 @@ bilinear_filter32I(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-bilinear_filter32F(void *out, Imaging im, double xin, double yin) {
+bilinear_filter32F(void *out, Imaging im, double xin, double yin)
+{
     FLOAT32 k;
     BILINEAR_HEAD(FLOAT32);
     BILINEAR_BODY(FLOAT32, im->image32, 1, 0);
@@ -539,7 +555,8 @@ bilinear_filter32F(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-bilinear_filter32LA(void *out, Imaging im, double xin, double yin) {
+bilinear_filter32LA(void *out, Imaging im, double xin, double yin)
+{
     BILINEAR_HEAD(UINT8);
     BILINEAR_BODY(UINT8, im->image, 4, 0);
     ((UINT8 *)out)[0] = (UINT8)v1;
@@ -551,7 +568,8 @@ bilinear_filter32LA(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-bilinear_filter32RGB(void *out, Imaging im, double xin, double yin) {
+bilinear_filter32RGB(void *out, Imaging im, double xin, double yin)
+{
     int b;
     BILINEAR_HEAD(UINT8);
     for (b = 0; b < im->bands; b++) {
@@ -623,7 +641,8 @@ bilinear_filter32RGB(void *out, Imaging im, double xin, double yin) {
     }
 
 static int
-bicubic_filter8(void *out, Imaging im, double xin, double yin) {
+bicubic_filter8(void *out, Imaging im, double xin, double yin)
+{
     BICUBIC_HEAD(UINT8);
     BICUBIC_BODY(UINT8, im->image8, 1, 0);
     if (v1 <= 0.0) {
@@ -637,7 +656,8 @@ bicubic_filter8(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-bicubic_filter32I(void *out, Imaging im, double xin, double yin) {
+bicubic_filter32I(void *out, Imaging im, double xin, double yin)
+{
     INT32 k;
     BICUBIC_HEAD(INT32);
     BICUBIC_BODY(INT32, im->image32, 1, 0);
@@ -647,7 +667,8 @@ bicubic_filter32I(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-bicubic_filter32F(void *out, Imaging im, double xin, double yin) {
+bicubic_filter32F(void *out, Imaging im, double xin, double yin)
+{
     FLOAT32 k;
     BICUBIC_HEAD(FLOAT32);
     BICUBIC_BODY(FLOAT32, im->image32, 1, 0);
@@ -657,7 +678,8 @@ bicubic_filter32F(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-bicubic_filter32LA(void *out, Imaging im, double xin, double yin) {
+bicubic_filter32LA(void *out, Imaging im, double xin, double yin)
+{
     BICUBIC_HEAD(UINT8);
     BICUBIC_BODY(UINT8, im->image, 4, 0);
     if (v1 <= 0.0) {
@@ -685,7 +707,8 @@ bicubic_filter32LA(void *out, Imaging im, double xin, double yin) {
 }
 
 static int
-bicubic_filter32RGB(void *out, Imaging im, double xin, double yin) {
+bicubic_filter32RGB(void *out, Imaging im, double xin, double yin)
+{
     int b;
     BICUBIC_HEAD(UINT8);
     for (b = 0; b < im->bands; b++) {
@@ -706,7 +729,8 @@ bicubic_filter32RGB(void *out, Imaging im, double xin, double yin) {
 #undef BICUBIC_BODY
 
 static ImagingTransformFilter
-getfilter(Imaging im, int filterid) {
+getfilter(Imaging im, int filterid)
+{
     switch (filterid) {
         case IMAGING_TRANSFORM_NEAREST:
             if (im->image8) {
@@ -781,7 +805,8 @@ ImagingGenericTransform(
     ImagingTransformMap transform,
     void *transform_data,
     int filterid,
-    int fill) {
+    int fill)
+{
     /* slow generic transformation.  use ImagingTransformAffine or
        ImagingScaleAffine where possible. */
 
@@ -836,14 +861,8 @@ ImagingGenericTransform(
 
 static Imaging
 ImagingScaleAffine(
-    Imaging imOut,
-    Imaging imIn,
-    int x0,
-    int y0,
-    int x1,
-    int y1,
-    double a[6],
-    int fill) {
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, double a[6], int fill)
+{
     /* scale, nearest neighbour resampling */
 
     ImagingSectionCookie cookie;
@@ -933,7 +952,8 @@ ImagingScaleAffine(
 }
 
 static inline int
-check_fixed(double a[6], int x, int y) {
+check_fixed(double a[6], int x, int y)
+{
     return (
         fabs(x * a[0] + y * a[1] + a[2]) < 32768.0 &&
         fabs(x * a[3] + y * a[4] + a[5]) < 32768.0);
@@ -949,7 +969,8 @@ affine_fixed(
     int y1,
     double a[6],
     int filterid,
-    int fill) {
+    int fill)
+{
     /* affine transform, nearest neighbour resampling, fixed point
        arithmetics */
 
@@ -1026,7 +1047,8 @@ ImagingTransformAffine(
     int y1,
     double a[6],
     int filterid,
-    int fill) {
+    int fill)
+{
     /* affine transform, nearest neighbour resampling, floating point
        arithmetics*/
 
@@ -1134,7 +1156,8 @@ ImagingTransform(
     int y1,
     double a[8],
     int filterid,
-    int fill) {
+    int fill)
+{
     ImagingTransformMap transform;
 
     switch (method) {

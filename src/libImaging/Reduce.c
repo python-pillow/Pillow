@@ -5,14 +5,16 @@
 #define ROUND_UP(f) ((int)((f) >= 0.0 ? (f) + 0.5F : (f) - 0.5F))
 
 UINT32
-division_UINT32(int divider, int result_bits) {
+division_UINT32(int divider, int result_bits)
+{
     UINT32 max_dividend = (1 << result_bits) * divider;
     float max_int = (1 << 30) * 4.0;
     return (UINT32)(max_int / max_dividend);
 }
 
 void
-ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale) {
+ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale)
+{
     /* The most general implementation for any xscale and yscale
      */
     int x, y, xx, yy;
@@ -180,7 +182,8 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
 }
 
 void
-ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale) {
+ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale)
+{
     /* Optimized implementation for xscale = 1.
      */
     int x, y, yy;
@@ -287,7 +290,8 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale) {
 }
 
 void
-ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
+ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale)
+{
     /* Optimized implementation for yscale = 1.
      */
     int x, y, xx;
@@ -384,7 +388,8 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
 }
 
 void
-ImagingReduce1x2(Imaging imOut, Imaging imIn, int box[4]) {
+ImagingReduce1x2(Imaging imOut, Imaging imIn, int box[4])
+{
     /* Optimized implementation for xscale = 1 and yscale = 2.
      */
     int xscale = 1, yscale = 2;
@@ -449,7 +454,8 @@ ImagingReduce1x2(Imaging imOut, Imaging imIn, int box[4]) {
 }
 
 void
-ImagingReduce2x1(Imaging imOut, Imaging imIn, int box[4]) {
+ImagingReduce2x1(Imaging imOut, Imaging imIn, int box[4])
+{
     /* Optimized implementation for xscale = 2 and yscale = 1.
      */
     int xscale = 2, yscale = 1;
@@ -512,7 +518,8 @@ ImagingReduce2x1(Imaging imOut, Imaging imIn, int box[4]) {
 }
 
 void
-ImagingReduce2x2(Imaging imOut, Imaging imIn, int box[4]) {
+ImagingReduce2x2(Imaging imOut, Imaging imIn, int box[4])
+{
     /* Optimized implementation for xscale = 2 and yscale = 2.
      */
     int xscale = 2, yscale = 2;
@@ -586,7 +593,8 @@ ImagingReduce2x2(Imaging imOut, Imaging imIn, int box[4]) {
 }
 
 void
-ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
+ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4])
+{
     /* Optimized implementation for xscale = 1 and yscale = 3.
      */
     int xscale = 1, yscale = 3;
@@ -661,7 +669,8 @@ ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
 }
 
 void
-ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
+ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4])
+{
     /* Optimized implementation for xscale = 3 and yscale = 1.
      */
     int xscale = 3, yscale = 1;
@@ -732,7 +741,8 @@ ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
 }
 
 void
-ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
+ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4])
+{
     /* Optimized implementation for xscale = 3 and yscale = 3.
      */
     int xscale = 3, yscale = 3;
@@ -827,7 +837,8 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
 }
 
 void
-ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
+ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4])
+{
     /* Optimized implementation for xscale = 4 and yscale = 4.
      */
     int xscale = 4, yscale = 4;
@@ -944,7 +955,8 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
 }
 
 void
-ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
+ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4])
+{
     /* Fast special case for xscale = 5 and yscale = 5.
      */
     int xscale = 5, yscale = 5;
@@ -1101,7 +1113,8 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
 }
 
 void
-ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale) {
+ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale)
+{
     /* Fill the last row and the last column for any xscale and yscale.
      */
     int x, y, xx, yy;
@@ -1239,8 +1252,8 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
 }
 
 void
-ImagingReduceNxN_32bpc(
-    Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale) {
+ImagingReduceNxN_32bpc(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale)
+{
     /* The most general implementation for any xscale and yscale
      */
     int x, y, xx, yy;
@@ -1313,7 +1326,8 @@ ImagingReduceNxN_32bpc(
 
 void
 ImagingReduceCorners_32bpc(
-    Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale) {
+    Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale)
+{
     /* Fill the last row and the last column for any xscale and yscale.
      */
     int x, y, xx, yy;
@@ -1414,7 +1428,8 @@ ImagingReduceCorners_32bpc(
 }
 
 Imaging
-ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
+ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4])
+{
     ImagingSectionCookie cookie;
     Imaging imOut = NULL;
 

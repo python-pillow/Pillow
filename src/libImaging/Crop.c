@@ -18,7 +18,8 @@
 #include "Imaging.h"
 
 Imaging
-ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1) {
+ImagingCrop(Imaging imIn, int sx0, int sy0, int sx1, int sy1)
+{
     Imaging imOut;
     int xsize, ysize;
     int dx0, dy0, dx1, dy1;

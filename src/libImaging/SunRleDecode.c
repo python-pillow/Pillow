@@ -18,7 +18,8 @@
 #include "Imaging.h"
 
 int
-ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingSunRleDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     int n;
     UINT8 *ptr;
     UINT8 extra_data = 0;

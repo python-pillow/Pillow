@@ -33,7 +33,8 @@ paste(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* paste opaque region */
 
     int y;
@@ -59,7 +60,8 @@ paste_mask_1(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* paste with mode "1" mask */
 
     int x, y;
@@ -120,7 +122,8 @@ paste_mask_L(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* paste with mode "L" matte */
 
     int x, y;
@@ -167,7 +170,8 @@ paste_mask_RGBA(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* paste with mode "RGBA" matte */
 
     int x, y;
@@ -214,7 +218,8 @@ paste_mask_RGBa(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* paste with mode "RGBa" matte */
 
     int x, y;
@@ -252,7 +257,8 @@ paste_mask_RGBa(
 
 int
 ImagingPaste(
-    Imaging imOut, Imaging imIn, Imaging imMask, int dx0, int dy0, int dx1, int dy1) {
+    Imaging imOut, Imaging imIn, Imaging imMask, int dx0, int dy0, int dx1, int dy1)
+{
     int xsize, ysize;
     int pixelsize;
     int sx0, sy0;
@@ -340,7 +346,8 @@ fill(
     int dy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* fill opaque region */
 
     int x, y;
@@ -378,7 +385,8 @@ fill_mask_1(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* fill with mode "1" mask */
 
     int x, y;
@@ -425,7 +433,8 @@ fill_mask_L(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* fill with mode "L" matte */
 
     int x, y, i;
@@ -484,7 +493,8 @@ fill_mask_RGBA(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* fill with mode "RGBA" matte */
 
     int x, y, i;
@@ -529,7 +539,8 @@ fill_mask_RGBa(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize)
+{
     /* fill with mode "RGBa" matte */
 
     int x, y, i;
@@ -565,13 +576,8 @@ fill_mask_RGBa(
 
 int
 ImagingFill2(
-    Imaging imOut,
-    const void *ink,
-    Imaging imMask,
-    int dx0,
-    int dy0,
-    int dx1,
-    int dy1) {
+    Imaging imOut, const void *ink, Imaging imMask, int dx0, int dy0, int dx1, int dy1)
+{
     ImagingSectionCookie cookie;
     int xsize, ysize;
     int pixelsize;

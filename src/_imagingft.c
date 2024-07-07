@@ -42,7 +42,9 @@
 #define FT_ERRORDEF(e, v, s) {e, s},
 #define FT_ERROR_START_LIST {
 #define FT_ERROR_END_LIST \
-    { 0, 0 }              \
+    {                     \
+        0, 0              \
+    }                     \
     }                     \
     ;
 
@@ -94,7 +96,8 @@ static PyTypeObject Font_Type;
 #define PIXEL(x) ((((x) + 32) & -64) >> 6)
 
 static PyObject *
-geterror(int code) {
+geterror(int code)
+{
     int i;
 
     for (i = 0; ft_errors[i].message; i++) {
@@ -109,7 +112,8 @@ geterror(int code) {
 }
 
 static PyObject *
-getfont(PyObject *self_, PyObject *args, PyObject *kw) {
+getfont(PyObject *self_, PyObject *args, PyObject *kw)
+{
     /* create a font object from a file name and a size (in pixels) */
 
     FontObject *self;
@@ -242,7 +246,8 @@ text_layout_raqm(
     const char *dir,
     PyObject *features,
     const char *lang,
-    GlyphInfo **glyph_info) {
+    GlyphInfo **glyph_info)
+{
     size_t i = 0, count = 0, start = 0;
     raqm_t *rq;
     raqm_glyph_t *glyphs = NULL;
@@ -398,7 +403,8 @@ text_layout_fallback(
     const char *lang,
     GlyphInfo **glyph_info,
     int mask,
-    int color) {
+    int color)
+{
     int error, load_flags, i;
     char *buffer = NULL;
     FT_ULong ch;
@@ -482,7 +488,8 @@ text_layout(
     const char *lang,
     GlyphInfo **glyph_info,
     int mask,
-    int color) {
+    int color)
+{
     size_t count;
 #ifdef HAVE_RAQM
     if (have_raqm && self->layout_engine == LAYOUT_RAQM) {
@@ -497,7 +504,8 @@ text_layout(
 }
 
 static PyObject *
-font_getlength(FontObject *self, PyObject *args) {
+font_getlength(FontObject *self, PyObject *args)
+{
     int length;                   /* length along primary axis, in 26.6 precision */
     GlyphInfo *glyph_info = NULL; /* computed text layout */
     size_t i, count;              /* glyph_info index and length */
@@ -555,7 +563,8 @@ bounding_box_and_anchors(
     int *width,
     int *height,
     int *x_offset,
-    int *y_offset) {
+    int *y_offset)
+{
     int position; /* pen position along primary axis, in 26.6 precision */
     int advanced; /* pen position along primary axis, in pixels */
     int px, py;   /* position of current glyph, in pixels */
@@ -721,7 +730,8 @@ bad_anchor:
 }
 
 static PyObject *
-font_getsize(FontObject *self, PyObject *args) {
+font_getsize(FontObject *self, PyObject *args)
+{
     int width, height, x_offset, y_offset;
     int load_flags; /* FreeType load_flags parameter */
     int error;
@@ -785,7 +795,8 @@ font_getsize(FontObject *self, PyObject *args) {
 }
 
 static PyObject *
-font_render(FontObject *self, PyObject *args) {
+font_render(FontObject *self, PyObject *args)
+{
     int x, y;         /* pen position, in 26.6 precision */
     int px, py;       /* position of current glyph, in pixels */
     int x_min, y_max; /* text offset in 26.6 precision */
@@ -1190,7 +1201,8 @@ glyph_error:
 #if FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) || \
     (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
 static PyObject *
-font_getvarnames(FontObject *self) {
+font_getvarnames(FontObject *self)
+{
     int error;
     FT_UInt i, j, num_namedstyles, name_count;
     FT_MM_Var *master;
@@ -1237,7 +1249,8 @@ font_getvarnames(FontObject *self) {
 }
 
 static PyObject *
-font_getvaraxes(FontObject *self) {
+font_getvaraxes(FontObject *self)
+{
     int error;
     FT_UInt i, j, num_axis, name_count;
     FT_MM_Var *master;
@@ -1305,7 +1318,8 @@ font_getvaraxes(FontObject *self) {
 }
 
 static PyObject *
-font_setvarname(FontObject *self, PyObject *args) {
+font_setvarname(FontObject *self, PyObject *args)
+{
     int error;
 
     int instance_index;
@@ -1323,7 +1337,8 @@ font_setvarname(FontObject *self, PyObject *args) {
 }
 
 static PyObject *
-font_setvaraxes(FontObject *self, PyObject *args) {
+font_setvaraxes(FontObject *self, PyObject *args)
+{
     int error;
 
     PyObject *axes, *item;
@@ -1372,7 +1387,8 @@ font_setvaraxes(FontObject *self, PyObject *args) {
 #endif
 
 static void
-font_dealloc(FontObject *self) {
+font_dealloc(FontObject *self)
+{
     if (self->face) {
         FT_Done_Face(self->face);
     }
@@ -1396,7 +1412,8 @@ static PyMethodDef font_methods[] = {
     {NULL, NULL}};
 
 static PyObject *
-font_getattr_family(FontObject *self, void *closure) {
+font_getattr_family(FontObject *self, void *closure)
+{
     if (self->face->family_name) {
         return PyUnicode_FromString(self->face->family_name);
     }
@@ -1404,7 +1421,8 @@ font_getattr_family(FontObject *self, void *closure) {
 }
 
 static PyObject *
-font_getattr_style(FontObject *self, void *closure) {
+font_getattr_style(FontObject *self, void *closure)
+{
     if (self->face->style_name) {
         return PyUnicode_FromString(self->face->style_name);
     }
@@ -1412,32 +1430,38 @@ font_getattr_style(FontObject *self, void *closure) {
 }
 
 static PyObject *
-font_getattr_ascent(FontObject *self, void *closure) {
+font_getattr_ascent(FontObject *self, void *closure)
+{
     return PyLong_FromLong(PIXEL(self->face->size->metrics.ascender));
 }
 
 static PyObject *
-font_getattr_descent(FontObject *self, void *closure) {
+font_getattr_descent(FontObject *self, void *closure)
+{
     return PyLong_FromLong(-PIXEL(self->face->size->metrics.descender));
 }
 
 static PyObject *
-font_getattr_height(FontObject *self, void *closure) {
+font_getattr_height(FontObject *self, void *closure)
+{
     return PyLong_FromLong(PIXEL(self->face->size->metrics.height));
 }
 
 static PyObject *
-font_getattr_x_ppem(FontObject *self, void *closure) {
+font_getattr_x_ppem(FontObject *self, void *closure)
+{
     return PyLong_FromLong(self->face->size->metrics.x_ppem);
 }
 
 static PyObject *
-font_getattr_y_ppem(FontObject *self, void *closure) {
+font_getattr_y_ppem(FontObject *self, void *closure)
+{
     return PyLong_FromLong(self->face->size->metrics.y_ppem);
 }
 
 static PyObject *
-font_getattr_glyphs(FontObject *self, void *closure) {
+font_getattr_glyphs(FontObject *self, void *closure)
+{
     return PyLong_FromLong(self->face->num_glyphs);
 }
 
@@ -1489,7 +1513,8 @@ static PyMethodDef _functions[] = {
     {"getfont", (PyCFunction)getfont, METH_VARARGS | METH_KEYWORDS}, {NULL, NULL}};
 
 static int
-setup_module(PyObject *m) {
+setup_module(PyObject *m)
+{
     PyObject *d;
     PyObject *v;
     int major, minor, patch;
@@ -1559,7 +1584,8 @@ setup_module(PyObject *m) {
 }
 
 PyMODINIT_FUNC
-PyInit__imagingft(void) {
+PyInit__imagingft(void)
+{
     PyObject *m;
 
     static PyModuleDef module_def = {

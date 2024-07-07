@@ -20,7 +20,8 @@
 #include "Imaging.h"
 
 int
-ImagingRawEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+ImagingRawEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
+{
     UINT8 *ptr;
 
     if (!state->state) {

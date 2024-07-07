@@ -6,7 +6,7 @@ AllowShortIfStatementsOnASingleLine: false
 AlignAfterOpenBracket: AlwaysBreak
 BinPackArguments: false
 BinPackParameters: false
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Linux
 ColumnLimit: 88
 DerivePointerAlignment: false
 IndentGotoLabels: false

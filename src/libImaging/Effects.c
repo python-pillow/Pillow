@@ -20,7 +20,8 @@
 #include <math.h>
 
 Imaging
-ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
+ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality)
+{
     /* Generate a Mandelbrot set covering the given extent */
 
     Imaging im;
@@ -72,7 +73,8 @@ ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
 }
 
 Imaging
-ImagingEffectNoise(int xsize, int ysize, float sigma) {
+ImagingEffectNoise(int xsize, int ysize, float sigma)
+{
     /* Generate Gaussian noise centered around 128 */
 
     Imaging imOut;
@@ -114,7 +116,8 @@ ImagingEffectNoise(int xsize, int ysize, float sigma) {
 }
 
 Imaging
-ImagingEffectSpread(Imaging imIn, int distance) {
+ImagingEffectSpread(Imaging imIn, int distance)
+{
     /* Randomly spread pixels in an image */
 
     Imaging imOut;

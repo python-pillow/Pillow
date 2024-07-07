@@ -24,7 +24,8 @@ extern int
 load_tkinter_funcs(void);
 
 static PyObject *
-_tkinit(PyObject *self, PyObject *args) {
+_tkinit(PyObject *self, PyObject *args)
+{
     Tcl_Interp *interp;
 
     PyObject *arg;
@@ -48,7 +49,8 @@ static PyMethodDef functions[] = {
 };
 
 PyMODINIT_FUNC
-PyInit__imagingtk(void) {
+PyInit__imagingtk(void)
+{
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
         "_imagingtk", /* m_name */

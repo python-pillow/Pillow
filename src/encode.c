@@ -49,7 +49,8 @@ typedef struct {
 static PyTypeObject ImagingEncoderType;
 
 static ImagingEncoderObject *
-PyImaging_EncoderNew(int contextsize) {
+PyImaging_EncoderNew(int contextsize)
+{
     ImagingEncoderObject *encoder;
     void *context;
 
@@ -92,7 +93,8 @@ PyImaging_EncoderNew(int contextsize) {
 }
 
 static void
-_dealloc(ImagingEncoderObject *encoder) {
+_dealloc(ImagingEncoderObject *encoder)
+{
     if (encoder->cleanup) {
         encoder->cleanup(&encoder->state);
     }
@@ -104,7 +106,8 @@ _dealloc(ImagingEncoderObject *encoder) {
 }
 
 static PyObject *
-_encode_cleanup(ImagingEncoderObject *encoder, PyObject *args) {
+_encode_cleanup(ImagingEncoderObject *encoder, PyObject *args)
+{
     int status = 0;
 
     if (encoder->cleanup) {
@@ -115,7 +118,8 @@ _encode_cleanup(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_encode(ImagingEncoderObject *encoder, PyObject *args) {
+_encode(ImagingEncoderObject *encoder, PyObject *args)
+{
     PyObject *buf;
     PyObject *result;
     int status;
@@ -149,7 +153,8 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_encode_to_pyfd(ImagingEncoderObject *encoder) {
+_encode_to_pyfd(ImagingEncoderObject *encoder)
+{
     PyObject *result;
     int status;
 
@@ -167,7 +172,8 @@ _encode_to_pyfd(ImagingEncoderObject *encoder) {
 }
 
 static PyObject *
-_encode_to_file(ImagingEncoderObject *encoder, PyObject *args) {
+_encode_to_file(ImagingEncoderObject *encoder, PyObject *args)
+{
     UINT8 *buf;
     int status;
     ImagingSectionCookie cookie;
@@ -217,7 +223,8 @@ extern Imaging
 PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
-_setimage(ImagingEncoderObject *encoder, PyObject *args) {
+_setimage(ImagingEncoderObject *encoder, PyObject *args)
+{
     PyObject *op;
     Imaging im;
     ImagingCodecState state;
@@ -280,7 +287,8 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_setfd(ImagingEncoderObject *encoder, PyObject *args) {
+_setfd(ImagingEncoderObject *encoder, PyObject *args)
+{
     PyObject *fd;
     ImagingCodecState state;
 
@@ -298,7 +306,8 @@ _setfd(ImagingEncoderObject *encoder, PyObject *args) {
 }
 
 static PyObject *
-_get_pushes_fd(ImagingEncoderObject *encoder, void *closure) {
+_get_pushes_fd(ImagingEncoderObject *encoder, void *closure)
+{
     return PyBool_FromLong(encoder->pushes_fd);
 }
 
@@ -357,7 +366,8 @@ static PyTypeObject ImagingEncoderType = {
 /* -------------------------------------------------------------------- */
 
 int
-get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode) {
+get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode)
+{
     int bits;
     ImagingShuffler pack;
 
@@ -379,7 +389,8 @@ get_packer(ImagingEncoderObject *encoder, const char *mode, const char *rawmode)
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_EpsEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_EpsEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     encoder = PyImaging_EncoderNew(0);
@@ -397,7 +408,8 @@ PyImaging_EpsEncoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_GifEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_GifEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     char *mode;
@@ -430,7 +442,8 @@ PyImaging_GifEncoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_PcxEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_PcxEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     char *mode;
@@ -460,7 +473,8 @@ PyImaging_PcxEncoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_RawEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     char *mode;
@@ -494,7 +508,8 @@ PyImaging_RawEncoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_TgaRleEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_TgaRleEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     char *mode;
@@ -526,7 +541,8 @@ PyImaging_TgaRleEncoderNew(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 
 PyObject *
-PyImaging_XbmEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_XbmEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     encoder = PyImaging_EncoderNew(0);
@@ -552,7 +568,8 @@ PyImaging_XbmEncoderNew(PyObject *self, PyObject *args) {
 #include "libImaging/ZipCodecs.h"
 
 PyObject *
-PyImaging_ZipEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_ZipEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     char *mode;
@@ -628,7 +645,8 @@ PyImaging_ZipEncoderNew(PyObject *self, PyObject *args) {
 #include <string.h>
 
 PyObject *
-PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     char *mode;
@@ -970,7 +988,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
 #include "libImaging/Jpeg.h"
 
 static unsigned int *
-get_qtables_arrays(PyObject *qtables, int *qtablesLen) {
+get_qtables_arrays(PyObject *qtables, int *qtablesLen)
+{
     PyObject *tables;
     PyObject *table;
     PyObject *table_data;
@@ -1033,7 +1052,8 @@ JPEG_QTABLES_ERR:
 }
 
 PyObject *
-PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_JpegEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
 
     char *mode;
@@ -1188,7 +1208,8 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 #include "libImaging/Jpeg2K.h"
 
 static void
-j2k_decode_coord_tuple(PyObject *tuple, int *x, int *y) {
+j2k_decode_coord_tuple(PyObject *tuple, int *x, int *y)
+{
     *x = *y = 0;
 
     if (tuple && PyTuple_Check(tuple) && PyTuple_GET_SIZE(tuple) == 2) {
@@ -1205,7 +1226,8 @@ j2k_decode_coord_tuple(PyObject *tuple, int *x, int *y) {
 }
 
 PyObject *
-PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
+PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args)
+{
     ImagingEncoderObject *encoder;
     JPEG2KENCODESTATE *context;
 

@@ -16,7 +16,8 @@
 #include "Imaging.h"
 
 Imaging
-ImagingModeFilter(Imaging im, int size) {
+ImagingModeFilter(Imaging im, int size)
+{
     Imaging imOut;
     int x, y, i;
     int xx, yy;

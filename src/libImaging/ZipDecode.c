@@ -30,7 +30,8 @@ static const int ROW_INCREMENT[] = {8, 8, 8, 4, 4, 2, 2};
 /* Get the length in bytes of a scanline in the pass specified,
  * for interlaced images */
 static int
-get_row_len(ImagingCodecState state, int pass) {
+get_row_len(ImagingCodecState state, int pass)
+{
     int row_len = (state->xsize + OFFSET[pass]) / COL_INCREMENT[pass];
     return ((row_len * state->bits) + 7) / 8;
 }
@@ -40,7 +41,8 @@ get_row_len(ImagingCodecState state, int pass) {
 /* -------------------------------------------------------------------- */
 
 int
-ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     ZIPSTATE *context = (ZIPSTATE *)state->context;
     int err;
     int n;
@@ -281,7 +283,8 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
 }
 
 int
-ImagingZipDecodeCleanup(ImagingCodecState state) {
+ImagingZipDecodeCleanup(ImagingCodecState state)
+{
     /* called to free the decompression engine when the decode terminates
        due to a corrupt or truncated image
     */

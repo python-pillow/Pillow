@@ -21,7 +21,8 @@
 #include "ZipCodecs.h"
 
 int
-ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
+{
     ZIPSTATE *context = (ZIPSTATE *)state->context;
     int err;
     int compress_level, compress_type;
@@ -348,7 +349,8 @@ ImagingZipEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 /* -------------------------------------------------------------------- */
 
 int
-ImagingZipEncodeCleanup(ImagingCodecState state) {
+ImagingZipEncodeCleanup(ImagingCodecState state)
+{
     ZIPSTATE *context = (ZIPSTATE *)state->context;
 
     if (context->dictionary) {
@@ -360,7 +362,8 @@ ImagingZipEncodeCleanup(ImagingCodecState state) {
 }
 
 const char *
-ImagingZipVersion(void) {
+ImagingZipVersion(void)
+{
     return zlibVersion();
 }
 

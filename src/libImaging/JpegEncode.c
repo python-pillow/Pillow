@@ -42,13 +42,15 @@ METHODDEF(void)
 stub(j_compress_ptr cinfo) { /* empty */ }
 
 METHODDEF(boolean)
-empty_output_buffer(j_compress_ptr cinfo) {
+empty_output_buffer(j_compress_ptr cinfo)
+{
     /* Suspension */
     return FALSE;
 }
 
 GLOBAL(void)
-jpeg_buffer_dest(j_compress_ptr cinfo, JPEGDESTINATION *destination) {
+jpeg_buffer_dest(j_compress_ptr cinfo, JPEGDESTINATION *destination)
+{
     cinfo->dest = (void *)destination;
 
     destination->pub.init_destination = stub;
@@ -61,7 +63,8 @@ jpeg_buffer_dest(j_compress_ptr cinfo, JPEGDESTINATION *destination) {
 /* -------------------------------------------------------------------- */
 
 METHODDEF(void)
-error(j_common_ptr cinfo) {
+error(j_common_ptr cinfo)
+{
     JPEGERROR *error;
     error = (JPEGERROR *)cinfo->err;
     (*cinfo->err->output_message)(cinfo);
@@ -73,7 +76,8 @@ error(j_common_ptr cinfo) {
 /* -------------------------------------------------------------------- */
 
 int
-ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
+{
     JPEGENCODERSTATE *context = (JPEGENCODERSTATE *)state->context;
     int ok;
 
@@ -376,7 +380,8 @@ cleanup:
 }
 
 const char *
-ImagingJpegVersion(void) {
+ImagingJpegVersion(void)
+{
     static char version[20];
     sprintf(version, "%d.%d", JPEG_LIB_VERSION / 10, JPEG_LIB_VERSION % 10);
     return version;

@@ -18,7 +18,8 @@
 #include "Bit.h"
 
 int
-ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingBitDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     BITSTATE *bitstate = state->context;
     UINT8 *ptr;
 

@@ -47,7 +47,8 @@ typedef struct {
 static PyTypeObject ImagingDisplayType;
 
 static ImagingDisplayObject *
-_new(const char *mode, int xsize, int ysize) {
+_new(const char *mode, int xsize, int ysize)
+{
     ImagingDisplayObject *display;
 
     if (PyType_Ready(&ImagingDisplayType) < 0) {
@@ -69,7 +70,8 @@ _new(const char *mode, int xsize, int ysize) {
 }
 
 static void
-_delete(ImagingDisplayObject *display) {
+_delete(ImagingDisplayObject *display)
+{
     if (display->dib) {
         ImagingDeleteDIB(display->dib);
     }
@@ -77,7 +79,8 @@ _delete(ImagingDisplayObject *display) {
 }
 
 static PyObject *
-_expose(ImagingDisplayObject *display, PyObject *args) {
+_expose(ImagingDisplayObject *display, PyObject *args)
+{
     HDC hdc;
     if (!PyArg_ParseTuple(args, F_HANDLE, &hdc)) {
         return NULL;
@@ -90,7 +93,8 @@ _expose(ImagingDisplayObject *display, PyObject *args) {
 }
 
 static PyObject *
-_draw(ImagingDisplayObject *display, PyObject *args) {
+_draw(ImagingDisplayObject *display, PyObject *args)
+{
     HDC hdc;
     int dst[4];
     int src[4];
@@ -119,7 +123,8 @@ extern Imaging
 PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
-_paste(ImagingDisplayObject *display, PyObject *args) {
+_paste(ImagingDisplayObject *display, PyObject *args)
+{
     Imaging im;
 
     PyObject *op;
@@ -147,7 +152,8 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
 }
 
 static PyObject *
-_query_palette(ImagingDisplayObject *display, PyObject *args) {
+_query_palette(ImagingDisplayObject *display, PyObject *args)
+{
     HDC hdc;
     int status;
 
@@ -161,7 +167,8 @@ _query_palette(ImagingDisplayObject *display, PyObject *args) {
 }
 
 static PyObject *
-_getdc(ImagingDisplayObject *display, PyObject *args) {
+_getdc(ImagingDisplayObject *display, PyObject *args)
+{
     HWND window;
     HDC dc;
 
@@ -179,7 +186,8 @@ _getdc(ImagingDisplayObject *display, PyObject *args) {
 }
 
 static PyObject *
-_releasedc(ImagingDisplayObject *display, PyObject *args) {
+_releasedc(ImagingDisplayObject *display, PyObject *args)
+{
     HWND window;
     HDC dc;
 
@@ -194,7 +202,8 @@ _releasedc(ImagingDisplayObject *display, PyObject *args) {
 }
 
 static PyObject *
-_frombytes(ImagingDisplayObject *display, PyObject *args) {
+_frombytes(ImagingDisplayObject *display, PyObject *args)
+{
     Py_buffer buffer;
 
     if (!PyArg_ParseTuple(args, "y*:frombytes", &buffer)) {
@@ -215,7 +224,8 @@ _frombytes(ImagingDisplayObject *display, PyObject *args) {
 }
 
 static PyObject *
-_tobytes(ImagingDisplayObject *display, PyObject *args) {
+_tobytes(ImagingDisplayObject *display, PyObject *args)
+{
     if (!PyArg_ParseTuple(args, ":tobytes")) {
         return NULL;
     }
@@ -237,12 +247,14 @@ static struct PyMethodDef methods[] = {
 };
 
 static PyObject *
-_getattr_mode(ImagingDisplayObject *self, void *closure) {
+_getattr_mode(ImagingDisplayObject *self, void *closure)
+{
     return Py_BuildValue("s", self->dib->mode);
 }
 
 static PyObject *
-_getattr_size(ImagingDisplayObject *self, void *closure) {
+_getattr_size(ImagingDisplayObject *self, void *closure)
+{
     return Py_BuildValue("ii", self->dib->xsize, self->dib->ysize);
 }
 
@@ -283,7 +295,8 @@ static PyTypeObject ImagingDisplayType = {
 };
 
 PyObject *
-PyImaging_DisplayWin32(PyObject *self, PyObject *args) {
+PyImaging_DisplayWin32(PyObject *self, PyObject *args)
+{
     ImagingDisplayObject *display;
     char *mode;
     int xsize, ysize;
@@ -301,7 +314,8 @@ PyImaging_DisplayWin32(PyObject *self, PyObject *args) {
 }
 
 PyObject *
-PyImaging_DisplayModeWin32(PyObject *self, PyObject *args) {
+PyImaging_DisplayModeWin32(PyObject *self, PyObject *args)
+{
     char *mode;
     int size[2];
 
@@ -316,7 +330,8 @@ PyImaging_DisplayModeWin32(PyObject *self, PyObject *args) {
 typedef HANDLE(__stdcall *Func_SetThreadDpiAwarenessContext)(HANDLE);
 
 PyObject *
-PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
+PyImaging_GrabScreenWin32(PyObject *self, PyObject *args)
+{
     int x = 0, y = 0, width, height;
     int includeLayeredWindows = 0, all_screens = 0;
     HBITMAP bitmap;
@@ -426,7 +441,8 @@ error:
 /* Windows clipboard grabber */
 
 PyObject *
-PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
+PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args)
+{
     HANDLE handle = NULL;
     int size;
     void *data;
@@ -484,7 +500,8 @@ PyImaging_GrabClipboardWin32(PyObject *self, PyObject *args) {
 static int mainloop = 0;
 
 static void
-callback_error(const char *handler) {
+callback_error(const char *handler)
+{
     PyObject *sys_stderr;
 
     sys_stderr = PySys_GetObject("stderr");
@@ -500,7 +517,8 @@ callback_error(const char *handler) {
 }
 
 static LRESULT CALLBACK
-windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam) {
+windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
     PAINTSTRUCT ps;
     PyObject *callback = NULL;
     PyObject *result;
@@ -625,7 +643,8 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam) {
 }
 
 PyObject *
-PyImaging_CreateWindowWin32(PyObject *self, PyObject *args) {
+PyImaging_CreateWindowWin32(PyObject *self, PyObject *args)
+{
     HWND wnd;
     WNDCLASS windowClass;
 
@@ -690,10 +709,12 @@ PyImaging_CreateWindowWin32(PyObject *self, PyObject *args) {
 }
 
 PyObject *
-PyImaging_EventLoopWin32(PyObject *self, PyObject *args) {
+PyImaging_EventLoopWin32(PyObject *self, PyObject *args)
+{
     MSG msg;
 
-    Py_BEGIN_ALLOW_THREADS while (mainloop && GetMessage(&msg, NULL, 0, 0)) {
+    Py_BEGIN_ALLOW_THREADS while (mainloop && GetMessage(&msg, NULL, 0, 0))
+    {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
@@ -709,7 +730,8 @@ PyImaging_EventLoopWin32(PyObject *self, PyObject *args) {
 #define GET32(p, o) ((DWORD *)(p + o))[0]
 
 PyObject *
-PyImaging_DrawWmf(PyObject *self, PyObject *args) {
+PyImaging_DrawWmf(PyObject *self, PyObject *args)
+{
     HBITMAP bitmap;
     HENHMETAFILE meta;
     BITMAPCOREHEADER core;
@@ -822,7 +844,8 @@ error:
 /* X11 screen grabber */
 
 PyObject *
-PyImaging_GrabScreenX11(PyObject *self, PyObject *args) {
+PyImaging_GrabScreenX11(PyObject *self, PyObject *args)
+{
     int width, height;
     char *display_name;
     xcb_connection_t *connection;

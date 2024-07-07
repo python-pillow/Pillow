@@ -55,7 +55,8 @@ static Tk_PhotoGetImage_t TK_PHOTO_GET_IMAGE;
 static Tk_PhotoPutBlock_t TK_PHOTO_PUT_BLOCK;
 
 static Imaging
-ImagingFind(const char *name) {
+ImagingFind(const char *name)
+{
     Py_ssize_t id;
 
     /* FIXME: use CObject instead? */
@@ -73,7 +74,8 @@ ImagingFind(const char *name) {
 
 static int
 PyImagingPhotoPut(
-    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv) {
+    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv)
+{
     Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
@@ -135,7 +137,8 @@ PyImagingPhotoPut(
 
 static int
 PyImagingPhotoGet(
-    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv) {
+    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv)
+{
     Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
@@ -177,7 +180,8 @@ PyImagingPhotoGet(
 }
 
 void
-TkImaging_Init(Tcl_Interp *interp) {
+TkImaging_Init(Tcl_Interp *interp)
+{
     TCL_CREATE_COMMAND(
         interp,
         "PyImagingPhoto",
@@ -215,7 +219,8 @@ TkImaging_Init(Tcl_Interp *interp) {
 #define TKINTER_PKG "tkinter"
 
 FARPROC
-_dfunc(HMODULE lib_handle, const char *func_name) {
+_dfunc(HMODULE lib_handle, const char *func_name)
+{
     /*
      * Load function `func_name` from `lib_handle`.
      * Set Python exception if we can't find `func_name` in `lib_handle`.
@@ -233,7 +238,8 @@ _dfunc(HMODULE lib_handle, const char *func_name) {
 }
 
 int
-get_tcl(HMODULE hMod) {
+get_tcl(HMODULE hMod)
+{
     /*
      * Try to fill Tcl global vars with function pointers. Return 0 for no
      * functions found, 1 for all functions found, -1 for some but not all
@@ -251,7 +257,8 @@ get_tcl(HMODULE hMod) {
 }
 
 int
-get_tk(HMODULE hMod) {
+get_tk(HMODULE hMod)
+{
     /*
      * Try to fill Tk global vars with function pointers. Return 0 for no
      * functions found, 1 for all functions found, -1 for some but not all
@@ -274,7 +281,8 @@ get_tk(HMODULE hMod) {
 }
 
 int
-load_tkinter_funcs(void) {
+load_tkinter_funcs(void)
+{
     /*
      * Load Tcl and Tk functions by searching all modules in current process.
      * Return 0 for success, non-zero for failure.
@@ -352,7 +360,8 @@ load_tkinter_funcs(void) {
 #include <dlfcn.h>
 
 void *
-_dfunc(void *lib_handle, const char *func_name) {
+_dfunc(void *lib_handle, const char *func_name)
+{
     /*
      * Load function `func_name` from `lib_handle`.
      * Set Python exception if we can't find `func_name` in `lib_handle`.
@@ -371,7 +380,8 @@ _dfunc(void *lib_handle, const char *func_name) {
 }
 
 int
-_func_loader(void *lib) {
+_func_loader(void *lib)
+{
     /*
      * Fill global function pointers from dynamic lib.
      * Return 1 if any pointer is NULL, 0 otherwise.
@@ -398,7 +408,8 @@ _func_loader(void *lib) {
 }
 
 int
-load_tkinter_funcs(void) {
+load_tkinter_funcs(void)
+{
     /*
      * Load tkinter global funcs from tkinter compiled module.
      * Return 0 for success, non-zero for failure.

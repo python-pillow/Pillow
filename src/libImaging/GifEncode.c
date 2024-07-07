@@ -55,7 +55,8 @@ enum {
 enum { PUT_HEAD, PUT_INIT_CLEAR, PUT_CLEAR, PUT_LAST_HEAD, PUT_END };
 
 static void
-glzwe_reset(GIFENCODERSTATE *st) {
+glzwe_reset(GIFENCODERSTATE *st)
+{
     st->next_code = st->end_code + 1;
     st->max_code = 2 * st->clear_code - 1;
     st->code_width = st->bits + 1;
@@ -63,7 +64,8 @@ glzwe_reset(GIFENCODERSTATE *st) {
 }
 
 static void
-glzwe_init(GIFENCODERSTATE *st) {
+glzwe_init(GIFENCODERSTATE *st)
+{
     st->clear_code = 1 << st->bits;
     st->end_code = st->clear_code + 1;
     glzwe_reset(st);
@@ -79,7 +81,8 @@ glzwe(
     UINT8 *out_ptr,
     UINT32 *in_avail,
     UINT32 *out_avail,
-    UINT32 end_of_data) {
+    UINT32 end_of_data)
+{
     switch (st->entry_state) {
         case LZW_TRY_IN1:
 get_first_byte:
@@ -217,7 +220,8 @@ flush_code_buffer: /* jump here after put_code */
 /* -END- GIF LZW encoder. */
 
 int
-ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
+{
     UINT8 *ptr;
     UINT8 *sub_block_ptr;
     UINT8 *sub_block_limit;

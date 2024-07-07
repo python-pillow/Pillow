@@ -18,7 +18,8 @@
 #include "Raw.h"
 
 int
-ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     enum { LINE = 1, SKIP };
     RAWSTATE *rawstate = state->context;
 

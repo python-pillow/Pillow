@@ -16,8 +16,8 @@
 #include "Imaging.h"
 
 int
-ImagingPackbitsDecode(
-    Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingPackbitsDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     UINT8 n;
     UINT8 *ptr;
     int i;

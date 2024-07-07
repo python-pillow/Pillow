@@ -22,7 +22,8 @@
                               : -1)
 
 int
-ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingHexDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     UINT8 *ptr;
     int a, b;
 

@@ -43,14 +43,16 @@ typedef struct {
 #define LOAD32(p) (p)[0] | ((p)[1] << 8) | ((p)[2] << 16) | ((p)[3] << 24)
 
 static void
-bc1_color_load(bc1_color *dst, const UINT8 *src) {
+bc1_color_load(bc1_color *dst, const UINT8 *src)
+{
     dst->c0 = LOAD16(src);
     dst->c1 = LOAD16(src + 2);
     dst->lut = LOAD32(src + 4);
 }
 
 static rgba
-decode_565(UINT16 x) {
+decode_565(UINT16 x)
+{
     rgba c;
     int r, g, b;
     r = (x & 0xf800) >> 8;
@@ -67,7 +69,8 @@ decode_565(UINT16 x) {
 }
 
 static void
-decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
+decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha)
+{
     bc1_color col;
     rgba p[4];
     int n, cw;
@@ -110,7 +113,8 @@ decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
 }
 
 static void
-decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o, int sign) {
+decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o, int sign)
+{
     UINT16 a0, a1;
     UINT8 a[8];
     int n, lut1, lut2, aw;
@@ -158,12 +162,14 @@ decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o, int sign) {
 }
 
 static void
-decode_bc1_block(rgba *col, const UINT8 *src) {
+decode_bc1_block(rgba *col, const UINT8 *src)
+{
     decode_bc1_color(col, src, 0);
 }
 
 static void
-decode_bc2_block(rgba *col, const UINT8 *src) {
+decode_bc2_block(rgba *col, const UINT8 *src)
+{
     int n, bitI, byI, av;
     decode_bc1_color(col, src + 8, 1);
     for (n = 0; n < 16; n++) {
@@ -176,18 +182,21 @@ decode_bc2_block(rgba *col, const UINT8 *src) {
 }
 
 static void
-decode_bc3_block(rgba *col, const UINT8 *src) {
+decode_bc3_block(rgba *col, const UINT8 *src)
+{
     decode_bc1_color(col, src + 8, 1);
     decode_bc3_alpha((char *)col, src, sizeof(col[0]), 3, 0);
 }
 
 static void
-decode_bc4_block(lum *col, const UINT8 *src) {
+decode_bc4_block(lum *col, const UINT8 *src)
+{
     decode_bc3_alpha((char *)col, src, sizeof(col[0]), 0, 0);
 }
 
 static void
-decode_bc5_block(rgba *col, const UINT8 *src, int sign) {
+decode_bc5_block(rgba *col, const UINT8 *src, int sign)
+{
     decode_bc3_alpha((char *)col, src, sizeof(col[0]), 0, sign);
     decode_bc3_alpha((char *)col, src + 8, sizeof(col[0]), 1, sign);
 }
@@ -197,14 +206,16 @@ decode_bc5_block(rgba *col, const UINT8 *src, int sign) {
  */
 
 static UINT8
-get_bit(const UINT8 *src, int bit) {
+get_bit(const UINT8 *src, int bit)
+{
     int by = bit >> 3;
     bit &= 7;
     return (src[by] >> bit) & 1;
 }
 
 static UINT8
-get_bits(const UINT8 *src, int bit, int count) {
+get_bits(const UINT8 *src, int bit, int count)
+{
     UINT8 v;
     int x;
     int by = bit >> 3;
@@ -296,7 +307,8 @@ static const char bc7_weights4[] = {
     0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64};
 
 static const char *
-bc7_get_weights(int n) {
+bc7_get_weights(int n)
+{
     if (n == 2) {
         return bc7_weights2;
     }
@@ -307,7 +319,8 @@ bc7_get_weights(int n) {
 }
 
 static int
-bc7_get_subset(int ns, int partition, int n) {
+bc7_get_subset(int ns, int partition, int n)
+{
     if (ns == 2) {
         return 1 & (bc7_si2[partition] >> n);
     }
@@ -318,13 +331,15 @@ bc7_get_subset(int ns, int partition, int n) {
 }
 
 static UINT8
-expand_quantized(UINT8 v, int bits) {
+expand_quantized(UINT8 v, int bits)
+{
     v = v << (8 - bits);
     return v | (v >> bits);
 }
 
 static void
-bc7_lerp(rgba *dst, const rgba *e, int s0, int s1) {
+bc7_lerp(rgba *dst, const rgba *e, int s0, int s1)
+{
     int t0 = 64 - s0;
     int t1 = 64 - s1;
     dst->r = (UINT8)((t0 * e[0].r + s0 * e[1].r + 32) >> 6);
@@ -334,7 +349,8 @@ bc7_lerp(rgba *dst, const rgba *e, int s0, int s1) {
 }
 
 static void
-decode_bc7_block(rgba *col, const UINT8 *src) {
+decode_bc7_block(rgba *col, const UINT8 *src)
+{
     rgba endpoints[6];
     int bit = 0, cibit, aibit;
     int mode = src[0];
@@ -594,7 +610,8 @@ static const UINT8 bc6_bit_packings[][75] = {
      64, 65, 66, 67, 31, 30, 29, 28, 27, 26, 80, 81, 82, 83, 47, 46, 45, 44, 43, 42}};
 
 static void
-bc6_sign_extend(UINT16 *v, int prec) {
+bc6_sign_extend(UINT16 *v, int prec)
+{
     int x = *v;
     if (x & (1 << (prec - 1))) {
         x |= -1 << prec;
@@ -603,7 +620,8 @@ bc6_sign_extend(UINT16 *v, int prec) {
 }
 
 static int
-bc6_unquantize(UINT16 v, int prec, int sign) {
+bc6_unquantize(UINT16 v, int prec, int sign)
+{
     int s = 0;
     int x;
     if (!sign) {
@@ -644,7 +662,8 @@ bc6_unquantize(UINT16 v, int prec, int sign) {
 }
 
 static float
-half_to_float(UINT16 h) {
+half_to_float(UINT16 h)
+{
     /* https://gist.github.com/rygorous/2144712 */
     union {
         UINT32 u;
@@ -662,7 +681,8 @@ half_to_float(UINT16 h) {
 }
 
 static float
-bc6_finalize(int v, int sign) {
+bc6_finalize(int v, int sign)
+{
     if (sign) {
         if (v < 0) {
             v = ((-v) * 31) / 32;
@@ -676,7 +696,8 @@ bc6_finalize(int v, int sign) {
 }
 
 static UINT8
-bc6_clamp(float value) {
+bc6_clamp(float value)
+{
     if (value < 0.0f) {
         return 0;
     } else if (value > 1.0f) {
@@ -687,7 +708,8 @@ bc6_clamp(float value) {
 }
 
 static void
-bc6_lerp(rgba *col, int *e0, int *e1, int s, int sign) {
+bc6_lerp(rgba *col, int *e0, int *e1, int s, int sign)
+{
     int r, g, b;
     int t = 64 - s;
     r = (e0[0] * t + e1[0] * s) >> 6;
@@ -699,7 +721,8 @@ bc6_lerp(rgba *col, int *e0, int *e1, int s, int sign) {
 }
 
 static void
-decode_bc6_block(rgba *col, const UINT8 *src, int sign) {
+decode_bc6_block(rgba *col, const UINT8 *src, int sign)
+{
     UINT16 endpoints[12]; /* storage for r0, g0, b0, r1, ... */
     int ueps[12];
     int i, i0, ib2, di, dw, mask, numep, s;
@@ -782,7 +805,8 @@ decode_bc6_block(rgba *col, const UINT8 *src, int sign) {
 }
 
 static void
-put_block(Imaging im, ImagingCodecState state, const char *col, int sz, int C) {
+put_block(Imaging im, ImagingCodecState state, const char *col, int sz, int C)
+{
     int width = state->xsize;
     int height = state->ysize;
     int xmax = width + state->xoff;
@@ -830,7 +854,8 @@ decode_bcn(
     int bytes,
     int N,
     int C,
-    char *pixel_format) {
+    char *pixel_format)
+{
     int ymax = state->ysize + state->yoff;
     const UINT8 *ptr = src;
     switch (N) {
@@ -889,7 +914,8 @@ decode_bcn(
 }
 
 int
-ImagingBcnDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingBcnDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     int N = state->state & 0xf;
     int width = state->xsize;
     int height = state->ysize;

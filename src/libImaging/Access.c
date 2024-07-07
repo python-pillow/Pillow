@@ -18,7 +18,8 @@
 static struct ImagingAccessInstance access_table[ACCESS_TABLE_SIZE];
 
 static inline UINT32
-hash(const char *mode) {
+hash(const char *mode)
+{
     UINT32 i = ACCESS_TABLE_HASH;
     while (*mode) {
         i = ((i << 5) + i) ^ (UINT8)*mode++;
@@ -27,7 +28,8 @@ hash(const char *mode) {
 }
 
 static ImagingAccess
-add_item(const char *mode) {
+add_item(const char *mode)
+{
     UINT32 i = hash(mode);
     /* printf("hash %s => %d\n", mode, i); */
     if (access_table[i].mode && strcmp(access_table[i].mode, mode) != 0) {
@@ -46,7 +48,8 @@ add_item(const char *mode) {
 /* fetch individual pixel */
 
 static void
-get_pixel_32_2bands(Imaging im, int x, int y, void *color) {
+get_pixel_32_2bands(Imaging im, int x, int y, void *color)
+{
     char *out = color;
     UINT8 *p = (UINT8 *)&im->image32[y][x];
     out[0] = p[0];
@@ -54,13 +57,15 @@ get_pixel_32_2bands(Imaging im, int x, int y, void *color) {
 }
 
 static void
-get_pixel_8(Imaging im, int x, int y, void *color) {
+get_pixel_8(Imaging im, int x, int y, void *color)
+{
     char *out = color;
     out[0] = im->image8[y][x];
 }
 
 static void
-get_pixel_16L(Imaging im, int x, int y, void *color) {
+get_pixel_16L(Imaging im, int x, int y, void *color)
+{
     UINT8 *in = (UINT8 *)&im->image[y][x + x];
 #ifdef WORDS_BIGENDIAN
     UINT16 out = in[0] + (in[1] << 8);
@@ -71,7 +76,8 @@ get_pixel_16L(Imaging im, int x, int y, void *color) {
 }
 
 static void
-get_pixel_16B(Imaging im, int x, int y, void *color) {
+get_pixel_16B(Imaging im, int x, int y, void *color)
+{
     UINT8 *in = (UINT8 *)&im->image[y][x + x];
 #ifdef WORDS_BIGENDIAN
     memcpy(color, in, sizeof(UINT16));
@@ -82,7 +88,8 @@ get_pixel_16B(Imaging im, int x, int y, void *color) {
 }
 
 static void
-get_pixel_BGR15(Imaging im, int x, int y, void *color) {
+get_pixel_BGR15(Imaging im, int x, int y, void *color)
+{
     UINT8 *in = (UINT8 *)&im->image8[y][x * 2];
     UINT16 pixel = in[0] + (in[1] << 8);
     char *out = color;
@@ -92,7 +99,8 @@ get_pixel_BGR15(Imaging im, int x, int y, void *color) {
 }
 
 static void
-get_pixel_BGR16(Imaging im, int x, int y, void *color) {
+get_pixel_BGR16(Imaging im, int x, int y, void *color)
+{
     UINT8 *in = (UINT8 *)&im->image8[y][x * 2];
     UINT16 pixel = in[0] + (in[1] << 8);
     char *out = color;
@@ -102,17 +110,20 @@ get_pixel_BGR16(Imaging im, int x, int y, void *color) {
 }
 
 static void
-get_pixel_BGR24(Imaging im, int x, int y, void *color) {
+get_pixel_BGR24(Imaging im, int x, int y, void *color)
+{
     memcpy(color, &im->image8[y][x * 3], sizeof(UINT8) * 3);
 }
 
 static void
-get_pixel_32(Imaging im, int x, int y, void *color) {
+get_pixel_32(Imaging im, int x, int y, void *color)
+{
     memcpy(color, &im->image32[y][x], sizeof(INT32));
 }
 
 static void
-get_pixel_32L(Imaging im, int x, int y, void *color) {
+get_pixel_32L(Imaging im, int x, int y, void *color)
+{
     UINT8 *in = (UINT8 *)&im->image[y][x * 4];
 #ifdef WORDS_BIGENDIAN
     INT32 out = in[0] + (in[1] << 8) + (in[2] << 16) + (in[3] << 24);
@@ -123,7 +134,8 @@ get_pixel_32L(Imaging im, int x, int y, void *color) {
 }
 
 static void
-get_pixel_32B(Imaging im, int x, int y, void *color) {
+get_pixel_32B(Imaging im, int x, int y, void *color)
+{
     UINT8 *in = (UINT8 *)&im->image[y][x * 4];
 #ifdef WORDS_BIGENDIAN
     memcpy(color, in, sizeof(INT32));
@@ -136,17 +148,20 @@ get_pixel_32B(Imaging im, int x, int y, void *color) {
 /* store individual pixel */
 
 static void
-put_pixel_8(Imaging im, int x, int y, const void *color) {
+put_pixel_8(Imaging im, int x, int y, const void *color)
+{
     im->image8[y][x] = *((UINT8 *)color);
 }
 
 static void
-put_pixel_16L(Imaging im, int x, int y, const void *color) {
+put_pixel_16L(Imaging im, int x, int y, const void *color)
+{
     memcpy(&im->image8[y][x + x], color, 2);
 }
 
 static void
-put_pixel_16B(Imaging im, int x, int y, const void *color) {
+put_pixel_16B(Imaging im, int x, int y, const void *color)
+{
     const char *in = color;
     UINT8 *out = (UINT8 *)&im->image8[y][x + x];
     out[0] = in[1];
@@ -154,22 +169,26 @@ put_pixel_16B(Imaging im, int x, int y, const void *color) {
 }
 
 static void
-put_pixel_BGR1516(Imaging im, int x, int y, const void *color) {
+put_pixel_BGR1516(Imaging im, int x, int y, const void *color)
+{
     memcpy(&im->image8[y][x * 2], color, 2);
 }
 
 static void
-put_pixel_BGR24(Imaging im, int x, int y, const void *color) {
+put_pixel_BGR24(Imaging im, int x, int y, const void *color)
+{
     memcpy(&im->image8[y][x * 3], color, 3);
 }
 
 static void
-put_pixel_32L(Imaging im, int x, int y, const void *color) {
+put_pixel_32L(Imaging im, int x, int y, const void *color)
+{
     memcpy(&im->image8[y][x * 4], color, 4);
 }
 
 static void
-put_pixel_32B(Imaging im, int x, int y, const void *color) {
+put_pixel_32B(Imaging im, int x, int y, const void *color)
+{
     const char *in = color;
     UINT8 *out = (UINT8 *)&im->image8[y][x * 4];
     out[0] = in[3];
@@ -179,12 +198,14 @@ put_pixel_32B(Imaging im, int x, int y, const void *color) {
 }
 
 static void
-put_pixel_32(Imaging im, int x, int y, const void *color) {
+put_pixel_32(Imaging im, int x, int y, const void *color)
+{
     memcpy(&im->image32[y][x], color, sizeof(INT32));
 }
 
 void
-ImagingAccessInit() {
+ImagingAccessInit()
+{
 #define ADD(mode_, get_pixel_, put_pixel_)      \
     {                                           \
         ImagingAccess access = add_item(mode_); \
@@ -225,7 +246,8 @@ ImagingAccessInit() {
 }
 
 ImagingAccess
-ImagingAccessNew(Imaging im) {
+ImagingAccessNew(Imaging im)
+{
     ImagingAccess access = &access_table[hash(im->mode)];
     if (im->mode[0] != access->mode[0] || strcmp(im->mode, access->mode) != 0) {
         return NULL;
@@ -234,4 +256,6 @@ ImagingAccessNew(Imaging im) {
 }
 
 void
-_ImagingAccessDelete(Imaging im, ImagingAccess access) {}
+_ImagingAccessDelete(Imaging im, ImagingAccess access)
+{
+}

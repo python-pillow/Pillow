@@ -24,42 +24,44 @@
         (b) = t;               \
     }
 
-#define MakeRankFunction(type)                       \
-    static type Rank##type(type a[], int n, int k) { \
-        register int i, j, l, m;                     \
-        register type x;                             \
-        l = 0;                                       \
-        m = n - 1;                                   \
-        while (l < m) {                              \
-            x = a[k];                                \
-            i = l;                                   \
-            j = m;                                   \
-            do {                                     \
-                while (a[i] < x) {                   \
-                    i++;                             \
-                }                                    \
-                while (x < a[j]) {                   \
-                    j--;                             \
-                }                                    \
-                if (i <= j) {                        \
-                    SWAP(type, a[i], a[j]);          \
-                    i++;                             \
-                    j--;                             \
-                }                                    \
-            } while (i <= j);                        \
-            if (j < k) {                             \
-                l = i;                               \
-            }                                        \
-            if (k < i) {                             \
-                m = j;                               \
-            }                                        \
-        }                                            \
-        return a[k];                                 \
+#define MakeRankFunction(type)                     \
+    static type Rank##type(type a[], int n, int k) \
+    {                                              \
+        register int i, j, l, m;                   \
+        register type x;                           \
+        l = 0;                                     \
+        m = n - 1;                                 \
+        while (l < m) {                            \
+            x = a[k];                              \
+            i = l;                                 \
+            j = m;                                 \
+            do {                                   \
+                while (a[i] < x) {                 \
+                    i++;                           \
+                }                                  \
+                while (x < a[j]) {                 \
+                    j--;                           \
+                }                                  \
+                if (i <= j) {                      \
+                    SWAP(type, a[i], a[j]);        \
+                    i++;                           \
+                    j--;                           \
+                }                                  \
+            } while (i <= j);                      \
+            if (j < k) {                           \
+                l = i;                             \
+            }                                      \
+            if (k < i) {                           \
+                m = j;                             \
+            }                                      \
+        }                                          \
+        return a[k];                               \
     }
 
 MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
 
-    Imaging ImagingRankFilter(Imaging im, int size, int rank) {
+    Imaging ImagingRankFilter(Imaging im, int size, int rank)
+{
     Imaging imOut = NULL;
     int x, y;
     int i, margin, size2;

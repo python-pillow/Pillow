@@ -20,7 +20,8 @@
 #include "Imaging.h"
 
 int
-ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+ImagingEpsEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
+{
     enum { HEXBYTE = 1, NEWLINE };
     const char *hex = "0123456789abcdef";
 

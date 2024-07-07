@@ -29,14 +29,16 @@
 /* -------------------------------------------------------------------- */
 
 static void
-j2k_error(const char *msg, void *client_data) {
+j2k_error(const char *msg, void *client_data)
+{
     JPEG2KENCODESTATE *state = (JPEG2KENCODESTATE *)client_data;
     free((void *)state->error_msg);
     state->error_msg = strdup(msg);
 }
 
 static void
-j2k_warn(const char *msg, void *client_data) {
+j2k_warn(const char *msg, void *client_data)
+{
     // Null handler
 }
 
@@ -45,7 +47,8 @@ j2k_warn(const char *msg, void *client_data) {
 /* -------------------------------------------------------------------- */
 
 static OPJ_SIZE_T
-j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data) {
+j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data)
+{
     ImagingCodecState state = (ImagingCodecState)p_user_data;
     unsigned int result;
 
@@ -55,7 +58,8 @@ j2k_write(void *p_buffer, OPJ_SIZE_T p_nb_bytes, void *p_user_data) {
 }
 
 static OPJ_OFF_T
-j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
+j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data)
+{
     ImagingCodecState state = (ImagingCodecState)p_user_data;
     char *buffer;
     int result;
@@ -74,7 +78,8 @@ j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
 }
 
 static OPJ_BOOL
-j2k_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
+j2k_seek(OPJ_OFF_T p_nb_bytes, void *p_user_data)
+{
     ImagingCodecState state = (ImagingCodecState)p_user_data;
     off_t pos = 0;
 
@@ -92,7 +97,8 @@ typedef void (*j2k_pack_tile_t)(
     Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h);
 
 static void
-j2k_pack_l(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h) {
+j2k_pack_l(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h)
+{
     UINT8 *ptr = buf;
     unsigned x, y;
     for (y = 0; y < h; ++y) {
@@ -104,7 +110,8 @@ j2k_pack_l(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigne
 }
 
 static void
-j2k_pack_i16(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h) {
+j2k_pack_i16(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h)
+{
     UINT8 *ptr = buf;
     unsigned x, y;
     for (y = 0; y < h; ++y) {
@@ -124,7 +131,8 @@ j2k_pack_i16(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsig
 }
 
 static void
-j2k_pack_la(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h) {
+j2k_pack_la(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h)
+{
     UINT8 *ptr = buf;
     UINT8 *ptra = buf + w * h;
     unsigned x, y;
@@ -139,7 +147,8 @@ j2k_pack_la(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsign
 }
 
 static void
-j2k_pack_rgb(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h) {
+j2k_pack_rgb(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h)
+{
     UINT8 *pr = buf;
     UINT8 *pg = pr + w * h;
     UINT8 *pb = pg + w * h;
@@ -156,8 +165,8 @@ j2k_pack_rgb(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsig
 }
 
 static void
-j2k_pack_rgba(
-    Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h) {
+j2k_pack_rgba(Imaging im, UINT8 *buf, unsigned x0, unsigned y0, unsigned w, unsigned h)
+{
     UINT8 *pr = buf;
     UINT8 *pg = pr + w * h;
     UINT8 *pb = pg + w * h;
@@ -182,7 +191,8 @@ enum {
 };
 
 static void
-j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params) {
+j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params)
+{
     float rate;
     int n;
 
@@ -263,7 +273,8 @@ j2k_set_cinema_params(Imaging im, int components, opj_cparameters_t *params) {
 }
 
 static int
-j2k_encode_entry(Imaging im, ImagingCodecState state) {
+j2k_encode_entry(Imaging im, ImagingCodecState state)
+{
     JPEG2KENCODESTATE *context = (JPEG2KENCODESTATE *)state->context;
     opj_stream_t *stream = NULL;
     opj_image_t *image = NULL;
@@ -608,7 +619,8 @@ quick_exit:
 }
 
 int
-ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
+ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes)
+{
     if (state->state == J2K_STATE_FAILED) {
         return -1;
     }
@@ -627,7 +639,8 @@ ImagingJpeg2KEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) 
 /* -------------------------------------------------------------------- */
 
 int
-ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
+ImagingJpeg2KEncodeCleanup(ImagingCodecState state)
+{
     JPEG2KENCODESTATE *context = (JPEG2KENCODESTATE *)state->context;
 
     if (context->quality_layers) {

@@ -11,7 +11,8 @@
 typedef UINT8 pixel[4];
 
 static inline UINT8
-clip8(int in) {
+clip8(int in)
+{
     if (in >= 255) {
         return 255;
     }
@@ -23,7 +24,8 @@ clip8(int in) {
 
 Imaging
 ImagingUnsharpMask(
-    Imaging imOut, Imaging imIn, float radius, int percent, int threshold) {
+    Imaging imOut, Imaging imIn, float radius, int percent, int threshold)
+{
     ImagingSectionCookie cookie;
     Imaging result;
 

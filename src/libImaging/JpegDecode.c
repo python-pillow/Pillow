@@ -48,7 +48,8 @@ char *libjpeg_turbo_version = NULL;
 #endif
 
 int
-ImagingJpegUseJCSExtensions() {
+ImagingJpegUseJCSExtensions()
+{
     int use_jcs_extensions = 0;
 #ifdef JCS_EXTENSIONS
 #if defined(LIBJPEG_TURBO_VERSION_NUMBER)
@@ -72,13 +73,15 @@ METHODDEF(void)
 stub(j_decompress_ptr cinfo) { /* empty */ }
 
 METHODDEF(boolean)
-fill_input_buffer(j_decompress_ptr cinfo) {
+fill_input_buffer(j_decompress_ptr cinfo)
+{
     /* Suspension */
     return FALSE;
 }
 
 METHODDEF(void)
-skip_input_data(j_decompress_ptr cinfo, long num_bytes) {
+skip_input_data(j_decompress_ptr cinfo, long num_bytes)
+{
     JPEGSOURCE *source = (JPEGSOURCE *)cinfo->src;
 
     if (num_bytes > (long)source->pub.bytes_in_buffer) {
@@ -96,7 +99,8 @@ skip_input_data(j_decompress_ptr cinfo, long num_bytes) {
 }
 
 GLOBAL(void)
-jpeg_buffer_src(j_decompress_ptr cinfo, JPEGSOURCE *source) {
+jpeg_buffer_src(j_decompress_ptr cinfo, JPEGSOURCE *source)
+{
     cinfo->src = (void *)source;
 
     /* Prepare for suspending reader */
@@ -115,7 +119,8 @@ jpeg_buffer_src(j_decompress_ptr cinfo, JPEGSOURCE *source) {
 /* -------------------------------------------------------------------- */
 
 METHODDEF(void)
-error(j_common_ptr cinfo) {
+error(j_common_ptr cinfo)
+{
     JPEGERROR *error;
     error = (JPEGERROR *)cinfo->err;
     longjmp(error->setjmp_buffer, 1);
@@ -129,7 +134,8 @@ output(j_common_ptr cinfo) { /* nothing */ }
 /* -------------------------------------------------------------------- */
 
 int
-ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes)
+{
     JPEGSTATE *context = (JPEGSTATE *)state->context;
     int ok;
 
@@ -290,7 +296,8 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
 /* -------------------------------------------------------------------- */
 
 int
-ImagingJpegDecodeCleanup(ImagingCodecState state) {
+ImagingJpegDecodeCleanup(ImagingCodecState state)
+{
     /* called to free the decompression engine when the decode terminates
        due to a corrupt or truncated image
     */

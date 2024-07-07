@@ -20,7 +20,8 @@ typedef struct {
 } rgba8;
 
 Imaging
-ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
+ImagingAlphaComposite(Imaging imDst, Imaging imSrc)
+{
     Imaging imOut;
     int x, y;
 

@@ -27,7 +27,8 @@
 #include "Imaging.h"
 
 static inline UINT8
-clip8(float in) {
+clip8(float in)
+{
     if (in <= 0.0) {
         return 0;
     }
@@ -38,7 +39,8 @@ clip8(float in) {
 }
 
 static inline INT32
-clip32(float in) {
+clip32(float in)
+{
     if (in <= 0.0) {
         return 0;
     }
@@ -49,7 +51,8 @@ clip32(float in) {
 }
 
 Imaging
-ImagingExpand(Imaging imIn, int xmargin, int ymargin) {
+ImagingExpand(Imaging imIn, int xmargin, int ymargin)
+{
     Imaging imOut;
     int x, y;
     ImagingSectionCookie cookie;
@@ -105,7 +108,8 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin) {
 }
 
 void
-ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
+ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset)
+{
 #define KERNEL1x3(in0, x, kernel, d)                               \
     (_i2f(in0[x - d]) * (kernel)[0] + _i2f(in0[x]) * (kernel)[1] + \
      _i2f(in0[x + d]) * (kernel)[2])
@@ -223,7 +227,8 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
 }
 
 void
-ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
+ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset)
+{
 #define KERNEL1x5(in0, x, kernel, d)                                       \
     (_i2f(in0[x - d - d]) * (kernel)[0] + _i2f(in0[x - d]) * (kernel)[1] + \
      _i2f(in0[x]) * (kernel)[2] + _i2f(in0[x + d]) * (kernel)[3] +         \
@@ -377,7 +382,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
 }
 
 Imaging
-ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 offset) {
+ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 offset)
+{
     Imaging imOut;
     ImagingSectionCookie cookie;
 

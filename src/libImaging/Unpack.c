@@ -109,7 +109,8 @@ static UINT8 BITFLIP[] = {
 /* Unpack to "1" image */
 
 static void
-unpack1(UINT8 *out, const UINT8 *in, int pixels) {
+unpack1(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* bits (msb first, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -143,7 +144,8 @@ unpack1(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpack1I(UINT8 *out, const UINT8 *in, int pixels) {
+unpack1I(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* bits (msb first, white is zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -177,7 +179,8 @@ unpack1I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpack1R(UINT8 *out, const UINT8 *in, int pixels) {
+unpack1R(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* bits (lsb first, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -211,7 +214,8 @@ unpack1R(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpack1IR(UINT8 *out, const UINT8 *in, int pixels) {
+unpack1IR(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* bits (lsb first, white is zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -245,7 +249,8 @@ unpack1IR(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpack18(UINT8 *out, const UINT8 *in, int pixels) {
+unpack18(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* Unpack a '|b1' image, which is a numpy boolean.
        1 == true, 0==false, in bytes */
 
@@ -258,7 +263,8 @@ unpack18(UINT8 *out, const UINT8 *in, int pixels) {
 /* Unpack to "L" image */
 
 static void
-unpackL2(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL2(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles (msb first, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -280,7 +286,8 @@ unpackL2(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL2I(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL2I(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles (msb first, white is zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -302,7 +309,8 @@ unpackL2I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL2R(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL2R(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles (bit order reversed, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -325,7 +333,8 @@ unpackL2R(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL2IR(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL2IR(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles (bit order reversed, white is zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -348,7 +357,8 @@ unpackL2IR(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL4(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL4(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles (msb first, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -364,7 +374,8 @@ unpackL4(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL4I(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL4I(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles (msb first, white is zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -380,7 +391,8 @@ unpackL4I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL4R(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL4R(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles (bit order reversed, white is non-zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -397,7 +409,8 @@ unpackL4R(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL4IR(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL4IR(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles (bit order reversed, white is zero) */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -414,7 +427,8 @@ unpackL4IR(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackLA(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackLA(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* LA, pixel interleaved */
     for (i = 0; i < pixels; i++) {
@@ -426,7 +440,8 @@ unpackLA(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackLAL(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackLAL(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* LA, line interleaved */
     for (i = 0; i < pixels; i++, _out += 4) {
@@ -436,7 +451,8 @@ unpackLAL(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackLI(UINT8 *out, const UINT8 *in, int pixels) {
+unpackLI(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* negative */
     int i;
     for (i = 0; i < pixels; i++) {
@@ -445,7 +461,8 @@ unpackLI(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackLR(UINT8 *out, const UINT8 *in, int pixels) {
+unpackLR(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGB, bit reversed */
     for (i = 0; i < pixels; i++) {
@@ -454,7 +471,8 @@ unpackLR(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL16(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL16(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* int16 (upper byte, little endian) */
     int i;
     for (i = 0; i < pixels; i++) {
@@ -464,7 +482,8 @@ unpackL16(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackL16B(UINT8 *out, const UINT8 *in, int pixels) {
+unpackL16B(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* int16 (upper byte, big endian) */
     for (i = 0; i < pixels; i++) {
@@ -476,7 +495,8 @@ unpackL16B(UINT8 *out, const UINT8 *in, int pixels) {
 /* Unpack to "P" image */
 
 static void
-unpackP1(UINT8 *out, const UINT8 *in, int pixels) {
+unpackP1(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* bits */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -510,7 +530,8 @@ unpackP1(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackP2(UINT8 *out, const UINT8 *in, int pixels) {
+unpackP2(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* bit pairs */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -532,7 +553,8 @@ unpackP2(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackP4(UINT8 *out, const UINT8 *in, int pixels) {
+unpackP4(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* nibbles */
     while (pixels > 0) {
         UINT8 byte = *in++;
@@ -548,7 +570,8 @@ unpackP4(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackP2L(UINT8 *out, const UINT8 *in, int pixels) {
+unpackP2L(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, j, m, s;
     /* bit layers */
     m = 128;
@@ -563,7 +586,8 @@ unpackP2L(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackP4L(UINT8 *out, const UINT8 *in, int pixels) {
+unpackP4L(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, j, m, s;
     /* bit layers (trust the optimizer ;-) */
     m = 128;
@@ -581,7 +605,8 @@ unpackP4L(UINT8 *out, const UINT8 *in, int pixels) {
 /* Unpack to "RGB" image */
 
 void
-ImagingUnpackRGB(UINT8 *_out, const UINT8 *in, int pixels) {
+ImagingUnpackRGB(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i = 0;
     /* RGB triplets */
     for (; i < pixels - 1; i++) {
@@ -601,7 +626,8 @@ ImagingUnpackRGB(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 void
-unpackRGB16L(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGB16L(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* 16-bit RGB triplets, little-endian order */
     for (i = 0; i < pixels; i++) {
@@ -613,7 +639,8 @@ unpackRGB16L(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 void
-unpackRGB16B(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGB16B(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* 16-bit RGB triplets, big-endian order */
     for (i = 0; i < pixels; i++) {
@@ -625,7 +652,8 @@ unpackRGB16B(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBL(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBL(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGB, line interleaved */
     for (i = 0; i < pixels; i++, _out += 4) {
@@ -635,7 +663,8 @@ unpackRGBL(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBR(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBR(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGB, bit reversed */
     for (i = 0; i < pixels; i++) {
@@ -647,7 +676,8 @@ unpackRGBR(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackBGR(UINT8 *_out, const UINT8 *in, int pixels) {
+ImagingUnpackBGR(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGB, reversed bytes */
     for (i = 0; i < pixels; i++) {
@@ -659,7 +689,8 @@ ImagingUnpackBGR(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackRGB15(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackRGB15(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGB, 5 bits per pixel */
     for (i = 0; i < pixels; i++) {
@@ -674,7 +705,8 @@ ImagingUnpackRGB15(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackRGBA15(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackRGBA15(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGB, 5/5/5/1 bits per pixel */
     for (i = 0; i < pixels; i++) {
@@ -689,7 +721,8 @@ ImagingUnpackRGBA15(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackBGR15(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackBGR15(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGB, reversed bytes, 5 bits per pixel */
     for (i = 0; i < pixels; i++) {
@@ -704,7 +737,8 @@ ImagingUnpackBGR15(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGB, rearranged channels, 5/5/5/1 bits per pixel */
     for (i = 0; i < pixels; i++) {
@@ -719,7 +753,8 @@ ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackBGRA15Z(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackBGRA15Z(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGB, rearranged channels, 5/5/5/1 bits per pixel, inverted alpha */
     for (i = 0; i < pixels; i++) {
@@ -734,7 +769,8 @@ ImagingUnpackBGRA15Z(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackRGB16(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackRGB16(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGB, 5/6/5 bits per pixel */
     for (i = 0; i < pixels; i++) {
@@ -749,7 +785,8 @@ ImagingUnpackRGB16(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackBGR16(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackBGR16(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGB, reversed bytes, 5/6/5 bits per pixel */
     for (i = 0; i < pixels; i++) {
@@ -764,7 +801,8 @@ ImagingUnpackBGR16(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGB, 4 bits per pixel */
     for (i = 0; i < pixels; i++) {
@@ -779,7 +817,8 @@ ImagingUnpackRGB4B(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
-ImagingUnpackRGBA4B(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackRGBA4B(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i, pixel;
     /* RGBA, 4 bits per pixel */
     for (i = 0; i < pixels; i++) {
@@ -794,7 +833,8 @@ ImagingUnpackRGBA4B(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-ImagingUnpackBGRX(UINT8 *_out, const UINT8 *in, int pixels) {
+ImagingUnpackBGRX(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGB, reversed bytes with padding */
     for (i = 0; i < pixels; i++) {
@@ -806,7 +846,8 @@ ImagingUnpackBGRX(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-ImagingUnpackBGXR(UINT8 *_out, const UINT8 *in, int pixels) {
+ImagingUnpackBGXR(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[3], in[1], in[0], 255);
@@ -817,7 +858,8 @@ ImagingUnpackBGXR(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-ImagingUnpackXRGB(UINT8 *_out, const UINT8 *in, int pixels) {
+ImagingUnpackXRGB(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGB, leading pad */
     for (i = 0; i < pixels; i++) {
@@ -829,7 +871,8 @@ ImagingUnpackXRGB(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-ImagingUnpackXBGR(UINT8 *_out, const UINT8 *in, int pixels) {
+ImagingUnpackXBGR(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGB, reversed bytes, leading pad */
     for (i = 0; i < pixels; i++) {
@@ -843,7 +886,8 @@ ImagingUnpackXBGR(UINT8 *_out, const UINT8 *in, int pixels) {
 /* Unpack to "RGBA" image */
 
 static void
-unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* grayscale with alpha */
     for (i = 0; i < pixels; i++) {
@@ -855,7 +899,8 @@ unpackRGBALA(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBALA16B(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBALA16B(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* 16-bit grayscale with alpha, big-endian */
     for (i = 0; i < pixels; i++) {
@@ -867,7 +912,8 @@ unpackRGBALA16B(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBa16L(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBa16L(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* premultiplied 16-bit RGBA, little-endian */
     for (i = 0; i < pixels; i++) {
@@ -891,7 +937,8 @@ unpackRGBa16L(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBa16B(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBa16B(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* premultiplied 16-bit RGBA, big-endian */
     for (i = 0; i < pixels; i++) {
@@ -915,7 +962,8 @@ unpackRGBa16B(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBa(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBa(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* premultiplied RGBA */
     for (i = 0; i < pixels; i++) {
@@ -939,7 +987,8 @@ unpackRGBa(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBaskip1(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBaskip1(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     UINT32 *out = (UINT32 *)_out;
     /* premultiplied RGBA */
@@ -961,7 +1010,8 @@ unpackRGBaskip1(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBaskip2(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBaskip2(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     UINT32 *out = (UINT32 *)_out;
     /* premultiplied RGBA */
@@ -983,7 +1033,8 @@ unpackRGBaskip2(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackBGRa(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackBGRa(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* premultiplied BGRA */
     for (i = 0; i < pixels; i++) {
@@ -1007,7 +1058,8 @@ unpackBGRa(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBAI(UINT8 *out, const UINT8 *in, int pixels) {
+unpackRGBAI(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGBA, inverted RGB bytes (FlashPix) */
     for (i = 0; i < pixels; i++) {
@@ -1021,7 +1073,8 @@ unpackRGBAI(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackRGBAL(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBAL(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGBA, line interleaved */
     for (i = 0; i < pixels; i++, _out += 4) {
@@ -1035,7 +1088,8 @@ unpackRGBAL(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 void
-unpackRGBA16L(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBA16L(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* 16-bit RGBA, little-endian order */
     for (i = 0; i < pixels; i++, _out += 4) {
@@ -1046,7 +1100,8 @@ unpackRGBA16L(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 void
-unpackRGBA16B(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackRGBA16B(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* 16-bit RGBA, big-endian order */
     for (i = 0; i < pixels; i++, _out += 4) {
@@ -1057,7 +1112,8 @@ unpackRGBA16B(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackARGB(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackARGB(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGBA, leading pad */
     for (i = 0; i < pixels; i++) {
@@ -1069,7 +1125,8 @@ unpackARGB(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackABGR(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackABGR(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGBA, reversed bytes */
     for (i = 0; i < pixels; i++) {
@@ -1081,7 +1138,8 @@ unpackABGR(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackBGRA(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackBGRA(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* RGBA, rearranged channels */
     for (i = 0; i < pixels; i++) {
@@ -1093,7 +1151,8 @@ unpackBGRA(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackBGRA16L(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackBGRA16L(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* 16-bit RGBA, little-endian order, rearranged channels */
     for (i = 0; i < pixels; i++) {
@@ -1105,7 +1164,8 @@ unpackBGRA16L(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackBGRA16B(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackBGRA16B(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* 16-bit RGBA, big-endian order, rearranged channels */
     for (i = 0; i < pixels; i++) {
@@ -1117,7 +1177,8 @@ unpackBGRA16B(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackBGAR(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackBGAR(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     for (i = 0; i < pixels; i++) {
         UINT32 iv = MAKE_UINT32(in[3], in[1], in[0], in[2]);
@@ -1130,7 +1191,8 @@ unpackBGAR(UINT8 *_out, const UINT8 *in, int pixels) {
 /* Unpack to "CMYK" image */
 
 static void
-unpackCMYKI(UINT8 *_out, const UINT8 *in, int pixels) {
+unpackCMYKI(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     /* CMYK, inverted bytes (Photoshop 2.5) */
     for (i = 0; i < pixels; i++) {
@@ -1153,7 +1215,8 @@ unpackCMYKI(UINT8 *_out, const UINT8 *in, int pixels) {
    internally, and we'll unshift for saving and whatnot.
 */
 void
-ImagingUnpackLAB(UINT8 *out, const UINT8 *in, int pixels) {
+ImagingUnpackLAB(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* LAB triplets */
     for (i = 0; i < pixels; i++) {
@@ -1167,7 +1230,8 @@ ImagingUnpackLAB(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackI16N_I16B(UINT8 *out, const UINT8 *in, int pixels) {
+unpackI16N_I16B(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     UINT8 *tmp = (UINT8 *)out;
     for (i = 0; i < pixels; i++) {
@@ -1177,7 +1241,8 @@ unpackI16N_I16B(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 static void
-unpackI16N_I16(UINT8 *out, const UINT8 *in, int pixels) {
+unpackI16N_I16(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     UINT8 *tmp = (UINT8 *)out;
     for (i = 0; i < pixels; i++) {
@@ -1187,7 +1252,8 @@ unpackI16N_I16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 static void
-unpackI16B_I16(UINT8 *out, const UINT8 *in, int pixels) {
+unpackI16B_I16(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     for (i = 0; i < pixels; i++) {
         out[0] = in[1];
@@ -1197,7 +1263,8 @@ unpackI16B_I16(UINT8 *out, const UINT8 *in, int pixels) {
     }
 }
 static void
-unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
+unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     for (i = 0; i < pixels; i++) {
         out[0] = BITFLIP[in[0]];
@@ -1208,7 +1275,8 @@ unpackI16R_I16(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels) {
+unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels)
+{
     /*  Fillorder 1/MSB -> LittleEndian, for 12bit integer grayscale tiffs.
 
         According to the TIFF spec:
@@ -1265,31 +1333,36 @@ unpackI12_I16(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-copy1(UINT8 *out, const UINT8 *in, int pixels) {
+copy1(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* L, P */
     memcpy(out, in, pixels);
 }
 
 static void
-copy2(UINT8 *out, const UINT8 *in, int pixels) {
+copy2(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* I;16 */
     memcpy(out, in, pixels * 2);
 }
 
 static void
-copy3(UINT8 *out, const UINT8 *in, int pixels) {
+copy3(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* BGR;24 */
     memcpy(out, in, pixels * 3);
 }
 
 static void
-copy4(UINT8 *out, const UINT8 *in, int pixels) {
+copy4(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* RGBA, CMYK quadruples */
     memcpy(out, in, 4 * pixels);
 }
 
 static void
-copy4skip1(UINT8 *_out, const UINT8 *in, int pixels) {
+copy4skip1(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     for (i = 0; i < pixels; i++) {
         memcpy(_out, in, 4);
@@ -1299,7 +1372,8 @@ copy4skip1(UINT8 *_out, const UINT8 *in, int pixels) {
 }
 
 static void
-copy4skip2(UINT8 *_out, const UINT8 *in, int pixels) {
+copy4skip2(UINT8 *_out, const UINT8 *in, int pixels)
+{
     int i;
     for (i = 0; i < pixels; i++) {
         memcpy(_out, in, 4);
@@ -1310,25 +1384,27 @@ copy4skip2(UINT8 *_out, const UINT8 *in, int pixels) {
 
 /* Unpack to "I" and "F" images */
 
-#define UNPACK_RAW(NAME, GET, INTYPE, OUTTYPE)                   \
-    static void NAME(UINT8 *out_, const UINT8 *in, int pixels) { \
-        int i;                                                   \
-        OUTTYPE *out = (OUTTYPE *)out_;                          \
-        for (i = 0; i < pixels; i++, in += sizeof(INTYPE)) {     \
-            out[i] = (OUTTYPE)((INTYPE)GET);                     \
-        }                                                        \
+#define UNPACK_RAW(NAME, GET, INTYPE, OUTTYPE)                 \
+    static void NAME(UINT8 *out_, const UINT8 *in, int pixels) \
+    {                                                          \
+        int i;                                                 \
+        OUTTYPE *out = (OUTTYPE *)out_;                        \
+        for (i = 0; i < pixels; i++, in += sizeof(INTYPE)) {   \
+            out[i] = (OUTTYPE)((INTYPE)GET);                   \
+        }                                                      \
     }
 
-#define UNPACK(NAME, COPY, INTYPE, OUTTYPE)                      \
-    static void NAME(UINT8 *out_, const UINT8 *in, int pixels) { \
-        int i;                                                   \
-        OUTTYPE *out = (OUTTYPE *)out_;                          \
-        INTYPE tmp_;                                             \
-        UINT8 *tmp = (UINT8 *)&tmp_;                             \
-        for (i = 0; i < pixels; i++, in += sizeof(INTYPE)) {     \
-            COPY;                                                \
-            out[i] = (OUTTYPE)tmp_;                              \
-        }                                                        \
+#define UNPACK(NAME, COPY, INTYPE, OUTTYPE)                    \
+    static void NAME(UINT8 *out_, const UINT8 *in, int pixels) \
+    {                                                          \
+        int i;                                                 \
+        OUTTYPE *out = (OUTTYPE *)out_;                        \
+        INTYPE tmp_;                                           \
+        UINT8 *tmp = (UINT8 *)&tmp_;                           \
+        for (i = 0; i < pixels; i++, in += sizeof(INTYPE)) {   \
+            COPY;                                              \
+            out[i] = (OUTTYPE)tmp_;                            \
+        }                                                      \
     }
 
 UNPACK_RAW(unpackI8, in[0], UINT8, INT32)
@@ -1372,7 +1448,8 @@ UNPACK(unpackF64NF, C64N, FLOAT64, FLOAT32)
 /* Misc. unpackers */
 
 static void
-band0(UINT8 *out, const UINT8 *in, int pixels) {
+band0(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 0 only */
     for (i = 0; i < pixels; i++) {
@@ -1382,7 +1459,8 @@ band0(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band1(UINT8 *out, const UINT8 *in, int pixels) {
+band1(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 1 only */
     for (i = 0; i < pixels; i++) {
@@ -1392,7 +1470,8 @@ band1(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band2(UINT8 *out, const UINT8 *in, int pixels) {
+band2(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 2 only */
     for (i = 0; i < pixels; i++) {
@@ -1402,7 +1481,8 @@ band2(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band3(UINT8 *out, const UINT8 *in, int pixels) {
+band3(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* band 3 only */
     int i;
     for (i = 0; i < pixels; i++) {
@@ -1412,7 +1492,8 @@ band3(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band0I(UINT8 *out, const UINT8 *in, int pixels) {
+band0I(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 0 only */
     for (i = 0; i < pixels; i++) {
@@ -1422,7 +1503,8 @@ band0I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band1I(UINT8 *out, const UINT8 *in, int pixels) {
+band1I(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 1 only */
     for (i = 0; i < pixels; i++) {
@@ -1432,7 +1514,8 @@ band1I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band2I(UINT8 *out, const UINT8 *in, int pixels) {
+band2I(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 2 only */
     for (i = 0; i < pixels; i++) {
@@ -1442,7 +1525,8 @@ band2I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band3I(UINT8 *out, const UINT8 *in, int pixels) {
+band3I(UINT8 *out, const UINT8 *in, int pixels)
+{
     /* band 3 only */
     int i;
     for (i = 0; i < pixels; i++) {
@@ -1452,7 +1536,8 @@ band3I(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band016B(UINT8 *out, const UINT8 *in, int pixels) {
+band016B(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 0 only, big endian */
     for (i = 0; i < pixels; i++) {
@@ -1463,7 +1548,8 @@ band016B(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band116B(UINT8 *out, const UINT8 *in, int pixels) {
+band116B(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 1 only, big endian */
     for (i = 0; i < pixels; i++) {
@@ -1474,7 +1560,8 @@ band116B(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band216B(UINT8 *out, const UINT8 *in, int pixels) {
+band216B(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 2 only, big endian */
     for (i = 0; i < pixels; i++) {
@@ -1485,7 +1572,8 @@ band216B(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band316B(UINT8 *out, const UINT8 *in, int pixels) {
+band316B(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 3 only, big endian */
     for (i = 0; i < pixels; i++) {
@@ -1496,7 +1584,8 @@ band316B(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band016L(UINT8 *out, const UINT8 *in, int pixels) {
+band016L(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 0 only, little endian */
     for (i = 0; i < pixels; i++) {
@@ -1507,7 +1596,8 @@ band016L(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band116L(UINT8 *out, const UINT8 *in, int pixels) {
+band116L(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 1 only, little endian */
     for (i = 0; i < pixels; i++) {
@@ -1518,7 +1608,8 @@ band116L(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band216L(UINT8 *out, const UINT8 *in, int pixels) {
+band216L(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 2 only, little endian */
     for (i = 0; i < pixels; i++) {
@@ -1529,7 +1620,8 @@ band216L(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 static void
-band316L(UINT8 *out, const UINT8 *in, int pixels) {
+band316L(UINT8 *out, const UINT8 *in, int pixels)
+{
     int i;
     /* band 3 only, little endian */
     for (i = 0; i < pixels; i++) {
@@ -1845,7 +1937,8 @@ static struct {
 };
 
 ImagingShuffler
-ImagingFindUnpacker(const char *mode, const char *rawmode, int *bits_out) {
+ImagingFindUnpacker(const char *mode, const char *rawmode, int *bits_out)
+{
     int i;
 
     /* find a suitable pixel unpacker */

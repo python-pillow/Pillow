@@ -20,7 +20,8 @@
 #include <ctype.h>
 
 int
-ImagingSaveRaw(Imaging im, FILE *fp) {
+ImagingSaveRaw(Imaging im, FILE *fp)
+{
     int x, y, i;
 
     if (strcmp(im->mode, "1") == 0 || strcmp(im->mode, "L") == 0) {
@@ -44,7 +45,8 @@ ImagingSaveRaw(Imaging im, FILE *fp) {
 }
 
 int
-ImagingSavePPM(Imaging im, const char *outfile) {
+ImagingSavePPM(Imaging im, const char *outfile)
+{
     FILE *fp;
 
     if (!im) {
