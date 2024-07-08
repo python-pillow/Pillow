@@ -46,6 +46,18 @@ def test_version() -> None:
         test(feature, features.version_feature)
 
 
+def test_webp_transparency() -> None:
+    assert features.check("transp_webp") == features.check_module("webp")
+
+
+def test_webp_mux() -> None:
+    assert features.check("webp_mux") == features.check_module("webp")
+
+
+def test_webp_anim() -> None:
+    assert features.check("webp_anim") == features.check_module("webp")
+
+
 @skip_unless_feature("libjpeg_turbo")
 def test_libjpeg_turbo_version() -> None:
     version = features.version("libjpeg_turbo")
