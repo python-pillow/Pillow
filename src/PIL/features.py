@@ -7,6 +7,7 @@ import warnings
 from typing import IO
 
 import PIL
+from PIL import _deprecate
 
 from . import Image
 
@@ -119,6 +120,9 @@ def get_supported_codecs() -> list[str]:
 
 
 features = {
+    "webp_anim": ("PIL._webp", True, None),
+    "webp_mux": ("PIL._webp", True, None),
+    "transp_webp": ("PIL._webp", True, None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
@@ -144,7 +148,11 @@ def check_feature(feature: str) -> bool | None:
 
     try:
         imported_module = __import__(module, fromlist=["PIL"])
-        return getattr(imported_module, flag)
+        if isinstance(flag, str):
+            return getattr(imported_module, flag)
+        else:
+            _deprecate.deprecate(f'check_feature("{feature}")', 12)
+            return flag
     except ModuleNotFoundError:
         return None
     except ImportError as ex:
