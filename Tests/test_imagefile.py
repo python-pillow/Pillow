@@ -90,6 +90,7 @@ class TestImageFile:
             data = f.read()
         with ImageFile.Parser() as p:
             p.feed(data)
+            assert p.image is not None
             assert (48, 48) == p.image.size
 
     @skip_unless_feature("webp")
@@ -103,6 +104,7 @@ class TestImageFile:
                 assert not p.image
 
                 p.feed(f.read())
+            assert p.image is not None
             assert (128, 128) == p.image.size
 
     @skip_unless_feature("zlib")
@@ -393,8 +395,9 @@ class TestPyEncoder(CodecsTest):
         with pytest.raises(NotImplementedError):
             encoder.encode_to_pyfd()
 
+        fh = BytesIO()
         with pytest.raises(NotImplementedError):
-            encoder.encode_to_file(None, None)
+            encoder.encode_to_file(fh, 0)
 
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):

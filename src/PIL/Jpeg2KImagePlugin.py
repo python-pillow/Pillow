@@ -29,7 +29,7 @@ class BoxReader:
     and to easily step into and read sub-boxes.
     """
 
-    def __init__(self, fp, length=-1):
+    def __init__(self, fp: IO[bytes], length: int = -1) -> None:
         self.fp = fp
         self.has_length = length >= 0
         self.length = length
@@ -97,7 +97,7 @@ class BoxReader:
         return tbox
 
 
-def _parse_codestream(fp) -> tuple[tuple[int, int], str]:
+def _parse_codestream(fp: IO[bytes]) -> tuple[tuple[int, int], str]:
     """Parse the JPEG 2000 codestream to extract the size and component
     count from the SIZ marker segment, returning a PIL (size, mode) tuple."""
 
@@ -137,7 +137,15 @@ def _res_to_dpi(num: int, denom: int, exp: int) -> float | None:
     return (254 * num * (10**exp)) / (10000 * denom)
 
 
-def _parse_jp2_header(fp):
+def _parse_jp2_header(
+    fp: IO[bytes],
+) -> tuple[
+    tuple[int, int],
+    str,
+    str | None,
+    tuple[float, float] | None,
+    ImagePalette.ImagePalette | None,
+]:
     """Parse the JP2 header box to extract size, component count,
     color space information, and optionally DPI information,
     returning a (size, mode, mimetype, dpi) tuple."""
@@ -155,6 +163,7 @@ def _parse_jp2_header(fp):
         elif tbox == b"ftyp":
             if reader.read_fields(">4s")[0] == b"jpx ":
                 mimetype = "image/jpx"
+    assert header is not None
 
     size = None
     mode = None
@@ -168,6 +177,9 @@ def _parse_jp2_header(fp):
 
         if tbox == b"ihdr":
             height, width, nc, bpc = header.read_fields(">IIHB")
+            assert isinstance(height, int)
+            assert isinstance(width, int)
+            assert isinstance(bpc, int)
             size = (width, height)
             if nc == 1 and (bpc & 0x7F) > 8:
                 mode = "I;16"
@@ -185,11 +197,21 @@ def _parse_jp2_header(fp):
                 mode = "CMYK"
         elif tbox == b"pclr" and mode in ("L", "LA"):
             ne, npc = header.read_fields(">HB")
-            bitdepths = header.read_fields(">" + ("B" * npc))
-            if max(bitdepths) <= 8:
+            assert isinstance(ne, int)
+            assert isinstance(npc, int)
+            max_bitdepth = 0
+            for bitdepth in header.read_fields(">" + ("B" * npc)):
+                assert isinstance(bitdepth, int)
+                if bitdepth > max_bitdepth:
+                    max_bitdepth = bitdepth
+            if max_bitdepth <= 8:
                 palette = ImagePalette.ImagePalette()
                 for i in range(ne):
-                    palette.getcolor(header.read_fields(">" + ("B" * npc)))
+                    color: list[int] = []
+                    for value in header.read_fields(">" + ("B" * npc)):
+                        assert isinstance(value, int)
+                        color.append(value)
+                    palette.getcolor(tuple(color))
                 mode = "P" if mode == "L" else "PA"
         elif tbox == b"res ":
             res = header.read_boxes()
@@ -197,6 +219,12 @@ def _parse_jp2_header(fp):
                 tres = res.next_box_type()
                 if tres == b"resc":
                     vrcn, vrcd, hrcn, hrcd, vrce, hrce = res.read_fields(">HHHHBB")
+                    assert isinstance(vrcn, int)
+                    assert isinstance(vrcd, int)
+                    assert isinstance(hrcn, int)
+                    assert isinstance(hrcd, int)
+                    assert isinstance(vrce, int)
+                    assert isinstance(hrce, int)
                     hres = _res_to_dpi(hrcn, hrcd, hrce)
                     vres = _res_to_dpi(vrcn, vrcd, vrce)
                     if hres is not None and vres is not None:

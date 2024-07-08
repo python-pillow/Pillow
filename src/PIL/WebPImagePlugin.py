@@ -115,7 +115,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self.__loaded = -1
         self.__timestamp = 0
 
-    def _get_next(self):
+    def _get_next(self) -> tuple[bytes, int, int]:
         # Get next frame
         ret = self._decoder.get_next()
         self.__physical_frame += 1

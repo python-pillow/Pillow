@@ -60,7 +60,7 @@ def Skip(self: JpegImageFile, marker: int) -> None:
     ImageFile._safe_read(self.fp, n)
 
 
-def APP(self, marker):
+def APP(self: JpegImageFile, marker: int) -> None:
     #
     # Application marker.  Store these in the APP dictionary.
     # Also look for well-known application markers.
@@ -133,13 +133,14 @@ def APP(self, marker):
                 offset += 4
                 data = s[offset : offset + size]
                 if code == 0x03ED:  # ResolutionInfo
-                    data = {
+                    photoshop[code] = {
                         "XResolution": i32(data, 0) / 65536,
                         "DisplayedUnitsX": i16(data, 4),
                         "YResolution": i32(data, 8) / 65536,
                         "DisplayedUnitsY": i16(data, 12),
                     }
-                photoshop[code] = data
+                else:
+                    photoshop[code] = data
                 offset += size
                 offset += offset & 1  # align
             except struct.error:
@@ -338,6 +339,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         # Create attributes
         self.bits = self.layers = 0
+        self._exif_offset = 0
 
         # JPEG specifics (internal)
         self.layer = []
@@ -498,17 +500,17 @@ class JpegImageFile(ImageFile.ImageFile):
         ):
             self.info["dpi"] = 72, 72
 
-    def _getmp(self):
+    def _getmp(self) -> dict[int, Any] | None:
         return _getmp(self)
 
 
-def _getexif(self) -> dict[str, Any] | None:
+def _getexif(self: JpegImageFile) -> dict[str, Any] | None:
     if "exif" not in self.info:
         return None
     return self.getexif()._get_merged_dict()
 
 
-def _getmp(self):
+def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
     # Extract MP information.  This method was inspired by the "highly
     # experimental" _getexif version that's been in use for years now,
     # itself based on the ImageFileDirectory class in the TIFF plugin.
@@ -616,7 +618,7 @@ samplings = {
 # fmt: on
 
 
-def get_sampling(im):
+def get_sampling(im: Image.Image) -> int:
     # There's no subsampling when images have only 1 layer
     # (grayscale images) or when they are CMYK (4 layers),
     # so set subsampling to the default value.
@@ -624,7 +626,7 @@ def get_sampling(im):
     # NOTE: currently Pillow can't encode JPEG to YCCK format.
     # If YCCK support is added in the future, subsampling code will have
     # to be updated (here and in JpegEncode.c) to deal with 4 layers.
-    if not hasattr(im, "layers") or im.layers in (1, 4):
+    if not isinstance(im, JpegImageFile) or im.layers in (1, 4):
         return -1
     sampling = im.layer[0][1:3] + im.layer[1][1:3] + im.layer[2][1:3]
     return samplings.get(sampling, -1)
