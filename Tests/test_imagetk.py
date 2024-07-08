@@ -109,3 +109,6 @@ def test_bitmapimage() -> None:
 
     # reloaded = ImageTk.getimage(im_tk)
     # assert_image_equal(reloaded, im)
+
+    with pytest.raises(ValueError):
+        ImageTk.BitmapImage()

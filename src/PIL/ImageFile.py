@@ -485,7 +485,7 @@ class Parser:
 
                 self.image = im
 
-    def __enter__(self):
+    def __enter__(self) -> Parser:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -580,7 +580,7 @@ def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
             encoder.cleanup()
 
 
-def _safe_read(fp, size):
+def _safe_read(fp: IO[bytes], size: int) -> bytes:
     """
     Reads large blocks in a safe way.  Unlike fp.read(n), this function
     doesn't trust the user.  If the requested size is larger than
@@ -601,18 +601,18 @@ def _safe_read(fp, size):
             msg = "Truncated File Read"
             raise OSError(msg)
         return data
-    data = []
+    blocks: list[bytes] = []
     remaining_size = size
     while remaining_size > 0:
         block = fp.read(min(remaining_size, SAFEBLOCK))
         if not block:
             break
-        data.append(block)
+        blocks.append(block)
         remaining_size -= len(block)
-    if sum(len(d) for d in data) < size:
+    if sum(len(block) for block in blocks) < size:
         msg = "Truncated File Read"
         raise OSError(msg)
-    return b"".join(data)
+    return b"".join(blocks)
 
 
 class PyCodecState:
@@ -636,7 +636,7 @@ class PyCodec:
         self.mode = mode
         self.init(args)
 
-    def init(self, args):
+    def init(self, args) -> None:
         """
         Override to perform codec specific initialization
 
@@ -653,7 +653,7 @@ class PyCodec:
         """
         pass
 
-    def setfd(self, fd):
+    def setfd(self, fd) -> None:
         """
         Called from ImageFile to set the Python file-like object
 
@@ -793,7 +793,7 @@ class PyEncoder(PyCodec):
             self.fd.write(data)
         return bytes_consumed, errcode
 
-    def encode_to_file(self, fh, bufsize):
+    def encode_to_file(self, fh: IO[bytes], bufsize: int) -> int:
         """
         :param fh: File handle.
         :param bufsize: Buffer size.

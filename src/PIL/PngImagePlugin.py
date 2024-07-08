@@ -230,6 +230,7 @@ class ChunkStream:
 
         cids = []
 
+        assert self.fp is not None
         while True:
             try:
                 cid, pos, length = self.read()
@@ -407,6 +408,7 @@ class PngStream(ChunkStream):
 
     def chunk_iCCP(self, pos: int, length: int) -> bytes:
         # ICC profile
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         # according to PNG spec, the iCCP chunk contains:
         # Profile name  1-79 bytes (character string)
@@ -434,6 +436,7 @@ class PngStream(ChunkStream):
 
     def chunk_IHDR(self, pos: int, length: int) -> bytes:
         # image header
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         if length < 13:
             if ImageFile.LOAD_TRUNCATED_IMAGES:
@@ -471,6 +474,7 @@ class PngStream(ChunkStream):
 
     def chunk_PLTE(self, pos: int, length: int) -> bytes:
         # palette
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         if self.im_mode == "P":
             self.im_palette = "RGB", s
@@ -478,6 +482,7 @@ class PngStream(ChunkStream):
 
     def chunk_tRNS(self, pos: int, length: int) -> bytes:
         # transparency
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         if self.im_mode == "P":
             if _simple_palette.match(s):
@@ -498,6 +503,7 @@ class PngStream(ChunkStream):
 
     def chunk_gAMA(self, pos: int, length: int) -> bytes:
         # gamma setting
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         self.im_info["gamma"] = i32(s) / 100000.0
         return s
@@ -506,6 +512,7 @@ class PngStream(ChunkStream):
         # chromaticity, 8 unsigned ints, actual value is scaled by 100,000
         # WP x,y, Red x,y, Green x,y Blue x,y
 
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         raw_vals = struct.unpack(">%dI" % (len(s) // 4), s)
         self.im_info["chromaticity"] = tuple(elt / 100000.0 for elt in raw_vals)
@@ -518,6 +525,7 @@ class PngStream(ChunkStream):
         # 2 saturation
         # 3 absolute colorimetric
 
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         if length < 1:
             if ImageFile.LOAD_TRUNCATED_IMAGES:
@@ -529,6 +537,7 @@ class PngStream(ChunkStream):
 
     def chunk_pHYs(self, pos: int, length: int) -> bytes:
         # pixels per unit
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         if length < 9:
             if ImageFile.LOAD_TRUNCATED_IMAGES:
@@ -546,6 +555,7 @@ class PngStream(ChunkStream):
 
     def chunk_tEXt(self, pos: int, length: int) -> bytes:
         # text
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         try:
             k, v = s.split(b"\0", 1)
@@ -554,17 +564,18 @@ class PngStream(ChunkStream):
             k = s
             v = b""
         if k:
-            k = k.decode("latin-1", "strict")
+            k_str = k.decode("latin-1", "strict")
             v_str = v.decode("latin-1", "replace")
 
-            self.im_info[k] = v if k == "exif" else v_str
-            self.im_text[k] = v_str
+            self.im_info[k_str] = v if k == b"exif" else v_str
+            self.im_text[k_str] = v_str
             self.check_text_memory(len(v_str))
 
         return s
 
     def chunk_zTXt(self, pos: int, length: int) -> bytes:
         # compressed text
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         try:
             k, v = s.split(b"\0", 1)
@@ -589,16 +600,17 @@ class PngStream(ChunkStream):
             v = b""
 
         if k:
-            k = k.decode("latin-1", "strict")
-            v = v.decode("latin-1", "replace")
+            k_str = k.decode("latin-1", "strict")
+            v_str = v.decode("latin-1", "replace")
 
-            self.im_info[k] = self.im_text[k] = v
-            self.check_text_memory(len(v))
+            self.im_info[k_str] = self.im_text[k_str] = v_str
+            self.check_text_memory(len(v_str))
 
         return s
 
     def chunk_iTXt(self, pos: int, length: int) -> bytes:
         # international text
+        assert self.fp is not None
         r = s = ImageFile._safe_read(self.fp, length)
         try:
             k, r = r.split(b"\0", 1)
@@ -627,25 +639,27 @@ class PngStream(ChunkStream):
         if k == b"XML:com.adobe.xmp":
             self.im_info["xmp"] = v
         try:
-            k = k.decode("latin-1", "strict")
-            lang = lang.decode("utf-8", "strict")
-            tk = tk.decode("utf-8", "strict")
-            v = v.decode("utf-8", "strict")
+            k_str = k.decode("latin-1", "strict")
+            lang_str = lang.decode("utf-8", "strict")
+            tk_str = tk.decode("utf-8", "strict")
+            v_str = v.decode("utf-8", "strict")
         except UnicodeError:
             return s
 
-        self.im_info[k] = self.im_text[k] = iTXt(v, lang, tk)
-        self.check_text_memory(len(v))
+        self.im_info[k_str] = self.im_text[k_str] = iTXt(v_str, lang_str, tk_str)
+        self.check_text_memory(len(v_str))
 
         return s
 
     def chunk_eXIf(self, pos: int, length: int) -> bytes:
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         self.im_info["exif"] = b"Exif\x00\x00" + s
         return s
 
     # APNG chunks
     def chunk_acTL(self, pos: int, length: int) -> bytes:
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         if length < 8:
             if ImageFile.LOAD_TRUNCATED_IMAGES:
@@ -666,6 +680,7 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_fcTL(self, pos: int, length: int) -> bytes:
+        assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
         if length < 26:
             if ImageFile.LOAD_TRUNCATED_IMAGES:
@@ -695,6 +710,7 @@ class PngStream(ChunkStream):
         return s
 
     def chunk_fdAT(self, pos: int, length: int) -> bytes:
+        assert self.fp is not None
         if length < 4:
             if ImageFile.LOAD_TRUNCATED_IMAGES:
                 s = ImageFile._safe_read(self.fp, length)
