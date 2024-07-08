@@ -12,6 +12,9 @@
 #ifdef __SSE4_2__
 #define __SSE4__
 #endif
+#ifdef __aarch64__
+#define __NEON__
+#endif
 
 #ifdef __SSE2__
 #include <mmintrin.h>   // MMX
@@ -27,7 +30,7 @@
 #ifdef __AVX2__
 #include <immintrin.h>  // AVX, AVX2
 #endif
-#ifdef __aarch64__
+#ifdef __NEON__
 #include <arm_neon.h>  // ARM NEON
 #endif
 
