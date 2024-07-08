@@ -55,10 +55,6 @@ Many of Pillow's features require external libraries:
 
 * **libwebp** provides the WebP format.
 
-  * Pillow has been tested with version **0.1.3**, which does not read
-    transparent WebP files. Versions **0.3.0** and above support
-    transparency.
-
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,

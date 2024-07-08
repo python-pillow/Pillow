@@ -1248,7 +1248,6 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **exact**
     If true, preserve the transparent RGB values. Otherwise, discard
     invisible RGB values for better compression. Defaults to false.
-    Requires libwebp 0.5.0 or later.
 
 **icc_profile**
     The ICC Profile to include in the saved file.
