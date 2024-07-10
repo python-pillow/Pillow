@@ -5,8 +5,9 @@ import os
 import os.path
 import tempfile
 import time
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import pytest
 
@@ -117,7 +118,7 @@ def test_dpi(params: dict[str, int | tuple[int, int]], tmp_path: Path) -> None:
     im = hopper()
 
     outfile = str(tmp_path / "temp.pdf")
-    im.save(outfile, **params)
+    im.save(outfile, "PDF", **params)
 
     with open(outfile, "rb") as fp:
         contents = fp.read()
@@ -228,6 +229,7 @@ def test_pdf_append_fails_on_nonexistent_file() -> None:
 
 
 def check_pdf_pages_consistency(pdf: PdfParser.PdfParser) -> None:
+    assert pdf.pages_ref is not None
     pages_info = pdf.read_indirect(pdf.pages_ref)
     assert b"Parent" not in pages_info
     assert b"Kids" in pages_info

@@ -78,8 +78,6 @@ Constructing images
 ^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: new
-.. autoclass:: SupportsArrayInterface
-    :show-inheritance:
 .. autofunction:: fromarray
 .. autofunction:: frombytes
 .. autofunction:: frombuffer
@@ -197,6 +195,7 @@ This helps to get the bounding box coordinates of the input image::
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
+.. automethod:: PIL.Image.Image.getxmp
 .. automethod:: PIL.Image.Image.histogram
 .. automethod:: PIL.Image.Image.paste
 .. automethod:: PIL.Image.Image.point
@@ -365,6 +364,14 @@ Classes
 .. autoclass:: PIL.Image.ImagePointHandler
 .. autoclass:: PIL.Image.ImageTransformHandler
 
+Protocols
+---------
+
+.. autoclass:: SupportsArrayInterface
+    :show-inheritance:
+.. autoclass:: SupportsGetData
+    :show-inheritance:
+
 Constants
 ---------
 
@@ -373,6 +380,11 @@ Constants
 
     Set to 89,478,485, approximately 0.25GB for a 24-bit (3 bpp) image.
     See :py:meth:`~PIL.Image.open` for more information about how this is used.
+
+.. data:: WARN_POSSIBLE_FORMATS
+
+    Set to false. If true, when an image cannot be identified, warnings will be raised
+    from formats that attempted to read the data.
 
 Transpose methods
 ^^^^^^^^^^^^^^^^^
@@ -418,7 +430,6 @@ See :ref:`concept-filters` for details.
 .. autoclass:: Resampling
     :members:
     :undoc-members:
-    :noindex:
 
 Dither modes
 ^^^^^^^^^^^^

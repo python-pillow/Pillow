@@ -54,17 +54,21 @@ def test_pack() -> None:
     assert A is None
 
     A = im.getcolors(maxcolors=3)
+    assert A is not None
     A.sort()
     assert A == expected
 
     A = im.getcolors(maxcolors=4)
+    assert A is not None
     A.sort()
     assert A == expected
 
     A = im.getcolors(maxcolors=8)
+    assert A is not None
     A.sort()
     assert A == expected
 
     A = im.getcolors(maxcolors=16)
+    assert A is not None
     A.sort()
     assert A == expected

@@ -5,6 +5,7 @@ import re
 import sys
 import warnings
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -70,7 +71,9 @@ class TestFileWebp:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
             assert_image_similar_tofile(image, "Tests/images/hopper_webp_bits.ppm", 1.0)
 
-    def _roundtrip(self, tmp_path: Path, mode, epsilon, args={}) -> None:
+    def _roundtrip(
+        self, tmp_path: Path, mode: str, epsilon: float, args: dict[str, Any] = {}
+    ) -> None:
         temp_file = str(tmp_path / "temp.webp")
 
         hopper(mode).save(temp_file, **args)
@@ -198,7 +201,9 @@ class TestFileWebp:
         (0, (0,), (-1, 0, 1, 2), (253, 254, 255, 256)),
     )
     @skip_unless_feature("webp_anim")
-    def test_invalid_background(self, background, tmp_path: Path) -> None:
+    def test_invalid_background(
+        self, background: int | tuple[int, ...], tmp_path: Path
+    ) -> None:
         temp_file = str(tmp_path / "temp.webp")
         im = hopper()
         with pytest.raises(OSError):

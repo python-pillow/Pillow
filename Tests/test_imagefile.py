@@ -90,6 +90,7 @@ class TestImageFile:
             data = f.read()
         with ImageFile.Parser() as p:
             p.feed(data)
+            assert p.image is not None
             assert (48, 48) == p.image.size
 
     @skip_unless_feature("webp")
@@ -103,6 +104,7 @@ class TestImageFile:
                 assert not p.image
 
                 p.feed(f.read())
+            assert p.image is not None
             assert (128, 128) == p.image.size
 
     @skip_unless_feature("zlib")
@@ -209,7 +211,7 @@ class MockPyDecoder(ImageFile.PyDecoder):
 
         super().__init__(mode, *args)
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
         # eof
         return -1, 0
 
@@ -222,7 +224,7 @@ class MockPyEncoder(ImageFile.PyEncoder):
 
         super().__init__(mode, *args)
 
-    def encode(self, buffer):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         return 1, 1, b""
 
     def cleanup(self) -> None:
@@ -305,7 +307,7 @@ class TestPyDecoder(CodecsTest):
     def test_decode(self) -> None:
         decoder = ImageFile.PyDecoder(None)
         with pytest.raises(NotImplementedError):
-            decoder.decode(None)
+            decoder.decode(b"")
 
 
 class TestPyEncoder(CodecsTest):
@@ -351,7 +353,9 @@ class TestPyEncoder(CodecsTest):
             ImageFile._save(
                 im, fp, [("MOCK", (xoff, yoff, -10, yoff + ysize), 0, "RGB")]
             )
-        assert MockPyEncoder.last.cleanup_called
+        last: MockPyEncoder | None = MockPyEncoder.last
+        assert last
+        assert last.cleanup_called
 
         with pytest.raises(ValueError):
             ImageFile._save(
@@ -381,7 +385,7 @@ class TestPyEncoder(CodecsTest):
     def test_encode(self) -> None:
         encoder = ImageFile.PyEncoder(None)
         with pytest.raises(NotImplementedError):
-            encoder.encode(None)
+            encoder.encode(0)
 
         bytes_consumed, errcode = encoder.encode_to_pyfd()
         assert bytes_consumed == 0
@@ -391,8 +395,9 @@ class TestPyEncoder(CodecsTest):
         with pytest.raises(NotImplementedError):
             encoder.encode_to_pyfd()
 
+        fh = BytesIO()
         with pytest.raises(NotImplementedError):
-            encoder.encode_to_file(None, None)
+            encoder.encode_to_file(fh, 0)
 
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):

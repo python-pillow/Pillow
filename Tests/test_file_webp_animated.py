@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -69,7 +70,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
     are visually similar to the originals.
     """
 
-    def check(temp_file) -> None:
+    def check(temp_file: str) -> None:
         with Image.open(temp_file) as im:
             assert im.n_frames == 2
 
@@ -96,7 +97,9 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
             check(temp_file1)
 
             # Tests appending using a generator
-            def im_generator(ims):
+            def im_generator(
+                ims: list[Image.Image],
+            ) -> Generator[Image.Image, None, None]:
                 yield from ims
 
             temp_file2 = str(tmp_path / "temp_generator.webp")

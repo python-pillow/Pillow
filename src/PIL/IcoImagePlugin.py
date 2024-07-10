@@ -25,6 +25,7 @@ from __future__ import annotations
 import warnings
 from io import BytesIO
 from math import ceil, log
+from typing import IO
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i16le as i16
@@ -39,7 +40,7 @@ from ._binary import o32le as o32
 _MAGIC = b"\0\0\1\0"
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(_MAGIC)  # (2+2)
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
     sizes = im.encoderinfo.get(
@@ -119,7 +120,7 @@ def _accept(prefix: bytes) -> bool:
 
 
 class IcoFile:
-    def __init__(self, buf):
+    def __init__(self, buf) -> None:
         """
         Parse image from file-like object containing ico file data
         """
@@ -176,25 +177,25 @@ class IcoFile:
         # ICO images are usually squares
         self.entry = sorted(self.entry, key=lambda x: x["square"], reverse=True)
 
-    def sizes(self):
+    def sizes(self) -> set[tuple[int, int]]:
         """
         Get a list of all available icon sizes and color depths.
         """
         return {(h["width"], h["height"]) for h in self.entry}
 
-    def getentryindex(self, size, bpp=False):
+    def getentryindex(self, size: tuple[int, int], bpp: int | bool = False) -> int:
         for i, h in enumerate(self.entry):
             if size == h["dim"] and (bpp is False or bpp == h["color_depth"]):
                 return i
         return 0
 
-    def getimage(self, size, bpp=False):
+    def getimage(self, size: tuple[int, int], bpp: int | bool = False) -> Image.Image:
         """
         Get an image from the icon
         """
         return self.frame(self.getentryindex(size, bpp))
 
-    def frame(self, idx):
+    def frame(self, idx: int) -> Image.Image:
         """
         Get an image from frame idx
         """
@@ -205,6 +206,7 @@ class IcoFile:
         data = self.buf.read(8)
         self.buf.seek(header["offset"])
 
+        im: Image.Image
         if data[:8] == PngImagePlugin._MAGIC:
             # png frame
             im = PngImagePlugin.PngImageFile(self.buf)
@@ -319,7 +321,7 @@ class IcoImageFile(ImageFile.ImageFile):
             raise ValueError(msg)
         self._size = value
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if self.im is not None and self.im.size == self.size:
             # Already loaded
             return Image.Image.load(self)
@@ -327,7 +329,6 @@ class IcoImageFile(ImageFile.ImageFile):
         # if tile is PNG, it won't really be loaded yet
         im.load()
         self.im = im.im
-        self.pyaccess = None
         self._mode = im.mode
         if im.palette:
             self.palette = im.palette
@@ -340,6 +341,7 @@ class IcoImageFile(ImageFile.ImageFile):
             self.info["sizes"] = set(sizes)
 
             self.size = im.size
+        return None
 
     def load_seek(self, pos: int) -> None:
         # Flag the ImageFile.Parser so that it

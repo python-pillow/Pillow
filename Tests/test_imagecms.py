@@ -103,7 +103,7 @@ def test_sanity() -> None:
 
 
 def test_flags() -> None:
-    assert ImageCms.Flags.NONE == 0
+    assert ImageCms.Flags.NONE.value == 0
     assert ImageCms.Flags.GRIDPOINTS(0) == ImageCms.Flags.NONE
     assert ImageCms.Flags.GRIDPOINTS(256) == ImageCms.Flags.NONE
 
@@ -247,7 +247,7 @@ def test_invalid_color_temperature() -> None:
         ImageCms.PyCMSError,
         match='Color temperature must be numeric, "invalid" not valid',
     ):
-        ImageCms.createProfile("LAB", "invalid")
+        ImageCms.createProfile("LAB", "invalid")  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("flag", ("my string", -1))
@@ -256,7 +256,7 @@ def test_invalid_flag(flag: str | int) -> None:
         with pytest.raises(
             ImageCms.PyCMSError, match="flags must be an integer between 0 and "
         ):
-            ImageCms.profileToProfile(im, "foo", "bar", flags=flag)
+            ImageCms.profileToProfile(im, "foo", "bar", flags=flag)  # type: ignore[arg-type]
 
 
 def test_simple_lab() -> None:
@@ -569,9 +569,9 @@ def assert_aux_channel_preserved(
             for delta in nine_grid_deltas:
                 channel_data.paste(
                     channel_pattern,
-                    tuple(
-                        paste_offset[c] + delta[c] * channel_pattern.size[c]
-                        for c in range(2)
+                    (
+                        paste_offset[0] + delta[0] * channel_pattern.size[0],
+                        paste_offset[1] + delta[1] * channel_pattern.size[1],
                     ),
                 )
             chans.append(channel_data)
@@ -588,11 +588,13 @@ def assert_aux_channel_preserved(
     )
 
     # apply transform
+    result_image: Image.Image | None
     if transform_in_place:
         ImageCms.applyTransform(source_image, t, inPlace=True)
         result_image = source_image
     else:
         result_image = ImageCms.applyTransform(source_image, t, inPlace=False)
+    assert result_image is not None
     result_image_aux = result_image.getchannel(preserved_channel)
 
     assert_image_equal(source_image_aux, result_image_aux)
@@ -640,7 +642,8 @@ def test_auxiliary_channels_isolated() -> None:
                 # convert with and without AUX data, test colors are equal
                 src_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], src_format[1])
                 source_profile = ImageCms.createProfile(src_colorSpace)
-                destination_profile = ImageCms.createProfile(dst_format[1])
+                dst_colorSpace = cast(Literal["LAB", "XYZ", "sRGB"], dst_format[1])
+                destination_profile = ImageCms.createProfile(dst_colorSpace)
                 source_image = src_format[3]
                 test_transform = ImageCms.buildTransform(
                     source_profile,
@@ -650,6 +653,7 @@ def test_auxiliary_channels_isolated() -> None:
                 )
 
                 # test conversion from aux-ful source
+                test_image: Image.Image | None
                 if transform_in_place:
                     test_image = source_image.copy()
                     ImageCms.applyTransform(test_image, test_transform, inPlace=True)
@@ -657,6 +661,7 @@ def test_auxiliary_channels_isolated() -> None:
                     test_image = ImageCms.applyTransform(
                         source_image, test_transform, inPlace=False
                     )
+                assert test_image is not None
 
                 # reference conversion from aux-less source
                 reference_transform = ImageCms.buildTransform(
@@ -674,7 +679,8 @@ def test_auxiliary_channels_isolated() -> None:
 
 def test_long_modes() -> None:
     p = ImageCms.getOpenProfile("Tests/icc/sGrey-v2-nano.icc")
-    ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
+    with pytest.warns(DeprecationWarning):
+        ImageCms.buildTransform(p, p, "ABCDEFGHI", "ABCDEFGHI")
 
 
 @pytest.mark.parametrize("mode", ("RGB", "RGBA", "RGBX"))
@@ -685,7 +691,9 @@ def test_rgb_lab(mode: str) -> None:
 
     im = Image.new("LAB", (1, 1), (255, 0, 0))
     converted_im = im.convert(mode)
-    assert converted_im.getpixel((0, 0))[:3] == (0, 255, 255)
+    value = converted_im.getpixel((0, 0))
+    assert isinstance(value, tuple)
+    assert value[:3] == (0, 255, 255)
 
 
 def test_deprecation() -> None:
@@ -695,3 +703,9 @@ def test_deprecation() -> None:
         assert ImageCms.VERSION == "1.0.0 pil"
     with pytest.warns(DeprecationWarning):
         assert isinstance(ImageCms.FLAGS, dict)
+
+    profile = ImageCmsProfile(ImageCms.createProfile("sRGB"))
+    with pytest.warns(DeprecationWarning):
+        ImageCms.ImageCmsTransform(profile, profile, "RGBA;16B", "RGB")
+    with pytest.warns(DeprecationWarning):
+        ImageCms.ImageCmsTransform(profile, profile, "RGB", "RGBA;16B")
