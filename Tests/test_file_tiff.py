@@ -898,9 +898,11 @@ class TestFileTiff:
         def check_pixel(
             im: Image.Image, expected_pixel: tuple[int, ...], pos: tuple[int, int]
         ) -> None:
-            actual_pixel = im.getpixel((0, 0))
-            if isinstance(actual_pixel, int):
-                actual_pixel = (actual_pixel,)
+            actual_pixel = im.getpixel(pos)
+            if actual_pixel is None:
+                actual_pixel = (-1,)
+            elif not isinstance(actual_pixel, tuple):
+                actual_pixel = (int(actual_pixel),)
             assert actual_pixel == expected_pixel
 
         def check_image(
