@@ -144,7 +144,7 @@ def _safe_zlib_decompress(s):
     return plaintext
 
 
-def _crc32(data, seed=0):
+def _crc32(data: bytes, seed: int = 0) -> int:
     return zlib.crc32(data, seed) & 0xFFFFFFFF
 
 
@@ -191,7 +191,7 @@ class ChunkStream:
         assert self.queue is not None
         self.queue.append((cid, pos, length))
 
-    def call(self, cid, pos, length):
+    def call(self, cid: bytes, pos: int, length: int) -> bytes:
         """Call the appropriate chunk handler"""
 
         logger.debug("STREAM %r %s %s", cid, pos, length)
@@ -1091,21 +1091,21 @@ _OUTMODES = {
 }
 
 
-def putchunk(fp, cid, *data):
+def putchunk(fp: IO[bytes], cid: bytes, *data: bytes) -> None:
     """Write a PNG chunk (including CRC field)"""
 
-    data = b"".join(data)
+    byte_data = b"".join(data)
 
-    fp.write(o32(len(data)) + cid)
-    fp.write(data)
-    crc = _crc32(data, _crc32(cid))
+    fp.write(o32(len(byte_data)) + cid)
+    fp.write(byte_data)
+    crc = _crc32(byte_data, _crc32(cid))
     fp.write(o32(crc))
 
 
 class _idat:
     # wrap output from the encoder in IDAT chunks
 
-    def __init__(self, fp, chunk):
+    def __init__(self, fp, chunk) -> None:
         self.fp = fp
         self.chunk = chunk
 
@@ -1116,7 +1116,7 @@ class _idat:
 class _fdat:
     # wrap encoder output in fdAT chunks
 
-    def __init__(self, fp, chunk, seq_num):
+    def __init__(self, fp: IO[bytes], chunk, seq_num: int) -> None:
         self.fp = fp
         self.chunk = chunk
         self.seq_num = seq_num
@@ -1259,7 +1259,9 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 
-def _save(im, fp, filename, chunk=putchunk, save_all=False):
+def _save(
+    im: Image.Image, fp, filename: str | bytes, chunk=putchunk, save_all: bool = False
+) -> None:
     # save an image to disk (called by the save method)
 
     if save_all:
@@ -1461,7 +1463,7 @@ def _save(im, fp, filename, chunk=putchunk, save_all=False):
 # PNG chunk converter
 
 
-def getchunks(im, **params):
+def getchunks(im: Image.Image, **params: Any) -> list[tuple[bytes, bytes, bytes]]:
     """Return a list of PNG chunks representing this image."""
 
     class collector:
@@ -1470,19 +1472,19 @@ def getchunks(im, **params):
         def write(self, data: bytes) -> None:
             pass
 
-        def append(self, chunk: bytes) -> None:
+        def append(self, chunk: tuple[bytes, bytes, bytes]) -> None:
             self.data.append(chunk)
 
-    def append(fp, cid, *data):
-        data = b"".join(data)
-        crc = o32(_crc32(data, _crc32(cid)))
-        fp.append((cid, data, crc))
+    def append(fp: collector, cid: bytes, *data: bytes) -> None:
+        byte_data = b"".join(data)
+        crc = o32(_crc32(byte_data, _crc32(cid)))
+        fp.append((cid, byte_data, crc))
 
     fp = collector()
 
     try:
         im.encoderinfo = params
-        _save(im, fp, None, append)
+        _save(im, fp, "", append)
     finally:
         del im.encoderinfo
 
