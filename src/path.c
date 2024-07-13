@@ -26,6 +26,7 @@
  */
 
 #include "Python.h"
+#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 
 #include <math.h>
