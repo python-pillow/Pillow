@@ -41,7 +41,7 @@ MAGIC = PngImagePlugin._MAGIC
 
 def chunk(cid: bytes, *data: bytes) -> bytes:
     test_file = BytesIO()
-    PngImagePlugin.putchunk(*(test_file, cid) + data)
+    PngImagePlugin.putchunk(test_file, cid, *data)
     return test_file.getvalue()
 
 

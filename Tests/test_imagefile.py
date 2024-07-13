@@ -127,7 +127,7 @@ class TestImageFile:
     def test_raise_typeerror(self) -> None:
         with pytest.raises(TypeError):
             parser = ImageFile.Parser()
-            parser.feed(1)
+            parser.feed(1)  # type: ignore[arg-type]
 
     def test_negative_stride(self) -> None:
         with open("Tests/images/raw_negative_stride.bin", "rb") as f:
@@ -305,7 +305,7 @@ class TestPyDecoder(CodecsTest):
             im.load()
 
     def test_decode(self) -> None:
-        decoder = ImageFile.PyDecoder(None)
+        decoder = ImageFile.PyDecoder("")
         with pytest.raises(NotImplementedError):
             decoder.decode(b"")
 
@@ -383,7 +383,7 @@ class TestPyEncoder(CodecsTest):
             )
 
     def test_encode(self) -> None:
-        encoder = ImageFile.PyEncoder(None)
+        encoder = ImageFile.PyEncoder("")
         with pytest.raises(NotImplementedError):
             encoder.encode(0)
 

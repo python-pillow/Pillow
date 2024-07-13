@@ -827,11 +827,11 @@ def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 ##
 # Factory for making JPEG and MPO instances
-def jpeg_factory(fp=None, filename=None):
+def jpeg_factory(fp: IO[bytes] | None = None, filename: str | bytes | None = None):
     im = JpegImageFile(fp, filename)
     try:
         mpheader = im._getmp()
-        if mpheader[45057] > 1:
+        if mpheader is not None and mpheader[45057] > 1:
             for segment, content in im.applist:
                 if segment == "APP1" and b' hdrgm:Version="' in content:
                     # Ultra HDR images are not yet supported
