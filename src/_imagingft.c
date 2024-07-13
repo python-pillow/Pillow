@@ -1205,9 +1205,15 @@ font_getvarnames(FontObject *self) {
 
     num_namedstyles = master->num_namedstyles;
     list_names = PyList_New(num_namedstyles);
+    if (list_names == NULL) {
+        FT_Done_MM_Var(library, master);
+        return NULL;
+    }
 
     int *list_names_filled = PyMem_Malloc(num_namedstyles * sizeof(int));
     if (list_names_filled == NULL) {
+        Py_DECREF(list_names);
+        FT_Done_MM_Var(library, master);
         return PyErr_NoMemory();
     }
 
@@ -1215,15 +1221,11 @@ font_getvarnames(FontObject *self) {
         list_names_filled[i] = 0;
     }
 
-    if (list_names == NULL) {
-        FT_Done_MM_Var(library, master);
-        return NULL;
-    }
-
     name_count = FT_Get_Sfnt_Name_Count(self->face);
     for (i = 0; i < name_count; i++) {
         error = FT_Get_Sfnt_Name(self->face, i, &name);
         if (error) {
+            PyMem_Free(list_names_filled);
             Py_DECREF(list_names);
             FT_Done_MM_Var(library, master);
             return geterror(error);
@@ -1236,6 +1238,12 @@ font_getvarnames(FontObject *self) {
 
             if (master->namedstyle[j].strid == name.name_id) {
                 list_name = Py_BuildValue("y#", name.string, name.string_len);
+                if (list_name == NULL) {
+                    PyMem_Free(list_names_filled);
+                    Py_DECREF(list_names);
+                    FT_Done_MM_Var(library, master);
+                    return NULL;
+                }
                 PyList_SetItem(list_names, j, list_name);
                 list_names_filled[j] = 1;
                 break;
@@ -1301,9 +1309,15 @@ font_getvaraxes(FontObject *self) {
 
             if (name.name_id == axis.strid) {
                 axis_name = Py_BuildValue("y#", name.string, name.string_len);
+                if (axis_name == NULL) {
+                    Py_DECREF(list_axis);
+                    Py_DECREF(list_axes);
+                    FT_Done_MM_Var(library, master);
+                    return NULL;
+                }
                 PyDict_SetItemString(
                     list_axis, "name", axis_name ? axis_name : Py_None);
-                Py_XDECREF(axis_name);
+                Py_DECREF(axis_name);
                 break;
             }
         }
@@ -1357,7 +1371,12 @@ font_setvaraxes(FontObject *self, PyObject *args) {
         return PyErr_NoMemory();
     }
     for (i = 0; i < num_coords; i++) {
-        item = PyList_GET_ITEM(axes, i);
+        item = PyList_GetItemRef(axes, i);
+        if (item == NULL) {
+            free(coords);
+            return NULL;
+        }
+
         if (PyFloat_Check(item)) {
             coord = PyFloat_AS_DOUBLE(item);
         } else if (PyLong_Check(item)) {
@@ -1365,10 +1384,12 @@ font_setvaraxes(FontObject *self, PyObject *args) {
         } else if (PyNumber_Check(item)) {
             coord = PyFloat_AsDouble(item);
         } else {
+            Py_DECREF(item);
             free(coords);
             PyErr_SetString(PyExc_TypeError, "list must contain numbers");
             return NULL;
         }
+        Py_DECREF(item);
         coords[i] = coord * 65536;
     }
 
