@@ -4073,7 +4073,7 @@ class Exif(_ExifBase):
                 else:
                     # Interop
                     self._ifds[tag] = self._get_ifd_dict(tag_data, tag)
-        ifd = self._ifds.get(tag, {})
+        ifd = self._ifds.setdefault(tag, {})
         if tag == ExifTags.IFD.Exif and self._hidden_data:
             ifd = {
                 k: v
