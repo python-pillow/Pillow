@@ -723,8 +723,8 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
 
         if (!is_core_tag) {
             PyObject *tag_type;
-            if (PyDict_GetItemRef(types, key, &tag_type) == 0) {
-                PyErr_SetString(PyExc_KeyError, "unknown tag type");
+            if (PyDict_GetItemRef(types, key, &tag_type) < 0) {
+                return NULL;  // Exception has been already set
             }
             if (tag_type) {
                 int type_int = PyLong_AsLong(tag_type);
