@@ -179,14 +179,21 @@ PyPath_Flatten(PyObject *data, double **pxy) {
         }                                                               \
         free(xy);                                                       \
         return -1;                                                      \
+    }                                                                   \
+    if (decref) {                                                       \
+        Py_DECREF(op);                                                  \
     }
 
     /* Copy table to path array */
     if (PyList_Check(data)) {
         for (i = 0; i < n; i++) {
             double x, y;
-            PyObject *op = PyList_GET_ITEM(data, i);
-            assign_item_to_array(op, 0);
+            PyObject *op = PyList_GetItemRef(data, i);
+            if (op == NULL) {
+                free(xy);
+                return -1;
+            }
+            assign_item_to_array(op, 1);
         }
     } else if (PyTuple_Check(data)) {
         for (i = 0; i < n; i++) {
@@ -209,7 +216,6 @@ PyPath_Flatten(PyObject *data, double **pxy) {
                 }
             }
             assign_item_to_array(op, 1);
-            Py_DECREF(op);
         }
     }
 

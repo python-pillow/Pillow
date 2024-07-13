@@ -2251,6 +2251,11 @@ _getcolors(ImagingObject *self, PyObject *args) {
             ImagingColorItem *v = &items[i];
             PyObject *item = Py_BuildValue(
                 "iN", v->count, getpixel(self->image, self->access, v->x, v->y));
+            if (item == NULL) {
+                Py_DECREF(out);
+                free(items);
+                return NULL;
+            }
             PyList_SetItem(out, i, item);
         }
     }

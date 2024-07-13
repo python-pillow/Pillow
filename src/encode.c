@@ -673,10 +673,16 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         TRACE(("tags size: %d\n", (int)tags_size));
         for (pos = 0; pos < tags_size; pos++) {
             item = PyList_GetItemRef(tags, pos);
+            if (item == NULL) {
+                return NULL;
+            }
+
             if (!PyTuple_Check(item) || PyTuple_Size(item) != 2) {
+                Py_DECREF(item);
                 PyErr_SetString(PyExc_ValueError, "Invalid tags list");
                 return NULL;
             }
+            Py_DECREF(item);
         }
         pos = 0;
     }
@@ -705,10 +711,16 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
     num_core_tags = sizeof(core_tags) / sizeof(int);
     for (pos = 0; pos < tags_size; pos++) {
         item = PyList_GetItemRef(tags, pos);
+        if (item == NULL) {
+            return NULL;
+        }
+
         // We already checked that tags is a 2-tuple list.
-        key = PyTuple_GetItem(item, 0);
+        key = PyTuple_GET_ITEM(item, 0);
         key_int = (int)PyLong_AsLong(key);
-        value = PyTuple_GetItem(item, 1);
+        value = PyTuple_GET_ITEM(item, 1);
+        Py_DECREF(item);
+
         status = 0;
         is_core_tag = 0;
         is_var_length = 0;
