@@ -95,7 +95,9 @@ def test_16bit_pgm_write(tmp_path: Path) -> None:
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
         filename = str(tmp_path / "temp.pgm")
         im.save(filename, "PPM")
+        assert_image_equal_tofile(im, filename)
 
+        im.convert("I;16").save(filename, "PPM")
         assert_image_equal_tofile(im, filename)
 
 
