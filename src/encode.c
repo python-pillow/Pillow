@@ -25,6 +25,7 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
+#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 #include "libImaging/Gif.h"
 
@@ -671,11 +672,17 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         tags_size = PyList_Size(tags);
         TRACE(("tags size: %d\n", (int)tags_size));
         for (pos = 0; pos < tags_size; pos++) {
-            item = PyList_GetItem(tags, pos);
+            item = PyList_GetItemRef(tags, pos);
+            if (item == NULL) {
+                return NULL;
+            }
+
             if (!PyTuple_Check(item) || PyTuple_Size(item) != 2) {
+                Py_DECREF(item);
                 PyErr_SetString(PyExc_ValueError, "Invalid tags list");
                 return NULL;
             }
+            Py_DECREF(item);
         }
         pos = 0;
     }
@@ -703,11 +710,17 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
 
     num_core_tags = sizeof(core_tags) / sizeof(int);
     for (pos = 0; pos < tags_size; pos++) {
-        item = PyList_GetItem(tags, pos);
+        item = PyList_GetItemRef(tags, pos);
+        if (item == NULL) {
+            return NULL;
+        }
+
         // We already checked that tags is a 2-tuple list.
-        key = PyTuple_GetItem(item, 0);
+        key = PyTuple_GET_ITEM(item, 0);
         key_int = (int)PyLong_AsLong(key);
-        value = PyTuple_GetItem(item, 1);
+        value = PyTuple_GET_ITEM(item, 1);
+        Py_DECREF(item);
+
         status = 0;
         is_core_tag = 0;
         is_var_length = 0;
@@ -721,7 +734,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
         }
 
         if (!is_core_tag) {
-            PyObject *tag_type = PyDict_GetItem(types, key);
+            PyObject *tag_type;
+            if (PyDict_GetItemRef(types, key, &tag_type) < 0) {
+                return NULL;  // Exception has been already set
+            }
             if (tag_type) {
                 int type_int = PyLong_AsLong(tag_type);
                 if (type_int >= TIFF_BYTE && type_int <= TIFF_DOUBLE) {

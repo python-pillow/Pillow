@@ -20,6 +20,7 @@
 
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 
 #include <ft2build.h>
@@ -1209,30 +1210,49 @@ font_getvarnames(FontObject *self) {
         return NULL;
     }
 
+    int *list_names_filled = PyMem_Malloc(num_namedstyles * sizeof(int));
+    if (list_names_filled == NULL) {
+        Py_DECREF(list_names);
+        FT_Done_MM_Var(library, master);
+        return PyErr_NoMemory();
+    }
+
+    for (int i = 0; i < num_namedstyles; i++) {
+        list_names_filled[i] = 0;
+    }
+
     name_count = FT_Get_Sfnt_Name_Count(self->face);
     for (i = 0; i < name_count; i++) {
         error = FT_Get_Sfnt_Name(self->face, i, &name);
         if (error) {
+            PyMem_Free(list_names_filled);
             Py_DECREF(list_names);
             FT_Done_MM_Var(library, master);
             return geterror(error);
         }
 
         for (j = 0; j < num_namedstyles; j++) {
-            if (PyList_GetItem(list_names, j) != NULL) {
+            if (list_names_filled[j]) {
                 continue;
             }
 
             if (master->namedstyle[j].strid == name.name_id) {
                 list_name = Py_BuildValue("y#", name.string, name.string_len);
+                if (list_name == NULL) {
+                    PyMem_Free(list_names_filled);
+                    Py_DECREF(list_names);
+                    FT_Done_MM_Var(library, master);
+                    return NULL;
+                }
                 PyList_SetItem(list_names, j, list_name);
+                list_names_filled[j] = 1;
                 break;
             }
         }
     }
 
+    PyMem_Free(list_names_filled);
     FT_Done_MM_Var(library, master);
-
     return list_names;
 }
 
@@ -1289,9 +1309,15 @@ font_getvaraxes(FontObject *self) {
 
             if (name.name_id == axis.strid) {
                 axis_name = Py_BuildValue("y#", name.string, name.string_len);
+                if (axis_name == NULL) {
+                    Py_DECREF(list_axis);
+                    Py_DECREF(list_axes);
+                    FT_Done_MM_Var(library, master);
+                    return NULL;
+                }
                 PyDict_SetItemString(
                     list_axis, "name", axis_name ? axis_name : Py_None);
-                Py_XDECREF(axis_name);
+                Py_DECREF(axis_name);
                 break;
             }
         }
@@ -1345,7 +1371,12 @@ font_setvaraxes(FontObject *self, PyObject *args) {
         return PyErr_NoMemory();
     }
     for (i = 0; i < num_coords; i++) {
-        item = PyList_GET_ITEM(axes, i);
+        item = PyList_GetItemRef(axes, i);
+        if (item == NULL) {
+            free(coords);
+            return NULL;
+        }
+
         if (PyFloat_Check(item)) {
             coord = PyFloat_AS_DOUBLE(item);
         } else if (PyLong_Check(item)) {
@@ -1353,10 +1384,12 @@ font_setvaraxes(FontObject *self, PyObject *args) {
         } else if (PyNumber_Check(item)) {
             coord = PyFloat_AsDouble(item);
         } else {
+            Py_DECREF(item);
             free(coords);
             PyErr_SetString(PyExc_TypeError, "list must contain numbers");
             return NULL;
         }
+        Py_DECREF(item);
         coords[i] = coord * 65536;
     }
 
@@ -1575,6 +1608,10 @@ PyInit__imagingft(void) {
     if (setup_module(m) < 0) {
         return NULL;
     }
+
+#ifdef Py_GIL_DISABLED
+    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
+#endif
 
     return m;
 }

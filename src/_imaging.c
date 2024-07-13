@@ -2251,6 +2251,11 @@ _getcolors(ImagingObject *self, PyObject *args) {
             ImagingColorItem *v = &items[i];
             PyObject *item = Py_BuildValue(
                 "iN", v->count, getpixel(self->image, self->access, v->x, v->y));
+            if (item == NULL) {
+                Py_DECREF(out);
+                free(items);
+                return NULL;
+            }
             PyList_SetItem(out, i, item);
         }
     }
@@ -4447,6 +4452,10 @@ PyInit__imaging(void) {
         Py_DECREF(m);
         return NULL;
     }
+
+#ifdef Py_GIL_DISABLED
+    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
+#endif
 
     return m;
 }
