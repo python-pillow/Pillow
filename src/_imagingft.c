@@ -1243,8 +1243,8 @@ font_getvarnames(FontObject *self) {
         }
     }
 
+    PyMem_Free(list_names_filled);
     FT_Done_MM_Var(library, master);
-
     return list_names;
 }
 
