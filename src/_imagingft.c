@@ -1315,8 +1315,7 @@ font_getvaraxes(FontObject *self) {
                     FT_Done_MM_Var(library, master);
                     return NULL;
                 }
-                PyDict_SetItemString(
-                    list_axis, "name", axis_name ? axis_name : Py_None);
+                PyDict_SetItemString(list_axis, "name", axis_name);
                 Py_DECREF(axis_name);
                 break;
             }
