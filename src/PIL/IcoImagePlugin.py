@@ -229,7 +229,7 @@ class IcoFile:
             im.tile[0] = d, (0, 0) + im.size, o, a
 
             # figure out where AND mask image starts
-            if 32 == header.bpp:
+            if header.bpp == 32:
                 # 32-bit color depth icon image allows semitransparent areas
                 # PIL's DIB format ignores transparency bits, recover them.
                 # The DIB is packed in BGRX byte order where X is the alpha
