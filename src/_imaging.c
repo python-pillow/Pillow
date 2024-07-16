@@ -4093,10 +4093,8 @@ _set_blocks_max(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    size_t blocksize = sizeof(ImagingDefaultArena.blocks_pool[0]);
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
-    if ((unsigned long)blocks_max > SIZE_MAX / blocksize) {
+    if ((unsigned long)blocks_max > SIZE_MAX /
+            sizeof(ImagingDefaultArena.blocks_pool[0])) {
         PyErr_SetString(PyExc_ValueError, "blocks_max is too large");
         return NULL;
     }
