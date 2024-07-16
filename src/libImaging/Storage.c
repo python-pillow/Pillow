@@ -503,7 +503,8 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
     }
 
     MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    Imaging tmp = ImagingAllocateArray(im, &ImagingDefaultArena, dirty, ImagingDefaultArena.block_size);
+    Imaging tmp = ImagingAllocateArray(
+        im, &ImagingDefaultArena, dirty, ImagingDefaultArena.block_size);
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
     if (tmp) {
         return im;
