@@ -153,7 +153,7 @@ jobs:
         uses: scientific-python/upload-nightly-action@b67d7fcc0396e1128a474d1ab2b48aa94680f9fc # 0.5.0
         with:
           artifacts_path: ./wheelhouse
-          anaconda_nightly_upload_token: ${{ secrets.PILLOW_NIGHTLY_UPLOAD_TOKEN }}
+          anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
   windows:
     name: Windows ${{ matrix.cibw_arch }}
@@ -246,7 +246,7 @@ jobs:
         uses: scientific-python/upload-nightly-action@b67d7fcc0396e1128a474d1ab2b48aa94680f9fc # 0.5.0
         with:
           artifacts_path: ./wheelhouse
-          anaconda_nightly_upload_token: ${{ secrets.PILLOW_NIGHTLY_UPLOAD_TOKEN }}
+          anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
   sdist:
     runs-on: ubuntu-latest
