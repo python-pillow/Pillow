@@ -369,12 +369,12 @@ ImagingDestroyArray(Imaging im) {
     int y = 0;
 
     if (im->blocks) {
+        MUTEX_LOCK(&ImagingDefaultArena.mutex);
         while (im->blocks[y].ptr) {
-            MUTEX_LOCK(&ImagingDefaultArena.mutex);
             memory_return_block(&ImagingDefaultArena, im->blocks[y]);
-            MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
             y += 1;
         }
+        MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
         free(im->blocks);
     }
 }
