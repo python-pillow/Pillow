@@ -161,6 +161,9 @@ typedef struct ImagingMemoryArena {
     int stats_reallocated_blocks; /* Number of blocks which were actually reallocated
                                      after retrieving */
     int stats_freed_blocks;       /* Number of freed blocks */
+#ifdef Py_GIL_DISABLED
+    PyMutex mutex;
+#endif
 } *ImagingMemoryArena;
 
 /* Objects */
@@ -689,6 +692,15 @@ _imaging_tell_pyFd(PyObject *fd);
 
 #include "ImagingUtils.h"
 extern UINT8 *clip8_lookups;
+
+/* Mutex lock/unlock helpers */
+#ifdef Py_GIL_DISABLED
+#define MUTEX_LOCK(m) PyMutex_Lock(m)
+#define MUTEX_UNLOCK(m) PyMutex_Unlock(m)
+#else
+#define MUTEX_LOCK(m)
+#define MUTEX_UNLOCK(m)
+#endif
 
 #if defined(__cplusplus)
 }
