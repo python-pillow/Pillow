@@ -70,11 +70,14 @@ class Dib:
     """
 
     def __init__(
-        self, image: Image.Image | str, size: tuple[int, int] | list[int] | None = None
+        self, image: Image.Image | str, size: tuple[int, int] | None = None
     ) -> None:
         if isinstance(image, str):
             mode = image
             image = ""
+            if size is None:
+                msg = "If first argument is mode, size is required"
+                raise ValueError(msg)
         else:
             mode = image.mode
             size = image.size
@@ -105,7 +108,12 @@ class Dib:
             result = self.image.expose(handle)
         return result
 
-    def draw(self, handle, dst, src=None):
+    def draw(
+        self,
+        handle,
+        dst: tuple[int, int, int, int],
+        src: tuple[int, int, int, int] | None = None,
+    ):
         """
         Same as expose, but allows you to specify where to draw the image, and
         what part of it to draw.
@@ -115,7 +123,7 @@ class Dib:
         the destination have different sizes, the image is resized as
         necessary.
         """
-        if not src:
+        if src is None:
             src = (0, 0) + self.size
         if isinstance(handle, HWND):
             dc = self.image.getdc(handle)
@@ -202,22 +210,22 @@ class Window:
             title, self.__dispatcher, width or 0, height or 0
         )
 
-    def __dispatcher(self, action, *args):
+    def __dispatcher(self, action: str, *args):
         return getattr(self, f"ui_handle_{action}")(*args)
 
-    def ui_handle_clear(self, dc, x0, y0, x1, y1):
+    def ui_handle_clear(self, dc, x0, y0, x1, y1) -> None:
         pass
 
-    def ui_handle_damage(self, x0, y0, x1, y1):
+    def ui_handle_damage(self, x0, y0, x1, y1) -> None:
         pass
 
     def ui_handle_destroy(self) -> None:
         pass
 
-    def ui_handle_repair(self, dc, x0, y0, x1, y1):
+    def ui_handle_repair(self, dc, x0, y0, x1, y1) -> None:
         pass
 
-    def ui_handle_resize(self, width, height):
+    def ui_handle_resize(self, width, height) -> None:
         pass
 
     def mainloop(self) -> None:
@@ -227,12 +235,12 @@ class Window:
 class ImageWindow(Window):
     """Create an image window which displays the given image."""
 
-    def __init__(self, image, title="PIL"):
+    def __init__(self, image, title: str = "PIL") -> None:
         if not isinstance(image, Dib):
             image = Dib(image)
         self.image = image
         width, height = image.size
         super().__init__(title, width=width, height=height)
 
-    def ui_handle_repair(self, dc, x0, y0, x1, y1):
+    def ui_handle_repair(self, dc, x0, y0, x1, y1) -> None:
         self.image.draw(dc, (x0, y0, x1, y1))

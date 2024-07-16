@@ -225,7 +225,7 @@ def test_l_macro_rounding(convert_mode: str) -> None:
         assert px is not None
         converted_color = px[0, 0]
         if convert_mode == "LA":
-            assert converted_color is not None
+            assert isinstance(converted_color, tuple)
             converted_color = converted_color[0]
         assert converted_color == 1
 

@@ -237,13 +237,13 @@ class TestImagingCoreResampleAccuracy:
 class TestCoreResampleConsistency:
     def make_case(
         self, mode: str, fill: tuple[int, int, int] | float
-    ) -> tuple[Image.Image, tuple[int, ...]]:
+    ) -> tuple[Image.Image, float | tuple[int, ...]]:
         im = Image.new(mode, (512, 9), fill)
         px = im.load()
         assert px is not None
         return im.resize((9, 512), Image.Resampling.LANCZOS), px[0, 0]
 
-    def run_case(self, case: tuple[Image.Image, int | tuple[int, ...]]) -> None:
+    def run_case(self, case: tuple[Image.Image, float | tuple[int, ...]]) -> None:
         channel, color = case
         px = channel.load()
         assert px is not None
@@ -256,6 +256,7 @@ class TestCoreResampleConsistency:
     def test_8u(self) -> None:
         im, color = self.make_case("RGB", (0, 64, 255))
         r, g, b = im.split()
+        assert isinstance(color, tuple)
         self.run_case((r, color[0]))
         self.run_case((g, color[1]))
         self.run_case((b, color[2]))
@@ -290,7 +291,11 @@ class TestCoreResampleAlphaCorrect:
         px = i.load()
         assert px is not None
         for y in range(i.size[1]):
-            used_colors = {px[x, y][0] for x in range(i.size[0])}
+            used_colors = set()
+            for x in range(i.size[0]):
+                value = px[x, y]
+                assert isinstance(value, tuple)
+                used_colors.add(value[0])
             assert 256 == len(used_colors), (
                 "All colors should be present in resized image. "
                 f"Only {len(used_colors)} on line {y}."
@@ -332,12 +337,13 @@ class TestCoreResampleAlphaCorrect:
         assert px is not None
         for y in range(i.size[1]):
             for x in range(i.size[0]):
-                if px[x, y][-1] != 0 and px[x, y][:-1] != clean_pixel:
+                value = px[x, y]
+                assert isinstance(value, tuple)
+                if value[-1] != 0 and value[:-1] != clean_pixel:
                     message = (
-                        f"pixel at ({x}, {y}) is different:\n"
-                        f"{px[x, y]}\n{clean_pixel}"
+                        f"pixel at ({x}, {y}) is different:\n{value}\n{clean_pixel}"
                     )
-                    assert px[x, y][:3] == clean_pixel, message
+                    assert value[:3] == clean_pixel, message
 
     def test_dirty_pixels_rgba(self) -> None:
         case = self.make_dirty_case("RGBA", (255, 255, 0, 128), (0, 0, 255, 0))

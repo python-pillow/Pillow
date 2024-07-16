@@ -691,7 +691,9 @@ def test_rgb_lab(mode: str) -> None:
 
     im = Image.new("LAB", (1, 1), (255, 0, 0))
     converted_im = im.convert(mode)
-    assert converted_im.getpixel((0, 0))[:3] == (0, 255, 255)
+    value = converted_im.getpixel((0, 0))
+    assert isinstance(value, tuple)
+    assert value[:3] == (0, 255, 255)
 
 
 def test_deprecation() -> None:

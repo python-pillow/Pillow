@@ -31,7 +31,9 @@ def test_libimagequant_quantize() -> None:
     converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 15)
-    assert len(converted.getcolors()) == 100
+    colors = converted.getcolors()
+    assert colors is not None
+    assert len(colors) == 100
 
 
 def test_octree_quantize() -> None:
@@ -39,7 +41,9 @@ def test_octree_quantize() -> None:
     converted = image.quantize(100, Image.Quantize.FASTOCTREE)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 20)
-    assert len(converted.getcolors()) == 100
+    colors = converted.getcolors()
+    assert colors is not None
+    assert len(colors) == 100
 
 
 def test_rgba_quantize() -> None:
@@ -158,4 +162,6 @@ def test_small_palette() -> None:
     im = im.quantize(palette=p)
 
     # Assert
-    assert len(im.getcolors()) == 2
+    quantized_colors = im.getcolors()
+    assert quantized_colors is not None
+    assert len(quantized_colors) == 2

@@ -63,7 +63,6 @@ from . import (
 )
 from ._binary import i32le, o32be, o32le
 from ._deprecate import deprecate
-from ._typing import StrOrBytesPath, TypeGuard
 from ._util import DeferredError, is_path
 
 ElementTree: ModuleType | None
@@ -220,6 +219,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 
 if TYPE_CHECKING:
     from . import ImageFile, ImagePalette
+    from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -1395,7 +1395,7 @@ class Image:
 
     def getcolors(
         self, maxcolors: int = 256
-    ) -> list[tuple[int, int]] | list[tuple[int, float]] | None:
+    ) -> list[tuple[int, tuple[int, ...]]] | list[tuple[int, float]] | None:
         """
         Returns a list of colors used in this image.
 
@@ -1412,7 +1412,7 @@ class Image:
         self.load()
         if self.mode in ("1", "L", "P"):
             h = self.im.histogram()
-            out = [(h[i], i) for i in range(256) if h[i]]
+            out: list[tuple[int, float]] = [(h[i], i) for i in range(256) if h[i]]
             if len(out) > maxcolors:
                 return None
             return out
@@ -1886,7 +1886,7 @@ class Image:
 
     def point(
         self,
-        lut: Sequence[float] | Callable[[int], float] | ImagePointHandler,
+        lut: Sequence[float] | NumpyArray | Callable[[int], float] | ImagePointHandler,
         mode: str | None = None,
     ) -> Image:
         """
@@ -1996,7 +1996,7 @@ class Image:
 
     def putdata(
         self,
-        data: Sequence[float] | Sequence[Sequence[int]],
+        data: Sequence[float] | Sequence[Sequence[int]] | NumpyArray,
         scale: float = 1.0,
         offset: float = 0.0,
     ) -> None:
@@ -2203,7 +2203,7 @@ class Image:
 
     def resize(
         self,
-        size: tuple[int, int],
+        size: tuple[int, int] | list[int] | NumpyArray,
         resample: int | None = None,
         box: tuple[float, float, float, float] | None = None,
         reducing_gap: float | None = None,
@@ -2211,7 +2211,7 @@ class Image:
         """
         Returns a resized copy of this image.
 
-        :param size: The requested size in pixels, as a 2-tuple:
+        :param size: The requested size in pixels, as a tuple or array:
            (width, height).
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
@@ -2276,6 +2276,7 @@ class Image:
         if box is None:
             box = (0, 0) + self.size
 
+        size = tuple(size)
         if self.size == size and box == (0, 0) + self.size:
             return self.copy()
 
@@ -3302,7 +3303,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
-def fromqimage(im):
+def fromqimage(im) -> ImageFile.ImageFile:
     """Creates an image instance from a QImage image"""
     from . import ImageQt
 
@@ -3312,7 +3313,7 @@ def fromqimage(im):
     return ImageQt.fromqimage(im)
 
 
-def fromqpixmap(im):
+def fromqpixmap(im) -> ImageFile.ImageFile:
     """Creates an image instance from a QPixmap image"""
     from . import ImageQt
 
@@ -3883,7 +3884,7 @@ class Exif(_ExifBase):
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, offset, group=None):
+    def _get_ifd_dict(self, offset: int, group=None):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
@@ -3897,7 +3898,7 @@ class Exif(_ExifBase):
             info.load(self.fp)
             return self._fixup_dict(info)
 
-    def _get_head(self):
+    def _get_head(self) -> bytes:
         version = b"\x2B" if self.bigtiff else b"\x2A"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
@@ -4118,16 +4119,16 @@ class Exif(_ExifBase):
             keys.update(self._info)
         return len(keys)
 
-    def __getitem__(self, tag):
+    def __getitem__(self, tag: int):
         if self._info is not None and tag not in self._data and tag in self._info:
             self._data[tag] = self._fixup(self._info[tag])
             del self._info[tag]
         return self._data[tag]
 
-    def __contains__(self, tag) -> bool:
+    def __contains__(self, tag: object) -> bool:
         return tag in self._data or (self._info is not None and tag in self._info)
 
-    def __setitem__(self, tag, value) -> None:
+    def __setitem__(self, tag: int, value) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         self._data[tag] = value

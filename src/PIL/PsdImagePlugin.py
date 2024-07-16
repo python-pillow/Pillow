@@ -185,7 +185,7 @@ def _layerinfo(fp, ct_bytes):
     # read layerinfo block
     layers = []
 
-    def read(size):
+    def read(size: int) -> bytes:
         return ImageFile._safe_read(fp, size)
 
     ct = si16(read(2))

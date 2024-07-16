@@ -372,8 +372,9 @@ class TestImage:
         img = Image.alpha_composite(dst, src)
 
         # Assert
-        img_colors = sorted(img.getcolors())
-        assert img_colors == expected_colors
+        img_colors = img.getcolors()
+        assert img_colors is not None
+        assert sorted(img_colors) == expected_colors
 
     def test_alpha_inplace(self) -> None:
         src = Image.new("RGBA", (128, 128), "blue")
@@ -670,7 +671,9 @@ class TestImage:
 
         im_remapped = im.remap_palette([1, 0])
         assert im_remapped.info["transparency"] == 1
-        assert len(im_remapped.getpalette()) == 6
+        palette = im_remapped.getpalette()
+        assert palette is not None
+        assert len(palette) == 6
 
         # Test unused transparency
         im.info["transparency"] = 2
@@ -701,7 +704,7 @@ class TestImage:
             else:
                 assert new_image.palette is None
 
-        _make_new(im, im_p, ImagePalette.ImagePalette(list(range(256)) * 3))
+        _make_new(im, im_p, ImagePalette.ImagePalette("RGB"))
         _make_new(im_p, im, None)
         _make_new(im, blank_p, ImagePalette.ImagePalette())
         _make_new(im, blank_pa, ImagePalette.ImagePalette())

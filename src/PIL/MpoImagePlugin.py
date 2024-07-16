@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import os
 import struct
-from typing import IO
+from typing import IO, Any, cast
 
 from . import (
     Image,
@@ -111,8 +111,11 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         JpegImagePlugin.JpegImageFile._open(self)
         self._after_jpeg_open()
 
-    def _after_jpeg_open(self, mpheader=None):
+    def _after_jpeg_open(self, mpheader: dict[int, Any] | None = None) -> None:
         self.mpinfo = mpheader if mpheader is not None else self._getmp()
+        if self.mpinfo is None:
+            msg = "Image appears to be a malformed MPO file"
+            raise ValueError(msg)
         self.n_frames = self.mpinfo[0xB001]
         self.__mpoffsets = [
             mpent["DataOffset"] + self.info["mpoffset"] for mpent in self.mpinfo[0xB002]
@@ -159,7 +162,10 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         return self.__frame
 
     @staticmethod
-    def adopt(jpeg_instance, mpheader=None):
+    def adopt(
+        jpeg_instance: JpegImagePlugin.JpegImageFile,
+        mpheader: dict[int, Any] | None = None,
+    ) -> MpoImageFile:
         """
         Transform the instance of JpegImageFile into
         an instance of MpoImageFile.
@@ -171,8 +177,9 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         double call to _open.
         """
         jpeg_instance.__class__ = MpoImageFile
-        jpeg_instance._after_jpeg_open(mpheader)
-        return jpeg_instance
+        mpo_instance = cast(MpoImageFile, jpeg_instance)
+        mpo_instance._after_jpeg_open(mpheader)
+        return mpo_instance
 
 
 # ---------------------------------------------------------------------

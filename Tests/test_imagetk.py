@@ -45,10 +45,12 @@ def test_kw() -> None:
 
             # Test "file"
             im = ImageTk._get_image_from_kw(kw)
+            assert im is not None
             assert_image_equal(im, im1)
 
             # Test "data"
             im = ImageTk._get_image_from_kw(kw)
+            assert im is not None
             assert_image_equal(im, im2)
 
     # Test no relevant entry
@@ -107,3 +109,6 @@ def test_bitmapimage() -> None:
 
     # reloaded = ImageTk.getimage(im_tk)
     # assert_image_equal(reloaded, im)
+
+    with pytest.raises(ValueError):
+        ImageTk.BitmapImage()

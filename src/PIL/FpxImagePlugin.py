@@ -231,7 +231,7 @@ class FpxImageFile(ImageFile.ImageFile):
         self._fp = self.fp
         self.fp = None
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if not self.fp:
             self.fp = self.ole.openstream(self.stream[:2] + ["Subimage 0000 Data"])
 

@@ -259,20 +259,26 @@ def test_colorize_2color() -> None:
     left = (0, 1)
     middle = (127, 1)
     right = (255, 1)
+    value = im_test.getpixel(left)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(left),
+        value,
         (255, 0, 0),
         threshold=1,
         msg="black test pixel incorrect",
     )
+    value = im_test.getpixel(middle)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(middle),
+        value,
         (127, 63, 0),
         threshold=1,
         msg="mid test pixel incorrect",
     )
+    value = im_test.getpixel(right)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(right),
+        value,
         (0, 127, 0),
         threshold=1,
         msg="white test pixel incorrect",
@@ -295,20 +301,26 @@ def test_colorize_2color_offset() -> None:
     left = (25, 1)
     middle = (75, 1)
     right = (125, 1)
+    value = im_test.getpixel(left)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(left),
+        value,
         (255, 0, 0),
         threshold=1,
         msg="black test pixel incorrect",
     )
+    value = im_test.getpixel(middle)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(middle),
+        value,
         (127, 63, 0),
         threshold=1,
         msg="mid test pixel incorrect",
     )
+    value = im_test.getpixel(right)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(right),
+        value,
         (0, 127, 0),
         threshold=1,
         msg="white test pixel incorrect",
@@ -339,29 +351,37 @@ def test_colorize_3color_offset() -> None:
     middle = (100, 1)
     right_middle = (150, 1)
     right = (225, 1)
+    value = im_test.getpixel(left)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(left),
+        value,
         (255, 0, 0),
         threshold=1,
         msg="black test pixel incorrect",
     )
+    value = im_test.getpixel(left_middle)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(left_middle),
+        value,
         (127, 0, 127),
         threshold=1,
         msg="low-mid test pixel incorrect",
     )
+    value = im_test.getpixel(middle)
+    assert isinstance(value, tuple)
+    assert_tuple_approx_equal(value, (0, 0, 255), threshold=1, msg="mid incorrect")
+    value = im_test.getpixel(right_middle)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(middle), (0, 0, 255), threshold=1, msg="mid incorrect"
-    )
-    assert_tuple_approx_equal(
-        im_test.getpixel(right_middle),
+        value,
         (0, 63, 127),
         threshold=1,
         msg="high-mid test pixel incorrect",
     )
+    value = im_test.getpixel(right)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(right),
+        value,
         (0, 127, 0),
         threshold=1,
         msg="white test pixel incorrect",
@@ -444,6 +464,7 @@ def test_exif_transpose_xml_without_xmp() -> None:
 
         del im.info["xmp"]
         transposed_im = ImageOps.exif_transpose(im)
+        assert transposed_im is not None
         assert 0x0112 not in transposed_im.getexif()
 
 

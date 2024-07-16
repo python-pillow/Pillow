@@ -115,7 +115,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self.__loaded = -1
         self.__timestamp = 0
 
-    def _get_next(self):
+    def _get_next(self) -> tuple[bytes, int, int]:
         # Get next frame
         ret = self._decoder.get_next()
         self.__physical_frame += 1
@@ -144,7 +144,7 @@ class WebPImageFile(ImageFile.ImageFile):
         while self.__physical_frame < frame:
             self._get_next()  # Advance to the requested frame
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if _webp.HAVE_WEBPANIM:
             if self.__loaded != self.__logical_frame:
                 self._seek(self.__logical_frame)
