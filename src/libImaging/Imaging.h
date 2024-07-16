@@ -295,7 +295,8 @@ extern Imaging
 ImagingFill(Imaging im, const void *ink);
 extern int
 ImagingFill2(
-    Imaging into, const void *ink, Imaging mask, int x0, int y0, int x1, int y1);
+    Imaging into, const void *ink, Imaging mask, int x0, int y0, int x1, int y1
+);
 extern Imaging
 ImagingFillBand(Imaging im, int band, int color);
 extern Imaging
@@ -310,7 +311,8 @@ extern Imaging
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingGaussianBlur(
-    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes);
+    Imaging imOut, Imaging imIn, float xradius, float yradius, int passes
+);
 extern Imaging
 ImagingGetBand(Imaging im, int band);
 extern Imaging
@@ -373,7 +375,8 @@ ImagingTransform(
     int y1,
     double a[8],
     int filter,
-    int fill);
+    int fill
+);
 extern Imaging
 ImagingUnsharpMask(Imaging imOut, Imaging im, float radius, int percent, int threshold);
 extern Imaging
@@ -386,7 +389,8 @@ ImagingColorLUT3D_linear(
     int size1D,
     int size2D,
     int size3D,
-    INT16 *table);
+    INT16 *table
+);
 
 extern Imaging
 ImagingCopy2(Imaging imOut, Imaging imIn);
@@ -440,7 +444,8 @@ ImagingDrawArc(
     float end,
     const void *ink,
     int width,
-    int op);
+    int op
+);
 extern int
 ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void *ink, int op);
 extern int
@@ -455,7 +460,8 @@ ImagingDrawChord(
     const void *ink,
     int fill,
     int width,
-    int op);
+    int op
+);
 extern int
 ImagingDrawEllipse(
     Imaging im,
@@ -466,12 +472,14 @@ ImagingDrawEllipse(
     const void *ink,
     int fill,
     int width,
-    int op);
+    int op
+);
 extern int
 ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink, int op);
 extern int
 ImagingDrawWideLine(
-    Imaging im, int x0, int y0, int x1, int y1, const void *ink, int width, int op);
+    Imaging im, int x0, int y0, int x1, int y1, const void *ink, int width, int op
+);
 extern int
 ImagingDrawPieslice(
     Imaging im,
@@ -484,12 +492,14 @@ ImagingDrawPieslice(
     const void *ink,
     int fill,
     int width,
-    int op);
+    int op
+);
 extern int
 ImagingDrawPoint(Imaging im, int x, int y, const void *ink, int op);
 extern int
 ImagingDrawPolygon(
-    Imaging im, int points, int *xy, const void *ink, int fill, int width, int op);
+    Imaging im, int points, int *xy, const void *ink, int fill, int width, int op
+);
 extern int
 ImagingDrawRectangle(
     Imaging im,
@@ -500,7 +510,8 @@ ImagingDrawRectangle(
     const void *ink,
     int fill,
     int width,
-    int op);
+    int op
+);
 
 /* Level 2 graphics (WORK IN PROGRESS) */
 extern ImagingOutline
@@ -510,7 +521,8 @@ ImagingOutlineDelete(ImagingOutline outline);
 
 extern int
 ImagingDrawOutline(
-    Imaging im, ImagingOutline outline, const void *ink, int fill, int op);
+    Imaging im, ImagingOutline outline, const void *ink, int fill, int op
+);
 
 extern int
 ImagingOutlineMove(ImagingOutline outline, float x, float y);
@@ -518,7 +530,8 @@ extern int
 ImagingOutlineLine(ImagingOutline outline, float x, float y);
 extern int
 ImagingOutlineCurve(
-    ImagingOutline outline, float x1, float y1, float x2, float y2, float x3, float y3);
+    ImagingOutline outline, float x1, float y1, float x2, float y2, float x3, float y3
+);
 extern int
 ImagingOutlineTransform(ImagingOutline outline, double a[6]);
 
@@ -545,7 +558,8 @@ ImagingSavePPM(Imaging im, const char *filename);
 /* Codecs */
 typedef struct ImagingCodecStateInstance *ImagingCodecState;
 typedef int (*ImagingCodec)(
-    Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
+    Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes
+);
 
 extern int
 ImagingBcnDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
@@ -575,7 +589,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes)
 #ifdef HAVE_OPENJPEG
 extern int
 ImagingJpeg2KDecode(
-    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
+    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
+);
 extern int
 ImagingJpeg2KDecodeCleanup(ImagingCodecState state);
 extern int
@@ -586,7 +601,8 @@ ImagingJpeg2KEncodeCleanup(ImagingCodecState state);
 #ifdef HAVE_LIBTIFF
 extern int
 ImagingLibTiffDecode(
-    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
+    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
+);
 extern int
 ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
 #endif
@@ -598,7 +614,8 @@ extern int
 ImagingMspDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
 extern int
 ImagingPackbitsDecode(
-    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
+    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
+);
 extern int
 ImagingPcdDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
 extern int
@@ -611,13 +628,16 @@ extern int
 ImagingRawEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
 extern int
 ImagingSgiRleDecode(
-    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
+    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
+);
 extern int
 ImagingSunRleDecode(
-    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
+    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
+);
 extern int
 ImagingTgaRleDecode(
-    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
+    Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
+);
 extern int
 ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
 extern int

@@ -58,11 +58,10 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
         INT32 mask = 0xffffffff;
         if (im->bands == 3) {
             ((UINT8 *)&mask)[3] = 0;
-        } else if (
-            alpha_only &&
-            (strcmp(im->mode, "RGBa") == 0 || strcmp(im->mode, "RGBA") == 0 ||
-             strcmp(im->mode, "La") == 0 || strcmp(im->mode, "LA") == 0 ||
-             strcmp(im->mode, "PA") == 0)) {
+        } else if (alpha_only &&
+                   (strcmp(im->mode, "RGBa") == 0 || strcmp(im->mode, "RGBA") == 0 ||
+                    strcmp(im->mode, "La") == 0 || strcmp(im->mode, "LA") == 0 ||
+                    strcmp(im->mode, "PA") == 0)) {
 #ifdef WORDS_BIGENDIAN
             mask = 0x000000ff;
 #else
@@ -246,13 +245,14 @@ getcolors32(Imaging im, int maxcolors, int *size) {
        code in Python 2.1.3; the exact implementation is borrowed from
        Python's Unicode property database (written by yours truly) /F */
 
-    static int SIZES[] = {
-        4,         3,  8,         3,  16,        3,  32,         5,  64,       3,
-        128,       3,  256,       29, 512,       17, 1024,       9,  2048,     5,
-        4096,      83, 8192,      27, 16384,     43, 32768,      3,  65536,    45,
-        131072,    9,  262144,    39, 524288,    39, 1048576,    9,  2097152,  5,
-        4194304,   3,  8388608,   33, 16777216,  27, 33554432,   9,  67108864, 71,
-        134217728, 39, 268435456, 9,  536870912, 5,  1073741824, 83, 0};
+    static int SIZES[] = {4,          3,  8,         3,  16,        3,  32,        5,
+                          64,         3,  128,       3,  256,       29, 512,       17,
+                          1024,       9,  2048,      5,  4096,      83, 8192,      27,
+                          16384,      43, 32768,     3,  65536,     45, 131072,    9,
+                          262144,     39, 524288,    39, 1048576,   9,  2097152,   5,
+                          4194304,    3,  8388608,   33, 16777216,  27, 33554432,  9,
+                          67108864,   71, 134217728, 39, 268435456, 9,  536870912, 5,
+                          1073741824, 83, 0};
 
     code_size = code_poly = code_mask = 0;
 

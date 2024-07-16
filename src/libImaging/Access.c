@@ -36,7 +36,8 @@ add_item(const char *mode) {
             "AccessInit: hash collision: %d for both %s and %s\n",
             i,
             mode,
-            access_table[i].mode);
+            access_table[i].mode
+        );
         exit(1);
     }
     access_table[i].mode = mode;

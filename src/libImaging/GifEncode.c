@@ -79,7 +79,8 @@ glzwe(
     UINT8 *out_ptr,
     UINT32 *in_avail,
     UINT32 *out_avail,
-    UINT32 end_of_data) {
+    UINT32 end_of_data
+) {
     switch (st->entry_state) {
         case LZW_TRY_IN1:
 get_first_byte:
@@ -312,7 +313,8 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 state->buffer,
                 (UINT8 *)im->image[state->y + state->yoff] +
                     state->xoff * im->pixelsize,
-                state->xsize);
+                state->xsize
+            );
             state->x = 0;
 
             /* step forward, according to the interlace settings */
@@ -348,7 +350,8 @@ ImagingGifEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             ptr,
             &in_avail,
             &out_avail,
-            state->state == FINISH);
+            state->state == FINISH
+        );
         out_used = sub_block_limit - ptr - out_avail;
         *sub_block_ptr += out_used;
         ptr += out_used;
