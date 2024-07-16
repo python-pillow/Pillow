@@ -41,6 +41,7 @@ env:
 
 jobs:
   build-1-QEMU-emulated-wheels:
+    if: github.event_name != 'schedule'
     name: aarch64 ${{ matrix.python-version }} ${{ matrix.spec }}
     runs-on: ubuntu-latest
     strategy:
@@ -249,6 +250,7 @@ jobs:
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
   sdist:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
