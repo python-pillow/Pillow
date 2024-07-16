@@ -270,7 +270,9 @@ struct ImagingMemoryArena ImagingDefaultArena = {
     0,
     0,
     0,  // Stats
+#ifdef Py_GIL_DISABLED
     {0},
+#endif
 };
 
 int
