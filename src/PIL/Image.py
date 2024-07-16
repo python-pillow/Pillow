@@ -3286,7 +3286,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
-def fromqimage(im):
+def fromqimage(im) -> ImageFile.ImageFile:
     """Creates an image instance from a QImage image"""
     from . import ImageQt
 
@@ -3296,7 +3296,7 @@ def fromqimage(im):
     return ImageQt.fromqimage(im)
 
 
-def fromqpixmap(im):
+def fromqpixmap(im) -> ImageFile.ImageFile:
     """Creates an image instance from a QPixmap image"""
     from . import ImageQt
 
@@ -3867,7 +3867,7 @@ class Exif(_ExifBase):
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, offset, group=None):
+    def _get_ifd_dict(self, offset: int, group=None):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
@@ -3881,7 +3881,7 @@ class Exif(_ExifBase):
             info.load(self.fp)
             return self._fixup_dict(info)
 
-    def _get_head(self):
+    def _get_head(self) -> bytes:
         version = b"\x2B" if self.bigtiff else b"\x2A"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
@@ -4102,16 +4102,16 @@ class Exif(_ExifBase):
             keys.update(self._info)
         return len(keys)
 
-    def __getitem__(self, tag):
+    def __getitem__(self, tag: int):
         if self._info is not None and tag not in self._data and tag in self._info:
             self._data[tag] = self._fixup(self._info[tag])
             del self._info[tag]
         return self._data[tag]
 
-    def __contains__(self, tag) -> bool:
+    def __contains__(self, tag: object) -> bool:
         return tag in self._data or (self._info is not None and tag in self._info)
 
-    def __setitem__(self, tag, value) -> None:
+    def __setitem__(self, tag: int, value) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         self._data[tag] = value

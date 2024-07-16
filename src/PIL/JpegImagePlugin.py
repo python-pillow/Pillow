@@ -685,7 +685,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             raise ValueError(msg)
         subsampling = get_sampling(im)
 
-    def validate_qtables(qtables):
+    def validate_qtables(
+        qtables: (
+            str | tuple[list[int], ...] | list[list[int]] | dict[int, list[int]] | None
+        )
+    ) -> list[list[int]] | None:
         if qtables is None:
             return qtables
         if isinstance(qtables, str):
@@ -715,12 +719,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     if len(table) != 64:
                         msg = "Invalid quantization table"
                         raise TypeError(msg)
-                    table = array.array("H", table)
+                    table_array = array.array("H", table)
                 except TypeError as e:
                     msg = "Invalid quantization table"
                     raise ValueError(msg) from e
                 else:
-                    qtables[idx] = list(table)
+                    qtables[idx] = list(table_array)
             return qtables
 
     if qtables == "keep":

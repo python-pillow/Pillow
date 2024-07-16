@@ -553,7 +553,9 @@ def _save(im, fp, tile, bufsize: int = 0) -> None:
         fp.flush()
 
 
-def _encode_tile(im, fp, tile: list[_Tile], bufsize: int, fh, exc=None) -> None:
+def _encode_tile(
+    im, fp: IO[bytes], tile: list[_Tile], bufsize: int, fh, exc=None
+) -> None:
     for encoder_name, extents, offset, args in tile:
         if offset > 0:
             fp.seek(offset)
@@ -653,7 +655,7 @@ class PyCodec:
         """
         pass
 
-    def setfd(self, fd) -> None:
+    def setfd(self, fd: IO[bytes]) -> None:
         """
         Called from ImageFile to set the Python file-like object
 
