@@ -781,7 +781,7 @@ setup_module(PyObject *m) {
     }
 
     PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
-    PyModule_AddObject(m, "webpdecoder_version", v ? v : Py_None);
+    PyModule_AddObject(m, "webpdecoder_version", v);
 
     return 0;
 }

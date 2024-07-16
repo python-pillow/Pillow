@@ -10,7 +10,7 @@ from PIL import Image
 
 from .helper import mark_if_feature_version, skip_unless_feature
 
-pytestmark = [skip_unless_feature("webp")]
+pytestmark = skip_unless_feature("webp")
 
 ElementTree: ModuleType | None
 try:
