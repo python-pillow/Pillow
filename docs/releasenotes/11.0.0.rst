@@ -43,10 +43,12 @@ similarly removed.
 Deprecations
 ============
 
-TODO
-^^^^
+ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
+:py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more
+keyword arguments can be used instead.
 
 API Changes
 ===========

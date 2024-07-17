@@ -37,10 +37,10 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
 
     :param expression: A function that receives a dictionary.
     :param options: Values to add to the function's dictionary, mapping image
-                    names to Image instances. You can use one or more keyword
-                    arguments instead of a dictionary, as shown in the above
-                    example. Note that the names must be valid Python
-                    identifiers.
+                    names to Image instances. Deprecated.
+                    You can instead use one or more keyword arguments, as
+                    shown in the above example. Note that the names must be
+                    valid Python identifiers.
     :return: An image, an integer value, a floating point value,
              or a pixel tuple, depending on the expression.
 
@@ -62,10 +62,10 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
                        syntax. In addition to the standard operators, you can
                        also use the functions described below.
     :param options: Values to add to the function's dictionary, mapping image
-                    names to Image instances. You can use one or more keyword
-                    arguments instead of a dictionary, as shown in the above
-                    example. Note that the names must be valid Python
-                    identifiers.
+                    names to Image instances. Deprecated.
+                    You can instead use one or more keyword arguments, as
+                    shown in the above example. Note that the names must be
+                    valid Python identifiers.
     :return: An image, an integer value, a floating point value,
              or a pixel tuple, depending on the expression.
 
