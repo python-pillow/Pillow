@@ -43,13 +43,13 @@ similarly removed.
 Deprecations
 ============
 
-WebP Features Test
-^^^^^^^^^^^^^^^^^^
+Specific WebP Feature Checks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following features ``features.check("transp_webp")``,
 ``features.check("webp_mux")``, and ``features.check("webp_anim")`` are now
-always ``True`` if the WebP module is installed and sohuld not be used.
-These checks wil be removed in Pillow 12.0.0 (2025-10-15).
+always ``True`` if the WebP module is installed and should not be used.
+These checks will be removed in Pillow 12.0.0 (2025-10-15).
 
 API Changes
 ===========
