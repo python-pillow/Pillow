@@ -1,6 +1,14 @@
 name: Wheels
 
 on:
+  schedule:
+  #        ┌───────────── minute (0 - 59)
+  #        │  ┌───────────── hour (0 - 23)
+  #        │  │ ┌───────────── day of the month (1 - 31)
+  #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+  #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+  #        │  │ │ │ │
+  - cron: "42 1 * * 0,3"
   push:
     paths:
       - ".ci/requirements-cibw.txt"
@@ -33,6 +41,7 @@ env:
 
 jobs:
   build-1-QEMU-emulated-wheels:
+    if: github.event_name != 'schedule'
     name: aarch64 ${{ matrix.python-version }} ${{ matrix.spec }}
     runs-on: ubuntu-latest
     strategy:
@@ -140,6 +149,13 @@ jobs:
           name: dist-${{ matrix.os }}-${{ matrix.cibw_arch }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
           path: ./wheelhouse/*.whl
 
+      - name: Upload wheels to scientific-python-nightly-wheels
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: scientific-python/upload-nightly-action@b67d7fcc0396e1128a474d1ab2b48aa94680f9fc # 0.5.0
+        with:
+          artifacts_path: ./wheelhouse
+          anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
+
   windows:
     name: Windows ${{ matrix.cibw_arch }}
     runs-on: windows-latest
@@ -226,7 +242,15 @@ jobs:
           name: fribidi-windows-${{ matrix.cibw_arch }}
           path: winbuild\build\bin\fribidi*
 
+      - name: Upload wheels to scientific-python-nightly-wheels
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: scientific-python/upload-nightly-action@b67d7fcc0396e1128a474d1ab2b48aa94680f9fc # 0.5.0
+        with:
+          artifacts_path: ./wheelhouse
+          anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
+
   sdist:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
