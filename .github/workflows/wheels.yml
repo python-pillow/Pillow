@@ -259,7 +259,7 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [build-2-native-wheels, windows]
     runs-on: ubuntu-latest
-    name: Upload release to PyPI
+    name: Upload wheels to scientific-python-nightly-wheels
     steps:
       - uses: actions/download-artifact@v4
         with:
