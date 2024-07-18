@@ -251,6 +251,7 @@ def lambda_eval(
     :param expression: A function that receives a dictionary.
     :param options: Values to add to the function's dictionary. Deprecated.
                     You can instead use one or more keyword arguments.
+    :param **kw: Values to add to the function's dictionary.
     :return: The expression result. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
@@ -295,6 +296,7 @@ def unsafe_eval(
     :param expression: A string containing a Python-style expression.
     :param options: Values to add to the evaluation context. Deprecated.
                     You can instead use one or more keyword arguments.
+    :param **kw: Values to add to the evaluation context.
     :return: The evaluated expression. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
