@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Deprecate ImageMath lambda_eval and unsafe_eval options argument #8242
+  [radarhere]
+
 - Changed ContainerIO to subclass IO #8240
   [radarhere]
 
