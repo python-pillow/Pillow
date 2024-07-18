@@ -37,6 +37,9 @@ example, let’s display the image we just loaded::
 
     >>> im.show()
 
+.. image:: show_hopper.png
+    :align: center
+
 .. note::
 
     The standard version of :py:meth:`~PIL.Image.Image.show` is not very
@@ -79,6 +82,9 @@ Convert files to JPEG
             except OSError:
                 print("cannot convert", infile)
 
+.. image:: ../../Tests/images/hopper.jpg
+    :align: center
+
 A second argument can be supplied to the :py:meth:`~PIL.Image.Image.save`
 method which explicitly specifies a file format. If you use a non-standard
 extension, you must always specify the format this way:
@@ -102,6 +108,9 @@ Create JPEG thumbnails
                     im.save(outfile, "JPEG")
             except OSError:
                 print("cannot create thumbnail for", infile)
+
+.. image:: thumbnail_hopper.jpg
+    :align: center
 
 It is important to note that the library doesn’t decode or load the raster data
 unless it really has to. When you open a file, the file header is read to
@@ -150,6 +159,9 @@ pixels, so the region in the above example is exactly 300x300 pixels.
 
 The region could now be processed in a certain manner and pasted back.
 
+.. image:: cropped_hopper.jpg
+    :align: center
+
 Processing a subrectangle, and pasting it back
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -163,6 +175,9 @@ exactly. In addition, the region cannot extend outside the image. However, the
 modes of the original image and the region do not need to match. If they don’t,
 the region is automatically converted before being pasted (see the section on
 :ref:`color-transforms` below for details).
+
+.. image:: pasted_hopper.jpg
+    :align: center
 
 Here’s an additional example:
 
@@ -186,6 +201,9 @@ Rolling an image
 
         return im
 
+.. image:: rolled_hopper.jpg
+    :align: center
+
 Or if you would like to merge two images into a wider image:
 
 Merging images
@@ -202,6 +220,9 @@ Merging images
         im.paste(im2, (im1.size[0], 0))
 
         return im
+
+.. image:: merged_hopper.png
+    :align: center
 
 For more advanced tricks, the paste method can also take a transparency mask as
 an optional argument. In this mask, the value 255 indicates that the pasted
@@ -229,6 +250,9 @@ Note that for a single-band image, :py:meth:`~PIL.Image.Image.split` returns
 the image itself. To work with individual color bands, you may want to convert
 the image to “RGB” first.
 
+.. image:: rebanded_hopper.jpg
+    :align: center
+
 Geometrical transforms
 ----------------------
 
@@ -245,6 +269,9 @@ Simple geometry transforms
     out = im.resize((128, 128))
     out = im.rotate(45) # degrees counter-clockwise
 
+.. image:: rotated_hopper_90.jpg
+    :align: center
+
 To rotate the image in 90 degree steps, you can either use the
 :py:meth:`~PIL.Image.Image.rotate` method or the
 :py:meth:`~PIL.Image.Image.transpose` method. The latter can also be used to
@@ -256,10 +283,37 @@ Transposing an image
 ::
 
     out = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+
+.. image:: flip_left_right_hopper.jpg
+    :align: center
+
+::
+
     out = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+
+.. image:: flip_top_bottom_hopper.jpg
+    :align: center
+
+::
+
     out = im.transpose(Image.Transpose.ROTATE_90)
+
+.. image:: rotated_hopper_90.jpg
+    :align: center
+
+::
+
     out = im.transpose(Image.Transpose.ROTATE_180)
+
+.. image:: rotated_hopper_180.jpg
+    :align: center
+
+::
+
     out = im.transpose(Image.Transpose.ROTATE_270)
+
+.. image:: rotated_hopper_270.jpg
+    :align: center
 
 ``transpose(ROTATE)`` operations can also be performed identically with
 :py:meth:`~PIL.Image.Image.rotate` operations, provided the ``expand`` flag is
@@ -342,6 +396,9 @@ Applying filters
     from PIL import ImageFilter
     out = im.filter(ImageFilter.DETAIL)
 
+.. image:: enhanced_hopper.jpg
+    :align: center
+
 Point Operations
 ^^^^^^^^^^^^^^^^
 
@@ -357,6 +414,9 @@ Applying point transforms
 
     # multiply each pixel by 1.2
     out = im.point(lambda i: i * 1.2)
+
+.. image:: transformed_hopper.jpg
+    :align: center
 
 Using the above technique, you can quickly apply any simple expression to an
 image. You can also combine the :py:meth:`~PIL.Image.Image.point` and
@@ -388,6 +448,9 @@ Note the syntax used to create the mask::
 
     imout = im.point(lambda i: expression and 255)
 
+.. image:: masked_hopper.jpg
+    :align: center
+
 Python only evaluates the portion of a logical expression as is necessary to
 determine the outcome, and returns the last value examined as the result of the
 expression. So if the expression above is false (0), Python does not look at
@@ -411,6 +474,10 @@ Enhancing images
 
     enh = ImageEnhance.Contrast(im)
     enh.enhance(1.3).show("30% more contrast")
+
+
+.. image:: contrasted_hopper.jpg
+    :align: center
 
 Image sequences
 ---------------
