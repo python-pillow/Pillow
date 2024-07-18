@@ -511,10 +511,43 @@ Reading sequences
 As seen in this example, you’ll get an :py:exc:`EOFError` exception when the
 sequence ends.
 
+Writing sequences
+^^^^^^^^^^^^^^^^^
+
+You can create animated GIFs with Pillow, e.g.
+
+::
+
+    from PIL import Image
+
+    # List of image filenames
+    image_filenames = [
+        "hopper.jpg",
+        "rotated_hopper_270.jpg",
+        "rotated_hopper_180.jpg",
+        "rotated_hopper_90.jpg",
+    ]
+
+    # Open images and append them to a list
+    images = [Image.open(filename) for filename in image_filenames]
+
+    # Save the images as an animated GIF
+    images[0].save(
+        "animated_hopper.gif",
+        save_all=True,
+        append_images=images[1:],
+        duration=500,  # duration of each frame in milliseconds
+        loop=0,  # loop forever
+    )
+
+
+.. image:: animated_hopper.gif
+    :align: center
+
 The following class lets you use the for-statement to loop over the sequence:
 
-Using the ImageSequence Iterator class
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using the :py:meth:`ImageSequence.Iterator` class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
