@@ -42,7 +42,7 @@ class DcxImageFile(PcxImageFile):
     format_description = "Intel DCX"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # Header
         s = self.fp.read(4)
         if not _accept(s):
@@ -58,7 +58,7 @@ class DcxImageFile(PcxImageFile):
             self._offset.append(offset)
 
         self._fp = self.fp
-        self.frame = None
+        self.frame = -1
         self.n_frames = len(self._offset)
         self.is_animated = self.n_frames > 1
         self.seek(0)

@@ -25,6 +25,7 @@ import io
 import math
 import os
 import time
+from typing import IO
 
 from . import Image, ImageFile, ImageSequence, PdfParser, __version__, features
 
@@ -39,7 +40,7 @@ from . import Image, ImageFile, ImageSequence, PdfParser, __version__, features
 #  5. page contents
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 
@@ -173,12 +174,15 @@ def _write_image(im, filename, existing_pdf, image_refs):
     return image_ref, procset
 
 
-def _save(im, fp, filename, save_all=False):
+def _save(
+    im: Image.Image, fp: IO[bytes], filename: str | bytes, save_all: bool = False
+) -> None:
     is_appending = im.encoderinfo.get("append", False)
+    filename_str = filename.decode() if isinstance(filename, bytes) else filename
     if is_appending:
-        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="r+b")
+        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename_str, mode="r+b")
     else:
-        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="w+b")
+        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename_str, mode="w+b")
 
     dpi = im.encoderinfo.get("dpi")
     if dpi:
@@ -227,12 +231,7 @@ def _save(im, fp, filename, save_all=False):
     for im in ims:
         im_number_of_pages = 1
         if save_all:
-            try:
-                im_number_of_pages = im.n_frames
-            except AttributeError:
-                # Image format does not have n_frames.
-                # It is a single frame image
-                pass
+            im_number_of_pages = getattr(im, "n_frames", 1)
         number_of_pages += im_number_of_pages
         for i in range(im_number_of_pages):
             image_refs.append(existing_pdf.next_object_id(0))
@@ -249,7 +248,9 @@ def _save(im, fp, filename, save_all=False):
 
     page_number = 0
     for im_sequence in ims:
-        im_pages = ImageSequence.Iterator(im_sequence) if save_all else [im_sequence]
+        im_pages: ImageSequence.Iterator | list[Image.Image] = (
+            ImageSequence.Iterator(im_sequence) if save_all else [im_sequence]
+        )
         for im in im_pages:
             image_ref, procset = _write_image(im, filename, existing_pdf, image_refs)
 

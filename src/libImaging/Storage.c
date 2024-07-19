@@ -110,9 +110,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_INT32;
 
-    } else if (
-        strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
-        strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
+    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
+               strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
@@ -227,7 +226,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
 Imaging
 ImagingNewPrologue(const char *mode, int xsize, int ysize) {
     return ImagingNewPrologueSubtype(
-        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance));
+        mode, xsize, ysize, sizeof(struct ImagingMemoryInstance)
+    );
 }
 
 void
@@ -418,9 +418,8 @@ ImagingAllocateArray(Imaging im, int dirty, int block_size) {
             }
             im->blocks[current_block] = block;
             /* Bulletproof code from libc _int_memalign */
-            aligned_ptr = (char *)(
-                ((size_t) (block.ptr + arena->alignment - 1)) &
-                -((Py_ssize_t) arena->alignment));
+            aligned_ptr = (char *)(((size_t)(block.ptr + arena->alignment - 1)) &
+                                   -((Py_ssize_t)arena->alignment));
         }
 
         im->image[y] = aligned_ptr + aligned_linesize * line_in_block;

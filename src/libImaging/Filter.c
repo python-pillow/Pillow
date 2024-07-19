@@ -59,7 +59,8 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin) {
     }
 
     imOut = ImagingNewDirty(
-        imIn->mode, imIn->xsize + 2 * xmargin, imIn->ysize + 2 * ymargin);
+        imIn->mode, imIn->xsize + 2 * xmargin, imIn->ysize + 2 * ymargin
+    );
     if (!imOut) {
         return NULL;
     }
@@ -106,7 +107,7 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin) {
 
 void
 ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
-#define KERNEL1x3(in0, x, kernel, d)                                             \
+#define KERNEL1x3(in0, x, kernel, d)                               \
     (_i2f(in0[x - d]) * (kernel)[0] + _i2f(in0[x]) * (kernel)[1] + \
      _i2f(in0[x + d]) * (kernel)[2])
 
@@ -224,10 +225,9 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
 
 void
 ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
-#define KERNEL1x5(in0, x, kernel, d)                                             \
-    (_i2f(in0[x - d - d]) * (kernel)[0] +                                 \
-     _i2f(in0[x - d]) * (kernel)[1] + _i2f(in0[x]) * (kernel)[2] + \
-     _i2f(in0[x + d]) * (kernel)[3] +                                     \
+#define KERNEL1x5(in0, x, kernel, d)                                       \
+    (_i2f(in0[x - d - d]) * (kernel)[0] + _i2f(in0[x - d]) * (kernel)[1] + \
+     _i2f(in0[x]) * (kernel)[2] + _i2f(in0[x + d]) * (kernel)[3] +         \
      _i2f(in0[x + d + d]) * (kernel)[4])
 
     int x = 0, y = 0;
@@ -370,7 +370,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 }
             }
             memcpy(
-                out + x * sizeof(UINT32), in0 + x * sizeof(UINT32), sizeof(UINT32) * 2);
+                out + x * sizeof(UINT32), in0 + x * sizeof(UINT32), sizeof(UINT32) * 2
+            );
         }
     }
     memcpy(imOut->image[y], im->image[y], im->linesize);

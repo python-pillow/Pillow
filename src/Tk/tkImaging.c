@@ -73,14 +73,16 @@ ImagingFind(const char *name) {
 
 static int
 PyImagingPhotoPut(
-    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv) {
+    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv
+) {
     Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
 
     if (argc != 3) {
         TCL_APPEND_RESULT(
-            interp, "usage: ", argv[0], " destPhoto srcImage", (char *)NULL);
+            interp, "usage: ", argv[0], " destPhoto srcImage", (char *)NULL
+        );
         return TCL_ERROR;
     }
 
@@ -128,21 +130,16 @@ PyImagingPhotoPut(
     block.pixelPtr = (unsigned char *)im->block;
 
     TK_PHOTO_PUT_BLOCK(
-        interp,
-        photo,
-        &block,
-        0,
-        0,
-        block.width,
-        block.height,
-        TK_PHOTO_COMPOSITE_SET);
+        interp, photo, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET
+    );
 
     return TCL_OK;
 }
 
 static int
 PyImagingPhotoGet(
-    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv) {
+    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv
+) {
     Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
@@ -150,7 +147,8 @@ PyImagingPhotoGet(
 
     if (argc != 3) {
         TCL_APPEND_RESULT(
-            interp, "usage: ", argv[0], " srcPhoto destImage", (char *)NULL);
+            interp, "usage: ", argv[0], " srcPhoto destImage", (char *)NULL
+        );
         return TCL_ERROR;
     }
 
@@ -190,13 +188,15 @@ TkImaging_Init(Tcl_Interp *interp) {
         "PyImagingPhoto",
         PyImagingPhotoPut,
         (ClientData)0,
-        (Tcl_CmdDeleteProc *)NULL);
+        (Tcl_CmdDeleteProc *)NULL
+    );
     TCL_CREATE_COMMAND(
         interp,
         "PyImagingPhotoGet",
         PyImagingPhotoGet,
         (ClientData)0,
-        (Tcl_CmdDeleteProc *)NULL);
+        (Tcl_CmdDeleteProc *)NULL
+    );
 }
 
 /*
@@ -287,7 +287,7 @@ load_tkinter_funcs(void) {
      * Return 0 for success, non-zero for failure.
      */
 
-    HMODULE* hMods = NULL;
+    HMODULE *hMods = NULL;
     HANDLE hProcess;
     DWORD cbNeeded;
     unsigned int i;
@@ -313,7 +313,7 @@ load_tkinter_funcs(void) {
 #endif
         return 1;
     }
-    if (!(hMods = (HMODULE*) malloc(cbNeeded))) {
+    if (!(hMods = (HMODULE *)malloc(cbNeeded))) {
         PyErr_NoMemory();
         return 1;
     }
@@ -345,7 +345,7 @@ load_tkinter_funcs(void) {
     } else if (found_tk == 0) {
         PyErr_SetString(PyExc_RuntimeError, "Could not find Tk routines");
     }
-    return (int) ((found_tcl != 1) || (found_tk != 1));
+    return (int)((found_tcl != 1) || (found_tk != 1));
 }
 
 #else /* not Windows */
@@ -400,8 +400,9 @@ _func_loader(void *lib) {
         return 1;
     }
     return (
-        (TK_PHOTO_PUT_BLOCK =
-             (Tk_PhotoPutBlock_t)_dfunc(lib, "Tk_PhotoPutBlock")) == NULL);
+        (TK_PHOTO_PUT_BLOCK = (Tk_PhotoPutBlock_t)_dfunc(lib, "Tk_PhotoPutBlock")) ==
+        NULL
+    );
 }
 
 int

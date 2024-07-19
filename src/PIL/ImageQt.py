@@ -19,10 +19,13 @@ from __future__ import annotations
 
 import sys
 from io import BytesIO
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from . import Image
 from ._util import is_path
+
+if TYPE_CHECKING:
+    from . import ImageFile
 
 qt_version: str | None
 qt_versions = [
@@ -90,11 +93,11 @@ def fromqimage(im):
     return Image.open(b)
 
 
-def fromqpixmap(im):
+def fromqpixmap(im) -> ImageFile.ImageFile:
     return fromqimage(im)
 
 
-def align8to32(bytes, width, mode):
+def align8to32(bytes: bytes, width: int, mode: str) -> bytes:
     """
     converts each scanline of data from 8 bit to 32 bit aligned
     """
@@ -152,7 +155,7 @@ def _toqclass_helper(im):
     elif im.mode == "RGBA":
         data = im.tobytes("raw", "BGRA")
         format = qt_format.Format_ARGB32
-    elif im.mode == "I;16" and hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
+    elif im.mode == "I;16":
         im = im.point(lambda i: i * 256)
 
         format = qt_format.Format_Grayscale16
@@ -172,7 +175,7 @@ def _toqclass_helper(im):
 if qt_is_installed:
 
     class ImageQt(QImage):
-        def __init__(self, im):
+        def __init__(self, im) -> None:
             """
             An PIL image wrapper for Qt.  This is a subclass of PyQt's QImage
             class.
@@ -196,7 +199,7 @@ if qt_is_installed:
                 self.setColorTable(im_data["colortable"])
 
 
-def toqimage(im):
+def toqimage(im) -> ImageQt:
     return ImageQt(im)
 
 

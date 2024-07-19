@@ -125,7 +125,7 @@ class SgiImageFile(ImageFile.ImageFile):
             ]
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode not in {"RGB", "RGBA", "L"}:
         msg = "Unsupported SGI image mode"
         raise ValueError(msg)
@@ -171,8 +171,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
     # Maximum Byte value (255 = 8bits per pixel)
     pinmax = 255
     # Image name (79 characters max, truncated below in write)
-    filename = os.path.basename(filename)
-    img_name = os.path.splitext(filename)[0].encode("ascii", "ignore")
+    img_name = os.path.splitext(os.path.basename(filename))[0]
+    if isinstance(img_name, str):
+        img_name = img_name.encode("ascii", "ignore")
     # Standard representation of pixel in the file
     colormap = 0
     fp.write(struct.pack(">h", magic_number))

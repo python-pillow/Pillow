@@ -134,7 +134,7 @@ ImagingPoint(Imaging imIn, const char *mode, const void *table) {
     ImagingSectionCookie cookie;
     Imaging imOut;
     im_point_context context;
-    void (*point)(Imaging imIn, Imaging imOut, im_point_context * context);
+    void (*point)(Imaging imIn, Imaging imOut, im_point_context *context);
 
     if (!imIn) {
         return (Imaging)ImagingError_ModeError();
@@ -197,8 +197,8 @@ ImagingPoint(Imaging imIn, const char *mode, const void *table) {
     return imOut;
 
 mode_mismatch:
-    return (Imaging)ImagingError_ValueError(
-        "point operation not supported for this mode");
+    return (Imaging
+    )ImagingError_ValueError("point operation not supported for this mode");
 }
 
 Imaging

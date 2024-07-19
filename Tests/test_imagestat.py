@@ -25,10 +25,10 @@ def test_sanity() -> None:
     st.stddev
 
     with pytest.raises(AttributeError):
-        st.spam()
+        st.spam()  # type: ignore[attr-defined]
 
     with pytest.raises(TypeError):
-        ImageStat.Stat(1)
+        ImageStat.Stat(1)  # type: ignore[arg-type]
 
 
 def test_hopper() -> None:

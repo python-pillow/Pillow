@@ -4,9 +4,9 @@ Tests for resize functionality.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from itertools import permutations
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
@@ -285,14 +285,14 @@ class TestReducingGapResize:
 
 class TestImageResize:
     def test_resize(self) -> None:
-        def resize(mode: str, size: tuple[int, int]) -> None:
+        def resize(mode: str, size: tuple[int, int] | list[int]) -> None:
             out = hopper(mode).resize(size)
             assert out.mode == mode
-            assert out.size == size
+            assert out.size == tuple(size)
 
         for mode in "1", "P", "L", "RGB", "I", "F":
             resize(mode, (112, 103))
-            resize(mode, (188, 214))
+            resize(mode, [188, 214])
 
         # Test unknown resampling filter
         with hopper() as im:

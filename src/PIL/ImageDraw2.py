@@ -24,13 +24,16 @@
 """
 from __future__ import annotations
 
+from typing import BinaryIO
+
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
+from ._typing import StrOrBytesPath
 
 
 class Pen:
     """Stores an outline color and width."""
 
-    def __init__(self, color, width=1, opacity=255):
+    def __init__(self, color: str, width: int = 1, opacity: int = 255) -> None:
         self.color = ImageColor.getrgb(color)
         self.width = width
 
@@ -38,14 +41,16 @@ class Pen:
 class Brush:
     """Stores a fill color"""
 
-    def __init__(self, color, opacity=255):
+    def __init__(self, color: str, opacity: int = 255) -> None:
         self.color = ImageColor.getrgb(color)
 
 
 class Font:
     """Stores a TrueType font and color"""
 
-    def __init__(self, color, file, size=12):
+    def __init__(
+        self, color: str, file: StrOrBytesPath | BinaryIO, size: float = 12
+    ) -> None:
         # FIXME: add support for bitmap fonts
         self.color = ImageColor.getrgb(color)
         self.font = ImageFont.truetype(file, size)
@@ -56,14 +61,22 @@ class Draw:
     (Experimental) WCK-style drawing interface
     """
 
-    def __init__(self, image, size=None, color=None):
-        if not hasattr(image, "im"):
+    def __init__(
+        self,
+        image: Image.Image | str,
+        size: tuple[int, int] | list[int] | None = None,
+        color: float | tuple[float, ...] | str | None = None,
+    ) -> None:
+        if isinstance(image, str):
+            if size is None:
+                msg = "If image argument is mode string, size must be a list or tuple"
+                raise ValueError(msg)
             image = Image.new(image, size, color)
         self.draw = ImageDraw.Draw(image)
         self.image = image
         self.transform = None
 
-    def flush(self):
+    def flush(self) -> Image.Image:
         return self.image
 
     def render(self, op, xy, pen, brush=None):
