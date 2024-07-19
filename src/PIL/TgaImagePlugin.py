@@ -36,7 +36,7 @@ MODES = {
     (3, 1): "1",
     (3, 8): "L",
     (3, 16): "LA",
-    (2, 16): "BGR;5",
+    (2, 16): "BGRA;15Z",
     (2, 24): "BGR",
     (2, 32): "BGRA",
 }
@@ -87,9 +87,7 @@ class TgaImageFile(ImageFile.ImageFile):
         elif imagetype in (1, 9):
             self._mode = "P" if colormaptype else "L"
         elif imagetype in (2, 10):
-            self._mode = "RGB"
-            if depth == 32:
-                self._mode = "RGBA"
+            self._mode = "RGB" if depth == 24 else "RGBA"
         else:
             msg = "unknown TGA mode"
             raise SyntaxError(msg)
@@ -118,15 +116,16 @@ class TgaImageFile(ImageFile.ImageFile):
             start, size, mapdepth = i16(s, 3), i16(s, 5), s[7]
             if mapdepth == 16:
                 self.palette = ImagePalette.raw(
-                    "BGR;15", b"\0" * 2 * start + self.fp.read(2 * size)
+                    "BGRA;15Z", bytes(2 * start) + self.fp.read(2 * size)
                 )
+                self.palette.mode = "RGBA"
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw(
-                    "BGR", b"\0" * 3 * start + self.fp.read(3 * size)
+                    "BGR", bytes(3 * start) + self.fp.read(3 * size)
                 )
             elif mapdepth == 32:
                 self.palette = ImagePalette.raw(
-                    "BGRA", b"\0" * 4 * start + self.fp.read(4 * size)
+                    "BGRA", bytes(4 * start) + self.fp.read(4 * size)
                 )
             else:
                 msg = "unknown TGA map depth"
@@ -178,7 +177,7 @@ SAVE = {
 }
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:

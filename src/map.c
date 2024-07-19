@@ -72,7 +72,8 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
             &offset,
             &mode,
             &stride,
-            &ystep)) {
+            &ystep
+        )) {
         return NULL;
     }
 

@@ -46,7 +46,8 @@
 
 typedef struct {
     PyObject_HEAD int (*decode)(
-        Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
+        Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes
+    );
     int (*cleanup)(ImagingCodecState state);
     struct ImagingCodecStateInstance state;
     Imaging im;
@@ -889,7 +890,8 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     PY_LONG_LONG length = -1;
 
     if (!PyArg_ParseTuple(
-            args, "ss|iiiL", &mode, &format, &reduce, &layers, &fd, &length)) {
+            args, "ss|iiiL", &mode, &format, &reduce, &layers, &fd, &length
+        )) {
         return NULL;
     }
 

@@ -60,6 +60,8 @@ class TestImageGrab:
     def test_grabclipboard(self) -> None:
         if sys.platform == "darwin":
             subprocess.call(["screencapture", "-cx"])
+
+            ImageGrab.grabclipboard()
         elif sys.platform == "win32":
             p = subprocess.Popen(["powershell", "-command", "-"], stdin=subprocess.PIPE)
             p.stdin.write(
@@ -69,6 +71,8 @@ $bmp = New-Object Drawing.Bitmap 200, 200
 [Windows.Forms.Clipboard]::SetImage($bmp)"""
             )
             p.communicate()
+
+            ImageGrab.grabclipboard()
         else:
             if not shutil.which("wl-paste") and not shutil.which("xclip"):
                 with pytest.raises(
@@ -77,9 +81,6 @@ $bmp = New-Object Drawing.Bitmap 200, 200
                     r" ImageGrab.grabclipboard\(\) on Linux",
                 ):
                     ImageGrab.grabclipboard()
-            return
-
-        ImageGrab.grabclipboard()
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
     def test_grabclipboard_file(self) -> None:
@@ -89,6 +90,7 @@ $bmp = New-Object Drawing.Bitmap 200, 200
         p.communicate()
 
         im = ImageGrab.grabclipboard()
+        assert isinstance(im, list)
         assert len(im) == 1
         assert os.path.samefile(im[0], "Tests/images/hopper.gif")
 
@@ -105,6 +107,7 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
         p.communicate()
 
         im = ImageGrab.grabclipboard()
+        assert isinstance(im, Image.Image)
         assert_image_equal_tofile(im, "Tests/images/hopper.png")
 
     @pytest.mark.skipif(
@@ -120,6 +123,7 @@ $ms = new-object System.IO.MemoryStream(, $bytes)
         with open(image_path, "rb") as fp:
             subprocess.call(["wl-copy"], stdin=fp)
         im = ImageGrab.grabclipboard()
+        assert isinstance(im, Image.Image)
         assert_image_equal_tofile(im, image_path)
 
     @pytest.mark.skipif(

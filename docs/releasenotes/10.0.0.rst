@@ -158,7 +158,7 @@ PyAccess and Image.USE_CFFI_ACCESS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Since Pillow's C API is now faster than PyAccess on PyPy,
-:py:mod:`~PIL.PyAccess` has been deprecated and will be removed in Pillow
+:py:mod:`!PyAccess` has been deprecated and will be removed in Pillow
 11.0.0 (2024-10-15). Pillow's C API will now be used by default on PyPy instead.
 
 ``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, is

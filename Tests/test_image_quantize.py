@@ -24,13 +24,16 @@ def test_sanity() -> None:
 def test_libimagequant_quantize() -> None:
     image = hopper()
     if is_ppc64le():
-        libimagequant = parse_version(features.version_feature("libimagequant"))
-        if libimagequant < parse_version("4"):
+        version = features.version_feature("libimagequant")
+        assert version is not None
+        if parse_version(version) < parse_version("4"):
             pytest.skip("Fails with libimagequant earlier than 4.0.0 on ppc64le")
     converted = image.quantize(100, Image.Quantize.LIBIMAGEQUANT)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 15)
-    assert len(converted.getcolors()) == 100
+    colors = converted.getcolors()
+    assert colors is not None
+    assert len(colors) == 100
 
 
 def test_octree_quantize() -> None:
@@ -38,7 +41,9 @@ def test_octree_quantize() -> None:
     converted = image.quantize(100, Image.Quantize.FASTOCTREE)
     assert converted.mode == "P"
     assert_image_similar(converted.convert("RGB"), image, 20)
-    assert len(converted.getcolors()) == 100
+    colors = converted.getcolors()
+    assert colors is not None
+    assert len(colors) == 100
 
 
 def test_rgba_quantize() -> None:
@@ -79,6 +84,7 @@ def test_quantize_no_dither2() -> None:
     assert tuple(quantized.palette.palette) == data
 
     px = quantized.load()
+    assert px is not None
     for x in range(9):
         assert px[x, 0] == (0 if x < 5 else 1)
 
@@ -97,7 +103,7 @@ def test_quantize_dither_diff() -> None:
 @pytest.mark.parametrize(
     "method", (Image.Quantize.MEDIANCUT, Image.Quantize.MAXCOVERAGE)
 )
-def test_quantize_kmeans(method) -> None:
+def test_quantize_kmeans(method: Image.Quantize) -> None:
     im = hopper()
     no_kmeans = im.quantize(kmeans=0, method=method)
     kmeans = im.quantize(kmeans=1, method=method)
@@ -117,10 +123,12 @@ def test_colors() -> None:
 def test_transparent_colors_equal() -> None:
     im = Image.new("RGBA", (1, 2), (0, 0, 0, 0))
     px = im.load()
+    assert px is not None
     px[0, 1] = (255, 255, 255, 0)
 
     converted = im.quantize()
     converted_px = converted.load()
+    assert converted_px is not None
     assert converted_px[0, 0] == converted_px[0, 1]
 
 
@@ -138,6 +146,7 @@ def test_palette(method: Image.Quantize, color: tuple[int, ...]) -> None:
 
     converted = im.quantize(method=method)
     converted_px = converted.load()
+    assert converted_px is not None
     assert converted_px[0, 0] == converted.palette.colors[color]
 
 
@@ -153,4 +162,6 @@ def test_small_palette() -> None:
     im = im.quantize(palette=p)
 
     # Assert
-    assert len(im.getcolors()) == 2
+    quantized_colors = im.getcolors()
+    assert quantized_colors is not None
+    assert len(quantized_colors) == 2

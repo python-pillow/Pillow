@@ -26,6 +26,7 @@
  */
 
 #include "Python.h"
+#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
 
 #include <math.h>
@@ -179,14 +180,21 @@ PyPath_Flatten(PyObject *data, double **pxy) {
         }                                                               \
         free(xy);                                                       \
         return -1;                                                      \
+    }                                                                   \
+    if (decref) {                                                       \
+        Py_DECREF(op);                                                  \
     }
 
     /* Copy table to path array */
     if (PyList_Check(data)) {
         for (i = 0; i < n; i++) {
             double x, y;
-            PyObject *op = PyList_GET_ITEM(data, i);
-            assign_item_to_array(op, 0);
+            PyObject *op = PyList_GetItemRef(data, i);
+            if (op == NULL) {
+                free(xy);
+                return -1;
+            }
+            assign_item_to_array(op, 1);
         }
     } else if (PyTuple_Check(data)) {
         for (i = 0; i < n; i++) {
@@ -209,7 +217,6 @@ PyPath_Flatten(PyObject *data, double **pxy) {
                 }
             }
             assign_item_to_array(op, 1);
-            Py_DECREF(op);
         }
     }
 
@@ -482,7 +489,8 @@ path_transform(PyPathObject *self, PyObject *args) {
     double wrap = 0.0;
 
     if (!PyArg_ParseTuple(
-            args, "(dddddd)|d:transform", &a, &b, &c, &d, &e, &f, &wrap)) {
+            args, "(dddddd)|d:transform", &a, &b, &c, &d, &e, &f, &wrap
+        )) {
         return NULL;
     }
 
@@ -563,7 +571,8 @@ path_subscript(PyPathObject *self, PyObject *item) {
         PyErr_Format(
             PyExc_TypeError,
             "Path indices must be integers, not %.200s",
-            Py_TYPE(item)->tp_name);
+            Py_TYPE(item)->tp_name
+        );
         return NULL;
     }
 }
@@ -579,7 +588,8 @@ static PySequenceMethods path_as_sequence = {
 };
 
 static PyMappingMethods path_as_mapping = {
-    (lenfunc)path_len, (binaryfunc)path_subscript, NULL};
+    (lenfunc)path_len, (binaryfunc)path_subscript, NULL
+};
 
 static PyTypeObject PyPathType = {
     PyVarObject_HEAD_INIT(NULL, 0) "Path", /*tp_name*/

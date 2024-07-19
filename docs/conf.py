@@ -338,7 +338,7 @@ linkcheck_allowed_redirects = {
 # https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 _repo = "https://github.com/python-pillow/Pillow/"
 extlinks = {
-    "cve": ("https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-%s", "CVE-%s"),
+    "cve": ("https://www.cve.org/CVERecord?id=CVE-%s", "CVE-%s"),
     "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
     "issue": (_repo + "issues/%s", "#%s"),
     "pr": (_repo + "pull/%s", "#%s"),
