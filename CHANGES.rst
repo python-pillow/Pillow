@@ -5,6 +5,18 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Deprecate ImageMath lambda_eval and unsafe_eval options argument #8242
+  [radarhere]
+
+- Changed ContainerIO to subclass IO #8240
+  [radarhere]
+
+- Move away from APIs that use borrowed references under the free-threaded build #8216
+  [hugovk, lysnikolaou]
+
+- Allow size argument to resize() to be a NumPy array #8201
+  [radarhere]
+
 - Drop support for Python 3.8 #8183
   [hugovk, radarhere]
 

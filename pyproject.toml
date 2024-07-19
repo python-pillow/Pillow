@@ -161,5 +161,4 @@ exclude = [
   '^Tests/test_qt_image_qapplication.py$',
   '^Tests/test_font_pcf_charsets.py$',
   '^Tests/test_font_pcf.py$',
-  '^Tests/test_file_tar.py$',
 ]

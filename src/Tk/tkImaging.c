@@ -73,14 +73,16 @@ ImagingFind(const char *name) {
 
 static int
 PyImagingPhotoPut(
-    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv) {
+    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv
+) {
     Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
 
     if (argc != 3) {
         TCL_APPEND_RESULT(
-            interp, "usage: ", argv[0], " destPhoto srcImage", (char *)NULL);
+            interp, "usage: ", argv[0], " destPhoto srcImage", (char *)NULL
+        );
         return TCL_ERROR;
     }
 
@@ -128,14 +130,16 @@ PyImagingPhotoPut(
     block.pixelPtr = (unsigned char *)im->block;
 
     TK_PHOTO_PUT_BLOCK(
-        interp, photo, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
+        interp, photo, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET
+    );
 
     return TCL_OK;
 }
 
 static int
 PyImagingPhotoGet(
-    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv) {
+    ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv
+) {
     Imaging im;
     Tk_PhotoHandle photo;
     Tk_PhotoImageBlock block;
@@ -143,7 +147,8 @@ PyImagingPhotoGet(
 
     if (argc != 3) {
         TCL_APPEND_RESULT(
-            interp, "usage: ", argv[0], " srcPhoto destImage", (char *)NULL);
+            interp, "usage: ", argv[0], " srcPhoto destImage", (char *)NULL
+        );
         return TCL_ERROR;
     }
 
@@ -183,13 +188,15 @@ TkImaging_Init(Tcl_Interp *interp) {
         "PyImagingPhoto",
         PyImagingPhotoPut,
         (ClientData)0,
-        (Tcl_CmdDeleteProc *)NULL);
+        (Tcl_CmdDeleteProc *)NULL
+    );
     TCL_CREATE_COMMAND(
         interp,
         "PyImagingPhotoGet",
         PyImagingPhotoGet,
         (ClientData)0,
-        (Tcl_CmdDeleteProc *)NULL);
+        (Tcl_CmdDeleteProc *)NULL
+    );
 }
 
 /*
@@ -394,7 +401,8 @@ _func_loader(void *lib) {
     }
     return (
         (TK_PHOTO_PUT_BLOCK = (Tk_PhotoPutBlock_t)_dfunc(lib, "Tk_PhotoPutBlock")) ==
-        NULL);
+        NULL
+    );
 }
 
 int

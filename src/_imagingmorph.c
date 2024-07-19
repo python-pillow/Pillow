@@ -253,7 +253,8 @@ static PyMethodDef functions[] = {
     {"apply", (PyCFunction)apply, METH_VARARGS, NULL},
     {"get_on_pixels", (PyCFunction)get_on_pixels, METH_VARARGS, NULL},
     {"match", (PyCFunction)match, METH_VARARGS, NULL},
-    {NULL, NULL, 0, NULL}};
+    {NULL, NULL, 0, NULL}
+};
 
 PyMODINIT_FUNC
 PyInit__imagingmorph(void) {

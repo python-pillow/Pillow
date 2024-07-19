@@ -1,6 +1,14 @@
 name: Wheels
 
 on:
+  schedule:
+  #        ┌───────────── minute (0 - 59)
+  #        │  ┌───────────── hour (0 - 23)
+  #        │  │ ┌───────────── day of the month (1 - 31)
+  #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+  #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+  #        │  │ │ │ │
+  - cron: "42 1 * * 0,3"
   push:
     paths:
       - ".ci/requirements-cibw.txt"
@@ -33,6 +41,7 @@ env:
 
 jobs:
   build-1-QEMU-emulated-wheels:
+    if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
     name: aarch64 ${{ matrix.python-version }} ${{ matrix.spec }}
     runs-on: ubuntu-latest
     strategy:
@@ -227,6 +236,7 @@ jobs:
           path: winbuild\build\bin\fribidi*
 
   sdist:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -244,6 +254,23 @@ jobs:
       with:
         name: dist-sdist
         path: dist/*.tar.gz
+
+  scientific-python-nightly-wheels-publish:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: [build-2-native-wheels, windows]
+    runs-on: ubuntu-latest
+    name: Upload wheels to scientific-python-nightly-wheels
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: Upload wheels to scientific-python-nightly-wheels
+        uses: scientific-python/upload-nightly-action@b67d7fcc0396e1128a474d1ab2b48aa94680f9fc # 0.5.0
+        with:
+          artifacts_path: dist
+          anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
 
   pypi-publish:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')

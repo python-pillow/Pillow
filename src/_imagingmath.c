@@ -209,7 +209,8 @@ _binop(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef _functions[] = {
-    {"unop", _unop, 1}, {"binop", _binop, 1}, {NULL, NULL}};
+    {"unop", _unop, 1}, {"binop", _binop, 1}, {NULL, NULL}
+};
 
 static void
 install(PyObject *d, char *name, void *value) {
