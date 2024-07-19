@@ -528,7 +528,7 @@ You can create animated GIFs with Pillow, e.g.
         "rotated_hopper_90.jpg",
     ]
 
-    # Open images and append them to a list
+    # Open images and create a list
     images = [Image.open(filename) for filename in image_filenames]
 
     # Save the images as an animated GIF
