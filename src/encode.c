@@ -1186,29 +1186,27 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     encoder->encode = ImagingJpegEncode;
 
-    strncpy(((JPEGENCODERSTATE *)encoder->state.context)->rawmode, rawmode, 8);
-
-    ((JPEGENCODERSTATE *)encoder->state.context)->keep_rgb = keep_rgb;
-    ((JPEGENCODERSTATE *)encoder->state.context)->quality = quality;
-    ((JPEGENCODERSTATE *)encoder->state.context)->qtables = qarrays;
-    ((JPEGENCODERSTATE *)encoder->state.context)->qtablesLen = qtablesLen;
-    ((JPEGENCODERSTATE *)encoder->state.context)->subsampling = subsampling;
-    ((JPEGENCODERSTATE *)encoder->state.context)->progressive = progressive;
-    ((JPEGENCODERSTATE *)encoder->state.context)->smooth = smooth;
-    ((JPEGENCODERSTATE *)encoder->state.context)->optimize = optimize;
-    ((JPEGENCODERSTATE *)encoder->state.context)->streamtype = streamtype;
-    ((JPEGENCODERSTATE *)encoder->state.context)->xdpi = xdpi;
-    ((JPEGENCODERSTATE *)encoder->state.context)->ydpi = ydpi;
-    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_blocks =
-        restart_marker_blocks;
-    ((JPEGENCODERSTATE *)encoder->state.context)->restart_marker_rows =
-        restart_marker_rows;
-    ((JPEGENCODERSTATE *)encoder->state.context)->comment = comment;
-    ((JPEGENCODERSTATE *)encoder->state.context)->comment_size = comment_size;
-    ((JPEGENCODERSTATE *)encoder->state.context)->extra = extra;
-    ((JPEGENCODERSTATE *)encoder->state.context)->extra_size = extra_size;
-    ((JPEGENCODERSTATE *)encoder->state.context)->rawExif = rawExif;
-    ((JPEGENCODERSTATE *)encoder->state.context)->rawExifLen = rawExifLen;
+    JPEGENCODERSTATE *jpeg_encoder_state = (JPEGENCODERSTATE *)encoder->state.context;
+    strncpy(jpeg_encoder_state->rawmode, rawmode, 8);
+    jpeg_encoder_state->keep_rgb = keep_rgb;
+    jpeg_encoder_state->quality = quality;
+    jpeg_encoder_state->qtables = qarrays;
+    jpeg_encoder_state->qtablesLen = qtablesLen;
+    jpeg_encoder_state->subsampling = subsampling;
+    jpeg_encoder_state->progressive = progressive;
+    jpeg_encoder_state->smooth = smooth;
+    jpeg_encoder_state->optimize = optimize;
+    jpeg_encoder_state->streamtype = streamtype;
+    jpeg_encoder_state->xdpi = xdpi;
+    jpeg_encoder_state->ydpi = ydpi;
+    jpeg_encoder_state->restart_marker_blocks = restart_marker_blocks;
+    jpeg_encoder_state->restart_marker_rows = restart_marker_rows;
+    jpeg_encoder_state->comment = comment;
+    jpeg_encoder_state->comment_size = comment_size;
+    jpeg_encoder_state->extra = extra;
+    jpeg_encoder_state->extra_size = extra_size;
+    jpeg_encoder_state->rawExif = rawExif;
+    jpeg_encoder_state->rawExifLen = rawExifLen;
 
     return (PyObject *)encoder;
 }
