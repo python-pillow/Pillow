@@ -37,7 +37,7 @@ example, let’s display the image we just loaded::
 
     >>> im.show()
 
-.. image:: show_hopper.png
+.. image:: show_hopper.webp
     :align: center
 
 .. note::
@@ -159,7 +159,7 @@ pixels, so the region in the above example is exactly 64x64 pixels.
 
 The region could now be processed in a certain manner and pasted back.
 
-.. image:: cropped_hopper.jpg
+.. image:: cropped_hopper.webp
     :align: center
 
 Processing a subrectangle, and pasting it back
@@ -176,7 +176,7 @@ modes of the original image and the region do not need to match. If they don’t
 the region is automatically converted before being pasted (see the section on
 :ref:`color-transforms` below for details).
 
-.. image:: pasted_hopper.jpg
+.. image:: pasted_hopper.webp
     :align: center
 
 Here’s an additional example:
@@ -201,7 +201,7 @@ Rolling an image
 
         return im
 
-.. image:: rolled_hopper.jpg
+.. image:: rolled_hopper.webp
     :align: center
 
 Or if you would like to merge two images into a wider image:
@@ -221,7 +221,7 @@ Merging images
 
         return im
 
-.. image:: merged_hopper.png
+.. image:: merged_hopper.webp
     :align: center
 
 For more advanced tricks, the paste method can also take a transparency mask as
@@ -250,7 +250,7 @@ Note that for a single-band image, :py:meth:`~PIL.Image.Image.split` returns
 the image itself. To work with individual color bands, you may want to convert
 the image to “RGB” first.
 
-.. image:: rebanded_hopper.jpg
+.. image:: rebanded_hopper.webp
     :align: center
 
 Geometrical transforms
@@ -269,7 +269,7 @@ Simple geometry transforms
     out = im.resize((128, 128))
     out = im.rotate(45) # degrees counter-clockwise
 
-.. image:: rotated_hopper_90.jpg
+.. image:: rotated_hopper_90.webp
     :align: center
 
 To rotate the image in 90 degree steps, you can either use the
@@ -284,35 +284,35 @@ Transposing an image
 
     out = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
-.. image:: flip_left_right_hopper.jpg
+.. image:: flip_left_right_hopper.webp
     :align: center
 
 ::
 
     out = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
 
-.. image:: flip_top_bottom_hopper.jpg
+.. image:: flip_top_bottom_hopper.webp
     :align: center
 
 ::
 
     out = im.transpose(Image.Transpose.ROTATE_90)
 
-.. image:: rotated_hopper_90.jpg
+.. image:: rotated_hopper_90.webp
     :align: center
 
 ::
 
     out = im.transpose(Image.Transpose.ROTATE_180)
 
-.. image:: rotated_hopper_180.jpg
+.. image:: rotated_hopper_180.webp
     :align: center
 
 ::
 
     out = im.transpose(Image.Transpose.ROTATE_270)
 
-.. image:: rotated_hopper_270.jpg
+.. image:: rotated_hopper_270.webp
     :align: center
 
 ``transpose(ROTATE)`` operations can also be performed identically with
@@ -396,7 +396,7 @@ Applying filters
     from PIL import ImageFilter
     out = im.filter(ImageFilter.DETAIL)
 
-.. image:: enhanced_hopper.jpg
+.. image:: enhanced_hopper.webp
     :align: center
 
 Point Operations
@@ -448,7 +448,7 @@ Note the syntax used to create the mask::
 
     imout = im.point(lambda i: expression and 255)
 
-.. image:: masked_hopper.jpg
+.. image:: masked_hopper.webp
     :align: center
 
 Python only evaluates the portion of a logical expression as is necessary to
