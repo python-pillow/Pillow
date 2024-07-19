@@ -164,7 +164,7 @@ Image.register_decoder("MSP", MspDecoder)
 # write MSP files (uncompressed only)
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as MSP"
         raise OSError(msg)

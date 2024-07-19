@@ -16,6 +16,8 @@ def verify(im1: Image.Image) -> None:
     assert im1.size == im2.size
     pix1 = im1.load()
     pix2 = im2.load()
+    assert pix1 is not None
+    assert pix2 is not None
     for y in range(im1.size[1]):
         for x in range(im1.size[0]):
             xy = x, y

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import shutil
+from io import BytesIO
 from pathlib import Path
-from typing import Callable
+from typing import IO, Callable
 
 import pytest
 
@@ -22,11 +23,11 @@ class TestShellInjection:
         self,
         tmp_path: Path,
         src_img: Image.Image,
-        save_func: Callable[[Image.Image, int, str], None],
+        save_func: Callable[[Image.Image, IO[bytes], str | bytes], None],
     ) -> None:
         for filename in test_filenames:
             dest_file = str(tmp_path / filename)
-            save_func(src_img, 0, dest_file)
+            save_func(src_img, BytesIO(), dest_file)
             # If file can't be opened, shell injection probably occurred
             with Image.open(dest_file) as im:
                 im.load()

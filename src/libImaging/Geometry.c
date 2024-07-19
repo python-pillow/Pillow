@@ -781,7 +781,8 @@ ImagingGenericTransform(
     ImagingTransformMap transform,
     void *transform_data,
     int filterid,
-    int fill) {
+    int fill
+) {
     /* slow generic transformation.  use ImagingTransformAffine or
        ImagingScaleAffine where possible. */
 
@@ -836,14 +837,8 @@ ImagingGenericTransform(
 
 static Imaging
 ImagingScaleAffine(
-    Imaging imOut,
-    Imaging imIn,
-    int x0,
-    int y0,
-    int x1,
-    int y1,
-    double a[6],
-    int fill) {
+    Imaging imOut, Imaging imIn, int x0, int y0, int x1, int y1, double a[6], int fill
+) {
     /* scale, nearest neighbour resampling */
 
     ImagingSectionCookie cookie;
@@ -936,7 +931,8 @@ static inline int
 check_fixed(double a[6], int x, int y) {
     return (
         fabs(x * a[0] + y * a[1] + a[2]) < 32768.0 &&
-        fabs(x * a[3] + y * a[4] + a[5]) < 32768.0);
+        fabs(x * a[3] + y * a[4] + a[5]) < 32768.0
+    );
 }
 
 static inline Imaging
@@ -949,7 +945,8 @@ affine_fixed(
     int y1,
     double a[6],
     int filterid,
-    int fill) {
+    int fill
+) {
     /* affine transform, nearest neighbour resampling, fixed point
        arithmetics */
 
@@ -1026,7 +1023,8 @@ ImagingTransformAffine(
     int y1,
     double a[6],
     int filterid,
-    int fill) {
+    int fill
+) {
     /* affine transform, nearest neighbour resampling, floating point
        arithmetics*/
 
@@ -1039,7 +1037,8 @@ ImagingTransformAffine(
 
     if (filterid || imIn->type == IMAGING_TYPE_SPECIAL) {
         return ImagingGenericTransform(
-            imOut, imIn, x0, y0, x1, y1, affine_transform, a, filterid, fill);
+            imOut, imIn, x0, y0, x1, y1, affine_transform, a, filterid, fill
+        );
     }
 
     if (a[1] == 0 && a[3] == 0) {
@@ -1134,13 +1133,15 @@ ImagingTransform(
     int y1,
     double a[8],
     int filterid,
-    int fill) {
+    int fill
+) {
     ImagingTransformMap transform;
 
     switch (method) {
         case IMAGING_TRANSFORM_AFFINE:
             return ImagingTransformAffine(
-                imOut, imIn, x0, y0, x1, y1, a, filterid, fill);
+                imOut, imIn, x0, y0, x1, y1, a, filterid, fill
+            );
             break;
         case IMAGING_TRANSFORM_PERSPECTIVE:
             transform = perspective_transform;
@@ -1153,5 +1154,6 @@ ImagingTransform(
     }
 
     return ImagingGenericTransform(
-        imOut, imIn, x0, y0, x1, y1, transform, a, filterid, fill);
+        imOut, imIn, x0, y0, x1, y1, transform, a, filterid, fill
+    );
 }

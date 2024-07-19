@@ -140,7 +140,7 @@ def test_load_dib() -> None:
         (124, "g/pal8v5.bmp"),
     ),
 )
-def test_dib_header_size(header_size, path):
+def test_dib_header_size(header_size: int, path: str) -> None:
     image_path = "Tests/images/bmp/" + path
     with open(image_path, "rb") as fp:
         data = fp.read()[14:]

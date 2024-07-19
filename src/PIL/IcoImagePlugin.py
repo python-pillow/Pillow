@@ -25,6 +25,7 @@ from __future__ import annotations
 import warnings
 from io import BytesIO
 from math import ceil, log
+from typing import IO, NamedTuple
 
 from . import BmpImagePlugin, Image, ImageFile, PngImagePlugin
 from ._binary import i16le as i16
@@ -39,7 +40,7 @@ from ._binary import o32le as o32
 _MAGIC = b"\0\0\1\0"
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(_MAGIC)  # (2+2)
     bmp = im.encoderinfo.get("bitmap_format") == "bmp"
     sizes = im.encoderinfo.get(
@@ -118,8 +119,22 @@ def _accept(prefix: bytes) -> bool:
     return prefix[:4] == _MAGIC
 
 
+class IconHeader(NamedTuple):
+    width: int
+    height: int
+    nb_color: int
+    reserved: int
+    planes: int
+    bpp: int
+    size: int
+    offset: int
+    dim: tuple[int, int]
+    square: int
+    color_depth: int
+
+
 class IcoFile:
-    def __init__(self, buf):
+    def __init__(self, buf: IO[bytes]) -> None:
         """
         Parse image from file-like object containing ico file data
         """
@@ -140,71 +155,65 @@ class IcoFile:
         for i in range(self.nb_items):
             s = buf.read(16)
 
-            icon_header = {
-                "width": s[0],
-                "height": s[1],
-                "nb_color": s[2],  # No. of colors in image (0 if >=8bpp)
-                "reserved": s[3],
-                "planes": i16(s, 4),
-                "bpp": i16(s, 6),
-                "size": i32(s, 8),
-                "offset": i32(s, 12),
-            }
-
             # See Wikipedia
-            for j in ("width", "height"):
-                if not icon_header[j]:
-                    icon_header[j] = 256
+            width = s[0] or 256
+            height = s[1] or 256
 
-            # See Wikipedia notes about color depth.
-            # We need this just to differ images with equal sizes
-            icon_header["color_depth"] = (
-                icon_header["bpp"]
-                or (
-                    icon_header["nb_color"] != 0
-                    and ceil(log(icon_header["nb_color"], 2))
-                )
-                or 256
+            # No. of colors in image (0 if >=8bpp)
+            nb_color = s[2]
+            bpp = i16(s, 6)
+            icon_header = IconHeader(
+                width=width,
+                height=height,
+                nb_color=nb_color,
+                reserved=s[3],
+                planes=i16(s, 4),
+                bpp=i16(s, 6),
+                size=i32(s, 8),
+                offset=i32(s, 12),
+                dim=(width, height),
+                square=width * height,
+                # See Wikipedia notes about color depth.
+                # We need this just to differ images with equal sizes
+                color_depth=bpp or (nb_color != 0 and ceil(log(nb_color, 2))) or 256,
             )
-
-            icon_header["dim"] = (icon_header["width"], icon_header["height"])
-            icon_header["square"] = icon_header["width"] * icon_header["height"]
 
             self.entry.append(icon_header)
 
-        self.entry = sorted(self.entry, key=lambda x: x["color_depth"])
+        self.entry = sorted(self.entry, key=lambda x: x.color_depth)
         # ICO images are usually squares
-        self.entry = sorted(self.entry, key=lambda x: x["square"], reverse=True)
+        self.entry = sorted(self.entry, key=lambda x: x.square, reverse=True)
 
-    def sizes(self):
+    def sizes(self) -> set[tuple[int, int]]:
         """
-        Get a list of all available icon sizes and color depths.
+        Get a set of all available icon sizes and color depths.
         """
-        return {(h["width"], h["height"]) for h in self.entry}
+        return {(h.width, h.height) for h in self.entry}
 
-    def getentryindex(self, size, bpp=False):
+    def getentryindex(self, size: tuple[int, int], bpp: int | bool = False) -> int:
         for i, h in enumerate(self.entry):
-            if size == h["dim"] and (bpp is False or bpp == h["color_depth"]):
+            if size == h.dim and (bpp is False or bpp == h.color_depth):
                 return i
         return 0
 
-    def getimage(self, size, bpp=False):
+    def getimage(self, size: tuple[int, int], bpp: int | bool = False) -> Image.Image:
         """
         Get an image from the icon
         """
         return self.frame(self.getentryindex(size, bpp))
 
-    def frame(self, idx):
+    def frame(self, idx: int) -> Image.Image:
         """
         Get an image from frame idx
         """
 
         header = self.entry[idx]
 
-        self.buf.seek(header["offset"])
+        self.buf.seek(header.offset)
         data = self.buf.read(8)
-        self.buf.seek(header["offset"])
+        self.buf.seek(header.offset)
 
+        im: Image.Image
         if data[:8] == PngImagePlugin._MAGIC:
             # png frame
             im = PngImagePlugin.PngImageFile(self.buf)
@@ -220,8 +229,7 @@ class IcoFile:
             im.tile[0] = d, (0, 0) + im.size, o, a
 
             # figure out where AND mask image starts
-            bpp = header["bpp"]
-            if 32 == bpp:
+            if header.bpp == 32:
                 # 32-bit color depth icon image allows semitransparent areas
                 # PIL's DIB format ignores transparency bits, recover them.
                 # The DIB is packed in BGRX byte order where X is the alpha
@@ -251,7 +259,7 @@ class IcoFile:
                 # padded row size * height / bits per char
 
                 total_bytes = int((w * im.size[1]) / 8)
-                and_mask_offset = header["offset"] + header["size"] - total_bytes
+                and_mask_offset = header.offset + header.size - total_bytes
 
                 self.buf.seek(and_mask_offset)
                 mask_data = self.buf.read(total_bytes)
@@ -305,7 +313,7 @@ class IcoImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         self.ico = IcoFile(self.fp)
         self.info["sizes"] = self.ico.sizes()
-        self.size = self.ico.entry[0]["dim"]
+        self.size = self.ico.entry[0].dim
         self.load()
 
     @property
@@ -319,7 +327,7 @@ class IcoImageFile(ImageFile.ImageFile):
             raise ValueError(msg)
         self._size = value
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if self.im is not None and self.im.size == self.size:
             # Already loaded
             return Image.Image.load(self)
@@ -327,7 +335,6 @@ class IcoImageFile(ImageFile.ImageFile):
         # if tile is PNG, it won't really be loaded yet
         im.load()
         self.im = im.im
-        self.pyaccess = None
         self._mode = im.mode
         if im.palette:
             self.palette = im.palette
@@ -340,6 +347,7 @@ class IcoImageFile(ImageFile.ImageFile):
             self.info["sizes"] = set(sizes)
 
             self.size = im.size
+        return None
 
     def load_seek(self, pos: int) -> None:
         # Flag the ImageFile.Parser so that it

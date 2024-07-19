@@ -16,7 +16,9 @@ def draft_roundtrip(
     im = Image.new(in_mode, in_size)
     data = tostring(im, "JPEG")
     im = fromstring(data)
-    mode, box = im.draft(req_mode, req_size)
+    result = im.draft(req_mode, req_size)
+    assert result is not None
+    box = result[1]
     scale, _ = im.decoderconfig
     assert box[:2] == (0, 0)
     assert (im.width - scale) < box[2] <= im.width

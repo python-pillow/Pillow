@@ -3,7 +3,7 @@
 BasedOnStyle: Google
 AlwaysBreakAfterReturnType: All
 AllowShortIfStatementsOnASingleLine: false
-AlignAfterOpenBracket: AlwaysBreak
+AlignAfterOpenBracket: BlockIndent
 BinPackArguments: false
 BinPackParameters: false
 BreakBeforeBraces: Attach

@@ -11,7 +11,7 @@ import pytest
     "args, report",
     ((["PIL"], False), (["PIL", "--report"], True), (["PIL.report"], True)),
 )
-def test_main(args, report) -> None:
+def test_main(args: list[str], report: bool) -> None:
     args = [sys.executable, "-m"] + args
     out = subprocess.check_output(args).decode("utf-8")
     lines = out.splitlines()

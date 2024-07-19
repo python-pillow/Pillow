@@ -28,10 +28,10 @@ class HDC:
     methods.
     """
 
-    def __init__(self, dc):
+    def __init__(self, dc: int) -> None:
         self.dc = dc
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.dc
 
 
@@ -42,10 +42,10 @@ class HWND:
     methods, instead of a DC.
     """
 
-    def __init__(self, wnd):
+    def __init__(self, wnd: int) -> None:
         self.wnd = wnd
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.wnd
 
 
@@ -69,19 +69,25 @@ class Dib:
                  defines the size of the image.
     """
 
-    def __init__(self, image, size=None):
-        if hasattr(image, "mode") and hasattr(image, "size"):
+    def __init__(
+        self, image: Image.Image | str, size: tuple[int, int] | None = None
+    ) -> None:
+        if isinstance(image, str):
+            mode = image
+            image = ""
+            if size is None:
+                msg = "If first argument is mode, size is required"
+                raise ValueError(msg)
+        else:
             mode = image.mode
             size = image.size
-        else:
-            mode = image
-            image = None
         if mode not in ["1", "L", "P", "RGB"]:
             mode = Image.getmodebase(mode)
         self.image = Image.core.display(mode, size)
         self.mode = mode
         self.size = size
         if image:
+            assert not isinstance(image, str)
             self.paste(image)
 
     def expose(self, handle):
@@ -102,7 +108,12 @@ class Dib:
             result = self.image.expose(handle)
         return result
 
-    def draw(self, handle, dst, src=None):
+    def draw(
+        self,
+        handle,
+        dst: tuple[int, int, int, int],
+        src: tuple[int, int, int, int] | None = None,
+    ):
         """
         Same as expose, but allows you to specify where to draw the image, and
         what part of it to draw.
@@ -112,7 +123,7 @@ class Dib:
         the destination have different sizes, the image is resized as
         necessary.
         """
-        if not src:
+        if src is None:
             src = (0, 0) + self.size
         if isinstance(handle, HWND):
             dc = self.image.getdc(handle)
@@ -149,7 +160,9 @@ class Dib:
             result = self.image.query_palette(handle)
         return result
 
-    def paste(self, im, box=None):
+    def paste(
+        self, im: Image.Image, box: tuple[int, int, int, int] | None = None
+    ) -> None:
         """
         Paste a PIL image into the bitmap image.
 
@@ -169,16 +182,16 @@ class Dib:
         else:
             self.image.paste(im.im)
 
-    def frombytes(self, buffer):
+    def frombytes(self, buffer: bytes) -> None:
         """
         Load display memory contents from byte data.
 
         :param buffer: A buffer containing display data (usually
                        data returned from :py:func:`~PIL.ImageWin.Dib.tobytes`)
         """
-        return self.image.frombytes(buffer)
+        self.image.frombytes(buffer)
 
-    def tobytes(self):
+    def tobytes(self) -> bytes:
         """
         Copy display memory contents to bytes object.
 
@@ -190,27 +203,29 @@ class Dib:
 class Window:
     """Create a Window with the given title size."""
 
-    def __init__(self, title="PIL", width=None, height=None):
+    def __init__(
+        self, title: str = "PIL", width: int | None = None, height: int | None = None
+    ) -> None:
         self.hwnd = Image.core.createwindow(
             title, self.__dispatcher, width or 0, height or 0
         )
 
-    def __dispatcher(self, action, *args):
+    def __dispatcher(self, action: str, *args):
         return getattr(self, f"ui_handle_{action}")(*args)
 
-    def ui_handle_clear(self, dc, x0, y0, x1, y1):
+    def ui_handle_clear(self, dc, x0, y0, x1, y1) -> None:
         pass
 
-    def ui_handle_damage(self, x0, y0, x1, y1):
+    def ui_handle_damage(self, x0, y0, x1, y1) -> None:
         pass
 
     def ui_handle_destroy(self) -> None:
         pass
 
-    def ui_handle_repair(self, dc, x0, y0, x1, y1):
+    def ui_handle_repair(self, dc, x0, y0, x1, y1) -> None:
         pass
 
-    def ui_handle_resize(self, width, height):
+    def ui_handle_resize(self, width, height) -> None:
         pass
 
     def mainloop(self) -> None:
@@ -220,12 +235,12 @@ class Window:
 class ImageWindow(Window):
     """Create an image window which displays the given image."""
 
-    def __init__(self, image, title="PIL"):
+    def __init__(self, image, title: str = "PIL") -> None:
         if not isinstance(image, Dib):
             image = Dib(image)
         self.image = image
         width, height = image.size
         super().__init__(title, width=width, height=height)
 
-    def ui_handle_repair(self, dc, x0, y0, x1, y1):
+    def ui_handle_repair(self, dc, x0, y0, x1, y1) -> None:
         self.image.draw(dc, (x0, y0, x1, y1))

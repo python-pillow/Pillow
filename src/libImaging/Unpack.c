@@ -104,7 +104,8 @@ static UINT8 BITFLIP[] = {
     3,  131, 67, 195, 35, 163, 99,  227, 19, 147, 83, 211, 51, 179, 115, 243,
     11, 139, 75, 203, 43, 171, 107, 235, 27, 155, 91, 219, 59, 187, 123, 251,
     7,  135, 71, 199, 39, 167, 103, 231, 23, 151, 87, 215, 55, 183, 119, 247,
-    15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127, 255};
+    15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127, 255
+};
 
 /* Unpack to "1" image */
 
@@ -731,6 +732,21 @@ ImagingUnpackBGRA15(UINT8 *out, const UINT8 *in, int pixels) {
 }
 
 void
+ImagingUnpackBGRA15Z(UINT8 *out, const UINT8 *in, int pixels) {
+    int i, pixel;
+    /* RGB, rearranged channels, 5/5/5/1 bits per pixel, inverted alpha */
+    for (i = 0; i < pixels; i++) {
+        pixel = in[0] + (in[1] << 8);
+        out[B] = (pixel & 31) * 255 / 31;
+        out[G] = ((pixel >> 5) & 31) * 255 / 31;
+        out[R] = ((pixel >> 10) & 31) * 255 / 31;
+        out[A] = ~((pixel >> 15) * 255);
+        out += 4;
+        in += 2;
+    }
+}
+
+void
 ImagingUnpackRGB16(UINT8 *out, const UINT8 *in, int pixels) {
     int i, pixel;
     /* RGB, 5/6/5 bits per pixel */
@@ -879,7 +895,8 @@ unpackRGBa16L(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[3] * 255 / a),
                 CLIP8(in[5] * 255 / a),
-                a);
+                a
+            );
         }
         memcpy(_out, &iv, sizeof(iv));
         in += 8;
@@ -903,7 +920,8 @@ unpackRGBa16B(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[0] * 255 / a),
                 CLIP8(in[2] * 255 / a),
                 CLIP8(in[4] * 255 / a),
-                a);
+                a
+            );
         }
         memcpy(_out, &iv, sizeof(iv));
         in += 8;
@@ -927,7 +945,8 @@ unpackRGBa(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[0] * 255 / a),
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[2] * 255 / a),
-                a);
+                a
+            );
         }
         memcpy(_out, &iv, sizeof(iv));
         in += 4;
@@ -951,7 +970,8 @@ unpackRGBaskip1(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[0] * 255 / a),
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[2] * 255 / a),
-                a);
+                a
+            );
         }
         in += 5;
     }
@@ -973,7 +993,8 @@ unpackRGBaskip2(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[0] * 255 / a),
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[2] * 255 / a),
-                a);
+                a
+            );
         }
         in += 6;
     }
@@ -995,7 +1016,8 @@ unpackBGRa(UINT8 *_out, const UINT8 *in, int pixels) {
                 CLIP8(in[2] * 255 / a),
                 CLIP8(in[1] * 255 / a),
                 CLIP8(in[0] * 255 / a),
-                a);
+                a
+            );
         }
         memcpy(_out, &iv, sizeof(iv));
         in += 4;
@@ -1026,7 +1048,8 @@ unpackRGBAL(UINT8 *_out, const UINT8 *in, int pixels) {
             in[i],
             in[i + pixels],
             in[i + pixels + pixels],
-            in[i + pixels + pixels + pixels]);
+            in[i + pixels + pixels + pixels]
+        );
         memcpy(_out, &iv, sizeof(iv));
     }
 }
@@ -1550,7 +1573,7 @@ static struct {
 
     /* flags: "I" inverted data; "R" reversed bit order; "B" big
        endian byte order (default is little endian); "L" line
-       interleave, "S" signed, "F" floating point */
+       interleave, "S" signed, "F" floating point, "Z" inverted alpha */
 
     /* exception: rawmodes "I" and "F" are always native endian byte order */
 
@@ -1615,10 +1638,14 @@ static struct {
     {"RGB", "BGR;15", 16, ImagingUnpackBGR15},
     {"RGB", "RGB;16", 16, ImagingUnpackRGB16},
     {"RGB", "BGR;16", 16, ImagingUnpackBGR16},
+    {"RGB", "RGBX;16L", 64, unpackRGBA16L},
+    {"RGB", "RGBX;16B", 64, unpackRGBA16B},
     {"RGB", "RGB;4B", 16, ImagingUnpackRGB4B},
     {"RGB", "BGR;5", 16, ImagingUnpackBGR15}, /* compat */
     {"RGB", "RGBX", 32, copy4},
     {"RGB", "RGBX;L", 32, unpackRGBAL},
+    {"RGB", "RGBXX", 40, copy4skip1},
+    {"RGB", "RGBXXX", 48, copy4skip2},
     {"RGB", "RGBA;L", 32, unpackRGBAL},
     {"RGB", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGB", "BGRX", 32, ImagingUnpackBGRX},
@@ -1657,6 +1684,7 @@ static struct {
     {"RGBA", "RGBA;L", 32, unpackRGBAL},
     {"RGBA", "RGBA;15", 16, ImagingUnpackRGBA15},
     {"RGBA", "BGRA;15", 16, ImagingUnpackBGRA15},
+    {"RGBA", "BGRA;15Z", 16, ImagingUnpackBGRA15Z},
     {"RGBA", "RGBA;4B", 16, ImagingUnpackRGBA4B},
     {"RGBA", "RGBA;16L", 64, unpackRGBA16L},
     {"RGBA", "RGBA;16B", 64, unpackRGBA16B},
