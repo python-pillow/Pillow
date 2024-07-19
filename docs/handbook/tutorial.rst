@@ -546,8 +546,8 @@ You can create animated GIFs with Pillow, e.g.
 
 The following class lets you use the for-statement to loop over the sequence:
 
-Using the :py:meth:`ImageSequence.Iterator` class
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using the :py:class:`~PIL.ImageSequence.Iterator` class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
