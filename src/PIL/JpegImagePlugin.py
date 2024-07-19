@@ -685,7 +685,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             raise ValueError(msg)
         subsampling = get_sampling(im)
 
-    def validate_qtables(qtables):
+    def validate_qtables(
+        qtables: (
+            str | tuple[list[int], ...] | list[list[int]] | dict[int, list[int]] | None
+        )
+    ) -> list[list[int]] | None:
         if qtables is None:
             return qtables
         if isinstance(qtables, str):
@@ -715,12 +719,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     if len(table) != 64:
                         msg = "Invalid quantization table"
                         raise TypeError(msg)
-                    table = array.array("H", table)
+                    table_array = array.array("H", table)
                 except TypeError as e:
                     msg = "Invalid quantization table"
                     raise ValueError(msg) from e
                 else:
-                    qtables[idx] = list(table)
+                    qtables[idx] = list(table_array)
             return qtables
 
     if qtables == "keep":
@@ -827,11 +831,11 @@ def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 ##
 # Factory for making JPEG and MPO instances
-def jpeg_factory(fp=None, filename=None):
+def jpeg_factory(fp: IO[bytes] | None = None, filename: str | bytes | None = None):
     im = JpegImageFile(fp, filename)
     try:
         mpheader = im._getmp()
-        if mpheader[45057] > 1:
+        if mpheader is not None and mpheader[45057] > 1:
             for segment, content in im.applist:
                 if segment == "APP1" and b' hdrgm:Version="' in content:
                     # Ultra HDR images are not yet supported

@@ -103,7 +103,8 @@ MakeRankFunction(UINT8) MakeRankFunction(INT32) MakeRankFunction(FLOAT32)
                     memcpy(                                                       \
                         buf + i * size,                                           \
                         &IMAGING_PIXEL_##type(im, x, y + i),                      \
-                        size * sizeof(type));                                     \
+                        size * sizeof(type)                                       \
+                    );                                                            \
                 }                                                                 \
                 IMAGING_PIXEL_##type(imOut, x, y) = Rank##type(buf, size2, rank); \
             }                                                                     \

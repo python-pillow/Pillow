@@ -110,9 +110,8 @@ ImagingNewPrologueSubtype(const char *mode, ImagingNewParams p, int size) {
         im->linesize = p.xsize * 4;
         im->type = IMAGING_TYPE_INT32;
 
-    } else if (
-        strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
-        strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
+    } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
+               strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
         /* EXPERIMENTAL */
         /* 16-bit raw integer images */
         im->bands = 1;
@@ -237,7 +236,9 @@ ImagingNewPrologueSubtype(const char *mode, ImagingNewParams p, int size) {
 
 Imaging
 ImagingNewPrologue(const char *mode, ImagingNewParams p) {
-    return ImagingNewPrologueSubtype(mode, p, sizeof(struct ImagingMemoryInstance));
+    return ImagingNewPrologueSubtype(
+        mode, p, sizeof(struct ImagingMemoryInstance)
+    );
 }
 
 void

@@ -17,7 +17,8 @@
 
 int
 ImagingPackbitsDecode(
-    Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes) {
+    Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t bytes
+) {
     UINT8 n;
     UINT8 *ptr;
     int i;
@@ -79,7 +80,8 @@ ImagingPackbitsDecode(
                 (UINT8 *)im->image[state->y + state->yoff] +
                     state->xoff * im->pixelsize,
                 state->buffer,
-                state->xsize);
+                state->xsize
+            );
 
             state->x = 0;
 

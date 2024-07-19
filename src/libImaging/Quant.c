@@ -103,7 +103,8 @@ static uint32_t
 pixel_hash(const HashTable *h, const Pixel pixel) {
     PixelHashData *d = (PixelHashData *)hashtable_get_user_data(h);
     return PIXEL_HASH(
-        pixel.c.r >> d->scale, pixel.c.g >> d->scale, pixel.c.b >> d->scale);
+        pixel.c.r >> d->scale, pixel.c.g >> d->scale, pixel.c.b >> d->scale
+    );
 }
 
 static int
@@ -111,9 +112,11 @@ pixel_cmp(const HashTable *h, const Pixel pixel1, const Pixel pixel2) {
     PixelHashData *d = (PixelHashData *)hashtable_get_user_data(h);
     uint32_t A, B;
     A = PIXEL_HASH(
-        pixel1.c.r >> d->scale, pixel1.c.g >> d->scale, pixel1.c.b >> d->scale);
+        pixel1.c.r >> d->scale, pixel1.c.g >> d->scale, pixel1.c.b >> d->scale
+    );
     B = PIXEL_HASH(
-        pixel2.c.r >> d->scale, pixel2.c.g >> d->scale, pixel2.c.b >> d->scale);
+        pixel2.c.r >> d->scale, pixel2.c.g >> d->scale, pixel2.c.b >> d->scale
+    );
     return (A == B) ? 0 : ((A < B) ? -1 : 1);
 }
 
@@ -129,7 +132,8 @@ new_count_func(const HashTable *h, const Pixel key, uint32_t *val) {
 
 static void
 rehash_collide(
-    const HashTable *h, Pixel *keyp, uint32_t *valp, Pixel newkey, uint32_t newval) {
+    const HashTable *h, Pixel *keyp, uint32_t *valp, Pixel newkey, uint32_t newval
+) {
     *valp += newval;
 }
 
@@ -157,7 +161,8 @@ create_pixel_hash(Pixel *pixelData, uint32_t nPixels) {
 #endif
     for (i = 0; i < nPixels; i++) {
         if (!hashtable_insert_or_update_computed(
-                hash, pixelData[i], new_count_func, exists_count_func)) {
+                hash, pixelData[i], new_count_func, exists_count_func
+            )) {
             ;
         }
         while (hashtable_get_count(hash) > MAX_HASH_ENTRIES) {
@@ -335,7 +340,8 @@ splitlists(
     PixelList *nt[2][3],
     uint32_t nCount[2],
     int axis,
-    uint32_t pixelCount) {
+    uint32_t pixelCount
+) {
     uint32_t left;
 
     PixelList *l, *r, *c, *n;
@@ -387,7 +393,8 @@ splitlists(
                     _prevCount[2],
                     _nextCount[0],
                     _nextCount[1],
-                    _nextCount[2]);
+                    _nextCount[2]
+                );
                 exit(1);
             }
         }
@@ -531,12 +538,14 @@ split(BoxNode *node) {
             if (node->tail[_i]->next[_i]) {
                 printf("tail is not tail\n");
                 printf(
-                    "node->tail[%d]->next[%d]=%p\n", _i, _i, node->tail[_i]->next[_i]);
+                    "node->tail[%d]->next[%d]=%p\n", _i, _i, node->tail[_i]->next[_i]
+                );
             }
             if (node->head[_i]->prev[_i]) {
                 printf("head is not head\n");
                 printf(
-                    "node->head[%d]->prev[%d]=%p\n", _i, _i, node->head[_i]->prev[_i]);
+                    "node->head[%d]->prev[%d]=%p\n", _i, _i, node->head[_i]->prev[_i]
+                );
             }
         }
 
@@ -573,14 +582,16 @@ split(BoxNode *node) {
                     _prevCount[2],
                     _nextCount[0],
                     _nextCount[1],
-                    _nextCount[2]);
+                    _nextCount[2]
+                );
             }
         }
     }
 #endif
     node->axis = axis;
     if (!splitlists(
-            node->head, node->tail, heads, tails, newCounts, axis, node->pixelCount)) {
+            node->head, node->tail, heads, tails, newCounts, axis, node->pixelCount
+        )) {
 #ifndef NO_OUTPUT
         printf("list split failed.\n");
 #endif
@@ -772,7 +783,8 @@ _distance_index_cmp(const void *a, const void *b) {
 
 static int
 resort_distance_tables(
-    uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries) {
+    uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries
+) {
     uint32_t i, j, k;
     uint32_t **skRow;
     uint32_t *skElt;
@@ -801,7 +813,8 @@ resort_distance_tables(
 
 static int
 build_distance_tables(
-    uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries) {
+    uint32_t *avgDist, uint32_t **avgDistSortKey, Pixel *p, uint32_t nEntries
+) {
     uint32_t i, j;
     DistanceWithIndex *dwi;
 
@@ -841,7 +854,8 @@ map_image_pixels(
     uint32_t nPaletteEntries,
     uint32_t *avgDist,
     uint32_t **avgDistSortKey,
-    uint32_t *pixelArray) {
+    uint32_t *pixelArray
+) {
     uint32_t *aD, **aDSK;
     uint32_t idx;
     uint32_t i, j;
@@ -888,7 +902,8 @@ map_image_pixels_from_quantized_pixels(
     uint32_t **avgDistSortKey,
     uint32_t *pixelArray,
     uint32_t *avg[3],
-    uint32_t *count) {
+    uint32_t *count
+) {
     uint32_t *aD, **aDSK;
     uint32_t idx;
     uint32_t i, j;
@@ -946,7 +961,8 @@ map_image_pixels_from_median_box(
     HashTable *medianBoxHash,
     uint32_t *avgDist,
     uint32_t **avgDistSortKey,
-    uint32_t *pixelArray) {
+    uint32_t *pixelArray
+) {
     uint32_t *aD, **aDSK;
     uint32_t idx;
     uint32_t i, j;
@@ -998,7 +1014,8 @@ compute_palette_from_median_cut(
     uint32_t nPixels,
     HashTable *medianBoxHash,
     Pixel **palette,
-    uint32_t nPaletteEntries) {
+    uint32_t nPaletteEntries
+) {
     uint32_t i;
     uint32_t paletteEntry;
     Pixel *p;
@@ -1055,7 +1072,8 @@ compute_palette_from_median_cut(
             printf(
                 "panic - paletteEntry>=nPaletteEntries (%d>=%d)\n",
                 (int)paletteEntry,
-                (int)nPaletteEntries);
+                (int)nPaletteEntries
+            );
 #endif
             for (i = 0; i < 3; i++) {
                 free(avg[i]);
@@ -1092,7 +1110,8 @@ compute_palette_from_median_cut(
 
 static int
 recompute_palette_from_averages(
-    Pixel *palette, uint32_t nPaletteEntries, uint32_t *avg[3], uint32_t *count) {
+    Pixel *palette, uint32_t nPaletteEntries, uint32_t *avg[3], uint32_t *count
+) {
     uint32_t i;
 
     for (i = 0; i < nPaletteEntries; i++) {
@@ -1111,7 +1130,8 @@ compute_palette_from_quantized_pixels(
     uint32_t nPaletteEntries,
     uint32_t *avg[3],
     uint32_t *count,
-    uint32_t *qp) {
+    uint32_t *qp
+) {
     uint32_t i;
 
     memset(count, 0, sizeof(uint32_t) * nPaletteEntries);
@@ -1145,7 +1165,8 @@ k_means(
     Pixel *paletteData,
     uint32_t nPaletteEntries,
     uint32_t *qp,
-    int threshold) {
+    int threshold
+) {
     uint32_t *avg[3];
     uint32_t *count;
     uint32_t i;
@@ -1194,16 +1215,19 @@ k_means(
     while (1) {
         if (!built) {
             compute_palette_from_quantized_pixels(
-                pixelData, nPixels, paletteData, nPaletteEntries, avg, count, qp);
+                pixelData, nPixels, paletteData, nPaletteEntries, avg, count, qp
+            );
             if (!build_distance_tables(
-                    avgDist, avgDistSortKey, paletteData, nPaletteEntries)) {
+                    avgDist, avgDistSortKey, paletteData, nPaletteEntries
+                )) {
                 goto error_3;
             }
             built = 1;
         } else {
             recompute_palette_from_averages(paletteData, nPaletteEntries, avg, count);
             resort_distance_tables(
-                avgDist, avgDistSortKey, paletteData, nPaletteEntries);
+                avgDist, avgDistSortKey, paletteData, nPaletteEntries
+            );
         }
         changes = map_image_pixels_from_quantized_pixels(
             pixelData,
@@ -1214,7 +1238,8 @@ k_means(
             avgDistSortKey,
             qp,
             avg,
-            count);
+            count
+        );
         if (changes < 0) {
             goto error_3;
         }
@@ -1273,7 +1298,8 @@ quantize(
     Pixel **palette,
     uint32_t *paletteLength,
     uint32_t **quantizedPixels,
-    int kmeans) {
+    int kmeans
+) {
     PixelList *hl[3];
     HashTable *h;
     BoxNode *root;
@@ -1399,7 +1425,8 @@ quantize(
     }
 
     if (!map_image_pixels_from_median_box(
-            pixelData, nPixels, p, nPaletteEntries, h, avgDist, avgDistSortKey, qp)) {
+            pixelData, nPixels, p, nPaletteEntries, h, avgDist, avgDistSortKey, qp
+        )) {
         goto error_7;
     }
 
@@ -1445,7 +1472,8 @@ quantize(
                                   _SQR(pixelData[i].c.b - p[qp[i]].c.b))),
                     sqrt((double)(_SQR(pixelData[i].c.r - p[bestmatch].c.r) +
                                   _SQR(pixelData[i].c.g - p[bestmatch].c.g) +
-                                  _SQR(pixelData[i].c.b - p[bestmatch].c.b))));
+                                  _SQR(pixelData[i].c.b - p[bestmatch].c.b)))
+                );
             }
         }
         hashtable_free(h2);
@@ -1545,7 +1573,8 @@ quantize2(
     Pixel **palette,
     uint32_t *paletteLength,
     uint32_t **quantizedPixels,
-    int kmeans) {
+    int kmeans
+) {
     HashTable *h;
     uint32_t i;
     uint32_t mean[3];
@@ -1609,7 +1638,8 @@ quantize2(
     }
 
     if (!map_image_pixels(
-            pixelData, nPixels, p, nQuantPixels, avgDist, avgDistSortKey, qp)) {
+            pixelData, nPixels, p, nQuantPixels, avgDist, avgDistSortKey, qp
+        )) {
         goto error_4;
     }
     if (kmeans > 0) {
@@ -1752,7 +1782,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 &palette,
                 &paletteLength,
                 &newData,
-                kmeans);
+                kmeans
+            );
             break;
         case 1:
             /* maximum coverage */
@@ -1763,7 +1794,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 &palette,
                 &paletteLength,
                 &newData,
-                kmeans);
+                kmeans
+            );
             break;
         case 2:
             result = quantize_octree(
@@ -1773,7 +1805,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 &palette,
                 &paletteLength,
                 &newData,
-                withAlpha);
+                withAlpha
+            );
             break;
         case 3:
 #ifdef HAVE_LIBIMAGEQUANT
@@ -1785,7 +1818,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 &palette,
                 &paletteLength,
                 &newData,
-                withAlpha);
+                withAlpha
+            );
 #else
             result = -1;
 #endif
@@ -1836,7 +1870,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
         if (result == -1) {
             return (Imaging)ImagingError_ValueError(
                 "dependency required by this method was not "
-                "enabled at compile time");
+                "enabled at compile time"
+            );
         }
 
         return (Imaging)ImagingError_ValueError("quantization error");

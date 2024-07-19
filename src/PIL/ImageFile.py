@@ -86,7 +86,7 @@ def raise_oserror(error: int) -> OSError:
     raise _get_oserror(error, encoder=False)
 
 
-def _tilesort(t):
+def _tilesort(t) -> int:
     # sort on offset
     return t[2]
 
@@ -163,7 +163,7 @@ class ImageFile(Image.Image):
             return Image.MIME.get(self.format.upper())
         return None
 
-    def __setstate__(self, state):
+    def __setstate__(self, state) -> None:
         self.tile = []
         super().__setstate__(state)
 
@@ -335,14 +335,14 @@ class ImageFile(Image.Image):
     # def load_read(self, read_bytes: int) -> bytes:
     #     pass
 
-    def _seek_check(self, frame):
+    def _seek_check(self, frame: int) -> bool:
         if (
             frame < self._min_frame
             # Only check upper limit on frames if additional seek operations
             # are not required to do so
             or (
                 not (hasattr(self, "_n_frames") and self._n_frames is None)
-                and frame >= self.n_frames + self._min_frame
+                and frame >= getattr(self, "n_frames") + self._min_frame
             )
         ):
             msg = "attempt to seek outside sequence"
@@ -372,7 +372,7 @@ class StubImageFile(ImageFile):
         msg = "StubImageFile subclass must implement _open"
         raise NotImplementedError(msg)
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         loader = self._load()
         if loader is None:
             msg = f"cannot find loader for this {self.format} file"
@@ -380,7 +380,7 @@ class StubImageFile(ImageFile):
         image = loader.load(self)
         assert image is not None
         # become the other object (!)
-        self.__class__ = image.__class__
+        self.__class__ = image.__class__  # type: ignore[assignment]
         self.__dict__ = image.__dict__
         return image.load()
 
@@ -398,8 +398,8 @@ class Parser:
 
     incremental = None
     image: Image.Image | None = None
-    data = None
-    decoder = None
+    data: bytes | None = None
+    decoder: Image.core.ImagingDecoder | PyDecoder | None = None
     offset = 0
     finished = 0
 
@@ -411,7 +411,7 @@ class Parser:
         """
         assert self.data is None, "cannot reuse parsers"
 
-    def feed(self, data):
+    def feed(self, data: bytes) -> None:
         """
         (Consumer) Feed data to the parser.
 
@@ -493,7 +493,7 @@ class Parser:
     def __exit__(self, *args: object) -> None:
         self.close()
 
-    def close(self):
+    def close(self) -> Image.Image:
         """
         (Consumer) Close the stream.
 
@@ -527,7 +527,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im, fp, tile, bufsize=0) -> None:
+def _save(im, fp, tile, bufsize: int = 0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.
@@ -555,7 +555,9 @@ def _save(im, fp, tile, bufsize=0) -> None:
         fp.flush()
 
 
-def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
+def _encode_tile(
+    im, fp: IO[bytes], tile: list[_Tile], bufsize: int, fh, exc=None
+) -> None:
     for encoder_name, extents, offset, args in tile:
         if offset > 0:
             fp.seek(offset)
@@ -631,18 +633,18 @@ class PyCodecState:
 class PyCodec:
     fd: IO[bytes] | None
 
-    def __init__(self, mode, *args):
-        self.im = None
+    def __init__(self, mode: str, *args: Any) -> None:
+        self.im: Image.core.ImagingCore | None = None
         self.state = PyCodecState()
         self.fd = None
         self.mode = mode
         self.init(args)
 
-    def init(self, args) -> None:
+    def init(self, args: tuple[Any, ...]) -> None:
         """
         Override to perform codec specific initialization
 
-        :param args: Array of args items from the tile entry
+        :param args: Tuple of arg items from the tile entry
         :returns: None
         """
         self.args = args
@@ -655,7 +657,7 @@ class PyCodec:
         """
         pass
 
-    def setfd(self, fd) -> None:
+    def setfd(self, fd: IO[bytes]) -> None:
         """
         Called from ImageFile to set the Python file-like object
 
@@ -664,7 +666,7 @@ class PyCodec:
         """
         self.fd = fd
 
-    def setimage(self, im, extents: tuple[int, int, int, int] | None = None) -> None:
+    def setimage(self, im, extents=None):
         """
         Called from ImageFile to set the core output image for the codec
 
