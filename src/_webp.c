@@ -784,8 +784,7 @@ WebPDecode_wrapper(PyObject *self, PyObject *args) {
     PyBytesObject *webp_string;
     const uint8_t *webp;
     Py_ssize_t size;
-    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL, *icc_profile = NULL,
-             *exif = NULL;
+    PyObject *ret = Py_None, *bytes = NULL, *icc_profile = NULL, *exif = NULL;
     WebPDecoderConfig config;
     VP8StatusCode vp8_status_code = VP8_STATUS_OK;
     char *mode = "RGB";
@@ -868,13 +867,12 @@ WebPDecode_wrapper(PyObject *self, PyObject *args) {
         );
     }
 
-    pymode = PyUnicode_FromString(mode);
     ret = Py_BuildValue(
-        "SiiSSS",
+        "SiisSS",
         bytes,
         config.output.width,
         config.output.height,
-        pymode,
+        mode,
         NULL == icc_profile ? Py_None : icc_profile,
         NULL == exif ? Py_None : exif
     );
@@ -883,7 +881,6 @@ end:
     WebPFreeDecBuffer(&config.output);
 
     Py_XDECREF(bytes);
-    Py_XDECREF(pymode);
     Py_XDECREF(icc_profile);
     Py_XDECREF(exif);
 
