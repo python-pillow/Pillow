@@ -1462,8 +1462,8 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
 
     imOut = ImagingNewDirty(
         imIn->mode,
-        (ImagingNewParams){
-            (box[2] + xscale - 1) / xscale, (box[3] + yscale - 1) / yscale}
+        (ImagingNewParams
+        ){(box[2] + xscale - 1) / xscale, (box[3] + yscale - 1) / yscale}
     );
     if (!imOut) {
         return NULL;

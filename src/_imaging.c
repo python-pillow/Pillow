@@ -730,8 +730,8 @@ _new(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return PyImagingNew(
-        ImagingNew(mode, (ImagingNewParams){xsize, ysize, depth, bands}));
+    return PyImagingNew(ImagingNew(mode, (ImagingNewParams){xsize, ysize, depth, bands})
+    );
 }
 
 static PyObject *
@@ -953,7 +953,8 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
     }
 
     imOut = ImagingNewDirty(
-        mode, (ImagingNewParams){self->image->xsize, self->image->ysize});
+        mode, (ImagingNewParams){self->image->xsize, self->image->ysize}
+    );
     if (!imOut) {
         free(prepared_table);
         return NULL;
@@ -1765,8 +1766,9 @@ _quantize(ImagingObject *self, PyObject *args) {
 
     if (!self->image->xsize || !self->image->ysize) {
         /* no content; return an empty image */
-        return PyImagingNew(ImagingNew(
-            "P", (ImagingNewParams){self->image->xsize, self->image->ysize}));
+        return PyImagingNew(
+            ImagingNew("P", (ImagingNewParams){self->image->xsize, self->image->ysize})
+        );
     }
 
     return PyImagingNew(ImagingQuantize(self->image, colours, method, kmeans));
@@ -2159,7 +2161,8 @@ _transpose(ImagingObject *self, PyObject *args) {
         case 3: /* rotate 180 */
             imOut = ImagingNewDirty(
                 imIn->mode,
-                (ImagingNewParams){imIn->xsize, imIn->ysize, imIn->depth, imIn->bands});
+                (ImagingNewParams){imIn->xsize, imIn->ysize, imIn->depth, imIn->bands}
+            );
             break;
         case 2: /* rotate 90 */
         case 4: /* rotate 270 */
@@ -2167,7 +2170,8 @@ _transpose(ImagingObject *self, PyObject *args) {
         case 6: /* transverse */
             imOut = ImagingNewDirty(
                 imIn->mode,
-                (ImagingNewParams){imIn->ysize, imIn->xsize, imIn->depth, imIn->bands});
+                (ImagingNewParams){imIn->ysize, imIn->xsize, imIn->depth, imIn->bands}
+            );
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "No such transpose operation");
@@ -2848,7 +2852,8 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
     }
 
     im = ImagingNew(
-        self->bitmap->mode, (ImagingNewParams){textwidth(self, text), self->ysize});
+        self->bitmap->mode, (ImagingNewParams){textwidth(self, text), self->ysize}
+    );
     if (!im) {
         free(text);
         return ImagingError_MemoryError();

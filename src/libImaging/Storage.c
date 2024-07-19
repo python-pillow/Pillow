@@ -191,8 +191,8 @@ ImagingNewPrologueSubtype(const char *mode, ImagingNewParams p, int size) {
 
     } else if (strcmp(mode, IMAGING_MODE_MB) == 0) {
         if (p.bands <= 0 || p.depth <= 0) {
-            return (Imaging)ImagingError_ValueError(
-                "multi-band missing bands and depth");
+            return (Imaging)ImagingError_ValueError("multi-band missing bands and depth"
+            );
         }
         im->bands = p.bands;
         im->depth = p.depth;
@@ -236,9 +236,7 @@ ImagingNewPrologueSubtype(const char *mode, ImagingNewParams p, int size) {
 
 Imaging
 ImagingNewPrologue(const char *mode, ImagingNewParams p) {
-    return ImagingNewPrologueSubtype(
-        mode, p, sizeof(struct ImagingMemoryInstance)
-    );
+    return ImagingNewPrologueSubtype(mode, p, sizeof(struct ImagingMemoryInstance));
 }
 
 void
@@ -570,8 +568,8 @@ ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn) {
     } else {
         /* create new image */
         imOut = ImagingNewDirty(
-            mode,
-            (ImagingNewParams){imIn->xsize, imIn->ysize, imIn->depth, imIn->bands});
+            mode, (ImagingNewParams){imIn->xsize, imIn->ysize, imIn->depth, imIn->bands}
+        );
         if (!imOut) {
             return NULL;
         }

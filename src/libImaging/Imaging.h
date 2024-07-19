@@ -705,7 +705,8 @@ struct ImagingCodecStateInstance {
     int xsize, ysize, xoff, yoff;
     ImagingShuffler shuffle;
     void (*mb_shuffle)(
-        UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state);
+        UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state
+    );
     int bits, bytes;
     UINT8 *buffer;
     void *context;

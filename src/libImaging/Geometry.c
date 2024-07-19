@@ -108,7 +108,8 @@ ImagingRotate90(Imaging imOut, Imaging imIn) {
                             memcpy(
                                 out + yyy * imIn->pixelsize,
                                 in + xxx * imIn->pixelsize,
-                                imIn->pixelsize);
+                                imIn->pixelsize
+                            );
                         }
                     }
                 }
@@ -158,7 +159,8 @@ ImagingTranspose(Imaging imOut, Imaging imIn) {
                             memcpy(
                                 out + yyy * imIn->pixelsize,
                                 in + xxx * imIn->pixelsize,
-                                imIn->pixelsize);
+                                imIn->pixelsize
+                            );
                         }
                     }
                 }
@@ -210,7 +212,8 @@ ImagingTransverse(Imaging imOut, Imaging imIn) {
                             memcpy(
                                 out + yr * imIn->pixelsize,
                                 in + xxx * imIn->pixelsize,
-                                imIn->pixelsize);
+                                imIn->pixelsize
+                            );
                         }
                     }
                 }
@@ -293,7 +296,8 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
                             memcpy(
                                 out + yr * imIn->pixelsize,
                                 in + xxx * imIn->pixelsize,
-                                imIn->pixelsize);
+                                imIn->pixelsize
+                            );
                         }
                     }
                 }

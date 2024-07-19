@@ -671,7 +671,8 @@ ImagingResampleInner(
         }
 
         imTemp = ImagingNewDirty(
-            imIn->mode, (ImagingNewParams){xsize, ybox_last - ybox_first});
+            imIn->mode, (ImagingNewParams){xsize, ybox_last - ybox_first}
+        );
         if (imTemp) {
             ResampleHorizontal(
                 imTemp, imIn, ybox_first, ksize_horiz, bounds_horiz, kk_horiz
