@@ -149,13 +149,13 @@ Copying a subrectangle from an image
 
 ::
 
-    box = (100, 100, 400, 400)
+    box = (0, 0, 64, 64)
     region = im.crop(box)
 
 The region is defined by a 4-tuple, where coordinates are (left, upper, right,
 lower). The Python Imaging Library uses a coordinate system with (0, 0) in the
 upper left corner. Also note that coordinates refer to positions between the
-pixels, so the region in the above example is exactly 300x300 pixels.
+pixels, so the region in the above example is exactly 64x64 pixels.
 
 The region could now be processed in a certain manner and pasted back.
 
