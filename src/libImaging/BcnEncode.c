@@ -53,7 +53,8 @@ rgb565_lerp(UINT16 c0, UINT16 c1, UINT8 a_fac, UINT8 b_fac) {
     return PACK_SHORT_565(
         (r0 * a_fac + r1 * b_fac) / (a_fac + b_fac),
         (g0 * a_fac + g1 * b_fac) / (a_fac + b_fac),
-        (b0 * a_fac + b1 * b_fac) / (a_fac + b_fac));
+        (b0 * a_fac + b1 * b_fac) / (a_fac + b_fac)
+    );
 }
 
 typedef struct {
@@ -82,7 +83,8 @@ pick_2_major_colors(
     const UINT8 *color_freq,
     UINT16 color_count,
     UINT16 *color0,
-    UINT16 *color1) {
+    UINT16 *color1
+) {
     UINT32 i;
     Color colors[16];
     memset(colors, 0, sizeof(colors));
