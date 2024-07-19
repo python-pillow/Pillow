@@ -4131,7 +4131,7 @@ _set_blocks_max(PyObject *self, PyObject *args) {
     }
 
     if ((unsigned long)blocks_max >
-            SIZE_MAX / sizeof(ImagingDefaultArena.blocks_pool[0])) {
+        SIZE_MAX / sizeof(ImagingDefaultArena.blocks_pool[0])) {
         PyErr_SetString(PyExc_ValueError, "blocks_max is too large");
         return NULL;
     }
