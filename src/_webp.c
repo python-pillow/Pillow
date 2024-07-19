@@ -42,7 +42,8 @@ static const char *const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
     "WEBP_MUX_INVALID_ARGUMENT",
     "WEBP_MUX_BAD_DATA",
     "WEBP_MUX_MEMORY_ERROR",
-    "WEBP_MUX_NOT_ENOUGH_DATA"};
+    "WEBP_MUX_NOT_ENOUGH_DATA"
+};
 
 PyObject *
 HandleMuxError(WebPMuxError err, char *chunk) {
@@ -61,7 +62,8 @@ HandleMuxError(WebPMuxError err, char *chunk) {
             sprintf(message, "could not assemble chunks: %s", kErrorMessages[-err]);
     } else {
         message_len = sprintf(
-            message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]);
+            message, "could not set %.4s chunk: %s", chunk, kErrorMessages[-err]
+        );
     }
     if (message_len < 0) {
         PyErr_SetString(PyExc_RuntimeError, "failed to construct error message");
@@ -138,7 +140,8 @@ _anim_encoder_new(PyObject *self, PyObject *args) {
             &kmin,
             &kmax,
             &allow_mixed,
-            &verbose)) {
+            &verbose
+        )) {
         return NULL;
     }
 
@@ -214,7 +217,8 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
             &lossless,
             &quality_factor,
             &alpha_quality_factor,
-            &method)) {
+            &method
+        )) {
         return NULL;
     }
 
@@ -283,7 +287,8 @@ _anim_encoder_assemble(PyObject *self, PyObject *args) {
             &exif_bytes,
             &exif_size,
             &xmp_bytes,
-            &xmp_size)) {
+            &xmp_size
+        )) {
         return NULL;
     }
 
@@ -421,7 +426,8 @@ _anim_decoder_get_info(PyObject *self) {
         info->loop_count,
         info->bgcolor,
         info->frame_count,
-        decp->mode);
+        decp->mode
+    );
 }
 
 PyObject *
@@ -466,7 +472,8 @@ _anim_decoder_get_next(PyObject *self) {
     }
 
     bytes = PyBytes_FromStringAndSize(
-        (char *)buf, decp->info.canvas_width * 4 * decp->info.canvas_height);
+        (char *)buf, decp->info.canvas_width * 4 * decp->info.canvas_height
+    );
 
     ret = Py_BuildValue("Si", bytes, timestamp);
 
@@ -621,7 +628,8 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
             &exif_bytes,
             &exif_size,
             &xmp_bytes,
-            &xmp_size)) {
+            &xmp_size
+        )) {
         return NULL;
     }
 
@@ -828,12 +836,14 @@ WebPDecode_wrapper(PyObject *self, PyObject *args) {
 
             if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data)) {
                 icc_profile = PyBytes_FromStringAndSize(
-                    (const char *)icc_profile_data.bytes, icc_profile_data.size);
+                    (const char *)icc_profile_data.bytes, icc_profile_data.size
+                );
             }
 
             if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data)) {
                 exif = PyBytes_FromStringAndSize(
-                    (const char *)exif_data.bytes, exif_data.size);
+                    (const char *)exif_data.bytes, exif_data.size
+                );
             }
 
             WebPDataClear(&image.bitstream);
@@ -848,12 +858,14 @@ WebPDecode_wrapper(PyObject *self, PyObject *args) {
 
     if (config.output.colorspace < MODE_YUV) {
         bytes = PyBytes_FromStringAndSize(
-            (char *)config.output.u.RGBA.rgba, config.output.u.RGBA.size);
+            (char *)config.output.u.RGBA.rgba, config.output.u.RGBA.size
+        );
     } else {
         // Skipping YUV for now. Need Test Images.
         // UNDONE -- unclear if we'll ever get here if we set mode_rgb*
         bytes = PyBytes_FromStringAndSize(
-            (char *)config.output.u.YUVA.y, config.output.u.YUVA.y_size);
+            (char *)config.output.u.YUVA.y, config.output.u.YUVA.y_size
+        );
     }
 
     pymode = PyUnicode_FromString(mode);
@@ -864,7 +876,8 @@ WebPDecode_wrapper(PyObject *self, PyObject *args) {
         config.output.height,
         pymode,
         NULL == icc_profile ? Py_None : icc_profile,
-        NULL == exif ? Py_None : exif);
+        NULL == exif ? Py_None : exif
+    );
 
 end:
     WebPFreeDecBuffer(&config.output);
@@ -898,7 +911,8 @@ WebPDecoderVersion_str(void) {
         "%d.%d.%d",
         version_number >> 16,
         (version_number >> 8) % 0x100,
-        version_number % 0x100);
+        version_number % 0x100
+    );
     return version;
 }
 
@@ -932,7 +946,8 @@ static PyMethodDef webpMethods[] = {
      WebPDecoderBuggyAlpha_wrapper,
      METH_NOARGS,
      "WebPDecoderBuggyAlpha"},
-    {NULL, NULL}};
+    {NULL, NULL}
+};
 
 void
 addMuxFlagToModule(PyObject *m) {
