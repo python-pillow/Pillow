@@ -1102,14 +1102,15 @@ def test_bytes(font: ImageFont.FreeTypeFont) -> None:
 
     assert font.getbbox(b"test") == font.getbbox("test")
 
+    im = Image.new("L", (1, 1))
     assert_image_equal(
-        Image.Image()._new(font.getmask(b"test")),
-        Image.Image()._new(font.getmask("test")),
+        im._new(font.getmask(b"test")),
+        im._new(font.getmask("test")),
     )
 
     assert_image_equal(
-        Image.Image()._new(font.getmask2(b"test")[0]),
-        Image.Image()._new(font.getmask2("test")[0]),
+        im._new(font.getmask2(b"test")[0]),
+        im._new(font.getmask2("test")[0]),
     )
     assert font.getmask2(b"test")[1] == font.getmask2("test")[1]
 
