@@ -1054,7 +1054,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
             self.load()
         if "exif" not in self.info and "Raw profile type exif" not in self.info:

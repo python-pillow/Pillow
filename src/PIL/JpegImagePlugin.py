@@ -468,7 +468,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self.tile = []
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         return _getexif(self)
 
     def _read_dpi_from_exif(self) -> None:
@@ -504,7 +504,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
-def _getexif(self: JpegImageFile) -> dict[str, Any] | None:
+def _getexif(self: JpegImageFile) -> dict[int, Any] | None:
     if "exif" not in self.info:
         return None
     return self.getexif()._get_merged_dict()
