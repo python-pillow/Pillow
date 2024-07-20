@@ -445,7 +445,7 @@ class IFDRational(Rational):
         __int__ = _delegate("__int__")
 
 
-def _register_loader(idx, size):
+def _register_loader(idx: int, size: int):
     def decorator(func):
         from .TiffTags import TYPES
 
@@ -457,7 +457,7 @@ def _register_loader(idx, size):
     return decorator
 
 
-def _register_writer(idx):
+def _register_writer(idx: int):
     def decorator(func):
         _write_dispatch[idx] = func  # noqa: F821
         return func
@@ -465,7 +465,7 @@ def _register_writer(idx):
     return decorator
 
 
-def _register_basic(idx_fmt_name):
+def _register_basic(idx_fmt_name: tuple[int, str, str]) -> None:
     from .TiffTags import TYPES
 
     idx, fmt, name = idx_fmt_name
@@ -640,7 +640,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __contains__(self, tag: object) -> bool:
         return tag in self._tags_v2 or tag in self._tagdata
 
-    def __setitem__(self, tag, value) -> None:
+    def __setitem__(self, tag: int, value) -> None:
         self._setitem(tag, value, self.legacy_api)
 
     def _setitem(self, tag, value, legacy_api) -> None:
@@ -731,10 +731,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __iter__(self):
         return iter(set(self._tagdata) | set(self._tags_v2))
 
-    def _unpack(self, fmt, data):
+    def _unpack(self, fmt: str, data):
         return struct.unpack(self._endian + fmt, data)
 
-    def _pack(self, fmt, *values):
+    def _pack(self, fmt: str, *values):
         return struct.pack(self._endian + fmt, *values)
 
     list(
@@ -755,7 +755,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     )
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
-    def load_byte(self, data, legacy_api=True):
+    def load_byte(self, data, legacy_api: bool = True):
         return data
 
     @_register_writer(1)  # Basic type, except for the legacy API.
@@ -767,7 +767,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return data
 
     @_register_loader(2, 1)
-    def load_string(self, data, legacy_api=True):
+    def load_string(self, data: bytes, legacy_api: bool = True) -> str:
         if data.endswith(b"\0"):
             data = data[:-1]
         return data.decode("latin-1", "replace")
@@ -797,7 +797,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         )
 
     @_register_loader(7, 1)
-    def load_undefined(self, data, legacy_api=True):
+    def load_undefined(self, data, legacy_api: bool = True):
         return data
 
     @_register_writer(7)
@@ -809,7 +809,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return value
 
     @_register_loader(10, 8)
-    def load_signed_rational(self, data, legacy_api=True):
+    def load_signed_rational(self, data, legacy_api: bool = True):
         vals = self._unpack(f"{len(data) // 4}l", data)
 
         def combine(a, b):
@@ -1030,7 +1030,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     """Dictionary of tag types"""
 
     @classmethod
-    def from_v2(cls, original) -> ImageFileDirectory_v1:
+    def from_v2(cls, original: ImageFileDirectory_v2) -> ImageFileDirectory_v1:
         """Returns an
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
         instance with the same data as is contained in the original
@@ -1073,7 +1073,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __iter__(self):
         return iter(set(self._tagdata) | set(self._tags_v1))
 
-    def __setitem__(self, tag, value) -> None:
+    def __setitem__(self, tag: int, value) -> None:
         for legacy_api in (False, True):
             self._setitem(tag, value, legacy_api)
 
@@ -1212,7 +1212,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Return the current frame number"""
         return self.__frame
 
-    def get_photoshop_blocks(self):
+    def get_photoshop_blocks(self) -> dict[int, dict[str, bytes]]:
         """
         Returns a dictionary of Photoshop "Image Resource Blocks".
         The keys are the image resource ID. For more information, see
@@ -1259,7 +1259,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if ExifTags.Base.Orientation in self.tag_v2:
             del self.tag_v2[ExifTags.Base.Orientation]
 
-    def _load_libtiff(self):
+    def _load_libtiff(self) -> Image.core.PixelAccess | None:
         """Overload method triggered when we detect a compressed tiff
         Calls out to libtiff"""
 
