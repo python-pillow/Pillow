@@ -603,12 +603,11 @@ Drawing PostScript
         im.thumbnail((page_width - 100, page_height // 2))
 
         # Define the box where the image will be placed
-        img_width, img_height = im.size
-        img_x = (page_width - img_width) // 2
+        img_x = (page_width - im.width) // 2
         img_y = text_y + text_height - 200  # 200 points below the text
 
         # Draw the image (75 dpi)
-        ps.image((img_x, img_y, img_x + img_width, img_y + img_height), im, 75)
+        ps.image((img_x, img_y, img_x + im.width, img_y + im.height), im, 75)
 
     # Draw the text
     ps.setfont(font_name, font_size)
