@@ -415,7 +415,7 @@ Applying point transforms
     # multiply each pixel by 20
     out = im.point(lambda i: i * 20)
 
-.. image:: transformed_hopper.jpg
+.. image:: transformed_hopper.webp
     :align: center
 
 Using the above technique, you can quickly apply any simple expression to an
@@ -618,7 +618,7 @@ Drawing PostScript
     ps.end_document()
     ps_file.close()
 
-.. image:: hopper_ps.png
+.. image:: hopper_ps.webp
 
 .. note::
 
