@@ -332,7 +332,7 @@ choose to resize relative to a given size.
 
     from PIL import Image, ImageOps
     size = (100, 150)
-    with Image.open("Tests/images/hopper.webp") as im:
+    with Image.open("hopper.webp") as im:
         ImageOps.contain(im, size).save("imageops_contain.webp")
         ImageOps.cover(im, size).save("imageops_cover.webp")
         ImageOps.fit(im, size).save("imageops_fit.webp")
@@ -597,7 +597,7 @@ Drawing PostScript
     text_y = page_height - text_height - 50  # Distance from the top of the page
 
     # Load the image
-    image_path = os.path.join("img", "hopper.ppm")  # Update this with your image path
+    image_path = "hopper.ppm"  # Update this with your image path
     with Image.open(image_path) as im:
         # Resize the image if it's too large
         im.thumbnail((page_width - 100, page_height // 2))
@@ -690,7 +690,7 @@ Reading from a tar archive
 
     from PIL import Image, TarIO
 
-    fp = TarIO.TarIO("Tests/images/hopper.tar", "hopper.jpg")
+    fp = TarIO.TarIO("hopper.tar", "hopper.jpg")
     im = Image.open(fp)
 
 
@@ -704,7 +704,6 @@ in the current directory can be saved as JPEGs at reduced quality.
 
     import glob
     from PIL import Image
-
 
     def compress_image(source_path, dest_path):
         with Image.open(source_path) as img:
