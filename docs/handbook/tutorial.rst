@@ -412,8 +412,8 @@ Applying point transforms
 
 ::
 
-    # multiply each pixel by 1.2
-    out = im.point(lambda i: i * 1.2)
+    # multiply each pixel by 20
+    out = im.point(lambda i: i * 20)
 
 .. image:: transformed_hopper.jpg
     :align: center
