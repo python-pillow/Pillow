@@ -623,7 +623,7 @@ class ImageDraw:
                 return fill_ink
             return ink
 
-        def draw_text(ink, stroke_width=0, stroke_offset=None) -> None:
+        def draw_text(ink, stroke_width=0) -> None:
             mode = self.fontmode
             if stroke_width == 0 and embedded_color:
                 mode = "RGBA"
@@ -664,8 +664,6 @@ class ImageDraw:
                     )
                 except TypeError:
                     mask = font.getmask(text)
-            if stroke_offset:
-                coord = [coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]]
             if mode == "RGBA":
                 # font.getmask2(mode="RGBA") returns color in RGB bands and mask in A
                 # extract mask and set text alpha
