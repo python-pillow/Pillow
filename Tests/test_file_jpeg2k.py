@@ -391,6 +391,13 @@ def test_pclr() -> None:
         assert len(im.palette.colors) == 256
         assert im.palette.colors[(255, 255, 255)] == 0
 
+    with Image.open(
+        f"{EXTRA_DIR}/147af3f1083de4393666b7d99b01b58b_signal_sigsegv_130c531_6155_5136.jp2"
+    ) as im:
+        assert im.mode == "P"
+        assert len(im.palette.colors) == 139
+        assert im.palette.colors[(0, 0, 0, 0)] == 0
+
 
 def test_comment() -> None:
     with Image.open("Tests/images/comment.jp2") as im:
