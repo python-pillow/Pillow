@@ -218,6 +218,8 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+
     from . import ImageFile, ImagePalette
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
@@ -241,9 +243,9 @@ ENCODERS: dict[str, type[ImageFile.PyEncoder]] = {}
 _ENDIAN = "<" if sys.byteorder == "little" else ">"
 
 
-def _conv_type_shape(im):
+def _conv_type_shape(im: Image) -> tuple[tuple[int, ...], str]:
     m = ImageMode.getmode(im.mode)
-    shape = (im.height, im.width)
+    shape: tuple[int, ...] = (im.height, im.width)
     extra = len(m.bands)
     if extra != 1:
         shape += (extra,)
@@ -470,10 +472,10 @@ class _E:
         self.scale = scale
         self.offset = offset
 
-    def __neg__(self):
+    def __neg__(self) -> _E:
         return _E(-self.scale, -self.offset)
 
-    def __add__(self, other):
+    def __add__(self, other) -> _E:
         if isinstance(other, _E):
             return _E(self.scale + other.scale, self.offset + other.offset)
         return _E(self.scale, self.offset + other)
@@ -486,14 +488,14 @@ class _E:
     def __rsub__(self, other):
         return other + -self
 
-    def __mul__(self, other):
+    def __mul__(self, other) -> _E:
         if isinstance(other, _E):
             return NotImplemented
         return _E(self.scale * other, self.offset * other)
 
     __rmul__ = __mul__
 
-    def __truediv__(self, other):
+    def __truediv__(self, other) -> _E:
         if isinstance(other, _E):
             return NotImplemented
         return _E(self.scale / other, self.offset / other)
@@ -718,9 +720,9 @@ class Image:
         return self._repr_image("JPEG")
 
     @property
-    def __array_interface__(self):
+    def __array_interface__(self) -> dict[str, str | bytes | int | tuple[int, ...]]:
         # numpy array interface support
-        new = {"version": 3}
+        new: dict[str, str | bytes | int | tuple[int, ...]] = {"version": 3}
         try:
             if self.mode == "1":
                 # Binary images need to be extended from bits to bytes
@@ -1418,7 +1420,7 @@ class Image:
             return out
         return self.im.getcolors(maxcolors)
 
-    def getdata(self, band: int | None = None):
+    def getdata(self, band: int | None = None) -> core.ImagingCore:
         """
         Returns the contents of this image as a sequence object
         containing pixel values.  The sequence object is flattened, so
@@ -1467,8 +1469,8 @@ class Image:
         def get_name(tag: str) -> str:
             return re.sub("^{[^}]+}", "", tag)
 
-        def get_value(element):
-            value = {get_name(k): v for k, v in element.attrib.items()}
+        def get_value(element: Element) -> str | dict[str, Any] | None:
+            value: dict[str, Any] = {get_name(k): v for k, v in element.attrib.items()}
             children = list(element)
             if children:
                 for child in children:
@@ -1712,7 +1714,7 @@ class Image:
             return self.im.histogram(extrema)
         return self.im.histogram()
 
-    def entropy(self, mask=None, extrema=None):
+    def entropy(self, mask: Image | None = None, extrema=None):
         """
         Calculates and returns the entropy for the image.
 
@@ -1996,7 +1998,7 @@ class Image:
 
     def putdata(
         self,
-        data: Sequence[float] | Sequence[Sequence[int]] | NumpyArray,
+        data: Sequence[float] | Sequence[Sequence[int]] | core.ImagingCore | NumpyArray,
         scale: float = 1.0,
         offset: float = 0.0,
     ) -> None:
@@ -2184,7 +2186,12 @@ class Image:
 
         return m_im
 
-    def _get_safe_box(self, size, resample, box):
+    def _get_safe_box(
+        self,
+        size: tuple[int, int],
+        resample: Resampling,
+        box: tuple[float, float, float, float],
+    ) -> tuple[int, int, int, int]:
         """Expands the box so it includes adjacent pixels
         that may be used by resampling with the given resampling filter.
         """
@@ -2294,7 +2301,7 @@ class Image:
             factor_x = int((box[2] - box[0]) / size[0] / reducing_gap) or 1
             factor_y = int((box[3] - box[1]) / size[1] / reducing_gap) or 1
             if factor_x > 1 or factor_y > 1:
-                reduce_box = self._get_safe_box(size, resample, box)
+                reduce_box = self._get_safe_box(size, cast(Resampling, resample), box)
                 factor = (factor_x, factor_y)
                 self = (
                     self.reduce(factor, box=reduce_box)
@@ -2430,7 +2437,7 @@ class Image:
             0.0,
         ]
 
-        def transform(x, y, matrix):
+        def transform(x: float, y: float, matrix: list[float]) -> tuple[float, float]:
             (a, b, c, d, e, f) = matrix
             return a * x + b * y + c, d * x + e * y + f
 
@@ -2445,9 +2452,9 @@ class Image:
             xx = []
             yy = []
             for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
-                x, y = transform(x, y, matrix)
-                xx.append(x)
-                yy.append(y)
+                transformed_x, transformed_y = transform(x, y, matrix)
+                xx.append(transformed_x)
+                yy.append(transformed_y)
             nw = math.ceil(max(xx)) - math.floor(min(xx))
             nh = math.ceil(max(yy)) - math.floor(min(yy))
 
@@ -2705,7 +2712,7 @@ class Image:
         provided_size = tuple(map(math.floor, size))
 
         def preserve_aspect_ratio() -> tuple[int, int] | None:
-            def round_aspect(number, key):
+            def round_aspect(number: float, key: Callable[[int], float]) -> int:
                 return max(min(math.floor(number), math.ceil(number), key=key), 1)
 
             x, y = provided_size
@@ -2849,7 +2856,13 @@ class Image:
         return im
 
     def __transformer(
-        self, box, image, method, data, resample=Resampling.NEAREST, fill=1
+        self,
+        box: tuple[int, int, int, int],
+        image: Image,
+        method,
+        data,
+        resample: int = Resampling.NEAREST,
+        fill: bool = True,
     ):
         w = box[2] - box[0]
         h = box[3] - box[1]
@@ -2899,11 +2912,12 @@ class Image:
             Resampling.BICUBIC,
         ):
             if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
-                msg = {
+                unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
-                }[resample] + f" ({resample}) cannot be used."
+                }
+                msg = unusable[resample] + f" ({resample}) cannot be used."
             else:
                 msg = f"Unknown resampling filter ({resample})."
 
@@ -3843,7 +3857,7 @@ class Exif(_ExifBase):
       print(gps_ifd[ExifTags.GPS.GPSDateStamp])  # 1999:99:99 99:99:99
     """
 
-    endian = None
+    endian: str | None = None
     bigtiff = False
     _loaded = False
 
@@ -3892,7 +3906,7 @@ class Exif(_ExifBase):
             head += b"\x00\x00\x00\x00"
         return head
 
-    def load(self, data):
+    def load(self, data: bytes) -> None:
         # Extract EXIF information.  This is highly experimental,
         # and is likely to be replaced with something better in a future
         # version.
@@ -3911,7 +3925,7 @@ class Exif(_ExifBase):
             self._info = None
             return
 
-        self.fp = io.BytesIO(data)
+        self.fp: IO[bytes] = io.BytesIO(data)
         self.head = self.fp.read(8)
         # process dictionary
         from . import TiffImagePlugin
@@ -3921,7 +3935,7 @@ class Exif(_ExifBase):
         self.fp.seek(self._info.next)
         self._info.load(self.fp)
 
-    def load_from_fp(self, fp, offset=None):
+    def load_from_fp(self, fp: IO[bytes], offset: int | None = None) -> None:
         self._loaded_exif = None
         self._data.clear()
         self._hidden_data.clear()
