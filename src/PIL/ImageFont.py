@@ -756,7 +756,7 @@ def load(filename: str) -> ImageFont:
 
 
 def truetype(
-    font: StrOrBytesPath | BinaryIO | None = None,
+    font: StrOrBytesPath | BinaryIO,
     size: float = 10,
     index: int = 0,
     encoding: str = "",
@@ -827,7 +827,7 @@ def truetype(
     :exception ValueError: If the font size is not greater than zero.
     """
 
-    def freetype(font: StrOrBytesPath | BinaryIO | None) -> FreeTypeFont:
+    def freetype(font: StrOrBytesPath | BinaryIO) -> FreeTypeFont:
         return FreeTypeFont(font, size, index, encoding, layout_engine)
 
     try:
