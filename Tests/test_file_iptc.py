@@ -57,6 +57,7 @@ def test_getiptcinfo_fotostation() -> None:
         iptc = IptcImagePlugin.getiptcinfo(im)
 
     # Assert
+    assert iptc is not None
     for tag in iptc.keys():
         if tag[0] == 240:
             return
