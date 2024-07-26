@@ -468,40 +468,40 @@ def _getencoder(
 
 
 class _E:
-    def __init__(self, scale, offset) -> None:
+    def __init__(self, scale: float, offset: float) -> None:
         self.scale = scale
         self.offset = offset
 
     def __neg__(self) -> _E:
         return _E(-self.scale, -self.offset)
 
-    def __add__(self, other) -> _E:
+    def __add__(self, other: _E | float) -> _E:
         if isinstance(other, _E):
             return _E(self.scale + other.scale, self.offset + other.offset)
         return _E(self.scale, self.offset + other)
 
     __radd__ = __add__
 
-    def __sub__(self, other):
+    def __sub__(self, other: _E | float) -> _E:
         return self + -other
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: _E | float) -> _E:
         return other + -self
 
-    def __mul__(self, other) -> _E:
+    def __mul__(self, other: _E | float) -> _E:
         if isinstance(other, _E):
             return NotImplemented
         return _E(self.scale * other, self.offset * other)
 
     __rmul__ = __mul__
 
-    def __truediv__(self, other) -> _E:
+    def __truediv__(self, other: _E | float) -> _E:
         if isinstance(other, _E):
             return NotImplemented
         return _E(self.scale / other, self.offset / other)
 
 
-def _getscaleoffset(expr):
+def _getscaleoffset(expr) -> tuple[float, float]:
     a = expr(_E(1, 0))
     return (a.scale, a.offset) if isinstance(a, _E) else (0, a)
 

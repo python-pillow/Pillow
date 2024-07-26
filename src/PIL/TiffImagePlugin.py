@@ -584,8 +584,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self.tagtype: dict[int, int] = {}
         """ Dictionary of tag types """
         self.reset()
-        (self.next,) = (
-            self._unpack("Q", ifh[8:]) if self._bigtiff else self._unpack("L", ifh[4:])
+        self.next = (
+            self._unpack("Q", ifh[8:])[0]
+            if self._bigtiff
+            else self._unpack("L", ifh[4:])[0]
         )
         self._legacy_api = False
 
@@ -643,7 +645,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __setitem__(self, tag: int, value) -> None:
         self._setitem(tag, value, self.legacy_api)
 
-    def _setitem(self, tag, value, legacy_api) -> None:
+    def _setitem(self, tag: int, value, legacy_api: bool) -> None:
         basetypes = (Number, bytes, str)
 
         info = TiffTags.lookup(tag, self.group)
@@ -731,7 +733,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __iter__(self):
         return iter(set(self._tagdata) | set(self._tags_v2))
 
-    def _unpack(self, fmt: str, data):
+    def _unpack(self, fmt: str, data: bytes):
         return struct.unpack(self._endian + fmt, data)
 
     def _pack(self, fmt: str, *values):
@@ -755,11 +757,11 @@ class ImageFileDirectory_v2(_IFDv2Base):
     )
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
-    def load_byte(self, data, legacy_api: bool = True):
+    def load_byte(self, data: bytes, legacy_api: bool = True) -> bytes:
         return data
 
     @_register_writer(1)  # Basic type, except for the legacy API.
-    def write_byte(self, data) -> bytes:
+    def write_byte(self, data: bytes | int | IFDRational) -> bytes:
         if isinstance(data, IFDRational):
             data = int(data)
         if isinstance(data, int):
@@ -773,7 +775,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return data.decode("latin-1", "replace")
 
     @_register_writer(2)
-    def write_string(self, value) -> bytes:
+    def write_string(self, value: str | bytes | int) -> bytes:
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
         if isinstance(value, int):
             value = str(value)
@@ -782,7 +784,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return value + b"\0"
 
     @_register_loader(5, 8)
-    def load_rational(self, data, legacy_api=True):
+    def load_rational(self, data, legacy_api: bool = True):
         vals = self._unpack(f"{len(data) // 4}L", data)
 
         def combine(a, b):
@@ -797,11 +799,11 @@ class ImageFileDirectory_v2(_IFDv2Base):
         )
 
     @_register_loader(7, 1)
-    def load_undefined(self, data, legacy_api: bool = True):
+    def load_undefined(self, data: bytes, legacy_api: bool = True) -> bytes:
         return data
 
     @_register_writer(7)
-    def write_undefined(self, value) -> bytes:
+    def write_undefined(self, value: bytes | int | IFDRational) -> bytes:
         if isinstance(value, IFDRational):
             value = int(value)
         if isinstance(value, int):
@@ -809,7 +811,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return value
 
     @_register_loader(10, 8)
-    def load_signed_rational(self, data, legacy_api: bool = True):
+    def load_signed_rational(self, data: bytes, legacy_api: bool = True):
         vals = self._unpack(f"{len(data) // 4}l", data)
 
         def combine(a, b):
