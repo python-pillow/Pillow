@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import ImageQt
+from PIL import Image, ImageQt
 
 from .helper import assert_image_equal_tofile, assert_image_similar, hopper
 
@@ -37,7 +37,7 @@ if ImageQt.qt_is_installed:
             lbl.setPixmap(pixmap1.copy())
 
 
-def roundtrip(expected) -> None:
+def roundtrip(expected: Image.Image) -> None:
     result = ImageQt.fromqpixmap(ImageQt.toqpixmap(expected))
     # Qt saves all pixmaps as rgb
     assert_image_similar(result, expected.convert("RGB"), 1)
@@ -46,7 +46,7 @@ def roundtrip(expected) -> None:
 @pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
 def test_sanity(tmp_path: Path) -> None:
     # Segfault test
-    app = QApplication([])
+    app: QApplication | None = QApplication([])
     ex = Example()
     assert app  # Silence warning
     assert ex  # Silence warning

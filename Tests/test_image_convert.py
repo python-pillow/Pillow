@@ -183,6 +183,14 @@ def test_trns_RGB(tmp_path: Path) -> None:
     assert im_l.info["transparency"] == im_l.getpixel((0, 0))  # undone
     im_l.save(f)
 
+    im_la = im.convert("LA")
+    assert "transparency" not in im_la.info
+    im_la.save(f)
+
+    im_la = im.convert("La")
+    assert "transparency" not in im_la.info
+    assert im_la.getpixel((0, 0)) == (0, 0)
+
     im_p = im.convert("P")
     assert "transparency" in im_p.info
     im_p.save(f)
@@ -190,6 +198,10 @@ def test_trns_RGB(tmp_path: Path) -> None:
     im_rgba = im.convert("RGBA")
     assert "transparency" not in im_rgba.info
     im_rgba.save(f)
+
+    im_rgba = im.convert("RGBa")
+    assert "transparency" not in im_rgba.info
+    assert im_rgba.getpixel((0, 0)) == (0, 0, 0, 0)
 
     im_p = pytest.warns(UserWarning, im.convert, "P", palette=Image.Palette.ADAPTIVE)
     assert "transparency" not in im_p.info
@@ -210,8 +222,10 @@ def test_l_macro_rounding(convert_mode: str) -> None:
 
         converted_im = im.convert(convert_mode)
         px = converted_im.load()
+        assert px is not None
         converted_color = px[0, 0]
         if convert_mode == "LA":
+            assert isinstance(converted_color, tuple)
             converted_color = converted_color[0]
         assert converted_color == 1
 

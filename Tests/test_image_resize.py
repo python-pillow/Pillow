@@ -4,9 +4,9 @@ Tests for resize functionality.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from itertools import permutations
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
@@ -154,7 +154,7 @@ class TestImagingCoreResize:
 
     def test_unknown_filter(self) -> None:
         with pytest.raises(ValueError):
-            self.resize(hopper(), (10, 10), 9)
+            self.resize(hopper(), (10, 10), 9)  # type: ignore[arg-type]
 
     def test_cross_platform(self, tmp_path: Path) -> None:
         # This test is intended for only check for consistent behaviour across
@@ -285,14 +285,14 @@ class TestReducingGapResize:
 
 class TestImageResize:
     def test_resize(self) -> None:
-        def resize(mode: str, size: tuple[int, int]) -> None:
+        def resize(mode: str, size: tuple[int, int] | list[int]) -> None:
             out = hopper(mode).resize(size)
             assert out.mode == mode
-            assert out.size == size
+            assert out.size == tuple(size)
 
         for mode in "1", "P", "L", "RGB", "I", "F":
             resize(mode, (112, 103))
-            resize(mode, (188, 214))
+            resize(mode, [188, 214])
 
         # Test unknown resampling filter
         with hopper() as im:

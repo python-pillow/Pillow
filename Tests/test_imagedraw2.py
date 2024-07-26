@@ -5,6 +5,7 @@ import os.path
 import pytest
 
 from PIL import Image, ImageDraw, ImageDraw2, features
+from PIL._typing import Coords
 
 from .helper import (
     assert_image_equal,
@@ -50,13 +51,22 @@ def test_sanity() -> None:
     pen = ImageDraw2.Pen("blue", width=7)
     draw.line(list(range(10)), pen)
 
-    draw, handler = ImageDraw.getdraw(im)
+    draw2, handler = ImageDraw.getdraw(im)
+    assert draw2 is not None
     pen = ImageDraw2.Pen("blue", width=7)
-    draw.line(list(range(10)), pen)
+    draw2.line(list(range(10)), pen)
+
+
+def test_mode() -> None:
+    draw = ImageDraw2.Draw("L", (1, 1))
+    assert draw.image.mode == "L"
+
+    with pytest.raises(ValueError):
+        ImageDraw2.Draw("L")
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_ellipse(bbox) -> None:
+def test_ellipse(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -84,7 +94,7 @@ def test_ellipse_edge() -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_line(points) -> None:
+def test_line(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -98,7 +108,7 @@ def test_line(points) -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_line_pen_as_brush(points) -> None:
+def test_line_pen_as_brush(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -114,7 +124,7 @@ def test_line_pen_as_brush(points) -> None:
 
 
 @pytest.mark.parametrize("points", POINTS)
-def test_polygon(points) -> None:
+def test_polygon(points: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)
@@ -129,7 +139,7 @@ def test_polygon(points) -> None:
 
 
 @pytest.mark.parametrize("bbox", BBOX)
-def test_rectangle(bbox) -> None:
+def test_rectangle(bbox: Coords) -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw2.Draw(im)

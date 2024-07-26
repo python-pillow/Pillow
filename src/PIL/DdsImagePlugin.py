@@ -16,6 +16,7 @@ import io
 import struct
 import sys
 from enum import IntEnum, IntFlag
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i32le as i32
@@ -271,16 +272,16 @@ class D3DFMT(IntEnum):
 module = sys.modules[__name__]
 for item in DDSD:
     assert item.name is not None
-    setattr(module, "DDSD_" + item.name, item.value)
+    setattr(module, f"DDSD_{item.name}", item.value)
 for item1 in DDSCAPS:
     assert item1.name is not None
-    setattr(module, "DDSCAPS_" + item1.name, item1.value)
+    setattr(module, f"DDSCAPS_{item1.name}", item1.value)
 for item2 in DDSCAPS2:
     assert item2.name is not None
-    setattr(module, "DDSCAPS2_" + item2.name, item2.value)
+    setattr(module, f"DDSCAPS2_{item2.name}", item2.value)
 for item3 in DDPF:
     assert item3.name is not None
-    setattr(module, "DDPF_" + item3.name, item3.value)
+    setattr(module, f"DDPF_{item3.name}", item3.value)
 
 DDS_FOURCC = DDPF.FOURCC
 DDS_RGB = DDPF.RGB
@@ -331,7 +332,7 @@ class DdsImageFile(ImageFile.ImageFile):
     format = "DDS"
     format_description = "DirectDraw Surface"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(4)):
             msg = "not a DDS file"
             raise SyntaxError(msg)
@@ -379,6 +380,7 @@ class DdsImageFile(ImageFile.ImageFile):
         elif pfflags & DDPF.PALETTEINDEXED8:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
+            self.palette.mode = "RGBA"
         elif pfflags & DDPF.FOURCC:
             offset = header_size + 4
             if fourcc == D3DFMT.DXT1:
@@ -472,14 +474,15 @@ class DdsImageFile(ImageFile.ImageFile):
         else:
             self.tile = [ImageFile._Tile("raw", extents, 0, rawmode or self.mode)]
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
 
 class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes) -> tuple[int, int]:
+        assert self.fd is not None
         bitcount, masks = self.args
 
         # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
@@ -497,7 +500,8 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
 
         data = bytearray()
         bytecount = bitcount // 8
-        while len(data) < self.state.xsize * self.state.ysize * len(masks):
+        dest_length = self.state.xsize * self.state.ysize * len(masks)
+        while len(data) < dest_length:
             value = int.from_bytes(self.fd.read(bytecount), "little")
             for i, mask in enumerate(masks):
                 masked_value = value & mask
@@ -505,11 +509,11 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
                 data += o8(
                     int(((masked_value >> mask_offsets[i]) / mask_totals[i]) * 255)
                 )
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
         return -1, 0
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)
@@ -561,7 +565,7 @@ def _save(im, fp, filename):
     )
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"DDS "
 
 

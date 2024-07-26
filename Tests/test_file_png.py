@@ -6,7 +6,8 @@ import warnings
 import zlib
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from types import ModuleType
+from typing import Any, cast
 
 import pytest
 
@@ -23,6 +24,7 @@ from .helper import (
     skip_unless_feature,
 )
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:
@@ -39,7 +41,7 @@ MAGIC = PngImagePlugin._MAGIC
 
 def chunk(cid: bytes, *data: bytes) -> bytes:
     test_file = BytesIO()
-    PngImagePlugin.putchunk(*(test_file, cid) + data)
+    PngImagePlugin.putchunk(test_file, cid, *data)
     return test_file.getvalue()
 
 
@@ -57,11 +59,11 @@ def load(data: bytes) -> Image.Image:
     return Image.open(BytesIO(data))
 
 
-def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
+def roundtrip(im: Image.Image, **options: Any) -> PngImagePlugin.PngImageFile:
     out = BytesIO()
     im.save(out, "PNG", **options)
     out.seek(0)
-    return Image.open(out)
+    return cast(PngImagePlugin.PngImageFile, Image.open(out))
 
 
 @skip_unless_feature("zlib")
@@ -83,7 +85,9 @@ class TestFilePng:
 
     def test_sanity(self, tmp_path: Path) -> None:
         # internal version number
-        assert re.search(r"\d+(\.\d+){1,3}$", features.version_codec("zlib"))
+        version = features.version_codec("zlib")
+        assert version is not None
+        assert re.search(r"\d+(\.\d+){1,3}(\.zlib\-ng)?$", version)
 
         test_file = str(tmp_path / "temp.png")
 
@@ -100,7 +104,7 @@ class TestFilePng:
             im = hopper(mode)
             im.save(test_file)
             with Image.open(test_file) as reloaded:
-                if mode in ("I;16", "I;16B"):
+                if mode in ("I", "I;16B"):
                     reloaded = reloaded.convert(mode)
                 assert_image_equal(reloaded, im)
 
@@ -302,8 +306,8 @@ class TestFilePng:
         assert im.getcolors() == [(100, (0, 0, 0, 0))]
 
     def test_save_grayscale_transparency(self, tmp_path: Path) -> None:
-        for mode, num_transparent in {"1": 1994, "L": 559, "I": 559}.items():
-            in_file = "Tests/images/" + mode.lower() + "_trns.png"
+        for mode, num_transparent in {"1": 1994, "L": 559, "I;16": 559}.items():
+            in_file = "Tests/images/" + mode.split(";")[0].lower() + "_trns.png"
             with Image.open(in_file) as im:
                 assert im.mode == mode
                 assert im.info["transparency"] == 255
@@ -531,8 +535,10 @@ class TestFilePng:
 
     def test_repr_png(self) -> None:
         im = hopper()
+        b = im._repr_png_()
+        assert b is not None
 
-        with Image.open(BytesIO(im._repr_png_())) as repr_png:
+        with Image.open(BytesIO(b)) as repr_png:
             assert repr_png.format == "PNG"
             assert_image_equal(im, repr_png)
 
@@ -617,6 +623,10 @@ class TestFilePng:
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
+    def test_unknown_compression_method(self) -> None:
+        with pytest.raises(SyntaxError, match="Unknown compression method"):
+            PngImagePlugin.PngImageFile("Tests/images/unknown_compression_method.png")
+
     def test_padded_idat(self) -> None:
         # This image has been manually hexedited
         # so that the IDAT chunk has padding at the end
@@ -647,11 +657,12 @@ class TestFilePng:
             png.call(cid, 0, 0)
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
-    def test_specify_bits(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize("save_all", (True, False))
+    def test_specify_bits(self, save_all: bool, tmp_path: Path) -> None:
         im = hopper("P")
 
         out = str(tmp_path / "temp.png")
-        im.save(out, bits=4)
+        im.save(out, bits=4, save_all=save_all)
 
         with Image.open(out) as reloaded:
             assert len(reloaded.png.im_palette[1]) == 48
@@ -675,6 +686,7 @@ class TestFilePng:
                 ):
                     assert im.getxmp() == {}
             else:
+                assert "xmp" in im.info
                 xmp = im.getxmp()
 
                 description = xmp["xmpmeta"]["RDF"]["Description"]
@@ -759,14 +771,10 @@ class TestFilePng:
     def test_save_stdout(self, buffer: bool) -> None:
         old_stdout = sys.stdout
 
-        if buffer:
+        class MyStdOut:
+            buffer = BytesIO()
 
-            class MyStdOut:
-                buffer = BytesIO()
-
-            mystdout = MyStdOut()
-        else:
-            mystdout = BytesIO()
+        mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
         sys.stdout = mystdout
 
@@ -776,10 +784,22 @@ class TestFilePng:
         # Reset stdout
         sys.stdout = old_stdout
 
-        if buffer:
+        if isinstance(mystdout, MyStdOut):
             mystdout = mystdout.buffer
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
+
+    def test_truncated_end_chunk(self) -> None:
+        with Image.open("Tests/images/truncated_end_chunk.png") as im:
+            with pytest.raises(OSError):
+                im.load()
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        try:
+            with Image.open("Tests/images/truncated_end_chunk.png") as im:
+                assert_image_equal_tofile(im, "Tests/images/hopper.png")
+        finally:
+            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")

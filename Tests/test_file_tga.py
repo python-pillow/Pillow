@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
@@ -22,8 +22,8 @@ _ORIGIN_TO_ORIENTATION = {"tl": 1, "bl": -1}
 
 
 @pytest.mark.parametrize("mode", _MODES)
-def test_sanity(mode, tmp_path: Path) -> None:
-    def roundtrip(original_im) -> None:
+def test_sanity(mode: str, tmp_path: Path) -> None:
+    def roundtrip(original_im: Image.Image) -> None:
         out = str(tmp_path / "temp.tga")
 
         original_im.save(out, rle=rle)
@@ -65,14 +65,28 @@ def test_sanity(mode, tmp_path: Path) -> None:
                     roundtrip(original_im)
 
 
+def test_palette_depth_8(tmp_path: Path) -> None:
+    with pytest.raises(UnidentifiedImageError):
+        Image.open("Tests/images/p_8.tga")
+
+
 def test_palette_depth_16(tmp_path: Path) -> None:
     with Image.open("Tests/images/p_16.tga") as im:
-        assert_image_equal_tofile(im.convert("RGB"), "Tests/images/p_16.png")
+        assert im.palette.mode == "RGBA"
+        assert_image_equal_tofile(im.convert("RGBA"), "Tests/images/p_16.png")
 
         out = str(tmp_path / "temp.png")
         im.save(out)
         with Image.open(out) as reloaded:
-            assert_image_equal_tofile(reloaded.convert("RGB"), "Tests/images/p_16.png")
+            assert_image_equal_tofile(reloaded.convert("RGBA"), "Tests/images/p_16.png")
+
+
+def test_rgba_16() -> None:
+    with Image.open("Tests/images/rgba16.tga") as im:
+        assert im.mode == "RGBA"
+
+        assert im.getpixel((0, 0)) == (172, 0, 255, 255)
+        assert im.getpixel((1, 0)) == (0, 255, 82, 0)
 
 
 def test_id_field() -> None:
@@ -131,6 +145,11 @@ def test_small_palette(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         assert reloaded.getpalette() == colors
+
+
+def test_missing_palette() -> None:
+    with Image.open("Tests/images/dilation4.lut") as im:
+        assert im.mode == "L"
 
 
 def test_save_wrong_mode(tmp_path: Path) -> None:

@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from PIL import Image
+from PIL import Image, ImageFile, MpoImagePlugin
 
 from .helper import (
     assert_image_equal,
@@ -20,14 +20,11 @@ test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 pytestmark = skip_unless_feature("jpg")
 
 
-def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
+def roundtrip(im: Image.Image, **options: Any) -> ImageFile.ImageFile:
     out = BytesIO()
     im.save(out, "MPO", **options)
-    test_bytes = out.tell()
     out.seek(0)
-    im = Image.open(out)
-    im.bytes = test_bytes  # for testing only
-    return im
+    return Image.open(out)
 
 
 @pytest.mark.parametrize("test_file", test_files)
@@ -88,7 +85,9 @@ def test_exif(test_file: str) -> None:
         im_reloaded = roundtrip(im_original, save_all=True, exif=im_original.getexif())
 
     for im in (im_original, im_reloaded):
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         info = im._getexif()
+        assert info is not None
         assert info[272] == "Nintendo 3DS"
         assert info[296] == 2
         assert info[34665] == 188
@@ -96,7 +95,7 @@ def test_exif(test_file: str) -> None:
 
 def test_frame_size() -> None:
     # This image has been hexedited to contain a different size
-    # in the EXIF data of the second frame
+    # in the SOF marker of the second frame
     with Image.open("Tests/images/sugarshack_frame_size.mpo") as im:
         assert im.size == (640, 480)
 
@@ -229,6 +228,17 @@ def test_eoferror() -> None:
         im.seek(n_frames - 1)
 
 
+def test_adopt_jpeg() -> None:
+    with Image.open("Tests/images/hopper.jpg") as im:
+        with pytest.raises(ValueError):
+            MpoImagePlugin.MpoImageFile.adopt(im)
+
+
+def test_ultra_hdr() -> None:
+    with Image.open("Tests/images/ultrahdr.jpg") as im:
+        assert im.format == "JPEG"
+
+
 @pytest.mark.parametrize("test_file", test_files)
 def test_image_grab(test_file: str) -> None:
     with Image.open(test_file) as im:
@@ -273,6 +283,8 @@ def test_save_all() -> None:
     im_reloaded = roundtrip(im, save_all=True, append_images=[im2])
 
     assert_image_equal(im, im_reloaded)
+    assert isinstance(im_reloaded, MpoImagePlugin.MpoImageFile)
+    assert im_reloaded.mpinfo is not None
     assert im_reloaded.mpinfo[45056] == b"0100"
 
     im_reloaded.seek(1)

@@ -23,19 +23,20 @@ import operator
 import sys
 from enum import IntEnum, IntFlag
 from functools import reduce
-from typing import Any
+from typing import Any, Literal, SupportsFloat, SupportsInt, Union
 
-from . import Image
+from . import Image, __version__
 from ._deprecate import deprecate
+from ._typing import SupportsRead
 
 try:
-    from . import _imagingcms
+    from . import _imagingcms as core
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
     from ._util import DeferredError
 
-    _imagingcms = DeferredError.new(ex)
+    core = DeferredError.new(ex)
 
 _DESCRIPTION = """
 pyCMS
@@ -119,7 +120,6 @@ def __getattr__(name: str) -> Any:
 
 # --------------------------------------------------------------------.
 
-core = _imagingcms
 
 #
 # intent/direction values
@@ -237,7 +237,7 @@ _FLAGS = {
 
 
 class ImageCmsProfile:
-    def __init__(self, profile):
+    def __init__(self, profile: str | SupportsRead[bytes] | core.CmsProfile) -> None:
         """
         :param profile: Either a string representing a filename,
             a file like object containing a profile or a
@@ -257,19 +257,19 @@ class ImageCmsProfile:
             self._set(core.profile_open(profile), profile)
         elif hasattr(profile, "read"):
             self._set(core.profile_frombytes(profile.read()))
-        elif isinstance(profile, _imagingcms.CmsProfile):
+        elif isinstance(profile, core.CmsProfile):
             self._set(profile)
         else:
-            msg = "Invalid type for Profile"
+            msg = "Invalid type for Profile"  # type: ignore[unreachable]
             raise TypeError(msg)
 
-    def _set(self, profile, filename=None):
+    def _set(self, profile: core.CmsProfile, filename: str | None = None) -> None:
         self.profile = profile
         self.filename = filename
         self.product_name = None  # profile.product_name
         self.product_info = None  # profile.product_info
 
-    def tobytes(self):
+    def tobytes(self) -> bytes:
         """
         Returns the profile in a format suitable for embedding in
         saved images.
@@ -290,15 +290,40 @@ class ImageCmsTransform(Image.ImagePointHandler):
 
     def __init__(
         self,
-        input,
-        output,
-        input_mode,
-        output_mode,
-        intent=Intent.PERCEPTUAL,
-        proof=None,
-        proof_intent=Intent.ABSOLUTE_COLORIMETRIC,
-        flags=Flags.NONE,
+        input: ImageCmsProfile,
+        output: ImageCmsProfile,
+        input_mode: str,
+        output_mode: str,
+        intent: Intent = Intent.PERCEPTUAL,
+        proof: ImageCmsProfile | None = None,
+        proof_intent: Intent = Intent.ABSOLUTE_COLORIMETRIC,
+        flags: Flags = Flags.NONE,
     ):
+        supported_modes = (
+            "RGB",
+            "RGBA",
+            "RGBX",
+            "CMYK",
+            "I;16",
+            "I;16L",
+            "I;16B",
+            "YCbCr",
+            "LAB",
+            "L",
+            "1",
+        )
+        for mode in (input_mode, output_mode):
+            if mode not in supported_modes:
+                deprecate(
+                    mode,
+                    12,
+                    {
+                        "L;16": "I;16 or I;16L",
+                        "L:16B": "I;16B",
+                        "YCCA": "YCbCr",
+                        "YCC": "YCbCr",
+                    }.get(mode),
+                )
         if proof is None:
             self.transform = core.buildTransform(
                 input.profile, output.profile, input_mode, output_mode, intent, flags
@@ -320,10 +345,10 @@ class ImageCmsTransform(Image.ImagePointHandler):
 
         self.output_profile = output
 
-    def point(self, im):
+    def point(self, im: Image.Image) -> Image.Image:
         return self.apply(im)
 
-    def apply(self, im, imOut=None):
+    def apply(self, im: Image.Image, imOut: Image.Image | None = None) -> Image.Image:
         im.load()
         if imOut is None:
             imOut = Image.new(self.output_mode, im.size, None)
@@ -331,7 +356,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         imOut.info["icc_profile"] = self.output_profile.tobytes()
         return imOut
 
-    def apply_in_place(self, im):
+    def apply_in_place(self, im: Image.Image) -> Image.Image:
         im.load()
         if im.mode != self.output_mode:
             msg = "mode mismatch"
@@ -341,7 +366,7 @@ class ImageCmsTransform(Image.ImagePointHandler):
         return im
 
 
-def get_display_profile(handle=None):
+def get_display_profile(handle: SupportsInt | None = None) -> ImageCmsProfile | None:
     """
     (experimental) Fetches the profile for the current display device.
 
@@ -351,12 +376,12 @@ def get_display_profile(handle=None):
     if sys.platform != "win32":
         return None
 
-    from . import ImageWin
+    from . import ImageWin  # type: ignore[unused-ignore, unreachable]
 
     if isinstance(handle, ImageWin.HDC):
-        profile = core.get_display_profile_win32(handle, 1)
+        profile = core.get_display_profile_win32(int(handle), 1)
     else:
-        profile = core.get_display_profile_win32(handle or 0)
+        profile = core.get_display_profile_win32(int(handle or 0))
     if profile is None:
         return None
     return ImageCmsProfile(profile)
@@ -365,6 +390,10 @@ def get_display_profile(handle=None):
 # --------------------------------------------------------------------.
 # pyCMS compatible layer
 # --------------------------------------------------------------------.
+
+_CmsProfileCompatible = Union[
+    str, SupportsRead[bytes], core.CmsProfile, ImageCmsProfile
+]
 
 
 class PyCMSError(Exception):
@@ -375,14 +404,14 @@ class PyCMSError(Exception):
 
 
 def profileToProfile(
-    im,
-    inputProfile,
-    outputProfile,
-    renderingIntent=Intent.PERCEPTUAL,
-    outputMode=None,
-    inPlace=False,
-    flags=Flags.NONE,
-):
+    im: Image.Image,
+    inputProfile: _CmsProfileCompatible,
+    outputProfile: _CmsProfileCompatible,
+    renderingIntent: Intent = Intent.PERCEPTUAL,
+    outputMode: str | None = None,
+    inPlace: bool = False,
+    flags: Flags = Flags.NONE,
+) -> Image.Image | None:
     """
     (pyCMS) Applies an ICC transformation to a given image, mapping from
     ``inputProfile`` to ``outputProfile``.
@@ -470,7 +499,9 @@ def profileToProfile(
     return imOut
 
 
-def getOpenProfile(profileFilename):
+def getOpenProfile(
+    profileFilename: str | SupportsRead[bytes] | core.CmsProfile,
+) -> ImageCmsProfile:
     """
     (pyCMS) Opens an ICC profile file.
 
@@ -493,13 +524,13 @@ def getOpenProfile(profileFilename):
 
 
 def buildTransform(
-    inputProfile,
-    outputProfile,
-    inMode,
-    outMode,
-    renderingIntent=Intent.PERCEPTUAL,
-    flags=Flags.NONE,
-):
+    inputProfile: _CmsProfileCompatible,
+    outputProfile: _CmsProfileCompatible,
+    inMode: str,
+    outMode: str,
+    renderingIntent: Intent = Intent.PERCEPTUAL,
+    flags: Flags = Flags.NONE,
+) -> ImageCmsTransform:
     """
     (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
     ``outputProfile``. Use applyTransform to apply the transform to a given
@@ -576,15 +607,15 @@ def buildTransform(
 
 
 def buildProofTransform(
-    inputProfile,
-    outputProfile,
-    proofProfile,
-    inMode,
-    outMode,
-    renderingIntent=Intent.PERCEPTUAL,
-    proofRenderingIntent=Intent.ABSOLUTE_COLORIMETRIC,
-    flags=Flags.SOFTPROOFING,
-):
+    inputProfile: _CmsProfileCompatible,
+    outputProfile: _CmsProfileCompatible,
+    proofProfile: _CmsProfileCompatible,
+    inMode: str,
+    outMode: str,
+    renderingIntent: Intent = Intent.PERCEPTUAL,
+    proofRenderingIntent: Intent = Intent.ABSOLUTE_COLORIMETRIC,
+    flags: Flags = Flags.SOFTPROOFING,
+) -> ImageCmsTransform:
     """
     (pyCMS) Builds an ICC transform mapping from the ``inputProfile`` to the
     ``outputProfile``, but tries to simulate the result that would be
@@ -692,16 +723,18 @@ buildTransformFromOpenProfiles = buildTransform
 buildProofTransformFromOpenProfiles = buildProofTransform
 
 
-def applyTransform(im, transform, inPlace=False):
+def applyTransform(
+    im: Image.Image, transform: ImageCmsTransform, inPlace: bool = False
+) -> Image.Image | None:
     """
     (pyCMS) Applies a transform to a given image.
 
-    If ``im.mode != transform.inMode``, a :exc:`PyCMSError` is raised.
+    If ``im.mode != transform.input_mode``, a :exc:`PyCMSError` is raised.
 
-    If ``inPlace`` is ``True`` and ``transform.inMode != transform.outMode``, a
+    If ``inPlace`` is ``True`` and ``transform.input_mode != transform.output_mode``, a
     :exc:`PyCMSError` is raised.
 
-    If ``im.mode``, ``transform.inMode`` or ``transform.outMode`` is not
+    If ``im.mode``, ``transform.input_mode`` or ``transform.output_mode`` is not
     supported by pyCMSdll or the profiles you used for the transform, a
     :exc:`PyCMSError` is raised.
 
@@ -715,13 +748,13 @@ def applyTransform(im, transform, inPlace=False):
 
     If you want to modify im in-place instead of receiving a new image as
     the return value, set ``inPlace`` to ``True``.  This can only be done if
-    ``transform.inMode`` and ``transform.outMode`` are the same, because we can't
-    change the mode in-place (the buffer sizes for some modes are
+    ``transform.input_mode`` and ``transform.output_mode`` are the same, because we
+    can't change the mode in-place (the buffer sizes for some modes are
     different).  The default behavior is to return a new :py:class:`~PIL.Image.Image`
-    object of the same dimensions in mode ``transform.outMode``.
+    object of the same dimensions in mode ``transform.output_mode``.
 
-    :param im: An :py:class:`~PIL.Image.Image` object, and im.mode must be the same
-        as the ``inMode`` supported by the transform.
+    :param im: An :py:class:`~PIL.Image.Image` object, and ``im.mode`` must be the same
+        as the ``input_mode`` supported by the transform.
     :param transform: A valid CmsTransform class object
     :param inPlace: Bool.  If ``True``, ``im`` is modified in place and ``None`` is
         returned, if ``False``, a new :py:class:`~PIL.Image.Image` object with the
@@ -745,7 +778,9 @@ def applyTransform(im, transform, inPlace=False):
     return imOut
 
 
-def createProfile(colorSpace, colorTemp=-1):
+def createProfile(
+    colorSpace: Literal["LAB", "XYZ", "sRGB"], colorTemp: SupportsFloat = 0
+) -> core.CmsProfile:
     """
     (pyCMS) Creates a profile.
 
@@ -767,7 +802,7 @@ def createProfile(colorSpace, colorTemp=-1):
     :param colorSpace: String, the color space of the profile you wish to
         create.
         Currently only "LAB", "XYZ", and "sRGB" are supported.
-    :param colorTemp: Positive integer for the white point for the profile, in
+    :param colorTemp: Positive number for the white point for the profile, in
         degrees Kelvin (i.e. 5000, 6500, 9600, etc.).  The default is for D50
         illuminant if omitted (5000k).  colorTemp is ONLY applied to LAB
         profiles, and is ignored for XYZ and sRGB.
@@ -794,7 +829,7 @@ def createProfile(colorSpace, colorTemp=-1):
         raise PyCMSError(v) from v
 
 
-def getProfileName(profile):
+def getProfileName(profile: _CmsProfileCompatible) -> str:
     """
 
     (pyCMS) Gets the internal product name for the given profile.
@@ -828,15 +863,15 @@ def getProfileName(profile):
 
         if not (model or manufacturer):
             return (profile.profile.profile_description or "") + "\n"
-        if not manufacturer or len(model) > 30:
-            return model + "\n"
+        if not manufacturer or (model and len(model) > 30):
+            return f"{model}\n"
         return f"{model} - {manufacturer}\n"
 
     except (AttributeError, OSError, TypeError, ValueError) as v:
         raise PyCMSError(v) from v
 
 
-def getProfileInfo(profile):
+def getProfileInfo(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the internal product information for the given profile.
 
@@ -873,7 +908,7 @@ def getProfileInfo(profile):
         raise PyCMSError(v) from v
 
 
-def getProfileCopyright(profile):
+def getProfileCopyright(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the copyright for the given profile.
 
@@ -901,7 +936,7 @@ def getProfileCopyright(profile):
         raise PyCMSError(v) from v
 
 
-def getProfileManufacturer(profile):
+def getProfileManufacturer(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the manufacturer for the given profile.
 
@@ -929,7 +964,7 @@ def getProfileManufacturer(profile):
         raise PyCMSError(v) from v
 
 
-def getProfileModel(profile):
+def getProfileModel(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the model for the given profile.
 
@@ -958,7 +993,7 @@ def getProfileModel(profile):
         raise PyCMSError(v) from v
 
 
-def getProfileDescription(profile):
+def getProfileDescription(profile: _CmsProfileCompatible) -> str:
     """
     (pyCMS) Gets the description for the given profile.
 
@@ -987,7 +1022,7 @@ def getProfileDescription(profile):
         raise PyCMSError(v) from v
 
 
-def getDefaultIntent(profile):
+def getDefaultIntent(profile: _CmsProfileCompatible) -> int:
     """
     (pyCMS) Gets the default intent name for the given profile.
 
@@ -1026,7 +1061,9 @@ def getDefaultIntent(profile):
         raise PyCMSError(v) from v
 
 
-def isIntentSupported(profile, intent, direction):
+def isIntentSupported(
+    profile: _CmsProfileCompatible, intent: Intent, direction: Direction
+) -> Literal[-1, 1]:
     """
     (pyCMS) Checks if a given intent is supported.
 
@@ -1077,7 +1114,7 @@ def isIntentSupported(profile, intent, direction):
         raise PyCMSError(v) from v
 
 
-def versions():
+def versions() -> tuple[str, str | None, str, str]:
     """
     (pyCMS) Fetches versions.
     """
@@ -1087,4 +1124,4 @@ def versions():
         12,
         '(PIL.features.version("littlecms2"), sys.version, PIL.__version__)',
     )
-    return _VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__
+    return _VERSION, core.littlecms_version, sys.version.split()[0], __version__

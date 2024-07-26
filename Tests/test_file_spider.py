@@ -9,7 +9,7 @@ import pytest
 
 from PIL import Image, ImageSequence, SpiderImagePlugin
 
-from .helper import assert_image_equal_tofile, hopper, is_pypy
+from .helper import assert_image_equal, hopper, is_pypy
 
 TEST_FILE = "Tests/images/hopper.spider"
 
@@ -105,6 +105,7 @@ def test_load_image_series() -> None:
     img_list = SpiderImagePlugin.loadImageSeries(file_list)
 
     # Assert
+    assert img_list is not None
     assert len(img_list) == 1
     assert isinstance(img_list[0], Image.Image)
     assert img_list[0].size == (128, 128)
@@ -160,4 +161,5 @@ def test_odd_size() -> None:
     im.save(data, format="SPIDER")
 
     data.seek(0)
-    assert_image_equal_tofile(im, data)
+    with Image.open(data) as im2:
+        assert_image_equal(im, im2)

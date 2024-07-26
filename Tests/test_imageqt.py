@@ -28,7 +28,7 @@ def test_rgb() -> None:
 
     assert qRgb(0, 0, 0) == qRgba(0, 0, 0, 255)
 
-    def checkrgb(r, g, b) -> None:
+    def checkrgb(r: int, g: int, b: int) -> None:
         val = ImageQt.rgb(r, g, b)
         val = val % 2**24  # drop the alpha
         assert val >> 16 == r
@@ -41,18 +41,13 @@ def test_rgb() -> None:
     checkrgb(0, 0, 255)
 
 
-def test_image() -> None:
-    modes = ["1", "RGB", "RGBA", "L", "P"]
-    qt_format = ImageQt.QImage.Format if ImageQt.qt_version == "6" else ImageQt.QImage
-    if hasattr(qt_format, "Format_Grayscale16"):  # Qt 5.13+
-        modes.append("I;16")
-
-    for mode in modes:
-        im = hopper(mode)
-        roundtripped_im = ImageQt.fromqimage(ImageQt.ImageQt(im))
-        if mode not in ("RGB", "RGBA"):
-            im = im.convert("RGB")
-        assert_image_similar(roundtripped_im, im, 1)
+@pytest.mark.parametrize("mode", ("1", "RGB", "RGBA", "L", "P", "I;16"))
+def test_image(mode: str) -> None:
+    im = hopper(mode)
+    roundtripped_im = ImageQt.fromqimage(ImageQt.ImageQt(im))
+    if mode not in ("RGB", "RGBA"):
+        im = im.convert("RGB")
+    assert_image_similar(roundtripped_im, im, 1)
 
 
 def test_closed_file() -> None:

@@ -40,17 +40,17 @@ test_card.load()
 def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
     out = BytesIO()
     im.save(out, "JPEG2000", **options)
-    test_bytes = out.tell()
     out.seek(0)
     with Image.open(out) as im:
-        im.bytes = test_bytes  # for testing only
         im.load()
     return im
 
 
 def test_sanity() -> None:
     # Internal version number
-    assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("jpg_2000"))
+    version = features.version_codec("jpg_2000")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
@@ -77,7 +77,9 @@ def test_invalid_file() -> None:
 def test_bytesio() -> None:
     with open("Tests/images/test-card-lossless.jp2", "rb") as f:
         data = BytesIO(f.read())
-    assert_image_similar_tofile(test_card, data, 1.0e-3)
+    with Image.open(data) as im:
+        im.load()
+        assert_image_similar(im, test_card, 1.0e-3)
 
 
 # These two test pre-written JPEG 2000 files that were not written with
@@ -289,6 +291,16 @@ def test_rgba(ext: str) -> None:
         assert im.mode == "RGBA"
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@skip_unless_feature_version("jpg_2000", "2.5.1")
+def test_cmyk() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue205.jp2") as im:
+        assert im.mode == "CMYK"
+        assert im.getpixel((0, 0)) == (185, 134, 0, 0)
+
+
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
 def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
@@ -323,9 +335,15 @@ def test_issue_6194() -> None:
         assert im.getpixel((5, 5)) == 31
 
 
+def test_unknown_j2k_mode() -> None:
+    with pytest.raises(UnidentifiedImageError):
+        with Image.open("Tests/images/unknown_mode.j2k"):
+            pass
+
+
 def test_unbound_local() -> None:
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
-    with pytest.raises(OSError):
+    with pytest.raises(UnidentifiedImageError):
         with Image.open("Tests/images/unbound_variable.jp2"):
             pass
 
@@ -340,6 +358,7 @@ def test_parser_feed() -> None:
     p.feed(data)
 
     # Assert
+    assert p.image is not None
     assert p.image.size == (640, 480)
 
 
@@ -361,6 +380,16 @@ def test_subsampling_decode(name: str) -> None:
                 width, height = width * 2, height * 2
             expected = im2.resize((width, height), Image.Resampling.NEAREST)
         assert_image_similar(im, expected, epsilon)
+
+
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+def test_pclr() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue104_jpxstream.jp2") as im:
+        assert im.mode == "P"
+        assert len(im.palette.colors) == 256
+        assert im.palette.colors[(255, 255, 255)] == 0
 
 
 def test_comment() -> None:
@@ -435,3 +464,9 @@ def test_plt_marker() -> None:
         hdr = out.read(2)
         length = _binary.i16be(hdr)
         out.seek(length - 2, os.SEEK_CUR)
+
+
+def test_9bit() -> None:
+    with Image.open("Tests/images/9bit.j2k") as im:
+        assert im.mode == "I;16"
+        assert im.size == (128, 128)

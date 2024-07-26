@@ -103,7 +103,7 @@ def bdf_char(
 class BdfFontFile(FontFile.FontFile):
     """Font file plugin for the X11 BDF format."""
 
-    def __init__(self, fp: BinaryIO):
+    def __init__(self, fp: BinaryIO) -> None:
         super().__init__()
 
         s = fp.readline()

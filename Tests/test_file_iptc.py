@@ -57,6 +57,7 @@ def test_getiptcinfo_fotostation() -> None:
         iptc = IptcImagePlugin.getiptcinfo(im)
 
     # Assert
+    assert iptc is not None
     for tag in iptc.keys():
         if tag[0] == 240:
             return
@@ -98,7 +99,7 @@ def test_i() -> None:
     assert ret == 97
 
 
-def test_dump(monkeypatch) -> None:
+def test_dump(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange
     c = b"abc"
     # Temporarily redirect stdout

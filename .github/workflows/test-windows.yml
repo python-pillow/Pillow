@@ -26,13 +26,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  COVERAGE_CORE: sysmon
+
 jobs:
   build:
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.10", "pypy3.9", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy3.10", "pypy3.9", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     timeout-minutes: 30
 
@@ -66,8 +69,16 @@ jobs:
     - name: Print build system information
       run: python3 .github/workflows/system-info.py
 
-    - name: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml olefile pyroma
-      run: python3 -m pip install pytest pytest-cov pytest-timeout defusedxml olefile pyroma
+    - name: Install Python dependencies
+      run: >
+        python3 -m pip install
+        coverage>=7.4.2
+        defusedxml
+        olefile
+        pyroma
+        pytest
+        pytest-cov
+        pytest-timeout
 
     - name: Install dependencies
       id: install
@@ -75,7 +86,7 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        choco install ghostscript --version=10.0.0.20230317 --no-progress
+        choco install ghostscript --version=10.3.1 --no-progress
         echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
@@ -202,11 +213,12 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3.1.5
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: GHA_Windows
         name: ${{ runner.os }} Python ${{ matrix.python-version }}
+        token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:

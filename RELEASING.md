@@ -20,8 +20,10 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
   git tag 5.2.0
   git push --tags
   ```
-* [ ] Create and upload all [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
-* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases)
+* [ ] Check the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
+  has passed, including the "Upload release to PyPI" job. This will have been triggered
+  by the new tag.
+* [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases).
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/),
       increment and append `.dev0` to version identifier in `src/PIL/_version.py` and then:
   ```bash
@@ -50,7 +52,9 @@ Released as needed for security, installation or critical bug fixes.
   ```bash
   make sdist
   ```
-* [ ] Create and upload all [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
+* [ ] Check the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
+  has passed, including the "Upload release to PyPI" job. This will have been triggered
+  by the new tag.
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases) and then:
   ```bash
   git push
@@ -72,21 +76,17 @@ Released as needed privately to individual vendors for critical security-related
   git tag 2.5.3
   git push origin --tags
   ```
-* [ ] Create and upload all [source and binary distributions](https://github.com/python-pillow/Pillow/blob/main/RELEASING.md#source-and-binary-distributions)
+* [ ] Check the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
+  has passed, including the "Upload release to PyPI" job. This will have been triggered
+  by the new tag.
 * [ ] Publish the [release on GitHub](https://github.com/python-pillow/Pillow/releases) and then:
   ```bash
   git push origin 2.5.x
   ```
 
-## Source and Binary Distributions
-
-* [ ] Check the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml)
-  has passed, including the "Upload release to PyPI" job. This will have been triggered
-  by the new tag.
-
 ## Publicize Release
 
-* [ ] Announce release availability via [Twitter](https://twitter.com/pythonpillow) and [Mastodon](https://fosstodon.org/@pillow) e.g. https://twitter.com/PythonPillow/status/1013789184354603010
+* [ ] Announce release availability via [Mastodon](https://fosstodon.org/@pillow) e.g. https://fosstodon.org/@pillow/110639450470725321
 
 ## Documentation
 

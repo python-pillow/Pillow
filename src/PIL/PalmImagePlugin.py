@@ -8,6 +8,8 @@
 ##
 from __future__ import annotations
 
+from typing import IO
+
 from . import Image, ImageFile
 from ._binary import o8
 from ._binary import o16be as o16b
@@ -82,10 +84,10 @@ _Palm8BitColormapValues = (
 
 
 # so build a prototype image to be used for palette resampling
-def build_prototype_image():
+def build_prototype_image() -> Image.Image:
     image = Image.new("L", (1, len(_Palm8BitColormapValues)))
     image.putdata(list(range(len(_Palm8BitColormapValues))))
-    palettedata = ()
+    palettedata: tuple[int, ...] = ()
     for colormapValue in _Palm8BitColormapValues:
         palettedata += colormapValue
     palettedata += (0, 0, 0) * (256 - len(_Palm8BitColormapValues))
@@ -112,7 +114,7 @@ _COMPRESSION_TYPES = {"none": 0xFF, "rle": 0x01, "scanline": 0x00}
 # (Internal) Image save plugin for the Palm format.
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode == "P":
         # we assume this is a color Palm image with the standard colormap,
         # unless the "info" dict has a "custom-colormap" field
@@ -127,22 +129,23 @@ def _save(im, fp, filename):
             # and invert it because
             # Palm does grayscale from white (0) to black (1)
             bpp = im.encoderinfo["bpp"]
-            im = im.point(
-                lambda x, shift=8 - bpp, maxval=(1 << bpp) - 1: maxval - (x >> shift)
-            )
+            maxval = (1 << bpp) - 1
+            shift = 8 - bpp
+            im = im.point(lambda x: maxval - (x >> shift))
         elif im.info.get("bpp") in (1, 2, 4):
             # here we assume that even though the inherent mode is 8-bit grayscale,
             # only the lower bpp bits are significant.
             # We invert them to match the Palm.
             bpp = im.info["bpp"]
-            im = im.point(lambda x, maxval=(1 << bpp) - 1: maxval - (x & maxval))
+            maxval = (1 << bpp) - 1
+            im = im.point(lambda x: maxval - (x & maxval))
         else:
             msg = f"cannot write mode {im.mode} as Palm"
             raise OSError(msg)
 
         # we ignore the palette here
-        im.mode = "P"
-        rawmode = "P;" + str(bpp)
+        im._mode = "P"
+        rawmode = f"P;{bpp}"
         version = 1
 
     elif im.mode == "1":

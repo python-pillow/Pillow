@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import os
 import warnings
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -20,6 +22,7 @@ from .helper import (
     is_win32,
 )
 
+ElementTree: ModuleType | None
 try:
     from defusedxml import ElementTree
 except ImportError:
@@ -75,6 +78,7 @@ class TestFileTiff:
 
     def test_seek_after_close(self) -> None:
         im = Image.open("Tests/images/multipage.tiff")
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         im.close()
 
         with pytest.raises(ValueError):
@@ -110,10 +114,14 @@ class TestFileTiff:
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
+    def test_seek_too_large(self) -> None:
+        with pytest.raises(ValueError, match="Unable to seek to frame"):
+            Image.open("Tests/images/seek_too_large.tif")
+
     def test_set_legacy_api(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         with pytest.raises(Exception) as e:
-            ifd.legacy_api = None
+            ifd.legacy_api = False
         assert str(e.value) == "Not allowing setting of legacy api"
 
     def test_xyres_tiff(self) -> None:
@@ -156,7 +164,7 @@ class TestFileTiff:
         "resolution_unit, dpi",
         [(None, 72.8), (2, 72.8), (3, 184.912)],
     )
-    def test_load_float_dpi(self, resolution_unit, dpi) -> None:
+    def test_load_float_dpi(self, resolution_unit: int | None, dpi: float) -> None:
         with Image.open(
             "Tests/images/hopper_float_dpi_" + str(resolution_unit) + ".tif"
         ) as im:
@@ -284,7 +292,7 @@ class TestFileTiff:
             ("Tests/images/multipage.tiff", 3),
         ),
     )
-    def test_n_frames(self, path, n_frames) -> None:
+    def test_n_frames(self, path: str, n_frames: int) -> None:
         with Image.open(path) as im:
             assert im.n_frames == n_frames
             assert im.is_animated == (n_frames != 1)
@@ -402,7 +410,7 @@ class TestFileTiff:
             assert len_before == len_after + 1
 
     @pytest.mark.parametrize("legacy_api", (False, True))
-    def test_load_byte(self, legacy_api) -> None:
+    def test_load_byte(self, legacy_api: bool) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abc"
         ret = ifd.load_byte(data, legacy_api)
@@ -417,13 +425,13 @@ class TestFileTiff:
     def test_load_float(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abcdabcd"
-        ret = ifd.load_float(data, False)
+        ret = getattr(ifd, "load_float")(data, False)
         assert ret == (1.6777999408082104e22, 1.6777999408082104e22)
 
     def test_load_double(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abcdefghabcdefgh"
-        ret = ifd.load_double(data, False)
+        ret = getattr(ifd, "load_double")(data, False)
         assert ret == (8.540883223036124e194, 8.540883223036124e194)
 
     def test_ifd_tag_type(self) -> None:
@@ -431,7 +439,7 @@ class TestFileTiff:
             assert 0x8825 in im.tag_v2
 
     def test_exif(self, tmp_path: Path) -> None:
-        def check_exif(exif) -> None:
+        def check_exif(exif: Image.Exif) -> None:
             assert sorted(exif.keys()) == [
                 256,
                 257,
@@ -511,7 +519,7 @@ class TestFileTiff:
             assert im.getexif()[273] == (1408, 1907)
 
     @pytest.mark.parametrize("mode", ("1", "L"))
-    def test_photometric(self, mode, tmp_path: Path) -> None:
+    def test_photometric(self, mode: str, tmp_path: Path) -> None:
         filename = str(tmp_path / "temp.tif")
         im = hopper(mode)
         im.save(filename, tiffinfo={262: 0})
@@ -592,7 +600,7 @@ class TestFileTiff:
     def test_with_underscores(self, tmp_path: Path) -> None:
         kwargs = {"resolution_unit": "inch", "x_resolution": 72, "y_resolution": 36}
         filename = str(tmp_path / "temp.tif")
-        hopper("RGB").save(filename, **kwargs)
+        hopper("RGB").save(filename, "TIFF", **kwargs)
         with Image.open(filename) as im:
             # legacy interface
             assert im.tag[X_RESOLUTION][0][0] == 72
@@ -614,12 +622,29 @@ class TestFileTiff:
 
             assert_image_equal_tofile(im, tmpfile)
 
+    def test_iptc(self, tmp_path: Path) -> None:
+        # Do not preserve IPTC_NAA_CHUNK by default if type is LONG
+        outfile = str(tmp_path / "temp.tif")
+        with Image.open("Tests/images/hopper.tif") as im:
+            im.load()
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            ifd = TiffImagePlugin.ImageFileDirectory_v2()
+            ifd[33723] = 1
+            ifd.tagtype[33723] = 4
+            im.tag_v2 = ifd
+            im.save(outfile)
+
+        with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert 33723 not in im.tag_v2
+
     def test_rowsperstrip(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
         im = hopper()
         im.save(outfile, tiffinfo={278: 256})
 
         with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2[278] == 256
 
     def test_strip_raw(self) -> None:
@@ -660,7 +685,7 @@ class TestFileTiff:
                 assert_image_equal_tofile(reloaded, infile)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
-    def test_palette(self, mode, tmp_path: Path) -> None:
+    def test_palette(self, mode: str, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
 
         im = hopper(mode)
@@ -689,7 +714,7 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
         # Test appending using a generator
-        def im_generator(ims):
+        def im_generator(ims: list[Image.Image]) -> Generator[Image.Image, None, None]:
             yield from ims
 
         mp = BytesIO()
@@ -751,6 +776,7 @@ class TestFileTiff:
                 ):
                     assert im.getxmp() == {}
             else:
+                assert "xmp" in im.info
                 xmp = im.getxmp()
 
                 description = xmp["xmpmeta"]["RDF"]["Description"]
@@ -860,7 +886,7 @@ class TestFileTiff:
         ],
     )
     @pytest.mark.timeout(2)
-    def test_oom(self, test_file) -> None:
+    def test_oom(self, test_file: str) -> None:
         with pytest.raises(UnidentifiedImageError):
             with pytest.warns(UserWarning):
                 with Image.open(test_file):

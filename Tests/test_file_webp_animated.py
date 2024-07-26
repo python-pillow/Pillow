@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -52,8 +53,9 @@ def test_write_animation_L(tmp_path: Path) -> None:
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
             if is_big_endian():
-                webp = parse_version(features.version_module("webp"))
-                if webp < parse_version("1.2.2"):
+                version = features.version_module("webp")
+                assert version is not None
+                if parse_version(version) < parse_version("1.2.2"):
                     pytest.skip("Fails with libwebp earlier than 1.2.2")
             orig.seek(orig.n_frames - 1)
             im.seek(im.n_frames - 1)
@@ -68,7 +70,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
     are visually similar to the originals.
     """
 
-    def check(temp_file) -> None:
+    def check(temp_file: str) -> None:
         with Image.open(temp_file) as im:
             assert im.n_frames == 2
 
@@ -78,8 +80,9 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
 
             # Compare second frame to original
             if is_big_endian():
-                webp = parse_version(features.version_module("webp"))
-                if webp < parse_version("1.2.2"):
+                version = features.version_module("webp")
+                assert version is not None
+                if parse_version(version) < parse_version("1.2.2"):
                     pytest.skip("Fails with libwebp earlier than 1.2.2")
             im.seek(1)
             im.load()
@@ -94,7 +97,9 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
             check(temp_file1)
 
             # Tests appending using a generator
-            def im_generator(ims):
+            def im_generator(
+                ims: list[Image.Image],
+            ) -> Generator[Image.Image, None, None]:
                 yield from ims
 
             temp_file2 = str(tmp_path / "temp_generator.webp")
@@ -188,3 +193,21 @@ def test_seek_errors() -> None:
 
         with pytest.raises(EOFError):
             im.seek(42)
+
+
+def test_alpha_quality(tmp_path: Path) -> None:
+    with Image.open("Tests/images/transparent.png") as im:
+        first_frame = Image.new("L", im.size)
+
+        out = str(tmp_path / "temp.webp")
+        first_frame.save(out, save_all=True, append_images=[im])
+
+        out_quality = str(tmp_path / "quality.webp")
+        first_frame.save(
+            out_quality, save_all=True, append_images=[im], alpha_quality=50
+        )
+        with Image.open(out) as reloaded:
+            reloaded.seek(1)
+            with Image.open(out_quality) as reloaded_quality:
+                reloaded_quality.seek(1)
+                assert reloaded.tobytes() != reloaded_quality.tobytes()

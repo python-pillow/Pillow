@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
@@ -53,6 +53,7 @@ def test_closed_file() -> None:
 
 def test_seek_after_close() -> None:
     im = Image.open("Tests/images/iss634.gif")
+    assert isinstance(im, GifImagePlugin.GifImageFile)
     im.load()
     im.close()
 
@@ -352,7 +353,7 @@ def test_palette_434(tmp_path: Path) -> None:
 
     def roundtrip(im: Image.Image, **kwargs: bool) -> Image.Image:
         out = str(tmp_path / "temp.gif")
-        im.copy().save(out, **kwargs)
+        im.copy().save(out, "GIF", **kwargs)
         reloaded = Image.open(out)
 
         return reloaded
@@ -377,7 +378,8 @@ def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
         img = img.convert("RGB")
 
         tempfile = str(tmp_path / "temp.gif")
-        GifImagePlugin._save_netpbm(img, 0, tempfile)
+        b = BytesIO()
+        GifImagePlugin._save_netpbm(img, b, tempfile)
         with Image.open(tempfile) as reloaded:
             assert_image_similar(img, reloaded.convert("RGB"), 0)
 
@@ -388,7 +390,8 @@ def test_save_netpbm_l_mode(tmp_path: Path) -> None:
         img = img.convert("L")
 
         tempfile = str(tmp_path / "temp.gif")
-        GifImagePlugin._save_netpbm(img, 0, tempfile)
+        b = BytesIO()
+        GifImagePlugin._save_netpbm(img, b, tempfile)
         with Image.open(tempfile) as reloaded:
             assert_image_similar(img, reloaded.convert("L"), 0)
 
@@ -647,6 +650,9 @@ def test_dispose2_palette(tmp_path: Path) -> None:
             # Center remains red every frame
             assert rgb_img.getpixel((50, 50)) == circle
 
+            # Check that frame transparency wasn't added unnecessarily
+            assert getattr(img, "_frame_transparency") is None
+
 
 def test_dispose2_diff(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
@@ -732,6 +738,25 @@ def test_dispose2_background_frame(tmp_path: Path) -> None:
 
     with Image.open(out) as im:
         assert im.n_frames == 3
+
+
+def test_dispose2_previous_frame(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("P", (100, 100))
+    im.info["transparency"] = 0
+    d = ImageDraw.Draw(im)
+    d.rectangle([(0, 0), (100, 50)], 1)
+    im.putpalette((0, 0, 0, 255, 0, 0))
+
+    im2 = Image.new("P", (100, 100))
+    im2.putpalette((0, 0, 0))
+
+    im.save(out, save_all=True, append_images=[im2], disposal=[0, 2])
+
+    with Image.open(out) as im:
+        im.seek(1)
+        assert im.getpixel((0, 0)) == (0, 0, 0, 255)
 
 
 def test_transparency_in_second_frame(tmp_path: Path) -> None:
@@ -1113,6 +1138,21 @@ def test_append_images(tmp_path: Path) -> None:
         assert reread.n_frames == 10
 
 
+def test_append_different_size_image(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("RGB", (100, 100))
+    bigger_im = Image.new("RGB", (200, 200), "#f00")
+
+    im.save(out, save_all=True, append_images=[bigger_im])
+
+    with Image.open(out) as reread:
+        assert reread.size == (100, 100)
+
+        reread.seek(1)
+        assert reread.size == (100, 100)
+
+
 def test_transparent_optimize(tmp_path: Path) -> None:
     # From issue #2195, if the transparent color is incorrectly optimized out, GIF loses
     # transparency.
@@ -1215,10 +1255,11 @@ def test_palette_save_L(tmp_path: Path) -> None:
 
     im = hopper("P")
     im_l = Image.frombytes("L", im.size, im.tobytes())
-    palette = bytes(im.getpalette())
+    palette = im.getpalette()
+    assert palette is not None
 
     out = str(tmp_path / "temp.gif")
-    im_l.save(out, palette=palette)
+    im_l.save(out, palette=bytes(palette))
 
     with Image.open(out) as reloaded:
         assert_image_equal(reloaded.convert("RGB"), im.convert("RGB"))

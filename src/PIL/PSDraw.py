@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import sys
+from typing import TYPE_CHECKING
 
 from . import EpsImagePlugin
 
@@ -38,7 +39,7 @@ class PSDraw:
                 fp = sys.stdout
         self.fp = fp
 
-    def begin_document(self, id=None):
+    def begin_document(self, id: str | None = None) -> None:
         """Set up printing of a document. (Write PostScript DSC header.)"""
         # FIXME: incomplete
         self.fp.write(
@@ -52,30 +53,32 @@ class PSDraw:
         self.fp.write(EDROFF_PS)
         self.fp.write(VDI_PS)
         self.fp.write(b"%%EndProlog\n")
-        self.isofont = {}
+        self.isofont: dict[bytes, int] = {}
 
-    def end_document(self):
+    def end_document(self) -> None:
         """Ends printing. (Write PostScript DSC footer.)"""
         self.fp.write(b"%%EndDocument\nrestore showpage\n%%End\n")
         if hasattr(self.fp, "flush"):
             self.fp.flush()
 
-    def setfont(self, font, size):
+    def setfont(self, font: str, size: int) -> None:
         """
         Selects which font to use.
 
         :param font: A PostScript font name
         :param size: Size in points.
         """
-        font = bytes(font, "UTF-8")
-        if font not in self.isofont:
+        font_bytes = bytes(font, "UTF-8")
+        if font_bytes not in self.isofont:
             # reencode font
-            self.fp.write(b"/PSDraw-%s ISOLatin1Encoding /%s E\n" % (font, font))
-            self.isofont[font] = 1
+            self.fp.write(
+                b"/PSDraw-%s ISOLatin1Encoding /%s E\n" % (font_bytes, font_bytes)
+            )
+            self.isofont[font_bytes] = 1
         # rough
-        self.fp.write(b"/F0 %d /PSDraw-%s F\n" % (size, font))
+        self.fp.write(b"/F0 %d /PSDraw-%s F\n" % (size, font_bytes))
 
-    def line(self, xy0, xy1):
+    def line(self, xy0: tuple[int, int], xy1: tuple[int, int]) -> None:
         """
         Draws a line between the two points. Coordinates are given in
         PostScript point coordinates (72 points per inch, (0, 0) is the lower
@@ -83,7 +86,7 @@ class PSDraw:
         """
         self.fp.write(b"%d %d %d %d Vl\n" % (*xy0, *xy1))
 
-    def rectangle(self, box):
+    def rectangle(self, box: tuple[int, int, int, int]) -> None:
         """
         Draws a rectangle.
 
@@ -92,18 +95,22 @@ class PSDraw:
         """
         self.fp.write(b"%d %d M 0 %d %d Vr\n" % box)
 
-    def text(self, xy, text):
+    def text(self, xy: tuple[int, int], text: str) -> None:
         """
         Draws text at the given position. You must use
         :py:meth:`~PIL.PSDraw.PSDraw.setfont` before calling this method.
         """
-        text = bytes(text, "UTF-8")
-        text = b"\\(".join(text.split(b"("))
-        text = b"\\)".join(text.split(b")"))
-        xy += (text,)
-        self.fp.write(b"%d %d M (%s) S\n" % xy)
+        text_bytes = bytes(text, "UTF-8")
+        text_bytes = b"\\(".join(text_bytes.split(b"("))
+        text_bytes = b"\\)".join(text_bytes.split(b")"))
+        self.fp.write(b"%d %d M (%s) S\n" % (xy + (text_bytes,)))
 
-    def image(self, box, im, dpi=None):
+    if TYPE_CHECKING:
+        from . import Image
+
+    def image(
+        self, box: tuple[int, int, int, int], im: Image.Image, dpi: int | None = None
+    ) -> None:
         """Draw a PIL image, centered in the given box."""
         # default resolution depends on mode
         if not dpi:
@@ -131,7 +138,7 @@ class PSDraw:
             sx = x / im.size[0]
             sy = y / im.size[1]
             self.fp.write(b"%f %f scale\n" % (sx, sy))
-        EpsImagePlugin._save(im, self.fp, None, 0)
+        EpsImagePlugin._save(im, self.fp, "", 0)
         self.fp.write(b"\ngrestore\n")
 
 

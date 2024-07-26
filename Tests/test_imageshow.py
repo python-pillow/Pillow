@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+from typing import Any
+
 import pytest
 
 from PIL import Image, ImageShow
@@ -13,8 +16,11 @@ def test_sanity() -> None:
 
 
 def test_register() -> None:
-    # Test registering a viewer that is not a class
-    ImageShow.register("not a class")
+    # Test registering a viewer that is an instance
+    class TestViewer(ImageShow.Viewer):
+        pass
+
+    ImageShow.register(TestViewer())
 
     # Restore original state
     ImageShow._viewers.pop()
@@ -24,9 +30,9 @@ def test_register() -> None:
     "order",
     [-1, 0],
 )
-def test_viewer_show(order) -> None:
+def test_viewer_show(order: int) -> None:
     class TestViewer(ImageShow.Viewer):
-        def show_image(self, image, **options) -> bool:
+        def show_image(self, image: Image.Image, **options: Any) -> bool:
             self.methodCalled = True
             return True
 
@@ -48,7 +54,7 @@ def test_viewer_show(order) -> None:
     reason="Only run on CIs; hangs on Windows CIs",
 )
 @pytest.mark.parametrize("mode", ("1", "I;16", "LA", "RGB", "RGBA"))
-def test_show(mode) -> None:
+def test_show(mode: str) -> None:
     im = hopper(mode)
     assert ImageShow.show(im)
 
@@ -63,17 +69,39 @@ def test_show_without_viewers() -> None:
     ImageShow._viewers = viewers
 
 
+@pytest.mark.parametrize(
+    "viewer",
+    (
+        ImageShow.Viewer(),
+        ImageShow.WindowsViewer(),
+        ImageShow.MacViewer(),
+        ImageShow.XDGViewer(),
+        ImageShow.DisplayViewer(),
+        ImageShow.GmDisplayViewer(),
+        ImageShow.EogViewer(),
+        ImageShow.XVViewer(),
+        ImageShow.IPythonViewer(),
+    ),
+)
+def test_show_file(viewer: ImageShow.Viewer) -> None:
+    assert not os.path.exists("missing.png")
+
+    with pytest.raises(FileNotFoundError):
+        viewer.show_file("missing.png")
+
+
 def test_viewer() -> None:
     viewer = ImageShow.Viewer()
 
-    assert viewer.get_format(None) is None
+    im = Image.new("L", (1, 1))
+    assert viewer.get_format(im) is None
 
     with pytest.raises(NotImplementedError):
-        viewer.get_command(None)
+        viewer.get_command("")
 
 
 @pytest.mark.parametrize("viewer", ImageShow._viewers)
-def test_viewers(viewer) -> None:
+def test_viewers(viewer: ImageShow.Viewer) -> None:
     try:
         viewer.get_command("test.jpg")
     except NotImplementedError:

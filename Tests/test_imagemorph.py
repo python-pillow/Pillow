@@ -41,11 +41,15 @@ A = string_to_img(
 def img_to_string(im: Image.Image) -> str:
     """Turn a (small) binary image into a string representation"""
     chars = ".1"
-    width, height = im.size
-    return "\n".join(
-        "".join(chars[im.getpixel((c, r)) > 0] for c in range(width))
-        for r in range(height)
-    )
+    result = []
+    for r in range(im.height):
+        line = ""
+        for c in range(im.width):
+            value = im.getpixel((c, r))
+            assert not isinstance(value, tuple) and value is not None
+            line += chars[value > 0]
+        result.append(line)
+    return "\n".join(result)
 
 
 def img_string_normalize(im: str) -> str:
@@ -73,15 +77,16 @@ def test_lut(op: str) -> None:
 
 
 def test_no_operator_loaded() -> None:
+    im = Image.new("L", (1, 1))
     mop = ImageMorph.MorphOp()
     with pytest.raises(Exception) as e:
-        mop.apply(None)
+        mop.apply(im)
     assert str(e.value) == "No operator loaded"
     with pytest.raises(Exception) as e:
-        mop.match(None)
+        mop.match(im)
     assert str(e.value) == "No operator loaded"
     with pytest.raises(Exception) as e:
-        mop.save_lut(None)
+        mop.save_lut("")
     assert str(e.value) == "No operator loaded"
 
 

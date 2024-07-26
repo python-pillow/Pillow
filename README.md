@@ -6,9 +6,9 @@
 
 ## Python Imaging Library (Fork)
 
-Pillow is the friendly PIL fork by [Jeffrey A. Clark (Alex) and
+Pillow is the friendly PIL fork by [Jeffrey A. Clark and
 contributors](https://github.com/python-pillow/Pillow/graphs/contributors).
-PIL is the Python Imaging Library by Fredrik Lundh and Contributors.
+PIL is the Python Imaging Library by Fredrik Lundh and contributors.
 As of 2019, Pillow development is
 [supported by Tidelift](https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=readme&utm_campaign=enterprise).
 
@@ -64,7 +64,7 @@ As of 2019, Pillow development is
                 src="https://zenodo.org/badge/17549/python-pillow/Pillow.svg"></a>
             <a href="https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=badge"><img
                 alt="Tidelift"
-                src="https://tidelift.com/badges/package/pypi/Pillow?style=flat"></a>
+                src="https://tidelift.com/badges/package/pypi/pillow?style=flat"></a>
             <a href="https://pypi.org/project/pillow/"><img
                 alt="Newest PyPI version"
                 src="https://img.shields.io/pypi/v/pillow.svg"></a>
@@ -82,9 +82,6 @@ As of 2019, Pillow development is
             <a href="https://gitter.im/python-pillow/Pillow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img
                 alt="Join the chat at https://gitter.im/python-pillow/Pillow"
                 src="https://badges.gitter.im/python-pillow/Pillow.svg"></a>
-            <a href="https://twitter.com/PythonPillow"><img
-                alt="Follow on https://twitter.com/PythonPillow"
-                src="https://img.shields.io/badge/tweet-on%20Twitter-00aced.svg"></a>
             <a href="https://fosstodon.org/@pillow"><img
                 alt="Follow on https://fosstodon.org/@pillow"
                 src="https://img.shields.io/badge/publish-on%20Mastodon-595aff.svg"
@@ -104,7 +101,7 @@ The core image library is designed for fast access to data stored in a few basic
 ## More Information
 
 - [Documentation](https://pillow.readthedocs.io/)
-  - [Installation](https://pillow.readthedocs.io/en/latest/installation.html)
+  - [Installation](https://pillow.readthedocs.io/en/latest/installation/basic-installation.html)
   - [Handbook](https://pillow.readthedocs.io/en/latest/handbook/index.html)
 - [Contribute](https://github.com/python-pillow/Pillow/blob/main/.github/CONTRIBUTING.md)
   - [Issues](https://github.com/python-pillow/Pillow/issues)

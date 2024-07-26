@@ -13,8 +13,12 @@ from .helper import (
 )
 
 
-class Deformer:
-    def getmesh(self, im):
+class Deformer(ImageOps.SupportsGetMesh):
+    def getmesh(
+        self, im: Image.Image
+    ) -> list[
+        tuple[tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]]
+    ]:
         x, y = im.size
         return [((0, 0, x, y), (0, 0, x, 0, x, y, y, 0))]
 
@@ -108,7 +112,7 @@ def test_fit_same_ratio() -> None:
 
 
 @pytest.mark.parametrize("new_size", ((256, 256), (512, 256), (256, 512)))
-def test_contain(new_size) -> None:
+def test_contain(new_size: tuple[int, int]) -> None:
     im = hopper()
     new_im = ImageOps.contain(im, new_size)
     assert new_im.size == (256, 256)
@@ -132,7 +136,7 @@ def test_contain_round() -> None:
         ("hopper.png", (256, 256)),  # square
     ),
 )
-def test_cover(image_name, expected_size) -> None:
+def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
@@ -161,14 +165,18 @@ def test_pad() -> None:
 def test_pad_round() -> None:
     im = Image.new("1", (1, 1), 1)
     new_im = ImageOps.pad(im, (4, 1))
-    assert new_im.load()[2, 0] == 1
+    px = new_im.load()
+    assert px is not None
+    assert px[2, 0] == 1
 
     new_im = ImageOps.pad(im, (1, 4))
-    assert new_im.load()[0, 2] == 1
+    px = new_im.load()
+    assert px is not None
+    assert px[0, 2] == 1
 
 
 @pytest.mark.parametrize("mode", ("P", "PA"))
-def test_palette(mode) -> None:
+def test_palette(mode: str) -> None:
     im = hopper(mode)
 
     # Expand
@@ -210,7 +218,7 @@ def test_scale() -> None:
 
 
 @pytest.mark.parametrize("border", (10, (1, 2, 3, 4)))
-def test_expand_palette(border) -> None:
+def test_expand_palette(border: int | tuple[int, int, int, int]) -> None:
     with Image.open("Tests/images/p_16.tga") as im:
         im_expanded = ImageOps.expand(im, border, (255, 0, 0))
 
@@ -219,6 +227,7 @@ def test_expand_palette(border) -> None:
         else:
             left, top, right, bottom = border
         px = im_expanded.convert("RGB").load()
+        assert px is not None
         for x in range(im_expanded.width):
             for b in range(top):
                 assert px[x, b] == (255, 0, 0)
@@ -250,20 +259,26 @@ def test_colorize_2color() -> None:
     left = (0, 1)
     middle = (127, 1)
     right = (255, 1)
+    value = im_test.getpixel(left)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(left),
+        value,
         (255, 0, 0),
         threshold=1,
         msg="black test pixel incorrect",
     )
+    value = im_test.getpixel(middle)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(middle),
+        value,
         (127, 63, 0),
         threshold=1,
         msg="mid test pixel incorrect",
     )
+    value = im_test.getpixel(right)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(right),
+        value,
         (0, 127, 0),
         threshold=1,
         msg="white test pixel incorrect",
@@ -286,20 +301,26 @@ def test_colorize_2color_offset() -> None:
     left = (25, 1)
     middle = (75, 1)
     right = (125, 1)
+    value = im_test.getpixel(left)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(left),
+        value,
         (255, 0, 0),
         threshold=1,
         msg="black test pixel incorrect",
     )
+    value = im_test.getpixel(middle)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(middle),
+        value,
         (127, 63, 0),
         threshold=1,
         msg="mid test pixel incorrect",
     )
+    value = im_test.getpixel(right)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(right),
+        value,
         (0, 127, 0),
         threshold=1,
         msg="white test pixel incorrect",
@@ -330,29 +351,37 @@ def test_colorize_3color_offset() -> None:
     middle = (100, 1)
     right_middle = (150, 1)
     right = (225, 1)
+    value = im_test.getpixel(left)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(left),
+        value,
         (255, 0, 0),
         threshold=1,
         msg="black test pixel incorrect",
     )
+    value = im_test.getpixel(left_middle)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(left_middle),
+        value,
         (127, 0, 127),
         threshold=1,
         msg="low-mid test pixel incorrect",
     )
+    value = im_test.getpixel(middle)
+    assert isinstance(value, tuple)
+    assert_tuple_approx_equal(value, (0, 0, 255), threshold=1, msg="mid incorrect")
+    value = im_test.getpixel(right_middle)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(middle), (0, 0, 255), threshold=1, msg="mid incorrect"
-    )
-    assert_tuple_approx_equal(
-        im_test.getpixel(right_middle),
+        value,
         (0, 63, 127),
         threshold=1,
         msg="high-mid test pixel incorrect",
     )
+    value = im_test.getpixel(right)
+    assert isinstance(value, tuple)
     assert_tuple_approx_equal(
-        im_test.getpixel(right),
+        value,
         (0, 127, 0),
         threshold=1,
         msg="white test pixel incorrect",
@@ -366,7 +395,7 @@ def test_exif_transpose() -> None:
     for ext in exts:
         with Image.open("Tests/images/hopper" + ext) as base_im:
 
-            def check(orientation_im) -> None:
+            def check(orientation_im: Image.Image) -> None:
                 for im in [
                     orientation_im,
                     orientation_im.copy(),
@@ -376,6 +405,7 @@ def test_exif_transpose() -> None:
                     else:
                         original_exif = im.info["exif"]
                     transposed_im = ImageOps.exif_transpose(im)
+                    assert transposed_im is not None
                     assert_image_similar(base_im, transposed_im, 17)
                     if orientation_im is base_im:
                         assert "exif" not in im.info
@@ -387,6 +417,7 @@ def test_exif_transpose() -> None:
 
                     # Repeat the operation to test that it does not keep transposing
                     transposed_im2 = ImageOps.exif_transpose(transposed_im)
+                    assert transposed_im2 is not None
                     assert_image_equal(transposed_im2, transposed_im)
 
             check(base_im)
@@ -402,6 +433,7 @@ def test_exif_transpose() -> None:
             assert im.getexif()[0x0112] == 3
 
             transposed_im = ImageOps.exif_transpose(im)
+            assert transposed_im is not None
             assert 0x0112 not in transposed_im.getexif()
 
             transposed_im._reload_exif()
@@ -414,13 +446,26 @@ def test_exif_transpose() -> None:
         assert im.getexif()[0x0112] == 3
 
         transposed_im = ImageOps.exif_transpose(im)
+        assert transposed_im is not None
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation set directly on Image.Exif
     im = hopper()
     im.getexif()[0x0112] = 3
     transposed_im = ImageOps.exif_transpose(im)
+    assert transposed_im is not None
     assert 0x0112 not in transposed_im.getexif()
+
+
+def test_exif_transpose_xml_without_xmp() -> None:
+    with Image.open("Tests/images/xmp_tags_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
+        assert "XML:com.adobe.xmp" in im.info
+
+        del im.info["xmp"]
+        transposed_im = ImageOps.exif_transpose(im)
+        assert transposed_im is not None
+        assert 0x0112 not in transposed_im.getexif()
 
 
 def test_exif_transpose_in_place() -> None:
@@ -445,7 +490,7 @@ def test_autocontrast_cutoff() -> None:
     # Test the cutoff argument of autocontrast
     with Image.open("Tests/images/bw_gradient.png") as img:
 
-        def autocontrast(cutoff):
+        def autocontrast(cutoff: int | tuple[int, int]) -> list[int]:
             return ImageOps.autocontrast(img, cutoff).histogram()
 
         assert autocontrast(10) == autocontrast((10, 10))
@@ -486,20 +531,20 @@ def test_autocontrast_mask_real_input() -> None:
         assert result_nomask != result
         assert_tuple_approx_equal(
             ImageStat.Stat(result, mask=rect_mask).median,
-            [195, 202, 184],
+            (195, 202, 184),
             threshold=2,
             msg="autocontrast with mask pixel incorrect",
         )
         assert_tuple_approx_equal(
             ImageStat.Stat(result_nomask).median,
-            [119, 106, 79],
+            (119, 106, 79),
             threshold=2,
             msg="autocontrast without mask pixel incorrect",
         )
 
 
 def test_autocontrast_preserve_tone() -> None:
-    def autocontrast(mode, preserve_tone):
+    def autocontrast(mode: str, preserve_tone: bool) -> list[int]:
         im = hopper(mode)
         return ImageOps.autocontrast(im, preserve_tone=preserve_tone).histogram()
 
@@ -533,7 +578,7 @@ def test_autocontrast_preserve_gradient() -> None:
 @pytest.mark.parametrize(
     "color", ((255, 255, 255), (127, 255, 0), (127, 127, 127), (0, 0, 0))
 )
-def test_autocontrast_preserve_one_color(color) -> None:
+def test_autocontrast_preserve_one_color(color: tuple[int, int, int]) -> None:
     img = Image.new("RGB", (10, 10), color)
 
     # single color images shouldn't change

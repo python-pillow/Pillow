@@ -22,19 +22,19 @@ import PIL
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = "2.4"
+needs_sphinx = "7.3"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "dater",
     "sphinx.ext.autodoc",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_inline_tabs",
-    "sphinx_removed_in",
     "sphinxext.opengraph",
 ]
 
@@ -54,9 +54,10 @@ master_doc = "index"
 # General information about the project.
 project = "Pillow (PIL Fork)"
 copyright = (
-    "1995-2011 Fredrik Lundh, 2010-2024 Jeffrey A. Clark (Alex) and contributors"
+    "1995-2011 Fredrik Lundh and contributors, "
+    "2010-2024 Jeffrey A. Clark and contributors."
 )
-author = "Fredrik Lundh, Jeffrey A. Clark (Alex), contributors"
+author = "Fredrik Lundh (PIL), Jeffrey A. Clark (Pillow)"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -252,7 +253,7 @@ latex_documents = [
         master_doc,
         "PillowPILFork.tex",
         "Pillow (PIL Fork) Documentation",
-        "Jeffrey A. Clark (Alex)",
+        "Jeffrey A. Clark",
         "manual",
     )
 ]
@@ -302,7 +303,7 @@ texinfo_documents = [
         "Pillow (PIL Fork) Documentation",
         author,
         "PillowPILFork",
-        "Pillow is the friendly PIL fork by Jeffrey A. Clark (Alex) and contributors.",
+        "Pillow is the friendly PIL fork by Jeffrey A. Clark and contributors.",
         "Miscellaneous",
     )
 ]
@@ -326,7 +327,7 @@ linkcheck_allowed_redirects = {
     r"https://gitter.im/python-pillow/Pillow?.*": r"https://app.gitter.im/#/room/#python-pillow_Pillow:gitter.im?.*",
     r"https://pillow.readthedocs.io/?badge=latest": r"https://pillow.readthedocs.io/en/stable/?badge=latest",
     r"https://pillow.readthedocs.io": r"https://pillow.readthedocs.io/en/stable/",
-    r"https://tidelift.com/badges/package/pypi/Pillow?.*": r"https://img.shields.io/badge/.*",
+    r"https://tidelift.com/badges/package/pypi/pillow?.*": r"https://img.shields.io/badge/.*",
     r"https://zenodo.org/badge/17549/python-pillow/Pillow.svg": r"https://zenodo.org/badge/doi/[\.0-9]+/zenodo.[0-9]+.svg",
     r"https://zenodo.org/badge/latestdoi/17549/python-pillow/Pillow": r"https://zenodo.org/record/[0-9]+",
 }
@@ -337,7 +338,7 @@ linkcheck_allowed_redirects = {
 # https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 _repo = "https://github.com/python-pillow/Pillow/"
 extlinks = {
-    "cve": ("https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-%s", "CVE-%s"),
+    "cve": ("https://www.cve.org/CVERecord?id=CVE-%s", "CVE-%s"),
     "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
     "issue": (_repo + "issues/%s", "#%s"),
     "pr": (_repo + "pull/%s", "#%s"),

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import BmpImagePlugin, Image
+from PIL import BmpImagePlugin, Image, _binary
 
 from .helper import (
     assert_image_equal,
@@ -16,7 +16,7 @@ from .helper import (
 
 
 def test_sanity(tmp_path: Path) -> None:
-    def roundtrip(im) -> None:
+    def roundtrip(im: Image.Image) -> None:
         outfile = str(tmp_path / "temp.bmp")
 
         im.save(outfile, "BMP")
@@ -128,6 +128,29 @@ def test_load_dib() -> None:
         assert_image_equal_tofile(im, "Tests/images/clipboard_target.png")
 
 
+@pytest.mark.parametrize(
+    "header_size, path",
+    (
+        (12, "g/pal8os2.bmp"),
+        (40, "g/pal1.bmp"),
+        (52, "q/rgb32h52.bmp"),
+        (56, "q/rgba32h56.bmp"),
+        (64, "q/pal8os2v2.bmp"),
+        (108, "g/pal8v4.bmp"),
+        (124, "g/pal8v5.bmp"),
+    ),
+)
+def test_dib_header_size(header_size: int, path: str) -> None:
+    image_path = "Tests/images/bmp/" + path
+    with open(image_path, "rb") as fp:
+        data = fp.read()[14:]
+    assert _binary.i32le(data) == header_size
+
+    dib = io.BytesIO(data)
+    with Image.open(dib) as im:
+        im.load()
+
+
 def test_save_dib(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.dib")
 
@@ -194,7 +217,7 @@ def test_rle4() -> None:
         ("Tests/images/bmp/g/pal8rle.bmp", 1064),
     ),
 )
-def test_rle8_eof(file_name, length) -> None:
+def test_rle8_eof(file_name: str, length: int) -> None:
     with open(file_name, "rb") as fp:
         data = fp.read(length)
         with Image.open(io.BytesIO(data)) as im:

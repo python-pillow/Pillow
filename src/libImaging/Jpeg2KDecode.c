@@ -67,7 +67,8 @@ j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
 /* -------------------------------------------------------------------- */
 
 typedef void (*j2k_unpacker_t)(
-    opj_image_t *in, const JPEG2KTILEINFO *tileInfo, const UINT8 *data, Imaging im);
+    opj_image_t *in, const JPEG2KTILEINFO *tileInfo, const UINT8 *data, Imaging im
+);
 
 struct j2k_decode_unpacker {
     const char *mode;
@@ -89,10 +90,8 @@ j2ku_shift(unsigned x, int n) {
 
 static void
 j2ku_gray_l(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -145,10 +144,8 @@ j2ku_gray_l(
 
 static void
 j2ku_gray_i(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -183,9 +180,9 @@ j2ku_gray_i(
                 UINT16 *row = (UINT16 *)im->image[y0 + y] + x0;
                 for (x = 0; x < w; ++x) {
                     UINT16 pixel = j2ku_shift(offset + *data++, shift);
-                    #ifdef WORDS_BIGENDIAN
-                        pixel = (pixel >> 8) | (pixel << 8);
-                    #endif
+#ifdef WORDS_BIGENDIAN
+                    pixel = (pixel >> 8) | (pixel << 8);
+#endif
                     *row++ = pixel;
                 }
             }
@@ -204,10 +201,8 @@ j2ku_gray_i(
 
 static void
 j2ku_gray_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -268,10 +263,8 @@ j2ku_gray_rgb(
 
 static void
 j2ku_graya_la(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -347,10 +340,8 @@ j2ku_graya_la(
 
 static void
 j2ku_srgb_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -413,10 +404,8 @@ j2ku_srgb_rgb(
 
 static void
 j2ku_sycc_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -482,10 +471,8 @@ j2ku_sycc_rgb(
 
 static void
 j2ku_srgba_rgba(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -547,10 +534,8 @@ j2ku_srgba_rgba(
 
 static void
 j2ku_sycca_rgba(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -615,6 +600,8 @@ j2ku_sycca_rgba(
 
 static const struct j2k_decode_unpacker j2k_unpackers[] = {
     {"L", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_l},
+    {"P", OPJ_CLRSPC_SRGB, 1, 0, j2ku_gray_l},
+    {"PA", OPJ_CLRSPC_SRGB, 2, 0, j2ku_graya_la},
     {"I;16", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
     {"I;16B", OPJ_CLRSPC_GRAY, 1, 0, j2ku_gray_i},
     {"LA", OPJ_CLRSPC_GRAY, 2, 0, j2ku_graya_la},
@@ -630,6 +617,7 @@ static const struct j2k_decode_unpacker j2k_unpackers[] = {
     {"RGBA", OPJ_CLRSPC_SYCC, 3, 1, j2ku_sycc_rgb},
     {"RGBA", OPJ_CLRSPC_SRGB, 4, 1, j2ku_srgba_rgba},
     {"RGBA", OPJ_CLRSPC_SYCC, 4, 1, j2ku_sycca_rgba},
+    {"CMYK", OPJ_CLRSPC_CMYK, 4, 1, j2ku_srgba_rgba},
 };
 
 /* -------------------------------------------------------------------- */
@@ -775,7 +763,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
                         color_space = OPJ_CLRSPC_SYCC;
                         break;
                 }
-            break;
+                break;
         }
     }
 
@@ -812,7 +800,8 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
                 &tile_info.x1,
                 &tile_info.y1,
                 &tile_info.nb_comps,
-                &should_continue)) {
+                &should_continue
+            )) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;
@@ -861,7 +850,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
          a, and then a malicious file could have a smaller tile_bytes
         */
 
-        for (n=0; n < tile_info.nb_comps; n++) {
+        for (n = 0; n < tile_info.nb_comps; n++) {
             // see csize /acsize calcs
             int csize = (image->comps[n].prec + 7) >> 3;
             csize = (csize == 3) ? 4 : csize;
@@ -903,7 +892,8 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
                 tile_info.tile_index,
                 (OPJ_BYTE *)state->buffer,
                 tile_info.data_size,
-                stream)) {
+                stream
+            )) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;

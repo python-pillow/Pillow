@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from packaging.version import parse as parse_version
@@ -13,13 +13,16 @@ numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
 im = hopper().resize((128, 100))
 
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
 
 def test_toarray() -> None:
     def test(mode: str) -> tuple[tuple[int, ...], str, int]:
         ai = numpy.array(im.convert(mode))
         return ai.shape, ai.dtype.str, ai.nbytes
 
-    def test_with_dtype(dtype) -> None:
+    def test_with_dtype(dtype: npt.DTypeLike) -> None:
         ai = numpy.array(im, dtype=dtype)
         assert ai.dtype == dtype
 
@@ -86,9 +89,19 @@ def test_fromarray() -> None:
     assert test("RGBX") == ("RGBA", (128, 100), True)
 
     # Test mode is None with no "typestr" in the array interface
+    wrapped = Wrapper(hopper("L"), {"shape": (100, 128)})
     with pytest.raises(TypeError):
-        wrapped = Wrapper(test("L"), {"shape": (100, 128)})
         Image.fromarray(wrapped)
+
+
+def test_fromarray_strides_without_tobytes() -> None:
+    class Wrapper:
+        def __init__(self, arr_params: dict[str, Any]) -> None:
+            self.__array_interface__ = arr_params
+
+    with pytest.raises(ValueError):
+        wrapped = Wrapper({"shape": (1, 1), "strides": (1, 1)})
+        Image.fromarray(wrapped, "L")
 
 
 def test_fromarray_palette() -> None:

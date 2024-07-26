@@ -31,7 +31,7 @@ def test_sanity() -> None:
 
 def test_long_integers() -> None:
     # see bug-200802-systemerror
-    def put(value: int) -> tuple[int, int, int, int]:
+    def put(value: int) -> float | tuple[int, ...] | None:
         im = Image.new("RGBA", (1, 1))
         im.putdata([value])
         return im.getpixel((0, 0))
@@ -81,7 +81,8 @@ def test_mode_F() -> None:
 @pytest.mark.parametrize("mode", ("BGR;15", "BGR;16", "BGR;24"))
 def test_mode_BGR(mode: str) -> None:
     data = [(16, 32, 49), (32, 32, 98)]
-    im = Image.new(mode, (1, 2))
+    with pytest.warns(DeprecationWarning):
+        im = Image.new(mode, (1, 2))
     im.putdata(data)
 
     assert list(im.getdata()) == data

@@ -26,6 +26,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  COVERAGE_CORE: sysmon
+
 jobs:
   build:
     runs-on: windows-latest
@@ -61,13 +64,12 @@ jobs:
               mingw-w64-x86_64-libtiff \
               mingw-w64-x86_64-libwebp \
               mingw-w64-x86_64-openjpeg2 \
-              mingw-w64-x86_64-python3-cffi \
               mingw-w64-x86_64-python3-numpy \
               mingw-w64-x86_64-python3-olefile \
-              mingw-w64-x86_64-python3-pip \
               mingw-w64-x86_64-python3-setuptools \
               mingw-w64-x86_64-python-pyqt6
 
+          python3 -m ensurepip
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
           pushd depends && ./install_extra_test_images.sh && popd
@@ -82,8 +84,9 @@ jobs:
           python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3.1.5
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
           flags: GHA_Windows
           name: "MSYS2 MinGW"
+          token: ${{ secrets.CODECOV_ORG_TOKEN }}

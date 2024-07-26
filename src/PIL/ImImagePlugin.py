@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import os
 import re
+from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 
@@ -78,7 +79,7 @@ OPEN = {
     "LA image": ("LA", "LA;L"),
     "PA image": ("LA", "PA;L"),
     "RGBA image": ("RGBA", "RGBA;L"),
-    "RGBX image": ("RGBX", "RGBX;L"),
+    "RGBX image": ("RGB", "RGBX;L"),
     "CMYK image": ("CMYK", "CMYK;L"),
     "YCC image": ("YCbCr", "YCbCr;L"),
 }
@@ -103,7 +104,7 @@ for j in range(2, 33):
 split = re.compile(rb"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 
-def number(s):
+def number(s: Any) -> float:
     try:
         return int(s)
     except ValueError:
@@ -119,7 +120,7 @@ class ImImageFile(ImageFile.ImageFile):
     format_description = "IFUNC Image Memory"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
@@ -196,7 +197,7 @@ class ImImageFile(ImageFile.ImageFile):
                     n += 1
 
             else:
-                msg = "Syntax error in IM header: " + s.decode("ascii", "replace")
+                msg = f"Syntax error in IM header: {s.decode('ascii', 'replace')}"
                 raise SyntaxError(msg)
 
         if not n:
@@ -271,14 +272,14 @@ class ImImageFile(ImageFile.ImageFile):
             self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
 
     @property
-    def n_frames(self):
+    def n_frames(self) -> int:
         return self.info[FRAMES]
 
     @property
-    def is_animated(self):
+    def is_animated(self) -> bool:
         return self.info[FRAMES] > 1
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
@@ -296,7 +297,7 @@ class ImImageFile(ImageFile.ImageFile):
 
         self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
 
-    def tell(self):
+    def tell(self) -> int:
         return self.frame
 
 
@@ -325,7 +326,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -340,6 +341,8 @@ def _save(im, fp, filename):
         # or: SyntaxError("not an IM file")
         # 8 characters are used for "Name: " and "\r\n"
         # Keep just the filename, ditch the potentially overlong path
+        if isinstance(filename, bytes):
+            filename = filename.decode("ascii")
         name, ext = os.path.splitext(os.path.basename(filename))
         name = "".join([name[: 92 - len(ext)], ext])
 

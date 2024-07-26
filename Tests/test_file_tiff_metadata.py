@@ -11,7 +11,11 @@ from PIL.TiffImagePlugin import IFDRational
 
 from .helper import assert_deep_equal, hopper
 
-TAG_IDS = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
+TAG_IDS: dict[str, int] = {
+    info.name: info.value
+    for info in TiffTags.TAGS_V2.values()
+    if info.value is not None
+}
 
 
 def test_rt_metadata(tmp_path: Path) -> None:
@@ -189,7 +193,9 @@ def test_iptc(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("value, expected", ((b"test", "test"), (1, "1")))
-def test_writing_other_types_to_ascii(value, expected, tmp_path: Path) -> None:
+def test_writing_other_types_to_ascii(
+    value: bytes | int, expected: str, tmp_path: Path
+) -> None:
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     tag = TiffTags.TAGS_V2[271]
@@ -206,7 +212,7 @@ def test_writing_other_types_to_ascii(value, expected, tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("value", (1, IFDRational(1)))
-def test_writing_other_types_to_bytes(value, tmp_path: Path) -> None:
+def test_writing_other_types_to_bytes(value: int | IFDRational, tmp_path: Path) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
@@ -222,14 +228,17 @@ def test_writing_other_types_to_bytes(value, tmp_path: Path) -> None:
         assert reloaded.tag_v2[700] == b"\x01"
 
 
-def test_writing_other_types_to_undefined(tmp_path: Path) -> None:
+@pytest.mark.parametrize("value", (1, IFDRational(1)))
+def test_writing_other_types_to_undefined(
+    value: int | IFDRational, tmp_path: Path
+) -> None:
     im = hopper()
     info = TiffImagePlugin.ImageFileDirectory_v2()
 
     tag = TiffTags.TAGS_V2[33723]
     assert tag.type == TiffTags.UNDEFINED
 
-    info[33723] = 1
+    info[33723] = value
 
     out = str(tmp_path / "temp.tiff")
     im.save(out, tiffinfo=info)
@@ -406,8 +415,8 @@ def test_empty_values() -> None:
     info = TiffImagePlugin.ImageFileDirectory_v2(head)
     info.load(data)
     # Should not raise ValueError.
-    info = dict(info)
-    assert 33432 in info
+    info_dict = dict(info)
+    assert 33432 in info_dict
 
 
 def test_photoshop_info(tmp_path: Path) -> None:

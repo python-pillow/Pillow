@@ -24,15 +24,18 @@ and has been tested with a few sample files found using google.
 """
 from __future__ import annotations
 
+from typing import IO
+
 from . import Image, ImageFile
 from ._binary import i32le as i32
+from ._typing import StrOrBytesPath
 
 
 class WalImageFile(ImageFile.ImageFile):
     format = "WAL"
     format_description = "Quake2 Texture"
 
-    def _open(self):
+    def _open(self) -> None:
         self._mode = "P"
 
         # read header fields
@@ -50,7 +53,7 @@ class WalImageFile(ImageFile.ImageFile):
         if next_name:
             self.info["next_name"] = next_name
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if not self.im:
             self.im = Image.core.new(self.mode, self.size)
             self.frombytes(self.fp.read(self.size[0] * self.size[1]))
@@ -58,7 +61,7 @@ class WalImageFile(ImageFile.ImageFile):
         return Image.Image.load(self)
 
 
-def open(filename):
+def open(filename: StrOrBytesPath | IO[bytes]) -> WalImageFile:
     """
     Load texture from a Quake2 WAL texture file.
 

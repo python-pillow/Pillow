@@ -87,10 +87,17 @@ are set by running ``winbuild\build\build_env.cmd`` and install Pillow with pip:
     winbuild\build\build_env.cmd
     python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor .
 
-To build a wheel instead, run::
+You can also install Pillow in `editable mode`_::
+
+    winbuild\build\build_env.cmd
+    python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor -e .
+
+To build a binary wheel instead, run::
 
     winbuild\build\build_env.cmd
     python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .
+
+.. _editable mode: https://setuptools.pypa.io/en/stable/userguide/development_mode.html
 
 Testing Pillow
 --------------
@@ -107,7 +114,7 @@ Example
 
 The following is a simplified version of the script used on AppVeyor::
 
-    set PYTHON=C:\Python38\bin
+    set PYTHON=C:\Python39\bin
     cd /D C:\Pillow\winbuild
     %PYTHON%\python.exe build_prepare.py -v --depends C:\pillow-depends
     build\build_dep_all.cmd

@@ -11,13 +11,15 @@ import subprocess
 import sys
 import sysconfig
 import tempfile
+from collections.abc import Sequence
+from functools import lru_cache
 from io import BytesIO
-from typing import Any, Callable, Sequence
+from typing import Any, Callable
 
 import pytest
 from packaging.version import parse as parse_version
 
-from PIL import Image, ImageMath, features
+from PIL import Image, ImageFile, ImageMath, features
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +60,7 @@ def convert_to_comparable(
     return new_a, new_b
 
 
-def assert_deep_equal(
-    a: Sequence[Any], b: Sequence[Any], msg: str | None = None
-) -> None:
+def assert_deep_equal(a: Any, b: Any, msg: str | None = None) -> None:
     try:
         assert len(a) == len(b), msg or f"got length {len(a)}, expected {len(b)}"
     except Exception:
@@ -114,7 +114,9 @@ def assert_image_similar(
 
     diff = 0
     for ach, bch in zip(a.split(), b.split()):
-        chdiff = ImageMath.eval("abs(a - b)", a=ach, b=bch).convert("L")
+        chdiff = ImageMath.lambda_eval(
+            lambda args: abs(args["a"] - args["b"]), a=ach, b=bch
+        ).convert("L")
         diff += sum(i * num for i, num in enumerate(chdiff.histogram()))
 
     ave_diff = diff / (a.size[0] * a.size[1])
@@ -171,12 +173,13 @@ def skip_unless_feature(feature: str) -> pytest.MarkDecorator:
 def skip_unless_feature_version(
     feature: str, required: str, reason: str | None = None
 ) -> pytest.MarkDecorator:
-    if not features.check(feature):
+    version = features.version(feature)
+    if version is None:
         return pytest.mark.skip(f"{feature} not available")
     if reason is None:
         reason = f"{feature} is older than {required}"
     version_required = parse_version(required)
-    version_available = parse_version(features.version(feature))
+    version_available = parse_version(version)
     return pytest.mark.skipif(version_available < version_required, reason=reason)
 
 
@@ -186,12 +189,13 @@ def mark_if_feature_version(
     version_blacklist: str,
     reason: str | None = None,
 ) -> pytest.MarkDecorator:
-    if not features.check(feature):
+    version = features.version(feature)
+    if version is None:
         return pytest.mark.pil_noop_mark()
     if reason is None:
         reason = f"{feature} is {version_blacklist}"
     version_required = parse_version(version_blacklist)
-    version_available = parse_version(features.version(feature))
+    version_available = parse_version(version)
     if (
         version_available.major == version_required.major
         and version_available.minor == version_required.minor
@@ -217,16 +221,11 @@ class PillowLeakTestCase:
         from resource import RUSAGE_SELF, getrusage
 
         mem = getrusage(RUSAGE_SELF).ru_maxrss
-        if sys.platform == "darwin":
-            # man 2 getrusage:
-            #     ru_maxrss
-            # This is the maximum resident set size utilized (in bytes).
-            return mem / 1024  # Kb
-        # linux
-        # man 2 getrusage
-        #        ru_maxrss (since Linux 2.6.32)
-        #  This is the maximum resident set size used (in kilobytes).
-        return mem  # Kb
+        # man 2 getrusage:
+        #     ru_maxrss
+        # This is the maximum resident set size utilized
+        # in bytes on macOS, in kilobytes on Linux
+        return mem / 1024 if sys.platform == "darwin" else mem
 
     def _test_leak(self, core: Callable[[], None]) -> None:
         start_mem = self._get_mem_usage()
@@ -240,7 +239,7 @@ class PillowLeakTestCase:
 # helpers
 
 
-def fromstring(data: bytes) -> Image.Image:
+def fromstring(data: bytes) -> ImageFile.ImageFile:
     return Image.open(BytesIO(data))
 
 
@@ -250,25 +249,38 @@ def tostring(im: Image.Image, string_format: str, **options: Any) -> bytes:
     return out.getvalue()
 
 
-def hopper(mode: str | None = None, cache: dict[str, Image.Image] = {}) -> Image.Image:
+def hopper(mode: str | None = None) -> Image.Image:
+    # Use caching to reduce reading from disk, but return a copy
+    # so that the cached image isn't modified by the tests
+    # (for fast, isolated, repeatable tests).
+
     if mode is None:
         # Always return fresh not-yet-loaded version of image.
-        # Operations on not-yet-loaded images is separate class of errors
-        # what we should catch.
+        # Operations on not-yet-loaded images are a separate class of errors
+        # that we should catch.
         return Image.open("Tests/images/hopper.ppm")
-    # Use caching to reduce reading from disk but so an original copy is
-    # returned each time and the cached image isn't modified by tests
-    # (for fast, isolated, repeatable tests).
-    im = cache.get(mode)
-    if im is None:
-        if mode == "F":
-            im = hopper("L").convert(mode)
-        elif mode[:4] == "I;16":
-            im = hopper("I").convert(mode)
-        else:
-            im = hopper().convert(mode)
-        cache[mode] = im
-    return im.copy()
+
+    return _cached_hopper(mode).copy()
+
+
+@lru_cache
+def _cached_hopper(mode: str) -> Image.Image:
+    if mode == "F":
+        im = hopper("L")
+    else:
+        im = hopper()
+    if mode.startswith("BGR;"):
+        with pytest.warns(DeprecationWarning):
+            im = im.convert(mode)
+    else:
+        try:
+            im = im.convert(mode)
+        except ImportError:
+            if mode == "LAB":
+                im = Image.open("Tests/images/hopper.Lab.tif")
+            else:
+                raise
+    return im
 
 
 def djpeg_available() -> bool:
@@ -351,7 +363,7 @@ def is_mingw() -> bool:
 
 
 class CachedProperty:
-    def __init__(self, func: Callable[[Any], None]) -> None:
+    def __init__(self, func: Callable[[Any], Any]) -> None:
         self.func = func
 
     def __get__(self, instance: Any, cls: type[Any] | None = None) -> Any:

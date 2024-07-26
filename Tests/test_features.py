@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import re
+from typing import Callable
 
 import pytest
 
@@ -29,13 +30,17 @@ def test_version() -> None:
     # Check the correctness of the convenience function
     # and the format of version numbers
 
-    def test(name, function) -> None:
+    def test(name: str, function: Callable[[str], str | None]) -> None:
         version = features.version(name)
         if not features.check(name):
             assert version is None
         else:
             assert function(name) == version
             if name != "PIL":
+                if name == "zlib" and version is not None:
+                    version = re.sub(".zlib-ng$", "", version)
+                elif name == "libtiff" and version is not None:
+                    version = re.sub("t$", "", version)
                 assert version is None or re.search(r"\d+(\.\d+)*$", version)
 
     for module in features.modules:
@@ -64,21 +69,25 @@ def test_webp_anim() -> None:
 
 @skip_unless_feature("libjpeg_turbo")
 def test_libjpeg_turbo_version() -> None:
-    assert re.search(r"\d+\.\d+\.\d+$", features.version("libjpeg_turbo"))
+    version = features.version("libjpeg_turbo")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
 
 @skip_unless_feature("libimagequant")
 def test_libimagequant_version() -> None:
-    assert re.search(r"\d+\.\d+\.\d+$", features.version("libimagequant"))
+    version = features.version("libimagequant")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
 
 @pytest.mark.parametrize("feature", features.modules)
-def test_check_modules(feature) -> None:
+def test_check_modules(feature: str) -> None:
     assert features.check_module(feature) in [True, False]
 
 
 @pytest.mark.parametrize("feature", features.codecs)
-def test_check_codecs(feature) -> None:
+def test_check_codecs(feature: str) -> None:
     assert features.check_codec(feature) in [True, False]
 
 
@@ -116,9 +125,10 @@ def test_unsupported_module() -> None:
         features.version_module(module)
 
 
-def test_pilinfo() -> None:
+@pytest.mark.parametrize("supported_formats", (True, False))
+def test_pilinfo(supported_formats: bool) -> None:
     buf = io.StringIO()
-    features.pilinfo(buf)
+    features.pilinfo(buf, supported_formats=supported_formats)
     out = buf.getvalue()
     lines = out.splitlines()
     assert lines[0] == "-" * 68
@@ -128,9 +138,15 @@ def test_pilinfo() -> None:
     while lines[0].startswith("    "):
         lines = lines[1:]
     assert lines[0] == "-" * 68
-    assert lines[1].startswith("Python modules loaded from ")
-    assert lines[2].startswith("Binary modules loaded from ")
-    assert lines[3] == "-" * 68
+    assert lines[1].startswith("Python executable is")
+    lines = lines[2:]
+    if lines[0].startswith("Environment Python files loaded from"):
+        lines = lines[1:]
+    assert lines[0].startswith("System Python files loaded from")
+    assert lines[1] == "-" * 68
+    assert lines[2].startswith("Python Pillow modules loaded from ")
+    assert lines[3].startswith("Binary Pillow modules loaded from ")
+    assert lines[4] == "-" * 68
     jpeg = (
         "\n"
         + "-" * 68
@@ -141,4 +157,4 @@ def test_pilinfo() -> None:
         + "-" * 68
         + "\n"
     )
-    assert jpeg in out
+    assert supported_formats == (jpeg in out)

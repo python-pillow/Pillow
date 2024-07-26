@@ -2,7 +2,7 @@
 -----
 
 Fix another regression seeking PNG files
-========================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This fixes a regression introduced in 7.1.0 when adding support for APNG files.
 

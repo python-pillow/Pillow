@@ -26,7 +26,8 @@ quantize_pngquant(
     Pixel **palette,
     uint32_t *paletteLength,
     uint32_t **quantizedPixels,
-    int withAlpha) {
+    int withAlpha
+) {
     int result = 0;
     liq_image *image = NULL;
     liq_attr *attr = NULL;

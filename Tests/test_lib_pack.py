@@ -15,7 +15,7 @@ class TestLibPack:
         mode: str,
         rawmode: str,
         data: int | bytes,
-        *pixels: int | float | tuple[int, ...],
+        *pixels: float | tuple[int, ...],
     ) -> None:
         """
         data - either raw bytes with data or just number of bytes in rawmode.
@@ -216,7 +216,10 @@ class TestLibPack:
             )
 
     def test_I16(self) -> None:
-        self.assert_pack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+        if sys.byteorder == "little":
+            self.assert_pack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+        else:
+            self.assert_pack("I;16N", "I;16N", 2, 0x0102, 0x0304, 0x0506)
 
     def test_F_float(self) -> None:
         self.assert_pack("F", "F;32F", 4, 1.539989614439558e-36, 4.063216068939723e-34)
@@ -239,7 +242,7 @@ class TestLibUnpack:
         mode: str,
         rawmode: str,
         data: int | bytes,
-        *pixels: int | float | tuple[int, ...],
+        *pixels: float | tuple[int, ...],
     ) -> None:
         """
         data - either raw bytes with data or just number of bytes in rawmode.
@@ -359,11 +362,14 @@ class TestLibUnpack:
         )
 
     def test_BGR(self) -> None:
-        self.assert_unpack("BGR;15", "BGR;15", 3, (8, 131, 0), (24, 0, 8), (41, 131, 8))
-        self.assert_unpack(
-            "BGR;16", "BGR;16", 3, (8, 64, 0), (24, 129, 0), (41, 194, 0)
-        )
-        self.assert_unpack("BGR;24", "BGR;24", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
+        with pytest.warns(DeprecationWarning):
+            self.assert_unpack(
+                "BGR;15", "BGR;15", 3, (8, 131, 0), (24, 0, 8), (41, 131, 8)
+            )
+            self.assert_unpack(
+                "BGR;16", "BGR;16", 3, (8, 64, 0), (24, 129, 0), (41, 194, 0)
+            )
+            self.assert_unpack("BGR;24", "BGR;24", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
 
     def test_RGBA(self) -> None:
         self.assert_unpack("RGBA", "LA", 2, (1, 1, 1, 2), (3, 3, 3, 4), (5, 5, 5, 6))

@@ -26,13 +26,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  COVERAGE_CORE: sysmon
+
 jobs:
   build:
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        python-minor-version: [8, 9]
+        python-minor-version: [9]
 
     timeout-minutes: 40
 
@@ -47,11 +50,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Cygwin
-        uses: egor-tensin/setup-cygwin@v4
+        uses: cygwin/cygwin-install-action@v4
         with:
           packages: >
             gcc-g++
             ghostscript
+            git
             ImageMagick
             jpeg
             libfreetype-devel
@@ -68,8 +72,6 @@ jobs:
             make
             netpbm
             perl
-            python39=3.9.16-1
-            python3${{ matrix.python-minor-version }}-cffi
             python3${{ matrix.python-minor-version }}-cython
             python3${{ matrix.python-minor-version }}-devel
             python3${{ matrix.python-minor-version }}-numpy
@@ -86,21 +88,15 @@ jobs:
 
       - name: Select Python version
         run: |
-          ln -sf c:/tools/cygwin/bin/python3.${{ matrix.python-minor-version }} c:/tools/cygwin/bin/python3
-
-      - name: Get latest NumPy version
-        id: latest-numpy
-        shell: bash.exe -eo pipefail -o igncr "{0}"
-        run: |
-          python3 -m pip list --outdated | grep numpy | sed -r 's/ +/ /g' | cut -d ' ' -f 3 | sed 's/^/version=/' >> $GITHUB_OUTPUT
+          ln -sf c:/cygwin/bin/python3.${{ matrix.python-minor-version }} c:/cygwin/bin/python3
 
       - name: pip cache
         uses: actions/cache@v4
         with:
           path: 'C:\cygwin\home\runneradmin\.cache\pip'
-          key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-${{ hashFiles('.ci/install.sh') }}
+          key: ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-${{ hashFiles('.ci/install.sh') }}
           restore-keys: |
-            ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-numpy${{ steps.latest-numpy.outputs.version }}-
+            ${{ runner.os }}-cygwin-pip3.${{ matrix.python-minor-version }}-
 
       - name: Build system information
         run: |
@@ -109,11 +105,6 @@ jobs:
       - name: Install dependencies
         run: |
           bash.exe .ci/install.sh
-
-      - name: Upgrade NumPy
-        shell: dash.exe -l "{0}"
-        run: |
-          python3 -m pip install -U "numpy<1.26"
 
       - name: Build
         shell: bash.exe -eo pipefail -o igncr "{0}"
@@ -141,11 +132,12 @@ jobs:
           bash.exe .ci/after_success.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3.1.5
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
           flags: GHA_Cygwin
           name: Cygwin Python 3.${{ matrix.python-minor-version }}
+          token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
     permissions:

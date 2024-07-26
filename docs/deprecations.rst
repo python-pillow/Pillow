@@ -12,28 +12,6 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
-PSFile
-~~~~~~
-
-.. deprecated:: 9.5.0
-
-The :py:class:`~PIL.EpsImagePlugin.PSFile` class has been deprecated and will
-be removed in Pillow 11 (2024-10-15). This class was only made as a helper to
-be used internally, so there is no replacement. If you need this functionality
-though, it is a very short class that can easily be recreated in your own code.
-
-PyAccess and Image.USE_CFFI_ACCESS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. deprecated:: 10.0.0
-
-Since Pillow's C API is now faster than PyAccess on PyPy,
-:py:mod:`~PIL.PyAccess` has been deprecated and will be removed in Pillow
-11.0.0 (2024-10-15). Pillow's C API will now be used by default on PyPy instead.
-
-``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, is
-similarly deprecated.
-
 ImageFile.raise_oserror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -92,11 +70,82 @@ Deprecated                                    Use instead
                                               :py:data:`sys.version_info`, and ``PIL.__version__``
 ============================================  ====================================================
 
+ImageMath eval()
+^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.3.0
+
+``ImageMath.eval()`` has been deprecated. Use :py:meth:`~PIL.ImageMath.lambda_eval` or
+:py:meth:`~PIL.ImageMath.unsafe_eval` instead.
+
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
+
+Non-image modes in ImageCms
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+The use in :py:mod:`.ImageCms` of input modes and output modes that are not Pillow
+image modes has been deprecated. Defaulting to "L" or "1" if the mode cannot be mapped
+is also deprecated.
+
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+Support for LibTIFF earlier than version 4 has been deprecated.
+Upgrade to a newer version of LibTIFF instead.
+
+ImageDraw.getdraw hints parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 10.4.0
+
+The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
+
+ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
+:py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more keyword
+arguments can be used instead.
+
 Removed features
 ----------------
 
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
+
+PSFile
+~~~~~~
+
+.. deprecated:: 9.5.0
+.. versionremoved:: 11.0.0
+
+The :py:class:`!PSFile` class was removed in Pillow 11 (2024-10-15).
+This class was only made as a helper to be used internally,
+so there is no replacement. If you need this functionality though,
+it is a very short class that can easily be recreated in your own code.
+
+PyAccess and Image.USE_CFFI_ACCESS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. deprecated:: 10.0.0
+.. versionremoved:: 11.0.0
+
+Since Pillow's C API is now faster than PyAccess on PyPy, ``PyAccess`` has been
+removed. Pillow's C API will now be used on PyPy instead.
+
+``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, was
+similarly removed.
 
 Tk/Tcl 8.4
 ~~~~~~~~~~
@@ -232,10 +281,10 @@ Previous code::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width, height = draw.textsize("Hello world")
+    width, height = draw.textsize("Hello world", font)
 
     width, height = font.getsize_multiline("Hello\nworld")
-    width, height = draw.multiline_textsize("Hello\nworld")
+    width, height = draw.multiline_textsize("Hello\nworld", font)
 
 Use instead::
 
@@ -247,10 +296,42 @@ Use instead::
 
     im = Image.new("RGB", (100, 100))
     draw = ImageDraw.Draw(im)
-    width = draw.textlength("Hello world")
+    width = draw.textlength("Hello world", font)
 
-    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld")
+    left, top, right, bottom = draw.multiline_textbbox((0, 0), "Hello\nworld", font)
     width, height = right - left, bottom - top
+
+Previously, the ``size`` methods returned a ``height`` that included the vertical
+offset of the text, while the new ``bbox`` methods distinguish this as a ``top``
+offset.
+
+.. image:: ./example/size_vs_bbox.webp
+    :alt: In bbox methods, top measures the vertical distance above the text, while bottom measures that plus the vertical distance of the text itself. In size methods, height also measures the vertical distance above the text plus the vertical distance of the text itself.
+    :align: center
+
+If you are using these methods for aligning text, consider using :ref:`text-anchors` instead
+which avoid issues that can occur with non-English text or unusual fonts.
+For example, instead of the following code::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    width, height = draw.textsize("Hello world", font)
+    x, y = (100 - width) / 2, (100 - height) / 2
+    draw.text((x, y), "Hello world", font=font)
+
+Use instead::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf")
+
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im)
+    draw.text((100 / 2, 100 / 2), "Hello world", font=font, anchor="mm")
 
 FreeTypeFont.getmask2 fill parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -504,3 +585,27 @@ PIL.OleFileIO
 the upstream :pypi:`olefile` Python package, and replaced with an :py:exc:`ImportError` in 5.0.0
 (2018-01). The deprecated file has now been removed from Pillow. If needed, install from
 PyPI (eg. ``python3 -m pip install olefile``).
+
+import _imaging
+~~~~~~~~~~~~~~~
+
+.. versionremoved:: 2.1.0
+
+Pillow >= 2.1.0 no longer supports ``import _imaging``.
+Please use ``from PIL.Image import core as _imaging`` instead.
+
+Pillow and PIL
+~~~~~~~~~~~~~~
+
+.. versionremoved:: 1.0.0
+
+Pillow and PIL cannot co-exist in the same environment.
+Before installing Pillow, please uninstall PIL.
+
+import Image
+~~~~~~~~~~~~
+
+.. versionremoved:: 1.0.0
+
+Pillow >= 1.0 no longer supports ``import Image``.
+Please use ``from PIL import Image`` instead.
