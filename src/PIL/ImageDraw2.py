@@ -101,7 +101,9 @@ class Draw:
             path.transform(self.transform)
             xy = path
         # render the item
-        if op == "line":
+        if op == "arc":
+            self.draw.arc(xy, fill=outline)
+        elif op == "line":
             self.draw.line(xy, fill=outline, width=width)
         else:
             getattr(self.draw, op)(xy, fill=fill, outline=outline)
