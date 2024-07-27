@@ -80,7 +80,7 @@ class Draw:
         return self.image
 
     def render(
-        self, op: str, xy: Coords, pen: Pen | Brush, brush: Brush | Pen | None = None
+        self, op: str, xy: Coords, pen: Pen | Brush | None, brush: Brush | Pen | None = None
     ) -> None:
         # handle color arguments
         outline = fill = None
@@ -111,50 +111,50 @@ class Draw:
         (xoffset, yoffset) = offset
         self.transform = (1, 0, xoffset, 0, 1, yoffset)
 
-    def arc(self, xy: Coords, start, end, *options: Any) -> None:
+    def arc(self, xy: Coords, pen: Pen | Brush | None, start, end, *options: Any) -> None:
         """
         Draws an arc (a portion of a circle outline) between the start and end
         angles, inside the given bounding box.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.arc`
         """
-        self.render("arc", xy, start, end, *options)
+        self.render("arc", xy, pen, start, end, *options)
 
-    def chord(self, xy: Coords, start, end, *options: Any) -> None:
+    def chord(self, xy: Coords, pen: Pen | Brush | None, start, end, *options: Any) -> None:
         """
         Same as :py:meth:`~PIL.ImageDraw2.Draw.arc`, but connects the end points
         with a straight line.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.chord`
         """
-        self.render("chord", xy, start, end, *options)
+        self.render("chord", xy, pen, start, end, *options)
 
-    def ellipse(self, xy: Coords, *options: Any) -> None:
+    def ellipse(self, xy: Coords, pen: Pen | Brush | None, *options: Any) -> None:
         """
         Draws an ellipse inside the given bounding box.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.ellipse`
         """
-        self.render("ellipse", xy, *options)
+        self.render("ellipse", xy, pen, *options)
 
-    def line(self, xy: Coords, *options: Any) -> None:
+    def line(self, xy: Coords, pen: Pen | Brush | None, *options: Any) -> None:
         """
         Draws a line between the coordinates in the ``xy`` list.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.line`
         """
-        self.render("line", xy, *options)
+        self.render("line", xy, pen, *options)
 
-    def pieslice(self, xy: Coords, start, end, *options: Any) -> None:
+    def pieslice(self, xy: Coords, pen: Pen | Brush | None, start, end, *options: Any) -> None:
         """
         Same as arc, but also draws straight lines between the end points and the
         center of the bounding box.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.pieslice`
         """
-        self.render("pieslice", xy, start, end, *options)
+        self.render("pieslice", xy, pen, start, end, *options)
 
-    def polygon(self, xy: Coords, *options: Any) -> None:
+    def polygon(self, xy: Coords, pen: Pen | Brush | None, *options: Any) -> None:
         """
         Draws a polygon.
 
@@ -165,15 +165,15 @@ class Draw:
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.polygon`
         """
-        self.render("polygon", xy, *options)
+        self.render("polygon", xy, pen, *options)
 
-    def rectangle(self, xy: Coords, *options: Any) -> None:
+    def rectangle(self, xy: Coords, pen: Pen | Brush | None, *options: Any) -> None:
         """
         Draws a rectangle.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.rectangle`
         """
-        self.render("rectangle", xy, *options)
+        self.render("rectangle", xy, pen, *options)
 
     def text(self, xy: tuple[float, float], text: AnyStr, font: Font) -> None:
         """
