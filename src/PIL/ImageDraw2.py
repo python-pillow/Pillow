@@ -24,7 +24,7 @@
 """
 from __future__ import annotations
 
-from typing import AnyStr, BinaryIO
+from typing import Any, AnyStr, BinaryIO
 
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
 from ._typing import Coords, StrOrBytesPath
@@ -111,7 +111,7 @@ class Draw:
         (xoffset, yoffset) = offset
         self.transform = (1, 0, xoffset, 0, 1, yoffset)
 
-    def arc(self, xy: Coords, start, end, *options) -> None:
+    def arc(self, xy: Coords, start, end, *options: Any) -> None:
         """
         Draws an arc (a portion of a circle outline) between the start and end
         angles, inside the given bounding box.
@@ -120,7 +120,7 @@ class Draw:
         """
         self.render("arc", xy, start, end, *options)
 
-    def chord(self, xy: Coords, start, end, *options) -> None:
+    def chord(self, xy: Coords, start, end, *options: Any) -> None:
         """
         Same as :py:meth:`~PIL.ImageDraw2.Draw.arc`, but connects the end points
         with a straight line.
@@ -129,7 +129,7 @@ class Draw:
         """
         self.render("chord", xy, start, end, *options)
 
-    def ellipse(self, xy: Coords, *options) -> None:
+    def ellipse(self, xy: Coords, *options: Any) -> None:
         """
         Draws an ellipse inside the given bounding box.
 
@@ -137,7 +137,7 @@ class Draw:
         """
         self.render("ellipse", xy, *options)
 
-    def line(self, xy: Coords, *options) -> None:
+    def line(self, xy: Coords, *options: Any) -> None:
         """
         Draws a line between the coordinates in the ``xy`` list.
 
@@ -145,7 +145,7 @@ class Draw:
         """
         self.render("line", xy, *options)
 
-    def pieslice(self, xy: Coords, start, end, *options) -> None:
+    def pieslice(self, xy: Coords, start, end, *options: Any) -> None:
         """
         Same as arc, but also draws straight lines between the end points and the
         center of the bounding box.
@@ -154,7 +154,7 @@ class Draw:
         """
         self.render("pieslice", xy, start, end, *options)
 
-    def polygon(self, xy: Coords, *options) -> None:
+    def polygon(self, xy: Coords, *options: Any) -> None:
         """
         Draws a polygon.
 
