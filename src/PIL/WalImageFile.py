@@ -24,8 +24,11 @@ and has been tested with a few sample files found using google.
 """
 from __future__ import annotations
 
+from typing import IO
+
 from . import Image, ImageFile
 from ._binary import i32le as i32
+from ._typing import StrOrBytesPath
 
 
 class WalImageFile(ImageFile.ImageFile):
@@ -58,7 +61,7 @@ class WalImageFile(ImageFile.ImageFile):
         return Image.Image.load(self)
 
 
-def open(filename):
+def open(filename: StrOrBytesPath | IO[bytes]) -> WalImageFile:
     """
     Load texture from a Quake2 WAL texture file.
 

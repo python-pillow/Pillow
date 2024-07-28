@@ -67,7 +67,8 @@ j2k_skip(OPJ_OFF_T p_nb_bytes, void *p_user_data) {
 /* -------------------------------------------------------------------- */
 
 typedef void (*j2k_unpacker_t)(
-    opj_image_t *in, const JPEG2KTILEINFO *tileInfo, const UINT8 *data, Imaging im);
+    opj_image_t *in, const JPEG2KTILEINFO *tileInfo, const UINT8 *data, Imaging im
+);
 
 struct j2k_decode_unpacker {
     const char *mode;
@@ -89,10 +90,8 @@ j2ku_shift(unsigned x, int n) {
 
 static void
 j2ku_gray_l(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -145,10 +144,8 @@ j2ku_gray_l(
 
 static void
 j2ku_gray_i(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -204,10 +201,8 @@ j2ku_gray_i(
 
 static void
 j2ku_gray_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -268,10 +263,8 @@ j2ku_gray_rgb(
 
 static void
 j2ku_graya_la(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -347,10 +340,8 @@ j2ku_graya_la(
 
 static void
 j2ku_srgb_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -413,10 +404,8 @@ j2ku_srgb_rgb(
 
 static void
 j2ku_sycc_rgb(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -482,10 +471,8 @@ j2ku_sycc_rgb(
 
 static void
 j2ku_srgba_rgba(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -547,10 +534,8 @@ j2ku_srgba_rgba(
 
 static void
 j2ku_sycca_rgba(
-    opj_image_t *in,
-    const JPEG2KTILEINFO *tileinfo,
-    const UINT8 *tiledata,
-    Imaging im) {
+    opj_image_t *in, const JPEG2KTILEINFO *tileinfo, const UINT8 *tiledata, Imaging im
+) {
     unsigned x0 = tileinfo->x0 - in->x0, y0 = tileinfo->y0 - in->y0;
     unsigned w = tileinfo->x1 - tileinfo->x0;
     unsigned h = tileinfo->y1 - tileinfo->y0;
@@ -815,7 +800,8 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
                 &tile_info.x1,
                 &tile_info.y1,
                 &tile_info.nb_comps,
-                &should_continue)) {
+                &should_continue
+            )) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;
@@ -906,7 +892,8 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
                 tile_info.tile_index,
                 (OPJ_BYTE *)state->buffer,
                 tile_info.data_size,
-                stream)) {
+                stream
+            )) {
             state->errcode = IMAGING_CODEC_BROKEN;
             state->state = J2K_STATE_FAILED;
             goto quick_exit;

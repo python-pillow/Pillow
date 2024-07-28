@@ -253,7 +253,8 @@ static PyMethodDef functions[] = {
     {"apply", (PyCFunction)apply, METH_VARARGS, NULL},
     {"get_on_pixels", (PyCFunction)get_on_pixels, METH_VARARGS, NULL},
     {"match", (PyCFunction)match, METH_VARARGS, NULL},
-    {NULL, NULL, 0, NULL}};
+    {NULL, NULL, 0, NULL}
+};
 
 PyMODINIT_FUNC
 PyInit__imagingmorph(void) {
@@ -268,6 +269,10 @@ PyInit__imagingmorph(void) {
     };
 
     m = PyModule_Create(&module_def);
+
+#ifdef Py_GIL_DISABLED
+    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
+#endif
 
     return m;
 }

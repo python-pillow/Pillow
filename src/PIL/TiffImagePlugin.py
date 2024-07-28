@@ -334,12 +334,13 @@ class IFDRational(Rational):
 
     __slots__ = ("_numerator", "_denominator", "_val")
 
-    def __init__(self, value, denominator=1):
+    def __init__(self, value, denominator: int = 1) -> None:
         """
         :param value: either an integer numerator, a
         float/rational/other number, or an IFDRational
         :param denominator: Optional integer denominator
         """
+        self._val: Fraction | float
         if isinstance(value, IFDRational):
             self._numerator = value.numerator
             self._denominator = value.denominator
@@ -444,7 +445,7 @@ class IFDRational(Rational):
         __int__ = _delegate("__int__")
 
 
-def _register_loader(idx, size):
+def _register_loader(idx: int, size: int):
     def decorator(func):
         from .TiffTags import TYPES
 
@@ -456,7 +457,7 @@ def _register_loader(idx, size):
     return decorator
 
 
-def _register_writer(idx):
+def _register_writer(idx: int):
     def decorator(func):
         _write_dispatch[idx] = func  # noqa: F821
         return func
@@ -464,7 +465,7 @@ def _register_writer(idx):
     return decorator
 
 
-def _register_basic(idx_fmt_name):
+def _register_basic(idx_fmt_name: tuple[int, str, str]) -> None:
     from .TiffTags import TYPES
 
     idx, fmt, name = idx_fmt_name
@@ -583,8 +584,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self.tagtype: dict[int, int] = {}
         """ Dictionary of tag types """
         self.reset()
-        (self.next,) = (
-            self._unpack("Q", ifh[8:]) if self._bigtiff else self._unpack("L", ifh[4:])
+        self.next = (
+            self._unpack("Q", ifh[8:])[0]
+            if self._bigtiff
+            else self._unpack("L", ifh[4:])[0]
         )
         self._legacy_api = False
 
@@ -636,13 +639,13 @@ class ImageFileDirectory_v2(_IFDv2Base):
             val = (val,)
         return val
 
-    def __contains__(self, tag):
+    def __contains__(self, tag: object) -> bool:
         return tag in self._tags_v2 or tag in self._tagdata
 
-    def __setitem__(self, tag, value):
+    def __setitem__(self, tag: int, value) -> None:
         self._setitem(tag, value, self.legacy_api)
 
-    def _setitem(self, tag, value, legacy_api):
+    def _setitem(self, tag: int, value, legacy_api: bool) -> None:
         basetypes = (Number, bytes, str)
 
         info = TiffTags.lookup(tag, self.group)
@@ -730,10 +733,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __iter__(self):
         return iter(set(self._tagdata) | set(self._tags_v2))
 
-    def _unpack(self, fmt, data):
+    def _unpack(self, fmt: str, data: bytes):
         return struct.unpack(self._endian + fmt, data)
 
-    def _pack(self, fmt, *values):
+    def _pack(self, fmt: str, *values):
         return struct.pack(self._endian + fmt, *values)
 
     list(
@@ -754,11 +757,11 @@ class ImageFileDirectory_v2(_IFDv2Base):
     )
 
     @_register_loader(1, 1)  # Basic type, except for the legacy API.
-    def load_byte(self, data, legacy_api=True):
+    def load_byte(self, data: bytes, legacy_api: bool = True) -> bytes:
         return data
 
     @_register_writer(1)  # Basic type, except for the legacy API.
-    def write_byte(self, data):
+    def write_byte(self, data: bytes | int | IFDRational) -> bytes:
         if isinstance(data, IFDRational):
             data = int(data)
         if isinstance(data, int):
@@ -766,13 +769,13 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return data
 
     @_register_loader(2, 1)
-    def load_string(self, data, legacy_api=True):
+    def load_string(self, data: bytes, legacy_api: bool = True) -> str:
         if data.endswith(b"\0"):
             data = data[:-1]
         return data.decode("latin-1", "replace")
 
     @_register_writer(2)
-    def write_string(self, value):
+    def write_string(self, value: str | bytes | int) -> bytes:
         # remerge of https://github.com/python-pillow/Pillow/pull/1416
         if isinstance(value, int):
             value = str(value)
@@ -781,7 +784,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return value + b"\0"
 
     @_register_loader(5, 8)
-    def load_rational(self, data, legacy_api=True):
+    def load_rational(self, data, legacy_api: bool = True):
         vals = self._unpack(f"{len(data) // 4}L", data)
 
         def combine(a, b):
@@ -790,17 +793,17 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return tuple(combine(num, denom) for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(5)
-    def write_rational(self, *values):
+    def write_rational(self, *values) -> bytes:
         return b"".join(
             self._pack("2L", *_limit_rational(frac, 2**32 - 1)) for frac in values
         )
 
     @_register_loader(7, 1)
-    def load_undefined(self, data, legacy_api=True):
+    def load_undefined(self, data: bytes, legacy_api: bool = True) -> bytes:
         return data
 
     @_register_writer(7)
-    def write_undefined(self, value):
+    def write_undefined(self, value: bytes | int | IFDRational) -> bytes:
         if isinstance(value, IFDRational):
             value = int(value)
         if isinstance(value, int):
@@ -808,7 +811,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return value
 
     @_register_loader(10, 8)
-    def load_signed_rational(self, data, legacy_api=True):
+    def load_signed_rational(self, data: bytes, legacy_api: bool = True):
         vals = self._unpack(f"{len(data) // 4}l", data)
 
         def combine(a, b):
@@ -817,13 +820,13 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return tuple(combine(num, denom) for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(10)
-    def write_signed_rational(self, *values):
+    def write_signed_rational(self, *values) -> bytes:
         return b"".join(
             self._pack("2l", *_limit_signed_rational(frac, 2**31 - 1, -(2**31)))
             for frac in values
         )
 
-    def _ensure_read(self, fp, size):
+    def _ensure_read(self, fp: IO[bytes], size: int) -> bytes:
         ret = fp.read(size)
         if len(ret) != size:
             msg = (
@@ -977,7 +980,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
         return result
 
-    def save(self, fp):
+    def save(self, fp: IO[bytes]) -> int:
         if fp.tell() == 0:  # skip TIFF header on subsequent pages
             # tiff header -- PIL always starts the first IFD at offset 8
             fp.write(self._prefix + self._pack("HL", 42, 8))
@@ -1017,7 +1020,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     ..  deprecated:: 3.0.0
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._legacy_api = True
 
@@ -1029,7 +1032,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     """Dictionary of tag types"""
 
     @classmethod
-    def from_v2(cls, original):
+    def from_v2(cls, original: ImageFileDirectory_v2) -> ImageFileDirectory_v1:
         """Returns an
         :py:class:`~PIL.TiffImagePlugin.ImageFileDirectory_v1`
         instance with the same data as is contained in the original
@@ -1063,7 +1066,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         ifd._tags_v2 = dict(self._tags_v2)
         return ifd
 
-    def __contains__(self, tag):
+    def __contains__(self, tag: object) -> bool:
         return tag in self._tags_v1 or tag in self._tagdata
 
     def __len__(self) -> int:
@@ -1072,7 +1075,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __iter__(self):
         return iter(set(self._tagdata) | set(self._tags_v1))
 
-    def __setitem__(self, tag, value):
+    def __setitem__(self, tag: int, value) -> None:
         for legacy_api in (False, True):
             self._setitem(tag, value, legacy_api)
 
@@ -1122,7 +1125,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.tag_v2 = ImageFileDirectory_v2(ifh)
 
         # legacy IFD entries will be filled in later
-        self.ifd = None
+        self.ifd: ImageFileDirectory_v1 | None = None
 
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next
@@ -1139,13 +1142,15 @@ class TiffImageFile(ImageFile.ImageFile):
         self._seek(0)
 
     @property
-    def n_frames(self):
-        if self._n_frames is None:
+    def n_frames(self) -> int:
+        current_n_frames = self._n_frames
+        if current_n_frames is None:
             current = self.tell()
             self._seek(len(self._frame_pos))
             while self._n_frames is None:
                 self._seek(self.tell() + 1)
             self.seek(current)
+        assert self._n_frames is not None
         return self._n_frames
 
     def seek(self, frame: int) -> None:
@@ -1211,7 +1216,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Return the current frame number"""
         return self.__frame
 
-    def get_photoshop_blocks(self):
+    def get_photoshop_blocks(self) -> dict[int, dict[str, bytes]]:
         """
         Returns a dictionary of Photoshop "Image Resource Blocks".
         The keys are the image resource ID. For more information, see
@@ -1258,7 +1263,7 @@ class TiffImageFile(ImageFile.ImageFile):
         if ExifTags.Base.Orientation in self.tag_v2:
             del self.tag_v2[ExifTags.Base.Orientation]
 
-    def _load_libtiff(self):
+    def _load_libtiff(self) -> Image.core.PixelAccess | None:
         """Overload method triggered when we detect a compressed tiff
         Calls out to libtiff"""
 
@@ -1343,7 +1348,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         return Image.Image.load(self)
 
-    def _setup(self):
+    def _setup(self) -> None:
         """Setup this image object based on current tags"""
 
         if 0xBC01 in self.tag_v2:
@@ -1537,13 +1542,13 @@ class TiffImageFile(ImageFile.ImageFile):
                     # adjust stride width accordingly
                     stride /= bps_count
 
-                a = (tile_rawmode, int(stride), 1)
+                args = (tile_rawmode, int(stride), 1)
                 self.tile.append(
                     (
                         self._compression,
                         (x, y, min(x + w, xsize), min(y + h, ysize)),
                         offset,
-                        a,
+                        args,
                     )
                 )
                 x = x + w
@@ -1938,7 +1943,7 @@ class AppendingTiffWriter:
         521,  # JPEGACTables
     }
 
-    def __init__(self, fn, new=False):
+    def __init__(self, fn, new: bool = False) -> None:
         if hasattr(fn, "read"):
             self.f = fn
             self.close_fp = False
@@ -2015,7 +2020,7 @@ class AppendingTiffWriter:
     def tell(self) -> int:
         return self.f.tell() - self.offsetOfNewPage
 
-    def seek(self, offset, whence=io.SEEK_SET):
+    def seek(self, offset: int, whence=io.SEEK_SET) -> int:
         if whence == os.SEEK_SET:
             offset += self.offsetOfNewPage
 

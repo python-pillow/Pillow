@@ -1,6 +1,14 @@
 name: Wheels
 
 on:
+  schedule:
+  #        ┌───────────── minute (0 - 59)
+  #        │  ┌───────────── hour (0 - 23)
+  #        │  │ ┌───────────── day of the month (1 - 31)
+  #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+  #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+  #        │  │ │ │ │
+  - cron: "42 1 * * 0,3"
   push:
     paths:
       - ".ci/requirements-cibw.txt"
@@ -33,6 +41,7 @@ env:
 
 jobs:
   build-1-QEMU-emulated-wheels:
+    if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
     name: aarch64 ${{ matrix.python-version }} ${{ matrix.spec }}
     runs-on: ubuntu-latest
     strategy:
@@ -88,6 +97,7 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build-2-native-wheels:
+    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -129,6 +139,7 @@ jobs:
         env:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
+          CIBW_FREE_THREADED_SUPPORT: True
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_PRERELEASE_PYTHONS: True
@@ -140,6 +151,7 @@ jobs:
           path: ./wheelhouse/*.whl
 
   windows:
+    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     name: Windows ${{ matrix.cibw_arch }}
     runs-on: windows-latest
     strategy:
@@ -201,6 +213,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
+          CIBW_FREE_THREADED_SUPPORT: True
           CIBW_PRERELEASE_PYTHONS: True
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm
@@ -225,6 +238,7 @@ jobs:
           path: winbuild\build\bin\fribidi*
 
   sdist:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -243,8 +257,25 @@ jobs:
         name: dist-sdist
         path: dist/*.tar.gz
 
+  scientific-python-nightly-wheels-publish:
+    if: github.repository_owner == 'python-pillow' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    needs: [build-2-native-wheels, windows]
+    runs-on: ubuntu-latest
+    name: Upload wheels to scientific-python-nightly-wheels
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: Upload wheels to scientific-python-nightly-wheels
+        uses: scientific-python/upload-nightly-action@b67d7fcc0396e1128a474d1ab2b48aa94680f9fc # 0.5.0
+        with:
+          artifacts_path: dist
+          anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
+
   pypi-publish:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.repository_owner == 'python-pillow' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: [build-1-QEMU-emulated-wheels, build-2-native-wheels, windows, sdist]
     runs-on: ubuntu-latest
     name: Upload release to PyPI

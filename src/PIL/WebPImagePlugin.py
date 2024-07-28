@@ -96,7 +96,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Initialize seek state
         self._reset(reset=False)
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
@@ -115,7 +115,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self.__loaded = -1
         self.__timestamp = 0
 
-    def _get_next(self):
+    def _get_next(self) -> tuple[bytes, int, int]:
         # Get next frame
         ret = self._decoder.get_next()
         self.__physical_frame += 1

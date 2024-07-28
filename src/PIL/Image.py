@@ -38,7 +38,7 @@ import struct
 import sys
 import tempfile
 import warnings
-from collections.abc import Callable, MutableMapping, Sequence
+from collections.abc import Callable, Iterator, MutableMapping, Sequence
 from enum import IntEnum
 from types import ModuleType
 from typing import (
@@ -218,6 +218,8 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+
     from . import ImageFile, ImagePalette
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
@@ -241,9 +243,9 @@ ENCODERS: dict[str, type[ImageFile.PyEncoder]] = {}
 _ENDIAN = "<" if sys.byteorder == "little" else ">"
 
 
-def _conv_type_shape(im):
+def _conv_type_shape(im: Image) -> tuple[tuple[int, ...], str]:
     m = ImageMode.getmode(im.mode)
-    shape = (im.height, im.width)
+    shape: tuple[int, ...] = (im.height, im.width)
     extra = len(m.bands)
     if extra != 1:
         shape += (extra,)
@@ -466,40 +468,40 @@ def _getencoder(
 
 
 class _E:
-    def __init__(self, scale, offset) -> None:
+    def __init__(self, scale: float, offset: float) -> None:
         self.scale = scale
         self.offset = offset
 
-    def __neg__(self):
+    def __neg__(self) -> _E:
         return _E(-self.scale, -self.offset)
 
-    def __add__(self, other):
+    def __add__(self, other: _E | float) -> _E:
         if isinstance(other, _E):
             return _E(self.scale + other.scale, self.offset + other.offset)
         return _E(self.scale, self.offset + other)
 
     __radd__ = __add__
 
-    def __sub__(self, other):
+    def __sub__(self, other: _E | float) -> _E:
         return self + -other
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: _E | float) -> _E:
         return other + -self
 
-    def __mul__(self, other):
+    def __mul__(self, other: _E | float) -> _E:
         if isinstance(other, _E):
             return NotImplemented
         return _E(self.scale * other, self.offset * other)
 
     __rmul__ = __mul__
 
-    def __truediv__(self, other):
+    def __truediv__(self, other: _E | float) -> _E:
         if isinstance(other, _E):
             return NotImplemented
         return _E(self.scale / other, self.offset / other)
 
 
-def _getscaleoffset(expr):
+def _getscaleoffset(expr) -> tuple[float, float]:
     a = expr(_E(1, 0))
     return (a.scale, a.offset) if isinstance(a, _E) else (0, a)
 
@@ -728,9 +730,9 @@ class Image:
         return self._repr_image("JPEG")
 
     @property
-    def __array_interface__(self):
+    def __array_interface__(self) -> dict[str, str | bytes | int | tuple[int, ...]]:
         # numpy array interface support
-        new = {"version": 3}
+        new: dict[str, str | bytes | int | tuple[int, ...]] = {"version": 3}
         try:
             if self.mode == "1":
                 # Binary images need to be extended from bits to bytes
@@ -752,11 +754,11 @@ class Image:
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
-    def __getstate__(self):
+    def __getstate__(self) -> list[Any]:
         im_data = self.tobytes()  # load image first
         return [self.info, self.mode, self.size, self.getpalette(), im_data]
 
-    def __setstate__(self, state) -> None:
+    def __setstate__(self, state: list[Any]) -> None:
         self._prepare()
         info, mode, size, palette, data = state
         self.info = info
@@ -1428,7 +1430,7 @@ class Image:
             return out
         return self.im.getcolors(maxcolors)
 
-    def getdata(self, band: int | None = None):
+    def getdata(self, band: int | None = None) -> core.ImagingCore:
         """
         Returns the contents of this image as a sequence object
         containing pixel values.  The sequence object is flattened, so
@@ -1477,8 +1479,8 @@ class Image:
         def get_name(tag: str) -> str:
             return re.sub("^{[^}]+}", "", tag)
 
-        def get_value(element):
-            value = {get_name(k): v for k, v in element.attrib.items()}
+        def get_value(element: Element) -> str | dict[str, Any] | None:
+            value: dict[str, Any] = {get_name(k): v for k, v in element.attrib.items()}
             children = list(element)
             if children:
                 for child in children:
@@ -1691,7 +1693,9 @@ class Image:
         x, y = self.im.getprojection()
         return list(x), list(y)
 
-    def histogram(self, mask: Image | None = None, extrema=None) -> list[int]:
+    def histogram(
+        self, mask: Image | None = None, extrema: tuple[float, float] | None = None
+    ) -> list[int]:
         """
         Returns a histogram for the image. The histogram is returned as a
         list of pixel counts, one for each pixel value in the source
@@ -1717,12 +1721,14 @@ class Image:
             mask.load()
             return self.im.histogram((0, 0), mask.im)
         if self.mode in ("I", "F"):
-            if extrema is None:
-                extrema = self.getextrema()
-            return self.im.histogram(extrema)
+            return self.im.histogram(
+                extrema if extrema is not None else self.getextrema()
+            )
         return self.im.histogram()
 
-    def entropy(self, mask=None, extrema=None):
+    def entropy(
+        self, mask: Image | None = None, extrema: tuple[float, float] | None = None
+    ) -> float:
         """
         Calculates and returns the entropy for the image.
 
@@ -1743,9 +1749,9 @@ class Image:
             mask.load()
             return self.im.entropy((0, 0), mask.im)
         if self.mode in ("I", "F"):
-            if extrema is None:
-                extrema = self.getextrema()
-            return self.im.entropy(extrema)
+            return self.im.entropy(
+                extrema if extrema is not None else self.getextrema()
+            )
         return self.im.entropy()
 
     def paste(
@@ -2006,7 +2012,7 @@ class Image:
 
     def putdata(
         self,
-        data: Sequence[float] | Sequence[Sequence[int]] | NumpyArray,
+        data: Sequence[float] | Sequence[Sequence[int]] | core.ImagingCore | NumpyArray,
         scale: float = 1.0,
         offset: float = 0.0,
     ) -> None:
@@ -2194,7 +2200,12 @@ class Image:
 
         return m_im
 
-    def _get_safe_box(self, size, resample, box):
+    def _get_safe_box(
+        self,
+        size: tuple[int, int],
+        resample: Resampling,
+        box: tuple[float, float, float, float],
+    ) -> tuple[int, int, int, int]:
         """Expands the box so it includes adjacent pixels
         that may be used by resampling with the given resampling filter.
         """
@@ -2304,7 +2315,7 @@ class Image:
             factor_x = int((box[2] - box[0]) / size[0] / reducing_gap) or 1
             factor_y = int((box[3] - box[1]) / size[1] / reducing_gap) or 1
             if factor_x > 1 or factor_y > 1:
-                reduce_box = self._get_safe_box(size, resample, box)
+                reduce_box = self._get_safe_box(size, cast(Resampling, resample), box)
                 factor = (factor_x, factor_y)
                 self = (
                     self.reduce(factor, box=reduce_box)
@@ -2440,7 +2451,7 @@ class Image:
             0.0,
         ]
 
-        def transform(x, y, matrix):
+        def transform(x: float, y: float, matrix: list[float]) -> tuple[float, float]:
             (a, b, c, d, e, f) = matrix
             return a * x + b * y + c, d * x + e * y + f
 
@@ -2455,9 +2466,9 @@ class Image:
             xx = []
             yy = []
             for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
-                x, y = transform(x, y, matrix)
-                xx.append(x)
-                yy.append(y)
+                transformed_x, transformed_y = transform(x, y, matrix)
+                xx.append(transformed_x)
+                yy.append(transformed_y)
             nw = math.ceil(max(xx)) - math.floor(min(xx))
             nh = math.ceil(max(yy)) - math.floor(min(yy))
 
@@ -2715,7 +2726,7 @@ class Image:
         provided_size = tuple(map(math.floor, size))
 
         def preserve_aspect_ratio() -> tuple[int, int] | None:
-            def round_aspect(number, key):
+            def round_aspect(number: float, key: Callable[[int], float]) -> int:
                 return max(min(math.floor(number), math.ceil(number), key=key), 1)
 
             x, y = provided_size
@@ -2859,7 +2870,13 @@ class Image:
         return im
 
     def __transformer(
-        self, box, image, method, data, resample=Resampling.NEAREST, fill=1
+        self,
+        box: tuple[int, int, int, int],
+        image: Image,
+        method,
+        data,
+        resample: int = Resampling.NEAREST,
+        fill: bool = True,
     ):
         w = box[2] - box[0]
         h = box[3] - box[1]
@@ -2909,11 +2926,12 @@ class Image:
             Resampling.BICUBIC,
         ):
             if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
-                msg = {
+                unusable: dict[int, str] = {
                     Resampling.BOX: "Image.Resampling.BOX",
                     Resampling.HAMMING: "Image.Resampling.HAMMING",
                     Resampling.LANCZOS: "Image.Resampling.LANCZOS",
-                }[resample] + f" ({resample}) cannot be used."
+                }
+                msg = unusable[resample] + f" ({resample}) cannot be used."
             else:
                 msg = f"Unknown resampling filter ({resample})."
 
@@ -3299,7 +3317,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
-def fromqimage(im):
+def fromqimage(im) -> ImageFile.ImageFile:
     """Creates an image instance from a QImage image"""
     from . import ImageQt
 
@@ -3309,7 +3327,7 @@ def fromqimage(im):
     return ImageQt.fromqimage(im)
 
 
-def fromqpixmap(im):
+def fromqpixmap(im) -> ImageFile.ImageFile:
     """Creates an image instance from a QPixmap image"""
     from . import ImageQt
 
@@ -3856,7 +3874,7 @@ class Exif(_ExifBase):
       print(gps_ifd[ExifTags.GPS.GPSDateStamp])  # 1999:99:99 99:99:99
     """
 
-    endian = None
+    endian: str | None = None
     bigtiff = False
     _loaded = False
 
@@ -3880,7 +3898,7 @@ class Exif(_ExifBase):
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, offset, group=None):
+    def _get_ifd_dict(self, offset: int, group: int | None = None):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
@@ -3894,7 +3912,7 @@ class Exif(_ExifBase):
             info.load(self.fp)
             return self._fixup_dict(info)
 
-    def _get_head(self):
+    def _get_head(self) -> bytes:
         version = b"\x2B" if self.bigtiff else b"\x2A"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
@@ -3905,7 +3923,7 @@ class Exif(_ExifBase):
             head += b"\x00\x00\x00\x00"
         return head
 
-    def load(self, data):
+    def load(self, data: bytes) -> None:
         # Extract EXIF information.  This is highly experimental,
         # and is likely to be replaced with something better in a future
         # version.
@@ -3924,7 +3942,7 @@ class Exif(_ExifBase):
             self._info = None
             return
 
-        self.fp = io.BytesIO(data)
+        self.fp: IO[bytes] = io.BytesIO(data)
         self.head = self.fp.read(8)
         # process dictionary
         from . import TiffImagePlugin
@@ -3934,7 +3952,7 @@ class Exif(_ExifBase):
         self.fp.seek(self._info.next)
         self._info.load(self.fp)
 
-    def load_from_fp(self, fp, offset=None):
+    def load_from_fp(self, fp: IO[bytes], offset: int | None = None) -> None:
         self._loaded_exif = None
         self._data.clear()
         self._hidden_data.clear()
@@ -4115,16 +4133,16 @@ class Exif(_ExifBase):
             keys.update(self._info)
         return len(keys)
 
-    def __getitem__(self, tag):
+    def __getitem__(self, tag: int):
         if self._info is not None and tag not in self._data and tag in self._info:
             self._data[tag] = self._fixup(self._info[tag])
             del self._info[tag]
         return self._data[tag]
 
-    def __contains__(self, tag) -> bool:
+    def __contains__(self, tag: object) -> bool:
         return tag in self._data or (self._info is not None and tag in self._info)
 
-    def __setitem__(self, tag, value) -> None:
+    def __setitem__(self, tag: int, value) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         self._data[tag] = value
@@ -4135,7 +4153,7 @@ class Exif(_ExifBase):
         else:
             del self._data[tag]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         keys = set(self._data)
         if self._info is not None:
             keys.update(self._info)

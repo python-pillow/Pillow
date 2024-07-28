@@ -65,7 +65,7 @@ def has_ghostscript() -> bool:
     return gs_binary is not False
 
 
-def Ghostscript(tile, size, fp, scale=1, transparency=False):
+def Ghostscript(tile, size, fp, scale=1, transparency: bool = False) -> Image.Image:
     """Render an image using Ghostscript"""
     global gs_binary
     if not has_ghostscript():
