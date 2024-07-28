@@ -2613,7 +2613,7 @@ _chop_overlay(ImagingObject *self, PyObject *args) {
     return PyImagingNew(ImagingOverlay(self->image, imagep->image));
 }
 
-/* Graphics (ImageDraw) ----------------------------------------------- */
+/* Fonts (ImageDraw and ImageFont) ------------------------------------ */
 
 static PyObject *
 _font_new(PyObject *self_, PyObject *args) {
@@ -2842,7 +2842,7 @@ static struct PyMethodDef _font_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-/* -------------------------------------------------------------------- */
+/* Graphics (ImageDraw) ----------------------------------------------- */
 
 static PyObject *
 _draw_new(PyObject *self_, PyObject *args) {

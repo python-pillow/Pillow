@@ -82,5 +82,5 @@ C-level Flags
 ^^^^^^^^^^^^^
 
 Some compiling flags like ``WITH_THREADING``, ``WITH_IMAGECHOPS``, and other
-``WITH_*`` were removed. These flags were not available in the build system,
+``WITH_*`` were removed. These flags were not available through the build system,
 but they could be edited in the C source.
