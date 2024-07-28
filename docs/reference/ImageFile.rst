@@ -37,6 +37,11 @@ Example: Parse an image
 Classes
 -------
 
+.. autoclass:: PIL.ImageFile._Tile()
+    :member-order: bysource
+    :members:
+    :show-inheritance:
+
 .. autoclass:: PIL.ImageFile.Parser()
     :members:
 

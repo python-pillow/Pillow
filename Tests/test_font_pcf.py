@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import AnyStr
 
 import pytest
 
@@ -92,7 +93,7 @@ def test_textsize(request: pytest.FixtureRequest, tmp_path: Path) -> None:
 
 
 def _test_high_characters(
-    request: pytest.FixtureRequest, tmp_path: Path, message: str | bytes
+    request: pytest.FixtureRequest, tmp_path: Path, message: AnyStr
 ) -> None:
     tempname = save_font(request, tmp_path)
     font = ImageFont.load(tempname)

@@ -249,13 +249,20 @@ def lambda_eval(
     :py:func:`~PIL.Image.merge` function.
 
     :param expression: A function that receives a dictionary.
-    :param options: Values to add to the function's dictionary. You
-                    can either use a dictionary, or one or more keyword
-                    arguments.
+    :param options: Values to add to the function's dictionary. Deprecated.
+                    You can instead use one or more keyword arguments.
+    :param **kw: Values to add to the function's dictionary.
     :return: The expression result. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
     """
+
+    if options:
+        deprecate(
+            "ImageMath.lambda_eval options",
+            12,
+            "ImageMath.lambda_eval keyword arguments",
+        )
 
     args: dict[str, Any] = ops.copy()
     args.update(options)
@@ -287,13 +294,20 @@ def unsafe_eval(
     :py:func:`~PIL.Image.merge` function.
 
     :param expression: A string containing a Python-style expression.
-    :param options: Values to add to the evaluation context.  You
-                    can either use a dictionary, or one or more keyword
-                    arguments.
+    :param options: Values to add to the evaluation context. Deprecated.
+                    You can instead use one or more keyword arguments.
+    :param **kw: Values to add to the evaluation context.
     :return: The evaluated expression. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
     """
+
+    if options:
+        deprecate(
+            "ImageMath.unsafe_eval options",
+            12,
+            "ImageMath.unsafe_eval keyword arguments",
+        )
 
     # build execution namespace
     args: dict[str, Any] = ops.copy()

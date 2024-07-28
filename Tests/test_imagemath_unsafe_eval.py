@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from PIL import Image, ImageMath
@@ -21,16 +23,16 @@ I = Image.new("I", (1, 1), 4)  # noqa: E741
 A2 = A.resize((2, 2))
 B2 = B.resize((2, 2))
 
-images = {"A": A, "B": B, "F": F, "I": I}
+images: dict[str, Any] = {"A": A, "B": B, "F": F, "I": I}
 
 
 def test_sanity() -> None:
     assert ImageMath.unsafe_eval("1") == 1
     assert ImageMath.unsafe_eval("1+A", A=2) == 3
     assert pixel(ImageMath.unsafe_eval("A+B", A=A, B=B)) == "I 3"
-    assert pixel(ImageMath.unsafe_eval("A+B", images)) == "I 3"
-    assert pixel(ImageMath.unsafe_eval("float(A)+B", images)) == "F 3.0"
-    assert pixel(ImageMath.unsafe_eval("int(float(A)+B)", images)) == "I 3"
+    assert pixel(ImageMath.unsafe_eval("A+B", **images)) == "I 3"
+    assert pixel(ImageMath.unsafe_eval("float(A)+B", **images)) == "F 3.0"
+    assert pixel(ImageMath.unsafe_eval("int(float(A)+B)", **images)) == "I 3"
 
 
 def test_eval_deprecated() -> None:
@@ -38,23 +40,28 @@ def test_eval_deprecated() -> None:
         assert ImageMath.eval("1") == 1
 
 
+def test_options_deprecated() -> None:
+    with pytest.warns(DeprecationWarning):
+        assert ImageMath.unsafe_eval("1", images) == 1
+
+
 def test_ops() -> None:
-    assert pixel(ImageMath.unsafe_eval("-A", images)) == "I -1"
-    assert pixel(ImageMath.unsafe_eval("+B", images)) == "L 2"
+    assert pixel(ImageMath.unsafe_eval("-A", **images)) == "I -1"
+    assert pixel(ImageMath.unsafe_eval("+B", **images)) == "L 2"
 
-    assert pixel(ImageMath.unsafe_eval("A+B", images)) == "I 3"
-    assert pixel(ImageMath.unsafe_eval("A-B", images)) == "I -1"
-    assert pixel(ImageMath.unsafe_eval("A*B", images)) == "I 2"
-    assert pixel(ImageMath.unsafe_eval("A/B", images)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("B**2", images)) == "I 4"
-    assert pixel(ImageMath.unsafe_eval("B**33", images)) == "I 2147483647"
+    assert pixel(ImageMath.unsafe_eval("A+B", **images)) == "I 3"
+    assert pixel(ImageMath.unsafe_eval("A-B", **images)) == "I -1"
+    assert pixel(ImageMath.unsafe_eval("A*B", **images)) == "I 2"
+    assert pixel(ImageMath.unsafe_eval("A/B", **images)) == "I 0"
+    assert pixel(ImageMath.unsafe_eval("B**2", **images)) == "I 4"
+    assert pixel(ImageMath.unsafe_eval("B**33", **images)) == "I 2147483647"
 
-    assert pixel(ImageMath.unsafe_eval("float(A)+B", images)) == "F 3.0"
-    assert pixel(ImageMath.unsafe_eval("float(A)-B", images)) == "F -1.0"
-    assert pixel(ImageMath.unsafe_eval("float(A)*B", images)) == "F 2.0"
-    assert pixel(ImageMath.unsafe_eval("float(A)/B", images)) == "F 0.5"
-    assert pixel(ImageMath.unsafe_eval("float(B)**2", images)) == "F 4.0"
-    assert pixel(ImageMath.unsafe_eval("float(B)**33", images)) == "F 8589934592.0"
+    assert pixel(ImageMath.unsafe_eval("float(A)+B", **images)) == "F 3.0"
+    assert pixel(ImageMath.unsafe_eval("float(A)-B", **images)) == "F -1.0"
+    assert pixel(ImageMath.unsafe_eval("float(A)*B", **images)) == "F 2.0"
+    assert pixel(ImageMath.unsafe_eval("float(A)/B", **images)) == "F 0.5"
+    assert pixel(ImageMath.unsafe_eval("float(B)**2", **images)) == "F 4.0"
+    assert pixel(ImageMath.unsafe_eval("float(B)**33", **images)) == "F 8589934592.0"
 
 
 @pytest.mark.parametrize(
@@ -72,33 +79,33 @@ def test_prevent_exec(expression: str) -> None:
 
 def test_prevent_double_underscores() -> None:
     with pytest.raises(ValueError):
-        ImageMath.unsafe_eval("1", {"__": None})
+        ImageMath.unsafe_eval("1", __=None)
 
 
 def test_prevent_builtins() -> None:
     with pytest.raises(ValueError):
-        ImageMath.unsafe_eval("(lambda: exec('exit()'))()", {"exec": None})
+        ImageMath.unsafe_eval("(lambda: exec('exit()'))()", exec=None)
 
 
 def test_logical() -> None:
-    assert pixel(ImageMath.unsafe_eval("not A", images)) == 0
-    assert pixel(ImageMath.unsafe_eval("A and B", images)) == "L 2"
-    assert pixel(ImageMath.unsafe_eval("A or B", images)) == "L 1"
+    assert pixel(ImageMath.unsafe_eval("not A", **images)) == 0
+    assert pixel(ImageMath.unsafe_eval("A and B", **images)) == "L 2"
+    assert pixel(ImageMath.unsafe_eval("A or B", **images)) == "L 1"
 
 
 def test_convert() -> None:
-    assert pixel(ImageMath.unsafe_eval("convert(A+B, 'L')", images)) == "L 3"
-    assert pixel(ImageMath.unsafe_eval("convert(A+B, '1')", images)) == "1 0"
+    assert pixel(ImageMath.unsafe_eval("convert(A+B, 'L')", **images)) == "L 3"
+    assert pixel(ImageMath.unsafe_eval("convert(A+B, '1')", **images)) == "1 0"
     assert (
-        pixel(ImageMath.unsafe_eval("convert(A+B, 'RGB')", images)) == "RGB (3, 3, 3)"
+        pixel(ImageMath.unsafe_eval("convert(A+B, 'RGB')", **images)) == "RGB (3, 3, 3)"
     )
 
 
 def test_compare() -> None:
-    assert pixel(ImageMath.unsafe_eval("min(A, B)", images)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("max(A, B)", images)) == "I 2"
-    assert pixel(ImageMath.unsafe_eval("A == 1", images)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("A == 2", images)) == "I 0"
+    assert pixel(ImageMath.unsafe_eval("min(A, B)", **images)) == "I 1"
+    assert pixel(ImageMath.unsafe_eval("max(A, B)", **images)) == "I 2"
+    assert pixel(ImageMath.unsafe_eval("A == 1", **images)) == "I 1"
+    assert pixel(ImageMath.unsafe_eval("A == 2", **images)) == "I 0"
 
 
 def test_one_image_larger() -> None:

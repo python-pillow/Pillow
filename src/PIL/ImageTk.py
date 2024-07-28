@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import tkinter
 from io import BytesIO
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from . import Image, ImageFile
 
@@ -61,7 +61,9 @@ def _get_image_from_kw(kw: dict[str, Any]) -> ImageFile.ImageFile | None:
     return Image.open(source)
 
 
-def _pyimagingtkcall(command, photo, id):
+def _pyimagingtkcall(
+    command: str, photo: PhotoImage | tkinter.PhotoImage, id: int
+) -> None:
     tk = photo.tk
     try:
         tk.call(command, photo, id)
@@ -215,11 +217,14 @@ class BitmapImage:
     :param image: A PIL image.
     """
 
-    def __init__(self, image=None, **kw):
+    def __init__(self, image: Image.Image | None = None, **kw: Any) -> None:
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
 
+        if image is None:
+            msg = "Image is required"
+            raise ValueError(msg)
         self.__mode = image.mode
         self.__size = image.size
 
@@ -278,18 +283,23 @@ def getimage(photo: PhotoImage) -> Image.Image:
     return im
 
 
-def _show(image, title):
+def _show(image: Image.Image, title: str | None) -> None:
     """Helper for the Image.show method."""
 
     class UI(tkinter.Label):
-        def __init__(self, master, im):
+        def __init__(self, master: tkinter.Toplevel, im: Image.Image) -> None:
+            self.image: BitmapImage | PhotoImage
             if im.mode == "1":
                 self.image = BitmapImage(im, foreground="white", master=master)
             else:
                 self.image = PhotoImage(im, master=master)
-            super().__init__(master, image=self.image, bg="black", bd=0)
+            if TYPE_CHECKING:
+                image = cast(tkinter._Image, self.image)
+            else:
+                image = self.image
+            super().__init__(master, image=image, bg="black", bd=0)
 
-    if not tkinter._default_root:
+    if not getattr(tkinter, "_default_root"):
         msg = "tkinter not initialized"
         raise OSError(msg)
     top = tkinter.Toplevel()

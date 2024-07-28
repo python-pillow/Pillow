@@ -90,6 +90,7 @@ class TestImageFile:
             data = f.read()
         with ImageFile.Parser() as p:
             p.feed(data)
+            assert p.image is not None
             assert (48, 48) == p.image.size
 
     @skip_unless_feature("webp")
@@ -102,6 +103,7 @@ class TestImageFile:
                 assert not p.image
 
                 p.feed(f.read())
+            assert p.image is not None
             assert (128, 128) == p.image.size
 
     @skip_unless_feature("zlib")
@@ -124,7 +126,7 @@ class TestImageFile:
     def test_raise_typeerror(self) -> None:
         with pytest.raises(TypeError):
             parser = ImageFile.Parser()
-            parser.feed(1)
+            parser.feed(1)  # type: ignore[arg-type]
 
     def test_negative_stride(self) -> None:
         with open("Tests/images/raw_negative_stride.bin", "rb") as f:
@@ -302,7 +304,7 @@ class TestPyDecoder(CodecsTest):
             im.load()
 
     def test_decode(self) -> None:
-        decoder = ImageFile.PyDecoder(None)
+        decoder = ImageFile.PyDecoder("")
         with pytest.raises(NotImplementedError):
             decoder.decode(b"")
 
@@ -380,7 +382,7 @@ class TestPyEncoder(CodecsTest):
             )
 
     def test_encode(self) -> None:
-        encoder = ImageFile.PyEncoder(None)
+        encoder = ImageFile.PyEncoder("")
         with pytest.raises(NotImplementedError):
             encoder.encode(0)
 
@@ -392,8 +394,9 @@ class TestPyEncoder(CodecsTest):
         with pytest.raises(NotImplementedError):
             encoder.encode_to_pyfd()
 
+        fh = BytesIO()
         with pytest.raises(NotImplementedError):
-            encoder.encode_to_file(None, None)
+            encoder.encode_to_file(fh, 0)
 
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):

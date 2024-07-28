@@ -1,12 +1,6 @@
-from typing import Any, TypedDict
+from typing import Any, Callable
 
-from . import _imaging
-
-class _Axis(TypedDict):
-    minimum: int | None
-    default: int | None
-    maximum: int | None
-    name: bytes | None
+from . import ImageFont, _imaging
 
 class Font:
     @property
@@ -28,42 +22,48 @@ class Font:
     def render(
         self,
         string: str | bytes,
-        fill,
-        mode=...,
-        dir=...,
-        features=...,
-        lang=...,
-        stroke_width=...,
-        anchor=...,
-        foreground_ink_long=...,
-        x_start=...,
-        y_start=...,
+        fill: Callable[[int, int], _imaging.ImagingCore],
+        mode: str,
+        dir: str | None,
+        features: list[str] | None,
+        lang: str | None,
+        stroke_width: float,
+        anchor: str | None,
+        foreground_ink_long: int,
+        x_start: float,
+        y_start: float,
         /,
     ) -> tuple[_imaging.ImagingCore, tuple[int, int]]: ...
     def getsize(
         self,
         string: str | bytes | bytearray,
-        mode=...,
-        dir=...,
-        features=...,
-        lang=...,
-        anchor=...,
+        mode: str,
+        dir: str | None,
+        features: list[str] | None,
+        lang: str | None,
+        anchor: str | None,
         /,
     ) -> tuple[tuple[int, int], tuple[int, int]]: ...
     def getlength(
-        self, string: str | bytes, mode=..., dir=..., features=..., lang=..., /
+        self,
+        string: str | bytes,
+        mode: str,
+        dir: str | None,
+        features: list[str] | None,
+        lang: str | None,
+        /,
     ) -> float: ...
     def getvarnames(self) -> list[bytes]: ...
-    def getvaraxes(self) -> list[_Axis] | None: ...
+    def getvaraxes(self) -> list[ImageFont.Axis]: ...
     def setvarname(self, instance_index: int, /) -> None: ...
     def setvaraxes(self, axes: list[float], /) -> None: ...
 
 def getfont(
     filename: str | bytes,
     size: float,
-    index=...,
-    encoding=...,
-    font_bytes=...,
-    layout_engine=...,
+    index: int,
+    encoding: str,
+    font_bytes: bytes,
+    layout_engine: int,
 ) -> Font: ...
 def __getattr__(name: str) -> Any: ...

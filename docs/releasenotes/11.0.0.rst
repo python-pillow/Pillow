@@ -51,6 +51,13 @@ The following features ``features.check("transp_webp")``,
 always ``True`` if the WebP module is installed and should not be used.
 These checks will be removed in Pillow 12.0.0 (2025-10-15).
 
+ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
+:py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more
+keyword arguments can be used instead.
+
 API Changes
 ===========
 

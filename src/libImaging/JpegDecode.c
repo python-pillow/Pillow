@@ -206,9 +206,8 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
                 context->cinfo.out_color_space = JCS_EXT_RGBX;
             }
 #endif
-            else if (
-                strcmp(context->rawmode, "CMYK") == 0 ||
-                strcmp(context->rawmode, "CMYK;I") == 0) {
+            else if (strcmp(context->rawmode, "CMYK") == 0 ||
+                     strcmp(context->rawmode, "CMYK;I") == 0) {
                 context->cinfo.out_color_space = JCS_CMYK;
             } else if (strcmp(context->rawmode, "YCbCr") == 0) {
                 context->cinfo.out_color_space = JCS_YCbCr;
@@ -256,7 +255,8 @@ ImagingJpegDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t by
                     (UINT8 *)im->image[state->y + state->yoff] +
                         state->xoff * im->pixelsize,
                     state->buffer,
-                    state->xsize);
+                    state->xsize
+                );
                 state->y++;
             }
             if (ok != 1) {

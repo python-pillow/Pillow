@@ -240,9 +240,10 @@ class TestFileLibTiff(LibTiffTestCase):
 
             new_ifd = TiffImagePlugin.ImageFileDirectory_v2()
             for tag, info in core_items.items():
+                assert info.type is not None
                 if info.length == 1:
                     new_ifd[tag] = values[info.type]
-                if info.length == 0:
+                elif not info.length:
                     new_ifd[tag] = tuple(values[info.type] for _ in range(3))
                 else:
                     new_ifd[tag] = tuple(values[info.type] for _ in range(info.length))

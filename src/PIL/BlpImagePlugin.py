@@ -313,6 +313,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
         self._blp_lengths = struct.unpack("<16I", self._safe_read(16 * 4))
 
     def _safe_read(self, length: int) -> bytes:
+        assert self.fd is not None
         return ImageFile._safe_read(self.fd, length)
 
     def _read_palette(self) -> list[tuple[int, int, int, int]]:

@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from typing import Any
+
+import pytest
+
 from PIL import Image, ImageMath
 
 
@@ -19,7 +23,7 @@ I = Image.new("I", (1, 1), 4)  # noqa: E741
 A2 = A.resize((2, 2))
 B2 = B.resize((2, 2))
 
-images = {"A": A, "B": B, "F": F, "I": I}
+images: dict[str, Any] = {"A": A, "B": B, "F": F, "I": I}
 
 
 def test_sanity() -> None:
@@ -30,13 +34,13 @@ def test_sanity() -> None:
         == "I 3"
     )
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] + args["B"], images))
+        pixel(ImageMath.lambda_eval(lambda args: args["A"] + args["B"], **images))
         == "I 3"
     )
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["float"](args["A"]) + args["B"], images
+                lambda args: args["float"](args["A"]) + args["B"], **images
             )
         )
         == "F 3.0"
@@ -44,42 +48,47 @@ def test_sanity() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["int"](args["float"](args["A"]) + args["B"]), images
+                lambda args: args["int"](args["float"](args["A"]) + args["B"]), **images
             )
         )
         == "I 3"
     )
 
 
+def test_options_deprecated() -> None:
+    with pytest.warns(DeprecationWarning):
+        assert ImageMath.lambda_eval(lambda args: 1, images) == 1
+
+
 def test_ops() -> None:
-    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] * -1, images)) == "I -1"
+    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] * -1, **images)) == "I -1"
 
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] + args["B"], images))
+        pixel(ImageMath.lambda_eval(lambda args: args["A"] + args["B"], **images))
         == "I 3"
     )
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] - args["B"], images))
+        pixel(ImageMath.lambda_eval(lambda args: args["A"] - args["B"], **images))
         == "I -1"
     )
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] * args["B"], images))
+        pixel(ImageMath.lambda_eval(lambda args: args["A"] * args["B"], **images))
         == "I 2"
     )
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] / args["B"], images))
+        pixel(ImageMath.lambda_eval(lambda args: args["A"] / args["B"], **images))
         == "I 0"
     )
-    assert pixel(ImageMath.lambda_eval(lambda args: args["B"] ** 2, images)) == "I 4"
+    assert pixel(ImageMath.lambda_eval(lambda args: args["B"] ** 2, **images)) == "I 4"
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] ** 33, images))
+        pixel(ImageMath.lambda_eval(lambda args: args["B"] ** 33, **images))
         == "I 2147483647"
     )
 
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["float"](args["A"]) + args["B"], images
+                lambda args: args["float"](args["A"]) + args["B"], **images
             )
         )
         == "F 3.0"
@@ -87,7 +96,7 @@ def test_ops() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["float"](args["A"]) - args["B"], images
+                lambda args: args["float"](args["A"]) - args["B"], **images
             )
         )
         == "F -1.0"
@@ -95,7 +104,7 @@ def test_ops() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["float"](args["A"]) * args["B"], images
+                lambda args: args["float"](args["A"]) * args["B"], **images
             )
         )
         == "F 2.0"
@@ -103,31 +112,33 @@ def test_ops() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["float"](args["A"]) / args["B"], images
+                lambda args: args["float"](args["A"]) / args["B"], **images
             )
         )
         == "F 0.5"
     )
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["float"](args["B"]) ** 2, images))
+        pixel(
+            ImageMath.lambda_eval(lambda args: args["float"](args["B"]) ** 2, **images)
+        )
         == "F 4.0"
     )
     assert (
         pixel(
-            ImageMath.lambda_eval(lambda args: args["float"](args["B"]) ** 33, images)
+            ImageMath.lambda_eval(lambda args: args["float"](args["B"]) ** 33, **images)
         )
         == "F 8589934592.0"
     )
 
 
 def test_logical() -> None:
-    assert pixel(ImageMath.lambda_eval(lambda args: not args["A"], images)) == 0
+    assert pixel(ImageMath.lambda_eval(lambda args: not args["A"], **images)) == 0
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] and args["B"], images))
+        pixel(ImageMath.lambda_eval(lambda args: args["A"] and args["B"], **images))
         == "L 2"
     )
     assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] or args["B"], images))
+        pixel(ImageMath.lambda_eval(lambda args: args["A"] or args["B"], **images))
         == "L 1"
     )
 
@@ -136,7 +147,7 @@ def test_convert() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["convert"](args["A"] + args["B"], "L"), images
+                lambda args: args["convert"](args["A"] + args["B"], "L"), **images
             )
         )
         == "L 3"
@@ -144,7 +155,7 @@ def test_convert() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["convert"](args["A"] + args["B"], "1"), images
+                lambda args: args["convert"](args["A"] + args["B"], "1"), **images
             )
         )
         == "1 0"
@@ -152,7 +163,7 @@ def test_convert() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["convert"](args["A"] + args["B"], "RGB"), images
+                lambda args: args["convert"](args["A"] + args["B"], "RGB"), **images
             )
         )
         == "RGB (3, 3, 3)"
@@ -163,7 +174,7 @@ def test_compare() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["min"](args["A"], args["B"]), images
+                lambda args: args["min"](args["A"], args["B"]), **images
             )
         )
         == "I 1"
@@ -171,13 +182,13 @@ def test_compare() -> None:
     assert (
         pixel(
             ImageMath.lambda_eval(
-                lambda args: args["max"](args["A"], args["B"]), images
+                lambda args: args["max"](args["A"], args["B"]), **images
             )
         )
         == "I 2"
     )
-    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] == 1, images)) == "I 1"
-    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] == 2, images)) == "I 0"
+    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] == 1, **images)) == "I 1"
+    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] == 2, **images)) == "I 0"
 
 
 def test_one_image_larger() -> None:

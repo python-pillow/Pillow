@@ -105,7 +105,8 @@ _draw(ImagingDisplayObject *display, PyObject *args) {
             src + 0,
             src + 1,
             src + 2,
-            src + 3)) {
+            src + 3
+        )) {
         return NULL;
     }
 
@@ -221,7 +222,8 @@ _tobytes(ImagingDisplayObject *display, PyObject *args) {
     }
 
     return PyBytes_FromStringAndSize(
-        display->dib->bits, display->dib->ysize * display->dib->linesize);
+        display->dib->bits, display->dib->ysize * display->dib->linesize
+    );
 }
 
 static struct PyMethodDef methods[] = {
@@ -247,7 +249,8 @@ _getattr_size(ImagingDisplayObject *self, void *closure) {
 }
 
 static struct PyGetSetDef getsetters[] = {
-    {"mode", (getter)_getattr_mode}, {"size", (getter)_getattr_size}, {NULL}};
+    {"mode", (getter)_getattr_mode}, {"size", (getter)_getattr_size}, {NULL}
+};
 
 static PyTypeObject ImagingDisplayType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingDisplay", /*tp_name*/
@@ -341,9 +344,8 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     // added in Windows 10 (1607)
     // loaded dynamically to avoid link errors
     user32 = LoadLibraryA("User32.dll");
-    SetThreadDpiAwarenessContext_function =
-        (Func_SetThreadDpiAwarenessContext)GetProcAddress(
-            user32, "SetThreadDpiAwarenessContext");
+    SetThreadDpiAwarenessContext_function = (Func_SetThreadDpiAwarenessContext
+    )GetProcAddress(user32, "SetThreadDpiAwarenessContext");
     if (SetThreadDpiAwarenessContext_function != NULL) {
         // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = ((DPI_CONTEXT_HANDLE)-3)
         dpiAwareness = SetThreadDpiAwarenessContext_function((HANDLE)-3);
@@ -403,7 +405,8 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
             height,
             PyBytes_AS_STRING(buffer),
             (BITMAPINFO *)&core,
-            DIB_RGB_COLORS)) {
+            DIB_RGB_COLORS
+        )) {
         goto error;
     }
 
@@ -547,7 +550,8 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam) {
                 ps.rcPaint.left,
                 ps.rcPaint.top,
                 ps.rcPaint.right,
-                ps.rcPaint.bottom);
+                ps.rcPaint.bottom
+            );
             if (result) {
                 Py_DECREF(result);
             } else {
@@ -562,7 +566,8 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam) {
                 0,
                 0,
                 rect.right - rect.left,
-                rect.bottom - rect.top);
+                rect.bottom - rect.top
+            );
             if (result) {
                 Py_DECREF(result);
             } else {
@@ -577,7 +582,8 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam) {
                 0,
                 0,
                 rect.right - rect.left,
-                rect.bottom - rect.top);
+                rect.bottom - rect.top
+            );
             if (result) {
                 Py_DECREF(result);
             } else {
@@ -591,7 +597,8 @@ windowCallback(HWND wnd, UINT message, WPARAM wParam, LPARAM lParam) {
         case WM_SIZE:
             /* resize window */
             result = PyObject_CallFunction(
-                callback, "sii", "resize", LOWORD(lParam), HIWORD(lParam));
+                callback, "sii", "resize", LOWORD(lParam), HIWORD(lParam)
+            );
             if (result) {
                 InvalidateRect(wnd, NULL, 1);
                 Py_DECREF(result);
@@ -670,7 +677,8 @@ PyImaging_CreateWindowWin32(PyObject *self, PyObject *args) {
         HWND_DESKTOP,
         NULL,
         NULL,
-        NULL);
+        NULL
+    );
 
     if (!wnd) {
         PyErr_SetString(PyExc_OSError, "failed to create window");
@@ -732,7 +740,8 @@ PyImaging_DrawWmf(PyObject *self, PyObject *args) {
             &x0,
             &x1,
             &y0,
-            &y1)) {
+            &y1
+        )) {
         return NULL;
     }
 
@@ -844,7 +853,8 @@ PyImaging_GrabScreenX11(PyObject *self, PyObject *args) {
         PyErr_Format(
             PyExc_OSError,
             "X connection failed: error %i",
-            xcb_connection_has_error(connection));
+            xcb_connection_has_error(connection)
+        );
         xcb_disconnect(connection);
         return NULL;
     }
@@ -878,8 +888,10 @@ PyImaging_GrabScreenX11(PyObject *self, PyObject *args) {
             0,
             width,
             height,
-            0x00ffffff),
-        &error);
+            0x00ffffff
+        ),
+        &error
+    );
     if (reply == NULL) {
         PyErr_Format(
             PyExc_OSError,
@@ -887,7 +899,8 @@ PyImaging_GrabScreenX11(PyObject *self, PyObject *args) {
             error->error_code,
             error->major_code,
             error->minor_code,
-            error->resource_id);
+            error->resource_id
+        );
         free(error);
         xcb_disconnect(connection);
         return NULL;
@@ -897,7 +910,8 @@ PyImaging_GrabScreenX11(PyObject *self, PyObject *args) {
 
     if (reply->depth == 24) {
         buffer = PyBytes_FromStringAndSize(
-            (char *)xcb_get_image_data(reply), xcb_get_image_data_length(reply));
+            (char *)xcb_get_image_data(reply), xcb_get_image_data_length(reply)
+        );
     } else {
         PyErr_Format(PyExc_OSError, "unsupported bit depth: %i", reply->depth);
     }

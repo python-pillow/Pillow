@@ -33,7 +33,7 @@ class Iterator:
     :param im: An image object.
     """
 
-    def __init__(self, im: Image.Image):
+    def __init__(self, im: Image.Image) -> None:
         if not hasattr(im, "seek"):
             msg = "im must have seek method"
             raise AttributeError(msg)

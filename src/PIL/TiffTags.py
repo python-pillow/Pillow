@@ -32,17 +32,24 @@ class _TagInfo(NamedTuple):
 class TagInfo(_TagInfo):
     __slots__: list[str] = []
 
-    def __new__(cls, value=None, name="unknown", type=None, length=None, enum=None):
+    def __new__(
+        cls,
+        value: int | None = None,
+        name: str = "unknown",
+        type: int | None = None,
+        length: int | None = None,
+        enum: dict[str, int] | None = None,
+    ) -> TagInfo:
         return super().__new__(cls, value, name, type, length, enum or {})
 
-    def cvt_enum(self, value):
+    def cvt_enum(self, value: str) -> int | str:
         # Using get will call hash(value), which can be expensive
         # for some types (e.g. Fraction). Since self.enum is rarely
         # used, it's usually better to test it first.
         return self.enum.get(value, value) if self.enum else value
 
 
-def lookup(tag, group=None):
+def lookup(tag: int, group: int | None = None) -> TagInfo:
     """
     :param tag: Integer tag number
     :param group: Which :py:data:`~PIL.TiffTags.TAGS_V2_GROUPS` to look in
@@ -89,7 +96,7 @@ DOUBLE = 12
 IFD = 13
 LONG8 = 16
 
-_tags_v2 = {
+_tags_v2: dict[int, tuple[str, int, int] | tuple[str, int, int, dict[str, int]]] = {
     254: ("NewSubfileType", LONG, 1),
     255: ("SubfileType", SHORT, 1),
     256: ("ImageWidth", LONG, 1),
@@ -233,7 +240,7 @@ _tags_v2 = {
     50838: ("ImageJMetaDataByteCounts", LONG, 0),  # Can be more than one
     50839: ("ImageJMetaData", UNDEFINED, 1),  # see Issue #2006
 }
-TAGS_V2_GROUPS = {
+_tags_v2_groups = {
     # ExifIFD
     34665: {
         36864: ("ExifVersion", UNDEFINED, 1),
@@ -281,7 +288,7 @@ TAGS_V2_GROUPS = {
 
 # Legacy Tags structure
 # these tags aren't included above, but were in the previous versions
-TAGS = {
+TAGS: dict[int | tuple[int, int], str] = {
     347: "JPEGTables",
     700: "XMP",
     # Additional Exif Info
@@ -426,9 +433,10 @@ TAGS = {
 }
 
 TAGS_V2: dict[int, TagInfo] = {}
+TAGS_V2_GROUPS: dict[int, dict[int, TagInfo]] = {}
 
 
-def _populate():
+def _populate() -> None:
     for k, v in _tags_v2.items():
         # Populate legacy structure.
         TAGS[k] = v[0]
@@ -438,9 +446,8 @@ def _populate():
 
         TAGS_V2[k] = TagInfo(k, *v)
 
-    for tags in TAGS_V2_GROUPS.values():
-        for k, v in tags.items():
-            tags[k] = TagInfo(k, *v)
+    for group, tags in _tags_v2_groups.items():
+        TAGS_V2_GROUPS[group] = {k: TagInfo(k, *v) for k, v in tags.items()}
 
 
 _populate()

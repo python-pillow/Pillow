@@ -107,11 +107,8 @@ free_color_cube(ColorCube cube) {
 
 static long
 color_bucket_offset_pos(
-    const ColorCube cube,
-    unsigned int r,
-    unsigned int g,
-    unsigned int b,
-    unsigned int a) {
+    const ColorCube cube, unsigned int r, unsigned int g, unsigned int b, unsigned int a
+) {
     return r << cube->rOffset | g << cube->gOffset | b << cube->bOffset |
            a << cube->aOffset;
 }
@@ -191,7 +188,8 @@ create_sorted_color_palette(const ColorCube cube) {
         buckets,
         cube->size,
         sizeof(struct _ColorBucket),
-        (int (*)(void const *, void const *)) & compare_bucket_count);
+        (int (*)(void const *, void const *)) & compare_bucket_count
+    );
 
     return buckets;
 }
@@ -212,7 +210,8 @@ copy_color_cube(
     unsigned int rBits,
     unsigned int gBits,
     unsigned int bBits,
-    unsigned int aBits) {
+    unsigned int aBits
+) {
     unsigned int r, g, b, a;
     long src_pos, dst_pos;
     unsigned int src_reduce[4] = {0}, dst_reduce[4] = {0};
@@ -262,15 +261,18 @@ copy_color_cube(
                         r >> src_reduce[0],
                         g >> src_reduce[1],
                         b >> src_reduce[2],
-                        a >> src_reduce[3]);
+                        a >> src_reduce[3]
+                    );
                     dst_pos = color_bucket_offset_pos(
                         result,
                         r >> dst_reduce[0],
                         g >> dst_reduce[1],
                         b >> dst_reduce[2],
-                        a >> dst_reduce[3]);
+                        a >> dst_reduce[3]
+                    );
                     add_bucket_values(
-                        &cube->buckets[src_pos], &result->buckets[dst_pos]);
+                        &cube->buckets[src_pos], &result->buckets[dst_pos]
+                    );
                 }
             }
         }
@@ -328,7 +330,8 @@ combined_palette(
     ColorBucket bucketsA,
     unsigned long nBucketsA,
     ColorBucket bucketsB,
-    unsigned long nBucketsB) {
+    unsigned long nBucketsB
+) {
     ColorBucket result;
     if (nBucketsA > LONG_MAX - nBucketsB ||
         (nBucketsA + nBucketsB) > LONG_MAX / sizeof(struct _ColorBucket)) {
@@ -366,7 +369,8 @@ map_image_pixels(
     const Pixel *pixelData,
     uint32_t nPixels,
     const ColorCube lookupCube,
-    uint32_t *pixelArray) {
+    uint32_t *pixelArray
+) {
     long i;
     for (i = 0; i < nPixels; i++) {
         pixelArray[i] = lookup_color(lookupCube, &pixelData[i]);
@@ -384,7 +388,8 @@ quantize_octree(
     Pixel **palette,
     uint32_t *paletteLength,
     uint32_t **quantizedPixels,
-    int withAlpha) {
+    int withAlpha
+) {
     ColorCube fineCube = NULL;
     ColorCube coarseCube = NULL;
     ColorCube lookupCube = NULL;
@@ -461,7 +466,8 @@ quantize_octree(
         subtract_color_buckets(
             coarseCube,
             &paletteBucketsFine[nAlreadySubtracted],
-            nFineColors - nAlreadySubtracted);
+            nFineColors - nAlreadySubtracted
+        );
     }
 
     /* create our palette buckets with fine and coarse combined */
@@ -470,7 +476,8 @@ quantize_octree(
         goto error;
     }
     paletteBuckets = combined_palette(
-        paletteBucketsCoarse, nCoarseColors, paletteBucketsFine, nFineColors);
+        paletteBucketsCoarse, nCoarseColors, paletteBucketsFine, nFineColors
+    );
 
     free(paletteBucketsFine);
     paletteBucketsFine = NULL;
@@ -491,7 +498,8 @@ quantize_octree(
     /* expand coarse cube (64) to larger fine cube (4k). the value of each
        coarse bucket is then present in the according 64 fine buckets. */
     lookupCube = copy_color_cube(
-        coarseLookupCube, cubeBits[0], cubeBits[1], cubeBits[2], cubeBits[3]);
+        coarseLookupCube, cubeBits[0], cubeBits[1], cubeBits[2], cubeBits[3]
+    );
     if (!lookupCube) {
         goto error;
     }

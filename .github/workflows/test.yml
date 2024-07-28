@@ -50,26 +50,24 @@ jobs:
           "3.9",
         ]
         include:
-        - python-version: "3.11"
-          PYTHONOPTIMIZE: 1
-          REVERSE: "--reverse"
-        - python-version: "3.10"
-          PYTHONOPTIMIZE: 2
+        - { python-version: "3.11", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
+        - { python-version: "3.10", PYTHONOPTIMIZE: 2 }
+        # Free-threaded
+        - { os: "ubuntu-latest", python-version: "3.13-dev", disable-gil: true }
         # M1 only available for 3.10+
-        - os: "macos-13"
-          python-version: "3.9"
+        - { os: "macos-13", python-version: "3.9" }
         exclude:
-        - os: "macos-14"
-          python-version: "3.9"
+        - { os: "macos-14", python-version: "3.9" }
 
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+    name: ${{ matrix.os }} Python ${{ matrix.python-version }} ${{ matrix.disable-gil && 'free-threaded' || '' }}
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
+      if: "${{ !matrix.disable-gil }}"
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -77,6 +75,18 @@ jobs:
         cache-dependency-path: |
           ".ci/*.sh"
           "pyproject.toml"
+
+    - name: Set up Python ${{ matrix.python-version }} (free-threaded)
+      uses: deadsnakes/action@v3.1.0
+      if: "${{ matrix.disable-gil }}"
+      with:
+        python-version: ${{ matrix.python-version }}
+        nogil: ${{ matrix.disable-gil }}
+
+    - name: Set PYTHON_GIL
+      if: "${{ matrix.disable-gil }}"
+      run: |
+        echo "PYTHON_GIL=0" >> $GITHUB_ENV
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py

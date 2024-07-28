@@ -74,7 +74,8 @@ ImagingRawDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
         state->shuffle(
             (UINT8 *)im->image[state->y + state->yoff] + state->xoff * im->pixelsize,
             ptr,
-            state->xsize);
+            state->xsize
+        );
 
         ptr += state->bytes;
         bytes -= state->bytes;

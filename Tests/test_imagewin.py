@@ -57,6 +57,9 @@ class TestImageWinDib:
         # Assert
         assert dib.size == (128, 128)
 
+        with pytest.raises(ValueError):
+            ImageWin.Dib(mode)
+
     def test_dib_paste(self) -> None:
         # Arrange
         im = hopper()

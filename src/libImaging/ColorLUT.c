@@ -63,7 +63,8 @@ ImagingColorLUT3D_linear(
     int size1D,
     int size2D,
     int size3D,
-    INT16 *table) {
+    INT16 *table
+) {
     /* This float to int conversion doesn't have rounding
        error compensation (+0.5) for two reasons:
        1. As we don't hit the highest value,
@@ -112,7 +113,8 @@ ImagingColorLUT3D_linear(
                                            index2D >> SCALE_BITS,
                                            index3D >> SCALE_BITS,
                                            size1D,
-                                           size1D_2D);
+                                           size1D_2D
+                                       );
             INT16 result[4], left[4], right[4];
             INT16 leftleft[4], leftright[4], rightleft[4], rightright[4];
 
@@ -123,19 +125,22 @@ ImagingColorLUT3D_linear(
                     leftright,
                     &table[idx + size1D * 3],
                     &table[idx + size1D * 3 + 3],
-                    shift1D);
+                    shift1D
+                );
                 interpolate3(left, leftleft, leftright, shift2D);
 
                 interpolate3(
                     rightleft,
                     &table[idx + size1D_2D * 3],
                     &table[idx + size1D_2D * 3 + 3],
-                    shift1D);
+                    shift1D
+                );
                 interpolate3(
                     rightright,
                     &table[idx + size1D_2D * 3 + size1D * 3],
                     &table[idx + size1D_2D * 3 + size1D * 3 + 3],
-                    shift1D);
+                    shift1D
+                );
                 interpolate3(right, rightleft, rightright, shift2D);
 
                 interpolate3(result, left, right, shift3D);
@@ -144,7 +149,8 @@ ImagingColorLUT3D_linear(
                     clip8(result[0]),
                     clip8(result[1]),
                     clip8(result[2]),
-                    rowIn[x * 4 + 3]);
+                    rowIn[x * 4 + 3]
+                );
                 memcpy(rowOut + x * sizeof(v), &v, sizeof(v));
             }
 
@@ -155,19 +161,22 @@ ImagingColorLUT3D_linear(
                     leftright,
                     &table[idx + size1D * 4],
                     &table[idx + size1D * 4 + 4],
-                    shift1D);
+                    shift1D
+                );
                 interpolate4(left, leftleft, leftright, shift2D);
 
                 interpolate4(
                     rightleft,
                     &table[idx + size1D_2D * 4],
                     &table[idx + size1D_2D * 4 + 4],
-                    shift1D);
+                    shift1D
+                );
                 interpolate4(
                     rightright,
                     &table[idx + size1D_2D * 4 + size1D * 4],
                     &table[idx + size1D_2D * 4 + size1D * 4 + 4],
-                    shift1D);
+                    shift1D
+                );
                 interpolate4(right, rightleft, rightright, shift2D);
 
                 interpolate4(result, left, right, shift3D);
@@ -176,7 +185,8 @@ ImagingColorLUT3D_linear(
                     clip8(result[0]),
                     clip8(result[1]),
                     clip8(result[2]),
-                    clip8(result[3]));
+                    clip8(result[3])
+                );
                 memcpy(rowOut + x * sizeof(v), &v, sizeof(v));
             }
         }

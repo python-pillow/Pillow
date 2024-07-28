@@ -95,7 +95,8 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
     }
 
     dib->bitmap = CreateDIBSection(
-        dib->dc, dib->info, DIB_RGB_COLORS, (void **)&dib->bits, NULL, 0);
+        dib->dc, dib->info, DIB_RGB_COLORS, (void **)&dib->bits, NULL, 0
+    );
     if (!dib->bitmap) {
         free(dib->info);
         free(dib);
@@ -218,7 +219,8 @@ ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4]) {
             dib->bits + dib->linesize * (dib->ysize - (xy[1] + y) - 1) +
                 xy[0] * dib->pixelsize,
             im->image[y],
-            im->xsize);
+            im->xsize
+        );
     }
 }
 
@@ -251,7 +253,8 @@ ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4]) {
             dib->bits,
             dib->info,
             DIB_RGB_COLORS,
-            SRCCOPY);
+            SRCCOPY
+        );
     } else {
         /* stretchblt (displays) */
         if (dib->palette != 0) {
@@ -268,7 +271,8 @@ ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4]) {
             src[1],
             src[2] - src[0],
             src[3] - src[1],
-            SRCCOPY);
+            SRCCOPY
+        );
     }
 }
 

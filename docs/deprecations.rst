@@ -109,6 +109,15 @@ ImageDraw.getdraw hints parameter
 
 The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
 
+ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
+:py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more keyword
+arguments can be used instead.
+
 Removed features
 ----------------
 

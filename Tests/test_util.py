@@ -30,28 +30,6 @@ def test_is_not_path(tmp_path: Path) -> None:
     assert not it_is_not
 
 
-def test_is_directory() -> None:
-    # Arrange
-    directory = "Tests"
-
-    # Act
-    it_is = _util.is_directory(directory)
-
-    # Assert
-    assert it_is
-
-
-def test_is_not_directory() -> None:
-    # Arrange
-    text = "abc"
-
-    # Act
-    it_is_not = _util.is_directory(text)
-
-    # Assert
-    assert not it_is_not
-
-
 def test_deferred_error() -> None:
     # Arrange
 
