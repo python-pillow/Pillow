@@ -1020,7 +1020,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     ..  deprecated:: 3.0.0
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._legacy_api = True
 
@@ -1142,13 +1142,15 @@ class TiffImageFile(ImageFile.ImageFile):
         self._seek(0)
 
     @property
-    def n_frames(self):
-        if self._n_frames is None:
+    def n_frames(self) -> int:
+        current_n_frames = self._n_frames
+        if current_n_frames is None:
             current = self.tell()
             self._seek(len(self._frame_pos))
             while self._n_frames is None:
                 self._seek(self.tell() + 1)
             self.seek(current)
+        assert self._n_frames is not None
         return self._n_frames
 
     def seek(self, frame: int) -> None:

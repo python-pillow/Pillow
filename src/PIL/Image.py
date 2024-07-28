@@ -38,7 +38,7 @@ import struct
 import sys
 import tempfile
 import warnings
-from collections.abc import Callable, MutableMapping, Sequence
+from collections.abc import Callable, Iterator, MutableMapping, Sequence
 from enum import IntEnum
 from types import ModuleType
 from typing import (
@@ -744,11 +744,11 @@ class Image:
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
-    def __getstate__(self):
+    def __getstate__(self) -> list[Any]:
         im_data = self.tobytes()  # load image first
         return [self.info, self.mode, self.size, self.getpalette(), im_data]
 
-    def __setstate__(self, state) -> None:
+    def __setstate__(self, state: list[Any]) -> None:
         Image.__init__(self)
         info, mode, size, palette, data = state
         self.info = info
@@ -1683,7 +1683,9 @@ class Image:
         x, y = self.im.getprojection()
         return list(x), list(y)
 
-    def histogram(self, mask: Image | None = None, extrema=None) -> list[int]:
+    def histogram(
+        self, mask: Image | None = None, extrema: tuple[float, float] | None = None
+    ) -> list[int]:
         """
         Returns a histogram for the image. The histogram is returned as a
         list of pixel counts, one for each pixel value in the source
@@ -1709,12 +1711,14 @@ class Image:
             mask.load()
             return self.im.histogram((0, 0), mask.im)
         if self.mode in ("I", "F"):
-            if extrema is None:
-                extrema = self.getextrema()
-            return self.im.histogram(extrema)
+            return self.im.histogram(
+                extrema if extrema is not None else self.getextrema()
+            )
         return self.im.histogram()
 
-    def entropy(self, mask: Image | None = None, extrema=None):
+    def entropy(
+        self, mask: Image | None = None, extrema: tuple[float, float] | None = None
+    ) -> float:
         """
         Calculates and returns the entropy for the image.
 
@@ -1735,9 +1739,9 @@ class Image:
             mask.load()
             return self.im.entropy((0, 0), mask.im)
         if self.mode in ("I", "F"):
-            if extrema is None:
-                extrema = self.getextrema()
-            return self.im.entropy(extrema)
+            return self.im.entropy(
+                extrema if extrema is not None else self.getextrema()
+            )
         return self.im.entropy()
 
     def paste(
@@ -3881,7 +3885,7 @@ class Exif(_ExifBase):
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, offset: int, group=None):
+    def _get_ifd_dict(self, offset: int, group: int | None = None):
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
@@ -4136,7 +4140,7 @@ class Exif(_ExifBase):
         else:
             del self._data[tag]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         keys = set(self._data)
         if self._info is not None:
             keys.update(self._info)
