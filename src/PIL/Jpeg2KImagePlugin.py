@@ -324,7 +324,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         return self._reduce or super().reduce
 
     @reduce.setter
-    def reduce(self, value):
+    def reduce(self, value: int) -> None:
         self._reduce = value
 
     def load(self) -> Image.core.PixelAccess | None:
