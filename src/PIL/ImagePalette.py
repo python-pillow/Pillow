@@ -208,7 +208,7 @@ class ImagePalette:
 # Internal
 
 
-def raw(rawmode, data: Sequence[int] | bytes | bytearray) -> ImagePalette:
+def raw(rawmode: str, data: Sequence[int] | bytes | bytearray) -> ImagePalette:
     palette = ImagePalette()
     palette.rawmode = rawmode
     palette.palette = data

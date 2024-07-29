@@ -2052,7 +2052,11 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
         if isinstance(data, ImagePalette.ImagePalette):
-            palette = ImagePalette.raw(data.rawmode, data.palette)
+            if data.rawmode is not None:
+                palette = ImagePalette.raw(data.rawmode, data.palette)
+            else:
+                palette = ImagePalette.ImagePalette(palette=data.palette)
+                palette.dirty = 1
         else:
             if not isinstance(data, bytes):
                 data = bytes(data)

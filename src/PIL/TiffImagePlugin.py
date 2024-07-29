@@ -47,16 +47,18 @@ import math
 import os
 import struct
 import warnings
-from collections.abc import MutableMapping
+from collections.abc import Iterator, MutableMapping
 from fractions import Fraction
 from numbers import Number, Rational
-from typing import IO, TYPE_CHECKING, Any, Callable, NoReturn
+from typing import IO, TYPE_CHECKING, Any, Callable, NoReturn, cast
 
 from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._deprecate import deprecate
+from ._typing import StrOrBytesPath
+from ._util import is_path
 from .TiffTags import TYPES
 
 logger = logging.getLogger(__name__)
@@ -313,7 +315,7 @@ _load_dispatch = {}
 _write_dispatch = {}
 
 
-def _delegate(op):
+def _delegate(op: str):
     def delegate(self, *args):
         return getattr(self._val, op)(*args)
 
@@ -334,7 +336,9 @@ class IFDRational(Rational):
 
     __slots__ = ("_numerator", "_denominator", "_val")
 
-    def __init__(self, value, denominator: int = 1) -> None:
+    def __init__(
+        self, value: float | Fraction | IFDRational, denominator: int = 1
+    ) -> None:
         """
         :param value: either an integer numerator, a
         float/rational/other number, or an IFDRational
@@ -358,18 +362,20 @@ class IFDRational(Rational):
             self._val = float("nan")
         elif denominator == 1:
             self._val = Fraction(value)
+        elif int(value) == value:
+            self._val = Fraction(int(value), denominator)
         else:
-            self._val = Fraction(value, denominator)
+            self._val = Fraction(value / denominator)
 
     @property
     def numerator(self):
         return self._numerator
 
     @property
-    def denominator(self):
+    def denominator(self) -> int:
         return self._denominator
 
-    def limit_rational(self, max_denominator):
+    def limit_rational(self, max_denominator: int) -> tuple[float, int]:
         """
 
         :param max_denominator: Integer, the maximum denominator value
@@ -379,6 +385,7 @@ class IFDRational(Rational):
         if self.denominator == 0:
             return self.numerator, self.denominator
 
+        assert isinstance(self._val, Fraction)
         f = self._val.limit_denominator(max_denominator)
         return f.numerator, f.denominator
 
@@ -396,14 +403,15 @@ class IFDRational(Rational):
             val = float(val)
         return val == other
 
-    def __getstate__(self):
+    def __getstate__(self) -> list[float | Fraction]:
         return [self._val, self._numerator, self._denominator]
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: list[float | Fraction]) -> None:
         IFDRational.__init__(self, 0)
         _val, _numerator, _denominator = state
         self._val = _val
         self._numerator = _numerator
+        assert isinstance(_denominator, int)
         self._denominator = _denominator
 
     """ a = ['add','radd', 'sub', 'rsub', 'mul', 'rmul',
@@ -730,13 +738,13 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self._tags_v1.pop(tag, None)
         self._tagdata.pop(tag, None)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         return iter(set(self._tagdata) | set(self._tags_v2))
 
     def _unpack(self, fmt: str, data: bytes):
         return struct.unpack(self._endian + fmt, data)
 
-    def _pack(self, fmt: str, *values):
+    def _pack(self, fmt: str, *values) -> bytes:
         return struct.pack(self._endian + fmt, *values)
 
     list(
@@ -787,7 +795,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def load_rational(self, data, legacy_api: bool = True):
         vals = self._unpack(f"{len(data) // 4}L", data)
 
-        def combine(a, b):
+        def combine(a: int, b: int) -> tuple[int, int] | IFDRational:
             return (a, b) if legacy_api else IFDRational(a, b)
 
         return tuple(combine(num, denom) for num, denom in zip(vals[::2], vals[1::2]))
@@ -814,7 +822,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def load_signed_rational(self, data: bytes, legacy_api: bool = True):
         vals = self._unpack(f"{len(data) // 4}l", data)
 
-        def combine(a, b):
+        def combine(a: int, b: int) -> tuple[int, int] | IFDRational:
             return (a, b) if legacy_api else IFDRational(a, b)
 
         return tuple(combine(num, denom) for num, denom in zip(vals[::2], vals[1::2]))
@@ -903,11 +911,11 @@ class ImageFileDirectory_v2(_IFDv2Base):
             warnings.warn(str(msg))
             return
 
-    def tobytes(self, offset=0):
+    def tobytes(self, offset: int = 0) -> bytes:
         # FIXME What about tagdata?
         result = self._pack("H", len(self._tags_v2))
 
-        entries = []
+        entries: list[tuple[int, int, int, bytes, bytes]] = []
         offset = offset + len(result) + len(self._tags_v2) * 12 + 4
         stripoffsets = None
 
@@ -916,7 +924,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         for tag, value in sorted(self._tags_v2.items()):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
-            typ = self.tagtype.get(tag)
+            typ = self.tagtype[tag]
             logger.debug("Tag %s, Type: %s, Value: %s", tag, typ, repr(value))
             is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
             if is_ifd:
@@ -1072,7 +1080,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __len__(self) -> int:
         return len(set(self._tagdata) | set(self._tags_v1))
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         return iter(set(self._tagdata) | set(self._tags_v1))
 
     def __setitem__(self, tag: int, value) -> None:
@@ -1943,17 +1951,18 @@ class AppendingTiffWriter:
         521,  # JPEGACTables
     }
 
-    def __init__(self, fn, new: bool = False) -> None:
-        if hasattr(fn, "read"):
-            self.f = fn
-            self.close_fp = False
-        else:
+    def __init__(self, fn: StrOrBytesPath | IO[bytes], new: bool = False) -> None:
+        self.f: IO[bytes]
+        if is_path(fn):
             self.name = fn
             self.close_fp = True
             try:
                 self.f = open(fn, "w+b" if new else "r+b")
             except OSError:
                 self.f = open(fn, "w+b")
+        else:
+            self.f = cast(IO[bytes], fn)
+            self.close_fp = False
         self.beginning = self.f.tell()
         self.setup()
 
@@ -1961,7 +1970,7 @@ class AppendingTiffWriter:
         # Reset everything.
         self.f.seek(self.beginning, os.SEEK_SET)
 
-        self.whereToWriteNewIFDOffset = None
+        self.whereToWriteNewIFDOffset: int | None = None
         self.offsetOfNewPage = 0
 
         self.IIMM = iimm = self.f.read(4)
@@ -2000,6 +2009,7 @@ class AppendingTiffWriter:
 
         ifd_offset = self.readLong()
         ifd_offset += self.offsetOfNewPage
+        assert self.whereToWriteNewIFDOffset is not None
         self.f.seek(self.whereToWriteNewIFDOffset)
         self.writeLong(ifd_offset)
         self.f.seek(ifd_offset)
@@ -2020,7 +2030,7 @@ class AppendingTiffWriter:
     def tell(self) -> int:
         return self.f.tell() - self.offsetOfNewPage
 
-    def seek(self, offset: int, whence=io.SEEK_SET) -> int:
+    def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
         if whence == os.SEEK_SET:
             offset += self.offsetOfNewPage
 
@@ -2111,7 +2121,6 @@ class AppendingTiffWriter:
             field_size = self.fieldSizes[field_type]
             total_size = field_size * count
             is_local = total_size <= 4
-            offset: int | None
             if not is_local:
                 offset = self.readLong() + self.offsetOfNewPage
                 self.rewriteLastLong(offset)
@@ -2130,8 +2139,6 @@ class AppendingTiffWriter:
                         count, isShort=(field_size == 2), isLong=(field_size == 4)
                     )
                     self.f.seek(cur_pos)
-
-                offset = cur_pos = None
 
             elif is_local:
                 # skip the locally stored value that is not an offset

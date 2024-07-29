@@ -167,7 +167,7 @@ class Draw:
         """
         self.render("polygon", xy, *options)
 
-    def rectangle(self, xy: Coords, *options) -> None:
+    def rectangle(self, xy: Coords, *options: Any) -> None:
         """
         Draws a rectangle.
 
