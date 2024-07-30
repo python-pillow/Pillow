@@ -220,7 +220,7 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 
-    from . import ImageFile, ImagePalette
+    from . import ImageFile, ImagePalette, TiffImagePlugin
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
 OPEN: dict[
@@ -676,7 +676,7 @@ class Image:
             id(self),
         )
 
-    def _repr_pretty_(self, p, cycle) -> None:
+    def _repr_pretty_(self, p, cycle: bool) -> None:
         """IPython plain text display support"""
 
         # Same as __repr__ but without unpredictable id(self),
@@ -1551,6 +1551,7 @@ class Image:
                     ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
         if ifd1 and ifd1.get(513):
+            assert exif._info is not None
             ifds.append((ifd1, exif._info.next))
 
         offset = None
@@ -1560,12 +1561,13 @@ class Image:
                 offset = current_offset
 
             fp = self.fp
-            thumbnail_offset = ifd.get(513)
-            if thumbnail_offset is not None:
-                thumbnail_offset += getattr(self, "_exif_offset", 0)
-                self.fp.seek(thumbnail_offset)
-                data = self.fp.read(ifd.get(514))
-                fp = io.BytesIO(data)
+            if ifd is not None:
+                thumbnail_offset = ifd.get(513)
+                if thumbnail_offset is not None:
+                    thumbnail_offset += getattr(self, "_exif_offset", 0)
+                    self.fp.seek(thumbnail_offset)
+                    data = self.fp.read(ifd.get(514))
+                    fp = io.BytesIO(data)
 
             with open(fp) as im:
                 from . import TiffImagePlugin
@@ -3869,14 +3871,14 @@ class Exif(_ExifBase):
     bigtiff = False
     _loaded = False
 
-    def __init__(self):
-        self._data = {}
-        self._hidden_data = {}
-        self._ifds = {}
-        self._info = None
-        self._loaded_exif = None
+    def __init__(self) -> None:
+        self._data: dict[int, Any] = {}
+        self._hidden_data: dict[int, Any] = {}
+        self._ifds: dict[int, dict[int, Any]] = {}
+        self._info: TiffImagePlugin.ImageFileDirectory_v2 | None = None
+        self._loaded_exif: bytes | None = None
 
-    def _fixup(self, value):
+    def _fixup(self, value: Any) -> Any:
         try:
             if len(value) == 1 and isinstance(value, tuple):
                 return value[0]
@@ -3884,24 +3886,26 @@ class Exif(_ExifBase):
             pass
         return value
 
-    def _fixup_dict(self, src_dict):
+    def _fixup_dict(self, src_dict: dict[int, Any]) -> dict[int, Any]:
         # Helper function
         # returns a dict with any single item tuples/lists as individual values
         return {k: self._fixup(v) for k, v in src_dict.items()}
 
-    def _get_ifd_dict(self, offset: int, group: int | None = None):
+    def _get_ifd_dict(
+        self, offset: int, group: int | None = None
+    ) -> dict[int, Any] | None:
         try:
             # an offset pointer to the location of the nested embedded IFD.
             # It should be a long, but may be corrupted.
             self.fp.seek(offset)
         except (KeyError, TypeError):
-            pass
+            return None
         else:
             from . import TiffImagePlugin
 
             info = TiffImagePlugin.ImageFileDirectory_v2(self.head, group=group)
             info.load(self.fp)
-            return self._fixup_dict(info)
+            return self._fixup_dict(dict(info))
 
     def _get_head(self) -> bytes:
         version = b"\x2B" if self.bigtiff else b"\x2A"
@@ -3966,7 +3970,7 @@ class Exif(_ExifBase):
         self.fp.seek(offset)
         self._info.load(self.fp)
 
-    def _get_merged_dict(self):
+    def _get_merged_dict(self) -> dict[int, Any]:
         merged_dict = dict(self)
 
         # get EXIF extension
@@ -4124,7 +4128,7 @@ class Exif(_ExifBase):
             keys.update(self._info)
         return len(keys)
 
-    def __getitem__(self, tag: int):
+    def __getitem__(self, tag: int) -> Any:
         if self._info is not None and tag not in self._data and tag in self._info:
             self._data[tag] = self._fixup(self._info[tag])
             del self._info[tag]
@@ -4133,7 +4137,7 @@ class Exif(_ExifBase):
     def __contains__(self, tag: object) -> bool:
         return tag in self._data or (self._info is not None and tag in self._info)
 
-    def __setitem__(self, tag: int, value) -> None:
+    def __setitem__(self, tag: int, value: Any) -> None:
         if self._info is not None and tag in self._info:
             del self._info[tag]
         self._data[tag] = value

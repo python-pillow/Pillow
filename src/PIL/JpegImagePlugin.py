@@ -42,7 +42,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import IO, Any
+from typing import IO, TYPE_CHECKING, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -50,6 +50,9 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from .JpegPresets import presets
+
+if TYPE_CHECKING:
+    from .MpoImagePlugin import MpoImageFile
 
 #
 # Parser
@@ -329,7 +332,7 @@ class JpegImageFile(ImageFile.ImageFile):
     format = "JPEG"
     format_description = "JPEG (ISO 10918)"
 
-    def _open(self):
+    def _open(self) -> None:
         s = self.fp.read(3)
 
         if not _accept(s):
@@ -342,13 +345,13 @@ class JpegImageFile(ImageFile.ImageFile):
         self._exif_offset = 0
 
         # JPEG specifics (internal)
-        self.layer = []
-        self.huffman_dc = {}
-        self.huffman_ac = {}
-        self.quantization = {}
-        self.app = {}  # compatibility
-        self.applist = []
-        self.icclist = []
+        self.layer: list[tuple[int, int, int, int]] = []
+        self.huffman_dc: dict[Any, Any] = {}
+        self.huffman_ac: dict[Any, Any] = {}
+        self.quantization: dict[int, list[int]] = {}
+        self.app: dict[str, bytes] = {}  # compatibility
+        self.applist: list[tuple[str, bytes]] = []
+        self.icclist: list[bytes] = []
 
         while True:
             i = s[0]
@@ -831,7 +834,9 @@ def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 ##
 # Factory for making JPEG and MPO instances
-def jpeg_factory(fp: IO[bytes] | None = None, filename: str | bytes | None = None):
+def jpeg_factory(
+    fp: IO[bytes] | None = None, filename: str | bytes | None = None
+) -> JpegImageFile | MpoImageFile:
     im = JpegImageFile(fp, filename)
     try:
         mpheader = im._getmp()

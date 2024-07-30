@@ -86,7 +86,7 @@ def raise_oserror(error: int) -> OSError:
     raise _get_oserror(error, encoder=False)
 
 
-def _tilesort(t) -> int:
+def _tilesort(t: _Tile) -> int:
     # sort on offset
     return t[2]
 
@@ -161,7 +161,7 @@ class ImageFile(Image.Image):
             return Image.MIME.get(self.format.upper())
         return None
 
-    def __setstate__(self, state) -> None:
+    def __setstate__(self, state: list[Any]) -> None:
         self.tile = []
         super().__setstate__(state)
 
@@ -525,7 +525,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im, fp, tile, bufsize: int = 0) -> None:
+def _save(im: Image.Image, fp: IO[bytes], tile, bufsize: int = 0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.
@@ -554,7 +554,12 @@ def _save(im, fp, tile, bufsize: int = 0) -> None:
 
 
 def _encode_tile(
-    im, fp: IO[bytes], tile: list[_Tile], bufsize: int, fh, exc=None
+    im: Image.Image,
+    fp: IO[bytes],
+    tile: list[_Tile],
+    bufsize: int,
+    fh,
+    exc: BaseException | None = None,
 ) -> None:
     for encoder_name, extents, offset, args in tile:
         if offset > 0:
@@ -664,7 +669,11 @@ class PyCodec:
         """
         self.fd = fd
 
-    def setimage(self, im, extents=None):
+    def setimage(
+        self,
+        im: Image.core.ImagingCore,
+        extents: tuple[int, int, int, int] | None = None,
+    ) -> None:
         """
         Called from ImageFile to set the core output image for the codec
 
