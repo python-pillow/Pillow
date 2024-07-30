@@ -288,8 +288,10 @@ def _accept(prefix: bytes) -> bool:
     return prefix[:4] in PREFIXES
 
 
-def _limit_rational(val, max_val):
-    inv = abs(val) > 1
+def _limit_rational(
+    val: float | Fraction | IFDRational, max_val: int
+) -> tuple[float, float]:
+    inv = abs(float(val)) > 1
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
 
@@ -792,7 +794,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return value + b"\0"
 
     @_register_loader(5, 8)
-    def load_rational(self, data, legacy_api: bool = True):
+    def load_rational(
+        self, data: bytes, legacy_api: bool = True
+    ) -> tuple[tuple[int, int] | IFDRational, ...]:
         vals = self._unpack(f"{len(data) // 4}L", data)
 
         def combine(a: int, b: int) -> tuple[int, int] | IFDRational:
@@ -801,7 +805,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return tuple(combine(num, denom) for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(5)
-    def write_rational(self, *values) -> bytes:
+    def write_rational(self, *values: IFDRational) -> bytes:
         return b"".join(
             self._pack("2L", *_limit_rational(frac, 2**32 - 1)) for frac in values
         )
@@ -828,7 +832,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return tuple(combine(num, denom) for num, denom in zip(vals[::2], vals[1::2]))
 
     @_register_writer(10)
-    def write_signed_rational(self, *values) -> bytes:
+    def write_signed_rational(self, *values: IFDRational) -> bytes:
         return b"".join(
             self._pack("2l", *_limit_signed_rational(frac, 2**31 - 1, -(2**31)))
             for frac in values

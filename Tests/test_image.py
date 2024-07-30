@@ -99,7 +99,7 @@ class TestImage:
         im = Image.new("L", (100, 100))
 
         p = Pretty()
-        im._repr_pretty_(p, None)
+        im._repr_pretty_(p, False)
         assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
 
     def test_open_formats(self) -> None:

@@ -154,7 +154,7 @@ class TestFileJpeg:
             assert k > 0.9
 
     def test_rgb(self) -> None:
-        def getchannels(im: JpegImagePlugin.JpegImageFile) -> tuple[int, int, int]:
+        def getchannels(im: JpegImagePlugin.JpegImageFile) -> tuple[int, ...]:
             return tuple(v[0] for v in im.layer)
 
         im = hopper()
