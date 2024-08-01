@@ -49,6 +49,7 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 if TYPE_CHECKING:
@@ -346,8 +347,8 @@ class JpegImageFile(ImageFile.ImageFile):
 
         # JPEG specifics (internal)
         self.layer: list[tuple[int, int, int, int]] = []
-        self.huffman_dc: dict[Any, Any] = {}
-        self.huffman_ac: dict[Any, Any] = {}
+        self._huffman_dc: dict[Any, Any] = {}
+        self._huffman_ac: dict[Any, Any] = {}
         self.quantization: dict[int, list[int]] = {}
         self.app: dict[str, bytes] = {}  # compatibility
         self.applist: list[tuple[str, bytes]] = []
@@ -385,6 +386,12 @@ class JpegImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg)
 
         self._read_dpi_from_exif()
+
+    def __getattr__(self, name: str) -> Any:
+        if name in ("huffman_ac", "huffman_dc"):
+            deprecate(name, 12)
+            return getattr(self, "_" + name)
+        raise AttributeError(name)
 
     def load_read(self, read_bytes: int) -> bytes:
         """
