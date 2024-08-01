@@ -539,7 +539,7 @@ class Image:
         self._mode: str = ""
         self._size: tuple[int, int] = (0, 0)
         self.palette = None
-        self.info = {}
+        self.info: dict[Any, Any] = {}
         self.readonly: int = 0
         self._exif: Exif | None = None
 
