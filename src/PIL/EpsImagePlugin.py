@@ -190,7 +190,7 @@ class EpsImageFile(ImageFile.ImageFile):
         self.fp.seek(offset)
 
         self._mode = "RGB"
-        self._size = None
+        image_size: tuple[int, int] | None = None
 
         byte_arr = bytearray(255)
         bytes_mv = memoryview(byte_arr)
@@ -213,7 +213,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg)
 
         def _read_comment(s: str) -> bool:
-            nonlocal reading_trailer_comments
+            nonlocal image_size, reading_trailer_comments
             try:
                 m = split.match(s)
             except re.error as e:
@@ -228,16 +228,18 @@ class EpsImageFile(ImageFile.ImageFile):
             if k == "BoundingBox":
                 if v == "(atend)":
                     reading_trailer_comments = True
-                elif not self._size or (trailer_reached and reading_trailer_comments):
+                elif image_size is None or (
+                    trailer_reached and reading_trailer_comments
+                ):
                     try:
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
                         # put floating point values there anyway.
                         box = [int(float(i)) for i in v.split()]
-                        self._size = box[2] - box[0], box[3] - box[1]
+                        image_size = box[2] - box[0], box[3] - box[1]
                         self.tile = [
                             ImageFile._Tile(
-                                "eps", (0, 0) + self.size, offset, (length, box)
+                                "eps", (0, 0) + image_size, offset, (length, box)
                             )
                         ]
                     except Exception:
@@ -334,8 +336,8 @@ class EpsImageFile(ImageFile.ImageFile):
                 else:
                     break
 
-                self._size = columns, rows
-                return
+                image_size = columns, rows
+                break
             elif bytes_mv[:5] == b"%%EOF":
                 break
             elif trailer_reached and reading_trailer_comments:
@@ -346,7 +348,9 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             bytes_read = 0
 
-        if not self._size:
+        if image_size:
+            self._size = image_size
+        else:
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
 
