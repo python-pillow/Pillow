@@ -118,6 +118,14 @@ The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
 :py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more keyword
 arguments can be used instead.
 
+JpegImageFile.huffman_ac and JpegImageFile.huffman_dc
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+The ``huffman_ac`` and ``huffman_dc`` dictionaries on JPEG images were unused, and have
+been deprecated.
+
 Removed features
 ----------------
 
