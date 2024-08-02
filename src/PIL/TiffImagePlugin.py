@@ -1313,6 +1313,7 @@ class TiffImageFile(ImageFile.ImageFile):
         decoder = Image._getdecoder(
             self.mode, "libtiff", tuple(args), self.decoderconfig
         )
+        assert self.im is not None
         try:
             decoder.setimage(self.im, extents)
         except ValueError as e:

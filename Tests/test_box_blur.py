@@ -24,6 +24,7 @@ def test_imageops_box_blur() -> None:
 
 
 def box_blur(image: Image.Image, radius: float = 1, n: int = 1) -> Image.Image:
+    assert image.im is not None
     return image._new(image.im.box_blur((radius, radius), n))
 
 

@@ -43,6 +43,7 @@ def _pilbitmap_check() -> int:
     if _pilbitmap_ok is None:
         try:
             im = Image.new("1", (1, 1))
+            assert im.im is not None
             tkinter.BitmapImage(data=f"PIL:{im.im.id}")
             _pilbitmap_ok = 1
         except tkinter.TclError:
@@ -127,10 +128,7 @@ class PhotoImage:
                 # palette mapped data
                 image.apply_transparency()
                 image.load()
-                try:
-                    mode = image.palette.mode
-                except AttributeError:
-                    mode = "RGB"  # default
+                mode = image.palette.mode if image.palette else "RGB"
             size = image.size
             kw["width"], kw["height"] = size
 
@@ -190,6 +188,7 @@ class PhotoImage:
         # convert to blittable
         im.load()
         image = im.im
+        assert image is not None
         if image.isblock() and im.mode == self.__mode:
             block = image
         else:
@@ -231,6 +230,7 @@ class BitmapImage:
         if _pilbitmap_check():
             # fast way (requires the pilbitmap booster patch)
             image.load()
+            assert image.im is not None
             kw["data"] = f"PIL:{image.im.id}"
             self.__im = image  # must keep a reference
         else:
@@ -277,6 +277,7 @@ def getimage(photo: PhotoImage) -> Image.Image:
     """Copies the contents of a PhotoImage to a PIL image memory."""
     im = Image.new("RGBA", (photo.width(), photo.height()))
     block = im.im
+    assert block is not None
 
     _pyimagingtkcall("PyImagingPhotoGet", photo, block.id)
 

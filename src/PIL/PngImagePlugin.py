@@ -863,6 +863,7 @@ class PngImageFile(ImageFile.ImageFile):
         assert self.png is not None
 
         self.dispose: _imaging.ImagingCore | None
+        dispose_extent = None
         if frame == 0:
             if rewind:
                 self._fp.seek(self.__rewind)
@@ -877,7 +878,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.default_image = self.info.get("default_image", False)
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            dispose_extent = self.info.get("bbox")
             self.__frame = 0
         else:
             if frame != self.__frame + 1:
@@ -886,6 +887,7 @@ class PngImageFile(ImageFile.ImageFile):
 
             # ensure previous frame was loaded
             self.load()
+            assert self.im is not None
 
             if self.dispose:
                 self.im.paste(self.dispose, self.dispose_extent)
@@ -935,11 +937,13 @@ class PngImageFile(ImageFile.ImageFile):
             self.tile = self.png.im_tile
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            dispose_extent = self.info.get("bbox")
 
             if not self.tile:
                 msg = "image not found in APNG frame"
                 raise EOFError(msg)
+        if dispose_extent:
+            self.dispose_extent: tuple[float, float, float, float] = dispose_extent
 
         # setup frame disposal (actual disposal done when needed in the next _seek())
         if self._prev_im is None and self.dispose_op == Disposal.OP_PREVIOUS:
@@ -1046,6 +1050,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.png = None
         else:
             if self._prev_im and self.blend_op == Blend.OP_OVER:
+                assert self.im is not None
                 updated = self._crop(self.im, self.dispose_extent)
                 if self.im.mode == "RGB" and "transparency" in self.info:
                     mask = updated.convert_transparent(
@@ -1400,6 +1405,7 @@ def _save(
                     chunk(fp, cid, data)
 
     if im.mode == "P":
+        assert im.im is not None
         palette_byte_number = colors * 3
         palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
         while len(palette_bytes) < palette_byte_number:
@@ -1430,8 +1436,9 @@ def _save(
                 # and it's in the info dict. It's probably just stale.
                 msg = "cannot use transparency for this mode"
                 raise OSError(msg)
-    else:
-        if im.mode == "P" and im.im.getpalettemode() == "RGBA":
+    elif im.mode == "P":
+        assert im.im is not None
+        if im.im.getpalettemode() == "RGBA":
             alpha = im.im.getpalette("RGBA", "A")
             alpha_bytes = colors
             chunk(fp, b"tRNS", alpha[:alpha_bytes])

@@ -173,6 +173,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     flags = 0
     if im.mode == "P" and "custom-colormap" in im.info:
+        assert im.palette is not None
         flags = flags & _FLAGS["custom-colormap"]
         colormapsize = 4 * 256 + 2
         colormapmode = im.palette.mode

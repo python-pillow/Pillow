@@ -26,7 +26,7 @@ class QoiImageFile(ImageFile.ImageFile):
             msg = "not a QOI file"
             raise SyntaxError(msg)
 
-        self._size = tuple(i32(self.fp.read(4)) for i in range(2))
+        self._size = i32(self.fp.read(4)), i32(self.fp.read(4))
 
         channels = self.fp.read(1)[0]
         self._mode = "RGB" if channels == 3 else "RGBA"

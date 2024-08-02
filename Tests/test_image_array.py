@@ -113,4 +113,6 @@ def test_fromarray_palette() -> None:
     out = Image.fromarray(a, "P")
 
     # Assert that the Python and C palettes match
+    assert out.palette is not None
+    assert out.im is not None
     assert len(out.palette.colors) == len(out.im.getpalette()) / 3

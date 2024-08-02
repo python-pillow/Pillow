@@ -92,6 +92,7 @@ def read_32(
                 msg = f"Error reading channel [{repr(bytesleft)} left]"
                 raise SyntaxError(msg)
             band = Image.frombuffer("L", pixel_size, b"".join(data), "raw", "L", 0, 1)
+            assert im.im is not None
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
 

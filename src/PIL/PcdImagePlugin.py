@@ -55,6 +55,7 @@ class PcdImageFile(ImageFile.ImageFile):
             assert self.im is not None
 
             self.im = self.im.rotate(self.tile_post_rotate)
+            assert self.im is not None
             self._size = self.im.size
 
 

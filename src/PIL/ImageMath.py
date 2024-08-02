@@ -65,6 +65,8 @@ class _Operand:
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
+            assert out.im is not None
+            assert im_1.im is not None
             _imagingmath.unop(op, out.im.id, im_1.im.id)
         else:
             # binary operation
@@ -93,6 +95,9 @@ class _Operand:
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
+            assert out.im is not None
+            assert im_1.im is not None
+            assert im_2.im is not None
             _imagingmath.binop(op, out.im.id, im_1.im.id, im_2.im.id)
         return _Operand(out)
 

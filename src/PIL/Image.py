@@ -532,16 +532,16 @@ class Image:
     format_description: str | None = None
     _close_exclusive_fp_after_loading = True
 
-    def __init__(self):
+    def __init__(self) -> None:
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
-        self.im = None
+        self.im: core.ImagingCore | None = None
         self._mode = ""
         self._size = (0, 0)
-        self.palette = None
-        self.info = {}
+        self.palette: ImagePalette.ImagePalette | None = None
+        self.info: dict[str | tuple[int, int], Any] = {}
         self.readonly = 0
-        self._exif = None
+        self._exif: Exif | None = None
 
     @property
     def width(self) -> int:
@@ -617,11 +617,12 @@ class Image:
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
-        self.im = DeferredError(ValueError("Operation on closed image"))
+        self.im = DeferredError(ValueError("Operation on closed image"))  # type: ignore[assignment]
 
     def _copy(self) -> None:
         self.load()
-        self.im = self.im.copy()
+        if self.im:
+            self.im = self.im.copy()
         self.readonly = 0
 
     def _ensure_mutable(self) -> None:
@@ -648,6 +649,7 @@ class Image:
         self.load()
 
         if not format or format == "PPM":
+            assert self.im is not None
             self.im.save_ppm(filename)
         else:
             self.save(filename, format, **options)
@@ -796,6 +798,7 @@ class Image:
 
         # unpack data
         e = _getencoder(self.mode, encoder_name, encoder_args)
+        assert self.im is not None
         e.setimage(self.im)
 
         bufsize = max(65536, self.size[0] * 4)  # see RawEncode.c
@@ -862,6 +865,7 @@ class Image:
 
         # unpack data
         d = _getdecoder(self.mode, decoder_name, decoder_args)
+        assert self.im is not None
         d.setimage(self.im)
         s = d.decode(data)
 
@@ -975,6 +979,7 @@ class Image:
             deprecate(mode, 12)
 
         self.load()
+        assert self.im is not None
 
         has_transparency = "transparency" in self.info
         if not mode and self.mode == "P":
@@ -1045,9 +1050,11 @@ class Image:
                     # use existing conversions
                     trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
+                        assert self.palette is not None
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
                             err = "Couldn't allocate a palette color for transparency"
+                            assert trns_im.palette is not None
                             try:
                                 t = trns_im.palette.getcolor(t, self)
                             except ValueError as e:
@@ -1087,6 +1094,7 @@ class Image:
             new_im = self._new(im)
             from . import ImagePalette
 
+            assert new_im.im is not None
             new_im.palette = ImagePalette.ImagePalette(
                 "RGB", new_im.im.getpalette("RGB")
             )
@@ -1149,7 +1157,9 @@ class Image:
         if trns is not None:
             if new_im.mode == "P" and new_im.palette:
                 try:
-                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
+                    new_im.info["transparency"] = new_im.palette.getcolor(
+                        cast(tuple[int, ...], trns), new_im  # trns was converted to RGB
+                    )
                 except ValueError as e:
                     del new_im.info["transparency"]
                     if str(e) != "cannot allocate more than 256 colors":
@@ -1216,6 +1226,7 @@ class Image:
             )
             raise ValueError(msg)
 
+        assert self.im is not None
         if palette:
             # use palette from reference image
             palette.load()
@@ -1227,6 +1238,7 @@ class Image:
                 raise ValueError(msg)
             im = self.im.convert("P", dither, palette.im)
             new_im = self._new(im)
+            assert palette.palette is not None
             new_im.palette = palette.palette.copy()
             return new_im
 
@@ -1253,6 +1265,7 @@ class Image:
         :returns: An :py:class:`~PIL.Image.Image` object.
         """
         self.load()
+        assert self.im is not None
         return self._new(self.im.copy())
 
     __copy__ = copy
@@ -1281,6 +1294,7 @@ class Image:
             raise ValueError(msg)
 
         self.load()
+        assert self.im is not None
         return self._new(self._crop(self.im, box))
 
     def _crop(
@@ -1334,6 +1348,7 @@ class Image:
         if ymargin is None:
             ymargin = xmargin
         self.load()
+        assert self.im is not None
         return self._new(self.im.expand(xmargin, ymargin))
 
     if TYPE_CHECKING:
@@ -1358,6 +1373,7 @@ class Image:
             raise TypeError(msg)
 
         multiband = isinstance(filter, ImageFilter.MultibandFilter)
+        assert self.im is not None
         if self.im.bands == 1 or multiband:
             return self._new(filter.filter(self.im))
 
@@ -1393,6 +1409,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         return self.im.getbbox(alpha_only)
 
     def getcolors(
@@ -1412,6 +1429,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         if self.mode in ("1", "L", "P"):
             h = self.im.histogram()
             out: list[tuple[int, float]] = [(h[i], i) for i in range(256) if h[i]]
@@ -1439,6 +1457,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         if band is not None:
             return self.im.getband(band)
         return self.im  # could be abused
@@ -1454,6 +1473,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         if self.im.bands > 1:
             return tuple(self.im.getband(i).getextrema() for i in range(self.im.bands))
         return self.im.getextrema()
@@ -1592,6 +1612,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         return self.im.ptr
 
     def getpalette(self, rawmode: str | None = "RGB") -> list[int] | None:
@@ -1608,6 +1629,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         try:
             mode = self.im.getpalettemode()
         except ValueError:
@@ -1628,11 +1650,15 @@ class Image:
 
         :returns: A boolean.
         """
-        return (
+        if (
             self.mode in ("LA", "La", "PA", "RGBA", "RGBa")
-            or (self.mode == "P" and self.palette.mode.endswith("A"))
             or "transparency" in self.info
-        )
+        ):
+            return True
+        if self.mode == "P":
+            assert self.palette is not None
+            return self.palette.mode.endswith("A")
+        return False
 
     def apply_transparency(self) -> None:
         """
@@ -1671,6 +1697,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         return self.im.getpixel(tuple(xy))
 
     def getprojection(self) -> tuple[list[int], list[int]]:
@@ -1682,6 +1709,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         x, y = self.im.getprojection()
         return list(x), list(y)
 
@@ -1709,6 +1737,7 @@ class Image:
         :returns: A list containing pixel counts.
         """
         self.load()
+        assert self.im is not None
         if mask:
             mask.load()
             return self.im.histogram((0, 0), mask.im)
@@ -1737,6 +1766,7 @@ class Image:
         :returns: A float value representing the image entropy
         """
         self.load()
+        assert self.im is not None
         if mask:
             mask.load()
             return self.im.entropy((0, 0), mask.im)
@@ -1815,26 +1845,32 @@ class Image:
                 raise ValueError(msg)
             box += (box[0] + size[0], box[1] + size[1])
 
+        source: core.ImagingCore | str | float | tuple[float, ...]
         if isinstance(im, str):
             from . import ImageColor
 
-            im = ImageColor.getcolor(im, self.mode)
-
+            source = ImageColor.getcolor(im, self.mode)
         elif isImageType(im):
             im.load()
             if self.mode != im.mode:
                 if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
                     # should use an adapter for this!
                     im = im.convert(self.mode)
-            im = im.im
+            assert im.im is not None
+            source = im.im
+        elif isinstance(im, tuple):
+            source = im
+        else:
+            source = cast(float, im)
 
         self._ensure_mutable()
+        assert self.im is not None
 
         if mask:
             mask.load()
-            self.im.paste(im, box, mask.im)
+            self.im.paste(source, box, mask.im)
         else:
-            self.im.paste(im, box)
+            self.im.paste(source, box)
 
     def alpha_composite(
         self, im: Image, dest: Sequence[int] = (0, 0), source: Sequence[int] = (0, 0)
@@ -1924,6 +1960,7 @@ class Image:
         if isinstance(lut, ImagePointHandler):
             return lut.point(self)
 
+        assert self.im is not None
         if callable(lut):
             # if it isn't a list, it should be a function
             if self.mode in ("I", "I;16", "F"):
@@ -1960,17 +1997,20 @@ class Image:
 
         if self.mode not in ("LA", "PA", "RGBA"):
             # attempt to promote self to a matching alpha mode
+            assert self.im is not None
             try:
                 mode = getmodebase(self.mode) + "A"
                 try:
                     self.im.setmode(mode)
                 except (AttributeError, ValueError) as e:
                     # do things the hard way
+                    assert self.im is not None
                     im = self.im.convert(mode)
                     if im.mode not in ("LA", "PA", "RGBA"):
                         msg = "alpha channel could not be added"
                         raise ValueError(msg) from e  # sanity check
                     self.im = im
+                    assert self.im is not None
                 self._mode = self.im.mode
             except KeyError as e:
                 msg = "illegal image mode"
@@ -1981,6 +2021,7 @@ class Image:
         else:
             band = 3
 
+        assert self.im is not None
         if isImageType(alpha):
             # alpha layer
             if alpha.mode not in ("1", "L"):
@@ -2023,6 +2064,7 @@ class Image:
 
         self._ensure_mutable()
 
+        assert self.im is not None
         self.im.putdata(data, scale, offset)
 
     def putpalette(
@@ -2105,8 +2147,10 @@ class Image:
             if self.mode == "PA":
                 alpha = value[3] if len(value) == 4 else 255
                 value = value[:3]
-            palette_index = self.palette.getcolor(value, self)
+            assert self.palette is not None
+            palette_index = self.palette.getcolor(tuple(value), self)
             value = (palette_index, alpha) if self.mode == "PA" else palette_index
+        assert self.im is not None
         return self.im.putpixel(xy, value)
 
     def remap_palette(
@@ -2133,6 +2177,7 @@ class Image:
         if source_palette is None:
             if self.mode == "P":
                 self.load()
+                assert self.im is not None
                 palette_mode = self.im.getpalettemode()
                 if palette_mode == "RGBA":
                     bands = 4
@@ -2180,6 +2225,7 @@ class Image:
         # m_im.putpalette(mapping_palette, 'L')  # converts to 'P'
         # or just force it.
         # UNDONE -- this is part of the general issue with palettes
+        assert m_im.im is not None
         m_im.im.putpalette(palette_mode, palette_mode + ";L", m_im.palette.tobytes())
 
         m_im = m_im.convert("L")
@@ -2325,6 +2371,7 @@ class Image:
                     (box[3] - reduce_box[1]) / factor_y,
                 )
 
+        assert self.im is not None
         return self._new(self.im.resize(size, resample, box))
 
     def reduce(
@@ -2359,7 +2406,7 @@ class Image:
             return im.convert(self.mode)
 
         self.load()
-
+        assert self.im is not None
         return self._new(self.im.reduce(factor, box))
 
     def rotate(
@@ -2637,6 +2684,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         if self.im.bands == 1:
             return (self.copy(),)
         return tuple(map(self._new, self.im.split()))
@@ -2661,6 +2709,7 @@ class Image:
                 msg = f'The image has no channel "{channel}"'
                 raise ValueError(msg) from e
 
+        assert self.im is not None
         return self._new(self.im.getband(channel))
 
     def tell(self) -> int:
@@ -2765,6 +2814,7 @@ class Image:
 
             self.im = im.im
             self._size = final_size
+            assert self.im is not None
             self._mode = self.im.mode
 
         self.readonly = 0
@@ -2949,6 +2999,7 @@ class Image:
         if image.mode in ("1", "P"):
             resample = Resampling.NEAREST
 
+        assert self.im is not None
         self.im.transform(box, image.im, method, data, resample, fill)
 
     def transpose(self, method: Transpose) -> Image:
@@ -2963,6 +3014,7 @@ class Image:
         """
 
         self.load()
+        assert self.im is not None
         return self._new(self.im.transpose(method))
 
     def effect_spread(self, distance: int) -> Image:
@@ -2972,6 +3024,7 @@ class Image:
         :param distance: Distance to spread pixels.
         """
         self.load()
+        assert self.im is not None
         return self._new(self.im.effect_spread(distance))
 
     def toqimage(self):
@@ -3205,6 +3258,7 @@ def frombuffer(
             if mode == "P":
                 from . import ImagePalette
 
+                assert im.im is not None
                 im.palette = ImagePalette.ImagePalette("RGB", im.im.getpalette("RGB"))
             im.readonly = 1
             return im

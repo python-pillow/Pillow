@@ -213,6 +213,8 @@ class MorphOp:
             msg = "Image mode must be L"
             raise ValueError(msg)
         outimage = Image.new(image.mode, image.size, None)
+        assert image.im is not None
+        assert outimage.im is not None
         count = _imagingmorph.apply(bytes(self.lut), image.im.id, outimage.im.id)
         return count, outimage
 
@@ -229,6 +231,7 @@ class MorphOp:
         if image.mode != "L":
             msg = "Image mode must be L"
             raise ValueError(msg)
+        assert image.im is not None
         return _imagingmorph.match(bytes(self.lut), image.im.id)
 
     def get_on_pixels(self, image: Image.Image) -> list[tuple[int, int]]:
@@ -240,6 +243,7 @@ class MorphOp:
         if image.mode != "L":
             msg = "Image mode must be L"
             raise ValueError(msg)
+        assert image.im is not None
         return _imagingmorph.get_on_pixels(image.im.id)
 
     def load_lut(self, filename: str) -> None:
