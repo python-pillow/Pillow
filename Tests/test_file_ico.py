@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import IcoImagePlugin, Image, ImageDraw
+from PIL import IcoImagePlugin, Image, ImageDraw, ImageFile
 
 from .helper import assert_image_equal, assert_image_equal_tofile, hopper
 
@@ -241,3 +241,29 @@ def test_draw_reloaded(tmp_path: Path) -> None:
 
     with Image.open(outfile) as im:
         assert_image_equal_tofile(im, "Tests/images/hopper_draw.ico")
+
+
+def test_truncated_mask() -> None:
+    # 1 bpp
+    with open("Tests/images/hopper_mask.ico", "rb") as fp:
+        data = fp.read()
+
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    data = data[:-3]
+
+    try:
+        with Image.open(io.BytesIO(data)) as im:
+            with Image.open("Tests/images/hopper_mask.png") as expected:
+                assert im.mode == "1"
+
+        # 32 bpp
+        output = io.BytesIO()
+        expected = hopper("RGBA")
+        expected.save(output, "ico", bitmap_format="bmp")
+
+        data = output.getvalue()[:-1]
+
+        with Image.open(io.BytesIO(data)) as im:
+            assert im.mode == "RGB"
+    finally:
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
