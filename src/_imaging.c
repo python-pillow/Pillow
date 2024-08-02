@@ -94,19 +94,6 @@
 #include <math.h>
 #include <stddef.h>
 
-/* Configuration stuff. Feel free to undef things you don't need. */
-#define WITH_IMAGECHOPS  /* ImageChops support */
-#define WITH_IMAGEDRAW   /* ImageDraw support */
-#define WITH_MAPPING     /* use memory mapping to read some file formats */
-#define WITH_IMAGEPATH   /* ImagePath stuff */
-#define WITH_ARROW       /* arrow graphics stuff (experimental) */
-#define WITH_EFFECTS     /* special effects */
-#define WITH_QUANTIZE    /* quantization support */
-#define WITH_RANKFILTER  /* rank filter */
-#define WITH_MODEFILTER  /* mode filter */
-#define WITH_THREADING   /* "friendly" threading support */
-#define WITH_UNSHARPMASK /* Kevin Cazabon's unsharpmask module */
-
 #undef VERBOSE
 
 #define B16(p, i) ((((int)p[(i)]) << 8) + p[(i) + 1])
@@ -123,8 +110,6 @@ typedef struct {
 } ImagingObject;
 
 static PyTypeObject Imaging_Type;
-
-#ifdef WITH_IMAGEDRAW
 
 typedef struct {
     /* to write a character, cut out sxy from glyph data, place
@@ -151,8 +136,6 @@ typedef struct {
 } ImagingDrawObject;
 
 static PyTypeObject ImagingDraw_Type;
-
-#endif
 
 typedef struct {
     PyObject_HEAD ImagingObject *image;
@@ -216,16 +199,12 @@ PyImaging_AsImaging(PyObject *op) {
 
 void
 ImagingSectionEnter(ImagingSectionCookie *cookie) {
-#ifdef WITH_THREADING
     *cookie = (PyThreadState *)PyEval_SaveThread();
-#endif
 }
 
 void
 ImagingSectionLeave(ImagingSectionCookie *cookie) {
-#ifdef WITH_THREADING
     PyEval_RestoreThread((PyThreadState *)*cookie);
-#endif
 }
 
 /* -------------------------------------------------------------------- */
@@ -1092,7 +1071,6 @@ _filter(ImagingObject *self, PyObject *args) {
     return imOut;
 }
 
-#ifdef WITH_UNSHARPMASK
 static PyObject *
 _gaussian_blur(ImagingObject *self, PyObject *args) {
     Imaging imIn;
@@ -1117,7 +1095,6 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(imOut);
 }
-#endif
 
 static PyObject *
 _getpalette(ImagingObject *self, PyObject *args) {
@@ -1375,7 +1352,6 @@ _entropy(ImagingObject *self, PyObject *args) {
     return PyFloat_FromDouble(-entropy);
 }
 
-#ifdef WITH_MODEFILTER
 static PyObject *
 _modefilter(ImagingObject *self, PyObject *args) {
     int size;
@@ -1385,7 +1361,6 @@ _modefilter(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingModeFilter(self->image, size));
 }
-#endif
 
 static PyObject *
 _offset(ImagingObject *self, PyObject *args) {
@@ -1717,8 +1692,6 @@ _putdata(ImagingObject *self, PyObject *args) {
     return Py_None;
 }
 
-#ifdef WITH_QUANTIZE
-
 static PyObject *
 _quantize(ImagingObject *self, PyObject *args) {
     int colours = 256;
@@ -1735,7 +1708,6 @@ _quantize(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingQuantize(self->image, colours, method, kmeans));
 }
-#endif
 
 static PyObject *
 _putpalette(ImagingObject *self, PyObject *args) {
@@ -1871,7 +1843,6 @@ _putpixel(ImagingObject *self, PyObject *args) {
     return Py_None;
 }
 
-#ifdef WITH_RANKFILTER
 static PyObject *
 _rankfilter(ImagingObject *self, PyObject *args) {
     int size, rank;
@@ -1881,7 +1852,6 @@ _rankfilter(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingRankFilter(self->image, size, rank));
 }
-#endif
 
 static PyObject *
 _resize(ImagingObject *self, PyObject *args) {
@@ -2163,7 +2133,6 @@ _transpose(ImagingObject *self, PyObject *args) {
     return PyImagingNew(imOut);
 }
 
-#ifdef WITH_UNSHARPMASK
 static PyObject *
 _unsharp_mask(ImagingObject *self, PyObject *args) {
     Imaging imIn;
@@ -2187,7 +2156,6 @@ _unsharp_mask(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(imOut);
 }
-#endif
 
 static PyObject *
 _box_blur(ImagingObject *self, PyObject *args) {
@@ -2464,9 +2432,7 @@ _split(ImagingObject *self) {
     return list;
 }
 
-/* -------------------------------------------------------------------- */
-
-#ifdef WITH_IMAGECHOPS
+/* Channel operations (ImageChops) ------------------------------------ */
 
 static PyObject *
 _chop_invert(ImagingObject *self) {
@@ -2647,11 +2613,8 @@ _chop_overlay(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingOverlay(self->image, imagep->image));
 }
-#endif
 
-/* -------------------------------------------------------------------- */
-
-#ifdef WITH_IMAGEDRAW
+/* Fonts (ImageDraw and ImageFont) ------------------------------------ */
 
 static PyObject *
 _font_new(PyObject *self_, PyObject *args) {
@@ -2880,7 +2843,7 @@ static struct PyMethodDef _font_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-/* -------------------------------------------------------------------- */
+/* Graphics (ImageDraw) ----------------------------------------------- */
 
 static PyObject *
 _draw_new(PyObject *self_, PyObject *args) {
@@ -3234,8 +3197,6 @@ _draw_points(ImagingDrawObject *self, PyObject *args) {
     return Py_None;
 }
 
-#ifdef WITH_ARROW
-
 /* from outline.c */
 extern ImagingOutline
 PyOutline_AsOutline(PyObject *outline);
@@ -3264,8 +3225,6 @@ _draw_outline(ImagingDrawObject *self, PyObject *args) {
     Py_INCREF(Py_None);
     return Py_None;
 }
-
-#endif
 
 static PyObject *
 _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
@@ -3432,12 +3391,9 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
 }
 
 static struct PyMethodDef _draw_methods[] = {
-#ifdef WITH_IMAGEDRAW
     /* Graphics (ImageDraw) */
     {"draw_lines", (PyCFunction)_draw_lines, METH_VARARGS},
-#ifdef WITH_ARROW
     {"draw_outline", (PyCFunction)_draw_outline, METH_VARARGS},
-#endif
     {"draw_polygon", (PyCFunction)_draw_polygon, METH_VARARGS},
     {"draw_rectangle", (PyCFunction)_draw_rectangle, METH_VARARGS},
     {"draw_points", (PyCFunction)_draw_points, METH_VARARGS},
@@ -3447,11 +3403,8 @@ static struct PyMethodDef _draw_methods[] = {
     {"draw_ellipse", (PyCFunction)_draw_ellipse, METH_VARARGS},
     {"draw_pieslice", (PyCFunction)_draw_pieslice, METH_VARARGS},
     {"draw_ink", (PyCFunction)_draw_ink, METH_VARARGS},
-#endif
     {NULL, NULL} /* sentinel */
 };
-
-#endif
 
 static PyObject *
 pixel_access_new(ImagingObject *imagep, PyObject *args) {
@@ -3533,10 +3486,8 @@ pixel_access_setitem(PixelAccessObject *self, PyObject *xy, PyObject *color) {
 }
 
 /* -------------------------------------------------------------------- */
-/* EFFECTS (experimental)                            */
+/* EFFECTS (experimental)                                               */
 /* -------------------------------------------------------------------- */
-
-#ifdef WITH_EFFECTS
 
 static PyObject *
 _effect_mandelbrot(ImagingObject *self, PyObject *args) {
@@ -3588,8 +3539,6 @@ _effect_spread(ImagingObject *self, PyObject *args) {
 
     return PyImagingNew(ImagingEffectSpread(self->image, dist));
 }
-
-#endif
 
 /* -------------------------------------------------------------------- */
 /* UTILITIES                                */
@@ -3671,20 +3620,14 @@ static struct PyMethodDef methods[] = {
     {"filter", (PyCFunction)_filter, METH_VARARGS},
     {"histogram", (PyCFunction)_histogram, METH_VARARGS},
     {"entropy", (PyCFunction)_entropy, METH_VARARGS},
-#ifdef WITH_MODEFILTER
     {"modefilter", (PyCFunction)_modefilter, METH_VARARGS},
-#endif
     {"offset", (PyCFunction)_offset, METH_VARARGS},
     {"paste", (PyCFunction)_paste, METH_VARARGS},
     {"point", (PyCFunction)_point, METH_VARARGS},
     {"point_transform", (PyCFunction)_point_transform, METH_VARARGS},
     {"putdata", (PyCFunction)_putdata, METH_VARARGS},
-#ifdef WITH_QUANTIZE
     {"quantize", (PyCFunction)_quantize, METH_VARARGS},
-#endif
-#ifdef WITH_RANKFILTER
     {"rankfilter", (PyCFunction)_rankfilter, METH_VARARGS},
-#endif
     {"resize", (PyCFunction)_resize, METH_VARARGS},
     {"reduce", (PyCFunction)_reduce, METH_VARARGS},
     {"transpose", (PyCFunction)_transpose, METH_VARARGS},
@@ -3710,7 +3653,6 @@ static struct PyMethodDef methods[] = {
     {"putpalettealpha", (PyCFunction)_putpalettealpha, METH_VARARGS},
     {"putpalettealphas", (PyCFunction)_putpalettealphas, METH_VARARGS},
 
-#ifdef WITH_IMAGECHOPS
     /* Channel operations (ImageChops) */
     {"chop_invert", (PyCFunction)_chop_invert, METH_NOARGS},
     {"chop_lighter", (PyCFunction)_chop_lighter, METH_VARARGS},
@@ -3729,20 +3671,14 @@ static struct PyMethodDef methods[] = {
     {"chop_hard_light", (PyCFunction)_chop_hard_light, METH_VARARGS},
     {"chop_overlay", (PyCFunction)_chop_overlay, METH_VARARGS},
 
-#endif
-
-#ifdef WITH_UNSHARPMASK
-    /* Kevin Cazabon's unsharpmask extension */
+    /* Unsharpmask extension */
     {"gaussian_blur", (PyCFunction)_gaussian_blur, METH_VARARGS},
     {"unsharp_mask", (PyCFunction)_unsharp_mask, METH_VARARGS},
-#endif
 
     {"box_blur", (PyCFunction)_box_blur, METH_VARARGS},
 
-#ifdef WITH_EFFECTS
     /* Special effects */
     {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
-#endif
 
     /* Misc. */
     {"new_block", (PyCFunction)_new_block, METH_VARARGS},
@@ -3871,8 +3807,6 @@ static PyTypeObject Imaging_Type = {
     getsetters,           /*tp_getset*/
 };
 
-#ifdef WITH_IMAGEDRAW
-
 static PyTypeObject ImagingFont_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "ImagingFont", /*tp_name*/
     sizeof(ImagingFontObject),                    /*tp_basicsize*/
@@ -3938,8 +3872,6 @@ static PyTypeObject ImagingDraw_Type = {
     0,                         /*tp_members*/
     0,                         /*tp_getset*/
 };
-
-#endif
 
 static PyMappingMethods pixel_access_as_mapping = {
     (lenfunc)NULL,                       /*mp_length*/
@@ -4309,13 +4241,11 @@ static PyMethodDef functions[] = {
     {"zip_encoder", (PyCFunction)PyImaging_ZipEncoderNew, METH_VARARGS},
 #endif
 
-/* Memory mapping */
-#ifdef WITH_MAPPING
+    /* Memory mapping */
     {"map_buffer", (PyCFunction)PyImaging_MapBuffer, METH_VARARGS},
-#endif
 
-/* Display support */
 #ifdef _WIN32
+    /* Display support */
     {"display", (PyCFunction)PyImaging_DisplayWin32, METH_VARARGS},
     {"display_mode", (PyCFunction)PyImaging_DisplayModeWin32, METH_VARARGS},
     {"grabscreen_win32", (PyCFunction)PyImaging_GrabScreenWin32, METH_VARARGS},
@@ -4331,30 +4261,22 @@ static PyMethodDef functions[] = {
     /* Utilities */
     {"getcodecstatus", (PyCFunction)_getcodecstatus, METH_VARARGS},
 
-/* Special effects (experimental) */
-#ifdef WITH_EFFECTS
+    /* Special effects (experimental) */
     {"effect_mandelbrot", (PyCFunction)_effect_mandelbrot, METH_VARARGS},
     {"effect_noise", (PyCFunction)_effect_noise, METH_VARARGS},
     {"linear_gradient", (PyCFunction)_linear_gradient, METH_VARARGS},
     {"radial_gradient", (PyCFunction)_radial_gradient, METH_VARARGS},
     {"wedge", (PyCFunction)_linear_gradient, METH_VARARGS}, /* Compatibility */
-#endif
 
-/* Drawing support stuff */
-#ifdef WITH_IMAGEDRAW
+    /* Drawing support stuff */
     {"font", (PyCFunction)_font_new, METH_VARARGS},
     {"draw", (PyCFunction)_draw_new, METH_VARARGS},
-#endif
 
-/* Experimental path stuff */
-#ifdef WITH_IMAGEPATH
+    /* Experimental path stuff */
     {"path", (PyCFunction)PyPath_Create, METH_VARARGS},
-#endif
 
-/* Experimental arrow graphics stuff */
-#ifdef WITH_ARROW
+    /* Experimental arrow graphics stuff */
     {"outline", (PyCFunction)PyOutline_Create, METH_VARARGS},
-#endif
 
     /* Resource management */
     {"get_stats", (PyCFunction)_get_stats, METH_VARARGS},
@@ -4379,16 +4301,12 @@ setup_module(PyObject *m) {
     if (PyType_Ready(&Imaging_Type) < 0) {
         return -1;
     }
-
-#ifdef WITH_IMAGEDRAW
     if (PyType_Ready(&ImagingFont_Type) < 0) {
         return -1;
     }
-
     if (PyType_Ready(&ImagingDraw_Type) < 0) {
         return -1;
     }
-#endif
     if (PyType_Ready(&PixelAccess_Type) < 0) {
         return -1;
     }
