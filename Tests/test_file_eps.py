@@ -8,6 +8,7 @@ import pytest
 from PIL import EpsImagePlugin, Image, UnidentifiedImageError, features
 
 from .helper import (
+    assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
@@ -245,9 +246,10 @@ def test_bytesio_object() -> None:
         assert_image_similar(img, image1_scale1_compare, 5)
 
 
-def test_1_mode() -> None:
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+def test_1() -> None:
     with Image.open("Tests/images/eps/1.eps") as im:
-        assert im.mode == "1"
+        assert_image_equal_tofile(im, "Tests/images/eps/1.bmp")
 
 
 def test_image_mode_not_supported(tmp_path: Path) -> None:
