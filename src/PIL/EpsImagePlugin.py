@@ -121,7 +121,13 @@ def Ghostscript(
                 lengthfile -= len(s)
                 f.write(s)
 
-    device = "pngalpha" if transparency else "ppmraw"
+    if transparency:
+        # "RGBA"
+        device = "pngalpha"
+    else:
+        # "pnmraw" automatically chooses between
+        # PBM ("1"), PGM ("L"), and PPM ("RGB").
+        device = "pnmraw"
 
     # Build Ghostscript command
     command = [

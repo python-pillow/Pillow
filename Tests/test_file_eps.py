@@ -178,7 +178,7 @@ def test_load_long_binary_data(prefix: bytes) -> None:
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_long_binary_data))
     with Image.open(data) as img:
         img.load()
-        assert img.mode == "RGB"
+        assert img.mode == "1"
         assert img.size == (100, 100)
         assert img.format == "EPS"
 
