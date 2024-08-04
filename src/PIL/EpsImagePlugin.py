@@ -157,8 +157,9 @@ def Ghostscript(
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         subprocess.check_call(command, startupinfo=startupinfo)
-        out_im = Image.open(outfile)
-        out_im.load()
+        with Image.open(outfile) as out_im:
+            out_im.load()
+            return out_im.im.copy()
     finally:
         try:
             os.unlink(outfile)
@@ -166,10 +167,6 @@ def Ghostscript(
                 os.unlink(infile_temp)
         except OSError:
             pass
-
-    im = out_im.im.copy()
-    out_im.close()
-    return im
 
 
 def _accept(prefix: bytes) -> bool:
