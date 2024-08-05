@@ -991,6 +991,13 @@ class TestFileJpeg:
             else:
                 assert im.getxmp() == {"xmpmeta": None}
 
+    def test_save_xmp(self, tmp_path: Path) -> None:
+        f = str(tmp_path / "temp.jpg")
+        hopper().save(f, xmp=b"XMP test")
+
+        with Image.open(f) as reloaded:
+            assert reloaded.info["xmp"] == b"XMP test"
+
     @pytest.mark.timeout(timeout=1)
     def test_eof(self) -> None:
         # Even though this decoder never says that it is finished

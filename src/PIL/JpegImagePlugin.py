@@ -746,6 +746,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     extra = info.get("extra", b"")
 
+    xmp = info.get("xmp")
+    if xmp:
+        size = o16(31 + len(xmp))
+        extra += b"\xFF\xE1" + size + b"http://ns.adobe.com/xap/1.0/\x00" + xmp
+
     MAX_BYTES_IN_MARKER = 65533
     icc_profile = info.get("icc_profile")
     if icc_profile:
