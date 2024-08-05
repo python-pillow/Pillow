@@ -93,7 +93,7 @@ def _tilesort(t: _Tile) -> int:
 
 class _Tile(NamedTuple):
     codec_name: str
-    extents: tuple[int, int, int, int]
+    extents: tuple[int, int, int, int] | None
     offset: int
     args: tuple[Any, ...] | str | None
 
@@ -522,7 +522,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im: Image.Image, fp: IO[bytes], tile, bufsize: int = 0) -> None:
+def _save(im: Image.Image, fp: IO[bytes], tile: list[_Tile], bufsize: int = 0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.

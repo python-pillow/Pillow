@@ -238,11 +238,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     if rle:
         ImageFile._save(
-            im, fp, [("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))]
+            im,
+            fp,
+            [ImageFile._Tile("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))],
         )
     else:
         ImageFile._save(
-            im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))]
+            im,
+            fp,
+            [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))],
         )
 
     # write targa version 2 footer
