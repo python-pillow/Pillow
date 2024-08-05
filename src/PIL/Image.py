@@ -218,9 +218,10 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 if TYPE_CHECKING:
+    import mmap
     from xml.etree.ElementTree import Element
 
-    from . import ImageFile, ImagePalette, TiffImagePlugin
+    from . import ImageFile, ImageFilter, ImagePalette, TiffImagePlugin
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
 OPEN: dict[
@@ -612,7 +613,7 @@ class Image:
                 logger.debug("Error closing: %s", msg)
 
         if getattr(self, "map", None):
-            self.map = None
+            self.map: mmap.mmap | None = None
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
@@ -1335,9 +1336,6 @@ class Image:
             ymargin = xmargin
         self.load()
         return self._new(self.im.expand(xmargin, ymargin))
-
-    if TYPE_CHECKING:
-        from . import ImageFilter
 
     def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
