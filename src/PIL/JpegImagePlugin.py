@@ -749,7 +749,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     MAX_BYTES_IN_MARKER = 65533
     xmp = info.get("xmp")
     if xmp:
-        overhead_len = 29
+        overhead_len = 29  # b"http://ns.adobe.com/xap/1.0/\x00"
         max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
         if len(xmp) > max_data_bytes_in_marker:
             msg = "XMP data is too long"
@@ -759,7 +759,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     icc_profile = info.get("icc_profile")
     if icc_profile:
-        overhead_len = 14
+        overhead_len = 14  # b"ICC_PROFILE\0" + o8(i) + o8(len(markers))
         max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
         markers = []
         while icc_profile:
