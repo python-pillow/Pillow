@@ -1226,7 +1226,7 @@ def _write_multiple_frames(
         ImageFile._save(
             im,
             cast(IO[bytes], _idat(fp, chunk)),
-            [("zip", (0, 0) + im.size, 0, rawmode)],
+            [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
         )
 
     seq_num = 0
@@ -1263,14 +1263,14 @@ def _write_multiple_frames(
             ImageFile._save(
                 im_frame,
                 cast(IO[bytes], _idat(fp, chunk)),
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
                 cast(IO[bytes], fdat_chunks),
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1471,7 +1471,7 @@ def _save(
         ImageFile._save(
             single_im,
             cast(IO[bytes], _idat(fp, chunk)),
-            [("zip", (0, 0) + single_im.size, 0, rawmode)],
+            [ImageFile._Tile("zip", (0, 0) + single_im.size, 0, rawmode)],
         )
 
     if info:

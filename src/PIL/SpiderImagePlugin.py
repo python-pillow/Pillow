@@ -278,7 +278,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))]
+    )
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

@@ -188,7 +188,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(o16(h))
 
     # image body
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 32, ("1", 0, 1))])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 32, ("1", 0, 1))])
 
 
 #
