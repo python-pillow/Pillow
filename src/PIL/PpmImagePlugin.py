@@ -333,7 +333,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         rawmode, head = "1;I", b"P4"
     elif im.mode == "L":
         rawmode, head = "L", b"P5"
-    elif im.mode == "I":
+    elif im.mode in ("I", "I;16"):
         rawmode, head = "I;16B", b"P5"
     elif im.mode in ("RGB", "RGBA"):
         rawmode, head = "RGB", b"P6"
