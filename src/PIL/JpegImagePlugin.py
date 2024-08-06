@@ -322,7 +322,7 @@ MARKER = {
 
 def _accept(prefix: bytes) -> bool:
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
-    return prefix[:3] == b"\xFF\xD8\xFF"
+    return prefix[:3] == b"\xff\xd8\xff"
 
 
 ##
@@ -339,7 +339,7 @@ class JpegImageFile(ImageFile.ImageFile):
         if not _accept(s):
             msg = "not a JPEG file"
             raise SyntaxError(msg)
-        s = b"\xFF"
+        s = b"\xff"
 
         # Create attributes
         self.bits = self.layers = 0
@@ -405,7 +405,7 @@ class JpegImageFile(ImageFile.ImageFile):
             # Premature EOF.
             # Pretend file is finished adding EOI marker
             self._ended = True
-            return b"\xFF\xD9"
+            return b"\xff\xd9"
 
         return s
 
@@ -759,7 +759,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         for marker in markers:
             size = o16(2 + ICC_OVERHEAD_LEN + len(marker))
             extra += (
-                b"\xFF\xE2"
+                b"\xff\xe2"
                 + size
                 + b"ICC_PROFILE\0"
                 + o8(i)

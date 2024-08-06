@@ -228,7 +228,7 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
                     msg = b"Invalid token for this mode: %s" % bytes([token])
                     raise ValueError(msg)
             data = (data + tokens)[:total_bytes]
-        invert = bytes.maketrans(b"01", b"\xFF\x00")
+        invert = bytes.maketrans(b"01", b"\xff\x00")
         return data.translate(invert)
 
     def _decode_blocks(self, maxval: int) -> bytearray:

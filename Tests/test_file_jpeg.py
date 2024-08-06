@@ -917,7 +917,7 @@ class TestFileJpeg:
 
     def test_jpeg_magic_number(self, monkeypatch: pytest.MonkeyPatch) -> None:
         size = 4097
-        buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
+        buffer = BytesIO(b"\xff" * size)  # Many FF bytes
         max_pos = 0
         orig_read = buffer.read
 
