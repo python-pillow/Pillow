@@ -109,6 +109,7 @@ lint.select = [
   "ISC",    # flake8-implicit-str-concat
   "LOG",    # flake8-logging
   "PGH",    # pygrep-hooks
+  "PT006",  # pytest-parametrize-names-wrong-type
   "PYI",    # flake8-pyi
   "RUF100", # unused noqa (yesqa)
   "UP",     # pyupgrade
@@ -129,6 +130,8 @@ lint.per-file-ignores."Tests/oss-fuzz/fuzz_font.py" = [
 lint.per-file-ignores."Tests/oss-fuzz/fuzz_pillow.py" = [
   "I002",
 ]
+lint.flake8-pytest-style.parametrize-names-type = "csv"
+
 lint.isort.known-first-party = [
   "PIL",
 ]
