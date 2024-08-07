@@ -106,39 +106,39 @@ class TestColorLut3DCoreAPI:
             im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, 16)
 
     @pytest.mark.parametrize(
-        "lut_mode, table_size",
+        "lut_mode, table_channels, table_size",
         [
-            ("RGB", (3, 3)),
-            ("CMYK", (4, 3)),
-            ("RGB", (3, (2, 3, 3))),
-            ("RGB", (3, (65, 3, 3))),
-            ("RGB", (3, (3, 65, 3))),
-            ("RGB", (3, (3, 3, 65))),
+            ("RGB", 3, 3),
+            ("CMYK", 4, 3),
+            ("RGB", 3, (2, 3, 3)),
+            ("RGB", 3, (65, 3, 3)),
+            ("RGB", 3, (3, 65, 3)),
+            ("RGB", 3, (2, 3, 65)),
         ],
     )
     def test_correct_args(
-        self, lut_mode: str, table_size: tuple[int, int | tuple[int, int, int]]
+        self, lut_mode: str, table_channels: int, table_size: int | tuple[int, int, int]
     ) -> None:
         im = Image.new("RGB", (10, 10), 0)
         assert im.im is not None
         im.im.color_lut_3d(
             lut_mode,
             Image.Resampling.BILINEAR,
-            *self.generate_identity_table(*table_size),
+            *self.generate_identity_table(table_channels, table_size),
         )
 
     @pytest.mark.parametrize(
-        "image_mode, lut_mode, table_size",
+        "image_mode, lut_mode, table_channels, table_size",
         [
-            ("L", "RGB", (3, 3)),
-            ("RGB", "L", (3, 3)),
-            ("L", "L", (3, 3)),
-            ("RGB", "RGBA", (3, 3)),
-            ("RGB", "RGB", (4, 3)),
+            ("L", "RGB", 3, 3),
+            ("RGB", "L", 3, 3),
+            ("L", "L", 3, 3),
+            ("RGB", "RGBA", 3, 3),
+            ("RGB", "RGB", 4, 3),
         ],
     )
     def test_wrong_mode(
-        self, image_mode: str, lut_mode: str, table_size: tuple[int, int]
+        self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
     ) -> None:
         with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new(image_mode, (10, 10), 0)
@@ -146,27 +146,27 @@ class TestColorLut3DCoreAPI:
             im.im.color_lut_3d(
                 lut_mode,
                 Image.Resampling.BILINEAR,
-                *self.generate_identity_table(*table_size),
+                *self.generate_identity_table(table_channels, table_size),
             )
 
     @pytest.mark.parametrize(
-        "image_mode, lut_mode, table_size",
+        "image_mode, lut_mode, table_channels, table_size",
         [
-            ("RGBA", "RGBA", (3, 3)),
-            ("RGBA", "RGBA", (4, 3)),
-            ("RGB", "HSV", (3, 3)),
-            ("RGB", "RGBA", (4, 3)),
+            ("RGBA", "RGBA", 3, 3),
+            ("RGBA", "RGBA", 4, 3),
+            ("RGB", "HSV", 3, 3),
+            ("RGB", "RGBA", 4, 3),
         ],
     )
     def test_correct_mode(
-        self, image_mode: str, lut_mode: str, table_size: tuple[int, int]
+        self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
     ) -> None:
         im = Image.new(image_mode, (10, 10), 0)
         assert im.im is not None
         im.im.color_lut_3d(
             lut_mode,
             Image.Resampling.BILINEAR,
-            *self.generate_identity_table(*table_size),
+            *self.generate_identity_table(table_channels, table_size),
         )
 
     def test_identities(self) -> None:
