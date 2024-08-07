@@ -106,7 +106,7 @@ class TestColorLut3DCoreAPI:
             im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, 16)
 
     @pytest.mark.parametrize(
-        ("lut_mode", "table_size"),
+        "lut_mode, table_size",
         [
             ("RGB", (3, 3)),
             ("CMYK", (4, 3)),
@@ -128,7 +128,7 @@ class TestColorLut3DCoreAPI:
         )
 
     @pytest.mark.parametrize(
-        ("image_mode", "lut_mode", "table_size"),
+        "image_mode, lut_mode, table_size",
         [
             ("L", "RGB", (3, 3)),
             ("RGB", "L", (3, 3)),
@@ -150,7 +150,7 @@ class TestColorLut3DCoreAPI:
             )
 
     @pytest.mark.parametrize(
-        ("image_mode", "lut_mode", "table_size"),
+        "image_mode, lut_mode, table_size",
         [
             ("RGBA", "RGBA", (3, 3)),
             ("RGBA", "RGBA", (4, 3)),
