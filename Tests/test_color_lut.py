@@ -152,7 +152,7 @@ class TestColorLut3DCoreAPI:
     @pytest.mark.parametrize(
         ("image_mode", "lut_mode", "table_size"),
         [
-            ("RGBA", "RGB", (3, 3)),
+            ("RGBA", "RGBA", (3, 3)),
             ("RGBA", "RGBA", (4, 3)),
             ("RGB", "HSV", (3, 3)),
             ("RGB", "RGBA", (4, 3)),
