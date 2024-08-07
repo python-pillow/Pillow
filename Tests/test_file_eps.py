@@ -128,6 +128,15 @@ def test_binary_header_only() -> None:
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_simple_eps_file(prefix: bytes) -> None:
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file))
+    with Image.open(data) as img:
+        assert img.mode == "RGB"
+        assert img.size == (100, 100)
+        assert img.format == "EPS"
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
 def test_missing_version_comment(prefix: bytes) -> None:
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_without_version))
     with pytest.raises(SyntaxError):
@@ -142,21 +151,17 @@ def test_missing_boundingbox_comment(prefix: bytes) -> None:
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_invalid_boundingbox_comment(prefix: bytes) -> None:
-    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox))
+@pytest.mark.parametrize(
+    "file_lines",
+    (
+        simple_eps_file_with_invalid_boundingbox,
+        simple_eps_file_with_invalid_boundingbox_valid_imagedata,
+    ),
+)
+def test_invalid_boundingbox_comment(prefix: bytes, file_lines: list[bytes]) -> None:
+    data = io.BytesIO(prefix + b"\n".join(file_lines))
     with pytest.raises(OSError, match="cannot determine EPS bounding box"):
         EpsImagePlugin.EpsImageFile(data)
-
-
-@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_invalid_boundingbox_comment_valid_imagedata_comment(prefix: bytes) -> None:
-    data = io.BytesIO(
-        prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox_valid_imagedata)
-    )
-    with Image.open(data) as img:
-        assert img.mode == "RGB"
-        assert img.size == (100, 100)
-        assert img.format == "EPS"
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
@@ -247,8 +252,13 @@ def test_bytesio_object() -> None:
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_1() -> None:
-    with Image.open("Tests/images/eps/1.eps") as im:
+@pytest.mark.parametrize(
+    # These images have an "ImageData" descriptor.
+    "filename",
+    ("Tests/images/eps/1.eps", "Tests/images/eps/1_atend.eps"),
+)
+def test_1(filename: str) -> None:
+    with Image.open(filename) as im:
         assert_image_equal_tofile(im, "Tests/images/eps/1.bmp")
 
 

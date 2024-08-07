@@ -194,6 +194,11 @@ class EpsImageFile(ImageFile.ImageFile):
 
         self._mode = "RGB"
 
+        # When reading header comments, the first comment is used.
+        # When reading trailer comments, the last comment is used.
+        bounding_box: list[int] | None = None
+        imagedata_size: tuple[int, int] | None = None
+
         byte_arr = bytearray(255)
         bytes_mv = memoryview(byte_arr)
         bytes_read = 0
@@ -214,8 +219,8 @@ class EpsImageFile(ImageFile.ImageFile):
                 msg = 'EPS header missing "%%BoundingBox" comment'
                 raise SyntaxError(msg)
 
-        def _read_comment(s: str) -> bool:
-            nonlocal reading_trailer_comments
+        def read_comment(s: str) -> bool:
+            nonlocal bounding_box, reading_trailer_comments
             try:
                 m = split.match(s)
             except re.error as e:
@@ -230,18 +235,12 @@ class EpsImageFile(ImageFile.ImageFile):
             if k == "BoundingBox":
                 if v == "(atend)":
                     reading_trailer_comments = True
-                elif not self.tile or (trailer_reached and reading_trailer_comments):
+                elif not bounding_box or (trailer_reached and reading_trailer_comments):
                     try:
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
                         # put floating point values there anyway.
-                        box = [int(float(i)) for i in v.split()]
-                        self._size = box[2] - box[0], box[3] - box[1]
-                        self.tile = [
-                            ImageFile._Tile(
-                                "eps", (0, 0) + self.size, offset, (length, box)
-                            )
-                        ]
+                        bounding_box = [int(float(i)) for i in v.split()]
                     except Exception:
                         pass
             return True
@@ -292,7 +291,7 @@ class EpsImageFile(ImageFile.ImageFile):
                     continue
 
                 s = str(bytes_mv[:bytes_read], "latin-1")
-                if not _read_comment(s):
+                if not read_comment(s):
                     m = field.match(s)
                     if m:
                         k = m.group(1)
@@ -326,31 +325,49 @@ class EpsImageFile(ImageFile.ImageFile):
                     int(value) for value in image_data_values[:4]
                 )
 
-                if bit_depth == 1:
-                    self._mode = "1"
-                elif bit_depth == 8:
-                    try:
-                        self._mode = self.mode_map[mode_id]
-                    except ValueError:
-                        break
-                else:
-                    break
+                if not imagedata_size:
+                    imagedata_size = columns, rows
 
-                self._size = columns, rows
-                return
+                    if bit_depth == 1:
+                        self._mode = "1"
+                    elif bit_depth == 8:
+                        try:
+                            self._mode = self.mode_map[mode_id]
+                        except ValueError:
+                            pass
             elif bytes_mv[:5] == b"%%EOF":
                 break
             elif trailer_reached and reading_trailer_comments:
                 # Load EPS trailer
                 s = str(bytes_mv[:bytes_read], "latin-1")
-                _read_comment(s)
+                read_comment(s)
             elif bytes_mv[:9] == b"%%Trailer":
                 trailer_reached = True
             bytes_read = 0
 
-        if not self.tile:
+        # A "BoundingBox" is always required,
+        # even if an "ImageData" descriptor size exists.
+        if not bounding_box:
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
+
+        # An "ImageData" size takes precedence over the "BoundingBox".
+        if imagedata_size:
+            self._size = imagedata_size
+        else:
+            self._size = (
+                bounding_box[2] - bounding_box[0],
+                bounding_box[3] - bounding_box[1],
+            )
+
+        self.tile = [
+            ImageFile._Tile(
+                codec_name="eps",
+                extents=(0, 0) + self._size,
+                offset=offset,
+                args=(length, bounding_box),
+            )
+        ]
 
     def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
         s = fp.read(4)
