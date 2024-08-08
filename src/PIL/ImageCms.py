@@ -392,7 +392,7 @@ def get_display_profile(handle: SupportsInt | None = None) -> ImageCmsProfile | 
 # --------------------------------------------------------------------.
 
 _CmsProfileCompatible = Union[
-    str, SupportsRead[bytes], core.CmsProfile, ImageCmsProfile
+    str, SupportsRead[bytes], "core.CmsProfile", ImageCmsProfile
 ]
 
 
