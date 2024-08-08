@@ -314,8 +314,9 @@ test_sorted(PixelList *pl[3]) {
     for (i = 0; i < 3; i++) {
         l = 256;
         for (t = pl[i]; t; t = t->next[i]) {
-            if (l < t->p.a.v[i])
+            if (l < t->p.a.v[i]) {
                 return 0;
+            }
             l = t->p.a.v[i];
         }
     }
@@ -1009,7 +1010,8 @@ compute_palette_from_median_cut(
     uint32_t nPixels,
     HashTable *medianBoxHash,
     Pixel **palette,
-    uint32_t nPaletteEntries
+    uint32_t nPaletteEntries,
+    BoxNode *root
 ) {
     uint32_t i;
     uint32_t paletteEntry;
@@ -1382,7 +1384,9 @@ quantize(
     fflush(stdout);
     timer = clock();
 #endif
-    if (!compute_palette_from_median_cut(pixelData, nPixels, h, &p, nPaletteEntries)) {
+    if (!compute_palette_from_median_cut(
+            pixelData, nPixels, h, &p, nPaletteEntries, root
+        )) {
         goto error_3;
     }
 #ifdef DEBUG
