@@ -93,7 +93,7 @@ def _tilesort(t: _Tile) -> int:
 
 class _Tile(NamedTuple):
     codec_name: str
-    extents: tuple[int, int, int, int]
+    extents: tuple[int, int, int, int] | None
     offset: int
     args: tuple[Any, ...] | str | None
 
@@ -174,7 +174,7 @@ class ImageFile(Image.Image):
             self.fp.close()
         self.fp = None
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
         if self.tile is None:
@@ -185,7 +185,7 @@ class ImageFile(Image.Image):
         if not self.tile:
             return pixel
 
-        self.map = None
+        self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
         # As of pypy 2.1.0, memory mapping was failing here.
         use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
@@ -193,17 +193,17 @@ class ImageFile(Image.Image):
         readonly = 0
 
         # look for read/seek overrides
-        try:
+        if hasattr(self, "load_read"):
             read = self.load_read
             # don't use mmap if there are custom read/seek functions
             use_mmap = False
-        except AttributeError:
+        else:
             read = self.fp.read
 
-        try:
+        if hasattr(self, "load_seek"):
             seek = self.load_seek
             use_mmap = False
-        except AttributeError:
+        else:
             seek = self.fp.seek
 
         if use_mmap:
@@ -243,11 +243,8 @@ class ImageFile(Image.Image):
             # sort tiles in file order
             self.tile.sort(key=_tilesort)
 
-            try:
-                # FIXME: This is a hack to handle TIFF's JpegTables tag.
-                prefix = self.tile_prefix
-            except AttributeError:
-                prefix = b""
+            # FIXME: This is a hack to handle TIFF's JpegTables tag.
+            prefix = getattr(self, "tile_prefix", b"")
 
             # Remove consecutive duplicates that only differ by their offset
             self.tile = [
@@ -525,7 +522,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im: Image.Image, fp: IO[bytes], tile, bufsize: int = 0) -> None:
+def _save(im: Image.Image, fp: IO[bytes], tile: list[_Tile], bufsize: int = 0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.
