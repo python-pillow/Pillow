@@ -59,7 +59,8 @@ ImagingExpand(Imaging imIn, int xmargin, int ymargin) {
     }
 
     imOut = ImagingNewDirty(
-        imIn->mode, imIn->xsize + 2 * xmargin, imIn->ysize + 2 * ymargin
+        imIn->mode,
+        (ImagingNewParams){imIn->xsize + 2 * xmargin, imIn->ysize + 2 * ymargin}
     );
     if (!imOut) {
         return NULL;
@@ -395,7 +396,7 @@ ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 o
         return (Imaging)ImagingError_ValueError("bad kernel size");
     }
 
-    imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
+    imOut = ImagingNewDirty(im->mode, (ImagingNewParams){im->xsize, im->ysize});
     if (!imOut) {
         return NULL;
     }
