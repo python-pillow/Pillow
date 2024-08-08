@@ -94,7 +94,6 @@ class TestImageFile:
             assert (48, 48) == p.image.size
 
     @skip_unless_feature("webp")
-    @skip_unless_feature("webp_anim")
     def test_incremental_webp(self) -> None:
         with ImageFile.Parser() as p:
             with open("Tests/images/hopper.webp", "rb") as f:

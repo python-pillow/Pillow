@@ -390,7 +390,7 @@ def test_colorize_3color_offset() -> None:
 
 def test_exif_transpose() -> None:
     exts = [".jpg"]
-    if features.check("webp") and features.check("webp_anim"):
+    if features.check("webp"):
         exts.append(".webp")
     for ext in exts:
         with Image.open("Tests/images/hopper" + ext) as base_im:

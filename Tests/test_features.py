@@ -10,11 +10,6 @@ from PIL import features
 
 from .helper import skip_unless_feature
 
-try:
-    from PIL import _webp
-except ImportError:
-    pass
-
 
 def test_check() -> None:
     # Check the correctness of the convenience function
@@ -51,20 +46,16 @@ def test_version() -> None:
         test(feature, features.version_feature)
 
 
-@skip_unless_feature("webp")
 def test_webp_transparency() -> None:
-    assert features.check("transp_webp") != _webp.WebPDecoderBuggyAlpha()
-    assert features.check("transp_webp") == _webp.HAVE_TRANSPARENCY
+    assert features.check("transp_webp") == features.check_module("webp")
 
 
-@skip_unless_feature("webp")
 def test_webp_mux() -> None:
-    assert features.check("webp_mux") == _webp.HAVE_WEBPMUX
+    assert features.check("webp_mux") == features.check_module("webp")
 
 
-@skip_unless_feature("webp")
 def test_webp_anim() -> None:
-    assert features.check("webp_anim") == _webp.HAVE_WEBPANIM
+    assert features.check("webp_anim") == features.check_module("webp")
 
 
 @skip_unless_feature("libjpeg_turbo")

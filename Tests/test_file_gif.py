@@ -978,7 +978,7 @@ def test_webp_background(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     # Test opaque WebP background
-    if features.check("webp") and features.check("webp_anim"):
+    if features.check("webp"):
         with Image.open("Tests/images/hopper.webp") as im:
             assert im.info["background"] == (255, 255, 255, 255)
             im.save(out)

@@ -7,6 +7,7 @@ import warnings
 from typing import IO
 
 import PIL
+from PIL import _deprecate
 
 from . import Image
 
@@ -119,9 +120,9 @@ def get_supported_codecs() -> list[str]:
 
 
 features = {
-    "webp_anim": ("PIL._webp", "HAVE_WEBPANIM", None),
-    "webp_mux": ("PIL._webp", "HAVE_WEBPMUX", None),
-    "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY", None),
+    "webp_anim": ("PIL._webp", True, None),
+    "webp_mux": ("PIL._webp", True, None),
+    "transp_webp": ("PIL._webp", True, None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
@@ -147,7 +148,13 @@ def check_feature(feature: str) -> bool | None:
 
     try:
         imported_module = __import__(module, fromlist=["PIL"])
-        return getattr(imported_module, flag)
+        if isinstance(flag, str):
+            return getattr(imported_module, flag)
+        elif isinstance(flag, bool):
+            _deprecate.deprecate(f'check_feature("{feature}")', 12)
+            return flag
+        else:
+            return None
     except ModuleNotFoundError:
         return None
     except ImportError as ex:
@@ -271,9 +278,6 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
         ("freetype2", "FREETYPE2"),
         ("littlecms2", "LITTLECMS2"),
         ("webp", "WEBP"),
-        ("transp_webp", "WEBP Transparency"),
-        ("webp_mux", "WEBPMUX"),
-        ("webp_anim", "WEBP Animation"),
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),
