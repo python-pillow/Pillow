@@ -205,7 +205,7 @@ def _parse_jp2_header(
                 if bitdepth > max_bitdepth:
                     max_bitdepth = bitdepth
             if max_bitdepth <= 8:
-                palette = ImagePalette.ImagePalette()
+                palette = ImagePalette.ImagePalette("RGBA" if npc == 4 else "RGB")
                 for i in range(ne):
                     color: list[int] = []
                     for value in header.read_fields(">" + ("B" * npc)):
