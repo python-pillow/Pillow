@@ -15,6 +15,7 @@ modules = {
     "tkinter": ("PIL._tkinter_finder", "tk_version"),
     "freetype2": ("PIL._imagingft", "freetype2_version"),
     "littlecms2": ("PIL._imagingcms", "littlecms_version"),
+    "jpegxl": ("PIL._jpegxl", "libjxl_version"),
     "webp": ("PIL._webp", "webpdecoder_version"),
 }
 
@@ -274,6 +275,7 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
         ("transp_webp", "WEBP Transparency"),
         ("webp_mux", "WEBPMUX"),
         ("webp_anim", "WEBP Animation"),
+        ("jpegxl", "JPEG XL"),
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),
