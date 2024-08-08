@@ -272,12 +272,12 @@ OPEN_INFO = {
 MAX_SAMPLESPERPIXEL = max(len(key_tp[4]) for key_tp in OPEN_INFO)
 
 PREFIXES = [
-    b"MM\x00\x2A",  # Valid TIFF header with big-endian byte order
-    b"II\x2A\x00",  # Valid TIFF header with little-endian byte order
-    b"MM\x2A\x00",  # Invalid TIFF header, assume big-endian
-    b"II\x00\x2A",  # Invalid TIFF header, assume little-endian
-    b"MM\x00\x2B",  # BigTIFF with big-endian byte order
-    b"II\x2B\x00",  # BigTIFF with little-endian byte order
+    b"MM\x00\x2a",  # Valid TIFF header with big-endian byte order
+    b"II\x2a\x00",  # Valid TIFF header with little-endian byte order
+    b"MM\x2a\x00",  # Invalid TIFF header, assume big-endian
+    b"II\x00\x2a",  # Invalid TIFF header, assume little-endian
+    b"MM\x00\x2b",  # BigTIFF with big-endian byte order
+    b"II\x2b\x00",  # BigTIFF with little-endian byte order
 ]
 
 if not getattr(Image.core, "libtiff_support_custom_tags", True):
@@ -933,9 +933,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
             is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
             if is_ifd:
                 if self._endian == "<":
-                    ifh = b"II\x2A\x00\x08\x00\x00\x00"
+                    ifh = b"II\x2a\x00\x08\x00\x00\x00"
                 else:
-                    ifh = b"MM\x00\x2A\x00\x00\x00\x08"
+                    ifh = b"MM\x00\x2a\x00\x00\x00\x08"
                 ifd = ImageFileDirectory_v2(ifh, group=tag)
                 values = self._tags_v2[tag]
                 for ifd_tag, ifd_value in values.items():

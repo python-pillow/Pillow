@@ -50,7 +50,9 @@ class FontFile:
             | None
         ] = [None] * 256
 
-    def __getitem__(self, ix: int) -> (
+    def __getitem__(
+        self, ix: int
+    ) -> (
         tuple[
             tuple[int, int],
             tuple[int, int, int, int],

@@ -145,7 +145,7 @@ class ImImageFile(ImageFile.ImageFile):
             if s == b"\r":
                 continue
 
-            if not s or s == b"\0" or s == b"\x1A":
+            if not s or s == b"\0" or s == b"\x1a":
                 break
 
             # FIXME: this may read whole file if not a text file
@@ -209,7 +209,7 @@ class ImImageFile(ImageFile.ImageFile):
         self._mode = self.info[MODE]
 
         # Skip forward to start of image data
-        while s and s[:1] != b"\x1A":
+        while s and s[:1] != b"\x1a":
             s = self.fp.read(1)
         if not s:
             msg = "File truncated"

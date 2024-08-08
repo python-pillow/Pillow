@@ -577,9 +577,7 @@ class TestFileJpeg:
                 24  35  55  64  81 104 113  92
                 49  64  78  87 103 121 120 101
                 72  92  95  98 112 100 103  99
-                """.split(
-                    None
-                )
+                """.split(None)
             ]
 
             standard_chrominance_qtable = [
@@ -593,9 +591,7 @@ class TestFileJpeg:
                 99  99  99  99  99  99  99  99
                 99  99  99  99  99  99  99  99
                 99  99  99  99  99  99  99  99
-                """.split(
-                    None
-                )
+                """.split(None)
             ]
             # list of qtable lists
             assert_image_similar(
@@ -921,7 +917,7 @@ class TestFileJpeg:
 
     def test_jpeg_magic_number(self, monkeypatch: pytest.MonkeyPatch) -> None:
         size = 4097
-        buffer = BytesIO(b"\xFF" * size)  # Many xFF bytes
+        buffer = BytesIO(b"\xff" * size)  # Many FF bytes
         max_pos = 0
         orig_read = buffer.read
 

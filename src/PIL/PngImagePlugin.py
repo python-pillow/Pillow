@@ -1416,7 +1416,7 @@ def _save(
                 chunk(fp, b"tRNS", transparency[:alpha_bytes])
             else:
                 transparency = max(0, min(255, transparency))
-                alpha = b"\xFF" * transparency + b"\0"
+                alpha = b"\xff" * transparency + b"\0"
                 chunk(fp, b"tRNS", alpha[:alpha_bytes])
         elif im.mode in ("1", "L", "I", "I;16"):
             transparency = max(0, min(65535, transparency))

@@ -516,7 +516,7 @@ def test_render_empty(font: ImageFont.FreeTypeFont) -> None:
 
 def test_unicode_extended(layout_engine: ImageFont.Layout) -> None:
     # issue #3777
-    text = "A\u278A\U0001F12B"
+    text = "A\u278a\U0001f12b"
     target = "Tests/images/unicode_extended.png"
 
     ttf = ImageFont.truetype(
@@ -985,7 +985,7 @@ def test_sbix(layout_engine: ImageFont.Layout) -> None:
         im = Image.new("RGB", (400, 400), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((50, 50), "\uE901", font=font, embedded_color=True)
+        d.text((50, 50), "\ue901", font=font, embedded_color=True)
 
         assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix.png", 1)
     except OSError as e:  # pragma: no cover
@@ -1002,7 +1002,7 @@ def test_sbix_mask(layout_engine: ImageFont.Layout) -> None:
         im = Image.new("RGB", (400, 400), "white")
         d = ImageDraw.Draw(im)
 
-        d.text((50, 50), "\uE901", (100, 0, 0), font=font)
+        d.text((50, 50), "\ue901", (100, 0, 0), font=font)
 
         assert_image_similar_tofile(im, "Tests/images/chromacheck-sbix_mask.png", 1)
     except OSError as e:  # pragma: no cover
