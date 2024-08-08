@@ -863,6 +863,7 @@ class PngImageFile(ImageFile.ImageFile):
         assert self.png is not None
 
         self.dispose: _imaging.ImagingCore | None
+        self.dispose_extent: tuple[int, int, int, int]
         if frame == 0:
             if rewind:
                 self._fp.seek(self.__rewind)
@@ -877,7 +878,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.default_image = self.info.get("default_image", False)
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            self.dispose_extent = cast(tuple[int, int, int, int], self.info.get("bbox"))
             self.__frame = 0
         else:
             if frame != self.__frame + 1:
@@ -935,7 +936,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.tile = self.png.im_tile
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            self.dispose_extent = cast(tuple[int, int, int, int], self.info.get("bbox"))
 
             if not self.tile:
                 msg = "image not found in APNG frame"

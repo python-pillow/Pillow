@@ -536,12 +536,12 @@ class Image:
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
         self.im = None
-        self._mode = ""
-        self._size = (0, 0)
+        self._mode: str = ""
+        self._size: tuple[int, int] = (0, 0)
         self.palette = None
-        self.info = {}
-        self.readonly = 0
-        self._exif = None
+        self.info: dict[Any, Any] = {}
+        self.readonly: int = 0
+        self._exif: Exif | None = None
 
     @property
     def width(self) -> int:
