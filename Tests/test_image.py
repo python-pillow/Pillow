@@ -91,6 +91,10 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    def test_direct(self) -> None:
+        with pytest.raises(TypeError):
+            Image.Image()
+
     def test_repr_pretty(self) -> None:
         class Pretty:
             def text(self, text: str) -> None:
