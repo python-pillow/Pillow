@@ -101,6 +101,31 @@ class TestFileJpeg:
             assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
             assert im.app["COM"] == im.info["comment"]
 
+    @pytest.mark.parametrize(
+        "keep_rgb, no_default_app_segments, expect_app0, expect_app14",
+        (
+            (False, False, True, False),
+            (True, False, False, True),
+            (False, True, False, False),
+            (True, True, False, False),
+        ),
+    )
+    def test_default_app_write(
+        self,
+        keep_rgb,
+        no_default_app_segments,
+        expect_app0,
+        expect_app14,
+    ):
+        im = self.roundtrip(
+            hopper(),
+            keep_rgb=keep_rgb,
+            no_default_app_segments=no_default_app_segments,
+        )
+        markers = {m[0] for m in im.applist}
+        assert ("APP0" in markers) == expect_app0
+        assert ("APP14" in markers) == expect_app14
+
     def test_comment_write(self) -> None:
         with Image.open(TEST_FILE) as im:
             assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
