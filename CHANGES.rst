@@ -5,6 +5,18 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Remove all WITH_* flags from _imaging.c and other flags #8211
+  [homm]
+
+- Improve ImageDraw2 shape methods #8265
+  [radarhere]
+
+- Lock around usages of imaging memory arenas #8238
+  [lysnikolaou]
+
+- Deprecate JpegImageFile huffman_ac and huffman_dc #8274
+  [radarhere]
+
 - Deprecate ImageMath lambda_eval and unsafe_eval options argument #8242
   [radarhere]
 

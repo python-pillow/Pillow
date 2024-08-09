@@ -308,11 +308,10 @@ mergesort_pixels(PixelList *head, int i) {
 #ifdef DEBUG
 static int
 test_sorted(PixelList *pl[3]) {
-    int i, n, l;
+    int i, l;
     PixelList *t;
 
     for (i = 0; i < 3; i++) {
-        n = 0;
         l = 256;
         for (t = pl[i]; t; t = t->next[i]) {
             if (l < t->p.a.v[i])
