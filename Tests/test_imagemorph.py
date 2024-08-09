@@ -325,6 +325,8 @@ def test_wrong_mode() -> None:
     lut = ImageMorph.LutBuilder(op_name="corner").build_lut()
     imrgb = Image.new("RGB", (10, 10))
     iml = Image.new("L", (10, 10))
+    assert imrgb.im is not None
+    assert iml.im is not None
 
     with pytest.raises(RuntimeError):
         _imagingmorph.apply(bytes(lut), imrgb.im.id, iml.im.id)

@@ -467,6 +467,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     magic = b"BLP1" if im.encoderinfo.get("blp_version") == "BLP1" else b"BLP2"
     fp.write(magic)
 
+    assert im.palette is not None
     fp.write(struct.pack("<i", 1))  # Uncompressed or DirectX compression
     fp.write(struct.pack("<b", Encoding.UNCOMPRESSED))
     fp.write(struct.pack("<b", 1 if im.palette.mode == "RGBA" else 0))

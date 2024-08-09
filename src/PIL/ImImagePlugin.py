@@ -353,6 +353,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(b"Lut: 1\r\n")
     fp.write(b"\000" * (511 - fp.tell()) + b"\032")
     if im.mode in ["P", "PA"]:
+        assert im.im is not None
         im_palette = im.im.getpalette("RGB", "RGB;L")
         colors = len(im_palette) // 3
         palette = b""

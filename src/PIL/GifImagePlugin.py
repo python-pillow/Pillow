@@ -307,6 +307,7 @@ class GifImageFile(ImageFile.ImageFile):
         self.tile = []
 
         if self.dispose:
+            assert self.im is not None
             self.im.paste(self.dispose, self.dispose_extent)
 
         self._frame_palette = palette if palette is not None else self.global_palette
@@ -320,17 +321,21 @@ class GifImageFile(ImageFile.ImageFile):
             else:
                 self._mode = "L"
 
-            if not palette and self.global_palette:
+            if palette:
+                self.palette = palette
+            elif self.global_palette:
                 from copy import copy
 
-                palette = copy(self.global_palette)
-            self.palette = palette
+                self.palette = copy(self.global_palette)
+            else:
+                self.palette = None
         else:
             if self.mode == "P":
                 if (
                     LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
                     or palette
                 ):
+                    assert self.im is not None
                     if "transparency" in self.info:
                         self.im.putpalettealpha(self.info["transparency"], 0)
                         self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
@@ -432,6 +437,7 @@ class GifImageFile(ImageFile.ImageFile):
             self._prev_im = self.im
             if self._frame_palette:
                 self.im = Image.core.fill("P", self.size, self._frame_transparency or 0)
+                assert self.im is not None
                 self.im.putpalette("RGB", *self._frame_palette.getdata())
             else:
                 self.im = None
@@ -441,6 +447,7 @@ class GifImageFile(ImageFile.ImageFile):
         super().load_prepare()
 
     def load_end(self) -> None:
+        assert self.im is not None
         if self.__frame == 0:
             if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
                 if self._frame_transparency is not None:
@@ -495,6 +502,7 @@ def _normalize_mode(im: Image.Image) -> Image.Image:
         return im
     if Image.getmodebase(im.mode) == "RGB":
         im = im.convert("P", palette=Image.Palette.ADAPTIVE)
+        assert im.palette is not None
         if im.palette.mode == "RGBA":
             for rgba in im.palette.colors:
                 if rgba[3] == 0:
@@ -531,16 +539,17 @@ def _normalize_palette(
 
     if im.mode == "P":
         if not source_palette:
+            assert im.im is not None
             source_palette = im.im.getpalette("RGB")[:768]
     else:  # L-mode
         if not source_palette:
             source_palette = bytearray(i // 3 for i in range(768))
         im.palette = ImagePalette.ImagePalette("RGB", palette=source_palette)
+    assert source_palette is not None
 
-    used_palette_colors: list[int] | None
     if palette:
-        used_palette_colors = []
-        assert source_palette is not None
+        used_palette_colors: list[int | None] = []
+        assert im.palette is not None
         for i in range(0, len(source_palette), 3):
             source_color = tuple(source_palette[i : i + 3])
             index = im.palette.colors.get(source_color)
@@ -553,20 +562,25 @@ def _normalize_palette(
                     if j not in used_palette_colors:
                         used_palette_colors[i] = j
                         break
-        im = im.remap_palette(used_palette_colors)
+        dest_map: list[int] = []
+        for index in used_palette_colors:
+            assert index is not None
+            dest_map.append(index)
+        im = im.remap_palette(dest_map)
     else:
-        used_palette_colors = _get_optimize(im, info)
-        if used_palette_colors is not None:
-            im = im.remap_palette(used_palette_colors, source_palette)
+        optimized_palette_colors = _get_optimize(im, info)
+        if optimized_palette_colors is not None:
+            im = im.remap_palette(optimized_palette_colors, source_palette)
             if "transparency" in info:
                 try:
-                    info["transparency"] = used_palette_colors.index(
+                    info["transparency"] = optimized_palette_colors.index(
                         info["transparency"]
                     )
                 except ValueError:
                     del info["transparency"]
             return im
 
+    assert im.palette is not None
     im.palette.palette = source_palette
     return im
 
@@ -578,7 +592,8 @@ def _write_single_frame(
 ) -> None:
     im_out = _normalize_mode(im)
     for k, v in im_out.info.items():
-        im.encoderinfo.setdefault(k, v)
+        if isinstance(k, str):
+            im.encoderinfo.setdefault(k, v)
     im_out = _normalize_palette(im_out, palette, im.encoderinfo)
 
     for s in _get_global_header(im_out, im.encoderinfo):
@@ -630,7 +645,8 @@ def _write_multiple_frames(
                 for k, v in im_frame.info.items():
                     if k == "transparency":
                         continue
-                    im.encoderinfo.setdefault(k, v)
+                    if isinstance(k, str):
+                        im.encoderinfo.setdefault(k, v)
 
             encoderinfo = im.encoderinfo.copy()
             if "transparency" in im_frame.info:
@@ -660,10 +676,12 @@ def _write_multiple_frames(
                         )
                         background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
+                        assert im_frames[0].im.palette is not None
                         background_im.putpalette(im_frames[0].im.palette)
                     bbox = _getbbox(background_im, im_frame)[1]
                 elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
+                        assert im_frame.palette is not None
                         try:
                             encoderinfo["transparency"] = (
                                 im_frame.palette._new_color_index(im_frame)
@@ -901,6 +919,7 @@ def _get_optimize(im: Image.Image, info: dict[str, Any]) -> list[int] | None:
             if optimise or max(used_palette_colors) >= len(used_palette_colors):
                 return used_palette_colors
 
+            assert im.palette is not None
             num_palette_colors = len(im.palette.palette) // Image.getmodebands(
                 im.palette.mode
             )
@@ -950,7 +969,7 @@ def _get_palette_bytes(im: Image.Image) -> bytes:
     :param im: Image object
     :returns: Bytes, len<=768 suitable for inclusion in gif header
     """
-    return im.palette.palette if im.palette else b""
+    return bytes(im.palette.palette) if im.palette else b""
 
 
 def _get_background(
@@ -963,6 +982,7 @@ def _get_background(
             # WebPImagePlugin stores an RGBA value in info["background"]
             # So it must be converted to the same format as GifImagePlugin's
             # info["background"] - a global color table index
+            assert im.palette is not None
             try:
                 background = im.palette.getcolor(info_background, im)
             except ValueError as e:

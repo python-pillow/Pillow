@@ -86,6 +86,7 @@ def test_rgba_palette(mode: str, palette: tuple[int, ...]) -> None:
     im = Image.new("P", (1, 1))
     im.putpalette(palette, mode)
     assert im.getpalette() == [1, 2, 3]
+    assert im.palette is not None
     assert im.palette.colors == {(1, 2, 3, 4): 0}
 
 

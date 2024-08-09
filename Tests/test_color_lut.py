@@ -47,6 +47,7 @@ class TestColorLut3DCoreAPI:
 
     def test_wrong_args(self) -> None:
         im = Image.new("RGB", (10, 10), 0)
+        assert im.im is not None
 
         with pytest.raises(ValueError, match="filter"):
             im.im.color_lut_3d(
@@ -179,6 +180,7 @@ class TestColorLut3DCoreAPI:
                 g.transpose(Image.Transpose.ROTATE_180),
             ],
         )
+        assert im.im is not None
 
         # Fast test with small cubes
         for size in [2, 3, 5, 7, 11, 16, 17]:
@@ -215,6 +217,7 @@ class TestColorLut3DCoreAPI:
                 g.transpose(Image.Transpose.ROTATE_180),
             ],
         )
+        assert im.im is not None
 
         # Red channel copied to alpha
         assert_image_equal(
@@ -239,6 +242,7 @@ class TestColorLut3DCoreAPI:
                 g.transpose(Image.Transpose.ROTATE_270),
             ],
         )
+        assert im.im is not None
 
         assert_image_equal(
             im,
@@ -261,6 +265,7 @@ class TestColorLut3DCoreAPI:
                 g.transpose(Image.Transpose.ROTATE_180),
             ],
         )
+        assert im.im is not None
 
         # Reverse channels by splitting and using table
         # fmt: off
@@ -286,6 +291,7 @@ class TestColorLut3DCoreAPI:
                 g.transpose(Image.Transpose.ROTATE_180),
             ],
         )
+        assert im.im is not None
 
         # fmt: off
         transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,

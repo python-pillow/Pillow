@@ -695,11 +695,13 @@ class TestImage:
             image: Image.Image,
             palette_result: ImagePalette.ImagePalette | None = None,
         ) -> None:
+            assert image.im is not None
             new_image = base_image._new(image.im)
             assert new_image.mode == image.mode
             assert new_image.size == image.size
             assert new_image.info == base_image.info
             if palette_result is not None:
+                assert new_image.palette is not None
                 assert new_image.palette.tobytes() == palette_result.tobytes()
             else:
                 assert new_image.palette is None
@@ -990,12 +992,14 @@ class TestImage:
         # P mode with RGBA palette
         im = Image.new("RGBA", (1, 1)).convert("P")
         assert im.mode == "P"
+        assert im.palette is not None
         assert im.palette.mode == "RGBA"
         assert im.has_transparency_data
 
     def test_apply_transparency(self) -> None:
         im = Image.new("P", (1, 1))
         im.putpalette((0, 0, 0, 1, 1, 1))
+        assert im.palette is not None
         assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
 
         # Test that no transformation is applied without transparency
@@ -1013,13 +1017,16 @@ class TestImage:
         im.putpalette((0, 0, 0, 255, 1, 1, 1, 128), "RGBA")
         im.info["transparency"] = 0
         im.apply_transparency()
+        assert im.palette is not None
         assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 128): 1}
 
         # Test that transparency bytes are applied
         with Image.open("Tests/images/pil123p.png") as im:
             assert isinstance(im.info["transparency"], bytes)
+            assert im.palette is not None
             assert im.palette.colors[(27, 35, 6)] == 24
             im.apply_transparency()
+            assert im.palette is not None
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
     def test_constants(self) -> None:

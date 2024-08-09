@@ -473,6 +473,7 @@ class JpegImageFile(ImageFile.ImageFile):
             except OSError:
                 pass
 
+        assert self.im is not None
         self._mode = self.im.mode
         self._size = self.im.size
 

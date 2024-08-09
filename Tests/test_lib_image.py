@@ -7,18 +7,21 @@ from PIL import Image
 
 def test_setmode() -> None:
     im = Image.new("L", (1, 1), 255)
+    assert im.im is not None
     im.im.setmode("1")
     assert im.im.getpixel((0, 0)) == 255
     im.im.setmode("L")
     assert im.im.getpixel((0, 0)) == 255
 
     im = Image.new("1", (1, 1), 1)
+    assert im.im is not None
     im.im.setmode("L")
     assert im.im.getpixel((0, 0)) == 255
     im.im.setmode("1")
     assert im.im.getpixel((0, 0)) == 255
 
     im = Image.new("RGB", (1, 1), (1, 2, 3))
+    assert im.im is not None
     im.im.setmode("RGB")
     assert im.im.getpixel((0, 0)) == (1, 2, 3)
     im.im.setmode("RGBA")

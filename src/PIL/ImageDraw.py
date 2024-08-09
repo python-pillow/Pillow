@@ -32,7 +32,6 @@
 from __future__ import annotations
 
 import math
-import numbers
 import struct
 from collections.abc import Sequence
 from types import ModuleType
@@ -160,13 +159,13 @@ class ImageDraw:
             if ink is not None:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
-                if self.palette and not isinstance(ink, numbers.Number):
+                if self.palette and isinstance(ink, tuple):
                     ink = self.palette.getcolor(ink, self._image)
                 result_ink = self.draw.draw_ink(ink)
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
-                if self.palette and not isinstance(fill, numbers.Number):
+                if self.palette and isinstance(fill, tuple):
                     fill = self.palette.getcolor(fill, self._image)
                 result_fill = self.draw.draw_ink(fill)
         return result_ink, result_fill

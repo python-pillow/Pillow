@@ -170,6 +170,8 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # ------------------ Special case : header is reported 40, which
         # ---------------------- is shorter than real size for bpp >= 16
+        assert isinstance(file_info["width"], int)
+        assert isinstance(file_info["height"], int)
         self._size = file_info["width"], file_info["height"]
 
         # ------- If color count was not found in the header, compute from bits
@@ -443,6 +445,7 @@ def _save(
     elif im.mode == "L":
         palette = b"".join(o8(i) * 4 for i in range(256))
     elif im.mode == "P":
+        assert im.im is not None
         palette = im.im.getpalette("RGB", "BGRX")
         colors = len(palette) // 4
     else:
