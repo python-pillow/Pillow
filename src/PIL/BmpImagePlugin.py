@@ -445,7 +445,6 @@ def _save(
     elif im.mode == "L":
         palette = b"".join(o8(i) * 4 for i in range(256))
     elif im.mode == "P":
-        assert im.im is not None
         palette = im.im.getpalette("RGB", "BGRX")
         colors = len(palette) // 4
     else:

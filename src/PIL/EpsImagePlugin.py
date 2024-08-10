@@ -161,7 +161,6 @@ def Ghostscript(
         except OSError:
             pass
 
-    assert out_im.im is not None
     im = out_im.im.copy()
     out_im.close()
     return im

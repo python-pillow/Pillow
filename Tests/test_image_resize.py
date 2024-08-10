@@ -27,7 +27,6 @@ class TestImagingCoreResize:
     ) -> Image.Image:
         # Image class independent version of resize.
         im.load()
-        assert im.im is not None
         return im._new(im.im.resize(size, f))
 
     @pytest.mark.parametrize(
@@ -38,8 +37,6 @@ class TestImagingCoreResize:
         r = self.resize(im, (15, 12), Image.Resampling.NEAREST)
         assert r.mode == mode
         assert r.size == (15, 12)
-        assert r.im is not None
-        assert im.im is not None
         assert r.im.bands == im.im.bands
 
     def test_convolution_modes(self) -> None:
@@ -54,8 +51,6 @@ class TestImagingCoreResize:
             r = self.resize(im, (15, 12), Image.Resampling.BILINEAR)
             assert r.mode == mode
             assert r.size == (15, 12)
-            assert r.im is not None
-            assert im.im is not None
             assert r.im.bands == im.im.bands
 
     @pytest.mark.parametrize(

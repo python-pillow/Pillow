@@ -48,7 +48,6 @@ def invert(image: Image.Image) -> Image.Image:
     """
 
     image.load()
-    assert image.im is not None
     return image._new(image.im.chop_invert())
 
 
@@ -64,7 +63,6 @@ def lighter(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_lighter(image2.im))
 
 
@@ -80,7 +78,6 @@ def darker(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_darker(image2.im))
 
 
@@ -96,7 +93,6 @@ def difference(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_difference(image2.im))
 
 
@@ -114,7 +110,6 @@ def multiply(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_multiply(image2.im))
 
 
@@ -129,7 +124,6 @@ def screen(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_screen(image2.im))
 
 
@@ -142,7 +136,6 @@ def soft_light(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_soft_light(image2.im))
 
 
@@ -155,7 +148,6 @@ def hard_light(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_hard_light(image2.im))
 
 
@@ -168,7 +160,6 @@ def overlay(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_overlay(image2.im))
 
 
@@ -186,7 +177,6 @@ def add(
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_add(image2.im, scale, offset))
 
 
@@ -204,7 +194,6 @@ def subtract(
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_subtract(image2.im, scale, offset))
 
 
@@ -218,7 +207,6 @@ def add_modulo(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_add_modulo(image2.im))
 
 
@@ -232,7 +220,6 @@ def subtract_modulo(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_subtract_modulo(image2.im))
 
 
@@ -251,7 +238,6 @@ def logical_and(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_and(image2.im))
 
 
@@ -267,7 +253,6 @@ def logical_or(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_or(image2.im))
 
 
@@ -283,7 +268,6 @@ def logical_xor(image1: Image.Image, image2: Image.Image) -> Image.Image:
 
     image1.load()
     image2.load()
-    assert image1.im is not None
     return image1._new(image1.im.chop_xor(image2.im))
 
 
@@ -324,5 +308,4 @@ def offset(image: Image.Image, xoffset: int, yoffset: int | None = None) -> Imag
     if yoffset is None:
         yoffset = xoffset
     image.load()
-    assert image.im is not None
     return image._new(image.im.offset(xoffset, yoffset))

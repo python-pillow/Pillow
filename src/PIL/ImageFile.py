@@ -315,7 +315,7 @@ class ImageFile(Image.Image):
 
     def load_prepare(self) -> None:
         # create image memory if necessary
-        if not self.im or self.im.mode != self.mode or self.im.size != self.size:
+        if self._im is None or self.im.mode != self.mode or self.im.size != self.size:
             self.im = Image.core.new(self.mode, self.size)
         # create palette (optional)
         if self.mode == "P":
@@ -475,7 +475,6 @@ class Parser:
                     d, e, o, a = im.tile[0]
                     im.tile = []
                     self.decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
-                    assert im.im is not None
                     self.decoder.setimage(im.im, e)
 
                     # calculate decoder offset
@@ -567,7 +566,6 @@ def _encode_tile(
             fp.seek(offset)
         encoder = Image._getencoder(im.mode, encoder_name, args, im.encoderconfig)
         try:
-            assert im.im is not None
             encoder.setimage(im.im, extents)
             if encoder.pushes_fd:
                 encoder.setfd(fp)

@@ -155,7 +155,7 @@ class GifImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
         if frame < self.__frame:
-            self.im = None
+            self._im = None
             self._seek(0)
 
         last_frame = self.__frame
@@ -307,7 +307,6 @@ class GifImageFile(ImageFile.ImageFile):
         self.tile = []
 
         if self.dispose:
-            assert self.im is not None
             self.im.paste(self.dispose, self.dispose_extent)
 
         self._frame_palette = palette if palette is not None else self.global_palette
@@ -335,7 +334,6 @@ class GifImageFile(ImageFile.ImageFile):
                     LOADING_STRATEGY != LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
                     or palette
                 ):
-                    assert self.im is not None
                     if "transparency" in self.info:
                         self.im.putpalettealpha(self.info["transparency"], 0)
                         self.im = self.im.convert("RGBA", Image.Dither.FLOYDSTEINBERG)
@@ -381,7 +379,7 @@ class GifImageFile(ImageFile.ImageFile):
                     self.dispose = Image.core.fill(dispose_mode, dispose_size, color)
                 else:
                     # replace with previous contents
-                    if self.im is not None:
+                    if self._im is not None:
                         # only dispose the extent in this frame
                         self.dispose = self._crop(self.im, self.dispose_extent)
                     elif frame_transparency is not None:
@@ -437,17 +435,15 @@ class GifImageFile(ImageFile.ImageFile):
             self._prev_im = self.im
             if self._frame_palette:
                 self.im = Image.core.fill("P", self.size, self._frame_transparency or 0)
-                assert self.im is not None
                 self.im.putpalette("RGB", *self._frame_palette.getdata())
             else:
-                self.im = None
+                self._im = None
         self._mode = temp_mode
         self._frame_palette = None
 
         super().load_prepare()
 
     def load_end(self) -> None:
-        assert self.im is not None
         if self.__frame == 0:
             if self.mode == "P" and LOADING_STRATEGY == LoadingStrategy.RGB_ALWAYS:
                 if self._frame_transparency is not None:
@@ -539,7 +535,6 @@ def _normalize_palette(
 
     if im.mode == "P":
         if not source_palette:
-            assert im.im is not None
             source_palette = im.im.getpalette("RGB")[:768]
     else:  # L-mode
         if not source_palette:

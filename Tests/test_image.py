@@ -695,7 +695,6 @@ class TestImage:
             image: Image.Image,
             palette_result: ImagePalette.ImagePalette | None = None,
         ) -> None:
-            assert image.im is not None
             new_image = base_image._new(image.im)
             assert new_image.mode == image.mode
             assert new_image.size == image.size

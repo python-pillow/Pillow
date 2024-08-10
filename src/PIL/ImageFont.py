@@ -142,7 +142,6 @@ class ImageFont:
             raise TypeError(msg)
 
         image.load()
-        assert image.im is not None
 
         self.font = Image.core.font(image.im, data)
 

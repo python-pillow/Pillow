@@ -869,7 +869,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self._fp.seek(self.__rewind)
                 self.png.rewind()
                 self.__prepare_idat = self.__rewind_idat
-                self.im = None
+                self._im = None
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
                 self.fp = self._fp
@@ -887,7 +887,6 @@ class PngImageFile(ImageFile.ImageFile):
 
             # ensure previous frame was loaded
             self.load()
-            assert self.im is not None
 
             if self.dispose:
                 self.im.paste(self.dispose, self.dispose_extent)
@@ -1050,7 +1049,6 @@ class PngImageFile(ImageFile.ImageFile):
             self.png = None
         else:
             if self._prev_im and self.blend_op == Blend.OP_OVER:
-                assert self.im is not None
                 updated = self._crop(self.im, self.dispose_extent)
                 if self.im.mode == "RGB" and "transparency" in self.info:
                     mask = updated.convert_transparent(
@@ -1405,7 +1403,6 @@ def _save(
                     chunk(fp, cid, data)
 
     if im.mode == "P":
-        assert im.im is not None
         palette_byte_number = colors * 3
         palette_bytes = im.im.getpalette("RGB")[:palette_byte_number]
         while len(palette_bytes) < palette_byte_number:
@@ -1436,9 +1433,8 @@ def _save(
                 # and it's in the info dict. It's probably just stale.
                 msg = "cannot use transparency for this mode"
                 raise OSError(msg)
-    elif im.mode == "P":
-        assert im.im is not None
-        if im.im.getpalettemode() == "RGBA":
+    else:
+        if im.mode == "P" and im.im.getpalettemode() == "RGBA":
             alpha = im.im.getpalette("RGBA", "A")
             alpha_bytes = colors
             chunk(fp, b"tRNS", alpha[:alpha_bytes])

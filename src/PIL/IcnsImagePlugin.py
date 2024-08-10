@@ -92,7 +92,6 @@ def read_32(
                 msg = f"Error reading channel [{repr(bytesleft)} left]"
                 raise SyntaxError(msg)
             band = Image.frombuffer("L", pixel_size, b"".join(data), "raw", "L", 0, 1)
-            assert im.im is not None
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
 
@@ -309,7 +308,7 @@ class IcnsImageFile(ImageFile.ImageFile):
             )
 
         px = Image.Image.load(self)
-        if self.im is not None and self.im.size == self.size:
+        if self._im is not None and self.im.size == self.size:
             # Already loaded
             return px
         self.load_prepare()

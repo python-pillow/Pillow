@@ -27,7 +27,6 @@ class TestImagingResampleVulnerability:
         ):
             with pytest.raises(MemoryError):
                 # any resampling filter will do here
-                assert im.im is not None
                 im.im.resize((xsize, ysize), Image.Resampling.BILINEAR)
 
     def test_invalid_size(self) -> None:
