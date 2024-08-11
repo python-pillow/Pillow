@@ -66,7 +66,8 @@ ImagingGetBand(Imaging imIn, int band) {
         12 + band,
         8 + band,
         4 + band,
-        0 + band);
+        0 + band
+    );
 #endif
 
     /* Extract band from image */
@@ -132,7 +133,8 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
                 __m128i source = _mm_loadu_si128((__m128i *)in);
                 source = _mm_shuffle_epi8(
                     source,
-                    _mm_set_epi8(15, 11, 7, 3, 14, 10, 6, 2, 13, 9, 5, 1, 12, 8, 4, 0));
+                    _mm_set_epi8(15, 11, 7, 3, 14, 10, 6, 2, 13, 9, 5, 1, 12, 8, 4, 0)
+                );
                 *((UINT32 *)(out0 + x)) = _mm_cvtsi128_si32(source);
                 *((UINT32 *)(out1 + x)) = _mm_cvtsi128_si32(_mm_srli_si128(source, 12));
 #else
@@ -161,7 +163,8 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
                 __m128i source = _mm_loadu_si128((__m128i *)in);
                 source = _mm_shuffle_epi8(
                     source,
-                    _mm_set_epi8(15, 11, 7, 3, 14, 10, 6, 2, 13, 9, 5, 1, 12, 8, 4, 0));
+                    _mm_set_epi8(15, 11, 7, 3, 14, 10, 6, 2, 13, 9, 5, 1, 12, 8, 4, 0)
+                );
                 *((UINT32 *)(out0 + x)) = _mm_cvtsi128_si32(source);
                 *((UINT32 *)(out1 + x)) = _mm_cvtsi128_si32(_mm_srli_si128(source, 4));
                 *((UINT32 *)(out2 + x)) = _mm_cvtsi128_si32(_mm_srli_si128(source, 8));
@@ -195,7 +198,8 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
                 __m128i source = _mm_loadu_si128((__m128i *)in);
                 source = _mm_shuffle_epi8(
                     source,
-                    _mm_set_epi8(15, 11, 7, 3, 14, 10, 6, 2, 13, 9, 5, 1, 12, 8, 4, 0));
+                    _mm_set_epi8(15, 11, 7, 3, 14, 10, 6, 2, 13, 9, 5, 1, 12, 8, 4, 0)
+                );
                 *((UINT32 *)(out0 + x)) = _mm_cvtsi128_si32(source);
                 *((UINT32 *)(out1 + x)) = _mm_cvtsi128_si32(_mm_srli_si128(source, 4));
                 *((UINT32 *)(out2 + x)) = _mm_cvtsi128_si32(_mm_srli_si128(source, 8));
