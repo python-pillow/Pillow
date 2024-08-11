@@ -23,28 +23,6 @@ Imaging
 ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
     Imaging imOut;
     int x, y;
-    int xsize = imDst->xsize;
-    __m128i mm_max_alpha = _mm_set1_epi32(255);
-    __m128i mm_max_alpha2 = _mm_set1_epi32(255 * 255);
-    __m128i mm_zero = _mm_setzero_si128();
-    __m128i mm_half = _mm_set1_epi16(128);
-    __m128i mm_get_lo = _mm_set_epi8(
-        -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0);
-    __m128i mm_get_hi = _mm_set_epi8(
-        -1,-1, 13,12, 13,12, 13,12, -1,-1, 9,8, 9,8, 9,8);
-#if defined(__AVX2__)
-    __m256i vmm_max_alpha = _mm256_set1_epi32(255);
-    __m256i vmm_max_alpha2 = _mm256_set1_epi32(255 * 255);
-    __m256i vmm_zero = _mm256_setzero_si256();
-    __m256i vmm_half = _mm256_set1_epi16(128);
-    __m256i vmm_get_lo = _mm256_set_epi8(
-        -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0,
-        -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0);
-    __m256i vmm_get_hi = _mm256_set_epi8(
-        -1,-1, 13,12, 13,12, 13,12, -1,-1, 9,8, 9,8, 9,8,
-        -1,-1, 13,12, 13,12, 13,12, -1,-1, 9,8, 9,8, 9,8);
-#endif
-
 
     /* Check arguments */
     if (!imDst || !imSrc || strcmp(imDst->mode, "RGBA") ||
@@ -71,11 +49,22 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
         x = 0;
 
 #if defined(__AVX2__)
+    {
+        __m256i vmm_max_alpha = _mm256_set1_epi32(255);
+        __m256i vmm_max_alpha2 = _mm256_set1_epi32(255 * 255);
+        __m256i vmm_zero = _mm256_setzero_si256();
+        __m256i vmm_half = _mm256_set1_epi16(128);
+        __m256i vmm_get_lo = _mm256_set_epi8(
+            -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0,
+            -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0);
+        __m256i vmm_get_hi = _mm256_set_epi8(
+            -1,-1, 13,12, 13,12, 13,12, -1,-1, 9,8, 9,8, 9,8,
+            -1,-1, 13,12, 13,12, 13,12, -1,-1, 9,8, 9,8, 9,8);
 
         #define MM_SHIFTDIV255_epi16(src)\
             _mm256_srli_epi16(_mm256_add_epi16(src, _mm256_srli_epi16(src, 8)), 8)
 
-        for (; x < xsize - 7; x += 8) {
+        for (; x < imDst->xsize - 7; x += 8) {
             __m256i mm_dst, mm_dst_lo, mm_dst_hi;
             __m256i mm_src, mm_src_lo, mm_src_hi;
             __m256i mm_dst_a, mm_src_a, mm_out_a, mm_blend;
@@ -126,13 +115,23 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
         }
 
         #undef MM_SHIFTDIV255_epi16
-
+    }
 #endif
+#if defined(__SSE4__)
+    {
+        __m128i mm_max_alpha = _mm_set1_epi32(255);
+        __m128i mm_max_alpha2 = _mm_set1_epi32(255 * 255);
+        __m128i mm_zero = _mm_setzero_si128();
+        __m128i mm_half = _mm_set1_epi16(128);
+        __m128i mm_get_lo = _mm_set_epi8(
+            -1,-1, 5,4, 5,4, 5,4, -1,-1, 1,0, 1,0, 1,0);
+        __m128i mm_get_hi = _mm_set_epi8(
+            -1,-1, 13,12, 13,12, 13,12, -1,-1, 9,8, 9,8, 9,8);
 
         #define MM_SHIFTDIV255_epi16(src)\
             _mm_srli_epi16(_mm_add_epi16(src, _mm_srli_epi16(src, 8)), 8)
 
-        for (; x < xsize - 3; x += 4) {
+        for (; x < imDst->xsize - 3; x += 4) {
             __m128i mm_dst, mm_dst_lo, mm_dst_hi;
             __m128i mm_src, mm_src_hi, mm_src_lo;
             __m128i mm_dst_a, mm_src_a, mm_out_a, mm_blend;
@@ -191,8 +190,10 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
         }
 
         #undef MM_SHIFTDIV255_epi16
+    }
+#endif
 
-        for (; x < xsize; x += 1) {
+        for (; x < imDst->xsize; x += 1) {
             if (src[x].a == 0) {
                 // Copy 4 bytes at once.
                 out[x] = dst[x];
