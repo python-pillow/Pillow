@@ -4417,8 +4417,8 @@ setup_module(PyObject *m) {
 #elif defined(__NEON__)
     PyModule_AddStringConstant(m, "acceleration", "neon");
 #else
-    Py_INCREF(Py_False);
-    PyModule_AddObject(m, "acceleration", Py_False);
+    Py_INCREF(Py_None);
+    PyModule_AddObject(m, "acceleration", Py_None);
 
     have_acceleration = Py_False;
 #endif
