@@ -4407,6 +4407,7 @@ setup_module(PyObject *m) {
     Py_INCREF(have_xcb);
     PyModule_AddObject(m, "HAVE_XCB", have_xcb);
 
+    PyObject *have_acceleration = Py_True;
 #ifdef __AVX2__
     PyModule_AddStringConstant(m, "acceleration", "avx2");
 #elif defined(__SSE4__)
@@ -4418,7 +4419,11 @@ setup_module(PyObject *m) {
 #else
     Py_INCREF(Py_False);
     PyModule_AddObject(m, "acceleration", Py_False);
+
+    have_acceleration = Py_False;
 #endif
+    Py_INCREF(have_acceleration);
+    PyModule_AddObject(m, "HAVE_ACCELERATION", have_acceleration);
 
     PyObject *pillow_version = PyUnicode_FromString(version);
     PyDict_SetItemString(

@@ -128,7 +128,7 @@ features = {
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO", "libjpeg_turbo_version"),
     "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT", "imagequant_version"),
     "xcb": ("PIL._imaging", "HAVE_XCB", None),
-    "acceleration": ("PIL._imaging", "acceleration", "acceleration"),
+    "acceleration": ("PIL._imaging", "HAVE_ACCELERATION", "acceleration"),
 }
 
 
