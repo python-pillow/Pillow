@@ -1275,6 +1275,13 @@ class TiffImageFile(ImageFile.ImageFile):
             return self._load_libtiff()
         return super().load()
 
+    @property
+    def size(self) -> tuple[int, int]:
+        if hasattr(self, 'tag_v2'):
+            if self.tag_v2.get(ExifTags.Base.Orientation) in (5, 6, 7, 8):
+                return (self._size[1], self._size[0])
+        return self._size
+
     def load_end(self) -> None:
         # allow closing if we're on the first frame, there's no next
         # This is the ImageFile.load path only, libtiff specific below.
@@ -1559,7 +1566,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if STRIPOFFSETS in self.tag_v2:
                 offsets = self.tag_v2[STRIPOFFSETS]
                 h = self.tag_v2.get(ROWSPERSTRIP, ysize)
-                w = self.size[0]
+                w = xsize
             else:
                 # tiled image
                 offsets = self.tag_v2[TILEOFFSETS]
@@ -1593,9 +1600,9 @@ class TiffImageFile(ImageFile.ImageFile):
                     )
                 )
                 x = x + w
-                if x >= self.size[0]:
+                if x >= xsize:
                     x, y = 0, y + h
-                    if y >= self.size[1]:
+                    if y >= ysize:
                         x = y = 0
                         layer += 1
         else:

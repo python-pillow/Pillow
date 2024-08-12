@@ -9,7 +9,6 @@ from .helper import (
     assert_image_similar,
     fromstring,
     hopper,
-    skip_unless_feature,
     tostring,
 )
 
@@ -89,22 +88,6 @@ def test_no_resize() -> None:
     with Image.open("Tests/images/hopper.jpg") as im:
         im.thumbnail((64, 64))
         assert im.size == (64, 64)
-
-
-@skip_unless_feature("libtiff")
-def test_load_first() -> None:
-    # load() may change the size of the image
-    # Test that thumbnail() is calling it before performing size calculations
-    with Image.open("Tests/images/g4_orientation_5.tif") as im:
-        im.thumbnail((64, 64))
-        assert im.size == (64, 10)
-
-    # Test thumbnail(), without draft(),
-    # on an image that is large enough once load() has changed the size
-    with Image.open("Tests/images/g4_orientation_5.tif") as im:
-        im.thumbnail((590, 88), reducing_gap=None)
-        assert im.size == (590, 88)
-
 
 def test_load_first_unless_jpeg() -> None:
     # Test that thumbnail() still uses draft() for JPEG

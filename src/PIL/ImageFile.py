@@ -322,8 +322,9 @@ class ImageFile(Image.Image):
 
     def load_prepare(self) -> None:
         # create image memory if necessary
-        if self._im is None or self.im.mode != self.mode or self.im.size != self.size:
-            self.im = Image.core.new(self.mode, self.size)
+        # use internal _size property for correct tile size
+        if self._im is None or self.im.mode != self.mode or self.im.size != self._size:
+            self.im = Image.core.new(self.mode, self._size)
         # create palette (optional)
         if self.mode == "P":
             Image.Image.load(self)
