@@ -119,7 +119,7 @@ def get_supported_codecs() -> list[str]:
     return [f for f in codecs if check_codec(f)]
 
 
-features = {
+features: dict[str, tuple[str, str | bool, str | None]] = {
     "webp_anim": ("PIL._webp", True, None),
     "webp_mux": ("PIL._webp", True, None),
     "transp_webp": ("PIL._webp", True, None),
