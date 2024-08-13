@@ -8,7 +8,7 @@ from PIL import Image
 
 from .helper import assert_image_equal, hopper
 
-_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
+pytest.importorskip("PIL._webp", reason="WebP support not installed")
 RGB_MODE = "RGB"
 
 
