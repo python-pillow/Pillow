@@ -11,7 +11,7 @@
  * Check the versions from mux.h and demux.h, to ensure the WebPAnimEncoder and
  * WebPAnimDecoder APIs are present (initial support was added in 0.5.0). The
  * very early versions had some significant differences, so we require later
- * versions, before enabling animation support.
+ * versions.
  */
 #if WEBP_MUX_ABI_VERSION < 0x0106 || WEBP_DEMUX_ABI_VERSION < 0x0107
 #error libwebp 0.5.0 and above is required. Upgrade libwebp or build Pillow with --disable-webp flag
