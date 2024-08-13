@@ -794,25 +794,17 @@ class pil_build_ext(build_ext):
         if feature.want("webp"):
             _dbg("Looking for webp")
             if all(
-                _find_include_file(self, src)
-                for src in [
-                    "webp/encode.h",
-                    "webp/decode.h",
-                    "webp/mux.h",
-                    "webp/demux.h",
-                ]
+                _find_include_file(self, "webp/" + include)
+                for include in ("encode.h", "decode.h", "mux.h", "demux.h")
             ):
-                # In Google's precompiled zip it is call "libwebp":
-                if all(
-                    _find_library_file(self, lib)
-                    for lib in ["webp", "webpmux", "webpdemux"]
-                ):
-                    feature.webp = "webp"
-                elif all(
-                    _find_library_file(self, lib)
-                    for lib in ["libwebp", "libwebpmux", "libwebpdemux"]
-                ):
-                    feature.webp = "libwebp"
+                # In Google's precompiled zip it is called "libwebp"
+                for prefix in ("", "lib"):
+                    if all(
+                        _find_library_file(self, prefix + library)
+                        for library in ("webp", "webpmux", "webpdemux")
+                    ):
+                        feature.webp = prefix + "webp"
+                        break
 
         if feature.want("xcb"):
             _dbg("Looking for xcb")
@@ -901,12 +893,8 @@ class pil_build_ext(build_ext):
             self._remove_extension("PIL._imagingcms")
 
         if feature.webp:
-            libs = [
-                feature.webp,
-                feature.webp + "mux",
-                feature.webp + "demux",
-            ]
-            self._update_extension("PIL._webp", libs, [])
+            libs = [feature.webp, feature.webp + "mux", feature.webp + "demux"]
+            self._update_extension("PIL._webp", libs)
         else:
             self._remove_extension("PIL._webp")
 
