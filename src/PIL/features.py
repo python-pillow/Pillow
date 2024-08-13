@@ -7,9 +7,9 @@ import warnings
 from typing import IO
 
 import PIL
-from PIL import _deprecate
 
 from . import Image
+from ._deprecate import deprecate
 
 modules = {
     "pil": ("PIL._imaging", "PILLOW_VERSION"),
@@ -149,7 +149,7 @@ def check_feature(feature: str) -> bool | None:
     try:
         imported_module = __import__(module, fromlist=["PIL"])
         if isinstance(flag, bool):
-            _deprecate.deprecate(f'check_feature("{feature}")', 12)
+            deprecate(f'check_feature("{feature}")', 12)
             return flag
         return getattr(imported_module, flag)
     except ModuleNotFoundError:
