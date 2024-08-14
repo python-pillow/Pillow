@@ -61,4 +61,4 @@ def test_f_lut() -> None:
 def test_f_mode() -> None:
     im = hopper("F")
     with pytest.raises(ValueError):
-        im.point(None)
+        im.point([])

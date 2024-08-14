@@ -11,7 +11,11 @@ from PIL.TiffImagePlugin import IFDRational
 
 from .helper import assert_deep_equal, hopper
 
-TAG_IDS = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
+TAG_IDS: dict[str, int] = {
+    info.name: info.value
+    for info in TiffTags.TAGS_V2.values()
+    if info.value is not None
+}
 
 
 def test_rt_metadata(tmp_path: Path) -> None:
@@ -411,8 +415,8 @@ def test_empty_values() -> None:
     info = TiffImagePlugin.ImageFileDirectory_v2(head)
     info.load(data)
     # Should not raise ValueError.
-    info = dict(info)
-    assert 33432 in info
+    info_dict = dict(info)
+    assert 33432 in info_dict
 
 
 def test_photoshop_info(tmp_path: Path) -> None:

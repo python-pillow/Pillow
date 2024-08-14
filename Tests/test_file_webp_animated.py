@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -14,10 +15,7 @@ from .helper import (
     skip_unless_feature,
 )
 
-pytestmark = [
-    skip_unless_feature("webp"),
-    skip_unless_feature("webp_anim"),
-]
+pytestmark = skip_unless_feature("webp")
 
 
 def test_n_frames() -> None:
@@ -52,8 +50,9 @@ def test_write_animation_L(tmp_path: Path) -> None:
             assert_image_similar(im, orig.convert("RGBA"), 32.9)
 
             if is_big_endian():
-                webp = parse_version(features.version_module("webp"))
-                if webp < parse_version("1.2.2"):
+                version = features.version_module("webp")
+                assert version is not None
+                if parse_version(version) < parse_version("1.2.2"):
                     pytest.skip("Fails with libwebp earlier than 1.2.2")
             orig.seek(orig.n_frames - 1)
             im.seek(im.n_frames - 1)
@@ -68,7 +67,7 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
     are visually similar to the originals.
     """
 
-    def check(temp_file) -> None:
+    def check(temp_file: str) -> None:
         with Image.open(temp_file) as im:
             assert im.n_frames == 2
 
@@ -78,8 +77,9 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
 
             # Compare second frame to original
             if is_big_endian():
-                webp = parse_version(features.version_module("webp"))
-                if webp < parse_version("1.2.2"):
+                version = features.version_module("webp")
+                assert version is not None
+                if parse_version(version) < parse_version("1.2.2"):
                     pytest.skip("Fails with libwebp earlier than 1.2.2")
             im.seek(1)
             im.load()
@@ -94,7 +94,9 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
             check(temp_file1)
 
             # Tests appending using a generator
-            def im_generator(ims):
+            def im_generator(
+                ims: list[Image.Image],
+            ) -> Generator[Image.Image, None, None]:
                 yield from ims
 
             temp_file2 = str(tmp_path / "temp_generator.webp")

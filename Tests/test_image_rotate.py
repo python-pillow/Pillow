@@ -124,8 +124,8 @@ def test_fastpath_translate() -> None:
 def test_center() -> None:
     im = hopper()
     rotate(im, im.mode, 45, center=(0, 0))
-    rotate(im, im.mode, 45, translate=(im.size[0] / 2, 0))
-    rotate(im, im.mode, 45, center=(0, 0), translate=(im.size[0] / 2, 0))
+    rotate(im, im.mode, 45, translate=(im.size[0] // 2, 0))
+    rotate(im, im.mode, 45, center=(0, 0), translate=(im.size[0] // 2, 0))
 
 
 def test_rotate_no_fill() -> None:

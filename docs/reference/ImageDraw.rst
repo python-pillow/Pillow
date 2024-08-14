@@ -227,6 +227,18 @@ Methods
 
         .. versionadded:: 5.3.0
 
+.. py:method:: ImageDraw.circle(xy, radius, fill=None, outline=None, width=1)
+
+    Draws a circle with a given radius centering on a point.
+
+    .. versionadded:: 10.4.0
+
+    :param xy: The point for the center of the circle, e.g. ``(x, y)``.
+    :param radius: Radius of the circle.
+    :param outline: Color to use for the outline.
+    :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
 .. py:method:: ImageDraw.ellipse(xy, fill=None, outline=None, width=1)
 
     Draws an ellipse inside the given bounding box.
@@ -679,23 +691,7 @@ Methods
     :param hints: An optional list of hints.
     :returns: A (drawing context, drawing resource factory) tuple.
 
-.. py:method:: floodfill(image, xy, value, border=None, thresh=0)
-
-    .. warning:: This method is experimental.
-
-    Fills a bounded region with a given color.
-
-    :param image: Target image.
-    :param xy: Seed position (a 2-item coordinate tuple).
-    :param value: Fill color.
-    :param border: Optional border value.  If given, the region consists of
-        pixels with a color different from the border color.  If not given,
-        the region consists of pixels having the same color as the seed
-        pixel.
-    :param thresh: Optional threshold value which specifies a maximum
-        tolerable difference of a pixel value from the 'background' in
-        order for it to be replaced. Useful for filling regions of non-
-        homogeneous, but similar, colors.
+.. autofunction:: PIL.ImageDraw.floodfill
 
 .. _BCP 47 language code: https://www.w3.org/International/articles/language-tags/
 .. _OpenType docs: https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist

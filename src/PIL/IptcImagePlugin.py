@@ -16,8 +16,9 @@
 #
 from __future__ import annotations
 
+from collections.abc import Sequence
 from io import BytesIO
-from typing import Sequence
+from typing import cast
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -148,7 +149,7 @@ class IptcImageFile(ImageFile.ImageFile):
         if tag == (8, 10):
             self.tile = [("iptc", (0, 0) + self.size, offset, compression)]
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
             return ImageFile.ImageFile.load(self)
 
@@ -176,6 +177,7 @@ class IptcImageFile(ImageFile.ImageFile):
         with Image.open(o) as _im:
             _im.load()
             self.im = _im.im
+        return None
 
 
 Image.register_open(IptcImageFile.format, IptcImageFile)
@@ -183,7 +185,9 @@ Image.register_open(IptcImageFile.format, IptcImageFile)
 Image.register_extension(IptcImageFile.format, ".iim")
 
 
-def getiptcinfo(im):
+def getiptcinfo(
+    im: ImageFile.ImageFile,
+) -> dict[tuple[int, int], bytes | list[bytes]] | None:
     """
     Get IPTC information from TIFF, JPEG, or IPTC file.
 
@@ -220,16 +224,17 @@ def getiptcinfo(im):
     class FakeImage:
         pass
 
-    im = FakeImage()
-    im.__class__ = IptcImageFile
+    fake_im = FakeImage()
+    fake_im.__class__ = IptcImageFile  # type: ignore[assignment]
+    iptc_im = cast(IptcImageFile, fake_im)
 
     # parse the IPTC information chunk
-    im.info = {}
-    im.fp = BytesIO(data)
+    iptc_im.info = {}
+    iptc_im.fp = BytesIO(data)
 
     try:
-        im._open()
+        iptc_im._open()
     except (IndexError, KeyError):
         pass  # expected failure
 
-    return im.info
+    return iptc_im.info

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import IO
 
 import pytest
 
-from PIL import Image, WmfImagePlugin
+from PIL import Image, ImageFile, WmfImagePlugin
 
 from .helper import assert_image_similar_tofile, hopper
 
@@ -34,10 +35,13 @@ def test_load() -> None:
 
 
 def test_register_handler(tmp_path: Path) -> None:
-    class TestHandler:
+    class TestHandler(ImageFile.StubHandler):
         methodCalled = False
 
-        def save(self, im, fp, filename) -> None:
+        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
+            return Image.new("RGB", (1, 1))
+
+        def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             self.methodCalled = True
 
     handler = TestHandler()
@@ -70,7 +74,7 @@ def test_load_set_dpi() -> None:
 
 
 @pytest.mark.parametrize("ext", (".wmf", ".emf"))
-def test_save(ext, tmp_path: Path) -> None:
+def test_save(ext: str, tmp_path: Path) -> None:
     im = hopper()
 
     tmpfile = str(tmp_path / ("temp" + ext))

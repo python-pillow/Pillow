@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import pytest
@@ -15,8 +16,11 @@ def test_sanity() -> None:
 
 
 def test_register() -> None:
-    # Test registering a viewer that is not a class
-    ImageShow.register("not a class")
+    # Test registering a viewer that is an instance
+    class TestViewer(ImageShow.Viewer):
+        pass
+
+    ImageShow.register(TestViewer())
 
     # Restore original state
     ImageShow._viewers.pop()
@@ -63,6 +67,27 @@ def test_show_without_viewers() -> None:
         assert not ImageShow.show(im)
 
     ImageShow._viewers = viewers
+
+
+@pytest.mark.parametrize(
+    "viewer",
+    (
+        ImageShow.Viewer(),
+        ImageShow.WindowsViewer(),
+        ImageShow.MacViewer(),
+        ImageShow.XDGViewer(),
+        ImageShow.DisplayViewer(),
+        ImageShow.GmDisplayViewer(),
+        ImageShow.EogViewer(),
+        ImageShow.XVViewer(),
+        ImageShow.IPythonViewer(),
+    ),
+)
+def test_show_file(viewer: ImageShow.Viewer) -> None:
+    assert not os.path.exists("missing.png")
+
+    with pytest.raises(FileNotFoundError):
+        viewer.show_file("missing.png")
 
 
 def test_viewer() -> None:

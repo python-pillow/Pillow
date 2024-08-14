@@ -51,9 +51,48 @@ def test_sanity() -> None:
     pen = ImageDraw2.Pen("blue", width=7)
     draw.line(list(range(10)), pen)
 
-    draw, handler = ImageDraw.getdraw(im)
+    draw2, handler = ImageDraw.getdraw(im)
+    assert draw2 is not None
     pen = ImageDraw2.Pen("blue", width=7)
-    draw.line(list(range(10)), pen)
+    draw2.line(list(range(10)), pen)
+
+
+def test_mode() -> None:
+    draw = ImageDraw2.Draw("L", (1, 1))
+    assert draw.image.mode == "L"
+
+    with pytest.raises(ValueError):
+        ImageDraw2.Draw("L")
+
+
+@pytest.mark.parametrize("bbox", BBOX)
+@pytest.mark.parametrize("start, end", ((0, 180), (0.5, 180.4)))
+def test_arc(bbox: Coords, start: float, end: float) -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("white", width=1)
+
+    # Act
+    draw.arc(bbox, pen, start, end)
+
+    # Assert
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_arc.png", 1)
+
+
+@pytest.mark.parametrize("bbox", BBOX)
+def test_chord(bbox: Coords) -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("yellow")
+    brush = ImageDraw2.Brush("red")
+
+    # Act
+    draw.chord(bbox, pen, 0, 180, brush)
+
+    # Assert
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_chord_RGB.png", 1)
 
 
 @pytest.mark.parametrize("bbox", BBOX)
@@ -112,6 +151,22 @@ def test_line_pen_as_brush(points: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
+
+
+@pytest.mark.parametrize("bbox", BBOX)
+@pytest.mark.parametrize("start, end", ((-92, 46), (-92.2, 46.2)))
+def test_pieslice(bbox: Coords, start: float, end: float) -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw2.Draw(im)
+    pen = ImageDraw2.Pen("blue")
+    brush = ImageDraw2.Brush("white")
+
+    # Act
+    draw.pieslice(bbox, pen, start, end, brush)
+
+    # Assert
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_pieslice.png", 1)
 
 
 @pytest.mark.parametrize("points", POINTS)

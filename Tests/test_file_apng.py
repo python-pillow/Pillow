@@ -706,10 +706,21 @@ def test_different_modes_in_later_frames(
         assert reloaded.mode == mode
 
 
-def test_apng_repeated_seeks_give_correct_info() -> None:
+def test_different_durations(tmp_path: Path) -> None:
+    test_file = str(tmp_path / "temp.png")
+
     with Image.open("Tests/images/apng/different_durations.png") as im:
-        for i in range(3):
+        for _ in range(3):
             im.seek(0)
             assert im.info["duration"] == 4000
+
             im.seek(1)
             assert im.info["duration"] == 1000
+
+        im.save(test_file, save_all=True)
+
+    with Image.open(test_file) as reloaded:
+        assert reloaded.info["duration"] == 4000
+
+        reloaded.seek(1)
+        assert reloaded.info["duration"] == 1000

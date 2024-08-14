@@ -23,7 +23,10 @@ from . import Image, ImageFilter, ImageStat
 
 
 class _Enhance:
-    def enhance(self, factor):
+    image: Image.Image
+    degenerate: Image.Image
+
+    def enhance(self, factor: float) -> Image.Image:
         """
         Returns an enhanced image.
 
@@ -46,7 +49,7 @@ class Color(_Enhance):
     the original image.
     """
 
-    def __init__(self, image):
+    def __init__(self, image: Image.Image) -> None:
         self.image = image
         self.intermediate_mode = "L"
         if "A" in image.getbands():
@@ -63,7 +66,7 @@ class Contrast(_Enhance):
     gives a solid gray image. A factor of 1.0 gives the original image.
     """
 
-    def __init__(self, image):
+    def __init__(self, image: Image.Image) -> None:
         self.image = image
         mean = int(ImageStat.Stat(image.convert("L")).mean[0] + 0.5)
         self.degenerate = Image.new("L", image.size, mean).convert(image.mode)
@@ -80,7 +83,7 @@ class Brightness(_Enhance):
     original image.
     """
 
-    def __init__(self, image):
+    def __init__(self, image: Image.Image) -> None:
         self.image = image
         self.degenerate = Image.new(image.mode, image.size, 0)
 
@@ -96,7 +99,7 @@ class Sharpness(_Enhance):
     original image, and a factor of 2.0 gives a sharpened image.
     """
 
-    def __init__(self, image):
+    def __init__(self, image: Image.Image) -> None:
         self.image = image
         self.degenerate = image.filter(ImageFilter.SMOOTH)
 

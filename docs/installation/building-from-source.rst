@@ -55,10 +55,6 @@ Many of Pillow's features require external libraries:
 
 * **libwebp** provides the WebP format.
 
-  * Pillow has been tested with version **0.1.3**, which does not read
-    transparent WebP files. Versions **0.3.0** and above support
-    transparency.
-
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
@@ -68,7 +64,7 @@ Many of Pillow's features require external libraries:
 
 * **libimagequant** provides improved color quantization
 
-  * Pillow has been tested with libimagequant **2.6-4.3**
+  * Pillow has been tested with libimagequant **2.6-4.3.1**
   * Libimagequant is licensed GPLv3, which is more restrictive than
     the Pillow license, therefore we will not be distributing binaries
     with libimagequant support enabled.
@@ -275,18 +271,18 @@ Build Options
 
 * Config settings: ``-C zlib=disable``, ``-C jpeg=disable``,
   ``-C tiff=disable``, ``-C freetype=disable``, ``-C raqm=disable``,
-  ``-C lcms=disable``, ``-C webp=disable``, ``-C webpmux=disable``,
+  ``-C lcms=disable``, ``-C webp=disable``,
   ``-C jpeg2000=disable``, ``-C imagequant=disable``, ``-C xcb=disable``.
   Disable building the corresponding feature even if the development
   libraries are present on the building machine.
 
 * Config settings: ``-C zlib=enable``, ``-C jpeg=enable``,
   ``-C tiff=enable``, ``-C freetype=enable``, ``-C raqm=enable``,
-  ``-C lcms=enable``, ``-C webp=enable``, ``-C webpmux=enable``,
+  ``-C lcms=enable``, ``-C webp=enable``,
   ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``.
   Require that the corresponding feature is built. The build will raise
-  an exception if the libraries are not found. Webpmux (WebP metadata)
-  relies on WebP support. Tcl and Tk also must be used together.
+  an exception if the libraries are not found. Tcl and Tk must be used
+  together.
 
 * Config settings: ``-C raqm=vendor``, ``-C fribidi=vendor``.
   These flags are used to compile a modified version of libraqm and

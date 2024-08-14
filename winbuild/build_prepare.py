@@ -112,12 +112,12 @@ ARCHITECTURES = {
 V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.2",
-    "FRIBIDI": "1.0.13",
-    "HARFBUZZ": "8.4.0",
-    "JPEGTURBO": "3.0.2",
+    "FRIBIDI": "1.0.15",
+    "HARFBUZZ": "8.5.0",
+    "JPEGTURBO": "3.0.3",
     "LCMS2": "2.16",
     "LIBPNG": "1.6.43",
-    "LIBWEBP": "1.3.2",
+    "LIBWEBP": "1.4.0",
     "OPENJPEG": "2.5.2",
     "TIFF": "4.6.0",
     "XZ": "5.4.5",
@@ -201,7 +201,7 @@ DEPS = {
         },
         "build": [
             *cmds_cmake(
-                "webp webpdemux webpmux",
+                "webp webpmux webpdemux",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DWEBP_LINK_STATIC:BOOL=OFF",
             ),

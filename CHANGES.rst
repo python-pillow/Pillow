@@ -2,8 +2,137 @@
 Changelog (Pillow)
 ==================
 
-10.4.0 (unreleased)
+11.0.0 (unreleased)
 -------------------
+
+- Remove all WITH_* flags from _imaging.c and other flags #8211
+  [homm]
+
+- Improve ImageDraw2 shape methods #8265
+  [radarhere]
+
+- Lock around usages of imaging memory arenas #8238
+  [lysnikolaou]
+
+- Deprecate JpegImageFile huffman_ac and huffman_dc #8274
+  [radarhere]
+
+- Deprecate ImageMath lambda_eval and unsafe_eval options argument #8242
+  [radarhere]
+
+- Changed ContainerIO to subclass IO #8240
+  [radarhere]
+
+- Move away from APIs that use borrowed references under the free-threaded build #8216
+  [hugovk, lysnikolaou]
+
+- Allow size argument to resize() to be a NumPy array #8201
+  [radarhere]
+
+- Drop support for Python 3.8 #8183
+  [hugovk, radarhere]
+
+- Add support for Python 3.13 #8181
+  [hugovk, radarhere]
+
+- Fix incompatibility with NumPy 1.20 #8187
+  [neutrinoceros, radarhere]
+
+- Remove PSFile, PyAccess and USE_CFFI_ACCESS #8182
+  [hugovk, radarhere]
+
+10.4.0 (2024-07-01)
+-------------------
+
+- Raise FileNotFoundError if show_file() path does not exist #8178
+  [radarhere]
+
+- Improved reading 16-bit TGA images with colour #7965
+  [Yay295, radarhere]
+
+- Deprecate non-image ImageCms modes #8031
+  [radarhere]
+
+- Fixed processing multiple JPEG EXIF markers #8127
+  [radarhere]
+
+- Do not preserve EXIFIFD tag by default when saving TIFF images #8110
+  [radarhere]
+
+- Added ImageFont.load_default_imagefont() #8086
+  [radarhere]
+
+- Added Image.WARN_POSSIBLE_FORMATS #8063
+  [radarhere]
+
+- Remove zero-byte end padding when parsing any XMP data #8171
+  [radarhere]
+
+- Do not detect Ultra HDR images as MPO #8056
+  [radarhere]
+
+- Raise SyntaxError specific to JP2 #8146
+  [Yay295, radarhere]
+
+- Do not use first frame duration for other frames when saving APNG images #8104
+  [radarhere]
+
+- Consider I;16 pixel size when using a 1 mode mask #8112
+  [radarhere]
+
+- When saving multiple PNG frames, convert to mode rather than raw mode #8087
+  [radarhere]
+
+- Added byte support to FreeTypeFont #8141
+  [radarhere]
+
+- Allow float center for rotate operations #8114
+  [radarhere]
+
+- Do not read layers immediately when opening PSD images #8039
+  [radarhere]
+
+- Restore original thread state #8065
+  [radarhere]
+
+- Read IM and TIFF images as RGB, rather than RGBX #7997
+  [radarhere]
+
+- Only preserve TIFF IPTC_NAA_CHUNK tag if type is BYTE or UNDEFINED #7948
+  [radarhere]
+
+- Clarify ImageDraw2 error message when size is missing #8165
+  [radarhere]
+
+- Support unpacking more rawmodes to RGBA palettes #7966
+  [radarhere]
+
+- Removed support for Qt 5 #8159
+  [radarhere]
+
+- Improve ``ImageFont.freetype`` support for XDG directories on Linux #8135
+  [mamg22, radarhere]
+
+- Improved consistency of XMP handling #8069
+  [radarhere]
+
+- Use pkg-config to help find libwebp and raqm #8142
+  [radarhere]
+
+- Accept 't' suffix for libtiff version #8126, #8129
+  [radarhere]
+
+- Deprecate ImageDraw.getdraw hints parameter #8124
+  [radarhere, hugovk]
+
+- Added ImageDraw circle() #8085
+  [void4, hugovk, radarhere]
+
+- Add mypy target to Makefile #8077
+  [Yay295]
+
+- Added more modes to Image.MODES #7984
+  [radarhere]
 
 - Deprecate BGR;15, BGR;16 and BGR;24 modes #7978
   [radarhere, hugovk]

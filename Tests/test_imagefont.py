@@ -34,7 +34,9 @@ pytestmark = skip_unless_feature("freetype2")
 
 
 def test_sanity() -> None:
-    assert re.search(r"\d+\.\d+\.\d+$", features.version_module("freetype2"))
+    version = features.version_module("freetype2")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
 
 @pytest.fixture(
@@ -207,7 +209,7 @@ def test_getlength(
         assert length == length_raqm
 
 
-def test_float_size() -> None:
+def test_float_size(layout_engine: ImageFont.Layout) -> None:
     lengths = []
     for size in (48, 48.5, 49):
         f = ImageFont.truetype(
@@ -222,7 +224,7 @@ def test_render_multiline(font: ImageFont.FreeTypeFont) -> None:
     draw = ImageDraw.Draw(im)
     line_spacing = font.getbbox("A")[3] + 4
     lines = TEST_TEXT.split("\n")
-    y = 0
+    y: float = 0
     for line in lines:
         draw.text((0, y), line, font=font)
         y += line_spacing
@@ -492,8 +494,8 @@ def test_default_font() -> None:
     assert_image_equal_tofile(im, "Tests/images/default_font_freetype.png")
 
 
-@pytest.mark.parametrize("mode", (None, "1", "RGBA"))
-def test_getbbox(font: ImageFont.FreeTypeFont, mode: str | None) -> None:
+@pytest.mark.parametrize("mode", ("", "1", "RGBA"))
+def test_getbbox(font: ImageFont.FreeTypeFont, mode: str) -> None:
     assert (0, 4, 12, 16) == font.getbbox("A", mode)
 
 
@@ -546,12 +548,11 @@ def test_find_font(
 
             def loadable_font(
                 filepath: str, size: int, index: int, encoding: str, *args: Any
-            ):
+            ) -> ImageFont.FreeTypeFont:
+                _freeTypeFont = getattr(ImageFont, "_FreeTypeFont")
                 if filepath == path_to_fake:
-                    return ImageFont._FreeTypeFont(
-                        FONT_PATH, size, index, encoding, *args
-                    )
-                return ImageFont._FreeTypeFont(filepath, size, index, encoding, *args)
+                    return _freeTypeFont(FONT_PATH, size, index, encoding, *args)
+                return _freeTypeFont(filepath, size, index, encoding, *args)
 
             m.setattr(ImageFont, "FreeTypeFont", loadable_font)
             font = ImageFont.truetype(fontname)
@@ -563,6 +564,7 @@ def test_find_font(
     # catching syntax like errors
     monkeypatch.setattr(sys, "platform", platform)
     if platform == "linux":
+        monkeypatch.setenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
         monkeypatch.setenv("XDG_DATA_DIRS", "/usr/share/:/usr/local/share/")
 
     def fake_walker(path: str) -> list[tuple[str, list[str], list[str]]]:
@@ -630,7 +632,9 @@ def test_complex_font_settings() -> None:
 
 
 def test_variation_get(font: ImageFont.FreeTypeFont) -> None:
-    freetype = parse_version(features.version_module("freetype2"))
+    version = features.version_module("freetype2")
+    assert version is not None
+    freetype = parse_version(version)
     if freetype < parse_version("2.9.1"):
         with pytest.raises(NotImplementedError):
             font.get_variation_names()
@@ -700,7 +704,9 @@ def _check_text(font: ImageFont.FreeTypeFont, path: str, epsilon: float) -> None
 
 
 def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
-    freetype = parse_version(features.version_module("freetype2"))
+    version = features.version_module("freetype2")
+    assert version is not None
+    freetype = parse_version(version)
     if freetype < parse_version("2.9.1"):
         with pytest.raises(NotImplementedError):
             font.set_variation_by_name("Bold")
@@ -711,21 +717,23 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
 
     font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
     _check_text(font, "Tests/images/variation_adobe.png", 11)
-    for name in ["Bold", b"Bold"]:
+    for name in ("Bold", b"Bold"):
         font.set_variation_by_name(name)
         assert font.getname()[1] == "Bold"
     _check_text(font, "Tests/images/variation_adobe_name.png", 16)
 
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     _check_text(font, "Tests/images/variation_tiny.png", 40)
-    for name in ["200", b"200"]:
+    for name in ("200", b"200"):
         font.set_variation_by_name(name)
         assert font.getname()[1] == "200"
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
 
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
-    freetype = parse_version(features.version_module("freetype2"))
+    version = features.version_module("freetype2")
+    assert version is not None
+    freetype = parse_version(version)
     if freetype < parse_version("2.9.1"):
         with pytest.raises(NotImplementedError):
             font.set_variation_by_axes([100])
@@ -1087,6 +1095,23 @@ def test_too_many_characters(font: ImageFont.FreeTypeFont) -> None:
         imagefont.getbbox("A" * 1_000_001)
     with pytest.raises(ValueError):
         imagefont.getmask("A" * 1_000_001)
+
+
+def test_bytes(font: ImageFont.FreeTypeFont) -> None:
+    assert font.getlength(b"test") == font.getlength("test")
+
+    assert font.getbbox(b"test") == font.getbbox("test")
+
+    assert_image_equal(
+        Image.Image()._new(font.getmask(b"test")),
+        Image.Image()._new(font.getmask("test")),
+    )
+
+    assert_image_equal(
+        Image.Image()._new(font.getmask2(b"test")[0]),
+        Image.Image()._new(font.getmask2("test")[0]),
+    )
+    assert font.getmask2(b"test")[1] == font.getmask2("test")[1]
 
 
 @pytest.mark.parametrize(

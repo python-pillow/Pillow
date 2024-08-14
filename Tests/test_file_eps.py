@@ -80,9 +80,7 @@ simple_eps_file_with_long_binary_data = (
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-@pytest.mark.parametrize(
-    ("filename", "size"), ((FILE1, (460, 352)), (FILE2, (360, 252)))
-)
+@pytest.mark.parametrize("filename, size", ((FILE1, (460, 352)), (FILE2, (360, 252))))
 @pytest.mark.parametrize("scale", (1, 2))
 def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
     expected_size = tuple(s * scale for s in size)
@@ -329,46 +327,6 @@ def test_read_binary_preview() -> None:
         pass
 
 
-def test_readline_psfile(tmp_path: Path) -> None:
-    # check all the freaking line endings possible from the spec
-    # test_string = u'something\r\nelse\n\rbaz\rbif\n'
-    line_endings = ["\r\n", "\n", "\n\r", "\r"]
-    strings = ["something", "else", "baz", "bif"]
-
-    def _test_readline(t: EpsImagePlugin.PSFile, ending: str) -> None:
-        ending = f"Failure with line ending: {''.join(str(ord(s)) for s in ending)}"
-        assert t.readline().strip("\r\n") == "something", ending
-        assert t.readline().strip("\r\n") == "else", ending
-        assert t.readline().strip("\r\n") == "baz", ending
-        assert t.readline().strip("\r\n") == "bif", ending
-
-    def _test_readline_io_psfile(test_string: str, ending: str) -> None:
-        f = io.BytesIO(test_string.encode("latin-1"))
-        with pytest.warns(DeprecationWarning):
-            t = EpsImagePlugin.PSFile(f)
-        _test_readline(t, ending)
-
-    def _test_readline_file_psfile(test_string: str, ending: str) -> None:
-        f = str(tmp_path / "temp.txt")
-        with open(f, "wb") as w:
-            w.write(test_string.encode("latin-1"))
-
-        with open(f, "rb") as r:
-            with pytest.warns(DeprecationWarning):
-                t = EpsImagePlugin.PSFile(r)
-            _test_readline(t, ending)
-
-    for ending in line_endings:
-        s = ending.join(strings)
-        _test_readline_io_psfile(s, ending)
-        _test_readline_file_psfile(s, ending)
-
-
-def test_psfile_deprecation() -> None:
-    with pytest.warns(DeprecationWarning):
-        EpsImagePlugin.PSFile(None)
-
-
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
 @pytest.mark.parametrize(
     "line_ending",
@@ -425,9 +383,10 @@ def test_timeout(test_file: str) -> None:
 def test_bounding_box_in_trailer() -> None:
     # Check bounding boxes are parsed in the same way
     # when specified in the header and the trailer
-    with Image.open("Tests/images/zero_bb_trailer.eps") as trailer_image, Image.open(
-        FILE1
-    ) as header_image:
+    with (
+        Image.open("Tests/images/zero_bb_trailer.eps") as trailer_image,
+        Image.open(FILE1) as header_image,
+    ):
         assert trailer_image.size == header_image.size
 
 

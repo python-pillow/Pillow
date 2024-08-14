@@ -105,91 +105,68 @@ class TestColorLut3DCoreAPI:
         with pytest.raises(TypeError):
             im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, 16)
 
-    def test_correct_args(self) -> None:
+    @pytest.mark.parametrize(
+        "lut_mode, table_channels, table_size",
+        [
+            ("RGB", 3, 3),
+            ("CMYK", 4, 3),
+            ("RGB", 3, (2, 3, 3)),
+            ("RGB", 3, (65, 3, 3)),
+            ("RGB", 3, (3, 65, 3)),
+            ("RGB", 3, (2, 3, 65)),
+        ],
+    )
+    def test_correct_args(
+        self, lut_mode: str, table_channels: int, table_size: int | tuple[int, int, int]
+    ) -> None:
         im = Image.new("RGB", (10, 10), 0)
-
+        assert im.im is not None
         im.im.color_lut_3d(
-            "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
-
-        im.im.color_lut_3d(
-            "CMYK", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
+            lut_mode,
             Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (2, 3, 3)),
+            *self.generate_identity_table(table_channels, table_size),
         )
 
+    @pytest.mark.parametrize(
+        "image_mode, lut_mode, table_channels, table_size",
+        [
+            ("L", "RGB", 3, 3),
+            ("RGB", "L", 3, 3),
+            ("L", "L", 3, 3),
+            ("RGB", "RGBA", 3, 3),
+            ("RGB", "RGB", 4, 3),
+        ],
+    )
+    def test_wrong_mode(
+        self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
+    ) -> None:
+        with pytest.raises(ValueError, match="wrong mode"):
+            im = Image.new(image_mode, (10, 10), 0)
+            assert im.im is not None
+            im.im.color_lut_3d(
+                lut_mode,
+                Image.Resampling.BILINEAR,
+                *self.generate_identity_table(table_channels, table_size),
+            )
+
+    @pytest.mark.parametrize(
+        "image_mode, lut_mode, table_channels, table_size",
+        [
+            ("RGBA", "RGBA", 3, 3),
+            ("RGBA", "RGBA", 4, 3),
+            ("RGB", "HSV", 3, 3),
+            ("RGB", "RGBA", 4, 3),
+        ],
+    )
+    def test_correct_mode(
+        self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
+    ) -> None:
+        im = Image.new(image_mode, (10, 10), 0)
+        assert im.im is not None
         im.im.color_lut_3d(
-            "RGB",
+            lut_mode,
             Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (65, 3, 3)),
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (3, 65, 3)),
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (3, 3, 65)),
-        )
-
-    def test_wrong_mode(self) -> None:
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("L", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "L", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("L", (10, 10), 0)
-            im.im.color_lut_3d(
-                "L", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-            )
-
-    def test_correct_mode(self) -> None:
-        im = Image.new("RGBA", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
-
-        im = Image.new("RGBA", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
-
-        im = Image.new("RGB", (10, 10), 0)
-        im.im.color_lut_3d(
-            "HSV", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
-
-        im = Image.new("RGB", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
+            *self.generate_identity_table(table_channels, table_size),
         )
 
     def test_identities(self) -> None:
@@ -321,6 +298,7 @@ class TestColorLut3DCoreAPI:
                                   -1,  2,  2,   2,  2,  2,
                               ])).load()
         # fmt: on
+        assert transformed is not None
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
         assert transformed[255, 0] == (0, 255, 255)
@@ -341,6 +319,7 @@ class TestColorLut3DCoreAPI:
                                   -3,  5,  5,   5,  5,  5,
                               ])).load()
         # fmt: on
+        assert transformed is not None
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
         assert transformed[255, 0] == (0, 255, 255)
@@ -354,10 +333,10 @@ class TestColorLut3DCoreAPI:
 class TestColorLut3DFilter:
     def test_wrong_args(self) -> None:
         with pytest.raises(ValueError, match="should be either an integer"):
-            ImageFilter.Color3DLUT("small", [1])
+            ImageFilter.Color3DLUT("small", [1])  # type: ignore[arg-type]
 
         with pytest.raises(ValueError, match="should be either an integer"):
-            ImageFilter.Color3DLUT((11, 11), [1])
+            ImageFilter.Color3DLUT((11, 11), [1])  # type: ignore[arg-type]
 
         with pytest.raises(ValueError, match=r"in \[2, 65\] range"):
             ImageFilter.Color3DLUT((11, 11, 1), [1])

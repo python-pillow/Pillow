@@ -48,7 +48,9 @@ def roundtrip(im: Image.Image, **options: Any) -> Image.Image:
 
 def test_sanity() -> None:
     # Internal version number
-    assert re.search(r"\d+\.\d+\.\d+$", features.version_codec("jpg_2000"))
+    version = features.version_codec("jpg_2000")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
@@ -333,9 +335,15 @@ def test_issue_6194() -> None:
         assert im.getpixel((5, 5)) == 31
 
 
+def test_unknown_j2k_mode() -> None:
+    with pytest.raises(UnidentifiedImageError):
+        with Image.open("Tests/images/unknown_mode.j2k"):
+            pass
+
+
 def test_unbound_local() -> None:
     # prepatch, a malformed jp2 file could cause an UnboundLocalError exception.
-    with pytest.raises(OSError):
+    with pytest.raises(UnidentifiedImageError):
         with Image.open("Tests/images/unbound_variable.jp2"):
             pass
 
@@ -458,7 +466,7 @@ def test_plt_marker() -> None:
         out.seek(length - 2, os.SEEK_CUR)
 
 
-def test_9bit():
+def test_9bit() -> None:
     with Image.open("Tests/images/9bit.j2k") as im:
         assert im.mode == "I;16"
         assert im.size == (128, 128)

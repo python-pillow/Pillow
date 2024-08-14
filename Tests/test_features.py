@@ -10,11 +10,6 @@ from PIL import features
 
 from .helper import skip_unless_feature
 
-try:
-    from PIL import _webp
-except ImportError:
-    pass
-
 
 def test_check() -> None:
     # Check the correctness of the convenience function
@@ -23,14 +18,18 @@ def test_check() -> None:
     for codec in features.codecs:
         assert features.check_codec(codec) == features.check(codec)
     for feature in features.features:
-        assert features.check_feature(feature) == features.check(feature)
+        if "webp" in feature:
+            with pytest.warns(DeprecationWarning):
+                assert features.check_feature(feature) == features.check(feature)
+        else:
+            assert features.check_feature(feature) == features.check(feature)
 
 
 def test_version() -> None:
     # Check the correctness of the convenience function
     # and the format of version numbers
 
-    def test(name: str, function: Callable[[str], bool]) -> None:
+    def test(name: str, function: Callable[[str], str | None]) -> None:
         version = features.version(name)
         if not features.check(name):
             assert version is None
@@ -38,7 +37,9 @@ def test_version() -> None:
             assert function(name) == version
             if name != "PIL":
                 if name == "zlib" and version is not None:
-                    version = version.replace(".zlib-ng", "")
+                    version = re.sub(".zlib-ng$", "", version)
+                elif name == "libtiff" and version is not None:
+                    version = re.sub("t$", "", version)
                 assert version is None or re.search(r"\d+(\.\d+)*$", version)
 
     for module in features.modules:
@@ -46,33 +47,40 @@ def test_version() -> None:
     for codec in features.codecs:
         test(codec, features.version_codec)
     for feature in features.features:
-        test(feature, features.version_feature)
+        if "webp" in feature:
+            with pytest.warns(DeprecationWarning):
+                test(feature, features.version_feature)
+        else:
+            test(feature, features.version_feature)
 
 
-@skip_unless_feature("webp")
 def test_webp_transparency() -> None:
-    assert features.check("transp_webp") != _webp.WebPDecoderBuggyAlpha()
-    assert features.check("transp_webp") == _webp.HAVE_TRANSPARENCY
+    with pytest.warns(DeprecationWarning):
+        assert features.check("transp_webp") == features.check_module("webp")
 
 
-@skip_unless_feature("webp")
 def test_webp_mux() -> None:
-    assert features.check("webp_mux") == _webp.HAVE_WEBPMUX
+    with pytest.warns(DeprecationWarning):
+        assert features.check("webp_mux") == features.check_module("webp")
 
 
-@skip_unless_feature("webp")
 def test_webp_anim() -> None:
-    assert features.check("webp_anim") == _webp.HAVE_WEBPANIM
+    with pytest.warns(DeprecationWarning):
+        assert features.check("webp_anim") == features.check_module("webp")
 
 
 @skip_unless_feature("libjpeg_turbo")
 def test_libjpeg_turbo_version() -> None:
-    assert re.search(r"\d+\.\d+\.\d+$", features.version("libjpeg_turbo"))
+    version = features.version("libjpeg_turbo")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
 
 @skip_unless_feature("libimagequant")
 def test_libimagequant_version() -> None:
-    assert re.search(r"\d+\.\d+\.\d+$", features.version("libimagequant"))
+    version = features.version("libimagequant")
+    assert version is not None
+    assert re.search(r"\d+\.\d+\.\d+$", version)
 
 
 @pytest.mark.parametrize("feature", features.modules)
@@ -120,7 +128,7 @@ def test_unsupported_module() -> None:
 
 
 @pytest.mark.parametrize("supported_formats", (True, False))
-def test_pilinfo(supported_formats) -> None:
+def test_pilinfo(supported_formats: bool) -> None:
     buf = io.StringIO()
     features.pilinfo(buf, supported_formats=supported_formats)
     out = buf.getvalue()
