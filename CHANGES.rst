@@ -5,6 +5,12 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Remove WebP support without anim, mux/demux, and with buggy alpha #8213
+  [homm, radarhere]
+
+- Add missing TIFF CMYK;16B reader #8298
+  [homm]
+
 - Remove all WITH_* flags from _imaging.c and other flags #8211
   [homm]
 
