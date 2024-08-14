@@ -218,7 +218,8 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
 
     // convert jxl data string to C uint8_t pointer
     PyBytes_AsStringAndSize(
-        (PyObject *)jxl_string, (char **)&_tmp_jxl_data, &_tmp_jxl_data_len);
+        (PyObject *)jxl_string, (char **)&_tmp_jxl_data, &_tmp_jxl_data_len
+    );
 
     // here occurs this copying (inefficiency)
     decp->jxl_data = malloc(_tmp_jxl_data_len);
@@ -232,13 +233,15 @@ _jxl_decoder_new(PyObject *self, PyObject *args) {
     decp->decoder = JxlDecoderCreate(NULL);
 
     decp->status = JxlDecoderSetParallelRunner(
-        decp->decoder, JxlThreadParallelRunner, decp->runner);
+        decp->decoder, JxlThreadParallelRunner, decp->runner
+    );
     _PIL_JXL_CHECK("JxlDecoderSetParallelRunner")
 
     decp->status = JxlDecoderSubscribeEvents(
         decp->decoder,
         JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FRAME | JXL_DEC_BOX |
-            JXL_DEC_FULL_IMAGE);
+            JXL_DEC_FULL_IMAGE
+    );
     _PIL_JXL_CHECK("JxlDecoderSubscribeEvents")
 
     // tell libjxl to decompress boxes (for example Exif is usually compressed)
@@ -271,7 +274,8 @@ decoder_loop_skip_process:
                 decp->pixel_format.data_type != JXL_TYPE_UINT16) {
                 // only 8 bit integer value images are supported for now
                 PyErr_SetString(
-                    PyExc_NotImplementedError, "unsupported pixel data type");
+                    PyExc_NotImplementedError, "unsupported pixel data type"
+                );
                 goto end_with_custom_error;
             }
             decp->mode = _pil_jxl_get_mode(&decp->basic_info);
@@ -282,7 +286,8 @@ decoder_loop_skip_process:
         // got color encoding
         if (decp->status == JXL_DEC_COLOR_ENCODING) {
             decp->status = JxlDecoderGetICCProfileSize(
-                decp->decoder, JXL_COLOR_PROFILE_TARGET_DATA, &decp->jxl_icc_len);
+                decp->decoder, JXL_COLOR_PROFILE_TARGET_DATA, &decp->jxl_icc_len
+            );
             _PIL_JXL_CHECK("JxlDecoderGetICCProfileSize");
 
             decp->jxl_icc = malloc(decp->jxl_icc_len);
@@ -295,7 +300,8 @@ decoder_loop_skip_process:
                 decp->decoder,
                 JXL_COLOR_PROFILE_TARGET_DATA,
                 decp->jxl_icc,
-                decp->jxl_icc_len);
+                decp->jxl_icc_len
+            );
             _PIL_JXL_CHECK("JxlDecoderGetColorAsICCProfile");
 
             continue;
@@ -337,9 +343,8 @@ decoder_loop_skip_process:
                 final_jxl_buf = _new_jxl_buf;
 
                 decp->status = JxlDecoderSetBoxBuffer(
-                    decp->decoder,
-                    final_jxl_buf + final_jxl_buf_len,
-                    cur_compr_box_size);
+                    decp->decoder, final_jxl_buf + final_jxl_buf_len, cur_compr_box_size
+                );
                 _PIL_JXL_CHECK("JxlDecoderSetBoxBuffer");
 
                 decp->status = JxlDecoderProcessInput(decp->decoder);
@@ -393,7 +398,8 @@ end:
         128,
         "could not create decoder object. libjxl call: %s returned: %d",
         jxl_call_name,
-        decp->status);
+        decp->status
+    );
     PyErr_SetString(PyExc_OSError, err_msg);
 
 end_with_custom_error:
@@ -418,7 +424,8 @@ _jxl_decoder_get_info(PyObject *self) {
         decp->basic_info.animation.tps_numerator,
         decp->basic_info.animation.tps_denominator,
         decp->basic_info.animation.num_loops,
-        decp->n_frames);
+        decp->n_frames
+    );
 }
 
 PyObject *
@@ -456,7 +463,8 @@ _jxl_decoder_get_next(PyObject *self) {
 
     size_t new_outbuf_len;
     decp->status = JxlDecoderImageOutBufferSize(
-        decp->decoder, &decp->pixel_format, &new_outbuf_len);
+        decp->decoder, &decp->pixel_format, &new_outbuf_len
+    );
     _PIL_JXL_CHECK("JxlDecoderImageOutBufferSize");
 
     // only allocate memory when current buffer is too small
@@ -471,7 +479,8 @@ _jxl_decoder_get_next(PyObject *self) {
     }
 
     decp->status = JxlDecoderSetImageOutBuffer(
-        decp->decoder, &decp->pixel_format, decp->outbuf, decp->outbuf_len);
+        decp->decoder, &decp->pixel_format, decp->outbuf, decp->outbuf_len
+    );
     _PIL_JXL_CHECK("JxlDecoderSetImageOutBuffer");
 
     // decode image into output_buffer
@@ -500,7 +509,8 @@ end:
         128,
         "could not read frame. libjxl call: %s returned: %d",
         jxl_call_name,
-        decp->status);
+        decp->status
+    );
     PyErr_SetString(PyExc_OSError, err_msg);
 
 end_with_custom_error:
@@ -603,17 +613,17 @@ JpegXlDecoderVersion_str(void) {
         "%d.%d.%d",
         version_number / 1000000,
         (version_number % 1000000) / 1000,
-        (version_number % 1000));
+        (version_number % 1000)
+    );
     return version;
 }
 
 static PyMethodDef jpegxlMethods[] = {
-    {"JpegXlDecoderVersion",
-     JpegXlDecoderVersion_wrapper,
-     METH_NOARGS,
-     "JpegXlVersion"},
+    {"JpegXlDecoderVersion", JpegXlDecoderVersion_wrapper, METH_NOARGS, "JpegXlVersion"
+    },
     {"PILJpegXlDecoder", _jxl_decoder_new, METH_VARARGS, "PILJpegXlDecoder"},
-    {NULL, NULL}};
+    {NULL, NULL}
+};
 
 static int
 setup_module(PyObject *m) {
