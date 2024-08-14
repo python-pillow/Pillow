@@ -61,10 +61,10 @@ have been deprecated, and will be removed in Pillow 12 (2025-10-15).
 Specific WebP Feature Checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following features ``features.check("transp_webp")``,
-``features.check("webp_mux")``, and ``features.check("webp_anim")`` are now
-always ``True`` if the WebP module is installed and should not be used.
-These checks will be removed in Pillow 12.0.0 (2025-10-15).
+``features.check("transp_webp")``, ``features.check("webp_mux")`` and
+``features.check("webp_anim")`` are now deprecated. They will always return
+``True`` if the WebP module is installed, until they are removed in Pillow
+12.0.0 (2025-10-15).
 
 API Changes
 ===========

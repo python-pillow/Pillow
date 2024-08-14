@@ -166,7 +166,7 @@ class TestFileWebp:
         with pytest.raises(TypeError):
             _webp.WebPEncode()
 
-    def test_WebPDecode_with_invalid_args(self) -> None:
+    def test_WebPAnimDecoder_with_invalid_args(self) -> None:
         """
         Calling decoder functions with no arguments should result in an error.
         """

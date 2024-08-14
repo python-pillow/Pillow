@@ -13,7 +13,7 @@ from .helper import (
     hopper,
 )
 
-_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
+pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
 def test_read_rgba() -> None:

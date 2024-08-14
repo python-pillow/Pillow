@@ -18,7 +18,11 @@ def test_check() -> None:
     for codec in features.codecs:
         assert features.check_codec(codec) == features.check(codec)
     for feature in features.features:
-        assert features.check_feature(feature) == features.check(feature)
+        if "webp" in feature:
+            with pytest.warns(DeprecationWarning):
+                assert features.check_feature(feature) == features.check(feature)
+        else:
+            assert features.check_feature(feature) == features.check(feature)
 
 
 def test_version() -> None:
@@ -43,19 +47,26 @@ def test_version() -> None:
     for codec in features.codecs:
         test(codec, features.version_codec)
     for feature in features.features:
-        test(feature, features.version_feature)
+        if "webp" in feature:
+            with pytest.warns(DeprecationWarning):
+                test(feature, features.version_feature)
+        else:
+            test(feature, features.version_feature)
 
 
 def test_webp_transparency() -> None:
-    assert features.check("transp_webp") == features.check_module("webp")
+    with pytest.warns(DeprecationWarning):
+        assert features.check("transp_webp") == features.check_module("webp")
 
 
 def test_webp_mux() -> None:
-    assert features.check("webp_mux") == features.check_module("webp")
+    with pytest.warns(DeprecationWarning):
+        assert features.check("webp_mux") == features.check_module("webp")
 
 
 def test_webp_anim() -> None:
-    assert features.check("webp_anim") == features.check_module("webp")
+    with pytest.warns(DeprecationWarning):
+        assert features.check("webp_anim") == features.check_module("webp")
 
 
 @skip_unless_feature("libjpeg_turbo")
