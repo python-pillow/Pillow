@@ -456,8 +456,11 @@ class IFDRational(Rational):
         __int__ = _delegate("__int__")
 
 
-def _register_loader(idx: int, size: int):
-    def decorator(func):
+_LoaderFunc = Callable[["ImageFileDirectory_v2", bytes, bool], Any]
+
+
+def _register_loader(idx: int, size: int) -> Callable[[_LoaderFunc], _LoaderFunc]:
+    def decorator(func: _LoaderFunc) -> _LoaderFunc:
         from .TiffTags import TYPES
 
         if func.__name__.startswith("load_"):
@@ -482,12 +485,13 @@ def _register_basic(idx_fmt_name: tuple[int, str, str]) -> None:
     idx, fmt, name = idx_fmt_name
     TYPES[idx] = name
     size = struct.calcsize(f"={fmt}")
-    _load_dispatch[idx] = (  # noqa: F821
-        size,
-        lambda self, data, legacy_api=True: (
-            self._unpack(f"{len(data) // size}{fmt}", data)
-        ),
-    )
+
+    def basic_handler(
+        self: ImageFileDirectory_v2, data: bytes, legacy_api: bool = True
+    ) -> tuple[Any, ...]:
+        return self._unpack(f"{len(data) // size}{fmt}", data)
+
+    _load_dispatch[idx] = size, basic_handler  # noqa: F821
     _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
         b"".join(self._pack(fmt, value) for value in values)
     )
@@ -560,7 +564,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
     """
 
-    _load_dispatch: dict[int, Callable[[ImageFileDirectory_v2, bytes, bool], Any]] = {}
+    _load_dispatch: dict[int, tuple[int, _LoaderFunc]] = {}
     _write_dispatch: dict[int, Callable[..., Any]] = {}
 
     def __init__(
@@ -653,10 +657,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __contains__(self, tag: object) -> bool:
         return tag in self._tags_v2 or tag in self._tagdata
 
-    def __setitem__(self, tag: int, value) -> None:
+    def __setitem__(self, tag: int, value: Any) -> None:
         self._setitem(tag, value, self.legacy_api)
 
-    def _setitem(self, tag: int, value, legacy_api: bool) -> None:
+    def _setitem(self, tag: int, value: Any, legacy_api: bool) -> None:
         basetypes = (Number, bytes, str)
 
         info = TiffTags.lookup(tag, self.group)
@@ -744,10 +748,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __iter__(self) -> Iterator[int]:
         return iter(set(self._tagdata) | set(self._tags_v2))
 
-    def _unpack(self, fmt: str, data: bytes):
+    def _unpack(self, fmt: str, data: bytes) -> tuple[Any, ...]:
         return struct.unpack(self._endian + fmt, data)
 
-    def _pack(self, fmt: str, *values) -> bytes:
+    def _pack(self, fmt: str, *values: Any) -> bytes:
         return struct.pack(self._endian + fmt, *values)
 
     list(
@@ -824,7 +828,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return value
 
     @_register_loader(10, 8)
-    def load_signed_rational(self, data: bytes, legacy_api: bool = True):
+    def load_signed_rational(
+        self, data: bytes, legacy_api: bool = True
+    ) -> tuple[tuple[int, int] | IFDRational, ...]:
         vals = self._unpack(f"{len(data) // 4}l", data)
 
         def combine(a: int, b: int) -> tuple[int, int] | IFDRational:
@@ -1088,7 +1094,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __iter__(self) -> Iterator[int]:
         return iter(set(self._tagdata) | set(self._tags_v1))
 
-    def __setitem__(self, tag: int, value) -> None:
+    def __setitem__(self, tag: int, value: Any) -> None:
         for legacy_api in (False, True):
             self._setitem(tag, value, legacy_api)
 
