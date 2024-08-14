@@ -180,7 +180,17 @@ def get_supported_features() -> list[str]:
     """
     :returns: A list of all supported features.
     """
-    return [f for f in features if check_feature(f)]
+    supported_features = []
+    for f, (module, flag, _) in features.items():
+        if flag is True:
+            for feature, (feature_module, _) in modules.items():
+                if feature_module == module:
+                    if check_module(feature):
+                        supported_features.append(f)
+                    break
+        elif check_feature(f):
+            supported_features.append(f)
+    return supported_features
 
 
 def check(feature: str) -> bool | None:
