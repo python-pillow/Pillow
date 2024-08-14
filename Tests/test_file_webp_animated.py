@@ -15,10 +15,7 @@ from .helper import (
     skip_unless_feature,
 )
 
-pytestmark = [
-    skip_unless_feature("webp"),
-    skip_unless_feature("webp_anim"),
-]
+pytestmark = skip_unless_feature("webp")
 
 
 def test_n_frames() -> None:
