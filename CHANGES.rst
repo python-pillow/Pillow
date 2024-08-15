@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- If left and right sides meet in ImageDraw.rounded_rectangle(), do not draw rectangle to fill gap #8304
+  [radarhere]
+
 - Remove WebP support without anim, mux/demux, and with buggy alpha #8213
   [homm, radarhere]
 
