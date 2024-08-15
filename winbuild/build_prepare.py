@@ -7,6 +7,7 @@ import re
 import shutil
 import struct
 import subprocess
+from typing import Any
 
 
 def cmd_cd(path: str) -> str:
@@ -43,21 +44,19 @@ def cmd_nmake(
     target: str = "",
     params: list[str] | None = None,
 ) -> str:
-    params = "" if params is None else " ".join(params)
-
     return " ".join(
         [
             "{nmake}",
             "-nologo",
             f'-f "{makefile}"' if makefile is not None else "",
-            f"{params}",
+            f'{" ".join(params)}' if params is not None else "",
             f'"{target}"',
         ]
     )
 
 
 def cmds_cmake(
-    target: str | tuple[str, ...] | list[str], *params, build_dir: str = "."
+    target: str | tuple[str, ...] | list[str], *params: str, build_dir: str = "."
 ) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
@@ -129,7 +128,7 @@ V["ZLIB_DOTLESS"] = V["ZLIB"].replace(".", "")
 
 
 # dependencies, listed in order of compilation
-DEPS = {
+DEPS: dict[str, dict[str, Any]] = {
     "libjpeg": {
         "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/"
         f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz/download",
@@ -538,7 +537,7 @@ def write_script(
             print("    " + line)
 
 
-def get_footer(dep: dict) -> list[str]:
+def get_footer(dep: dict[str, Any]) -> list[str]:
     lines = []
     for out in dep.get("headers", []):
         lines.append(cmd_copy(out, "{inc_dir}"))
@@ -583,6 +582,7 @@ def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
             license_text += f.read()
     if "license_pattern" in dep:
         match = re.search(dep["license_pattern"], license_text, re.DOTALL)
+        assert match is not None
         license_text = "\n".join(match.groups())
     assert len(license_text) > 50
     with open(os.path.join(license_dir, f"{directory}.txt"), "w") as f:

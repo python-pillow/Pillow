@@ -1517,19 +1517,21 @@ To add other read or write support, use
 :py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
 handler. ::
 
-    from PIL import Image
+    from typing import IO
+
+    from PIL import Image, ImageFile
     from PIL import WmfImagePlugin
 
 
-    class WmfHandler:
-        def open(self, im):
+    class WmfHandler(ImageFile.StubHandler):
+        def open(self, im: ImageFile.StubImageFile) -> None:
             ...
 
-        def load(self, im):
+        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             ...
             return image
 
-        def save(self, im, fp, filename):
+        def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             ...
 
 

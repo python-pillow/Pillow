@@ -317,7 +317,13 @@ class TestPyEncoder(CodecsTest):
 
         fp = BytesIO()
         ImageFile._save(
-            im, fp, [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 0, "RGB")]
+            im,
+            fp,
+            [
+                ImageFile._Tile(
+                    "MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 0, "RGB"
+                )
+            ],
         )
 
         assert MockPyEncoder.last
@@ -333,7 +339,7 @@ class TestPyEncoder(CodecsTest):
         im.tile = [("MOCK", None, 32, None)]
 
         fp = BytesIO()
-        ImageFile._save(im, fp, [("MOCK", None, 0, "RGB")])
+        ImageFile._save(im, fp, [ImageFile._Tile("MOCK", None, 0, "RGB")])
 
         assert MockPyEncoder.last
         assert MockPyEncoder.last.state.xoff == 0
@@ -350,7 +356,9 @@ class TestPyEncoder(CodecsTest):
         MockPyEncoder.last = None
         with pytest.raises(ValueError):
             ImageFile._save(
-                im, fp, [("MOCK", (xoff, yoff, -10, yoff + ysize), 0, "RGB")]
+                im,
+                fp,
+                [ImageFile._Tile("MOCK", (xoff, yoff, -10, yoff + ysize), 0, "RGB")],
             )
         last: MockPyEncoder | None = MockPyEncoder.last
         assert last
@@ -358,7 +366,9 @@ class TestPyEncoder(CodecsTest):
 
         with pytest.raises(ValueError):
             ImageFile._save(
-                im, fp, [("MOCK", (xoff, yoff, xoff + xsize, -10), 0, "RGB")]
+                im,
+                fp,
+                [ImageFile._Tile("MOCK", (xoff, yoff, xoff + xsize, -10), 0, "RGB")],
             )
 
     def test_oversize(self) -> None:
@@ -371,14 +381,22 @@ class TestPyEncoder(CodecsTest):
             ImageFile._save(
                 im,
                 fp,
-                [("MOCK", (xoff, yoff, xoff + xsize + 100, yoff + ysize), 0, "RGB")],
+                [
+                    ImageFile._Tile(
+                        "MOCK", (xoff, yoff, xoff + xsize + 100, yoff + ysize), 0, "RGB"
+                    )
+                ],
             )
 
         with pytest.raises(ValueError):
             ImageFile._save(
                 im,
                 fp,
-                [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize + 100), 0, "RGB")],
+                [
+                    ImageFile._Tile(
+                        "MOCK", (xoff, yoff, xoff + xsize, yoff + ysize + 100), 0, "RGB"
+                    )
+                ],
             )
 
     def test_encode(self) -> None:
