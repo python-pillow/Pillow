@@ -54,8 +54,8 @@ def test_nonetype() -> None:
     assert xres.denominator is not None
     assert yres._val is not None
 
-    assert xres and 1
-    assert xres and yres
+    assert xres
+    assert yres
 
 
 @pytest.mark.parametrize(

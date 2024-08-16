@@ -127,7 +127,6 @@ lint.ignore = [
   "PT012",  # pytest-raises-with-multiple-statements
   "PT016",  # pytest-fail-without-message
   "PT017",  # pytest-assert-in-except
-  "PT018",  # pytest-composite-assertion
   "PYI026", # flake8-pyi: typing.TypeAlias added in Python 3.10
   "PYI034", # flake8-pyi: typing.Self added in Python 3.11
 ]
