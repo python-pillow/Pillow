@@ -1393,7 +1393,7 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- photometric_interpretation: %s", photo)
         logger.debug("- planar_configuration: %s", self._planar_configuration)
         logger.debug("- fill_order: %s", fillorder)
-        logger.debug("- YCbCr subsampling: %s", self.tag.get(YCBCRSUBSAMPLING))
+        logger.debug("- YCbCr subsampling: %s", self.tag_v2.get(YCBCRSUBSAMPLING))
 
         # size
         xsize = int(self.tag_v2.get(IMAGEWIDTH))
