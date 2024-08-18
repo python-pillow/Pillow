@@ -290,9 +290,21 @@ class TestImageResize:
             assert out.mode == mode
             assert out.size == tuple(size)
 
+        def resize_scale(mode: str, scale: float) -> None:
+            img = hopper(mode)
+            size = (
+                int(self.width * scale),
+                int(self.height * scale)
+            )
+            out = img.resize(scale=scale)
+            assert out.mode == mode
+            assert out.size == tuple(size)
+
         for mode in "1", "P", "L", "RGB", "I", "F":
             resize(mode, (112, 103))
             resize(mode, [188, 214])
+            # test scale refactoring
+            resize_scale(mode, 0.5)
 
         # Test unknown resampling filter
         with hopper() as im:
