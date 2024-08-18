@@ -292,8 +292,11 @@ class TestImageResize:
 
         def resize_scale(mode: str, scale: float) -> None:
             img = hopper(mode)
-            size = (int(self.width * scale), int(self.height * scale))
-            out = img.resize(scale=scale)
+            size = (
+                int(self.width * scale),
+                int(self.height * scale)
+            )
+            out = img.resize(img.size, scale=scale)
             assert out.mode == mode
             assert out.size == tuple(size)
 

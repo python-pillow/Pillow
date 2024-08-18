@@ -2230,8 +2230,8 @@ class Image:
         :param size: The requested size in pixels, as a tuple or array:
            (width, height).
         :param scale: An optional scale factor to upsample/downsample the image:
-           (e.g. 0.5 means that an image (width, height) will be
-           resized to (width/2, height/2)). If provided overwrite size.
+           (e.g. 0.5 means that an image input size will be
+           resized to (size[0]/2, size[1]/2)).
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
@@ -2292,7 +2292,10 @@ class Image:
             raise ValueError(msg)
 
         if scale:
-            size = (int(self.width * scale), int(self.height * scale))
+            size = (
+                int(size[0] * scale),
+                int(size[1] * scale)
+            )
 
         self.load()
         if box is None:
