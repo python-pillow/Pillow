@@ -2219,6 +2219,7 @@ class Image:
     def resize(
         self,
         size: tuple[int, int] | list[int] | NumpyArray,
+        scale: float | None = None,
         resample: int | None = None,
         box: tuple[float, float, float, float] | None = None,
         reducing_gap: float | None = None,
@@ -2228,6 +2229,9 @@ class Image:
 
         :param size: The requested size in pixels, as a tuple or array:
            (width, height).
+        :param scale: An optional scale factor to upsample/downsample the image:
+           (e.g. 0.5 means that an image (width, height) will be
+           resized to (width/2, height/2)). If provided overwrite size.
         :param resample: An optional resampling filter.  This can be
            one of :py:data:`Resampling.NEAREST`, :py:data:`Resampling.BOX`,
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
@@ -2286,6 +2290,12 @@ class Image:
         if reducing_gap is not None and reducing_gap < 1.0:
             msg = "reducing_gap must be 1.0 or greater"
             raise ValueError(msg)
+        
+        if scale:
+            size = (
+                int(self.width * scale),
+                int(self.height * scale)
+            )
 
         self.load()
         if box is None:
