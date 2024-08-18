@@ -77,6 +77,16 @@ def test_getiptcinfo_zero_padding() -> None:
     assert len(iptc) == 3
 
 
+def test_getiptcinfo_tiff() -> None:
+    # Arrange
+    with Image.open("Tests/images/hopper.Lab.tif") as im:
+        # Act
+        iptc = IptcImagePlugin.getiptcinfo(im)
+
+    # Assert
+    assert iptc == {(1, 90): b"\x1b%G", (2, 0): b"\xcf\xc0"}
+
+
 def test_getiptcinfo_tiff_none() -> None:
     # Arrange
     with Image.open("Tests/images/hopper.tif") as im:
