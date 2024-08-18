@@ -2290,12 +2290,9 @@ class Image:
         if reducing_gap is not None and reducing_gap < 1.0:
             msg = "reducing_gap must be 1.0 or greater"
             raise ValueError(msg)
-        
+
         if scale:
-            size = (
-                int(self.width * scale),
-                int(self.height * scale)
-            )
+            size = (int(self.width * scale), int(self.height * scale))
 
         self.load()
         if box is None:
