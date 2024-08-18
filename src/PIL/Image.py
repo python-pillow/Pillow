@@ -2292,10 +2292,7 @@ class Image:
             raise ValueError(msg)
 
         if scale:
-            size = (
-                int(size[0] * scale),
-                int(size[1] * scale)
-            )
+            size = (int(size[0] * scale), int(size[1] * scale))
 
         self.load()
         if box is None:
