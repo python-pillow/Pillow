@@ -221,6 +221,8 @@ if TYPE_CHECKING:
     import mmap
     from xml.etree.ElementTree import Element
 
+    from IPython.lib.pretty import PrettyPrinter
+
     from . import ImageFile, ImageFilter, ImagePalette, TiffImagePlugin
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
@@ -677,7 +679,7 @@ class Image:
             id(self),
         )
 
-    def _repr_pretty_(self, p, cycle: bool) -> None:
+    def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
         """IPython plain text display support"""
 
         # Same as __repr__ but without unpredictable id(self),
