@@ -181,6 +181,28 @@ def test_change_stripbytecounts_tag_type(tmp_path: Path) -> None:
         assert reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] == TiffTags.LONG
 
 
+def test_save_multiple_stripoffsets() -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[TiffImagePlugin.STRIPOFFSETS] = (123, 456)
+    assert ifd.tagtype[TiffImagePlugin.STRIPOFFSETS] == TiffTags.LONG
+
+    # all values are in little-endian
+    assert ifd.tobytes() == (
+        # number of tags == 1
+        b"\x01\x00"
+        # tag id (2 bytes), type (2 bytes), count (4 bytes), value (4 bytes)
+        # == 273, 4, 2, 18
+        # == TiffImagePlugin.STRIPOFFSETS, TiffTags.LONG, 2, 18
+        # the value is the index of the tag data
+        b"\x11\x01\x04\x00\x02\x00\x00\x00\x12\x00\x00\x00"
+        # end of tags marker
+        b"\x00\x00\x00\x00"
+        # tag data == (149, 482) == (123 + 26, 456 + 26)
+        # 26 is the number of bytes before this data
+        b"\x95\x00\x00\x00\xe2\x01\x00\x00"
+    )
+
+
 def test_no_duplicate_50741_tag() -> None:
     assert TAG_IDS["MakerNoteSafety"] == 50741
     assert TAG_IDS["BestQualityScale"] == 50780

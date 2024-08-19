@@ -991,9 +991,11 @@ class ImageFileDirectory_v2(_IFDv2Base):
         if stripoffsets is not None:
             tag, typ, count, value, data = entries[stripoffsets]
             if data:
-                msg = "multistrip support not yet implemented"
-                raise NotImplementedError(msg)
-            value = self._pack("L", self._unpack("L", value)[0] + offset)
+                size, handler = self._load_dispatch[typ]
+                values = [val + offset for val in handler(self, data, self.legacy_api)]
+                data = self._write_dispatch[typ](self, *values)
+            else:
+                value = self._pack("L", self._unpack("L", value)[0] + offset)
             entries[stripoffsets] = tag, typ, count, value, data
 
         # pass 2: write entries to file
