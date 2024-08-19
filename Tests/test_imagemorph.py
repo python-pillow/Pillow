@@ -46,7 +46,8 @@ def img_to_string(im: Image.Image) -> str:
         line = ""
         for c in range(im.width):
             value = im.getpixel((c, r))
-            assert not isinstance(value, tuple) and value is not None
+            assert not isinstance(value, tuple)
+            assert value is not None
             line += chars[value > 0]
         result.append(line)
     return "\n".join(result)

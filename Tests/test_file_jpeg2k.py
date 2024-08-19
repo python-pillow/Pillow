@@ -233,7 +233,7 @@ def test_layers() -> None:
         ("foo.jp2", {"no_jp2": True}, 0, b"\xff\x4f"),
         ("foo.j2k", {"no_jp2": False}, 0, b"\xff\x4f"),
         ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
-        ("foo.jp2", {"no_jp2": False}, 4, b"jP"),
+        (None, {"no_jp2": False}, 4, b"jP"),
     ),
 )
 def test_no_jp2(name: str, args: dict[str, bool], offset: int, data: bytes) -> None:
