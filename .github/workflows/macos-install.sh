@@ -2,6 +2,9 @@
 
 set -e
 
+if [[ "$ImageOS" == "macos13" ]]; then
+    brew uninstall gradle maven
+fi
 brew install \
     freetype \
     ghostscript \
