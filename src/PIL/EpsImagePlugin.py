@@ -361,12 +361,7 @@ class EpsImageFile(ImageFile.ImageFile):
             )
 
         self.tile = [
-            ImageFile._Tile(
-                codec_name="eps",
-                extents=(0, 0) + self._size,
-                offset=offset,
-                args=(length, bounding_box),
-            )
+            ImageFile._Tile("eps", (0, 0) + self._size, offset, (length, bounding_box))
         ]
 
     def _find_offset(self, fp: IO[bytes]) -> tuple[int, int]:
