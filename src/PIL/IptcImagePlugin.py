@@ -214,7 +214,7 @@ def getiptcinfo(
         # as 4-byte integers, so we cannot use the get method...)
         try:
             data = im.tag_v2[TiffImagePlugin.IPTC_NAA_CHUNK]
-        except (AttributeError, KeyError):
+        except KeyError:
             pass
 
     if data is None:

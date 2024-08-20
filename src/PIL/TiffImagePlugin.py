@@ -624,12 +624,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self._tagdata: dict[int, bytes] = {}
         self.tagtype = {}  # added 2008-06-05 by Florian Hoech
         self._next = None
-        self._offset = None
+        self._offset: int | None = None
 
     def __str__(self) -> str:
         return str(dict(self))
 
-    def named(self):
+    def named(self) -> dict[str, Any]:
         """
         :returns: dict of name|key: value
 
@@ -643,7 +643,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __len__(self) -> int:
         return len(set(self._tagdata) | set(self._tags_v2))
 
-    def __getitem__(self, tag):
+    def __getitem__(self, tag: int) -> Any:
         if tag not in self._tags_v2:  # unpack on the fly
             data = self._tagdata[tag]
             typ = self.tagtype[tag]
@@ -855,7 +855,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
             raise OSError(msg)
         return ret
 
-    def load(self, fp):
+    def load(self, fp: IO[bytes]) -> None:
         self.reset()
         self._offset = fp.tell()
 
@@ -1098,7 +1098,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         for legacy_api in (False, True):
             self._setitem(tag, value, legacy_api)
 
-    def __getitem__(self, tag):
+    def __getitem__(self, tag: int) -> Any:
         if tag not in self._tags_v1:  # unpack on the fly
             data = self._tagdata[tag]
             typ = self.tagtype[tag]
@@ -1124,11 +1124,15 @@ class TiffImageFile(ImageFile.ImageFile):
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
 
-    def __init__(self, fp=None, filename=None):
-        self.tag_v2 = None
+    def __init__(
+        self,
+        fp: StrOrBytesPath | IO[bytes] | None = None,
+        filename: str | bytes | None = None,
+    ) -> None:
+        self.tag_v2: ImageFileDirectory_v2
         """ Image file directory (tag dictionary) """
 
-        self.tag = None
+        self.tag: ImageFileDirectory_v1
         """ Legacy tag entries """
 
         super().__init__(fp, filename)
@@ -1142,9 +1146,6 @@ class TiffImageFile(ImageFile.ImageFile):
             ifh += self.fp.read(8)
 
         self.tag_v2 = ImageFileDirectory_v2(ifh)
-
-        # legacy IFD entries will be filled in later
-        self.ifd: ImageFileDirectory_v1 | None = None
 
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next
@@ -1396,8 +1397,11 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- YCbCr subsampling: %s", self.tag_v2.get(YCBCRSUBSAMPLING))
 
         # size
-        xsize = int(self.tag_v2.get(IMAGEWIDTH))
-        ysize = int(self.tag_v2.get(IMAGELENGTH))
+        xsize = self.tag_v2.get(IMAGEWIDTH)
+        ysize = self.tag_v2.get(IMAGELENGTH)
+        if not isinstance(xsize, int) or not isinstance(ysize, int):
+            msg = "Invalid dimensions"
+            raise ValueError(msg)
         self._size = xsize, ysize
 
         logger.debug("- size: %s", self.size)
@@ -1545,8 +1549,12 @@ class TiffImageFile(ImageFile.ImageFile):
             else:
                 # tiled image
                 offsets = self.tag_v2[TILEOFFSETS]
-                w = self.tag_v2.get(TILEWIDTH)
+                tilewidth = self.tag_v2.get(TILEWIDTH)
                 h = self.tag_v2.get(TILELENGTH)
+                if not isinstance(tilewidth, int) or not isinstance(h, int):
+                    msg = "Invalid tile dimensions"
+                    raise ValueError(msg)
+                w = tilewidth
 
             for offset in offsets:
                 if x + w > xsize:
@@ -1624,7 +1632,7 @@ SAVE_INFO = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp, filename: str | bytes) -> None:
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
@@ -1760,10 +1768,11 @@ def _save(im, fp, filename):
         if im.mode == "1":
             inverted_im = im.copy()
             px = inverted_im.load()
-            for y in range(inverted_im.height):
-                for x in range(inverted_im.width):
-                    px[x, y] = 0 if px[x, y] == 255 else 255
-            im = inverted_im
+            if px is not None:
+                for y in range(inverted_im.height):
+                    for x in range(inverted_im.width):
+                        px[x, y] = 0 if px[x, y] == 255 else 255
+                im = inverted_im
         else:
             im = ImageOps.invert(im)
 
@@ -1805,11 +1814,11 @@ def _save(im, fp, filename):
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
 
     if im.mode == "YCbCr":
-        for tag, value in {
+        for tag, default_value in {
             YCBCRSUBSAMPLING: (1, 1),
             REFERENCEBLACKWHITE: (0, 255, 128, 255, 128, 255),
         }.items():
-            ifd.setdefault(tag, value)
+            ifd.setdefault(tag, default_value)
 
     blocklist = [TILEWIDTH, TILELENGTH, TILEOFFSETS, TILEBYTECOUNTS]
     if libtiff:
@@ -1852,7 +1861,7 @@ def _save(im, fp, filename):
         ]
 
         # bits per sample is a single short in the tiff directory, not a list.
-        atts = {BITSPERSAMPLE: bits[0]}
+        atts: dict[int, Any] = {BITSPERSAMPLE: bits[0]}
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
@@ -1923,13 +1932,15 @@ def _save(im, fp, filename):
         offset = ifd.save(fp)
 
         ImageFile._save(
-            im, fp, [("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))]
+            im,
+            fp,
+            [ImageFile._Tile("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --
     if "_debug_multipage" in encoderinfo:
         # just to access o32 and o16 (using correct byte order)
-        im._debug_multipage = ifd
+        setattr(im, "_debug_multipage", ifd)
 
 
 class AppendingTiffWriter:

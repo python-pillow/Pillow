@@ -363,6 +363,7 @@ Classes
     :show-inheritance:
 .. autoclass:: PIL.Image.ImagePointHandler
 .. autoclass:: PIL.Image.ImageTransformHandler
+.. autoclass:: PIL.Image._E
 
 Protocols
 ---------

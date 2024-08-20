@@ -31,6 +31,7 @@ from __future__ import annotations
 import abc
 import io
 import itertools
+import os
 import struct
 import sys
 from typing import IO, Any, NamedTuple
@@ -555,7 +556,7 @@ def _encode_tile(
     fp: IO[bytes],
     tile: list[_Tile],
     bufsize: int,
-    fh,
+    fh: int | None,
     exc: BaseException | None = None,
 ) -> None:
     for encoder_name, extents, offset, args in tile:
@@ -577,6 +578,7 @@ def _encode_tile(
                             break
                 else:
                     # slight speedup: compress to real file object
+                    assert fh is not None
                     errcode = encoder.encode_to_file(fh, bufsize)
             if errcode < 0:
                 raise _get_oserror(errcode, encoder=True) from exc
@@ -801,7 +803,7 @@ class PyEncoder(PyCodec):
             self.fd.write(data)
         return bytes_consumed, errcode
 
-    def encode_to_file(self, fh: IO[bytes], bufsize: int) -> int:
+    def encode_to_file(self, fh: int, bufsize: int) -> int:
         """
         :param fh: File handle.
         :param bufsize: Buffer size.
@@ -814,5 +816,5 @@ class PyEncoder(PyCodec):
         while errcode == 0:
             status, errcode, buf = self.encode(bufsize)
             if status > 0:
-                fh.write(buf[status:])
+                os.write(fh, buf[status:])
         return errcode
