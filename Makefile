@@ -4521,20 +4521,20 @@ db-dump-default: eb-export
 .PHONY: dbshell-default
 dbshell-default: django-db-shell
 
+.PHONY: d-default
+d-default: deploy
+
 .PHONY: deploy-default
 deploy-default: eb-deploy
-
-.PHONY: d-default
-d-default: eb-deploy
 
 .PHONY: deps-default
 deps-default: pip-deps
 
-.PHONY: e-default
-e-default: edit
-
 .PHONY: edit-default
 edit-default: readme-edit
+
+.PHONY: e-default
+e-default: edit
 
 .PHONY: empty-default
 empty-default: git-commit-message-empty git-push
@@ -4605,11 +4605,11 @@ migrations-show-default: django-migrations-show
 .PHONY: mk-default
 mk-default: project.mk git-commit-message-mk git-push
 
-.PHONY: open-default
-open-default: django-open
-
 .PHONY: o-default
 o-default: django-open
+
+.PHONY: open-default
+open-default: open
 
 .PHONY: readme-default
 readme-default: readme-init
@@ -4618,13 +4618,13 @@ readme-default: readme-init
 rename-default: git-commit-message-rename git-push
 
 .PHONY: s-default
-s-default: django-serve
-
-.PHONY: shell-default
-shell-default: django-shell
+s-default: serve
 
 .PHONY: serve-default
 serve-default: django-serve
+
+.PHONY: shell-default
+shell-default: django-shell
 
 .PHONY: static-default
 static-default: django-static
@@ -4639,7 +4639,7 @@ su-default: django-su
 test-default: django-test
 
 .PHONY: t-default
-t-default: django-test
+t-default: test
 
 .PHONY: u-default
 u-default: help
