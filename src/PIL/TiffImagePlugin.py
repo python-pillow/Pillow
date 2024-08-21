@@ -2086,38 +2086,34 @@ class AppendingTiffWriter:
         (value,) = struct.unpack(self.longFmt, self.f.read(4))
         return value
 
+    @staticmethod
+    def _verify_bytes_written(bytes_written: int | None, expected: int) -> None:
+        if bytes_written is not None and bytes_written != expected:
+            msg = f"wrote only {bytes_written} bytes but wanted {expected}"
+            raise RuntimeError(msg)
+
     def rewriteLastShortToLong(self, value: int) -> None:
         self.f.seek(-2, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            msg = f"wrote only {bytes_written} bytes but wanted 4"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 4)
 
     def rewriteLastShort(self, value: int) -> None:
         self.f.seek(-2, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
-        if bytes_written is not None and bytes_written != 2:
-            msg = f"wrote only {bytes_written} bytes but wanted 2"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 2)
 
     def rewriteLastLong(self, value: int) -> None:
         self.f.seek(-4, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            msg = f"wrote only {bytes_written} bytes but wanted 4"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 4)
 
     def writeShort(self, value: int) -> None:
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
-        if bytes_written is not None and bytes_written != 2:
-            msg = f"wrote only {bytes_written} bytes but wanted 2"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 2)
 
     def writeLong(self, value: int) -> None:
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            msg = f"wrote only {bytes_written} bytes but wanted 4"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 4)
 
     def close(self) -> None:
         self.finalize()
