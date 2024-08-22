@@ -673,9 +673,11 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     WebPPictureFree(&pic);
     if (!ok) {
         int error_code = (&pic)->error_code;
-        const char *message = "";
+        char message[50] = "";
         if (error_code == VP8_ENC_ERROR_BAD_DIMENSION) {
-            message = ": Image size exceeds WebP limit";
+            sprintf(
+                message, ": Image size exceeds WebP limit of %d", WEBP_MAX_DIMENSION
+            );
         }
         PyErr_Format(PyExc_ValueError, "encoding error %d%s", error_code, message);
         return NULL;

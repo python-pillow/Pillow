@@ -163,7 +163,9 @@ class TestFileWebp:
         im = Image.new("L", (16384, 16384))
         with pytest.raises(ValueError) as e:
             im.save(temp_file)
-        assert str(e.value) == "encoding error 5: Image size exceeds WebP limit"
+        assert (
+            str(e.value) == "encoding error 5: Image size exceeds WebP limit of 16383"
+        )
 
     def test_WebPEncode_with_invalid_args(self) -> None:
         """
