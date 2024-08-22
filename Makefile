@@ -1996,7 +1996,6 @@ _build/
 .elasticbeanstalk/
 db.sqlite3
 static/
-backend/inituser
 backend/var
 endef
 
@@ -4230,6 +4229,7 @@ plone-instance-default:
 	-$(GIT_ADD) backend/etc/site.zcml
 	-$(GIT_ADD) backend/etc/zope.conf
 	-$(GIT_ADD) backend/etc/zope.ini
+	-$(GIT_ADD) backend/inituser
 
 .PHONY: plone-serve-default
 plone-serve-default:
