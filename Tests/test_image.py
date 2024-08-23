@@ -938,7 +938,15 @@ class TestImage:
 
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
-            assert im.getxmp() == {}
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    xmp = im.getxmp()
+            else:
+                xmp = im.getxmp()
+            assert xmp == {}
 
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))
