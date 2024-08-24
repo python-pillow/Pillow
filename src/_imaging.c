@@ -239,8 +239,8 @@ void ReleaseArrowSchemaPyCapsule(PyObject* capsule) {
 
 PyObject* ExportArrowSchemaPyCapsule(ImagingObject *self) {
     struct ArrowSchema* schema =
-        (struct ArrowSchema*)malloc(sizeof(struct ArrowSchema));
-    export_uint32_type(schema);
+      (struct ArrowSchema*)calloc(1, sizeof(struct ArrowSchema));
+    export_imaging_schema(self->image, schema);
     return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
 }
 
@@ -255,7 +255,7 @@ void ReleaseArrowArrayPyCapsule(PyObject* capsule) {
 
 PyObject* ExportArrowArrayPyCapsule(ImagingObject *self) {
     struct ArrowArray* array =
-        (struct ArrowArray*)malloc(sizeof(struct ArrowArray));
+      (struct ArrowArray*)calloc(1, sizeof(struct ArrowArray));
     export_imaging_array(self->image, array);
     return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
 }
