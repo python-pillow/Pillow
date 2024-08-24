@@ -104,6 +104,11 @@ struct ImagingMemoryInstance {
 
     /* Virtual methods */
     void (*destroy)(Imaging im);
+
+    /* arrow */
+    int arrow_borrow; /* Number of arrow arrays that have been allocated */
+    int blocks_count; /* Number of blocks that have been allocated */
+    int lines_per_block; /* Number of lines in a block have been allocated */
 };
 
 #define IMAGING_PIXEL_1(im, x, y) ((im)->image8[(y)][(x)])
@@ -701,6 +706,12 @@ extern int
 _imaging_seek_pyFd(PyObject *fd, Py_ssize_t offset, int whence);
 extern Py_ssize_t
 _imaging_tell_pyFd(PyObject *fd);
+
+/* Arrow */
+
+#include "Arrow.h"
+extern void export_imaging_array(Imaging im, struct ArrowArray* array);
+extern void export_uint32_type(struct ArrowSchema* schema);
 
 /* Errcodes */
 #define IMAGING_CODEC_END 1
