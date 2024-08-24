@@ -116,7 +116,15 @@ def test_read_no_exif() -> None:
 def test_getxmp() -> None:
     with Image.open("Tests/images/flower.webp") as im:
         assert "xmp" not in im.info
-        assert im.getxmp() == {}
+        if ElementTree is None:
+            with pytest.warns(
+                UserWarning,
+                match="XMP data cannot be read without defusedxml dependency",
+            ):
+                xmp = im.getxmp()
+        else:
+            xmp = im.getxmp()
+        assert xmp == {}
 
     with Image.open("Tests/images/flower2.webp") as im:
         if ElementTree is None:
