@@ -157,6 +157,17 @@ class TestFileWebp:
             im.save(temp_file, method=0)
         assert str(e.value) == "encoding error 6"
 
+    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
+    def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
+        temp_file = str(tmp_path / "temp.webp")
+        im = Image.new("L", (16384, 16384))
+        with pytest.raises(ValueError) as e:
+            im.save(temp_file)
+        assert (
+            str(e.value)
+            == "encoding error 5: Image size exceeds WebP limit of 16383 pixels"
+        )
+
     def test_WebPEncode_with_invalid_args(self) -> None:
         """
         Calling encoder functions with no arguments should result in an error.
