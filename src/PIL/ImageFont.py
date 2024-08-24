@@ -269,12 +269,12 @@ class FreeTypeFont:
         else:
             load_from_bytes(font)
 
-    def __getstate__(self):
+    def __getstate__(self) -> list[Any]:
         return [self.path, self.size, self.index, self.encoding, self.layout_engine]
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: list[Any]) -> None:
         path, size, index, encoding, layout_engine = state
-        self.__init__(path, size, index, encoding, layout_engine)
+        FreeTypeFont.__init__(self, path, size, index, encoding, layout_engine)
 
     def getname(self) -> tuple[str | None, str | None]:
         """

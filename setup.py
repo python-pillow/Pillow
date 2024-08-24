@@ -295,7 +295,6 @@ class pil_build_ext(build_ext):
             "raqm",
             "lcms",
             "webp",
-            "webpmux",
             "jpeg2000",
             "imagequant",
             "xcb",
@@ -794,28 +793,18 @@ class pil_build_ext(build_ext):
 
         if feature.want("webp"):
             _dbg("Looking for webp")
-            if _find_include_file(self, "webp/encode.h") and _find_include_file(
-                self, "webp/decode.h"
+            if all(
+                _find_include_file(self, "webp/" + include)
+                for include in ("encode.h", "decode.h", "mux.h", "demux.h")
             ):
-                # In Google's precompiled zip it is call "libwebp":
-                if _find_library_file(self, "webp"):
-                    feature.webp = "webp"
-                elif _find_library_file(self, "libwebp"):
-                    feature.webp = "libwebp"
-
-        if feature.want("webpmux"):
-            _dbg("Looking for webpmux")
-            if _find_include_file(self, "webp/mux.h") and _find_include_file(
-                self, "webp/demux.h"
-            ):
-                if _find_library_file(self, "webpmux") and _find_library_file(
-                    self, "webpdemux"
-                ):
-                    feature.webpmux = "webpmux"
-                if _find_library_file(self, "libwebpmux") and _find_library_file(
-                    self, "libwebpdemux"
-                ):
-                    feature.webpmux = "libwebpmux"
+                # In Google's precompiled zip it is called "libwebp"
+                for prefix in ("", "lib"):
+                    if all(
+                        _find_library_file(self, prefix + library)
+                        for library in ("webp", "webpmux", "webpdemux")
+                    ):
+                        feature.webp = prefix + "webp"
+                        break
 
         if feature.want("xcb"):
             _dbg("Looking for xcb")
@@ -904,15 +893,8 @@ class pil_build_ext(build_ext):
             self._remove_extension("PIL._imagingcms")
 
         if feature.webp:
-            libs = [feature.webp]
-            defs = []
-
-            if feature.webpmux:
-                defs.append(("HAVE_WEBPMUX", None))
-                libs.append(feature.webpmux)
-                libs.append(feature.webpmux.replace("pmux", "pdemux"))
-
-            self._update_extension("PIL._webp", libs, defs)
+            libs = [feature.webp, feature.webp + "mux", feature.webp + "demux"]
+            self._update_extension("PIL._webp", libs)
         else:
             self._remove_extension("PIL._webp")
 
@@ -953,7 +935,6 @@ class pil_build_ext(build_ext):
             (feature.raqm, "RAQM (Text shaping)", raqm_extra_info),
             (feature.lcms, "LITTLECMS2"),
             (feature.webp, "WEBP"),
-            (feature.webpmux, "WEBPMUX"),
             (feature.xcb, "XCB (X protocol)"),
         ]
 

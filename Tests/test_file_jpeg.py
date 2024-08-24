@@ -154,7 +154,7 @@ class TestFileJpeg:
             assert k > 0.9
 
     def test_rgb(self) -> None:
-        def getchannels(im: JpegImagePlugin.JpegImageFile) -> tuple[int, int, int]:
+        def getchannels(im: JpegImagePlugin.JpegImageFile) -> tuple[int, ...]:
             return tuple(v[0] for v in im.layer)
 
         im = hopper()
@@ -1019,13 +1019,16 @@ class TestFileJpeg:
 
         # SOI, EOI
         for marker in b"\xff\xd8", b"\xff\xd9":
-            assert marker in data[1] and marker in data[2]
+            assert marker in data[1]
+            assert marker in data[2]
         # DHT, DQT
         for marker in b"\xff\xc4", b"\xff\xdb":
-            assert marker in data[1] and marker not in data[2]
+            assert marker in data[1]
+            assert marker not in data[2]
         # SOF0, SOS, APP0 (JFIF header)
         for marker in b"\xff\xc0", b"\xff\xda", b"\xff\xe0":
-            assert marker not in data[1] and marker in data[2]
+            assert marker not in data[1]
+            assert marker in data[2]
 
         with Image.open(BytesIO(data[0])) as interchange_im:
             with Image.open(BytesIO(data[1] + data[2])) as combined_im:
@@ -1044,6 +1047,13 @@ class TestFileJpeg:
         im = hopper("F")
 
         assert im._repr_jpeg_() is None
+
+    def test_deprecation(self) -> None:
+        with Image.open(TEST_FILE) as im:
+            with pytest.warns(DeprecationWarning):
+                assert im.huffman_ac == {}
+            with pytest.warns(DeprecationWarning):
+                assert im.huffman_dc == {}
 
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")

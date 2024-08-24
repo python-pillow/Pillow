@@ -40,7 +40,7 @@ import warnings
 import zlib
 from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
+from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -1223,7 +1223,11 @@ def _write_multiple_frames(
     if default_image:
         if im.mode != mode:
             im = im.convert(mode)
-        ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
+        ImageFile._save(
+            im,
+            cast(IO[bytes], _idat(fp, chunk)),
+            [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
+        )
 
     seq_num = 0
     for frame, frame_data in enumerate(im_frames):
@@ -1258,15 +1262,15 @@ def _write_multiple_frames(
             # first frame must be in IDAT chunks for backwards compatibility
             ImageFile._save(
                 im_frame,
-                _idat(fp, chunk),
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                cast(IO[bytes], _idat(fp, chunk)),
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
-                fdat_chunks,
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                cast(IO[bytes], fdat_chunks),
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1465,7 +1469,9 @@ def _save(
         )
     if single_im:
         ImageFile._save(
-            single_im, _idat(fp, chunk), [("zip", (0, 0) + single_im.size, 0, rawmode)]
+            single_im,
+            cast(IO[bytes], _idat(fp, chunk)),
+            [ImageFile._Tile("zip", (0, 0) + single_im.size, 0, rawmode)],
         )
 
     if info:

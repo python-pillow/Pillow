@@ -1243,7 +1243,7 @@ font_getvarnames(FontObject *self) {
         return PyErr_NoMemory();
     }
 
-    for (int i = 0; i < num_namedstyles; i++) {
+    for (unsigned int i = 0; i < num_namedstyles; i++) {
         list_names_filled[i] = 0;
     }
 

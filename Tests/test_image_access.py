@@ -230,7 +230,7 @@ class TestImagePutPixelError:
                 im.putpixel((0, 0), v)  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
-        ("mode", "band_numbers", "match"),
+        "mode, band_numbers, match",
         (
             ("L", (0, 2), "color must be int or single-element tuple"),
             ("LA", (0, 3), "color must be int, or tuple of one or two elements"),

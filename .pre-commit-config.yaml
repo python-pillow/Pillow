@@ -1,12 +1,12 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
+    rev: v0.6.0
     hooks:
       - id: ruff
         args: [--exit-non-zero-on-fix]
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
 
@@ -50,7 +50,7 @@ repos:
         exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.6
+    rev: 0.29.1
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
@@ -62,12 +62,12 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: 2.1.3
+    rev: 2.2.1
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.18
+    rev: v0.19
     hooks:
       - id: validate-pyproject
 
