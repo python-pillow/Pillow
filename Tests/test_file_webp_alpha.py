@@ -13,12 +13,7 @@ from .helper import (
     hopper,
 )
 
-_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
-
-
-def setup_module() -> None:
-    if _webp.WebPDecoderBuggyAlpha():
-        pytest.skip("Buggy early version of WebP installed, not testing transparency")
+pytest.importorskip("PIL._webp", reason="WebP support not installed")
 
 
 def test_read_rgba() -> None:
@@ -81,9 +76,6 @@ def test_write_rgba(tmp_path: Path) -> None:
     pil_image = Image.new("RGBA", (10, 10), (255, 0, 0, 20))
     pil_image.save(temp_file)
 
-    if _webp.WebPDecoderBuggyAlpha():
-        return
-
     with Image.open(temp_file) as image:
         image.load()
 
@@ -93,12 +85,7 @@ def test_write_rgba(tmp_path: Path) -> None:
         image.load()
         image.getdata()
 
-        # Early versions of WebP are known to produce higher deviations:
-        # deal with it
-        if _webp.WebPDecoderVersion() <= 0x201:
-            assert_image_similar(image, pil_image, 3.0)
-        else:
-            assert_image_similar(image, pil_image, 1.0)
+        assert_image_similar(image, pil_image, 1.0)
 
 
 def test_keep_rgb_values_when_transparent(tmp_path: Path) -> None:

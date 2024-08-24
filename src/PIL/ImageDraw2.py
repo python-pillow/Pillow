@@ -24,10 +24,10 @@
 """
 from __future__ import annotations
 
-from typing import BinaryIO
+from typing import Any, AnyStr, BinaryIO
 
 from . import Image, ImageColor, ImageDraw, ImageFont, ImagePath
-from ._typing import StrOrBytesPath
+from ._typing import Coords, StrOrBytesPath
 
 
 class Pen:
@@ -74,12 +74,19 @@ class Draw:
             image = Image.new(image, size, color)
         self.draw = ImageDraw.Draw(image)
         self.image = image
-        self.transform = None
+        self.transform: tuple[float, float, float, float, float, float] | None = None
 
     def flush(self) -> Image.Image:
         return self.image
 
-    def render(self, op, xy, pen, brush=None):
+    def render(
+        self,
+        op: str,
+        xy: Coords,
+        pen: Pen | Brush | None,
+        brush: Brush | Pen | None = None,
+        **kwargs: Any,
+    ) -> None:
         # handle color arguments
         outline = fill = None
         width = 1
@@ -95,63 +102,89 @@ class Draw:
             fill = pen.color
         # handle transformation
         if self.transform:
-            xy = ImagePath.Path(xy)
-            xy.transform(self.transform)
+            path = ImagePath.Path(xy)
+            path.transform(self.transform)
+            xy = path
         # render the item
-        if op == "line":
-            self.draw.line(xy, fill=outline, width=width)
+        if op in ("arc", "line"):
+            kwargs.setdefault("fill", outline)
         else:
-            getattr(self.draw, op)(xy, fill=fill, outline=outline)
+            kwargs.setdefault("fill", fill)
+            kwargs.setdefault("outline", outline)
+        if op == "line":
+            kwargs.setdefault("width", width)
+        getattr(self.draw, op)(xy, **kwargs)
 
-    def settransform(self, offset):
+    def settransform(self, offset: tuple[float, float]) -> None:
         """Sets a transformation offset."""
         (xoffset, yoffset) = offset
         self.transform = (1, 0, xoffset, 0, 1, yoffset)
 
-    def arc(self, xy, start, end, *options):
+    def arc(
+        self,
+        xy: Coords,
+        pen: Pen | Brush | None,
+        start: float,
+        end: float,
+        *options: Any,
+    ) -> None:
         """
         Draws an arc (a portion of a circle outline) between the start and end
         angles, inside the given bounding box.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.arc`
         """
-        self.render("arc", xy, start, end, *options)
+        self.render("arc", xy, pen, *options, start=start, end=end)
 
-    def chord(self, xy, start, end, *options):
+    def chord(
+        self,
+        xy: Coords,
+        pen: Pen | Brush | None,
+        start: float,
+        end: float,
+        *options: Any,
+    ) -> None:
         """
         Same as :py:meth:`~PIL.ImageDraw2.Draw.arc`, but connects the end points
         with a straight line.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.chord`
         """
-        self.render("chord", xy, start, end, *options)
+        self.render("chord", xy, pen, *options, start=start, end=end)
 
-    def ellipse(self, xy, *options):
+    def ellipse(self, xy: Coords, pen: Pen | Brush | None, *options: Any) -> None:
         """
         Draws an ellipse inside the given bounding box.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.ellipse`
         """
-        self.render("ellipse", xy, *options)
+        self.render("ellipse", xy, pen, *options)
 
-    def line(self, xy, *options):
+    def line(self, xy: Coords, pen: Pen | Brush | None, *options: Any) -> None:
         """
         Draws a line between the coordinates in the ``xy`` list.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.line`
         """
-        self.render("line", xy, *options)
+        self.render("line", xy, pen, *options)
 
-    def pieslice(self, xy, start, end, *options):
+    def pieslice(
+        self,
+        xy: Coords,
+        pen: Pen | Brush | None,
+        start: float,
+        end: float,
+        *options: Any,
+    ) -> None:
         """
         Same as arc, but also draws straight lines between the end points and the
         center of the bounding box.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.pieslice`
         """
-        self.render("pieslice", xy, start, end, *options)
+        self.render("pieslice", xy, pen, *options, start=start, end=end)
 
-    def polygon(self, xy, *options):
+    def polygon(self, xy: Coords, pen: Pen | Brush | None, *options: Any) -> None:
         """
         Draws a polygon.
 
@@ -162,28 +195,31 @@ class Draw:
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.polygon`
         """
-        self.render("polygon", xy, *options)
+        self.render("polygon", xy, pen, *options)
 
-    def rectangle(self, xy, *options):
+    def rectangle(self, xy: Coords, pen: Pen | Brush | None, *options: Any) -> None:
         """
         Draws a rectangle.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.rectangle`
         """
-        self.render("rectangle", xy, *options)
+        self.render("rectangle", xy, pen, *options)
 
-    def text(self, xy, text, font):
+    def text(self, xy: tuple[float, float], text: AnyStr, font: Font) -> None:
         """
         Draws the string at the given position.
 
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.text`
         """
         if self.transform:
-            xy = ImagePath.Path(xy)
-            xy.transform(self.transform)
+            path = ImagePath.Path(xy)
+            path.transform(self.transform)
+            xy = path
         self.draw.text(xy, text, font=font.font, fill=font.color)
 
-    def textbbox(self, xy, text, font):
+    def textbbox(
+        self, xy: tuple[float, float], text: AnyStr, font: Font
+    ) -> tuple[float, float, float, float]:
         """
         Returns bounding box (in pixels) of given text.
 
@@ -192,11 +228,12 @@ class Draw:
         .. seealso:: :py:meth:`PIL.ImageDraw.ImageDraw.textbbox`
         """
         if self.transform:
-            xy = ImagePath.Path(xy)
-            xy.transform(self.transform)
+            path = ImagePath.Path(xy)
+            path.transform(self.transform)
+            xy = path
         return self.draw.textbbox(xy, text, font=font.font)
 
-    def textlength(self, text, font):
+    def textlength(self, text: AnyStr, font: Font) -> float:
         """
         Returns length (in pixels) of given text.
         This is the amount by which following text should be offset.

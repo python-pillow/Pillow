@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from io import BytesIO
+from typing import cast
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -184,7 +185,9 @@ Image.register_open(IptcImageFile.format, IptcImageFile)
 Image.register_extension(IptcImageFile.format, ".iim")
 
 
-def getiptcinfo(im):
+def getiptcinfo(
+    im: ImageFile.ImageFile,
+) -> dict[tuple[int, int], bytes | list[bytes]] | None:
     """
     Get IPTC information from TIFF, JPEG, or IPTC file.
 
@@ -210,8 +213,8 @@ def getiptcinfo(im):
         # get raw data from the IPTC/NAA tag (PhotoShop tags the data
         # as 4-byte integers, so we cannot use the get method...)
         try:
-            data = im.tag.tagdata[TiffImagePlugin.IPTC_NAA_CHUNK]
-        except (AttributeError, KeyError):
+            data = im.tag_v2[TiffImagePlugin.IPTC_NAA_CHUNK]
+        except KeyError:
             pass
 
     if data is None:
@@ -221,16 +224,17 @@ def getiptcinfo(im):
     class FakeImage:
         pass
 
-    im = FakeImage()
-    im.__class__ = IptcImageFile
+    fake_im = FakeImage()
+    fake_im.__class__ = IptcImageFile  # type: ignore[assignment]
+    iptc_im = cast(IptcImageFile, fake_im)
 
     # parse the IPTC information chunk
-    im.info = {}
-    im.fp = BytesIO(data)
+    iptc_im.info = {}
+    iptc_im.fp = BytesIO(data)
 
     try:
-        im._open()
+        iptc_im._open()
     except (IndexError, KeyError):
         pass  # expected failure
 
-    return im.info
+    return iptc_im.info

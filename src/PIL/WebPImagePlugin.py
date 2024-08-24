@@ -45,22 +45,6 @@ class WebPImageFile(ImageFile.ImageFile):
     __logical_frame = 0
 
     def _open(self) -> None:
-        if not _webp.HAVE_WEBPANIM:
-            # Legacy mode
-            data, width, height, self._mode, icc_profile, exif = _webp.WebPDecode(
-                self.fp.read()
-            )
-            if icc_profile:
-                self.info["icc_profile"] = icc_profile
-            if exif:
-                self.info["exif"] = exif
-            self._size = width, height
-            self.fp = BytesIO(data)
-            self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
-            self.n_frames = 1
-            self.is_animated = False
-            return
-
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
         self._decoder = _webp.WebPAnimDecoder(self.fp.read())
@@ -96,7 +80,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Initialize seek state
         self._reset(reset=False)
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
@@ -145,21 +129,20 @@ class WebPImageFile(ImageFile.ImageFile):
             self._get_next()  # Advance to the requested frame
 
     def load(self) -> Image.core.PixelAccess | None:
-        if _webp.HAVE_WEBPANIM:
-            if self.__loaded != self.__logical_frame:
-                self._seek(self.__logical_frame)
+        if self.__loaded != self.__logical_frame:
+            self._seek(self.__logical_frame)
 
-                # We need to load the image data for this frame
-                data, timestamp, duration = self._get_next()
-                self.info["timestamp"] = timestamp
-                self.info["duration"] = duration
-                self.__loaded = self.__logical_frame
+            # We need to load the image data for this frame
+            data, timestamp, duration = self._get_next()
+            self.info["timestamp"] = timestamp
+            self.info["duration"] = duration
+            self.__loaded = self.__logical_frame
 
-                # Set tile
-                if self.fp and self._exclusive_fp:
-                    self.fp.close()
-                self.fp = BytesIO(data)
-                self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
+            # Set tile
+            if self.fp and self._exclusive_fp:
+                self.fp.close()
+            self.fp = BytesIO(data)
+            self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
 
         return super().load()
 
@@ -167,9 +150,6 @@ class WebPImageFile(ImageFile.ImageFile):
         pass
 
     def tell(self) -> int:
-        if not _webp.HAVE_WEBPANIM:
-            return super().tell()
-
         return self.__logical_frame
 
 
@@ -357,7 +337,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
 if SUPPORTED:
     Image.register_save(WebPImageFile.format, _save)
-    if _webp.HAVE_WEBPANIM:
-        Image.register_save_all(WebPImageFile.format, _save_all)
+    Image.register_save_all(WebPImageFile.format, _save_all)
     Image.register_extension(WebPImageFile.format, ".webp")
     Image.register_mime(WebPImageFile.format, "image/webp")

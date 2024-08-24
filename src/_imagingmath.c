@@ -209,7 +209,8 @@ _binop(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef _functions[] = {
-    {"unop", _unop, 1}, {"binop", _binop, 1}, {NULL, NULL}};
+    {"unop", _unop, 1}, {"binop", _binop, 1}, {NULL, NULL}
+};
 
 static void
 install(PyObject *d, char *name, void *value) {
@@ -289,6 +290,10 @@ PyInit__imagingmath(void) {
     if (setup_module(m) < 0) {
         return NULL;
     }
+
+#ifdef Py_GIL_DISABLED
+    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
+#endif
 
     return m;
 }

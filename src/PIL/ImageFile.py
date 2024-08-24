@@ -31,6 +31,7 @@ from __future__ import annotations
 import abc
 import io
 import itertools
+import os
 import struct
 import sys
 from typing import IO, Any, NamedTuple
@@ -86,14 +87,14 @@ def raise_oserror(error: int) -> OSError:
     raise _get_oserror(error, encoder=False)
 
 
-def _tilesort(t):
+def _tilesort(t: _Tile) -> int:
     # sort on offset
     return t[2]
 
 
 class _Tile(NamedTuple):
     codec_name: str
-    extents: tuple[int, int, int, int]
+    extents: tuple[int, int, int, int] | None
     offset: int
     args: tuple[Any, ...] | str | None
 
@@ -161,7 +162,7 @@ class ImageFile(Image.Image):
             return Image.MIME.get(self.format.upper())
         return None
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: list[Any]) -> None:
         self.tile = []
         super().__setstate__(state)
 
@@ -174,7 +175,7 @@ class ImageFile(Image.Image):
             self.fp.close()
         self.fp = None
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
         if self.tile is None:
@@ -185,7 +186,7 @@ class ImageFile(Image.Image):
         if not self.tile:
             return pixel
 
-        self.map = None
+        self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
         # As of pypy 2.1.0, memory mapping was failing here.
         use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
@@ -193,17 +194,17 @@ class ImageFile(Image.Image):
         readonly = 0
 
         # look for read/seek overrides
-        try:
+        if hasattr(self, "load_read"):
             read = self.load_read
             # don't use mmap if there are custom read/seek functions
             use_mmap = False
-        except AttributeError:
+        else:
             read = self.fp.read
 
-        try:
+        if hasattr(self, "load_seek"):
             seek = self.load_seek
             use_mmap = False
-        except AttributeError:
+        else:
             seek = self.fp.seek
 
         if use_mmap:
@@ -243,11 +244,8 @@ class ImageFile(Image.Image):
             # sort tiles in file order
             self.tile.sort(key=_tilesort)
 
-            try:
-                # FIXME: This is a hack to handle TIFF's JpegTables tag.
-                prefix = self.tile_prefix
-            except AttributeError:
-                prefix = b""
+            # FIXME: This is a hack to handle TIFF's JpegTables tag.
+            prefix = getattr(self, "tile_prefix", b"")
 
             # Remove consecutive duplicates that only differ by their offset
             self.tile = [
@@ -333,14 +331,14 @@ class ImageFile(Image.Image):
     # def load_read(self, read_bytes: int) -> bytes:
     #     pass
 
-    def _seek_check(self, frame):
+    def _seek_check(self, frame: int) -> bool:
         if (
             frame < self._min_frame
             # Only check upper limit on frames if additional seek operations
             # are not required to do so
             or (
                 not (hasattr(self, "_n_frames") and self._n_frames is None)
-                and frame >= self.n_frames + self._min_frame
+                and frame >= getattr(self, "n_frames") + self._min_frame
             )
         ):
             msg = "attempt to seek outside sequence"
@@ -370,7 +368,7 @@ class StubImageFile(ImageFile):
         msg = "StubImageFile subclass must implement _open"
         raise NotImplementedError(msg)
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         loader = self._load()
         if loader is None:
             msg = f"cannot find loader for this {self.format} file"
@@ -378,7 +376,7 @@ class StubImageFile(ImageFile):
         image = loader.load(self)
         assert image is not None
         # become the other object (!)
-        self.__class__ = image.__class__
+        self.__class__ = image.__class__  # type: ignore[assignment]
         self.__dict__ = image.__dict__
         return image.load()
 
@@ -396,8 +394,8 @@ class Parser:
 
     incremental = None
     image: Image.Image | None = None
-    data = None
-    decoder = None
+    data: bytes | None = None
+    decoder: Image.core.ImagingDecoder | PyDecoder | None = None
     offset = 0
     finished = 0
 
@@ -409,7 +407,7 @@ class Parser:
         """
         assert self.data is None, "cannot reuse parsers"
 
-    def feed(self, data):
+    def feed(self, data: bytes) -> None:
         """
         (Consumer) Feed data to the parser.
 
@@ -491,7 +489,7 @@ class Parser:
     def __exit__(self, *args: object) -> None:
         self.close()
 
-    def close(self):
+    def close(self) -> Image.Image:
         """
         (Consumer) Close the stream.
 
@@ -525,7 +523,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im, fp, tile, bufsize=0) -> None:
+def _save(im: Image.Image, fp: IO[bytes], tile: list[_Tile], bufsize: int = 0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.
@@ -553,7 +551,14 @@ def _save(im, fp, tile, bufsize=0) -> None:
         fp.flush()
 
 
-def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
+def _encode_tile(
+    im: Image.Image,
+    fp: IO[bytes],
+    tile: list[_Tile],
+    bufsize: int,
+    fh: int | None,
+    exc: BaseException | None = None,
+) -> None:
     for encoder_name, extents, offset, args in tile:
         if offset > 0:
             fp.seek(offset)
@@ -573,6 +578,7 @@ def _encode_tile(im, fp, tile: list[_Tile], bufsize, fh, exc=None):
                             break
                 else:
                     # slight speedup: compress to real file object
+                    assert fh is not None
                     errcode = encoder.encode_to_file(fh, bufsize)
             if errcode < 0:
                 raise _get_oserror(errcode, encoder=True) from exc
@@ -629,18 +635,18 @@ class PyCodecState:
 class PyCodec:
     fd: IO[bytes] | None
 
-    def __init__(self, mode, *args):
-        self.im = None
+    def __init__(self, mode: str, *args: Any) -> None:
+        self.im: Image.core.ImagingCore | None = None
         self.state = PyCodecState()
         self.fd = None
         self.mode = mode
         self.init(args)
 
-    def init(self, args) -> None:
+    def init(self, args: tuple[Any, ...]) -> None:
         """
         Override to perform codec specific initialization
 
-        :param args: Array of args items from the tile entry
+        :param args: Tuple of arg items from the tile entry
         :returns: None
         """
         self.args = args
@@ -653,7 +659,7 @@ class PyCodec:
         """
         pass
 
-    def setfd(self, fd) -> None:
+    def setfd(self, fd: IO[bytes]) -> None:
         """
         Called from ImageFile to set the Python file-like object
 
@@ -662,7 +668,11 @@ class PyCodec:
         """
         self.fd = fd
 
-    def setimage(self, im, extents: tuple[int, int, int, int] | None = None) -> None:
+    def setimage(
+        self,
+        im: Image.core.ImagingCore,
+        extents: tuple[int, int, int, int] | None = None,
+    ) -> None:
         """
         Called from ImageFile to set the core output image for the codec
 
@@ -793,7 +803,7 @@ class PyEncoder(PyCodec):
             self.fd.write(data)
         return bytes_consumed, errcode
 
-    def encode_to_file(self, fh: IO[bytes], bufsize: int) -> int:
+    def encode_to_file(self, fh: int, bufsize: int) -> int:
         """
         :param fh: File handle.
         :param bufsize: Buffer size.
@@ -806,5 +816,5 @@ class PyEncoder(PyCodec):
         while errcode == 0:
             status, errcode, buf = self.encode(bufsize)
             if status > 0:
-                fh.write(buf[status:])
+                os.write(fh, buf[status:])
         return errcode

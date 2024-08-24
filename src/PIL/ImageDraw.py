@@ -36,7 +36,7 @@ import numbers
 import struct
 from collections.abc import Sequence
 from types import ModuleType
-from typing import TYPE_CHECKING, AnyStr, Callable, Union, cast
+from typing import TYPE_CHECKING, Any, AnyStr, Callable, Union, cast
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
@@ -505,7 +505,7 @@ class ImageDraw:
 
             if full_x:
                 self.draw.draw_rectangle((x0, y0 + r + 1, x1, y1 - r - 1), fill_ink, 1)
-            else:
+            elif x1 - r - 1 > x0 + r + 1:
                 self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill_ink, 1)
             if not full_x and not full_y:
                 left = [x0, y0, x0 + r, y1]
@@ -561,7 +561,12 @@ class ImageDraw:
     def _multiline_split(self, text: AnyStr) -> list[AnyStr]:
         return text.split("\n" if isinstance(text, str) else b"\n")
 
-    def _multiline_spacing(self, font, spacing, stroke_width):
+    def _multiline_spacing(
+        self,
+        font: ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont,
+        spacing: float,
+        stroke_width: float,
+    ) -> float:
         return (
             self.textbbox((0, 0), "A", font, stroke_width=stroke_width)[3]
             + stroke_width
@@ -571,25 +576,25 @@ class ImageDraw:
     def text(
         self,
         xy: tuple[float, float],
-        text: str,
-        fill=None,
+        text: AnyStr,
+        fill: _Ink | None = None,
         font: (
             ImageFont.ImageFont
             | ImageFont.FreeTypeFont
             | ImageFont.TransposedFont
             | None
         ) = None,
-        anchor=None,
-        spacing=4,
-        align="left",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        stroke_fill=None,
-        embedded_color=False,
-        *args,
-        **kwargs,
+        anchor: str | None = None,
+        spacing: float = 4,
+        align: str = "left",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        stroke_fill: _Ink | None = None,
+        embedded_color: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """Draw text."""
         if embedded_color and self.mode not in ("RGB", "RGBA"):
@@ -623,15 +628,14 @@ class ImageDraw:
                 return fill_ink
             return ink
 
-        def draw_text(ink, stroke_width=0, stroke_offset=None) -> None:
+        def draw_text(ink: int, stroke_width: float = 0) -> None:
             mode = self.fontmode
             if stroke_width == 0 and embedded_color:
                 mode = "RGBA"
             coord = []
-            start = []
             for i in range(2):
                 coord.append(int(xy[i]))
-                start.append(math.modf(xy[i])[0])
+            start = (math.modf(xy[0])[0], math.modf(xy[1])[0])
             try:
                 mask, offset = font.getmask2(  # type: ignore[union-attr,misc]
                     text,
@@ -664,8 +668,6 @@ class ImageDraw:
                     )
                 except TypeError:
                     mask = font.getmask(text)
-            if stroke_offset:
-                coord = [coord[0] + stroke_offset[0], coord[1] + stroke_offset[1]]
             if mode == "RGBA":
                 # font.getmask2(mode="RGBA") returns color in RGB bands and mask in A
                 # extract mask and set text alpha
@@ -699,25 +701,25 @@ class ImageDraw:
     def multiline_text(
         self,
         xy: tuple[float, float],
-        text: str,
-        fill=None,
+        text: AnyStr,
+        fill: _Ink | None = None,
         font: (
             ImageFont.ImageFont
             | ImageFont.FreeTypeFont
             | ImageFont.TransposedFont
             | None
         ) = None,
-        anchor=None,
-        spacing=4,
-        align="left",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        stroke_fill=None,
-        embedded_color=False,
+        anchor: str | None = None,
+        spacing: float = 4,
+        align: str = "left",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        stroke_fill: _Ink | None = None,
+        embedded_color: bool = False,
         *,
-        font_size=None,
+        font_size: float | None = None,
     ) -> None:
         if direction == "ttb":
             msg = "ttb direction is unsupported for multiline text"
@@ -790,19 +792,19 @@ class ImageDraw:
 
     def textlength(
         self,
-        text: str,
+        text: AnyStr,
         font: (
             ImageFont.ImageFont
             | ImageFont.FreeTypeFont
             | ImageFont.TransposedFont
             | None
         ) = None,
-        direction=None,
-        features=None,
-        language=None,
-        embedded_color=False,
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        embedded_color: bool = False,
         *,
-        font_size=None,
+        font_size: float | None = None,
     ) -> float:
         """Get the length of a given string, in pixels with 1/64 precision."""
         if self._multiline_check(text):
@@ -819,20 +821,25 @@ class ImageDraw:
 
     def textbbox(
         self,
-        xy,
-        text,
-        font=None,
-        anchor=None,
-        spacing=4,
-        align="left",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        embedded_color=False,
+        xy: tuple[float, float],
+        text: AnyStr,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
+        anchor: str | None = None,
+        spacing: float = 4,
+        align: str = "left",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        embedded_color: bool = False,
         *,
-        font_size=None,
-    ) -> tuple[int, int, int, int]:
+        font_size: float | None = None,
+    ) -> tuple[float, float, float, float]:
         """Get the bounding box of a given string, in pixels."""
         if embedded_color and self.mode not in ("RGB", "RGBA"):
             msg = "Embedded color supported only in RGB and RGBA modes"
@@ -864,20 +871,25 @@ class ImageDraw:
 
     def multiline_textbbox(
         self,
-        xy,
-        text,
-        font=None,
-        anchor=None,
-        spacing=4,
-        align="left",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        embedded_color=False,
+        xy: tuple[float, float],
+        text: AnyStr,
+        font: (
+            ImageFont.ImageFont
+            | ImageFont.FreeTypeFont
+            | ImageFont.TransposedFont
+            | None
+        ) = None,
+        anchor: str | None = None,
+        spacing: float = 4,
+        align: str = "left",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        embedded_color: bool = False,
         *,
-        font_size=None,
-    ) -> tuple[int, int, int, int]:
+        font_size: float | None = None,
+    ) -> tuple[float, float, float, float]:
         if direction == "ttb":
             msg = "ttb direction is unsupported for multiline text"
             raise ValueError(msg)
@@ -916,7 +928,7 @@ class ImageDraw:
         elif anchor[1] == "d":
             top -= (len(lines) - 1) * line_spacing
 
-        bbox: tuple[int, int, int, int] | None = None
+        bbox: tuple[float, float, float, float] | None = None
 
         for idx, line in enumerate(lines):
             left = xy[0]

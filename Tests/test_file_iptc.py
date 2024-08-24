@@ -57,6 +57,7 @@ def test_getiptcinfo_fotostation() -> None:
         iptc = IptcImagePlugin.getiptcinfo(im)
 
     # Assert
+    assert iptc is not None
     for tag in iptc.keys():
         if tag[0] == 240:
             return
@@ -74,6 +75,16 @@ def test_getiptcinfo_zero_padding() -> None:
     # Assert
     assert isinstance(iptc, dict)
     assert len(iptc) == 3
+
+
+def test_getiptcinfo_tiff() -> None:
+    # Arrange
+    with Image.open("Tests/images/hopper.Lab.tif") as im:
+        # Act
+        iptc = IptcImagePlugin.getiptcinfo(im)
+
+    # Assert
+    assert iptc == {(1, 90): b"\x1b%G", (2, 0): b"\xcf\xc0"}
 
 
 def test_getiptcinfo_tiff_none() -> None:

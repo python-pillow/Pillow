@@ -42,6 +42,12 @@ try:
 except ImportError:
     ElementTree = None
 
+PrettyPrinter: type | None
+try:
+    from IPython.lib.pretty import PrettyPrinter
+except ImportError:
+    PrettyPrinter = None
+
 
 # Deprecation helper
 def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
@@ -91,16 +97,15 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    @pytest.mark.skipif(PrettyPrinter is None, reason="IPython is not installed")
     def test_repr_pretty(self) -> None:
-        class Pretty:
-            def text(self, text: str) -> None:
-                self.pretty_output = text
-
         im = Image.new("L", (100, 100))
 
-        p = Pretty()
-        im._repr_pretty_(p, None)
-        assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
+        output = io.StringIO()
+        assert PrettyPrinter is not None
+        p = PrettyPrinter(output)
+        im._repr_pretty_(p, False)
+        assert output.getvalue() == "<PIL.Image.Image image mode=L size=100x100>"
 
     def test_open_formats(self) -> None:
         PNGFILE = "Tests/images/hopper.png"
@@ -825,7 +830,6 @@ class TestImage:
             assert reloaded_exif[305] == "Pillow test"
 
     @skip_unless_feature("webp")
-    @skip_unless_feature("webp_anim")
     def test_exif_webp(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
@@ -947,7 +951,15 @@ class TestImage:
 
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
-            assert im.getxmp() == {}
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    xmp = im.getxmp()
+            else:
+                xmp = im.getxmp()
+            assert xmp == {}
 
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))

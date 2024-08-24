@@ -42,14 +42,18 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import IO, Any
+from typing import IO, TYPE_CHECKING, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
+from ._deprecate import deprecate
 from .JpegPresets import presets
+
+if TYPE_CHECKING:
+    from .MpoImagePlugin import MpoImageFile
 
 #
 # Parser
@@ -329,7 +333,7 @@ class JpegImageFile(ImageFile.ImageFile):
     format = "JPEG"
     format_description = "JPEG (ISO 10918)"
 
-    def _open(self):
+    def _open(self) -> None:
         s = self.fp.read(3)
 
         if not _accept(s):
@@ -342,13 +346,13 @@ class JpegImageFile(ImageFile.ImageFile):
         self._exif_offset = 0
 
         # JPEG specifics (internal)
-        self.layer = []
-        self.huffman_dc = {}
-        self.huffman_ac = {}
-        self.quantization = {}
-        self.app = {}  # compatibility
-        self.applist = []
-        self.icclist = []
+        self.layer: list[tuple[int, int, int, int]] = []
+        self._huffman_dc: dict[Any, Any] = {}
+        self._huffman_ac: dict[Any, Any] = {}
+        self.quantization: dict[int, list[int]] = {}
+        self.app: dict[str, bytes] = {}  # compatibility
+        self.applist: list[tuple[str, bytes]] = []
+        self.icclist: list[bytes] = []
 
         while True:
             i = s[0]
@@ -382,6 +386,12 @@ class JpegImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg)
 
         self._read_dpi_from_exif()
+
+    def __getattr__(self, name: str) -> Any:
+        if name in ("huffman_ac", "huffman_dc"):
+            deprecate(name, 12)
+            return getattr(self, "_" + name)
+        raise AttributeError(name)
 
     def load_read(self, read_bytes: int) -> bytes:
         """
@@ -468,7 +478,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self.tile = []
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         return _getexif(self)
 
     def _read_dpi_from_exif(self) -> None:
@@ -504,7 +514,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return _getmp(self)
 
 
-def _getexif(self: JpegImageFile) -> dict[str, Any] | None:
+def _getexif(self: JpegImageFile) -> dict[int, Any] | None:
     if "exif" not in self.info:
         return None
     return self.getexif()._get_merged_dict()
@@ -685,7 +695,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             raise ValueError(msg)
         subsampling = get_sampling(im)
 
-    def validate_qtables(qtables):
+    def validate_qtables(
+        qtables: (
+            str | tuple[list[int], ...] | list[list[int]] | dict[int, list[int]] | None
+        )
+    ) -> list[list[int]] | None:
         if qtables is None:
             return qtables
         if isinstance(qtables, str):
@@ -715,12 +729,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     if len(table) != 64:
                         msg = "Invalid quantization table"
                         raise TypeError(msg)
-                    table = array.array("H", table)
+                    table_array = array.array("H", table)
                 except TypeError as e:
                     msg = "Invalid quantization table"
                     raise ValueError(msg) from e
                 else:
-                    qtables[idx] = list(table)
+                    qtables[idx] = list(table_array)
             return qtables
 
     if qtables == "keep":
@@ -812,7 +826,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # Ensure that our buffer is big enough. Same with the icc_profile block.
         bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
 
-    ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
+    )
 
 
 def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -827,11 +843,13 @@ def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 ##
 # Factory for making JPEG and MPO instances
-def jpeg_factory(fp=None, filename=None):
+def jpeg_factory(
+    fp: IO[bytes] | None = None, filename: str | bytes | None = None
+) -> JpegImageFile | MpoImageFile:
     im = JpegImageFile(fp, filename)
     try:
         mpheader = im._getmp()
-        if mpheader[45057] > 1:
+        if mpheader is not None and mpheader[45057] > 1:
             for segment, content in im.applist:
                 if segment == "APP1" and b' hdrgm:Version="' in content:
                     # Ultra HDR images are not yet supported

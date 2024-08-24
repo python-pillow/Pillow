@@ -324,7 +324,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         return self._reduce or super().reduce
 
     @reduce.setter
-    def reduce(self, value):
+    def reduce(self, value: int) -> None:
         self._reduce = value
 
     def load(self) -> Image.core.PixelAccess | None:
@@ -419,7 +419,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    ImageFile._save(im, fp, [("jpeg2k", (0, 0) + im.size, 0, kind)])
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", (0, 0) + im.size, 0, kind)])
 
 
 # ------------------------------------------------------------

@@ -857,6 +857,27 @@ def test_rounded_rectangle_corners(
     )
 
 
+def test_rounded_rectangle_joined_x_different_corners() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.rounded_rectangle(
+        (20, 10, 80, 90),
+        30,
+        fill="red",
+        outline="green",
+        width=5,
+        corners=(True, False, False, False),
+    )
+
+    # Assert
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rounded_rectangle_joined_x_different_corners.png"
+    )
+
+
 @pytest.mark.parametrize(
     "xy, radius, type",
     [

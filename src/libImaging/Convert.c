@@ -1044,7 +1044,8 @@ static struct {
     {"I;16L", "F", I16L_F},
     {"I;16B", "F", I16B_F},
 
-    {NULL}};
+    {NULL}
+};
 
 /* FIXME: translate indexed versions to pointer versions below this line */
 
@@ -1316,7 +1317,8 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
             (UINT8 *)imOut->image[y],
             (UINT8 *)imIn->image[y],
             imIn->xsize,
-            imIn->palette);
+            imIn->palette
+        );
     }
     ImagingSectionLeave(&cookie);
 
@@ -1328,11 +1330,8 @@ frompalette(Imaging imOut, Imaging imIn, const char *mode) {
 #endif
 static Imaging
 topalette(
-    Imaging imOut,
-    Imaging imIn,
-    const char *mode,
-    ImagingPalette inpalette,
-    int dither) {
+    Imaging imOut, Imaging imIn, const char *mode, ImagingPalette inpalette, int dither
+) {
     ImagingSectionCookie cookie;
     int alpha;
     int x, y;
@@ -1623,7 +1622,8 @@ tobilevel(Imaging imOut, Imaging imIn) {
 
 static Imaging
 convert(
-    Imaging imOut, Imaging imIn, const char *mode, ImagingPalette palette, int dither) {
+    Imaging imOut, Imaging imIn, const char *mode, ImagingPalette palette, int dither
+) {
     ImagingSectionCookie cookie;
     ImagingShuffler convert;
     int y;
@@ -1677,7 +1677,8 @@ convert(
 #else
         static char buf[100];
         snprintf(
-            buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode);
+            buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode
+        );
         return (Imaging)ImagingError_ValueError(buf);
 #endif
     }
@@ -1727,18 +1728,16 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
         if (strcmp(mode, "RGBa") == 0) {
             premultiplied = 1;
         }
-    } else if (
-        strcmp(imIn->mode, "RGB") == 0 &&
-        (strcmp(mode, "LA") == 0 || strcmp(mode, "La") == 0)) {
+    } else if (strcmp(imIn->mode, "RGB") == 0 &&
+               (strcmp(mode, "LA") == 0 || strcmp(mode, "La") == 0)) {
         convert = rgb2la;
         source_transparency = 1;
         if (strcmp(mode, "La") == 0) {
             premultiplied = 1;
         }
-    } else if (
-        (strcmp(imIn->mode, "1") == 0 || strcmp(imIn->mode, "I") == 0 ||
-         strcmp(imIn->mode, "I;16") == 0 || strcmp(imIn->mode, "L") == 0) &&
-        (strcmp(mode, "RGBA") == 0 || strcmp(mode, "LA") == 0)) {
+    } else if ((strcmp(imIn->mode, "1") == 0 || strcmp(imIn->mode, "I") == 0 ||
+                strcmp(imIn->mode, "I;16") == 0 || strcmp(imIn->mode, "L") == 0) &&
+               (strcmp(mode, "RGBA") == 0 || strcmp(mode, "LA") == 0)) {
         if (strcmp(imIn->mode, "1") == 0) {
             convert = bit2rgb;
         } else if (strcmp(imIn->mode, "I") == 0) {
@@ -1756,7 +1755,8 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
             100,
             "conversion from %.10s to %.10s not supported in convert_transparent",
             imIn->mode,
-            mode);
+            mode
+        );
         return (Imaging)ImagingError_ValueError(buf);
     }
 
