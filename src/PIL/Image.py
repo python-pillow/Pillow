@@ -470,43 +470,53 @@ def _getencoder(
 # Simple expression analyzer
 
 
-class _E:
+class ImagePointTransform:
+    """
+    Used with :py:meth:`~PIL.Image.Image.point` for single band images with more than
+    8 bits, this represents an affine transformation, where the value is multiplied by
+    ``scale`` and ``offset`` is added.
+    """
+
     def __init__(self, scale: float, offset: float) -> None:
         self.scale = scale
         self.offset = offset
 
-    def __neg__(self) -> _E:
-        return _E(-self.scale, -self.offset)
+    def __neg__(self) -> ImagePointTransform:
+        return ImagePointTransform(-self.scale, -self.offset)
 
-    def __add__(self, other: _E | float) -> _E:
-        if isinstance(other, _E):
-            return _E(self.scale + other.scale, self.offset + other.offset)
-        return _E(self.scale, self.offset + other)
+    def __add__(self, other: ImagePointTransform | float) -> ImagePointTransform:
+        if isinstance(other, ImagePointTransform):
+            return ImagePointTransform(
+                self.scale + other.scale, self.offset + other.offset
+            )
+        return ImagePointTransform(self.scale, self.offset + other)
 
     __radd__ = __add__
 
-    def __sub__(self, other: _E | float) -> _E:
+    def __sub__(self, other: ImagePointTransform | float) -> ImagePointTransform:
         return self + -other
 
-    def __rsub__(self, other: _E | float) -> _E:
+    def __rsub__(self, other: ImagePointTransform | float) -> ImagePointTransform:
         return other + -self
 
-    def __mul__(self, other: _E | float) -> _E:
-        if isinstance(other, _E):
+    def __mul__(self, other: ImagePointTransform | float) -> ImagePointTransform:
+        if isinstance(other, ImagePointTransform):
             return NotImplemented
-        return _E(self.scale * other, self.offset * other)
+        return ImagePointTransform(self.scale * other, self.offset * other)
 
     __rmul__ = __mul__
 
-    def __truediv__(self, other: _E | float) -> _E:
-        if isinstance(other, _E):
+    def __truediv__(self, other: ImagePointTransform | float) -> ImagePointTransform:
+        if isinstance(other, ImagePointTransform):
             return NotImplemented
-        return _E(self.scale / other, self.offset / other)
+        return ImagePointTransform(self.scale / other, self.offset / other)
 
 
-def _getscaleoffset(expr: Callable[[_E], _E | float]) -> tuple[float, float]:
-    a = expr(_E(1, 0))
-    return (a.scale, a.offset) if isinstance(a, _E) else (0, a)
+def _getscaleoffset(
+    expr: Callable[[ImagePointTransform], ImagePointTransform | float]
+) -> tuple[float, float]:
+    a = expr(ImagePointTransform(1, 0))
+    return (a.scale, a.offset) if isinstance(a, ImagePointTransform) else (0, a)
 
 
 # --------------------------------------------------------------------
@@ -1898,7 +1908,7 @@ class Image:
             Sequence[float]
             | NumpyArray
             | Callable[[int], float]
-            | Callable[[_E], _E | float]
+            | Callable[[ImagePointTransform], ImagePointTransform | float]
             | ImagePointHandler
         ),
         mode: str | None = None,

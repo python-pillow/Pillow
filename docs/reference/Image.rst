@@ -362,8 +362,8 @@ Classes
     :undoc-members:
     :show-inheritance:
 .. autoclass:: PIL.Image.ImagePointHandler
+.. autoclass:: PIL.Image.ImagePointTransform
 .. autoclass:: PIL.Image.ImageTransformHandler
-.. autoclass:: PIL.Image._E
 
 Protocols
 ---------
