@@ -42,6 +42,12 @@ try:
 except ImportError:
     ElementTree = None
 
+PrettyPrinter: type | None
+try:
+    from IPython.lib.pretty import PrettyPrinter
+except ImportError:
+    PrettyPrinter = None
+
 
 # Deprecation helper
 def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
@@ -91,16 +97,15 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    @pytest.mark.skipif(PrettyPrinter is None, reason="IPython is not installed")
     def test_repr_pretty(self) -> None:
-        class Pretty:
-            def text(self, text: str) -> None:
-                self.pretty_output = text
-
         im = Image.new("L", (100, 100))
 
-        p = Pretty()
+        output = io.StringIO()
+        assert PrettyPrinter is not None
+        p = PrettyPrinter(output)
         im._repr_pretty_(p, False)
-        assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
+        assert output.getvalue() == "<PIL.Image.Image image mode=L size=100x100>"
 
     def test_open_formats(self) -> None:
         PNGFILE = "Tests/images/hopper.png"

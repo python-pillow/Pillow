@@ -319,11 +319,11 @@ class IcoImageFile(ImageFile.ImageFile):
         self.load()
 
     @property
-    def size(self):
+    def size(self) -> tuple[int, int]:
         return self._size
 
     @size.setter
-    def size(self, value):
+    def size(self, value: tuple[int, int]) -> None:
         if value not in self.info["sizes"]:
             msg = "This is not one of the allowed sizes of this image"
             raise ValueError(msg)

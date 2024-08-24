@@ -412,9 +412,8 @@ class TestPyEncoder(CodecsTest):
         with pytest.raises(NotImplementedError):
             encoder.encode_to_pyfd()
 
-        fh = BytesIO()
         with pytest.raises(NotImplementedError):
-            encoder.encode_to_file(fh, 0)
+            encoder.encode_to_file(0, 0)
 
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):
