@@ -100,24 +100,18 @@ int export_imaging_schema(Imaging im, struct ArrowSchema* schema) {
     return export_named_type(schema, im->arrow_band_format, im->band_names[0]);
   }
 
-  retval = export_named_type(schema, "+s", "");
+  retval = export_named_type(schema, "+w:4", "");
   if (retval) {
     return retval;
   }
   // if it's not 1 band, it's an int32 at the moment. 4 unint8 bands.
-  schema->n_children = 4;
-  schema->children = calloc(4, sizeof(struct ArrowSchema*));
-  for (int i=0; i<4; i++) {
-    schema->children[i] =
-      (struct ArrowSchema*)calloc(1, sizeof(struct ArrowSchema));
-    if (export_named_type(schema->children[i], im->arrow_band_format, im->band_names[i])) {
-      /* error recovery */
-      for (int j=i-1; i>=0; i--) {
-        schema->children[j]->release(schema->children[j]);
-        free(schema->children[j]);
-      }
-      return 2;
-    }
+  schema->n_children = 1;
+  schema->children = calloc(1, sizeof(struct ArrowSchema*));
+  schema->children[0] = (struct ArrowSchema*)calloc(1, sizeof(struct ArrowSchema));
+  if (export_named_type(schema->children[0], im->arrow_band_format, "pixel")) {
+    free(schema->children[0]);
+    schema->release(schema);
+    return 2;
   }
   return 0;
 }
@@ -187,7 +181,7 @@ static void release_const_array(struct ArrowArray* array) {
 }
 
 
-void export_imaging_array(Imaging im, struct ArrowArray* array) {
+int export_single_channel_array(Imaging im, struct ArrowArray* array){
   int length = im->xsize * im->ysize;
 
   /* undone -- for now, single block images */
@@ -223,4 +217,84 @@ void export_imaging_array(Imaging im, struct ArrowArray* array) {
    } else {
      array->buffers[1] = im->blocks[0].ptr;
    }
+   return 0;
+}
+
+
+int export_fixed_pixel_array(Imaging im, struct ArrowArray* array) {
+
+  int length = im->xsize * im->ysize;
+
+  /* undone -- for now, single block images */
+  //assert (im->block_count = 0 || im->block_count = 1);
+
+  if (im->lines_per_block && im->lines_per_block < im->ysize) {
+    length = im->xsize * im->lines_per_block;
+  }
+
+  im->arrow_borrow++;
+  // Initialize primitive fields
+  // Fixed length arrays are 1 buffer of validity, and the length in pixels.
+  // Data is in a child array.
+  *array = (struct ArrowArray) {
+      // Data description
+      .length = length,
+      .offset = 0,
+      .null_count = 0,
+      .n_buffers = 1,
+      .n_children = 1,
+      .children = NULL,
+      .dictionary = NULL,
+      // Bookkeeping
+      .release = &release_const_array,
+      .private_data = im
+   };
+
+   // Allocate list of buffers
+   array->buffers = (const void**) calloc(1, sizeof(void*) * array->n_buffers);
+   //assert(array->buffers != NULL);
+   array->buffers[0] = NULL;  // no nulls, null bitmap can be omitted
+
+
+   // if it's not 1 band, it's an int32 at the moment. 4 unint8 bands.
+   array->n_children = 1;
+   array->children = calloc(1, sizeof(struct ArrowArray*));
+   array->children[0] = (struct ArrowArray*)calloc(1, sizeof(struct ArrowArray));
+
+   im->arrow_borrow++;
+   *array->children[0] = (struct ArrowArray) {
+      // Data description
+      .length = length * 4,
+      .offset = 0,
+      .null_count = 0,
+      .n_buffers = 2,
+      .n_children = 0,
+      .children = NULL,
+      .dictionary = NULL,
+      // Bookkeeping
+      .release = &release_const_array,
+      .private_data = im
+   };
+
+   array->children[0]->buffers = (const void**) calloc(2, sizeof(void*) * array->n_buffers);
+
+   if (im->block) {
+     array->children[0]->buffers[1] = im->block;
+   } else {
+     array->children[0]->buffers[1] = im->blocks[0].ptr;
+   }
+   return 0;
+}
+
+
+int export_imaging_array(Imaging im, struct ArrowArray* array) {
+  if (strcmp(im->arrow_band_format, "") == 0) {
+    return 1;
+  }
+
+  if (im->bands == 1) {
+    return export_single_channel_array(im, array);
+  }
+
+  return export_fixed_pixel_array(im, array);
 }
