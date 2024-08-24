@@ -1917,7 +1917,7 @@ class Image:
            object::
 
                class Example(Image.ImagePointHandler):
-                 def point(self, data):
+                 def point(self, im: Image) -> Image:
                    # Return result
         :param mode: Output mode (default is same as input). This can only be used if
            the source image has mode "L" or "P", and the output has mode "1" or the
