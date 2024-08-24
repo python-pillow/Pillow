@@ -5,6 +5,12 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Updated error message when saving WebP with invalid width or height #8322
+  [radarhere, hugovk]
+
+- Remove warning if NumPy failed to raise an error during conversion #8326
+  [radarhere]
+
 - If left and right sides meet in ImageDraw.rounded_rectangle(), do not draw rectangle to fill gap #8304
   [radarhere]
 
