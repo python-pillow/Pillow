@@ -58,7 +58,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     /* Setup image descriptor */
     im->xsize = xsize;
     im->ysize = ysize;
-
+    im->arrow_borrow = 1;
     im->type = IMAGING_TYPE_UINT8;
     strcpy(im->arrow_band_format, "C");
 
@@ -298,13 +298,15 @@ ImagingDelete(Imaging im) {
         return;
     }
 
+    im->arrow_borrow--;
+
+    if (im->arrow_borrow>0) {
+      return;
+    }
+
     if (im->palette) {
         ImagingPaletteDelete(im->palette);
         im->palette = NULL;
-    }
-
-    if (im->arrow_borrow) {
-      return;
     }
 
     if (im->destroy) {

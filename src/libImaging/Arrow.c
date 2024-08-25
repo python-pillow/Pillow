@@ -170,7 +170,7 @@ void export_uint32_array(const uint32_t* data, int64_t nitems,
 
 static void release_const_array(struct ArrowArray* array) {
   Imaging im = (Imaging)array->private_data;
-   im->arrow_borrow--;
+
    ImagingDelete(im);
 
    //assert(array->n_buffers == 2);
