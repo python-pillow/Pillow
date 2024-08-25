@@ -63,3 +63,41 @@ def test_to_array(mode: str, dtype: Any, mask: Any ) -> None:
     arr = pyarrow.array(img)
     _test_img_equals_pyarray(img, arr, mask)
     assert arr.type == dtype
+
+
+def test_lifetime():
+    # valgrind shouldn't error out here.
+    # arrays should be accessible after the image is deleted.
+
+    img = hopper('L')
+
+    arr_1 = pyarrow.array(img)
+    arr_2 = pyarrow.array(img)
+
+    del(img)
+
+    assert arr_1.sum().as_py() > 0
+    del(arr_1)
+
+    assert arr_2.sum().as_py() > 0
+    del(arr_2)
+
+def test_lifetime2():
+    # valgrind shouldn't error out here.
+    # img should remain after the arrays are collected.
+
+    img = hopper('L')
+
+    arr_1 = pyarrow.array(img)
+    arr_2 = pyarrow.array(img)
+
+
+    assert arr_1.sum().as_py() > 0
+    del(arr_1)
+
+    assert arr_2.sum().as_py() > 0
+    del(arr_2)
+
+    img2 = img.copy()
+    px = img2.load()
+    assert isinstance(px[0,0], int)
