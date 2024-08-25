@@ -269,7 +269,8 @@ getfamily(PyObject *self_, PyObject *args, PyObject *kw) {
     }
 
     if (!PyArg_ParseTupleAndKeywords(
-            args, kw, "O!|n", kwlist, &PyTuple_Type, &fonts_tuple, &layout_engine)) {
+            args, kw, "O!|n", kwlist, &PyTuple_Type, &fonts_tuple, &layout_engine
+        )) {
         return NULL;
     }
 
@@ -316,7 +317,8 @@ getfamily(PyObject *self_, PyObject *args, PyObject *kw) {
                 &index,
                 &encoding,
                 &font_bytes,
-                &font_bytes_size)) {
+                &font_bytes_size
+            )) {
             goto err;
         }
 
@@ -340,7 +342,8 @@ getfamily(PyObject *self_, PyObject *args, PyObject *kw) {
                     (FT_Byte *)self->font_bytes[i],
                     font_bytes_size,
                     index,
-                    &family->faces[i]);
+                    &family->faces[i]
+                );
             }
         }
 
@@ -499,7 +502,7 @@ text_layout_raqm(
         }
     }
 
-    for (face = 0; ; face++) {
+    for (face = 0;; face++) {
 #ifdef RAQM_VERSION_ATLEAST
 #if RAQM_VERSION_ATLEAST(0, 9, 0)
         if (face >= 1) {
@@ -518,7 +521,8 @@ text_layout_raqm(
             }
         }
 
-        int set_text = text != NULL ? raqm_set_text(rq, text, size) : raqm_set_text_utf8(rq, buffer, size);
+        int set_text = text != NULL ? raqm_set_text(rq, text, size)
+                                    : raqm_set_text_utf8(rq, buffer, size);
         if (!set_text) {
             PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
             goto failed;
@@ -595,10 +599,12 @@ text_layout_raqm(
                 }
                 if (fallback[start] < 0) {
                     raqm_set_freetype_face_range(
-                        rq, family->faces[f], start, i - start);
+                        rq, family->faces[f], start, i - start
+                    );
                 } else {
                     raqm_set_freetype_face_range(
-                        rq, family->faces[fallback[start]], start, i - start);
+                        rq, family->faces[fallback[start]], start, i - start
+                    );
                 }
                 start = i;
             }
@@ -771,7 +777,8 @@ text_layout_fallback(
                 */
 
                 (*glyph_info)[i].x_advance = glyph->metrics.horiAdvance;
-                /* y_advance is only used in ttb, which is not supported by basic layout */
+                /* y_advance is only used in ttb, which is not supported by basic layout
+                 */
                 (*glyph_info)[i].y_advance = 0;
                 last_index = (*glyph_info)[i].index;
                 (*glyph_info)[i].cluster = ch;
@@ -994,7 +1001,8 @@ bounding_box_and_anchors(
                 case 'm':  // middle (ascender + descender) / 2
                     // this should be consistent with getmetrics()
                     y_anchor = PIXEL(
-                        (family_getascender(family) + family_getdescender(family)) / 2);
+                        (family_getascender(family) + family_getdescender(family)) / 2
+                    );
                     break;
                 case 's':  // horizontal baseline
                     y_anchor = 0;
@@ -1301,8 +1309,7 @@ text_render(FontFamily *family, PyObject *args) {
         py = PIXEL(y + glyph_info[i].y_offset);
 
         face = glyph_info[i].face;
-        error =
-            FT_Load_Glyph(face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
+        error = FT_Load_Glyph(face, glyph_info[i].index, load_flags | FT_LOAD_RENDER);
         if (error) {
             geterror(error);
             goto glyph_error;
@@ -1923,16 +1930,17 @@ static PyMethodDef family_methods[] = {
     {"render", (PyCFunction)family_render, METH_VARARGS},
     {"getsize", (PyCFunction)family_getsize, METH_VARARGS},
     {"getlength", (PyCFunction)family_getlength, METH_VARARGS},
-/* TODO
-#if FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) || \
-    (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
-    {"getvarnames", (PyCFunction)font_getvarnames, METH_NOARGS},
-    {"getvaraxes", (PyCFunction)font_getvaraxes, METH_NOARGS},
-    {"setvarname", (PyCFunction)font_setvarname, METH_VARARGS},
-    {"setvaraxes", (PyCFunction)font_setvaraxes, METH_VARARGS},
-#endif
-*/
-    {NULL, NULL}};
+    /* TODO
+    #if FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && FREETYPE_MINOR > 9) || \
+        (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 9 && FREETYPE_PATCH == 1)
+        {"getvarnames", (PyCFunction)font_getvarnames, METH_NOARGS},
+        {"getvaraxes", (PyCFunction)font_getvaraxes, METH_NOARGS},
+        {"setvarname", (PyCFunction)font_setvarname, METH_VARARGS},
+        {"setvaraxes", (PyCFunction)font_setvaraxes, METH_VARARGS},
+    #endif
+    */
+    {NULL, NULL}
+};
 
 static PyObject *
 family_getattr_ascent(FontFamilyObject *self, void *closure) {
@@ -1949,7 +1957,6 @@ family_getattr_height(FontFamilyObject *self, void *closure) {
     return PyLong_FromLong(PIXEL(family_getheight(&self->data)));
 }
 
-
 static struct PyGetSetDef family_getsetters[] = {
     //{"family", (getter)font_getattr_family},
     //{"style", (getter)font_getattr_style},
@@ -1959,8 +1966,8 @@ static struct PyGetSetDef family_getsetters[] = {
     //{"x_ppem", (getter)font_getattr_x_ppem},
     //{"y_ppem", (getter)font_getattr_y_ppem},
     //{"glyphs", (getter)font_getattr_glyphs},
-    {NULL}};
-
+    {NULL}
+};
 
 static PyTypeObject FontFamily_Type = {
     PyVarObject_HEAD_INIT(NULL, 0) "FontFamily",
