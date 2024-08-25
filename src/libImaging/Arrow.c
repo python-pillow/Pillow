@@ -71,8 +71,8 @@ int export_named_type(struct ArrowSchema* schema,
     return 1;
   }
 
-  strlcpy(formatp, format, format_len);
-  strlcpy(namep, name, name_len);
+  strncpy(formatp, format, format_len);
+  strncpy(namep, name, name_len);
 
   *schema = (struct ArrowSchema) {
     // Type description
