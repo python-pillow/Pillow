@@ -71,7 +71,7 @@ def Ghostscript(
     fp: IO[bytes],
     scale: int = 1,
     transparency: bool = False,
-) -> Image.Image:
+) -> Image.core.ImagingCore:
     """Render an image using Ghostscript"""
     global gs_binary
     if not has_ghostscript():
