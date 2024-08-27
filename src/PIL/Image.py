@@ -223,7 +223,7 @@ if TYPE_CHECKING:
 
     from IPython.lib.pretty import PrettyPrinter
 
-    from . import ImageFile, ImageFilter, ImagePalette, TiffImagePlugin
+    from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
 OPEN: dict[
@@ -2978,7 +2978,7 @@ class Image:
         self.load()
         return self._new(self.im.effect_spread(distance))
 
-    def toqimage(self):
+    def toqimage(self) -> ImageQt.ImageQt:
         """Returns a QImage copy of this image"""
         from . import ImageQt
 
@@ -2987,7 +2987,7 @@ class Image:
             raise ImportError(msg)
         return ImageQt.toqimage(self)
 
-    def toqpixmap(self):
+    def toqpixmap(self) -> ImageQt.QPixmap:
         """Returns a QPixmap copy of this image"""
         from . import ImageQt
 
@@ -3314,7 +3314,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
-def fromqimage(im) -> ImageFile.ImageFile:
+def fromqimage(im: ImageQt.QImage) -> ImageFile.ImageFile:
     """Creates an image instance from a QImage image"""
     from . import ImageQt
 
@@ -3324,7 +3324,7 @@ def fromqimage(im) -> ImageFile.ImageFile:
     return ImageQt.fromqimage(im)
 
 
-def fromqpixmap(im) -> ImageFile.ImageFile:
+def fromqpixmap(im: ImageQt.QPixmap) -> ImageFile.ImageFile:
     """Creates an image instance from a QPixmap image"""
     from . import ImageQt
 
