@@ -504,7 +504,7 @@ class ImageDraw:
 
             if full_x:
                 self.draw.draw_rectangle((x0, y0 + r + 1, x1, y1 - r - 1), fill_ink, 1)
-            else:
+            elif x1 - r - 1 > x0 + r + 1:
                 self.draw.draw_rectangle((x0 + r + 1, y0, x1 - r - 1, y1), fill_ink, 1)
             if not full_x and not full_y:
                 left = [x0, y0, x0 + r, y1]

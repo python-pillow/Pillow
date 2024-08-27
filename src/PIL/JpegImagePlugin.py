@@ -826,7 +826,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # Ensure that our buffer is big enough. Same with the icc_profile block.
         bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
 
-    ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
+    )
 
 
 def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

@@ -601,7 +601,9 @@ def _write_single_frame(
     _write_local_header(fp, im, (0, 0), flags)
 
     im_out.encoderconfig = (8, get_interlace(im))
-    ImageFile._save(im_out, fp, [("gif", (0, 0) + im.size, 0, RAWMODE[im_out.mode])])
+    ImageFile._save(
+        im_out, fp, [ImageFile._Tile("gif", (0, 0) + im.size, 0, RAWMODE[im_out.mode])]
+    )
 
     fp.write(b"\0")  # end of image data
 
@@ -1069,7 +1071,9 @@ def _write_frame_data(
         _write_local_header(fp, im_frame, offset, 0)
 
         ImageFile._save(
-            im_frame, fp, [("gif", (0, 0) + im_frame.size, 0, RAWMODE[im_frame.mode])]
+            im_frame,
+            fp,
+            [ImageFile._Tile("gif", (0, 0) + im_frame.size, 0, RAWMODE[im_frame.mode])],
         )
 
         fp.write(b"\0")  # end of image data

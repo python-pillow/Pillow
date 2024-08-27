@@ -259,6 +259,7 @@ OPEN_INFO = {
     (II, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
     (MM, 5, (1,), 1, (8, 8, 8, 8, 8, 8), (0, 0)): ("CMYK", "CMYKXX"),
     (II, 5, (1,), 1, (16, 16, 16, 16), ()): ("CMYK", "CMYK;16L"),
+    (MM, 5, (1,), 1, (16, 16, 16, 16), ()): ("CMYK", "CMYK;16B"),
     (II, 6, (1,), 1, (8,), ()): ("L", "L"),
     (MM, 6, (1,), 1, (8,), ()): ("L", "L"),
     # JPEG compressed images handled by LibTiff and auto-converted to RGBX
@@ -455,8 +456,11 @@ class IFDRational(Rational):
         __int__ = _delegate("__int__")
 
 
-def _register_loader(idx: int, size: int):
-    def decorator(func):
+_LoaderFunc = Callable[["ImageFileDirectory_v2", bytes, bool], Any]
+
+
+def _register_loader(idx: int, size: int) -> Callable[[_LoaderFunc], _LoaderFunc]:
+    def decorator(func: _LoaderFunc) -> _LoaderFunc:
         from .TiffTags import TYPES
 
         if func.__name__.startswith("load_"):
@@ -481,12 +485,13 @@ def _register_basic(idx_fmt_name: tuple[int, str, str]) -> None:
     idx, fmt, name = idx_fmt_name
     TYPES[idx] = name
     size = struct.calcsize(f"={fmt}")
-    _load_dispatch[idx] = (  # noqa: F821
-        size,
-        lambda self, data, legacy_api=True: (
-            self._unpack(f"{len(data) // size}{fmt}", data)
-        ),
-    )
+
+    def basic_handler(
+        self: ImageFileDirectory_v2, data: bytes, legacy_api: bool = True
+    ) -> tuple[Any, ...]:
+        return self._unpack(f"{len(data) // size}{fmt}", data)
+
+    _load_dispatch[idx] = size, basic_handler  # noqa: F821
     _write_dispatch[idx] = lambda self, *values: (  # noqa: F821
         b"".join(self._pack(fmt, value) for value in values)
     )
@@ -559,7 +564,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
     """
 
-    _load_dispatch: dict[int, Callable[[ImageFileDirectory_v2, bytes, bool], Any]] = {}
+    _load_dispatch: dict[int, tuple[int, _LoaderFunc]] = {}
     _write_dispatch: dict[int, Callable[..., Any]] = {}
 
     def __init__(
@@ -619,12 +624,12 @@ class ImageFileDirectory_v2(_IFDv2Base):
         self._tagdata: dict[int, bytes] = {}
         self.tagtype = {}  # added 2008-06-05 by Florian Hoech
         self._next = None
-        self._offset = None
+        self._offset: int | None = None
 
     def __str__(self) -> str:
         return str(dict(self))
 
-    def named(self):
+    def named(self) -> dict[str, Any]:
         """
         :returns: dict of name|key: value
 
@@ -638,7 +643,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __len__(self) -> int:
         return len(set(self._tagdata) | set(self._tags_v2))
 
-    def __getitem__(self, tag):
+    def __getitem__(self, tag: int) -> Any:
         if tag not in self._tags_v2:  # unpack on the fly
             data = self._tagdata[tag]
             typ = self.tagtype[tag]
@@ -652,10 +657,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __contains__(self, tag: object) -> bool:
         return tag in self._tags_v2 or tag in self._tagdata
 
-    def __setitem__(self, tag: int, value) -> None:
+    def __setitem__(self, tag: int, value: Any) -> None:
         self._setitem(tag, value, self.legacy_api)
 
-    def _setitem(self, tag: int, value, legacy_api: bool) -> None:
+    def _setitem(self, tag: int, value: Any, legacy_api: bool) -> None:
         basetypes = (Number, bytes, str)
 
         info = TiffTags.lookup(tag, self.group)
@@ -743,10 +748,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
     def __iter__(self) -> Iterator[int]:
         return iter(set(self._tagdata) | set(self._tags_v2))
 
-    def _unpack(self, fmt: str, data: bytes):
+    def _unpack(self, fmt: str, data: bytes) -> tuple[Any, ...]:
         return struct.unpack(self._endian + fmt, data)
 
-    def _pack(self, fmt: str, *values) -> bytes:
+    def _pack(self, fmt: str, *values: Any) -> bytes:
         return struct.pack(self._endian + fmt, *values)
 
     list(
@@ -823,7 +828,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
         return value
 
     @_register_loader(10, 8)
-    def load_signed_rational(self, data: bytes, legacy_api: bool = True):
+    def load_signed_rational(
+        self, data: bytes, legacy_api: bool = True
+    ) -> tuple[tuple[int, int] | IFDRational, ...]:
         vals = self._unpack(f"{len(data) // 4}l", data)
 
         def combine(a: int, b: int) -> tuple[int, int] | IFDRational:
@@ -848,7 +855,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
             raise OSError(msg)
         return ret
 
-    def load(self, fp):
+    def load(self, fp: IO[bytes]) -> None:
         self.reset()
         self._offset = fp.tell()
 
@@ -1087,11 +1094,11 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
     def __iter__(self) -> Iterator[int]:
         return iter(set(self._tagdata) | set(self._tags_v1))
 
-    def __setitem__(self, tag: int, value) -> None:
+    def __setitem__(self, tag: int, value: Any) -> None:
         for legacy_api in (False, True):
             self._setitem(tag, value, legacy_api)
 
-    def __getitem__(self, tag):
+    def __getitem__(self, tag: int) -> Any:
         if tag not in self._tags_v1:  # unpack on the fly
             data = self._tagdata[tag]
             typ = self.tagtype[tag]
@@ -1117,11 +1124,15 @@ class TiffImageFile(ImageFile.ImageFile):
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
 
-    def __init__(self, fp=None, filename=None):
-        self.tag_v2 = None
+    def __init__(
+        self,
+        fp: StrOrBytesPath | IO[bytes] | None = None,
+        filename: str | bytes | None = None,
+    ) -> None:
+        self.tag_v2: ImageFileDirectory_v2
         """ Image file directory (tag dictionary) """
 
-        self.tag = None
+        self.tag: ImageFileDirectory_v1
         """ Legacy tag entries """
 
         super().__init__(fp, filename)
@@ -1135,9 +1146,6 @@ class TiffImageFile(ImageFile.ImageFile):
             ifh += self.fp.read(8)
 
         self.tag_v2 = ImageFileDirectory_v2(ifh)
-
-        # legacy IFD entries will be filled in later
-        self.ifd: ImageFileDirectory_v1 | None = None
 
         # setup frame pointers
         self.__first = self.__next = self.tag_v2.next
@@ -1386,11 +1394,14 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- photometric_interpretation: %s", photo)
         logger.debug("- planar_configuration: %s", self._planar_configuration)
         logger.debug("- fill_order: %s", fillorder)
-        logger.debug("- YCbCr subsampling: %s", self.tag.get(YCBCRSUBSAMPLING))
+        logger.debug("- YCbCr subsampling: %s", self.tag_v2.get(YCBCRSUBSAMPLING))
 
         # size
-        xsize = int(self.tag_v2.get(IMAGEWIDTH))
-        ysize = int(self.tag_v2.get(IMAGELENGTH))
+        xsize = self.tag_v2.get(IMAGEWIDTH)
+        ysize = self.tag_v2.get(IMAGELENGTH)
+        if not isinstance(xsize, int) or not isinstance(ysize, int):
+            msg = "Invalid dimensions"
+            raise ValueError(msg)
         self._size = xsize, ysize
 
         logger.debug("- size: %s", self.size)
@@ -1538,8 +1549,12 @@ class TiffImageFile(ImageFile.ImageFile):
             else:
                 # tiled image
                 offsets = self.tag_v2[TILEOFFSETS]
-                w = self.tag_v2.get(TILEWIDTH)
+                tilewidth = self.tag_v2.get(TILEWIDTH)
                 h = self.tag_v2.get(TILELENGTH)
+                if not isinstance(tilewidth, int) or not isinstance(h, int):
+                    msg = "Invalid tile dimensions"
+                    raise ValueError(msg)
+                w = tilewidth
 
             for offset in offsets:
                 if x + w > xsize:
@@ -1617,7 +1632,7 @@ SAVE_INFO = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp, filename: str | bytes) -> None:
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
@@ -1753,10 +1768,11 @@ def _save(im, fp, filename):
         if im.mode == "1":
             inverted_im = im.copy()
             px = inverted_im.load()
-            for y in range(inverted_im.height):
-                for x in range(inverted_im.width):
-                    px[x, y] = 0 if px[x, y] == 255 else 255
-            im = inverted_im
+            if px is not None:
+                for y in range(inverted_im.height):
+                    for x in range(inverted_im.width):
+                        px[x, y] = 0 if px[x, y] == 255 else 255
+                im = inverted_im
         else:
             im = ImageOps.invert(im)
 
@@ -1798,11 +1814,11 @@ def _save(im, fp, filename):
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
 
     if im.mode == "YCbCr":
-        for tag, value in {
+        for tag, default_value in {
             YCBCRSUBSAMPLING: (1, 1),
             REFERENCEBLACKWHITE: (0, 255, 128, 255, 128, 255),
         }.items():
-            ifd.setdefault(tag, value)
+            ifd.setdefault(tag, default_value)
 
     blocklist = [TILEWIDTH, TILELENGTH, TILEOFFSETS, TILEBYTECOUNTS]
     if libtiff:
@@ -1845,7 +1861,7 @@ def _save(im, fp, filename):
         ]
 
         # bits per sample is a single short in the tiff directory, not a list.
-        atts = {BITSPERSAMPLE: bits[0]}
+        atts: dict[int, Any] = {BITSPERSAMPLE: bits[0]}
         # Merge the ones that we have with (optional) more bits from
         # the original file, e.g x,y resolution so that we can
         # save(load('')) == original file.
@@ -1916,13 +1932,15 @@ def _save(im, fp, filename):
         offset = ifd.save(fp)
 
         ImageFile._save(
-            im, fp, [("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))]
+            im,
+            fp,
+            [ImageFile._Tile("raw", (0, 0) + im.size, offset, (rawmode, stride, 1))],
         )
 
     # -- helper for multi-page save --
     if "_debug_multipage" in encoderinfo:
         # just to access o32 and o16 (using correct byte order)
-        im._debug_multipage = ifd
+        setattr(im, "_debug_multipage", ifd)
 
 
 class AppendingTiffWriter:
@@ -2079,38 +2097,34 @@ class AppendingTiffWriter:
         (value,) = struct.unpack(self.longFmt, self.f.read(4))
         return value
 
+    @staticmethod
+    def _verify_bytes_written(bytes_written: int | None, expected: int) -> None:
+        if bytes_written is not None and bytes_written != expected:
+            msg = f"wrote only {bytes_written} bytes but wanted {expected}"
+            raise RuntimeError(msg)
+
     def rewriteLastShortToLong(self, value: int) -> None:
         self.f.seek(-2, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            msg = f"wrote only {bytes_written} bytes but wanted 4"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 4)
 
     def rewriteLastShort(self, value: int) -> None:
         self.f.seek(-2, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
-        if bytes_written is not None and bytes_written != 2:
-            msg = f"wrote only {bytes_written} bytes but wanted 2"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 2)
 
     def rewriteLastLong(self, value: int) -> None:
         self.f.seek(-4, os.SEEK_CUR)
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            msg = f"wrote only {bytes_written} bytes but wanted 4"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 4)
 
     def writeShort(self, value: int) -> None:
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
-        if bytes_written is not None and bytes_written != 2:
-            msg = f"wrote only {bytes_written} bytes but wanted 2"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 2)
 
     def writeLong(self, value: int) -> None:
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            msg = f"wrote only {bytes_written} bytes but wanted 4"
-            raise RuntimeError(msg)
+        self._verify_bytes_written(bytes_written, 4)
 
     def close(self) -> None:
         self.finalize()

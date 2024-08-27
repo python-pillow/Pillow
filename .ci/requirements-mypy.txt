@@ -5,6 +5,7 @@ ipython
 numpy
 packaging
 pytest
+sphinx
 types-defusedxml
 types-olefile
 types-setuptools

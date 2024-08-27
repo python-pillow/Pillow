@@ -684,6 +684,13 @@ class TestFileTiff:
             with Image.open(outfile) as reloaded:
                 assert_image_equal_tofile(reloaded, infile)
 
+    def test_invalid_tiled_dimensions(self) -> None:
+        with open("Tests/images/tiff_tiled_planar_raw.tif", "rb") as fp:
+            data = fp.read()
+        b = BytesIO(data[:144] + b"\x02" + data[145:])
+        with pytest.raises(ValueError):
+            Image.open(b)
+
     @pytest.mark.parametrize("mode", ("P", "PA"))
     def test_palette(self, mode: str, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")

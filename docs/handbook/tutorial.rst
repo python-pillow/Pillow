@@ -186,7 +186,7 @@ Rolling an image
 
 ::
 
-    def roll(im, delta):
+    def roll(im: Image.Image, delta: int) -> Image.Image:
         """Roll an image sideways."""
         xsize, ysize = im.size
 
@@ -211,7 +211,7 @@ Merging images
 
 ::
 
-    def merge(im1, im2):
+    def merge(im1: Image.Image, im2: Image.Image) -> Image.Image:
         w = im1.size[0] + im2.size[0]
         h = max(im1.size[1], im2.size[1])
         im = Image.new("RGBA", (w, h))
@@ -704,7 +704,7 @@ in the current directory can be saved as JPEGs at reduced quality.
     import glob
     from PIL import Image
 
-    def compress_image(source_path, dest_path):
+    def compress_image(source_path: str, dest_path: str) -> None:
         with Image.open(source_path) as img:
             if img.mode != "RGB":
                 img = img.convert("RGB")

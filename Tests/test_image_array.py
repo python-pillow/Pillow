@@ -47,7 +47,7 @@ def test_toarray() -> None:
             with pytest.raises(OSError):
                 numpy.array(im_truncated)
         else:
-            with pytest.warns(UserWarning):
+            with pytest.warns(DeprecationWarning):
                 numpy.array(im_truncated)
 
 

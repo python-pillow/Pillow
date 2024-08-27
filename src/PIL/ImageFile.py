@@ -31,6 +31,7 @@ from __future__ import annotations
 import abc
 import io
 import itertools
+import os
 import struct
 import sys
 from typing import IO, Any, NamedTuple
@@ -93,7 +94,7 @@ def _tilesort(t: _Tile) -> int:
 
 class _Tile(NamedTuple):
     codec_name: str
-    extents: tuple[int, int, int, int]
+    extents: tuple[int, int, int, int] | None
     offset: int
     args: tuple[Any, ...] | str | None
 
@@ -174,7 +175,7 @@ class ImageFile(Image.Image):
             self.fp.close()
         self.fp = None
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
         if self.tile is None:
@@ -185,7 +186,7 @@ class ImageFile(Image.Image):
         if not self.tile:
             return pixel
 
-        self.map = None
+        self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
         # As of pypy 2.1.0, memory mapping was failing here.
         use_mmap = use_mmap and not hasattr(sys, "pypy_version_info")
@@ -193,17 +194,17 @@ class ImageFile(Image.Image):
         readonly = 0
 
         # look for read/seek overrides
-        try:
+        if hasattr(self, "load_read"):
             read = self.load_read
             # don't use mmap if there are custom read/seek functions
             use_mmap = False
-        except AttributeError:
+        else:
             read = self.fp.read
 
-        try:
+        if hasattr(self, "load_seek"):
             seek = self.load_seek
             use_mmap = False
-        except AttributeError:
+        else:
             seek = self.fp.seek
 
         if use_mmap:
@@ -243,11 +244,8 @@ class ImageFile(Image.Image):
             # sort tiles in file order
             self.tile.sort(key=_tilesort)
 
-            try:
-                # FIXME: This is a hack to handle TIFF's JpegTables tag.
-                prefix = self.tile_prefix
-            except AttributeError:
-                prefix = b""
+            # FIXME: This is a hack to handle TIFF's JpegTables tag.
+            prefix = getattr(self, "tile_prefix", b"")
 
             # Remove consecutive duplicates that only differ by their offset
             self.tile = [
@@ -525,7 +523,7 @@ class Parser:
 # --------------------------------------------------------------------
 
 
-def _save(im: Image.Image, fp: IO[bytes], tile, bufsize: int = 0) -> None:
+def _save(im: Image.Image, fp: IO[bytes], tile: list[_Tile], bufsize: int = 0) -> None:
     """Helper to save image based on tile list
 
     :param im: Image object.
@@ -558,7 +556,7 @@ def _encode_tile(
     fp: IO[bytes],
     tile: list[_Tile],
     bufsize: int,
-    fh,
+    fh: int | None,
     exc: BaseException | None = None,
 ) -> None:
     for encoder_name, extents, offset, args in tile:
@@ -580,6 +578,7 @@ def _encode_tile(
                             break
                 else:
                     # slight speedup: compress to real file object
+                    assert fh is not None
                     errcode = encoder.encode_to_file(fh, bufsize)
             if errcode < 0:
                 raise _get_oserror(errcode, encoder=True) from exc
@@ -804,7 +803,7 @@ class PyEncoder(PyCodec):
             self.fd.write(data)
         return bytes_consumed, errcode
 
-    def encode_to_file(self, fh: IO[bytes], bufsize: int) -> int:
+    def encode_to_file(self, fh: int, bufsize: int) -> int:
         """
         :param fh: File handle.
         :param bufsize: Buffer size.
@@ -817,5 +816,5 @@ class PyEncoder(PyCodec):
         while errcode == 0:
             status, errcode, buf = self.encode(bufsize)
             if status > 0:
-                fh.write(buf[status:])
+                os.write(fh, buf[status:])
         return errcode

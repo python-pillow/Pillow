@@ -218,9 +218,12 @@ if hasattr(core, "DEFAULT_STRATEGY"):
 # Registries
 
 if TYPE_CHECKING:
+    import mmap
     from xml.etree.ElementTree import Element
 
-    from . import ImageFile, ImagePalette, TiffImagePlugin
+    from IPython.lib.pretty import PrettyPrinter
+
+    from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
 OPEN: dict[
@@ -467,43 +470,53 @@ def _getencoder(
 # Simple expression analyzer
 
 
-class _E:
+class ImagePointTransform:
+    """
+    Used with :py:meth:`~PIL.Image.Image.point` for single band images with more than
+    8 bits, this represents an affine transformation, where the value is multiplied by
+    ``scale`` and ``offset`` is added.
+    """
+
     def __init__(self, scale: float, offset: float) -> None:
         self.scale = scale
         self.offset = offset
 
-    def __neg__(self) -> _E:
-        return _E(-self.scale, -self.offset)
+    def __neg__(self) -> ImagePointTransform:
+        return ImagePointTransform(-self.scale, -self.offset)
 
-    def __add__(self, other: _E | float) -> _E:
-        if isinstance(other, _E):
-            return _E(self.scale + other.scale, self.offset + other.offset)
-        return _E(self.scale, self.offset + other)
+    def __add__(self, other: ImagePointTransform | float) -> ImagePointTransform:
+        if isinstance(other, ImagePointTransform):
+            return ImagePointTransform(
+                self.scale + other.scale, self.offset + other.offset
+            )
+        return ImagePointTransform(self.scale, self.offset + other)
 
     __radd__ = __add__
 
-    def __sub__(self, other: _E | float) -> _E:
+    def __sub__(self, other: ImagePointTransform | float) -> ImagePointTransform:
         return self + -other
 
-    def __rsub__(self, other: _E | float) -> _E:
+    def __rsub__(self, other: ImagePointTransform | float) -> ImagePointTransform:
         return other + -self
 
-    def __mul__(self, other: _E | float) -> _E:
-        if isinstance(other, _E):
+    def __mul__(self, other: ImagePointTransform | float) -> ImagePointTransform:
+        if isinstance(other, ImagePointTransform):
             return NotImplemented
-        return _E(self.scale * other, self.offset * other)
+        return ImagePointTransform(self.scale * other, self.offset * other)
 
     __rmul__ = __mul__
 
-    def __truediv__(self, other: _E | float) -> _E:
-        if isinstance(other, _E):
+    def __truediv__(self, other: ImagePointTransform | float) -> ImagePointTransform:
+        if isinstance(other, ImagePointTransform):
             return NotImplemented
-        return _E(self.scale / other, self.offset / other)
+        return ImagePointTransform(self.scale / other, self.offset / other)
 
 
-def _getscaleoffset(expr) -> tuple[float, float]:
-    a = expr(_E(1, 0))
-    return (a.scale, a.offset) if isinstance(a, _E) else (0, a)
+def _getscaleoffset(
+    expr: Callable[[ImagePointTransform], ImagePointTransform | float]
+) -> tuple[float, float]:
+    a = expr(ImagePointTransform(1, 0))
+    return (a.scale, a.offset) if isinstance(a, ImagePointTransform) else (0, a)
 
 
 # --------------------------------------------------------------------
@@ -623,7 +636,7 @@ class Image:
                 logger.debug("Error closing: %s", msg)
 
         if getattr(self, "map", None):
-            self.map = None
+            self.map: mmap.mmap | None = None
 
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
@@ -687,7 +700,7 @@ class Image:
             id(self),
         )
 
-    def _repr_pretty_(self, p, cycle: bool) -> None:
+    def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
         """IPython plain text display support"""
 
         # Same as __repr__ but without unpredictable id(self),
@@ -734,24 +747,12 @@ class Image:
     def __array_interface__(self) -> dict[str, str | bytes | int | tuple[int, ...]]:
         # numpy array interface support
         new: dict[str, str | bytes | int | tuple[int, ...]] = {"version": 3}
-        try:
-            if self.mode == "1":
-                # Binary images need to be extended from bits to bytes
-                # See: https://github.com/python-pillow/Pillow/issues/350
-                new["data"] = self.tobytes("raw", "L")
-            else:
-                new["data"] = self.tobytes()
-        except Exception as e:
-            if not isinstance(e, (MemoryError, RecursionError)):
-                try:
-                    import numpy
-                    from packaging.version import parse as parse_version
-                except ImportError:
-                    pass
-                else:
-                    if parse_version(numpy.__version__) < parse_version("1.23"):
-                        warnings.warn(str(e))
-            raise
+        if self.mode == "1":
+            # Binary images need to be extended from bits to bytes
+            # See: https://github.com/python-pillow/Pillow/issues/350
+            new["data"] = self.tobytes("raw", "L")
+        else:
+            new["data"] = self.tobytes()
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
@@ -1352,9 +1353,6 @@ class Image:
         self.load()
         return self._new(self.im.expand(xmargin, ymargin))
 
-    if TYPE_CHECKING:
-        from . import ImageFilter
-
     def filter(self, filter: ImageFilter.Filter | type[ImageFilter.Filter]) -> Image:
         """
         Filters this image using the given filter.  For a list of
@@ -1918,7 +1916,13 @@ class Image:
 
     def point(
         self,
-        lut: Sequence[float] | NumpyArray | Callable[[int], float] | ImagePointHandler,
+        lut: (
+            Sequence[float]
+            | NumpyArray
+            | Callable[[int], float]
+            | Callable[[ImagePointTransform], ImagePointTransform | float]
+            | ImagePointHandler
+        ),
         mode: str | None = None,
     ) -> Image:
         """
@@ -1935,7 +1939,7 @@ class Image:
            object::
 
                class Example(Image.ImagePointHandler):
-                 def point(self, data):
+                 def point(self, im: Image) -> Image:
                    # Return result
         :param mode: Output mode (default is same as input). This can only be used if
            the source image has mode "L" or "P", and the output has mode "1" or the
@@ -1954,10 +1958,10 @@ class Image:
                 # check if the function can be used with point_transform
                 # UNDONE wiredfool -- I think this prevents us from ever doing
                 # a gamma function point transform on > 8bit images.
-                scale, offset = _getscaleoffset(lut)
+                scale, offset = _getscaleoffset(lut)  # type: ignore[arg-type]
                 return self._new(self.im.point_transform(scale, offset))
             # for other modes, convert the function to a table
-            flatLut = [lut(i) for i in range(256)] * self.im.bands
+            flatLut = [lut(i) for i in range(256)] * self.im.bands  # type: ignore[arg-type]
         else:
             flatLut = lut
 
@@ -2894,11 +2898,11 @@ class Image:
         self,
         box: tuple[int, int, int, int],
         image: Image,
-        method,
-        data,
+        method: Transform,
+        data: Sequence[float],
         resample: int = Resampling.NEAREST,
         fill: bool = True,
-    ):
+    ) -> None:
         w = box[2] - box[0]
         h = box[3] - box[1]
 
@@ -2999,7 +3003,7 @@ class Image:
         self.load()
         return self._new(self.im.effect_spread(distance))
 
-    def toqimage(self):
+    def toqimage(self) -> ImageQt.ImageQt:
         """Returns a QImage copy of this image"""
         from . import ImageQt
 
@@ -3008,7 +3012,7 @@ class Image:
             raise ImportError(msg)
         return ImageQt.toqimage(self)
 
-    def toqpixmap(self):
+    def toqpixmap(self) -> ImageQt.QPixmap:
         """Returns a QPixmap copy of this image"""
         from . import ImageQt
 
@@ -3335,7 +3339,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
-def fromqimage(im) -> ImageFile.ImageFile:
+def fromqimage(im: ImageQt.QImage) -> ImageFile.ImageFile:
     """Creates an image instance from a QImage image"""
     from . import ImageQt
 
@@ -3345,7 +3349,7 @@ def fromqimage(im) -> ImageFile.ImageFile:
     return ImageQt.fromqimage(im)
 
 
-def fromqpixmap(im) -> ImageFile.ImageFile:
+def fromqpixmap(im: ImageQt.QPixmap) -> ImageFile.ImageFile:
     """Creates an image instance from a QPixmap image"""
     from . import ImageQt
 
@@ -4033,15 +4037,19 @@ class Exif(_ExifBase):
             ifd[tag] = value
         return b"Exif\x00\x00" + head + ifd.tobytes(offset)
 
-    def get_ifd(self, tag):
+    def get_ifd(self, tag: int) -> dict[int, Any]:
         if tag not in self._ifds:
             if tag == ExifTags.IFD.IFD1:
                 if self._info is not None and self._info.next != 0:
-                    self._ifds[tag] = self._get_ifd_dict(self._info.next)
+                    ifd = self._get_ifd_dict(self._info.next)
+                    if ifd is not None:
+                        self._ifds[tag] = ifd
             elif tag in [ExifTags.IFD.Exif, ExifTags.IFD.GPSInfo]:
                 offset = self._hidden_data.get(tag, self.get(tag))
                 if offset is not None:
-                    self._ifds[tag] = self._get_ifd_dict(offset, tag)
+                    ifd = self._get_ifd_dict(offset, tag)
+                    if ifd is not None:
+                        self._ifds[tag] = ifd
             elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
@@ -4098,7 +4106,9 @@ class Exif(_ExifBase):
                                 (offset,) = struct.unpack(">L", data)
                                 self.fp.seek(offset)
 
-                                camerainfo = {"ModelID": self.fp.read(4)}
+                                camerainfo: dict[str, int | bytes] = {
+                                    "ModelID": self.fp.read(4)
+                                }
 
                                 self.fp.read(4)
                                 # Seconds since 2000
@@ -4114,16 +4124,18 @@ class Exif(_ExifBase):
                                 ][1]
                                 camerainfo["Parallax"] = handler(
                                     ImageFileDirectory_v2(), parallax, False
-                                )
+                                )[0]
 
                                 self.fp.read(4)
                                 camerainfo["Category"] = self.fp.read(2)
 
-                                makernote = {0x1101: dict(self._fixup_dict(camerainfo))}
+                                makernote = {0x1101: camerainfo}
                         self._ifds[tag] = makernote
                 else:
                     # Interop
-                    self._ifds[tag] = self._get_ifd_dict(tag_data, tag)
+                    ifd = self._get_ifd_dict(tag_data, tag)
+                    if ifd is not None:
+                        self._ifds[tag] = ifd
         ifd = self._ifds.get(tag, {})
         if tag == ExifTags.IFD.Exif and self._hidden_data:
             ifd = {

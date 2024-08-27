@@ -217,8 +217,8 @@ def getiptcinfo(
         # get raw data from the IPTC/NAA tag (PhotoShop tags the data
         # as 4-byte integers, so we cannot use the get method...)
         try:
-            data = im.tag.tagdata[TiffImagePlugin.IPTC_NAA_CHUNK]
-        except (AttributeError, KeyError):
+            data = im.tag_v2[TiffImagePlugin.IPTC_NAA_CHUNK]
+        except KeyError:
             pass
 
     if data is None:

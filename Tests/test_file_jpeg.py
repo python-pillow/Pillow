@@ -1019,13 +1019,16 @@ class TestFileJpeg:
 
         # SOI, EOI
         for marker in b"\xff\xd8", b"\xff\xd9":
-            assert marker in data[1] and marker in data[2]
+            assert marker in data[1]
+            assert marker in data[2]
         # DHT, DQT
         for marker in b"\xff\xc4", b"\xff\xdb":
-            assert marker in data[1] and marker not in data[2]
+            assert marker in data[1]
+            assert marker not in data[2]
         # SOF0, SOS, APP0 (JFIF header)
         for marker in b"\xff\xc0", b"\xff\xda", b"\xff\xe0":
-            assert marker not in data[1] and marker in data[2]
+            assert marker not in data[1]
+            assert marker in data[2]
 
         with Image.open(BytesIO(data[0])) as interchange_im:
             with Image.open(BytesIO(data[1] + data[2])) as combined_im:
