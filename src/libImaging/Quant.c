@@ -36,7 +36,8 @@
 #define UINT32_MAX 0xffffffff
 #endif
 
-#define NO_OUTPUT
+// #define DEBUG
+// #define TEST_NEAREST_NEIGHBOUR
 
 typedef struct {
     uint32_t scale;
@@ -144,7 +145,7 @@ create_pixel_hash(Pixel *pixelData, uint32_t nPixels) {
     PixelHashData *d;
     HashTable *hash;
     uint32_t i;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     uint32_t timer, timer2, timer3;
 #endif
 
@@ -156,7 +157,7 @@ create_pixel_hash(Pixel *pixelData, uint32_t nPixels) {
     hash = hashtable_new(pixel_hash, pixel_cmp);
     hashtable_set_user_data(hash, d);
     d->scale = 0;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     timer = timer3 = clock();
 #endif
     for (i = 0; i < nPixels; i++) {
@@ -167,22 +168,22 @@ create_pixel_hash(Pixel *pixelData, uint32_t nPixels) {
         }
         while (hashtable_get_count(hash) > MAX_HASH_ENTRIES) {
             d->scale++;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             printf("rehashing - new scale: %d\n", (int)d->scale);
             timer2 = clock();
 #endif
             hashtable_rehash_compute(hash, rehash_collide);
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             timer2 = clock() - timer2;
             printf("rehash took %f sec\n", timer2 / (double)CLOCKS_PER_SEC);
             timer += timer2;
 #endif
         }
     }
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("inserts took %f sec\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("total        %f sec\n", (clock() - timer3) / (double)CLOCKS_PER_SEC);
 #endif
     return hash;
@@ -304,18 +305,18 @@ mergesort_pixels(PixelList *head, int i) {
     return head;
 }
 
-#if defined(TEST_MERGESORT) || defined(TEST_SORTED)
+#ifdef DEBUG
 static int
 test_sorted(PixelList *pl[3]) {
-    int i, n, l;
+    int i, l;
     PixelList *t;
 
     for (i = 0; i < 3; i++) {
-        n = 0;
         l = 256;
         for (t = pl[i]; t; t = t->next[i]) {
-            if (l < t->p.a.v[i])
+            if (l < t->p.a.v[i]) {
                 return 0;
+            }
             l = t->p.a.v[i];
         }
     }
@@ -347,12 +348,12 @@ splitlists(
     PixelList *l, *r, *c, *n;
     int i;
     int nRight;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     int nLeft;
 #endif
     int splitColourVal;
 
-#ifdef TEST_SPLIT
+#ifdef DEBUG
     {
         PixelList *_prevTest, *_nextTest;
         int _i, _nextCount[3], _prevCount[3];
@@ -402,14 +403,14 @@ splitlists(
 #endif
     nCount[0] = nCount[1] = 0;
     nRight = 0;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     nLeft = 0;
 #endif
     for (left = 0, c = h[axis]; c;) {
         left = left + c->count;
         nCount[0] += c->count;
         c->flag = 0;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
         nLeft++;
 #endif
         c = c->next[axis];
@@ -424,7 +425,7 @@ splitlists(
                 break;
             }
             c->flag = 0;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             nLeft++;
 #endif
             nCount[0] += c->count;
@@ -442,14 +443,14 @@ splitlists(
             }
             c->flag = 1;
             nRight++;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             nLeft--;
 #endif
             nCount[0] -= c->count;
             nCount[1] += c->count;
         }
     }
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     if (!nLeft) {
         for (c = h[axis]; c; c = c->next[axis]) {
             printf("[%d %d %d]\n", c->p.c.r, c->p.c.g, c->p.c.b);
@@ -511,7 +512,7 @@ split(BoxNode *node) {
     gl = node->tail[1]->p.c.g;
     bh = node->head[2]->p.c.b;
     bl = node->tail[2]->p.c.b;
-#ifdef TEST_SPLIT
+#ifdef DEBUG
     printf("splitting node [%d %d %d] [%d %d %d] ", rl, gl, bl, rh, gh, bh);
 #endif
     f[0] = (rh - rl) * 77;
@@ -526,11 +527,8 @@ split(BoxNode *node) {
             axis = i;
         }
     }
-#ifdef TEST_SPLIT
+#ifdef DEBUG
     printf("along axis %d\n", axis + 1);
-#endif
-
-#ifdef TEST_SPLIT
     {
         PixelList *_prevTest, *_nextTest;
         int _i, _nextCount[3], _prevCount[3];
@@ -592,12 +590,12 @@ split(BoxNode *node) {
     if (!splitlists(
             node->head, node->tail, heads, tails, newCounts, axis, node->pixelCount
         )) {
-#ifndef NO_OUTPUT
+#ifdef DEBUG
         printf("list split failed.\n");
 #endif
         return 0;
     }
-#ifdef TEST_SPLIT
+#ifdef DEBUG
     if (!test_sorted(heads[0])) {
         printf("bug in split");
         exit(1);
@@ -623,7 +621,7 @@ split(BoxNode *node) {
         node->head[i] = NULL;
         node->tail[i] = NULL;
     }
-#ifdef TEST_SPLIT
+#ifdef DEBUG
     if (left->head[0]) {
         rh = left->head[0]->p.c.r;
         rl = left->tail[0]->p.c.r;
@@ -687,7 +685,7 @@ median_cut(PixelList *hl[3], uint32_t imPixelCount, int nPixels) {
             }
         } while (compute_box_volume(thisNode) == 1);
         if (!split(thisNode)) {
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             printf("Oops, split failed...\n");
 #endif
             exit(1);
@@ -716,16 +714,14 @@ free_box_tree(BoxNode *n) {
     free(n);
 }
 
-#ifdef TEST_SPLIT_INTEGRITY
+#ifdef DEBUG
 static int
 checkContained(BoxNode *n, Pixel *pp) {
     if (n->l && n->r) {
         return checkContained(n->l, pp) + checkContained(n->r, pp);
     }
     if (n->l || n->r) {
-#ifndef NO_OUTPUT
         printf("box tree is dead\n");
-#endif
         return 0;
     }
     if (pp->c.r <= n->head[0]->p.c.r && pp->c.r >= n->tail[0]->p.c.r &&
@@ -746,7 +742,7 @@ annotate_hash_table(BoxNode *n, HashTable *h, uint32_t *box) {
         return annotate_hash_table(n->l, h, box) && annotate_hash_table(n->r, h, box);
     }
     if (n->l || n->r) {
-#ifndef NO_OUTPUT
+#ifdef DEBUG
         printf("box tree is dead\n");
 #endif
         return 0;
@@ -754,7 +750,7 @@ annotate_hash_table(BoxNode *n, HashTable *h, uint32_t *box) {
     for (p = n->head[0]; p; p = p->next[0]) {
         PIXEL_UNSCALE(&(p->p), &q, d->scale);
         if (!hashtable_insert(h, q, *box)) {
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             printf("hashtable insert failed\n");
 #endif
             return 0;
@@ -978,7 +974,7 @@ map_image_pixels_from_median_box(
             continue;
         }
         if (!hashtable_lookup(medianBoxHash, pixelData[i], &pixelVal)) {
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             printf("pixel lookup failed\n");
 #endif
             return 0;
@@ -1014,7 +1010,8 @@ compute_palette_from_median_cut(
     uint32_t nPixels,
     HashTable *medianBoxHash,
     Pixel **palette,
-    uint32_t nPaletteEntries
+    uint32_t nPaletteEntries,
+    BoxNode *root
 ) {
     uint32_t i;
     uint32_t paletteEntry;
@@ -1043,7 +1040,7 @@ compute_palette_from_median_cut(
         }
     }
     for (i = 0; i < nPixels; i++) {
-#ifdef TEST_SPLIT_INTEGRITY
+#ifdef DEBUG
         if (!(i % 100)) {
             printf("%05d\r", i);
             fflush(stdout);
@@ -1058,7 +1055,7 @@ compute_palette_from_median_cut(
         }
 #endif
         if (!hashtable_lookup(medianBoxHash, pixelData[i], &paletteEntry)) {
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             printf("pixel lookup failed\n");
 #endif
             for (i = 0; i < 3; i++) {
@@ -1068,7 +1065,7 @@ compute_palette_from_median_cut(
             return 0;
         }
         if (paletteEntry >= nPaletteEntries) {
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             printf(
                 "panic - paletteEntry>=nPaletteEntries (%d>=%d)\n",
                 (int)paletteEntry,
@@ -1140,7 +1137,7 @@ compute_palette_from_quantized_pixels(
     }
     for (i = 0; i < nPixels; i++) {
         if (qp[i] >= nPaletteEntries) {
-#ifndef NO_OUTPUT
+#ifdef DEBUG
             printf("scream\n");
 #endif
             return 0;
@@ -1208,7 +1205,7 @@ k_means(
         goto error_2;
     }
 
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("[");
     fflush(stdout);
 #endif
@@ -1243,7 +1240,7 @@ k_means(
         if (changes < 0) {
             goto error_3;
         }
-#ifndef NO_OUTPUT
+#ifdef DEBUG
         printf(".(%d)", changes);
         fflush(stdout);
 #endif
@@ -1251,7 +1248,7 @@ k_means(
             break;
         }
     }
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("]\n");
 #endif
     if (avgDistSortKey) {
@@ -1311,32 +1308,32 @@ quantize(
     uint32_t **avgDistSortKey;
     Pixel *p;
 
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     uint32_t timer, timer2;
 #endif
 
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     timer2 = clock();
     printf("create hash table...");
     fflush(stdout);
     timer = clock();
 #endif
     h = create_pixel_hash(pixelData, nPixels);
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
     if (!h) {
         goto error_0;
     }
 
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("create lists from hash table...");
     fflush(stdout);
     timer = clock();
 #endif
     hl[0] = hl[1] = hl[2] = NULL;
     hashtable_foreach(h, hash_to_list, hl);
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
 
@@ -1344,7 +1341,7 @@ quantize(
         goto error_1;
     }
 
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("mergesort lists...");
     fflush(stdout);
     timer = clock();
@@ -1352,47 +1349,47 @@ quantize(
     for (i = 0; i < 3; i++) {
         hl[i] = mergesort_pixels(hl[i], i);
     }
-#ifdef TEST_MERGESORT
+#ifdef DEBUG
     if (!test_sorted(hl)) {
         printf("bug in mergesort\n");
         goto error_1;
     }
-#endif
-#ifndef NO_OUTPUT
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
 
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("median cut...");
     fflush(stdout);
     timer = clock();
 #endif
     root = median_cut(hl, nPixels, nQuantPixels);
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
     if (!root) {
         goto error_1;
     }
     nPaletteEntries = 0;
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("median cut tree to hash table...");
     fflush(stdout);
     timer = clock();
 #endif
     annotate_hash_table(root, h, &nPaletteEntries);
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("compute palette...\n");
     fflush(stdout);
     timer = clock();
 #endif
-    if (!compute_palette_from_median_cut(pixelData, nPixels, h, &p, nPaletteEntries)) {
+    if (!compute_palette_from_median_cut(
+            pixelData, nPixels, h, &p, nPaletteEntries, root
+        )) {
         goto error_3;
     }
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
 
@@ -1479,7 +1476,7 @@ quantize(
         hashtable_free(h2);
     }
 #endif
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("k means...\n");
     fflush(stdout);
     timer = clock();
@@ -1487,7 +1484,7 @@ quantize(
     if (kmeans > 0) {
         k_means(pixelData, nPixels, p, nPaletteEntries, qp, kmeans - 1);
     }
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
 #endif
 
@@ -1495,7 +1492,7 @@ quantize(
     *palette = p;
     *paletteLength = nPaletteEntries;
 
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("cleanup...");
     fflush(stdout);
     timer = clock();
@@ -1507,7 +1504,7 @@ quantize(
         free(avgDistSortKey);
     }
     destroy_pixel_hash(h);
-#ifndef NO_OUTPUT
+#ifdef DEBUG
     printf("done (%f)\n", (clock() - timer) / (double)CLOCKS_PER_SEC);
     printf("-----\ntotal time %f\n", (clock() - timer2) / (double)CLOCKS_PER_SEC);
 #endif

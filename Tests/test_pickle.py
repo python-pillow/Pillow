@@ -46,7 +46,7 @@ def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> Non
 
 
 @pytest.mark.parametrize(
-    ("test_file", "test_mode"),
+    "test_file, test_mode",
     [
         ("Tests/images/hopper.jpg", None),
         ("Tests/images/hopper.jpg", "L"),

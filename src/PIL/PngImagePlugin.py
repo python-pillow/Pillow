@@ -38,8 +38,9 @@ import re
 import struct
 import warnings
 import zlib
+from collections.abc import Callable
 from enum import IntEnum
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
+from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn, cast
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
@@ -135,7 +136,7 @@ class Blend(IntEnum):
     """
 
 
-def _safe_zlib_decompress(s):
+def _safe_zlib_decompress(s: bytes) -> bytes:
     dobj = zlib.decompressobj()
     plaintext = dobj.decompress(s, MAX_TEXT_CHUNK)
     if dobj.unconsumed_tail:
@@ -783,7 +784,7 @@ class PngImageFile(ImageFile.ImageFile):
         self._mode = self.png.im_mode
         self._size = self.png.im_size
         self.info = self.png.im_info
-        self._text = None
+        self._text: dict[str, str | iTXt] | None = None
         self.tile = self.png.im_tile
         self.custom_mimetype = self.png.im_custom_mimetype
         self.n_frames = self.png.im_n_frames or 1
@@ -810,7 +811,7 @@ class PngImageFile(ImageFile.ImageFile):
         self.is_animated = self.n_frames > 1
 
     @property
-    def text(self):
+    def text(self) -> dict[str, str | iTXt]:
         # experimental
         if self._text is None:
             # iTxt, tEXt and zTXt chunks may appear at the end of the file
@@ -822,6 +823,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.load()
             if self.is_animated:
                 self.seek(frame)
+        assert self._text is not None
         return self._text
 
     def verify(self) -> None:
@@ -861,12 +863,13 @@ class PngImageFile(ImageFile.ImageFile):
         assert self.png is not None
 
         self.dispose: _imaging.ImagingCore | None
+        dispose_extent = None
         if frame == 0:
             if rewind:
                 self._fp.seek(self.__rewind)
                 self.png.rewind()
                 self.__prepare_idat = self.__rewind_idat
-                self.im = None
+                self._im = None
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
                 self.fp = self._fp
@@ -875,7 +878,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.default_image = self.info.get("default_image", False)
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            dispose_extent = self.info.get("bbox")
             self.__frame = 0
         else:
             if frame != self.__frame + 1:
@@ -933,11 +936,13 @@ class PngImageFile(ImageFile.ImageFile):
             self.tile = self.png.im_tile
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            dispose_extent = self.info.get("bbox")
 
             if not self.tile:
                 msg = "image not found in APNG frame"
                 raise EOFError(msg)
+        if dispose_extent:
+            self.dispose_extent: tuple[float, float, float, float] = dispose_extent
 
         # setup frame disposal (actual disposal done when needed in the next _seek())
         if self._prev_im is None and self.dispose_op == Disposal.OP_PREVIOUS:
@@ -1054,7 +1059,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
             self.load()
         if "exif" not in self.info and "Raw profile type exif" not in self.info:
@@ -1105,7 +1110,7 @@ def putchunk(fp: IO[bytes], cid: bytes, *data: bytes) -> None:
 class _idat:
     # wrap output from the encoder in IDAT chunks
 
-    def __init__(self, fp, chunk) -> None:
+    def __init__(self, fp: IO[bytes], chunk: Callable[..., None]) -> None:
         self.fp = fp
         self.chunk = chunk
 
@@ -1116,7 +1121,7 @@ class _idat:
 class _fdat:
     # wrap encoder output in fdAT chunks
 
-    def __init__(self, fp: IO[bytes], chunk, seq_num: int) -> None:
+    def __init__(self, fp: IO[bytes], chunk: Callable[..., None], seq_num: int) -> None:
         self.fp = fp
         self.chunk = chunk
         self.seq_num = seq_num
@@ -1135,7 +1140,7 @@ class _Frame(NamedTuple):
 def _write_multiple_frames(
     im: Image.Image,
     fp: IO[bytes],
-    chunk,
+    chunk: Callable[..., None],
     mode: str,
     rawmode: str,
     default_image: Image.Image | None,
@@ -1221,7 +1226,11 @@ def _write_multiple_frames(
     if default_image:
         if im.mode != mode:
             im = im.convert(mode)
-        ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
+        ImageFile._save(
+            im,
+            cast(IO[bytes], _idat(fp, chunk)),
+            [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
+        )
 
     seq_num = 0
     for frame, frame_data in enumerate(im_frames):
@@ -1256,15 +1265,15 @@ def _write_multiple_frames(
             # first frame must be in IDAT chunks for backwards compatibility
             ImageFile._save(
                 im_frame,
-                _idat(fp, chunk),
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                cast(IO[bytes], _idat(fp, chunk)),
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
-                fdat_chunks,
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                cast(IO[bytes], fdat_chunks),
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1275,7 +1284,11 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
 
 def _save(
-    im: Image.Image, fp, filename: str | bytes, chunk=putchunk, save_all: bool = False
+    im: Image.Image,
+    fp: IO[bytes],
+    filename: str | bytes,
+    chunk: Callable[..., None] = putchunk,
+    save_all: bool = False,
 ) -> None:
     # save an image to disk (called by the save method)
 
@@ -1459,7 +1472,9 @@ def _save(
         )
     if single_im:
         ImageFile._save(
-            single_im, _idat(fp, chunk), [("zip", (0, 0) + single_im.size, 0, rawmode)]
+            single_im,
+            cast(IO[bytes], _idat(fp, chunk)),
+            [ImageFile._Tile("zip", (0, 0) + single_im.size, 0, rawmode)],
         )
 
     if info:
@@ -1483,22 +1498,16 @@ def _save(
 
 def getchunks(im: Image.Image, **params: Any) -> list[tuple[bytes, bytes, bytes]]:
     """Return a list of PNG chunks representing this image."""
+    from io import BytesIO
 
-    class collector:
-        data = []
+    chunks = []
 
-        def write(self, data: bytes) -> None:
-            pass
-
-        def append(self, chunk: tuple[bytes, bytes, bytes]) -> None:
-            self.data.append(chunk)
-
-    def append(fp: collector, cid: bytes, *data: bytes) -> None:
+    def append(fp: IO[bytes], cid: bytes, *data: bytes) -> None:
         byte_data = b"".join(data)
         crc = o32(_crc32(byte_data, _crc32(cid)))
-        fp.append((cid, byte_data, crc))
+        chunks.append((cid, byte_data, crc))
 
-    fp = collector()
+    fp = BytesIO()
 
     try:
         im.encoderinfo = params
@@ -1506,7 +1515,7 @@ def getchunks(im: Image.Image, **params: Any) -> list[tuple[bytes, bytes, bytes]
     finally:
         del im.encoderinfo
 
-    return fp.data
+    return chunks
 
 
 # --------------------------------------------------------------------

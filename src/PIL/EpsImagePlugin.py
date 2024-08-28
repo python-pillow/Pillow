@@ -65,16 +65,24 @@ def has_ghostscript() -> bool:
     return gs_binary is not False
 
 
-def Ghostscript(tile, size, fp, scale=1, transparency: bool = False) -> Image.Image:
+def Ghostscript(
+    tile: list[ImageFile._Tile],
+    size: tuple[int, int],
+    fp: IO[bytes],
+    scale: int = 1,
+    transparency: bool = False,
+) -> Image.core.ImagingCore:
     """Render an image using Ghostscript"""
     global gs_binary
     if not has_ghostscript():
         msg = "Unable to locate Ghostscript on paths"
         raise OSError(msg)
+    assert isinstance(gs_binary, str)
 
     # Unpack decoder tile
-    decoder, tile, offset, data = tile[0]
-    length, bbox = data
+    args = tile[0].args
+    assert isinstance(args, tuple)
+    length, bbox = args
 
     # Hack to support hi-res rendering
     scale = int(scale) or 1
@@ -182,7 +190,6 @@ class EpsImageFile(ImageFile.ImageFile):
         self.fp.seek(offset)
 
         self._mode = "RGB"
-        self._size = None
 
         byte_arr = bytearray(255)
         bytes_mv = memoryview(byte_arr)
@@ -220,14 +227,18 @@ class EpsImageFile(ImageFile.ImageFile):
             if k == "BoundingBox":
                 if v == "(atend)":
                     reading_trailer_comments = True
-                elif not self._size or (trailer_reached and reading_trailer_comments):
+                elif not self.tile or (trailer_reached and reading_trailer_comments):
                     try:
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
                         # put floating point values there anyway.
                         box = [int(float(i)) for i in v.split()]
                         self._size = box[2] - box[0], box[3] - box[1]
-                        self.tile = [("eps", (0, 0) + self.size, offset, (length, box))]
+                        self.tile = [
+                            ImageFile._Tile(
+                                "eps", (0, 0) + self.size, offset, (length, box)
+                            )
+                        ]
                     except Exception:
                         pass
             return True
@@ -334,7 +345,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             bytes_read = 0
 
-        if not self._size:
+        if not self.tile:
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
 
@@ -422,7 +433,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [("eps", (0, 0) + im.size, 0, None)])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0) + im.size, 0, None)])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

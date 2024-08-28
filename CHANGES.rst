@@ -5,6 +5,33 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Updated error message when saving WebP with invalid width or height #8322
+  [radarhere, hugovk]
+
+- Remove warning if NumPy failed to raise an error during conversion #8326
+  [radarhere]
+
+- If left and right sides meet in ImageDraw.rounded_rectangle(), do not draw rectangle to fill gap #8304
+  [radarhere]
+
+- Remove WebP support without anim, mux/demux, and with buggy alpha #8213
+  [homm, radarhere]
+
+- Add missing TIFF CMYK;16B reader #8298
+  [homm]
+
+- Remove all WITH_* flags from _imaging.c and other flags #8211
+  [homm]
+
+- Improve ImageDraw2 shape methods #8265
+  [radarhere]
+
+- Lock around usages of imaging memory arenas #8238
+  [lysnikolaou]
+
+- Deprecate JpegImageFile huffman_ac and huffman_dc #8274
+  [radarhere]
+
 - Deprecate ImageMath lambda_eval and unsafe_eval options argument #8242
   [radarhere]
 

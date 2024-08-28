@@ -47,7 +47,7 @@ def test_toarray() -> None:
             with pytest.raises(OSError):
                 numpy.array(im_truncated)
         else:
-            with pytest.warns(UserWarning):
+            with pytest.warns(DeprecationWarning):
                 numpy.array(im_truncated)
 
 
@@ -113,4 +113,5 @@ def test_fromarray_palette() -> None:
     out = Image.fromarray(a, "P")
 
     # Assert that the Python and C palettes match
+    assert out.palette is not None
     assert len(out.palette.colors) == len(out.im.getpalette()) / 3
