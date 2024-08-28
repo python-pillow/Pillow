@@ -545,16 +545,27 @@ class Image:
     format_description: str | None = None
     _close_exclusive_fp_after_loading = True
 
-    def __init__(self):
+    def __init__(self) -> None:
         # FIXME: take "new" parameters / other image?
         # FIXME: turn mode and size into delegating properties?
-        self.im = None
+        self._im: core.ImagingCore | DeferredError | None = None
         self._mode = ""
         self._size = (0, 0)
-        self.palette = None
-        self.info = {}
+        self.palette: ImagePalette.ImagePalette | None = None
+        self.info: dict[str | tuple[int, int], Any] = {}
         self.readonly = 0
-        self._exif = None
+        self._exif: Exif | None = None
+
+    @property
+    def im(self) -> core.ImagingCore:
+        if isinstance(self._im, DeferredError):
+            raise self._im.ex
+        assert self._im is not None
+        return self._im
+
+    @im.setter
+    def im(self, im: core.ImagingCore) -> None:
+        self._im = im
 
     @property
     def width(self) -> int:
@@ -630,7 +641,7 @@ class Image:
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
-        self.im = DeferredError(ValueError("Operation on closed image"))
+        self._im = DeferredError(ValueError("Operation on closed image"))
 
     def _copy(self) -> None:
         self.load()
@@ -888,7 +899,7 @@ class Image:
         :returns: An image access object.
         :rtype: :py:class:`.PixelAccess`
         """
-        if self.im is not None and self.palette and self.palette.dirty:
+        if self._im is not None and self.palette and self.palette.dirty:
             # realize palette
             mode, arr = self.palette.getdata()
             self.im.putpalette(self.palette.mode, mode, arr)
@@ -905,7 +916,7 @@ class Image:
                     self.palette.mode, self.palette.mode
                 )
 
-        if self.im is not None:
+        if self._im is not None:
             return self.im.pixel_access(self.readonly)
         return None
 
@@ -1046,9 +1057,11 @@ class Image:
                     # use existing conversions
                     trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
+                        assert self.palette is not None
                         trns_im.putpalette(self.palette)
                         if isinstance(t, tuple):
                             err = "Couldn't allocate a palette color for transparency"
+                            assert trns_im.palette is not None
                             try:
                                 t = trns_im.palette.getcolor(t, self)
                             except ValueError as e:
@@ -1150,7 +1163,9 @@ class Image:
         if trns is not None:
             if new_im.mode == "P" and new_im.palette:
                 try:
-                    new_im.info["transparency"] = new_im.palette.getcolor(trns, new_im)
+                    new_im.info["transparency"] = new_im.palette.getcolor(
+                        cast(tuple[int, ...], trns), new_im  # trns was converted to RGB
+                    )
                 except ValueError as e:
                     del new_im.info["transparency"]
                     if str(e) != "cannot allocate more than 256 colors":
@@ -1228,6 +1243,7 @@ class Image:
                 raise ValueError(msg)
             im = self.im.convert("P", dither, palette.im)
             new_im = self._new(im)
+            assert palette.palette is not None
             new_im.palette = palette.palette.copy()
             return new_im
 
@@ -1626,11 +1642,15 @@ class Image:
 
         :returns: A boolean.
         """
-        return (
+        if (
             self.mode in ("LA", "La", "PA", "RGBA", "RGBa")
-            or (self.mode == "P" and self.palette.mode.endswith("A"))
             or "transparency" in self.info
-        )
+        ):
+            return True
+        if self.mode == "P":
+            assert self.palette is not None
+            return self.palette.mode.endswith("A")
+        return False
 
     def apply_transparency(self) -> None:
         """
@@ -1813,26 +1833,30 @@ class Image:
                 raise ValueError(msg)
             box += (box[0] + size[0], box[1] + size[1])
 
+        source: core.ImagingCore | str | float | tuple[float, ...]
         if isinstance(im, str):
             from . import ImageColor
 
-            im = ImageColor.getcolor(im, self.mode)
-
+            source = ImageColor.getcolor(im, self.mode)
         elif isImageType(im):
             im.load()
             if self.mode != im.mode:
                 if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
                     # should use an adapter for this!
                     im = im.convert(self.mode)
-            im = im.im
+            source = im.im
+        elif isinstance(im, tuple):
+            source = im
+        else:
+            source = cast(float, im)
 
         self._ensure_mutable()
 
         if mask:
             mask.load()
-            self.im.paste(im, box, mask.im)
+            self.im.paste(source, box, mask.im)
         else:
-            self.im.paste(im, box)
+            self.im.paste(source, box)
 
     def alpha_composite(
         self, im: Image, dest: Sequence[int] = (0, 0), source: Sequence[int] = (0, 0)
@@ -2109,7 +2133,8 @@ class Image:
             if self.mode == "PA":
                 alpha = value[3] if len(value) == 4 else 255
                 value = value[:3]
-            palette_index = self.palette.getcolor(value, self)
+            assert self.palette is not None
+            palette_index = self.palette.getcolor(tuple(value), self)
             value = (palette_index, alpha) if self.mode == "PA" else palette_index
         return self.im.putpixel(xy, value)
 

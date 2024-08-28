@@ -308,7 +308,7 @@ class IcnsImageFile(ImageFile.ImageFile):
             )
 
         px = Image.Image.load(self)
-        if self.im is not None and self.im.size == self.size:
+        if self._im is not None and self.im.size == self.size:
             # Already loaded
             return px
         self.load_prepare()

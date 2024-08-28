@@ -158,7 +158,6 @@ class TgaImageFile(ImageFile.ImageFile):
 
     def load_end(self) -> None:
         if self._flip_horizontally:
-            assert self.im is not None
             self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
@@ -200,7 +199,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
-        assert im.im is not None
         palette = im.im.getpalette("RGB", "BGR")
         colormaplength, colormapentry = len(palette) // 3, 24
     else:

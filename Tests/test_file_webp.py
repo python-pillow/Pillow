@@ -248,6 +248,7 @@ class TestFileWebp:
         temp_file = str(tmp_path / "temp.webp")
         im = Image.new("RGBA", (1, 1)).convert("P")
         assert im.mode == "P"
+        assert im.palette is not None
         assert im.palette.mode == "RGBA"
         im.save(temp_file)
 

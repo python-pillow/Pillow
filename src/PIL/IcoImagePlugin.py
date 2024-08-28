@@ -330,7 +330,7 @@ class IcoImageFile(ImageFile.ImageFile):
         self._size = value
 
     def load(self) -> Image.core.PixelAccess | None:
-        if self.im is not None and self.im.size == self.size:
+        if self._im is not None and self.im.size == self.size:
             # Already loaded
             return Image.Image.load(self)
         im = self.ico.getimage(self.size)
