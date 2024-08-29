@@ -34,7 +34,7 @@ import itertools
 import os
 import struct
 import sys
-from typing import IO, TYPE_CHECKING, Any, NamedTuple
+from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
 
 from . import Image
 from ._deprecate import deprecate
@@ -111,7 +111,7 @@ class ImageFile(Image.Image):
     """Base class for image file format handlers."""
 
     def __init__(
-        self, fp: StrOrBytesPath | IO[bytes] | None = None, filename: str | bytes | None = None
+        self, fp: StrOrBytesPath | IO[bytes], filename: str | bytes | None = None
     ) -> None:
         super().__init__()
 
@@ -134,7 +134,7 @@ class ImageFile(Image.Image):
             self._exclusive_fp = True
         else:
             # stream
-            self.fp = fp
+            self.fp = cast(IO[bytes], fp)
             self.filename = filename if filename is not None else ""
             # can be overridden
             self._exclusive_fp = False

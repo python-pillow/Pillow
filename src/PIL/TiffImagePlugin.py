@@ -1126,7 +1126,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def __init__(
         self,
-        fp: StrOrBytesPath | IO[bytes] | None = None,
+        fp: StrOrBytesPath | IO[bytes],
         filename: str | bytes | None = None,
     ) -> None:
         self.tag_v2: ImageFileDirectory_v2

@@ -848,7 +848,7 @@ def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 ##
 # Factory for making JPEG and MPO instances
 def jpeg_factory(
-    fp: IO[bytes] | None = None, filename: str | bytes | None = None
+    fp: IO[bytes], filename: str | bytes | None = None
 ) -> JpegImageFile | MpoImageFile:
     im = JpegImageFile(fp, filename)
     try:
