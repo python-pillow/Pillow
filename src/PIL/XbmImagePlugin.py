@@ -67,7 +67,7 @@ class XbmImageFile(ImageFile.ImageFile):
         self._mode = "1"
         self._size = xsize, ysize
 
-        self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
+        self.tile = [ImageFile._Tile("xbm", (0, 0) + self.size, m.end(), None)]
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

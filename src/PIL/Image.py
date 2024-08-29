@@ -3641,7 +3641,10 @@ def merge(mode: str, bands: Sequence[Image]) -> Image:
 
 def register_open(
     id: str,
-    factory: Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
+    factory: (
+        Callable[[IO[bytes], str | bytes], ImageFile.ImageFile]
+        | type[ImageFile.ImageFile]
+    ),
     accept: Callable[[bytes], bool | str] | None = None,
 ) -> None:
     """

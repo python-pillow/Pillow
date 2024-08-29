@@ -296,7 +296,7 @@ class BmpImageFile(ImageFile.ImageFile):
             args.append(((file_info["width"] * file_info["bits"] + 31) >> 3) & (~3))
         args.append(file_info["direction"])
         self.tile = [
-            (
+            ImageFile._Tile(
                 decoder_name,
                 (0, 0, file_info["width"], file_info["height"]),
                 offset or self.fp.tell(),

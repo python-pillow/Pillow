@@ -1298,7 +1298,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         extents = self.tile[0][1]
-        args = list(self.tile[0][3])
+        args = self.tile[0][3]
 
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
@@ -1316,11 +1316,12 @@ class TiffImageFile(ImageFile.ImageFile):
             fp = False
 
         if fp:
-            args[2] = fp
+            assert isinstance(args, tuple)
+            args_list = list(args)
+            args_list[2] = fp
+            args = tuple(args_list)
 
-        decoder = Image._getdecoder(
-            self.mode, "libtiff", tuple(args), self.decoderconfig
-        )
+        decoder = Image._getdecoder(self.mode, "libtiff", args, self.decoderconfig)
         try:
             decoder.setimage(self.im, extents)
         except ValueError as e:
@@ -1538,7 +1539,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
             a = (rawmode, self._compression, False, self.tag_v2.offset)
-            self.tile.append(("libtiff", (0, 0, xsize, ysize), 0, a))
+            self.tile.append(ImageFile._Tile("libtiff", (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
             # striped image
@@ -1571,7 +1572,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
                 args = (tile_rawmode, int(stride), 1)
                 self.tile.append(
-                    (
+                    ImageFile._Tile(
                         self._compression,
                         (x, y, min(x + w, xsize), min(y + h, ysize)),
                         offset,

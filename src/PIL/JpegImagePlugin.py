@@ -372,7 +372,9 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [("jpeg", (0, 0) + self.size, 0, (rawmode, ""))]
+                    self.tile = [
+                        ImageFile._Tile("jpeg", (0, 0) + self.size, 0, (rawmode, ""))
+                    ]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -423,6 +425,7 @@ class JpegImageFile(ImageFile.ImageFile):
         scale = 1
         original_size = self.size
 
+        assert isinstance(a, tuple)
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
             self._mode = mode
             a = mode, ""
@@ -432,6 +435,7 @@ class JpegImageFile(ImageFile.ImageFile):
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
+            assert e is not None
             e = (
                 e[0],
                 e[1],
@@ -441,7 +445,7 @@ class JpegImageFile(ImageFile.ImageFile):
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
 
-        self.tile = [(d, e, o, a)]
+        self.tile = [ImageFile._Tile(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)

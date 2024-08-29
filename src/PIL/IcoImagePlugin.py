@@ -228,7 +228,7 @@ class IcoFile:
             # change tile dimension to only encompass XOR image
             im._size = (im.size[0], int(im.size[1] / 2))
             d, e, o, a = im.tile[0]
-            im.tile[0] = d, (0, 0) + im.size, o, a
+            im.tile[0] = ImageFile._Tile(d, (0, 0) + im.size, o, a)
 
             # figure out where AND mask image starts
             if header.bpp == 32:

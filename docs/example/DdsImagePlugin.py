@@ -246,7 +246,9 @@ class DdsImageFile(ImageFile.ImageFile):
             msg = f"Unimplemented pixel format {repr(fourcc)}"
             raise NotImplementedError(msg)
 
-        self.tile = [(self.decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
+        self.tile = [
+            ImageFile._Tile(self.decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))
+        ]
 
     def load_seek(self, pos: int) -> None:
         pass

@@ -407,7 +407,7 @@ class GifImageFile(ImageFile.ImageFile):
                 elif self.mode not in ("RGB", "RGBA"):
                     transparency = frame_transparency
             self.tile = [
-                (
+                ImageFile._Tile(
                     "gif",
                     (x0, y0, x1, y1),
                     self.__offset,

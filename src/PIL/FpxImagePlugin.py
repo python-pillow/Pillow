@@ -166,7 +166,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
             if compression == 0:
                 self.tile.append(
-                    (
+                    ImageFile._Tile(
                         "raw",
                         (x, y, x1, y1),
                         i32(s, i) + 28,
@@ -177,7 +177,7 @@ class FpxImageFile(ImageFile.ImageFile):
             elif compression == 1:
                 # FIXME: the fill decoder is not implemented
                 self.tile.append(
-                    (
+                    ImageFile._Tile(
                         "fill",
                         (x, y, x1, y1),
                         i32(s, i) + 28,
@@ -205,7 +205,7 @@ class FpxImageFile(ImageFile.ImageFile):
                     jpegmode = rawmode
 
                 self.tile.append(
-                    (
+                    ImageFile._Tile(
                         "jpeg",
                         (x, y, x1, y1),
                         i32(s, i) + 28,
