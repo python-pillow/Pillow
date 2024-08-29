@@ -48,7 +48,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - pp39
           - pp310
           - cp3{9,10,11}
           - cp3{12,13}
@@ -57,7 +56,6 @@ jobs:
           - manylinux_2_28
           - musllinux
         exclude:
-          - { python-version: pp39, spec: musllinux }
           - { python-version: pp310, spec: musllinux }
 
     steps:
