@@ -53,10 +53,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     fi
 
     # Pyroma uses non-isolated build and fails with old setuptools
-    if [[
-        $GHA_PYTHON_VERSION == pypy3.9
-        || $GHA_PYTHON_VERSION == 3.9
-    ]]; then
+    if [[ $GHA_PYTHON_VERSION == 3.9 ]]; then
         # To match pyproject.toml
         python3 -m pip install "setuptools>=67.8"
     fi
