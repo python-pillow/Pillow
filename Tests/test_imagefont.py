@@ -460,6 +460,17 @@ def test_free_type_font_get_mask(font: ImageFont.FreeTypeFont) -> None:
     assert mask.size == (108, 13)
 
 
+def test_load_raises_if_image_not_found(tmp_path) -> None:
+    font_path = tmp_path / "file.font"
+    font_path.write_bytes(b"")
+    with pytest.raises(OSError) as excinfo:
+        ImageFont.load(font_path)
+
+    pre = tmp_path / "file"
+    msg = f"cannot find glyph data file {pre}.{{png|gif|pbm}}"
+    assert msg in str(excinfo.value)
+
+
 def test_load_path_not_found() -> None:
     # Arrange
     filename = "somefilenamethatdoesntexist.ttf"
@@ -469,6 +480,22 @@ def test_load_path_not_found() -> None:
         ImageFont.load_path(filename)
     with pytest.raises(OSError):
         ImageFont.truetype(filename)
+
+
+def test_load_path_exisitng_path(tmp_path) -> None:
+    # First, the file doens't exist, so we don't suggest `load`
+    some_path = tmp_path / "file.ttf"
+    with pytest.raises(OSError) as excinfo:
+        ImageFont.load_path(str(some_path))
+        assert str(some_path) in str(excinfo.value)
+        assert "did you mean" not in str(excinfo.value)
+
+    # The file exists, so the error message suggests to use `load` instead
+    some_path.write_bytes(b"")
+    with pytest.raises(OSError) as excinfo:
+        ImageFont.load_path(str(some_path))
+    assert str(some_path) in str(excinfo.value)
+    assert " did you mean" in str(excinfo.value)
 
 
 def test_load_non_font_bytes() -> None:

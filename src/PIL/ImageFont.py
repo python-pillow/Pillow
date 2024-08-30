@@ -98,11 +98,13 @@ class ImageFont:
     def _load_pilfont(self, filename: str) -> None:
         with open(filename, "rb") as fp:
             image: ImageFile.ImageFile | None = None
+            filename_body = os.path.splitext(filename)[0]
+
             for ext in (".png", ".gif", ".pbm"):
                 if image:
                     image.close()
                 try:
-                    fullname = os.path.splitext(filename)[0] + ext
+                    fullname = filename_body + ext
                     image = Image.open(fullname)
                 except Exception:
                     pass
@@ -112,7 +114,9 @@ class ImageFont:
             else:
                 if image:
                     image.close()
-                msg = "cannot find glyph data file"
+
+                pre = filename_body
+                msg = f"cannot find glyph data file {pre}.{{png|gif|pbm}}"
                 raise OSError(msg)
 
             self.file = fullname
@@ -224,7 +228,7 @@ class FreeTypeFont:
             raise core.ex
 
         if size <= 0:
-            msg = "font size must be greater than 0"
+            msg = f"font size must be greater than 0, not {size}"
             raise ValueError(msg)
 
         self.path = font
@@ -774,6 +778,8 @@ def load(filename: str) -> ImageFont:
     :param filename: Name of font file.
     :return: A font object.
     :exception OSError: If the file could not be read.
+
+    .. seealso:: :py:func:`PIL.ImageFont.truetype`
     """
     f = ImageFont()
     f._load_pilfont(filename)
@@ -850,6 +856,8 @@ def truetype(
     :return: A font object.
     :exception OSError: If the file could not be read.
     :exception ValueError: If the font size is not greater than zero.
+
+    .. seealso:: :py:func:`PIL.ImageFont.load`
     """
 
     def freetype(font: StrOrBytesPath | BinaryIO | None) -> FreeTypeFont:
@@ -927,7 +935,10 @@ def load_path(filename: str | bytes) -> ImageFont:
             return load(os.path.join(directory, filename))
         except OSError:
             pass
-    msg = "cannot find font file"
+    msg = f"cannot find font file '{filename}' in `sys.path`"
+    if os.path.exists(filename):
+        msg += f" did you mean `ImageFont.load({filename})` instead?"
+
     raise OSError(msg)
 
 
