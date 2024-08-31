@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 from io import BytesIO
 from pathlib import Path
 from typing import Any, BinaryIO
@@ -460,15 +461,15 @@ def test_free_type_font_get_mask(font: ImageFont.FreeTypeFont) -> None:
     assert mask.size == (108, 13)
 
 
-def test_load_raises_if_image_not_found(tmp_path) -> None:
-    font_path = tmp_path / "file.font"
-    font_path.write_bytes(b"")
-    with pytest.raises(OSError) as excinfo:
-        ImageFont.load(font_path)
+def test_load_when_image_not_found(tmp_path: Path) -> None:
+    tmpfile = tmp_path / "file.font"
+    tmpfile.write_bytes(b"")
+    tempfile = str(tmpfile)
+    with pytest.raises(OSError) as e:
+        ImageFont.load(tempfile)
 
-    pre = tmp_path / "file"
-    msg = f"cannot find glyph data file {pre}.{{png|gif|pbm}}"
-    assert msg in str(excinfo.value)
+    root = os.path.splitext(tempfile)[0]
+    assert str(e.value) == f"cannot find glyph data file {root}.{{png|gif|pbm}}"
 
 
 def test_load_path_not_found() -> None:
@@ -476,26 +477,24 @@ def test_load_path_not_found() -> None:
     filename = "somefilenamethatdoesntexist.ttf"
 
     # Act/Assert
-    with pytest.raises(OSError):
+    with pytest.raises(OSError) as e:
         ImageFont.load_path(filename)
+
+        # The file doesn't exist, so don't suggest `load`
+        assert filename in str(e.value)
+        assert "did you mean" not in str(e.value)
     with pytest.raises(OSError):
         ImageFont.truetype(filename)
 
 
-def test_load_path_exisitng_path(tmp_path) -> None:
-    # First, the file doens't exist, so we don't suggest `load`
-    some_path = tmp_path / "file.ttf"
-    with pytest.raises(OSError) as excinfo:
-        ImageFont.load_path(str(some_path))
-        assert str(some_path) in str(excinfo.value)
-        assert "did you mean" not in str(excinfo.value)
+def test_load_path_existing_path() -> None:
+    with tempfile.NamedTemporaryFile() as tmp:
+        with pytest.raises(OSError) as e:
+            ImageFont.load_path(tmp.name)
 
-    # The file exists, so the error message suggests to use `load` instead
-    some_path.write_bytes(b"")
-    with pytest.raises(OSError) as excinfo:
-        ImageFont.load_path(str(some_path))
-    assert str(some_path) in str(excinfo.value)
-    assert " did you mean" in str(excinfo.value)
+        # The file exists, so the error message suggests to use `load` instead
+        assert tmp.name in str(e.value)
+    assert " did you mean" in str(e.value)
 
 
 def test_load_non_font_bytes() -> None:
