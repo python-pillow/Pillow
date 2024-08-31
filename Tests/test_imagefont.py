@@ -487,8 +487,8 @@ def test_load_path_exisitng_path(tmp_path) -> None:
     some_path = tmp_path / "file.ttf"
     with pytest.raises(OSError) as excinfo:
         ImageFont.load_path(str(some_path))
-        assert str(some_path) in str(excinfo.value)
-        assert "did you mean" not in str(excinfo.value)
+    assert str(some_path) in str(excinfo.value)
+    assert "did you mean" not in str(excinfo.value)
 
     # The file exists, so the error message suggests to use `load` instead
     some_path.write_bytes(b"")
