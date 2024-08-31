@@ -98,13 +98,13 @@ class ImageFont:
     def _load_pilfont(self, filename: str) -> None:
         with open(filename, "rb") as fp:
             image: ImageFile.ImageFile | None = None
-            filename_body = os.path.splitext(filename)[0]
+            root = os.path.splitext(filename)[0]
 
             for ext in (".png", ".gif", ".pbm"):
                 if image:
                     image.close()
                 try:
-                    fullname = filename_body + ext
+                    fullname = root + ext
                     image = Image.open(fullname)
                 except Exception:
                     pass
@@ -115,8 +115,7 @@ class ImageFont:
                 if image:
                     image.close()
 
-                pre = filename_body
-                msg = f"cannot find glyph data file {pre}.{{png|gif|pbm}}"
+                msg = f"cannot find glyph data file {root}.{{png|gif|pbm}}"
                 raise OSError(msg)
 
             self.file = fullname
@@ -937,7 +936,7 @@ def load_path(filename: str | bytes) -> ImageFont:
             pass
     msg = f"cannot find font file '{filename}' in `sys.path`"
     if os.path.exists(filename):
-        msg += f" did you mean `ImageFont.load({filename})` instead?"
+        msg += f", did you mean `ImageFont.load({filename})` instead?"
 
     raise OSError(msg)
 
