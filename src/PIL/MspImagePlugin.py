@@ -152,7 +152,7 @@ class MspDecoder(ImageFile.PyDecoder):
                 msg = f"Corrupted MSP file in row {x}"
                 raise OSError(msg) from e
 
-        self.set_as_raw(img.getvalue(), ("1", 0, 1))
+        self.set_as_raw(img.getvalue(), "1")
 
         return -1, 0
 

@@ -387,7 +387,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if self.fd.tell() % 2 != 0:
                         self.fd.seek(1, os.SEEK_CUR)
         rawmode = "L" if self.mode == "L" else "P"
-        self.set_as_raw(bytes(data), (rawmode, 0, self.args[-1]))
+        self.set_as_raw(bytes(data), rawmode, (0, self.args[-1]))
         return -1, 0
 
 

@@ -225,6 +225,11 @@ if TYPE_CHECKING:
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType
+    else:
+        CapsuleType = object
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -1598,7 +1603,7 @@ class Image:
             self.fp.seek(offset)
         return child_images
 
-    def getim(self):
+    def getim(self) -> CapsuleType:
         """
         Returns a capsule that points to the internal image memory.
 
