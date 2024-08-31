@@ -13,10 +13,6 @@ except ImportError:
     SUPPORTED = False
 
 
-_VALID_WEBP_MODES = {"RGBX": True, "RGBA": True, "RGB": True}
-
-_VALID_WEBP_LEGACY_MODES = {"RGB": True, "RGBA": True}
-
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",
     b"VP8X": "RGBA",
@@ -247,27 +243,16 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
                 # Make sure image mode is supported
                 frame = ims
-                rawmode = ims.mode
-                if ims.mode not in _VALID_WEBP_MODES:
-                    alpha = (
-                        "A" in ims.mode
-                        or "a" in ims.mode
-                        or (ims.mode == "P" and "A" in ims.im.getpalettemode())
-                    )
-                    rawmode = "RGBA" if alpha else "RGB"
-                    frame = ims.convert(rawmode)
-
-                if rawmode == "RGB":
-                    # For faster conversion, use RGBX
-                    rawmode = "RGBX"
+                if frame.mode not in ("RGBX", "RGBA", "RGB"):
+                    frame = frame.convert("RGBA" if im.has_transparency_data else "RGB")
 
                 # Append the frame to the animation encoder
                 enc.add(
-                    frame.tobytes("raw", rawmode),
+                    frame.tobytes(),
                     round(timestamp),
                     frame.size[0],
                     frame.size[1],
-                    rawmode,
+                    frame.mode,
                     lossless,
                     quality,
                     alpha_quality,
@@ -310,7 +295,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     method = im.encoderinfo.get("method", 4)
     exact = 1 if im.encoderinfo.get("exact") else 0
 
-    if im.mode not in _VALID_WEBP_LEGACY_MODES:
+    if im.mode not in ("RGB", "RGBA"):
         im = im.convert("RGBA" if im.has_transparency_data else "RGB")
 
     data = _webp.WebPEncode(
