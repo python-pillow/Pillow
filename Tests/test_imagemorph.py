@@ -328,13 +328,13 @@ def test_wrong_mode() -> None:
     iml = Image.new("L", (10, 10))
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.apply(bytes(lut), imrgb.im.id, iml.im.id)
+        _imagingmorph.apply(bytes(lut), imrgb.im.ptr, iml.im.ptr)
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.apply(bytes(lut), iml.im.id, imrgb.im.id)
+        _imagingmorph.apply(bytes(lut), iml.im.ptr, imrgb.im.ptr)
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.match(bytes(lut), imrgb.im.id)
+        _imagingmorph.match(bytes(lut), imrgb.im.ptr)
 
     # Should not raise
-    _imagingmorph.match(bytes(lut), iml.im.id)
+    _imagingmorph.match(bytes(lut), iml.im.ptr)

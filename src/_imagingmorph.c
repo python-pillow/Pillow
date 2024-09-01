@@ -30,15 +30,15 @@
 static PyObject *
 apply(PyObject *self, PyObject *args) {
     const char *lut;
-    PyObject *py_lut;
-    Py_ssize_t lut_len, i0, i1;
+    PyObject *py_lut, *i0, *i1;
+    Py_ssize_t lut_len;
     Imaging imgin, imgout;
     int width, height;
     int row_idx, col_idx;
     UINT8 **inrows, **outrows;
     int num_changed_pixels = 0;
 
-    if (!PyArg_ParseTuple(args, "Onn", &py_lut, &i0, &i1)) {
+    if (!PyArg_ParseTuple(args, "OOO", &py_lut, &i0, &i1)) {
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
         return NULL;
     }
@@ -57,8 +57,16 @@ apply(PyObject *self, PyObject *args) {
 
     lut = PyBytes_AsString(py_lut);
 
-    imgin = (Imaging)i0;
-    imgout = (Imaging)i1;
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC) ||
+        !PyCapsule_IsValid(i1, IMAGING_MAGIC)) {
+        PyErr_Format(
+            PyExc_TypeError, "Expected PyCapsule with '%s' name.", IMAGING_MAGIC
+        );
+        return NULL;
+    }
+
+    imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    imgout = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
     width = imgin->xsize;
     height = imgin->ysize;
 
@@ -129,8 +137,8 @@ apply(PyObject *self, PyObject *args) {
 static PyObject *
 match(PyObject *self, PyObject *args) {
     const char *lut;
-    PyObject *py_lut;
-    Py_ssize_t lut_len, i0;
+    PyObject *py_lut, *i0;
+    Py_ssize_t lut_len;
     Imaging imgin;
     int width, height;
     int row_idx, col_idx;
@@ -140,7 +148,7 @@ match(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "On", &py_lut, &i0)) {
+    if (!PyArg_ParseTuple(args, "OO", &py_lut, &i0)) {
         Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
         return NULL;
@@ -161,7 +169,15 @@ match(PyObject *self, PyObject *args) {
     }
 
     lut = PyBytes_AsString(py_lut);
-    imgin = (Imaging)i0;
+
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC)) {
+        PyErr_Format(
+            PyExc_TypeError, "Expected PyCapsule with '%s' name.", IMAGING_MAGIC
+        );
+        return NULL;
+    }
+
+    imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
 
     if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1) {
         Py_DECREF(ret);
@@ -215,7 +231,7 @@ match(PyObject *self, PyObject *args) {
 */
 static PyObject *
 get_on_pixels(PyObject *self, PyObject *args) {
-    Py_ssize_t i0;
+    PyObject *i0;
     Imaging img;
     UINT8 **rows;
     int row_idx, col_idx;
@@ -225,12 +241,20 @@ get_on_pixels(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "n", &i0)) {
+    if (!PyArg_ParseTuple(args, "O", &i0)) {
         Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
         return NULL;
     }
-    img = (Imaging)i0;
+
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC)) {
+        PyErr_Format(
+            PyExc_TypeError, "Expected PyCapsule with '%s' name.", IMAGING_MAGIC
+        );
+        return NULL;
+    }
+
+    img = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
     rows = img->image8;
     width = img->xsize;
     height = img->ysize;
