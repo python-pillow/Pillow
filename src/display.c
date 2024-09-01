@@ -34,12 +34,6 @@
 
 #include "libImaging/ImDib.h"
 
-#if SIZEOF_VOID_P == 8
-#define F_HANDLE "K"
-#else
-#define F_HANDLE "k"
-#endif
-
 typedef struct {
     PyObject_HEAD ImagingDIB dib;
 } ImagingDisplayObject;
