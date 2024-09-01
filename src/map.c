@@ -18,8 +18,6 @@
  * FIXME: should move the memory mapping primitives into libImaging!
  */
 
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
 
 /* compatibility wrappers (defined in _imaging.c) */

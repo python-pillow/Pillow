@@ -18,10 +18,8 @@
  * Copyright (c) 1998-2007 by Secret Labs AB
  */
 
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
-#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
+#include "thirdparty/pythoncapi_compat.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

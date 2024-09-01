@@ -22,9 +22,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
 
 /* -------------------------------------------------------------------- */

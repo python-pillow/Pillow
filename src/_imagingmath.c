@@ -13,12 +13,10 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
 
-#include "math.h"
-#include "float.h"
+#include <math.h>
+#include <float.h>
 
 #define MAX_INT32 2147483647.0
 #define MIN_INT32 -2147483648.0

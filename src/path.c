@@ -25,9 +25,8 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
-#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
+#include "thirdparty/pythoncapi_compat.h"
 
 #include <math.h>
 
