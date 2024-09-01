@@ -1411,10 +1411,3 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 }
 
 #endif
-
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */
