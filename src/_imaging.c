@@ -3707,6 +3707,13 @@ _getattr_bands(ImagingObject *self, void *closure) {
 
 static PyObject *
 _getattr_id(ImagingObject *self, void *closure) {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "id property is deprecated and will be removed in Pillow 12.0",
+            1
+        ) < 0) {
+        return NULL;
+    }
     return PyLong_FromSsize_t((Py_ssize_t)self->image);
 }
 
@@ -3717,6 +3724,13 @@ _getattr_ptr(ImagingObject *self, void *closure) {
 
 static PyObject *
 _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "unsafe_ptrs property is deprecated and will be removed in Pillow 12.0",
+            1
+        ) < 0) {
+        return NULL;
+    }
     return Py_BuildValue(
         "(sn)(sn)(sn)",
         "image8",
