@@ -71,9 +71,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
-
 #ifdef HAVE_LIBJPEG
 #include "jconfig.h"
 #endif

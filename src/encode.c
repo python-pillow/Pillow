@@ -22,11 +22,8 @@
 
 /* FIXME: make these pluggable! */
 
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
-
-#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
+#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Gif.h"
 
 #ifdef HAVE_UNISTD_H

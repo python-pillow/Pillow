@@ -29,11 +29,7 @@
 
 /* FIXME: make these pluggable! */
 
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
-
 #include "libImaging/Bit.h"
 #include "libImaging/Bcn.h"
 #include "libImaging/Gif.h"
