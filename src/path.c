@@ -28,8 +28,6 @@
 #include "libImaging/Imaging.h"
 #include "thirdparty/pythoncapi_compat.h"
 
-#include <math.h>
-
 /* compatibility wrappers (defined in _imaging.c) */
 extern int
 PyImaging_CheckBuffer(PyObject *buffer);

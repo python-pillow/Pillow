@@ -15,7 +15,6 @@
 
 #include "libImaging/Imaging.h"
 
-#include <math.h>
 #include <float.h>
 
 #define MAX_INT32 2147483647.0
