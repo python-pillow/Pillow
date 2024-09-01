@@ -35,20 +35,6 @@ from . import Image, ImageFile
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
 
-_pilbitmap_ok = None
-
-
-def _pilbitmap_check() -> int:
-    global _pilbitmap_ok
-    if _pilbitmap_ok is None:
-        try:
-            im = Image.new("1", (1, 1))
-            tkinter.BitmapImage(data=f"PIL:{im.im.id}")
-            _pilbitmap_ok = 1
-        except tkinter.TclError:
-            _pilbitmap_ok = 0
-    return _pilbitmap_ok
-
 
 def _get_image_from_kw(kw: dict[str, Any]) -> ImageFile.ImageFile | None:
     source = None
@@ -142,6 +128,8 @@ class PhotoImage:
             self.paste(image)
 
     def __del__(self) -> None:
+        if not hasattr(self, "__photo"):
+            return
         name = self.__photo.name
         self.__photo.name = None
         try:
@@ -225,17 +213,11 @@ class BitmapImage:
         self.__mode = image.mode
         self.__size = image.size
 
-        if _pilbitmap_check():
-            # fast way (requires the pilbitmap booster patch)
-            image.load()
-            kw["data"] = f"PIL:{image.im.id}"
-            self.__im = image  # must keep a reference
-        else:
-            # slow but safe way
-            kw["data"] = image.tobitmap()
-        self.__photo = tkinter.BitmapImage(**kw)
+        self.__photo = tkinter.BitmapImage(data=image.tobitmap(), **kw)
 
     def __del__(self) -> None:
+        if not hasattr(self, "__photo"):
+            return
         name = self.__photo.name
         self.__photo.name = None
         try:
