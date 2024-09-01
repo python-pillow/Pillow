@@ -295,17 +295,14 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     method = im.encoderinfo.get("method", 4)
     exact = 1 if im.encoderinfo.get("exact") else 0
 
-    if im.mode not in ("RGB", "RGBA"):
+    if im.mode not in ("RGBX", "RGBA", "RGB"):
         im = im.convert("RGBA" if im.has_transparency_data else "RGB")
 
     data = _webp.WebPEncode(
-        im.tobytes(),
-        im.size[0],
-        im.size[1],
+        im.im.ptr,
         lossless,
         float(quality),
         float(alpha_quality),
-        im.mode,
         icc_profile,
         method,
         exact,
