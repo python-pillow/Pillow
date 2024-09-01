@@ -10,6 +10,9 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 /* Check that we have an ANSI compliant compiler */
 #ifndef HAVE_PROTOTYPES
 #error Sorry, this library requires support for ANSI prototypes.
