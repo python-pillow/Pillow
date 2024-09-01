@@ -7,6 +7,7 @@
  * Copyright (c) Fredrik Lundh 1995-2003.
  */
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
 /* Check that we have an ANSI compliant compiler */
