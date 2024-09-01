@@ -480,9 +480,9 @@ def test_load_path_not_found() -> None:
     with pytest.raises(OSError) as e:
         ImageFont.load_path(filename)
 
-        # The file doesn't exist, so don't suggest `load`
-        assert filename in str(e.value)
-        assert "did you mean" not in str(e.value)
+    # The file doesn't exist, so don't suggest `load`
+    assert filename in str(e.value)
+    assert "did you mean" not in str(e.value)
     with pytest.raises(OSError):
         ImageFont.truetype(filename)
 
