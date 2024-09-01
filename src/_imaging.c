@@ -4412,15 +4412,15 @@ setup_module(PyObject *m) {
 }
 
 PyMODINIT_FUNC
-PyInit__imaging(void) {
+PyInit_lib_imaging(void) {
     PyObject *m;
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imaging", /* m_name */
-        NULL,       /* m_doc */
-        -1,         /* m_size */
-        functions,  /* m_methods */
+        "lib_imaging", /* m_name */
+        NULL,          /* m_doc */
+        -1,            /* m_size */
+        functions,     /* m_methods */
     };
 
     m = PyModule_Create(&module_def);

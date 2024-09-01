@@ -16,16 +16,6 @@
 #error libwebp 0.5.0 and above is required. Upgrade libwebp or build Pillow with --disable-webp flag
 #endif
 
-void
-ImagingSectionEnter(ImagingSectionCookie *cookie) {
-    *cookie = (PyThreadState *)PyEval_SaveThread();
-}
-
-void
-ImagingSectionLeave(ImagingSectionCookie *cookie) {
-    PyEval_RestoreThread((PyThreadState *)*cookie);
-}
-
 /* -------------------------------------------------------------------- */
 /* WebP Muxer Error Handling                                            */
 /* -------------------------------------------------------------------- */

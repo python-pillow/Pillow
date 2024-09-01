@@ -73,7 +73,7 @@ on some Python versions.
 :mod:`PIL.Image.core` Module
 ----------------------------
 
-.. module:: PIL._imaging
+.. module:: PIL.lib_imaging
 .. module:: PIL.Image.core
 
 An internal interface module previously known as :mod:`~PIL._imaging`,

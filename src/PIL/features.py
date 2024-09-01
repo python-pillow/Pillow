@@ -12,7 +12,7 @@ from . import Image
 from ._deprecate import deprecate
 
 modules = {
-    "pil": ("PIL._imaging", "PILLOW_VERSION"),
+    "pil": ("PIL.lib_imaging", "PILLOW_VERSION"),
     "tkinter": ("PIL._tkinter_finder", "tk_version"),
     "freetype2": ("PIL._imagingft", "freetype2_version"),
     "littlecms2": ("PIL._imagingcms", "littlecms_version"),
@@ -128,7 +128,7 @@ features: dict[str, tuple[str, str | bool, str | None]] = {
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO", "libjpeg_turbo_version"),
     "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT", "imagequant_version"),
-    "xcb": ("PIL._imaging", "HAVE_XCB", None),
+    "xcb": ("PIL.lib_imaging", "HAVE_XCB", None),
 }
 
 

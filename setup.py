@@ -14,10 +14,13 @@ import shutil
 import struct
 import subprocess
 import sys
+import sysconfig
 import warnings
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+
+EXT_SUFFIX, _, _ = sysconfig.get_config_var("EXT_SUFFIX").rpartition(".")
 
 
 def get_version():
@@ -411,7 +414,7 @@ class pil_build_ext(build_ext):
                 if FUZZING_BUILD:
                     extension.language = "c++"
                     extension.extra_link_args = ["--stdlib=libc++"]
-                break
+                return extension
 
     def _remove_extension(self, name):
         for extension in self.extensions:
@@ -854,7 +857,7 @@ class pil_build_ext(build_ext):
 
         defs.append(("PILLOW_VERSION", f'"{PILLOW_VERSION}"'))
 
-        self._update_extension("PIL._imaging", libs, defs)
+        self._update_extension("PIL.lib_imaging", libs, defs)
 
         #
         # additional libraries
@@ -891,8 +894,15 @@ class pil_build_ext(build_ext):
             self._remove_extension("PIL._imagingcms")
 
         if feature.webp:
-            libs = [feature.webp, feature.webp + "mux", feature.webp + "demux"]
-            self._update_extension("PIL._webp", libs)
+            libs = [
+                f"_imaging{EXT_SUFFIX}",
+                feature.webp,
+                feature.webp + "mux",
+                feature.webp + "demux",
+            ]
+            ext = self._update_extension("PIL._webp", libs)
+            ext.library_dirs.append(f"{self.build_lib}/PIL/")
+            ext.runtime_library_dirs.append("$ORIGIN")
         else:
             self._remove_extension("PIL._webp")
 
@@ -972,7 +982,7 @@ for src_file in _IMAGING:
 for src_file in _LIB_IMAGING:
     files.append(os.path.join("src/libImaging", src_file + ".c"))
 ext_modules = [
-    Extension("PIL._imaging", files),
+    Extension("PIL.lib_imaging", files),
     Extension("PIL._imagingft", ["src/_imagingft.c"]),
     Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
     Extension("PIL._webp", ["src/_webp.c"]),
