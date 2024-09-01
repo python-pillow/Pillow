@@ -620,12 +620,6 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
 
 #ifdef _WIN32
 
-#ifdef _WIN64
-#define F_HANDLE "K"
-#else
-#define F_HANDLE "k"
-#endif
-
 static PyObject *
 cms_get_display_profile_win32(PyObject *self, PyObject *args) {
     char filename[MAX_PATH];

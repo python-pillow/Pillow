@@ -12,8 +12,6 @@
 
 #ifdef _WIN32
 
-#include "ImagingPlatform.h"
-
 #if defined(__cplusplus)
 extern "C" {
 #endif

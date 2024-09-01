@@ -28,7 +28,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "ImagingUtils.h"
+#include "Imaging.h"
 #include "QuantOctree.h"
 
 typedef struct _ColorBucket {
