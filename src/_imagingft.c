@@ -824,7 +824,6 @@ font_render(FontObject *self, PyObject *args) {
     unsigned char convert_scale;    /* scale factor for non-8bpp bitmaps */
     PyObject *image;
     Imaging im;
-    Py_ssize_t id;
     int mask = 0;  /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     int stroke_width = 0;
@@ -923,10 +922,9 @@ font_render(FontObject *self, PyObject *args) {
         PyMem_Del(glyph_info);
         return NULL;
     }
-    PyObject *imageId = PyObject_GetAttrString(image, "id");
-    id = PyLong_AsSsize_t(imageId);
-    Py_XDECREF(imageId);
-    im = (Imaging)id;
+    PyObject *imagePtr = PyObject_GetAttrString(image, "ptr");
+    im = (Imaging)PyCapsule_GetPointer(imagePtr, IMAGING_MAGIC);
+    Py_XDECREF(imagePtr);
 
     x_offset -= stroke_width;
     y_offset -= stroke_width;
