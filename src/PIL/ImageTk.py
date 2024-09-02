@@ -48,18 +48,18 @@ def _get_image_from_kw(kw: dict[str, Any]) -> ImageFile.ImageFile | None:
 
 
 def _pyimagingtkcall(
-    command: str, photo: PhotoImage | tkinter.PhotoImage, id: int
+    command: str, photo: PhotoImage | tkinter.PhotoImage, ptr: object
 ) -> None:
     tk = photo.tk
     try:
-        tk.call(command, photo, id)
+        tk.call(command, photo, repr(ptr))
     except tkinter.TclError:
         # activate Tkinter hook
         # may raise an error if it cannot attach to Tkinter
         from . import _imagingtk
 
         _imagingtk.tkinit(tk.interpaddr())
-        tk.call(command, photo, id)
+        tk.call(command, photo, repr(ptr))
 
 
 # --------------------------------------------------------------------
@@ -181,7 +181,7 @@ class PhotoImage:
             block = image.new_block(self.__mode, im.size)
             image.convert2(block, image)  # convert directly between buffers
 
-        _pyimagingtkcall("PyImagingPhoto", self.__photo, block.id)
+        _pyimagingtkcall("PyImagingPhoto", self.__photo, block.ptr)
 
 
 # --------------------------------------------------------------------
@@ -255,9 +255,8 @@ class BitmapImage:
 def getimage(photo: PhotoImage) -> Image.Image:
     """Copies the contents of a PhotoImage to a PIL image memory."""
     im = Image.new("RGBA", (photo.width(), photo.height()))
-    block = im.im
 
-    _pyimagingtkcall("PyImagingPhotoGet", photo, block.id)
+    _pyimagingtkcall("PyImagingPhotoGet", photo, im.im.ptr)
 
     return im
 
