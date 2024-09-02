@@ -182,6 +182,15 @@ def test_restricted_icc_profile() -> None:
         ImageFile.LOAD_TRUNCATED_IMAGES = False
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+def test_unknown_colorspace() -> None:
+    with Image.open(f"{EXTRA_DIR}/file8.jp2") as im:
+        im.load()
+        assert im.mode == "L"
+
+
 def test_header_errors() -> None:
     for path in (
         "Tests/images/invalid_header_length.jp2",
