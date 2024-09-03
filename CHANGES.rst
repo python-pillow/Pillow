@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Treat unknown JPEG2000 colorspace as unspecified #8343
+  [radarhere]
+
 - Updated error message when saving WebP with invalid width or height #8322
   [radarhere, hugovk]
 
