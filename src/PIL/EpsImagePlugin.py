@@ -320,21 +320,26 @@ class EpsImageFile(ImageFile.ImageFile):
                 # binary/ascii (1: binary, 2: ascii)
                 # data start identifier (the image data follows after a single line
                 #   consisting only of this quoted value)
+                if imagedata_size:
+                    bytes_read = 0
+                    continue
+
                 image_data_values = byte_arr[11:bytes_read].split(None, 7)
                 columns, rows, bit_depth, mode_id = (
                     int(value) for value in image_data_values[:4]
                 )
 
-                if not imagedata_size:
-                    imagedata_size = columns, rows
+                if bit_depth == 1:
+                    self._mode = "1"
+                elif bit_depth == 8:
+                    try:
+                        self._mode = self.mode_map[mode_id]
+                    except ValueError:
+                        break
+                else:
+                    break
 
-                    if bit_depth == 1:
-                        self._mode = "1"
-                    elif bit_depth == 8:
-                        try:
-                            self._mode = self.mode_map[mode_id]
-                        except ValueError:
-                            pass
+                imagedata_size = columns, rows
             elif bytes_mv[:5] == b"%%EOF":
                 break
             elif trailer_reached and reading_trailer_comments:
