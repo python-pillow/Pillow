@@ -190,6 +190,7 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     float quality_factor;
     float alpha_quality_factor;
     int method;
+    ImagingSectionCookie cookie;
     WebPConfig config;
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPAnimEncoder *enc = encp->enc;
@@ -246,8 +247,11 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
         WebPPictureImportRGB(frame, rgb, 3 * width);
     }
 
-    // Add the frame to the encoder
-    if (!WebPAnimEncoderAdd(enc, frame, timestamp, &config)) {
+    ImagingSectionEnter(&cookie);
+    int ok = WebPAnimEncoderAdd(enc, frame, timestamp, &config);
+    ImagingSectionLeave(&cookie);
+
+    if (!ok) {
         PyErr_SetString(PyExc_RuntimeError, WebPAnimEncoderGetError(enc));
         return NULL;
     }
