@@ -541,9 +541,7 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
 
     if (!PyCapsule_IsValid(i0, IMAGING_MAGIC) ||
         !PyCapsule_IsValid(i1, IMAGING_MAGIC)) {
-        PyErr_Format(
-            PyExc_TypeError, "Expected PyCapsule with '%s' name.", IMAGING_MAGIC
-        );
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
         return NULL;
     }
 

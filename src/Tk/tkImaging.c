@@ -79,9 +79,7 @@ ImagingFind(const char *name) {
     }
 
     if (!PyCapsule_IsValid(capsule, IMAGING_MAGIC)) {
-        PyErr_Format(
-            PyExc_TypeError, "Expected PyCapsule with '%s' name.", IMAGING_MAGIC
-        );
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
         return NULL;
     }
 

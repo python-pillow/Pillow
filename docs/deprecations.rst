@@ -144,7 +144,7 @@ Get Internal Pointers to Objects
 ``Image.core.ImageCore.id`` and ``Image.core.ImageCore.unsafe_ptrs``
 have been deprecated and will be removed in Pillow 12 (2025-10-15).
 They were used for obtaining raw pointers to ``ImageCore`` internals. To interact with
-C code, you can use ``Image.core.ImageCore.ptr``, which returns a ``PyCapsule`` object.
+C code, you can use ``Image.core.ImageCore.ptr``, which returns a ``Capsule`` object.
 
 Removed features
 ----------------
