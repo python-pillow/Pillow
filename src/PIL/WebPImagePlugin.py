@@ -248,11 +248,8 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
                 # Append the frame to the animation encoder
                 enc.add(
-                    frame.tobytes(),
+                    frame.im.ptr,
                     round(timestamp),
-                    frame.size[0],
-                    frame.size[1],
-                    frame.mode,
                     lossless,
                     quality,
                     alpha_quality,
@@ -270,7 +267,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, alpha_quality, 0)
+    enc.add(None, round(timestamp), lossless, quality, alpha_quality, 0)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)

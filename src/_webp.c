@@ -84,6 +84,46 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 }
 
 /* -------------------------------------------------------------------- */
+/* Frame import                                                         */
+/* -------------------------------------------------------------------- */
+
+static int
+import_frame_libwebp(WebPPicture *frame, Imaging im) {
+    UINT32 mask = 0;
+
+    if (strcmp(im->mode, "RGBA") && strcmp(im->mode, "RGB") &&
+        strcmp(im->mode, "RGBX")) {
+        PyErr_SetString(PyExc_ValueError, "unsupported image mode");
+        return -1;
+    }
+
+    if (strcmp(im->mode, "RGBA")) {
+        mask = MASK_UINT32_CHANNEL_3;
+    }
+
+    frame->width = im->xsize;
+    frame->height = im->ysize;
+    frame->use_argb = 1;  // Don't convert RGB pixels to YUV
+
+    if (!WebPPictureAlloc(frame)) {
+        PyErr_SetString(PyExc_MemoryError, "can't allocate picture frame");
+        return -2;
+    }
+
+    for (int y = 0; y < im->ysize; ++y) {
+        UINT8 *src = (UINT8 *)im->image32[y];
+        UINT32 *dst = frame->argb + frame->argb_stride * y;
+        for (int x = 0; x < im->xsize; ++x) {
+            UINT32 pix =
+                MAKE_UINT32(src[x * 4 + 2], src[x * 4 + 1], src[x * 4], src[x * 4 + 3]);
+            dst[x] = pix | mask;
+        }
+    }
+
+    return 0;
+}
+
+/* -------------------------------------------------------------------- */
 /* WebP Animation Support                                               */
 /* -------------------------------------------------------------------- */
 
@@ -180,12 +220,9 @@ _anim_encoder_dealloc(PyObject *self) {
 
 PyObject *
 _anim_encoder_add(PyObject *self, PyObject *args) {
-    uint8_t *rgb;
-    Py_ssize_t size;
+    PyObject *i0;
+    Imaging im;
     int timestamp;
-    int width;
-    int height;
-    char *mode;
     int lossless;
     float quality_factor;
     float alpha_quality_factor;
@@ -198,13 +235,9 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "z#iiisiffi",
-            (char **)&rgb,
-            &size,
+            "Oiiffi",
+            &i0,
             &timestamp,
-            &width,
-            &height,
-            &mode,
             &lossless,
             &quality_factor,
             &alpha_quality_factor,
@@ -214,10 +247,17 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     }
 
     // Check for NULL frame, which sets duration of final frame
-    if (!rgb) {
+    if (i0 == Py_None) {
         WebPAnimEncoderAdd(enc, NULL, timestamp, NULL);
         Py_RETURN_NONE;
     }
+
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
+
+    im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
 
     // Setup config for this frame
     if (!WebPConfigInit(&config)) {
@@ -235,16 +275,8 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // Populate the frame with raw bytes passed to us
-    frame->width = width;
-    frame->height = height;
-    frame->use_argb = 1;  // Don't convert RGB pixels to YUV
-    if (strcmp(mode, "RGBA") == 0) {
-        WebPPictureImportRGBA(frame, rgb, 4 * width);
-    } else if (strcmp(mode, "RGBX") == 0) {
-        WebPPictureImportRGBX(frame, rgb, 4 * width);
-    } else {
-        WebPPictureImportRGB(frame, rgb, 3 * width);
+    if (import_frame_libwebp(frame, im)) {
+        return NULL;
     }
 
     ImagingSectionEnter(&cookie);
@@ -569,44 +601,6 @@ static PyTypeObject WebPAnimDecoder_Type = {
     0,                                 /*tp_members*/
     0,                                 /*tp_getset*/
 };
-
-/* -------------------------------------------------------------------- */
-/* Frame import                                                         */
-/* -------------------------------------------------------------------- */
-
-static int
-import_frame_libwebp(WebPPicture *frame, Imaging im) {
-    UINT32 mask = 0;
-
-    if (strcmp(im->mode, "RGBA") && strcmp(im->mode, "RGB") && strcmp(im->mode, "RGBX")) {
-        PyErr_SetString(PyExc_ValueError, "unsupported image mode");
-        return -1;
-    }
-
-    if (strcmp(im->mode, "RGBA")) {
-        mask = MASK_UINT32_CHANNEL_3;
-    }
-
-    frame->width = im->xsize;
-    frame->height = im->ysize;
-    frame->use_argb = 1;  // Don't convert RGB pixels to YUV
-
-    if (!WebPPictureAlloc(frame)) {
-        PyErr_SetString(PyExc_MemoryError, "can't allocate picture frame");
-        return -2;
-    }
-
-    for (int y = 0; y < im->ysize; ++y) {
-        UINT8 *src = (UINT8 *)im->image32[y];
-        UINT32 *dst = frame->argb + frame->argb_stride * y;
-        for (int x = 0; x < im->xsize; ++x) {
-            UINT32 pix = MAKE_UINT32(src[x * 4 + 2], src[x * 4 + 1], src[x * 4], src[x * 4 + 3]);
-            dst[x] = pix | mask;
-        }
-    }
-
-    return 0;
-}
 
 /* -------------------------------------------------------------------- */
 /* Legacy WebP Support                                                  */
