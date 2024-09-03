@@ -177,16 +177,12 @@ _unop(PyObject *self, PyObject *args) {
     }
 
     if (!PyCapsule_IsValid(op, MATH_FUNC_UNOP_MAGIC)) {
-        PyErr_Format(
-            PyExc_TypeError, "Expected PyCapsule with '%s' name.", MATH_FUNC_UNOP_MAGIC
-        );
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", MATH_FUNC_UNOP_MAGIC);
         return NULL;
     }
     if (!PyCapsule_IsValid(i0, IMAGING_MAGIC) ||
         !PyCapsule_IsValid(i1, IMAGING_MAGIC)) {
-        PyErr_Format(
-            PyExc_TypeError, "Expected PyCapsule with '%s' name.", IMAGING_MAGIC
-        );
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
         return NULL;
     }
 
@@ -213,17 +209,13 @@ _binop(PyObject *self, PyObject *args) {
     }
 
     if (!PyCapsule_IsValid(op, MATH_FUNC_BINOP_MAGIC)) {
-        PyErr_Format(
-            PyExc_TypeError, "Expected PyCapsule with '%s' name.", MATH_FUNC_BINOP_MAGIC
-        );
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", MATH_FUNC_BINOP_MAGIC);
         return NULL;
     }
     if (!PyCapsule_IsValid(i0, IMAGING_MAGIC) ||
         !PyCapsule_IsValid(i1, IMAGING_MAGIC) ||
         !PyCapsule_IsValid(i2, IMAGING_MAGIC)) {
-        PyErr_Format(
-            PyExc_TypeError, "Expected PyCapsule with '%s' name.", IMAGING_MAGIC
-        );
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
         return NULL;
     }
 
