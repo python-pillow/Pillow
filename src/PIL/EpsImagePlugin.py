@@ -310,6 +310,12 @@ class EpsImageFile(ImageFile.ImageFile):
                 # Check for an "ImageData" descriptor
                 # https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577413_pgfId-1035096
 
+                # If we've already read an "ImageData" descriptor,
+                # don't read another one.
+                if imagedata_size:
+                    bytes_read = 0
+                    continue
+
                 # Values:
                 # columns
                 # rows
@@ -320,10 +326,6 @@ class EpsImageFile(ImageFile.ImageFile):
                 # binary/ascii (1: binary, 2: ascii)
                 # data start identifier (the image data follows after a single line
                 #   consisting only of this quoted value)
-                if imagedata_size:
-                    bytes_read = 0
-                    continue
-
                 image_data_values = byte_arr[11:bytes_read].split(None, 7)
                 columns, rows, bit_depth, mode_id = (
                     int(value) for value in image_data_values[:4]
@@ -339,6 +341,8 @@ class EpsImageFile(ImageFile.ImageFile):
                 else:
                     break
 
+                # Read the columns and rows after checking the bit depth and mode
+                # in case the bit depth and/or mode are invalid.
                 imagedata_size = columns, rows
             elif bytes_mv[:5] == b"%%EOF":
                 break
