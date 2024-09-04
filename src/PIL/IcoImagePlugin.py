@@ -243,13 +243,19 @@ class IcoFile:
                 alpha_bytes = self.buf.read(im.size[0] * im.size[1] * 4)[3::4]
 
                 # convert to an 8bpp grayscale image
-                mask = Image.frombuffer(
-                    "L",  # 8bpp
-                    im.size,  # (w, h)
-                    alpha_bytes,  # source chars
-                    "raw",  # raw decoder
-                    ("L", 0, -1),  # 8bpp inverted, unpadded, reversed
-                )
+                try:
+                    mask = Image.frombuffer(
+                        "L",  # 8bpp
+                        im.size,  # (w, h)
+                        alpha_bytes,  # source chars
+                        "raw",  # raw decoder
+                        ("L", 0, -1),  # 8bpp inverted, unpadded, reversed
+                    )
+                except ValueError:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        mask = None
+                    else:
+                        raise
             else:
                 # get AND image from end of bitmap
                 w = im.size[0]
@@ -267,19 +273,26 @@ class IcoFile:
                 mask_data = self.buf.read(total_bytes)
 
                 # convert raw data to image
-                mask = Image.frombuffer(
-                    "1",  # 1 bpp
-                    im.size,  # (w, h)
-                    mask_data,  # source chars
-                    "raw",  # raw decoder
-                    ("1;I", int(w / 8), -1),  # 1bpp inverted, padded, reversed
-                )
+                try:
+                    mask = Image.frombuffer(
+                        "1",  # 1 bpp
+                        im.size,  # (w, h)
+                        mask_data,  # source chars
+                        "raw",  # raw decoder
+                        ("1;I", int(w / 8), -1),  # 1bpp inverted, padded, reversed
+                    )
+                except ValueError:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        mask = None
+                    else:
+                        raise
 
                 # now we have two images, im is XOR image and mask is AND image
 
             # apply mask image as alpha channel
-            im = im.convert("RGBA")
-            im.putalpha(mask)
+            if mask:
+                im = im.convert("RGBA")
+                im.putalpha(mask)
 
         return im
 
