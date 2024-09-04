@@ -3674,15 +3674,12 @@ static struct PyMethodDef methods[] = {
     /* Unsharpmask extension */
     {"gaussian_blur", (PyCFunction)_gaussian_blur, METH_VARARGS},
     {"unsharp_mask", (PyCFunction)_unsharp_mask, METH_VARARGS},
-
     {"box_blur", (PyCFunction)_box_blur, METH_VARARGS},
 
     /* Special effects */
     {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
 
     /* Misc. */
-    {"new_block", (PyCFunction)_new_block, METH_VARARGS},
-
     {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */
@@ -4212,6 +4209,7 @@ static PyMethodDef functions[] = {
     {"blend", (PyCFunction)_blend, METH_VARARGS},
     {"fill", (PyCFunction)_fill, METH_VARARGS},
     {"new", (PyCFunction)_new, METH_VARARGS},
+    {"new_block", (PyCFunction)_new_block, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
 
     /* Functions */

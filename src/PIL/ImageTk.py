@@ -178,7 +178,7 @@ class PhotoImage:
         if image.isblock() and im.mode == self.__mode:
             block = image
         else:
-            block = image.new_block(self.__mode, im.size)
+            block = Image.core.new_block(self.__mode, im.size)
             image.convert2(block, image)  # convert directly between buffers
 
         _pyimagingtkcall("PyImagingPhoto", self.__photo, block.ptr)
