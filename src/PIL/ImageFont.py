@@ -34,7 +34,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict
+from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict, cast
 
 from . import Image
 from ._typing import StrOrBytesPath
@@ -245,7 +245,7 @@ class FreeTypeFont:
 
         self.layout_engine = layout_engine
 
-        def load_from_bytes(f) -> None:
+        def load_from_bytes(f: IO[bytes]) -> None:
             self.font_bytes = f.read()
             self.font = core.getfont(
                 "", size, index, encoding, self.font_bytes, layout_engine
@@ -267,7 +267,7 @@ class FreeTypeFont:
                 font, size, index, encoding, layout_engine=layout_engine
             )
         else:
-            load_from_bytes(font)
+            load_from_bytes(cast(IO[bytes], font))
 
     def __getstate__(self) -> list[Any]:
         return [self.path, self.size, self.index, self.encoding, self.layout_engine]

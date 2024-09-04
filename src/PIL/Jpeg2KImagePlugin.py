@@ -18,6 +18,7 @@ from __future__ import annotations
 import io
 import os
 import struct
+from collections.abc import Callable
 from typing import IO, cast
 
 from . import Image, ImageFile, ImagePalette, _binary
@@ -316,8 +317,13 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             else:
                 self.fp.seek(length - 2, os.SEEK_CUR)
 
-    @property
-    def reduce(self):
+    @property  # type: ignore[override]
+    def reduce(
+        self,
+    ) -> (
+        Callable[[int | tuple[int, int], tuple[int, int, int, int] | None], Image.Image]
+        | int
+    ):
         # https://github.com/python-pillow/Pillow/issues/4343 found that the
         # new Image 'reduce' method was shadowed by this plugin's 'reduce'
         # property. This attempts to allow for both scenarios

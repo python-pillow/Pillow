@@ -163,7 +163,3 @@ follow_imports = "silent"
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
-exclude = [
-  '^Tests/oss-fuzz/fuzz_font.py$',
-  '^Tests/oss-fuzz/fuzz_pillow.py$',
-]
