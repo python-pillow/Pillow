@@ -4136,7 +4136,7 @@ class Exif(_ExifBase):
                     ifd = self._get_ifd_dict(tag_data, tag)
                     if ifd is not None:
                         self._ifds[tag] = ifd
-        ifd = self._ifds.get(tag, {})
+        ifd = self._ifds.setdefault(tag, {})
         if tag == ExifTags.IFD.Exif and self._hidden_data:
             ifd = {
                 k: v

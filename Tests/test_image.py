@@ -775,6 +775,14 @@ class TestImage:
         exif.load(b"Exif\x00\x00")
         assert not dict(exif)
 
+    def test_empty_get_ifd(self) -> None:
+        exif = Image.Exif()
+        ifd = exif.get_ifd(0x8769)
+        assert ifd == {}
+
+        ifd[36864] = b"0220"
+        assert exif.get_ifd(0x8769) == {36864: b"0220"}
+
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
