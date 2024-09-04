@@ -995,11 +995,13 @@ class TestFileJpeg:
         f = str(tmp_path / "temp.jpg")
         im = hopper()
         im.save(f, xmp=b"XMP test")
-
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"XMP test"
 
-        im.save(f, xmp=b"1" * 65504)
+        im.info["xmp"] = b"1" * 65504
+        im.save(f)
+        with Image.open(f) as reloaded:
+            assert reloaded.info["xmp"] == b"1" * 65504
 
         with pytest.raises(ValueError):
             im.save(f, xmp=b"1" * 65505)
