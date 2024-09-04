@@ -747,17 +747,27 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     extra = info.get("extra", b"")
 
     MAX_BYTES_IN_MARKER = 65533
+    xmp = info.get("xmp", im.info.get("xmp"))
+    if xmp:
+        overhead_len = 29  # b"http://ns.adobe.com/xap/1.0/\x00"
+        max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
+        if len(xmp) > max_data_bytes_in_marker:
+            msg = "XMP data is too long"
+            raise ValueError(msg)
+        size = o16(2 + overhead_len + len(xmp))
+        extra += b"\xFF\xE1" + size + b"http://ns.adobe.com/xap/1.0/\x00" + xmp
+
     icc_profile = info.get("icc_profile")
     if icc_profile:
-        ICC_OVERHEAD_LEN = 14
-        MAX_DATA_BYTES_IN_MARKER = MAX_BYTES_IN_MARKER - ICC_OVERHEAD_LEN
+        overhead_len = 14  # b"ICC_PROFILE\0" + o8(i) + o8(len(markers))
+        max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
         markers = []
         while icc_profile:
-            markers.append(icc_profile[:MAX_DATA_BYTES_IN_MARKER])
-            icc_profile = icc_profile[MAX_DATA_BYTES_IN_MARKER:]
+            markers.append(icc_profile[:max_data_bytes_in_marker])
+            icc_profile = icc_profile[max_data_bytes_in_marker:]
         i = 1
         for marker in markers:
-            size = o16(2 + ICC_OVERHEAD_LEN + len(marker))
+            size = o16(2 + overhead_len + len(marker))
             extra += (
                 b"\xFF\xE2"
                 + size
