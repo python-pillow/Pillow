@@ -137,7 +137,7 @@ class TgaImageFile(ImageFile.ImageFile):
             if imagetype & 8:
                 # compressed
                 self.tile = [
-                    (
+                    ImageFile._Tile(
                         "tga_rle",
                         (0, 0) + self.size,
                         self.fp.tell(),
@@ -146,7 +146,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 ]
             else:
                 self.tile = [
-                    (
+                    ImageFile._Tile(
                         "raw",
                         (0, 0) + self.size,
                         self.fp.tell(),

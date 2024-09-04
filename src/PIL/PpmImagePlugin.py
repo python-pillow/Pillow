@@ -151,7 +151,9 @@ class PpmImageFile(ImageFile.ImageFile):
                     decoder_name = "ppm"
 
             args = rawmode if decoder_name == "raw" else (rawmode, maxval)
-        self.tile = [(decoder_name, (0, 0) + self.size, self.fp.tell(), args)]
+        self.tile = [
+            ImageFile._Tile(decoder_name, (0, 0) + self.size, self.fp.tell(), args)
+        ]
 
 
 #

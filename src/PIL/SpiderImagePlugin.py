@@ -154,7 +154,9 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [("raw", (0, 0) + self.size, offset, (self.rawmode, 0, 1))]
+        self.tile = [
+            ImageFile._Tile("raw", (0, 0) + self.size, offset, (self.rawmode, 0, 1))
+        ]
         self._fp = self.fp  # FIXME: hack
 
     @property

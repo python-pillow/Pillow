@@ -67,7 +67,7 @@ class FitsImageFile(ImageFile.ImageFile):
             raise ValueError(msg)
 
         offset += self.fp.tell() - 80
-        self.tile = [(decoder_name, (0, 0) + self.size, offset, args)]
+        self.tile = [ImageFile._Tile(decoder_name, (0, 0) + self.size, offset, args)]
 
     def _get_size(
         self, headers: dict[bytes, bytes], prefix: bytes

@@ -367,7 +367,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 mask_count = 3
 
             masks = struct.unpack(f"<{mask_count}I", header.read(mask_count * 4))
-            self.tile = [("dds_rgb", extents, 0, (bitcount, masks))]
+            self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
             return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:

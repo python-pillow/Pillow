@@ -147,7 +147,9 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # tile
         if tag == (8, 10):
-            self.tile = [("iptc", (0, 0) + self.size, offset, compression)]
+            self.tile = [
+                ImageFile._Tile("iptc", (0, 0) + self.size, offset, compression)
+            ]
 
     def load(self) -> Image.core.PixelAccess | None:
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
