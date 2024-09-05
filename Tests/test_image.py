@@ -42,6 +42,12 @@ try:
 except ImportError:
     ElementTree = None
 
+PrettyPrinter: type | None
+try:
+    from IPython.lib.pretty import PrettyPrinter
+except ImportError:
+    PrettyPrinter = None
+
 
 # Deprecation helper
 def helper_image_new(mode: str, size: tuple[int, int]) -> Image.Image:
@@ -91,16 +97,15 @@ class TestImage:
         # with pytest.raises(MemoryError):
         #   Image.new("L", (1000000, 1000000))
 
+    @pytest.mark.skipif(PrettyPrinter is None, reason="IPython is not installed")
     def test_repr_pretty(self) -> None:
-        class Pretty:
-            def text(self, text: str) -> None:
-                self.pretty_output = text
-
         im = Image.new("L", (100, 100))
 
-        p = Pretty()
+        output = io.StringIO()
+        assert PrettyPrinter is not None
+        p = PrettyPrinter(output)
         im._repr_pretty_(p, False)
-        assert p.pretty_output == "<PIL.Image.Image image mode=L size=100x100>"
+        assert output.getvalue() == "<PIL.Image.Image image mode=L size=100x100>"
 
     def test_open_formats(self) -> None:
         PNGFILE = "Tests/images/hopper.png"
@@ -700,6 +705,7 @@ class TestImage:
             assert new_image.size == image.size
             assert new_image.info == base_image.info
             if palette_result is not None:
+                assert new_image.palette is not None
                 assert new_image.palette.tobytes() == palette_result.tobytes()
             else:
                 assert new_image.palette is None
@@ -769,6 +775,14 @@ class TestImage:
         exif.load(b"Exif\x00\x00")
         assert not dict(exif)
 
+    def test_empty_get_ifd(self) -> None:
+        exif = Image.Exif()
+        ifd = exif.get_ifd(0x8769)
+        assert ifd == {}
+
+        ifd[36864] = b"0220"
+        assert exif.get_ifd(0x8769) == {36864: b"0220"}
+
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
@@ -817,7 +831,6 @@ class TestImage:
             assert reloaded_exif[305] == "Pillow test"
 
     @skip_unless_feature("webp")
-    @skip_unless_feature("webp_anim")
     def test_exif_webp(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/hopper.webp") as im:
             exif = im.getexif()
@@ -939,7 +952,15 @@ class TestImage:
 
     def test_empty_xmp(self) -> None:
         with Image.open("Tests/images/hopper.gif") as im:
-            assert im.getxmp() == {}
+            if ElementTree is None:
+                with pytest.warns(
+                    UserWarning,
+                    match="XMP data cannot be read without defusedxml dependency",
+                ):
+                    xmp = im.getxmp()
+            else:
+                xmp = im.getxmp()
+            assert xmp == {}
 
     def test_getxmp_padded(self) -> None:
         im = Image.new("RGB", (1, 1))
@@ -990,12 +1011,14 @@ class TestImage:
         # P mode with RGBA palette
         im = Image.new("RGBA", (1, 1)).convert("P")
         assert im.mode == "P"
+        assert im.palette is not None
         assert im.palette.mode == "RGBA"
         assert im.has_transparency_data
 
     def test_apply_transparency(self) -> None:
         im = Image.new("P", (1, 1))
         im.putpalette((0, 0, 0, 1, 1, 1))
+        assert im.palette is not None
         assert im.palette.colors == {(0, 0, 0): 0, (1, 1, 1): 1}
 
         # Test that no transformation is applied without transparency
@@ -1013,13 +1036,16 @@ class TestImage:
         im.putpalette((0, 0, 0, 255, 1, 1, 1, 128), "RGBA")
         im.info["transparency"] = 0
         im.apply_transparency()
+        assert im.palette is not None
         assert im.palette.colors == {(0, 0, 0, 0): 0, (1, 1, 1, 128): 1}
 
         # Test that transparency bytes are applied
         with Image.open("Tests/images/pil123p.png") as im:
             assert isinstance(im.info["transparency"], bytes)
+            assert im.palette is not None
             assert im.palette.colors[(27, 35, 6)] == 24
             im.apply_transparency()
+            assert im.palette is not None
             assert im.palette.colors[(27, 35, 6, 214)] == 24
 
     def test_constants(self) -> None:

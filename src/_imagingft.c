@@ -272,7 +272,7 @@ text_layout_raqm(
         }
         set_text = raqm_set_text(rq, text, size);
         PyMem_Free(text);
-    } else {
+    } else if (PyBytes_Check(string)) {
         char *buffer;
         PyBytes_AsStringAndSize(string, &buffer, &size);
         if (!buffer || !size) {
@@ -281,6 +281,9 @@ text_layout_raqm(
             goto failed;
         }
         set_text = raqm_set_text_utf8(rq, buffer, size);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "expected string or bytes");
+        goto failed;
     }
     if (!set_text) {
         PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
@@ -425,8 +428,11 @@ text_layout_fallback(
 
     if (PyUnicode_Check(string)) {
         count = PyUnicode_GET_LENGTH(string);
-    } else {
+    } else if (PyBytes_Check(string)) {
         PyBytes_AsStringAndSize(string, &buffer, &count);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "expected string or bytes");
+        return 0;
     }
     if (count == 0) {
         return 0;
@@ -1243,7 +1249,7 @@ font_getvarnames(FontObject *self) {
         return PyErr_NoMemory();
     }
 
-    for (int i = 0; i < num_namedstyles; i++) {
+    for (unsigned int i = 0; i < num_namedstyles; i++) {
         list_names_filled[i] = 0;
     }
 

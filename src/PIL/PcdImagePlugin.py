@@ -47,13 +47,11 @@ class PcdImageFile(ImageFile.ImageFile):
 
         self._mode = "RGB"
         self._size = 768, 512  # FIXME: not correct for rotated images!
-        self.tile = [("pcd", (0, 0) + self.size, 96 * 2048, None)]
+        self.tile = [ImageFile._Tile("pcd", (0, 0) + self.size, 96 * 2048, None)]
 
     def load_end(self) -> None:
         if self.tile_post_rotate:
             # Handle rotated PCDs
-            assert self.im is not None
-
             self.im = self.im.rotate(self.tile_post_rotate)
             self._size = self.im.size
 

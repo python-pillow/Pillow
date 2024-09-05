@@ -53,7 +53,7 @@ true color.
     from PIL import Image, ImageFile
 
 
-    def _accept(prefix):
+    def _accept(prefix: bytes) -> bool:
         return prefix[:4] == b"SPAM"
 
 
@@ -62,7 +62,7 @@ true color.
         format = "SPAM"
         format_description = "Spam raster image"
 
-        def _open(self):
+        def _open(self) -> None:
 
             header = self.fp.read(128).split()
 
@@ -82,7 +82,7 @@ true color.
                 raise SyntaxError(msg)
 
             # data descriptor
-            self.tile = [("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))]
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 128, (self.mode, 0, 1))]
 
 
     Image.register_open(SpamImageFile.format, SpamImageFile, _accept)

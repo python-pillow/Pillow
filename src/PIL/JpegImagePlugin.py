@@ -49,6 +49,7 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
+from ._deprecate import deprecate
 from .JpegPresets import presets
 
 if TYPE_CHECKING:
@@ -346,8 +347,8 @@ class JpegImageFile(ImageFile.ImageFile):
 
         # JPEG specifics (internal)
         self.layer: list[tuple[int, int, int, int]] = []
-        self.huffman_dc: dict[Any, Any] = {}
-        self.huffman_ac: dict[Any, Any] = {}
+        self._huffman_dc: dict[Any, Any] = {}
+        self._huffman_ac: dict[Any, Any] = {}
         self.quantization: dict[int, list[int]] = {}
         self.app: dict[str, bytes] = {}  # compatibility
         self.applist: list[tuple[str, bytes]] = []
@@ -371,7 +372,9 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [("jpeg", (0, 0) + self.size, 0, (rawmode, ""))]
+                    self.tile = [
+                        ImageFile._Tile("jpeg", (0, 0) + self.size, 0, (rawmode, ""))
+                    ]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -385,6 +388,12 @@ class JpegImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg)
 
         self._read_dpi_from_exif()
+
+    def __getattr__(self, name: str) -> Any:
+        if name in ("huffman_ac", "huffman_dc"):
+            deprecate(name, 12)
+            return getattr(self, "_" + name)
+        raise AttributeError(name)
 
     def load_read(self, read_bytes: int) -> bytes:
         """
@@ -416,6 +425,7 @@ class JpegImageFile(ImageFile.ImageFile):
         scale = 1
         original_size = self.size
 
+        assert isinstance(a, tuple)
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
             self._mode = mode
             a = mode, ""
@@ -425,6 +435,7 @@ class JpegImageFile(ImageFile.ImageFile):
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
+            assert e is not None
             e = (
                 e[0],
                 e[1],
@@ -434,7 +445,7 @@ class JpegImageFile(ImageFile.ImageFile):
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
 
-        self.tile = [(d, e, o, a)]
+        self.tile = [ImageFile._Tile(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
@@ -740,17 +751,27 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     extra = info.get("extra", b"")
 
     MAX_BYTES_IN_MARKER = 65533
+    xmp = info.get("xmp", im.info.get("xmp"))
+    if xmp:
+        overhead_len = 29  # b"http://ns.adobe.com/xap/1.0/\x00"
+        max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
+        if len(xmp) > max_data_bytes_in_marker:
+            msg = "XMP data is too long"
+            raise ValueError(msg)
+        size = o16(2 + overhead_len + len(xmp))
+        extra += b"\xFF\xE1" + size + b"http://ns.adobe.com/xap/1.0/\x00" + xmp
+
     icc_profile = info.get("icc_profile")
     if icc_profile:
-        ICC_OVERHEAD_LEN = 14
-        MAX_DATA_BYTES_IN_MARKER = MAX_BYTES_IN_MARKER - ICC_OVERHEAD_LEN
+        overhead_len = 14  # b"ICC_PROFILE\0" + o8(i) + o8(len(markers))
+        max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
         markers = []
         while icc_profile:
-            markers.append(icc_profile[:MAX_DATA_BYTES_IN_MARKER])
-            icc_profile = icc_profile[MAX_DATA_BYTES_IN_MARKER:]
+            markers.append(icc_profile[:max_data_bytes_in_marker])
+            icc_profile = icc_profile[max_data_bytes_in_marker:]
         i = 1
         for marker in markers:
-            size = o16(2 + ICC_OVERHEAD_LEN + len(marker))
+            size = o16(2 + overhead_len + len(marker))
             extra += (
                 b"\xFF\xE2"
                 + size
@@ -819,7 +840,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # Ensure that our buffer is big enough. Same with the icc_profile block.
         bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
 
-    ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
+    )
 
 
 def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -835,7 +858,7 @@ def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 ##
 # Factory for making JPEG and MPO instances
 def jpeg_factory(
-    fp: IO[bytes] | None = None, filename: str | bytes | None = None
+    fp: IO[bytes], filename: str | bytes | None = None
 ) -> JpegImageFile | MpoImageFile:
     im = JpegImageFile(fp, filename)
     try:

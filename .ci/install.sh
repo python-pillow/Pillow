@@ -30,6 +30,7 @@ python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade wheel
 python3 -m pip install coverage
 python3 -m pip install defusedxml
+python3 -m pip install ipython
 python3 -m pip install olefile
 python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov
@@ -52,10 +53,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     fi
 
     # Pyroma uses non-isolated build and fails with old setuptools
-    if [[
-        $GHA_PYTHON_VERSION == pypy3.9
-        || $GHA_PYTHON_VERSION == 3.9
-    ]]; then
+    if [[ $GHA_PYTHON_VERSION == 3.9 ]]; then
         # To match pyproject.toml
         python3 -m pip install "setuptools>=67.8"
     fi

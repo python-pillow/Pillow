@@ -978,7 +978,7 @@ def test_webp_background(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     # Test opaque WebP background
-    if features.check("webp") and features.check("webp_anim"):
+    if features.check("webp"):
         with Image.open("Tests/images/hopper.webp") as im:
             assert im.info["background"] == (255, 255, 255, 255)
             im.save(out)
@@ -1378,16 +1378,37 @@ def test_lzw_bits() -> None:
         im.load()
 
 
-def test_extents() -> None:
-    with Image.open("Tests/images/test_extents.gif") as im:
-        assert im.size == (100, 100)
+@pytest.mark.parametrize(
+    "test_file, loading_strategy",
+    (
+        ("test_extents.gif", GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST),
+        (
+            "test_extents.gif",
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY,
+        ),
+        (
+            "test_extents_transparency.gif",
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST,
+        ),
+    ),
+)
+def test_extents(test_file, loading_strategy) -> None:
+    GifImagePlugin.LOADING_STRATEGY = loading_strategy
+    try:
+        with Image.open("Tests/images/" + test_file) as im:
+            assert im.size == (100, 100)
 
-        # Check that n_frames does not change the size
-        assert im.n_frames == 2
-        assert im.size == (100, 100)
+            # Check that n_frames does not change the size
+            assert im.n_frames == 2
+            assert im.size == (100, 100)
 
-        im.seek(1)
-        assert im.size == (150, 150)
+            im.seek(1)
+            assert im.size == (150, 150)
+
+            im.load()
+            assert im.im.size == (150, 150)
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 
 def test_missing_background() -> None:

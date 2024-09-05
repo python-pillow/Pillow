@@ -258,7 +258,9 @@ class iTXt(str):
     tkey: str | bytes | None
 
     @staticmethod
-    def __new__(cls, text, lang=None, tkey=None):
+    def __new__(
+        cls, text: str, lang: str | None = None, tkey: str | None = None
+    ) -> iTXt:
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
@@ -863,12 +865,13 @@ class PngImageFile(ImageFile.ImageFile):
         assert self.png is not None
 
         self.dispose: _imaging.ImagingCore | None
+        dispose_extent = None
         if frame == 0:
             if rewind:
                 self._fp.seek(self.__rewind)
                 self.png.rewind()
                 self.__prepare_idat = self.__rewind_idat
-                self.im = None
+                self._im = None
                 self.info = self.png.im_info
                 self.tile = self.png.im_tile
                 self.fp = self._fp
@@ -877,7 +880,7 @@ class PngImageFile(ImageFile.ImageFile):
             self.default_image = self.info.get("default_image", False)
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            dispose_extent = self.info.get("bbox")
             self.__frame = 0
         else:
             if frame != self.__frame + 1:
@@ -935,11 +938,13 @@ class PngImageFile(ImageFile.ImageFile):
             self.tile = self.png.im_tile
             self.dispose_op = self.info.get("disposal")
             self.blend_op = self.info.get("blend")
-            self.dispose_extent = self.info.get("bbox")
+            dispose_extent = self.info.get("bbox")
 
             if not self.tile:
                 msg = "image not found in APNG frame"
                 raise EOFError(msg)
+        if dispose_extent:
+            self.dispose_extent: tuple[float, float, float, float] = dispose_extent
 
         # setup frame disposal (actual disposal done when needed in the next _seek())
         if self._prev_im is None and self.dispose_op == Disposal.OP_PREVIOUS:
@@ -1226,7 +1231,7 @@ def _write_multiple_frames(
         ImageFile._save(
             im,
             cast(IO[bytes], _idat(fp, chunk)),
-            [("zip", (0, 0) + im.size, 0, rawmode)],
+            [ImageFile._Tile("zip", (0, 0) + im.size, 0, rawmode)],
         )
 
     seq_num = 0
@@ -1263,14 +1268,14 @@ def _write_multiple_frames(
             ImageFile._save(
                 im_frame,
                 cast(IO[bytes], _idat(fp, chunk)),
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
         else:
             fdat_chunks = _fdat(fp, chunk, seq_num)
             ImageFile._save(
                 im_frame,
                 cast(IO[bytes], fdat_chunks),
-                [("zip", (0, 0) + im_frame.size, 0, rawmode)],
+                [ImageFile._Tile("zip", (0, 0) + im_frame.size, 0, rawmode)],
             )
             seq_num = fdat_chunks.seq_num
     return None
@@ -1471,7 +1476,7 @@ def _save(
         ImageFile._save(
             single_im,
             cast(IO[bytes], _idat(fp, chunk)),
-            [("zip", (0, 0) + single_im.size, 0, rawmode)],
+            [ImageFile._Tile("zip", (0, 0) + single_im.size, 0, rawmode)],
         )
 
     if info:

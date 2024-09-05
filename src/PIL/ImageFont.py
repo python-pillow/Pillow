@@ -34,7 +34,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict
+from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict, cast
 
 from . import Image
 from ._typing import StrOrBytesPath
@@ -212,7 +212,7 @@ class FreeTypeFont:
 
     def __init__(
         self,
-        font: StrOrBytesPath | BinaryIO | None = None,
+        font: StrOrBytesPath | BinaryIO,
         size: float = 10,
         index: int = 0,
         encoding: str = "",
@@ -245,7 +245,7 @@ class FreeTypeFont:
 
         self.layout_engine = layout_engine
 
-        def load_from_bytes(f) -> None:
+        def load_from_bytes(f: IO[bytes]) -> None:
             self.font_bytes = f.read()
             self.font = core.getfont(
                 "", size, index, encoding, self.font_bytes, layout_engine
@@ -267,7 +267,7 @@ class FreeTypeFont:
                 font, size, index, encoding, layout_engine=layout_engine
             )
         else:
-            load_from_bytes(font)
+            load_from_bytes(cast(IO[bytes], font))
 
     def __getstate__(self) -> list[Any]:
         return [self.path, self.size, self.index, self.encoding, self.layout_engine]
@@ -781,7 +781,7 @@ def load(filename: str) -> ImageFont:
 
 
 def truetype(
-    font: StrOrBytesPath | BinaryIO | None = None,
+    font: StrOrBytesPath | BinaryIO,
     size: float = 10,
     index: int = 0,
     encoding: str = "",
@@ -852,7 +852,7 @@ def truetype(
     :exception ValueError: If the font size is not greater than zero.
     """
 
-    def freetype(font: StrOrBytesPath | BinaryIO | None) -> FreeTypeFont:
+    def freetype(font: StrOrBytesPath | BinaryIO) -> FreeTypeFont:
         return FreeTypeFont(font, size, index, encoding, layout_engine)
 
     try:

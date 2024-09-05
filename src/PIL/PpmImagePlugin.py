@@ -151,7 +151,9 @@ class PpmImageFile(ImageFile.ImageFile):
                     decoder_name = "ppm"
 
             args = rawmode if decoder_name == "raw" else (rawmode, maxval)
-        self.tile = [(decoder_name, (0, 0) + self.size, self.fp.tell(), args)]
+        self.tile = [
+            ImageFile._Tile(decoder_name, (0, 0) + self.size, self.fp.tell(), args)
+        ]
 
 
 #
@@ -333,7 +335,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         rawmode, head = "1;I", b"P4"
     elif im.mode == "L":
         rawmode, head = "L", b"P5"
-    elif im.mode == "I":
+    elif im.mode in ("I", "I;16"):
         rawmode, head = "I;16B", b"P5"
     elif im.mode in ("RGB", "RGBA"):
         rawmode, head = "RGB", b"P6"
@@ -353,7 +355,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     elif head == b"Pf":
         fp.write(b"-1.0\n")
     row_order = -1 if im.mode == "F" else 1
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, row_order))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, row_order))]
+    )
 
 
 #

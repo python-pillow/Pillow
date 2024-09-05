@@ -109,6 +109,7 @@ lint.select = [
   "ISC",    # flake8-implicit-str-concat
   "LOG",    # flake8-logging
   "PGH",    # pygrep-hooks
+  "PT",     # flake8-pytest-style
   "PYI",    # flake8-pyi
   "RUF100", # unused noqa (yesqa)
   "UP",     # pyupgrade
@@ -120,6 +121,12 @@ lint.ignore = [
   "E221",   # Multiple spaces before operator
   "E226",   # Missing whitespace around arithmetic operator
   "E241",   # Multiple spaces after ','
+  "PT001",  # pytest-fixture-incorrect-parentheses-style
+  "PT007",  # pytest-parametrize-values-wrong-type
+  "PT011",  # pytest-raises-too-broad
+  "PT012",  # pytest-raises-with-multiple-statements
+  "PT016",  # pytest-fail-without-message
+  "PT017",  # pytest-assert-in-except
   "PYI026", # flake8-pyi: typing.TypeAlias added in Python 3.10
   "PYI034", # flake8-pyi: typing.Self added in Python 3.11
 ]
@@ -129,6 +136,7 @@ lint.per-file-ignores."Tests/oss-fuzz/fuzz_font.py" = [
 lint.per-file-ignores."Tests/oss-fuzz/fuzz_pillow.py" = [
   "I002",
 ]
+lint.flake8-pytest-style.parametrize-names-type = "csv"
 lint.isort.known-first-party = [
   "PIL",
 ]
@@ -155,8 +163,3 @@ follow_imports = "silent"
 warn_redundant_casts = true
 warn_unreachable = true
 warn_unused_ignores = true
-exclude = [
-  '^Tests/oss-fuzz/fuzz_font.py$',
-  '^Tests/oss-fuzz/fuzz_pillow.py$',
-  '^Tests/test_qt_image_qapplication.py$',
-]
