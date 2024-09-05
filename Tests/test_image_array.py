@@ -24,7 +24,7 @@ def test_toarray() -> None:
 
     def test_with_dtype(dtype: npt.DTypeLike) -> None:
         ai = numpy.array(im, dtype=dtype)
-        assert ai.dtype == dtype
+        assert ai.dtype.type is dtype
 
     # assert test("1") == ((100, 128), '|b1', 1600))
     assert test("L") == ((100, 128), "|u1", 12800)
