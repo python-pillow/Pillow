@@ -331,6 +331,18 @@ sets the following :py:attr:`~PIL.Image.Image.info` property:
     ask for ``(512, 512, 2)``, the final value of
     :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
 
+.. _icns-loading:
+
+Loading
+~~~~~~~
+
+You can call the :py:meth:`~PIL.Image.Image.load` method with the following parameter.
+
+**scale**
+    Affects the scale of the resultant image. If the size is set to ``(512, 512)``,
+    after loading at scale 2, the final value of :py:attr:`~PIL.Image.Image.size` will
+    be ``(1024, 1024)``.
+
 .. _icns-saving:
 
 Saving
