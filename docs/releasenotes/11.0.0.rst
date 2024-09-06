@@ -43,8 +43,19 @@ similarly removed.
 Deprecations
 ============
 
+
+ICNS (width, height, scale) sizes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+Setting an ICNS image size to ``(width, height, scale)`` before loading has been
+deprecated. Instead, ``load(scale)`` can be used.
+
 ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
 
 The ``options`` parameter in :py:meth:`~PIL.ImageMath.lambda_eval()` and
 :py:meth:`~PIL.ImageMath.unsafe_eval()` has been deprecated. One or more
@@ -60,6 +71,8 @@ have been deprecated, and will be removed in Pillow 12 (2025-10-15).
 
 Specific WebP Feature Checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
 
 ``features.check("transp_webp")``, ``features.check("webp_mux")`` and
 ``features.check("webp_anim")`` are now deprecated. They will always return

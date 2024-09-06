@@ -87,7 +87,8 @@ def test_sizes() -> None:
         for w, h, r in im.info["sizes"]:
             wr = w * r
             hr = h * r
-            im.size = (w, h, r)
+            with pytest.warns(DeprecationWarning):
+                im.size = (w, h, r)
             im.load()
             assert im.mode == "RGBA"
             assert im.size == (wr, hr)

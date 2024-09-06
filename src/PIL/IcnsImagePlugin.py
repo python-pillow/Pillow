@@ -25,6 +25,7 @@ import sys
 from typing import IO
 
 from . import Image, ImageFile, PngImagePlugin, features
+from ._deprecate import deprecate
 
 enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
@@ -275,15 +276,16 @@ class IcnsImageFile(ImageFile.ImageFile):
             self.best_size[1] * self.best_size[2],
         )
 
-    @property
-    def size(self):
+    @property  # type: ignore[override]
+    def size(self) -> tuple[int, int] | tuple[int, int, int]:
         return self._size
 
     @size.setter
-    def size(self, value) -> None:
+    def size(self, value: tuple[int, int] | tuple[int, int, int]) -> None:
         if len(value) == 3:
+            deprecate("Setting size to (width, height, scale)", 12, "load(scale)")
             if value in self.info["sizes"]:
-                self._size = value
+                self._size = value  # type: ignore[assignment]
                 return
         else:
             # Check that a matching size exists,
