@@ -12,6 +12,19 @@ Deprecated features
 Below are features which are considered deprecated. Where appropriate,
 a :py:exc:`DeprecationWarning` is issued.
 
+FreeType 2.9.0
+~~~~~~~~~~~~~~
+
+.. deprecated:: 11.0.0
+
+Support for FreeType 2.9.0 is deprecated and will be removed in Pillow 12.0.0
+(2025-10-15), when FreeType 2.9.1 will be the minimum supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`CVE-2020-15999`).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
+
 ImageFile.raise_oserror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
