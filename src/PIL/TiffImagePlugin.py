@@ -46,6 +46,7 @@ import logging
 import math
 import os
 import struct
+import sys
 import warnings
 from collections.abc import Iterator, MutableMapping
 from fractions import Fraction
@@ -1647,7 +1648,7 @@ SAVE_INFO = {
 }
 
 
-def _save(im: Image.Image, fp, filename: str | bytes) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
@@ -1958,7 +1959,7 @@ def _save(im: Image.Image, fp, filename: str | bytes) -> None:
         setattr(im, "_debug_multipage", ifd)
 
 
-class AppendingTiffWriter:
+class AppendingTiffWriter(io.BytesIO):
     fieldSizes = [
         0,  # None
         1,  # byte
@@ -2068,6 +2069,12 @@ class AppendingTiffWriter:
         return self.f.tell() - self.offsetOfNewPage
 
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
+        """
+        :param offset: Distance to seek.
+        :param whence: Whether the distance is relative to the start,
+                       end or current position.
+        :returns: The resulting position, relative to the start.
+        """
         if whence == os.SEEK_SET:
             offset += self.offsetOfNewPage
 
@@ -2101,8 +2108,16 @@ class AppendingTiffWriter:
             num_tags = self.readShort()
             self.f.seek(num_tags * 12, os.SEEK_CUR)
 
-    def write(self, data: bytes) -> int | None:
-        return self.f.write(data)
+    if sys.version_info >= (3, 12):
+        from collections.abc import Buffer
+
+        def write(self, data: Buffer, /) -> int:
+            return self.f.write(data)
+
+    else:
+
+        def write(self, data: Any, /) -> int:
+            return self.f.write(data)
 
     def readShort(self) -> int:
         (value,) = struct.unpack(self.shortFmt, self.f.read(2))
@@ -2143,7 +2158,8 @@ class AppendingTiffWriter:
 
     def close(self) -> None:
         self.finalize()
-        self.f.close()
+        if self.close_fp:
+            self.f.close()
 
     def fixIFD(self) -> None:
         num_tags = self.readShort()
