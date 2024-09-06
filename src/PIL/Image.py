@@ -3968,7 +3968,7 @@ class Exif(_ExifBase):
         self._data.clear()
         self._hidden_data.clear()
         self._ifds.clear()
-        if data and data.startswith(b"Exif\x00\x00"):
+        while data and data.startswith(b"Exif\x00\x00"):
             data = data[6:]
         if not data:
             self._info = None
