@@ -1392,7 +1392,9 @@ def test_lzw_bits() -> None:
         ),
     ),
 )
-def test_extents(test_file, loading_strategy) -> None:
+def test_extents(
+    test_file: str, loading_strategy: GifImagePlugin.LoadingStrategy
+) -> None:
     GifImagePlugin.LOADING_STRATEGY = loading_strategy
     try:
         with Image.open("Tests/images/" + test_file) as im:
