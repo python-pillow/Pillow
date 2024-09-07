@@ -1154,7 +1154,7 @@ def test_invalid_truetype_sizes_raise_valueerror(
 
 def test_freetype_deprecation(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: mock features.version_module to return fake FreeType version
-    def fake_version_module(module):
+    def fake_version_module(module: str) -> str:
         return "2.9.0"
 
     monkeypatch.setattr(features, "version_module", fake_version_module)
