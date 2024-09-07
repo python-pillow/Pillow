@@ -1127,17 +1127,23 @@ class Image:
             return new_im
 
         if "LAB" in (self.mode, mode):
-            other_mode = mode if self.mode == "LAB" else self.mode
+            im = self
+            if mode == "LAB":
+                if im.mode not in ("RGB", "RGBA", "RGBX"):
+                    im = im.convert("RGBA")
+                other_mode = im.mode
+            else:
+                other_mode = mode
             if other_mode in ("RGB", "RGBA", "RGBX"):
                 from . import ImageCms
 
                 srgb = ImageCms.createProfile("sRGB")
                 lab = ImageCms.createProfile("LAB")
-                profiles = [lab, srgb] if self.mode == "LAB" else [srgb, lab]
+                profiles = [lab, srgb] if im.mode == "LAB" else [srgb, lab]
                 transform = ImageCms.buildTransform(
-                    profiles[0], profiles[1], self.mode, mode
+                    profiles[0], profiles[1], im.mode, mode
                 )
-                return transform.apply(self)
+                return transform.apply(im)
 
         # colorspace conversion
         if dither is None:
