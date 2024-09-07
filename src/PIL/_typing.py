@@ -15,6 +15,11 @@ if TYPE_CHECKING:
     except (ImportError, AttributeError):
         pass
 
+if sys.version_info >= (3, 13):
+    from types import CapsuleType
+else:
+    CapsuleType = object
+
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
 else:

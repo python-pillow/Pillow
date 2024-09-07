@@ -224,12 +224,7 @@ if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
-    from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
-
-    if sys.version_info >= (3, 13):
-        from types import CapsuleType
-    else:
-        CapsuleType = object
+    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
 OPEN: dict[
     str,
