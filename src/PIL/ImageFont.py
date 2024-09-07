@@ -115,7 +115,7 @@ class ImageFont:
                 if image:
                     image.close()
 
-                msg = f"cannot find glyph data file {root}.{{png|gif|pbm}}"
+                msg = f"cannot find glyph data file {root}.{{gif|pbm|png}}"
                 raise OSError(msg)
 
             self.file = fullname

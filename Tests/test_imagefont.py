@@ -469,7 +469,7 @@ def test_load_when_image_not_found(tmp_path: Path) -> None:
         ImageFont.load(tempfile)
 
     root = os.path.splitext(tempfile)[0]
-    assert str(e.value) == f"cannot find glyph data file {root}.{{png|gif|pbm}}"
+    assert str(e.value) == f"cannot find glyph data file {root}.{{gif|pbm|png}}"
 
 
 def test_load_path_not_found() -> None:
