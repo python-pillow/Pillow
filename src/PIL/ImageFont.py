@@ -771,14 +771,13 @@ class TransposedFont:
 
 def load(filename: str) -> ImageFont:
     """
-    Load a font file.  This function loads a font object from the given
-    bitmap font file, and returns the corresponding font object.
+    Load a font file. This function loads a font object from the given
+    bitmap font file, and returns the corresponding font object. For loading TrueType
+    or OpenType fonts instead, see :py:func:`~PIL.ImageFont.truetype`.
 
     :param filename: Name of font file.
     :return: A font object.
     :exception OSError: If the file could not be read.
-
-    .. seealso:: :py:func:`PIL.ImageFont.truetype`
     """
     f = ImageFont()
     f._load_pilfont(filename)
@@ -794,7 +793,8 @@ def truetype(
 ) -> FreeTypeFont:
     """
     Load a TrueType or OpenType font from a file or file-like object,
-    and create a font object.
+    and create a font object. For loading bitmap fonts instead,
+    see :py:func:`~PIL.ImageFont.load` and :py:func:`~PIL.ImageFont.load_path`.
     This function loads a font object from the given file or file-like
     object, and creates a font object for a font of the given size.
 
@@ -855,8 +855,6 @@ def truetype(
     :return: A font object.
     :exception OSError: If the file could not be read.
     :exception ValueError: If the font size is not greater than zero.
-
-    .. seealso:: :py:func:`PIL.ImageFont.load`
     """
 
     def freetype(font: StrOrBytesPath | BinaryIO | None) -> FreeTypeFont:
