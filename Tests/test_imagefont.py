@@ -1113,6 +1113,9 @@ def test_bytes(font: ImageFont.FreeTypeFont) -> None:
     )
     assert font.getmask2(b"test")[1] == font.getmask2("test")[1]
 
+    with pytest.raises(TypeError):
+        font.getlength((0, 0))  # type: ignore[arg-type]
+
 
 @pytest.mark.parametrize(
     "test_file",

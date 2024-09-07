@@ -296,7 +296,7 @@ class BmpImageFile(ImageFile.ImageFile):
             args.append(((file_info["width"] * file_info["bits"] + 31) >> 3) & (~3))
         args.append(file_info["direction"])
         self.tile = [
-            (
+            ImageFile._Tile(
                 decoder_name,
                 (0, 0, file_info["width"], file_info["height"]),
                 offset or self.fp.tell(),
@@ -387,7 +387,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if self.fd.tell() % 2 != 0:
                         self.fd.seek(1, os.SEEK_CUR)
         rawmode = "L" if self.mode == "L" else "P"
-        self.set_as_raw(bytes(data), (rawmode, 0, self.args[-1]))
+        self.set_as_raw(bytes(data), rawmode, (0, self.args[-1]))
         return -1, 0
 
 

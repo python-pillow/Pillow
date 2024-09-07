@@ -6,6 +6,8 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar, Union
 
 if TYPE_CHECKING:
+    from numbers import _IntegralLike as IntegralLike
+
     try:
         import numpy.typing as npt
 
@@ -38,4 +40,4 @@ class SupportsRead(Protocol[_T_co]):
 StrOrBytesPath = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
 
 
-__all__ = ["TypeGuard", "StrOrBytesPath", "SupportsRead"]
+__all__ = ["IntegralLike", "StrOrBytesPath", "SupportsRead", "TypeGuard"]

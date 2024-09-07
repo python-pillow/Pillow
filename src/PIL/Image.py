@@ -225,6 +225,11 @@ if TYPE_CHECKING:
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType
+    else:
+        CapsuleType = object
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -1598,7 +1603,7 @@ class Image:
             self.fp.seek(offset)
         return child_images
 
-    def getim(self):
+    def getim(self) -> CapsuleType:
         """
         Returns a capsule that points to the internal image memory.
 
@@ -3641,7 +3646,10 @@ def merge(mode: str, bands: Sequence[Image]) -> Image:
 
 def register_open(
     id: str,
-    factory: Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
+    factory: (
+        Callable[[IO[bytes], str | bytes], ImageFile.ImageFile]
+        | type[ImageFile.ImageFile]
+    ),
     accept: Callable[[bytes], bool | str] | None = None,
 ) -> None:
     """
@@ -4136,7 +4144,7 @@ class Exif(_ExifBase):
                     ifd = self._get_ifd_dict(tag_data, tag)
                     if ifd is not None:
                         self._ifds[tag] = ifd
-        ifd = self._ifds.get(tag, {})
+        ifd = self._ifds.setdefault(tag, {})
         if tag == ExifTags.IFD.Exif and self._hidden_data:
             ifd = {
                 k: v

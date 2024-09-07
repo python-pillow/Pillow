@@ -61,6 +61,9 @@ from ._typing import StrOrBytesPath
 from ._util import is_path
 from .TiffTags import TYPES
 
+if TYPE_CHECKING:
+    from ._typing import IntegralLike
+
 logger = logging.getLogger(__name__)
 
 # Set these to true to force use of libtiff for reading or writing.
@@ -291,22 +294,24 @@ def _accept(prefix: bytes) -> bool:
 
 def _limit_rational(
     val: float | Fraction | IFDRational, max_val: int
-) -> tuple[float, float]:
+) -> tuple[IntegralLike, IntegralLike]:
     inv = abs(float(val)) > 1
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
 
 
-def _limit_signed_rational(val, max_val, min_val):
+def _limit_signed_rational(
+    val: IFDRational, max_val: int, min_val: int
+) -> tuple[IntegralLike, IntegralLike]:
     frac = Fraction(val)
-    n_d = frac.numerator, frac.denominator
+    n_d: tuple[IntegralLike, IntegralLike] = frac.numerator, frac.denominator
 
-    if min(n_d) < min_val:
+    if min(float(i) for i in n_d) < min_val:
         n_d = _limit_rational(val, abs(min_val))
 
-    if max(n_d) > max_val:
-        val = Fraction(*n_d)
-        n_d = _limit_rational(val, max_val)
+    n_d_float = tuple(float(i) for i in n_d)
+    if max(n_d_float) > max_val:
+        n_d = _limit_rational(n_d_float[0] / n_d_float[1], max_val)
 
     return n_d
 
@@ -318,8 +323,10 @@ _load_dispatch = {}
 _write_dispatch = {}
 
 
-def _delegate(op: str):
-    def delegate(self, *args):
+def _delegate(op: str) -> Any:
+    def delegate(
+        self: IFDRational, *args: tuple[float, ...]
+    ) -> bool | float | Fraction:
         return getattr(self._val, op)(*args)
 
     return delegate
@@ -358,7 +365,10 @@ class IFDRational(Rational):
             self._numerator = value.numerator
             self._denominator = value.denominator
         else:
-            self._numerator = value
+            if TYPE_CHECKING:
+                self._numerator = cast(IntegralLike, value)
+            else:
+                self._numerator = value
             self._denominator = denominator
 
         if denominator == 0:
@@ -371,14 +381,14 @@ class IFDRational(Rational):
             self._val = Fraction(value / denominator)
 
     @property
-    def numerator(self):
+    def numerator(self) -> IntegralLike:
         return self._numerator
 
     @property
     def denominator(self) -> int:
         return self._denominator
 
-    def limit_rational(self, max_denominator: int) -> tuple[float, int]:
+    def limit_rational(self, max_denominator: int) -> tuple[IntegralLike, int]:
         """
 
         :param max_denominator: Integer, the maximum denominator value
@@ -406,14 +416,18 @@ class IFDRational(Rational):
             val = float(val)
         return val == other
 
-    def __getstate__(self) -> list[float | Fraction]:
+    def __getstate__(self) -> list[float | Fraction | IntegralLike]:
         return [self._val, self._numerator, self._denominator]
 
-    def __setstate__(self, state: list[float | Fraction]) -> None:
+    def __setstate__(self, state: list[float | Fraction | IntegralLike]) -> None:
         IFDRational.__init__(self, 0)
         _val, _numerator, _denominator = state
+        assert isinstance(_val, (float, Fraction))
         self._val = _val
-        self._numerator = _numerator
+        if TYPE_CHECKING:
+            self._numerator = cast(IntegralLike, _numerator)
+        else:
+            self._numerator = _numerator
         assert isinstance(_denominator, int)
         self._denominator = _denominator
 
@@ -471,8 +485,8 @@ def _register_loader(idx: int, size: int) -> Callable[[_LoaderFunc], _LoaderFunc
     return decorator
 
 
-def _register_writer(idx: int):
-    def decorator(func):
+def _register_writer(idx: int) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         _write_dispatch[idx] = func  # noqa: F821
         return func
 
@@ -1126,7 +1140,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def __init__(
         self,
-        fp: StrOrBytesPath | IO[bytes] | None = None,
+        fp: StrOrBytesPath | IO[bytes],
         filename: str | bytes | None = None,
     ) -> None:
         self.tag_v2: ImageFileDirectory_v2
@@ -1298,7 +1312,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # (self._compression, (extents tuple),
         #   0, (rawmode, self._compression, fp))
         extents = self.tile[0][1]
-        args = list(self.tile[0][3])
+        args = self.tile[0][3]
 
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
@@ -1316,11 +1330,12 @@ class TiffImageFile(ImageFile.ImageFile):
             fp = False
 
         if fp:
-            args[2] = fp
+            assert isinstance(args, tuple)
+            args_list = list(args)
+            args_list[2] = fp
+            args = tuple(args_list)
 
-        decoder = Image._getdecoder(
-            self.mode, "libtiff", tuple(args), self.decoderconfig
-        )
+        decoder = Image._getdecoder(self.mode, "libtiff", args, self.decoderconfig)
         try:
             decoder.setimage(self.im, extents)
         except ValueError as e:
@@ -1538,7 +1553,7 @@ class TiffImageFile(ImageFile.ImageFile):
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
             a = (rawmode, self._compression, False, self.tag_v2.offset)
-            self.tile.append(("libtiff", (0, 0, xsize, ysize), 0, a))
+            self.tile.append(ImageFile._Tile("libtiff", (0, 0, xsize, ysize), 0, a))
 
         elif STRIPOFFSETS in self.tag_v2 or TILEOFFSETS in self.tag_v2:
             # striped image
@@ -1571,7 +1586,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
                 args = (tile_rawmode, int(stride), 1)
                 self.tile.append(
-                    (
+                    ImageFile._Tile(
                         self._compression,
                         (x, y, min(x + w, xsize), min(y + h, ysize)),
                         offset,
