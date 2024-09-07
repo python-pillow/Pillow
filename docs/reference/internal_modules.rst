@@ -33,6 +33,10 @@ Internal Modules
 Provides a convenient way to import type hints that are not available
 on some Python versions.
 
+.. py:class:: Buffer
+
+    Typing alias.
+
 .. py:class:: IntegralLike
 
     Typing alias.

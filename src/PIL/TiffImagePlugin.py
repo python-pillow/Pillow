@@ -46,7 +46,6 @@ import logging
 import math
 import os
 import struct
-import sys
 import warnings
 from collections.abc import Iterator, MutableMapping
 from fractions import Fraction
@@ -63,7 +62,7 @@ from ._util import is_path
 from .TiffTags import TYPES
 
 if TYPE_CHECKING:
-    from ._typing import IntegralLike
+    from ._typing import Buffer, IntegralLike
 
 logger = logging.getLogger(__name__)
 
@@ -2108,16 +2107,8 @@ class AppendingTiffWriter(io.BytesIO):
             num_tags = self.readShort()
             self.f.seek(num_tags * 12, os.SEEK_CUR)
 
-    if sys.version_info >= (3, 12):
-        from collections.abc import Buffer
-
-        def write(self, data: Buffer, /) -> int:
-            return self.f.write(data)
-
-    else:
-
-        def write(self, data: Any, /) -> int:
-            return self.f.write(data)
+    def write(self, data: Buffer, /) -> int:
+        return self.f.write(data)
 
     def readShort(self) -> int:
         (value,) = struct.unpack(self.shortFmt, self.f.read(2))
