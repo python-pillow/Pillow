@@ -69,7 +69,6 @@ logger = logging.getLogger(__name__)
 # Set these to true to force use of libtiff for reading or writing.
 READ_LIBTIFF = False
 WRITE_LIBTIFF = False
-IFD_LEGACY_API = True
 STRIP_SIZE = 65536
 
 II = b"II"  # little-endian (Intel style)
@@ -1125,7 +1124,7 @@ class ImageFileDirectory_v1(ImageFileDirectory_v2):
         return val
 
 
-# undone -- switch this pointer when IFD_LEGACY_API == False
+# undone -- switch this pointer
 ImageFileDirectory = ImageFileDirectory_v1
 
 

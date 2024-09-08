@@ -142,6 +142,13 @@ Removed features
 Deprecated features are only removed in major releases after an appropriate
 period of deprecation has passed.
 
+TiffImagePlugin IFD_LEGACY_API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionremoved:: 11.0.0
+
+``TiffImagePlugin.IFD_LEGACY_API`` was removed, as it was an unused setting.
+
 PSFile
 ~~~~~~
 
