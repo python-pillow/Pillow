@@ -110,7 +110,7 @@ ImageDraw.getdraw hints parameter
 The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
 
 FreeType 2.9.0
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
 
