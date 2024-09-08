@@ -34,7 +34,7 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, BinaryIO
+from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict, cast
 
 from . import Image
 from ._typing import StrOrBytesPath
@@ -44,6 +44,13 @@ if TYPE_CHECKING:
     from . import ImageFile
     from ._imaging import ImagingFont
     from ._imagingft import Font
+
+
+class Axis(TypedDict):
+    minimum: int | None
+    default: int | None
+    maximum: int | None
+    name: bytes | None
 
 
 class Layout(IntEnum):
@@ -138,7 +145,9 @@ class ImageFont:
 
         self.font = Image.core.font(image.im, data)
 
-    def getmask(self, text, mode="", *args, **kwargs):
+    def getmask(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> Image.core.ImagingCore:
         """
         Create a bitmap for the text.
 
@@ -203,7 +212,7 @@ class FreeTypeFont:
 
     def __init__(
         self,
-        font: StrOrBytesPath | BinaryIO | None = None,
+        font: StrOrBytesPath | BinaryIO,
         size: float = 10,
         index: int = 0,
         encoding: str = "",
@@ -236,7 +245,7 @@ class FreeTypeFont:
 
         self.layout_engine = layout_engine
 
-        def load_from_bytes(f):
+        def load_from_bytes(f: IO[bytes]) -> None:
             self.font_bytes = f.read()
             self.font = core.getfont(
                 "", size, index, encoding, self.font_bytes, layout_engine
@@ -258,14 +267,14 @@ class FreeTypeFont:
                 font, size, index, encoding, layout_engine=layout_engine
             )
         else:
-            load_from_bytes(font)
+            load_from_bytes(cast(IO[bytes], font))
 
-    def __getstate__(self):
+    def __getstate__(self) -> list[Any]:
         return [self.path, self.size, self.index, self.encoding, self.layout_engine]
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: list[Any]) -> None:
         path, size, index, encoding, layout_engine = state
-        self.__init__(path, size, index, encoding, layout_engine)
+        FreeTypeFont.__init__(self, path, size, index, encoding, layout_engine)
 
     def getname(self) -> tuple[str | None, str | None]:
         """
@@ -283,7 +292,12 @@ class FreeTypeFont:
         return self.font.ascent, self.font.descent
 
     def getlength(
-        self, text: str | bytes, mode="", direction=None, features=None, language=None
+        self,
+        text: str | bytes,
+        mode: str = "",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
     ) -> float:
         """
         Returns length (in pixels with 1/64 precision) of given text when rendered
@@ -424,16 +438,16 @@ class FreeTypeFont:
 
     def getmask(
         self,
-        text,
-        mode="",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        anchor=None,
-        ink=0,
-        start=None,
-    ):
+        text: str | bytes,
+        mode: str = "",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        anchor: str | None = None,
+        ink: int = 0,
+        start: tuple[float, float] | None = None,
+    ) -> Image.core.ImagingCore:
         """
         Create a bitmap for the text.
 
@@ -516,17 +530,17 @@ class FreeTypeFont:
     def getmask2(
         self,
         text: str | bytes,
-        mode="",
-        direction=None,
-        features=None,
-        language=None,
-        stroke_width=0,
-        anchor=None,
-        ink=0,
-        start=None,
-        *args,
-        **kwargs,
-    ):
+        mode: str = "",
+        direction: str | None = None,
+        features: list[str] | None = None,
+        language: str | None = None,
+        stroke_width: float = 0,
+        anchor: str | None = None,
+        ink: int = 0,
+        start: tuple[float, float] | None = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> tuple[Image.core.ImagingCore, tuple[int, int]]:
         """
         Create a bitmap for the text.
 
@@ -599,7 +613,7 @@ class FreeTypeFont:
         if start is None:
             start = (0, 0)
 
-        def fill(width, height):
+        def fill(width: int, height: int) -> Image.core.ImagingCore:
             size = (width, height)
             Image._decompression_bomb_check(size)
             return Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
@@ -619,8 +633,13 @@ class FreeTypeFont:
         )
 
     def font_variant(
-        self, font=None, size=None, index=None, encoding=None, layout_engine=None
-    ):
+        self,
+        font: StrOrBytesPath | BinaryIO | None = None,
+        size: float | None = None,
+        index: int | None = None,
+        encoding: str | None = None,
+        layout_engine: Layout | None = None,
+    ) -> FreeTypeFont:
         """
         Create a copy of this FreeTypeFont object,
         using any specified arguments to override the settings.
@@ -655,7 +674,7 @@ class FreeTypeFont:
             raise NotImplementedError(msg) from e
         return [name.replace(b"\x00", b"") for name in names]
 
-    def set_variation_by_name(self, name):
+    def set_variation_by_name(self, name: str | bytes) -> None:
         """
         :param name: The name of the style.
         :exception OSError: If the font is not a variation font.
@@ -674,7 +693,7 @@ class FreeTypeFont:
 
         self.font.setvarname(index)
 
-    def get_variation_axes(self):
+    def get_variation_axes(self) -> list[Axis]:
         """
         :returns: A list of the axes in a variation font.
         :exception OSError: If the font is not a variation font.
@@ -704,7 +723,9 @@ class FreeTypeFont:
 class TransposedFont:
     """Wrapper for writing rotated or mirrored text"""
 
-    def __init__(self, font, orientation=None):
+    def __init__(
+        self, font: ImageFont | FreeTypeFont, orientation: Image.Transpose | None = None
+    ):
         """
         Wrapper that creates a transposed font from any existing font
         object.
@@ -718,13 +739,17 @@ class TransposedFont:
         self.font = font
         self.orientation = orientation  # any 'transpose' argument, or None
 
-    def getmask(self, text, mode="", *args, **kwargs):
+    def getmask(
+        self, text: str | bytes, mode: str = "", *args: Any, **kwargs: Any
+    ) -> Image.core.ImagingCore:
         im = self.font.getmask(text, mode, *args, **kwargs)
         if self.orientation is not None:
             return im.transpose(self.orientation)
         return im
 
-    def getbbox(self, text, *args, **kwargs):
+    def getbbox(
+        self, text: str | bytes, *args: Any, **kwargs: Any
+    ) -> tuple[int, int, float, float]:
         # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
         # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont
         left, top, right, bottom = self.font.getbbox(text, *args, **kwargs)
@@ -734,7 +759,7 @@ class TransposedFont:
             return 0, 0, height, width
         return 0, 0, width, height
 
-    def getlength(self, text: str | bytes, *args, **kwargs) -> float:
+    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> float:
         if self.orientation in (Image.Transpose.ROTATE_90, Image.Transpose.ROTATE_270):
             msg = "text length is undefined for text rotated by 90 or 270 degrees"
             raise ValueError(msg)
@@ -756,7 +781,7 @@ def load(filename: str) -> ImageFont:
 
 
 def truetype(
-    font: StrOrBytesPath | BinaryIO | None = None,
+    font: StrOrBytesPath | BinaryIO,
     size: float = 10,
     index: int = 0,
     encoding: str = "",
@@ -827,7 +852,7 @@ def truetype(
     :exception ValueError: If the font size is not greater than zero.
     """
 
-    def freetype(font: StrOrBytesPath | BinaryIO | None) -> FreeTypeFont:
+    def freetype(font: StrOrBytesPath | BinaryIO) -> FreeTypeFont:
         return FreeTypeFont(font, size, index, encoding, layout_engine)
 
     try:

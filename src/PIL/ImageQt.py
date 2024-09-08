@@ -19,10 +19,22 @@ from __future__ import annotations
 
 import sys
 from io import BytesIO
-from typing import Callable
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 from . import Image
 from ._util import is_path
+
+if TYPE_CHECKING:
+    import PyQt6
+    import PySide6
+
+    from . import ImageFile
+
+    QBuffer: type
+    QByteArray = Union[PyQt6.QtCore.QByteArray, PySide6.QtCore.QByteArray]
+    QIODevice = Union[PyQt6.QtCore.QIODevice, PySide6.QtCore.QIODevice]
+    QImage = Union[PyQt6.QtGui.QImage, PySide6.QtGui.QImage]
+    QPixmap = Union[PyQt6.QtGui.QPixmap, PySide6.QtGui.QPixmap]
 
 qt_version: str | None
 qt_versions = [
@@ -34,10 +46,6 @@ qt_versions = [
 qt_versions.sort(key=lambda version: version[1] in sys.modules, reverse=True)
 for version, qt_module in qt_versions:
     try:
-        QBuffer: type
-        QIODevice: type
-        QImage: type
-        QPixmap: type
         qRgba: Callable[[int, int, int, int], int]
         if qt_module == "PyQt6":
             from PyQt6.QtCore import QBuffer, QIODevice
@@ -55,26 +63,27 @@ else:
     qt_version = None
 
 
-def rgb(r, g, b, a=255):
+def rgb(r: int, g: int, b: int, a: int = 255) -> int:
     """(Internal) Turns an RGB color into a Qt compatible color integer."""
     # use qRgb to pack the colors, and then turn the resulting long
     # into a negative integer with the same bitpattern.
     return qRgba(r, g, b, a) & 0xFFFFFFFF
 
 
-def fromqimage(im):
+def fromqimage(im: QImage | QPixmap) -> ImageFile.ImageFile:
     """
     :param im: QImage or PIL ImageQt object
     """
     buffer = QBuffer()
+    qt_openmode: object
     if qt_version == "6":
         try:
-            qt_openmode = QIODevice.OpenModeFlag
+            qt_openmode = getattr(QIODevice, "OpenModeFlag")
         except AttributeError:
-            qt_openmode = QIODevice.OpenMode
+            qt_openmode = getattr(QIODevice, "OpenMode")
     else:
         qt_openmode = QIODevice
-    buffer.open(qt_openmode.ReadWrite)
+    buffer.open(getattr(qt_openmode, "ReadWrite"))
     # preserve alpha channel with png
     # otherwise ppm is more friendly with Image.open
     if im.hasAlphaChannel():
@@ -90,11 +99,11 @@ def fromqimage(im):
     return Image.open(b)
 
 
-def fromqpixmap(im):
+def fromqpixmap(im: QPixmap) -> ImageFile.ImageFile:
     return fromqimage(im)
 
 
-def align8to32(bytes, width, mode):
+def align8to32(bytes: bytes, width: int, mode: str) -> bytes:
     """
     converts each scanline of data from 8 bit to 32 bit aligned
     """
@@ -120,7 +129,7 @@ def align8to32(bytes, width, mode):
     return b"".join(new_data)
 
 
-def _toqclass_helper(im):
+def _toqclass_helper(im: Image.Image | str | QByteArray) -> dict[str, Any]:
     data = None
     colortable = None
     exclusive_fp = False
@@ -132,30 +141,32 @@ def _toqclass_helper(im):
     if is_path(im):
         im = Image.open(im)
         exclusive_fp = True
+    assert isinstance(im, Image.Image)
 
-    qt_format = QImage.Format if qt_version == "6" else QImage
+    qt_format = getattr(QImage, "Format") if qt_version == "6" else QImage
     if im.mode == "1":
-        format = qt_format.Format_Mono
+        format = getattr(qt_format, "Format_Mono")
     elif im.mode == "L":
-        format = qt_format.Format_Indexed8
+        format = getattr(qt_format, "Format_Indexed8")
         colortable = [rgb(i, i, i) for i in range(256)]
     elif im.mode == "P":
-        format = qt_format.Format_Indexed8
+        format = getattr(qt_format, "Format_Indexed8")
         palette = im.getpalette()
+        assert palette is not None
         colortable = [rgb(*palette[i : i + 3]) for i in range(0, len(palette), 3)]
     elif im.mode == "RGB":
         # Populate the 4th channel with 255
         im = im.convert("RGBA")
 
         data = im.tobytes("raw", "BGRA")
-        format = qt_format.Format_RGB32
+        format = getattr(qt_format, "Format_RGB32")
     elif im.mode == "RGBA":
         data = im.tobytes("raw", "BGRA")
-        format = qt_format.Format_ARGB32
+        format = getattr(qt_format, "Format_ARGB32")
     elif im.mode == "I;16":
         im = im.point(lambda i: i * 256)
 
-        format = qt_format.Format_Grayscale16
+        format = getattr(qt_format, "Format_Grayscale16")
     else:
         if exclusive_fp:
             im.close()
@@ -171,8 +182,8 @@ def _toqclass_helper(im):
 
 if qt_is_installed:
 
-    class ImageQt(QImage):
-        def __init__(self, im):
+    class ImageQt(QImage):  # type: ignore[misc]
+        def __init__(self, im: Image.Image | str | QByteArray) -> None:
             """
             An PIL image wrapper for Qt.  This is a subclass of PyQt's QImage
             class.
@@ -196,10 +207,10 @@ if qt_is_installed:
                 self.setColorTable(im_data["colortable"])
 
 
-def toqimage(im) -> ImageQt:
+def toqimage(im: Image.Image | str | QByteArray) -> ImageQt:
     return ImageQt(im)
 
 
-def toqpixmap(im):
+def toqpixmap(im: Image.Image | str | QByteArray) -> QPixmap:
     qimage = toqimage(im)
-    return QPixmap.fromImage(qimage)
+    return getattr(QPixmap, "fromImage")(qimage)

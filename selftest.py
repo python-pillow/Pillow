@@ -52,7 +52,7 @@ def testimage() -> None:
     or you call the "load" method:
 
     >>> im = Image.open("Tests/images/hopper.ppm")
-    >>> print(im.im) # internal image attribute
+    >>> print(im._im) # internal image attribute
     None
     >>> a = im.load()
     >>> type(im.im) # doctest: +ELLIPSIS

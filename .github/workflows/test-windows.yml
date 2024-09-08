@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.10", "pypy3.9", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy3.10", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     timeout-minutes: 30
 
@@ -87,7 +87,7 @@ jobs:
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
         choco install ghostscript --version=10.3.1 --no-progress
-        echo "C:\Program Files\gs\gs10.00.0\bin" >> $env:GITHUB_PATH
+        echo "C:\Program Files\gs\gs10.03.1\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
         xcopy /S /Y Tests\test-images\* Tests\images

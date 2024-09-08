@@ -45,7 +45,7 @@ class FliImageFile(ImageFile.ImageFile):
     format_description = "Autodesk FLI/FLC Animation"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # HEAD
         s = self.fp.read(128)
         if not (_accept(s) and s[20:22] == b"\x00\x00"):
@@ -83,7 +83,7 @@ class FliImageFile(ImageFile.ImageFile):
         if i16(s, 4) == 0xF1FA:
             # look for palette chunk
             number_of_subchunks = i16(s, 6)
-            chunk_size = None
+            chunk_size: int | None = None
             for _ in range(number_of_subchunks):
                 if chunk_size is not None:
                     self.fp.seek(chunk_size - 6, os.SEEK_CUR)
@@ -96,8 +96,9 @@ class FliImageFile(ImageFile.ImageFile):
                 if not chunk_size:
                     break
 
-        palette = [o8(r) + o8(g) + o8(b) for (r, g, b) in palette]
-        self.palette = ImagePalette.raw("RGB", b"".join(palette))
+        self.palette = ImagePalette.raw(
+            "RGB", b"".join(o8(r) + o8(g) + o8(b) for (r, g, b) in palette)
+        )
 
         # set things up to decode first frame
         self.__frame = -1
@@ -105,7 +106,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.__rewind = self.fp.tell()
         self.seek(0)
 
-    def _palette(self, palette, shift):
+    def _palette(self, palette: list[tuple[int, int, int]], shift: int) -> None:
         # load palette
 
         i = 0
@@ -158,7 +159,7 @@ class FliImageFile(ImageFile.ImageFile):
         framesize = i32(s)
 
         self.decodermaxblock = framesize
-        self.tile = [("fli", (0, 0) + self.size, self.__offset, None)]
+        self.tile = [ImageFile._Tile("fli", (0, 0) + self.size, self.__offset, None)]
 
         self.__offset += framesize
 

@@ -80,9 +80,7 @@ simple_eps_file_with_long_binary_data = (
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-@pytest.mark.parametrize(
-    ("filename", "size"), ((FILE1, (460, 352)), (FILE2, (360, 252)))
-)
+@pytest.mark.parametrize("filename, size", ((FILE1, (460, 352)), (FILE2, (360, 252))))
 @pytest.mark.parametrize("scale", (1, 2))
 def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
     expected_size = tuple(s * scale for s in size)

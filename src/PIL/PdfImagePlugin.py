@@ -25,7 +25,7 @@ import io
 import math
 import os
 import time
-from typing import IO
+from typing import IO, Any
 
 from . import Image, ImageFile, ImageSequence, PdfParser, __version__, features
 
@@ -48,7 +48,12 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 # (Internal) Image save plugin for the PDF format.
 
 
-def _write_image(im, filename, existing_pdf, image_refs):
+def _write_image(
+    im: Image.Image,
+    filename: str | bytes,
+    existing_pdf: PdfParser.PdfParser,
+    image_refs: list[PdfParser.IndirectReference],
+) -> tuple[PdfParser.IndirectReference, str]:
     # FIXME: Should replace ASCIIHexDecode with RunLengthDecode
     # (packbits) or LZWDecode (tiff/lzw compression).  Note that
     # PDF 1.2 also supports Flatedecode (zip compression).
@@ -61,10 +66,10 @@ def _write_image(im, filename, existing_pdf, image_refs):
 
     width, height = im.size
 
-    dict_obj = {"BitsPerComponent": 8}
+    dict_obj: dict[str, Any] = {"BitsPerComponent": 8}
     if im.mode == "1":
         if features.check("libtiff"):
-            filter = "CCITTFaxDecode"
+            decode_filter = "CCITTFaxDecode"
             dict_obj["BitsPerComponent"] = 1
             params = PdfParser.PdfArray(
                 [
@@ -79,22 +84,23 @@ def _write_image(im, filename, existing_pdf, image_refs):
                 ]
             )
         else:
-            filter = "DCTDecode"
+            decode_filter = "DCTDecode"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceGray")
         procset = "ImageB"  # grayscale
     elif im.mode == "L":
-        filter = "DCTDecode"
+        decode_filter = "DCTDecode"
         # params = f"<< /Predictor 15 /Columns {width-2} >>"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceGray")
         procset = "ImageB"  # grayscale
     elif im.mode == "LA":
-        filter = "JPXDecode"
+        decode_filter = "JPXDecode"
         # params = f"<< /Predictor 15 /Columns {width-2} >>"
         procset = "ImageB"  # grayscale
         dict_obj["SMaskInData"] = 1
     elif im.mode == "P":
-        filter = "ASCIIHexDecode"
+        decode_filter = "ASCIIHexDecode"
         palette = im.getpalette()
+        assert palette is not None
         dict_obj["ColorSpace"] = [
             PdfParser.PdfName("Indexed"),
             PdfParser.PdfName("DeviceRGB"),
@@ -110,15 +116,15 @@ def _write_image(im, filename, existing_pdf, image_refs):
             image_ref = _write_image(smask, filename, existing_pdf, image_refs)[0]
             dict_obj["SMask"] = image_ref
     elif im.mode == "RGB":
-        filter = "DCTDecode"
+        decode_filter = "DCTDecode"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceRGB")
         procset = "ImageC"  # color images
     elif im.mode == "RGBA":
-        filter = "JPXDecode"
+        decode_filter = "JPXDecode"
         procset = "ImageC"  # color images
         dict_obj["SMaskInData"] = 1
     elif im.mode == "CMYK":
-        filter = "DCTDecode"
+        decode_filter = "DCTDecode"
         dict_obj["ColorSpace"] = PdfParser.PdfName("DeviceCMYK")
         procset = "ImageC"  # color images
         decode = [1, 0, 1, 0, 1, 0, 1, 0]
@@ -131,9 +137,9 @@ def _write_image(im, filename, existing_pdf, image_refs):
 
     op = io.BytesIO()
 
-    if filter == "ASCIIHexDecode":
-        ImageFile._save(im, op, [("hex", (0, 0) + im.size, 0, im.mode)])
-    elif filter == "CCITTFaxDecode":
+    if decode_filter == "ASCIIHexDecode":
+        ImageFile._save(im, op, [ImageFile._Tile("hex", (0, 0) + im.size, 0, im.mode)])
+    elif decode_filter == "CCITTFaxDecode":
         im.save(
             op,
             "TIFF",
@@ -141,21 +147,22 @@ def _write_image(im, filename, existing_pdf, image_refs):
             # use a single strip
             strip_size=math.ceil(width / 8) * height,
         )
-    elif filter == "DCTDecode":
+    elif decode_filter == "DCTDecode":
         Image.SAVE["JPEG"](im, op, filename)
-    elif filter == "JPXDecode":
+    elif decode_filter == "JPXDecode":
         del dict_obj["BitsPerComponent"]
         Image.SAVE["JPEG2000"](im, op, filename)
     else:
-        msg = f"unsupported PDF filter ({filter})"
+        msg = f"unsupported PDF filter ({decode_filter})"
         raise ValueError(msg)
 
     stream = op.getvalue()
-    if filter == "CCITTFaxDecode":
+    filter: PdfParser.PdfArray | PdfParser.PdfName
+    if decode_filter == "CCITTFaxDecode":
         stream = stream[8:]
-        filter = PdfParser.PdfArray([PdfParser.PdfName(filter)])
+        filter = PdfParser.PdfArray([PdfParser.PdfName(decode_filter)])
     else:
-        filter = PdfParser.PdfName(filter)
+        filter = PdfParser.PdfName(decode_filter)
 
     image_ref = image_refs.pop(0)
     existing_pdf.write_obj(
@@ -174,12 +181,15 @@ def _write_image(im, filename, existing_pdf, image_refs):
     return image_ref, procset
 
 
-def _save(im, fp, filename, save_all=False):
+def _save(
+    im: Image.Image, fp: IO[bytes], filename: str | bytes, save_all: bool = False
+) -> None:
     is_appending = im.encoderinfo.get("append", False)
+    filename_str = filename.decode() if isinstance(filename, bytes) else filename
     if is_appending:
-        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="r+b")
+        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename_str, mode="r+b")
     else:
-        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename, mode="w+b")
+        existing_pdf = PdfParser.PdfParser(f=fp, filename=filename_str, mode="w+b")
 
     dpi = im.encoderinfo.get("dpi")
     if dpi:
@@ -228,12 +238,7 @@ def _save(im, fp, filename, save_all=False):
     for im in ims:
         im_number_of_pages = 1
         if save_all:
-            try:
-                im_number_of_pages = im.n_frames
-            except AttributeError:
-                # Image format does not have n_frames.
-                # It is a single frame image
-                pass
+            im_number_of_pages = getattr(im, "n_frames", 1)
         number_of_pages += im_number_of_pages
         for i in range(im_number_of_pages):
             image_refs.append(existing_pdf.next_object_id(0))
@@ -250,7 +255,9 @@ def _save(im, fp, filename, save_all=False):
 
     page_number = 0
     for im_sequence in ims:
-        im_pages = ImageSequence.Iterator(im_sequence) if save_all else [im_sequence]
+        im_pages: ImageSequence.Iterator | list[Image.Image] = (
+            ImageSequence.Iterator(im_sequence) if save_all else [im_sequence]
+        )
         for im in im_pages:
             image_ref, procset = _write_image(im, filename, existing_pdf, image_refs)
 

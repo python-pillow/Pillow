@@ -218,6 +218,7 @@ def test_trns_RGB(tmp_path: Path) -> None:
 def test_l_macro_rounding(convert_mode: str) -> None:
     for mode in ("P", "PA"):
         im = Image.new(mode, (1, 1))
+        assert im.palette is not None
         im.palette.getcolor((0, 1, 2))
 
         converted_im = im.convert(convert_mode)
@@ -225,7 +226,7 @@ def test_l_macro_rounding(convert_mode: str) -> None:
         assert px is not None
         converted_color = px[0, 0]
         if convert_mode == "LA":
-            assert converted_color is not None
+            assert isinstance(converted_color, tuple)
             converted_color = converted_color[0]
         assert converted_color == 1
 

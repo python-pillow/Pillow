@@ -1,12 +1,27 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
 import pytest
 
 from PIL import Image, ImageQt
 
 from .helper import assert_image_equal_tofile, assert_image_similar, hopper
+
+if TYPE_CHECKING:
+    import PyQt6
+    import PySide6
+
+    QApplication = Union[PyQt6.QtWidgets.QApplication, PySide6.QtWidgets.QApplication]
+    QHBoxLayout = Union[PyQt6.QtWidgets.QHBoxLayout, PySide6.QtWidgets.QHBoxLayout]
+    QImage = Union[PyQt6.QtGui.QImage, PySide6.QtGui.QImage]
+    QLabel = Union[PyQt6.QtWidgets.QLabel, PySide6.QtWidgets.QLabel]
+    QPainter = Union[PyQt6.QtGui.QPainter, PySide6.QtGui.QPainter]
+    QPixmap = Union[PyQt6.QtGui.QPixmap, PySide6.QtGui.QPixmap]
+    QPoint = Union[PyQt6.QtCore.QPoint, PySide6.QtCore.QPoint]
+    QRegion = Union[PyQt6.QtGui.QRegion, PySide6.QtGui.QRegion]
+    QWidget = Union[PyQt6.QtWidgets.QWidget, PySide6.QtWidgets.QWidget]
 
 if ImageQt.qt_is_installed:
     from PIL.ImageQt import QPixmap
@@ -20,7 +35,7 @@ if ImageQt.qt_is_installed:
         from PySide6.QtGui import QImage, QPainter, QRegion
         from PySide6.QtWidgets import QApplication, QHBoxLayout, QLabel, QWidget
 
-    class Example(QWidget):
+    class Example(QWidget):  # type: ignore[misc]
         def __init__(self) -> None:
             super().__init__()
 
@@ -28,11 +43,12 @@ if ImageQt.qt_is_installed:
 
             qimage = ImageQt.ImageQt(img)
 
-            pixmap1 = ImageQt.QPixmap.fromImage(qimage)
+            pixmap1 = getattr(ImageQt.QPixmap, "fromImage")(qimage)
 
-            QHBoxLayout(self)  # hbox
+            # hbox
+            QHBoxLayout(self)  # type: ignore[operator]
 
-            lbl = QLabel(self)
+            lbl = QLabel(self)  # type: ignore[operator]
             # Segfault in the problem
             lbl.setPixmap(pixmap1.copy())
 
@@ -46,7 +62,7 @@ def roundtrip(expected: Image.Image) -> None:
 @pytest.mark.skipif(not ImageQt.qt_is_installed, reason="Qt bindings are not installed")
 def test_sanity(tmp_path: Path) -> None:
     # Segfault test
-    app: QApplication | None = QApplication([])
+    app: QApplication | None = QApplication([])  # type: ignore[operator]
     ex = Example()
     assert app  # Silence warning
     assert ex  # Silence warning
@@ -56,7 +72,7 @@ def test_sanity(tmp_path: Path) -> None:
         im = hopper(mode)
         data = ImageQt.toqpixmap(im)
 
-        assert isinstance(data, QPixmap)
+        assert data.__class__.__name__ == "QPixmap"
         assert not data.isNull()
 
         # Test saving the file
@@ -64,14 +80,14 @@ def test_sanity(tmp_path: Path) -> None:
         data.save(tempfile)
 
         # Render the image
-        qimage = ImageQt.ImageQt(im)
-        data = QPixmap.fromImage(qimage)
-        qt_format = QImage.Format if ImageQt.qt_version == "6" else QImage
-        qimage = QImage(128, 128, qt_format.Format_ARGB32)
-        painter = QPainter(qimage)
-        image_label = QLabel()
+        imageqt = ImageQt.ImageQt(im)
+        data = getattr(QPixmap, "fromImage")(imageqt)
+        qt_format = getattr(QImage, "Format") if ImageQt.qt_version == "6" else QImage
+        qimage = QImage(128, 128, getattr(qt_format, "Format_ARGB32"))  # type: ignore[operator]
+        painter = QPainter(qimage)  # type: ignore[operator]
+        image_label = QLabel()  # type: ignore[operator]
         image_label.setPixmap(data)
-        image_label.render(painter, QPoint(0, 0), QRegion(0, 0, 128, 128))
+        image_label.render(painter, QPoint(0, 0), QRegion(0, 0, 128, 128))  # type: ignore[operator]
         painter.end()
         rendered_tempfile = str(tmp_path / f"temp_rendered_{mode}.png")
         qimage.save(rendered_tempfile)

@@ -253,7 +253,11 @@ class ImImageFile(ImageFile.ImageFile):
                 # use bit decoder (if necessary)
                 bits = int(self.rawmode[2:])
                 if bits not in [8, 16, 32]:
-                    self.tile = [("bit", (0, 0) + self.size, offs, (bits, 8, 3, 0, -1))]
+                    self.tile = [
+                        ImageFile._Tile(
+                            "bit", (0, 0) + self.size, offs, (bits, 8, 3, 0, -1)
+                        )
+                    ]
                     return
             except ValueError:
                 pass
@@ -263,13 +267,17 @@ class ImImageFile(ImageFile.ImageFile):
             # ever stumbled upon such a file ;-)
             size = self.size[0] * self.size[1]
             self.tile = [
-                ("raw", (0, 0) + self.size, offs, ("G", 0, -1)),
-                ("raw", (0, 0) + self.size, offs + size, ("R", 0, -1)),
-                ("raw", (0, 0) + self.size, offs + 2 * size, ("B", 0, -1)),
+                ImageFile._Tile("raw", (0, 0) + self.size, offs, ("G", 0, -1)),
+                ImageFile._Tile("raw", (0, 0) + self.size, offs + size, ("R", 0, -1)),
+                ImageFile._Tile(
+                    "raw", (0, 0) + self.size, offs + 2 * size, ("B", 0, -1)
+                ),
             ]
         else:
             # LabEye/IFUNC files
-            self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
+            self.tile = [
+                ImageFile._Tile("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))
+            ]
 
     @property
     def n_frames(self) -> int:
@@ -295,7 +303,9 @@ class ImImageFile(ImageFile.ImageFile):
 
         self.fp = self._fp
 
-        self.tile = [("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))]
+        self.tile = [
+            ImageFile._Tile("raw", (0, 0) + self.size, offs, (self.rawmode, 0, -1))
+        ]
 
     def tell(self) -> int:
         return self.frame
@@ -360,7 +370,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             palette += im_palette[colors * i : colors * (i + 1)]
             palette += b"\x00" * (256 - colors)
         fp.write(palette)  # 768 bytes
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, -1))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, -1))]
+    )
 
 
 #

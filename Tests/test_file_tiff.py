@@ -78,6 +78,7 @@ class TestFileTiff:
 
     def test_seek_after_close(self) -> None:
         im = Image.open("Tests/images/multipage.tiff")
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
         im.close()
 
         with pytest.raises(ValueError):
@@ -424,13 +425,13 @@ class TestFileTiff:
     def test_load_float(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abcdabcd"
-        ret = ifd.load_float(data, False)
+        ret = getattr(ifd, "load_float")(data, False)
         assert ret == (1.6777999408082104e22, 1.6777999408082104e22)
 
     def test_load_double(self) -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         data = b"abcdefghabcdefgh"
-        ret = ifd.load_double(data, False)
+        ret = getattr(ifd, "load_double")(data, False)
         assert ret == (8.540883223036124e194, 8.540883223036124e194)
 
     def test_ifd_tag_type(self) -> None:
@@ -599,7 +600,7 @@ class TestFileTiff:
     def test_with_underscores(self, tmp_path: Path) -> None:
         kwargs = {"resolution_unit": "inch", "x_resolution": 72, "y_resolution": 36}
         filename = str(tmp_path / "temp.tif")
-        hopper("RGB").save(filename, **kwargs)
+        hopper("RGB").save(filename, "TIFF", **kwargs)
         with Image.open(filename) as im:
             # legacy interface
             assert im.tag[X_RESOLUTION][0][0] == 72
@@ -624,14 +625,17 @@ class TestFileTiff:
     def test_iptc(self, tmp_path: Path) -> None:
         # Do not preserve IPTC_NAA_CHUNK by default if type is LONG
         outfile = str(tmp_path / "temp.tif")
-        im = hopper()
-        ifd = TiffImagePlugin.ImageFileDirectory_v2()
-        ifd[33723] = 1
-        ifd.tagtype[33723] = 4
-        im.tag_v2 = ifd
-        im.save(outfile)
+        with Image.open("Tests/images/hopper.tif") as im:
+            im.load()
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            ifd = TiffImagePlugin.ImageFileDirectory_v2()
+            ifd[33723] = 1
+            ifd.tagtype[33723] = 4
+            im.tag_v2 = ifd
+            im.save(outfile)
 
         with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert 33723 not in im.tag_v2
 
     def test_rowsperstrip(self, tmp_path: Path) -> None:
@@ -679,6 +683,13 @@ class TestFileTiff:
 
             with Image.open(outfile) as reloaded:
                 assert_image_equal_tofile(reloaded, infile)
+
+    def test_invalid_tiled_dimensions(self) -> None:
+        with open("Tests/images/tiff_tiled_planar_raw.tif", "rb") as fp:
+            data = fp.read()
+        b = BytesIO(data[:144] + b"\x02" + data[145:])
+        with pytest.raises(ValueError):
+            Image.open(b)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     def test_palette(self, mode: str, tmp_path: Path) -> None:

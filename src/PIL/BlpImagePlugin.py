@@ -273,13 +273,13 @@ class BlpImageFile(ImageFile.ImageFile):
             raise BLPFormatError(msg)
 
         self._mode = "RGBA" if self._blp_alpha_depth else "RGB"
-        self.tile = [(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
+        self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
 
 
 class _BLPBaseDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         try:
             self._read_blp_header()
             self._load()
@@ -313,6 +313,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
         self._blp_lengths = struct.unpack("<16I", self._safe_read(16 * 4))
 
     def _safe_read(self, length: int) -> bytes:
+        assert self.fd is not None
         return ImageFile._safe_read(self.fd, length)
 
     def _read_palette(self) -> list[tuple[int, int, int, int]]:
@@ -371,7 +372,10 @@ class BLP1Decoder(_BLPBaseDecoder):
         Image._decompression_bomb_check(image.size)
         if image.mode == "CMYK":
             decoder_name, extents, offset, args = image.tile[0]
-            image.tile = [(decoder_name, extents, offset, (args[0], "CMYK"))]
+            assert isinstance(args, tuple)
+            image.tile = [
+                ImageFile._Tile(decoder_name, extents, offset, (args[0], "CMYK"))
+            ]
         r, g, b = image.convert("RGB").split()
         reversed_image = Image.merge("RGB", (b, g, r))
         self.set_as_raw(reversed_image.tobytes())
@@ -466,6 +470,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     magic = b"BLP1" if im.encoderinfo.get("blp_version") == "BLP1" else b"BLP2"
     fp.write(magic)
 
+    assert im.palette is not None
     fp.write(struct.pack("<i", 1))  # Uncompressed or DirectX compression
     fp.write(struct.pack("<b", Encoding.UNCOMPRESSED))
     fp.write(struct.pack("<b", 1 if im.palette.mode == "RGBA" else 0))
@@ -476,7 +481,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(struct.pack("<i", 5))
         fp.write(struct.pack("<i", 0))
 
-    ImageFile._save(im, fp, [("BLP", (0, 0) + im.size, 0, im.mode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("BLP", (0, 0) + im.size, 0, im.mode)])
 
 
 Image.register_open(BlpImageFile.format, BlpImageFile, _accept)

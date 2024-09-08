@@ -16,8 +16,11 @@ def test_sanity() -> None:
 
 
 def test_register() -> None:
-    # Test registering a viewer that is not a class
-    ImageShow.register("not a class")
+    # Test registering a viewer that is an instance
+    class TestViewer(ImageShow.Viewer):
+        pass
+
+    ImageShow.register(TestViewer())
 
     # Restore original state
     ImageShow._viewers.pop()

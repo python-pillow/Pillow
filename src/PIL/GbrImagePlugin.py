@@ -88,8 +88,8 @@ class GbrImageFile(ImageFile.ImageFile):
         # Data is an uncompressed block of w * h * bytes/pixel
         self._data_size = width * height * color_depth
 
-    def load(self):
-        if not self.im:
+    def load(self) -> Image.core.PixelAccess | None:
+        if self._im is None:
             self.im = Image.core.new(self.mode, self.size)
             self.frombytes(self.fp.read(self._data_size))
         return Image.Image.load(self)

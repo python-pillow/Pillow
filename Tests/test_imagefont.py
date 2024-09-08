@@ -717,14 +717,14 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
 
     font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
     _check_text(font, "Tests/images/variation_adobe.png", 11)
-    for name in ["Bold", b"Bold"]:
+    for name in ("Bold", b"Bold"):
         font.set_variation_by_name(name)
         assert font.getname()[1] == "Bold"
     _check_text(font, "Tests/images/variation_adobe_name.png", 16)
 
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     _check_text(font, "Tests/images/variation_tiny.png", 40)
-    for name in ["200", b"200"]:
+    for name in ("200", b"200"):
         font.set_variation_by_name(name)
         assert font.getname()[1] == "200"
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
@@ -1112,6 +1112,9 @@ def test_bytes(font: ImageFont.FreeTypeFont) -> None:
         Image.Image()._new(font.getmask2("test")[0]),
     )
     assert font.getmask2(b"test")[1] == font.getmask2("test")[1]
+
+    with pytest.raises(TypeError):
+        font.getlength((0, 0))  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(

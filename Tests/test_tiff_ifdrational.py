@@ -11,7 +11,11 @@ from PIL.TiffImagePlugin import IFDRational
 from .helper import hopper, skip_unless_feature
 
 
-def _test_equal(num, denom, target) -> None:
+def _test_equal(
+    num: float | Fraction | IFDRational,
+    denom: int,
+    target: float | Fraction | IFDRational,
+) -> None:
     t = IFDRational(num, denom)
 
     assert target == t
@@ -50,8 +54,8 @@ def test_nonetype() -> None:
     assert xres.denominator is not None
     assert yres._val is not None
 
-    assert xres and 1
-    assert xres and yres
+    assert xres
+    assert yres
 
 
 @pytest.mark.parametrize(

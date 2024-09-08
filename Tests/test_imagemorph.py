@@ -41,11 +41,16 @@ A = string_to_img(
 def img_to_string(im: Image.Image) -> str:
     """Turn a (small) binary image into a string representation"""
     chars = ".1"
-    width, height = im.size
-    return "\n".join(
-        "".join(chars[im.getpixel((c, r)) > 0] for c in range(width))
-        for r in range(height)
-    )
+    result = []
+    for r in range(im.height):
+        line = ""
+        for c in range(im.width):
+            value = im.getpixel((c, r))
+            assert not isinstance(value, tuple)
+            assert value is not None
+            line += chars[value > 0]
+        result.append(line)
+    return "\n".join(result)
 
 
 def img_string_normalize(im: str) -> str:
