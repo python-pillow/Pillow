@@ -40,6 +40,11 @@ removed. Pillow's C API will now be used on PyPy instead.
 ``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, was
 similarly removed.
 
+TiffImagePlugin IFD_LEGACY_API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An unused setting, ``TiffImagePlugin.IFD_LEGACY_API``, has been removed.
+
 Deprecations
 ============
 

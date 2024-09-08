@@ -279,7 +279,7 @@ class BlpImageFile(ImageFile.ImageFile):
 class _BLPBaseDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         try:
             self._read_blp_header()
             self._load()

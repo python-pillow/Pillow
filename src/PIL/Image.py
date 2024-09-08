@@ -851,7 +851,10 @@ class Image:
         )
 
     def frombytes(
-        self, data: bytes | bytearray, decoder_name: str = "raw", *args: Any
+        self,
+        data: bytes | bytearray | SupportsArrayInterface,
+        decoder_name: str = "raw",
+        *args: Any,
     ) -> None:
         """
         Loads this image with pixel data from a bytes object.
@@ -3140,7 +3143,7 @@ def new(
 def frombytes(
     mode: str,
     size: tuple[int, int],
-    data: bytes | bytearray,
+    data: bytes | bytearray | SupportsArrayInterface,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3184,7 +3187,11 @@ def frombytes(
 
 
 def frombuffer(
-    mode: str, size: tuple[int, int], data, decoder_name: str = "raw", *args: Any
+    mode: str,
+    size: tuple[int, int],
+    data: bytes | SupportsArrayInterface,
+    decoder_name: str = "raw",
+    *args: Any,
 ) -> Image:
     """
     Creates an image memory referencing pixel data in a byte buffer.
@@ -3963,7 +3970,7 @@ class Exif(_ExifBase):
         self._data.clear()
         self._hidden_data.clear()
         self._ifds.clear()
-        if data and data.startswith(b"Exif\x00\x00"):
+        while data and data.startswith(b"Exif\x00\x00"):
             data = data[6:]
         if not data:
             self._info = None

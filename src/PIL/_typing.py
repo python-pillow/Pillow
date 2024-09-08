@@ -20,6 +20,11 @@ if sys.version_info >= (3, 13):
 else:
     CapsuleType = object
 
+if sys.version_info >= (3, 12):
+    from collections.abc import Buffer
+else:
+    Buffer = Any
+
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
 else:
@@ -45,4 +50,4 @@ class SupportsRead(Protocol[_T_co]):
 StrOrBytesPath = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
 
 
-__all__ = ["IntegralLike", "StrOrBytesPath", "SupportsRead", "TypeGuard"]
+__all__ = ["Buffer", "IntegralLike", "StrOrBytesPath", "SupportsRead", "TypeGuard"]
