@@ -32,6 +32,9 @@ from typing import TYPE_CHECKING, Any, cast
 
 from . import Image, ImageFile
 
+if TYPE_CHECKING:
+    from ._typing import CapsuleType
+
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
 
@@ -48,7 +51,7 @@ def _get_image_from_kw(kw: dict[str, Any]) -> ImageFile.ImageFile | None:
 
 
 def _pyimagingtkcall(
-    command: str, photo: PhotoImage | tkinter.PhotoImage, ptr: object
+    command: str, photo: PhotoImage | tkinter.PhotoImage, ptr: CapsuleType
 ) -> None:
     tk = photo.tk
     try:

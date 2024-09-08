@@ -15,6 +15,11 @@ if TYPE_CHECKING:
     except (ImportError, AttributeError):
         pass
 
+if sys.version_info >= (3, 13):
+    from types import CapsuleType
+else:
+    CapsuleType = object
+
 if sys.version_info >= (3, 12):
     from collections.abc import Buffer
 else:
