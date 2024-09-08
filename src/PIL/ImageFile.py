@@ -733,7 +733,7 @@ class PyDecoder(PyCodec):
     def pulls_fd(self) -> bool:
         return self._pulls_fd
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         """
         Override to perform the decoding process.
 

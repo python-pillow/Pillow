@@ -29,7 +29,6 @@ import itertools
 import math
 import os
 import subprocess
-import sys
 from enum import IntEnum
 from functools import cached_property
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, Union
@@ -49,6 +48,7 @@ from ._binary import o16le as o16
 
 if TYPE_CHECKING:
     from . import _imaging
+    from ._typing import Buffer
 
 
 class LoadingStrategy(IntEnum):
@@ -1157,18 +1157,9 @@ def getdata(
     class Collector(BytesIO):
         data = []
 
-        if sys.version_info >= (3, 12):
-            from collections.abc import Buffer
-
-            def write(self, data: Buffer) -> int:
-                self.data.append(data)
-                return len(data)
-
-        else:
-
-            def write(self, data: Any) -> int:
-                self.data.append(data)
-                return len(data)
+        def write(self, data: Buffer) -> int:
+            self.data.append(data)
+            return len(data)
 
     im.load()  # make sure raster data is available
 

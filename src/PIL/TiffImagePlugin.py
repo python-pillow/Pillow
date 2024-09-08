@@ -62,7 +62,7 @@ from ._util import is_path
 from .TiffTags import TYPES
 
 if TYPE_CHECKING:
-    from ._typing import IntegralLike
+    from ._typing import Buffer, IntegralLike
 
 logger = logging.getLogger(__name__)
 
@@ -1646,7 +1646,7 @@ SAVE_INFO = {
 }
 
 
-def _save(im: Image.Image, fp, filename: str | bytes) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
@@ -1957,7 +1957,7 @@ def _save(im: Image.Image, fp, filename: str | bytes) -> None:
         setattr(im, "_debug_multipage", ifd)
 
 
-class AppendingTiffWriter:
+class AppendingTiffWriter(io.BytesIO):
     fieldSizes = [
         0,  # None
         1,  # byte
@@ -2067,6 +2067,12 @@ class AppendingTiffWriter:
         return self.f.tell() - self.offsetOfNewPage
 
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
+        """
+        :param offset: Distance to seek.
+        :param whence: Whether the distance is relative to the start,
+                       end or current position.
+        :returns: The resulting position, relative to the start.
+        """
         if whence == os.SEEK_SET:
             offset += self.offsetOfNewPage
 
@@ -2100,7 +2106,7 @@ class AppendingTiffWriter:
             num_tags = self.readShort()
             self.f.seek(num_tags * 12, os.SEEK_CUR)
 
-    def write(self, data: bytes) -> int | None:
+    def write(self, data: Buffer, /) -> int:
         return self.f.write(data)
 
     def readShort(self) -> int:
@@ -2142,7 +2148,8 @@ class AppendingTiffWriter:
 
     def close(self) -> None:
         self.finalize()
-        self.f.close()
+        if self.close_fp:
+            self.f.close()
 
     def fixIFD(self) -> None:
         num_tags = self.readShort()
