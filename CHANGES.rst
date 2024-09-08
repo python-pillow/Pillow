@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Removed unused TiffImagePlugin IFD_LEGACY_API #8355
+  [radarhere]
+
 - Handle duplicate EXIF header #8350
   [zakajd, radarhere]
 
