@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Support converting more modes to LAB by converting to RGBA first #8358
+  [radarhere]
+
 - Deprecate support for FreeType 2.9.0 #8356
   [hugovk, radarhere]
 
