@@ -238,6 +238,9 @@ ImagingBoxBlur(Imaging imOut, Imaging imIn, float xradius, float yradius, int n)
     int i;
     Imaging imTransposed;
 
+    if (imOut->xsize == 0 || imOut->ysize == 0) {
+        return imOut;
+    }
     if (n < 1) {
         return ImagingError_ValueError("number of passes must be greater than zero");
     }

@@ -1113,6 +1113,9 @@ def test_bytes(font: ImageFont.FreeTypeFont) -> None:
     )
     assert font.getmask2(b"test")[1] == font.getmask2("test")[1]
 
+    with pytest.raises(TypeError):
+        font.getlength((0, 0))  # type: ignore[arg-type]
+
 
 @pytest.mark.parametrize(
     "test_file",
@@ -1147,3 +1150,15 @@ def test_invalid_truetype_sizes_raise_valueerror(
 ) -> None:
     with pytest.raises(ValueError):
         ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)
+
+
+def test_freetype_deprecation(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Arrange: mock features.version_module to return fake FreeType version
+    def fake_version_module(module: str) -> str:
+        return "2.9.0"
+
+    monkeypatch.setattr(features, "version_module", fake_version_module)
+
+    # Act / Assert
+    with pytest.warns(DeprecationWarning):
+        ImageFont.truetype(FONT_PATH, FONT_SIZE)

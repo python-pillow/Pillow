@@ -40,8 +40,26 @@ removed. Pillow's C API will now be used on PyPy instead.
 ``Image.USE_CFFI_ACCESS``, for switching from the C API to PyAccess, was
 similarly removed.
 
+TiffImagePlugin IFD_LEGACY_API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An unused setting, ``TiffImagePlugin.IFD_LEGACY_API``, has been removed.
+
 Deprecations
 ============
+
+FreeType 2.9.0
+^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+Support for FreeType 2.9.0 is deprecated and will be removed in Pillow 12.0.0
+(2025-10-15), when FreeType 2.9.1 will be the minimum supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
 
 ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

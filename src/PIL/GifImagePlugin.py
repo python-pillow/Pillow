@@ -29,7 +29,6 @@ import itertools
 import math
 import os
 import subprocess
-import sys
 from enum import IntEnum
 from functools import cached_property
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, Union
@@ -49,6 +48,7 @@ from ._binary import o16le as o16
 
 if TYPE_CHECKING:
     from . import _imaging
+    from ._typing import Buffer
 
 
 class LoadingStrategy(IntEnum):
@@ -407,7 +407,7 @@ class GifImageFile(ImageFile.ImageFile):
                 elif self.mode not in ("RGB", "RGBA"):
                     transparency = frame_transparency
             self.tile = [
-                (
+                ImageFile._Tile(
                     "gif",
                     (x0, y0, x1, y1),
                     self.__offset,
@@ -438,6 +438,13 @@ class GifImageFile(ImageFile.ImageFile):
                 self.im.putpalette("RGB", *self._frame_palette.getdata())
             else:
                 self._im = None
+        if not self._prev_im and self._im is not None and self.size != self.im.size:
+            expanded_im = Image.core.fill(self.im.mode, self.size)
+            if self._frame_palette:
+                expanded_im.putpalette("RGB", *self._frame_palette.getdata())
+            expanded_im.paste(self.im, (0, 0) + self.im.size)
+
+            self.im = expanded_im
         self._mode = temp_mode
         self._frame_palette = None
 
@@ -455,6 +462,17 @@ class GifImageFile(ImageFile.ImageFile):
             return
         if not self._prev_im:
             return
+        if self.size != self._prev_im.size:
+            if self._frame_transparency is not None:
+                expanded_im = Image.core.fill("RGBA", self.size)
+            else:
+                expanded_im = Image.core.fill("P", self.size)
+                expanded_im.putpalette("RGB", "RGB", self.im.getpalette())
+                expanded_im = expanded_im.convert("RGB")
+            expanded_im.paste(self._prev_im, (0, 0) + self._prev_im.size)
+
+            self._prev_im = expanded_im
+            assert self._prev_im is not None
         if self._frame_transparency is not None:
             self.im.putpalettealpha(self._frame_transparency, 0)
             frame_im = self.im.convert("RGBA")
@@ -1139,18 +1157,9 @@ def getdata(
     class Collector(BytesIO):
         data = []
 
-        if sys.version_info >= (3, 12):
-            from collections.abc import Buffer
-
-            def write(self, data: Buffer) -> int:
-                self.data.append(data)
-                return len(data)
-
-        else:
-
-            def write(self, data: Any) -> int:
-                self.data.append(data)
-                return len(data)
+        def write(self, data: Buffer) -> int:
+            self.data.append(data)
+            return len(data)
 
     im.load()  # make sure raster data is available
 

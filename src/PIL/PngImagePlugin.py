@@ -258,7 +258,9 @@ class iTXt(str):
     tkey: str | bytes | None
 
     @staticmethod
-    def __new__(cls, text, lang=None, tkey=None):
+    def __new__(
+        cls, text: str, lang: str | None = None, tkey: str | None = None
+    ) -> iTXt:
         """
         :param cls: the class to use when creating the instance
         :param text: value for this key
@@ -368,21 +370,27 @@ class PngInfo:
 # PNG image stream (IHDR/IEND)
 
 
+class _RewindState(NamedTuple):
+    info: dict[str | tuple[int, int], Any]
+    tile: list[ImageFile._Tile]
+    seq_num: int | None
+
+
 class PngStream(ChunkStream):
-    def __init__(self, fp):
+    def __init__(self, fp: IO[bytes]) -> None:
         super().__init__(fp)
 
         # local copies of Image attributes
-        self.im_info = {}
-        self.im_text = {}
+        self.im_info: dict[str | tuple[int, int], Any] = {}
+        self.im_text: dict[str, str | iTXt] = {}
         self.im_size = (0, 0)
-        self.im_mode = None
-        self.im_tile = None
-        self.im_palette = None
-        self.im_custom_mimetype = None
-        self.im_n_frames = None
-        self._seq_num = None
-        self.rewind_state = None
+        self.im_mode = ""
+        self.im_tile: list[ImageFile._Tile] = []
+        self.im_palette: tuple[str, bytes] | None = None
+        self.im_custom_mimetype: str | None = None
+        self.im_n_frames: int | None = None
+        self._seq_num: int | None = None
+        self.rewind_state = _RewindState({}, [], None)
 
         self.text_memory = 0
 
@@ -396,16 +404,16 @@ class PngStream(ChunkStream):
             raise ValueError(msg)
 
     def save_rewind(self) -> None:
-        self.rewind_state = {
-            "info": self.im_info.copy(),
-            "tile": self.im_tile,
-            "seq_num": self._seq_num,
-        }
+        self.rewind_state = _RewindState(
+            self.im_info.copy(),
+            self.im_tile,
+            self._seq_num,
+        )
 
     def rewind(self) -> None:
-        self.im_info = self.rewind_state["info"].copy()
-        self.im_tile = self.rewind_state["tile"]
-        self._seq_num = self.rewind_state["seq_num"]
+        self.im_info = self.rewind_state.info.copy()
+        self.im_tile = self.rewind_state.tile
+        self._seq_num = self.rewind_state.seq_num
 
     def chunk_iCCP(self, pos: int, length: int) -> bytes:
         # ICC profile
@@ -459,11 +467,11 @@ class PngStream(ChunkStream):
     def chunk_IDAT(self, pos: int, length: int) -> NoReturn:
         # image data
         if "bbox" in self.im_info:
-            tile = [("zip", self.im_info["bbox"], pos, self.im_rawmode)]
+            tile = [ImageFile._Tile("zip", self.im_info["bbox"], pos, self.im_rawmode)]
         else:
             if self.im_n_frames is not None:
                 self.im_info["default_image"] = True
-            tile = [("zip", (0, 0) + self.im_size, pos, self.im_rawmode)]
+            tile = [ImageFile._Tile("zip", (0, 0) + self.im_size, pos, self.im_rawmode)]
         self.im_tile = tile
         self.im_idat = length
         msg = "image data found"

@@ -34,11 +34,14 @@ import itertools
 import os
 import struct
 import sys
-from typing import IO, Any, NamedTuple
+from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
 
 from . import Image
 from ._deprecate import deprecate
 from ._util import is_path
+
+if TYPE_CHECKING:
+    from ._typing import StrOrBytesPath
 
 MAXBLOCK = 65536
 
@@ -107,34 +110,36 @@ class _Tile(NamedTuple):
 class ImageFile(Image.Image):
     """Base class for image file format handlers."""
 
-    def __init__(self, fp=None, filename=None):
+    def __init__(
+        self, fp: StrOrBytesPath | IO[bytes], filename: str | bytes | None = None
+    ) -> None:
         super().__init__()
 
         self._min_frame = 0
 
-        self.custom_mimetype = None
+        self.custom_mimetype: str | None = None
 
-        self.tile = None
+        self.tile: list[_Tile] = []
         """ A list of tile descriptors, or ``None`` """
 
         self.readonly = 1  # until we know better
 
         self.mb_config = ()
 
-        self.decoderconfig = ()
+        self.decoderconfig: tuple[Any, ...] = ()
         self.decodermaxblock = MAXBLOCK
 
         if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
-            self.filename = fp
+            self.filename = os.path.realpath(os.fspath(fp))
             self._exclusive_fp = True
         else:
             # stream
-            self.fp = fp
-            self.filename = filename
+            self.fp = cast(IO[bytes], fp)
+            self.filename = filename if filename is not None else ""
             # can be overridden
-            self._exclusive_fp = None
+            self._exclusive_fp = False
 
         try:
             try:
@@ -156,6 +161,9 @@ class ImageFile(Image.Image):
             if self._exclusive_fp:
                 self.fp.close()
             raise
+
+    def _open(self) -> None:
+        pass
 
     def get_format_mimetype(self) -> str | None:
         if self.custom_mimetype:
@@ -180,7 +188,7 @@ class ImageFile(Image.Image):
     def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
-        if self.tile is None:
+        if not self.tile and self._im is None:
             msg = "cannot load this image"
             raise OSError(msg)
 
@@ -216,6 +224,7 @@ class ImageFile(Image.Image):
                 args = (args, 0, 1)
             if (
                 decoder_name == "raw"
+                and isinstance(args, tuple)
                 and len(args) >= 3
                 and args[0] == self.mode
                 and args[0] in Image._MAPMODES
@@ -726,7 +735,7 @@ class PyDecoder(PyCodec):
     def pulls_fd(self) -> bool:
         return self._pulls_fd
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         """
         Override to perform the decoding process.
 
@@ -738,19 +747,22 @@ class PyDecoder(PyCodec):
         msg = "unavailable in base decoder"
         raise NotImplementedError(msg)
 
-    def set_as_raw(self, data: bytes, rawmode=None) -> None:
+    def set_as_raw(
+        self, data: bytes, rawmode: str | None = None, extra: tuple[Any, ...] = ()
+    ) -> None:
         """
         Convenience method to set the internal image from a stream of raw data
 
         :param data: Bytes to be set
         :param rawmode: The rawmode to be used for the decoder.
             If not specified, it will default to the mode of the image
+        :param extra: Extra arguments for the decoder.
         :returns: None
         """
 
         if not rawmode:
             rawmode = self.mode
-        d = Image._getdecoder(self.mode, "raw", rawmode)
+        d = Image._getdecoder(self.mode, "raw", rawmode, extra)
         assert self.im is not None
         d.setimage(self.im, self.state.extents())
         s = d.decode(data)

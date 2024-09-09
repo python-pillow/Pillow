@@ -367,7 +367,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 mask_count = 3
 
             masks = struct.unpack(f"<{mask_count}I", header.read(mask_count * 4))
-            self.tile = [("dds_rgb", extents, 0, (bitcount, masks))]
+            self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
             return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
@@ -481,7 +481,7 @@ class DdsImageFile(ImageFile.ImageFile):
 class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         bitcount, masks = self.args
 

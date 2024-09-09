@@ -991,12 +991,29 @@ class TestFileJpeg:
             else:
                 assert im.getxmp() == {"xmpmeta": None}
 
+    def test_save_xmp(self, tmp_path: Path) -> None:
+        f = str(tmp_path / "temp.jpg")
+        im = hopper()
+        im.save(f, xmp=b"XMP test")
+        with Image.open(f) as reloaded:
+            assert reloaded.info["xmp"] == b"XMP test"
+
+        im.info["xmp"] = b"1" * 65504
+        im.save(f)
+        with Image.open(f) as reloaded:
+            assert reloaded.info["xmp"] == b"1" * 65504
+
+        with pytest.raises(ValueError):
+            im.save(f, xmp=b"1" * 65505)
+
     @pytest.mark.timeout(timeout=1)
     def test_eof(self) -> None:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
-            def decode(self, buffer: bytes) -> tuple[int, int]:
+            def decode(
+                self, buffer: bytes | Image.SupportsArrayInterface
+            ) -> tuple[int, int]:
                 return 0, 0
 
         Image.register_decoder("INFINITE", InfiniteMockPyDecoder)

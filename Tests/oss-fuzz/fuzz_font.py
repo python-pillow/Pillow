@@ -16,8 +16,9 @@
 
 
 import atheris
+from atheris.import_hook import instrument_imports
 
-with atheris.instrument_imports():
+with instrument_imports():
     import sys
 
     import fuzzers
