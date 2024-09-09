@@ -58,15 +58,15 @@ class XVThumbImageFile(ImageFile.ImageFile):
 
         # skip info comments
         while True:
-            s = self.fp.readline()
-            if not s:
+            line = self.fp.readline()
+            if not line:
                 msg = "Unexpected EOF reading XV thumbnail file"
                 raise SyntaxError(msg)
-            if s[0] != 35:  # ie. when not a comment: '#'
+            if line[0] != 35:  # ie. when not a comment: '#'
                 break
 
         # parse header line (already read)
-        s = s.strip().split()
+        s = line.strip().split()
 
         self._mode = "P"
         self._size = int(s[0]), int(s[1])

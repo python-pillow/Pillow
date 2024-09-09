@@ -258,6 +258,7 @@ class BlpImageFile(ImageFile.ImageFile):
     format_description = "Blizzard Mipmap Format"
 
     def _open(self) -> None:
+        assert self.fp is not None
         self.magic = self.fp.read(4)
 
         self.fp.seek(5, os.SEEK_CUR)

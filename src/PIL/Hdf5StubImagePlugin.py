@@ -40,6 +40,7 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
     format_description = "HDF5"
 
     def _open(self) -> None:
+        assert self.fp is not None
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(8)):

@@ -40,6 +40,7 @@ import sys
 from typing import IO, TYPE_CHECKING, Any, cast
 
 from . import Image, ImageFile
+from ._util import DeferredError
 
 
 def isInt(f: Any) -> int:
@@ -100,6 +101,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # check header
+        assert self.fp is not None
         n = 27 * 4  # read 27 float values
         f = self.fp.read(n)
 
@@ -181,6 +183,9 @@ class SpiderImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
+
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
         self.fp.seek(self.stkoffset)
         self._open()
@@ -211,26 +216,27 @@ class SpiderImageFile(ImageFile.ImageFile):
 
 
 # given a list of filenames, return a list of images
-def loadImageSeries(filelist: list[str] | None = None) -> list[SpiderImageFile] | None:
+def loadImageSeries(filelist: list[str] | None = None) -> list[Image.Image] | None:
     """create a list of :py:class:`~PIL.Image.Image` objects for use in a montage"""
     if filelist is None or len(filelist) < 1:
         return None
 
-    imglist = []
+    byte_imgs = []
     for img in filelist:
         if not os.path.exists(img):
             print(f"unable to find {img}")
             continue
         try:
             with Image.open(img) as im:
-                im = im.convert2byte()
+                assert isinstance(im, SpiderImageFile)
+                byte_im = im.convert2byte()
         except Exception:
             if not isSpiderImage(img):
                 print(f"{img} is not a Spider image file")
             continue
-        im.info["filename"] = img
-        imglist.append(im)
-    return imglist
+        byte_im.info["filename"] = img
+        byte_imgs.append(byte_im)
+    return byte_imgs
 
 
 # --------------------------------------------------------------------
@@ -321,9 +327,9 @@ if __name__ == "__main__":
             outfile = sys.argv[2]
 
             # perform some image operation
-            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            transposed_im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             print(
                 f"saving a flipped version of {os.path.basename(filename)} "
                 f"as {outfile} "
             )
-            im.save(outfile, SpiderImageFile.format)
+            transposed_im.save(outfile, SpiderImageFile.format)

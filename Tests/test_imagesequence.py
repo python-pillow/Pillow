@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import Image, ImageSequence, TiffImagePlugin
+from PIL import Image, ImageSequence, PsdImagePlugin, TiffImagePlugin
 
 from .helper import assert_image_equal, hopper, skip_unless_feature
 
@@ -31,6 +31,8 @@ def test_sanity(tmp_path: Path) -> None:
 
 def test_iterator() -> None:
     with Image.open("Tests/images/multipage.tiff") as im:
+        assert isinstance(im, TiffImagePlugin.TiffImageFile)
+
         i = ImageSequence.Iterator(im)
         for index in range(0, im.n_frames):
             assert i[index] == next(i)
@@ -42,6 +44,8 @@ def test_iterator() -> None:
 
 def test_iterator_min_frame() -> None:
     with Image.open("Tests/images/hopper.psd") as im:
+        assert isinstance(im, PsdImagePlugin.PsdImageFile)
+
         i = ImageSequence.Iterator(im)
         for index in range(1, im.n_frames):
             assert i[index] == next(i)
@@ -74,9 +78,14 @@ def test_consecutive() -> None:
 def test_palette_mmap() -> None:
     # Using mmap in ImageFile can require to reload the palette.
     with Image.open("Tests/images/multipage-mmap.tiff") as im:
-        color1 = im.getpalette()[:3]
+        palette = im.getpalette()
+        assert palette is not None
+        color1 = palette[:3]
         im.seek(0)
-        color2 = im.getpalette()[:3]
+
+        palette = im.getpalette()
+        assert palette is not None
+        color2 = palette[:3]
         assert color1 == color2
 
 

@@ -91,6 +91,7 @@ class TestFileJpeg:
     def test_app(self) -> None:
         # Test APP/COM reader (@PIL135)
         with Image.open(TEST_FILE) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert im.applist[0] == ("APP0", b"JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00")
             assert im.applist[1] == (
                 "COM",
@@ -131,26 +132,30 @@ class TestFileJpeg:
         f = "Tests/images/pil_sample_cmyk.jpg"
         with Image.open(f) as im:
             # the source image has red pixels in the upper left corner.
-            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
+            value = im.getpixel((0, 0))
+            assert isinstance(value, tuple)
+            c, m, y, k = (x / 255.0 for x in value)
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
             # the opposite corner is black
-            c, m, y, k = (
-                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            )
+            value = im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            assert isinstance(value, tuple)
+            c, m, y, k = (x / 255.0 for x in value)
             assert k > 0.9
             # roundtrip, and check again
             im = self.roundtrip(im)
-            c, m, y, k = (x / 255.0 for x in im.getpixel((0, 0)))
+            value = im.getpixel((0, 0))
+            assert isinstance(value, tuple)
+            c, m, y, k = (x / 255.0 for x in value)
             assert c == 0.0
             assert m > 0.8
             assert y > 0.8
             assert k == 0.0
-            c, m, y, k = (
-                x / 255.0 for x in im.getpixel((im.size[0] - 1, im.size[1] - 1))
-            )
+            value = im.getpixel((im.size[0] - 1, im.size[1] - 1))
+            assert isinstance(value, tuple)
+            c, m, y, k = (x / 255.0 for x in value)
             assert k > 0.9
 
     def test_rgb(self) -> None:
@@ -309,6 +314,8 @@ class TestFileJpeg:
 
     def test_exif_typeerror(self) -> None:
         with Image.open("Tests/images/exif_typeerror.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
             # Should not raise a TypeError
             im._getexif()
 
@@ -324,8 +331,10 @@ class TestFileJpeg:
 
         # Reading
         with Image.open("Tests/images/exif_gps.jpg") as im:
-            exif = im._getexif()
-            assert exif[gps_index] == expected_exif_gps
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            exif_data = im._getexif()
+            assert exif_data is not None
+            assert exif_data[gps_index] == expected_exif_gps
 
         # Writing
         f = str(tmp_path / "temp.jpg")
@@ -334,8 +343,10 @@ class TestFileJpeg:
         hopper().save(f, exif=exif)
 
         with Image.open(f) as reloaded:
-            exif = reloaded._getexif()
-            assert exif[gps_index] == expected_exif_gps
+            assert isinstance(reloaded, JpegImagePlugin.JpegImageFile)
+            exif_data = reloaded._getexif()
+            assert exif_data is not None
+            assert exif_data[gps_index] == expected_exif_gps
 
     def test_empty_exif_gps(self) -> None:
         with Image.open("Tests/images/empty_gps_ifd.jpg") as im:
@@ -363,6 +374,7 @@ class TestFileJpeg:
         exifs = []
         for i in range(2):
             with Image.open("Tests/images/exif-200dpcm.jpg") as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 exifs.append(im._getexif())
         assert exifs[0] == exifs[1]
 
@@ -396,13 +408,18 @@ class TestFileJpeg:
         }
 
         with Image.open("Tests/images/exif_gps.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
             exif = im._getexif()
+            assert exif is not None
 
         for tag, value in expected_exif.items():
             assert value == exif[tag]
 
     def test_exif_gps_typeerror(self) -> None:
         with Image.open("Tests/images/exif_gps_typeerror.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
             # Should not raise a TypeError
             im._getexif()
 
@@ -478,7 +495,9 @@ class TestFileJpeg:
 
     def test_exif(self) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             info = im._getexif()
+            assert info is not None
             assert info[305] == "Adobe Photoshop CS Macintosh"
 
     def test_get_child_images(self) -> None:
@@ -490,6 +509,7 @@ class TestFileJpeg:
 
     def test_mp(self) -> None:
         with Image.open("Tests/images/pil_sample_rgb.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert im._getmp() is None
 
     def test_quality_keep(self, tmp_path: Path) -> None:
@@ -547,12 +567,14 @@ class TestFileJpeg:
                 f = str(tmp_path / "temp.jpg")
                 im.save(f, qtables=[[n] * 64] * n)
             with Image.open(f) as im:
+                assert isinstance(im, JpegImagePlugin.JpegImageFile)
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
                 assert max(reloaded.quantization[0]) <= 255
 
         with Image.open("Tests/images/hopper.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             qtables = im.quantization
             reloaded = self.roundtrip(im, qtables=qtables, subsampling=0)
             assert im.quantization == reloaded.quantization
@@ -652,6 +674,7 @@ class TestFileJpeg:
 
     def test_load_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert len(im.quantization) == 2
             assert len(im.quantization[0]) == 64
             assert max(im.quantization[0]) > 255
@@ -659,10 +682,12 @@ class TestFileJpeg:
     def test_save_multiple_16bit_qtables(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
             im2 = self.roundtrip(im, qtables="keep")
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert im.quantization == im2.quantization
 
     def test_save_single_16bit_qtable(self) -> None:
         with Image.open("Tests/images/hopper_16bit_qtables.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             im2 = self.roundtrip(im, qtables={0: im.quantization[0]})
             assert len(im2.quantization) == 1
             assert im2.quantization[0] == im.quantization[0]
@@ -693,9 +718,10 @@ class TestFileJpeg:
 
     @pytest.mark.skipif(not djpeg_available(), reason="djpeg not available")
     def test_load_djpeg(self) -> None:
-        with Image.open(TEST_FILE) as img:
-            img.load_djpeg()
-            assert_image_similar_tofile(img, TEST_FILE, 5)
+        with Image.open(TEST_FILE) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            im.load_djpeg()
+            assert_image_similar_tofile(im, TEST_FILE, 5)
 
     @pytest.mark.skipif(not cjpeg_available(), reason="cjpeg not available")
     def test_save_cjpeg(self, tmp_path: Path) -> None:
@@ -868,7 +894,10 @@ class TestFileJpeg:
         # in contrast to normal 8
         with Image.open("Tests/images/exif-ifd-offset.jpg") as im:
             # Act / Assert
-            assert im._getexif()[306] == "2017:03:13 23:03:09"
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            exif = im._getexif()
+            assert exif is not None
+            assert exif[306] == "2017:03:13 23:03:09"
 
     def test_multiple_exif(self) -> None:
         with Image.open("Tests/images/multiple_exif.jpg") as im:
@@ -896,6 +925,7 @@ class TestFileJpeg:
 
     def test_photoshop_malformed_and_multiple(self) -> None:
         with Image.open("Tests/images/app13-multiple.jpg") as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             assert "photoshop" in im.info
             assert 24 == len(im.info["photoshop"])
             apps_13_lengths = [len(v) for k, v in im.applist if k == "APP13"]
@@ -1020,7 +1050,7 @@ class TestFileJpeg:
 
         with Image.open(TEST_FILE) as im:
             im.tile = [
-                ("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
+                ImageFile._Tile("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
             ]
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             im.load()
@@ -1067,6 +1097,7 @@ class TestFileJpeg:
 
     def test_deprecation(self) -> None:
         with Image.open(TEST_FILE) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
             with pytest.warns(DeprecationWarning):
                 assert im.huffman_ac == {}
             with pytest.warns(DeprecationWarning):
@@ -1083,8 +1114,9 @@ class TestFileCloseW32:
             im.save(tmpfile)
 
         im = Image.open(tmpfile)
+        assert im.fp is not None
+        assert not im.fp.closed
         fp = im.fp
-        assert not fp.closed
         with pytest.raises(OSError):
             os.remove(tmpfile)
         im.load()

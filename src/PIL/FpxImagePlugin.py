@@ -58,6 +58,7 @@ class FpxImageFile(ImageFile.ImageFile):
         # read the OLE directory and see if this is a likely
         # to be a FlashPix file
 
+        assert self.fp is not None
         try:
             self.ole = olefile.OleFileIO(self.fp)
         except OSError as e:
@@ -229,6 +230,7 @@ class FpxImageFile(ImageFile.ImageFile):
                 if y >= ysize:
                     break  # isn't really required
 
+        assert self.fp is not None
         self.stream = stream
         self._fp = self.fp
         self.fp = None

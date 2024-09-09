@@ -31,7 +31,9 @@ def test_load_raw() -> None:
 def test_load() -> None:
     with Image.open("Tests/images/drawing.emf") as im:
         if hasattr(Image.core, "drawwmf"):
-            assert im.load()[0, 0] == (255, 255, 255)
+            px = im.load()
+            assert px is not None
+            assert px[0, 0] == (255, 255, 255)
 
 
 def test_register_handler(tmp_path: Path) -> None:
@@ -64,6 +66,7 @@ def test_load_float_dpi() -> None:
 
 def test_load_set_dpi() -> None:
     with Image.open("Tests/images/drawing.wmf") as im:
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
         assert im.size == (82, 82)
 
         if hasattr(Image.core, "drawwmf"):

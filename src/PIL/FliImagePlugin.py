@@ -22,6 +22,7 @@ from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
+from ._util import DeferredError
 
 #
 # decoder
@@ -47,6 +48,7 @@ class FliImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # HEAD
+        assert self.fp is not None
         s = self.fp.read(128)
         if not (_accept(s) and s[20:22] == b"\x00\x00"):
             msg = "not an FLI/FLC file"
@@ -110,6 +112,7 @@ class FliImageFile(ImageFile.ImageFile):
         # load palette
 
         i = 0
+        assert self.fp is not None
         for e in range(i16(self.fp.read(2))):
             s = self.fp.read(2)
             i = i + s[0]
@@ -134,6 +137,8 @@ class FliImageFile(ImageFile.ImageFile):
             self._seek(f)
 
     def _seek(self, frame: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         if frame == 0:
             self.__frame = -1
             self._fp.seek(self.__rewind)

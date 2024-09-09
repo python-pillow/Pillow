@@ -218,6 +218,7 @@ class TestFileWebp:
         # Save P mode GIF with background
         with Image.open("Tests/images/chi.gif") as im:
             original_value = im.convert("RGB").getpixel((1, 1))
+            assert isinstance(original_value, tuple)
 
             # Save as WEBP
             out_webp = str(tmp_path / "temp.webp")
@@ -230,6 +231,7 @@ class TestFileWebp:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
+        assert isinstance(reread_value, tuple)
         difference = sum(abs(original_value[i] - reread_value[i]) for i in range(0, 3))
         assert difference < 5
 

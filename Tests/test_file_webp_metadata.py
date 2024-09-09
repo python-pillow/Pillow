@@ -6,7 +6,7 @@ from types import ModuleType
 
 import pytest
 
-from PIL import Image
+from PIL import Image, WebPImagePlugin
 
 from .helper import mark_if_feature_version, skip_unless_feature
 
@@ -22,11 +22,13 @@ except ImportError:
 def test_read_exif_metadata() -> None:
     file_path = "Tests/images/flower.webp"
     with Image.open(file_path) as image:
+        assert isinstance(image, WebPImagePlugin.WebPImageFile)
         assert image.format == "WEBP"
         exif_data = image.info.get("exif", None)
         assert exif_data
 
         exif = image._getexif()
+        assert exif is not None
 
         # Camera make
         assert exif[271] == "Canon"
@@ -110,6 +112,7 @@ def test_read_no_exif() -> None:
 
     test_buffer.seek(0)
     with Image.open(test_buffer) as webp_image:
+        assert isinstance(webp_image, WebPImagePlugin.WebPImageFile)
         assert not webp_image._getexif()
 
 

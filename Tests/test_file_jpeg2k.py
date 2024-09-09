@@ -54,6 +54,7 @@ def test_sanity() -> None:
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
+        assert px is not None
         assert px[0, 0] == (0, 0, 0)
         assert im.mode == "RGB"
         assert im.size == (640, 480)
@@ -154,7 +155,7 @@ def test_reduce() -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         assert callable(im.reduce)
 
-        im.reduce = 2
+        im.reduce = 2  # type: ignore[method-assign, assignment]
         assert im.reduce == 2
 
         im.load()
@@ -221,12 +222,14 @@ def test_layers() -> None:
     out.seek(0)
 
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 1
         im.load()
         assert_image_similar(im, test_card, 13)
 
     out.seek(0)
     with Image.open(out) as im:
+        assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 3
         im.load()
         assert_image_similar(im, test_card, 0.4)
@@ -397,6 +400,7 @@ def test_subsampling_decode(name: str) -> None:
 def test_pclr() -> None:
     with Image.open(f"{EXTRA_DIR}/issue104_jpxstream.jp2") as im:
         assert im.mode == "P"
+        assert im.palette is not None
         assert len(im.palette.colors) == 256
         assert im.palette.colors[(255, 255, 255)] == 0
 
@@ -404,6 +408,7 @@ def test_pclr() -> None:
         f"{EXTRA_DIR}/147af3f1083de4393666b7d99b01b58b_signal_sigsegv_130c531_6155_5136.jp2"
     ) as im:
         assert im.mode == "P"
+        assert im.palette is not None
         assert len(im.palette.colors) == 139
         assert im.palette.colors[(0, 0, 0, 0)] == 0
 

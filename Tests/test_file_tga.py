@@ -72,6 +72,7 @@ def test_palette_depth_8(tmp_path: Path) -> None:
 
 def test_palette_depth_16(tmp_path: Path) -> None:
     with Image.open("Tests/images/p_16.tga") as im:
+        assert im.palette is not None
         assert im.palette.mode == "RGBA"
         assert_image_equal_tofile(im.convert("RGBA"), "Tests/images/p_16.png")
 
@@ -213,10 +214,18 @@ def test_save_orientation(tmp_path: Path) -> None:
 def test_horizontal_orientations() -> None:
     # These images have been manually hexedited to have the relevant orientations
     with Image.open("Tests/images/rgb32rle_top_right.tga") as im:
-        assert im.load()[90, 90][:3] == (0, 0, 0)
+        px = im.load()
+        assert px is not None
+        value = px[90, 90]
+        assert isinstance(value, tuple)
+        assert value[:3] == (0, 0, 0)
 
     with Image.open("Tests/images/rgb32rle_bottom_right.tga") as im:
-        assert im.load()[90, 90][:3] == (0, 255, 0)
+        px = im.load()
+        assert px is not None
+        value = px[90, 90]
+        assert isinstance(value, tuple)
+        assert value[:3] == (0, 255, 0)
 
 
 def test_save_rle(tmp_path: Path) -> None:
@@ -259,13 +268,17 @@ def test_save_l_transparency(tmp_path: Path) -> None:
     in_file = "Tests/images/la.tga"
     with Image.open(in_file) as im:
         assert im.mode == "LA"
-        assert im.getchannel("A").getcolors()[0][0] == num_transparent
+        colors = im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == num_transparent
 
         out = str(tmp_path / "temp.tga")
         im.save(out)
 
     with Image.open(out) as test_im:
         assert test_im.mode == "LA"
-        assert test_im.getchannel("A").getcolors()[0][0] == num_transparent
+        colors = test_im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == num_transparent
 
         assert_image_equal(im, test_im)

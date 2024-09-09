@@ -64,12 +64,14 @@ def test_tell() -> None:
 
 def test_n_frames() -> None:
     with Image.open(TEST_IM) as im:
+        assert isinstance(im, ImImagePlugin.ImImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open(TEST_IM) as im:
+        assert isinstance(im, ImImagePlugin.ImImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame

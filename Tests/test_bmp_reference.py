@@ -92,8 +92,11 @@ def test_good() -> None:
 
     for f in get_files("g"):
         try:
+            im: Image.Image
             with Image.open(f) as im:
                 im.load()
+
+                compare: Image.Image
                 with Image.open(get_compare(f)) as compare:
                     compare.load()
                     if im.mode == "P":

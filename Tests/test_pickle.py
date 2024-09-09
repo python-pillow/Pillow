@@ -17,6 +17,7 @@ def helper_pickle_file(
     tmp_path: Path, protocol: int, test_file: str, mode: str | None
 ) -> None:
     # Arrange
+    im: Image.Image
     with Image.open(test_file) as im:
         filename = str(tmp_path / "temp.pkl")
         if mode:
@@ -33,6 +34,7 @@ def helper_pickle_file(
 
 
 def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> None:
+    im: Image.Image
     with Image.open(test_file) as im:
         if mode:
             im = im.convert(mode)
@@ -77,8 +79,8 @@ def test_pickle_image(
 def test_pickle_la_mode_with_palette(tmp_path: Path) -> None:
     # Arrange
     filename = str(tmp_path / "temp.pkl")
-    with Image.open("Tests/images/hopper.jpg") as im:
-        im = im.convert("PA")
+    with Image.open("Tests/images/hopper.jpg") as img:
+        im = img.convert("PA")
 
     # Act / Assert
     for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
