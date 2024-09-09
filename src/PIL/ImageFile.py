@@ -173,8 +173,8 @@ class ImageFile(Image.Image):
         return self
 
     def _close_fp(self) -> None:
-        if getattr(self, "_fp", False):
-            if self._fp != self.fp and not isinstance(self._fp, DeferredError):
+        if hasattr(self, "_fp") and not isinstance(self._fp, DeferredError):
+            if self._fp != self.fp:
                 self._fp.close()
             self._fp = DeferredError(ValueError("Operation on closed image"))
         if self.fp:
