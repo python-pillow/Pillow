@@ -257,7 +257,7 @@ class DdsImageFile(ImageFile.ImageFile):
 class DXT1Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         try:
             self.set_as_raw(_dxt1(self.fd, self.state.xsize, self.state.ysize))
@@ -270,7 +270,7 @@ class DXT1Decoder(ImageFile.PyDecoder):
 class DXT5Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         try:
             self.set_as_raw(_dxt5(self.fd, self.state.xsize, self.state.ysize))
