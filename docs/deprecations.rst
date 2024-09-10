@@ -130,6 +130,14 @@ ICNS (width, height, scale) sizes
 Setting an ICNS image size to ``(width, height, scale)`` before loading has been
 deprecated. Instead, ``load(scale)`` can be used.
 
+Image isImageType()
+^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+``Image.isImageType(im)`` has been deprecated. Use ``isinstance(im, Image.Image)``
+instead.
+
 ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
