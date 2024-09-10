@@ -553,7 +553,9 @@ def _normalize_palette(
 
     if im.mode == "P":
         if not source_palette:
-            source_palette = im.im.getpalette("RGB")[:768]
+            im_palette = im.getpalette(None)
+            assert im_palette is not None
+            source_palette = bytearray(im_palette)
     else:  # L-mode
         if not source_palette:
             source_palette = bytearray(i // 3 for i in range(768))
@@ -629,7 +631,10 @@ def _write_single_frame(
 def _getbbox(
     base_im: Image.Image, im_frame: Image.Image
 ) -> tuple[Image.Image, tuple[int, int, int, int] | None]:
-    if _get_palette_bytes(im_frame) != _get_palette_bytes(base_im):
+    palette_bytes = [
+        bytes(im.palette.palette) if im.palette else b"" for im in (base_im, im_frame)
+    ]
+    if palette_bytes[0] != palette_bytes[1]:
         im_frame = im_frame.convert("RGBA")
         base_im = base_im.convert("RGBA")
     delta = ImageChops.subtract_modulo(im_frame, base_im)
@@ -984,7 +989,13 @@ def _get_palette_bytes(im: Image.Image) -> bytes:
     :param im: Image object
     :returns: Bytes, len<=768 suitable for inclusion in gif header
     """
-    return bytes(im.palette.palette) if im.palette else b""
+    if not im.palette:
+        return b""
+
+    palette = bytes(im.palette.palette)
+    if im.palette.mode == "RGBA":
+        palette = b"".join(palette[i * 4 : i * 4 + 3] for i in range(len(palette) // 3))
+    return palette
 
 
 def _get_background(

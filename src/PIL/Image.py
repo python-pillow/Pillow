@@ -1066,7 +1066,7 @@ class Image:
                     trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
                         assert self.palette is not None
-                        trns_im.putpalette(self.palette)
+                        trns_im.putpalette(self.palette, self.palette.mode)
                         if isinstance(t, tuple):
                             err = "Couldn't allocate a palette color for transparency"
                             assert trns_im.palette is not None
@@ -2182,6 +2182,9 @@ class Image:
                 source_palette = self.im.getpalette(palette_mode, palette_mode)
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
+        elif len(source_palette) > 768:
+            bands = 4
+            palette_mode = "RGBA"
 
         palette_bytes = b""
         new_positions = [0] * 256
