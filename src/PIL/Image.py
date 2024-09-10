@@ -133,6 +133,7 @@ def isImageType(t: Any) -> TypeGuard[Image]:
     :param t: object to check if it's an image
     :returns: True if the object is an image
     """
+    deprecate("Image.isImageType(im)", 12, "isinstance(im, Image.Image)")
     return hasattr(t, "im")
 
 
@@ -1823,23 +1824,22 @@ class Image:
         :param mask: An optional mask image.
         """
 
-        if isImageType(box):
+        if isinstance(box, Image):
             if mask is not None:
                 msg = "If using second argument as mask, third argument must be None"
                 raise ValueError(msg)
             # abbreviated paste(im, mask) syntax
             mask = box
             box = None
-        assert not isinstance(box, Image)
 
         if box is None:
             box = (0, 0)
 
         if len(box) == 2:
             # upper left corner given; get size from image or mask
-            if isImageType(im):
+            if isinstance(im, Image):
                 size = im.size
-            elif isImageType(mask):
+            elif isinstance(mask, Image):
                 size = mask.size
             else:
                 # FIXME: use self.size here?
@@ -1852,17 +1852,15 @@ class Image:
             from . import ImageColor
 
             source = ImageColor.getcolor(im, self.mode)
-        elif isImageType(im):
+        elif isinstance(im, Image):
             im.load()
             if self.mode != im.mode:
                 if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
                     # should use an adapter for this!
                     im = im.convert(self.mode)
             source = im.im
-        elif isinstance(im, tuple):
-            source = im
         else:
-            source = cast(float, im)
+            source = im
 
         self._ensure_mutable()
 
@@ -2023,7 +2021,7 @@ class Image:
         else:
             band = 3
 
-        if isImageType(alpha):
+        if isinstance(alpha, Image):
             # alpha layer
             if alpha.mode not in ("1", "L"):
                 msg = "illegal image mode"
@@ -2033,7 +2031,6 @@ class Image:
                 alpha = alpha.convert("L")
         else:
             # constant alpha
-            alpha = cast(int, alpha)  # see python/typing#1013
             try:
                 self.im.fillband(band, alpha)
             except (AttributeError, ValueError):
