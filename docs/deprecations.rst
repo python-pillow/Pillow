@@ -122,6 +122,14 @@ vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 
 .. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
 
+ICNS (width, height, scale) sizes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+Setting an ICNS image size to ``(width, height, scale)`` before loading has been
+deprecated. Instead, ``load(scale)`` can be used.
+
 Image isImageType()
 ^^^^^^^^^^^^^^^^^^^
 
