@@ -1481,3 +1481,22 @@ def test_saving_rgba(tmp_path: Path) -> None:
         value = px[0, 0]
         assert isinstance(value, tuple)
         assert value[3] == 0
+
+
+def test_optimizing_p_rgba(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im1 = Image.new("P", (100, 100))
+    d = ImageDraw.Draw(im1)
+    d.ellipse([(40, 40), (60, 60)], fill=1)
+    data = [0, 0, 0, 0, 0, 0, 0, 255] + [0, 0, 0, 0] * 254
+    im1.putpalette(data, "RGBA")
+
+    im2 = Image.new("P", (100, 100))
+    im2.putpalette(data, "RGBA")
+
+    im1.save(out, save_all=True, append_images=[im2])
+
+    with Image.open(out) as reloaded:
+        assert isinstance(reloaded, GifImagePlugin.GifImageFile)
+        assert reloaded.n_frames == 2

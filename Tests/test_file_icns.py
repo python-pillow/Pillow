@@ -68,8 +68,8 @@ def test_save_append_images(tmp_path: Path) -> None:
 
         with Image.open(temp_file) as reread:
             assert isinstance(reread, IcnsImagePlugin.IcnsImageFile)
-            reread.size = (16, 16, 2)
-            reread.load()
+            reread.size = (16, 16)
+            reread.load(2)
             assert_image_equal(reread, provided_im)
 
 
@@ -93,14 +93,21 @@ def test_sizes() -> None:
         for w, h, r in im.info["sizes"]:
             wr = w * r
             hr = h * r
-            im.size = (w, h, r)
+            with pytest.warns(DeprecationWarning):
+                im.size = (w, h, r)
             im.load()
+            assert im.mode == "RGBA"
+            assert im.size == (wr, hr)
+
+            # Test using load() with scale
+            im.size = (w, h)
+            im.load(scale=r)
             assert im.mode == "RGBA"
             assert im.size == (wr, hr)
 
         # Check that we cannot load an incorrect size
         with pytest.raises(ValueError):
-            im.size = (1, 1)
+            im.size = (1, 2)
 
 
 def test_older_icon() -> None:
@@ -112,8 +119,8 @@ def test_older_icon() -> None:
             hr = h * r
             with Image.open("Tests/images/pillow2.icns") as im2:
                 assert isinstance(im2, IcnsImagePlugin.IcnsImageFile)
-                im2.size = (w, h, r)
-                im2.load()
+                im2.size = (w, h)
+                im2.load(r)
                 assert im2.mode == "RGBA"
                 assert im2.size == (wr, hr)
 
@@ -130,8 +137,8 @@ def test_jp2_icon() -> None:
             hr = h * r
             with Image.open("Tests/images/pillow3.icns") as im2:
                 assert isinstance(im2, IcnsImagePlugin.IcnsImageFile)
-                im2.size = (w, h, r)
-                im2.load()
+                im2.size = (w, h)
+                im2.load(r)
                 assert im2.mode == "RGBA"
                 assert im2.size == (wr, hr)
 

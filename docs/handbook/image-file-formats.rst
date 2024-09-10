@@ -324,12 +324,19 @@ sets the following :py:attr:`~PIL.Image.Image.info` property:
 **sizes**
     A list of supported sizes found in this icon file; these are a
     3-tuple, ``(width, height, scale)``, where ``scale`` is 2 for a retina
-    icon and 1 for a standard icon.  You *are* permitted to use this 3-tuple
-    format for the :py:attr:`~PIL.Image.Image.size` property if you set it
-    before calling :py:meth:`~PIL.Image.Image.load`; after loading, the size
-    will be reset to a 2-tuple containing pixel dimensions (so, e.g. if you
-    ask for ``(512, 512, 2)``, the final value of
-    :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
+    icon and 1 for a standard icon.
+
+.. _icns-loading:
+
+Loading
+~~~~~~~
+
+You can call the :py:meth:`~PIL.Image.Image.load` method with the following parameter.
+
+**scale**
+    Affects the scale of the resultant image. If the size is set to ``(512, 512)``,
+    after loading at scale 2, the final value of :py:attr:`~PIL.Image.Image.size` will
+    be ``(1024, 1024)``.
 
 .. _icns-saving:
 
