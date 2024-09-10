@@ -5,6 +5,12 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Deprecate ICNS (width, height, scale) sizes in favour of load(scale) #8352
+  [radarhere]
+
+- Improved handling of RGBA palettes when saving GIF images #8366
+  [radarhere]
+
 - Deprecate isImageType #8364
   [radarhere]
 
