@@ -103,10 +103,18 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+Writing XMP bytes to JPEG and MPO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+XMP data can now be saved to JPEG files using an ``xmp`` argument::
+
+    im.save("out.jpg", xmp=b"test")
+
+The data can also be set  through :py:attr:`~PIL.Image.Image.info`, for use when saving
+either JPEG or MPO images::
+
+    im.info["xmp"] = b"test"
+    im.save("out.jpg")
 
 Other Changes
 =============
