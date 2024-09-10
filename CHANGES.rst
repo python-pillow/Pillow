@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Deprecate isImageType #8364
+  [radarhere]
+
 - Support converting more modes to LAB by converting to RGBA first #8358
   [radarhere]
 
