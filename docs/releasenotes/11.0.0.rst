@@ -45,6 +45,11 @@ TiffImagePlugin IFD_LEGACY_API
 
 An unused setting, ``TiffImagePlugin.IFD_LEGACY_API``, has been removed.
 
+WebP 0.4
+^^^^^^^^
+
+Support for WebP 0.4 and earlier has been removed; WebP 0.5 is the minimum supported.
+
 Deprecations
 ============
 
