@@ -341,7 +341,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 else:
                     break
 
-                # Read the columns and rows after checking the bit depth and mode
+                # Parse the columns and rows after checking the bit depth and mode
                 # in case the bit depth and/or mode are invalid.
                 imagedata_size = columns, rows
             elif bytes_mv[:5] == b"%%EOF":
