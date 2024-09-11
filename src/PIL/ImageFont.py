@@ -932,9 +932,9 @@ def load_path(filename: str | bytes) -> ImageFont:
             return load(os.path.join(directory, filename))
         except OSError:
             pass
-    msg = f"cannot find font file '{filename}' in `sys.path`"
+    msg = f"cannot find font file '{filename}' in sys.path"
     if os.path.exists(filename):
-        msg += f', did you mean `ImageFont.load("{filename}")` instead?'
+        msg += f', did you mean ImageFont.load("{filename}") instead?'
 
     raise OSError(msg)
 
