@@ -128,7 +128,9 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)
 
-        self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
+        self.tile = [
+            ImageFile._Tile("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))
+        ]
 
 
 # --------------------------------------------------------------------

@@ -133,6 +133,7 @@ def isImageType(t: Any) -> TypeGuard[Image]:
     :param t: object to check if it's an image
     :returns: True if the object is an image
     """
+    deprecate("Image.isImageType(im)", 12, "isinstance(im, Image.Image)")
     return hasattr(t, "im")
 
 
@@ -225,6 +226,11 @@ if TYPE_CHECKING:
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
     from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType
+    else:
+        CapsuleType = object
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -851,7 +857,10 @@ class Image:
         )
 
     def frombytes(
-        self, data: bytes | bytearray, decoder_name: str = "raw", *args: Any
+        self,
+        data: bytes | bytearray | SupportsArrayInterface,
+        decoder_name: str = "raw",
+        *args: Any,
     ) -> None:
         """
         Loads this image with pixel data from a bytes object.
@@ -1058,7 +1067,7 @@ class Image:
                     trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
                         assert self.palette is not None
-                        trns_im.putpalette(self.palette)
+                        trns_im.putpalette(self.palette, self.palette.mode)
                         if isinstance(t, tuple):
                             err = "Couldn't allocate a palette color for transparency"
                             assert trns_im.palette is not None
@@ -1122,17 +1131,23 @@ class Image:
             return new_im
 
         if "LAB" in (self.mode, mode):
-            other_mode = mode if self.mode == "LAB" else self.mode
+            im = self
+            if mode == "LAB":
+                if im.mode not in ("RGB", "RGBA", "RGBX"):
+                    im = im.convert("RGBA")
+                other_mode = im.mode
+            else:
+                other_mode = mode
             if other_mode in ("RGB", "RGBA", "RGBX"):
                 from . import ImageCms
 
                 srgb = ImageCms.createProfile("sRGB")
                 lab = ImageCms.createProfile("LAB")
-                profiles = [lab, srgb] if self.mode == "LAB" else [srgb, lab]
+                profiles = [lab, srgb] if im.mode == "LAB" else [srgb, lab]
                 transform = ImageCms.buildTransform(
-                    profiles[0], profiles[1], self.mode, mode
+                    profiles[0], profiles[1], im.mode, mode
                 )
-                return transform.apply(self)
+                return transform.apply(im)
 
         # colorspace conversion
         if dither is None:
@@ -1598,7 +1613,7 @@ class Image:
             self.fp.seek(offset)
         return child_images
 
-    def getim(self):
+    def getim(self) -> CapsuleType:
         """
         Returns a capsule that points to the internal image memory.
 
@@ -1809,23 +1824,22 @@ class Image:
         :param mask: An optional mask image.
         """
 
-        if isImageType(box):
+        if isinstance(box, Image):
             if mask is not None:
                 msg = "If using second argument as mask, third argument must be None"
                 raise ValueError(msg)
             # abbreviated paste(im, mask) syntax
             mask = box
             box = None
-        assert not isinstance(box, Image)
 
         if box is None:
             box = (0, 0)
 
         if len(box) == 2:
             # upper left corner given; get size from image or mask
-            if isImageType(im):
+            if isinstance(im, Image):
                 size = im.size
-            elif isImageType(mask):
+            elif isinstance(mask, Image):
                 size = mask.size
             else:
                 # FIXME: use self.size here?
@@ -1838,17 +1852,15 @@ class Image:
             from . import ImageColor
 
             source = ImageColor.getcolor(im, self.mode)
-        elif isImageType(im):
+        elif isinstance(im, Image):
             im.load()
             if self.mode != im.mode:
                 if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
                     # should use an adapter for this!
                     im = im.convert(self.mode)
             source = im.im
-        elif isinstance(im, tuple):
-            source = im
         else:
-            source = cast(float, im)
+            source = im
 
         self._ensure_mutable()
 
@@ -2009,7 +2021,7 @@ class Image:
         else:
             band = 3
 
-        if isImageType(alpha):
+        if isinstance(alpha, Image):
             # alpha layer
             if alpha.mode not in ("1", "L"):
                 msg = "illegal image mode"
@@ -2019,7 +2031,6 @@ class Image:
                 alpha = alpha.convert("L")
         else:
             # constant alpha
-            alpha = cast(int, alpha)  # see python/typing#1013
             try:
                 self.im.fillband(band, alpha)
             except (AttributeError, ValueError):
@@ -2168,6 +2179,9 @@ class Image:
                 source_palette = self.im.getpalette(palette_mode, palette_mode)
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
+        elif len(source_palette) > 768:
+            bands = 4
+            palette_mode = "RGBA"
 
         palette_bytes = b""
         new_positions = [0] * 256
@@ -3140,7 +3154,7 @@ def new(
 def frombytes(
     mode: str,
     size: tuple[int, int],
-    data: bytes | bytearray,
+    data: bytes | bytearray | SupportsArrayInterface,
     decoder_name: str = "raw",
     *args: Any,
 ) -> Image:
@@ -3184,7 +3198,11 @@ def frombytes(
 
 
 def frombuffer(
-    mode: str, size: tuple[int, int], data, decoder_name: str = "raw", *args: Any
+    mode: str,
+    size: tuple[int, int],
+    data: bytes | SupportsArrayInterface,
+    decoder_name: str = "raw",
+    *args: Any,
 ) -> Image:
     """
     Creates an image memory referencing pixel data in a byte buffer.
@@ -3641,7 +3659,10 @@ def merge(mode: str, bands: Sequence[Image]) -> Image:
 
 def register_open(
     id: str,
-    factory: Callable[[IO[bytes], str | bytes], ImageFile.ImageFile],
+    factory: (
+        Callable[[IO[bytes], str | bytes], ImageFile.ImageFile]
+        | type[ImageFile.ImageFile]
+    ),
     accept: Callable[[bytes], bool | str] | None = None,
 ) -> None:
     """
@@ -3960,7 +3981,7 @@ class Exif(_ExifBase):
         self._data.clear()
         self._hidden_data.clear()
         self._ifds.clear()
-        if data and data.startswith(b"Exif\x00\x00"):
+        while data and data.startswith(b"Exif\x00\x00"):
             data = data[6:]
         if not data:
             self._info = None
@@ -4136,7 +4157,7 @@ class Exif(_ExifBase):
                     ifd = self._get_ifd_dict(tag_data, tag)
                     if ifd is not None:
                         self._ifds[tag] = ifd
-        ifd = self._ifds.get(tag, {})
+        ifd = self._ifds.setdefault(tag, {})
         if tag == ExifTags.IFD.Exif and self._hidden_data:
             ifd = {
                 k: v

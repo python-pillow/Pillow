@@ -6,6 +6,7 @@ numpy
 packaging
 pytest
 sphinx
+types-atheris
 types-defusedxml
 types-olefile
 types-setuptools

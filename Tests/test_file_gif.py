@@ -1378,16 +1378,39 @@ def test_lzw_bits() -> None:
         im.load()
 
 
-def test_extents() -> None:
-    with Image.open("Tests/images/test_extents.gif") as im:
-        assert im.size == (100, 100)
+@pytest.mark.parametrize(
+    "test_file, loading_strategy",
+    (
+        ("test_extents.gif", GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST),
+        (
+            "test_extents.gif",
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY,
+        ),
+        (
+            "test_extents_transparency.gif",
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST,
+        ),
+    ),
+)
+def test_extents(
+    test_file: str, loading_strategy: GifImagePlugin.LoadingStrategy
+) -> None:
+    GifImagePlugin.LOADING_STRATEGY = loading_strategy
+    try:
+        with Image.open("Tests/images/" + test_file) as im:
+            assert im.size == (100, 100)
 
-        # Check that n_frames does not change the size
-        assert im.n_frames == 2
-        assert im.size == (100, 100)
+            # Check that n_frames does not change the size
+            assert im.n_frames == 2
+            assert im.size == (100, 100)
 
-        im.seek(1)
-        assert im.size == (150, 150)
+            im.seek(1)
+            assert im.size == (150, 150)
+
+            im.load()
+            assert im.im.size == (150, 150)
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 
 def test_missing_background() -> None:
@@ -1406,3 +1429,21 @@ def test_saving_rgba(tmp_path: Path) -> None:
     with Image.open(out) as reloaded:
         reloaded_rgba = reloaded.convert("RGBA")
         assert reloaded_rgba.load()[0, 0][3] == 0
+
+
+def test_optimizing_p_rgba(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im1 = Image.new("P", (100, 100))
+    d = ImageDraw.Draw(im1)
+    d.ellipse([(40, 40), (60, 60)], fill=1)
+    data = [0, 0, 0, 0, 0, 0, 0, 255] + [0, 0, 0, 0] * 254
+    im1.putpalette(data, "RGBA")
+
+    im2 = Image.new("P", (100, 100))
+    im2.putpalette(data, "RGBA")
+
+    im1.save(out, save_all=True, append_images=[im2])
+
+    with Image.open(out) as reloaded:
+        assert reloaded.n_frames == 2

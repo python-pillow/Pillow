@@ -273,13 +273,13 @@ class BlpImageFile(ImageFile.ImageFile):
             raise BLPFormatError(msg)
 
         self._mode = "RGBA" if self._blp_alpha_depth else "RGB"
-        self.tile = [(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
+        self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
 
 
 class _BLPBaseDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         try:
             self._read_blp_header()
             self._load()
@@ -372,7 +372,10 @@ class BLP1Decoder(_BLPBaseDecoder):
         Image._decompression_bomb_check(image.size)
         if image.mode == "CMYK":
             decoder_name, extents, offset, args = image.tile[0]
-            image.tile = [(decoder_name, extents, offset, (args[0], "CMYK"))]
+            assert isinstance(args, tuple)
+            image.tile = [
+                ImageFile._Tile(decoder_name, extents, offset, (args[0], "CMYK"))
+            ]
         r, g, b = image.convert("RGB").split()
         reversed_image = Image.merge("RGB", (b, g, r))
         self.set_as_raw(reversed_image.tobytes())

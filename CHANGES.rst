@@ -5,6 +5,54 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Deprecate ICNS (width, height, scale) sizes in favour of load(scale) #8352
+  [radarhere]
+
+- Improved handling of RGBA palettes when saving GIF images #8366
+  [radarhere]
+
+- Deprecate isImageType #8364
+  [radarhere]
+
+- Support converting more modes to LAB by converting to RGBA first #8358
+  [radarhere]
+
+- Deprecate support for FreeType 2.9.0 #8356
+  [hugovk, radarhere]
+
+- Removed unused TiffImagePlugin IFD_LEGACY_API #8355
+  [radarhere]
+
+- Handle duplicate EXIF header #8350
+  [zakajd, radarhere]
+
+- Return early from BoxBlur if either width or height is zero #8347
+  [radarhere]
+
+- Check text is either string or bytes #8308
+  [radarhere]
+
+- Added writing XMP bytes to JPEG #8286
+  [radarhere]
+
+- Support JPEG2000 RGBA palettes #8256
+  [radarhere]
+
+- Expand C image to match GIF frame image size #8237
+  [radarhere]
+
+- Allow saving I;16 images as PPM #8231
+  [radarhere]
+
+- When IFD is missing, connect get_ifd() dictionary to Exif #8230
+  [radarhere]
+
+- Skip truncated ICO mask if LOAD_TRUNCATED_IMAGES is enabled #8180
+  [radarhere]
+
+- Treat unknown JPEG2000 colorspace as unspecified #8343
+  [radarhere]
+
 - Updated error message when saving WebP with invalid width or height #8322
   [radarhere, hugovk]
 
