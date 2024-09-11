@@ -141,10 +141,10 @@ Get Internal Pointers to Objects
 
 .. deprecated:: 11.0.0
 
-``Image.core.ImageCore.id`` and ``Image.core.ImageCore.unsafe_ptrs``
-have been deprecated and will be removed in Pillow 12 (2025-10-15).
-They were used for obtaining raw pointers to ``ImageCore`` internals. To interact with
-C code, you can use ``Image.core.ImageCore.ptr``, which returns a ``Capsule`` object.
+``Image.core.ImagingCore.id`` and ``Image.core.ImagingCore.unsafe_ptrs`` have been
+deprecated and will be removed in Pillow 12 (2025-10-15). They were used for obtaining
+raw pointers to ``ImagingCore`` internals. To interact with C code, you can use
+``Image.core.ImagingCore.ptr``, which returns a ``Capsule`` object.
 
 Removed features
 ----------------
