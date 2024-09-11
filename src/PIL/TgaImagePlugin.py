@@ -137,7 +137,7 @@ class TgaImageFile(ImageFile.ImageFile):
             if imagetype & 8:
                 # compressed
                 self.tile = [
-                    (
+                    ImageFile._Tile(
                         "tga_rle",
                         (0, 0) + self.size,
                         self.fp.tell(),
@@ -146,7 +146,7 @@ class TgaImageFile(ImageFile.ImageFile):
                 ]
             else:
                 self.tile = [
-                    (
+                    ImageFile._Tile(
                         "raw",
                         (0, 0) + self.size,
                         self.fp.tell(),
@@ -158,7 +158,6 @@ class TgaImageFile(ImageFile.ImageFile):
 
     def load_end(self) -> None:
         if self._flip_horizontally:
-            assert self.im is not None
             self.im = self.im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
@@ -200,7 +199,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         warnings.warn("id_section has been trimmed to 255 characters")
 
     if colormaptype:
-        assert im.im is not None
         palette = im.im.getpalette("RGB", "BGR")
         colormaplength, colormapentry = len(palette) // 3, 24
     else:
@@ -238,11 +236,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     if rle:
         ImageFile._save(
-            im, fp, [("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))]
+            im,
+            fp,
+            [ImageFile._Tile("tga_rle", (0, 0) + im.size, 0, (rawmode, orientation))],
         )
     else:
         ImageFile._save(
-            im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))]
+            im,
+            fp,
+            [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))],
         )
 
     # write targa version 2 footer

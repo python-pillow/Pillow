@@ -170,6 +170,8 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # ------------------ Special case : header is reported 40, which
         # ---------------------- is shorter than real size for bpp >= 16
+        assert isinstance(file_info["width"], int)
+        assert isinstance(file_info["height"], int)
         self._size = file_info["width"], file_info["height"]
 
         # ------- If color count was not found in the header, compute from bits
@@ -294,7 +296,7 @@ class BmpImageFile(ImageFile.ImageFile):
             args.append(((file_info["width"] * file_info["bits"] + 31) >> 3) & (~3))
         args.append(file_info["direction"])
         self.tile = [
-            (
+            ImageFile._Tile(
                 decoder_name,
                 (0, 0, file_info["width"], file_info["height"]),
                 offset or self.fp.tell(),
@@ -319,7 +321,7 @@ class BmpImageFile(ImageFile.ImageFile):
 class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         rle4 = self.args[1]
         data = bytearray()
@@ -385,7 +387,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if self.fd.tell() % 2 != 0:
                         self.fd.seek(1, os.SEEK_CUR)
         rawmode = "L" if self.mode == "L" else "P"
-        self.set_as_raw(bytes(data), (rawmode, 0, self.args[-1]))
+        self.set_as_raw(bytes(data), rawmode, (0, self.args[-1]))
         return -1, 0
 
 
@@ -482,7 +484,9 @@ def _save(
     if palette:
         fp.write(palette)
 
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))]
+    )
 
 
 #

@@ -42,7 +42,6 @@ jobs:
         ]
         python-version: [
           "pypy3.10",
-          "pypy3.9",
           "3.13",
           "3.12",
           "3.11",
@@ -77,7 +76,7 @@ jobs:
           "pyproject.toml"
 
     - name: Set up Python ${{ matrix.python-version }} (free-threaded)
-      uses: deadsnakes/action@v3.1.0
+      uses: deadsnakes/action@v3.2.0
       if: "${{ matrix.disable-gil }}"
       with:
         python-version: ${{ matrix.python-version }}

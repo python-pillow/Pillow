@@ -71,7 +71,7 @@ def Ghostscript(
     fp: IO[bytes],
     scale: int = 1,
     transparency: bool = False,
-) -> Image.Image:
+) -> Image.core.ImagingCore:
     """Render an image using Ghostscript"""
     global gs_binary
     if not has_ghostscript():
@@ -190,7 +190,6 @@ class EpsImageFile(ImageFile.ImageFile):
         self.fp.seek(offset)
 
         self._mode = "RGB"
-        self._size = None
 
         byte_arr = bytearray(255)
         bytes_mv = memoryview(byte_arr)
@@ -228,7 +227,7 @@ class EpsImageFile(ImageFile.ImageFile):
             if k == "BoundingBox":
                 if v == "(atend)":
                     reading_trailer_comments = True
-                elif not self._size or (trailer_reached and reading_trailer_comments):
+                elif not self.tile or (trailer_reached and reading_trailer_comments):
                     try:
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
@@ -346,7 +345,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 trailer_reached = True
             bytes_read = 0
 
-        if not self._size:
+        if not self.tile:
             msg = "cannot determine EPS bounding box"
             raise OSError(msg)
 
@@ -434,7 +433,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes, eps: int = 1) -
     if hasattr(fp, "flush"):
         fp.flush()
 
-    ImageFile._save(im, fp, [("eps", (0, 0) + im.size, 0, None)])
+    ImageFile._save(im, fp, [ImageFile._Tile("eps", (0, 0) + im.size, 0, None)])
 
     fp.write(b"\n%%%%EndBinary\n")
     fp.write(b"grestore end\n")

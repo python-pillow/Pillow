@@ -97,7 +97,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             if bits != 32:
                 and_mask = Image.new("1", size)
                 ImageFile._save(
-                    and_mask, image_io, [("raw", (0, 0) + size, 0, ("1", 0, -1))]
+                    and_mask,
+                    image_io,
+                    [ImageFile._Tile("raw", (0, 0) + size, 0, ("1", 0, -1))],
                 )
         else:
             frame.save(image_io, "png")
@@ -226,7 +228,7 @@ class IcoFile:
             # change tile dimension to only encompass XOR image
             im._size = (im.size[0], int(im.size[1] / 2))
             d, e, o, a = im.tile[0]
-            im.tile[0] = d, (0, 0) + im.size, o, a
+            im.tile[0] = ImageFile._Tile(d, (0, 0) + im.size, o, a)
 
             # figure out where AND mask image starts
             if header.bpp == 32:
@@ -241,13 +243,19 @@ class IcoFile:
                 alpha_bytes = self.buf.read(im.size[0] * im.size[1] * 4)[3::4]
 
                 # convert to an 8bpp grayscale image
-                mask = Image.frombuffer(
-                    "L",  # 8bpp
-                    im.size,  # (w, h)
-                    alpha_bytes,  # source chars
-                    "raw",  # raw decoder
-                    ("L", 0, -1),  # 8bpp inverted, unpadded, reversed
-                )
+                try:
+                    mask = Image.frombuffer(
+                        "L",  # 8bpp
+                        im.size,  # (w, h)
+                        alpha_bytes,  # source chars
+                        "raw",  # raw decoder
+                        ("L", 0, -1),  # 8bpp inverted, unpadded, reversed
+                    )
+                except ValueError:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        mask = None
+                    else:
+                        raise
             else:
                 # get AND image from end of bitmap
                 w = im.size[0]
@@ -265,19 +273,26 @@ class IcoFile:
                 mask_data = self.buf.read(total_bytes)
 
                 # convert raw data to image
-                mask = Image.frombuffer(
-                    "1",  # 1 bpp
-                    im.size,  # (w, h)
-                    mask_data,  # source chars
-                    "raw",  # raw decoder
-                    ("1;I", int(w / 8), -1),  # 1bpp inverted, padded, reversed
-                )
+                try:
+                    mask = Image.frombuffer(
+                        "1",  # 1 bpp
+                        im.size,  # (w, h)
+                        mask_data,  # source chars
+                        "raw",  # raw decoder
+                        ("1;I", int(w / 8), -1),  # 1bpp inverted, padded, reversed
+                    )
+                except ValueError:
+                    if ImageFile.LOAD_TRUNCATED_IMAGES:
+                        mask = None
+                    else:
+                        raise
 
                 # now we have two images, im is XOR image and mask is AND image
 
             # apply mask image as alpha channel
-            im = im.convert("RGBA")
-            im.putalpha(mask)
+            if mask:
+                im = im.convert("RGBA")
+                im.putalpha(mask)
 
         return im
 
@@ -317,18 +332,18 @@ class IcoImageFile(ImageFile.ImageFile):
         self.load()
 
     @property
-    def size(self):
+    def size(self) -> tuple[int, int]:
         return self._size
 
     @size.setter
-    def size(self, value):
+    def size(self, value: tuple[int, int]) -> None:
         if value not in self.info["sizes"]:
             msg = "This is not one of the allowed sizes of this image"
             raise ValueError(msg)
         self._size = value
 
     def load(self) -> Image.core.PixelAccess | None:
-        if self.im is not None and self.im.size == self.size:
+        if self._im is not None and self.im.size == self.size:
             # Already loaded
             return Image.Image.load(self)
         im = self.ico.getimage(self.size)

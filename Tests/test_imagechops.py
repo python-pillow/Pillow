@@ -398,7 +398,8 @@ def test_logical() -> None:
             for y in (a, b):
                 imy = Image.new("1", (1, 1), y)
                 value = op(imx, imy).getpixel((0, 0))
-                assert not isinstance(value, tuple) and value is not None
+                assert not isinstance(value, tuple)
+                assert value is not None
                 out.append(value)
         return out
 
