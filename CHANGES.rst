@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Accept float stroke widths #8369
+  [radarhere]
+
 - Deprecate ICNS (width, height, scale) sizes in favour of load(scale) #8352
   [radarhere]
 
