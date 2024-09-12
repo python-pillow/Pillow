@@ -13,9 +13,7 @@ else
     yum install -y fribidi
 fi
 
-if [ "${AUDITWHEEL_POLICY::9}" != "musllinux" ]; then
-  python3 -m pip install numpy
-fi
+python3 -m pip install numpy
 
 if [ ! -d "test-images-main" ]; then
     curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
