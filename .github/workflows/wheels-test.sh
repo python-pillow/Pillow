@@ -15,11 +15,7 @@ fi
 
 if [ "${AUDITWHEEL_POLICY::9}" != "musllinux" ]; then
   # TODO Update condition when NumPy supports free-threading
-  if [ $(python3 -c "import sysconfig;print(sysconfig.get_config_var('Py_GIL_DISABLED'))") == "1" ]; then
-    python3 -m pip install numpy --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
-  else
-    python3 -m pip install numpy
-  fi
+  python3 -m pip install numpy
 fi
 
 if [ ! -d "test-images-main" ]; then
