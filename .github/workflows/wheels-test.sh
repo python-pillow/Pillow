@@ -14,7 +14,6 @@ else
 fi
 
 if [ "${AUDITWHEEL_POLICY::9}" != "musllinux" ]; then
-  # TODO Update condition when NumPy supports free-threading
   python3 -m pip install numpy
 fi
 
