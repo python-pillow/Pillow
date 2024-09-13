@@ -107,7 +107,7 @@ jobs:
             cibw_arch: x86_64
             macosx_deployment_target: "10.10"
           - name: "macOS arm64"
-            os: macos-14
+            os: macos-latest
             cibw_arch: arm64
             macosx_deployment_target: "11.0"
           - name: "manylinux2014 and musllinux x86_64"
