@@ -119,7 +119,7 @@ V = {
     "LIBWEBP": "1.4.0",
     "OPENJPEG": "2.5.2",
     "TIFF": "4.6.0",
-    "XZ": "5.4.5",
+    "XZ": "5.6.2",
     "ZLIB": "1.3.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
@@ -175,7 +175,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": f"{SF_PROJECTS}/lzmautils/files/xz-{V['XZ']}.tar.gz/download",
+        "url": f"https://github.com/tukaani-project/xz/releases/download/v{V['XZ']}/xz-{V['XZ']}.tar.gz",
         "filename": f"xz-{V['XZ']}.tar.gz",
         "dir": f"xz-{V['XZ']}",
         "license": "COPYING",
