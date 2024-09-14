@@ -23,6 +23,13 @@ Python 3.8
 Pillow has dropped support for Python 3.8,
 which reached end-of-life in October 2024.
 
+Python 3.12 on macOS < 10.13
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The latest version of Python 3.12 no longer supports macOS versions earlier than 10.13,
+and so Pillow has also updated the deployment target for its prebuilt Python 3.12
+wheels.
+
 PSFile
 ^^^^^^
 
@@ -146,6 +153,8 @@ of 3.13.0 final (2024-10-01, :pep:`719`).
 Pillow 11.0.0 now officially supports Python 3.13.
 
 Support has also been added for the experimental free-threaded mode of :pep:`703`.
+
+Python 3.13 does not support macOS versions earlier than 10.13.
 
 C-level Flags
 ^^^^^^^^^^^^^
