@@ -23,15 +23,6 @@
 
 #ifdef HAVE_LIBJPEG
 
-#undef HAVE_PROTOTYPES
-#undef HAVE_STDLIB_H
-#undef HAVE_STDDEF_H
-#undef UINT8
-#undef UINT16
-#undef UINT32
-#undef INT16
-#undef INT32
-
 #include "Jpeg.h"
 
 /* -------------------------------------------------------------------- */
