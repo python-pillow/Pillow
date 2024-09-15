@@ -69,7 +69,7 @@ _tiffReadProc(thandle_t hdata, tdata_t buf, tsize_t size) {
         );
         return 0;
     }
-    to_read = min(size, min(state->size, (tsize_t)state->eof) - (tsize_t)state->loc);
+    to_read = MIN(size, MIN(state->size, (tsize_t)state->eof) - (tsize_t)state->loc);
     TRACE(("to_read: %d\n", (int)to_read));
 
     _TIFFmemcpy(buf, (UINT8 *)state->data + state->loc, to_read);
@@ -87,7 +87,7 @@ _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
     TRACE(("_tiffWriteProc: %d \n", (int)size));
     dump_state(state);
 
-    to_write = min(size, state->size - (tsize_t)state->loc);
+    to_write = MIN(size, state->size - (tsize_t)state->loc);
     if (state->flrealloc && size > to_write) {
         tdata_t new_data;
         tsize_t newsize = state->size;
@@ -114,7 +114,7 @@ _tiffWriteProc(thandle_t hdata, tdata_t buf, tsize_t size) {
 
     _TIFFmemcpy((UINT8 *)state->data + state->loc, buf, to_write);
     state->loc += (toff_t)to_write;
-    state->eof = max(state->loc, state->eof);
+    state->eof = MAX(state->loc, state->eof);
 
     dump_state(state);
     return to_write;
@@ -333,7 +333,7 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
 
     for (; state->y < state->ysize; state->y += rows_per_block) {
         img.row_offset = state->y;
-        rows_to_read = min(rows_per_block, img.height - state->y);
+        rows_to_read = MIN(rows_per_block, img.height - state->y);
 
         if (!TIFFRGBAImageGet(&img, (UINT32 *)state->buffer, img.width, rows_to_read)) {
             TRACE(("Decode Error, y: %d\n", state->y));
@@ -349,7 +349,7 @@ _decodeAsRGBA(Imaging im, ImagingCodecState state, TIFF *tiff) {
 
         // iterate over each row in the strip and stuff data into image
         for (current_row = 0;
-             current_row < min((INT32)rows_per_block, state->ysize - state->y);
+             current_row < MIN((INT32)rows_per_block, state->ysize - state->y);
              current_row++) {
             TRACE(("Writing data into line %d ; \n", state->y + current_row));
 
@@ -452,8 +452,8 @@ _decodeTile(
 
                 TRACE(("Read tile at %dx%d; \n\n", x, y));
 
-                current_tile_width = min((INT32)tile_width, state->xsize - x);
-                current_tile_length = min((INT32)tile_length, state->ysize - y);
+                current_tile_width = MIN((INT32)tile_width, state->xsize - x);
+                current_tile_length = MIN((INT32)tile_length, state->ysize - y);
                 // iterate over each line in the tile and stuff data into image
                 for (tile_y = 0; tile_y < current_tile_length; tile_y++) {
                     TRACE(
@@ -566,7 +566,7 @@ _decodeStrip(
 
             // iterate over each row in the strip and stuff data into image
             for (strip_row = 0;
-                 strip_row < min((INT32)rows_per_strip, state->ysize - state->y);
+                 strip_row < MIN((INT32)rows_per_strip, state->ysize - state->y);
                  strip_row++) {
                 TRACE(("Writing data into line %d ; \n", state->y + strip_row));
 

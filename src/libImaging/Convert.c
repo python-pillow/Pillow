@@ -34,9 +34,6 @@
 
 #include "Imaging.h"
 
-#define MAX(a, b) (a) > (b) ? (a) : (b)
-#define MIN(a, b) (a) < (b) ? (a) : (b)
-
 #define CLIP16(v) ((v) <= 0 ? 0 : (v) >= 65535 ? 65535 : (v))
 
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
