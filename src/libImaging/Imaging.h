@@ -10,7 +10,7 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "ImPlatform.h"
+#include "ImagingPlatform.h"
 
 #if defined(__cplusplus)
 extern "C" {
