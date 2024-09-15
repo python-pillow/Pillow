@@ -72,11 +72,11 @@
  */
 
 #ifdef HAVE_LIBJPEG
-#include "jconfig.h"
+#include <jconfig.h>
 #endif
 
 #ifdef HAVE_LIBZ
-#include "zlib.h"
+#include <zlib.h>
 #endif
 
 #ifdef HAVE_LIBTIFF
@@ -84,8 +84,6 @@
 #endif
 
 #include "libImaging/Imaging.h"
-
-#include <stddef.h>
 
 #undef VERBOSE
 

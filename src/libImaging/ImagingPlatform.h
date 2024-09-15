@@ -28,20 +28,18 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-
 #ifdef _WIN64
 #define F_HANDLE "K"
 #else
 #define F_HANDLE "k"
 #endif
-
 #endif /* _WIN32 */
+
+#include <stdint.h>
 
 /* We have to define types instead of using typedef because the JPEG lib also
    defines their own types with the same names, so we need to be able to undef
    ours before including the JPEG code. */
-#include <stdint.h>
-
 #define INT8 int8_t
 #define UINT8 uint8_t
 #define INT16 int16_t
