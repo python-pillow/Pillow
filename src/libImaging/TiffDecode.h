@@ -6,15 +6,8 @@
  *
  */
 
-#ifndef _TIFFIO_
 #include <tiffio.h>
-#endif
-#ifndef _TIFF_
 #include <tiff.h>
-#endif
-
-#ifndef _PIL_LIBTIFF_
-#define _PIL_LIBTIFF_
 
 typedef struct {
     tdata_t data; /* tdata_t == void* */
@@ -52,5 +45,3 @@ ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 */
 
 #define TRACE(args)
-
-#endif

@@ -83,9 +83,7 @@
 #endif
 
 #ifdef HAVE_LIBTIFF
-#ifndef _TIFFIO_
 #include <tiffio.h>
-#endif
 #endif
 
 #include "libImaging/Imaging.h"
