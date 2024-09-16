@@ -3714,9 +3714,18 @@ _getattr_id(ImagingObject *self, void *closure) {
     return PyLong_FromSsize_t((Py_ssize_t)self->image);
 }
 
+static void
+_ptr_destructor(PyObject *capsule) {
+    PyObject *self = (PyObject *)PyCapsule_GetContext(capsule);
+    Py_DECREF(self);
+}
+
 static PyObject *
 _getattr_ptr(ImagingObject *self, void *closure) {
-    return PyCapsule_New(self->image, IMAGING_MAGIC, NULL);
+    PyObject *capsule = PyCapsule_New(self->image, IMAGING_MAGIC, _ptr_destructor);
+    Py_INCREF(self);
+    PyCapsule_SetContext(capsule, self);
+    return capsule;
 }
 
 static PyObject *
