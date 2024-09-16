@@ -149,6 +149,13 @@ class WebPImageFile(ImageFile.ImageFile):
         return self.__logical_frame
 
 
+def _convert_frame(im: Image.Image) -> Image.Image:
+    # Make sure image mode is supported
+    if im.mode not in ("RGBX", "RGBA", "RGB"):
+        im = im.convert("RGBA" if im.has_transparency_data else "RGB")
+    return im
+
+
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderinfo = im.encoderinfo.copy()
     append_images = list(encoderinfo.get("append_images", []))
@@ -240,12 +247,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             for idx in range(nfr):
                 ims.seek(idx)
 
-                # Make sure image mode is supported
-                frame = ims
-                if frame.mode not in ("RGBX", "RGBA", "RGB"):
-                    frame = frame.convert(
-                        "RGBA" if frame.has_transparency_data else "RGB"
-                    )
+                frame = _convert_frame(ims)
 
                 # Append the frame to the animation encoder
                 enc.add(
@@ -293,8 +295,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     method = im.encoderinfo.get("method", 4)
     exact = 1 if im.encoderinfo.get("exact") else 0
 
-    if im.mode not in ("RGBX", "RGBA", "RGB"):
-        im = im.convert("RGBA" if im.has_transparency_data else "RGB")
+    im = _convert_frame(im)
 
     data = _webp.WebPEncode(
         im.getim(),
