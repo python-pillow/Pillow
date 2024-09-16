@@ -239,7 +239,6 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
             for idx in range(nfr):
                 ims.seek(idx)
-                ims.load()
 
                 # Make sure image mode is supported
                 frame = ims
@@ -248,7 +247,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
                 # Append the frame to the animation encoder
                 enc.add(
-                    frame.im.ptr,
+                    frame.getim(),
                     round(timestamp),
                     lossless,
                     quality,
@@ -296,7 +295,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         im = im.convert("RGBA" if im.has_transparency_data else "RGB")
 
     data = _webp.WebPEncode(
-        im.im.ptr,
+        im.getim(),
         lossless,
         float(quality),
         float(alpha_quality),
