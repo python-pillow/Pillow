@@ -208,7 +208,7 @@ class TestFileWebp:
 
     def test_background_from_gif(self, tmp_path: Path) -> None:
         out_webp = tmp_path / "temp.webp"
-        
+
         # Save L mode GIF with background
         with Image.open("Tests/images/no_palette_with_background.gif") as im:
             im.save(out_webp, save_all=True)

@@ -243,7 +243,9 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 # Make sure image mode is supported
                 frame = ims
                 if frame.mode not in ("RGBX", "RGBA", "RGB"):
-                    frame = frame.convert("RGBA" if im.has_transparency_data else "RGB")
+                    frame = frame.convert(
+                        "RGBA" if frame.has_transparency_data else "RGB"
+                    )
 
                 # Append the frame to the animation encoder
                 enc.add(
