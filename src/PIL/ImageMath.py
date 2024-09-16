@@ -59,7 +59,6 @@ class _Operand:
         if im2 is None:
             # unary operation
             out = Image.new(mode or im_1.mode, im_1.size, None)
-            im_1.load()
             try:
                 op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
@@ -86,7 +85,6 @@ class _Operand:
                 if im_2.size != size:
                     im_2 = im_2.crop((0, 0) + size)
             out = Image.new(mode or im_1.mode, im_1.size, None)
-            im_1.load()
             try:
                 op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
