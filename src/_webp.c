@@ -89,16 +89,12 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 
 static int
 import_frame_libwebp(WebPPicture *frame, Imaging im) {
-    UINT32 mask = 0;
+    int drop_alpha = strcmp(im->mode, "RGBA");
 
     if (strcmp(im->mode, "RGBA") && strcmp(im->mode, "RGB") &&
         strcmp(im->mode, "RGBX")) {
         PyErr_SetString(PyExc_ValueError, "unsupported image mode");
         return -1;
-    }
-
-    if (strcmp(im->mode, "RGBA")) {
-        mask = MASK_UINT32_CHANNEL_3;
     }
 
     frame->width = im->xsize;
@@ -113,10 +109,18 @@ import_frame_libwebp(WebPPicture *frame, Imaging im) {
     for (int y = 0; y < im->ysize; ++y) {
         UINT8 *src = (UINT8 *)im->image32[y];
         UINT32 *dst = frame->argb + frame->argb_stride * y;
-        for (int x = 0; x < im->xsize; ++x) {
-            UINT32 pix =
-                MAKE_UINT32(src[x * 4 + 2], src[x * 4 + 1], src[x * 4], src[x * 4 + 3]);
-            dst[x] = pix | mask;
+        if (drop_alpha) {
+            for (int x = 0; x < im->xsize; ++x) {
+                dst[x] =
+                    ((UINT32)(src[x * 4 + 2]) | ((UINT32)(src[x * 4 + 1]) << 8) |
+                     ((UINT32)(src[x * 4]) << 16) | (0xff << 24));
+            }
+        } else {
+            for (int x = 0; x < im->xsize; ++x) {
+                dst[x] =
+                    ((UINT32)(src[x * 4 + 2]) | ((UINT32)(src[x * 4 + 1]) << 8) |
+                     ((UINT32)(src[x * 4]) << 16) | ((UINT32)(src[x * 4 + 3]) << 24));
+            }
         }
     }
 
