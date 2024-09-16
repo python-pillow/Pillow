@@ -89,6 +89,7 @@ def test_no_resize() -> None:
         im.thumbnail((64, 64))
         assert im.size == (64, 64)
 
+
 def test_load_first_unless_jpeg() -> None:
     # Test that thumbnail() still uses draft() for JPEG
     with Image.open("Tests/images/hopper.jpg") as im:

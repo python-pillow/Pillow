@@ -1277,7 +1277,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
     @property
     def size(self) -> tuple[int, int]:
-        if hasattr(self, 'tag_v2'):
+        if hasattr(self, "tag_v2"):
             if self.tag_v2.get(ExifTags.Base.Orientation) in (5, 6, 7, 8):
                 return (self._size[1], self._size[0])
         return self._size
