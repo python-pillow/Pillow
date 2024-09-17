@@ -220,12 +220,6 @@ static const char *readonly = "image is readonly";
 /* static const char* no_content = "image has no content"; */
 
 void *
-ImagingError_OSError(void) {
-    PyErr_SetString(PyExc_OSError, "error when accessing file");
-    return NULL;
-}
-
-void *
 ImagingError_MemoryError(void) {
     return PyErr_NoMemory();
 }
@@ -248,11 +242,6 @@ ImagingError_ValueError(const char *message) {
         PyExc_ValueError, (message) ? (char *)message : "unrecognized argument value"
     );
     return NULL;
-}
-
-void
-ImagingError_Clear(void) {
-    PyErr_Clear();
 }
 
 /* -------------------------------------------------------------------- */
@@ -1534,7 +1523,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         } else {
             seq = PySequence_Fast(data, must_be_sequence);
             if (!seq) {
-                PyErr_SetString(PyExc_TypeError, must_be_sequence);
                 return NULL;
             }
             double value;
@@ -1593,7 +1581,6 @@ _putdata(ImagingObject *self, PyObject *args) {
         /* 32-bit images */
         seq = PySequence_Fast(data, must_be_sequence);
         if (!seq) {
-            PyErr_SetString(PyExc_TypeError, must_be_sequence);
             return NULL;
         }
         switch (image->type) {
