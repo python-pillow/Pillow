@@ -199,22 +199,6 @@ ImagingSectionLeave(ImagingSectionCookie *cookie) {
 }
 
 /* -------------------------------------------------------------------- */
-/* BUFFER HANDLING                                                      */
-/* -------------------------------------------------------------------- */
-/* Python compatibility API */
-
-int
-PyImaging_CheckBuffer(PyObject *buffer) {
-    return PyObject_CheckBuffer(buffer);
-}
-
-int
-PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
-    /* must call check_buffer first! */
-    return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
-}
-
-/* -------------------------------------------------------------------- */
 /* EXCEPTION REROUTING                                                  */
 /* -------------------------------------------------------------------- */
 
@@ -4188,19 +4172,19 @@ extern PyObject *
 PyImaging_GrabScreenX11(PyObject *self, PyObject *args);
 #endif
 
-/* Experimental path stuff (in path.c) */
+/* Path object (in path.c) */
 extern PyObject *
 PyPath_Create(ImagingObject *self, PyObject *args);
 
-/* Experimental outline stuff (in outline.c) */
+/* Outline object (in outline.c) */
 extern PyObject *
 PyOutline_Create(ImagingObject *self, PyObject *args);
 
+/* MapBuffer implementation (in map.c) */
 extern PyObject *
 PyImaging_MapBuffer(PyObject *self, PyObject *args);
 
 static PyMethodDef functions[] = {
-
     /* Object factories */
     {"alpha_composite", (PyCFunction)_alpha_composite, METH_VARARGS},
     {"blend", (PyCFunction)_blend, METH_VARARGS},
