@@ -896,17 +896,12 @@ _convert(ImagingObject *self, PyObject *args) {
     int dither = 0;
     ImagingObject *paletteimage = NULL;
 
-    if (!PyArg_ParseTuple(args, "s|iO", &mode, &dither, &paletteimage)) {
+    if (!PyArg_ParseTuple(
+            args, "s|iO!", &mode, &dither, &Imaging_Type, &paletteimage
+        )) {
         return NULL;
     }
     if (paletteimage != NULL) {
-        if (!PyImaging_Check(paletteimage)) {
-            PyObject_Print((PyObject *)paletteimage, stderr, 0);
-            PyErr_SetString(
-                PyExc_ValueError, "palette argument must be image with mode 'P'"
-            );
-            return NULL;
-        }
         if (paletteimage->image->palette == NULL) {
             PyErr_SetString(PyExc_ValueError, "null palette");
             return NULL;
