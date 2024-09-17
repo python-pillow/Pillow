@@ -92,7 +92,7 @@
 #define S16(v) ((v) < 32768 ? (v) : ((v) - 65536))
 
 /* -------------------------------------------------------------------- */
-/* OBJECT ADMINISTRATION                        */
+/* OBJECT ADMINISTRATION                                                */
 /* -------------------------------------------------------------------- */
 
 typedef struct {
@@ -256,7 +256,7 @@ ImagingError_Clear(void) {
 }
 
 /* -------------------------------------------------------------------- */
-/* HELPERS                                */
+/* HELPERS                                                              */
 /* -------------------------------------------------------------------- */
 
 static int
@@ -605,7 +605,7 @@ getink(PyObject *color, Imaging im, char *ink) {
 }
 
 /* -------------------------------------------------------------------- */
-/* FACTORIES                                */
+/* FACTORIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -688,7 +688,7 @@ _radial_gradient(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-_alpha_composite(ImagingObject *self, PyObject *args) {
+_alpha_composite(PyObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
 
@@ -702,7 +702,7 @@ _alpha_composite(ImagingObject *self, PyObject *args) {
 }
 
 static PyObject *
-_blend(ImagingObject *self, PyObject *args) {
+_blend(PyObject *self, PyObject *args) {
     ImagingObject *imagep1;
     ImagingObject *imagep2;
     double alpha;
@@ -920,15 +920,12 @@ _convert(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _convert2(ImagingObject *self, PyObject *args) {
-    ImagingObject *imagep1;
-    ImagingObject *imagep2;
-    if (!PyArg_ParseTuple(
-            args, "O!O!", &Imaging_Type, &imagep1, &Imaging_Type, &imagep2
-        )) {
+    ImagingObject *imagep;
+    if (!PyArg_ParseTuple(args, "O!", &Imaging_Type, &imagep)) {
         return NULL;
     }
 
-    if (!ImagingConvert2(imagep1->image, imagep2->image)) {
+    if (!ImagingConvert2(imagep->image, self->image)) {
         return NULL;
     }
 
@@ -3487,7 +3484,7 @@ _effect_spread(ImagingObject *self, PyObject *args) {
 }
 
 /* -------------------------------------------------------------------- */
-/* UTILITIES                                */
+/* UTILITIES                                                            */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -3523,7 +3520,7 @@ _getcodecstatus(PyObject *self, PyObject *args) {
 }
 
 /* -------------------------------------------------------------------- */
-/* DEBUGGING HELPERS                            */
+/* DEBUGGING HELPERS                                                    */
 /* -------------------------------------------------------------------- */
 
 static PyObject *
@@ -4161,9 +4158,6 @@ static PyMethodDef functions[] = {
     {"new", (PyCFunction)_new, METH_VARARGS},
     {"new_block", (PyCFunction)_new_block, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
-
-    /* Functions */
-    {"convert", (PyCFunction)_convert2, METH_VARARGS},
 
     /* Codecs */
     {"bcn_decoder", (PyCFunction)PyImaging_BcnDecoderNew, METH_VARARGS},
