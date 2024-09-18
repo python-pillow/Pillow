@@ -1421,12 +1421,8 @@ class TiffImageFile(ImageFile.ImageFile):
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
-        self._will_be_transposed = self.tag_v2.get(ExifTags.Base.Orientation) in (
-            5,
-            6,
-            7,
-            8,
-        )
+        orientation = self.tag_v2.get(ExifTags.Base.Orientation)
+        self._will_be_transposed = orientation in (5, 6, 7, 8)
         if self._will_be_transposed:
             self._size = ysize, xsize
         else:
