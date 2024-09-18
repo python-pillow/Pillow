@@ -406,8 +406,7 @@ path_map(PyPathObject *self, PyObject *args) {
     }
     self->mapping = 0;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static int
@@ -519,8 +518,7 @@ path_transform(PyPathObject *self, PyObject *args) {
         }
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static struct PyMethodDef methods[] = {

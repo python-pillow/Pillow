@@ -209,8 +209,7 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     Py_XDECREF(decoder->lock);
     decoder->lock = op;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -227,8 +226,7 @@ _setfd(ImagingDecoderObject *decoder, PyObject *args) {
     Py_XINCREF(fd);
     state->fd = fd;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *

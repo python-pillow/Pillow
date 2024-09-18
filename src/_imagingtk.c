@@ -36,8 +36,7 @@ _tkinit(PyObject *self, PyObject *args) {
     /* This will bomb if interp is invalid... */
     TkImaging_Init(interp);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef functions[] = {

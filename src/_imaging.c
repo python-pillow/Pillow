@@ -441,8 +441,7 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
     }
 
     /* unknown type */
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static char *
@@ -933,8 +932,7 @@ _convert2(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1182,8 +1180,7 @@ _getpixel(ImagingObject *self, PyObject *args) {
     }
 
     if (self->access == NULL) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return getpixel(self->image, self->access, x, y);
@@ -1385,8 +1382,7 @@ _paste(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1659,8 +1655,7 @@ _putdata(ImagingObject *self, PyObject *args) {
 
     Py_XDECREF(seq);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1720,8 +1715,7 @@ _putpalette(ImagingObject *self, PyObject *args) {
     self->image->palette->size = palettesize * 8 / bits;
     unpack(self->image->palette->palette, palette, self->image->palette->size);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1745,8 +1739,7 @@ _putpalettealpha(ImagingObject *self, PyObject *args) {
     strcpy(self->image->palette->mode, "RGBA");
     self->image->palette->palette[index * 4 + 3] = (UINT8)alpha;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1773,8 +1766,7 @@ _putpalettealphas(ImagingObject *self, PyObject *args) {
         self->image->palette->palette[i * 4 + 3] = (UINT8)values[i];
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1810,8 +1802,7 @@ _putpixel(ImagingObject *self, PyObject *args) {
         self->access->put_pixel(im, x, y, ink);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1978,8 +1969,7 @@ im_setmode(ImagingObject *self, PyObject *args) {
     }
     self->access = ImagingAccessNew(im);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2042,8 +2032,7 @@ _transform(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2170,8 +2159,7 @@ _getbbox(ImagingObject *self, PyObject *args) {
     }
 
     if (!ImagingGetBBox(self->image, bbox, alpha_only)) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        Py_RETURN_NONE;
     }
 
     return Py_BuildValue("iiii", bbox[0], bbox[1], bbox[2], bbox[3]);
@@ -2251,8 +2239,7 @@ _getextrema(ImagingObject *self) {
         }
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2315,8 +2302,7 @@ _fillband(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2331,8 +2317,7 @@ _putband(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2918,8 +2903,7 @@ _draw_arc(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2956,8 +2940,7 @@ _draw_bitmap(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3013,8 +2996,7 @@ _draw_chord(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3068,8 +3050,7 @@ _draw_ellipse(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3132,8 +3113,7 @@ _draw_lines(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3164,8 +3144,7 @@ _draw_points(ImagingDrawObject *self, PyObject *args) {
 
     free(xy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /* from outline.c */
@@ -3193,8 +3172,7 @@ _draw_outline(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3250,8 +3228,7 @@ _draw_pieslice(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3302,8 +3279,7 @@ _draw_polygon(ImagingDrawObject *self, PyObject *args) {
 
     free(ixy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3357,8 +3333,7 @@ _draw_rectangle(ImagingDrawObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static struct PyMethodDef _draw_methods[] = {
@@ -3563,8 +3538,7 @@ _save_ppm(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
@@ -3952,8 +3926,7 @@ _reset_stats(PyObject *self, PyObject *args) {
     arena->stats_freed_blocks = 0;
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4013,8 +3986,7 @@ _set_alignment(PyObject *self, PyObject *args) {
     ImagingDefaultArena.alignment = alignment;
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4038,8 +4010,7 @@ _set_block_size(PyObject *self, PyObject *args) {
     ImagingDefaultArena.block_size = block_size;
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4067,8 +4038,7 @@ _set_blocks_max(PyObject *self, PyObject *args) {
         return ImagingError_MemoryError();
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4083,8 +4053,7 @@ _clear_cache(PyObject *self, PyObject *args) {
     ImagingMemoryClearCache(&ImagingDefaultArena, i);
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
