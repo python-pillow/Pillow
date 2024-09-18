@@ -808,10 +808,10 @@ def truetype(
 ) -> FreeTypeFont:
     """
     Load a TrueType or OpenType font from a file or file-like object,
-    and create a font object. For loading bitmap fonts instead,
-    see :py:func:`~PIL.ImageFont.load` and :py:func:`~PIL.ImageFont.load_path`.
-    This function loads a font object from the given file or file-like
-    object, and creates a font object for a font of the given size.
+    and create a font object. This function loads a font object from the given
+    file or file-like object, and creates a font object for a font of the given
+    size. For loading bitmap fonts instead, see :py:func:`~PIL.ImageFont.load`
+    and :py:func:`~PIL.ImageFont.load_path`.
 
     Pillow uses FreeType to open font files. On Windows, be aware that FreeType
     will keep the file open as long as the FreeTypeFont object exists. Windows
