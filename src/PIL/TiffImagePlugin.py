@@ -1194,8 +1194,8 @@ class TiffImageFile(ImageFile.ImageFile):
         # Create a new core image object on second and
         # subsequent frames in the image. Image may be
         # different size/mode.
-        Image._decompression_bomb_check(self.size)
-        self.im = Image.core.new(self.mode, self.size)
+        Image._decompression_bomb_check(self._tile_size)
+        self.im = Image.core.new(self.mode, self._tile_size)
 
     def _seek(self, frame: int) -> None:
         self.fp = self._fp
@@ -1276,8 +1276,8 @@ class TiffImageFile(ImageFile.ImageFile):
         return super().load()
 
     def load_prepare(self) -> None:
-        if self._im is None and self._will_be_transposed:
-            self.im = Image.core.new(self.mode, self.size[::-1])
+        if self._im is None:
+            self.im = Image.core.new(self.mode, self._tile_size)
         ImageFile.ImageFile.load_prepare(self)
 
     def load_end(self) -> None:
@@ -1421,9 +1421,9 @@ class TiffImageFile(ImageFile.ImageFile):
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
+        self._tile_size = xsize, ysize
         orientation = self.tag_v2.get(ExifTags.Base.Orientation)
-        self._will_be_transposed = orientation in (5, 6, 7, 8)
-        if self._will_be_transposed:
+        if orientation in (5, 6, 7, 8):
             self._size = ysize, xsize
         else:
             self._size = xsize, ysize
