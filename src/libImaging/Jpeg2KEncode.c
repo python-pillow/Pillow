@@ -652,10 +652,3 @@ ImagingJpeg2KEncodeCleanup(ImagingCodecState state) {
 }
 
 #endif /* HAVE_OPENJPEG */
-
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */

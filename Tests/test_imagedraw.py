@@ -1370,6 +1370,20 @@ def test_stroke() -> None:
 
 
 @skip_unless_feature("freetype2")
+def test_stroke_float() -> None:
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((12, 12), "A", "#f00", font, stroke_width=0.5)
+
+    # Assert
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_float.png", 3.1)
+
+
+@skip_unless_feature("freetype2")
 def test_stroke_descender() -> None:
     # Arrange
     im = Image.new("RGB", (120, 130))

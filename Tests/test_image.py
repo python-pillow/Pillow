@@ -1088,22 +1088,17 @@ class TestImage:
         valgrind pytest -qq Tests/test_image.py::TestImage::test_overrun | grep decode.c
         """
         with Image.open(os.path.join("Tests/images", path)) as im:
-            try:
+            with pytest.raises(OSError) as e:
                 im.load()
-                pytest.fail()
-            except OSError as e:
-                buffer_overrun = str(e) == "buffer overrun when reading image file"
-                truncated = "image file is truncated" in str(e)
+        buffer_overrun = str(e.value) == "buffer overrun when reading image file"
+        truncated = "image file is truncated" in str(e.value)
 
-                assert buffer_overrun or truncated
+        assert buffer_overrun or truncated
 
     def test_fli_overrun2(self) -> None:
         with Image.open("Tests/images/fli_overrun2.bin") as im:
-            try:
+            with pytest.raises(OSError, match="buffer overrun when reading image file"):
                 im.seek(1)
-                pytest.fail()
-            except OSError as e:
-                assert str(e) == "buffer overrun when reading image file"
 
     def test_exit_fp(self) -> None:
         with Image.new("L", (1, 1)) as im:

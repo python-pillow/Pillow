@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          "macos-14",
+          "macos-latest",
           "ubuntu-latest",
         ]
         python-version: [
@@ -56,7 +56,7 @@ jobs:
         # M1 only available for 3.10+
         - { os: "macos-13", python-version: "3.9" }
         exclude:
-        - { os: "macos-14", python-version: "3.9" }
+        - { os: "macos-latest", python-version: "3.9" }
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }} ${{ matrix.disable-gil && 'free-threaded' || '' }}
