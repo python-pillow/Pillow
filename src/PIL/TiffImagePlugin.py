@@ -1275,6 +1275,11 @@ class TiffImageFile(ImageFile.ImageFile):
             return self._load_libtiff()
         return super().load()
 
+    def load_prepare(self) -> None:
+        if self._im is None and self._will_be_transposed:
+            self.im = Image.core.new(self.mode, self.size[::-1])
+        ImageFile.ImageFile.load_prepare(self)
+
     def load_end(self) -> None:
         # allow closing if we're on the first frame, there's no next
         # This is the ImageFile.load path only, libtiff specific below.
@@ -1416,7 +1421,16 @@ class TiffImageFile(ImageFile.ImageFile):
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
-        self._size = xsize, ysize
+        self._will_be_transposed = self.tag_v2.get(ExifTags.Base.Orientation) in (
+            5,
+            6,
+            7,
+            8,
+        )
+        if self._will_be_transposed:
+            self._size = ysize, xsize
+        else:
+            self._size = xsize, ysize
 
         logger.debug("- size: %s", self.size)
 
