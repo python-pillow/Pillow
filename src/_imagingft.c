@@ -1371,8 +1371,7 @@ font_setvarname(FontObject *self, PyObject *args) {
         return geterror(error);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1426,8 +1425,7 @@ font_setvaraxes(FontObject *self, PyObject *args) {
         return geterror(error);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 #endif
 
