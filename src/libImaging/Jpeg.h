@@ -8,7 +8,7 @@
  * Copyright (c) 1995-1996 by Fredrik Lundh
  */
 
-/* This undefs ruquired for libjpeg v8 and below */
+/* These undefs are required for libjpeg v8 and below */
 
 #undef UINT8
 #undef UINT16
