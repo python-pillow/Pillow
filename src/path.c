@@ -44,7 +44,6 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view);
 typedef struct {
     PyObject_HEAD Py_ssize_t count;
     double *xy;
-    int index; /* temporary use, e.g. in decimate */
 } PyPathObject;
 
 static PyTypeObject PyPathType;

@@ -109,6 +109,35 @@ ImageDraw.getdraw hints parameter
 
 The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
 
+FreeType 2.9.0
+^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+Support for FreeType 2.9.0 is deprecated and will be removed in Pillow 12.0.0
+(2025-10-15), when FreeType 2.9.1 will be the minimum supported.
+
+We recommend upgrading to at least FreeType `2.10.4`_, which fixed a severe
+vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
+
+.. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
+
+ICNS (width, height, scale) sizes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+Setting an ICNS image size to ``(width, height, scale)`` before loading has been
+deprecated. Instead, ``load(scale)`` can be used.
+
+Image isImageType()
+^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+``Image.isImageType(im)`` has been deprecated. Use ``isinstance(im, Image.Image)``
+instead.
+
 ImageMath.lambda_eval and ImageMath.unsafe_eval options parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

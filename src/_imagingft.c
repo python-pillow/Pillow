@@ -832,7 +832,7 @@ font_render(FontObject *self, PyObject *args) {
     Imaging im;
     int mask = 0;  /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0; /* is FT_LOAD_COLOR enabled? */
-    int stroke_width = 0;
+    float stroke_width = 0;
     PY_LONG_LONG foreground_ink_long = 0;
     unsigned int foreground_ink;
     const char *mode = NULL;
@@ -852,7 +852,7 @@ font_render(FontObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "OO|zzOzizLffO:render",
+            "OO|zzOzfzLffO:render",
             &string,
             &fill,
             &mode,
@@ -918,8 +918,8 @@ font_render(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    width += stroke_width * 2 + ceil(x_start);
-    height += stroke_width * 2 + ceil(y_start);
+    width += ceil(stroke_width * 2 + x_start);
+    height += ceil(stroke_width * 2 + y_start);
     image = PyObject_CallFunction(fill, "ii", width, height);
     if (image == Py_None) {
         PyMem_Del(glyph_info);
@@ -932,8 +932,8 @@ font_render(FontObject *self, PyObject *args) {
     im = (Imaging)PyCapsule_GetPointer(imagePtr, IMAGING_MAGIC);
     Py_XDECREF(imagePtr);
 
-    x_offset -= stroke_width;
-    y_offset -= stroke_width;
+    x_offset = round(x_offset - stroke_width);
+    y_offset = round(y_offset - stroke_width);
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
         return Py_BuildValue("N(ii)", image, x_offset, y_offset);
@@ -948,7 +948,7 @@ font_render(FontObject *self, PyObject *args) {
 
         FT_Stroker_Set(
             stroker,
-            (FT_Fixed)stroke_width * 64,
+            (FT_Fixed)round(stroke_width * 64),
             FT_STROKER_LINECAP_ROUND,
             FT_STROKER_LINEJOIN_ROUND,
             0
@@ -986,8 +986,8 @@ font_render(FontObject *self, PyObject *args) {
     }
 
     /* set pen position to text origin */
-    x = (-x_min + stroke_width + x_start) * 64;
-    y = (-y_max + (-stroke_width) - y_start) * 64;
+    x = round((-x_min + stroke_width + x_start) * 64);
+    y = round((-y_max + (-stroke_width) - y_start) * 64);
 
     if (stroker == NULL) {
         load_flags |= FT_LOAD_RENDER;

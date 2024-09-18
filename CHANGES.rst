@@ -5,6 +5,24 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Accept float stroke widths #8369
+  [radarhere]
+
+- Deprecate ICNS (width, height, scale) sizes in favour of load(scale) #8352
+  [radarhere]
+
+- Improved handling of RGBA palettes when saving GIF images #8366
+  [radarhere]
+
+- Deprecate isImageType #8364
+  [radarhere]
+
+- Support converting more modes to LAB by converting to RGBA first #8358
+  [radarhere]
+
+- Deprecate support for FreeType 2.9.0 #8356
+  [hugovk, radarhere]
+
 - Removed unused TiffImagePlugin IFD_LEGACY_API #8355
   [radarhere]
 
