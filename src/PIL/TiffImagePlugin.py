@@ -1569,7 +1569,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if STRIPOFFSETS in self.tag_v2:
                 offsets = self.tag_v2[STRIPOFFSETS]
                 h = self.tag_v2.get(ROWSPERSTRIP, ysize)
-                w = self.size[0]
+                w = xsize
             else:
                 # tiled image
                 offsets = self.tag_v2[TILEOFFSETS]
@@ -1603,9 +1603,9 @@ class TiffImageFile(ImageFile.ImageFile):
                     )
                 )
                 x = x + w
-                if x >= self.size[0]:
+                if x >= xsize:
                     x, y = 0, y + h
-                    if y >= self.size[1]:
+                    if y >= ysize:
                         x = y = 0
                         layer += 1
         else:
