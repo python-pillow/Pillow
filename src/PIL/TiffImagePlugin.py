@@ -1194,8 +1194,8 @@ class TiffImageFile(ImageFile.ImageFile):
         # Create a new core image object on second and
         # subsequent frames in the image. Image may be
         # different size/mode.
-        Image._decompression_bomb_check(self.size)
-        self.im = Image.core.new(self.mode, self.size)
+        Image._decompression_bomb_check(self._tile_size)
+        self.im = Image.core.new(self.mode, self._tile_size)
 
     def _seek(self, frame: int) -> None:
         self.fp = self._fp
@@ -1274,6 +1274,11 @@ class TiffImageFile(ImageFile.ImageFile):
         if self.tile and self.use_load_libtiff:
             return self._load_libtiff()
         return super().load()
+
+    def load_prepare(self) -> None:
+        if self._im is None:
+            self.im = Image.core.new(self.mode, self._tile_size)
+        ImageFile.ImageFile.load_prepare(self)
 
     def load_end(self) -> None:
         # allow closing if we're on the first frame, there's no next
@@ -1416,7 +1421,12 @@ class TiffImageFile(ImageFile.ImageFile):
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
-        self._size = xsize, ysize
+        self._tile_size = xsize, ysize
+        orientation = self.tag_v2.get(ExifTags.Base.Orientation)
+        if orientation in (5, 6, 7, 8):
+            self._size = ysize, xsize
+        else:
+            self._size = xsize, ysize
 
         logger.debug("- size: %s", self.size)
 
@@ -1559,7 +1569,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if STRIPOFFSETS in self.tag_v2:
                 offsets = self.tag_v2[STRIPOFFSETS]
                 h = self.tag_v2.get(ROWSPERSTRIP, ysize)
-                w = self.size[0]
+                w = xsize
             else:
                 # tiled image
                 offsets = self.tag_v2[TILEOFFSETS]
@@ -1593,9 +1603,9 @@ class TiffImageFile(ImageFile.ImageFile):
                     )
                 )
                 x = x + w
-                if x >= self.size[0]:
+                if x >= xsize:
                     x, y = 0, y + h
-                    if y >= self.size[1]:
+                    if y >= ysize:
                         x = y = 0
                         layer += 1
         else:

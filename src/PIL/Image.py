@@ -2332,7 +2332,6 @@ class Image:
             msg = "reducing_gap must be 1.0 or greater"
             raise ValueError(msg)
 
-        self.load()
         if box is None:
             box = (0, 0) + self.size
 
@@ -2781,27 +2780,18 @@ class Image:
                 )
             return x, y
 
-        box = None
-        final_size: tuple[int, int]
-        if reducing_gap is not None:
-            preserved_size = preserve_aspect_ratio()
-            if preserved_size is None:
-                return
-            final_size = preserved_size
+        preserved_size = preserve_aspect_ratio()
+        if preserved_size is None:
+            return
+        final_size = preserved_size
 
+        box = None
+        if reducing_gap is not None:
             res = self.draft(
                 None, (int(size[0] * reducing_gap), int(size[1] * reducing_gap))
             )
             if res is not None:
                 box = res[1]
-        if box is None:
-            self.load()
-
-            # load() may have changed the size of the image
-            preserved_size = preserve_aspect_ratio()
-            if preserved_size is None:
-                return
-            final_size = preserved_size
 
         if self.size != final_size:
             im = self.resize(final_size, resample, box=box, reducing_gap=reducing_gap)
