@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import base64
+import hashlib
+
 import pytest
 
 from PIL import Image
@@ -7,34 +10,38 @@ from PIL import Image
 from .helper import hopper
 
 expected_data = {
-    "1": (256, 0, 10994, -6588993366496339844),
-    "CMYK": (1024, 0, 16384, 6499941520588169132),
-    "F": (256, 0, 662, -6473002676204311189),
-    "HSV": (768, 0, 1696, -6543359421857819796),
-    "I": (256, 0, 662, -6473002676204311189),
-    "I;16": (256, 0, 8192, 5889973619001565923),
-    "I;16B": (256, 0, 8192, 5889973619001565923),
-    "I;16L": (256, 0, 8192, 5889973619001565923),
-    "I;16N": (256, 0, 8192, 5889973619001565923),
-    "L": (256, 0, 662, -2745750633816556827),
-    "LA": (512, 0, 662, -7010327511106502095),
-    "La": (512, 0, 662, -7010327511106502095),
-    "LAB": (768, 0, 1946, -5543905267928649909),
-    "P": (256, 0, 1551, -8229466336626460515),
-    "PA": (512, 0, 1551, 5750919599917307801),
-    "RGB": (768, 4, 675, -7521681876442962674),
-    "RGBA": (1024, 0, 16384, -4362402434932696434),
-    "RGBa": (1024, 0, 16384, -4362402434932696434),
-    "RGBX": (1024, 0, 16384, -4362402434932696434),
-    "YCbCr": (768, 0, 1908, -1513926274659056238),
+    "1": (256, 0, 10994, b"zk4Al^)(jtioYSyJT@emR4<LAz}yHLJ6>*b*%R1K"),
+    "CMYK": (1024, 0, 16384, b"zqm8<<;r>h42v|$3xNIR#fG2=P&z(awe2&{GK(8o"),
+    "F": (256, 0, 662, b"*EIrB8n_NEx9e()#ao<>L)@gEjm|N%I8B)YhA8V~"),
+    "HSV": (768, 0, 1696, b"F6vt%@sQf%X04Md4^n!Qpv!qJ8Oz()CqPx=rjFvu"),
+    "I": (256, 0, 662, b"*EIrB8n_NEx9e()#ao<>L)@gEjm|N%I8B)YhA8V~"),
+    "I;16": (256, 0, 8192, b"S+c=3i+Fs3wK2>Q<8rq@PgsAg=nE1VLdMtHZ2K8$"),
+    "I;16B": (256, 0, 8192, b"S+c=3i+Fs3wK2>Q<8rq@PgsAg=nE1VLdMtHZ2K8$"),
+    "I;16L": (256, 0, 8192, b"S+c=3i+Fs3wK2>Q<8rq@PgsAg=nE1VLdMtHZ2K8$"),
+    "I;16N": (256, 0, 8192, b"S+c=3i+Fs3wK2>Q<8rq@PgsAg=nE1VLdMtHZ2K8$"),
+    "L": (256, 0, 662, b"EmZC)FNJ#AK=O?2(qxYeY#*-vk97Iz%f8!<LaY}1"),
+    "LA": (512, 0, 662, b"Eds{eGw)qbudo%xtTJ_6#d5In@<fQMK3Kn%5!9;0"),
+    "La": (512, 0, 662, b"Eds{eGw)qbudo%xtTJ_6#d5In@<fQMK3Kn%5!9;0"),
+    "LAB": (768, 0, 1946, b"9X3PUSDkz%k~jXeBH}f4?u?ga;js`?-81}2(RAPF"),
+    "P": (256, 0, 1551, b"mCdCL$^NJhLi#i!x{jz~<&y%a{iVi(H(JP}W5-Op"),
+    "PA": (512, 0, 1551, b"r_3_AMV`<vvmH_kY7ulvv|2QT==P{6rpFz6)D>~q"),
+    "RGB": (768, 4, 675, b"!TjBr^o$}ZXlfh|aIU7&4VKP8=rBq&RecVDIcndZ"),
+    "RGBA": (1024, 0, 16384, b"du`JBXvzDrPu^Ybc}8Y+4y1MDTEK|!Q|rR~Jk^@J"),
+    "RGBa": (1024, 0, 16384, b"du`JBXvzDrPu^Ybc}8Y+4y1MDTEK|!Q|rR~Jk^@J"),
+    "RGBX": (1024, 0, 16384, b"du`JBXvzDrPu^Ybc}8Y+4y1MDTEK|!Q|rR~Jk^@J"),
+    "YCbCr": (768, 0, 1908, b"%z+JjEuI^YFOt*}($tSuSk^nX-~-HI>QDL>T%9H9"),
 }
+
+
+# Python's basic hash() function isn't necessarily deterministic, so use this instead.
+def deterministic_hash(data: list[int]) -> bytes:
+    data_bytes = str(data).encode("ascii")
+    hash_digest = hashlib.sha256(data_bytes).digest()
+    return base64.b85encode(hash_digest)
 
 
 @pytest.mark.parametrize("mode", Image.MODES)
 def test_histogram(mode: str) -> None:
     h = hopper(mode).histogram()
-    # If all values are checked in the same assert and they don't match,
-    # the error message gets truncated. So use multiple asserts to see
-    # the full message.
-    assert (len(h), min(h), max(h)) == expected_data[mode][:3]
-    assert hash(tuple(h)) == expected_data[mode][3]
+    data = (len(h), min(h), max(h), deterministic_hash(h))
+    assert data == expected_data[mode]
