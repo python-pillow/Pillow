@@ -190,8 +190,8 @@ jobs:
 
     - name: Test Pillow
       run: |
-        path %GITHUB_WORKSPACE%\\winbuild\\build\\bin;%PATH%
-        python.exe -m pytest -vx -W always --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+        path %GITHUB_WORKSPACE%\winbuild\build\bin;%PATH%
+        .ci\test.cmd
       shell: cmd
 
     - name: Prepare to upload errors
