@@ -1037,7 +1037,7 @@ ImagingTransformAffine(
 
     if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
         return (Imaging)ImagingError_ModeError();
-    }    
+    }
 
     if (filterid || imIn->type == IMAGING_TYPE_SPECIAL) {
         return ImagingGenericTransform(
