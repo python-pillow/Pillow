@@ -5,6 +5,18 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Use transposed size after opening for TIFF images #8390
+  [radarhere, homm]
+
+- Improve ImageFont error messages #8338
+  [yngvem, radarhere, hugovk]
+
+- Mention MAX_TEXT_CHUNK limit in PNG error message #8391
+  [radarhere]
+
+- Cast Dib handle to int #8385
+  [radarhere]
+
 - Accept float stroke widths #8369
   [radarhere]
 
