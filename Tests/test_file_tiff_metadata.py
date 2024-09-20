@@ -191,14 +191,15 @@ def test_save_multiple_stripoffsets() -> None:
         # number of tags == 1
         b"\x01\x00"
         # tag id (2 bytes), type (2 bytes), count (4 bytes), value (4 bytes)
-        # == 273, 4, 2, 18
-        # == TiffImagePlugin.STRIPOFFSETS, TiffTags.LONG, 2, 18
-        # the value is the index of the tag data
+        # TiffImagePlugin.STRIPOFFSETS, TiffTags.LONG, 2, 18
+        # where STRIPOFFSETS is 273, LONG is 4
+        # and 18 is the offset of the tag data
         b"\x11\x01\x04\x00\x02\x00\x00\x00\x12\x00\x00\x00"
-        # end of tags marker
+        # end of entries
         b"\x00\x00\x00\x00"
-        # tag data == (149, 482) == (123 + 26, 456 + 26)
-        # 26 is the number of bytes before this data
+        # 26 is the total number of bytes output,
+        # the offset for any auxiliary strip data that will then be appended
+        # (123 + 26, 456 + 26) == (149, 482)
         b"\x95\x00\x00\x00\xe2\x01\x00\x00"
     )
 
