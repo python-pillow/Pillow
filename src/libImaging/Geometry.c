@@ -791,13 +791,13 @@ ImagingGenericTransform(
     char *out;
     double xx, yy;
 
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+        return (Imaging)ImagingError_ModeError();
+    }
+
     ImagingTransformFilter filter = getfilter(imIn, filterid);
     if (!filter) {
         return (Imaging)ImagingError_ValueError("bad filter number");
-    }
-
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
-        return (Imaging)ImagingError_ModeError();
     }
 
     ImagingCopyPalette(imOut, imIn);
