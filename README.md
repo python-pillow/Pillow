@@ -51,7 +51,7 @@ As of 2019, Pillow development is
             <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
-            <a href="https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:pillow"><img
+            <a href="https://issues.oss-fuzz.com/issues?q=title:pillow"><img
                 alt="Fuzzing Status"
                 src="https://oss-fuzz-build-logs.storage.googleapis.com/badges/pillow.svg"></a>
         </td>
