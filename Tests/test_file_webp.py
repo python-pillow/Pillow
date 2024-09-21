@@ -127,6 +127,11 @@ class TestFileWebp:
             reloaded.seek(1)
             assert_image_similar(im2, reloaded, 1)
 
+    def test_unsupported_image_mode(self) -> None:
+        im = Image.new("1", (1, 1))
+        with pytest.raises(ValueError):
+            _webp.WebPEncode(im.getim(), False, 0, 0, "", 4, 0, b"", "")
+
     def test_icc_profile(self, tmp_path: Path) -> None:
         self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})
         self._roundtrip(
