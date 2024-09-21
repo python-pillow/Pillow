@@ -176,15 +176,14 @@ class PhotoImage:
                    the bitmap image.
         """
         # convert to blittable
-        im.load()
+        ptr = im.getim()
         image = im.im
-        if image.isblock() and im.mode == self.__mode:
-            block = image
-        else:
+        if not image.isblock() or im.mode != self.__mode:
             block = Image.core.new_block(self.__mode, im.size)
             image.convert2(block, image)  # convert directly between buffers
+            ptr = block.ptr
 
-        _pyimagingtkcall("PyImagingPhoto", self.__photo, block.ptr)
+        _pyimagingtkcall("PyImagingPhoto", self.__photo, ptr)
 
 
 # --------------------------------------------------------------------
