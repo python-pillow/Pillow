@@ -89,8 +89,6 @@ HandleMuxError(WebPMuxError err, char *chunk) {
 
 static int
 import_frame_libwebp(WebPPicture *frame, Imaging im) {
-    int drop_alpha = strcmp(im->mode, "RGBA");
-
     if (strcmp(im->mode, "RGBA") && strcmp(im->mode, "RGB") &&
         strcmp(im->mode, "RGBX")) {
         PyErr_SetString(PyExc_ValueError, "unsupported image mode");
@@ -106,10 +104,11 @@ import_frame_libwebp(WebPPicture *frame, Imaging im) {
         return -2;
     }
 
+    int ignore_fourth_channel = strcmp(im->mode, "RGBA");
     for (int y = 0; y < im->ysize; ++y) {
         UINT8 *src = (UINT8 *)im->image32[y];
         UINT32 *dst = frame->argb + frame->argb_stride * y;
-        if (drop_alpha) {
+        if (ignore_fourth_channel) {
             for (int x = 0; x < im->xsize; ++x) {
                 dst[x] =
                     ((UINT32)(src[x * 4 + 2]) | ((UINT32)(src[x * 4 + 1]) << 8) |
