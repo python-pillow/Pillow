@@ -23,7 +23,12 @@ else
     cargo cinstall --prefix=/usr --destdir=.
 
     # Copy into place
-    sudo cp usr/lib/libimagequant.so* /usr/lib/
+    if [ -d "usr/lib64" ]; then
+        lib="lib64"
+    else
+        lib="lib"
+    fi
+    sudo cp usr/$lib/libimagequant.so* /usr/lib/
     sudo cp usr/include/libimagequant.h /usr/include/
 
     if [ -n "$GITHUB_ACTIONS" ]; then
