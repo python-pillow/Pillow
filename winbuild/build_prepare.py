@@ -292,8 +292,12 @@ DEPS: dict[str, dict[str, Any]] = {
         },
         "build": [
             cmd_rmdir("objs"),
-            cmd_msbuild("MSBuild.sln", "Release Static", "Clean"),
-            cmd_msbuild("MSBuild.sln", "Release Static", "Build"),
+            cmd_msbuild(
+                r"builds\windows\vc2010\freetype.vcxproj", "Release Static", "Clean"
+            ),
+            cmd_msbuild(
+                r"builds\windows\vc2010\freetype.vcxproj", "Release Static", "Build"
+            ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
