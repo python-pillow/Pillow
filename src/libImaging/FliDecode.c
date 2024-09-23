@@ -62,6 +62,10 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
         state->errcode = IMAGING_CODEC_UNKNOWN;
         return -1;
     }
+    if (state->xsize <= 0 || state->ysize <= 0) {
+        state->errcode = IMAGING_CODEC_CONFIG;
+        return -1;
+    }
 
     chunks = I16(ptr + 6);
     ptr += 16;
