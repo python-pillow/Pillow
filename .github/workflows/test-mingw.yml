@@ -80,8 +80,7 @@ jobs:
       - name: Test Pillow
         run: |
           python3 selftest.py --installed
-          python3 -c "from PIL import Image"
-          python3 -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+          .ci/test.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
