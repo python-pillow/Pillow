@@ -17,7 +17,7 @@ ARCHIVE_SDIR=pillow-depends-main
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.2
 if [[ "$MB_ML_VER" != 2014 ]]; then
-    HARFBUZZ_VERSION=9.0.0
+    HARFBUZZ_VERSION=10.0.0
 else
     HARFBUZZ_VERSION=8.5.0
 fi
