@@ -112,7 +112,7 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.15",
-    "HARFBUZZ": "9.0.0",
+    "HARFBUZZ": "10.0.1",
     "JPEGTURBO": "3.0.4",
     "LCMS2": "2.16",
     "LIBPNG": "1.6.44",
@@ -292,8 +292,12 @@ DEPS: dict[str, dict[str, Any]] = {
         },
         "build": [
             cmd_rmdir("objs"),
-            cmd_msbuild("MSBuild.sln", "Release Static", "Clean"),
-            cmd_msbuild("MSBuild.sln", "Release Static", "Build"),
+            cmd_msbuild(
+                r"builds\windows\vc2010\freetype.vcxproj", "Release Static", "Clean"
+            ),
+            cmd_msbuild(
+                r"builds\windows\vc2010\freetype.vcxproj", "Release Static", "Build"
+            ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],

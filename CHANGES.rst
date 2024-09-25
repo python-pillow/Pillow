@@ -5,6 +5,27 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Fixed writing multiple StripOffsets to TIFF #8317
+  [Yay295, radarhere]
+
+- Shared imagequant libraries may be located within usr/lib64 #8407
+  [radarhere]
+
+- Fix dereference before checking for NULL in ImagingTransformAffine #8398
+  [PavlNekrasov]
+
+- Use transposed size after opening for TIFF images #8390
+  [radarhere, homm]
+
+- Improve ImageFont error messages #8338
+  [yngvem, radarhere, hugovk]
+
+- Mention MAX_TEXT_CHUNK limit in PNG error message #8391
+  [radarhere]
+
+- Cast Dib handle to int #8385
+  [radarhere]
+
 - Accept float stroke widths #8369
   [radarhere]
 

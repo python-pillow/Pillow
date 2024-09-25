@@ -86,8 +86,8 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        choco install ghostscript --version=10.3.1 --no-progress
-        echo "C:\Program Files\gs\gs10.03.1\bin" >> $env:GITHUB_PATH
+        choco install ghostscript --version=10.4.0 --no-progress
+        echo "C:\Program Files\gs\gs10.04.0\bin" >> $env:GITHUB_PATH
 
         # Install extra test images
         xcopy /S /Y Tests\test-images\* Tests\images
@@ -190,8 +190,8 @@ jobs:
 
     - name: Test Pillow
       run: |
-        path %GITHUB_WORKSPACE%\\winbuild\\build\\bin;%PATH%
-        python.exe -m pytest -vx -W always --cov PIL --cov Tests --cov-report term --cov-report xml Tests
+        path %GITHUB_WORKSPACE%\winbuild\build\bin;%PATH%
+        .ci\test.cmd
       shell: cmd
 
     - name: Prepare to upload errors
