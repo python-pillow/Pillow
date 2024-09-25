@@ -108,10 +108,6 @@ class TestFileTiff:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
-            # The data type of this file's StripOffsets tag is LONG8,
-            # which is not yet supported for offset data when saving multiple frames.
-            del im.tag_v2[273]
-
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
