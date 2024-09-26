@@ -13,10 +13,6 @@ except ImportError:
     SUPPORTED = False
 
 
-_VALID_WEBP_MODES = {"RGBX": True, "RGBA": True, "RGB": True}
-
-_VALID_WEBP_LEGACY_MODES = {"RGB": True, "RGBA": True}
-
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",
     b"VP8X": "RGBA",
@@ -153,6 +149,13 @@ class WebPImageFile(ImageFile.ImageFile):
         return self.__logical_frame
 
 
+def _convert_frame(im: Image.Image) -> Image.Image:
+    # Make sure image mode is supported
+    if im.mode not in ("RGBX", "RGBA", "RGB"):
+        im = im.convert("RGBA" if im.has_transparency_data else "RGB")
+    return im
+
+
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderinfo = im.encoderinfo.copy()
     append_images = list(encoderinfo.get("append_images", []))
@@ -243,31 +246,13 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
             for idx in range(nfr):
                 ims.seek(idx)
-                ims.load()
 
-                # Make sure image mode is supported
-                frame = ims
-                rawmode = ims.mode
-                if ims.mode not in _VALID_WEBP_MODES:
-                    alpha = (
-                        "A" in ims.mode
-                        or "a" in ims.mode
-                        or (ims.mode == "P" and "A" in ims.im.getpalettemode())
-                    )
-                    rawmode = "RGBA" if alpha else "RGB"
-                    frame = ims.convert(rawmode)
-
-                if rawmode == "RGB":
-                    # For faster conversion, use RGBX
-                    rawmode = "RGBX"
+                frame = _convert_frame(ims)
 
                 # Append the frame to the animation encoder
                 enc.add(
-                    frame.tobytes("raw", rawmode),
+                    frame.getim(),
                     round(timestamp),
-                    frame.size[0],
-                    frame.size[1],
-                    rawmode,
                     lossless,
                     quality,
                     alpha_quality,
@@ -285,7 +270,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, alpha_quality, 0)
+    enc.add(None, round(timestamp), lossless, quality, alpha_quality, 0)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
@@ -310,17 +295,13 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     method = im.encoderinfo.get("method", 4)
     exact = 1 if im.encoderinfo.get("exact") else 0
 
-    if im.mode not in _VALID_WEBP_LEGACY_MODES:
-        im = im.convert("RGBA" if im.has_transparency_data else "RGB")
+    im = _convert_frame(im)
 
     data = _webp.WebPEncode(
-        im.tobytes(),
-        im.size[0],
-        im.size[1],
+        im.getim(),
         lossless,
         float(quality),
         float(alpha_quality),
-        im.mode,
         icc_profile,
         method,
         exact,
