@@ -857,6 +857,27 @@ def test_rounded_rectangle_corners(
     )
 
 
+def test_rounded_rectangle_joined_x_different_corners() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.rounded_rectangle(
+        (20, 10, 80, 90),
+        30,
+        fill="red",
+        outline="green",
+        width=5,
+        corners=(True, False, False, False),
+    )
+
+    # Assert
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rounded_rectangle_joined_x_different_corners.png"
+    )
+
+
 @pytest.mark.parametrize(
     "xy, radius, type",
     [
@@ -1345,6 +1366,20 @@ def test_stroke() -> None:
         assert_image_similar_tofile(
             im, "Tests/images/imagedraw_stroke_" + suffix + ".png", 3.1
         )
+
+
+@skip_unless_feature("freetype2")
+def test_stroke_float() -> None:
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((12, 12), "A", "#f00", font, stroke_width=0.5)
+
+    # Assert
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_float.png", 3.1)
 
 
 @skip_unless_feature("freetype2")

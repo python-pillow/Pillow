@@ -152,7 +152,7 @@ def test_sanity_ati2_bc5u(image_path: str) -> None:
 
 
 @pytest.mark.parametrize(
-    ("image_path", "expected_path"),
+    "image_path, expected_path",
     (
         # hexeditted to be typeless
         (TEST_FILE_DX10_BC5_TYPELESS, TEST_FILE_DX10_BC5_UNORM),
@@ -248,7 +248,7 @@ def test_dx10_r8g8b8a8_unorm_srgb() -> None:
 
 
 @pytest.mark.parametrize(
-    ("mode", "size", "test_file"),
+    "mode, size, test_file",
     [
         ("L", (128, 128), TEST_FILE_UNCOMPRESSED_L),
         ("LA", (128, 128), TEST_FILE_UNCOMPRESSED_L_WITH_ALPHA),
@@ -373,7 +373,7 @@ def test_save_unsupported_mode(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    ("mode", "test_file"),
+    "mode, test_file",
     [
         ("L", "Tests/images/linear_gradient.png"),
         ("LA", "Tests/images/uncompressed_la.png"),

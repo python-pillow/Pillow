@@ -69,6 +69,7 @@ def test_quantize_no_dither() -> None:
 
     converted = image.quantize(dither=Image.Dither.NONE, palette=palette)
     assert converted.mode == "P"
+    assert converted.palette is not None
     assert converted.palette.palette == palette.palette.palette
 
 
@@ -81,6 +82,7 @@ def test_quantize_no_dither2() -> None:
     palette.putpalette(data)
     quantized = im.quantize(dither=Image.Dither.NONE, palette=palette)
 
+    assert quantized.palette is not None
     assert tuple(quantized.palette.palette) == data
 
     px = quantized.load()
@@ -117,6 +119,7 @@ def test_colors() -> None:
     im = hopper()
     colors = 2
     converted = im.quantize(colors)
+    assert converted.palette is not None
     assert len(converted.palette.palette) == colors * len("RGB")
 
 
@@ -147,6 +150,7 @@ def test_palette(method: Image.Quantize, color: tuple[int, ...]) -> None:
     converted = im.quantize(method=method)
     converted_px = converted.load()
     assert converted_px is not None
+    assert converted.palette is not None
     assert converted_px[0, 0] == converted.palette.colors[color]
 
 

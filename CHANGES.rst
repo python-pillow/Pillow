@@ -5,6 +5,117 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Fixed writing multiple StripOffsets to TIFF #8317
+  [Yay295, radarhere]
+
+- Shared imagequant libraries may be located within usr/lib64 #8407
+  [radarhere]
+
+- Fix dereference before checking for NULL in ImagingTransformAffine #8398
+  [PavlNekrasov]
+
+- Use transposed size after opening for TIFF images #8390
+  [radarhere, homm]
+
+- Improve ImageFont error messages #8338
+  [yngvem, radarhere, hugovk]
+
+- Mention MAX_TEXT_CHUNK limit in PNG error message #8391
+  [radarhere]
+
+- Cast Dib handle to int #8385
+  [radarhere]
+
+- Accept float stroke widths #8369
+  [radarhere]
+
+- Deprecate ICNS (width, height, scale) sizes in favour of load(scale) #8352
+  [radarhere]
+
+- Improved handling of RGBA palettes when saving GIF images #8366
+  [radarhere]
+
+- Deprecate isImageType #8364
+  [radarhere]
+
+- Support converting more modes to LAB by converting to RGBA first #8358
+  [radarhere]
+
+- Deprecate support for FreeType 2.9.0 #8356
+  [hugovk, radarhere]
+
+- Removed unused TiffImagePlugin IFD_LEGACY_API #8355
+  [radarhere]
+
+- Handle duplicate EXIF header #8350
+  [zakajd, radarhere]
+
+- Return early from BoxBlur if either width or height is zero #8347
+  [radarhere]
+
+- Check text is either string or bytes #8308
+  [radarhere]
+
+- Added writing XMP bytes to JPEG #8286
+  [radarhere]
+
+- Support JPEG2000 RGBA palettes #8256
+  [radarhere]
+
+- Expand C image to match GIF frame image size #8237
+  [radarhere]
+
+- Allow saving I;16 images as PPM #8231
+  [radarhere]
+
+- When IFD is missing, connect get_ifd() dictionary to Exif #8230
+  [radarhere]
+
+- Skip truncated ICO mask if LOAD_TRUNCATED_IMAGES is enabled #8180
+  [radarhere]
+
+- Treat unknown JPEG2000 colorspace as unspecified #8343
+  [radarhere]
+
+- Updated error message when saving WebP with invalid width or height #8322
+  [radarhere, hugovk]
+
+- Remove warning if NumPy failed to raise an error during conversion #8326
+  [radarhere]
+
+- If left and right sides meet in ImageDraw.rounded_rectangle(), do not draw rectangle to fill gap #8304
+  [radarhere]
+
+- Remove WebP support without anim, mux/demux, and with buggy alpha #8213
+  [homm, radarhere]
+
+- Add missing TIFF CMYK;16B reader #8298
+  [homm]
+
+- Remove all WITH_* flags from _imaging.c and other flags #8211
+  [homm]
+
+- Improve ImageDraw2 shape methods #8265
+  [radarhere]
+
+- Lock around usages of imaging memory arenas #8238
+  [lysnikolaou]
+
+- Deprecate JpegImageFile huffman_ac and huffman_dc #8274
+  [radarhere]
+
+- Deprecate ImageMath lambda_eval and unsafe_eval options argument #8242
+  [radarhere]
+
+- Changed ContainerIO to subclass IO #8240
+  [radarhere]
+
+- Move away from APIs that use borrowed references under the free-threaded build #8216
+  [hugovk, lysnikolaou]
+
+- Allow size argument to resize() to be a NumPy array #8201
+  [radarhere]
+
 - Drop support for Python 3.8 #8183
   [hugovk, radarhere]
 

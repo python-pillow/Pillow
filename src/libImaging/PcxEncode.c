@@ -71,7 +71,8 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     state->buffer,
                     (UINT8 *)im->image[state->y + state->yoff] +
                         state->xoff * im->pixelsize,
-                    state->xsize);
+                    state->xsize
+                );
 
                 state->y += 1;
 

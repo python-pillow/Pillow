@@ -54,7 +54,7 @@ class WalImageFile(ImageFile.ImageFile):
             self.info["next_name"] = next_name
 
     def load(self) -> Image.core.PixelAccess | None:
-        if not self.im:
+        if self._im is None:
             self.im = Image.core.new(self.mode, self.size)
             self.frombytes(self.fp.read(self.size[0] * self.size[1]))
             self.putpalette(quake2palette)

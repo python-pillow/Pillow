@@ -63,7 +63,8 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) 
                     state->buffer,
                     (UINT8 *)im->image[state->y + state->yoff] +
                         state->xoff * im->pixelsize,
-                    state->xsize);
+                    state->xsize
+                );
             }
 
             row = state->buffer;
@@ -146,7 +147,8 @@ ImagingTgaRleEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) 
         }
 
         memcpy(
-            dst, state->buffer + (state->x * bytesPerPixel - state->count), flushCount);
+            dst, state->buffer + (state->x * bytesPerPixel - state->count), flushCount
+        );
         dst += flushCount;
         bytes -= flushCount;
 

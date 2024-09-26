@@ -85,7 +85,9 @@ def test_exif(test_file: str) -> None:
         im_reloaded = roundtrip(im_original, save_all=True, exif=im_original.getexif())
 
     for im in (im_original, im_reloaded):
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         info = im._getexif()
+        assert info is not None
         assert info[272] == "Nintendo 3DS"
         assert info[296] == 2
         assert info[34665] == 188

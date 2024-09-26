@@ -7,6 +7,7 @@ import re
 import shutil
 import struct
 import subprocess
+from typing import Any
 
 
 def cmd_cd(path: str) -> str:
@@ -43,21 +44,19 @@ def cmd_nmake(
     target: str = "",
     params: list[str] | None = None,
 ) -> str:
-    params = "" if params is None else " ".join(params)
-
     return " ".join(
         [
             "{nmake}",
             "-nologo",
             f'-f "{makefile}"' if makefile is not None else "",
-            f"{params}",
+            f'{" ".join(params)}' if params is not None else "",
             f'"{target}"',
         ]
     )
 
 
 def cmds_cmake(
-    target: str | tuple[str, ...] | list[str], *params, build_dir: str = "."
+    target: str | tuple[str, ...] | list[str], *params: str, build_dir: str = "."
 ) -> list[str]:
     if not isinstance(target, str):
         target = " ".join(target)
@@ -111,16 +110,16 @@ ARCHITECTURES = {
 
 V = {
     "BROTLI": "1.1.0",
-    "FREETYPE": "2.13.2",
-    "FRIBIDI": "1.0.15",
-    "HARFBUZZ": "8.5.0",
-    "JPEGTURBO": "3.0.3",
+    "FREETYPE": "2.13.3",
+    "FRIBIDI": "1.0.16",
+    "HARFBUZZ": "10.0.1",
+    "JPEGTURBO": "3.0.4",
     "LCMS2": "2.16",
-    "LIBPNG": "1.6.43",
+    "LIBPNG": "1.6.44",
     "LIBWEBP": "1.4.0",
     "OPENJPEG": "2.5.2",
     "TIFF": "4.6.0",
-    "XZ": "5.4.5",
+    "XZ": "5.6.2",
     "ZLIB": "1.3.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
@@ -129,7 +128,7 @@ V["ZLIB_DOTLESS"] = V["ZLIB"].replace(".", "")
 
 
 # dependencies, listed in order of compilation
-DEPS = {
+DEPS: dict[str, dict[str, Any]] = {
     "libjpeg": {
         "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/"
         f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz/download",
@@ -176,7 +175,7 @@ DEPS = {
         "libs": [r"*.lib"],
     },
     "xz": {
-        "url": f"{SF_PROJECTS}/lzmautils/files/xz-{V['XZ']}.tar.gz/download",
+        "url": f"https://github.com/tukaani-project/xz/releases/download/v{V['XZ']}/xz-{V['XZ']}.tar.gz",
         "filename": f"xz-{V['XZ']}.tar.gz",
         "dir": f"xz-{V['XZ']}",
         "license": "COPYING",
@@ -201,7 +200,7 @@ DEPS = {
         },
         "build": [
             *cmds_cmake(
-                "webp webpdemux webpmux",
+                "webp webpmux webpdemux",
                 "-DBUILD_SHARED_LIBS:BOOL=OFF",
                 "-DWEBP_LINK_STATIC:BOOL=OFF",
             ),
@@ -294,10 +293,10 @@ DEPS = {
         "build": [
             cmd_rmdir("objs"),
             cmd_msbuild(
-                r"builds\windows\vc2010\freetype.sln", "Release Static", "Clean"
+                r"builds\windows\vc2010\freetype.vcxproj", "Release Static", "Clean"
             ),
             cmd_msbuild(
-                r"builds\windows\vc2010\freetype.sln", "Release Static", "Build"
+                r"builds\windows\vc2010\freetype.vcxproj", "Release Static", "Build"
             ),
             cmd_xcopy("include", "{inc_dir}"),
         ],
@@ -538,7 +537,7 @@ def write_script(
             print("    " + line)
 
 
-def get_footer(dep: dict) -> list[str]:
+def get_footer(dep: dict[str, Any]) -> list[str]:
     lines = []
     for out in dep.get("headers", []):
         lines.append(cmd_copy(out, "{inc_dir}"))
@@ -583,6 +582,7 @@ def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
             license_text += f.read()
     if "license_pattern" in dep:
         match = re.search(dep["license_pattern"], license_text, re.DOTALL)
+        assert match is not None
         license_text = "\n".join(match.groups())
     assert len(license_text) > 50
     with open(os.path.join(license_dir, f"{directory}.txt"), "w") as f:

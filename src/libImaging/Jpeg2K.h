@@ -104,10 +104,3 @@ typedef struct {
     int plt;
 
 } JPEG2KENCODESTATE;
-
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */

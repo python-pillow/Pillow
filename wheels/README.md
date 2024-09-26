@@ -1,11 +1,11 @@
 README
 ------
 
-[cibuildwheel](https://github.com/pypa/cibuildwheel) is used to build macOS and Linux
-wheels for tagged versions of Pillow.
+[cibuildwheel](https://github.com/pypa/cibuildwheel) is used to build wheels for tagged
+versions of Pillow.
 
 This directory contains [multibuild](https://github.com/multi-build/multibuild) to
-build dependencies for the wheels, and dependency licenses to be included.
+build dependencies for macOS and Linux wheels, and dependency licenses to be included.
 
 Archives
 --------
@@ -30,6 +30,3 @@ Wheels
 
 Wheels are
 [GitHub Actions artifacts created for tags, relevant changes or manual builds](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml).
-
-Windows wheels are created separately. They are
-[GitHub Actions artifacts created on each run of the Windows workflow](https://github.com/python-pillow/Pillow/actions/workflows/test-windows.yml?query=branch%3Amain).

@@ -1,6 +1,14 @@
 name: Wheels
 
 on:
+  schedule:
+  #        ┌───────────── minute (0 - 59)
+  #        │  ┌───────────── hour (0 - 23)
+  #        │  │ ┌───────────── day of the month (1 - 31)
+  #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+  #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+  #        │  │ │ │ │
+  - cron: "42 1 * * 0,3"
   push:
     paths:
       - ".ci/requirements-cibw.txt"
@@ -33,13 +41,13 @@ env:
 
 jobs:
   build-1-QEMU-emulated-wheels:
+    if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
     name: aarch64 ${{ matrix.python-version }} ${{ matrix.spec }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version:
-          - pp39
           - pp310
           - cp3{9,10,11}
           - cp3{12,13}
@@ -48,7 +56,6 @@ jobs:
           - manylinux_2_28
           - musllinux
         exclude:
-          - { python-version: pp39, spec: musllinux }
           - { python-version: pp310, spec: musllinux }
 
     steps:
@@ -88,18 +95,30 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build-2-native-wheels:
+    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: "macOS x86_64"
+          - name: "macOS 10.10 x86_64"
             os: macos-13
             cibw_arch: x86_64
+            build: "cp3{9,10,11}*"
             macosx_deployment_target: "10.10"
+          - name: "macOS 10.13 x86_64"
+            os: macos-13
+            cibw_arch: x86_64
+            build: "cp3{12,13}*"
+            macosx_deployment_target: "10.13"
+          - name: "macOS 10.15 x86_64"
+            os: macos-13
+            cibw_arch: x86_64
+            build: "pp310*"
+            macosx_deployment_target: "10.15"
           - name: "macOS arm64"
-            os: macos-14
+            os: macos-latest
             cibw_arch: arm64
             macosx_deployment_target: "11.0"
           - name: "manylinux2014 and musllinux x86_64"
@@ -137,10 +156,11 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}-${{ matrix.cibw_arch }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
+          name: dist-${{ matrix.os }}${{ matrix.macosx_deployment_target && format('-{0}', matrix.macosx_deployment_target) }}-${{ matrix.cibw_arch }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
           path: ./wheelhouse/*.whl
 
   windows:
+    if: github.event_name != 'schedule' || github.repository_owner == 'python-pillow'
     name: Windows ${{ matrix.cibw_arch }}
     runs-on: windows-latest
     strategy:
@@ -227,6 +247,7 @@ jobs:
           path: winbuild\build\bin\fribidi*
 
   sdist:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -245,8 +266,25 @@ jobs:
         name: dist-sdist
         path: dist/*.tar.gz
 
+  scientific-python-nightly-wheels-publish:
+    if: github.repository_owner == 'python-pillow' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    needs: [build-2-native-wheels, windows]
+    runs-on: ubuntu-latest
+    name: Upload wheels to scientific-python-nightly-wheels
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: Upload wheels to scientific-python-nightly-wheels
+        uses: scientific-python/upload-nightly-action@b67d7fcc0396e1128a474d1ab2b48aa94680f9fc # 0.5.0
+        with:
+          artifacts_path: dist
+          anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
+
   pypi-publish:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.repository_owner == 'python-pillow' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: [build-1-QEMU-emulated-wheels, build-2-native-wheels, windows, sdist]
     runs-on: ubuntu-latest
     name: Upload release to PyPI

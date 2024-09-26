@@ -147,7 +147,9 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # tile
         if tag == (8, 10):
-            self.tile = [("iptc", (0, 0) + self.size, offset, compression)]
+            self.tile = [
+                ImageFile._Tile("iptc", (0, 0) + self.size, offset, compression)
+            ]
 
     def load(self) -> Image.core.PixelAccess | None:
         if len(self.tile) != 1 or self.tile[0][0] != "iptc":
@@ -185,7 +187,9 @@ Image.register_open(IptcImageFile.format, IptcImageFile)
 Image.register_extension(IptcImageFile.format, ".iim")
 
 
-def getiptcinfo(im: ImageFile.ImageFile):
+def getiptcinfo(
+    im: ImageFile.ImageFile,
+) -> dict[tuple[int, int], bytes | list[bytes]] | None:
     """
     Get IPTC information from TIFF, JPEG, or IPTC file.
 
@@ -197,9 +201,13 @@ def getiptcinfo(im: ImageFile.ImageFile):
 
     data = None
 
+    info: dict[tuple[int, int], bytes | list[bytes]] = {}
     if isinstance(im, IptcImageFile):
         # return info dictionary right away
-        return im.info
+        for k, v in im.info.items():
+            if isinstance(k, tuple):
+                info[k] = v
+        return info
 
     elif isinstance(im, JpegImagePlugin.JpegImageFile):
         # extract the IPTC/NAA resource
@@ -211,8 +219,8 @@ def getiptcinfo(im: ImageFile.ImageFile):
         # get raw data from the IPTC/NAA tag (PhotoShop tags the data
         # as 4-byte integers, so we cannot use the get method...)
         try:
-            data = im.tag.tagdata[TiffImagePlugin.IPTC_NAA_CHUNK]
-        except (AttributeError, KeyError):
+            data = im.tag_v2[TiffImagePlugin.IPTC_NAA_CHUNK]
+        except KeyError:
             pass
 
     if data is None:
@@ -235,4 +243,7 @@ def getiptcinfo(im: ImageFile.ImageFile):
     except (IndexError, KeyError):
         pass  # expected failure
 
-    return iptc_im.info
+    for k, v in iptc_im.info.items():
+        if isinstance(k, tuple):
+            info[k] = v
+    return info

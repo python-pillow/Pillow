@@ -72,7 +72,7 @@ class GdImageFile(ImageFile.ImageFile):
         )
 
         self.tile = [
-            (
+            ImageFile._Tile(
                 "raw",
                 (0, 0) + self.size,
                 7 + true_color_offset + 4 + 256 * 4,
