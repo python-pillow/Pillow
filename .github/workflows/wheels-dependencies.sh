@@ -16,7 +16,7 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.2
-if [[ "$MB_ML_VER" != 2014 ]] && [[ -z "$SANITIZER" ]]; then
+if [[ -n "$IS_MACOS" ]] || ([[ "$MB_ML_VER" != 2014 ]] && [[ -z "$SANITIZER" ]]); then
     HARFBUZZ_VERSION=10.0.1
 else
     HARFBUZZ_VERSION=8.5.0
