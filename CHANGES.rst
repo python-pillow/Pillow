@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Use Capsule for WebP saving #8386
+  [homm, radarhere]
+
 - Fixed writing multiple StripOffsets to TIFF #8317
   [Yay295, radarhere]
 
