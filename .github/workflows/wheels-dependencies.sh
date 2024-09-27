@@ -16,7 +16,7 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.2
-if [[ "$MB_ML_VER" != 2014 ]]; then
+if [[ -n "$IS_MACOS" ]] || ([[ "$MB_ML_VER" != 2014 ]] && [[ -z "$SANITIZER" ]]); then
     HARFBUZZ_VERSION=10.0.1
 else
     HARFBUZZ_VERSION=8.5.0
@@ -156,12 +156,10 @@ if [[ -n "$IS_MACOS" ]]; then
   fi
 
   brew install meson pkg-config
-elif [[ "$MB_ML_LIBC" == "manylinux" ]]; then
-  if [[ "$HARFBUZZ_VERSION" != 8.5.0 ]]; then
-    yum install -y meson
-  fi
-else
+elif [[ -n "$IS_ALPINE" ]]; then
   apk add meson
+elif [[ "$HARFBUZZ_VERSION" != 8.5.0 ]]; then
+  yum install -y meson
 fi
 
 wrap_wheel_builder build
