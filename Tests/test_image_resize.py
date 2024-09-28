@@ -315,14 +315,14 @@ class TestImageResize:
             im = im.resize((64, 64))
             assert im.size == (64, 64)
 
-    @pytest.mark.parametrize("mode", ("L", "RGB", "I", "F"))
+    @pytest.mark.parametrize(
+        "mode", ("L", "RGB", "I", "I;16", "I;16L", "I;16B", "I;16N", "F")
+    )
     def test_default_filter_bicubic(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-    @pytest.mark.parametrize(
-        "mode", ("1", "P", "I;16", "I;16L", "I;16B", "BGR;15", "BGR;16")
-    )
+    @pytest.mark.parametrize("mode", ("1", "P", "BGR;15", "BGR;16"))
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))
