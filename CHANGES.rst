@@ -5,6 +5,18 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Improved copying imagequant libraries #8420
+  [radarhere]
+
+- Use Capsule for WebP saving #8386
+  [homm, radarhere]
+
+- Fixed writing multiple StripOffsets to TIFF #8317
+  [Yay295, radarhere]
+
+- Fix dereference before checking for NULL in ImagingTransformAffine #8398
+  [PavlNekrasov]
+
 - Use transposed size after opening for TIFF images #8390
   [radarhere, homm]
 

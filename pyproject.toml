@@ -97,9 +97,13 @@ config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
-[tool.ruff]
-fix = true
+[tool.black]
+exclude = "wheels/multibuild"
 
+[tool.ruff]
+exclude = [ "wheels/multibuild" ]
+
+fix = true
 lint.select = [
   "C4",     # flake8-comprehensions
   "E",      # pycodestyle errors

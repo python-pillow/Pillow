@@ -53,9 +53,8 @@ test_script:
 - cd c:\pillow
 - '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov pytest-timeout defusedxml ipython numpy olefile pyroma'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
-- '%PYTHON%\%EXECUTABLE% -c "from PIL import Image"'
-- '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'
-#- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
+- path %PYTHON%;%PATH%
+- .ci\test.cmd
 
 after_test:
 - curl -Os https://uploader.codecov.io/latest/windows/codecov.exe
