@@ -26,13 +26,13 @@ class QoiImageFile(ImageFile.ImageFile):
             msg = "not a QOI file"
             raise SyntaxError(msg)
 
-        self._size = tuple(i32(self.fp.read(4)) for i in range(2))
+        self._size = i32(self.fp.read(4)), i32(self.fp.read(4))
 
         channels = self.fp.read(1)[0]
         self._mode = "RGB" if channels == 3 else "RGBA"
 
         self.fp.seek(1, os.SEEK_CUR)  # colorspace
-        self.tile = [("qoi", (0, 0) + self._size, self.fp.tell(), None)]
+        self.tile = [ImageFile._Tile("qoi", (0, 0) + self._size, self.fp.tell(), None)]
 
 
 class QoiDecoder(ImageFile.PyDecoder):
@@ -47,7 +47,7 @@ class QoiDecoder(ImageFile.PyDecoder):
         hash_value = (r * 3 + g * 5 + b * 7 + a * 11) % 64
         self._previously_seen_pixels[hash_value] = value
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
 
         self._previously_seen_pixels = {}

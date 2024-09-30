@@ -128,7 +128,9 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)
 
-        self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
+        self.tile = [
+            ImageFile._Tile("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))
+        ]
 
 
 # --------------------------------------------------------------------
@@ -204,8 +206,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     if im.mode == "P":
         # colour palette
-        assert im.im is not None
-
         fp.write(o8(12))
         palette = im.im.getpalette("RGB", "RGB")
         palette += b"\x00" * (768 - len(palette))

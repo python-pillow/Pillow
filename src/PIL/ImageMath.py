@@ -268,7 +268,7 @@ def lambda_eval(
     args.update(options)
     args.update(kw)
     for k, v in args.items():
-        if hasattr(v, "im"):
+        if isinstance(v, Image.Image):
             args[k] = _Operand(v)
 
     out = expression(args)
@@ -319,7 +319,7 @@ def unsafe_eval(
     args.update(options)
     args.update(kw)
     for k, v in args.items():
-        if hasattr(v, "im"):
+        if isinstance(v, Image.Image):
             args[k] = _Operand(v)
 
     compiled_code = compile(expression, "<string>", "eval")

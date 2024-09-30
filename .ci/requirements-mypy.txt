@@ -1,4 +1,4 @@
-mypy==1.11.1
+mypy==1.11.2
 IceSpringPySideStubs-PyQt6
 IceSpringPySideStubs-PySide6
 ipython
@@ -6,6 +6,7 @@ numpy
 packaging
 pytest
 sphinx
+types-atheris
 types-defusedxml
 types-olefile
 types-setuptools

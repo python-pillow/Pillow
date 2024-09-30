@@ -120,7 +120,6 @@ class TestColorLut3DCoreAPI:
         self, lut_mode: str, table_channels: int, table_size: int | tuple[int, int, int]
     ) -> None:
         im = Image.new("RGB", (10, 10), 0)
-        assert im.im is not None
         im.im.color_lut_3d(
             lut_mode,
             Image.Resampling.BILINEAR,
@@ -142,7 +141,6 @@ class TestColorLut3DCoreAPI:
     ) -> None:
         with pytest.raises(ValueError, match="wrong mode"):
             im = Image.new(image_mode, (10, 10), 0)
-            assert im.im is not None
             im.im.color_lut_3d(
                 lut_mode,
                 Image.Resampling.BILINEAR,
@@ -162,7 +160,6 @@ class TestColorLut3DCoreAPI:
         self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
     ) -> None:
         im = Image.new(image_mode, (10, 10), 0)
-        assert im.im is not None
         im.im.color_lut_3d(
             lut_mode,
             Image.Resampling.BILINEAR,

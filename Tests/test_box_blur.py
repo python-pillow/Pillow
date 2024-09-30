@@ -71,6 +71,11 @@ def test_color_modes() -> None:
         box_blur(sample.convert("YCbCr"))
 
 
+@pytest.mark.parametrize("size", ((0, 1), (1, 0)))
+def test_zero_dimension(size: tuple[int, int]) -> None:
+    assert box_blur(Image.new("L", size)).size == size
+
+
 def test_radius_0() -> None:
     assert_blur(
         sample,

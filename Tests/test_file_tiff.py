@@ -108,7 +108,8 @@ class TestFileTiff:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
-            # multistrip support not yet implemented
+            # The data type of this file's StripOffsets tag is LONG8,
+            # which is not yet supported for offset data when saving multiple frames.
             del im.tag_v2[273]
 
             outfile = str(tmp_path / "temp.tif")
@@ -683,6 +684,13 @@ class TestFileTiff:
 
             with Image.open(outfile) as reloaded:
                 assert_image_equal_tofile(reloaded, infile)
+
+    def test_invalid_tiled_dimensions(self) -> None:
+        with open("Tests/images/tiff_tiled_planar_raw.tif", "rb") as fp:
+            data = fp.read()
+        b = BytesIO(data[:144] + b"\x02" + data[145:])
+        with pytest.raises(ValueError):
+            Image.open(b)
 
     @pytest.mark.parametrize("mode", ("P", "PA"))
     def test_palette(self, mode: str, tmp_path: Path) -> None:

@@ -117,7 +117,7 @@ lint-fix:
 	python3 -c "import black" > /dev/null 2>&1 || python3 -m pip install black
 	python3 -m black .
 	python3 -c "import ruff" > /dev/null 2>&1 || python3 -m pip install ruff
-	python3 -m ruff --fix .
+	python3 -m ruff check --fix .
 
 .PHONY: mypy
 mypy:

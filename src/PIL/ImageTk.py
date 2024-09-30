@@ -127,10 +127,7 @@ class PhotoImage:
                 # palette mapped data
                 image.apply_transparency()
                 image.load()
-                try:
-                    mode = image.palette.mode
-                except AttributeError:
-                    mode = "RGB"  # default
+                mode = image.palette.mode if image.palette else "RGB"
             size = image.size
             kw["width"], kw["height"] = size
 

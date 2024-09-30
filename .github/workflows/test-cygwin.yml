@@ -74,6 +74,7 @@ jobs:
             perl
             python3${{ matrix.python-minor-version }}-cython
             python3${{ matrix.python-minor-version }}-devel
+            python3${{ matrix.python-minor-version }}-ipython
             python3${{ matrix.python-minor-version }}-numpy
             python3${{ matrix.python-minor-version }}-sip
             python3${{ matrix.python-minor-version }}-tkinter

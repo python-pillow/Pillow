@@ -16,11 +16,11 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.2
-HARFBUZZ_VERSION=8.5.0
-LIBPNG_VERSION=1.6.43
-JPEGTURBO_VERSION=3.0.3
+HARFBUZZ_VERSION=10.0.1
+LIBPNG_VERSION=1.6.44
+JPEGTURBO_VERSION=3.0.4
 OPENJPEG_VERSION=2.5.2
-XZ_VERSION=5.4.5
+XZ_VERSION=5.6.2
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
 if [[ -n "$IS_MACOS" ]]; then
@@ -40,7 +40,7 @@ BROTLI_VERSION=1.1.0
 
 if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "x86_64" ]]; then
     function build_openjpeg {
-        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz openjpeg-${OPENJPEG_VERSION}.tar.gz)
+        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz openjpeg-$OPENJPEG_VERSION.tar.gz)
         (cd $out_dir \
             && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
             && make install)
@@ -50,13 +50,26 @@ fi
 
 function build_brotli {
     local cmake=$(get_modern_cmake)
-    local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-1.1.0.tar.gz)
+    local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
         && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
         && make install)
     if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
         cp /usr/local/lib64/libbrotli* /usr/local/lib
         cp /usr/local/lib64/pkgconfig/libbrotli* /usr/local/lib/pkgconfig
+    fi
+}
+
+function build_harfbuzz {
+    python3 -m pip install meson ninja
+
+    local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
+    (cd $out_dir \
+        && meson setup build --buildtype=release -Dfreetype=enabled -Dglib=disabled)
+    (cd $out_dir/build \
+        && meson install)
+    if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
+        cp /usr/local/lib64/libharfbuzz* /usr/local/lib
     fi
 }
 
@@ -109,15 +122,7 @@ function build {
         build_freetype
     fi
 
-    if [ -z "$IS_MACOS" ]; then
-        export FREETYPE_LIBS=-lfreetype
-        export FREETYPE_CFLAGS=-I/usr/local/include/freetype2/
-    fi
-    build_simple harfbuzz $HARFBUZZ_VERSION https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION tar.xz --with-freetype=yes --with-glib=no
-    if [ -z "$IS_MACOS" ]; then
-        export FREETYPE_LIBS=""
-        export FREETYPE_CFLAGS=""
-    fi
+    build_harfbuzz
 }
 
 # Any stuff that you need to do before you start building the wheels
