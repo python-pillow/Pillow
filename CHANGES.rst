@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Check image value before use #8400
+  [radarhere]
+
 - Improved copying imagequant libraries #8420
   [radarhere]
 
