@@ -224,7 +224,7 @@ ImagingFliDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 break;
             case 16:
                 /* COPY chunk */
-                if (INT32_MAX / state->xsize < state->ysize) {
+                if (INT32_MAX < (uint64_t)state->xsize * state->ysize) {
                     /* Integer overflow, bail */
                     state->errcode = IMAGING_CODEC_OVERRUN;
                     return -1;
