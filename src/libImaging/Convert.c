@@ -310,40 +310,46 @@ rgb2bgr24(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-rgb2hsv_row(UINT8 *out, const UINT8 *in) {  // following colorsys.py
-    float h, s, rc, gc, bc, cr;
-    UINT8 maxc, minc;
-    UINT8 r, g, b;
-    UINT8 uh, us, uv;
+rgb2hsv_row(UINT8 *out, const UINT8 *in) {
+    // based on Python's colorsys module
 
-    r = in[0];
-    g = in[1];
-    b = in[2];
-    maxc = MAX(r, MAX(g, b));
-    minc = MIN(r, MIN(g, b));
-    uv = maxc;
+    const UINT8 r = in[0];
+    const UINT8 g = in[1];
+    const UINT8 b = in[2];
+
+    const UINT8 maxc = MAX(r, MAX(g, b));
+    const UINT8 minc = MIN(r, MIN(g, b));
+
+    UINT8 uh, us;
+    const UINT8 uv = maxc;
+
     if (minc == maxc) {
         uh = 0;
         us = 0;
     } else {
-        cr = (float)(maxc - minc);
-        s = cr / (float)maxc;
-        rc = ((float)(maxc - r)) / cr;
-        gc = ((float)(maxc - g)) / cr;
-        bc = ((float)(maxc - b)) / cr;
-        if (r == maxc) {
-            h = bc - gc;
-        } else if (g == maxc) {
-            h = 2.0 + rc - bc;
-        } else {
-            h = 4.0 + gc - rc;
-        }
-        // incorrect hue happens if h/6 is negative.
-        h = fmod((h / 6.0 + 1.0), 1.0);
+        const UINT8 color_range = maxc - minc;
+        double h;
 
-        uh = (UINT8)CLIP8((int)(h * 255.0));
-        us = (UINT8)CLIP8((int)(s * 255.0));
+        const double cr = (double)color_range;
+        if (r == maxc) {
+            h = (g - b) / cr;
+        } else if (g == maxc) {
+            h = 2.0 + (b - r) / cr;
+        } else {
+            h = 4.0 + (r - g) / cr;
+        }
+
+        // the modulus operator in Python does not exactly match
+        // the modulus operator or the fmod function in C
+        // https://stackoverflow.com/a/3883019/3878168
+        // "h = (h/6.0) % 1.0" in Python can be computed as:
+        h = h / 6.0;
+        h = h - floor(h);
+
+        uh = (UINT8)(255.0 * h);
+        us = 255 * color_range / maxc;
     }
+
     out[0] = uh;
     out[1] = us;
     out[2] = uv;
@@ -359,7 +365,8 @@ rgb2hsv(UINT8 *out, const UINT8 *in, int xsize) {
 }
 
 static void
-hsv2rgb(UINT8 *out, const UINT8 *in, int xsize) {  // following colorsys.py
+hsv2rgb(UINT8 *out, const UINT8 *in, int xsize) {
+    // based on Python's colorsys module
 
     int p, q, t;
     UINT8 up, uq, ut;
