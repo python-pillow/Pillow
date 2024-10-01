@@ -44,6 +44,7 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view);
 typedef struct {
     PyObject_HEAD Py_ssize_t count;
     double *xy;
+    int mapping;
 } PyPathObject;
 
 static PyTypeObject PyPathType;
@@ -91,6 +92,7 @@ path_new(Py_ssize_t count, double *xy, int duplicate) {
 
     path->count = count;
     path->xy = xy;
+    path->mapping = 0;
 
     return path;
 }
@@ -276,6 +278,10 @@ path_compact(PyPathObject *self, PyObject *args) {
 
     double cityblock = 2.0;
 
+    if (self->mapping) {
+        PyErr_SetString(PyExc_ValueError, "Path compacted during mapping");
+        return NULL;
+    }
     if (!PyArg_ParseTuple(args, "|d:compact", &cityblock)) {
         return NULL;
     }
@@ -393,11 +399,13 @@ path_map(PyPathObject *self, PyObject *args) {
     xy = self->xy;
 
     /* apply function to coordinate set */
+    self->mapping = 1;
     for (i = 0; i < self->count; i++) {
         double x = xy[i + i];
         double y = xy[i + i + 1];
         PyObject *item = PyObject_CallFunction(function, "dd", x, y);
         if (!item || !PyArg_ParseTuple(item, "dd", &x, &y)) {
+            self->mapping = 0;
             Py_XDECREF(item);
             return NULL;
         }
@@ -405,6 +413,7 @@ path_map(PyPathObject *self, PyObject *args) {
         xy[i + i + 1] = y;
         Py_DECREF(item);
     }
+    self->mapping = 0;
 
     Py_INCREF(Py_None);
     return Py_None;
