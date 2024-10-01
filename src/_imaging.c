@@ -1579,16 +1579,12 @@ _putdata(ImagingObject *self, PyObject *args) {
                 int bigendian = 0;
                 if (image->type == IMAGING_TYPE_SPECIAL) {
                     // I;16*
-                    if (strcmp(image->mode, "I;16N") == 0) {
+                    if (strcmp(image->mode, "I;16B") == 0
 #ifdef WORDS_BIGENDIAN
-                        bigendian = 1;
-#else
-                        bigendian = 0;
+                        || strcmp(image->mode, "I;16N") == 0
 #endif
-                    } else if (strcmp(image->mode, "I;16B") == 0) {
+                    ) {
                         bigendian = 1;
-                    } else {
-                        bigendian = 0;
                     }
                 }
                 for (i = x = y = 0; i < n; i++) {
