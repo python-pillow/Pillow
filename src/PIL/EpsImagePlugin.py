@@ -361,13 +361,10 @@ class EpsImageFile(ImageFile.ImageFile):
             raise OSError(msg)
 
         # An "ImageData" size takes precedence over the "BoundingBox".
-        if imagedata_size:
-            self._size = imagedata_size
-        else:
-            self._size = (
-                bounding_box[2] - bounding_box[0],
-                bounding_box[3] - bounding_box[1],
-            )
+        self._size = imagedata_size or (
+            bounding_box[2] - bounding_box[0],
+            bounding_box[3] - bounding_box[1],
+        )
 
         self.tile = [
             ImageFile._Tile("eps", (0, 0) + self.size, offset, (length, bounding_box))
