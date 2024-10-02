@@ -6,11 +6,13 @@ on:
       - "**"
     paths:
       - ".github/workflows/cifuzz.yml"
+      - ".github/workflows/wheels-dependencies.sh"
       - "**.c"
       - "**.h"
   pull_request:
     paths:
       - ".github/workflows/cifuzz.yml"
+      - ".github/workflows/wheels-dependencies.sh"
       - "**.c"
       - "**.h"
   workflow_dispatch:
