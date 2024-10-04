@@ -698,8 +698,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     }
 
     /* Check that this image is something we can handle */
-    if (image->numcomps < 1 || image->numcomps > 4 ||
-        image->color_space == OPJ_CLRSPC_UNKNOWN) {
+    if (image->numcomps < 1 || image->numcomps > 4) {
         state->errcode = IMAGING_CODEC_BROKEN;
         state->state = J2K_STATE_FAILED;
         goto quick_exit;
@@ -744,7 +743,7 @@ j2k_decode_entry(Imaging im, ImagingCodecState state) {
     /* Find the correct unpacker */
     color_space = image->color_space;
 
-    if (color_space == OPJ_CLRSPC_UNSPECIFIED) {
+    if (color_space == OPJ_CLRSPC_UNKNOWN || color_space == OPJ_CLRSPC_UNSPECIFIED) {
         switch (image->numcomps) {
             case 1:
             case 2:
@@ -980,10 +979,3 @@ ImagingJpeg2KVersion(void) {
 }
 
 #endif /* HAVE_OPENJPEG */
-
-/*
- * Local Variables:
- * c-basic-offset: 4
- * End:
- *
- */

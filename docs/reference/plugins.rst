@@ -185,6 +185,14 @@ Plugin reference
     :undoc-members:
     :show-inheritance:
 
+:mod:`~PIL.MpoImagePlugin` Module
+----------------------------------
+
+.. automodule:: PIL.MpoImagePlugin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`~PIL.MspImagePlugin` Module
 ---------------------------------
 

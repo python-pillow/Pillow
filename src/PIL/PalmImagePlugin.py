@@ -173,6 +173,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     flags = 0
     if im.mode == "P" and "custom-colormap" in im.info:
+        assert im.palette is not None
         flags = flags & _FLAGS["custom-colormap"]
         colormapsize = 4 * 256 + 2
         colormapmode = im.palette.mode
@@ -213,7 +214,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 )
 
     # now convert data to raw form
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, rowbytes, 1))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, rowbytes, 1))]
+    )
 
     if hasattr(fp, "flush"):
         fp.flush()

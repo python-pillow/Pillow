@@ -424,8 +424,10 @@ class TestFilePng:
         im = roundtrip(im, pnginfo=info)
         assert im.info == {"spam": "Eggs", "eggs": "Spam"}
         assert im.text == {"spam": "Eggs", "eggs": "Spam"}
+        assert isinstance(im.text["spam"], PngImagePlugin.iTXt)
         assert im.text["spam"].lang == "en"
         assert im.text["spam"].tkey == "Spam"
+        assert isinstance(im.text["eggs"], PngImagePlugin.iTXt)
         assert im.text["eggs"].lang == "en"
         assert im.text["eggs"].tkey == "Eggs"
 
@@ -776,7 +778,7 @@ class TestFilePng:
 
         mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-        sys.stdout = mystdout  # type: ignore[assignment]
+        sys.stdout = mystdout
 
         with Image.open(TEST_PNG_FILE) as im:
             im.save(sys.stdout, "PNG")

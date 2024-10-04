@@ -13,10 +13,6 @@ except ImportError:
     SUPPORTED = False
 
 
-_VALID_WEBP_MODES = {"RGBX": True, "RGBA": True, "RGB": True}
-
-_VALID_WEBP_LEGACY_MODES = {"RGB": True, "RGBA": True}
-
 _VP8_MODES_BY_IDENTIFIER = {
     b"VP8 ": "RGB",
     b"VP8X": "RGBA",
@@ -45,22 +41,6 @@ class WebPImageFile(ImageFile.ImageFile):
     __logical_frame = 0
 
     def _open(self) -> None:
-        if not _webp.HAVE_WEBPANIM:
-            # Legacy mode
-            data, width, height, self._mode, icc_profile, exif = _webp.WebPDecode(
-                self.fp.read()
-            )
-            if icc_profile:
-                self.info["icc_profile"] = icc_profile
-            if exif:
-                self.info["exif"] = exif
-            self._size = width, height
-            self.fp = BytesIO(data)
-            self.tile = [("raw", (0, 0) + self.size, 0, self.mode)]
-            self.n_frames = 1
-            self.is_animated = False
-            return
-
         # Use the newer AnimDecoder API to parse the (possibly) animated file,
         # and access muxed chunks like ICC/EXIF/XMP.
         self._decoder = _webp.WebPAnimDecoder(self.fp.read())
@@ -96,7 +76,7 @@ class WebPImageFile(ImageFile.ImageFile):
         # Initialize seek state
         self._reset(reset=False)
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         if "exif" not in self.info:
             return None
         return self.getexif()._get_merged_dict()
@@ -145,21 +125,20 @@ class WebPImageFile(ImageFile.ImageFile):
             self._get_next()  # Advance to the requested frame
 
     def load(self) -> Image.core.PixelAccess | None:
-        if _webp.HAVE_WEBPANIM:
-            if self.__loaded != self.__logical_frame:
-                self._seek(self.__logical_frame)
+        if self.__loaded != self.__logical_frame:
+            self._seek(self.__logical_frame)
 
-                # We need to load the image data for this frame
-                data, timestamp, duration = self._get_next()
-                self.info["timestamp"] = timestamp
-                self.info["duration"] = duration
-                self.__loaded = self.__logical_frame
+            # We need to load the image data for this frame
+            data, timestamp, duration = self._get_next()
+            self.info["timestamp"] = timestamp
+            self.info["duration"] = duration
+            self.__loaded = self.__logical_frame
 
-                # Set tile
-                if self.fp and self._exclusive_fp:
-                    self.fp.close()
-                self.fp = BytesIO(data)
-                self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
+            # Set tile
+            if self.fp and self._exclusive_fp:
+                self.fp.close()
+            self.fp = BytesIO(data)
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.rawmode)]
 
         return super().load()
 
@@ -167,10 +146,14 @@ class WebPImageFile(ImageFile.ImageFile):
         pass
 
     def tell(self) -> int:
-        if not _webp.HAVE_WEBPANIM:
-            return super().tell()
-
         return self.__logical_frame
+
+
+def _convert_frame(im: Image.Image) -> Image.Image:
+    # Make sure image mode is supported
+    if im.mode not in ("RGBX", "RGBA", "RGB"):
+        im = im.convert("RGBA" if im.has_transparency_data else "RGB")
+    return im
 
 
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -263,31 +246,13 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
             for idx in range(nfr):
                 ims.seek(idx)
-                ims.load()
 
-                # Make sure image mode is supported
-                frame = ims
-                rawmode = ims.mode
-                if ims.mode not in _VALID_WEBP_MODES:
-                    alpha = (
-                        "A" in ims.mode
-                        or "a" in ims.mode
-                        or (ims.mode == "P" and "A" in ims.im.getpalettemode())
-                    )
-                    rawmode = "RGBA" if alpha else "RGB"
-                    frame = ims.convert(rawmode)
-
-                if rawmode == "RGB":
-                    # For faster conversion, use RGBX
-                    rawmode = "RGBX"
+                frame = _convert_frame(ims)
 
                 # Append the frame to the animation encoder
                 enc.add(
-                    frame.tobytes("raw", rawmode),
+                    frame.getim(),
                     round(timestamp),
-                    frame.size[0],
-                    frame.size[1],
-                    rawmode,
                     lossless,
                     quality,
                     alpha_quality,
@@ -305,7 +270,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         im.seek(cur_idx)
 
     # Force encoder to flush frames
-    enc.add(None, round(timestamp), 0, 0, "", lossless, quality, alpha_quality, 0)
+    enc.add(None, round(timestamp), lossless, quality, alpha_quality, 0)
 
     # Get the final output from the encoder
     data = enc.assemble(icc_profile, exif, xmp)
@@ -330,17 +295,13 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     method = im.encoderinfo.get("method", 4)
     exact = 1 if im.encoderinfo.get("exact") else 0
 
-    if im.mode not in _VALID_WEBP_LEGACY_MODES:
-        im = im.convert("RGBA" if im.has_transparency_data else "RGB")
+    im = _convert_frame(im)
 
     data = _webp.WebPEncode(
-        im.tobytes(),
-        im.size[0],
-        im.size[1],
+        im.getim(),
         lossless,
         float(quality),
         float(alpha_quality),
-        im.mode,
         icc_profile,
         method,
         exact,
@@ -357,7 +318,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
 if SUPPORTED:
     Image.register_save(WebPImageFile.format, _save)
-    if _webp.HAVE_WEBPANIM:
-        Image.register_save_all(WebPImageFile.format, _save_all)
+    Image.register_save_all(WebPImageFile.format, _save_all)
     Image.register_extension(WebPImageFile.format, ".webp")
     Image.register_mime(WebPImageFile.format, "image/webp")

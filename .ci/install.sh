@@ -21,7 +21,7 @@ set -e
 
 if [[ $(uname) != CYGWIN* ]]; then
     sudo apt-get -qq install libfreetype6-dev liblcms2-dev python3-tk\
-                             ghostscript libffi-dev libjpeg-turbo-progs libopenjp2-7-dev\
+                             ghostscript libjpeg-turbo-progs libopenjp2-7-dev\
                              cmake meson imagemagick libharfbuzz-dev libfribidi-dev\
                              sway wl-clipboard libopenblas-dev
 fi
@@ -30,6 +30,7 @@ python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade wheel
 python3 -m pip install coverage
 python3 -m pip install defusedxml
+python3 -m pip install ipython
 python3 -m pip install olefile
 python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov
@@ -37,12 +38,7 @@ python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
 
 if [[ $(uname) != CYGWIN* ]]; then
-    # TODO Update condition when NumPy supports free-threading
-    if [[ "$PYTHON_GIL" == "0" ]]; then
-        python3 -m pip install numpy --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
-    else
-        python3 -m pip install numpy
-    fi
+    python3 -m pip install numpy
 
     # PyQt6 doesn't support PyPy3
     if [[ $GHA_PYTHON_VERSION == 3.* ]]; then
@@ -52,10 +48,7 @@ if [[ $(uname) != CYGWIN* ]]; then
     fi
 
     # Pyroma uses non-isolated build and fails with old setuptools
-    if [[
-        $GHA_PYTHON_VERSION == pypy3.9
-        || $GHA_PYTHON_VERSION == 3.9
-    ]]; then
+    if [[ $GHA_PYTHON_VERSION == 3.9 ]]; then
         # To match pyproject.toml
         python3 -m pip install "setuptools>=67.8"
     fi

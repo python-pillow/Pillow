@@ -791,13 +791,13 @@ ImagingGenericTransform(
     char *out;
     double xx, yy;
 
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+        return (Imaging)ImagingError_ModeError();
+    }
+
     ImagingTransformFilter filter = getfilter(imIn, filterid);
     if (!filter) {
         return (Imaging)ImagingError_ValueError("bad filter number");
-    }
-
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
-        return (Imaging)ImagingError_ModeError();
     }
 
     ImagingCopyPalette(imOut, imIn);
@@ -1035,6 +1035,10 @@ ImagingTransformAffine(
     double xx, yy;
     double xo, yo;
 
+    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
+        return (Imaging)ImagingError_ModeError();
+    }
+
     if (filterid || imIn->type == IMAGING_TYPE_SPECIAL) {
         return ImagingGenericTransform(
             imOut, imIn, x0, y0, x1, y1, affine_transform, a, filterid, fill
@@ -1044,10 +1048,6 @@ ImagingTransformAffine(
     if (a[1] == 0 && a[3] == 0) {
         /* Scaling */
         return ImagingScaleAffine(imOut, imIn, x0, y0, x1, y1, a, fill);
-    }
-
-    if (!imOut || !imIn || strcmp(imIn->mode, imOut->mode) != 0) {
-        return (Imaging)ImagingError_ModeError();
     }
 
     if (x0 < 0) {

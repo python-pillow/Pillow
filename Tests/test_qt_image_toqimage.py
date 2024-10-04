@@ -21,7 +21,7 @@ def test_sanity(mode: str, tmp_path: Path) -> None:
     src = hopper(mode)
     data = ImageQt.toqimage(src)
 
-    assert isinstance(data, QImage)
+    assert isinstance(data, QImage)  # type: ignore[arg-type, misc]
     assert not data.isNull()
 
     # reload directly from the qimage

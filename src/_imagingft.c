@@ -272,7 +272,7 @@ text_layout_raqm(
         }
         set_text = raqm_set_text(rq, text, size);
         PyMem_Free(text);
-    } else {
+    } else if (PyBytes_Check(string)) {
         char *buffer;
         PyBytes_AsStringAndSize(string, &buffer, &size);
         if (!buffer || !size) {
@@ -281,6 +281,9 @@ text_layout_raqm(
             goto failed;
         }
         set_text = raqm_set_text_utf8(rq, buffer, size);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "expected string or bytes");
+        goto failed;
     }
     if (!set_text) {
         PyErr_SetString(PyExc_ValueError, "raqm_set_text() failed");
@@ -425,8 +428,11 @@ text_layout_fallback(
 
     if (PyUnicode_Check(string)) {
         count = PyUnicode_GET_LENGTH(string);
-    } else {
+    } else if (PyBytes_Check(string)) {
         PyBytes_AsStringAndSize(string, &buffer, &count);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "expected string or bytes");
+        return 0;
     }
     if (count == 0) {
         return 0;
@@ -827,7 +833,7 @@ font_render(FontObject *self, PyObject *args) {
     Py_ssize_t id;
     int mask = 0;  /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0; /* is FT_LOAD_COLOR enabled? */
-    int stroke_width = 0;
+    float stroke_width = 0;
     PY_LONG_LONG foreground_ink_long = 0;
     unsigned int foreground_ink;
     const char *mode = NULL;
@@ -847,7 +853,7 @@ font_render(FontObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "OO|zzOzizLffO:render",
+            "OO|zzOzfzLffO:render",
             &string,
             &fill,
             &mode,
@@ -913,8 +919,8 @@ font_render(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    width += stroke_width * 2 + ceil(x_start);
-    height += stroke_width * 2 + ceil(y_start);
+    width += ceil(stroke_width * 2 + x_start);
+    height += ceil(stroke_width * 2 + y_start);
     image = PyObject_CallFunction(fill, "ii", width, height);
     if (image == Py_None) {
         PyMem_Del(glyph_info);
@@ -928,8 +934,8 @@ font_render(FontObject *self, PyObject *args) {
     Py_XDECREF(imageId);
     im = (Imaging)id;
 
-    x_offset -= stroke_width;
-    y_offset -= stroke_width;
+    x_offset = round(x_offset - stroke_width);
+    y_offset = round(y_offset - stroke_width);
     if (count == 0 || width == 0 || height == 0) {
         PyMem_Del(glyph_info);
         return Py_BuildValue("N(ii)", image, x_offset, y_offset);
@@ -944,7 +950,7 @@ font_render(FontObject *self, PyObject *args) {
 
         FT_Stroker_Set(
             stroker,
-            (FT_Fixed)stroke_width * 64,
+            (FT_Fixed)round(stroke_width * 64),
             FT_STROKER_LINECAP_ROUND,
             FT_STROKER_LINEJOIN_ROUND,
             0
@@ -982,8 +988,8 @@ font_render(FontObject *self, PyObject *args) {
     }
 
     /* set pen position to text origin */
-    x = (-x_min + stroke_width + x_start) * 64;
-    y = (-y_max + (-stroke_width) - y_start) * 64;
+    x = round((-x_min + stroke_width + x_start) * 64);
+    y = round((-y_max + (-stroke_width) - y_start) * 64);
 
     if (stroker == NULL) {
         load_flags |= FT_LOAD_RENDER;
@@ -1243,7 +1249,7 @@ font_getvarnames(FontObject *self) {
         return PyErr_NoMemory();
     }
 
-    for (int i = 0; i < num_namedstyles; i++) {
+    for (unsigned int i = 0; i < num_namedstyles; i++) {
         list_names_filled[i] = 0;
     }
 

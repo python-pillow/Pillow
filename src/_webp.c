@@ -4,8 +4,6 @@
 #include <webp/encode.h>
 #include <webp/decode.h>
 #include <webp/types.h>
-
-#ifdef HAVE_WEBPMUX
 #include <webp/mux.h>
 #include <webp/demux.h>
 
@@ -13,12 +11,10 @@
  * Check the versions from mux.h and demux.h, to ensure the WebPAnimEncoder and
  * WebPAnimDecoder APIs are present (initial support was added in 0.5.0). The
  * very early versions had some significant differences, so we require later
- * versions, before enabling animation support.
+ * versions.
  */
-#if WEBP_MUX_ABI_VERSION >= 0x0104 && WEBP_DEMUX_ABI_VERSION >= 0x0105
-#define HAVE_WEBPANIM
-#endif
-
+#if WEBP_MUX_ABI_VERSION < 0x0106 || WEBP_DEMUX_ABI_VERSION < 0x0107
+#error libwebp 0.5.0 and above is required. Upgrade libwebp or build Pillow with --disable-webp flag
 #endif
 
 void
@@ -34,8 +30,6 @@ ImagingSectionLeave(ImagingSectionCookie *cookie) {
 /* -------------------------------------------------------------------- */
 /* WebP Muxer Error Handling                                            */
 /* -------------------------------------------------------------------- */
-
-#ifdef HAVE_WEBPMUX
 
 static const char *const kErrorMessages[-WEBP_MUX_NOT_ENOUGH_DATA + 1] = {
     "WEBP_MUX_NOT_FOUND",
@@ -89,13 +83,52 @@ HandleMuxError(WebPMuxError err, char *chunk) {
     return NULL;
 }
 
-#endif
+/* -------------------------------------------------------------------- */
+/* Frame import                                                         */
+/* -------------------------------------------------------------------- */
+
+static int
+import_frame_libwebp(WebPPicture *frame, Imaging im) {
+    if (strcmp(im->mode, "RGBA") && strcmp(im->mode, "RGB") &&
+        strcmp(im->mode, "RGBX")) {
+        PyErr_SetString(PyExc_ValueError, "unsupported image mode");
+        return -1;
+    }
+
+    frame->width = im->xsize;
+    frame->height = im->ysize;
+    frame->use_argb = 1;  // Don't convert RGB pixels to YUV
+
+    if (!WebPPictureAlloc(frame)) {
+        PyErr_SetString(PyExc_MemoryError, "can't allocate picture frame");
+        return -2;
+    }
+
+    int ignore_fourth_channel = strcmp(im->mode, "RGBA");
+    for (int y = 0; y < im->ysize; ++y) {
+        UINT8 *src = (UINT8 *)im->image32[y];
+        UINT32 *dst = frame->argb + frame->argb_stride * y;
+        if (ignore_fourth_channel) {
+            for (int x = 0; x < im->xsize; ++x) {
+                dst[x] =
+                    ((UINT32)(src[x * 4 + 2]) | ((UINT32)(src[x * 4 + 1]) << 8) |
+                     ((UINT32)(src[x * 4]) << 16) | (0xff << 24));
+            }
+        } else {
+            for (int x = 0; x < im->xsize; ++x) {
+                dst[x] =
+                    ((UINT32)(src[x * 4 + 2]) | ((UINT32)(src[x * 4 + 1]) << 8) |
+                     ((UINT32)(src[x * 4]) << 16) | ((UINT32)(src[x * 4 + 3]) << 24));
+            }
+        }
+    }
+
+    return 0;
+}
 
 /* -------------------------------------------------------------------- */
 /* WebP Animation Support                                               */
 /* -------------------------------------------------------------------- */
-
-#ifdef HAVE_WEBPANIM
 
 // Encoder type
 typedef struct {
@@ -190,16 +223,14 @@ _anim_encoder_dealloc(PyObject *self) {
 
 PyObject *
 _anim_encoder_add(PyObject *self, PyObject *args) {
-    uint8_t *rgb;
-    Py_ssize_t size;
+    PyObject *i0;
+    Imaging im;
     int timestamp;
-    int width;
-    int height;
-    char *mode;
     int lossless;
     float quality_factor;
     float alpha_quality_factor;
     int method;
+    ImagingSectionCookie cookie;
     WebPConfig config;
     WebPAnimEncoderObject *encp = (WebPAnimEncoderObject *)self;
     WebPAnimEncoder *enc = encp->enc;
@@ -207,13 +238,9 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "z#iiisiffi",
-            (char **)&rgb,
-            &size,
+            "Oiiffi",
+            &i0,
             &timestamp,
-            &width,
-            &height,
-            &mode,
             &lossless,
             &quality_factor,
             &alpha_quality_factor,
@@ -223,10 +250,17 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
     }
 
     // Check for NULL frame, which sets duration of final frame
-    if (!rgb) {
+    if (i0 == Py_None) {
         WebPAnimEncoderAdd(enc, NULL, timestamp, NULL);
         Py_RETURN_NONE;
     }
+
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
+
+    im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
 
     // Setup config for this frame
     if (!WebPConfigInit(&config)) {
@@ -244,20 +278,15 @@ _anim_encoder_add(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // Populate the frame with raw bytes passed to us
-    frame->width = width;
-    frame->height = height;
-    frame->use_argb = 1;  // Don't convert RGB pixels to YUV
-    if (strcmp(mode, "RGBA") == 0) {
-        WebPPictureImportRGBA(frame, rgb, 4 * width);
-    } else if (strcmp(mode, "RGBX") == 0) {
-        WebPPictureImportRGBX(frame, rgb, 4 * width);
-    } else {
-        WebPPictureImportRGB(frame, rgb, 3 * width);
+    if (import_frame_libwebp(frame, im)) {
+        return NULL;
     }
 
-    // Add the frame to the encoder
-    if (!WebPAnimEncoderAdd(enc, frame, timestamp, &config)) {
+    ImagingSectionEnter(&cookie);
+    int ok = WebPAnimEncoderAdd(enc, frame, timestamp, &config);
+    ImagingSectionLeave(&cookie);
+
+    if (!ok) {
         PyErr_SetString(PyExc_RuntimeError, WebPAnimEncoderGetError(enc));
         return NULL;
     }
@@ -576,34 +605,27 @@ static PyTypeObject WebPAnimDecoder_Type = {
     0,                                 /*tp_getset*/
 };
 
-#endif
-
 /* -------------------------------------------------------------------- */
 /* Legacy WebP Support                                                  */
 /* -------------------------------------------------------------------- */
 
 PyObject *
 WebPEncode_wrapper(PyObject *self, PyObject *args) {
-    int width;
-    int height;
     int lossless;
     float quality_factor;
     float alpha_quality_factor;
     int method;
     int exact;
-    uint8_t *rgb;
+    Imaging im;
+    PyObject *i0;
     uint8_t *icc_bytes;
     uint8_t *exif_bytes;
     uint8_t *xmp_bytes;
     uint8_t *output;
-    char *mode;
-    Py_ssize_t size;
     Py_ssize_t icc_size;
     Py_ssize_t exif_size;
     Py_ssize_t xmp_size;
     size_t ret_size;
-    int rgba_mode;
-    int channels;
     int ok;
     ImagingSectionCookie cookie;
     WebPConfig config;
@@ -612,15 +634,11 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "y#iiiffss#iis#s#",
-            (char **)&rgb,
-            &size,
-            &width,
-            &height,
+            "Oiffs#iis#s#",
+            &i0,
             &lossless,
             &quality_factor,
             &alpha_quality_factor,
-            &mode,
             &icc_bytes,
             &icc_size,
             &method,
@@ -633,15 +651,12 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    rgba_mode = strcmp(mode, "RGBA") == 0;
-    if (!rgba_mode && strcmp(mode, "RGB") != 0) {
-        Py_RETURN_NONE;
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
     }
 
-    channels = rgba_mode ? 4 : 3;
-    if (size < width * height * channels) {
-        Py_RETURN_NONE;
-    }
+    im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
 
     // Setup config for this frame
     if (!WebPConfigInit(&config)) {
@@ -652,10 +667,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
     config.quality = quality_factor;
     config.alpha_quality = alpha_quality_factor;
     config.method = method;
-#if WEBP_ENCODER_ABI_VERSION >= 0x0209
-    // the "exact" flag is only available in libwebp 0.5.0 and later
     config.exact = exact;
-#endif
 
     // Validate the config
     if (!WebPValidateConfig(&config)) {
@@ -667,14 +679,9 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "could not initialise picture");
         return NULL;
     }
-    pic.width = width;
-    pic.height = height;
-    pic.use_argb = 1;  // Don't convert RGB pixels to YUV
 
-    if (rgba_mode) {
-        WebPPictureImportRGBA(&pic, rgb, channels * width);
-    } else {
-        WebPPictureImportRGB(&pic, rgb, channels * width);
+    if (import_frame_libwebp(&pic, im)) {
+        return NULL;
     }
 
     WebPMemoryWriterInit(&writer);
@@ -687,19 +694,21 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
 
     WebPPictureFree(&pic);
     if (!ok) {
-        PyErr_Format(PyExc_ValueError, "encoding error %d", (&pic)->error_code);
+        int error_code = (&pic)->error_code;
+        char message[50] = "";
+        if (error_code == VP8_ENC_ERROR_BAD_DIMENSION) {
+            sprintf(
+                message,
+                ": Image size exceeds WebP limit of %d pixels",
+                WEBP_MAX_DIMENSION
+            );
+        }
+        PyErr_Format(PyExc_ValueError, "encoding error %d%s", error_code, message);
         return NULL;
     }
     output = writer.mem;
     ret_size = writer.size;
 
-#ifndef HAVE_WEBPMUX
-    if (ret_size > 0) {
-        PyObject *ret = PyBytes_FromStringAndSize((char *)output, ret_size);
-        free(output);
-        return ret;
-    }
-#else
     {
         /* I want to truncate the *_size items that get passed into WebP
            data. Pypy2.1.0 had some issues where the Py_ssize_t items had
@@ -775,130 +784,7 @@ WebPEncode_wrapper(PyObject *self, PyObject *args) {
             return ret;
         }
     }
-#endif
     Py_RETURN_NONE;
-}
-
-PyObject *
-WebPDecode_wrapper(PyObject *self, PyObject *args) {
-    PyBytesObject *webp_string;
-    const uint8_t *webp;
-    Py_ssize_t size;
-    PyObject *ret = Py_None, *bytes = NULL, *pymode = NULL, *icc_profile = NULL,
-             *exif = NULL;
-    WebPDecoderConfig config;
-    VP8StatusCode vp8_status_code = VP8_STATUS_OK;
-    char *mode = "RGB";
-
-    if (!PyArg_ParseTuple(args, "S", &webp_string)) {
-        return NULL;
-    }
-
-    if (!WebPInitDecoderConfig(&config)) {
-        Py_RETURN_NONE;
-    }
-
-    PyBytes_AsStringAndSize((PyObject *)webp_string, (char **)&webp, &size);
-
-    vp8_status_code = WebPGetFeatures(webp, size, &config.input);
-    if (vp8_status_code == VP8_STATUS_OK) {
-        // If we don't set it, we don't get alpha.
-        // Initialized to MODE_RGB
-        if (config.input.has_alpha) {
-            config.output.colorspace = MODE_RGBA;
-            mode = "RGBA";
-        }
-
-#ifndef HAVE_WEBPMUX
-        vp8_status_code = WebPDecode(webp, size, &config);
-#else
-        {
-            int copy_data = 0;
-            WebPData data = {webp, size};
-            WebPMuxFrameInfo image;
-            WebPData icc_profile_data = {0};
-            WebPData exif_data = {0};
-
-            WebPMux *mux = WebPMuxCreate(&data, copy_data);
-            if (NULL == mux) {
-                goto end;
-            }
-
-            if (WEBP_MUX_OK != WebPMuxGetFrame(mux, 1, &image)) {
-                WebPMuxDelete(mux);
-                goto end;
-            }
-
-            webp = image.bitstream.bytes;
-            size = image.bitstream.size;
-
-            vp8_status_code = WebPDecode(webp, size, &config);
-
-            if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "ICCP", &icc_profile_data)) {
-                icc_profile = PyBytes_FromStringAndSize(
-                    (const char *)icc_profile_data.bytes, icc_profile_data.size
-                );
-            }
-
-            if (WEBP_MUX_OK == WebPMuxGetChunk(mux, "EXIF", &exif_data)) {
-                exif = PyBytes_FromStringAndSize(
-                    (const char *)exif_data.bytes, exif_data.size
-                );
-            }
-
-            WebPDataClear(&image.bitstream);
-            WebPMuxDelete(mux);
-        }
-#endif
-    }
-
-    if (vp8_status_code != VP8_STATUS_OK) {
-        goto end;
-    }
-
-    if (config.output.colorspace < MODE_YUV) {
-        bytes = PyBytes_FromStringAndSize(
-            (char *)config.output.u.RGBA.rgba, config.output.u.RGBA.size
-        );
-    } else {
-        // Skipping YUV for now. Need Test Images.
-        // UNDONE -- unclear if we'll ever get here if we set mode_rgb*
-        bytes = PyBytes_FromStringAndSize(
-            (char *)config.output.u.YUVA.y, config.output.u.YUVA.y_size
-        );
-    }
-
-    pymode = PyUnicode_FromString(mode);
-    ret = Py_BuildValue(
-        "SiiSSS",
-        bytes,
-        config.output.width,
-        config.output.height,
-        pymode,
-        NULL == icc_profile ? Py_None : icc_profile,
-        NULL == exif ? Py_None : exif
-    );
-
-end:
-    WebPFreeDecBuffer(&config.output);
-
-    Py_XDECREF(bytes);
-    Py_XDECREF(pymode);
-    Py_XDECREF(icc_profile);
-    Py_XDECREF(exif);
-
-    if (Py_None == ret) {
-        Py_RETURN_NONE;
-    }
-
-    return ret;
-}
-
-// Return the decoder's version number, packed in hexadecimal using 8bits for
-// each of major/minor/revision. E.g: v2.5.7 is 0x020507.
-PyObject *
-WebPDecoderVersion_wrapper() {
-    return Py_BuildValue("i", WebPGetDecoderVersion());
 }
 
 // Version as string
@@ -916,85 +802,26 @@ WebPDecoderVersion_str(void) {
     return version;
 }
 
-/*
- * The version of webp that ships with (0.1.3) Ubuntu 12.04 doesn't handle alpha well.
- * Files that are valid with 0.3 are reported as being invalid.
- */
-int
-WebPDecoderBuggyAlpha(void) {
-    return WebPGetDecoderVersion() == 0x0103;
-}
-
-PyObject *
-WebPDecoderBuggyAlpha_wrapper() {
-    return Py_BuildValue("i", WebPDecoderBuggyAlpha());
-}
-
 /* -------------------------------------------------------------------- */
 /* Module Setup                                                         */
 /* -------------------------------------------------------------------- */
 
 static PyMethodDef webpMethods[] = {
-#ifdef HAVE_WEBPANIM
     {"WebPAnimDecoder", _anim_decoder_new, METH_VARARGS, "WebPAnimDecoder"},
     {"WebPAnimEncoder", _anim_encoder_new, METH_VARARGS, "WebPAnimEncoder"},
-#endif
     {"WebPEncode", WebPEncode_wrapper, METH_VARARGS, "WebPEncode"},
-    {"WebPDecode", WebPDecode_wrapper, METH_VARARGS, "WebPDecode"},
-    {"WebPDecoderVersion", WebPDecoderVersion_wrapper, METH_NOARGS, "WebPVersion"},
-    {"WebPDecoderBuggyAlpha",
-     WebPDecoderBuggyAlpha_wrapper,
-     METH_NOARGS,
-     "WebPDecoderBuggyAlpha"},
     {NULL, NULL}
 };
 
-void
-addMuxFlagToModule(PyObject *m) {
-    PyObject *have_webpmux;
-#ifdef HAVE_WEBPMUX
-    have_webpmux = Py_True;
-#else
-    have_webpmux = Py_False;
-#endif
-    Py_INCREF(have_webpmux);
-    PyModule_AddObject(m, "HAVE_WEBPMUX", have_webpmux);
-}
-
-void
-addAnimFlagToModule(PyObject *m) {
-    PyObject *have_webpanim;
-#ifdef HAVE_WEBPANIM
-    have_webpanim = Py_True;
-#else
-    have_webpanim = Py_False;
-#endif
-    Py_INCREF(have_webpanim);
-    PyModule_AddObject(m, "HAVE_WEBPANIM", have_webpanim);
-}
-
-void
-addTransparencyFlagToModule(PyObject *m) {
-    PyObject *have_transparency = PyBool_FromLong(!WebPDecoderBuggyAlpha());
-    if (PyModule_AddObject(m, "HAVE_TRANSPARENCY", have_transparency)) {
-        Py_DECREF(have_transparency);
-    }
-}
-
 static int
 setup_module(PyObject *m) {
-#ifdef HAVE_WEBPANIM
     /* Ready object types */
     if (PyType_Ready(&WebPAnimDecoder_Type) < 0 ||
         PyType_Ready(&WebPAnimEncoder_Type) < 0) {
         return -1;
     }
-#endif
-    PyObject *d = PyModule_GetDict(m);
-    addMuxFlagToModule(m);
-    addAnimFlagToModule(m);
-    addTransparencyFlagToModule(m);
 
+    PyObject *d = PyModule_GetDict(m);
     PyObject *v = PyUnicode_FromString(WebPDecoderVersion_str());
     PyDict_SetItemString(d, "webpdecoder_version", v ? v : Py_None);
     Py_XDECREF(v);

@@ -8,14 +8,11 @@ from PIL import Image
 
 from .helper import assert_image_equal, hopper
 
-_webp = pytest.importorskip("PIL._webp", reason="WebP support not installed")
+pytest.importorskip("PIL._webp", reason="WebP support not installed")
 RGB_MODE = "RGB"
 
 
 def test_write_lossless_rgb(tmp_path: Path) -> None:
-    if _webp.WebPDecoderVersion() < 0x0200:
-        pytest.skip("lossless not included")
-
     temp_file = str(tmp_path / "temp.webp")
 
     hopper(RGB_MODE).save(temp_file, lossless=True)

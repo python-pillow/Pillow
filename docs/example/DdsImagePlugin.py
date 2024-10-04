@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import struct
 from io import BytesIO
+from typing import IO
 
 from PIL import Image, ImageFile
 
@@ -94,26 +95,26 @@ DXT3_FOURCC = 0x33545844
 DXT5_FOURCC = 0x35545844
 
 
-def _decode565(bits):
+def _decode565(bits: int) -> tuple[int, int, int]:
     a = ((bits >> 11) & 0x1F) << 3
     b = ((bits >> 5) & 0x3F) << 2
     c = (bits & 0x1F) << 3
     return a, b, c
 
 
-def _c2a(a, b):
+def _c2a(a: int, b: int) -> int:
     return (2 * a + b) // 3
 
 
-def _c2b(a, b):
+def _c2b(a: int, b: int) -> int:
     return (a + b) // 2
 
 
-def _c3(a, b):
+def _c3(a: int, b: int) -> int:
     return (2 * b + a) // 3
 
 
-def _dxt1(data, width, height):
+def _dxt1(data: IO[bytes], width: int, height: int) -> bytes:
     # TODO implement this function as pixel format in decode.c
     ret = bytearray(4 * width * height)
 
@@ -151,7 +152,7 @@ def _dxt1(data, width, height):
     return bytes(ret)
 
 
-def _dxtc_alpha(a0, a1, ac0, ac1, ai):
+def _dxtc_alpha(a0: int, a1: int, ac0: int, ac1: int, ai: int) -> int:
     if ai <= 12:
         ac = (ac0 >> ai) & 7
     elif ai == 15:
@@ -175,7 +176,7 @@ def _dxtc_alpha(a0, a1, ac0, ac1, ai):
     return alpha
 
 
-def _dxt5(data, width, height):
+def _dxt5(data: IO[bytes], width: int, height: int) -> bytes:
     # TODO implement this function as pixel format in decode.c
     ret = bytearray(4 * width * height)
 
@@ -211,7 +212,7 @@ class DdsImageFile(ImageFile.ImageFile):
     format = "DDS"
     format_description = "DirectDraw Surface"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(4)):
             msg = "not a DDS file"
             raise SyntaxError(msg)
@@ -242,19 +243,22 @@ class DdsImageFile(ImageFile.ImageFile):
         elif fourcc == b"DXT5":
             self.decoder = "DXT5"
         else:
-            msg = f"Unimplemented pixel format {fourcc}"
+            msg = f"Unimplemented pixel format {repr(fourcc)}"
             raise NotImplementedError(msg)
 
-        self.tile = [(self.decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
+        self.tile = [
+            ImageFile._Tile(self.decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))
+        ]
 
-    def load_seek(self, pos):
+    def load_seek(self, pos: int) -> None:
         pass
 
 
 class DXT1Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+        assert self.fd is not None
         try:
             self.set_as_raw(_dxt1(self.fd, self.state.xsize, self.state.ysize))
         except struct.error as e:
@@ -266,7 +270,8 @@ class DXT1Decoder(ImageFile.PyDecoder):
 class DXT5Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+        assert self.fd is not None
         try:
             self.set_as_raw(_dxt5(self.fd, self.state.xsize, self.state.ysize))
         except struct.error as e:
@@ -279,7 +284,7 @@ Image.register_decoder("DXT1", DXT1Decoder)
 Image.register_decoder("DXT5", DXT5Decoder)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"DDS "
 
 
