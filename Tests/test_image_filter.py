@@ -36,9 +36,14 @@ from .helper import assert_image_equal, hopper
     ),
 )
 @pytest.mark.parametrize("mode", ("L", "I", "RGB", "CMYK"))
-def test_sanity(filter_to_apply: ImageFilter.Filter, mode: str) -> None:
+def test_sanity(
+    filter_to_apply: ImageFilter.Filter | type[ImageFilter.Filter], mode: str
+) -> None:
     im = hopper(mode)
-    if mode != "I" or isinstance(filter_to_apply, ImageFilter.BuiltinFilter):
+    if mode != "I" or (
+        callable(filter_to_apply)
+        and issubclass(filter_to_apply, ImageFilter.BuiltinFilter)
+    ):
         out = im.filter(filter_to_apply)
         assert out.mode == im.mode
         assert out.size == im.size
