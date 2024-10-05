@@ -158,7 +158,9 @@ def test_missing_boundingbox_comment(prefix: bytes) -> None:
         simple_eps_file_with_invalid_boundingbox_valid_imagedata,
     ),
 )
-def test_invalid_boundingbox_comment(prefix: bytes, file_lines: list[bytes]) -> None:
+def test_invalid_boundingbox_comment(
+    prefix: bytes, file_lines: tuple[bytes, ...]
+) -> None:
     data = io.BytesIO(prefix + b"\n".join(file_lines))
     with pytest.raises(OSError, match="cannot determine EPS bounding box"):
         EpsImagePlugin.EpsImageFile(data)
