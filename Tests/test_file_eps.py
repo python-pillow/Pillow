@@ -257,7 +257,11 @@ def test_bytesio_object() -> None:
 @pytest.mark.parametrize(
     # These images have an "ImageData" descriptor.
     "filename",
-    ("Tests/images/eps/1.eps", "Tests/images/eps/1_boundingbox_after_imagedata.eps"),
+    (
+        "Tests/images/eps/1.eps",
+        "Tests/images/eps/1_boundingbox_after_imagedata.eps",
+        "Tests/images/eps/1_second_imagedata.eps",
+    ),
 )
 def test_1(filename: str) -> None:
     with Image.open(filename) as im:
