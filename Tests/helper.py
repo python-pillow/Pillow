@@ -327,16 +327,7 @@ def magick_command() -> list[str] | None:
     return None
 
 
-def on_appveyor() -> bool:
-    return "APPVEYOR" in os.environ
-
-
-def on_github_actions() -> bool:
-    return "GITHUB_ACTIONS" in os.environ
-
-
 def on_ci() -> bool:
-    # GitHub Actions and AppVeyor have "CI"
     return "CI" in os.environ
 
 
