@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 from io import BytesIO
 from pathlib import Path
 from typing import Any, BinaryIO
@@ -460,15 +461,41 @@ def test_free_type_font_get_mask(font: ImageFont.FreeTypeFont) -> None:
     assert mask.size == (108, 13)
 
 
+def test_load_when_image_not_found() -> None:
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        pass
+    with pytest.raises(OSError) as e:
+        ImageFont.load(tmp.name)
+
+    os.unlink(tmp.name)
+
+    root = os.path.splitext(tmp.name)[0]
+    assert str(e.value) == f"cannot find glyph data file {root}.{{gif|pbm|png}}"
+
+
 def test_load_path_not_found() -> None:
     # Arrange
     filename = "somefilenamethatdoesntexist.ttf"
 
     # Act/Assert
-    with pytest.raises(OSError):
+    with pytest.raises(OSError) as e:
         ImageFont.load_path(filename)
+
+    # The file doesn't exist, so don't suggest `load`
+    assert filename in str(e.value)
+    assert "did you mean" not in str(e.value)
     with pytest.raises(OSError):
         ImageFont.truetype(filename)
+
+
+def test_load_path_existing_path() -> None:
+    with tempfile.NamedTemporaryFile() as tmp:
+        with pytest.raises(OSError) as e:
+            ImageFont.load_path(tmp.name)
+
+    # The file exists, so the error message suggests to use `load` instead
+    assert tmp.name in str(e.value)
+    assert " did you mean" in str(e.value)
 
 
 def test_load_non_font_bytes() -> None:

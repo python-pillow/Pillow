@@ -133,6 +133,7 @@ def isImageType(t: Any) -> TypeGuard[Image]:
     :param t: object to check if it's an image
     :returns: True if the object is an image
     """
+    deprecate("Image.isImageType(im)", 12, "isinstance(im, Image.Image)")
     return hasattr(t, "im")
 
 
@@ -1066,7 +1067,7 @@ class Image:
                     trns_im = new(self.mode, (1, 1))
                     if self.mode == "P":
                         assert self.palette is not None
-                        trns_im.putpalette(self.palette)
+                        trns_im.putpalette(self.palette, self.palette.mode)
                         if isinstance(t, tuple):
                             err = "Couldn't allocate a palette color for transparency"
                             assert trns_im.palette is not None
@@ -1130,17 +1131,23 @@ class Image:
             return new_im
 
         if "LAB" in (self.mode, mode):
-            other_mode = mode if self.mode == "LAB" else self.mode
+            im = self
+            if mode == "LAB":
+                if im.mode not in ("RGB", "RGBA", "RGBX"):
+                    im = im.convert("RGBA")
+                other_mode = im.mode
+            else:
+                other_mode = mode
             if other_mode in ("RGB", "RGBA", "RGBX"):
                 from . import ImageCms
 
                 srgb = ImageCms.createProfile("sRGB")
                 lab = ImageCms.createProfile("LAB")
-                profiles = [lab, srgb] if self.mode == "LAB" else [srgb, lab]
+                profiles = [lab, srgb] if im.mode == "LAB" else [srgb, lab]
                 transform = ImageCms.buildTransform(
-                    profiles[0], profiles[1], self.mode, mode
+                    profiles[0], profiles[1], im.mode, mode
                 )
-                return transform.apply(self)
+                return transform.apply(im)
 
         # colorspace conversion
         if dither is None:
@@ -1817,23 +1824,22 @@ class Image:
         :param mask: An optional mask image.
         """
 
-        if isImageType(box):
+        if isinstance(box, Image):
             if mask is not None:
                 msg = "If using second argument as mask, third argument must be None"
                 raise ValueError(msg)
             # abbreviated paste(im, mask) syntax
             mask = box
             box = None
-        assert not isinstance(box, Image)
 
         if box is None:
             box = (0, 0)
 
         if len(box) == 2:
             # upper left corner given; get size from image or mask
-            if isImageType(im):
+            if isinstance(im, Image):
                 size = im.size
-            elif isImageType(mask):
+            elif isinstance(mask, Image):
                 size = mask.size
             else:
                 # FIXME: use self.size here?
@@ -1846,17 +1852,15 @@ class Image:
             from . import ImageColor
 
             source = ImageColor.getcolor(im, self.mode)
-        elif isImageType(im):
+        elif isinstance(im, Image):
             im.load()
             if self.mode != im.mode:
                 if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
                     # should use an adapter for this!
                     im = im.convert(self.mode)
             source = im.im
-        elif isinstance(im, tuple):
-            source = im
         else:
-            source = cast(float, im)
+            source = im
 
         self._ensure_mutable()
 
@@ -2017,7 +2021,7 @@ class Image:
         else:
             band = 3
 
-        if isImageType(alpha):
+        if isinstance(alpha, Image):
             # alpha layer
             if alpha.mode not in ("1", "L"):
                 msg = "illegal image mode"
@@ -2027,7 +2031,6 @@ class Image:
                 alpha = alpha.convert("L")
         else:
             # constant alpha
-            alpha = cast(int, alpha)  # see python/typing#1013
             try:
                 self.im.fillband(band, alpha)
             except (AttributeError, ValueError):
@@ -2176,6 +2179,9 @@ class Image:
                 source_palette = self.im.getpalette(palette_mode, palette_mode)
             else:  # L-mode
                 source_palette = bytearray(i // 3 for i in range(768))
+        elif len(source_palette) > 768:
+            bands = 4
+            palette_mode = "RGBA"
 
         palette_bytes = b""
         new_positions = [0] * 256
@@ -2272,8 +2278,8 @@ class Image:
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
            :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
            If the image has mode "1" or "P", it is always set to
-           :py:data:`Resampling.NEAREST`. If the image mode specifies a number
-           of bits, such as "I;16", then the default filter is
+           :py:data:`Resampling.NEAREST`. If the image mode is "BGR;15",
+           "BGR;16" or "BGR;24", then the default filter is
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
@@ -2296,8 +2302,8 @@ class Image:
         """
 
         if resample is None:
-            type_special = ";" in self.mode
-            resample = Resampling.NEAREST if type_special else Resampling.BICUBIC
+            bgr = self.mode.startswith("BGR;")
+            resample = Resampling.NEAREST if bgr else Resampling.BICUBIC
         elif resample not in (
             Resampling.NEAREST,
             Resampling.BILINEAR,
@@ -2326,7 +2332,6 @@ class Image:
             msg = "reducing_gap must be 1.0 or greater"
             raise ValueError(msg)
 
-        self.load()
         if box is None:
             box = (0, 0) + self.size
 
@@ -2775,27 +2780,18 @@ class Image:
                 )
             return x, y
 
-        box = None
-        final_size: tuple[int, int]
-        if reducing_gap is not None:
-            preserved_size = preserve_aspect_ratio()
-            if preserved_size is None:
-                return
-            final_size = preserved_size
+        preserved_size = preserve_aspect_ratio()
+        if preserved_size is None:
+            return
+        final_size = preserved_size
 
+        box = None
+        if reducing_gap is not None:
             res = self.draft(
                 None, (int(size[0] * reducing_gap), int(size[1] * reducing_gap))
             )
             if res is not None:
                 box = res[1]
-        if box is None:
-            self.load()
-
-            # load() may have changed the size of the image
-            preserved_size = preserve_aspect_ratio()
-            if preserved_size is None:
-                return
-            final_size = preserved_size
 
         if self.size != final_size:
             im = self.resize(final_size, resample, box=box, reducing_gap=reducing_gap)

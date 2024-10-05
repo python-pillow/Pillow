@@ -23,14 +23,14 @@ else
     cargo cinstall --prefix=/usr --destdir=.
 
     # Copy into place
-    sudo cp usr/lib/libimagequant.so* /usr/lib/
+    sudo find usr -name libimagequant.so* -exec cp {} /usr/lib/ \;
     sudo cp usr/include/libimagequant.h /usr/include/
 
     if [ -n "$GITHUB_ACTIONS" ]; then
         # Copy to cache
         rm -rf ~/cache-$archive_name
         mkdir ~/cache-$archive_name
-        cp usr/lib/libimagequant.so* ~/cache-$archive_name/
+        find usr -name libimagequant.so* -exec cp {} ~/cache-$archive_name/ \;
         cp usr/include/libimagequant.h ~/cache-$archive_name/
     fi
 

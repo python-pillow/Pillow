@@ -98,14 +98,15 @@ class Dib:
                        HDC or HWND instance.  In PythonWin, you can use
                        ``CDC.GetHandleAttrib()`` to get a suitable handle.
         """
+        handle_int = int(handle)
         if isinstance(handle, HWND):
-            dc = self.image.getdc(handle)
+            dc = self.image.getdc(handle_int)
             try:
                 self.image.expose(dc)
             finally:
-                self.image.releasedc(handle, dc)
+                self.image.releasedc(handle_int, dc)
         else:
-            self.image.expose(handle)
+            self.image.expose(handle_int)
 
     def draw(
         self,
@@ -124,14 +125,15 @@ class Dib:
         """
         if src is None:
             src = (0, 0) + self.size
+        handle_int = int(handle)
         if isinstance(handle, HWND):
-            dc = self.image.getdc(handle)
+            dc = self.image.getdc(handle_int)
             try:
                 self.image.draw(dc, dst, src)
             finally:
-                self.image.releasedc(handle, dc)
+                self.image.releasedc(handle_int, dc)
         else:
-            self.image.draw(handle, dst, src)
+            self.image.draw(handle_int, dst, src)
 
     def query_palette(self, handle: int | HDC | HWND) -> int:
         """
@@ -148,14 +150,15 @@ class Dib:
         :return: The number of entries that were changed (if one or more entries,
                  this indicates that the image should be redrawn).
         """
+        handle_int = int(handle)
         if isinstance(handle, HWND):
-            handle = self.image.getdc(handle)
+            handle = self.image.getdc(handle_int)
             try:
                 result = self.image.query_palette(handle)
             finally:
                 self.image.releasedc(handle, handle)
         else:
-            result = self.image.query_palette(handle)
+            result = self.image.query_palette(handle_int)
         return result
 
     def paste(

@@ -5,6 +5,57 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Support all resampling filters when resizing I;16* images #8422
+  [radarhere]
+
+- Free memory on early return #8413
+  [radarhere]
+
+- Cast int before potentially exceeding INT_MAX #8402
+  [radarhere]
+
+- Check image value before use #8400
+  [radarhere]
+
+- Improved copying imagequant libraries #8420
+  [radarhere]
+
+- Use Capsule for WebP saving #8386
+  [homm, radarhere]
+
+- Fixed writing multiple StripOffsets to TIFF #8317
+  [Yay295, radarhere]
+
+- Fix dereference before checking for NULL in ImagingTransformAffine #8398
+  [PavlNekrasov]
+
+- Use transposed size after opening for TIFF images #8390
+  [radarhere, homm]
+
+- Improve ImageFont error messages #8338
+  [yngvem, radarhere, hugovk]
+
+- Mention MAX_TEXT_CHUNK limit in PNG error message #8391
+  [radarhere]
+
+- Cast Dib handle to int #8385
+  [radarhere]
+
+- Accept float stroke widths #8369
+  [radarhere]
+
+- Deprecate ICNS (width, height, scale) sizes in favour of load(scale) #8352
+  [radarhere]
+
+- Improved handling of RGBA palettes when saving GIF images #8366
+  [radarhere]
+
+- Deprecate isImageType #8364
+  [radarhere]
+
+- Support converting more modes to LAB by converting to RGBA first #8358
+  [radarhere]
+
 - Deprecate support for FreeType 2.9.0 #8356
   [hugovk, radarhere]
 
