@@ -5,6 +5,12 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Updated EPS mode when opening images without transparency #8281
+  [Yay295, radarhere]
+
+- Use transparency when combining P frames from APNGs #8443
+  [radarhere]
+
 - Support all resampling filters when resizing I;16* images #8422
   [radarhere]
 
