@@ -1063,6 +1063,12 @@ class PngImageFile(ImageFile.ImageFile):
                         "RGBA", self.info["transparency"]
                     )
                 else:
+                    if self.im.mode == "P" and "transparency" in self.info:
+                        t = self.info["transparency"]
+                        if isinstance(t, bytes):
+                            updated.putpalettealphas(t)
+                        elif isinstance(t, int):
+                            updated.putpalettealpha(t)
                     mask = updated.convert("RGBA")
                 self._prev_im.paste(updated, self.dispose_extent, mask)
                 self.im = self._prev_im
