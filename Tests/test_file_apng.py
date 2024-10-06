@@ -283,8 +283,8 @@ def test_apng_mode() -> None:
         assert im.mode == "P"
         im.seek(im.n_frames - 1)
         rgb_im = im.convert("RGBA")
-        assert rgb_im.getpixel((0, 0)) == (255, 0, 0, 0)
-        assert rgb_im.getpixel((64, 32)) == (255, 0, 0, 0)
+        assert rgb_im.getpixel((0, 0)) == (0, 255, 0, 255)
+        assert rgb_im.getpixel((64, 32)) == (0, 255, 0, 255)
 
     with Image.open("Tests/images/apng/mode_palette_1bit_alpha.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)

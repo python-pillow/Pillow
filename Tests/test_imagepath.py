@@ -204,6 +204,17 @@ def test_overflow_segfault() -> None:
             x[i] = b"0" * 16
 
 
+def test_compact_within_map() -> None:
+    p = ImagePath.Path([0, 1])
+
+    def map_func(x: float, y: float) -> tuple[float, float]:
+        p.compact()
+        return 0, 0
+
+    with pytest.raises(ValueError):
+        p.map(map_func)
+
+
 class Evil:
     def __init__(self) -> None:
         self.corrupt = Image.core.path(0x4000000000000000)

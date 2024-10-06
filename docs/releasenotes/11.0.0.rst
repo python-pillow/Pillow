@@ -119,10 +119,11 @@ Specific WebP Feature Checks
 API Changes
 ===========
 
-TODO
-^^^^
+Default resampling filter for I;16* image modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+The default resampling filter for I;16, I;16L, I;16B and I;16N has been changed from
+``Image.NEAREST`` to ``Image.BICUBIC``, to match the majority of modes.
 
 API Additions
 =============
