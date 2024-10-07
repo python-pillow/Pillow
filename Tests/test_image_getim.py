@@ -16,4 +16,4 @@ def test_sanity() -> None:
 
     with pytest.warns(DeprecationWarning):
         ptrs = dict(im.im.unsafe_ptrs)
-    assert all(k in ptrs for k in ["image8", "image32", "image"])
+    assert ptrs.keys() == {"image8", "image32", "image"}

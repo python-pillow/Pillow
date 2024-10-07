@@ -29,8 +29,8 @@
 static PyObject *
 apply(PyObject *self, PyObject *args) {
     const char *lut;
-    PyObject *i0, *i1;
     Py_ssize_t lut_len;
+    PyObject *i0, *i1;
     Imaging imgin, imgout;
     int width, height;
     int row_idx, col_idx;
@@ -124,8 +124,8 @@ apply(PyObject *self, PyObject *args) {
 static PyObject *
 match(PyObject *self, PyObject *args) {
     const char *lut;
-    PyObject *i0;
     Py_ssize_t lut_len;
+    PyObject *i0;
     Imaging imgin;
     int width, height;
     int row_idx, col_idx;

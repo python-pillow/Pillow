@@ -3706,7 +3706,7 @@ static PyObject *
 _getattr_id(ImagingObject *self, void *closure) {
     if (PyErr_WarnEx(
             PyExc_DeprecationWarning,
-            "id property is deprecated and will be removed in Pillow 12.0",
+            "id property is deprecated and will be removed in Pillow 12 (2025-10-15)",
             1
         ) < 0) {
         return NULL;
@@ -3732,7 +3732,8 @@ static PyObject *
 _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
     if (PyErr_WarnEx(
             PyExc_DeprecationWarning,
-            "unsafe_ptrs property is deprecated and will be removed in Pillow 12.0",
+            "unsafe_ptrs property is deprecated and will be removed in Pillow 12 "
+            "(2025-10-15)",
             1
         ) < 0) {
         return NULL;
