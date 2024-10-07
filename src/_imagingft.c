@@ -922,10 +922,7 @@ font_render(FontObject *self, PyObject *args) {
     width += ceil(stroke_width * 2 + x_start);
     height += ceil(stroke_width * 2 + y_start);
     image = PyObject_CallFunction(fill, "ii", width, height);
-    if (image == Py_None) {
-        PyMem_Del(glyph_info);
-        return Py_BuildValue("N(ii)", image, 0, 0);
-    } else if (image == NULL) {
+    if (image == NULL) {
         PyMem_Del(glyph_info);
         return NULL;
     }
