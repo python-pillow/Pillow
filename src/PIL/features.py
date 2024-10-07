@@ -129,6 +129,7 @@ features: dict[str, tuple[str, str | bool, str | None]] = {
     "libjpeg_turbo": ("PIL._imaging", "HAVE_LIBJPEGTURBO", "libjpeg_turbo_version"),
     "libimagequant": ("PIL._imaging", "HAVE_LIBIMAGEQUANT", "imagequant_version"),
     "xcb": ("PIL._imaging", "HAVE_XCB", None),
+    "acceleration": ("PIL._imaging", "acceleration", "acceleration"),
 }
 
 
@@ -281,6 +282,7 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
 
     for name, feature in [
         ("pil", "PIL CORE"),
+        ("acceleration", "Acceleration"),
         ("tkinter", "TKINTER"),
         ("freetype2", "FREETYPE2"),
         ("littlecms2", "LITTLECMS2"),
@@ -302,7 +304,7 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
             if v is None:
                 v = version(name)
             if v is not None:
-                version_static = name in ("pil", "jpg")
+                version_static = name in ("pil", "jpg", "acceleration")
                 if name == "littlecms2":
                     # this check is also in src/_imagingcms.c:setup_module()
                     version_static = tuple(int(x) for x in v.split(".")) < (2, 7)
