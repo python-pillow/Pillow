@@ -531,23 +531,24 @@ buildProofTransform(PyObject *self, PyObject *args) {
 
 static PyObject *
 cms_transform_apply(CmsTransformObject *self, PyObject *args) {
-    Py_ssize_t idIn;
-    Py_ssize_t idOut;
+    PyObject *i0, *i1;
     Imaging im;
     Imaging imOut;
 
-    int result;
-
-    if (!PyArg_ParseTuple(args, "nn:apply", &idIn, &idOut)) {
+    if (!PyArg_ParseTuple(args, "OO:apply", &i0, &i1)) {
         return NULL;
     }
 
-    im = (Imaging)idIn;
-    imOut = (Imaging)idOut;
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC) ||
+        !PyCapsule_IsValid(i1, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
 
-    result = pyCMSdoTransform(im, imOut, self->transform);
+    im = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    imOut = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
 
-    return Py_BuildValue("i", result);
+    return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
 }
 
 /* -------------------------------------------------------------------- */

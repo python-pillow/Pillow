@@ -165,6 +165,16 @@ Specific WebP Feature Checks
 ``True`` if the WebP module is installed, until they are removed in Pillow
 12.0.0 (2025-10-15).
 
+Get internal pointers to objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+``Image.core.ImagingCore.id`` and ``Image.core.ImagingCore.unsafe_ptrs`` have been
+deprecated and will be removed in Pillow 12 (2025-10-15). They were used for obtaining
+raw pointers to ``ImagingCore`` internals. To interact with C code, you can use
+``Image.Image.getim()``, which returns a ``Capsule`` object.
+
 Removed features
 ----------------
 
