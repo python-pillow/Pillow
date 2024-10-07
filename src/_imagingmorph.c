@@ -62,11 +62,8 @@ apply(PyObject *self, PyObject *args) {
     width = imgin->xsize;
     height = imgin->ysize;
 
-    if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1) {
-        PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
-        return NULL;
-    }
-    if (imgout->type != IMAGING_TYPE_UINT8 || imgout->bands != 1) {
+    if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1 ||
+        imgout->type != IMAGING_TYPE_UINT8 || imgout->bands != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
         return NULL;
     }
