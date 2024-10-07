@@ -165,7 +165,7 @@ Specific WebP Feature Checks
 ``True`` if the WebP module is installed, until they are removed in Pillow
 12.0.0 (2025-10-15).
 
-Get Internal Pointers to Objects
+Get internal pointers to objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 11.0.0
