@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Use ImagingCore.ptr instead of ImagingCore.id #8341
+  [homm, radarhere, hugovk]
+
 - Updated EPS mode when opening images without transparency #8281
   [Yay295, radarhere]
 
