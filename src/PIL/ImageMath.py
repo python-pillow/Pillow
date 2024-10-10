@@ -173,23 +173,27 @@ class _Operand:
         return self.apply("rshift", self, other)
 
     # logical
-    def __eq__(self, other):
-        return self.apply("eq", self, other)
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _Operand):
+            return False
+        return bool(self.apply("eq", self, other))
 
-    def __ne__(self, other):
-        return self.apply("ne", self, other)
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, _Operand):
+            return True
+        return bool(self.apply("ne", self, other))
 
-    def __lt__(self, other: _Operand | float) -> _Operand:
-        return self.apply("lt", self, other)
+    def __lt__(self, other: _Operand | float) -> bool:
+        return bool(self.apply("lt", self, other))
 
-    def __le__(self, other: _Operand | float) -> _Operand:
-        return self.apply("le", self, other)
+    def __le__(self, other: _Operand | float) -> bool:
+        return bool(self.apply("le", self, other))
 
-    def __gt__(self, other: _Operand | float) -> _Operand:
-        return self.apply("gt", self, other)
+    def __gt__(self, other: _Operand | float) -> bool:
+        return bool(self.apply("gt", self, other))
 
-    def __ge__(self, other: _Operand | float) -> _Operand:
-        return self.apply("ge", self, other)
+    def __ge__(self, other: _Operand | float) -> bool:
+        return bool(self.apply("ge", self, other))
 
 
 # conversions
@@ -202,12 +206,12 @@ def imagemath_float(self: _Operand) -> _Operand:
 
 
 # logical
-def imagemath_equal(self: _Operand, other: _Operand | float | None) -> _Operand:
-    return self.apply("eq", self, other, mode="I")
+def imagemath_equal(self: _Operand, other: _Operand | float | None) -> bool:
+    return bool(self.apply("eq", self, other, mode="I"))
 
 
-def imagemath_notequal(self: _Operand, other: _Operand | float | None) -> _Operand:
-    return self.apply("ne", self, other, mode="I")
+def imagemath_notequal(self: _Operand, other: _Operand | float | None) -> bool:
+    return bool(self.apply("ne", self, other, mode="I"))
 
 
 def imagemath_min(self: _Operand, other: _Operand | float | None) -> _Operand:
@@ -250,7 +254,7 @@ def lambda_eval(
                     You can instead use one or more keyword arguments.
     :param **kw: Values to add to the function's dictionary.
     :return: The expression result. This is usually an image object, but can
-             also be an integer, a floating point value, or a pixel tuple,
+             also be an integer, a floating point value, a boolean, or a pixel tuple,
              depending on the expression.
     """
 
@@ -295,7 +299,7 @@ def unsafe_eval(
                     You can instead use one or more keyword arguments.
     :param **kw: Values to add to the evaluation context.
     :return: The evaluated expression. This is usually an image object, but can
-             also be an integer, a floating point value, or a pixel tuple,
+             also be an integer, a floating point value, a boolean, or a pixel tuple,
              depending on the expression.
     """
 
@@ -354,7 +358,7 @@ def eval(
                   can either use a dictionary, or one or more keyword
                   arguments.
     :return: The evaluated expression. This is usually an image object, but can
-             also be an integer, a floating point value, or a pixel tuple,
+             also be an integer, a floating point value, a boolean, or a pixel tuple,
              depending on the expression.
 
     ..  deprecated:: 10.3.0

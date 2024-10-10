@@ -42,7 +42,7 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
                     shown in the above example.
     :param \**kw: Values to add to the function's dictionary, mapping image names to
                  Image instances.
-    :return: An image, an integer value, a floating point value,
+    :return: An image, an integer value, a floating point value, a boolean,
              or a pixel tuple, depending on the expression.
 
 .. py:function:: unsafe_eval(expression, options, **kw)
@@ -68,7 +68,7 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
                     shown in the above example.
     :param \**kw: Values to add to the evaluation context, mapping image names to Image
                  instances.
-    :return: An image, an integer value, a floating point value,
+    :return: An image, an integer value, a floating point value, a boolean,
              or a pixel tuple, depending on the expression.
 
 Expression syntax

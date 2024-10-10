@@ -104,8 +104,8 @@ def test_convert() -> None:
 def test_compare() -> None:
     assert pixel(ImageMath.unsafe_eval("min(A, B)", **images)) == "I 1"
     assert pixel(ImageMath.unsafe_eval("max(A, B)", **images)) == "I 2"
-    assert pixel(ImageMath.unsafe_eval("A == 1", **images)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("A == 2", **images)) == "I 0"
+    assert ImageMath.unsafe_eval("A == 1", **images) is False
+    assert ImageMath.unsafe_eval("A == 2", **images) is False
 
 
 def test_one_image_larger() -> None:
@@ -169,60 +169,60 @@ def test_bitwise_rightshift() -> None:
 
 
 def test_logical_eq() -> None:
-    assert pixel(ImageMath.unsafe_eval("A==A", A=A)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("B==B", B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("A==B", A=A, B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("B==A", A=A, B=B)) == "I 0"
+    assert ImageMath.unsafe_eval("A==A", A=A) is True
+    assert ImageMath.unsafe_eval("B==B", B=B) is True
+    assert ImageMath.unsafe_eval("A==B", A=A, B=B) is False
+    assert ImageMath.unsafe_eval("B==A", A=A, B=B) is False
 
 
 def test_logical_ne() -> None:
-    assert pixel(ImageMath.unsafe_eval("A!=A", A=A)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("B!=B", B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("A!=B", A=A, B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("B!=A", A=A, B=B)) == "I 1"
+    assert ImageMath.unsafe_eval("A!=A", A=A) is False
+    assert ImageMath.unsafe_eval("B!=B", B=B) is False
+    assert ImageMath.unsafe_eval("A!=B", A=A, B=B) is True
+    assert ImageMath.unsafe_eval("B!=A", A=A, B=B) is True
 
 
 def test_logical_lt() -> None:
-    assert pixel(ImageMath.unsafe_eval("A<A", A=A)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("B<B", B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("A<B", A=A, B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("B<A", A=A, B=B)) == "I 0"
+    assert ImageMath.unsafe_eval("A<A", A=A) is False
+    assert ImageMath.unsafe_eval("B<B", B=B) is False
+    assert ImageMath.unsafe_eval("A<B", A=A, B=B) is True
+    assert ImageMath.unsafe_eval("B<A", A=A, B=B) is False
 
 
 def test_logical_le() -> None:
-    assert pixel(ImageMath.unsafe_eval("A<=A", A=A)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("B<=B", B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("A<=B", A=A, B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("B<=A", A=A, B=B)) == "I 0"
+    assert ImageMath.unsafe_eval("A<=A", A=A) is True
+    assert ImageMath.unsafe_eval("B<=B", B=B) is True
+    assert ImageMath.unsafe_eval("A<=B", A=A, B=B) is True
+    assert ImageMath.unsafe_eval("B<=A", A=A, B=B) is False
 
 
 def test_logical_gt() -> None:
-    assert pixel(ImageMath.unsafe_eval("A>A", A=A)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("B>B", B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("A>B", A=A, B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("B>A", A=A, B=B)) == "I 1"
+    assert ImageMath.unsafe_eval("A>A", A=A) is False
+    assert ImageMath.unsafe_eval("B>B", B=B) is False
+    assert ImageMath.unsafe_eval("A>B", A=A, B=B) is False
+    assert ImageMath.unsafe_eval("B>A", A=A, B=B) is True
 
 
 def test_logical_ge() -> None:
-    assert pixel(ImageMath.unsafe_eval("A>=A", A=A)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("B>=B", B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("A>=B", A=A, B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("B>=A", A=A, B=B)) == "I 1"
+    assert ImageMath.unsafe_eval("A>=A", A=A) is True
+    assert ImageMath.unsafe_eval("B>=B", B=B) is True
+    assert ImageMath.unsafe_eval("A>=B", A=A, B=B) is False
+    assert ImageMath.unsafe_eval("B>=A", A=A, B=B) is True
 
 
 def test_logical_equal() -> None:
-    assert pixel(ImageMath.unsafe_eval("equal(A, A)", A=A)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("equal(B, B)", B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("equal(Z, Z)", Z=Z)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("equal(A, B)", A=A, B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("equal(B, A)", A=A, B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("equal(A, Z)", A=A, Z=Z)) == "I 0"
+    assert ImageMath.unsafe_eval("equal(A, A)", A=A) is True
+    assert ImageMath.unsafe_eval("equal(B, B)", B=B) is True
+    assert ImageMath.unsafe_eval("equal(Z, Z)", Z=Z) is True
+    assert ImageMath.unsafe_eval("equal(A, B)", A=A, B=B) is False
+    assert ImageMath.unsafe_eval("equal(B, A)", A=A, B=B) is False
+    assert ImageMath.unsafe_eval("equal(A, Z)", A=A, Z=Z) is False
 
 
 def test_logical_not_equal() -> None:
-    assert pixel(ImageMath.unsafe_eval("notequal(A, A)", A=A)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("notequal(B, B)", B=B)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("notequal(Z, Z)", Z=Z)) == "I 0"
-    assert pixel(ImageMath.unsafe_eval("notequal(A, B)", A=A, B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("notequal(B, A)", A=A, B=B)) == "I 1"
-    assert pixel(ImageMath.unsafe_eval("notequal(A, Z)", A=A, Z=Z)) == "I 1"
+    assert ImageMath.unsafe_eval("notequal(A, A)", A=A) is False
+    assert ImageMath.unsafe_eval("notequal(B, B)", B=B) is False
+    assert ImageMath.unsafe_eval("notequal(Z, Z)", Z=Z) is False
+    assert ImageMath.unsafe_eval("notequal(A, B)", A=A, B=B) is True
+    assert ImageMath.unsafe_eval("notequal(B, A)", A=A, B=B) is True
+    assert ImageMath.unsafe_eval("notequal(A, Z)", A=A, Z=Z) is True

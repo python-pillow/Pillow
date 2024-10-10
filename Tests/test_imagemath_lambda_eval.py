@@ -187,8 +187,9 @@ def test_compare() -> None:
         )
         == "I 2"
     )
-    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] == 1, **images)) == "I 1"
-    assert pixel(ImageMath.lambda_eval(lambda args: args["A"] == 2, **images)) == "I 0"
+    for i in range(1, 3):
+        assert ImageMath.lambda_eval(lambda args: args["A"] == i, **images) is False
+        assert ImageMath.lambda_eval(lambda args: args["A"] != i, **images) is True
 
 
 def test_one_image_larger() -> None:
@@ -310,198 +311,108 @@ def test_bitwise_rightshift() -> None:
 
 
 def test_logical_eq() -> None:
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] == args["A"], A=A)) == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] == args["B"], B=B)) == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] == args["B"], A=A, B=B))
-        == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] == args["A"], A=A, B=B))
-        == "I 0"
-    )
+    assert ImageMath.lambda_eval(lambda args: args["A"] == args["A"], A=A) is True
+    assert ImageMath.lambda_eval(lambda args: args["B"] == args["B"], B=B) is True
+    assert ImageMath.lambda_eval(lambda args: args["A"] == args["B"], A=A, B=B) is False
+    assert ImageMath.lambda_eval(lambda args: args["B"] == args["A"], A=A, B=B) is False
 
 
 def test_logical_ne() -> None:
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] != args["A"], A=A)) == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] != args["B"], B=B)) == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] != args["B"], A=A, B=B))
-        == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] != args["A"], A=A, B=B))
-        == "I 1"
-    )
+    assert ImageMath.lambda_eval(lambda args: args["A"] != args["A"], A=A) is False
+    assert ImageMath.lambda_eval(lambda args: args["B"] != args["B"], B=B) is False
+    assert ImageMath.lambda_eval(lambda args: args["A"] != args["B"], A=A, B=B) is True
+    assert ImageMath.lambda_eval(lambda args: args["B"] != args["A"], A=A, B=B) is True
 
 
 def test_logical_lt() -> None:
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] < args["A"], A=A)) == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] < args["B"], B=B)) == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] < args["B"], A=A, B=B))
-        == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] < args["A"], A=A, B=B))
-        == "I 0"
-    )
+    assert ImageMath.lambda_eval(lambda args: args["A"] < args["A"], A=A) is False
+    assert ImageMath.lambda_eval(lambda args: args["B"] < args["B"], B=B) is False
+    assert ImageMath.lambda_eval(lambda args: args["A"] < args["B"], A=A, B=B) is True
+    assert ImageMath.lambda_eval(lambda args: args["B"] < args["A"], A=A, B=B) is False
 
 
 def test_logical_le() -> None:
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] <= args["A"], A=A)) == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] <= args["B"], B=B)) == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] <= args["B"], A=A, B=B))
-        == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] <= args["A"], A=A, B=B))
-        == "I 0"
-    )
+    assert ImageMath.lambda_eval(lambda args: args["A"] <= args["A"], A=A) is True
+    assert ImageMath.lambda_eval(lambda args: args["B"] <= args["B"], B=B) is True
+    assert ImageMath.lambda_eval(lambda args: args["A"] <= args["B"], A=A, B=B) is True
+    assert ImageMath.lambda_eval(lambda args: args["B"] <= args["A"], A=A, B=B) is False
 
 
 def test_logical_gt() -> None:
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] > args["A"], A=A)) == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] > args["B"], B=B)) == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] > args["B"], A=A, B=B))
-        == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] > args["A"], A=A, B=B))
-        == "I 1"
-    )
+    assert ImageMath.lambda_eval(lambda args: args["A"] > args["A"], A=A) is False
+    assert ImageMath.lambda_eval(lambda args: args["B"] > args["B"], B=B) is False
+    assert ImageMath.lambda_eval(lambda args: args["A"] > args["B"], A=A, B=B) is False
+    assert ImageMath.lambda_eval(lambda args: args["B"] > args["A"], A=A, B=B) is True
 
 
 def test_logical_ge() -> None:
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] >= args["A"], A=A)) == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] >= args["B"], B=B)) == "I 1"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["A"] >= args["B"], A=A, B=B))
-        == "I 0"
-    )
-    assert (
-        pixel(ImageMath.lambda_eval(lambda args: args["B"] >= args["A"], A=A, B=B))
-        == "I 1"
-    )
+    assert ImageMath.lambda_eval(lambda args: args["A"] >= args["A"], A=A) is True
+    assert ImageMath.lambda_eval(lambda args: args["B"] >= args["B"], B=B) is True
+    assert ImageMath.lambda_eval(lambda args: args["A"] >= args["B"], A=A, B=B) is False
+    assert ImageMath.lambda_eval(lambda args: args["B"] >= args["A"], A=A, B=B) is True
 
 
 def test_logical_equal() -> None:
     assert (
-        pixel(
-            ImageMath.lambda_eval(lambda args: args["equal"](args["A"], args["A"]), A=A)
-        )
-        == "I 1"
+        ImageMath.lambda_eval(lambda args: args["equal"](args["A"], args["A"]), A=A)
+        is True
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(lambda args: args["equal"](args["B"], args["B"]), B=B)
-        )
-        == "I 1"
+        ImageMath.lambda_eval(lambda args: args["equal"](args["B"], args["B"]), B=B)
+        is True
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(lambda args: args["equal"](args["Z"], args["Z"]), Z=Z)
-        )
-        == "I 1"
+        ImageMath.lambda_eval(lambda args: args["equal"](args["Z"], args["Z"]), Z=Z)
+        is True
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["equal"](args["A"], args["B"]), A=A, B=B
-            )
+        ImageMath.lambda_eval(
+            lambda args: args["equal"](args["A"], args["B"]), A=A, B=B
         )
-        == "I 0"
+        is False
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["equal"](args["B"], args["A"]), A=A, B=B
-            )
+        ImageMath.lambda_eval(
+            lambda args: args["equal"](args["B"], args["A"]), A=A, B=B
         )
-        == "I 0"
+        is False
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["equal"](args["A"], args["Z"]), A=A, Z=Z
-            )
+        ImageMath.lambda_eval(
+            lambda args: args["equal"](args["A"], args["Z"]), A=A, Z=Z
         )
-        == "I 0"
+        is False
     )
 
 
 def test_logical_not_equal() -> None:
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["notequal"](args["A"], args["A"]), A=A
-            )
-        )
-        == "I 0"
+        ImageMath.lambda_eval(lambda args: args["notequal"](args["A"], args["A"]), A=A)
+        is False
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["notequal"](args["B"], args["B"]), B=B
-            )
-        )
-        == "I 0"
+        ImageMath.lambda_eval(lambda args: args["notequal"](args["B"], args["B"]), B=B)
+        is False
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["notequal"](args["Z"], args["Z"]), Z=Z
-            )
-        )
-        == "I 0"
+        ImageMath.lambda_eval(lambda args: args["notequal"](args["Z"], args["Z"]), Z=Z)
+        is False
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["notequal"](args["A"], args["B"]), A=A, B=B
-            )
+        ImageMath.lambda_eval(
+            lambda args: args["notequal"](args["A"], args["B"]), A=A, B=B
         )
-        == "I 1"
+        is True
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["notequal"](args["B"], args["A"]), A=A, B=B
-            )
+        ImageMath.lambda_eval(
+            lambda args: args["notequal"](args["B"], args["A"]), A=A, B=B
         )
-        == "I 1"
+        is True
     )
     assert (
-        pixel(
-            ImageMath.lambda_eval(
-                lambda args: args["notequal"](args["A"], args["Z"]), A=A, Z=Z
-            )
+        ImageMath.lambda_eval(
+            lambda args: args["notequal"](args["A"], args["Z"]), A=A, Z=Z
         )
-        == "I 1"
+        is True
     )
