@@ -239,7 +239,7 @@ class ImageFile(Image.Image):
                     self.im = Image.core.map_buffer(
                         self.map, self.size, decoder_name, offset, args
                     )
-                    readonly = 1
+                    readonly = self.im.readonly
                     # After trashing self.im,
                     # we might need to reload the palette data.
                     if self.palette:
