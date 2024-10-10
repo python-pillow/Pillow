@@ -8,14 +8,14 @@
  *
  */
 
+#ifdef HAVE_LIBIMAGEQUANT
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libimagequant.h>
 
 #include "QuantPngQuant.h"
-
-#ifdef HAVE_LIBIMAGEQUANT
-#include "libimagequant.h"
 
 int
 quantize_pngquant(
