@@ -900,6 +900,55 @@ class TestFileTiff:
                 with Image.open(test_file):
                     pass
 
+    def test_open_tiff_uint16_multiband(self) -> None:
+        """Test opening multiband TIFFs and reading all channels."""
+
+        def check_pixel(
+            im: Image.Image, expected_pixel: tuple[int, ...], pos: tuple[int, int]
+        ) -> None:
+            actual_pixel = im.getpixel(pos)
+            if actual_pixel is None:
+                actual_pixel = (-1,)
+            elif not isinstance(actual_pixel, tuple):
+                actual_pixel = (int(actual_pixel),)
+            assert actual_pixel == expected_pixel
+
+        def check_image(
+            im: Image.Image, width: int, height: int, expected_pixel: tuple[int, ...]
+        ) -> None:
+            assert im.width == width
+            assert im.height == height
+            for x in range(im.width):
+                for y in range(im.height):
+                    check_pixel(im, expected_pixel, (x, y))
+
+        base_value = 4660
+        for i in range(1, 6):
+            pixel = tuple(base_value + j for j in range(i))
+            infile = f"Tests/images/uint16_{i}_{base_value}.tif"
+            im = Image.open(infile)
+
+            im.load()
+            check_image(im, 10, 10, pixel)
+
+            copy = im.copy()
+            check_image(copy, 10, 10, pixel)
+
+            cropped = im.crop((2, 2, 8, 7))
+            check_image(cropped, 6, 5, pixel)
+
+            for method, [w, h] in {
+                Image.Transpose.FLIP_LEFT_RIGHT: (6, 5),
+                Image.Transpose.FLIP_TOP_BOTTOM: (6, 5),
+                Image.Transpose.ROTATE_90: (5, 6),
+                Image.Transpose.ROTATE_180: (6, 5),
+                Image.Transpose.ROTATE_270: (5, 6),
+                Image.Transpose.TRANSPOSE: (5, 6),
+                Image.Transpose.TRANSVERSE: (5, 6),
+            }.items():
+                transposed = cropped.transpose(method)
+                check_image(transposed, w, h, pixel)
+
 
 @pytest.mark.skipif(not is_win32(), reason="Windows only")
 class TestFileTiffW32:

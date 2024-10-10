@@ -124,6 +124,8 @@ class ImageFile(Image.Image):
 
         self.readonly = 1  # until we know better
 
+        self.mb_config = ()
+
         self.decoderconfig: tuple[Any, ...] = ()
         self.decodermaxblock = MAXBLOCK
 
@@ -237,7 +239,7 @@ class ImageFile(Image.Image):
                         msg = "buffer is not large enough"
                         raise OSError(msg)
                     self.im = Image.core.map_buffer(
-                        self.map, self.size, decoder_name, offset, args
+                        self.map, self.size, decoder_name, offset, args, *self.mb_config
                     )
                     readonly = 1
                     # After trashing self.im,
@@ -323,7 +325,7 @@ class ImageFile(Image.Image):
     def load_prepare(self) -> None:
         # create image memory if necessary
         if self._im is None:
-            self.im = Image.core.new(self.mode, self.size)
+            self.im = Image.core.new(self.mode, self.size, *self.mb_config)
         # create palette (optional)
         if self.mode == "P":
             Image.Image.load(self)

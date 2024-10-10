@@ -25,7 +25,7 @@ ImagingOffset(Imaging im, int xoffset, int yoffset) {
         return (Imaging)ImagingError_ModeError();
     }
 
-    imOut = ImagingNewDirty(im->mode, im->xsize, im->ysize);
+    imOut = ImagingNewDirty(im->mode, (ImagingNewParams){im->xsize, im->ysize});
     if (!imOut) {
         return NULL;
     }
