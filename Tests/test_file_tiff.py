@@ -108,10 +108,6 @@ class TestFileTiff:
             assert_image_equal_tofile(im, "Tests/images/hopper.tif")
 
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
-            # The data type of this file's StripOffsets tag is LONG8,
-            # which is not yet supported for offset data when saving multiple frames.
-            del im.tag_v2[273]
-
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
@@ -731,6 +727,20 @@ class TestFileTiff:
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
             assert reread.n_frames == 3
+
+    def test_fixoffsets(self) -> None:
+        b = BytesIO(b"II\x2a\x00\x00\x00\x00\x00")
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            b.seek(0)
+            a.fixOffsets(1, isShort=True)
+
+            b.seek(0)
+            a.fixOffsets(1, isLong=True)
+
+            # Neither short nor long
+            b.seek(0)
+            with pytest.raises(RuntimeError):
+                a.fixOffsets(1)
 
     def test_saving_icc_profile(self, tmp_path: Path) -> None:
         # Tests saving TIFF with icc_profile set.
