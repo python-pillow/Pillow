@@ -21,12 +21,14 @@ environment:
   - PYTHON: C:/Python313
     ARCHITECTURE: x86
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-  - PYTHON: C:/Python39-x64
+  - PYTHON: C:/Python39
+    CHOCO_PYTHON_VERSION: 3.9.13
     ARCHITECTURE: AMD64
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 
 
 install:
+- if defined CHOCO_PYTHON_VERSION choco install python --version=%CHOCO_PYTHON_VERSION%
 - '%PYTHON%\%EXECUTABLE% --version'
 - '%PYTHON%\%EXECUTABLE% -m pip install --upgrade pip'
 - curl -fsSL -o pillow-test-images.zip https://github.com/python-pillow/test-images/archive/main.zip
