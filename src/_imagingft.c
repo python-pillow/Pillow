@@ -1026,130 +1026,99 @@ font_render(FontObject *self, PyObject *args) {
             yy = -(py + glyph_slot->bitmap_top);
         }
 
-        // Null buffer, is dereferenced in FT_Bitmap_Convert
-        if (!bitmap.buffer && bitmap.rows) {
-            PyErr_SetString(PyExc_OSError, "Bitmap missing for glyph");
-            goto glyph_error;
-        }
-
-        /* convert non-8bpp bitmaps */
-        switch (bitmap.pixel_mode) {
-            case FT_PIXEL_MODE_MONO:
-                convert_scale = 255;
-                break;
-            case FT_PIXEL_MODE_GRAY2:
-                convert_scale = 255 / 3;
-                break;
-            case FT_PIXEL_MODE_GRAY4:
-                convert_scale = 255 / 15;
-                break;
-            default:
-                convert_scale = 1;
-        }
-        switch (bitmap.pixel_mode) {
-            case FT_PIXEL_MODE_MONO:
-            case FT_PIXEL_MODE_GRAY2:
-            case FT_PIXEL_MODE_GRAY4:
-                if (!bitmap_converted_ready) {
-                    FT_Bitmap_Init(&bitmap_converted);
-                    bitmap_converted_ready = 1;
-                }
-                error = FT_Bitmap_Convert(library, &bitmap, &bitmap_converted, 1);
-                if (error) {
-                    geterror(error);
-                    goto glyph_error;
-                }
-                bitmap = bitmap_converted;
-                /* bitmap is now FT_PIXEL_MODE_GRAY, fall through */
-            case FT_PIXEL_MODE_GRAY:
-                break;
-            case FT_PIXEL_MODE_BGRA:
-                if (color) {
+        if (bitmap.buffer) {
+            /* convert non-8bpp bitmaps */
+            switch (bitmap.pixel_mode) {
+                case FT_PIXEL_MODE_MONO:
+                    convert_scale = 255;
                     break;
-                }
-                /* we didn't ask for color, fall through to default */
-            default:
-                PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
-                goto glyph_error;
-        }
-
-        /* clip glyph bitmap width to target image bounds */
-        x0 = 0;
-        x1 = bitmap.width;
-        if (xx < 0) {
-            x0 = -xx;
-        }
-        if (xx + x1 > im->xsize) {
-            x1 = im->xsize - xx;
-        }
-
-        source = (unsigned char *)bitmap.buffer;
-        for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++, yy++) {
-            /* clip glyph bitmap height to target image bounds */
-            if (yy >= 0 && yy < im->ysize) {
-                /* blend this glyph into the buffer */
-                int k;
-                unsigned char *target;
-                unsigned int tmp;
-                if (color) {
-                    /* target[RGB] returns the color, target[A] returns the mask */
-                    /* target bands get split again in ImageDraw.text */
-                    target = (unsigned char *)im->image[yy] + xx * 4;
-                } else {
-                    target = im->image8[yy] + xx;
-                }
-                if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
-                    /* paste color glyph */
-                    for (k = x0; k < x1; k++) {
-                        unsigned int src_alpha = source[k * 4 + 3];
-
-                        /* paste only if source has data */
-                        if (src_alpha > 0) {
-                            /* unpremultiply BGRa */
-                            int src_red =
-                                CLIP8((255 * (int)source[k * 4 + 2]) / src_alpha);
-                            int src_green =
-                                CLIP8((255 * (int)source[k * 4 + 1]) / src_alpha);
-                            int src_blue =
-                                CLIP8((255 * (int)source[k * 4 + 0]) / src_alpha);
-
-                            /* blend required if target has data */
-                            if (target[k * 4 + 3] > 0) {
-                                /* blend RGBA colors */
-                                target[k * 4 + 0] =
-                                    BLEND(src_alpha, target[k * 4 + 0], src_red, tmp);
-                                target[k * 4 + 1] =
-                                    BLEND(src_alpha, target[k * 4 + 1], src_green, tmp);
-                                target[k * 4 + 2] =
-                                    BLEND(src_alpha, target[k * 4 + 2], src_blue, tmp);
-                                target[k * 4 + 3] = CLIP8(
-                                    src_alpha +
-                                    MULDIV255(target[k * 4 + 3], (255 - src_alpha), tmp)
-                                );
-                            } else {
-                                /* paste unpremultiplied RGBA values */
-                                target[k * 4 + 0] = src_red;
-                                target[k * 4 + 1] = src_green;
-                                target[k * 4 + 2] = src_blue;
-                                target[k * 4 + 3] = src_alpha;
-                            }
-                        }
+                case FT_PIXEL_MODE_GRAY2:
+                    convert_scale = 255 / 3;
+                    break;
+                case FT_PIXEL_MODE_GRAY4:
+                    convert_scale = 255 / 15;
+                    break;
+                default:
+                    convert_scale = 1;
+            }
+            switch (bitmap.pixel_mode) {
+                case FT_PIXEL_MODE_MONO:
+                case FT_PIXEL_MODE_GRAY2:
+                case FT_PIXEL_MODE_GRAY4:
+                    if (!bitmap_converted_ready) {
+                        FT_Bitmap_Init(&bitmap_converted);
+                        bitmap_converted_ready = 1;
                     }
-                } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+                    error = FT_Bitmap_Convert(library, &bitmap, &bitmap_converted, 1);
+                    if (error) {
+                        geterror(error);
+                        goto glyph_error;
+                    }
+                    bitmap = bitmap_converted;
+                    /* bitmap is now FT_PIXEL_MODE_GRAY, fall through */
+                case FT_PIXEL_MODE_GRAY:
+                    break;
+                case FT_PIXEL_MODE_BGRA:
                     if (color) {
-                        unsigned char *ink = (unsigned char *)&foreground_ink;
+                        break;
+                    }
+                    /* we didn't ask for color, fall through to default */
+                default:
+                    PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
+                    goto glyph_error;
+            }
+
+            /* clip glyph bitmap width to target image bounds */
+            x0 = 0;
+            x1 = bitmap.width;
+            if (xx < 0) {
+                x0 = -xx;
+            }
+            if (xx + x1 > im->xsize) {
+                x1 = im->xsize - xx;
+            }
+
+            source = (unsigned char *)bitmap.buffer;
+            for (bitmap_y = 0; bitmap_y < bitmap.rows; bitmap_y++, yy++) {
+                /* clip glyph bitmap height to target image bounds */
+                if (yy >= 0 && yy < im->ysize) {
+                    /* blend this glyph into the buffer */
+                    int k;
+                    unsigned char *target;
+                    unsigned int tmp;
+                    if (color) {
+                        /* target[RGB] returns the color, target[A] returns the mask */
+                        /* target bands get split again in ImageDraw.text */
+                        target = (unsigned char *)im->image[yy] + xx * 4;
+                    } else {
+                        target = im->image8[yy] + xx;
+                    }
+                    if (color && bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
+                        /* paste color glyph */
                         for (k = x0; k < x1; k++) {
-                            unsigned int src_alpha = source[k] * convert_scale;
+                            unsigned int src_alpha = source[k * 4 + 3];
+
+                            /* paste only if source has data */
                             if (src_alpha > 0) {
+                                /* unpremultiply BGRa */
+                                int src_red =
+                                    CLIP8((255 * (int)source[k * 4 + 2]) / src_alpha);
+                                int src_green =
+                                    CLIP8((255 * (int)source[k * 4 + 1]) / src_alpha);
+                                int src_blue =
+                                    CLIP8((255 * (int)source[k * 4 + 0]) / src_alpha);
+
+                                /* blend required if target has data */
                                 if (target[k * 4 + 3] > 0) {
+                                    /* blend RGBA colors */
                                     target[k * 4 + 0] = BLEND(
-                                        src_alpha, target[k * 4 + 0], ink[0], tmp
+                                        src_alpha, target[k * 4 + 0], src_red, tmp
                                     );
                                     target[k * 4 + 1] = BLEND(
-                                        src_alpha, target[k * 4 + 1], ink[1], tmp
+                                        src_alpha, target[k * 4 + 1], src_green, tmp
                                     );
                                     target[k * 4 + 2] = BLEND(
-                                        src_alpha, target[k * 4 + 2], ink[2], tmp
+                                        src_alpha, target[k * 4 + 2], src_blue, tmp
                                     );
                                     target[k * 4 + 3] = CLIP8(
                                         src_alpha +
@@ -1158,35 +1127,68 @@ font_render(FontObject *self, PyObject *args) {
                                         )
                                     );
                                 } else {
-                                    target[k * 4 + 0] = ink[0];
-                                    target[k * 4 + 1] = ink[1];
-                                    target[k * 4 + 2] = ink[2];
+                                    /* paste unpremultiplied RGBA values */
+                                    target[k * 4 + 0] = src_red;
+                                    target[k * 4 + 1] = src_green;
+                                    target[k * 4 + 2] = src_blue;
                                     target[k * 4 + 3] = src_alpha;
                                 }
                             }
                         }
-                    } else {
-                        for (k = x0; k < x1; k++) {
-                            unsigned int src_alpha = source[k] * convert_scale;
-                            if (src_alpha > 0) {
-                                target[k] =
-                                    target[k] > 0
-                                        ? CLIP8(
-                                              src_alpha +
-                                              MULDIV255(
-                                                  target[k], (255 - src_alpha), tmp
+                    } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+                        if (color) {
+                            unsigned char *ink = (unsigned char *)&foreground_ink;
+                            for (k = x0; k < x1; k++) {
+                                unsigned int src_alpha = source[k] * convert_scale;
+                                if (src_alpha > 0) {
+                                    if (target[k * 4 + 3] > 0) {
+                                        target[k * 4 + 0] = BLEND(
+                                            src_alpha, target[k * 4 + 0], ink[0], tmp
+                                        );
+                                        target[k * 4 + 1] = BLEND(
+                                            src_alpha, target[k * 4 + 1], ink[1], tmp
+                                        );
+                                        target[k * 4 + 2] = BLEND(
+                                            src_alpha, target[k * 4 + 2], ink[2], tmp
+                                        );
+                                        target[k * 4 + 3] = CLIP8(
+                                            src_alpha + MULDIV255(
+                                                            target[k * 4 + 3],
+                                                            (255 - src_alpha),
+                                                            tmp
+                                                        )
+                                        );
+                                    } else {
+                                        target[k * 4 + 0] = ink[0];
+                                        target[k * 4 + 1] = ink[1];
+                                        target[k * 4 + 2] = ink[2];
+                                        target[k * 4 + 3] = src_alpha;
+                                    }
+                                }
+                            }
+                        } else {
+                            for (k = x0; k < x1; k++) {
+                                unsigned int src_alpha = source[k] * convert_scale;
+                                if (src_alpha > 0) {
+                                    target[k] =
+                                        target[k] > 0
+                                            ? CLIP8(
+                                                  src_alpha +
+                                                  MULDIV255(
+                                                      target[k], (255 - src_alpha), tmp
+                                                  )
                                               )
-                                          )
-                                        : src_alpha;
+                                            : src_alpha;
+                                }
                             }
                         }
+                    } else {
+                        PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
+                        goto glyph_error;
                     }
-                } else {
-                    PyErr_SetString(PyExc_OSError, "unsupported bitmap pixel mode");
-                    goto glyph_error;
                 }
+                source += bitmap.pitch;
             }
-            source += bitmap.pitch;
         }
         x += glyph_info[i].x_advance;
         y += glyph_info[i].y_advance;
