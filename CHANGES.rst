@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Support ImageFilter.BuiltinFilter for I;16* images #8438
+  [radarhere]
+
 - Use ImagingCore.ptr instead of ImagingCore.id #8341
   [homm, radarhere, hugovk]
 
