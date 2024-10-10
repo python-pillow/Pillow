@@ -43,7 +43,7 @@ dynamic = [
 optional-dependencies.docs = [
   "furo",
   "olefile",
-  "sphinx>=7.3",
+  "sphinx>=8.1",
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinxext-opengraph",
