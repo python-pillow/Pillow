@@ -293,3 +293,45 @@ def test_save_all() -> None:
     # Test that a single frame image will not be saved as an MPO
     jpg = roundtrip(im, save_all=True)
     assert "mp" not in jpg.info
+
+
+def test_save_all_progress():
+    out = BytesIO()
+    progress = []
+
+    def callback(state):
+        if state["image_filename"]:
+            state["image_filename"] = (
+                state["image_filename"].replace("\\", "/").split("Tests/images/")[-1]
+            )
+        progress.append(state)
+
+    Image.new("RGB", (1, 1)).save(out, "MPO", save_all=True, progress=callback)
+    assert progress == [
+        {
+            "image_index": 0,
+            "image_filename": None,
+            "completed_frames": 1,
+            "total_frames": 1,
+        }
+    ]
+
+    out = BytesIO()
+    progress = []
+
+    with Image.open("Tests/images/sugarshack.mpo") as im:
+        with Image.open("Tests/images/frozenpond.mpo") as im2:
+            im.save(out, "MPO", save_all=True, append_images=[im2], progress=callback)
+
+    expected = []
+    for i, filename in enumerate(["sugarshack.mpo", "frozenpond.mpo"]):
+        for j in range(2):
+            expected.append(
+                {
+                    "image_index": i,
+                    "image_filename": filename,
+                    "completed_frames": i * 2 + j + 1,
+                    "total_frames": 4,
+                }
+            )
+    assert progress == expected

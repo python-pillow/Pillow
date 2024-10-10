@@ -702,7 +702,7 @@ class TestFileTiff:
         with Image.open(outfile) as reloaded:
             assert_image_equal(im.convert("RGB"), reloaded.convert("RGB"))
 
-    def test_tiff_save_all(self) -> None:
+    def test_save_all(self) -> None:
         mp = BytesIO()
         with Image.open("Tests/images/multipage.tiff") as im:
             im.save(mp, format="tiff", save_all=True)
@@ -731,6 +731,57 @@ class TestFileTiff:
         mp.seek(0, os.SEEK_SET)
         with Image.open(mp) as reread:
             assert reread.n_frames == 3
+
+    def test_save_all_progress(self) -> None:
+        out = BytesIO()
+        progress = []
+
+        def callback(state):
+            if state["image_filename"]:
+                state["image_filename"] = (
+                    state["image_filename"]
+                    .replace("\\", "/")
+                    .split("Tests/images/")[-1]
+                )
+            progress.append(state)
+
+        Image.new("RGB", (1, 1)).save(out, "TIFF", save_all=True, progress=callback)
+        assert progress == [
+            {
+                "image_index": 0,
+                "image_filename": None,
+                "completed_frames": 1,
+                "total_frames": 1,
+            }
+        ]
+
+        out = BytesIO()
+        progress = []
+
+        with Image.open("Tests/images/hopper.tif") as im:
+            with Image.open("Tests/images/multipage.tiff") as im2:
+                im.save(
+                    out, "TIFF", save_all=True, append_images=[im2], progress=callback
+                )
+
+        expected = [
+            {
+                "image_index": 0,
+                "image_filename": "hopper.tif",
+                "completed_frames": 1,
+                "total_frames": 4,
+            }
+        ]
+        for i in range(3):
+            expected.append(
+                {
+                    "image_index": 1,
+                    "image_filename": "multipage.tiff",
+                    "completed_frames": i + 2,
+                    "total_frames": 4,
+                }
+            )
+        assert progress == expected
 
     def test_saving_icc_profile(self, tmp_path: Path) -> None:
         # Tests saving TIFF with icc_profile set.
