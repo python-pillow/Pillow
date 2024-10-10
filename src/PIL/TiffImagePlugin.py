@@ -2179,17 +2179,27 @@ class AppendingTiffWriter(io.BytesIO):
             if tag in self.Tags:
                 cur_pos = self.f.tell()
 
-                if is_local:
-                    self.fixOffsets(
-                        count, isShort=(field_size == 2), isLong=(field_size == 4)
+                try:
+                    if is_local:
+                        self.fixOffsets(
+                            count, isShort=(field_size == 2), isLong=(field_size == 4)
+                        )
+                        self.f.seek(cur_pos + 4)
+                    else:
+                        self.f.seek(offset)
+                        self.fixOffsets(
+                            count, isShort=(field_size == 2), isLong=(field_size == 4)
+                        )
+                        self.f.seek(cur_pos)
+                except RuntimeError as e:
+                    msg = (
+                        f"{e}:"
+                        f" Tag ID {tag}"
+                        f" Field Type {field_type}"
+                        f" Field Size {field_size}"
+                        f" Count {count}"
                     )
-                    self.f.seek(cur_pos + 4)
-                else:
-                    self.f.seek(offset)
-                    self.fixOffsets(
-                        count, isShort=(field_size == 2), isLong=(field_size == 4)
-                    )
-                    self.f.seek(cur_pos)
+                    raise RuntimeError(msg) from e
 
             elif is_local:
                 # skip the locally stored value that is not an offset
