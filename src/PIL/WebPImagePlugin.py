@@ -315,6 +315,25 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(data)
 
 
+def _supported_modes():
+    return [
+        "RGB",
+        "RGBA",
+        "RGBa",
+        "RGBX",
+        "CMYK",
+        "YCbCr",
+        "HSV",
+        "I",
+        "F",
+        "P",
+        "LA",
+        "LAB",
+        "L",
+        "1",
+    ]
+
+
 Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
 if SUPPORTED:
     Image.register_save(WebPImageFile.format, _save)

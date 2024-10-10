@@ -19,6 +19,7 @@ from PIL import (
     ImageDraw,
     ImageFile,
     ImagePalette,
+    TiffImagePlugin,
     UnidentifiedImageError,
     features,
 )
@@ -467,6 +468,67 @@ class TestImage:
         assert extensions
         for ext in [".cur", ".icns", ".tif", ".tiff"]:
             assert ext in extensions
+
+    def test_supported_modes(self) -> None:
+        for format in Image.MIME.keys():
+            try:
+                save_handler = Image.SAVE[format]
+            except KeyError:
+                continue
+            plugin = sys.modules[save_handler.__module__]
+            if not hasattr(plugin, "_supported_modes"):
+                continue
+
+            # Check that the supported modes list is accurate
+            supported_modes = plugin._supported_modes()
+            for mode in [
+                "1",
+                "L",
+                "P",
+                "RGB",
+                "RGBA",
+                "CMYK",
+                "YCbCr",
+                "LAB",
+                "HSV",
+                "I",
+                "F",
+                "LA",
+                "La",
+                "RGBX",
+                "RGBa",
+            ]:
+                out = io.BytesIO()
+                im = Image.new(mode, (100, 100))
+                if mode in supported_modes:
+                    im.save(out, format)
+                else:
+                    with pytest.raises(Exception):
+                        im.save(out, format)
+
+    def test_no_supported_modes_method(self, tmp_path: Path) -> None:
+        assert not hasattr(TiffImagePlugin, "_supported_modes")
+
+        temp_file = str(tmp_path / "temp.tiff")
+
+        im = hopper()
+        im.save(temp_file, convert_mode=True)
+
+    def test_convert_mode(self) -> None:
+        for mode, modes in [["P", []], ["P", ["P"]]]:  # no modes, same mode
+            im = Image.new(mode, (100, 100))
+            assert im._convert_mode(modes) is None
+
+        for mode, modes in [
+            ["P", ["RGB"]],
+            ["P", ["L"]],  # converting to a non-preferred mode
+            ["LA", ["P"]],
+            ["I", ["L"]],
+            ["RGB", ["L"]],
+            ["RGB", ["CMYK"]],
+        ]:
+            im = Image.new(mode, (100, 100))
+            assert im._convert_mode(modes) is not None
 
     def test_effect_mandelbrot(self) -> None:
         # Arrange
