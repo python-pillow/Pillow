@@ -50,6 +50,7 @@ TEST_FILE_UNCOMPRESSED_RGB_WITH_ALPHA = "Tests/images/uncompressed_rgb.dds"
 )
 def test_sanity_dxt1_bc1(image_path: str) -> None:
     """Check DXT1 and BC1 images can be opened"""
+    target: Image.Image
     with Image.open(TEST_FILE_DXT1.replace(".dds", ".png")) as target:
         target = target.convert("RGBA")
     with Image.open(image_path) as im:
@@ -331,11 +332,13 @@ def test_dxt5_colorblock_alpha_issue_4142() -> None:
 
     with Image.open("Tests/images/dxt5-colorblock-alpha-issue-4142.dds") as im:
         px = im.getpixel((0, 0))
+        assert isinstance(px, tuple)
         assert px[0] != 0
         assert px[1] != 0
         assert px[2] != 0
 
         px = im.getpixel((1, 0))
+        assert isinstance(px, tuple)
         assert px[0] != 0
         assert px[1] != 0
         assert px[2] != 0

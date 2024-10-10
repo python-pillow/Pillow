@@ -31,7 +31,7 @@ import os
 import subprocess
 from enum import IntEnum
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, Union
+from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, Union, cast
 
 from . import (
     Image,
@@ -45,6 +45,7 @@ from . import (
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
+from ._util import DeferredError
 
 if TYPE_CHECKING:
     from . import _imaging
@@ -83,6 +84,7 @@ class GifImageFile(ImageFile.ImageFile):
     global_palette = None
 
     def data(self) -> bytes | None:
+        assert self.fp is not None
         s = self.fp.read(1)
         if s and s[0]:
             return self.fp.read(s[0])
@@ -96,6 +98,7 @@ class GifImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # Screen
+        assert self.fp is not None
         s = self.fp.read(13)
         if not _accept(s):
             msg = "not a GIF file"
@@ -113,8 +116,8 @@ class GifImageFile(ImageFile.ImageFile):
             # check if palette contains colour indices
             p = self.fp.read(3 << bits)
             if self._is_palette_needed(p):
-                p = ImagePalette.raw("RGB", p)
-                self.global_palette = self.palette = p
+                palette = ImagePalette.raw("RGB", p)
+                self.global_palette = self.palette = palette
 
         self._fp = self.fp  # FIXME: hack
         self.__rewind = self.fp.tell()
@@ -168,6 +171,8 @@ class GifImageFile(ImageFile.ImageFile):
                 raise EOFError(msg) from e
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         if frame == 0:
             # rewind
             self.__offset = 0
@@ -251,7 +256,7 @@ class GifImageFile(ImageFile.ImageFile):
                         info["comment"] += b"\n" + comment
                     else:
                         info["comment"] = comment
-                    s = None
+                    s = b""
                     continue
                 elif s[0] == 255 and frame == 0 and block is not None:
                     #
@@ -294,7 +299,7 @@ class GifImageFile(ImageFile.ImageFile):
                 bits = self.fp.read(1)[0]
                 self.__offset = self.fp.tell()
                 break
-            s = None
+            s = b""
 
         if interlace is None:
             msg = "image not found in GIF frame"
@@ -347,7 +352,10 @@ class GifImageFile(ImageFile.ImageFile):
             if self._frame_palette:
                 if color * 3 + 3 > len(self._frame_palette.palette):
                     color = 0
-                return tuple(self._frame_palette.palette[color * 3 : color * 3 + 3])
+                return cast(
+                    tuple[int, int, int],
+                    tuple(self._frame_palette.palette[color * 3 : color * 3 + 3]),
+                )
             else:
                 return (color, color, color)
 

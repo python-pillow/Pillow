@@ -600,22 +600,11 @@ class Image:
         return new
 
     # Context manager support
-    def __enter__(self):
+    def __enter__(self) -> Image:
         return self
 
-    def _close_fp(self):
-        if getattr(self, "_fp", False):
-            if self._fp != self.fp:
-                self._fp.close()
-            self._fp = DeferredError(ValueError("Operation on closed image"))
-        if self.fp:
-            self.fp.close()
-
-    def __exit__(self, *args):
-        if hasattr(self, "fp"):
-            if getattr(self, "_exclusive_fp", False):
-                self._close_fp()
-            self.fp = None
+    def __exit__(self, *args: object) -> None:
+        pass
 
     def close(self) -> None:
         """
@@ -629,13 +618,6 @@ class Image:
         :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
         more information.
         """
-        if hasattr(self, "fp"):
-            try:
-                self._close_fp()
-                self.fp = None
-            except Exception as msg:
-                logger.debug("Error closing: %s", msg)
-
         if getattr(self, "map", None):
             self.map: mmap.mmap | None = None
 
@@ -1539,10 +1521,14 @@ class Image:
                 exif_info = bytes.fromhex(
                     "".join(self.info["Raw profile type exif"].split("\n")[3:])
                 )
-            elif hasattr(self, "tag_v2"):
-                self._exif.bigtiff = self.tag_v2._bigtiff
-                self._exif.endian = self.tag_v2._endian
-                self._exif.load_from_fp(self.fp, self.tag_v2._offset)
+            else:
+                from . import TiffImagePlugin
+
+                if isinstance(self, TiffImagePlugin.TiffImageFile):
+                    self._exif.bigtiff = self.tag_v2._bigtiff
+                    self._exif.endian = self.tag_v2._endian
+                    assert self.fp is not None
+                    self._exif.load_from_fp(self.fp, self.tag_v2._offset)
         if exif_info is not None:
             self._exif.load(exif_info)
 
@@ -1561,52 +1547,6 @@ class Image:
             return
         self._exif._loaded = False
         self.getexif()
-
-    def get_child_images(self) -> list[ImageFile.ImageFile]:
-        child_images = []
-        exif = self.getexif()
-        ifds = []
-        if ExifTags.Base.SubIFDs in exif:
-            subifd_offsets = exif[ExifTags.Base.SubIFDs]
-            if subifd_offsets:
-                if not isinstance(subifd_offsets, tuple):
-                    subifd_offsets = (subifd_offsets,)
-                for subifd_offset in subifd_offsets:
-                    ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
-        ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
-        if ifd1 and ifd1.get(513):
-            assert exif._info is not None
-            ifds.append((ifd1, exif._info.next))
-
-        offset = None
-        for ifd, ifd_offset in ifds:
-            current_offset = self.fp.tell()
-            if offset is None:
-                offset = current_offset
-
-            fp = self.fp
-            if ifd is not None:
-                thumbnail_offset = ifd.get(513)
-                if thumbnail_offset is not None:
-                    thumbnail_offset += getattr(self, "_exif_offset", 0)
-                    self.fp.seek(thumbnail_offset)
-                    data = self.fp.read(ifd.get(514))
-                    fp = io.BytesIO(data)
-
-            with open(fp) as im:
-                from . import TiffImagePlugin
-
-                if thumbnail_offset is None and isinstance(
-                    im, TiffImagePlugin.TiffImageFile
-                ):
-                    im._frame_pos = [ifd_offset]
-                    im._seek(0)
-                im.load()
-                child_images.append(im)
-
-        if offset is not None:
-            self.fp.seek(offset)
-        return child_images
 
     def getim(self) -> CapsuleType:
         """
@@ -2516,7 +2456,10 @@ class Image:
         )
 
     def save(
-        self, fp: StrOrBytesPath | IO[bytes], format: str | None = None, **params: Any
+        self,
+        fp: StrOrBytesPath | IO[bytes] | io.TextIOWrapper,
+        format: str | None = None,
+        **params: Any,
     ) -> None:
         """
         Saves this image under the given filename.  If no format is

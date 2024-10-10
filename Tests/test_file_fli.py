@@ -21,6 +21,8 @@ animated_test_file_with_prefix_chunk = "Tests/images/2422.flc"
 
 def test_sanity() -> None:
     with Image.open(static_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
+
         im.load()
         assert im.mode == "P"
         assert im.size == (128, 128)
@@ -28,6 +30,8 @@ def test_sanity() -> None:
         assert not im.is_animated
 
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
+
         assert im.mode == "P"
         assert im.size == (320, 200)
         assert im.format == "FLI"
@@ -39,6 +43,8 @@ def test_prefix_chunk() -> None:
     ImageFile.LOAD_TRUNCATED_IMAGES = True
     try:
         with Image.open(animated_test_file_with_prefix_chunk) as im:
+            assert isinstance(im, FliImagePlugin.FliImageFile)
+
             assert im.mode == "P"
             assert im.size == (320, 200)
             assert im.format == "FLI"
@@ -46,6 +52,7 @@ def test_prefix_chunk() -> None:
             assert im.is_animated
 
             palette = im.getpalette()
+            assert palette is not None
             assert palette[3:6] == [255, 255, 255]
             assert palette[381:384] == [204, 204, 12]
             assert palette[765:] == [252, 0, 0]
@@ -110,16 +117,19 @@ def test_palette_chunk_second() -> None:
 
 def test_n_frames() -> None:
     with Image.open(static_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         assert im.n_frames == 384
         assert im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open(animated_test_file) as im:
+        assert isinstance(im, FliImagePlugin.FliImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame

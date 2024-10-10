@@ -4,8 +4,6 @@ import pytest
 
 from PIL import ContainerIO, Image
 
-from .helper import hopper
-
 TEST_FILE = "Tests/images/dummy.container"
 
 
@@ -15,15 +13,15 @@ def test_sanity() -> None:
 
 
 def test_isatty() -> None:
-    with hopper() as im:
-        container = ContainerIO.ContainerIO(im, 0, 0)
+    with open(TEST_FILE, "rb") as fh:
+        container = ContainerIO.ContainerIO(fh, 0, 0)
 
     assert container.isatty() is False
 
 
 def test_seekable() -> None:
-    with hopper() as im:
-        container = ContainerIO.ContainerIO(im, 0, 0)
+    with open(TEST_FILE, "rb") as fh:
+        container = ContainerIO.ContainerIO(fh, 0, 0)
 
     assert container.seekable() is True
 

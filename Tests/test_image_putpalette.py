@@ -62,6 +62,7 @@ def test_putpalette_with_alpha_values() -> None:
         expected = im.convert("RGBA")
 
         palette = im.getpalette()
+        assert palette is not None
         transparency = im.info.pop("transparency")
 
         palette_with_alpha_values = []

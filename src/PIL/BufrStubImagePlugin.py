@@ -40,6 +40,7 @@ class BufrStubImageFile(ImageFile.StubImageFile):
     format_description = "BUFR"
 
     def _open(self) -> None:
+        assert self.fp is not None
         offset = self.fp.tell()
 
         if not _accept(self.fp.read(4)):

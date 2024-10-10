@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from io import BytesIO
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 
 import pytest
@@ -79,6 +79,7 @@ def test_arbitrary_maxval(
         assert im.mode == mode
 
         px = im.load()
+        assert px is not None
         assert tuple(px[x, 0] for x in range(3)) == pixels
 
 
@@ -370,10 +371,8 @@ def test_mimetypes(tmp_path: Path) -> None:
 def test_save_stdout(buffer: bool) -> None:
     old_stdout = sys.stdout
 
-    class MyStdOut:
-        buffer = BytesIO()
-
-    mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
+    b = BytesIO()
+    mystdout: TextIOWrapper | BytesIO = TextIOWrapper(b) if buffer else b
 
     sys.stdout = mystdout
 
@@ -383,7 +382,5 @@ def test_save_stdout(buffer: bool) -> None:
     # Reset stdout
     sys.stdout = old_stdout
 
-    if isinstance(mystdout, MyStdOut):
-        mystdout = mystdout.buffer
-    with Image.open(mystdout) as reloaded:
+    with Image.open(b) as reloaded:
         assert_image_equal_tofile(reloaded, TEST_FILE)

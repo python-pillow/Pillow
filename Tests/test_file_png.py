@@ -4,7 +4,7 @@ import re
 import sys
 import warnings
 import zlib
-from io import BytesIO
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from types import ModuleType
 from typing import Any, cast
@@ -93,6 +93,7 @@ class TestFilePng:
 
         hopper("RGB").save(test_file)
 
+        im: Image.Image
         with Image.open(test_file) as im:
             im.load()
             assert im.mode == "RGB"
@@ -103,6 +104,8 @@ class TestFilePng:
         for mode in ["1", "L", "P", "RGB", "I", "I;16", "I;16B"]:
             im = hopper(mode)
             im.save(test_file)
+
+            reloaded: Image.Image
             with Image.open(test_file) as reloaded:
                 if mode in ("I", "I;16B"):
                     reloaded = reloaded.convert(mode)
@@ -225,11 +228,13 @@ class TestFilePng:
         test_file = "Tests/images/pil123p.png"
         with Image.open(test_file) as im:
             assert_image(im, "P", (162, 150))
-            im = im.convert("RGBA")
-        assert_image(im, "RGBA", (162, 150))
+            rgba_im = im.convert("RGBA")
+        assert_image(rgba_im, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
-        assert len(im.getchannel("A").getcolors()) == 124
+        colors = rgba_im.getchannel("A").getcolors()
+        assert colors is not None
+        assert len(colors) == 124
 
     def test_load_transparent_rgb(self) -> None:
         test_file = "Tests/images/rgb_trns.png"
@@ -237,11 +242,13 @@ class TestFilePng:
             assert im.info["transparency"] == (0, 255, 52)
 
             assert_image(im, "RGB", (64, 64))
-            im = im.convert("RGBA")
-        assert_image(im, "RGBA", (64, 64))
+            rgba_im = im.convert("RGBA")
+        assert_image(rgba_im, "RGBA", (64, 64))
 
         # image has 876 transparent pixels
-        assert im.getchannel("A").getcolors()[0][0] == 876
+        colors = rgba_im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == 876
 
     def test_save_p_transparent_palette(self, tmp_path: Path) -> None:
         in_file = "Tests/images/pil123p.png"
@@ -258,11 +265,13 @@ class TestFilePng:
             assert len(im.info["transparency"]) == 256
 
             assert_image(im, "P", (162, 150))
-            im = im.convert("RGBA")
-        assert_image(im, "RGBA", (162, 150))
+            rgba_im = im.convert("RGBA")
+        assert_image(rgba_im, "RGBA", (162, 150))
 
         # image has 124 unique alpha values
-        assert len(im.getchannel("A").getcolors()) == 124
+        colors = rgba_im.getchannel("A").getcolors()
+        assert colors is not None
+        assert len(colors) == 124
 
     def test_save_p_single_transparency(self, tmp_path: Path) -> None:
         in_file = "Tests/images/p_trns_single.png"
@@ -279,13 +288,15 @@ class TestFilePng:
             assert im.info["transparency"] == 164
             assert im.getpixel((31, 31)) == 164
             assert_image(im, "P", (64, 64))
-            im = im.convert("RGBA")
-        assert_image(im, "RGBA", (64, 64))
+            rgba_im = im.convert("RGBA")
+        assert_image(rgba_im, "RGBA", (64, 64))
 
-        assert im.getpixel((31, 31)) == (0, 255, 52, 0)
+        assert rgba_im.getpixel((31, 31)) == (0, 255, 52, 0)
 
         # image has 876 transparent pixels
-        assert im.getchannel("A").getcolors()[0][0] == 876
+        colors = rgba_im.getchannel("A").getcolors()
+        assert colors is not None
+        assert colors[0][0] == 876
 
     def test_save_p_transparent_black(self, tmp_path: Path) -> None:
         # check if solid black image with full transparency
@@ -313,7 +324,9 @@ class TestFilePng:
                 assert im.info["transparency"] == 255
 
                 im_rgba = im.convert("RGBA")
-            assert im_rgba.getchannel("A").getcolors()[0][0] == num_transparent
+            colors = im_rgba.getchannel("A").getcolors()
+            assert colors is not None
+            assert colors[0][0] == num_transparent
 
             test_file = str(tmp_path / "temp.png")
             im.save(test_file)
@@ -324,7 +337,9 @@ class TestFilePng:
                 assert_image_equal(im, test_im)
 
             test_im_rgba = test_im.convert("RGBA")
-            assert test_im_rgba.getchannel("A").getcolors()[0][0] == num_transparent
+            colors = test_im_rgba.getchannel("A").getcolors()
+            assert colors is not None
+            assert colors[0][0] == num_transparent
 
     def test_save_rgb_single_transparency(self, tmp_path: Path) -> None:
         in_file = "Tests/images/caption_6_33_22.png"
@@ -578,6 +593,7 @@ class TestFilePng:
 
     def test_read_private_chunks(self) -> None:
         with Image.open("Tests/images/exif.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert im.private_chunks == [(b"orNT", b"\x01")]
 
     def test_roundtrip_private_chunk(self) -> None:
@@ -600,6 +616,7 @@ class TestFilePng:
 
     def test_textual_chunks_after_idat(self) -> None:
         with Image.open("Tests/images/hopper.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert "comment" in im.text
             for k, v in {
                 "date:create": "2014-09-04T09:37:08+03:00",
@@ -609,20 +626,24 @@ class TestFilePng:
 
         # Raises a SyntaxError in load_end
         with Image.open("Tests/images/broken_data_stream.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             with pytest.raises(OSError):
                 assert isinstance(im.text, dict)
 
         # Raises a UnicodeDecodeError in load_end
         with Image.open("Tests/images/truncated_image.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+
             # The file is truncated
             with pytest.raises(OSError):
-                im.text()
+                im.text
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             assert isinstance(im.text, dict)
             ImageFile.LOAD_TRUNCATED_IMAGES = False
 
         # Raises an EOFError in load_end
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
     def test_unknown_compression_method(self) -> None:
@@ -667,6 +688,9 @@ class TestFilePng:
         im.save(out, bits=4, save_all=save_all)
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            assert reloaded.png is not None
+            assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 48
 
     def test_plte_length(self, tmp_path: Path) -> None:
@@ -677,6 +701,9 @@ class TestFilePng:
         im.save(str(tmp_path / "temp.png"))
 
         with Image.open(out) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+            assert reloaded.png is not None
+            assert reloaded.png.im_palette is not None
             assert len(reloaded.png.im_palette[1]) == 3
 
     def test_getxmp(self) -> None:
@@ -698,13 +725,17 @@ class TestFilePng:
     def test_exif(self) -> None:
         # With an EXIF chunk
         with Image.open("Tests/images/exif.png") as im:
-            exif = im._getexif()
-        assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+        assert exif_data is not None
+        assert exif_data[274] == 1
 
         # With an ImageMagick zTXt chunk
         with Image.open("Tests/images/exif_imagemagick.png") as im:
-            exif = im._getexif()
-            assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+            assert exif_data is not None
+            assert exif_data[274] == 1
 
             # Assert that info still can be extracted
             # when the image is no longer a PngImageFile instance
@@ -713,8 +744,10 @@ class TestFilePng:
 
         # With a tEXt chunk
         with Image.open("Tests/images/exif_text.png") as im:
-            exif = im._getexif()
-        assert exif[274] == 1
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            exif_data = im._getexif()
+        assert exif_data is not None
+        assert exif_data[274] == 1
 
         # With XMP tags
         with Image.open("Tests/images/xmp_tags_orientation.png") as im:
@@ -728,6 +761,7 @@ class TestFilePng:
             im.save(test_file)
 
         with Image.open(test_file) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
             assert reloaded._getexif() is None
 
         # Test passing in exif
@@ -735,7 +769,9 @@ class TestFilePng:
             im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
             exif = reloaded._getexif()
+        assert exif is not None
         assert exif[274] == 1
 
     @mark_if_feature_version(
@@ -747,7 +783,9 @@ class TestFilePng:
             im.save(test_file, exif=im.getexif())
 
         with Image.open(test_file) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
             exif = reloaded._getexif()
+        assert exif is not None
         assert exif[305] == "Adobe Photoshop CS Macintosh"
 
     def test_exif_argument(self, tmp_path: Path) -> None:
@@ -773,10 +811,8 @@ class TestFilePng:
     def test_save_stdout(self, buffer: bool) -> None:
         old_stdout = sys.stdout
 
-        class MyStdOut:
-            buffer = BytesIO()
-
-        mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
+        b = BytesIO()
+        mystdout: TextIOWrapper | BytesIO = TextIOWrapper(b) if buffer else b
 
         sys.stdout = mystdout
 
@@ -786,9 +822,7 @@ class TestFilePng:
         # Reset stdout
         sys.stdout = old_stdout
 
-        if isinstance(mystdout, MyStdOut):
-            mystdout = mystdout.buffer
-        with Image.open(mystdout) as reloaded:
+        with Image.open(b) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
     def test_truncated_end_chunk(self) -> None:

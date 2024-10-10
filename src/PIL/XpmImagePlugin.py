@@ -37,17 +37,18 @@ class XpmImageFile(ImageFile.ImageFile):
     format_description = "X11 Pixel Map"
 
     def _open(self) -> None:
+        assert self.fp is not None
         if not _accept(self.fp.read(9)):
             msg = "not an XPM file"
             raise SyntaxError(msg)
 
         # skip forward to next string
         while True:
-            s = self.fp.readline()
-            if not s:
+            line = self.fp.readline()
+            if not line:
                 msg = "broken XPM file"
                 raise SyntaxError(msg)
-            m = xpm_head.match(s)
+            m = xpm_head.match(line)
             if m:
                 break
 
@@ -66,14 +67,14 @@ class XpmImageFile(ImageFile.ImageFile):
         palette = [b"\0\0\0"] * 256
 
         for _ in range(pal):
-            s = self.fp.readline()
-            if s[-2:] == b"\r\n":
-                s = s[:-2]
-            elif s[-1:] in b"\r\n":
-                s = s[:-1]
+            line = self.fp.readline()
+            if line[-2:] == b"\r\n":
+                line = line[:-2]
+            elif line[-1:] in b"\r\n":
+                line = line[:-1]
 
-            c = s[1]
-            s = s[2:-2].split()
+            c = line[1]
+            s = line[2:-2].split()
 
             for i in range(0, len(s), 2):
                 if s[i] == b"c":
@@ -83,9 +84,11 @@ class XpmImageFile(ImageFile.ImageFile):
                         self.info["transparency"] = c
                     elif rgb[:1] == b"#":
                         # FIXME: handle colour names (see ImagePalette.py)
-                        rgb = int(rgb[1:], 16)
+                        rgb_int = int(rgb[1:], 16)
                         palette[c] = (
-                            o8((rgb >> 16) & 255) + o8((rgb >> 8) & 255) + o8(rgb & 255)
+                            o8((rgb_int >> 16) & 255)
+                            + o8((rgb_int >> 8) & 255)
+                            + o8(rgb_int & 255)
                         )
                     else:
                         # unknown colour
@@ -111,6 +114,7 @@ class XpmImageFile(ImageFile.ImageFile):
 
         xsize, ysize = self.size
 
+        assert self.fp is not None
         s = [self.fp.readline()[1 : xsize + 1].ljust(xsize) for i in range(ysize)]
 
         return b"".join(s)
