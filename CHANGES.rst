@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Do not close provided file handles with libtiff when saving #8458
+  [radarhere]
+
 - Support ImageFilter.BuiltinFilter for I;16* images #8438
   [radarhere]
 
