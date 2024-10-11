@@ -1864,7 +1864,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if hasattr(fp, "fileno"):
             try:
                 fp.seek(0)
-                _fp = os.dup(fp.fileno())
+                _fp = fp.fileno()
             except io.UnsupportedOperation:
                 pass
 
@@ -1943,11 +1943,6 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 fp.write(data)
             if errcode:
                 break
-        if _fp:
-            try:
-                os.close(_fp)
-            except OSError:
-                pass
         if errcode < 0:
             msg = f"encoder error {errcode} when writing image file"
             raise OSError(msg)
