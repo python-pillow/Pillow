@@ -46,7 +46,7 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 install-sphinx:
-	$(PYTHON) -m pip install --quiet furo olefile sphinx sphinx-copybutton sphinx-inline-tabs sphinxext-opengraph
+	$(PYTHON) -m pip install -e ..[docs]
 
 .PHONY: html
 html:
