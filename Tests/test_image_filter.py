@@ -35,16 +35,25 @@ from .helper import assert_image_equal, hopper
         ImageFilter.UnsharpMask(10),
     ),
 )
-@pytest.mark.parametrize("mode", ("L", "I", "RGB", "CMYK"))
-def test_sanity(filter_to_apply: ImageFilter.Filter, mode: str) -> None:
+@pytest.mark.parametrize(
+    "mode", ("L", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+)
+def test_sanity(
+    filter_to_apply: ImageFilter.Filter | type[ImageFilter.Filter], mode: str
+) -> None:
     im = hopper(mode)
-    if mode != "I" or isinstance(filter_to_apply, ImageFilter.BuiltinFilter):
+    if mode[0] != "I" or (
+        callable(filter_to_apply)
+        and issubclass(filter_to_apply, ImageFilter.BuiltinFilter)
+    ):
         out = im.filter(filter_to_apply)
         assert out.mode == im.mode
         assert out.size == im.size
 
 
-@pytest.mark.parametrize("mode", ("L", "I", "RGB", "CMYK"))
+@pytest.mark.parametrize(
+    "mode", ("L", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+)
 def test_sanity_error(mode: str) -> None:
     im = hopper(mode)
     with pytest.raises(TypeError):
@@ -145,7 +154,9 @@ def test_kernel_not_enough_coefficients() -> None:
         ImageFilter.Kernel((3, 3), (0, 0))
 
 
-@pytest.mark.parametrize("mode", ("L", "LA", "I", "RGB", "CMYK"))
+@pytest.mark.parametrize(
+    "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+)
 def test_consistency_3x3(mode: str) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss.bmp") as reference:
@@ -161,7 +172,9 @@ def test_consistency_3x3(mode: str) -> None:
             assert_image_equal(source.filter(kernel), reference)
 
 
-@pytest.mark.parametrize("mode", ("L", "LA", "I", "RGB", "CMYK"))
+@pytest.mark.parametrize(
+    "mode", ("L", "LA", "I", "I;16", "I;16L", "I;16B", "I;16N", "RGB", "CMYK")
+)
 def test_consistency_5x5(mode: str) -> None:
     with Image.open("Tests/images/hopper.bmp") as source:
         with Image.open("Tests/images/hopper_emboss_more.bmp") as reference:

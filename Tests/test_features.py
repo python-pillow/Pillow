@@ -56,17 +56,17 @@ def test_version() -> None:
 
 def test_webp_transparency() -> None:
     with pytest.warns(DeprecationWarning):
-        assert features.check("transp_webp") == features.check_module("webp")
+        assert (features.check("transp_webp") or False) == features.check_module("webp")
 
 
 def test_webp_mux() -> None:
     with pytest.warns(DeprecationWarning):
-        assert features.check("webp_mux") == features.check_module("webp")
+        assert (features.check("webp_mux") or False) == features.check_module("webp")
 
 
 def test_webp_anim() -> None:
     with pytest.warns(DeprecationWarning):
-        assert features.check("webp_anim") == features.check_module("webp")
+        assert (features.check("webp_anim") or False) == features.check_module("webp")
 
 
 @skip_unless_feature("libjpeg_turbo")
