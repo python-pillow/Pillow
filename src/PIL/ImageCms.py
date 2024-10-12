@@ -31,6 +31,10 @@ from ._typing import SupportsRead
 
 try:
     from . import _imagingcms as core
+
+    _CmsProfileCompatible = Union[
+        str, SupportsRead[bytes], core.CmsProfile, "ImageCmsProfile"
+    ]
 except ImportError as ex:
     # Allow error import for doc purposes, but error out when accessing
     # anything in core.
@@ -388,10 +392,6 @@ def get_display_profile(handle: SupportsInt | None = None) -> ImageCmsProfile | 
 # --------------------------------------------------------------------.
 # pyCMS compatible layer
 # --------------------------------------------------------------------.
-
-_CmsProfileCompatible = Union[
-    str, SupportsRead[bytes], core.CmsProfile, ImageCmsProfile
-]
 
 
 class PyCMSError(Exception):
