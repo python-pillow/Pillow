@@ -279,6 +279,30 @@ def lambda_eval(
         return out
 
 
+def _unsafe_eval(
+    expression: str,
+    args: dict[str, Any],
+) -> Any:
+    compiled_code = compile(expression, "<string>", "eval")
+
+    def scan(code: CodeType) -> None:
+        for const in code.co_consts:
+            if type(const) is type(compiled_code):
+                scan(const)
+
+        for name in code.co_names:
+            if name not in args and name != "abs":
+                msg = f"'{name}' not allowed"
+                raise ValueError(msg)
+
+    scan(compiled_code)
+    out = builtins.eval(expression, {"__builtins": {"abs": abs}}, args)
+    try:
+        return out.im
+    except AttributeError:
+        return out
+
+
 def unsafe_eval(
     expression: str,
     options: dict[str, Any] = {},
@@ -323,24 +347,64 @@ def unsafe_eval(
         if isinstance(v, Image.Image):
             args[k] = _Operand(v)
 
-    compiled_code = compile(expression, "<string>", "eval")
+    return _unsafe_eval(expression, args)
 
-    def scan(code: CodeType) -> None:
-        for const in code.co_consts:
-            if type(const) is type(compiled_code):
-                scan(const)
 
-        for name in code.co_names:
-            if name not in args and name != "abs":
-                msg = f"'{name}' not allowed"
-                raise ValueError(msg)
+class _Operand_Eval(_Operand):
+    def apply(
+        self,
+        op: str,
+        im1: _Operand | float,
+        im2: _Operand | float | None = None,
+        mode: str | None = None,
+    ) -> _Operand:
+        operand = super().apply(op, im1, im2, mode)
+        return _Operand_Eval(operand.im)
 
-    scan(compiled_code)
-    out = builtins.eval(expression, {"__builtins": {"abs": abs}}, args)
-    try:
-        return out.im
-    except AttributeError:
-        return out
+    def __eq__(self, other: _Operand_Eval | float | None) -> _Operand:  # type: ignore[override]
+        return self.apply("eq", self, other)
+
+    def __ne__(self, other: _Operand_Eval | float | None) -> _Operand:  # type: ignore[override]
+        return self.apply("ne", self, other)
+
+    def __lt__(self, other: _Operand_Eval | float) -> _Operand:  # type: ignore[override]
+        return self.apply("lt", self, other)
+
+    def __le__(self, other: _Operand_Eval | float) -> _Operand:  # type: ignore[override]
+        return self.apply("le", self, other)
+
+    def __gt__(self, other: _Operand_Eval | float) -> _Operand:  # type: ignore[override]
+        return self.apply("gt", self, other)
+
+    def __ge__(self, other: _Operand_Eval | float) -> _Operand:  # type: ignore[override]
+        return self.apply("ge", self, other)
+
+
+def imagemath_int_eval(self: _Operand) -> _Operand:
+    operand = _Operand(self.im.convert("I"))
+    return _Operand_Eval(operand.im)
+
+
+def imagemath_float_eval(self: _Operand) -> _Operand:
+    operand = _Operand(self.im.convert("F"))
+    return _Operand_Eval(operand.im)
+
+
+def imagemath_equal_eval(
+    self: _Operand_Eval, other: _Operand_Eval | float | None
+) -> _Operand:
+    return self.apply("eq", self, other, mode="I")
+
+
+def imagemath_notequal_eval(
+    self: _Operand_Eval, other: _Operand_Eval | float | None
+) -> _Operand:
+    return self.apply("ne", self, other, mode="I")
+
+
+def imagemath_convert_eval(self: _Operand, mode: str) -> _Operand_Eval:
+    operand = _Operand(self.im.convert(mode))
+    return _Operand_Eval(operand.im)
 
 
 def eval(
@@ -358,7 +422,7 @@ def eval(
                   can either use a dictionary, or one or more keyword
                   arguments.
     :return: The evaluated expression. This is usually an image object, but can
-             also be an integer, a floating point value, a boolean, or a pixel tuple,
+             also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
 
     ..  deprecated:: 10.3.0
@@ -369,4 +433,26 @@ def eval(
         12,
         "ImageMath.lambda_eval or ImageMath.unsafe_eval",
     )
-    return unsafe_eval(expression, _dict, **kw)
+
+    # build execution namespace
+    args: dict[str, Any] = {
+        "int": imagemath_int_eval,
+        "float": imagemath_float_eval,
+        "equal": imagemath_equal_eval,
+        "notequal": imagemath_notequal_eval,
+        "min": imagemath_min,
+        "max": imagemath_max,
+        "convert": imagemath_convert_eval,
+    }
+    for k in list(_dict.keys()) + list(kw.keys()):
+        if "__" in k or hasattr(builtins, k):
+            msg = f"'{k}' not allowed"
+            raise ValueError(msg)
+
+    args.update(_dict)
+    args.update(kw)
+    for k, v in args.items():
+        if isinstance(v, Image.Image):
+            args[k] = _Operand_Eval(v)
+
+    return _unsafe_eval(expression, args)

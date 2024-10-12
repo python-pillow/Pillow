@@ -13,9 +13,9 @@ which reached end-of-life in October 2024.
 ImageMath comparison operations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Comparison operations in :py:mod:`~PIL.ImageMath` will now return booleans
-instead of images. ``==``, ``!=``, ``<``, ``<=``, ``>``, ``>=``, ``equal()`` and
-``notequal()`` are all affected::
+In :py:meth:`~PIL.ImageMath.lambda_eval` and :py:meth:`~PIL.ImageMath.unsafe_eval`,
+comparison operations will now return booleans instead of images. ``==``, ``!=``,
+``<``, ``<=``, ``>``, ``>=``, ``equal()`` and ``notequal()`` are all affected::
 
     from PIL import Image, ImageMath
     A = Image.new("L", (1, 1))
@@ -23,6 +23,8 @@ instead of images. ``==``, ``!=``, ``<``, ``<=``, ``>``, ``>=``, ``equal()`` and
     # Previously, this would return an I mode 1x1 image
     # It will now return True
     ImageMath.lambda_eval(lambda args: args["A"] == args["A"], A=A))
+
+The deprecated ``ImageMath.eval()`` remains unchanged.
 
 Python 3.12 on macOS <= 10.12
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
