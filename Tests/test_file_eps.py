@@ -8,6 +8,7 @@ import pytest
 from PIL import EpsImagePlugin, Image, UnidentifiedImageError, features
 
 from .helper import (
+    assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
@@ -19,18 +20,18 @@ from .helper import (
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
 # Our two EPS test files (they are identical except for their bounding boxes)
-FILE1 = "Tests/images/zero_bb.eps"
-FILE2 = "Tests/images/non_zero_bb.eps"
+FILE1 = "Tests/images/eps/zero_bb.eps"
+FILE2 = "Tests/images/eps/non_zero_bb.eps"
 
 # Due to palletization, we'll need to convert these to RGB after load
-FILE1_COMPARE = "Tests/images/zero_bb.png"
-FILE1_COMPARE_SCALE2 = "Tests/images/zero_bb_scale2.png"
+FILE1_COMPARE = "Tests/images/eps/zero_bb.png"
+FILE1_COMPARE_SCALE2 = "Tests/images/eps/zero_bb_scale2.png"
 
-FILE2_COMPARE = "Tests/images/non_zero_bb.png"
-FILE2_COMPARE_SCALE2 = "Tests/images/non_zero_bb_scale2.png"
+FILE2_COMPARE = "Tests/images/eps/non_zero_bb.png"
+FILE2_COMPARE_SCALE2 = "Tests/images/eps/non_zero_bb_scale2.png"
 
 # EPS test files with binary preview
-FILE3 = "Tests/images/binary_preview_map.eps"
+FILE3 = "Tests/images/eps/binary_preview_map.eps"
 
 # Three unsigned 32bit little-endian values:
 #   0xC6D3D0C5 magic number
@@ -80,9 +81,7 @@ simple_eps_file_with_long_binary_data = (
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-@pytest.mark.parametrize(
-    ("filename", "size"), ((FILE1, (460, 352)), (FILE2, (360, 252)))
-)
+@pytest.mark.parametrize("filename, size", ((FILE1, (460, 352)), (FILE2, (360, 252))))
 @pytest.mark.parametrize("scale", (1, 2))
 def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
     expected_size = tuple(s * scale for s in size)
@@ -129,6 +128,15 @@ def test_binary_header_only() -> None:
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_simple_eps_file(prefix: bytes) -> None:
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file))
+    with Image.open(data) as img:
+        assert img.mode == "RGB"
+        assert img.size == (100, 100)
+        assert img.format == "EPS"
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
 def test_missing_version_comment(prefix: bytes) -> None:
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_without_version))
     with pytest.raises(SyntaxError):
@@ -143,21 +151,19 @@ def test_missing_boundingbox_comment(prefix: bytes) -> None:
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_invalid_boundingbox_comment(prefix: bytes) -> None:
-    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox))
+@pytest.mark.parametrize(
+    "file_lines",
+    (
+        simple_eps_file_with_invalid_boundingbox,
+        simple_eps_file_with_invalid_boundingbox_valid_imagedata,
+    ),
+)
+def test_invalid_boundingbox_comment(
+    prefix: bytes, file_lines: tuple[bytes, ...]
+) -> None:
+    data = io.BytesIO(prefix + b"\n".join(file_lines))
     with pytest.raises(OSError, match="cannot determine EPS bounding box"):
         EpsImagePlugin.EpsImageFile(data)
-
-
-@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_invalid_boundingbox_comment_valid_imagedata_comment(prefix: bytes) -> None:
-    data = io.BytesIO(
-        prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox_valid_imagedata)
-    )
-    with Image.open(data) as img:
-        assert img.mode == "RGB"
-        assert img.size == (100, 100)
-        assert img.format == "EPS"
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
@@ -179,7 +185,7 @@ def test_load_long_binary_data(prefix: bytes) -> None:
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_long_binary_data))
     with Image.open(data) as img:
         img.load()
-        assert img.mode == "RGB"
+        assert img.mode == "1"
         assert img.size == (100, 100)
         assert img.format == "EPS"
 
@@ -189,7 +195,7 @@ def test_load_long_binary_data(prefix: bytes) -> None:
 )
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_cmyk() -> None:
-    with Image.open("Tests/images/pil_sample_cmyk.eps") as cmyk_image:
+    with Image.open("Tests/images/eps/pil_sample_cmyk.eps") as cmyk_image:
         assert cmyk_image.mode == "CMYK"
         assert cmyk_image.size == (100, 100)
         assert cmyk_image.format == "EPS"
@@ -206,8 +212,8 @@ def test_cmyk() -> None:
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_showpage() -> None:
     # See https://github.com/python-pillow/Pillow/issues/2615
-    with Image.open("Tests/images/reqd_showpage.eps") as plot_image:
-        with Image.open("Tests/images/reqd_showpage.png") as target:
+    with Image.open("Tests/images/eps/reqd_showpage.eps") as plot_image:
+        with Image.open("Tests/images/eps/reqd_showpage.png") as target:
             # should not crash/hang
             plot_image.load()
             # fonts could be slightly different
@@ -216,11 +222,11 @@ def test_showpage() -> None:
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_transparency() -> None:
-    with Image.open("Tests/images/reqd_showpage.eps") as plot_image:
+    with Image.open("Tests/images/eps/reqd_showpage.eps") as plot_image:
         plot_image.load(transparency=True)
         assert plot_image.mode == "RGBA"
 
-        with Image.open("Tests/images/reqd_showpage_transparency.png") as target:
+        with Image.open("Tests/images/eps/reqd_showpage_transparency.png") as target:
             # fonts could be slightly different
             assert_image_similar(plot_image, target, 6)
 
@@ -247,9 +253,19 @@ def test_bytesio_object() -> None:
         assert_image_similar(img, image1_scale1_compare, 5)
 
 
-def test_1_mode() -> None:
-    with Image.open("Tests/images/1.eps") as im:
-        assert im.mode == "1"
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+@pytest.mark.parametrize(
+    # These images have an "ImageData" descriptor.
+    "filename",
+    (
+        "Tests/images/eps/1.eps",
+        "Tests/images/eps/1_boundingbox_after_imagedata.eps",
+        "Tests/images/eps/1_second_imagedata.eps",
+    ),
+)
+def test_1(filename: str) -> None:
+    with Image.open(filename) as im:
+        assert_image_equal_tofile(im, "Tests/images/eps/1.bmp")
 
 
 def test_image_mode_not_supported(tmp_path: Path) -> None:
@@ -304,7 +320,9 @@ def test_render_scale2() -> None:
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-@pytest.mark.parametrize("filename", (FILE1, FILE2, "Tests/images/illu10_preview.eps"))
+@pytest.mark.parametrize(
+    "filename", (FILE1, FILE2, "Tests/images/eps/illu10_preview.eps")
+)
 def test_resize(filename: str) -> None:
     with Image.open(filename) as im:
         new_size = (100, 100)
@@ -346,10 +364,10 @@ def test_readline(prefix: bytes, line_ending: bytes) -> None:
 @pytest.mark.parametrize(
     "filename",
     (
-        "Tests/images/illu10_no_preview.eps",
-        "Tests/images/illu10_preview.eps",
-        "Tests/images/illuCS6_no_preview.eps",
-        "Tests/images/illuCS6_preview.eps",
+        "Tests/images/eps/illu10_no_preview.eps",
+        "Tests/images/eps/illu10_preview.eps",
+        "Tests/images/eps/illuCS6_no_preview.eps",
+        "Tests/images/eps/illuCS6_preview.eps",
     ),
 )
 def test_open_eps(filename: str) -> None:
@@ -361,7 +379,7 @@ def test_open_eps(filename: str) -> None:
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_emptyline() -> None:
     # Test file includes an empty line in the header data
-    emptyline_file = "Tests/images/zero_bb_emptyline.eps"
+    emptyline_file = "Tests/images/eps/zero_bb_emptyline.eps"
 
     with Image.open(emptyline_file) as image:
         image.load()
@@ -373,7 +391,7 @@ def test_emptyline() -> None:
 @pytest.mark.timeout(timeout=5)
 @pytest.mark.parametrize(
     "test_file",
-    ["Tests/images/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],
+    ["Tests/images/eps/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],
 )
 def test_timeout(test_file: str) -> None:
     with open(test_file, "rb") as f:
@@ -386,7 +404,7 @@ def test_bounding_box_in_trailer() -> None:
     # Check bounding boxes are parsed in the same way
     # when specified in the header and the trailer
     with (
-        Image.open("Tests/images/zero_bb_trailer.eps") as trailer_image,
+        Image.open("Tests/images/eps/zero_bb_trailer.eps") as trailer_image,
         Image.open(FILE1) as header_image,
     ):
         assert trailer_image.size == header_image.size
@@ -394,12 +412,12 @@ def test_bounding_box_in_trailer() -> None:
 
 def test_eof_before_bounding_box() -> None:
     with pytest.raises(OSError):
-        with Image.open("Tests/images/zero_bb_eof_before_boundingbox.eps"):
+        with Image.open("Tests/images/eps/zero_bb_eof_before_boundingbox.eps"):
             pass
 
 
 def test_invalid_data_after_eof() -> None:
-    with open("Tests/images/illuCS6_preview.eps", "rb") as f:
+    with open("Tests/images/eps/illuCS6_preview.eps", "rb") as f:
         img_bytes = io.BytesIO(f.read() + b"\r\n%" + (b" " * 255))
 
     with Image.open(img_bytes) as img:

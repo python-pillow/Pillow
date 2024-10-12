@@ -9,6 +9,7 @@ from typing import IO
 import PIL
 
 from . import Image
+from ._deprecate import deprecate
 
 modules = {
     "pil": ("PIL._imaging", "PILLOW_VERSION"),
@@ -118,10 +119,10 @@ def get_supported_codecs() -> list[str]:
     return [f for f in codecs if check_codec(f)]
 
 
-features = {
-    "webp_anim": ("PIL._webp", "HAVE_WEBPANIM", None),
-    "webp_mux": ("PIL._webp", "HAVE_WEBPMUX", None),
-    "transp_webp": ("PIL._webp", "HAVE_TRANSPARENCY", None),
+features: dict[str, tuple[str, str | bool, str | None]] = {
+    "webp_anim": ("PIL._webp", True, None),
+    "webp_mux": ("PIL._webp", True, None),
+    "transp_webp": ("PIL._webp", True, None),
     "raqm": ("PIL._imagingft", "HAVE_RAQM", "raqm_version"),
     "fribidi": ("PIL._imagingft", "HAVE_FRIBIDI", "fribidi_version"),
     "harfbuzz": ("PIL._imagingft", "HAVE_HARFBUZZ", "harfbuzz_version"),
@@ -145,8 +146,12 @@ def check_feature(feature: str) -> bool | None:
 
     module, flag, ver = features[feature]
 
+    if isinstance(flag, bool):
+        deprecate(f'check_feature("{feature}")', 12)
     try:
         imported_module = __import__(module, fromlist=["PIL"])
+        if isinstance(flag, bool):
+            return flag
         return getattr(imported_module, flag)
     except ModuleNotFoundError:
         return None
@@ -176,7 +181,17 @@ def get_supported_features() -> list[str]:
     """
     :returns: A list of all supported features.
     """
-    return [f for f in features if check_feature(f)]
+    supported_features = []
+    for f, (module, flag, _) in features.items():
+        if flag is True:
+            for feature, (feature_module, _) in modules.items():
+                if feature_module == module:
+                    if check_module(feature):
+                        supported_features.append(f)
+                    break
+        elif check_feature(f):
+            supported_features.append(f)
+    return supported_features
 
 
 def check(feature: str) -> bool | None:
@@ -271,9 +286,6 @@ def pilinfo(out: IO[str] | None = None, supported_formats: bool = True) -> None:
         ("freetype2", "FREETYPE2"),
         ("littlecms2", "LITTLECMS2"),
         ("webp", "WEBP"),
-        ("transp_webp", "WEBP Transparency"),
-        ("webp_mux", "WEBPMUX"),
-        ("webp_anim", "WEBP Animation"),
         ("jpg", "JPEG"),
         ("jpg_2000", "OPENJPEG (JPEG2000)"),
         ("zlib", "ZLIB (PNG/ZIP)"),

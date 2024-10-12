@@ -18,7 +18,7 @@ environment:
   TEST_OPTIONS:
   DEPLOY: YES
   matrix:
-  - PYTHON: C:/Python312
+  - PYTHON: C:/Python313
     ARCHITECTURE: x86
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
   - PYTHON: C:/Python39-x64
@@ -34,8 +34,8 @@ install:
 - xcopy /S /Y c:\test-images-main\* c:\pillow\tests\images
 - curl -fsSL -o nasm-win64.zip https://raw.githubusercontent.com/python-pillow/pillow-depends/main/nasm-2.16.03-win64.zip
 - 7z x nasm-win64.zip -oc:\
-- choco install ghostscript --version=10.3.1
-- path c:\nasm-2.16.03;C:\Program Files\gs\gs10.03.1\bin;%PATH%
+- choco install ghostscript --version=10.4.0
+- path c:\nasm-2.16.03;C:\Program Files\gs\gs10.04.0\bin;%PATH%
 - cd c:\pillow\winbuild\
 - ps: |
         c:\python39\python.exe c:\pillow\winbuild\build_prepare.py -v --depends=C:\pillow-depends\
@@ -51,11 +51,10 @@ build_script:
 
 test_script:
 - cd c:\pillow
-- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov pytest-timeout defusedxml numpy olefile pyroma'
+- '%PYTHON%\%EXECUTABLE% -m pip install pytest pytest-cov pytest-timeout defusedxml ipython numpy olefile pyroma'
 - c:\"Program Files (x86)"\"Windows Kits"\10\Debuggers\x86\gflags.exe /p /enable %PYTHON%\%EXECUTABLE%
-- '%PYTHON%\%EXECUTABLE% -c "from PIL import Image"'
-- '%PYTHON%\%EXECUTABLE% -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests'
-#- '%PYTHON%\%EXECUTABLE% test-installed.py -v -s %TEST_OPTIONS%' TODO TEST_OPTIONS with pytest?
+- path %PYTHON%;%PATH%
+- .ci\test.cmd
 
 after_test:
 - curl -Os https://uploader.codecov.io/latest/windows/codecov.exe

@@ -95,7 +95,9 @@ def test_16bit_pgm_write(tmp_path: Path) -> None:
     with Image.open("Tests/images/16_bit_binary.pgm") as im:
         filename = str(tmp_path / "temp.pgm")
         im.save(filename, "PPM")
+        assert_image_equal_tofile(im, filename)
 
+        im.convert("I;16").save(filename, "PPM")
         assert_image_equal_tofile(im, filename)
 
 
@@ -373,7 +375,7 @@ def test_save_stdout(buffer: bool) -> None:
 
     mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-    sys.stdout = mystdout  # type: ignore[assignment]
+    sys.stdout = mystdout
 
     with Image.open(TEST_FILE) as im:
         im.save(sys.stdout, "PPM")

@@ -18,6 +18,7 @@ from __future__ import annotations
 import io
 import os
 import struct
+from collections.abc import Callable
 from typing import IO, cast
 
 from . import Image, ImageFile, ImagePalette, _binary
@@ -205,7 +206,7 @@ def _parse_jp2_header(
                 if bitdepth > max_bitdepth:
                     max_bitdepth = bitdepth
             if max_bitdepth <= 8:
-                palette = ImagePalette.ImagePalette()
+                palette = ImagePalette.ImagePalette("RGBA" if npc == 4 else "RGB")
                 for i in range(ne):
                     color: list[int] = []
                     for value in header.read_fields(">" + ("B" * npc)):
@@ -286,7 +287,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 length = -1
 
         self.tile = [
-            (
+            ImageFile._Tile(
                 "jpeg2k",
                 (0, 0) + self.size,
                 0,
@@ -316,15 +317,20 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             else:
                 self.fp.seek(length - 2, os.SEEK_CUR)
 
-    @property
-    def reduce(self):
+    @property  # type: ignore[override]
+    def reduce(
+        self,
+    ) -> (
+        Callable[[int | tuple[int, int], tuple[int, int, int, int] | None], Image.Image]
+        | int
+    ):
         # https://github.com/python-pillow/Pillow/issues/4343 found that the
         # new Image 'reduce' method was shadowed by this plugin's 'reduce'
         # property. This attempts to allow for both scenarios
         return self._reduce or super().reduce
 
     @reduce.setter
-    def reduce(self, value):
+    def reduce(self, value: int) -> None:
         self._reduce = value
 
     def load(self) -> Image.core.PixelAccess | None:
@@ -338,8 +344,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
             # Update the reduce and layers settings
             t = self.tile[0]
+            assert isinstance(t[3], tuple)
             t3 = (t[3][0], self._reduce, self.layers, t[3][3], t[3][4])
-            self.tile = [(t[0], (0, 0) + self.size, t[2], t3)]
+            self.tile = [ImageFile._Tile(t[0], (0, 0) + self.size, t[2], t3)]
 
         return ImageFile.ImageFile.load(self)
 
@@ -419,7 +426,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         plt,
     )
 
-    ImageFile._save(im, fp, [("jpeg2k", (0, 0) + im.size, 0, kind)])
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", (0, 0) + im.size, 0, kind)])
 
 
 # ------------------------------------------------------------

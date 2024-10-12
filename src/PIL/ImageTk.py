@@ -32,22 +32,11 @@ from typing import TYPE_CHECKING, Any, cast
 
 from . import Image, ImageFile
 
+if TYPE_CHECKING:
+    from ._typing import CapsuleType
+
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
-
-_pilbitmap_ok = None
-
-
-def _pilbitmap_check() -> int:
-    global _pilbitmap_ok
-    if _pilbitmap_ok is None:
-        try:
-            im = Image.new("1", (1, 1))
-            tkinter.BitmapImage(data=f"PIL:{im.im.id}")
-            _pilbitmap_ok = 1
-        except tkinter.TclError:
-            _pilbitmap_ok = 0
-    return _pilbitmap_ok
 
 
 def _get_image_from_kw(kw: dict[str, Any]) -> ImageFile.ImageFile | None:
@@ -62,18 +51,18 @@ def _get_image_from_kw(kw: dict[str, Any]) -> ImageFile.ImageFile | None:
 
 
 def _pyimagingtkcall(
-    command: str, photo: PhotoImage | tkinter.PhotoImage, id: int
+    command: str, photo: PhotoImage | tkinter.PhotoImage, ptr: CapsuleType
 ) -> None:
     tk = photo.tk
     try:
-        tk.call(command, photo, id)
+        tk.call(command, photo, repr(ptr))
     except tkinter.TclError:
         # activate Tkinter hook
         # may raise an error if it cannot attach to Tkinter
         from . import _imagingtk
 
         _imagingtk.tkinit(tk.interpaddr())
-        tk.call(command, photo, id)
+        tk.call(command, photo, repr(ptr))
 
 
 # --------------------------------------------------------------------
@@ -127,10 +116,7 @@ class PhotoImage:
                 # palette mapped data
                 image.apply_transparency()
                 image.load()
-                try:
-                    mode = image.palette.mode
-                except AttributeError:
-                    mode = "RGB"  # default
+                mode = image.palette.mode if image.palette else "RGB"
             size = image.size
             kw["width"], kw["height"] = size
 
@@ -145,7 +131,10 @@ class PhotoImage:
             self.paste(image)
 
     def __del__(self) -> None:
-        name = self.__photo.name
+        try:
+            name = self.__photo.name
+        except AttributeError:
+            return
         self.__photo.name = None
         try:
             self.__photo.tk.call("image", "delete", name)
@@ -188,15 +177,14 @@ class PhotoImage:
                    the bitmap image.
         """
         # convert to blittable
-        im.load()
+        ptr = im.getim()
         image = im.im
-        if image.isblock() and im.mode == self.__mode:
-            block = image
-        else:
-            block = image.new_block(self.__mode, im.size)
+        if not image.isblock() or im.mode != self.__mode:
+            block = Image.core.new_block(self.__mode, im.size)
             image.convert2(block, image)  # convert directly between buffers
+            ptr = block.ptr
 
-        _pyimagingtkcall("PyImagingPhoto", self.__photo, block.id)
+        _pyimagingtkcall("PyImagingPhoto", self.__photo, ptr)
 
 
 # --------------------------------------------------------------------
@@ -228,18 +216,13 @@ class BitmapImage:
         self.__mode = image.mode
         self.__size = image.size
 
-        if _pilbitmap_check():
-            # fast way (requires the pilbitmap booster patch)
-            image.load()
-            kw["data"] = f"PIL:{image.im.id}"
-            self.__im = image  # must keep a reference
-        else:
-            # slow but safe way
-            kw["data"] = image.tobitmap()
-        self.__photo = tkinter.BitmapImage(**kw)
+        self.__photo = tkinter.BitmapImage(data=image.tobitmap(), **kw)
 
     def __del__(self) -> None:
-        name = self.__photo.name
+        try:
+            name = self.__photo.name
+        except AttributeError:
+            return
         self.__photo.name = None
         try:
             self.__photo.tk.call("image", "delete", name)
@@ -276,9 +259,8 @@ class BitmapImage:
 def getimage(photo: PhotoImage) -> Image.Image:
     """Copies the contents of a PhotoImage to a PIL image memory."""
     im = Image.new("RGBA", (photo.width(), photo.height()))
-    block = im.im
 
-    _pyimagingtkcall("PyImagingPhotoGet", photo, block.id)
+    _pyimagingtkcall("PyImagingPhotoGet", photo, im.getim())
 
     return im
 

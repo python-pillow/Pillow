@@ -696,6 +696,12 @@ def test_rgb_lab(mode: str) -> None:
     assert value[:3] == (0, 255, 255)
 
 
+def test_cmyk_lab() -> None:
+    im = Image.new("CMYK", (1, 1))
+    converted_im = im.convert("LAB")
+    assert converted_im.getpixel((0, 0)) == (255, 128, 128)
+
+
 def test_deprecation() -> None:
     with pytest.warns(DeprecationWarning):
         assert ImageCms.DESCRIPTION.strip().startswith("pyCMS")

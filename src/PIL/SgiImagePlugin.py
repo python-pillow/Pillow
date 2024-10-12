@@ -109,19 +109,28 @@ class SgiImageFile(ImageFile.ImageFile):
             pagesize = xsize * ysize * bpc
             if bpc == 2:
                 self.tile = [
-                    ("SGI16", (0, 0) + self.size, headlen, (self.mode, 0, orientation))
+                    ImageFile._Tile(
+                        "SGI16",
+                        (0, 0) + self.size,
+                        headlen,
+                        (self.mode, 0, orientation),
+                    )
                 ]
             else:
                 self.tile = []
                 offset = headlen
                 for layer in self.mode:
                     self.tile.append(
-                        ("raw", (0, 0) + self.size, offset, (layer, 0, orientation))
+                        ImageFile._Tile(
+                            "raw", (0, 0) + self.size, offset, (layer, 0, orientation)
+                        )
                     )
                     offset += pagesize
         elif compression == 1:
             self.tile = [
-                ("sgi_rle", (0, 0) + self.size, headlen, (rawmode, orientation, bpc))
+                ImageFile._Tile(
+                    "sgi_rle", (0, 0) + self.size, headlen, (rawmode, orientation, bpc)
+                )
             ]
 
 
@@ -205,7 +214,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
         assert self.im is not None
 

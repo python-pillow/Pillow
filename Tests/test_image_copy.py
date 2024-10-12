@@ -49,5 +49,7 @@ def test_copy_zero() -> None:
 @skip_unless_feature("libtiff")
 def test_deepcopy() -> None:
     with Image.open("Tests/images/g4_orientation_5.tif") as im:
+        assert im.size == (590, 88)
+
         out = copy.deepcopy(im)
     assert out.size == (590, 88)

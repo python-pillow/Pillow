@@ -70,9 +70,9 @@ class MspImageFile(ImageFile.ImageFile):
         self._size = i16(s, 4), i16(s, 6)
 
         if s[:4] == b"DanM":
-            self.tile = [("raw", (0, 0) + self.size, 32, ("1", 0, 1))]
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 32, ("1", 0, 1))]
         else:
-            self.tile = [("MSP", (0, 0) + self.size, 32, None)]
+            self.tile = [ImageFile._Tile("MSP", (0, 0) + self.size, 32, None)]
 
 
 class MspDecoder(ImageFile.PyDecoder):
@@ -112,7 +112,7 @@ class MspDecoder(ImageFile.PyDecoder):
 
     _pulls_fd = True
 
-    def decode(self, buffer: bytes) -> tuple[int, int]:
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         assert self.fd is not None
 
         img = io.BytesIO()
@@ -152,7 +152,7 @@ class MspDecoder(ImageFile.PyDecoder):
                 msg = f"Corrupted MSP file in row {x}"
                 raise OSError(msg) from e
 
-        self.set_as_raw(img.getvalue(), ("1", 0, 1))
+        self.set_as_raw(img.getvalue(), "1")
 
         return -1, 0
 
@@ -188,7 +188,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         fp.write(o16(h))
 
     # image body
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 32, ("1", 0, 1))])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 32, ("1", 0, 1))])
 
 
 #

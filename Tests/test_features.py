@@ -10,11 +10,6 @@ from PIL import features
 
 from .helper import skip_unless_feature
 
-try:
-    from PIL import _webp
-except ImportError:
-    pass
-
 
 def test_check() -> None:
     # Check the correctness of the convenience function
@@ -23,7 +18,11 @@ def test_check() -> None:
     for codec in features.codecs:
         assert features.check_codec(codec) == features.check(codec)
     for feature in features.features:
-        assert features.check_feature(feature) == features.check(feature)
+        if "webp" in feature:
+            with pytest.warns(DeprecationWarning):
+                assert features.check_feature(feature) == features.check(feature)
+        else:
+            assert features.check_feature(feature) == features.check(feature)
 
 
 def test_version() -> None:
@@ -48,23 +47,26 @@ def test_version() -> None:
     for codec in features.codecs:
         test(codec, features.version_codec)
     for feature in features.features:
-        test(feature, features.version_feature)
+        if "webp" in feature:
+            with pytest.warns(DeprecationWarning):
+                test(feature, features.version_feature)
+        else:
+            test(feature, features.version_feature)
 
 
-@skip_unless_feature("webp")
 def test_webp_transparency() -> None:
-    assert features.check("transp_webp") != _webp.WebPDecoderBuggyAlpha()
-    assert features.check("transp_webp") == _webp.HAVE_TRANSPARENCY
+    with pytest.warns(DeprecationWarning):
+        assert (features.check("transp_webp") or False) == features.check_module("webp")
 
 
-@skip_unless_feature("webp")
 def test_webp_mux() -> None:
-    assert features.check("webp_mux") == _webp.HAVE_WEBPMUX
+    with pytest.warns(DeprecationWarning):
+        assert (features.check("webp_mux") or False) == features.check_module("webp")
 
 
-@skip_unless_feature("webp")
 def test_webp_anim() -> None:
-    assert features.check("webp_anim") == _webp.HAVE_WEBPANIM
+    with pytest.warns(DeprecationWarning):
+        assert (features.check("webp_anim") or False) == features.check_module("webp")
 
 
 @skip_unless_feature("libjpeg_turbo")
