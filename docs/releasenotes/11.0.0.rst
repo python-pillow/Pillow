@@ -1,19 +1,6 @@
 11.0.0
 ------
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
 Backwards Incompatible Changes
 ==============================
 
@@ -22,6 +9,20 @@ Python 3.8
 
 Pillow has dropped support for Python 3.8,
 which reached end-of-life in October 2024.
+
+ImageMath comparison operations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Comparison operations in :py:mod:`~PIL.ImageMath` will now return booleans
+instead of images. ``==``, ``!=``, ``<``, ``<=``, ``>``, ``>=``, ``equal()`` and
+``notequal()`` are all affected::
+
+    from PIL import Image, ImageMath
+    A = Image.new("L", (1, 1))
+
+    # Previously, this would return an I mode 1x1 image
+    # It will now return True
+    ImageMath.lambda_eval(lambda args: args["A"] == args["A"], A=A))
 
 Python 3.12 on macOS <= 10.12
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -33,10 +34,10 @@ wheels.
 PSFile
 ^^^^^^
 
-The :py:class:`!PSFile` class was removed in Pillow 11 (2024-10-15).
-This class was only made as a helper to be used internally,
-so there is no replacement. If you need this functionality though,
-it is a very short class that can easily be recreated in your own code.
+The :py:class:`!PSFile` class has been removed. This class was only made as a
+helper to be used internally, so there is no replacement. If you need this
+functionality though, it is a very short class that can easily be recreated in
+your own code.
 
 PyAccess and Image.USE_CFFI_ACCESS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
