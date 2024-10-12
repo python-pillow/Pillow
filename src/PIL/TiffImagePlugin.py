@@ -1937,8 +1937,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         encoder.setimage(im.im, (0, 0) + im.size)
         while True:
-            # undone, change to self.decodermaxblock:
-            errcode, data = encoder.encode(16 * 1024)[1:]
+            errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
             if not _fp:
                 fp.write(data)
             if errcode:
