@@ -119,7 +119,7 @@ V = {
     "LIBWEBP": "1.4.0",
     "OPENJPEG": "2.5.2",
     "TIFF": "4.6.0",
-    "XZ": "5.6.2",
+    "XZ": "5.6.3",
     "ZLIB": "1.3.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
@@ -185,7 +185,7 @@ DEPS: dict[str, dict[str, Any]] = {
             cmd_copy(r"src\liblzma\api\lzma\*.h", r"{inc_dir}\lzma"),
         ],
         "headers": [r"src\liblzma\api\lzma.h"],
-        "libs": [r"liblzma.lib"],
+        "libs": [r"lzma.lib"],
     },
     "libwebp": {
         "url": f"http://downloads.webmproject.org/releases/webp/libwebp-{V['LIBWEBP']}.tar.gz",
@@ -216,8 +216,8 @@ DEPS: dict[str, dict[str, Any]] = {
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
-                # link against liblzma.lib
-                "#ifdef LZMA_SUPPORT": '#ifdef LZMA_SUPPORT\n#pragma comment(lib, "liblzma.lib")',  # noqa: E501
+                # link against lzma.lib
+                "#ifdef LZMA_SUPPORT": '#ifdef LZMA_SUPPORT\n#pragma comment(lib, "lzma.lib")',  # noqa: E501
             },
             r"libtiff\tif_webp.c": {
                 # link against libwebp.lib

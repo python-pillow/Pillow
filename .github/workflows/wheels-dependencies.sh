@@ -16,15 +16,11 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.2
-if [[ "$MB_ML_VER" != 2014 ]]; then
-    HARFBUZZ_VERSION=10.0.1
-else
-    HARFBUZZ_VERSION=8.5.0
-fi
+HARFBUZZ_VERSION=10.0.1
 LIBPNG_VERSION=1.6.44
 JPEGTURBO_VERSION=3.0.4
 OPENJPEG_VERSION=2.5.2
-XZ_VERSION=5.6.2
+XZ_VERSION=5.6.3
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
 if [[ -n "$IS_MACOS" ]]; then
@@ -65,21 +61,15 @@ function build_brotli {
 }
 
 function build_harfbuzz {
-    if [[ "$HARFBUZZ_VERSION" == 8.5.0 ]]; then
-        export FREETYPE_LIBS=-lfreetype
-        export FREETYPE_CFLAGS=-I/usr/local/include/freetype2/
-        build_simple harfbuzz $HARFBUZZ_VERSION https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION tar.xz --with-freetype=yes --with-glib=no
-        export FREETYPE_LIBS=""
-        export FREETYPE_CFLAGS=""
-    else
-        local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
-        (cd $out_dir \
-            && meson setup build --buildtype=release -Dfreetype=enabled -Dglib=disabled)
-        (cd $out_dir/build \
-            && meson install)
-        if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
-            cp /usr/local/lib64/libharfbuzz* /usr/local/lib
-        fi
+    python3 -m pip install meson ninja
+
+    local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
+    (cd $out_dir \
+        && meson setup build --buildtype=release -Dfreetype=enabled -Dglib=disabled)
+    (cd $out_dir/build \
+        && meson install)
+    if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
+        cp /usr/local/lib64/libharfbuzz* /usr/local/lib
     fi
 }
 
@@ -155,13 +145,7 @@ if [[ -n "$IS_MACOS" ]]; then
     brew remove --ignore-dependencies webp
   fi
 
-  brew install meson pkg-config
-elif [[ "$MB_ML_LIBC" == "manylinux" ]]; then
-  if [[ "$HARFBUZZ_VERSION" != 8.5.0 ]]; then
-    yum install -y meson
-  fi
-else
-  apk add meson
+  brew install pkg-config
 fi
 
 wrap_wheel_builder build

@@ -11,7 +11,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
 #include "libImaging/Imaging.h"
 
 #define LUT_SIZE (1 << 9)
@@ -30,43 +29,36 @@
 static PyObject *
 apply(PyObject *self, PyObject *args) {
     const char *lut;
-    PyObject *py_lut;
-    Py_ssize_t lut_len, i0, i1;
+    Py_ssize_t lut_len;
+    PyObject *i0, *i1;
     Imaging imgin, imgout;
     int width, height;
     int row_idx, col_idx;
     UINT8 **inrows, **outrows;
     int num_changed_pixels = 0;
 
-    if (!PyArg_ParseTuple(args, "Onn", &py_lut, &i0, &i1)) {
-        PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
+    if (!PyArg_ParseTuple(args, "s#OO", &lut, &lut_len, &i0, &i1)) {
         return NULL;
     }
-
-    if (!PyBytes_Check(py_lut)) {
-        PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a bytes object");
-        return NULL;
-    }
-
-    lut_len = PyBytes_Size(py_lut);
 
     if (lut_len < LUT_SIZE) {
         PyErr_SetString(PyExc_RuntimeError, "The morphology LUT has the wrong size");
         return NULL;
     }
 
-    lut = PyBytes_AsString(py_lut);
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC) ||
+        !PyCapsule_IsValid(i1, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
 
-    imgin = (Imaging)i0;
-    imgout = (Imaging)i1;
+    imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    imgout = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
     width = imgin->xsize;
     height = imgin->ysize;
 
-    if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1) {
-        PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
-        return NULL;
-    }
-    if (imgout->type != IMAGING_TYPE_UINT8 || imgout->bands != 1) {
+    if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1 ||
+        imgout->type != IMAGING_TYPE_UINT8 || imgout->bands != 1) {
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
         return NULL;
     }
@@ -129,43 +121,36 @@ apply(PyObject *self, PyObject *args) {
 static PyObject *
 match(PyObject *self, PyObject *args) {
     const char *lut;
-    PyObject *py_lut;
-    Py_ssize_t lut_len, i0;
+    Py_ssize_t lut_len;
+    PyObject *i0;
     Imaging imgin;
     int width, height;
     int row_idx, col_idx;
     UINT8 **inrows;
-    PyObject *ret = PyList_New(0);
-    if (ret == NULL) {
+
+    if (!PyArg_ParseTuple(args, "s#O", &lut, &lut_len, &i0)) {
         return NULL;
     }
-
-    if (!PyArg_ParseTuple(args, "On", &py_lut, &i0)) {
-        Py_DECREF(ret);
-        PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
-        return NULL;
-    }
-
-    if (!PyBytes_Check(py_lut)) {
-        Py_DECREF(ret);
-        PyErr_SetString(PyExc_RuntimeError, "The morphology LUT is not a bytes object");
-        return NULL;
-    }
-
-    lut_len = PyBytes_Size(py_lut);
 
     if (lut_len < LUT_SIZE) {
-        Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "The morphology LUT has the wrong size");
         return NULL;
     }
 
-    lut = PyBytes_AsString(py_lut);
-    imgin = (Imaging)i0;
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
+
+    imgin = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
 
     if (imgin->type != IMAGING_TYPE_UINT8 || imgin->bands != 1) {
-        Py_DECREF(ret);
         PyErr_SetString(PyExc_RuntimeError, "Unsupported image type");
+        return NULL;
+    }
+
+    PyObject *ret = PyList_New(0);
+    if (ret == NULL) {
         return NULL;
     }
 
@@ -215,25 +200,30 @@ match(PyObject *self, PyObject *args) {
 */
 static PyObject *
 get_on_pixels(PyObject *self, PyObject *args) {
-    Py_ssize_t i0;
+    PyObject *i0;
     Imaging img;
     UINT8 **rows;
     int row_idx, col_idx;
     int width, height;
+
+    if (!PyArg_ParseTuple(args, "O", &i0)) {
+        return NULL;
+    }
+
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
+
+    img = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    rows = img->image8;
+    width = img->xsize;
+    height = img->ysize;
+
     PyObject *ret = PyList_New(0);
     if (ret == NULL) {
         return NULL;
     }
-
-    if (!PyArg_ParseTuple(args, "n", &i0)) {
-        Py_DECREF(ret);
-        PyErr_SetString(PyExc_RuntimeError, "Argument parsing problem");
-        return NULL;
-    }
-    img = (Imaging)i0;
-    rows = img->image8;
-    width = img->xsize;
-    height = img->ysize;
 
     for (row_idx = 0; row_idx < height; row_idx++) {
         UINT8 *row = rows[row_idx];

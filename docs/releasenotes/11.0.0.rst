@@ -73,6 +73,16 @@ vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 
 .. _2.10.4: https://sourceforge.net/projects/freetype/files/freetype2/2.10.4/
 
+Get internal pointers to objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+``Image.core.ImagingCore.id`` and ``Image.core.ImagingCore.unsafe_ptrs`` have been
+deprecated and will be removed in Pillow 12 (2025-10-15). They were used for obtaining
+raw pointers to ``ImagingCore`` internals. To interact with C code, you can use
+``Image.Image.getim()``, which returns a ``Capsule`` object.
+
 ICNS (width, height, scale) sizes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -119,10 +129,11 @@ Specific WebP Feature Checks
 API Changes
 ===========
 
-TODO
-^^^^
+Default resampling filter for I;16* image modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+The default resampling filter for I;16, I;16L, I;16B and I;16N has been changed from
+``Image.NEAREST`` to ``Image.BICUBIC``, to match the majority of modes.
 
 API Additions
 =============

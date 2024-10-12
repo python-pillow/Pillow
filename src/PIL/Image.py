@@ -225,12 +225,7 @@ if TYPE_CHECKING:
     from IPython.lib.pretty import PrettyPrinter
 
     from . import ImageFile, ImageFilter, ImagePalette, ImageQt, TiffImagePlugin
-    from ._typing import NumpyArray, StrOrBytesPath, TypeGuard
-
-    if sys.version_info >= (3, 13):
-        from types import CapsuleType
-    else:
-        CapsuleType = object
+    from ._typing import CapsuleType, NumpyArray, StrOrBytesPath, TypeGuard
 ID: list[str] = []
 OPEN: dict[
     str,
@@ -2278,8 +2273,8 @@ class Image:
            :py:data:`Resampling.BILINEAR`, :py:data:`Resampling.HAMMING`,
            :py:data:`Resampling.BICUBIC` or :py:data:`Resampling.LANCZOS`.
            If the image has mode "1" or "P", it is always set to
-           :py:data:`Resampling.NEAREST`. If the image mode specifies a number
-           of bits, such as "I;16", then the default filter is
+           :py:data:`Resampling.NEAREST`. If the image mode is "BGR;15",
+           "BGR;16" or "BGR;24", then the default filter is
            :py:data:`Resampling.NEAREST`. Otherwise, the default filter is
            :py:data:`Resampling.BICUBIC`. See: :ref:`concept-filters`.
         :param box: An optional 4-tuple of floats providing
@@ -2302,8 +2297,8 @@ class Image:
         """
 
         if resample is None:
-            type_special = ";" in self.mode
-            resample = Resampling.NEAREST if type_special else Resampling.BICUBIC
+            bgr = self.mode.startswith("BGR;")
+            resample = Resampling.NEAREST if bgr else Resampling.BICUBIC
         elif resample not in (
             Resampling.NEAREST,
             Resampling.BILINEAR,

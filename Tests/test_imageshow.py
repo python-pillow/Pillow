@@ -117,5 +117,5 @@ def test_ipythonviewer() -> None:
     else:
         pytest.fail("IPythonViewer not found")
 
-    im = hopper()
-    assert test_viewer.show(im) == 1
+    with hopper() as im:
+        assert test_viewer.show(im) == 1

@@ -44,9 +44,19 @@ class TestImagingCoreResize:
             self.resize(hopper("1"), (15, 12), Image.Resampling.BILINEAR)
         with pytest.raises(ValueError):
             self.resize(hopper("P"), (15, 12), Image.Resampling.BILINEAR)
-        with pytest.raises(ValueError):
-            self.resize(hopper("I;16"), (15, 12), Image.Resampling.BILINEAR)
-        for mode in ["L", "I", "F", "RGB", "RGBA", "CMYK", "YCbCr"]:
+        for mode in [
+            "L",
+            "I",
+            "I;16",
+            "I;16L",
+            "I;16B",
+            "I;16N",
+            "F",
+            "RGB",
+            "RGBA",
+            "CMYK",
+            "YCbCr",
+        ]:
             im = hopper(mode)
             r = self.resize(im, (15, 12), Image.Resampling.BILINEAR)
             assert r.mode == mode
@@ -305,14 +315,14 @@ class TestImageResize:
             im = im.resize((64, 64))
             assert im.size == (64, 64)
 
-    @pytest.mark.parametrize("mode", ("L", "RGB", "I", "F"))
+    @pytest.mark.parametrize(
+        "mode", ("L", "RGB", "I", "I;16", "I;16L", "I;16B", "I;16N", "F")
+    )
     def test_default_filter_bicubic(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-    @pytest.mark.parametrize(
-        "mode", ("1", "P", "I;16", "I;16L", "I;16B", "BGR;15", "BGR;16")
-    )
+    @pytest.mark.parametrize("mode", ("1", "P", "BGR;15", "BGR;16"))
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))

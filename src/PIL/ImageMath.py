@@ -59,13 +59,12 @@ class _Operand:
         if im2 is None:
             # unary operation
             out = Image.new(mode or im_1.mode, im_1.size, None)
-            im_1.load()
             try:
                 op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
-            _imagingmath.unop(op, out.im.id, im_1.im.id)
+            _imagingmath.unop(op, out.getim(), im_1.getim())
         else:
             # binary operation
             im_2 = self.__fixup(im2)
@@ -86,14 +85,12 @@ class _Operand:
                 if im_2.size != size:
                     im_2 = im_2.crop((0, 0) + size)
             out = Image.new(mode or im_1.mode, im_1.size, None)
-            im_1.load()
-            im_2.load()
             try:
                 op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
-            _imagingmath.binop(op, out.im.id, im_1.im.id, im_2.im.id)
+            _imagingmath.binop(op, out.getim(), im_1.getim(), im_2.getim())
         return _Operand(out)
 
     # unary operators

@@ -1579,16 +1579,12 @@ _putdata(ImagingObject *self, PyObject *args) {
                 int bigendian = 0;
                 if (image->type == IMAGING_TYPE_SPECIAL) {
                     // I;16*
-                    if (strcmp(image->mode, "I;16N") == 0) {
+                    if (strcmp(image->mode, "I;16B") == 0
 #ifdef WORDS_BIGENDIAN
-                        bigendian = 1;
-#else
-                        bigendian = 0;
+                        || strcmp(image->mode, "I;16N") == 0
 #endif
-                    } else if (strcmp(image->mode, "I;16B") == 0) {
+                    ) {
                         bigendian = 1;
-                    } else {
-                        bigendian = 0;
                     }
                 }
                 for (i = x = y = 0; i < n; i++) {
@@ -3674,15 +3670,12 @@ static struct PyMethodDef methods[] = {
     /* Unsharpmask extension */
     {"gaussian_blur", (PyCFunction)_gaussian_blur, METH_VARARGS},
     {"unsharp_mask", (PyCFunction)_unsharp_mask, METH_VARARGS},
-
     {"box_blur", (PyCFunction)_box_blur, METH_VARARGS},
 
     /* Special effects */
     {"effect_spread", (PyCFunction)_effect_spread, METH_VARARGS},
 
     /* Misc. */
-    {"new_block", (PyCFunction)_new_block, METH_VARARGS},
-
     {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */
@@ -3707,16 +3700,40 @@ _getattr_bands(ImagingObject *self, void *closure) {
 
 static PyObject *
 _getattr_id(ImagingObject *self, void *closure) {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "id property is deprecated and will be removed in Pillow 12 (2025-10-15)",
+            1
+        ) < 0) {
+        return NULL;
+    }
     return PyLong_FromSsize_t((Py_ssize_t)self->image);
+}
+
+static void
+_ptr_destructor(PyObject *capsule) {
+    PyObject *self = (PyObject *)PyCapsule_GetContext(capsule);
+    Py_DECREF(self);
 }
 
 static PyObject *
 _getattr_ptr(ImagingObject *self, void *closure) {
-    return PyCapsule_New(self->image, IMAGING_MAGIC, NULL);
+    PyObject *capsule = PyCapsule_New(self->image, IMAGING_MAGIC, _ptr_destructor);
+    Py_INCREF(self);
+    PyCapsule_SetContext(capsule, self);
+    return capsule;
 }
 
 static PyObject *
 _getattr_unsafe_ptrs(ImagingObject *self, void *closure) {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "unsafe_ptrs property is deprecated and will be removed in Pillow 12 "
+            "(2025-10-15)",
+            1
+        ) < 0) {
+        return NULL;
+    }
     return Py_BuildValue(
         "(sn)(sn)(sn)",
         "image8",
@@ -4198,6 +4215,7 @@ static PyMethodDef functions[] = {
     {"blend", (PyCFunction)_blend, METH_VARARGS},
     {"fill", (PyCFunction)_fill, METH_VARARGS},
     {"new", (PyCFunction)_new, METH_VARARGS},
+    {"new_block", (PyCFunction)_new_block, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
 
     /* Functions */

@@ -5,11 +5,41 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
-- Fixed writing multiple StripOffsets to TIFF #8317
+- Do not close provided file handles with libtiff when saving #8458
+  [radarhere]
+
+- Support ImageFilter.BuiltinFilter for I;16* images #8438
+  [radarhere]
+
+- Use ImagingCore.ptr instead of ImagingCore.id #8341
+  [homm, radarhere, hugovk]
+
+- Updated EPS mode when opening images without transparency #8281
   [Yay295, radarhere]
 
-- Shared imagequant libraries may be located within usr/lib64 #8407
+- Use transparency when combining P frames from APNGs #8443
   [radarhere]
+
+- Support all resampling filters when resizing I;16* images #8422
+  [radarhere]
+
+- Free memory on early return #8413
+  [radarhere]
+
+- Cast int before potentially exceeding INT_MAX #8402
+  [radarhere]
+
+- Check image value before use #8400
+  [radarhere]
+
+- Improved copying imagequant libraries #8420
+  [radarhere]
+
+- Use Capsule for WebP saving #8386
+  [homm, radarhere]
+
+- Fixed writing multiple StripOffsets to TIFF #8317
+  [Yay295, radarhere]
 
 - Fix dereference before checking for NULL in ImagingTransformAffine #8398
   [PavlNekrasov]
