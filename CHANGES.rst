@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Update licence to MIT-CMU #8460
+  [hugovk]
+
 - Conditionally define ImageCms type hint to avoid requiring core #8197
   [radarhere]
 
