@@ -70,8 +70,8 @@ typedef struct ImagingHistogramInstance *ImagingHistogram;
 typedef struct ImagingOutlineInstance *ImagingOutline;
 typedef struct ImagingPaletteInstance *ImagingPalette;
 
-/* handle magics (used with PyCObject). */
-#define IMAGING_MAGIC "PIL Imaging"
+/* handle magics (used with PyCapsule). */
+#define IMAGING_MAGIC "Pillow Imaging"
 
 /* pixel types */
 #define IMAGING_TYPE_UINT8 0

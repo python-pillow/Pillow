@@ -14,14 +14,14 @@ readme = "README.md"
 keywords = [
   "Imaging",
 ]
-license = { text = "HPND" }
+license = { text = "MIT-CMU" }
 authors = [
   { name = "Jeffrey A. Clark", email = "aclark@aclark.net" },
 ]
 requires-python = ">=3.9"
 classifiers = [
   "Development Status :: 6 - Mature",
-  "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",
+  "License :: OSI Approved :: CMU License (MIT-CMU)",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -43,7 +43,7 @@ dynamic = [
 optional-dependencies.docs = [
   "furo",
   "olefile",
-  "sphinx>=7.3",
+  "sphinx>=8.1",
   "sphinx-copybutton",
   "sphinx-inline-tabs",
   "sphinxext-opengraph",

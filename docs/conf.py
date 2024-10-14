@@ -22,7 +22,7 @@ import PIL
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = "7.3"
+needs_sphinx = "8.1"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -121,7 +121,7 @@ nitpicky = True
 # generating warnings in “nitpicky mode”. Note that type should include the domain name
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [("py:class", "_io.BytesIO")]
+nitpick_ignore = [("py:class", "_io.BytesIO"), ("py:class", "_CmsProfileCompatible")]
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -338,8 +338,6 @@ linkcheck_allowed_redirects = {
 # https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 _repo = "https://github.com/python-pillow/Pillow/"
 extlinks = {
-    "cve": ("https://www.cve.org/CVERecord?id=CVE-%s", "CVE-%s"),
-    "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
     "issue": (_repo + "issues/%s", "#%s"),
     "pr": (_repo + "pull/%s", "#%s"),
     "pypi": ("https://pypi.org/project/%s/", "%s"),

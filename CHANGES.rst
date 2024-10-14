@@ -5,6 +5,33 @@ Changelog (Pillow)
 11.0.0 (unreleased)
 -------------------
 
+- Update licence to MIT-CMU #8460
+  [hugovk]
+
+- Conditionally define ImageCms type hint to avoid requiring core #8197
+  [radarhere]
+
+- Support writing LONG8 offsets in AppendingTiffWriter #8417
+  [radarhere]
+
+- Use ImageFile.MAXBLOCK when saving TIFF images #8461
+  [radarhere]
+
+- Do not close provided file handles with libtiff when saving #8458
+  [radarhere]
+
+- Support ImageFilter.BuiltinFilter for I;16* images #8438
+  [radarhere]
+
+- Use ImagingCore.ptr instead of ImagingCore.id #8341
+  [homm, radarhere, hugovk]
+
+- Updated EPS mode when opening images without transparency #8281
+  [Yay295, radarhere]
+
+- Use transparency when combining P frames from APNGs #8443
+  [radarhere]
+
 - Support all resampling filters when resizing I;16* images #8422
   [radarhere]
 

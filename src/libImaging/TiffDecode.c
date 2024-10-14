@@ -780,7 +780,7 @@ ImagingLibTiffDecode(
 decode_err:
     // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
     if (clientstate->fp) {
-        // Pillow will manage the closing of the file rather than libtiff
+        // Python will manage the closing of the file rather than libtiff
         // So only call TIFFCleanup
         TIFFCleanup(tiff);
     } else {
@@ -1008,7 +1008,17 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                 ) == -1) {
                 TRACE(("Encode Error, row %d\n", state->y));
                 state->errcode = IMAGING_CODEC_BROKEN;
-                TIFFClose(tiff);
+
+                // TIFFClose in libtiff calls tif_closeproc and TIFFCleanup
+                if (clientstate->fp) {
+                    // Python will manage the closing of the file rather than libtiff
+                    // So only call TIFFCleanup
+                    TIFFCleanup(tiff);
+                } else {
+                    // When tif_closeproc refers to our custom _tiffCloseProc though,
+                    // that is fine, as it does not close the file
+                    TIFFClose(tiff);
+                }
                 if (!clientstate->fp) {
                     free(clientstate->data);
                 }
@@ -1025,14 +1035,22 @@ ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int byt
                 TRACE(("Error flushing the tiff"));
                 // likely reason is memory.
                 state->errcode = IMAGING_CODEC_MEMORY;
-                TIFFClose(tiff);
+                if (clientstate->fp) {
+                    TIFFCleanup(tiff);
+                } else {
+                    TIFFClose(tiff);
+                }
                 if (!clientstate->fp) {
                     free(clientstate->data);
                 }
                 return -1;
             }
             TRACE(("Closing \n"));
-            TIFFClose(tiff);
+            if (clientstate->fp) {
+                TIFFCleanup(tiff);
+            } else {
+                TIFFClose(tiff);
+            }
             // reset the clientstate metadata to use it to read out the buffer.
             clientstate->loc = 0;
             clientstate->size = clientstate->eof;  // redundant?

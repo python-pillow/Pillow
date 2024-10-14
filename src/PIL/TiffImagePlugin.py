@@ -1239,11 +1239,11 @@ class TiffImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
         self._seek(frame)
-        # Create a new core image object on second and
-        # subsequent frames in the image. Image may be
-        # different size/mode.
-        Image._decompression_bomb_check(self._tile_size)
-        self.im = Image.core.new(self.mode, self._tile_size)
+        if self._im is not None and (
+            self.im.size != self._tile_size or self.im.mode != self.mode
+        ):
+            # The core image will no longer be used
+            self._im = None
 
     def _seek(self, frame: int) -> None:
         self.fp = self._fp
@@ -1325,6 +1325,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def load_prepare(self) -> None:
         if self._im is None:
+            Image._decompression_bomb_check(self._tile_size)
             self.im = Image.core.new(self.mode, self._tile_size)
         ImageFile.ImageFile.load_prepare(self)
 
@@ -1905,7 +1906,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         if hasattr(fp, "fileno"):
             try:
                 fp.seek(0)
-                _fp = os.dup(fp.fileno())
+                _fp = fp.fileno()
             except io.UnsupportedOperation:
                 pass
 
@@ -1978,17 +1979,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         encoder = Image._getencoder(im.mode, "libtiff", a, encoderconfig)
         encoder.setimage(im.im, (0, 0) + im.size)
         while True:
-            # undone, change to self.decodermaxblock:
-            errcode, data = encoder.encode(16 * 1024)[1:]
+            errcode, data = encoder.encode(ImageFile.MAXBLOCK)[1:]
             if not _fp:
                 fp.write(data)
             if errcode:
                 break
-        if _fp:
-            try:
-                os.close(_fp)
-            except OSError:
-                pass
         if errcode < 0:
             msg = f"encoder error {errcode} when writing image file"
             raise OSError(msg)
@@ -2162,13 +2157,24 @@ class AppendingTiffWriter(io.BytesIO):
     def write(self, data: Buffer, /) -> int:
         return self.f.write(data)
 
-    def readShort(self) -> int:
-        (value,) = struct.unpack(self.shortFmt, self.f.read(2))
+    def _fmt(self, field_size: int) -> str:
+        try:
+            return {2: "H", 4: "L", 8: "Q"}[field_size]
+        except KeyError:
+            msg = "offset is not supported"
+            raise RuntimeError(msg)
+
+    def _read(self, field_size: int) -> int:
+        (value,) = struct.unpack(
+            self.endian + self._fmt(field_size), self.f.read(field_size)
+        )
         return value
 
+    def readShort(self) -> int:
+        return self._read(2)
+
     def readLong(self) -> int:
-        (value,) = struct.unpack(self.longFmt, self.f.read(4))
-        return value
+        return self._read(4)
 
     @staticmethod
     def _verify_bytes_written(bytes_written: int | None, expected: int) -> None:
@@ -2181,15 +2187,18 @@ class AppendingTiffWriter(io.BytesIO):
         bytes_written = self.f.write(struct.pack(self.longFmt, value))
         self._verify_bytes_written(bytes_written, 4)
 
+    def _rewriteLast(self, value: int, field_size: int) -> None:
+        self.f.seek(-field_size, os.SEEK_CUR)
+        bytes_written = self.f.write(
+            struct.pack(self.endian + self._fmt(field_size), value)
+        )
+        self._verify_bytes_written(bytes_written, field_size)
+
     def rewriteLastShort(self, value: int) -> None:
-        self.f.seek(-2, os.SEEK_CUR)
-        bytes_written = self.f.write(struct.pack(self.shortFmt, value))
-        self._verify_bytes_written(bytes_written, 2)
+        return self._rewriteLast(value, 2)
 
     def rewriteLastLong(self, value: int) -> None:
-        self.f.seek(-4, os.SEEK_CUR)
-        bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        self._verify_bytes_written(bytes_written, 4)
+        return self._rewriteLast(value, 4)
 
     def writeShort(self, value: int) -> None:
         bytes_written = self.f.write(struct.pack(self.shortFmt, value))
@@ -2221,32 +2230,22 @@ class AppendingTiffWriter(io.BytesIO):
                 cur_pos = self.f.tell()
 
                 if is_local:
-                    self.fixOffsets(
-                        count, isShort=(field_size == 2), isLong=(field_size == 4)
-                    )
+                    self._fixOffsets(count, field_size)
                     self.f.seek(cur_pos + 4)
                 else:
                     self.f.seek(offset)
-                    self.fixOffsets(
-                        count, isShort=(field_size == 2), isLong=(field_size == 4)
-                    )
+                    self._fixOffsets(count, field_size)
                     self.f.seek(cur_pos)
 
             elif is_local:
                 # skip the locally stored value that is not an offset
                 self.f.seek(4, os.SEEK_CUR)
 
-    def fixOffsets(
-        self, count: int, isShort: bool = False, isLong: bool = False
-    ) -> None:
-        if not isShort and not isLong:
-            msg = "offset is neither short nor long"
-            raise RuntimeError(msg)
-
+    def _fixOffsets(self, count: int, field_size: int) -> None:
         for i in range(count):
-            offset = self.readShort() if isShort else self.readLong()
+            offset = self._read(field_size)
             offset += self.offsetOfNewPage
-            if isShort and offset >= 65536:
+            if field_size == 2 and offset >= 65536:
                 # offset is now too large - we must convert shorts to longs
                 if count != 1:
                     msg = "not implemented"
@@ -2258,10 +2257,19 @@ class AppendingTiffWriter(io.BytesIO):
                 self.f.seek(-10, os.SEEK_CUR)
                 self.writeShort(TiffTags.LONG)  # rewrite the type to LONG
                 self.f.seek(8, os.SEEK_CUR)
-            elif isShort:
-                self.rewriteLastShort(offset)
             else:
-                self.rewriteLastLong(offset)
+                self._rewriteLast(offset, field_size)
+
+    def fixOffsets(
+        self, count: int, isShort: bool = False, isLong: bool = False
+    ) -> None:
+        if isShort:
+            field_size = 2
+        elif isLong:
+            field_size = 4
+        else:
+            field_size = 0
+        return self._fixOffsets(count, field_size)
 
 
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
