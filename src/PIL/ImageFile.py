@@ -124,7 +124,7 @@ class ImageFile(Image.Image):
 
         self.readonly = 1  # until we know better
 
-        self.mb_config = ()
+        self.mb_config: tuple[int, ...] = ()
 
         self.decoderconfig: tuple[Any, ...] = ()
         self.decodermaxblock = MAXBLOCK
