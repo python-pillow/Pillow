@@ -60,7 +60,6 @@ class WebPImageFile(ImageFile.ImageFile):
         self.is_animated = self.n_frames > 1
         self._mode = "RGB" if mode == "RGBX" else mode
         self.rawmode = mode
-        self.tile = []
 
         # Attempt to read ICC / EXIF / XMP chunks from file
         icc_profile = self._decoder.get_chunk("ICCP")
