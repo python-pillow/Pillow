@@ -2,7 +2,7 @@
 Changelog (Pillow)
 ==================
 
-11.0.0 (unreleased)
+11.0.0 (2024-10-15)
 -------------------
 
 - Update licence to MIT-CMU #8460
