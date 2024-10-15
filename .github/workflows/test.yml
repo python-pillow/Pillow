@@ -51,15 +51,19 @@ jobs:
         include:
         - { python-version: "3.11", PYTHONOPTIMIZE: 1, REVERSE: "--reverse" }
         - { python-version: "3.10", PYTHONOPTIMIZE: 2 }
+        # SIMD-accelerated builds for x86
+        - { os: "ubuntu-latest", python-version: "3.9", acceleration: "sse4"}
+        - { os: "ubuntu-latest", python-version: "3.12", acceleration: "avx2"}
         # Free-threaded
         - { os: "ubuntu-latest", python-version: "3.13-dev", disable-gil: true }
         # M1 only available for 3.10+
         - { os: "macos-13", python-version: "3.9" }
+        - { os: "macos-13", python-version: "3.9", acceleration: "avx2"}
         exclude:
         - { os: "macos-latest", python-version: "3.9" }
 
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Python ${{ matrix.python-version }} ${{ matrix.disable-gil && 'free-threaded' || '' }}
+    name: ${{ matrix.os }} Python ${{ matrix.python-version }} ${{ matrix.acceleration }} ${{ matrix.disable-gil && 'free-threaded' || '' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -107,7 +111,7 @@ jobs:
         GHA_LIBIMAGEQUANT_CACHE_HIT: ${{ steps.cache-libimagequant.outputs.cache-hit }}
 
     - name: Install macOS dependencies
-      if: startsWith(matrix.os, 'macOS')
+      if: startsWith(matrix.os, 'macos')
       run: |
         .github/workflows/macos-install.sh
       env:
@@ -116,6 +120,11 @@ jobs:
     - name: Register gcc problem matcher
       if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'"
       run: echo "::add-matcher::.github/problem-matchers/gcc.json"
+
+    - name: Set compiler options for optimization
+      if: ${{ matrix.acceleration }}
+      run: |
+        echo "CC=cc -m${{ matrix.acceleration }}" >> $GITHUB_ENV
 
     - name: Build
       run: |

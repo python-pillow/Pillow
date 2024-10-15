@@ -4425,6 +4425,19 @@ setup_module(PyObject *m) {
     Py_INCREF(have_xcb);
     PyModule_AddObject(m, "HAVE_XCB", have_xcb);
 
+#ifdef __AVX2__
+    PyModule_AddStringConstant(m, "acceleration", "avx2");
+#elif defined(__SSE4__)
+    PyModule_AddStringConstant(m, "acceleration", "sse4");
+#elif defined(__SSE2__)
+    PyModule_AddStringConstant(m, "acceleration", "sse2");
+#elif defined(__NEON__)
+    PyModule_AddStringConstant(m, "acceleration", "neon");
+#else
+    Py_INCREF(Py_False);
+    PyModule_AddObject(m, "acceleration", Py_False);
+#endif
+
     PyObject *pillow_version = PyUnicode_FromString(version);
     PyDict_SetItemString(
         d, "PILLOW_VERSION", pillow_version ? pillow_version : Py_None
