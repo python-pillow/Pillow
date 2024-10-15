@@ -805,6 +805,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         info.get("smooth", 0),
         optimize,
         info.get("keep_rgb", False),
+        info.get("no_default_app_segments", False),
         info.get("streamtype", 0),
         dpi[0],
         dpi[1],
