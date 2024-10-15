@@ -152,6 +152,7 @@ jobs:
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_PRERELEASE_PYTHONS: True
+          CIBW_SKIP: pp39-*
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
 
       - uses: actions/upload-artifact@v4
@@ -224,6 +225,7 @@ jobs:
           CIBW_CACHE_PATH: "C:\\cibw"
           CIBW_FREE_THREADED_SUPPORT: True
           CIBW_PRERELEASE_PYTHONS: True
+          CIBW_SKIP: pp39-*
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm
             -v {project}:C:\pillow
