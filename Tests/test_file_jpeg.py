@@ -406,6 +406,10 @@ class TestFileJpeg:
             # Should not raise a TypeError
             im._getexif()
 
+    def test_exif_gps_zero_denominator(self) -> None:
+        with Image.open("Tests/images/exif_gps_zero_denominator.jpg") as im:
+            im.getexif().tobytes()
+
     def test_progressive_compat(self) -> None:
         im1 = self.roundtrip(hopper())
         assert not im1.info.get("progressive")
