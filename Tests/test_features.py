@@ -35,7 +35,9 @@ def test_version() -> None:
             assert version is None
         else:
             assert function(name) == version
-            if name != "PIL":
+            if name == "acceleration":
+                assert version in ("avx2", "sse4", "sse2", "neon", None)
+            elif name != "PIL":
                 if name == "zlib" and version is not None:
                     version = re.sub(".zlib-ng$", "", version)
                 elif name == "libtiff" and version is not None:
