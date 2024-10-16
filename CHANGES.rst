@@ -2,6 +2,12 @@
 Changelog (Pillow)
 ==================
 
+11.1.0 (unreleased)
+-------------------
+
+- Fixed disabling a feature during install #8469
+  [radarhere]
+
 11.0.0 (2024-10-15)
 -------------------
 
