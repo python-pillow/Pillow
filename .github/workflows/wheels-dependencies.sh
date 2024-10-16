@@ -5,7 +5,7 @@ if [ -z "$IS_MACOS" ]; then
     export MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     export MB_ML_VER=${AUDITWHEEL_POLICY:9}
 fi
-export PLAT=$CIBW_ARCHS
+export PLAT="${CIBW_ARCHS:-$AUDITWHEEL_ARCH}"
 source wheels/multibuild/common_utils.sh
 source wheels/multibuild/library_builders.sh
 if [ -z "$IS_MACOS" ]; then
