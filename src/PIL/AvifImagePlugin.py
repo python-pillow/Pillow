@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
+from typing import IO
 
 from . import ExifTags, Image, ImageFile
 
@@ -20,9 +21,9 @@ DEFAULT_MAX_THREADS = 0
 _VALID_AVIF_MODES = {"RGB", "RGBA"}
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool | str:
     if prefix[4:8] != b"ftyp":
-        return
+        return False
     coding_brands = (b"avif", b"avis")
     container_brands = (b"mif1", b"msf1")
     major_brand = prefix[8:12]
@@ -42,6 +43,7 @@ def _accept(prefix):
         # Also, because this file might not actually be an AVIF file, we
         # don't raise an error if AVIF support isn't properly compiled.
         return True
+    return False
 
 
 class AvifImageFile(ImageFile.ImageFile):
@@ -53,7 +55,7 @@ class AvifImageFile(ImageFile.ImageFile):
     def load_seek(self, pos: int) -> None:
         pass
 
-    def _open(self):
+    def _open(self) -> None:
         if not SUPPORTED:
             msg = (
                 "image file could not be identified because AVIF "
@@ -71,7 +73,6 @@ class AvifImageFile(ImageFile.ImageFile):
         self.n_frames = n_frames
         self.is_animated = self.n_frames > 1
         self._mode = self.rawmode = mode
-        self.tile = []
 
         if icc:
             self.info["icc_profile"] = icc
@@ -80,13 +81,13 @@ class AvifImageFile(ImageFile.ImageFile):
         if xmp:
             self.info["xmp"] = xmp
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
         self.__frame = frame
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if self.__loaded != self.__frame:
             # We need to load the image data for this frame
             data, timescale, tsp_in_ts, dur_in_ts = self._decoder.get_frame(
@@ -102,19 +103,21 @@ class AvifImageFile(ImageFile.ImageFile):
             if self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = BytesIO(data)
-            self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.rawmode)]
 
         return super().load()
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__frame
 
 
-def _save_all(im, fp, filename):
+def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, save_all=True)
 
 
-def _save(im, fp, filename, save_all=False):
+def _save(
+    im: Image.Image, fp: IO[bytes], filename: str | bytes, save_all: bool = False
+) -> None:
     info = im.encoderinfo.copy()
     if save_all:
         append_images = list(info.get("append_images", []))

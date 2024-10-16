@@ -66,21 +66,25 @@ function build_harfbuzz {
 }
 
 function install_rav1e {
-    if [[ -n "$IS_MACOS" ]] && [[ "$PLAT" == "arm64" ]]; then
-        librav1e_tgz=librav1e-${RAV1E_VERSION}-macos-aarch64.tar.gz
-    elif [ -n "$IS_MACOS" ]; then
-        librav1e_tgz=librav1e-${RAV1E_VERSION}-macos.tar.gz
-    elif [ "$PLAT" == "aarch64" ]; then
-        librav1e_tgz=librav1e-${RAV1E_VERSION}-linux-aarch64.tar.gz
+    if [ -n "$IS_MACOS" ]; then
+        suffix="macos"
+        if [[ "$PLAT" == "arm64" ]]; then
+            suffix+="-aarch64"
+        fi
     else
-        librav1e_tgz=librav1e-${RAV1E_VERSION}-linux-generic.tar.gz
+        suffix="linux"
+        if [[ "$PLAT" == "aarch64" ]]; then
+            suffix+="-aarch64"
+        else
+            suffix+="-generic"
+        fi
     fi
 
     curl -sLo - \
-        https://github.com/xiph/rav1e/releases/download/v$RAV1E_VERSION/$librav1e_tgz \
+        https://github.com/xiph/rav1e/releases/download/v$RAV1E_VERSION/librav1e-$RAV1E_VERSION-$suffix.tar.gz \
         | tar -C $BUILD_PREFIX --exclude LICENSE --exclude LICENSE --exclude '*.so' --exclude '*.dylib' -zxf -
 
-    if [ ! -n "$IS_MACOS" ]; then
+    if [ -z "$IS_MACOS" ]; then
         sed -i 's/-lgcc_s/-lgcc_eh/g' "${BUILD_PREFIX}/lib/pkgconfig/rav1e.pc"
     fi
 
@@ -101,7 +105,7 @@ function build_libavif {
     python -m pip install meson ninja
 
     if [[ "$PLAT" == "x86_64" ]]; then
-        build_simple nasm 2.15.05 https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/
+        build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/
     fi
 
     local cmake=$(get_modern_cmake)
@@ -210,7 +214,7 @@ if [[ -n "$IS_MACOS" ]]; then
     brew remove --ignore-dependencies webp aom libavif
   fi
 
-  brew install meson pkg-config
+  brew install pkg-config
 
   # clear bash path cache for curl
   hash -d curl
