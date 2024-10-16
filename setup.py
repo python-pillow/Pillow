@@ -389,7 +389,7 @@ class pil_build_ext(build_ext):
                     pass
         for x in self.feature:
             if getattr(self, f"disable_{x}"):
-                setattr(self.feature, x, False)
+                self.feature.set(x, False)
                 self.feature.required.discard(x)
                 _dbg("Disabling %s", x)
                 if getattr(self, f"enable_{x}"):
