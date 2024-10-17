@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import Image
+from PIL import Image, ImageFile
 
 from .helper import (
     assert_image_equal,
@@ -179,7 +179,7 @@ class TestImagingCoreResize:
 
 
 @pytest.fixture
-def gradients_image() -> Generator[Image.Image, None, None]:
+def gradients_image() -> Generator[ImageFile.ImageFile, None, None]:
     with Image.open("Tests/images/radial_gradients.png") as im:
         im.load()
     try:
@@ -189,7 +189,7 @@ def gradients_image() -> Generator[Image.Image, None, None]:
 
 
 class TestReducingGapResize:
-    def test_reducing_gap_values(self, gradients_image: Image.Image) -> None:
+    def test_reducing_gap_values(self, gradients_image: ImageFile.ImageFile) -> None:
         ref = gradients_image.resize(
             (52, 34), Image.Resampling.BICUBIC, reducing_gap=None
         )
@@ -210,7 +210,7 @@ class TestReducingGapResize:
     )
     def test_reducing_gap_1(
         self,
-        gradients_image: Image.Image,
+        gradients_image: ImageFile.ImageFile,
         box: tuple[float, float, float, float],
         epsilon: float,
     ) -> None:
@@ -230,7 +230,7 @@ class TestReducingGapResize:
     )
     def test_reducing_gap_2(
         self,
-        gradients_image: Image.Image,
+        gradients_image: ImageFile.ImageFile,
         box: tuple[float, float, float, float],
         epsilon: float,
     ) -> None:
@@ -250,7 +250,7 @@ class TestReducingGapResize:
     )
     def test_reducing_gap_3(
         self,
-        gradients_image: Image.Image,
+        gradients_image: ImageFile.ImageFile,
         box: tuple[float, float, float, float],
         epsilon: float,
     ) -> None:
@@ -266,7 +266,9 @@ class TestReducingGapResize:
 
     @pytest.mark.parametrize("box", (None, (1.1, 2.2, 510.8, 510.9), (3, 10, 410, 256)))
     def test_reducing_gap_8(
-        self, gradients_image: Image.Image, box: tuple[float, float, float, float]
+        self,
+        gradients_image: ImageFile.ImageFile,
+        box: tuple[float, float, float, float],
     ) -> None:
         ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
         im = gradients_image.resize(
@@ -281,7 +283,7 @@ class TestReducingGapResize:
     )
     def test_box_filter(
         self,
-        gradients_image: Image.Image,
+        gradients_image: ImageFile.ImageFile,
         box: tuple[float, float, float, float],
         epsilon: float,
     ) -> None:
