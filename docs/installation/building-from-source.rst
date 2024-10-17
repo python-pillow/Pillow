@@ -89,6 +89,16 @@ Many of Pillow's features require external libraries:
 
 * **libxcb** provides X11 screengrab support.
 
+
+* **libavif** provides support for the AVIF format.
+
+  * Pillow requires libavif version **0.8.0** or greater, which is when
+    AVIF image sequence support was added.
+  * libavif is merely an API that wraps AVIF codecs. If you are compiling
+    libavif from source, you will also need to install both an AVIF encoder
+    and decoder, such as rav1e and dav1d, or libaom, which both encodes and
+    decodes AVIF images.
+
 .. tab:: Linux
 
     If you didn't build Python from source, make sure you have Python's
@@ -116,6 +126,12 @@ Many of Pillow's features require external libraries:
 
     To install libraqm, ``sudo apt-get install meson`` and then see
     ``depends/install_raqm.sh``.
+
+    Build prerequisites for libavif on Ubuntu are installed with::
+
+        sudo apt-get install cmake ninja-build nasm
+
+    Then see ``depends/install_libavif.sh`` to build and install libavif.
 
     Prerequisites are installed on recent **Red Hat**, **CentOS** or **Fedora** with::
 
@@ -156,6 +172,12 @@ Many of Pillow's features require external libraries:
 
     Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
+    To install libavif on macOS use Homebrew to install its build dependencies::
+
+        brew install aom dav1d rav1e
+
+    Then see ``depends/install_libavif.sh`` to install libavif.
+
 .. tab:: Windows
 
     We recommend you use prebuilt wheels from PyPI.
@@ -193,7 +215,8 @@ Many of Pillow's features require external libraries:
             mingw-w64-x86_64-libwebp \
             mingw-w64-x86_64-openjpeg2 \
             mingw-w64-x86_64-libimagequant \
-            mingw-w64-x86_64-libraqm
+            mingw-w64-x86_64-libraqm \
+            mingw-w64-x86_64-libavif
 
     https://www.msys2.org/docs/python/ states that setuptools >= 60 does not work with
     MSYS2. To workaround this, before installing Pillow you must run::
@@ -210,9 +233,10 @@ Many of Pillow's features require external libraries:
 
     Prerequisites are installed on **FreeBSD 10 or 11** with::
 
-        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb
+        sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif
 
-    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
+    See ``depends/install_raqm_cmake.sh`` to install libraqm and
+    ``depends/install_libavif.sh`` to install libavif.
 
 .. tab:: Android
 
