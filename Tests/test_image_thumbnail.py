@@ -104,20 +104,20 @@ def test_transposed() -> None:
         assert im.size == (590, 88)
 
 
-def test_load_first_unless_jpeg() -> None:
+def test_load_first_unless_jpeg(monkeypatch: pytest.MonkeyPatch) -> None:
     # Test that thumbnail() still uses draft() for JPEG
     with Image.open("Tests/images/hopper.jpg") as im:
-        draft = im.draft
+        orig_draft = im.draft
 
         def im_draft(
             mode: str, size: tuple[int, int]
         ) -> tuple[str, tuple[int, int, float, float]] | None:
-            result = draft(mode, size)
+            result = orig_draft(mode, size)
             assert result is not None
 
             return result
 
-        im.draft = im_draft
+        monkeypatch.setattr(im, "draft", im_draft)
 
         im.thumbnail((64, 64))
 
@@ -156,6 +156,7 @@ def test_reducing_gap_values() -> None:
 
 
 def test_reducing_gap_for_DCT_scaling() -> None:
+    ref: Image.Image
     with Image.open("Tests/images/hopper.jpg") as ref:
         # thumbnail should call draft with reducing_gap scale
         ref.draft(None, (18 * 3, 18 * 3))

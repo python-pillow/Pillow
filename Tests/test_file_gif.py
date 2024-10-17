@@ -81,12 +81,16 @@ def test_invalid_file() -> None:
 def test_l_mode_transparency() -> None:
     with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
         assert im.mode == "L"
-        assert im.load()[0, 0] == 128
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == 128
         assert im.info["transparency"] == 255
 
         im.seek(1)
         assert im.mode == "L"
-        assert im.load()[0, 0] == 128
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == 128
 
 
 def test_l_mode_after_rgb() -> None:
@@ -221,6 +225,7 @@ def test_optimize_if_palette_can_be_reduced_by_half() -> None:
         out = BytesIO()
         im.save(out, "GIF", optimize=optimize)
         with Image.open(out) as reloaded:
+            assert reloaded.palette is not None
             assert len(reloaded.palette.palette) // 3 == colors
 
 
@@ -277,6 +282,7 @@ def test_roundtrip_save_all(tmp_path: Path) -> None:
         im.save(out, save_all=True)
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 5
 
 
@@ -302,10 +308,14 @@ def test_roundtrip_save_all_1(tmp_path: Path) -> None:
     ),
 )
 def test_loading_multiple_palettes(path: str, mode: str) -> None:
+    im: Image.Image
     with Image.open(path) as im:
         assert im.mode == "P"
+        assert im.palette is not None
         first_frame_colors = im.palette.colors.keys()
-        original_color = im.convert("RGB").load()[0, 0]
+        px = im.convert("RGB").load()
+        assert px is not None
+        original_color = px[0, 0]
 
         im.seek(1)
         assert im.mode == mode
@@ -313,10 +323,14 @@ def test_loading_multiple_palettes(path: str, mode: str) -> None:
             im = im.convert("RGB")
 
         # Check a color only from the old palette
-        assert im.load()[0, 0] == original_color
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == original_color
 
         # Check a color from the new palette
-        assert im.load()[24, 24] not in first_frame_colors
+        px = im.load()
+        assert px is not None
+        assert px[24, 24] not in first_frame_colors
 
 
 def test_headers_saving_for_animated_gifs(tmp_path: Path) -> None:
@@ -334,7 +348,7 @@ def test_headers_saving_for_animated_gifs(tmp_path: Path) -> None:
 
 def test_palette_handling(tmp_path: Path) -> None:
     # see https://github.com/python-pillow/Pillow/issues/513
-
+    im: Image.Image
     with Image.open(TEST_GIF) as im:
         im = im.convert("RGB")
 
@@ -358,8 +372,8 @@ def test_palette_434(tmp_path: Path) -> None:
 
         return reloaded
 
-    orig = "Tests/images/test.colors.gif"
-    with Image.open(orig) as im:
+    im: Image.Image
+    with Image.open("Tests/images/test.colors.gif") as im:
         with roundtrip(im) as reloaded:
             assert_image_similar(im, reloaded, 1)
         with roundtrip(im, optimize=True) as reloaded:
@@ -374,6 +388,7 @@ def test_palette_434(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
 def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
+    img: Image.Image
     with Image.open(TEST_GIF) as img:
         img = img.convert("RGB")
 
@@ -386,6 +401,7 @@ def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(not netpbm_available(), reason="Netpbm not available")
 def test_save_netpbm_l_mode(tmp_path: Path) -> None:
+    img: Image.Image
     with Image.open(TEST_GIF) as img:
         img = img.convert("L")
 
@@ -438,10 +454,12 @@ def test_seek_rewind() -> None:
 def test_n_frames(path: str, n_frames: int) -> None:
     # Test is_animated before n_frames
     with Image.open(path) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.is_animated == (n_frames != 1)
 
     # Test is_animated after n_frames
     with Image.open(path) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.n_frames == n_frames
         assert im.is_animated == (n_frames != 1)
 
@@ -451,6 +469,7 @@ def test_no_change() -> None:
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
         im.seek(1)
         expected = im.copy()
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.n_frames == 5
         assert_image_equal(im, expected)
 
@@ -458,17 +477,20 @@ def test_no_change() -> None:
     with Image.open("Tests/images/dispose_bgnd.gif") as im:
         im.seek(3)
         expected = im.copy()
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.is_animated
         assert_image_equal(im, expected)
 
     with Image.open("Tests/images/comment_after_only_frame.gif") as im:
         expected = Image.new("P", (1, 1))
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert not im.is_animated
         assert_image_equal(im, expected)
 
 
 def test_eoferror() -> None:
     with Image.open(TEST_GIF) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame
@@ -483,11 +505,13 @@ def test_eoferror() -> None:
 def test_first_frame_transparency() -> None:
     with Image.open("Tests/images/first_frame_transparency.gif") as im:
         px = im.load()
+        assert px is not None
         assert px[0, 0] == im.info["transparency"]
 
 
 def test_dispose_none() -> None:
     with Image.open("Tests/images/dispose_none.gif") as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         try:
             while True:
                 img.seek(img.tell() + 1)
@@ -511,6 +535,7 @@ def test_dispose_none_load_end() -> None:
 
 def test_dispose_background() -> None:
     with Image.open("Tests/images/dispose_bgnd.gif") as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         try:
             while True:
                 img.seek(img.tell() + 1)
@@ -523,7 +548,10 @@ def test_dispose_background_transparency() -> None:
     with Image.open("Tests/images/dispose_bgnd_transparency.gif") as img:
         img.seek(2)
         px = img.load()
-        assert px[35, 30][3] == 0
+        assert px is not None
+        value = px[35, 30]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 @pytest.mark.parametrize(
@@ -565,6 +593,7 @@ def test_transparent_dispose(
 
 def test_dispose_previous() -> None:
     with Image.open("Tests/images/dispose_prev.gif") as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         try:
             while True:
                 img.seek(img.tell() + 1)
@@ -602,6 +631,7 @@ def test_save_dispose(tmp_path: Path) -> None:
     for method in range(0, 4):
         im_list[0].save(out, save_all=True, append_images=im_list[1:], disposal=method)
         with Image.open(out) as img:
+            assert isinstance(img, GifImagePlugin.GifImageFile)
             for _ in range(2):
                 img.seek(img.tell() + 1)
                 assert img.disposal_method == method
@@ -615,6 +645,7 @@ def test_save_dispose(tmp_path: Path) -> None:
     )
 
     with Image.open(out) as img:
+        assert isinstance(img, GifImagePlugin.GifImageFile)
         for i in range(2):
             img.seek(img.tell() + 1)
             assert img.disposal_method == i + 1
@@ -737,6 +768,7 @@ def test_dispose2_background_frame(tmp_path: Path) -> None:
     im_list[0].save(out, save_all=True, append_images=im_list[1:], disposal=2)
 
     with Image.open(out) as im:
+        assert isinstance(im, GifImagePlugin.GifImageFile)
         assert im.n_frames == 3
 
 
@@ -903,6 +935,8 @@ def test_identical_frames(tmp_path: Path) -> None:
         out, save_all=True, append_images=im_list[1:], duration=duration_list
     )
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+
         # Assert that the first three frames were combined
         assert reread.n_frames == 2
 
@@ -932,6 +966,8 @@ def test_identical_frames_to_single_frame(
 
     im_list[0].save(out, save_all=True, append_images=im_list[1:], duration=duration)
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+
         # Assert that all frames were combined
         assert reread.n_frames == 1
 
@@ -979,9 +1015,9 @@ def test_webp_background(tmp_path: Path) -> None:
 
     # Test opaque WebP background
     if features.check("webp"):
-        with Image.open("Tests/images/hopper.webp") as im:
-            assert im.info["background"] == (255, 255, 255, 255)
-            im.save(out)
+        with Image.open("Tests/images/hopper.webp") as img:
+            assert img.info["background"] == (255, 255, 255, 255)
+            img.save(out)
 
     # Test non-opaque WebP background
     im = Image.new("L", (100, 100), "#000")
@@ -990,6 +1026,7 @@ def test_webp_background(tmp_path: Path) -> None:
 
 
 def test_comment(tmp_path: Path) -> None:
+    im: Image.Image
     with Image.open(TEST_GIF) as im:
         assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0"
 
@@ -1118,6 +1155,7 @@ def test_append_images(tmp_path: Path) -> None:
     im.copy().save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 3
 
     # Tests appending using a generator
@@ -1127,6 +1165,7 @@ def test_append_images(tmp_path: Path) -> None:
     im.save(out, save_all=True, append_images=im_generator(ims))
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 3
 
     # Tests appending single and multiple frame images
@@ -1135,6 +1174,7 @@ def test_append_images(tmp_path: Path) -> None:
             im.save(out, save_all=True, append_images=[im2])
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 10
 
 
@@ -1235,6 +1275,7 @@ def test_bbox(tmp_path: Path) -> None:
     im.save(out, save_all=True, append_images=ims)
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 2
 
 
@@ -1247,6 +1288,7 @@ def test_bbox_alpha(tmp_path: Path) -> None:
     im.save(out, save_all=True, append_images=[im2])
 
     with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
         assert reread.n_frames == 2
 
 
@@ -1308,6 +1350,9 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
     with Image.open(out) as im:
         # Assert that the frames are correct, and each frame has the same palette
         assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
+        assert isinstance(im, GifImagePlugin.GifImageFile)
+        assert im.palette is not None
+        assert im.global_palette is not None
         assert im.palette.palette == im.global_palette.palette
 
         im.seek(1)
@@ -1373,7 +1418,9 @@ def test_getdata() -> None:
 def test_lzw_bits() -> None:
     # see https://github.com/python-pillow/Pillow/issues/2811
     with Image.open("Tests/images/issue_2811.gif") as im:
-        assert im.tile[0][3][0] == 11  # LZW bits
+        args = im.tile[0][3]
+        assert isinstance(args, tuple)
+        assert args[0] == 11  # LZW bits
         # codec error prepatch
         im.load()
 
@@ -1398,6 +1445,7 @@ def test_extents(
     GifImagePlugin.LOADING_STRATEGY = loading_strategy
     try:
         with Image.open("Tests/images/" + test_file) as im:
+            assert isinstance(im, GifImagePlugin.GifImageFile)
             assert im.size == (100, 100)
 
             # Check that n_frames does not change the size
@@ -1428,7 +1476,11 @@ def test_saving_rgba(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         reloaded_rgba = reloaded.convert("RGBA")
-        assert reloaded_rgba.load()[0, 0][3] == 0
+        px = reloaded_rgba.load()
+        assert px is not None
+        value = px[0, 0]
+        assert isinstance(value, tuple)
+        assert value[3] == 0
 
 
 def test_optimizing_p_rgba(tmp_path: Path) -> None:
@@ -1446,4 +1498,5 @@ def test_optimizing_p_rgba(tmp_path: Path) -> None:
     im1.save(out, save_all=True, append_images=[im2])
 
     with Image.open(out) as reloaded:
+        assert isinstance(reloaded, GifImagePlugin.GifImageFile)
         assert reloaded.n_frames == 2

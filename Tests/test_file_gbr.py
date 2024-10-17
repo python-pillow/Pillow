@@ -14,10 +14,12 @@ def test_gbr_file() -> None:
 
 def test_load() -> None:
     with Image.open("Tests/images/gbr.gbr") as im:
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (0, 0, 0, 0)
 
         # Test again now that it has already been loaded once
-        assert im.load()[0, 0] == (0, 0, 0, 0)
+        assert px[0, 0] == (0, 0, 0, 0)
 
 
 def test_multiple_load_operations() -> None:

@@ -307,12 +307,12 @@ class TestImageResize:
         # Test unknown resampling filter
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.resize((10, 10), "unknown")
+                im.resize((10, 10), -1)
 
     @skip_unless_feature("libtiff")
     def test_transposed(self) -> None:
-        with Image.open("Tests/images/g4_orientation_5.tif") as im:
-            im = im.resize((64, 64))
+        with Image.open("Tests/images/g4_orientation_5.tif") as img:
+            im = img.resize((64, 64))
             assert im.size == (64, 64)
 
     @pytest.mark.parametrize(
