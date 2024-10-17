@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.1.0 (unreleased)
 -------------------
 
+- Fix IFDRational with a zero denominator #8474
+  [radarhere]
+
 - Fixed disabling a feature during install #8469
   [radarhere]
 
