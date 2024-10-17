@@ -2615,6 +2615,23 @@ class Image:
         if open_fp:
             fp.close()
 
+    def _save_all_progress(
+        self, im=None, im_index=0, completed=1, total=1, progress=None
+    ):
+        if not progress:
+            progress = self.encoderinfo.get("progress")
+        if not progress:
+            return
+
+        progress(
+            {
+                "image_index": im_index,
+                "image_filename": getattr(im or self, "filename", None),
+                "completed_frames": completed,
+                "total_frames": total,
+            }
+        )
+
     def seek(self, frame: int) -> None:
         """
         Seeks to the given frame in this sequence file. If you seek
