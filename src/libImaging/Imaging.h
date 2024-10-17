@@ -42,10 +42,20 @@ extern "C" {
  * LA       4           L, -, -, A
  * PA       4           P, -, -, A
  * I;16     2           I (16-bit integer, native byte order)
+ * MB       variable
  *
  * "P" is an 8-bit palette mode, which should be mapped through the
  * palette member to get an output image.  Check palette->mode to
  * find the corresponding "real" mode.
+ *
+ * "MB" is an experimental multi-band mode for multi-channel image where each sample is
+ * more than UINT8. In this mode,
+ * - im->depth is size of each sample in bits. Valid values are 8, 16, and 32. Currently
+ * each sample is assumed to be a uint; further refactoring will be needed to support
+ * int and float.
+ * - im->type is set to IMAGING_TYPE_MB.
+ * - Neither im->image8 nor im->image32 is set. All operators must access im->image
+ * directly.
  *
  * For information on how to access Imaging objects from your own C
  * extensions, see http://www.effbot.org/zone/pil-extending.htm
@@ -68,9 +78,20 @@ typedef struct ImagingPaletteInstance *ImagingPalette;
 #define IMAGING_TYPE_INT32 1
 #define IMAGING_TYPE_FLOAT32 2
 #define IMAGING_TYPE_SPECIAL 3 /* check mode for details */
+#define IMAGING_TYPE_MB 4      /* multi-band format */
 
 #define IMAGING_MODE_LENGTH \
     6 + 1 /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK", "YCbCr", "BGR;xy") */
+
+#define IMAGING_MODE_MB "MB" /* multi-band format */
+
+/* Parameters of various ImagingNew* functions. */
+typedef struct {
+    int xsize;
+    int ysize;
+    int depth; /** MB mode only. */
+    int bands; /** MB mode only. */
+} ImagingNewParams;
 
 typedef struct {
     char *ptr;
@@ -80,9 +101,9 @@ typedef struct {
 struct ImagingMemoryInstance {
     /* Format */
     char mode[IMAGING_MODE_LENGTH]; /* Band names ("1", "L", "P", "RGB", "RGBA", "CMYK",
-                                       "YCbCr", "BGR;xy") */
+                                       "YCbCr", "BGR;xy", "MB") */
     int type;                       /* Data type (IMAGING_TYPE_*) */
-    int depth;                      /* Depth (ignored in this version) */
+    int depth;                      /* Sample size (1, 2, or 4) in multi-band format */
     int bands;                      /* Number of bands (1, 2, 3, or 4) */
     int xsize;                      /* Image dimension. */
     int ysize;
@@ -176,9 +197,9 @@ extern void
 ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size);
 
 extern Imaging
-ImagingNew(const char *mode, int xsize, int ysize);
+ImagingNew(const char *mode, ImagingNewParams p);
 extern Imaging
-ImagingNewDirty(const char *mode, int xsize, int ysize);
+ImagingNewDirty(const char *mode, ImagingNewParams p);
 extern Imaging
 ImagingNew2Dirty(const char *mode, Imaging imOut, Imaging imIn);
 extern void
@@ -188,9 +209,9 @@ extern Imaging
 ImagingNewBlock(const char *mode, int xsize, int ysize);
 
 extern Imaging
-ImagingNewPrologue(const char *mode, int xsize, int ysize);
+ImagingNewPrologue(const char *mode, ImagingNewParams p);
 extern Imaging
-ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int structure_size);
+ImagingNewPrologueSubtype(const char *mode, ImagingNewParams p, int structure_size);
 
 extern void
 ImagingCopyPalette(Imaging destination, Imaging source);
@@ -686,6 +707,9 @@ struct ImagingCodecStateInstance {
     int ystep;
     int xsize, ysize, xoff, yoff;
     ImagingShuffler shuffle;
+    void (*mb_shuffle)(
+        UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state
+    );
     int bits, bytes;
     UINT8 *buffer;
     void *context;
