@@ -97,6 +97,12 @@ class TestFileWebp:
                 target = target.convert(self.rgb_mode)
             assert_image_similar(image, target, epsilon)
 
+    def test_save_convert_mode(self) -> None:
+        out = io.BytesIO()
+        for mode in ["CMYK", "I", "L", "LA", "P"]:
+            img = Image.new(mode, (20, 20))
+            img.save(out, "WEBP", convert_mode=True)
+
     def test_write_rgb(self, tmp_path: Path) -> None:
         """
         Can we write a RGB mode file to webp without error?

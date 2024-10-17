@@ -2564,10 +2564,6 @@ class Image:
         # may mutate self!
         self._ensure_mutable()
 
-        save_all = params.pop("save_all", False)
-        self.encoderinfo = params
-        self.encoderconfig: tuple[Any, ...] = ()
-
         preinit()
 
         filename_ext = os.path.splitext(filename)[1].lower()
@@ -2584,10 +2580,21 @@ class Image:
 
         if format.upper() not in SAVE:
             init()
-        if save_all:
+        if params.pop("save_all", False):
             save_handler = SAVE_ALL[format.upper()]
         else:
             save_handler = SAVE[format.upper()]
+
+        if params.get("convert_mode"):
+            plugin = sys.modules[save_handler.__module__]
+            if hasattr(plugin, "_supported_modes"):
+                modes = plugin._supported_modes()
+                converted_im = self._convert_mode(modes, params)
+                if converted_im:
+                    return converted_im.save(fp, format, **params)
+
+        self.encoderinfo = params
+        self.encoderconfig: tuple[Any, ...] = ()
 
         created = False
         if open_fp:
@@ -2614,6 +2621,62 @@ class Image:
             raise
         if open_fp:
             fp.close()
+
+    def _convert_mode(self, modes, params={}):
+        if not modes or self.mode in modes:
+            return
+        if self.mode == "P":
+            preferred_modes = []
+            if "A" in self.im.getpalettemode():
+                preferred_modes.append("RGBA")
+            preferred_modes.append("RGB")
+        else:
+            preferred_modes = {
+                "CMYK": ["RGB"],
+                "RGB": ["CMYK"],
+                "RGBX": ["RGB"],
+                "RGBa": ["RGBA", "RGB"],
+                "RGBA": ["RGB"],
+                "LA": ["RGBA", "P", "L"],
+                "La": ["LA", "L"],
+                "L": ["RGB"],
+                "F": ["I"],
+                "I": ["L", "RGB"],
+                "1": ["L"],
+                "YCbCr": ["RGB"],
+                "LAB": ["RGB"],
+                "HSV": ["RGB"],
+            }.get(self.mode, [])
+        for new_mode in preferred_modes:
+            if new_mode in modes:
+                break
+        else:
+            new_mode = modes[0]
+        if self.mode == "LA" and new_mode == "P":
+            alpha = self.getchannel("A")
+            # Convert the image into P mode but only use 255 colors
+            # in the palette out of 256.
+            im = self.convert("L").convert("P", palette=Palette.ADAPTIVE, colors=255)
+            # Set all pixel values below 128 to 255, and the rest to 0.
+            mask = eval(alpha, lambda px: 255 if px < 128 else 0)
+            # Paste the color of index 255 and use alpha as a mask.
+            im.paste(255, mask)
+            # The transparency index is 255.
+            im.info["transparency"] = 255
+            return im
+
+        elif self.mode == "I":
+            im = self.point([i // 256 for i in range(65536)], "L")
+            return im.convert(new_mode) if new_mode != "L" else im
+
+        elif self.mode in ("RGBA", "LA") and new_mode in ("RGB", "L"):
+            fill_color = params.get("fill_color", "white")
+            background = new(new_mode, self.size, fill_color)
+            background.paste(self, self.getchannel("A"))
+            return background
+
+        elif new_mode:
+            return self.convert(new_mode)
 
     def seek(self, frame: int) -> None:
         """
