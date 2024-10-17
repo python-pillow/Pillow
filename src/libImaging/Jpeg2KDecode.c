@@ -17,7 +17,6 @@
 
 #ifdef HAVE_OPENJPEG
 
-#include <stdlib.h>
 #include "Jpeg2K.h"
 
 typedef struct {

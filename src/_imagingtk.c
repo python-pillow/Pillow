@@ -12,7 +12,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
 #include "libImaging/Imaging.h"
 
 #include "Tk/_tkmini.h"
@@ -37,8 +36,7 @@ _tkinit(PyObject *self, PyObject *args) {
     /* This will bomb if interp is invalid... */
     TkImaging_Init(interp);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef functions[] = {

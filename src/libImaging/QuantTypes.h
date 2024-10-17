@@ -9,15 +9,10 @@
  * See the README file for information on usage and redistribution.
  */
 
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#ifndef __QUANTTYPES_H__
+#define __QUANTTYPES_H__
 
-#ifdef _MSC_VER
-typedef unsigned __int32 uint32_t;
-typedef unsigned __int64 uint64_t;
-#else
 #include <stdint.h>
-#endif
 
 typedef union {
     struct {
