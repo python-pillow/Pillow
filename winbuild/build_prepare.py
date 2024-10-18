@@ -121,6 +121,9 @@ V = {
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
     "ZLIB": "1.3.1",
+    "MESON": "1.5.1",
+    "LIBAVIF": "1.1.1",
+    "RAV1E": "0.7.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
@@ -397,6 +400,57 @@ DEPS: dict[str, dict[str, Any]] = {
         ],
         "bins": [r"*.dll"],
     },
+    "rav1e": {
+        "url": (
+            f"https://github.com/xiph/rav1e/releases/download/v{V['RAV1E']}/"
+            f"rav1e-{V['RAV1E']}-windows-msvc-generic.zip"
+        ),
+        "filename": f"rav1e-{V['RAV1E']}-windows-msvc-generic.zip",
+        "dir": "rav1e-windows-msvc-sdk",
+        "license": "LICENSE",
+        "build": [
+            cmd_xcopy("include", "{inc_dir}"),
+        ],
+        "bins": [r"bin\*.dll"],
+        "libs": [r"lib\*.*"],
+    },
+    "libavif": {
+        "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.zip",
+        "filename": f"libavif-{V['LIBAVIF']}.zip",
+        "dir": f"libavif-{V['LIBAVIF']}",
+        "license": "LICENSE",
+        "build": [
+            cmd_mkdir("build.pillow"),
+            cmd_cd("build.pillow"),
+            " ".join(
+                [
+                    "{cmake}",
+                    "-DCMAKE_BUILD_TYPE=Release",
+                    "-DCMAKE_VERBOSE_MAKEFILE=ON",
+                    "-DCMAKE_RULE_MESSAGES:BOOL=OFF",
+                    "-DCMAKE_C_COMPILER=cl.exe",
+                    "-DCMAKE_CXX_COMPILER=cl.exe",
+                    "-DCMAKE_C_FLAGS=-nologo",
+                    "-DCMAKE_CXX_FLAGS=-nologo",
+                    "-DBUILD_SHARED_LIBS=OFF",
+                    "-DAVIF_CODEC_AOM=LOCAL",
+                    "-DAVIF_LIBYUV=LOCAL",
+                    "-DAVIF_LIBSHARPYUV=LOCAL",
+                    "-DAVIF_CODEC_RAV1E=SYSTEM",
+                    "-DAVIF_RAV1E_ROOT={build_dir}",
+                    "-DCMAKE_MODULE_PATH={winbuild_dir_cmake}",
+                    "-DAVIF_CODEC_DAV1D=LOCAL",
+                    "-DAVIF_CODEC_SVT=LOCAL",
+                    '-G "Ninja"',
+                    "..",
+                ]
+            ),
+            "ninja -v",
+            cmd_cd(".."),
+            cmd_xcopy("include", "{inc_dir}"),
+        ],
+        "libs": [r"build.pillow\avif.lib"],
+    },
 }
 
 
@@ -620,12 +674,15 @@ def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
 def build_dep_all(disabled: list[str], prefs: dict[str, str], verbose: bool) -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
     gha_groups = "GITHUB_ACTIONS" in os.environ
+    scripts = ["install_meson.cmd"]
     for dep_name in DEPS:
         print()
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
             continue
-        script = build_dep(dep_name, prefs, verbose)
+        scripts.append(build_dep(dep_name, prefs, verbose))
+
+    for script in scripts:
         if gha_groups:
             lines.append(f"@echo ::group::Running {script}")
         lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
@@ -699,6 +756,11 @@ def main() -> None:
         action="store_true",
         help="skip LGPL-licensed optional dependency FriBiDi",
     )
+    parser.add_argument(
+        "--no-avif",
+        action="store_true",
+        help="skip optional dependency libavif",
+    )
     args = parser.parse_args()
 
     arch_prefs = ARCHITECTURES[args.architecture]
@@ -739,12 +801,15 @@ def main() -> None:
         disabled += ["libimagequant"]
     if args.no_fribidi:
         disabled += ["fribidi"]
+    if args.no_avif or args.architecture != "AMD64":
+        disabled += ["rav1e", "libavif"]
 
     prefs = {
         "architecture": args.architecture,
         **arch_prefs,
         # Pillow paths
         "winbuild_dir": winbuild_dir,
+        "winbuild_dir_cmake": winbuild_dir.replace("\\", "/"),
         # Build paths
         "bin_dir": bin_dir,
         "build_dir": args.build_dir,
@@ -766,6 +831,18 @@ def main() -> None:
     print()
 
     write_script(".gitignore", ["*"], prefs, args.verbose)
+    write_script(
+        "install_meson.cmd",
+        [
+            r'call "{build_dir}\build_env.cmd"',
+            "@echo " + ("=" * 70),
+            f"@echo ==== {'Building meson':<60} ====",
+            "@echo " + ("=" * 70),
+            f"python -mpip install meson=={V['MESON']}",
+        ],
+        prefs,
+        args.verbose,
+    )
     build_env(prefs, args.verbose)
     build_dep_all(disabled, prefs, args.verbose)
 
