@@ -763,7 +763,7 @@ class Image:
 
     def __setstate__(self, state: list[Any]) -> None:
         Image.__init__(self)
-        info, mode, size, palette, data = state
+        info, mode, size, palette, data = state[:5]
         self.info = info
         self._mode = mode
         self._size = size
