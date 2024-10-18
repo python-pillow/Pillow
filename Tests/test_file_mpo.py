@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from PIL import Image, ImageFile, MpoImagePlugin
+from PIL import Image, ImageFile, JpegImagePlugin, MpoImagePlugin
 
 from .helper import (
     assert_image_equal,
@@ -71,6 +71,7 @@ def test_context_manager() -> None:
 def test_app(test_file: str) -> None:
     # Test APP/COM reader (@PIL135)
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.applist[0][0] == "APP1"
         assert im.applist[1][0] == "APP2"
         assert (
@@ -110,9 +111,11 @@ def test_ignore_frame_size() -> None:
     # Ignore the different size of the second frame
     # since this is not a "Large Thumbnail" image
     with Image.open("Tests/images/ignore_frame_size.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.size == (64, 64)
 
         im.seek(1)
+        assert im.mpinfo is not None
         assert (
             im.mpinfo[0xB002][1]["Attribute"]["MPType"]
             == "Multi-Frame Image: (Disparity)"
@@ -145,7 +148,9 @@ def test_reload_exif_after_seek() -> None:
 @pytest.mark.parametrize("test_file", test_files)
 def test_mp(test_file: str) -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
+        assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
         assert mpinfo[45057] == 2
 
@@ -154,7 +159,9 @@ def test_mp_offset() -> None:
     # This image has been manually hexedited to have an IFD offset of 10
     # in APP2 data, in contrast to normal 8
     with Image.open("Tests/images/sugarshack_ifd_offset.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
+        assert mpinfo is not None
         assert mpinfo[45056] == b"0100"
         assert mpinfo[45057] == 2
 
@@ -170,7 +177,9 @@ def test_mp_no_data() -> None:
 @pytest.mark.parametrize("test_file", test_files)
 def test_mp_attribute(test_file: str) -> None:
     with Image.open(test_file) as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         mpinfo = im._getmp()
+        assert mpinfo is not None
     for frame_number, mpentry in enumerate(mpinfo[0xB002]):
         mpattr = mpentry["Attribute"]
         if frame_number:
@@ -211,12 +220,14 @@ def test_seek(test_file: str) -> None:
 
 def test_n_frames() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         assert im.n_frames == 2
         assert im.is_animated
 
 
 def test_eoferror() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         n_frames = im.n_frames
 
         # Test seeking past the last frame
@@ -230,6 +241,8 @@ def test_eoferror() -> None:
 
 def test_adopt_jpeg() -> None:
     with Image.open("Tests/images/hopper.jpg") as im:
+        assert isinstance(im, JpegImagePlugin.JpegImageFile)
+
         with pytest.raises(ValueError):
             MpoImagePlugin.MpoImageFile.adopt(im)
 
@@ -267,6 +280,7 @@ def test_save(test_file: str) -> None:
 
 
 def test_save_all() -> None:
+    im: Image.Image
     for test_file in test_files:
         with Image.open(test_file) as im:
             im_reloaded = roundtrip(im, save_all=True)

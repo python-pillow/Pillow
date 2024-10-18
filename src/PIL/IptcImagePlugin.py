@@ -77,6 +77,7 @@ class IptcImageFile(ImageFile.ImageFile):
     def field(self) -> tuple[tuple[int, int] | None, int]:
         #
         # get a IPTC field header
+        assert self.fp is not None
         s = self.fp.read(5)
         if not s.strip(b"\x00"):
             return None, 0
@@ -104,6 +105,7 @@ class IptcImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         # load descriptive fields
+        assert self.fp is not None
         while True:
             offset = self.fp.tell()
             tag, size = self.field()
@@ -157,6 +159,7 @@ class IptcImageFile(ImageFile.ImageFile):
 
         offset, compression = self.tile[0][2:]
 
+        assert self.fp is not None
         self.fp.seek(offset)
 
         # Copy image data to temporary file
@@ -165,6 +168,7 @@ class IptcImageFile(ImageFile.ImageFile):
             # To simplify access to the extracted file,
             # prepend a PPM header
             o.write(b"P5\n%d %d\n255\n" % self.size)
+        assert self.fp is not None
         while True:
             type, size = self.field()
             if type != (8, 10):
@@ -188,7 +192,7 @@ Image.register_extension(IptcImageFile.format, ".iim")
 
 
 def getiptcinfo(
-    im: ImageFile.ImageFile,
+    im: Image.Image,
 ) -> dict[tuple[int, int], bytes | list[bytes]] | None:
     """
     Get IPTC information from TIFF, JPEG, or IPTC file.

@@ -160,6 +160,7 @@ testpaths = [
 python_version = "3.9"
 pretty = true
 disallow_any_generics = true
+disallow_untyped_defs = true
 enable_error_code = "ignore-without-code"
 extra_checks = true
 follow_imports = "silent"

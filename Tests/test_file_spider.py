@@ -92,6 +92,7 @@ def test_tell() -> None:
 
 def test_n_frames() -> None:
     with Image.open(TEST_FILE) as im:
+        assert isinstance(im, SpiderImagePlugin.SpiderImageFile)
         assert im.n_frames == 1
         assert not im.is_animated
 
