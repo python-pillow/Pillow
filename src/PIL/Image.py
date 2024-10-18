@@ -2633,9 +2633,15 @@ class Image:
         """
 
         # overridden by file handlers
-        if frame != 0:
+        if frame != self.tell():
+            # The file handler likely did not override this method
             msg = "no more images in file"
             raise EOFError(msg)
+
+        if self._im is not None and (
+            self.im.size != self.size or self.im.mode != self.mode
+        ):
+            self._im = None
 
     def show(self, title: str | None = None) -> None:
         """
