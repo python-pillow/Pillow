@@ -293,3 +293,15 @@ def test_save_all() -> None:
     # Test that a single frame image will not be saved as an MPO
     jpg = roundtrip(im, save_all=True)
     assert "mp" not in jpg.info
+
+
+def test_save_xmp() -> None:
+    im = Image.new("RGB", (1, 1))
+    im2 = Image.new("RGB", (1, 1), "#f00")
+    im2.encoderinfo = {"xmp": b"Second frame"}
+    im_reloaded = roundtrip(im, xmp=b"First frame", save_all=True, append_images=[im2])
+
+    assert im_reloaded.info["xmp"] == b"First frame"
+
+    im_reloaded.seek(1)
+    assert im_reloaded.info["xmp"] == b"Second frame"
