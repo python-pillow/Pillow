@@ -47,6 +47,7 @@ _plugins = [
     "IptcImagePlugin",
     "JpegImagePlugin",
     "Jpeg2KImagePlugin",
+    "JpegXlImagePlugin",
     "McIdasImagePlugin",
     "MicImagePlugin",
     "MpegImagePlugin",
