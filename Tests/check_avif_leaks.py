@@ -36,9 +36,8 @@ def test_leak_save() -> None:
     setrlimit(RLIMIT_STACK, (stack_size, stack_size))
     setrlimit(RLIMIT_AS, (mem_limit, mem_limit))
     for _ in range(iterations):
+        test_output = BytesIO()
         with Image.open(test_file) as im:
-            im.load()
-            test_output = BytesIO()
             im.save(test_output, "AVIF")
-            test_output.seek(0)
-            test_output.read()
+        test_output.seek(0)
+        test_output.read()
