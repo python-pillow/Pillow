@@ -998,8 +998,13 @@ class TestFileJpeg:
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"XMP test"
 
-        im.info["xmp"] = b"1" * 65504
-        im.save(f)
+            # Check that XMP is not saved from image info
+            reloaded.save(f)
+
+        with Image.open(f) as reloaded:
+            assert "xmp" not in reloaded.info
+
+        im.save(f, xmp=b"1" * 65504)
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"1" * 65504
 
