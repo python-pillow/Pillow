@@ -4,7 +4,6 @@ import gc
 import os
 import re
 import warnings
-import xml.etree.ElementTree
 from collections.abc import Generator
 from contextlib import contextmanager
 from io import BytesIO
@@ -43,25 +42,13 @@ except ImportError:
 TEST_AVIF_FILE = "Tests/images/avif/hopper.avif"
 
 
-def assert_xmp_orientation(xmp: bytes | None, expected: int) -> None:
-    assert isinstance(xmp, bytes)
-    root = xml.etree.ElementTree.fromstring(xmp)
-    orientation = None
-    for elem in root.iter():
-        if elem.tag.endswith("}Description"):
-            tag_orientation = elem.attrib.get(
-                "{http://ns.adobe.com/tiff/1.0/}Orientation"
-            )
-            if tag_orientation:
-                orientation = int(tag_orientation)
-                break
-    assert orientation == expected
+def assert_xmp_orientation(xmp: bytes, expected: int) -> None:
+    assert int(xmp.split(b'tiff:Orientation="')[1].split(b'"')[0]) == expected
 
 
 def roundtrip(im: ImageFile.ImageFile, **options: Any) -> ImageFile.ImageFile:
     out = BytesIO()
     im.save(out, "AVIF", **options)
-    out.seek(0)
     return Image.open(out)
 
 
@@ -82,7 +69,7 @@ def skip_unless_avif_encoder(codec_name: str) -> pytest.MarkDecorator:
 def is_docker_qemu() -> bool:
     try:
         init_proc_exe = os.readlink("/proc/1/exe")
-    except:  # noqa: E722
+    except (FileNotFoundError, PermissionError):
         return False
     else:
         return "qemu" in init_proc_exe
@@ -125,18 +112,16 @@ class TestUnsupportedAvif:
     def test_unsupported(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(AvifImagePlugin, "SUPPORTED", False)
 
-        file_path = "Tests/images/avif/hopper.avif"
-        pytest.warns(
-            UserWarning,
-            lambda: pytest.raises(UnidentifiedImageError, Image.open, file_path),
-        )
+        with pytest.warns(UserWarning):
+            with pytest.raises(UnidentifiedImageError):
+                with Image.open(TEST_AVIF_FILE):
+                    pass
 
     def test_unsupported_open(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(AvifImagePlugin, "SUPPORTED", False)
 
-        file_path = "Tests/images/avif/hopper.avif"
         with pytest.raises(SyntaxError):
-            AvifImagePlugin.AvifImageFile(file_path)
+            AvifImagePlugin.AvifImageFile(TEST_AVIF_FILE)
 
 
 @skip_unless_feature("avif")
@@ -154,12 +139,11 @@ class TestFileAvif:
         Does it have the bits we expect?
         """
 
-        with Image.open("Tests/images/avif/hopper.avif") as image:
+        with Image.open(TEST_AVIF_FILE) as image:
             assert image.mode == "RGB"
             assert image.size == (128, 128)
             assert image.format == "AVIF"
             assert image.get_format_mimetype() == "image/avif"
-            image.load()
             image.getdata()
 
             # generated with:
@@ -176,7 +160,6 @@ class TestFileAvif:
             assert image.mode == "RGB"
             assert image.size == (128, 128)
             assert image.format == "AVIF"
-            image.load()
             image.getdata()
 
             if mode == "RGB":
@@ -240,10 +223,10 @@ class TestFileAvif:
             im.save(test_file)
 
     def test_no_resource_warning(self, tmp_path: Path) -> None:
-        with Image.open(TEST_AVIF_FILE) as image:
+        with Image.open(TEST_AVIF_FILE) as im:
             temp_file = str(tmp_path / "temp.avif")
             with warnings.catch_warnings():
-                image.save(temp_file)
+                im.save(temp_file)
 
     @pytest.mark.parametrize("major_brand", [b"avif", b"avis", b"mif1", b"msf1"])
     def test_accept_ftyp_brands(self, major_brand: bytes) -> None:
@@ -272,9 +255,7 @@ class TestFileAvif:
 
         with Image.open(out_gif) as reread:
             reread_value = reread.convert("RGB").getpixel((1, 1))
-        difference = sum(
-            [abs(original_value[i] - reread_value[i]) for i in range(0, 3)]
-        )
+        difference = sum([abs(original_value[i] - reread_value[i]) for i in range(3)])
         assert difference < 5
 
     def test_save_single_frame(self, tmp_path: Path) -> None:
@@ -296,7 +277,7 @@ class TestFileAvif:
             assert_image(im, "RGBA", (64, 64))
 
             # image has 876 transparent pixels
-            assert im.getchannel("A").getcolors()[0][0] == 876
+            assert im.getchannel("A").getcolors()[0] == (876, 0)
 
     def test_save_transparent(self, tmp_path: Path) -> None:
         im = Image.new("RGBA", (10, 10), (0, 0, 0, 0))
@@ -305,7 +286,7 @@ class TestFileAvif:
         test_file = str(tmp_path / "temp.avif")
         im.save(test_file)
 
-        # check if saved image contains same transparency
+        # check if saved image contains the same transparency
         with Image.open(test_file) as im:
             assert_image(im, "RGBA", (10, 10))
             assert im.getcolors() == [(100, (0, 0, 0, 0))]
@@ -346,7 +327,7 @@ class TestFileAvif:
             exif = im.getexif()
         assert exif[274] == 1
 
-    def test_exif_save(self, tmp_path: Path) -> None:
+    def test_exif_save_default(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/avif/exif.avif") as im:
             test_file = str(tmp_path / "temp.avif")
             im.save(test_file)
@@ -355,24 +336,14 @@ class TestFileAvif:
             exif = reloaded.getexif()
         assert exif[274] == 1
 
-    def test_exif_obj_argument(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize("bytes", [True, False])
+    def test_exif_save_argument(self, tmp_path: Path, bytes: bool) -> None:
         exif = Image.Exif()
         exif[274] = 1
         exif_data = exif.tobytes()
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
-            im.save(test_file, exif=exif)
-
-        with Image.open(test_file) as reloaded:
-            assert reloaded.info["exif"] == exif_data
-
-    def test_exif_bytes_argument(self, tmp_path: Path) -> None:
-        exif = Image.Exif()
-        exif[274] = 1
-        exif_data = exif.tobytes()
-        with Image.open(TEST_AVIF_FILE) as im:
-            test_file = str(tmp_path / "temp.avif")
-            im.save(test_file, exif=exif_data)
+            im.save(test_file, exif=exif_data if bytes else exif)
 
         with Image.open(test_file) as reloaded:
             assert reloaded.info["exif"] == exif_data
@@ -385,7 +356,7 @@ class TestFileAvif:
 
     def test_xmp(self) -> None:
         with Image.open("Tests/images/avif/xmp_tags_orientation.avif") as im:
-            xmp = im.info.get("xmp")
+            xmp = im.info["xmp"]
         assert_xmp_orientation(xmp, 3)
 
     def test_xmp_save(self, tmp_path: Path) -> None:
@@ -394,7 +365,7 @@ class TestFileAvif:
             im.save(test_file)
 
         with Image.open(test_file) as reloaded:
-            xmp = reloaded.info.get("xmp")
+            xmp = reloaded.info["xmp"]
         assert_xmp_orientation(xmp, 3)
 
     def test_xmp_save_from_png(self, tmp_path: Path) -> None:
@@ -403,7 +374,7 @@ class TestFileAvif:
             im.save(test_file)
 
         with Image.open(test_file) as reloaded:
-            xmp = reloaded.info.get("xmp")
+            xmp = reloaded.info["xmp"]
         assert_xmp_orientation(xmp, 3)
 
     def test_xmp_save_argument(self, tmp_path: Path) -> None:
@@ -420,12 +391,12 @@ class TestFileAvif:
                 '<?xpacket end="r"?>',
             ]
         )
-        with Image.open("Tests/images/avif/hopper.avif") as im:
+        with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
             im.save(test_file, xmp=xmp_arg)
 
         with Image.open(test_file) as reloaded:
-            xmp = reloaded.info.get("xmp")
+            xmp = reloaded.info["xmp"]
         assert_xmp_orientation(xmp, 1)
 
     def test_tell(self) -> None:
@@ -514,33 +485,29 @@ class TestFileAvif:
 
     @skip_unless_avif_decoder("aom")
     @skip_unless_feature("avif")
-    def test_decoder_codec_param(self) -> None:
-        AvifImagePlugin.DECODE_CODEC_CHOICE = "aom"
-        try:
-            with Image.open(TEST_AVIF_FILE) as im:
-                assert im.size == (128, 128)
-        finally:
-            AvifImagePlugin.DECODE_CODEC_CHOICE = "auto"
+    def test_decoder_codec_param(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(AvifImagePlugin, "DECODE_CODEC_CHOICE", "aom")
+
+        with Image.open(TEST_AVIF_FILE) as im:
+            assert im.size == (128, 128)
 
     @skip_unless_avif_encoder("rav1e")
     @skip_unless_feature("avif")
-    def test_decoder_codec_cannot_decode(self, tmp_path: Path) -> None:
-        AvifImagePlugin.DECODE_CODEC_CHOICE = "rav1e"
-        try:
-            with pytest.raises(ValueError):
-                with Image.open(TEST_AVIF_FILE):
-                    pass
-        finally:
-            AvifImagePlugin.DECODE_CODEC_CHOICE = "auto"
+    def test_decoder_codec_cannot_decode(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        monkeypatch.setattr(AvifImagePlugin, "DECODE_CODEC_CHOICE", "rav1e")
 
-    def test_decoder_codec_invalid(self) -> None:
-        AvifImagePlugin.DECODE_CODEC_CHOICE = "foo"
-        try:
-            with pytest.raises(ValueError):
-                with Image.open(TEST_AVIF_FILE):
-                    pass
-        finally:
-            AvifImagePlugin.DECODE_CODEC_CHOICE = "auto"
+        with pytest.raises(ValueError):
+            with Image.open(TEST_AVIF_FILE):
+                pass
+
+    def test_decoder_codec_invalid(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(AvifImagePlugin, "DECODE_CODEC_CHOICE", "foo")
+
+        with pytest.raises(ValueError):
+            with Image.open(TEST_AVIF_FILE):
+                pass
 
     @skip_unless_avif_encoder("aom")
     @skip_unless_feature("avif")
@@ -560,7 +527,7 @@ class TestFileAvif:
         assert _avif.encoder_codec_available("foo") is False
 
     def test_encoder_quality_valueerror(self, tmp_path: Path) -> None:
-        with Image.open("Tests/images/avif/hopper.avif") as im:
+        with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
             with pytest.raises(ValueError):
                 im.save(test_file, quality="invalid")
@@ -583,22 +550,20 @@ class TestFileAvif:
         assert _avif.decoder_codec_available("foo") is False
 
     @pytest.mark.parametrize("upsampling", ["fastest", "best", "nearest", "bilinear"])
-    def test_decoder_upsampling(self, upsampling: str) -> None:
-        AvifImagePlugin.CHROMA_UPSAMPLING = upsampling
-        try:
+    def test_decoder_upsampling(
+        self, monkeypatch: pytest.MonkeyPatch, upsampling: str
+    ) -> None:
+        monkeypatch.setattr(AvifImagePlugin, "CHROMA_UPSAMPLING", upsampling)
+
+        with Image.open(TEST_AVIF_FILE):
+            pass
+
+    def test_decoder_upsampling_invalid(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(AvifImagePlugin, "CHROMA_UPSAMPLING", "foo")
+
+        with pytest.raises(ValueError):
             with Image.open(TEST_AVIF_FILE):
                 pass
-        finally:
-            AvifImagePlugin.CHROMA_UPSAMPLING = "auto"
-
-    def test_decoder_upsampling_invalid(self) -> None:
-        AvifImagePlugin.CHROMA_UPSAMPLING = "foo"
-        try:
-            with pytest.raises(ValueError):
-                with Image.open(TEST_AVIF_FILE):
-                    pass
-        finally:
-            AvifImagePlugin.CHROMA_UPSAMPLING = "auto"
 
     def test_p_mode_transparency(self) -> None:
         im = Image.new("P", size=(64, 64))
@@ -612,7 +577,8 @@ class TestFileAvif:
         buf_out = BytesIO()
         im_png.save(buf_out, format="AVIF", quality=100)
 
-        assert_image_similar(im_png.convert("RGBA"), Image.open(buf_out), 1)
+        with Image.open(buf_out) as expected:
+            assert_image_similar(im_png.convert("RGBA"), expected, 1)
 
     def test_decoder_strict_flags(self) -> None:
         # This would fail if full avif strictFlags were enabled
@@ -648,7 +614,7 @@ class TestAvifAnimation:
         correctly.
         """
 
-        with Image.open("Tests/images/avif/hopper.avif") as im:
+        with Image.open(TEST_AVIF_FILE) as im:
             assert im.n_frames == 1
             assert not im.is_animated
 
@@ -671,13 +637,9 @@ class TestAvifAnimation:
                 assert im.n_frames == orig.n_frames
 
                 # Compare first and second-to-last frames to the original animated GIF
-                orig.load()
-                im.load()
                 assert_image_similar(im.convert("RGB"), orig.convert("RGB"), 25.0)
                 orig.seek(orig.n_frames - 2)
                 im.seek(im.n_frames - 2)
-                orig.load()
-                im.load()
                 assert_image_similar(im.convert("RGB"), orig.convert("RGB"), 25.0)
 
     def test_write_animation_RGB(self, tmp_path: Path) -> None:
@@ -691,12 +653,10 @@ class TestAvifAnimation:
                 assert im.n_frames == 4
 
                 # Compare first frame to original
-                im.load()
                 assert_image_similar(im, frame1.convert("RGBA"), 25.0)
 
                 # Compare second frame to original
                 im.seek(1)
-                im.load()
                 assert_image_similar(im, frame2.convert("RGBA"), 25.0)
 
         with self.star_frames() as frames:
@@ -725,7 +685,7 @@ class TestAvifAnimation:
         frame1 = Image.new("RGB", (100, 100))
         frame2 = Image.new("RGB", (150, 150))
         with pytest.raises(ValueError):
-            frame1.save(temp_file, save_all=True, append_images=[frame2], duration=100)
+            frame1.save(temp_file, save_all=True, append_images=[frame2])
 
     def test_heif_raises_unidentified_image_error(self) -> None:
         with pytest.raises(UnidentifiedImageError):

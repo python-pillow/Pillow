@@ -86,8 +86,6 @@ jobs:
         choco install nasm --no-progress
         echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
-        python -m pip install meson
-
         choco install ghostscript --version=10.4.0 --no-progress
         echo "C:\Program Files\gs\gs10.04.0\bin" >> $env:GITHUB_PATH
 

@@ -7,6 +7,7 @@ import re
 import shutil
 import struct
 import subprocess
+import sys
 from typing import Any
 
 
@@ -121,7 +122,7 @@ V = {
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
     "ZLIB": "1.3.1",
-    "MESON": "1.5.1",
+    "MESON": "1.5.2",
     "LIBAVIF": "1.1.1",
     "RAV1E": "0.7.1",
 }
@@ -838,7 +839,7 @@ def main() -> None:
             "@echo " + ("=" * 70),
             f"@echo ==== {'Building meson':<60} ====",
             "@echo " + ("=" * 70),
-            f"python -mpip install meson=={V['MESON']}",
+            f"{sys.executable} -m pip install meson=={V['MESON']}",
         ],
         prefs,
         args.verbose,

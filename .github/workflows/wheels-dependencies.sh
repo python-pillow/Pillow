@@ -102,7 +102,7 @@ EOF
 
 function build_libavif {
     install_rav1e
-    python -m pip install meson ninja
+    python3 -m pip install meson ninja
 
     if [[ "$PLAT" == "x86_64" ]]; then
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/

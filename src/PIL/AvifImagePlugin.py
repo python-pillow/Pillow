@@ -72,7 +72,7 @@ class AvifImageFile(ImageFile.ImageFile):
         self._size = width, height
         self.n_frames = n_frames
         self.is_animated = self.n_frames > 1
-        self._mode = self.rawmode = mode
+        self._mode = mode
 
         if icc:
             self.info["icc_profile"] = icc
@@ -103,7 +103,7 @@ class AvifImageFile(ImageFile.ImageFile):
             if self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.rawmode)]
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
 
         return super().load()
 
