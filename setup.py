@@ -344,6 +344,11 @@ class pil_build_ext(build_ext):
             for x in ("raqm", "fribidi")
         ]
         + [
+            (
+                "dependencies-prefix",
+                None,
+                "The prefix where build dependencies are located.",
+            ),
             ("disable-platform-guessing", None, "Disable platform guessing on Linux"),
             ("debug", None, "Debug logging"),
         ]
@@ -355,6 +360,7 @@ class pil_build_ext(build_ext):
         return True if value in configuration.get(option, []) else None
 
     def initialize_options(self) -> None:
+        self.dependencies_prefix = configuration.get("dependencies-prefix", [])
         self.disable_platform_guessing = self.check_configuration(
             "platform-guessing", "disable"
         )
@@ -564,48 +570,56 @@ class pil_build_ext(build_ext):
             )
 
         elif sys.platform == "darwin":
-            # attempt to make sure we pick freetype2 over other versions
-            _add_directory(include_dirs, "/sw/include/freetype2")
-            _add_directory(include_dirs, "/sw/lib/freetype2/include")
-            # fink installation directories
-            _add_directory(library_dirs, "/sw/lib")
-            _add_directory(include_dirs, "/sw/include")
-            # darwin ports installation directories
-            _add_directory(library_dirs, "/opt/local/lib")
-            _add_directory(include_dirs, "/opt/local/include")
-
-            # if Homebrew is installed, use its lib and include directories
-            try:
-                prefix = (
-                    subprocess.check_output(["brew", "--prefix"])
-                    .strip()
-                    .decode("latin1")
-                )
-            except Exception:
-                # Homebrew not installed
-                prefix = None
-
-            ft_prefix = None
-
-            if prefix:
-                # add Homebrew's include and lib directories
-                _add_directory(library_dirs, os.path.join(prefix, "lib"))
-                _add_directory(include_dirs, os.path.join(prefix, "include"))
-                _add_directory(
-                    include_dirs, os.path.join(prefix, "opt", "zlib", "include")
-                )
-                ft_prefix = os.path.join(prefix, "opt", "freetype")
-
-            if ft_prefix and os.path.isdir(ft_prefix):
-                # freetype might not be linked into Homebrew's prefix
-                _add_directory(library_dirs, os.path.join(ft_prefix, "lib"))
-                _add_directory(include_dirs, os.path.join(ft_prefix, "include"))
+            if self.dependencies_prefix:
+                # Use the explicitly provided prefixes for dependencies.
+                for prefix in self.dependencies_prefix:
+                    _add_directory(library_dirs, os.path.join(prefix, "lib"))
+                    _add_directory(include_dirs, os.path.join(prefix, "include"))
             else:
-                # fall back to freetype from XQuartz if
-                # Homebrew's freetype is missing
-                _add_directory(library_dirs, "/usr/X11/lib")
-                _add_directory(include_dirs, "/usr/X11/include")
+                # Guess the dependency locations based on homebrew/fink/macports
+                # attempt to make sure we pick freetype2 over other versions
+                _add_directory(include_dirs, "/sw/include/freetype2")
+                _add_directory(include_dirs, "/sw/lib/freetype2/include")
+                # fink installation directories
+                _add_directory(library_dirs, "/sw/lib")
+                _add_directory(include_dirs, "/sw/include")
+                # darwin ports installation directories
+                _add_directory(library_dirs, "/opt/local/lib")
+                _add_directory(include_dirs, "/opt/local/include")
 
+                # if Homebrew is installed, use its lib and include directories
+                try:
+                    prefix = (
+                        subprocess.check_output(["brew", "--prefix"])
+                        .strip()
+                        .decode("latin1")
+                    )
+                except Exception:
+                    # Homebrew not installed
+                    prefix = None
+
+                ft_prefix = None
+
+                if prefix:
+                    # add Homebrew's include and lib directories
+                    _add_directory(library_dirs, os.path.join(prefix, "lib"))
+                    _add_directory(include_dirs, os.path.join(prefix, "include"))
+                    _add_directory(
+                        include_dirs, os.path.join(prefix, "opt", "zlib", "include")
+                    )
+                    ft_prefix = os.path.join(prefix, "opt", "freetype")
+
+                if ft_prefix and os.path.isdir(ft_prefix):
+                    # freetype might not be linked into Homebrew's prefix
+                    _add_directory(library_dirs, os.path.join(ft_prefix, "lib"))
+                    _add_directory(include_dirs, os.path.join(ft_prefix, "include"))
+                else:
+                    # fall back to freetype from XQuartz if
+                    # Homebrew's freetype is missing
+                    _add_directory(library_dirs, "/usr/X11/lib")
+                    _add_directory(include_dirs, "/usr/X11/include")
+
+            # Add the macOS SDK path.
             sdk_path = self.get_macos_sdk_path()
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))

@@ -23,6 +23,8 @@ OPENJPEG_VERSION=2.5.2
 XZ_VERSION=5.6.3
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
+RAQM_VERSION=0.7.1
+FRIBIDI_VERSION=1.0.16
 if [[ -n "$IS_MACOS" ]]; then
     GIFLIB_VERSION=5.2.2
 else
@@ -38,7 +40,23 @@ BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
 
+function build_pkg_config {
+    if [ -e pkg-config-stamp ]; then return; fi
+    # This essentially duplicates the Homebrew recipe:
+    # https://github.com/Homebrew/homebrew-core/blob/master/Formula/p/pkg-config.rb
+    ORIGINAL_CFLAGS=$CFLAGS
+    CFLAGS="$CFLAGS -Wno-int-conversion"
+    build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
+        --disable-debug --disable-host-tool --with-internal-glib \
+        --with-pc-path=$BUILD_PREFIX/share/pkgconfig:$BUILD_PREFIX/lib/pkgconfig \
+        --with-system-include-path=$(xcrun --show-sdk-path --sdk macosx)/usr/include
+    CFLAGS=$ORIGINAL_CFLAGS
+    export PKG_CONFIG=$BUILD_PREFIX/bin/pkg-config
+    touch pkg-config-stamp
+}
+
 function build_brotli {
+    if [ -e brotli-stamp ]; then return; fi
     local cmake=$(get_modern_cmake)
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
@@ -48,25 +66,25 @@ function build_brotli {
         cp /usr/local/lib64/libbrotli* /usr/local/lib
         cp /usr/local/lib64/pkgconfig/libbrotli* /usr/local/lib/pkgconfig
     fi
+    touch brotli-stamp
 }
 
 function build_harfbuzz {
-    python3 -m pip install meson ninja
+    if [ -e harfbuzz-stamp ]; then return; fi
+    python -m pip install meson ninja
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
-        && meson setup build --buildtype=release -Dfreetype=enabled -Dglib=disabled)
+        && meson setup build --prefix=$BUILD_PREFIX --buildtype=release -Dfreetype=enabled -Dglib=disabled)
     (cd $out_dir/build \
         && meson install)
     if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
         cp /usr/local/lib64/libharfbuzz* /usr/local/lib
     fi
+    touch harfbuzz-stamp
 }
 
 function build {
-    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
-        sudo chown -R runner /usr/local
-    fi
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
@@ -77,17 +95,23 @@ function build {
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
+        build_simple libXdmcp 1.1.5 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
-        if [[ "$CIBW_ARCHS" == "arm64" ]]; then
-            cp /usr/local/share/pkgconfig/xcb-proto.pc /usr/local/lib/pkgconfig
-        fi
     else
         sed s/\${pc_sysrootdir\}// /usr/local/share/pkgconfig/xcb-proto.pc > /usr/local/lib/pkgconfig/xcb-proto.pc
     fi
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
     build_libjpeg_turbo
-    build_tiff
+    if [ -n "$IS_MACOS" ]; then
+        # Custom tiff build to include jpeg; by default, configure won't include
+        # headers/libs in the custom macOS prefix
+        build_simple tiff $TIFF_VERSION https://download.osgeo.org/libtiff tar.gz \
+            --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib
+    else
+        build_tiff
+    fi
+
     build_libpng
     build_lcms2
     build_openjpeg
@@ -113,32 +137,54 @@ function build {
     fi
 
     build_harfbuzz
+
+    if [ -n "$IS_MACOS" ]; then
+        build_simple fribidi $FRIBIDI_VERSION https://github.com/fribidi/fribidi/releases/download/v$FRIBIDI_VERSION tar.xz --enable-shared
+        build_simple raqm $RAQM_VERSION https://github.com/Host_Oman/libraqm/releases/download/v$RAQM_VERSION tar.gz --enable-shared
+    fi
 }
+
+# Perform all dependency builds in the build subfolder.
+mkdir -p build
+pushd build > /dev/null
 
 # Any stuff that you need to do before you start building the wheels
 # Runs in the root directory of this repository.
-curl -fsSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
-untar pillow-depends-main.zip
+if [[ ! -d pillow-depends-main ]]; then
+  if [[ ! -f pillow-depends-main.zip ]]; then
+    echo "Download pillow dependency sources..."
+    curl -fSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
+  fi
+  untar pillow-depends-main.zip
+fi
 
 if [[ -n "$IS_MACOS" ]]; then
-  # libtiff and libxcb cause a conflict with building libtiff and libxcb
-  # libxau and libxdmcp cause an issue on macOS < 11
-  # remove cairo to fix building harfbuzz on arm64
-  # remove lcms2 and libpng to fix building openjpeg on arm64
-  # remove jpeg-turbo to avoid inclusion on arm64
-  # remove webp and zstd to avoid inclusion on x86_64
-  # curl from brew requires zstd, use system curl
-  brew remove --ignore-dependencies libpng libtiff libxcb libxau libxdmcp curl cairo lcms2 zstd
-  if [[ "$CIBW_ARCHS" == "arm64" ]]; then
-    brew remove --ignore-dependencies jpeg-turbo
-  else
-    brew remove --ignore-dependencies webp
-  fi
+    # Build and install into the `deps` folder.
+    BUILD_PREFIX=$(pwd)/deps
 
-  brew install pkg-config
+    # Homebrew (or similar packaging environments) install can contain some of
+    # the libraries that we're going to build. However, they may be compiled
+    # with a MACOSX_DEPLOYMENT_TARGET that doesn't match what we want to use,
+    # and they may bring in other dependencies that we don't want. The same will
+    # be true of any other locations on the path. To avoid conflicts, strip the
+    # path down to the bare mimimum (which, on macOS, won't include any
+    # development dependencies).
+    export PATH="$BUILD_PREFIX/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:$(dirname $(which python))"
+    export CMAKE_PREFIX_PATH=$BUILD_PREFIX
+
+    # Link the brew command into our isolated build directory.
+    mkdir -p "$BUILD_PREFIX/bin"
+    mkdir -p "$BUILD_PREFIX/lib"
+
+    # Ensure pkg-confg and cmake are available
+    build_pkg_config
+    python -m pip install cmake
 fi
 
 wrap_wheel_builder build
+
+# Return to the project root to finish the build
+popd > /dev/null
 
 # Append licenses
 for filename in wheels/dependency_licenses/*; do

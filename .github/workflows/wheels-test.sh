@@ -1,16 +1,13 @@
 #!/bin/bash
 set -e
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install fribidi
-    export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
-    if [ -f /opt/homebrew/lib/libfribidi.dylib ]; then
-        sudo cp /opt/homebrew/lib/libfribidi.dylib /usr/local/lib
+# For Unix, Ensure fibidi is installed by the system.
+if [[ "$OSTYPE" != "darwin"* ]]; then
+    if [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
+        apk add curl fribidi
+    else
+        yum install -y fribidi
     fi
-elif [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
-    apk add curl fribidi
-else
-    yum install -y fribidi
 fi
 
 python3 -m pip install numpy
