@@ -104,8 +104,16 @@ SF_PROJECTS = "https://sourceforge.net/projects"
 
 ARCHITECTURES = {
     "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32", "zlibng_arch": "x86"},
-    "AMD64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64", "zlibng_arch": "x86-64"},
-    "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64", "zlibng_arch": "arm64"},
+    "AMD64": {
+        "vcvars_arch": "x86_amd64",
+        "msbuild_arch": "x64",
+        "zlibng_arch": "x86-64",
+    },
+    "ARM64": {
+        "vcvars_arch": "x86_arm64",
+        "msbuild_arch": "ARM64",
+        "zlibng_arch": "arm64",
+    },
 }
 
 V = {
@@ -161,7 +169,7 @@ DEPS: dict[str, dict[str, Any]] = {
     },
     "zlib": {
         "url": f"https://github.com/zlib-ng/zlib-ng/releases/download/{V['ZLIBNG']}/zlib-ng-win-{{zlibng_arch}}-compat.zip",
-        "filename": f"zlib-ng-win-{{zlibng_arch}}-compat.zip",
+        "filename": "zlib-ng-win-{zlibng_arch}-compat.zip",
         "dir": "",
         "release": f"zlib-ng-{V['ZLIBNG']}",
         "license": "LICENSE.md",
