@@ -103,9 +103,9 @@ def cmd_msbuild(
 SF_PROJECTS = "https://sourceforge.net/projects"
 
 ARCHITECTURES = {
-    "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32"},
-    "AMD64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64"},
-    "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64"},
+    "x86": {"vcvars_arch": "x86", "msbuild_arch": "Win32", "zlibng_arch": "x86"},
+    "AMD64": {"vcvars_arch": "x86_amd64", "msbuild_arch": "x64", "zlibng_arch": "x86-64"},
+    "ARM64": {"vcvars_arch": "x86_arm64", "msbuild_arch": "ARM64", "zlibng_arch": "arm64"},
 }
 
 V = {
@@ -120,7 +120,7 @@ V = {
     "OPENJPEG": "2.5.2",
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
-    "ZLIBNG": "2.2.2",
+    "ZLIBNG": "2.2.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
@@ -160,17 +160,17 @@ DEPS: dict[str, dict[str, Any]] = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": f"https://github.com/zlib-ng/zlib-ng/archive/refs/tags/{V['ZLIBNG']}.zip",
-        "filename": f"zlib-ng-{V['ZLIBNG']}.zip",
-        "dir": f"zlib-ng-{V['ZLIBNG']}",
+        "url": f"https://github.com/zlib-ng/zlib-ng/releases/download/{V['ZLIBNG']}/zlib-ng-win-{{zlibng_arch}}-compat.zip",
+        "filename": f"zlib-ng-win-{{zlibng_arch}}-compat.zip",
+        "dir": "",
+        "release": f"zlib-ng-{V['ZLIBNG']}",
         "license": "LICENSE.md",
         "build": [
-            cmd_nmake(r"win32\Makefile.msc", "clean"),
-            cmd_nmake(r"win32\Makefile.msc", "zlib.lib", ["ZLIB_COMPAT=yes"]),
-            cmd_copy("zlib.lib", "z.lib"),
+            cmd_copy(r"lib\zlibstatic.lib", r"lib\zlib.lib"),
+            cmd_copy(r"lib\zlibstatic.lib", r"lib\z.lib"),
         ],
-        "headers": [r"z*.h"],
-        "libs": [r"*.lib"],
+        "headers": [r"include\z*.h"],
+        "libs": [r"lib\*.lib"],
     },
     "xz": {
         "url": f"https://github.com/tukaani-project/xz/releases/download/v{V['XZ']}/xz-{V['XZ']}.tar.gz",
@@ -483,6 +483,9 @@ def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
     depends_dir = prefs["depends_dir"]
     sources_dir = prefs["src_dir"]
 
+    url = url.format(**prefs)
+    filename = filename.format(**prefs)
+
     file = os.path.join(depends_dir, filename)
     if not os.path.exists(file):
         # First try our mirror
@@ -565,6 +568,7 @@ def build_env(prefs: dict[str, str], verbose: bool) -> None:
 def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
     dep = DEPS[name]
     directory = dep["dir"]
+    release = dep["dir"] or dep["release"]
     file = f"build_dep_{name}.cmd"
     license_dir = prefs["license_dir"]
     sources_dir = prefs["src_dir"]
@@ -583,8 +587,8 @@ def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
         assert match is not None
         license_text = "\n".join(match.groups())
     assert len(license_text) > 50
-    with open(os.path.join(license_dir, f"{directory}.txt"), "w") as f:
-        print(f"Writing license {directory}.txt")
+    with open(os.path.join(license_dir, f"{release}.txt"), "w") as f:
+        print(f"Writing license {release}.txt")
         f.write(license_text)
 
     for patch_file, patch_list in dep.get("patch", {}).items():
