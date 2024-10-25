@@ -34,10 +34,13 @@ def test_wheel_features() -> None:
         "fribidi",
         "harfbuzz",
         "libjpeg_turbo",
+        "zlib_ng",
         "xcb",
     }
 
     if sys.platform == "win32":
         expected_features.remove("xcb")
+    else:
+        expected_features.remove("zlib_ng")
 
     assert set(features.get_supported_features()) == expected_features
