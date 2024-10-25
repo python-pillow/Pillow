@@ -4,6 +4,9 @@
 if [ -z "$IS_MACOS" ]; then
     export MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     export MB_ML_VER=${AUDITWHEEL_POLICY:9}
+
+    # Build and install into the `build/deps` folder.
+    BUILD_PREFIX=$(pwd)/build/deps
 fi
 export PLAT=$CIBW_ARCHS
 source wheels/multibuild/common_utils.sh
@@ -84,6 +87,18 @@ function build_harfbuzz {
     touch harfbuzz-stamp
 }
 
+function build_raqm {
+    if [ -e raqm-stamp ]; then return; fi
+    python3 -m pip install meson ninja
+
+    local out_dir=$(fetch_unpack https://github.com/HOST-Oman/libraqm/releases/download/v$RAQM_VERSION/raqm-$RAQM_VERSION.tar.xz raqm-$RAQM_VERSION.tar.xz)
+    (cd $out_dir \
+        && meson setup build --prefix=$BUILD_PREFIX)
+    (cd $out_dir/build \
+        && meson install)
+    touch raqm-stamp
+}
+
 function build {
     build_xz
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
@@ -105,9 +120,12 @@ function build {
     build_libjpeg_turbo
     if [ -n "$IS_MACOS" ]; then
         # Custom tiff build to include jpeg; by default, configure won't include
-        # headers/libs in the custom macOS prefix
+        # headers/libs in the custom macOS prefix. Explicitly disable webp and
+        # zstd, because on x86_64 macs, it will pick up the Homebrew versions of
+        # webp and zstd from /usr/local.
         build_simple tiff $TIFF_VERSION https://download.osgeo.org/libtiff tar.gz \
-            --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib
+            --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
+            --disable-webp --disable-zstd
     else
         build_tiff
     fi
@@ -140,7 +158,7 @@ function build {
 
     if [ -n "$IS_MACOS" ]; then
         build_simple fribidi $FRIBIDI_VERSION https://github.com/fribidi/fribidi/releases/download/v$FRIBIDI_VERSION tar.xz --enable-shared
-        build_simple raqm $RAQM_VERSION https://github.com/Host_Oman/libraqm/releases/download/v$RAQM_VERSION tar.gz --enable-shared
+        build_raqm
     fi
 }
 
@@ -159,9 +177,6 @@ if [[ ! -d pillow-depends-main ]]; then
 fi
 
 if [[ -n "$IS_MACOS" ]]; then
-    # Build and install into the `deps` folder.
-    BUILD_PREFIX=$(pwd)/deps
-
     # Homebrew (or similar packaging environments) install can contain some of
     # the libraries that we're going to build. However, they may be compiled
     # with a MACOSX_DEPLOYMENT_TARGET that doesn't match what we want to use,
@@ -169,16 +184,17 @@ if [[ -n "$IS_MACOS" ]]; then
     # be true of any other locations on the path. To avoid conflicts, strip the
     # path down to the bare mimimum (which, on macOS, won't include any
     # development dependencies).
-    export PATH="$BUILD_PREFIX/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:$(dirname $(which python))"
+    export PATH="$BUILD_PREFIX/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
     export CMAKE_PREFIX_PATH=$BUILD_PREFIX
 
     # Link the brew command into our isolated build directory.
     mkdir -p "$BUILD_PREFIX/bin"
     mkdir -p "$BUILD_PREFIX/lib"
 
-    # Ensure pkg-config and cmake are available
+    # Ensure pkg-config is available
     build_pkg_config
-    python3 -m pip install cmake
+    # Ensure cmake is available
+    python3 -m pip cmake
 fi
 
 wrap_wheel_builder build

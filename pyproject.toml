@@ -102,7 +102,7 @@ test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
 [tool.cibuildwheel.macos.environment]
-PATH = "$(pwd)/build/deps/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:$(dirname $(which python))"
+PATH = "$(pwd)/build/deps/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
 [tool.black]
 exclude = "wheels/multibuild"
