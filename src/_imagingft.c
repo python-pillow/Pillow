@@ -83,7 +83,7 @@ struct {
 
     static FT_Library library;
 #ifdef Py_GIL_DISABLED
-PyMutex ft_library_mutex;
+static PyMutex ft_library_mutex;
 #endif
 
 typedef struct {
@@ -1648,7 +1648,6 @@ PyInit__imagingft(void) {
     }
 
 #ifdef Py_GIL_DISABLED
-    ft_library_mutex = (PyMutex){0};
     PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
 #endif
 
