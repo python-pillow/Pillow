@@ -23,7 +23,7 @@ OPENJPEG_VERSION=2.5.2
 XZ_VERSION=5.6.3
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
-RAQM_VERSION=0.7.1
+RAQM_VERSION=0.10.2
 FRIBIDI_VERSION=1.0.16
 if [[ -n "$IS_MACOS" ]]; then
     GIFLIB_VERSION=5.2.2
@@ -71,7 +71,7 @@ function build_brotli {
 
 function build_harfbuzz {
     if [ -e harfbuzz-stamp ]; then return; fi
-    python -m pip install meson ninja
+    python3 -m pip install meson ninja
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
@@ -176,9 +176,9 @@ if [[ -n "$IS_MACOS" ]]; then
     mkdir -p "$BUILD_PREFIX/bin"
     mkdir -p "$BUILD_PREFIX/lib"
 
-    # Ensure pkg-confg and cmake are available
+    # Ensure pkg-config and cmake are available
     build_pkg_config
-    python -m pip install cmake
+    python3 -m pip install cmake
 fi
 
 wrap_wheel_builder build

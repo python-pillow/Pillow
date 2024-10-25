@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# For Unix, Ensure fibidi is installed by the system.
+# For Unix, ensure fribidi is installed by the system.
 if [[ "$OSTYPE" != "darwin"* ]]; then
     if [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
         apk add curl fribidi
