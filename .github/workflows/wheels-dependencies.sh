@@ -125,7 +125,7 @@ function build {
         # webp and zstd from /usr/local.
         build_simple tiff $TIFF_VERSION https://download.osgeo.org/libtiff tar.gz \
             --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
-            --disable-webp --disable-zstd
+            --disable-webp --disable-zstd --disable-libdeflate
     else
         build_tiff
     fi
