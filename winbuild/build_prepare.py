@@ -130,8 +130,7 @@ V["ZLIB_DOTLESS"] = V["ZLIB"].replace(".", "")
 # dependencies, listed in order of compilation
 DEPS: dict[str, dict[str, Any]] = {
     "libjpeg": {
-        "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/"
-        "FILENAME/download",
+        "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/FILENAME/download",
         "filename": f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
         "dir": f"libjpeg-turbo-{V['JPEGTURBO']}",
         "license": ["README.ijg", "LICENSE.md"],
