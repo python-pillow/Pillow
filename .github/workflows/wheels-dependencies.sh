@@ -66,8 +66,8 @@ function build_brotli {
         && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
         && make install)
     if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
-        cp /usr/local/lib64/libbrotli* /usr/local/lib
-        cp /usr/local/lib64/pkgconfig/libbrotli* /usr/local/lib/pkgconfig
+        cp $BUILD_PREFIX/lib64/libbrotli* $BUILD_PREFIX/lib
+        cp $BUILD_PREFIX/lib64/pkgconfig/libbrotli* $BUILD_PREFIX/lib/pkgconfig
     fi
     touch brotli-stamp
 }
@@ -82,7 +82,7 @@ function build_harfbuzz {
     (cd $out_dir/build \
         && meson install)
     if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
-        cp /usr/local/lib64/libharfbuzz* /usr/local/lib
+        cp $BUILD_PREFIX/lib64/libharfbuzz* $BUILD_PREFIX/lib
     fi
     touch harfbuzz-stamp
 }
@@ -113,7 +113,7 @@ function build {
         build_simple libXdmcp 1.1.5 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
     else
-        sed s/\${pc_sysrootdir\}// $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > /usr/local/lib/pkgconfig/xcb-proto.pc
+        sed s/\${pc_sysrootdir\}// $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
     fi
     build_simple libxcb $LIBXCB_VERSION https://www.x.org/releases/individual/lib
 
@@ -133,8 +133,8 @@ function build {
     build_libpng
     build_lcms2
     build_openjpeg
-    if [ -f /usr/local/lib64/libopenjp2.so ]; then
-        cp /usr/local/lib64/libopenjp2.so /usr/local/lib
+    if [ -f $BUILD_PREFIX/lib64/libopenjp2.so ]; then
+        cp $BUILD_PREFIX/lib64/libopenjp2.so $BUILD_PREFIX/lib
     fi
 
     ORIGINAL_CFLAGS=$CFLAGS
