@@ -120,11 +120,10 @@ V = {
     "OPENJPEG": "2.5.2",
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
-    "ZLIB": "1.3.1",
+    "ZLIBNG": "2.2.2",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
-V["ZLIB_DOTLESS"] = V["ZLIB"].replace(".", "")
 
 
 # dependencies, listed in order of compilation
@@ -161,18 +160,22 @@ DEPS: dict[str, dict[str, Any]] = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": f"https://zlib.net/zlib{V['ZLIB_DOTLESS']}.zip",
-        "filename": f"zlib{V['ZLIB_DOTLESS']}.zip",
-        "dir": f"zlib-{V['ZLIB']}",
-        "license": "README",
-        "license_pattern": "Copyright notice:\n\n(.+)$",
+        "url": f"https://github.com/zlib-ng/zlib-ng/archive/refs/tags/{V['ZLIBNG']}.zip",
+        "filename": f"zlib-ng-{V['ZLIBNG']}.zip",
+        "dir": f"zlib-ng-{V['ZLIBNG']}",
+        "license": "LICENSE.md",
+        "patch": {
+            r"CMakeLists.txt": {
+                "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlibstatic${{SUFFIX}})": "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlib)",  # noqa: E501
+            },
+        },
         "build": [
-            cmd_nmake(r"win32\Makefile.msc", "clean"),
-            cmd_nmake(r"win32\Makefile.msc", "zlib.lib"),
-            cmd_copy("zlib.lib", "z.lib"),
+            *cmds_cmake(
+                "zlib", "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DZLIB_COMPAT:BOOL=ON"
+            ),
         ],
         "headers": [r"z*.h"],
-        "libs": [r"*.lib"],
+        "libs": [r"zlib.lib"],
     },
     "xz": {
         "url": f"https://github.com/tukaani-project/xz/releases/download/v{V['XZ']}/xz-{V['XZ']}.tar.gz",
