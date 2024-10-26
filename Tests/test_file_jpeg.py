@@ -850,6 +850,8 @@ class TestFileJpeg:
 
             out = str(tmp_path / "out.jpg")
             with warnings.catch_warnings():
+                warnings.simplefilter("error")
+
                 im.save(out, exif=exif)
 
         with Image.open(out) as reloaded:
