@@ -26,6 +26,7 @@ from ._util import is_path
 
 if TYPE_CHECKING:
     import PyQt6
+    import PyQt5
     import PySide6
 
     from . import ImageFile
@@ -39,6 +40,7 @@ if TYPE_CHECKING:
 qt_version: str | None
 qt_versions = [
     ["6", "PyQt6"],
+    ["5", "PyQt5"],
     ["side6", "PySide6"],
 ]
 
@@ -50,6 +52,9 @@ for version, qt_module in qt_versions:
         if qt_module == "PyQt6":
             from PyQt6.QtCore import QBuffer, QIODevice
             from PyQt6.QtGui import QImage, QPixmap, qRgba
+        elif qt_module == "PyQt5":
+            from PyQt5.QtCore import QBuffer, QIODevice
+            from PyQt5.QtGui import QImage, QPixmap, qRgba
         elif qt_module == "PySide6":
             from PySide6.QtCore import QBuffer, QIODevice
             from PySide6.QtGui import QImage, QPixmap, qRgba
@@ -155,11 +160,11 @@ def _toqclass_helper(im: Image.Image | str | QByteArray) -> dict[str, Any]:
         assert palette is not None
         colortable = [rgb(*palette[i : i + 3]) for i in range(0, len(palette), 3)]
     elif im.mode == "RGB":
-        # Populate the 4th channel with 255
+        # Populate the 4th channel with 255 #!
         im = im.convert("RGBA")
 
         data = im.tobytes("raw", "BGRA")
-        format = getattr(qt_format, "Format_RGB32")
+        format = getattr(qt_format, "Format_ARGB32") # 4th channel was populated in line 164 
     elif im.mode == "RGBA":
         data = im.tobytes("raw", "BGRA")
         format = getattr(qt_format, "Format_ARGB32")
