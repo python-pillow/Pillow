@@ -716,12 +716,12 @@ PyImaging_EventLoopWin32(PyObject *self, PyObject *args) {
 
 #define GET32(p, o) ((DWORD *)(p + o))[0]
 
-BOOL
+int
 enhMetaFileProc(
-    HDC hdc, HANDLETABLE FAR *lpht, CONST ENHMETARECORD *lpmr, int nHandles, LPARAM data
+    HDC hdc, HANDLETABLE *lpht, const ENHMETARECORD *lpmr, int nHandles, LPARAM data
 ) {
     PlayEnhMetaFileRecord(hdc, lpht, lpmr, nHandles);
-    return TRUE;
+    return 1;
 }
 
 PyObject *
@@ -804,7 +804,14 @@ PyImaging_DrawWmf(PyObject *self, PyObject *args) {
     /* FIXME: make background transparent? configurable? */
     FillRect(dc, &rect, GetStockObject(WHITE_BRUSH));
 
+#ifdef _WIN64
     EnumEnhMetaFile(dc, meta, enhMetaFileProc, NULL, &rect);
+#else
+    if (!PlayEnhMetaFile(dc, meta, &rect)) {
+        PyErr_SetString(PyExc_OSError, "cannot render metafile");
+        goto error;
+    }
+#endif
 
     /* step 4: extract bits from bitmap */
 
