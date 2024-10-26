@@ -137,8 +137,7 @@ V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 # dependencies, listed in order of compilation
 DEPS: dict[str, dict[str, Any]] = {
     "libjpeg": {
-        "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/"
-        f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz/download",
+        "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/FILENAME/download",
         "filename": f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
         "dir": f"libjpeg-turbo-{V['JPEGTURBO']}",
         "license": ["README.ijg", "LICENSE.md"],
@@ -168,7 +167,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": f"https://github.com/zlib-ng/zlib-ng/releases/download/{V['ZLIBNG']}/zlib-ng-win-{{zlibng_arch}}-compat.zip",
+        "url": f"https://github.com/zlib-ng/zlib-ng/releases/download/{V['ZLIBNG']}/FILENAME",
         "filename": "zlib-ng-win-{zlibng_arch}-compat.zip",
         "dir": "",
         "release": f"zlib-ng-{V['ZLIBNG']}",
@@ -181,7 +180,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"lib\*.lib"],
     },
     "xz": {
-        "url": f"https://github.com/tukaani-project/xz/releases/download/v{V['XZ']}/xz-{V['XZ']}.tar.gz",
+        "url": f"https://github.com/tukaani-project/xz/releases/download/v{V['XZ']}/FILENAME",
         "filename": f"xz-{V['XZ']}.tar.gz",
         "dir": f"xz-{V['XZ']}",
         "license": "COPYING",
@@ -194,7 +193,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"lzma.lib"],
     },
     "libwebp": {
-        "url": f"http://downloads.webmproject.org/releases/webp/libwebp-{V['LIBWEBP']}.tar.gz",
+        "url": "http://downloads.webmproject.org/releases/webp/FILENAME",
         "filename": f"libwebp-{V['LIBWEBP']}.tar.gz",
         "dir": f"libwebp-{V['LIBWEBP']}",
         "license": "COPYING",
@@ -216,7 +215,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"libsharpyuv.lib", r"libwebp*.lib"],
     },
     "libtiff": {
-        "url": f"https://download.osgeo.org/libtiff/tiff-{V['TIFF']}.tar.gz",
+        "url": "https://download.osgeo.org/libtiff/FILENAME",
         "filename": f"tiff-{V['TIFF']}.tar.gz",
         "dir": f"tiff-{V['TIFF']}",
         "license": "LICENSE.md",
@@ -274,7 +273,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": ["*.lib"],
     },
     "freetype": {
-        "url": f"https://download.savannah.gnu.org/releases/freetype/freetype-{V['FREETYPE']}.tar.gz",
+        "url": "https://download.savannah.gnu.org/releases/freetype/FILENAME",
         "filename": f"freetype-{V['FREETYPE']}.tar.gz",
         "dir": f"freetype-{V['FREETYPE']}",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
@@ -309,7 +308,7 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"objs\{msbuild_arch}\Release Static\freetype.lib"],
     },
     "lcms2": {
-        "url": f"{SF_PROJECTS}/lcms/files/lcms/{V['LCMS2']}/lcms2-{V['LCMS2']}.tar.gz/download",  # noqa: E501
+        "url": f"{SF_PROJECTS}/lcms/files/lcms/{V['LCMS2']}/FILENAME/download",
         "filename": f"lcms2-{V['LCMS2']}.tar.gz",
         "dir": f"lcms2-{V['LCMS2']}",
         "license": "LICENSE",
@@ -506,7 +505,7 @@ def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
         except RuntimeError as exc:
             # Otherwise try upstream
             print(exc)
-            download_dep(url, file)
+            download_dep(url.replace("FILENAME", filename), file)
 
     print("Extracting " + filename)
     sources_dir_abs = os.path.abspath(sources_dir)
