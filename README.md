@@ -3,7 +3,7 @@
 </p>
 
 # Pillow
-
+SOME UPDATES
 ## Python Imaging Library (Fork)
 
 Pillow is the friendly PIL fork by [Jeffrey A. Clark and
