@@ -9,36 +9,25 @@
 const ModeData MODES[] = {
     [IMAGING_MODE_UNKNOWN] = {""},
 
-    [IMAGING_MODE_1] = {"1"},
-    [IMAGING_MODE_CMYK] = {"CMYK"},
-    [IMAGING_MODE_F] = {"F"},
-    [IMAGING_MODE_HSV] = {"HSV"},
-    [IMAGING_MODE_I] = {"I"},
-    [IMAGING_MODE_L] = {"L"},
-    [IMAGING_MODE_LA] = {"LA"},
-    [IMAGING_MODE_LAB] = {"LAB"},
-    [IMAGING_MODE_La] = {"La"},
-    [IMAGING_MODE_P] = {"P"},
-    [IMAGING_MODE_PA] = {"PA"},
-    [IMAGING_MODE_RGB] = {"RGB"},
-    [IMAGING_MODE_RGBA] = {"RGBA"},
-    [IMAGING_MODE_RGBX] = {"RGBX"},
-    [IMAGING_MODE_RGBa] = {"RGBa"},
-    [IMAGING_MODE_YCbCr] = {"YCbCr"},
+    [IMAGING_MODE_1] = {"1"},           [IMAGING_MODE_CMYK] = {"CMYK"},
+    [IMAGING_MODE_F] = {"F"},           [IMAGING_MODE_HSV] = {"HSV"},
+    [IMAGING_MODE_I] = {"I"},           [IMAGING_MODE_L] = {"L"},
+    [IMAGING_MODE_LA] = {"LA"},         [IMAGING_MODE_LAB] = {"LAB"},
+    [IMAGING_MODE_La] = {"La"},         [IMAGING_MODE_P] = {"P"},
+    [IMAGING_MODE_PA] = {"PA"},         [IMAGING_MODE_RGB] = {"RGB"},
+    [IMAGING_MODE_RGBA] = {"RGBA"},     [IMAGING_MODE_RGBX] = {"RGBX"},
+    [IMAGING_MODE_RGBa] = {"RGBa"},     [IMAGING_MODE_YCbCr] = {"YCbCr"},
 
-    [IMAGING_MODE_BGR_15] = {"BGR;15"},
-    [IMAGING_MODE_BGR_16] = {"BGR;16"},
+    [IMAGING_MODE_BGR_15] = {"BGR;15"}, [IMAGING_MODE_BGR_16] = {"BGR;16"},
     [IMAGING_MODE_BGR_24] = {"BGR;24"},
 
-    [IMAGING_MODE_I_16] = {"I;16"},
-    [IMAGING_MODE_I_16L] = {"I;16L"},
-    [IMAGING_MODE_I_16B] = {"I;16B"},
-    [IMAGING_MODE_I_16N] = {"I;16N"},
-    [IMAGING_MODE_I_32L] = {"I;32L"},
-    [IMAGING_MODE_I_32B] = {"I;32B"},
+    [IMAGING_MODE_I_16] = {"I;16"},     [IMAGING_MODE_I_16L] = {"I;16L"},
+    [IMAGING_MODE_I_16B] = {"I;16B"},   [IMAGING_MODE_I_16N] = {"I;16N"},
+    [IMAGING_MODE_I_32L] = {"I;32L"},   [IMAGING_MODE_I_32B] = {"I;32B"},
 };
 
-const ModeID findModeID(const char * const name) {
+const ModeID
+findModeID(const char *const name) {
     if (name == NULL) {
         return IMAGING_MODE_UNKNOWN;
     }
@@ -48,20 +37,20 @@ const ModeID findModeID(const char * const name) {
             fprintf(stderr, "Mode ID %zu is not defined.\n", (size_t)i);
         } else
 #endif
-        if (strcmp(MODES[i].name, name) == 0) {
+            if (strcmp(MODES[i].name, name) == 0) {
             return (ModeID)i;
         }
     }
     return IMAGING_MODE_UNKNOWN;
 }
 
-const ModeData * const getModeData(const ModeID id) {
+const ModeData *const
+getModeData(const ModeID id) {
     if (id < 0 || id > sizeof(MODES) / sizeof(*MODES)) {
         return &MODES[IMAGING_MODE_UNKNOWN];
     }
     return &MODES[id];
 }
-
 
 const RawModeData RAWMODES[] = {
     [IMAGING_RAWMODE_UNKNOWN] = {""},
@@ -242,7 +231,8 @@ const RawModeData RAWMODES[] = {
     [IMAGING_RAWMODE_aRGB] = {"aRGB"},
 };
 
-const RawModeID findRawModeID(const char * const name) {
+const RawModeID
+findRawModeID(const char *const name) {
     if (name == NULL) {
         return IMAGING_RAWMODE_UNKNOWN;
     }
@@ -252,24 +242,23 @@ const RawModeID findRawModeID(const char * const name) {
             fprintf(stderr, "Rawmode ID %zu is not defined.\n", (size_t)i);
         } else
 #endif
-        if (strcmp(RAWMODES[i].name, name) == 0) {
+            if (strcmp(RAWMODES[i].name, name) == 0) {
             return (RawModeID)i;
         }
     }
     return IMAGING_RAWMODE_UNKNOWN;
 }
 
-const RawModeData * const getRawModeData(const RawModeID id) {
+const RawModeData *const
+getRawModeData(const RawModeID id) {
     if (id < 0 || id > sizeof(RAWMODES) / sizeof(*RAWMODES)) {
         return &RAWMODES[IMAGING_RAWMODE_UNKNOWN];
     }
     return &RAWMODES[id];
 }
 
-
-int isModeI16(const ModeID mode) {
-    return mode == IMAGING_MODE_I_16
-    || mode == IMAGING_MODE_I_16L
-    || mode == IMAGING_MODE_I_16B
-    || mode == IMAGING_MODE_I_16N;
+int
+isModeI16(const ModeID mode) {
+    return mode == IMAGING_MODE_I_16 || mode == IMAGING_MODE_I_16L ||
+           mode == IMAGING_MODE_I_16B || mode == IMAGING_MODE_I_16N;
 }

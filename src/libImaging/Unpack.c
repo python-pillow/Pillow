@@ -1840,13 +1840,16 @@ static struct {
     {IMAGING_MODE_I_16N, IMAGING_RAWMODE_I_16N, 16, copy2},
 
     {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16B, 16, unpackI16B_I16},
-    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16N, 16, unpackI16N_I16}, // LibTiff native->image endian.
-    {IMAGING_MODE_I_16L, IMAGING_RAWMODE_I_16N, 16, unpackI16N_I16}, // LibTiff native->image endian.
+    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16N, 16, unpackI16N_I16
+    },  // LibTiff native->image endian.
+    {IMAGING_MODE_I_16L, IMAGING_RAWMODE_I_16N, 16, unpackI16N_I16
+    },  // LibTiff native->image endian.
     {IMAGING_MODE_I_16B, IMAGING_RAWMODE_I_16N, 16, unpackI16N_I16B},
 
     {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_16R, 16, unpackI16R_I16},
 
-    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_12, 12, unpackI12_I16} // 12 bit Tiffs stored in 16bits.
+    {IMAGING_MODE_I_16, IMAGING_RAWMODE_I_12, 12, unpackI12_I16
+    }  // 12 bit Tiffs stored in 16bits.
 };
 
 ImagingShuffler

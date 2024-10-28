@@ -450,11 +450,10 @@ fill_mask_L(
         }
 
     } else {
-        int alpha_channel = imOut->mode == IMAGING_MODE_RGBa ||
-                            imOut->mode == IMAGING_MODE_RGBA ||
-                            imOut->mode == IMAGING_MODE_La ||
-                            imOut->mode == IMAGING_MODE_LA ||
-                            imOut->mode == IMAGING_MODE_PA;
+        int alpha_channel =
+            imOut->mode == IMAGING_MODE_RGBa || imOut->mode == IMAGING_MODE_RGBA ||
+            imOut->mode == IMAGING_MODE_La || imOut->mode == IMAGING_MODE_LA ||
+            imOut->mode == IMAGING_MODE_PA;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx * pixelsize;
             UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx;

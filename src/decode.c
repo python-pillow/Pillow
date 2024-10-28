@@ -293,7 +293,9 @@ static PyTypeObject ImagingDecoderType = {
 /* -------------------------------------------------------------------- */
 
 int
-get_unpacker(ImagingDecoderObject *decoder, const ModeID mode, const RawModeID rawmode) {
+get_unpacker(
+    ImagingDecoderObject *decoder, const ModeID mode, const RawModeID rawmode
+) {
     int bits;
     ImagingShuffler unpack;
 
@@ -324,7 +326,9 @@ PyImaging_BitDecoderNew(PyObject *self, PyObject *args) {
     int fill = 0;
     int sign = 0;
     int ystep = 1;
-    if (!PyArg_ParseTuple(args, "s|iiiii", &mode_name, &bits, &pad, &fill, &sign, &ystep)) {
+    if (!PyArg_ParseTuple(
+            args, "s|iiiii", &mode_name, &bits, &pad, &fill, &sign, &ystep
+        )) {
         return NULL;
     }
 
@@ -435,7 +439,9 @@ PyImaging_GifDecoderNew(PyObject *self, PyObject *args) {
     int bits = 8;
     int interlace = 0;
     int transparency = -1;
-    if (!PyArg_ParseTuple(args, "s|iii", &mode_name, &bits, &interlace, &transparency)) {
+    if (!PyArg_ParseTuple(
+            args, "s|iii", &mode_name, &bits, &interlace, &transparency
+        )) {
         return NULL;
     }
 
@@ -508,7 +514,9 @@ PyImaging_LibTiffDecoderNew(PyObject *self, PyObject *args) {
     int fp;
     uint32_t ifdoffset;
 
-    if (!PyArg_ParseTuple(args, "sssiI", &mode_name, &rawmode_name, &compname, &fp, &ifdoffset)) {
+    if (!PyArg_ParseTuple(
+            args, "sssiI", &mode_name, &rawmode_name, &compname, &fp, &ifdoffset
+        )) {
         return NULL;
     }
 
@@ -850,12 +858,14 @@ PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
     ImagingDecoderObject *decoder;
 
     char *mode_name;
-    char *rawmode_name; /* what we want from the decoder */
+    char *rawmode_name;  /* what we want from the decoder */
     char *jpegmode_name; /* what's in the file */
     int scale = 1;
     int draft = 0;
 
-    if (!PyArg_ParseTuple(args, "ssz|ii", &mode_name, &rawmode_name, &jpegmode_name, &scale, &draft)) {
+    if (!PyArg_ParseTuple(
+            args, "ssz|ii", &mode_name, &rawmode_name, &jpegmode_name, &scale, &draft
+        )) {
         return NULL;
     }
 

@@ -89,11 +89,10 @@ ImagingGetBBox(Imaging im, int bbox[4], int alpha_only) {
         INT32 mask = 0xffffffff;
         if (im->bands == 3) {
             ((UINT8 *)&mask)[3] = 0;
-        } else if (alpha_only && (
-            im->mode == IMAGING_MODE_RGBa || im->mode == IMAGING_MODE_RGBA ||
-            im->mode == IMAGING_MODE_La || im->mode == IMAGING_MODE_LA ||
-            im->mode == IMAGING_MODE_PA
-        )) {
+        } else if (alpha_only &&
+                   (im->mode == IMAGING_MODE_RGBa || im->mode == IMAGING_MODE_RGBA ||
+                    im->mode == IMAGING_MODE_La || im->mode == IMAGING_MODE_LA ||
+                    im->mode == IMAGING_MODE_PA)) {
 #ifdef WORDS_BIGENDIAN
             mask = 0x000000ff;
 #else

@@ -1720,7 +1720,9 @@ _quantize(ImagingObject *self, PyObject *args) {
 
     if (!self->image->xsize || !self->image->ysize) {
         /* no content; return an empty image */
-        return PyImagingNew(ImagingNew(IMAGING_MODE_P, self->image->xsize, self->image->ysize));
+        return PyImagingNew(
+            ImagingNew(IMAGING_MODE_P, self->image->xsize, self->image->ysize)
+        );
     }
 
     return PyImagingNew(ImagingQuantize(self->image, colours, method, kmeans));
@@ -2004,7 +2006,8 @@ _reduce(ImagingObject *self, PyObject *args) {
 
 static int
 isRGB(const ModeID mode) {
-    return mode == IMAGING_MODE_RGB || mode == IMAGING_MODE_RGBA || mode == IMAGING_MODE_RGBX;
+    return mode == IMAGING_MODE_RGB || mode == IMAGING_MODE_RGBA ||
+           mode == IMAGING_MODE_RGBX;
 }
 
 static PyObject *

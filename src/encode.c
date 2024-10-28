@@ -412,7 +412,9 @@ PyImaging_GifEncoderNew(PyObject *self, PyObject *args) {
     char *rawmode_name;
     Py_ssize_t bits = 8;
     Py_ssize_t interlace = 0;
-    if (!PyArg_ParseTuple(args, "ss|nn", &mode_name, &rawmode_name, &bits, &interlace)) {
+    if (!PyArg_ParseTuple(
+            args, "ss|nn", &mode_name, &rawmode_name, &bits, &interlace
+        )) {
         return NULL;
     }
 
