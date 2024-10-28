@@ -80,6 +80,12 @@ jobs:
         pytest-cov
         pytest-timeout
 
+    - name: Install CPython dependencies
+      if: "!contains(matrix.python-version, 'pypy')"
+      run: >
+        python3 -m pip install
+        PyQt6
+
     - name: Install dependencies
       id: install
       run: |
