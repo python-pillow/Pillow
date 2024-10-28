@@ -91,9 +91,6 @@ function build {
     build_libpng
     build_lcms2
     build_openjpeg
-    if [ -f /usr/local/lib64/libopenjp2.so ]; then
-        cp /usr/local/lib64/libopenjp2.so /usr/local/lib
-    fi
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
