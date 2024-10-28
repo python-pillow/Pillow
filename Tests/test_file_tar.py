@@ -37,11 +37,15 @@ def test_unclosed_file() -> None:
 
 def test_close() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         tar = TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg")
         tar.close()
 
 
 def test_contextmanager() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         with TarIO.TarIO(TEST_TAR_FILE, "hopper.jpg"):
             pass
