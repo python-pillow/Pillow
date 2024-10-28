@@ -2,6 +2,18 @@
 Changelog (Pillow)
 ==================
 
+11.1.0 (unreleased)
+-------------------
+
+- Corrected EMF DPI #8485
+  [radarhere]
+
+- Fix IFDRational with a zero denominator #8474
+  [radarhere]
+
+- Fixed disabling a feature during install #8469
+  [radarhere]
+
 11.0.0 (2024-10-15)
 -------------------
 
