@@ -454,7 +454,7 @@ class pil_build_ext(build_ext):
     def get_macos_sdk_path(self) -> str | None:
         try:
             sdk_path = (
-                subprocess.check_output(["xcrun", "--show-sdk-path"])
+                subprocess.check_output(["xcrun", "--show-sdk-path", "--sdk", "macosx"])
                 .strip()
                 .decode("latin1")
             )

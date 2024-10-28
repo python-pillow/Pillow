@@ -95,8 +95,8 @@ before-all = ".github/workflows/wheels-dependencies.sh"
 build-verbosity = 1
 
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
-# Add an explicit dependencies prefix for macOS, and don't request vendored libraries.
-macos.config-settings = "raqm=enable imagequant=disable dependencies-prefix=./build/deps"
+# Add an explicit dependencies prefix for macOS.
+macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable dependencies-prefix=./build/deps"
 
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"

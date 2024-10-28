@@ -1,13 +1,24 @@
 #!/bin/bash
 set -e
 
-# For Unix, ensure fribidi is installed by the system.
-if [[ "$OSTYPE" != "darwin"* ]]; then
-    if [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
-        apk add curl fribidi
+# Ensure fribidi is installed by the system.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # If Homebrew is on the path during the build, it may leak into the wheels.
+    # However, we need a *do* need Homebrew to provide a copy of fribidi for
+    # testing purposes so that we can verify the fribidi shim works as expected.
+    if [[ "$(uname -m)" == "x86_64" ]]; then
+        HOMEBREW_HOME=/usr/local/homebrew
     else
-        yum install -y fribidi
+        HOMEBREW_HOME=/opt/homebrew
     fi
+    $HOMEBREW_HOME/bin/brew install fribidi
+
+    # Add the Homebrew lib folder so that vendored libraries can be found.
+    export DYLD_LIBRARY_PATH=$HOMEBREW_HOME/lib
+elif [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
+    apk add curl fribidi
+else
+    yum install -y fribidi
 fi
 
 python3 -m pip install numpy

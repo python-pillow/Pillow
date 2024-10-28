@@ -155,11 +155,6 @@ function build {
     fi
 
     build_harfbuzz
-
-    if [ -n "$IS_MACOS" ]; then
-        build_simple fribidi $FRIBIDI_VERSION https://github.com/fribidi/fribidi/releases/download/v$FRIBIDI_VERSION tar.xz --enable-shared
-        build_raqm
-    fi
 }
 
 # Perform all dependency builds in the build subfolder.
