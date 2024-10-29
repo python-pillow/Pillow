@@ -79,6 +79,7 @@ jobs:
         pytest
         pytest-cov
         pytest-timeout
+        trove-classifiers>=2024.10.12
 
     - name: Install CPython dependencies
       if: "!contains(matrix.python-version, 'pypy')"
