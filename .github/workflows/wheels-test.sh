@@ -4,7 +4,7 @@ set -e
 # Ensure fribidi is installed by the system.
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # If Homebrew is on the path during the build, it may leak into the wheels.
-    # However, we need a *do* need Homebrew to provide a copy of fribidi for
+    # However, we *do* need Homebrew to provide a copy of fribidi for
     # testing purposes so that we can verify the fribidi shim works as expected.
     if [[ "$(uname -m)" == "x86_64" ]]; then
         HOMEBREW_HOME=/usr/local/homebrew
