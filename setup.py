@@ -131,7 +131,7 @@ _LIB_IMAGING = (
     "codec_fd",
 )
 
-DEBUG = True
+DEBUG = False
 
 
 class DependencyException(Exception):
@@ -479,6 +479,7 @@ class pil_build_ext(build_ext):
         pkg_config = None
         if _cmd_exists(os.environ.get("PKG_CONFIG", "pkg-config")):
             pkg_config = _pkg_config
+
         #
         # add configured kits
         for root_name, lib_name in {
