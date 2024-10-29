@@ -26,8 +26,6 @@ OPENJPEG_VERSION=2.5.2
 XZ_VERSION=5.6.3
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
-RAQM_VERSION=0.10.2
-FRIBIDI_VERSION=1.0.16
 if [[ -n "$IS_MACOS" ]]; then
     GIFLIB_VERSION=5.2.2
 else
@@ -63,12 +61,8 @@ function build_brotli {
     local cmake=$(get_modern_cmake)
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
-        && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
+        && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
         && make install)
-    if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
-        cp $BUILD_PREFIX/lib64/libbrotli* $BUILD_PREFIX/lib
-        cp $BUILD_PREFIX/lib64/pkgconfig/libbrotli* $BUILD_PREFIX/lib/pkgconfig
-    fi
     touch brotli-stamp
 }
 
@@ -78,25 +72,10 @@ function build_harfbuzz {
 
     local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
-        && meson setup build --prefix=$BUILD_PREFIX --buildtype=release -Dfreetype=enabled -Dglib=disabled)
+        && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=release -Dfreetype=enabled -Dglib=disabled)
     (cd $out_dir/build \
         && meson install)
-    if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
-        cp $BUILD_PREFIX/lib64/libharfbuzz* $BUILD_PREFIX/lib
-    fi
     touch harfbuzz-stamp
-}
-
-function build_raqm {
-    if [ -e raqm-stamp ]; then return; fi
-    python3 -m pip install meson ninja
-
-    local out_dir=$(fetch_unpack https://github.com/HOST-Oman/libraqm/releases/download/v$RAQM_VERSION/raqm-$RAQM_VERSION.tar.xz raqm-$RAQM_VERSION.tar.xz)
-    (cd $out_dir \
-        && meson setup build --prefix=$BUILD_PREFIX)
-    (cd $out_dir/build \
-        && meson install)
-    touch raqm-stamp
 }
 
 function build {
@@ -133,9 +112,6 @@ function build {
     build_libpng
     build_lcms2
     build_openjpeg
-    if [ -f $BUILD_PREFIX/lib64/libopenjp2.so ]; then
-        cp $BUILD_PREFIX/lib64/libopenjp2.so $BUILD_PREFIX/lib
-    fi
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
@@ -190,6 +166,9 @@ if [[ -n "$IS_MACOS" ]]; then
     build_pkg_config
     # Ensure cmake is available
     python3 -m pip install cmake
+else
+    # Ensure that any built libraries are on the linker path.
+    export LD_LIBRARY_PATH=$BUILD_PREFIX/lib
 fi
 
 wrap_wheel_builder build
