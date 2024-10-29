@@ -4,8 +4,8 @@
 if [ -z "$IS_MACOS" ]; then
     export MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     export MB_ML_VER=${AUDITWHEEL_POLICY:9}
-
-    # Build and install into the `build/deps` folder.
+else
+    # Build and install macOS builds into the `build/deps` folder.
     BUILD_PREFIX=$(pwd)/build/deps
 fi
 export PLAT=$CIBW_ARCHS
@@ -166,9 +166,6 @@ if [[ -n "$IS_MACOS" ]]; then
     build_pkg_config
     # Ensure cmake is available
     python3 -m pip install cmake
-else
-    # Ensure that any built libraries are on the linker path.
-    export LD_LIBRARY_PATH=$BUILD_PREFIX/lib
 fi
 
 wrap_wheel_builder build

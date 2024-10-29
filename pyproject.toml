@@ -104,10 +104,6 @@ test-extras = "tests"
 [tool.cibuildwheel.macos.environment]
 PATH = "$(pwd)/build/deps/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
-[tool.cibuildwheel.linux.environment]
-LD_LIBRARY_PATH = "$(pwd)/build/deps/lib"
-PKG_CONFIG_PATH = "$(pwd)/build/deps/lib/pkgconfig:$(pwd)/build/deps/share/pkgconfig"
-
 [tool.black]
 exclude = "wheels/multibuild"
 
