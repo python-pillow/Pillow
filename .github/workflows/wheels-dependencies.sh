@@ -1,18 +1,20 @@
 #!/bin/bash
 # Define custom utilities
-# Test for macOS with [ -n "$IS_MACOS" ]
-if [ -z "$IS_MACOS" ]; then
-    export MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
-    export MB_ML_VER=${AUDITWHEEL_POLICY:9}
-else
-    # Build and install macOS builds into the `build/deps` folder.
-    BUILD_PREFIX=$(pwd)/build/deps
-fi
 export PLAT=$CIBW_ARCHS
 source wheels/multibuild/common_utils.sh
 source wheels/multibuild/library_builders.sh
 if [ -z "$IS_MACOS" ]; then
     source wheels/multibuild/manylinux_utils.sh
+fi
+
+# Test for macOS with [ -n "$IS_MACOS" ]
+echo "IS MACOS: $IS_MACOS"
+if [ -z "$IS_MACOS" ]; then
+    export MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
+    export MB_ML_VER=${AUDITWHEEL_POLICY:9}
+elseac
+    # Build and install macOS builds into the `build/deps` folder.
+    BUILD_PREFIX=$(pwd)/build/deps
 fi
 
 ARCHIVE_SDIR=pillow-depends-main
