@@ -65,6 +65,7 @@ optional-dependencies.tests = [
   "pytest",
   "pytest-cov",
   "pytest-timeout",
+  "trove-classifiers>=2024.10.12",
 ]
 optional-dependencies.typing = [
   "typing-extensions; python_version<'3.10'",

@@ -69,17 +69,6 @@ jobs:
     - name: Print build system information
       run: python3 .github/workflows/system-info.py
 
-    - name: Install Python dependencies
-      run: >
-        python3 -m pip install
-        coverage>=7.4.2
-        defusedxml
-        olefile
-        pyroma
-        pytest
-        pytest-cov
-        pytest-timeout
-
     - name: Install CPython dependencies
       if: "!contains(matrix.python-version, 'pypy')"
       run: >
@@ -184,7 +173,7 @@ jobs:
     - name: Build Pillow
       run: |
         $FLAGS="-C raqm=vendor -C fribidi=vendor"
-        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS ."
+        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS .[tests]"
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
