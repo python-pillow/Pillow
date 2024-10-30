@@ -7,7 +7,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # However, we *do* need Homebrew to provide a copy of fribidi for
     # testing purposes so that we can verify the fribidi shim works as expected.
     if [[ "$(uname -m)" == "x86_64" ]]; then
-        HOMEBREW_HOME=/usr/local/homebrew
+        HOMEBREW_HOME=/usr/local
     else
         HOMEBREW_HOME=/opt/homebrew
     fi
