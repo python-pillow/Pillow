@@ -6,7 +6,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import is_pypy
+from .helper import is_pypy, running_in_another_thread
 
 
 def test_get_stats() -> None:
@@ -48,6 +48,9 @@ class TestCoreMemory:
         assert alignment > 0
 
     def test_set_alignment(self) -> None:
+        if running_in_another_thread():
+            return
+
         for i in [1, 2, 4, 8, 16, 32]:
             Image.core.set_alignment(i)
             alignment = Image.core.get_alignment()

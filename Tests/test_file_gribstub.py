@@ -7,7 +7,7 @@ import pytest
 
 from PIL import GribStubImagePlugin, Image, ImageFile
 
-from .helper import hopper
+from .helper import hopper, running_in_another_thread
 
 TEST_FILE = "Tests/images/WAlaska.wind.7days.grb"
 
@@ -69,6 +69,9 @@ def test_handler(tmp_path: Path) -> None:
 
         def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             self.saved = True
+
+    if running_in_another_thread():
+        return
 
     handler = TestHandler()
     GribStubImagePlugin.register_handler(handler)

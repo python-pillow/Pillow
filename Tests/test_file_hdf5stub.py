@@ -8,6 +8,8 @@ import pytest
 
 from PIL import Hdf5StubImagePlugin, Image, ImageFile
 
+from .helper import running_in_another_thread
+
 TEST_FILE = "Tests/images/hdf5.h5"
 
 
@@ -71,6 +73,9 @@ def test_handler(tmp_path: Path) -> None:
 
         def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             self.saved = True
+
+    if running_in_another_thread():
+        return
 
     handler = TestHandler()
     Hdf5StubImagePlugin.register_handler(handler)

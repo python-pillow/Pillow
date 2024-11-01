@@ -8,7 +8,7 @@ import pytest
 
 from PIL import Image, ImageFile, WmfImagePlugin
 
-from .helper import assert_image_similar_tofile, hopper
+from .helper import assert_image_similar_tofile, hopper, running_in_another_thread
 
 
 def test_load_raw() -> None:
@@ -44,6 +44,9 @@ def test_register_handler(tmp_path: Path) -> None:
 
         def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             self.methodCalled = True
+
+    if running_in_another_thread():
+        return
 
     handler = TestHandler()
     original_handler = WmfImagePlugin._handler
