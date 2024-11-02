@@ -102,7 +102,6 @@ jobs:
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
-        gcov: true
         token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:
