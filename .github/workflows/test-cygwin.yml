@@ -48,6 +48,8 @@ jobs:
 
       - name: Checkout Pillow
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@v4
