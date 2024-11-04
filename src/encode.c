@@ -961,7 +961,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 );
             } else if (type == TIFF_LONG8) {
                 status = ImagingLibTiffSetField(
-                    &encoder->state, (ttag_t)key_int, PyLong_AsLongLong(value)
+                    &encoder->state, (ttag_t)key_int, (uint64_t)PyLong_AsLongLong(value)
                 );
             } else {
                 TRACE(
