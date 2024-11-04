@@ -39,6 +39,11 @@ or the clipboard to a PIL image memory.
         You can check X11 support using :py:func:`PIL.features.check_feature` with ``feature="xcb"``.
 
         .. versionadded:: 7.1.0
+
+    :param handle:
+        HWND, to capture a single window. Windows only.
+
+        .. versionadded:: 11.1.0
     :return: An image
 
 .. py:function:: grabclipboard()

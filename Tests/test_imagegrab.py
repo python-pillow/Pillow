@@ -57,6 +57,11 @@ class TestImageGrab:
             ImageGrab.grab(xdisplay="error.test:0.0")
         assert str(e.value).startswith("X connection failed")
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
+    def test_grab_invalid_handle(self) -> None:
+        with pytest.raises(OSError):
+            ImageGrab.grab(window=-1)
+
     def test_grabclipboard(self) -> None:
         if sys.platform == "darwin":
             subprocess.call(["screencapture", "-cx"])
