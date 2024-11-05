@@ -316,6 +316,7 @@ PyImaging_DisplayModeWin32(PyObject *self, PyObject *args) {
 /* -------------------------------------------------------------------- */
 /* Windows screen grabber */
 
+typedef HANDLE(__stdcall *Func_GetWindowDpiAwarenessContext)(HANDLE);
 typedef HANDLE(__stdcall *Func_SetThreadDpiAwarenessContext)(HANDLE);
 
 PyObject *
@@ -330,6 +331,7 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     PyObject *buffer;
     HANDLE dpiAwareness;
     HMODULE user32;
+    Func_GetWindowDpiAwarenessContext GetWindowDpiAwarenessContext_function;
     Func_SetThreadDpiAwarenessContext SetThreadDpiAwarenessContext_function;
 
     if (!PyArg_ParseTuple(
@@ -358,8 +360,19 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
     SetThreadDpiAwarenessContext_function = (Func_SetThreadDpiAwarenessContext
     )GetProcAddress(user32, "SetThreadDpiAwarenessContext");
     if (SetThreadDpiAwarenessContext_function != NULL) {
-        // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = ((DPI_CONTEXT_HANDLE)-3)
-        dpiAwareness = SetThreadDpiAwarenessContext_function((HANDLE)-3);
+        if (screens == -1) {
+            GetWindowDpiAwarenessContext_function = (Func_GetWindowDpiAwarenessContext
+            )GetProcAddress(user32, "GetWindowDpiAwarenessContext");
+            DPI_AWARENESS_CONTEXT dpiAwarenessContext =
+                GetWindowDpiAwarenessContext_function(wnd);
+            if (dpiAwarenessContext != NULL) {
+                dpiAwareness =
+                    SetThreadDpiAwarenessContext_function(dpiAwarenessContext);
+            }
+        } else {
+            // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = ((DPI_CONTEXT_HANDLE)-3)
+            dpiAwareness = SetThreadDpiAwarenessContext_function((HANDLE)-3);
+        }
     }
 
     if (screens == 1) {
