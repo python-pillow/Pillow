@@ -44,16 +44,20 @@ jobs:
     steps:
     - name: Checkout Pillow
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Checkout cached dependencies
       uses: actions/checkout@v4
       with:
+        persist-credentials: false
         repository: python-pillow/pillow-depends
         path: winbuild\depends
 
     - name: Checkout extra test images
       uses: actions/checkout@v4
       with:
+        persist-credentials: false
         repository: python-pillow/test-images
         path: Tests\test-images
 
