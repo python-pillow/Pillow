@@ -82,8 +82,6 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     format_description = "Windows Metafile"
 
     def _open(self) -> None:
-        self._inch = None
-
         # check placable header
         s = self.fp.read(80)
 
@@ -91,7 +89,8 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             # placeable windows metafile
 
             # get units per inch
-            self._inch = word(s, 14)
+            inch = word(s, 14)
+            self._inch: tuple[float, float] = inch, inch
 
             # get bounding box
             x0 = short(s, 6)
@@ -102,8 +101,8 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             # normalize size to 72 dots per inch
             self.info["dpi"] = 72
             size = (
-                (x1 - x0) * self.info["dpi"] // self._inch,
-                (y1 - y0) * self.info["dpi"] // self._inch,
+                (x1 - x0) * self.info["dpi"] // inch,
+                (y1 - y0) * self.info["dpi"] // inch,
             )
 
             self.info["wmf_bbox"] = x0, y0, x1, y1
@@ -137,6 +136,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 self.info["dpi"] = xdpi
             else:
                 self.info["dpi"] = xdpi, ydpi
+            self._inch = xdpi, ydpi
 
         else:
             msg = "Unsupported file format"
@@ -152,13 +152,17 @@ class WmfStubImageFile(ImageFile.StubImageFile):
     def _load(self) -> ImageFile.StubHandler | None:
         return _handler
 
-    def load(self, dpi: int | None = None) -> Image.core.PixelAccess | None:
-        if dpi is not None and self._inch is not None:
+    def load(
+        self, dpi: float | tuple[float, float] | None = None
+    ) -> Image.core.PixelAccess | None:
+        if dpi is not None:
             self.info["dpi"] = dpi
             x0, y0, x1, y1 = self.info["wmf_bbox"]
+            if not isinstance(dpi, tuple):
+                dpi = dpi, dpi
             self._size = (
-                (x1 - x0) * self.info["dpi"] // self._inch,
-                (y1 - y0) * self.info["dpi"] // self._inch,
+                int((x1 - x0) * dpi[0] / self._inch[0]),
+                int((y1 - y0) * dpi[1] / self._inch[1]),
             )
         return super().load()
 
