@@ -1433,8 +1433,12 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- YCbCr subsampling: %s", self.tag_v2.get(YCBCRSUBSAMPLING))
 
         # size
-        xsize = self.tag_v2.get(IMAGEWIDTH)
-        ysize = self.tag_v2.get(IMAGELENGTH)
+        try:
+            xsize = self.tag_v2[IMAGEWIDTH]
+            ysize = self.tag_v2[IMAGELENGTH]
+        except KeyError as e:
+            msg = "Missing dimensions"
+            raise TypeError(msg) from e
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
