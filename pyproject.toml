@@ -56,7 +56,7 @@ optional-dependencies.mic = [
 ]
 optional-dependencies.tests = [
   "check-manifest",
-  "coverage",
+  "coverage>=7.4.2",
   "defusedxml",
   "markdown2",
   "olefile",
