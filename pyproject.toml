@@ -96,13 +96,13 @@ build-verbosity = 1
 
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
 # Add an explicit dependencies prefix for macOS.
-macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable dependencies-prefix=./build/deps"
+macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable dependencies-prefix=./build/deps/darwin"
 
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
 [tool.cibuildwheel.macos.environment]
-PATH = "$(pwd)/build/deps/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
+PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
 [tool.black]
 exclude = "wheels/multibuild"

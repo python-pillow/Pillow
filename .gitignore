@@ -91,5 +91,9 @@ Tests/images/msp
 Tests/images/picins
 Tests/images/sunraster
 
+# Test and dependency downloads
+pillow-depends-main.zip
+pillow-test-images.zip
+
 # pyinstaller
 *.spec

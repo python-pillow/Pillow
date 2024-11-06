@@ -16,8 +16,12 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
     $HOMEBREW_HOME/bin/brew install fribidi
 
-    # Add the Homebrew lib folder so that vendored libraries can be found.
-    export DYLD_LIBRARY_PATH=$HOMEBREW_HOME/lib
+    # Add the lib folder for fribidi so that the vendored library can be found.
+    # Don't use /opt/homebrew/lib directly - use the lib folder where the
+    # installed copy of fribidi is cellared. This ensures we don't pick up the
+    # Homebrew version of any other library that we're dependent on (most notably,
+    # freetype).
+    export DYLD_LIBRARY_PATH=$(dirname $(realpath $HOMEBREW_HOME/lib/libfribidi.dylib))
 elif [ "${AUDITWHEEL_POLICY::9}" == "musllinux" ]; then
     apk add curl fribidi
 else

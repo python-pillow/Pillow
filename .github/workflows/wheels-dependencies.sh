@@ -1,16 +1,34 @@
 #!/bin/bash
 
 # Setup that needs to be done before multibuild utils are invoked
+PROJECTDIR=$(pwd)
 if [[ "$(uname -s)" == "Darwin" ]]; then
-    # Build and install macOS builds into the `build/deps` folder.
-    BUILD_PREFIX=$(pwd)/build/deps
+    # Safety check - macOS builds require that CIBW_ARCHS is set, and that it
+    # only contains a single value (even though cwbuildwheel) allows multiple
+    # values in CIBW_ARCHS.
+    if [[ -z "$CIBW_ARCHS" ]]; then
+        echo "ERROR: Pillow macOS builds require CIBW_ARCHS be defined."
+        exit 1
+    fi
+    if [[ "$CIBW_ARCHS" == *" "* ]]; then
+        echo "ERROR: Pillow macOS builds only support a single architecture in CIBW_ARCHS."
+        exit 1
+    fi
+
+    # Build macOS dependencies in `build/darwin`
+    # Install them into `build/deps/darwin`
+    WORKDIR=$(pwd)/build/darwin
+    BUILD_PREFIX=$(pwd)/build/deps/darwin
+    PLAT=$CIBW_ARCHS
 else
-    export MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
-    export MB_ML_VER=${AUDITWHEEL_POLICY:9}
+    # Build prefix will default to /usr/local
+    WORKDIR=$(pwd)/build
+    PLAT=$CIBW_ARCHS
+    MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
+    MB_ML_VER=${AUDITWHEEL_POLICY:9}
 fi
 
 # Define custom utilities
-export PLAT=$CIBW_ARCHS
 source wheels/multibuild/common_utils.sh
 source wheels/multibuild/library_builders.sh
 if [ -z "$IS_MACOS" ]; then
@@ -117,9 +135,6 @@ function build {
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
-    if [[ -n "$IS_MACOS" ]]; then
-        CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
-    fi
     build_libwebp
     CFLAGS=$ORIGINAL_CFLAGS
 
@@ -127,7 +142,7 @@ function build {
 
     if [ -n "$IS_MACOS" ]; then
         # Custom freetype build
-        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
+        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --without-harfbuzz
     else
         build_freetype
     fi
@@ -136,17 +151,18 @@ function build {
 }
 
 # Perform all dependency builds in the build subfolder.
-mkdir -p build
-pushd build > /dev/null
+mkdir -p $WORKDIR
+pushd $WORKDIR > /dev/null
 
 # Any stuff that you need to do before you start building the wheels
 # Runs in the root directory of this repository.
-if [[ ! -d pillow-depends-main ]]; then
-  if [[ ! -f pillow-depends-main.zip ]]; then
+if [[ ! -d $WORKDIR/pillow-depends-main ]]; then
+  if [[ ! -f $PROJECTDIR/pillow-depends-main.zip ]]; then
     echo "Download pillow dependency sources..."
-    curl -fSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
+    curl -fSL -o $PROJECTDIR/pillow-depends-main.zip https://github.com/python-pillow/pillow-depends/archive/main.zip
   fi
-  untar pillow-depends-main.zip
+  echo "Unpacking pillow dependency sources..."
+  untar $PROJECTDIR/pillow-depends-main.zip
 fi
 
 if [[ -n "$IS_MACOS" ]]; then
