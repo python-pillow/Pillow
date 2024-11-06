@@ -1008,7 +1008,7 @@ libraries: list[tuple[str, _BuildInfo]] = [
     ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
 ]
 
-files = ["src/_imaging.c"]
+files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
 for src_file in _IMAGING:
     files.append("src/" + src_file + ".c")
 for src_file in _LIB_IMAGING:

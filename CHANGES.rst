@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.1.0 (unreleased)
 -------------------
 
+- Detach PyQt6 QPixmap instance before returning #8509
+  [radarhere]
+
 - Corrected EMF DPI #8485
   [radarhere]
 
