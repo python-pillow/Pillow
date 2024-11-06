@@ -61,6 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
 
       - uses: actions/setup-python@v5
@@ -132,6 +133,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
 
       - uses: actions/setup-python@v5
@@ -173,10 +175,13 @@ jobs:
           - cibw_arch: ARM64
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Checkout extra test images
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           repository: python-pillow/test-images
           path: Tests\test-images
 
@@ -253,6 +258,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Set up Python
       uses: actions/setup-python@v5
