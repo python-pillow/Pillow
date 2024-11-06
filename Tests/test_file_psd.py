@@ -35,6 +35,8 @@ def test_unclosed_file() -> None:
 
 def test_closed_file() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         im = Image.open(test_file)
         im.load()
         im.close()
@@ -42,6 +44,8 @@ def test_closed_file() -> None:
 
 def test_context_manager() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         with Image.open(test_file) as im:
             im.load()
 

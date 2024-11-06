@@ -91,9 +91,6 @@ function build {
     build_libpng
     build_lcms2
     build_openjpeg
-    if [ -f /usr/local/lib64/libopenjp2.so ]; then
-        cp /usr/local/lib64/libopenjp2.so /usr/local/lib
-    fi
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
@@ -121,6 +118,7 @@ curl -fsSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-de
 untar pillow-depends-main.zip
 
 if [[ -n "$IS_MACOS" ]]; then
+  # libdeflate may cause a minimum target error when repairing the wheel
   # libtiff and libxcb cause a conflict with building libtiff and libxcb
   # libxau and libxdmcp cause an issue on macOS < 11
   # remove cairo to fix building harfbuzz on arm64
@@ -132,7 +130,7 @@ if [[ -n "$IS_MACOS" ]]; then
   if [[ "$CIBW_ARCHS" == "arm64" ]]; then
     brew remove --ignore-dependencies jpeg-turbo
   else
-    brew remove --ignore-dependencies webp
+    brew remove --ignore-dependencies libdeflate webp
   fi
 
   brew install pkg-config

@@ -739,6 +739,8 @@ class TestImage:
         # Act/Assert
         with Image.open(test_file) as im:
             with warnings.catch_warnings():
+                warnings.simplefilter("error")
+
                 im.save(temp_file)
 
     def test_no_new_file_on_error(self, tmp_path: Path) -> None:

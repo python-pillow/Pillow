@@ -294,7 +294,7 @@ def _accept(prefix: bytes) -> bool:
 def _limit_rational(
     val: float | Fraction | IFDRational, max_val: int
 ) -> tuple[IntegralLike, IntegralLike]:
-    inv = abs(float(val)) > 1
+    inv = abs(val) > 1
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
 
@@ -685,22 +685,33 @@ class ImageFileDirectory_v2(_IFDv2Base):
             else:
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
-                    self.tagtype[tag] = (
-                        TiffTags.RATIONAL
-                        if all(v >= 0 for v in values)
-                        else TiffTags.SIGNED_RATIONAL
-                    )
-                elif all(isinstance(v, int) for v in values):
-                    if all(0 <= v < 2**16 for v in values):
-                        self.tagtype[tag] = TiffTags.SHORT
-                    elif all(-(2**15) < v < 2**15 for v in values):
-                        self.tagtype[tag] = TiffTags.SIGNED_SHORT
+                    for v in values:
+                        assert isinstance(v, IFDRational)
+                        if v < 0:
+                            self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
+                            break
                     else:
-                        self.tagtype[tag] = (
-                            TiffTags.LONG
-                            if all(v >= 0 for v in values)
-                            else TiffTags.SIGNED_LONG
-                        )
+                        self.tagtype[tag] = TiffTags.RATIONAL
+                elif all(isinstance(v, int) for v in values):
+                    short = True
+                    signed_short = True
+                    long = True
+                    for v in values:
+                        assert isinstance(v, int)
+                        if short and not (0 <= v < 2**16):
+                            short = False
+                        if signed_short and not (-(2**15) < v < 2**15):
+                            signed_short = False
+                        if long and v < 0:
+                            long = False
+                    if short:
+                        self.tagtype[tag] = TiffTags.SHORT
+                    elif signed_short:
+                        self.tagtype[tag] = TiffTags.SIGNED_SHORT
+                    elif long:
+                        self.tagtype[tag] = TiffTags.LONG
+                    else:
+                        self.tagtype[tag] = TiffTags.SIGNED_LONG
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = TiffTags.DOUBLE
                 elif all(isinstance(v, str) for v in values):
@@ -718,7 +729,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
         is_ifd = self.tagtype[tag] == TiffTags.LONG and isinstance(values, dict)
         if not is_ifd:
-            values = tuple(info.cvt_enum(value) for value in values)
+            values = tuple(
+                info.cvt_enum(value) if isinstance(value, str) else value
+                for value in values
+            )
 
         dest = self._tags_v1 if legacy_api else self._tags_v2
 

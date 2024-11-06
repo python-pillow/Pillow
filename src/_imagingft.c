@@ -82,6 +82,9 @@ struct {
     /* font objects */
 
     static FT_Library library;
+#ifdef Py_GIL_DISABLED
+static PyMutex ft_library_mutex;
+#endif
 
 typedef struct {
     PyObject_HEAD FT_Face face;
@@ -187,7 +190,9 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
 
     if (filename && font_bytes_size <= 0) {
         self->font_bytes = NULL;
+        MUTEX_LOCK(&ft_library_mutex);
         error = FT_New_Face(library, filename, index, &self->face);
+        MUTEX_UNLOCK(&ft_library_mutex);
     } else {
         /* need to have allocated storage for font_bytes for the life of the object.*/
         /* Don't free this before FT_Done_Face */
@@ -197,6 +202,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         }
         if (!error) {
             memcpy(self->font_bytes, font_bytes, (size_t)font_bytes_size);
+            MUTEX_LOCK(&ft_library_mutex);
             error = FT_New_Memory_Face(
                 library,
                 (FT_Byte *)self->font_bytes,
@@ -204,6 +210,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
                 index,
                 &self->face
             );
+            MUTEX_UNLOCK(&ft_library_mutex);
         }
     }
 
@@ -1433,7 +1440,9 @@ font_setvaraxes(FontObject *self, PyObject *args) {
 static void
 font_dealloc(FontObject *self) {
     if (self->face) {
+        MUTEX_LOCK(&ft_library_mutex);
         FT_Done_Face(self->face);
+        MUTEX_UNLOCK(&ft_library_mutex);
     }
     if (self->font_bytes) {
         PyMem_Free(self->font_bytes);

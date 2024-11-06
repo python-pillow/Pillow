@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  issues: write
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,6 +15,8 @@ concurrency:
 jobs:
   stale:
     if: github.repository_owner == 'python-pillow'
+    permissions:
+      issues: write
 
     runs-on: ubuntu-latest
 

@@ -2,8 +2,26 @@
 Changelog (Pillow)
 ==================
 
-11.0.0 (unreleased)
+11.1.0 (unreleased)
 -------------------
+
+- Detach PyQt6 QPixmap instance before returning #8509
+  [radarhere]
+
+- Corrected EMF DPI #8485
+  [radarhere]
+
+- Fix IFDRational with a zero denominator #8474
+  [radarhere]
+
+- Fixed disabling a feature during install #8469
+  [radarhere]
+
+11.0.0 (2024-10-15)
+-------------------
+
+- Update licence to MIT-CMU #8460
+  [hugovk]
 
 - Conditionally define ImageCms type hint to avoid requiring core #8197
   [radarhere]

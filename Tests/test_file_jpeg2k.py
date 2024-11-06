@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from typing import Any
@@ -29,8 +30,16 @@ EXTRA_DIR = "Tests/images/jpeg2000"
 
 pytestmark = skip_unless_feature("jpg_2000")
 
-test_card = Image.open("Tests/images/test-card.png")
-test_card.load()
+
+@pytest.fixture
+def card() -> Generator[ImageFile.ImageFile, None, None]:
+    with Image.open("Tests/images/test-card.png") as im:
+        im.load()
+    try:
+        yield im
+    finally:
+        im.close()
+
 
 # OpenJPEG 2.0.0 outputs this debugging message sometimes; we should
 # ignore it---it doesn't represent a test failure.
@@ -75,76 +84,76 @@ def test_invalid_file() -> None:
         Jpeg2KImagePlugin.Jpeg2KImageFile(invalid_file)
 
 
-def test_bytesio() -> None:
+def test_bytesio(card: ImageFile.ImageFile) -> None:
     with open("Tests/images/test-card-lossless.jp2", "rb") as f:
         data = BytesIO(f.read())
     with Image.open(data) as im:
         im.load()
-        assert_image_similar(im, test_card, 1.0e-3)
+        assert_image_similar(im, card, 1.0e-3)
 
 
 # These two test pre-written JPEG 2000 files that were not written with
 # PIL (they were made using Adobe Photoshop)
 
 
-def test_lossless(tmp_path: Path) -> None:
+def test_lossless(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         im.load()
         outfile = str(tmp_path / "temp_test-card.png")
         im.save(outfile)
-    assert_image_similar(im, test_card, 1.0e-3)
+    assert_image_similar(im, card, 1.0e-3)
 
 
-def test_lossy_tiled() -> None:
-    assert_image_similar_tofile(
-        test_card, "Tests/images/test-card-lossy-tiled.jp2", 2.0
-    )
+def test_lossy_tiled(card: ImageFile.ImageFile) -> None:
+    assert_image_similar_tofile(card, "Tests/images/test-card-lossy-tiled.jp2", 2.0)
 
 
-def test_lossless_rt() -> None:
-    im = roundtrip(test_card)
-    assert_image_equal(im, test_card)
+def test_lossless_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card)
+    assert_image_equal(im, card)
 
 
-def test_lossy_rt() -> None:
-    im = roundtrip(test_card, quality_layers=[20])
-    assert_image_similar(im, test_card, 2.0)
+def test_lossy_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, quality_layers=[20])
+    assert_image_similar(im, card, 2.0)
 
 
-def test_tiled_rt() -> None:
-    im = roundtrip(test_card, tile_size=(128, 128))
-    assert_image_equal(im, test_card)
+def test_tiled_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, tile_size=(128, 128))
+    assert_image_equal(im, card)
 
 
-def test_tiled_offset_rt() -> None:
-    im = roundtrip(test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(32, 32))
-    assert_image_equal(im, test_card)
+def test_tiled_offset_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, tile_size=(128, 128), tile_offset=(0, 0), offset=(32, 32))
+    assert_image_equal(im, card)
 
 
-def test_tiled_offset_too_small() -> None:
+def test_tiled_offset_too_small(card: ImageFile.ImageFile) -> None:
     with pytest.raises(ValueError):
-        roundtrip(test_card, tile_size=(128, 128), tile_offset=(0, 0), offset=(128, 32))
+        roundtrip(card, tile_size=(128, 128), tile_offset=(0, 0), offset=(128, 32))
 
 
-def test_irreversible_rt() -> None:
-    im = roundtrip(test_card, irreversible=True, quality_layers=[20])
-    assert_image_similar(im, test_card, 2.0)
+def test_irreversible_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, irreversible=True, quality_layers=[20])
+    assert_image_similar(im, card, 2.0)
 
 
-def test_prog_qual_rt() -> None:
-    im = roundtrip(test_card, quality_layers=[60, 40, 20], progression="LRCP")
-    assert_image_similar(im, test_card, 2.0)
+def test_prog_qual_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, quality_layers=[60, 40, 20], progression="LRCP")
+    assert_image_similar(im, card, 2.0)
 
 
-def test_prog_res_rt() -> None:
-    im = roundtrip(test_card, num_resolutions=8, progression="RLCP")
-    assert_image_equal(im, test_card)
+def test_prog_res_rt(card: ImageFile.ImageFile) -> None:
+    im = roundtrip(card, num_resolutions=8, progression="RLCP")
+    assert_image_equal(im, card)
 
 
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
-def test_default_num_resolutions(num_resolutions: int) -> None:
+def test_default_num_resolutions(
+    card: ImageFile.ImageFile, num_resolutions: int
+) -> None:
     d = 1 << (num_resolutions - 1)
-    im = test_card.resize((d - 1, d - 1))
+    im = card.resize((d - 1, d - 1))
     with pytest.raises(OSError):
         roundtrip(im, num_resolutions=num_resolutions)
     reloaded = roundtrip(im)
@@ -206,33 +215,33 @@ def test_header_errors() -> None:
             pass
 
 
-def test_layers_type(tmp_path: Path) -> None:
+def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp_layers.jp2")
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
-        test_card.save(outfile, quality_layers=quality_layers)
+        card.save(outfile, quality_layers=quality_layers)
 
     for quality_layers_str in ["quality_layers", ("100", "50", "10")]:
         with pytest.raises(ValueError):
-            test_card.save(outfile, quality_layers=quality_layers_str)
+            card.save(outfile, quality_layers=quality_layers_str)
 
 
-def test_layers() -> None:
+def test_layers(card: ImageFile.ImageFile) -> None:
     out = BytesIO()
-    test_card.save(out, "JPEG2000", quality_layers=[100, 50, 10], progression="LRCP")
+    card.save(out, "JPEG2000", quality_layers=[100, 50, 10], progression="LRCP")
     out.seek(0)
 
     with Image.open(out) as im:
         assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 1
         im.load()
-        assert_image_similar(im, test_card, 13)
+        assert_image_similar(im, card, 13)
 
     out.seek(0)
     with Image.open(out) as im:
         assert isinstance(im, Jpeg2KImagePlugin.Jpeg2KImageFile)
         im.layers = 3
         im.load()
-        assert_image_similar(im, test_card, 0.4)
+        assert_image_similar(im, card, 0.4)
 
 
 @pytest.mark.parametrize(
@@ -248,24 +257,30 @@ def test_layers() -> None:
         (None, {"no_jp2": False}, 4, b"jP"),
     ),
 )
-def test_no_jp2(name: str, args: dict[str, bool], offset: int, data: bytes) -> None:
+def test_no_jp2(
+    card: ImageFile.ImageFile,
+    name: str,
+    args: dict[str, bool],
+    offset: int,
+    data: bytes,
+) -> None:
     out = BytesIO()
     if name:
         out.name = name
-    test_card.save(out, "JPEG2000", **args)
+    card.save(out, "JPEG2000", **args)
     out.seek(offset)
     assert out.read(2) == data
 
 
-def test_mct() -> None:
+def test_mct(card: ImageFile.ImageFile) -> None:
     # Three component
     for val in (0, 1):
         out = BytesIO()
-        test_card.save(out, "JPEG2000", mct=val, no_jp2=True)
+        card.save(out, "JPEG2000", mct=val, no_jp2=True)
 
         assert out.getvalue()[59] == val
         with Image.open(out) as im:
-            assert_image_similar(im, test_card, 1.0e-3)
+            assert_image_similar(im, card, 1.0e-3)
 
     # Single component should have MCT disabled
     for val in (0, 1):
@@ -424,22 +439,22 @@ def test_comment() -> None:
             pass
 
 
-def test_save_comment() -> None:
+def test_save_comment(card: ImageFile.ImageFile) -> None:
     for comment in ("Created by Pillow", b"Created by Pillow"):
         out = BytesIO()
-        test_card.save(out, "JPEG2000", comment=comment)
+        card.save(out, "JPEG2000", comment=comment)
 
         with Image.open(out) as im:
             assert im.info["comment"] == b"Created by Pillow"
 
     out = BytesIO()
     long_comment = b" " * 65531
-    test_card.save(out, "JPEG2000", comment=long_comment)
+    card.save(out, "JPEG2000", comment=long_comment)
     with Image.open(out) as im:
         assert im.info["comment"] == long_comment
 
     with pytest.raises(ValueError):
-        test_card.save(out, "JPEG2000", comment=long_comment + b" ")
+        card.save(out, "JPEG2000", comment=long_comment + b" ")
 
 
 @pytest.mark.parametrize(
@@ -462,10 +477,10 @@ def test_crashes(test_file: str) -> None:
 
 
 @skip_unless_feature_version("jpg_2000", "2.4.0")
-def test_plt_marker() -> None:
+def test_plt_marker(card: ImageFile.ImageFile) -> None:
     # Search the start of the codesteam for PLT
     out = BytesIO()
-    test_card.save(out, "JPEG2000", no_jp2=True, plt=True)
+    card.save(out, "JPEG2000", no_jp2=True, plt=True)
     out.seek(0)
     while True:
         marker = out.read(2)
