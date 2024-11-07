@@ -363,11 +363,12 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
         GetWindowDpiAwarenessContext_function = (Func_GetWindowDpiAwarenessContext
         )GetProcAddress(user32, "GetWindowDpiAwarenessContext");
         if (screens == -1 && GetWindowDpiAwarenessContext_function != NULL) {
-            dpiAwareness =
-                GetWindowDpiAwarenessContext_function(wnd);
+            dpiAwareness = GetWindowDpiAwarenessContext_function(wnd);
         }
         // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = ((DPI_CONTEXT_HANDLE)-3)
-        dpiAwareness = SetThreadDpiAwarenessContext_function(dpiAwareness == NULL ? (HANDLE)-3 : dpiAwareness);
+        dpiAwareness = SetThreadDpiAwarenessContext_function(
+            dpiAwareness == NULL ? (HANDLE)-3 : dpiAwareness
+        );
     }
 
     if (screens == 1) {
