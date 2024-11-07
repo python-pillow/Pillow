@@ -213,7 +213,7 @@ class MorphOp:
             msg = "Image mode must be L"
             raise ValueError(msg)
         outimage = Image.new(image.mode, image.size, None)
-        count = _imagingmorph.apply(bytes(self.lut), image.im.id, outimage.im.id)
+        count = _imagingmorph.apply(bytes(self.lut), image.getim(), outimage.getim())
         return count, outimage
 
     def match(self, image: Image.Image) -> list[tuple[int, int]]:
@@ -229,7 +229,7 @@ class MorphOp:
         if image.mode != "L":
             msg = "Image mode must be L"
             raise ValueError(msg)
-        return _imagingmorph.match(bytes(self.lut), image.im.id)
+        return _imagingmorph.match(bytes(self.lut), image.getim())
 
     def get_on_pixels(self, image: Image.Image) -> list[tuple[int, int]]:
         """Get a list of all turned on pixels in a binary image
@@ -240,7 +240,7 @@ class MorphOp:
         if image.mode != "L":
             msg = "Image mode must be L"
             raise ValueError(msg)
-        return _imagingmorph.get_on_pixels(image.im.id)
+        return _imagingmorph.get_on_pixels(image.getim())
 
     def load_lut(self, filename: str) -> None:
         """Load an operator from an mrl file"""

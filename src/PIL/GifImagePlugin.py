@@ -103,7 +103,6 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.info["version"] = s[:6]
         self._size = i16(s, 6), i16(s, 8)
-        self.tile = []
         flags = s[10]
         bits = (flags & 7) + 1
 

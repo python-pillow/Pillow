@@ -324,17 +324,17 @@ def test_set_lut() -> None:
 
 def test_wrong_mode() -> None:
     lut = ImageMorph.LutBuilder(op_name="corner").build_lut()
-    imrgb = Image.new("RGB", (10, 10))
-    iml = Image.new("L", (10, 10))
+    imrgb_ptr = Image.new("RGB", (10, 10)).getim()
+    iml_ptr = Image.new("L", (10, 10)).getim()
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.apply(bytes(lut), imrgb.im.id, iml.im.id)
+        _imagingmorph.apply(bytes(lut), imrgb_ptr, iml_ptr)
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.apply(bytes(lut), iml.im.id, imrgb.im.id)
+        _imagingmorph.apply(bytes(lut), iml_ptr, imrgb_ptr)
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.match(bytes(lut), imrgb.im.id)
+        _imagingmorph.match(bytes(lut), imrgb_ptr)
 
     # Should not raise
-    _imagingmorph.match(bytes(lut), iml.im.id)
+    _imagingmorph.match(bytes(lut), iml_ptr)

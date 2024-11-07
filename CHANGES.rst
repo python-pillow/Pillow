@@ -2,8 +2,50 @@
 Changelog (Pillow)
 ==================
 
-11.0.0 (unreleased)
+11.1.0 (unreleased)
 -------------------
+
+- Detach PyQt6 QPixmap instance before returning #8509
+  [radarhere]
+
+- Corrected EMF DPI #8485
+  [radarhere]
+
+- Fix IFDRational with a zero denominator #8474
+  [radarhere]
+
+- Fixed disabling a feature during install #8469
+  [radarhere]
+
+11.0.0 (2024-10-15)
+-------------------
+
+- Update licence to MIT-CMU #8460
+  [hugovk]
+
+- Conditionally define ImageCms type hint to avoid requiring core #8197
+  [radarhere]
+
+- Support writing LONG8 offsets in AppendingTiffWriter #8417
+  [radarhere]
+
+- Use ImageFile.MAXBLOCK when saving TIFF images #8461
+  [radarhere]
+
+- Do not close provided file handles with libtiff when saving #8458
+  [radarhere]
+
+- Support ImageFilter.BuiltinFilter for I;16* images #8438
+  [radarhere]
+
+- Use ImagingCore.ptr instead of ImagingCore.id #8341
+  [homm, radarhere, hugovk]
+
+- Updated EPS mode when opening images without transparency #8281
+  [Yay295, radarhere]
+
+- Use transparency when combining P frames from APNGs #8443
+  [radarhere]
 
 - Support all resampling filters when resizing I;16* images #8422
   [radarhere]

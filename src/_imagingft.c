@@ -82,6 +82,9 @@ struct {
     /* font objects */
 
     static FT_Library library;
+#ifdef Py_GIL_DISABLED
+static PyMutex ft_library_mutex;
+#endif
 
 typedef struct {
     PyObject_HEAD FT_Face face;
@@ -187,7 +190,9 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
 
     if (filename && font_bytes_size <= 0) {
         self->font_bytes = NULL;
+        MUTEX_LOCK(&ft_library_mutex);
         error = FT_New_Face(library, filename, index, &self->face);
+        MUTEX_UNLOCK(&ft_library_mutex);
     } else {
         /* need to have allocated storage for font_bytes for the life of the object.*/
         /* Don't free this before FT_Done_Face */
@@ -197,6 +202,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
         }
         if (!error) {
             memcpy(self->font_bytes, font_bytes, (size_t)font_bytes_size);
+            MUTEX_LOCK(&ft_library_mutex);
             error = FT_New_Memory_Face(
                 library,
                 (FT_Byte *)self->font_bytes,
@@ -204,6 +210,7 @@ getfont(PyObject *self_, PyObject *args, PyObject *kw) {
                 index,
                 &self->face
             );
+            MUTEX_UNLOCK(&ft_library_mutex);
         }
     }
 
@@ -830,7 +837,6 @@ font_render(FontObject *self, PyObject *args) {
     unsigned char convert_scale;    /* scale factor for non-8bpp bitmaps */
     PyObject *image;
     Imaging im;
-    Py_ssize_t id;
     int mask = 0;  /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     float stroke_width = 0;
@@ -922,17 +928,13 @@ font_render(FontObject *self, PyObject *args) {
     width += ceil(stroke_width * 2 + x_start);
     height += ceil(stroke_width * 2 + y_start);
     image = PyObject_CallFunction(fill, "ii", width, height);
-    if (image == Py_None) {
-        PyMem_Del(glyph_info);
-        return Py_BuildValue("N(ii)", image, 0, 0);
-    } else if (image == NULL) {
+    if (image == NULL) {
         PyMem_Del(glyph_info);
         return NULL;
     }
-    PyObject *imageId = PyObject_GetAttrString(image, "id");
-    id = PyLong_AsSsize_t(imageId);
-    Py_XDECREF(imageId);
-    im = (Imaging)id;
+    PyObject *imagePtr = PyObject_GetAttrString(image, "ptr");
+    im = (Imaging)PyCapsule_GetPointer(imagePtr, IMAGING_MAGIC);
+    Py_XDECREF(imagePtr);
 
     x_offset = round(x_offset - stroke_width);
     y_offset = round(y_offset - stroke_width);
@@ -1438,7 +1440,9 @@ font_setvaraxes(FontObject *self, PyObject *args) {
 static void
 font_dealloc(FontObject *self) {
     if (self->face) {
+        MUTEX_LOCK(&ft_library_mutex);
         FT_Done_Face(self->face);
+        MUTEX_UNLOCK(&ft_library_mutex);
     }
     if (self->font_bytes) {
         PyMem_Free(self->font_bytes);

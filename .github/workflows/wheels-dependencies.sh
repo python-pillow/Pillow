@@ -38,16 +38,6 @@ BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
 
-if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "x86_64" ]]; then
-    function build_openjpeg {
-        local out_dir=$(fetch_unpack https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz openjpeg-$OPENJPEG_VERSION.tar.gz)
-        (cd $out_dir \
-            && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
-            && make install)
-        touch openjpeg-stamp
-    }
-fi
-
 function build_brotli {
     local cmake=$(get_modern_cmake)
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
@@ -101,9 +91,6 @@ function build {
     build_libpng
     build_lcms2
     build_openjpeg
-    if [ -f /usr/local/lib64/libopenjp2.so ]; then
-        cp /usr/local/lib64/libopenjp2.so /usr/local/lib
-    fi
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
@@ -131,6 +118,7 @@ curl -fsSL -o pillow-depends-main.zip https://github.com/python-pillow/pillow-de
 untar pillow-depends-main.zip
 
 if [[ -n "$IS_MACOS" ]]; then
+  # libdeflate may cause a minimum target error when repairing the wheel
   # libtiff and libxcb cause a conflict with building libtiff and libxcb
   # libxau and libxdmcp cause an issue on macOS < 11
   # remove cairo to fix building harfbuzz on arm64
@@ -142,7 +130,7 @@ if [[ -n "$IS_MACOS" ]]; then
   if [[ "$CIBW_ARCHS" == "arm64" ]]; then
     brew remove --ignore-dependencies jpeg-turbo
   else
-    brew remove --ignore-dependencies webp
+    brew remove --ignore-dependencies libdeflate webp
   fi
 
   brew install pkg-config

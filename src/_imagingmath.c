@@ -23,6 +23,9 @@
 #define MAX_INT32 2147483647.0
 #define MIN_INT32 -2147483648.0
 
+#define MATH_FUNC_UNOP_MAGIC "Pillow Math unary func"
+#define MATH_FUNC_BINOP_MAGIC "Pillow Math binary func"
+
 #define UNOP(name, op, type)                   \
     void name(Imaging out, Imaging im1) {      \
         int x, y;                              \
@@ -168,15 +171,24 @@ _unop(PyObject *self, PyObject *args) {
     Imaging im1;
     void (*unop)(Imaging, Imaging);
 
-    Py_ssize_t op, i0, i1;
-    if (!PyArg_ParseTuple(args, "nnn", &op, &i0, &i1)) {
+    PyObject *op, *i0, *i1;
+    if (!PyArg_ParseTuple(args, "OOO", &op, &i0, &i1)) {
         return NULL;
     }
 
-    out = (Imaging)i0;
-    im1 = (Imaging)i1;
+    if (!PyCapsule_IsValid(op, MATH_FUNC_UNOP_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", MATH_FUNC_UNOP_MAGIC);
+        return NULL;
+    }
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC) ||
+        !PyCapsule_IsValid(i1, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
 
-    unop = (void *)op;
+    unop = (void *)PyCapsule_GetPointer(op, MATH_FUNC_UNOP_MAGIC);
+    out = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    im1 = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
 
     unop(out, im1);
 
@@ -191,16 +203,26 @@ _binop(PyObject *self, PyObject *args) {
     Imaging im2;
     void (*binop)(Imaging, Imaging, Imaging);
 
-    Py_ssize_t op, i0, i1, i2;
-    if (!PyArg_ParseTuple(args, "nnnn", &op, &i0, &i1, &i2)) {
+    PyObject *op, *i0, *i1, *i2;
+    if (!PyArg_ParseTuple(args, "OOOO", &op, &i0, &i1, &i2)) {
         return NULL;
     }
 
-    out = (Imaging)i0;
-    im1 = (Imaging)i1;
-    im2 = (Imaging)i2;
+    if (!PyCapsule_IsValid(op, MATH_FUNC_BINOP_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", MATH_FUNC_BINOP_MAGIC);
+        return NULL;
+    }
+    if (!PyCapsule_IsValid(i0, IMAGING_MAGIC) ||
+        !PyCapsule_IsValid(i1, IMAGING_MAGIC) ||
+        !PyCapsule_IsValid(i2, IMAGING_MAGIC)) {
+        PyErr_Format(PyExc_TypeError, "Expected '%s' Capsule", IMAGING_MAGIC);
+        return NULL;
+    }
 
-    binop = (void *)op;
+    binop = (void *)PyCapsule_GetPointer(op, MATH_FUNC_BINOP_MAGIC);
+    out = (Imaging)PyCapsule_GetPointer(i0, IMAGING_MAGIC);
+    im1 = (Imaging)PyCapsule_GetPointer(i1, IMAGING_MAGIC);
+    im2 = (Imaging)PyCapsule_GetPointer(i2, IMAGING_MAGIC);
 
     binop(out, im1, im2);
 
@@ -213,8 +235,17 @@ static PyMethodDef _functions[] = {
 };
 
 static void
-install(PyObject *d, char *name, void *value) {
-    PyObject *v = PyLong_FromSsize_t((Py_ssize_t)value);
+install_unary(PyObject *d, char *name, void *func) {
+    PyObject *v = PyCapsule_New(func, MATH_FUNC_UNOP_MAGIC, NULL);
+    if (!v || PyDict_SetItemString(d, name, v)) {
+        PyErr_Clear();
+    }
+    Py_XDECREF(v);
+}
+
+static void
+install_binary(PyObject *d, char *name, void *func) {
+    PyObject *v = PyCapsule_New(func, MATH_FUNC_BINOP_MAGIC, NULL);
     if (!v || PyDict_SetItemString(d, name, v)) {
         PyErr_Clear();
     }
@@ -225,50 +256,50 @@ static int
 setup_module(PyObject *m) {
     PyObject *d = PyModule_GetDict(m);
 
-    install(d, "abs_I", abs_I);
-    install(d, "neg_I", neg_I);
-    install(d, "add_I", add_I);
-    install(d, "sub_I", sub_I);
-    install(d, "diff_I", diff_I);
-    install(d, "mul_I", mul_I);
-    install(d, "div_I", div_I);
-    install(d, "mod_I", mod_I);
-    install(d, "min_I", min_I);
-    install(d, "max_I", max_I);
-    install(d, "pow_I", pow_I);
+    install_unary(d, "abs_I", abs_I);
+    install_unary(d, "neg_I", neg_I);
+    install_binary(d, "add_I", add_I);
+    install_binary(d, "sub_I", sub_I);
+    install_binary(d, "diff_I", diff_I);
+    install_binary(d, "mul_I", mul_I);
+    install_binary(d, "div_I", div_I);
+    install_binary(d, "mod_I", mod_I);
+    install_binary(d, "min_I", min_I);
+    install_binary(d, "max_I", max_I);
+    install_binary(d, "pow_I", pow_I);
 
-    install(d, "invert_I", invert_I);
-    install(d, "and_I", and_I);
-    install(d, "or_I", or_I);
-    install(d, "xor_I", xor_I);
-    install(d, "lshift_I", lshift_I);
-    install(d, "rshift_I", rshift_I);
+    install_unary(d, "invert_I", invert_I);
+    install_binary(d, "and_I", and_I);
+    install_binary(d, "or_I", or_I);
+    install_binary(d, "xor_I", xor_I);
+    install_binary(d, "lshift_I", lshift_I);
+    install_binary(d, "rshift_I", rshift_I);
 
-    install(d, "eq_I", eq_I);
-    install(d, "ne_I", ne_I);
-    install(d, "lt_I", lt_I);
-    install(d, "le_I", le_I);
-    install(d, "gt_I", gt_I);
-    install(d, "ge_I", ge_I);
+    install_binary(d, "eq_I", eq_I);
+    install_binary(d, "ne_I", ne_I);
+    install_binary(d, "lt_I", lt_I);
+    install_binary(d, "le_I", le_I);
+    install_binary(d, "gt_I", gt_I);
+    install_binary(d, "ge_I", ge_I);
 
-    install(d, "abs_F", abs_F);
-    install(d, "neg_F", neg_F);
-    install(d, "add_F", add_F);
-    install(d, "sub_F", sub_F);
-    install(d, "diff_F", diff_F);
-    install(d, "mul_F", mul_F);
-    install(d, "div_F", div_F);
-    install(d, "mod_F", mod_F);
-    install(d, "min_F", min_F);
-    install(d, "max_F", max_F);
-    install(d, "pow_F", pow_F);
+    install_unary(d, "abs_F", abs_F);
+    install_unary(d, "neg_F", neg_F);
+    install_binary(d, "add_F", add_F);
+    install_binary(d, "sub_F", sub_F);
+    install_binary(d, "diff_F", diff_F);
+    install_binary(d, "mul_F", mul_F);
+    install_binary(d, "div_F", div_F);
+    install_binary(d, "mod_F", mod_F);
+    install_binary(d, "min_F", min_F);
+    install_binary(d, "max_F", max_F);
+    install_binary(d, "pow_F", pow_F);
 
-    install(d, "eq_F", eq_F);
-    install(d, "ne_F", ne_F);
-    install(d, "lt_F", lt_F);
-    install(d, "le_F", le_F);
-    install(d, "gt_F", gt_F);
-    install(d, "ge_F", ge_F);
+    install_binary(d, "eq_F", eq_F);
+    install_binary(d, "ne_F", ne_F);
+    install_binary(d, "lt_F", lt_F);
+    install_binary(d, "le_F", le_F);
+    install_binary(d, "gt_F", gt_F);
+    install_binary(d, "ge_F", ge_F);
 
     return 0;
 }

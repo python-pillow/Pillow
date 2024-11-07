@@ -146,10 +146,11 @@ def check_feature(feature: str) -> bool | None:
 
     module, flag, ver = features[feature]
 
+    if isinstance(flag, bool):
+        deprecate(f'check_feature("{feature}")', 12)
     try:
         imported_module = __import__(module, fromlist=["PIL"])
         if isinstance(flag, bool):
-            deprecate(f'check_feature("{feature}")', 12)
             return flag
         return getattr(imported_module, flag)
     except ModuleNotFoundError:
