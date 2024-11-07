@@ -365,7 +365,7 @@ PyImaging_GrabScreenWin32(PyObject *self, PyObject *args) {
             )GetProcAddress(user32, "GetWindowDpiAwarenessContext");
             DPI_AWARENESS_CONTEXT dpiAwarenessContext =
                 GetWindowDpiAwarenessContext_function(wnd);
-            if (dpiAwarenessContext != NULL) {
+            if (GetWindowDpiAwarenessContext_function != NULL && dpiAwarenessContext != NULL) {
                 dpiAwareness =
                     SetThreadDpiAwarenessContext_function(dpiAwarenessContext);
             } else {
