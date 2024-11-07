@@ -4,7 +4,7 @@
 PROJECTDIR=$(pwd)
 if [[ "$(uname -s)" == "Darwin" ]]; then
     # Safety check - macOS builds require that CIBW_ARCHS is set, and that it
-    # only contains a single value (even though cwbuildwheel) allows multiple
+    # only contains a single value (even though cibuildwheel) allows multiple
     # values in CIBW_ARCHS.
     if [[ -z "$CIBW_ARCHS" ]]; then
         echo "ERROR: Pillow macOS builds require CIBW_ARCHS be defined."
