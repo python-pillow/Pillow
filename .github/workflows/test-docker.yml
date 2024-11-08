@@ -47,6 +47,7 @@ jobs:
           debian-12-bookworm-x86,
           debian-12-bookworm-amd64,
           fedora-40-amd64,
+          fedora-41-amd64,
           gentoo,
           ubuntu-22.04-jammy-amd64,
           ubuntu-24.04-noble-amd64,
@@ -64,6 +65,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
@@ -101,7 +104,6 @@ jobs:
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
-        gcov: true
         token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:

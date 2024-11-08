@@ -338,6 +338,8 @@ class TestFilePng:
         with Image.open(TEST_PNG_FILE) as im:
             # Assert that there is no unclosed file warning
             with warnings.catch_warnings():
+                warnings.simplefilter("error")
+
                 im.verify()
 
         with Image.open(TEST_PNG_FILE) as im:
