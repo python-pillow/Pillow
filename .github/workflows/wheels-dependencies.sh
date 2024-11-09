@@ -4,8 +4,8 @@
 PROJECTDIR=$(pwd)
 if [[ "$(uname -s)" == "Darwin" ]]; then
     # Safety check - macOS builds require that CIBW_ARCHS is set, and that it
-    # only contains a single value (even though cibuildwheel) allows multiple
-    # values in CIBW_ARCHS.
+    # only contains a single value (even though cibuildwheel allows multiple
+    # values in CIBW_ARCHS).
     if [[ -z "$CIBW_ARCHS" ]]; then
         echo "ERROR: Pillow macOS builds require CIBW_ARCHS be defined."
         exit 1
@@ -171,7 +171,7 @@ if [[ -n "$IS_MACOS" ]]; then
     # with a MACOSX_DEPLOYMENT_TARGET that doesn't match what we want to use,
     # and they may bring in other dependencies that we don't want. The same will
     # be true of any other locations on the path. To avoid conflicts, strip the
-    # path down to the bare mimimum (which, on macOS, won't include any
+    # path down to the bare minimum (which, on macOS, won't include any
     # development dependencies).
     export PATH="$BUILD_PREFIX/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
     export CMAKE_PREFIX_PATH=$BUILD_PREFIX
