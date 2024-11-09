@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.1.0 (unreleased)
 -------------------
 
+- Allow linking to zlib import library on Windows #8519
+  [cubanpit, nulano]
+
 - Detach PyQt6 QPixmap instance before returning #8509
   [radarhere]
 
