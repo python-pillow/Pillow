@@ -690,6 +690,8 @@ class pil_build_ext(build_ext):
                     feature.set("zlib", "z")
                 elif sys.platform == "win32" and _find_library_file(self, "zlib"):
                     feature.set("zlib", "zlib")  # alternative name
+                elif sys.platform == "win32" and _find_library_file(self, "zdll"):
+                    feature.set("zlib", "zdll")  # dll import library
 
         if feature.want("jpeg"):
             _dbg("Looking for jpeg")
