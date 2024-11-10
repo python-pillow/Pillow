@@ -5,6 +5,9 @@ Changelog (Pillow)
 11.1.0 (unreleased)
 -------------------
 
+- Removed use of os.path.realpath #8545
+  [radarhere]
+
 - Allow linking to zlib import library on Windows #8519
   [cubanpit, nulano]
 
