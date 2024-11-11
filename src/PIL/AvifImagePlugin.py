@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from io import BytesIO
 from typing import IO
 
@@ -46,6 +47,15 @@ def _accept(prefix: bytes) -> bool | str:
     return False
 
 
+def _get_default_max_threads():
+    if DEFAULT_MAX_THREADS:
+        return DEFAULT_MAX_THREADS
+    if hasattr(os, "sched_getaffinity"):
+        return len(os.sched_getaffinity(0))
+    else:
+        return os.cpu_count() or 1
+
+
 class AvifImageFile(ImageFile.ImageFile):
     format = "AVIF"
     format_description = "AVIF image"
@@ -64,7 +74,10 @@ class AvifImageFile(ImageFile.ImageFile):
             raise SyntaxError(msg)
 
         self._decoder = _avif.AvifDecoder(
-            self.fp.read(), DECODE_CODEC_CHOICE, CHROMA_UPSAMPLING, DEFAULT_MAX_THREADS
+            self.fp.read(),
+            DECODE_CODEC_CHOICE,
+            CHROMA_UPSAMPLING,
+            _get_default_max_threads(),
         )
 
         # Get info from decoder
@@ -140,7 +153,7 @@ def _save(
     duration = info.get("duration", 0)
     subsampling = info.get("subsampling", "4:2:0")
     speed = info.get("speed", 6)
-    max_threads = info.get("max_threads", DEFAULT_MAX_THREADS)
+    max_threads = info.get("max_threads", _get_default_max_threads())
     codec = info.get("codec", "auto")
     range_ = info.get("range", "full")
     tile_rows_log2 = info.get("tile_rows", 0)
