@@ -402,8 +402,7 @@ DEPS: dict[str, dict[str, Any]] = {
     },
     "rav1e": {
         "url": (
-            f"https://github.com/xiph/rav1e/releases/download/v{V['RAV1E']}/"
-            f"rav1e-{V['RAV1E']}-windows-msvc-generic.zip"
+            f"https://github.com/xiph/rav1e/releases/download/v{V['RAV1E']}/FILENAME"
         ),
         "filename": f"rav1e-{V['RAV1E']}-windows-msvc-generic.zip",
         "dir": "rav1e-windows-msvc-sdk",

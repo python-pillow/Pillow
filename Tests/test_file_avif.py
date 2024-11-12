@@ -327,6 +327,10 @@ class TestFileAvif:
             exif = im.getexif()
         assert exif[274] == 1
 
+        with Image.open("Tests/images/avif/xmp_tags_orientation.avif") as im:
+            exif = im.getexif()
+        assert exif[274] == 3
+
     def test_exif_save_default(self, tmp_path: Path) -> None:
         with Image.open("Tests/images/avif/exif.avif") as im:
             test_file = str(tmp_path / "temp.avif")
@@ -548,22 +552,6 @@ class TestFileAvif:
 
     def test_decoder_codec_available_invalid(self) -> None:
         assert _avif.decoder_codec_available("foo") is False
-
-    @pytest.mark.parametrize("upsampling", ["fastest", "best", "nearest", "bilinear"])
-    def test_decoder_upsampling(
-        self, monkeypatch: pytest.MonkeyPatch, upsampling: str
-    ) -> None:
-        monkeypatch.setattr(AvifImagePlugin, "CHROMA_UPSAMPLING", upsampling)
-
-        with Image.open(TEST_AVIF_FILE):
-            pass
-
-    def test_decoder_upsampling_invalid(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(AvifImagePlugin, "CHROMA_UPSAMPLING", "foo")
-
-        with pytest.raises(ValueError):
-            with Image.open(TEST_AVIF_FILE):
-                pass
 
     def test_p_mode_transparency(self) -> None:
         im = Image.new("P", size=(64, 64))

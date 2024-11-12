@@ -3,12 +3,6 @@
 #include <Python.h>
 #include "avif/avif.h"
 
-#if AVIF_VERSION < 80300
-#define AVIF_CHROMA_UPSAMPLING_AUTOMATIC AVIF_CHROMA_UPSAMPLING_BILINEAR
-#define AVIF_CHROMA_UPSAMPLING_BEST_QUALITY AVIF_CHROMA_UPSAMPLING_BILINEAR
-#define AVIF_CHROMA_UPSAMPLING_FASTEST AVIF_CHROMA_UPSAMPLING_NEAREST
-#endif
-
 typedef struct {
     avifPixelFormat subsampling;
     int qmin;
@@ -671,32 +665,13 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
     PyObject *avif_bytes;
     AvifDecoderObject *self = NULL;
 
-    char *upsampling_str;
     char *codec_str;
     avifCodecChoice codec;
-    avifChromaUpsampling upsampling;
     int max_threads;
 
     avifResult result;
 
-    if (!PyArg_ParseTuple(
-            args, "Sssi", &avif_bytes, &codec_str, &upsampling_str, &max_threads
-        )) {
-        return NULL;
-    }
-
-    if (!strcmp(upsampling_str, "auto")) {
-        upsampling = AVIF_CHROMA_UPSAMPLING_AUTOMATIC;
-    } else if (!strcmp(upsampling_str, "fastest")) {
-        upsampling = AVIF_CHROMA_UPSAMPLING_FASTEST;
-    } else if (!strcmp(upsampling_str, "best")) {
-        upsampling = AVIF_CHROMA_UPSAMPLING_BEST_QUALITY;
-    } else if (!strcmp(upsampling_str, "nearest")) {
-        upsampling = AVIF_CHROMA_UPSAMPLING_NEAREST;
-    } else if (!strcmp(upsampling_str, "bilinear")) {
-        upsampling = AVIF_CHROMA_UPSAMPLING_BILINEAR;
-    } else {
-        PyErr_Format(PyExc_ValueError, "Invalid upsampling option: %s", upsampling_str);
+    if (!PyArg_ParseTuple(args, "Ssi", &avif_bytes, &codec_str, &max_threads)) {
         return NULL;
     }
 

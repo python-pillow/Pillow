@@ -16,7 +16,6 @@ except ImportError:
 # Decoder options as module globals, until there is a way to pass parameters
 # to Image.open (see https://github.com/python-pillow/Pillow/issues/569)
 DECODE_CODEC_CHOICE = "auto"
-CHROMA_UPSAMPLING = "auto"
 DEFAULT_MAX_THREADS = 0
 
 _VALID_AVIF_MODES = {"RGB", "RGBA"}
@@ -76,7 +75,6 @@ class AvifImageFile(ImageFile.ImageFile):
         self._decoder = _avif.AvifDecoder(
             self.fp.read(),
             DECODE_CODEC_CHOICE,
-            CHROMA_UPSAMPLING,
             _get_default_max_threads(),
         )
 
@@ -238,22 +236,12 @@ def _save(
 
             for idx in range(nfr):
                 ims.seek(idx)
-                ims.load()
 
                 # Make sure image mode is supported
                 frame = ims
                 rawmode = ims.mode
                 if ims.mode not in _VALID_AVIF_MODES:
-                    alpha = (
-                        "A" in ims.mode
-                        or "a" in ims.mode
-                        or (ims.mode == "P" and "A" in ims.im.getpalettemode())
-                        or (
-                            ims.mode == "P"
-                            and ims.info.get("transparency", None) is not None
-                        )
-                    )
-                    rawmode = "RGBA" if alpha else "RGB"
+                    rawmode = "RGBA" if ims.has_transparency_data else "RGB"
                     frame = ims.convert(rawmode)
 
                 # Update frame duration
