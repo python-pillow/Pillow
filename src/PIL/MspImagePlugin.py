@@ -72,7 +72,7 @@ class MspImageFile(ImageFile.ImageFile):
         if s[:4] == b"DanM":
             self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 32, ("1", 0, 1))]
         else:
-            self.tile = [ImageFile._Tile("MSP", (0, 0) + self.size, 32, None)]
+            self.tile = [ImageFile._Tile("MSP", (0, 0) + self.size, 32)]
 
 
 class MspDecoder(ImageFile.PyDecoder):
