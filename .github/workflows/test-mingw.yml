@@ -87,7 +87,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: GHA_Windows
           name: "MSYS2 MinGW"
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
