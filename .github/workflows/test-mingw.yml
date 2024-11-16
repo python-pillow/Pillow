@@ -85,7 +85,7 @@ jobs:
           .ci/test.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: ./coverage.xml
           flags: GHA_Windows
