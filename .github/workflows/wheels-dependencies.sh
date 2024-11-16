@@ -19,14 +19,13 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     # Install them into `build/deps/darwin`
     WORKDIR=$(pwd)/build/darwin
     BUILD_PREFIX=$(pwd)/build/deps/darwin
-    PLAT=$CIBW_ARCHS
 else
     # Build prefix will default to /usr/local
     WORKDIR=$(pwd)/build
-    PLAT=$CIBW_ARCHS
     MB_ML_LIBC=${AUDITWHEEL_POLICY::9}
     MB_ML_VER=${AUDITWHEEL_POLICY:9}
 fi
+PLAT=$CIBW_ARCHS
 
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
@@ -119,9 +118,9 @@ function build {
     build_libjpeg_turbo
     if [ -n "$IS_MACOS" ]; then
         # Custom tiff build to include jpeg; by default, configure won't include
-        # headers/libs in the custom macOS prefix. Explicitly disable webp and
-        # zstd, because on x86_64 macs, it will pick up the Homebrew versions of
-        # webp and zstd from /usr/local.
+        # headers/libs in the custom macOS prefix. Explicitly disable webp,
+        # libdeflate and zstd, because on x86_64 macs, it will pick up the
+        # Homebrew versions of those libraries from /usr/local.
         build_simple tiff $TIFF_VERSION https://download.osgeo.org/libtiff tar.gz \
             --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
             --disable-webp --disable-zstd --disable-libdeflate
