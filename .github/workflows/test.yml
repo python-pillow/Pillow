@@ -63,6 +63,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -114,7 +116,7 @@ jobs:
         GHA_PYTHON_VERSION: ${{ matrix.python-version }}
 
     - name: Register gcc problem matcher
-      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'"
+      if: "matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'"
       run: echo "::add-matcher::.github/problem-matchers/gcc.json"
 
     - name: Build
@@ -158,7 +160,6 @@ jobs:
       with:
         flags: ${{ matrix.os == 'ubuntu-latest' && 'GHA_Ubuntu' || 'GHA_macOS' }}
         name: ${{ matrix.os }} Python ${{ matrix.python-version }}
-        gcov: true
         token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:

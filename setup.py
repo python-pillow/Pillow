@@ -448,7 +448,7 @@ class pil_build_ext(build_ext):
     def get_macos_sdk_path(self) -> str | None:
         try:
             sdk_path = (
-                subprocess.check_output(["xcrun", "--show-sdk-path"])
+                subprocess.check_output(["xcrun", "--show-sdk-path", "--sdk", "macosx"])
                 .strip()
                 .decode("latin1")
             )
@@ -606,6 +606,7 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
+            # Add the macOS SDK path.
             sdk_path = self.get_macos_sdk_path()
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
@@ -690,6 +691,8 @@ class pil_build_ext(build_ext):
                     feature.set("zlib", "z")
                 elif sys.platform == "win32" and _find_library_file(self, "zlib"):
                     feature.set("zlib", "zlib")  # alternative name
+                elif sys.platform == "win32" and _find_library_file(self, "zdll"):
+                    feature.set("zlib", "zdll")  # dll import library
 
         if feature.want("jpeg"):
             _dbg("Looking for jpeg")
@@ -1001,7 +1004,7 @@ def debug_build() -> bool:
     return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
-files = ["src/_imaging.c"]
+files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
 for src_file in _IMAGING:
     files.append("src/" + src_file + ".c")
 for src_file in _LIB_IMAGING:

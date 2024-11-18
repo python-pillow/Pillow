@@ -56,7 +56,7 @@ optional-dependencies.mic = [
 ]
 optional-dependencies.tests = [
   "check-manifest",
-  "coverage",
+  "coverage>=7.4.2",
   "defusedxml",
   "markdown2",
   "olefile",
@@ -65,6 +65,7 @@ optional-dependencies.tests = [
   "pytest",
   "pytest-cov",
   "pytest-timeout",
+  "trove-classifiers>=2024.10.12",
 ]
 optional-dependencies.typing = [
   "typing-extensions; python_version<'3.10'",
@@ -93,9 +94,16 @@ version = { attr = "PIL.__version__" }
 [tool.cibuildwheel]
 before-all = ".github/workflows/wheels-dependencies.sh"
 build-verbosity = 1
+
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
+# Disable platform guessing on macOS
+macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
+
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
+
+[tool.cibuildwheel.macos.environment]
+PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
 
 [tool.black]
 exclude = "wheels/multibuild"
