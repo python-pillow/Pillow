@@ -62,8 +62,7 @@ BROTLI_VERSION=1.1.0
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
-    # This essentially duplicates the Homebrew recipe:
-    # https://github.com/Homebrew/homebrew-core/blob/master/Formula/p/pkg-config.rb
+    # This essentially duplicates the Homebrew recipe
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -Wno-int-conversion"
     build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
@@ -108,7 +107,6 @@ function build {
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
         build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
-        build_simple libXdmcp 1.1.5 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
     else
         sed s/\${pc_sysrootdir\}// $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
@@ -123,7 +121,7 @@ function build {
         # Homebrew versions of those libraries from /usr/local.
         build_simple tiff $TIFF_VERSION https://download.osgeo.org/libtiff tar.gz \
             --with-jpeg-include-dir=$BUILD_PREFIX/include --with-jpeg-lib-dir=$BUILD_PREFIX/lib \
-            --disable-webp --disable-zstd --disable-libdeflate
+            --disable-webp --disable-libdeflate --disable-zstd
     else
         build_tiff
     fi
@@ -134,6 +132,9 @@ function build {
 
     ORIGINAL_CFLAGS=$CFLAGS
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
+    if [[ -n "$IS_MACOS" ]]; then
+        CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
+    fi
     build_libwebp
     CFLAGS=$ORIGINAL_CFLAGS
 
@@ -141,7 +142,7 @@ function build {
 
     if [ -n "$IS_MACOS" ]; then
         # Custom freetype build
-        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --without-harfbuzz
+        build_simple freetype $FREETYPE_VERSION https://download.savannah.gnu.org/releases/freetype tar.gz --with-harfbuzz=no
     else
         build_freetype
     fi
@@ -175,7 +176,7 @@ if [[ -n "$IS_MACOS" ]]; then
     export PATH="$BUILD_PREFIX/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
     export CMAKE_PREFIX_PATH=$BUILD_PREFIX
 
-    # Link the brew command into our isolated build directory.
+    # Ensure the basic structure of the build prefix directory exists.
     mkdir -p "$BUILD_PREFIX/bin"
     mkdir -p "$BUILD_PREFIX/lib"
 
