@@ -1216,10 +1216,6 @@ class TiffImageFile(ImageFile.ImageFile):
     def _seek(self, frame: int) -> None:
         self.fp = self._fp
 
-        # reset buffered io handle in case fp
-        # was passed to libtiff, invalidating the buffer
-        self.fp.tell()
-
         while len(self._frame_pos) <= frame:
             if not self.__next:
                 msg = "no more images in TIFF file"
@@ -1303,10 +1299,6 @@ class TiffImageFile(ImageFile.ImageFile):
         if not self.is_animated:
             self._close_exclusive_fp_after_loading = True
 
-            # reset buffered io handle in case fp
-            # was passed to libtiff, invalidating the buffer
-            self.fp.tell()
-
             # load IFD data from fp before it is closed
             exif = self.getexif()
             for key in TiffTags.TAGS_V2_GROUPS:
@@ -1381,8 +1373,17 @@ class TiffImageFile(ImageFile.ImageFile):
             logger.debug("have fileno, calling fileno version of the decoder.")
             if not close_self_fp:
                 self.fp.seek(0)
+            # Save and restore the file position, because libtiff will move it
+            # outside of the python runtime, and that will confuse
+            # io.BufferedReader and possible others.
+            # NOTE: This must use os.lseek(), and not fp.tell()/fp.seek(),
+            # because the buffer read head already may not equal the actual
+            # file position, and fp.seek() may just adjust it's internal
+            # pointer and not actually seek the OS file handle.
+            pos = os.lseek(fp, 0, os.SEEK_CUR)
             # 4 bytes, otherwise the trace might error out
             n, err = decoder.decode(b"fpfp")
+            os.lseek(fp, pos, os.SEEK_SET)
         else:
             # we have something else.
             logger.debug("don't have fileno or getvalue. just reading")
