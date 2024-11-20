@@ -1374,7 +1374,7 @@ class TiffImageFile(ImageFile.ImageFile):
             if not close_self_fp:
                 self.fp.seek(0)
             # Save and restore the file position, because libtiff will move it
-            # outside of the python runtime, and that will confuse
+            # outside of the Python runtime, and that will confuse
             # io.BufferedReader and possible others.
             # NOTE: This must use os.lseek(), and not fp.tell()/fp.seek(),
             # because the buffer read head already may not equal the actual
