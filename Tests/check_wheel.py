@@ -40,7 +40,7 @@ def test_wheel_features() -> None:
 
     if sys.platform == "win32":
         expected_features.remove("xcb")
-    else:
+    elif sys.platform == "darwin":
         expected_features.remove("zlib_ng")
 
     assert set(features.get_supported_features()) == expected_features

@@ -50,10 +50,10 @@ if [[ -n "$IS_MACOS" ]]; then
 else
     GIFLIB_VERSION=5.2.1
 fi
-if [[ -n "$IS_MACOS" ]] || [[ "$MB_ML_VER" != 2014 ]]; then
+if [[ -n "$IS_MACOS" ]]; then
     ZLIB_VERSION=1.3.1
 else
-    ZLIB_VERSION=1.2.8
+    ZLIB_NG_VERSION=2.2.2
 fi
 LIBWEBP_VERSION=1.4.0
 BZIP2_VERSION=1.0.8
@@ -72,6 +72,16 @@ function build_pkg_config {
     CFLAGS=$ORIGINAL_CFLAGS
     export PKG_CONFIG=$BUILD_PREFIX/bin/pkg-config
     touch pkg-config-stamp
+}
+
+function build_zlib_ng {
+    if [ -e zlib-stamp ]; then return; fi
+    fetch_unpack https://github.com/zlib-ng/zlib-ng/archive/$ZLIB_NG_VERSION.tar.gz zlib-ng-$ZLIB_NG_VERSION.tar.gz
+    (cd zlib-ng-$ZLIB_NG_VERSION \
+        && ./configure --prefix=$BUILD_PREFIX --zlib-compat \
+        && make -j4 \
+        && make install)
+    touch zlib-stamp
 }
 
 function build_brotli {
@@ -101,7 +111,11 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    build_new_zlib
+    if [ -n "$IS_MACOS" ]; then
+        build_new_zlib
+    else
+        build_zlib_ng
+    fi
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
