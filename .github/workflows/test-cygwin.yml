@@ -133,6 +133,7 @@ jobs:
       - name: After success
         run: |
           bash.exe .ci/after_success.sh
+          rm C:\cygwin\bin\bash.EXE
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5
