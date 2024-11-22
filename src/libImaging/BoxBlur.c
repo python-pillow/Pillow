@@ -5,6 +5,184 @@
 
 typedef UINT8 pixel[4];
 
+#if defined(__SSE4__)
+
+void static inline ImagingLineBoxBlur32_SSE4(
+    UINT32 *lineOut,
+    UINT32 *lineIn,
+    int lastx,
+    int radius,
+    int edgeA,
+    int edgeB,
+    UINT32 ww,
+    UINT32 fw
+) {
+    int x;
+    __m128i acc;
+    __m128i bulk;
+    __m128i wws = _mm_set1_epi32(ww);
+    __m128i fws = _mm_set1_epi32(fw);
+    __m128i b23 = _mm_set1_epi32(1 << 23);
+    __m128i shiftmask = _mm_set_epi8(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 7, 11, 15);
+
+    // #define MOVE_ACC(acc, subtract, add)
+    //     acc[0] += lineIn[add][0] - lineIn[subtract][0];
+
+#define MOVE_ACC(acc, subtract, add)                         \
+    {                                                        \
+        __m128i tmp1 = mm_cvtepu8_epi32(&lineIn[add]);       \
+        __m128i tmp2 = mm_cvtepu8_epi32(&lineIn[subtract]);  \
+        acc = _mm_sub_epi32(_mm_add_epi32(acc, tmp1), tmp2); \
+    }
+
+    // #define ADD_FAR(bulk, acc, left, right)
+    //     bulk[0] = (acc[0] * ww) + (lineIn[left][0] + lineIn[right][0]) * fw;
+
+#define ADD_FAR(bulk, acc, left, right)                                 \
+    {                                                                   \
+        __m128i tmp3 = mm_cvtepu8_epi32(&lineIn[left]);                 \
+        __m128i tmp4 = mm_cvtepu8_epi32(&lineIn[right]);                \
+        __m128i tmp5 = _mm_mullo_epi32(_mm_add_epi32(tmp3, tmp4), fws); \
+        __m128i tmp6 = _mm_mullo_epi32(acc, wws);                       \
+        bulk = _mm_add_epi32(tmp5, tmp6);                               \
+    }
+
+    // #define SAVE(x, bulk)
+    //    lineOut[x][0] = (UINT8)((bulk[0] + (1 << 23)) >> 24);
+
+#define SAVE(x, bulk) \
+    lineOut[x] =      \
+        _mm_cvtsi128_si32(_mm_shuffle_epi8(_mm_add_epi32(bulk, b23), shiftmask))
+
+    /* Compute acc for -1 pixel (outside of image):
+       From "-radius-1" to "-1" get first pixel,
+       then from "0" to "radius-1". */
+    // acc[0] = lineIn[0][0] * (radius + 1);
+    acc = _mm_mullo_epi32(mm_cvtepu8_epi32(&lineIn[0]), _mm_set1_epi32(radius + 1));
+
+    /* As radius can be bigger than xsize, iterate to edgeA -1. */
+    for (x = 0; x < edgeA - 1; x++) {
+        // acc[0] += lineIn[x][0];
+        acc = _mm_add_epi32(acc, mm_cvtepu8_epi32(&lineIn[x]));
+    }
+    /* Then multiply remainder to last x. */
+    // acc[0] += lineIn[lastx][0] * (radius - edgeA + 1);
+    acc = _mm_add_epi32(
+        acc,
+        _mm_mullo_epi32(
+            mm_cvtepu8_epi32(&lineIn[x]), _mm_set1_epi32(radius - edgeA + 1)
+        )
+    );
+
+    if (edgeA <= edgeB) {
+        /* Subtract pixel from left ("0").
+           Add pixels from radius. */
+        for (x = 0; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        /* Subtract previous pixel from "-radius".
+           Add pixels from radius. */
+        for (x = edgeA; x < edgeB; x++) {
+            MOVE_ACC(acc, x - radius - 1, x + radius);
+            ADD_FAR(bulk, acc, x - radius - 1, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        /* Subtract previous pixel from "-radius".
+           Add last pixel. */
+        for (x = edgeB; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            SAVE(x, bulk);
+        }
+    } else {
+        for (x = 0; x < edgeB; x++) {
+            MOVE_ACC(acc, 0, x + radius);
+            ADD_FAR(bulk, acc, 0, x + radius + 1);
+            SAVE(x, bulk);
+        }
+        for (x = edgeB; x < edgeA; x++) {
+            MOVE_ACC(acc, 0, lastx);
+            ADD_FAR(bulk, acc, 0, lastx);
+            SAVE(x, bulk);
+        }
+        for (x = edgeA; x <= lastx; x++) {
+            MOVE_ACC(acc, x - radius - 1, lastx);
+            ADD_FAR(bulk, acc, x - radius - 1, lastx);
+            SAVE(x, bulk);
+        }
+    }
+
+#undef MOVE_ACC
+#undef ADD_FAR
+#undef SAVE
+}
+
+void static inline ImagingLineBoxBlurZero32_SSE4(
+    UINT32 *lineOut,
+    UINT32 *lineIn,
+    int lastx,
+    int edgeA,
+    int edgeB,
+    UINT32 ww,
+    UINT32 fw
+) {
+    int x;
+    __m128i acc;
+    __m128i bulk;
+    __m128i wws = _mm_set1_epi32(ww);
+    __m128i fws = _mm_set1_epi32(fw);
+    __m128i b23 = _mm_set1_epi32(1 << 23);
+    __m128i shiftmask = _mm_set_epi8(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 7, 11, 15);
+
+    // #define ADD_FAR(bulk, acc, left, right)
+    //     bulk[0] = (acc[0] * ww) + (lineIn[left][0] + lineIn[right][0]) * fw;
+
+#define ADD_FAR(bulk, acc, left, right)                                 \
+    {                                                                   \
+        __m128i tmp3 = mm_cvtepu8_epi32(&lineIn[left]);                 \
+        __m128i tmp4 = mm_cvtepu8_epi32(&lineIn[right]);                \
+        __m128i tmp5 = _mm_mullo_epi32(_mm_add_epi32(tmp3, tmp4), fws); \
+        __m128i tmp6 = _mm_mullo_epi32(acc, wws);                       \
+        bulk = _mm_add_epi32(tmp5, tmp6);                               \
+    }
+
+    // #define SAVE(x, bulk)
+    //    lineOut[x][0] = (UINT8)((bulk[0] + (1 << 23)) >> 24);
+
+#define SAVE(x, bulk) \
+    lineOut[x] =      \
+        _mm_cvtsi128_si32(_mm_shuffle_epi8(_mm_add_epi32(bulk, b23), shiftmask))
+
+    /* Subtract pixel from left ("0").
+       Add pixels from radius. */
+    for (x = 0; x < edgeA; x++) {
+        acc = mm_cvtepu8_epi32(&lineIn[0]);
+        ADD_FAR(bulk, acc, 0, x + 1);
+        SAVE(x, bulk);
+    }
+    /* Subtract previous pixel from "-radius".
+       Add pixels from radius. */
+    for (x = edgeA; x < edgeB; x++) {
+        acc = mm_cvtepu8_epi32(&lineIn[x]);
+        ADD_FAR(bulk, acc, x - 1, x + 1);
+        SAVE(x, bulk);
+    }
+    /* Subtract previous pixel from "-radius".
+       Add last pixel. */
+    for (x = edgeB; x <= lastx; x++) {
+        acc = mm_cvtepu8_epi32(&lineIn[lastx]);
+        ADD_FAR(bulk, acc, x - 1, lastx);
+        SAVE(x, bulk);
+    }
+
+#undef ADD_FAR
+#undef SAVE
+}
+
+#endif  // defined(__SSE4__)
+
 void static inline ImagingLineBoxBlur32(
     pixel *lineOut,
     pixel *lineIn,
@@ -168,6 +346,41 @@ void static inline ImagingLineBoxBlur8(
 #undef SAVE
 }
 
+void static inline ImagingLineBoxBlurZero8(
+    UINT8 *lineOut, UINT8 *lineIn, int lastx, int edgeA, int edgeB, UINT32 ww, UINT32 fw
+) {
+    int x;
+    UINT32 acc;
+    UINT32 bulk;
+
+#define MOVE_ACC(acc, subtract, add) acc += lineIn[add] - lineIn[subtract];
+
+#define ADD_FAR(bulk, acc, left, right) \
+    bulk = (acc * ww) + (lineIn[left] + lineIn[right]) * fw;
+
+#define SAVE(x, bulk) lineOut[x] = (UINT8)((bulk + (1 << 23)) >> 24)
+
+    for (x = 0; x < edgeA; x++) {
+        acc = lineIn[0];
+        ADD_FAR(bulk, acc, 0, x + 1);
+        SAVE(x, bulk);
+    }
+    for (x = edgeA; x < edgeB; x++) {
+        acc = lineIn[x];
+        ADD_FAR(bulk, acc, x - 1, x + 1);
+        SAVE(x, bulk);
+    }
+    for (x = edgeB; x <= lastx; x++) {
+        acc = lineIn[lastx];
+        ADD_FAR(bulk, acc, x - 1, lastx);
+        SAVE(x, bulk);
+    }
+
+#undef MOVE_ACC
+#undef ADD_FAR
+#undef SAVE
+}
+
 Imaging
 ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
     ImagingSectionCookie cookie;
@@ -186,22 +399,35 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
         return ImagingError_MemoryError();
     }
 
-    // printf(">>> %d %d %d\n", radius, ww, fw);
+    // printf(">>> radius: %d edges: %d %d, weights: %d %d\n",
+    //     radius, edgeA, edgeB, ww, fw);
 
     ImagingSectionEnter(&cookie);
 
     if (imIn->image8) {
         for (y = 0; y < imIn->ysize; y++) {
-            ImagingLineBoxBlur8(
-                (imIn == imOut ? (UINT8 *)lineOut : imOut->image8[y]),
-                imIn->image8[y],
-                imIn->xsize - 1,
-                radius,
-                edgeA,
-                edgeB,
-                ww,
-                fw
-            );
+            if (radius) {
+                ImagingLineBoxBlur8(
+                    (imIn == imOut ? (UINT8 *)lineOut : imOut->image8[y]),
+                    imIn->image8[y],
+                    imIn->xsize - 1,
+                    radius,
+                    edgeA,
+                    edgeB,
+                    ww,
+                    fw
+                );
+            } else {
+                ImagingLineBoxBlurZero8(
+                    (imIn == imOut ? (UINT8 *)lineOut : imOut->image8[y]),
+                    imIn->image8[y],
+                    imIn->xsize - 1,
+                    edgeA,
+                    edgeB,
+                    ww,
+                    fw
+                );
+            }
             if (imIn == imOut) {
                 // Commit.
                 memcpy(imOut->image8[y], lineOut, imIn->xsize);
@@ -209,6 +435,30 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
         }
     } else {
         for (y = 0; y < imIn->ysize; y++) {
+#if defined(__SSE4__)
+            if (radius) {
+                ImagingLineBoxBlur32_SSE4(
+                    imIn == imOut ? (UINT32 *)lineOut : (UINT32 *)imOut->image32[y],
+                    (UINT32 *)imIn->image32[y],
+                    imIn->xsize - 1,
+                    radius,
+                    edgeA,
+                    edgeB,
+                    ww,
+                    fw
+                );
+            } else {
+                ImagingLineBoxBlurZero32_SSE4(
+                    imIn == imOut ? (UINT32 *)lineOut : (UINT32 *)imOut->image32[y],
+                    (UINT32 *)imIn->image32[y],
+                    imIn->xsize - 1,
+                    edgeA,
+                    edgeB,
+                    ww,
+                    fw
+                );
+            }
+#else   // defined(__SSE4__)
             ImagingLineBoxBlur32(
                 imIn == imOut ? (pixel *)lineOut : (pixel *)imOut->image32[y],
                 (pixel *)imIn->image32[y],
@@ -219,6 +469,7 @@ ImagingHorizontalBoxBlur(Imaging imOut, Imaging imIn, float floatRadius) {
                 ww,
                 fw
             );
+#endif  // defined(__SSE4__)
             if (imIn == imOut) {
                 // Commit.
                 memcpy(imOut->image32[y], lineOut, imIn->xsize * 4);
