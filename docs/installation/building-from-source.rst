@@ -195,11 +195,6 @@ Many of Pillow's features require external libraries:
             mingw-w64-x86_64-libimagequant \
             mingw-w64-x86_64-libraqm
 
-    https://www.msys2.org/docs/python/ states that setuptools >= 60 does not work with
-    MSYS2. To workaround this, before installing Pillow you must run::
-
-        export SETUPTOOLS_USE_DISTUTILS=stdlib
-
 .. tab:: FreeBSD
 
     .. Note:: Only FreeBSD 10 and 11 tested
