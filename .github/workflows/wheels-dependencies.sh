@@ -50,11 +50,7 @@ if [[ -n "$IS_MACOS" ]]; then
 else
     GIFLIB_VERSION=5.2.1
 fi
-if [[ -n "$IS_MACOS" ]]; then
-    ZLIB_VERSION=1.3.1
-else
-    ZLIB_NG_VERSION=2.2.2
-fi
+ZLIB_NG_VERSION=2.2.2
 LIBWEBP_VERSION=1.4.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -111,11 +107,7 @@ function build {
     if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    if [ -n "$IS_MACOS" ]; then
-        build_new_zlib
-    else
-        build_zlib_ng
-    fi
+    build_zlib_ng
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
