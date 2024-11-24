@@ -69,16 +69,16 @@ jobs:
               mingw-w64-x86_64-openjpeg2 \
               mingw-w64-x86_64-python3-numpy \
               mingw-w64-x86_64-python3-olefile \
-              mingw-w64-x86_64-python3-setuptools \
+              mingw-w64-x86_64-python3-pip \
+              mingw-w64-x86_64-python-pytest \
+              mingw-w64-x86_64-python-pytest-cov \
+              mingw-w64-x86_64-python-pytest-timeout \
               mingw-w64-x86_64-python-pyqt6
-
-          python3 -m ensurepip
-          python3 -m pip install pyroma pytest pytest-cov pytest-timeout
 
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: SETUPTOOLS_USE_DISTUTILS="stdlib" CFLAGS="-coverage" python3 -m pip install .
+        run: CFLAGS="-coverage" python3 -m pip install .
 
       - name: Test Pillow
         run: |
@@ -86,9 +86,9 @@ jobs:
           .ci/test.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: GHA_Windows
           name: "MSYS2 MinGW"
           token: ${{ secrets.CODECOV_ORG_TOKEN }}
