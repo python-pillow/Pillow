@@ -2,26 +2,12 @@
 Changelog (Pillow)
 ==================
 
-11.1.0 (unreleased)
--------------------
+11.1.0 and newer
+----------------
 
-- Removed use of os.path.realpath #8545
-  [radarhere]
+See GitHub Releases:
 
-- Allow linking to zlib import library on Windows #8519
-  [cubanpit, nulano]
-
-- Detach PyQt6 QPixmap instance before returning #8509
-  [radarhere]
-
-- Corrected EMF DPI #8485
-  [radarhere]
-
-- Fix IFDRational with a zero denominator #8474
-  [radarhere]
-
-- Fixed disabling a feature during install #8469
-  [radarhere]
+- https://github.com/python-pillow/Pillow/releases
 
 11.0.0 (2024-10-15)
 -------------------
