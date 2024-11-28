@@ -19,7 +19,6 @@ Please send a pull request to the `main` branch. Please include [documentation](
 - Follow PEP 8.
 - When committing only documentation changes please include `[ci skip]` in the commit message to avoid running tests on AppVeyor.
 - Include [release notes](https://github.com/python-pillow/Pillow/tree/main/docs/releasenotes) as needed or appropriate with your bug fixes, feature additions and tests.
-- Do not add to the [changelog](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst) for proposed changes, as that is updated after changes are merged.
 
 ## Reporting Issues
 

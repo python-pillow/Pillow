@@ -73,7 +73,7 @@ optional-dependencies.typing = [
 optional-dependencies.xmp = [
   "defusedxml",
 ]
-urls.Changelog = "https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst"
+urls.Changelog = "https://github.com/python-pillow/Pillow/releases"
 urls.Documentation = "https://pillow.readthedocs.io"
 urls.Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
 urls.Homepage = "https://python-pillow.org"
