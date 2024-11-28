@@ -112,11 +112,11 @@ class TestFileJpeg:
     )
     def test_default_app_write(
         self,
-        keep_rgb,
-        no_default_app_segments,
-        expect_app0,
-        expect_app14,
-    ):
+        keep_rgb: bool,
+        no_default_app_segments: bool,
+        expect_app0: bool,
+        expect_app14: bool,
+    ) -> None:
         im = self.roundtrip(
             hopper(),
             keep_rgb=keep_rgb,
