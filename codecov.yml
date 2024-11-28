@@ -1,7 +1,7 @@
 # Documentation: https://docs.codecov.com/docs/codecov-yaml
 
 codecov:
-  # Avoid "Missing base report" due to committing CHANGES.rst with "[CI skip]"
+  # Avoid "Missing base report" due to committing with "[CI skip]"
   # https://github.com/codecov/support/issues/363
   # https://docs.codecov.com/docs/comparing-commits
   allow_coverage_offsets: true
