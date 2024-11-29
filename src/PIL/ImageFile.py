@@ -135,7 +135,7 @@ class ImageFile(Image.Image):
         if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
-            self.filename = os.path.realpath(os.fspath(fp))
+            self.filename = os.fspath(fp)
             self._exclusive_fp = True
         else:
             # stream

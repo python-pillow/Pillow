@@ -2493,7 +2493,7 @@ class Image:
         filename: str | bytes = ""
         open_fp = False
         if is_path(fp):
-            filename = os.path.realpath(os.fspath(fp))
+            filename = os.fspath(fp)
             open_fp = True
         elif fp == sys.stdout:
             try:
@@ -2502,7 +2502,7 @@ class Image:
                 pass
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
-            filename = os.path.realpath(os.fspath(fp.name))
+            filename = os.fspath(fp.name)
 
         # may mutate self!
         self._ensure_mutable()
@@ -3406,7 +3406,7 @@ def open(
     exclusive_fp = False
     filename: str | bytes = ""
     if is_path(fp):
-        filename = os.path.realpath(os.fspath(fp))
+        filename = os.fspath(fp)
 
     if filename:
         fp = builtins.open(filename, "rb")
