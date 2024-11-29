@@ -1098,6 +1098,25 @@ class TestFileLibTiff(LibTiffTestCase):
 
                     assert_image_similar(base_im, im, 0.7)
 
+    @pytest.mark.parametrize(
+        "test_file",
+        [
+            "Tests/images/old-style-jpeg-compression-no-samplesperpixel.tif",
+            "Tests/images/old-style-jpeg-compression.tif",
+        ],
+    )
+    def test_buffering(self, test_file: str) -> None:
+        # load exif first
+        with Image.open(open(test_file, "rb", buffering=1048576)) as im:
+            exif = dict(im.getexif())
+
+        # load image before exif
+        with Image.open(open(test_file, "rb", buffering=1048576)) as im2:
+            im2.load()
+            exif_after_load = dict(im2.getexif())
+
+        assert exif == exif_after_load
+
     @pytest.mark.valgrind_known_error(reason="Backtrace in Python Core")
     def test_sampleformat_not_corrupted(self) -> None:
         # Assert that a TIFF image with SampleFormat=UINT tag is not corrupted
