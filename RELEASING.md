@@ -12,7 +12,6 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 * [ ] Check [GitHub Actions](https://github.com/python-pillow/Pillow/actions) and [AppVeyor](https://ci.appveyor.com/project/python-pillow/Pillow) to confirm passing tests in `main` branch.
 * [ ] Check that all the wheel builds pass the tests in the [GitHub Actions "Wheels" workflow](https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml) jobs by manually triggering them.
 * [ ] In compliance with [PEP 440](https://peps.python.org/pep-0440/), update version identifier in `src/PIL/_version.py`
-* [ ] Update `CHANGES.rst`.
 * [ ] Run pre-release check via `make release-test` in a freshly cloned repo.
 * [ ] Create branch and tag for release e.g.:
   ```bash
@@ -34,7 +33,6 @@ Released quarterly on January 2nd, April 1st, July 1st and October 15th.
 Released as needed for security, installation or critical bug fixes.
 
 * [ ] Make necessary changes in `main` branch.
-* [ ] Update `CHANGES.rst`.
 * [ ] Check out release branch e.g.:
   ```bash
   git checkout -t remotes/origin/5.2.x
