@@ -1,0 +1,12 @@
+mypy==1.13.0
+IceSpringPySideStubs-PyQt6
+IceSpringPySideStubs-PySide6
+ipython
+numpy
+packaging
+pytest
+sphinx
+types-atheris
+types-defusedxml
+types-olefile
+types-setuptools

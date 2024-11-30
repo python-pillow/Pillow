@@ -137,6 +137,30 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             /* Compressor configuration */
             jpeg_set_defaults(&context->cinfo);
 
+            /* Prevent RGB -> YCbCr conversion */
+            if (context->keep_rgb) {
+                switch (context->cinfo.in_color_space) {
+                    case JCS_RGB:
+#ifdef JCS_EXTENSIONS
+                    case JCS_EXT_RGBX:
+#endif
+                        switch (context->subsampling) {
+                            case -1: /* Default */
+                            case 0:  /* No subsampling */
+                                break;
+                            default:
+                                /* Would subsample the green and blue
+                                   channels, which doesn't make sense */
+                                state->errcode = IMAGING_CODEC_CONFIG;
+                                return -1;
+                        }
+                        jpeg_set_colorspace(&context->cinfo, JCS_RGB);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             /* Use custom quantization tables */
             if (context->qtables) {
                 int i;
@@ -151,7 +175,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                         i,
                         &context->qtables[i * DCTSIZE2],
                         quality,
-                        FALSE);
+                        FALSE
+                    );
                     context->cinfo.comp_info[i].quant_tbl_no = i;
                     last_q = i;
                 }
@@ -159,7 +184,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     // jpeg_set_defaults created two qtables internally, but we only
                     // wanted one.
                     jpeg_add_quant_table(
-                        &context->cinfo, 1, &context->qtables[0], quality, FALSE);
+                        &context->cinfo, 1, &context->qtables[0], quality, FALSE
+                    );
                 }
                 for (i = last_q; i < context->cinfo.num_components; i++) {
                     context->cinfo.comp_info[i].quant_tbl_no = last_q;
@@ -210,6 +236,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             context->cinfo.smoothing_factor = context->smooth;
             context->cinfo.optimize_coding = (boolean)context->optimize;
+            context->cinfo.restart_interval = context->restart_marker_blocks;
+            context->cinfo.restart_in_rows = context->restart_marker_rows;
             if (context->xdpi > 0 && context->ydpi > 0) {
                 context->cinfo.write_JFIF_header = TRUE;
                 context->cinfo.density_unit = 1; /* dots per inch */
@@ -218,9 +246,9 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             switch (context->streamtype) {
                 case 1:
-                    /* tables only -- not yet implemented */
-                    state->errcode = IMAGING_CODEC_CONFIG;
-                    return -1;
+                    /* tables only */
+                    jpeg_write_tables(&context->cinfo);
+                    goto cleanup;
                 case 2:
                     /* image only */
                     jpeg_suppress_tables(&context->cinfo, TRUE);
@@ -247,7 +275,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     &context->cinfo,
                     JPEG_APP0 + 1,
                     (unsigned char *)context->rawExif,
-                    context->rawExifLen);
+                    context->rawExifLen
+                );
             }
 
             state->state++;
@@ -263,7 +292,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                 memcpy(
                     context->destination.pub.next_output_byte,
                     context->extra + context->extra_offset,
-                    n);
+                    n
+                );
                 context->destination.pub.next_output_byte += n;
                 context->destination.pub.free_in_buffer -= n;
                 context->extra_offset += n;
@@ -279,7 +309,12 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
         case 4:
 
             if (context->comment) {
-                jpeg_write_marker(&context->cinfo, JPEG_COM, (unsigned char *)context->comment, context->comment_size);
+                jpeg_write_marker(
+                    &context->cinfo,
+                    JPEG_COM,
+                    (unsigned char *)context->comment,
+                    context->comment_size
+                );
             }
             state->state++;
 
@@ -294,7 +329,8 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     state->buffer,
                     (UINT8 *)im->image[state->y + state->yoff] +
                         state->xoff * im->pixelsize,
-                    state->xsize);
+                    state->xsize
+                );
                 ok = jpeg_write_scanlines(&context->cinfo, &state->buffer, 1);
                 if (ok != 1) {
                     break;
@@ -316,6 +352,7 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             }
             jpeg_finish_compress(&context->cinfo);
 
+cleanup:
             /* Clean up */
             if (context->comment) {
                 free(context->comment);

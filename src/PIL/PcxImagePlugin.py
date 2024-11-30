@@ -24,9 +24,11 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 import logging
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -36,7 +38,7 @@ from ._binary import o16le as o16
 logger = logging.getLogger(__name__)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[0] == 10 and prefix[1] in [0, 2, 3, 5]
 
 
@@ -48,8 +50,10 @@ class PcxImageFile(ImageFile.ImageFile):
     format = "PCX"
     format_description = "Paintbrush"
 
-    def _open(self):
+    def _open(self) -> None:
         # header
+        assert self.fp is not None
+
         s = self.fp.read(128)
         if not _accept(s):
             msg = "not a PCX file"
@@ -91,7 +95,7 @@ class PcxImageFile(ImageFile.ImageFile):
             self.fp.seek(-769, io.SEEK_END)
             s = self.fp.read(769)
             if len(s) == 769 and s[0] == 12:
-                # check if the palette is linear greyscale
+                # check if the palette is linear grayscale
                 for i in range(256):
                     if s[i * 3 + 1 : i * 3 + 4] != o8(i) * 3:
                         mode = rawmode = "P"
@@ -108,7 +112,7 @@ class PcxImageFile(ImageFile.ImageFile):
             msg = "unknown PCX mode"
             raise OSError(msg)
 
-        self.mode = mode
+        self._mode = mode
         self._size = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
         # Don't trust the passed in stride.
@@ -124,7 +128,9 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)
 
-        self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
+        self.tile = [
+            ImageFile._Tile("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))
+        ]
 
 
 # --------------------------------------------------------------------
@@ -140,7 +146,7 @@ SAVE = {
 }
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -194,7 +200,9 @@ def _save(im, fp, filename):
 
     assert fp.tell() == 128
 
-    ImageFile._save(im, fp, [("pcx", (0, 0) + im.size, 0, (rawmode, bits * planes))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("pcx", (0, 0) + im.size, 0, (rawmode, bits * planes))]
+    )
 
     if im.mode == "P":
         # colour palette
@@ -203,7 +211,7 @@ def _save(im, fp, filename):
         palette += b"\x00" * (768 - len(palette))
         fp.write(palette)  # 768 bytes
     elif im.mode == "L":
-        # greyscale palette
+        # grayscale palette
         fp.write(o8(12))
         for i in range(256):
             fp.write(o8(i) * 3)

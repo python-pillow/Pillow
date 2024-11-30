@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from PIL import Image, ImageStat
@@ -5,7 +7,7 @@ from PIL import Image, ImageStat
 from .helper import hopper
 
 
-def test_sanity():
+def test_sanity() -> None:
     im = hopper()
 
     st = ImageStat.Stat(im)
@@ -23,13 +25,13 @@ def test_sanity():
     st.stddev
 
     with pytest.raises(AttributeError):
-        st.spam()
+        st.spam()  # type: ignore[attr-defined]
 
     with pytest.raises(TypeError):
-        ImageStat.Stat(1)
+        ImageStat.Stat(1)  # type: ignore[arg-type]
 
 
-def test_hopper():
+def test_hopper() -> None:
     im = hopper()
 
     st = ImageStat.Stat(im)
@@ -42,7 +44,7 @@ def test_hopper():
     assert st.sum[2] == 1563008
 
 
-def test_constant():
+def test_constant() -> None:
     im = Image.new("L", (128, 128), 128)
 
     st = ImageStat.Stat(im)

@@ -2,19 +2,34 @@
 
 set -e
 
-brew install libtiff libjpeg openjpeg libimagequant webp little-cms2 freetype libraqm
+if [[ "$ImageOS" == "macos13" ]]; then
+    brew uninstall gradle maven
+fi
+brew install \
+    freetype \
+    ghostscript \
+    libimagequant \
+    libjpeg \
+    libtiff \
+    little-cms2 \
+    openjpeg \
+    webp
+if [[ "$ImageOS" == "macos13" ]]; then
+    brew install --ignore-dependencies libraqm
+else
+    brew install libraqm
+fi
+export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"
 
-PYTHONOPTIMIZE=0 python3 -m pip install cffi
 python3 -m pip install coverage
 python3 -m pip install defusedxml
+python3 -m pip install ipython
 python3 -m pip install olefile
 python3 -m pip install -U pytest
 python3 -m pip install -U pytest-cov
 python3 -m pip install -U pytest-timeout
 python3 -m pip install pyroma
-
-# TODO Remove condition when NumPy supports 3.12
-if ! [ "$GHA_PYTHON_VERSION" == "3.12-dev" ]; then python3 -m pip install numpy ; fi
+python3 -m pip install numpy
 
 # extra test images
 pushd depends && ./install_extra_test_images.sh && popd

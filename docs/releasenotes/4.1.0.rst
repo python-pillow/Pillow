@@ -1,8 +1,8 @@
 4.1.0
 -----
 
-Removed Deprecated Items
-========================
+Deprecations
+============
 
 Several deprecated items have been removed.
 
@@ -15,8 +15,11 @@ Several deprecated items have been removed.
   ``PIL.ImageDraw.ImageDraw.setfont`` have been removed.
 
 
+Other Changes
+=============
+
 Closing Files When Opening Images
-=================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The file handling when opening images has been overhauled. Previously,
 Pillow would attempt to close some, but not all image formats
@@ -38,9 +41,8 @@ is specified:
   the underlying file until we are done with the image. The mapping
   will be closed in the ``close`` or ``__del__`` method.
 
-
 Changes to GIF Handling When Saving
-===================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :py:class:`PIL.GifImagePlugin` code has been refactored to fix the flow when
 saving images. There are two external changes that arise from this:
@@ -56,14 +58,14 @@ This refactor fixed some bugs with palette handling when saving
 multiple frame GIFs.
 
 New Method: Image.remap_palette
-===============================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The method :py:meth:`PIL.Image.Image.remap_palette()` has been
 added. This method was hoisted from the GifImagePlugin code used to
 optimize the palette.
 
 Added Decoder Registry and Support for Python Based Decoders
-============================================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There is now a decoder registry similar to the image plugin
 registries. Image plugins can register a decoder, and it will be
@@ -73,7 +75,7 @@ their C based counterparts, they may be easier and quicker to develop
 or safer to run.
 
 Tests
-=====
+^^^^^
 
 Many tests have been added, including correctness tests for image
 formats that have been previously untested.

@@ -15,14 +15,18 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
+from functools import cached_property
+from typing import IO
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import si16be as si16
+from ._binary import si32be as si32
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -42,7 +46,7 @@ MODES = {
 # read PSD images
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] == b"8BPS"
 
 
@@ -55,7 +59,7 @@ class PsdImageFile(ImageFile.ImageFile):
     format_description = "Adobe Photoshop"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         read = self.fp.read
 
         #
@@ -79,7 +83,7 @@ class PsdImageFile(ImageFile.ImageFile):
             mode = "RGBA"
             channels = 4
 
-        self.mode = mode
+        self._mode = mode
         self._size = i32(s, 18), i32(s, 14)
 
         #
@@ -116,18 +120,17 @@ class PsdImageFile(ImageFile.ImageFile):
         #
         # layer and mask information
 
-        self.layers = []
+        self._layers_position = None
 
         size = i32(read(4))
         if size:
             end = self.fp.tell() + size
             size = i32(read(4))
             if size:
-                _layer_data = io.BytesIO(ImageFile._safe_read(self.fp, size))
-                self.layers = _layerinfo(_layer_data, size)
+                self._layers_position = self.fp.tell()
+                self._layers_size = size
             self.fp.seek(end)
-        self.n_frames = len(self.layers)
-        self.is_animated = self.n_frames > 1
+        self._n_frames: int | None = None
 
         #
         # image descriptor
@@ -139,32 +142,55 @@ class PsdImageFile(ImageFile.ImageFile):
         self.frame = 1
         self._min_frame = 1
 
-    def seek(self, layer):
+    @cached_property
+    def layers(
+        self,
+    ) -> list[tuple[str, str, tuple[int, int, int, int], list[ImageFile._Tile]]]:
+        layers = []
+        if self._layers_position is not None:
+            self._fp.seek(self._layers_position)
+            _layer_data = io.BytesIO(ImageFile._safe_read(self._fp, self._layers_size))
+            layers = _layerinfo(_layer_data, self._layers_size)
+        self._n_frames = len(layers)
+        return layers
+
+    @property
+    def n_frames(self) -> int:
+        if self._n_frames is None:
+            self._n_frames = len(self.layers)
+        return self._n_frames
+
+    @property
+    def is_animated(self) -> bool:
+        return len(self.layers) > 1
+
+    def seek(self, layer: int) -> None:
         if not self._seek_check(layer):
             return
 
         # seek to given layer (1..max)
         try:
-            name, mode, bbox, tile = self.layers[layer - 1]
-            self.mode = mode
+            _, mode, _, tile = self.layers[layer - 1]
+            self._mode = mode
             self.tile = tile
             self.frame = layer
             self.fp = self._fp
-            return name, bbox
         except IndexError as e:
             msg = "no such layer"
             raise EOFError(msg) from e
 
-    def tell(self):
+    def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)
         return self.frame
 
 
-def _layerinfo(fp, ct_bytes):
+def _layerinfo(
+    fp: IO[bytes], ct_bytes: int
+) -> list[tuple[str, str, tuple[int, int, int, int], list[ImageFile._Tile]]]:
     # read layerinfo block
     layers = []
 
-    def read(size):
+    def read(size: int) -> bytes:
         return ImageFile._safe_read(fp, size)
 
     ct = si16(read(2))
@@ -176,39 +202,41 @@ def _layerinfo(fp, ct_bytes):
 
     for _ in range(abs(ct)):
         # bounding box
-        y0 = i32(read(4))
-        x0 = i32(read(4))
-        y1 = i32(read(4))
-        x1 = i32(read(4))
+        y0 = si32(read(4))
+        x0 = si32(read(4))
+        y1 = si32(read(4))
+        x1 = si32(read(4))
 
         # image info
-        mode = []
+        bands = []
         ct_types = i16(read(2))
-        types = list(range(ct_types))
-        if len(types) > 4:
+        if ct_types > 4:
+            fp.seek(ct_types * 6 + 12, io.SEEK_CUR)
+            size = i32(read(4))
+            fp.seek(size, io.SEEK_CUR)
             continue
 
-        for _ in types:
+        for _ in range(ct_types):
             type = i16(read(2))
 
             if type == 65535:
-                m = "A"
+                b = "A"
             else:
-                m = "RGBA"[type]
+                b = "RGBA"[type]
 
-            mode.append(m)
+            bands.append(b)
             read(4)  # size
 
         # figure out the image mode
-        mode.sort()
-        if mode == ["R"]:
+        bands.sort()
+        if bands == ["R"]:
             mode = "L"
-        elif mode == ["B", "G", "R"]:
+        elif bands == ["B", "G", "R"]:
             mode = "RGB"
-        elif mode == ["A", "B", "G", "R"]:
+        elif bands == ["A", "B", "G", "R"]:
             mode = "RGBA"
         else:
-            mode = None  # unknown
+            mode = ""  # unknown
 
         # skip over blend flags and extra information
         read(12)  # filler
@@ -235,19 +263,22 @@ def _layerinfo(fp, ct_bytes):
         layers.append((name, mode, (x0, y0, x1, y1)))
 
     # get tiles
+    layerinfo = []
     for i, (name, mode, bbox) in enumerate(layers):
         tile = []
         for m in mode:
             t = _maketile(fp, m, bbox, 1)
             if t:
                 tile.extend(t)
-        layers[i] = name, mode, bbox, tile
+        layerinfo.append((name, mode, bbox, tile))
 
-    return layers
+    return layerinfo
 
 
-def _maketile(file, mode, bbox, channels):
-    tile = None
+def _maketile(
+    file: IO[bytes], mode: str, bbox: tuple[int, int, int, int], channels: int
+) -> list[ImageFile._Tile]:
+    tiles = []
     read = file.read
 
     compression = i16(read(2))
@@ -260,26 +291,24 @@ def _maketile(file, mode, bbox, channels):
     if compression == 0:
         #
         # raw compression
-        tile = []
         for channel in range(channels):
             layer = mode[channel]
             if mode == "CMYK":
                 layer += ";I"
-            tile.append(("raw", bbox, offset, layer))
+            tiles.append(ImageFile._Tile("raw", bbox, offset, layer))
             offset = offset + xsize * ysize
 
     elif compression == 1:
         #
         # packbits compression
         i = 0
-        tile = []
         bytecount = read(channels * ysize * 2)
         offset = file.tell()
         for channel in range(channels):
             layer = mode[channel]
             if mode == "CMYK":
                 layer += ";I"
-            tile.append(("packbits", bbox, offset, layer))
+            tiles.append(ImageFile._Tile("packbits", bbox, offset, layer))
             for y in range(ysize):
                 offset = offset + i16(bytecount, i)
                 i += 2
@@ -289,7 +318,7 @@ def _maketile(file, mode, bbox, channels):
     if offset & 1:
         read(1)  # padding
 
-    return tile
+    return tiles
 
 
 # --------------------------------------------------------------------

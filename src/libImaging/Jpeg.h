@@ -74,6 +74,9 @@ typedef struct {
     /* Optimize Huffman tables (slow) */
     int optimize;
 
+    /* Disable automatic conversion of RGB images to YCbCr if non-zero */
+    int keep_rgb;
+
     /* Stream type (0=full, 1=tables only, 2=image only) */
     int streamtype;
 
@@ -82,6 +85,10 @@ typedef struct {
 
     /* Chroma Subsampling (-1=default, 0=none, 1=medium, 2=high) */
     int subsampling;
+
+    /* Restart marker interval, in MCU blocks or MCU rows, or 0 for none */
+    unsigned int restart_marker_blocks;
+    unsigned int restart_marker_rows;
 
     /* Converter input mode (input to the shuffler) */
     char rawmode[8 + 1];

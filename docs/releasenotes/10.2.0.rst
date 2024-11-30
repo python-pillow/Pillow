@@ -1,0 +1,161 @@
+10.2.0
+------
+
+Security
+========
+
+ImageFont.getmask: Applied ImageFont.MAX_STRING_LENGTH
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using arbitrary strings as text input,
+Pillow will now raise a :py:exc:`ValueError` if the number of characters passed into
+:py:meth:`PIL.ImageFont.ImageFont.getmask` is over a certain limit,
+:py:data:`PIL.ImageFont.MAX_STRING_LENGTH`.
+
+This threshold can be changed by setting :py:data:`PIL.ImageFont.MAX_STRING_LENGTH`. It
+can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
+
+A decompression bomb check has also been added to
+:py:meth:`PIL.ImageFont.ImageFont.getmask`.
+
+ImageFont.getmask: Trim glyph size
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To protect against potential DOS attacks when using PIL fonts,
+:py:class:`PIL.ImageFont.ImageFont` now trims the size of individual glyphs so that
+they do not extend beyond the bitmap image.
+
+:cve:`2023-50447`: ImageMath.eval: Restricted environment keys
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If an attacker has control over the keys passed to the
+``environment`` argument of :py:meth:`!PIL.ImageMath.eval`, they may be able to execute
+arbitrary code. To prevent this, keys matching the names of builtins and keys
+containing double underscores will now raise a :py:exc:`ValueError`.
+
+Deprecations
+============
+
+ImageFile.raise_oserror
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``ImageFile.raise_oserror()`` has been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). The function is undocumented and is only useful for translating
+error codes returned by a codec's ``decode()`` method, which ImageFile already does
+automatically.
+
+IptcImageFile helper functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The functions ``IptcImageFile.dump`` and ``IptcImageFile.i``, and the constant
+``IptcImageFile.PAD`` have been deprecated and will be removed in Pillow
+12.0.0 (2025-10-15). These are undocumented helper functions intended
+for internal use, so there is no replacement. They can each be replaced
+by a single line of code using builtin functions in Python.
+
+API Changes
+===========
+
+Zero or negative font size error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When creating a :py:class:`~PIL.ImageFont.FreeTypeFont` instance, either directly or
+through :py:func:`~PIL.ImageFont.truetype`, if the font size is zero or less, a
+:py:exc:`ValueError` will now be raised.
+
+API Additions
+=============
+
+Added DdsImagePlugin enums
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.DdsImagePlugin.DDSD`, :py:class:`~PIL.DdsImagePlugin.DDSCAPS`,
+:py:class:`~PIL.DdsImagePlugin.DDSCAPS2`, :py:class:`~PIL.DdsImagePlugin.DDPF`,
+:py:class:`~PIL.DdsImagePlugin.DXGI_FORMAT` and :py:class:`~PIL.DdsImagePlugin.D3DFMT`
+enums have been added to :py:class:`PIL.DdsImagePlugin`.
+
+JPEG RGB color space
+^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``keep_rgb`` can now be set to ``True``. This will store RGB
+images in the RGB color space instead of being converted to YCbCr automatically by
+libjpeg. When this option is enabled, attempting to chroma-subsample RGB images with
+the ``subsampling`` option will raise an :py:exc:`OSError`.
+
+JPEG restart marker interval
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``restart_marker_blocks`` and ``restart_marker_rows`` can now
+be used to emit restart markers whenever the specified number of MCU blocks or rows
+have been produced.
+
+JPEG tables-only streamtype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving JPEG files, ``streamtype`` can now be set to 1, for tables-only. This will
+output only the quantization and Huffman tables for the image.
+
+Other Changes
+=============
+
+Added DDS BC4U and DX10 BC1 and BC4 reading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support has been added to read the BC4U format of DDS images.
+
+Support has also been added to read DX10 BC1 and BC4, whether UNORM or
+TYPELESS.
+
+Support arbitrary masks for uncompressed RGB DDS images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All masks are now supported when reading DDS images with uncompressed RGB data,
+allowing for bit counts other than 24 and 32.
+
+Saving TIFF tag RowsPerStrip
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving TIFF images, the TIFF tag RowsPerStrip can now be one of the tags set by
+the user, rather than always being calculated by Pillow.
+
+Optimized ImageColor.getrgb and getcolor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The color calculations of :py:attr:`~PIL.ImageColor.getrgb` and
+:py:attr:`~PIL.ImageColor.getcolor` are now cached using
+:py:func:`functools.lru_cache`. Cached calls of ``getrgb`` are 3.1 - 91.4 times
+as fast and ``getcolor`` are 5.1 - 19.6 times as fast.
+
+Optimized ImageMode.getmode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The lookups made by :py:attr:`~PIL.ImageMode.getmode` are now cached using
+:py:func:`functools.lru_cache` instead of a custom cache. Cached calls are 1.2 times as
+fast.
+
+Optimized ImageStat.Stat count and extrema
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Calculating the :py:attr:`~PIL.ImageStat.Stat.count` and
+:py:attr:`~PIL.ImageStat.Stat.extrema` statistics is now faster. After the
+histogram is created in ``st = ImageStat.Stat(im)``, ``st.count`` is 3 times as fast on
+average and ``st.extrema`` is 12 times as fast on average.
+
+Encoder errors now report error detail as string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:exc:`OSError` exceptions from image encoders now include a textual description of
+the error instead of a numeric error code.
+
+Type hints
+^^^^^^^^^^
+
+Work has begun to add type annotations to Pillow, including:
+
+* :py:mod:`~PIL.ContainerIO`
+* :py:mod:`~PIL.FontFile`, :py:mod:`~PIL.BdfFontFile` and :py:mod:`~PIL.PcfFontFile`
+* :py:mod:`~PIL.ImageChops`
+* :py:mod:`~PIL.ImageMode`
+* :py:mod:`~PIL.ImageSequence`
+* :py:mod:`~PIL.ImageTransform`
+* :py:mod:`~PIL.TarIO`

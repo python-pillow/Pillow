@@ -4,21 +4,33 @@
 Security
 ========
 
-:cve:`2021-25289`: The previous fix for :cve:`2020-35654` was insufficient
-due to incorrect error checking in ``TiffDecode.c``.
+:cve:`2021-25289`: Correct the fix for :cve:`2020-35654`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:cve:`2021-25290`: In ``TiffDecode.c``, there is a negative-offset ``memcpy``
-with an invalid size.
+The previous fix for :cve:`2020-35654` was insufficient due to incorrect
+error checking in ``TiffDecode.c``.
 
-:cve:`2021-25291`: In ``TiffDecode.c``, invalid tile boundaries could lead to
-an out-of-bounds read in ``TIFFReadRGBATile``.
+:cve:`2021-25290`: Fix buffer overflow in ``TiffDecode.c``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:cve:`2021-25292`: The PDF parser has a catastrophic backtracking regex
-that could be used as a DOS attack.
+In ``TiffDecode.c``, there is a negative-offset ``memcpy`` with an invalid size.
 
-:cve:`2021-25293`: There is an out-of-bounds read in ``SgiRleDecode.c``,
-since Pillow 4.3.0.
+:cve:`2021-25291`: Fix buffer overflow in ``TIFFReadRGBATile``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+In ``TiffDecode.c``, invalid tile boundaries could lead to an out-of-bounds
+read in ``TIFFReadRGBATile``.
+
+:cve:`2021-25292`: Fix DOS attack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The PDF parser has a catastrophic backtracking regex that could be used as a
+DOS attack.
+
+:cve:`2021-25293`: Fix buffer overflow in ``SgiRleDecode.c``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There is an out-of-bounds read in ``SgiRleDecode.c`` since Pillow 4.3.0.
 
 Other Changes
 =============

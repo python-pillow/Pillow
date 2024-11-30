@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 
 import pytest
@@ -8,7 +10,13 @@ X = 255
 
 
 class TestLibPack:
-    def assert_pack(self, mode, rawmode, data, *pixels):
+    def assert_pack(
+        self,
+        mode: str,
+        rawmode: str,
+        data: int | bytes,
+        *pixels: float | tuple[int, ...],
+    ) -> None:
         """
         data - either raw bytes with data or just number of bytes in rawmode.
         """
@@ -22,7 +30,7 @@ class TestLibPack:
 
         assert data == im.tobytes("raw", rawmode)
 
-    def test_1(self):
+    def test_1(self) -> None:
         self.assert_pack("1", "1", b"\x01", 0, 0, 0, 0, 0, 0, 0, X)
         self.assert_pack("1", "1;I", b"\x01", X, X, X, X, X, X, X, 0)
         self.assert_pack("1", "1;R", b"\x01", X, 0, 0, 0, 0, 0, 0, 0)
@@ -35,29 +43,29 @@ class TestLibPack:
 
         self.assert_pack("1", "L", b"\xff\x00\x00\xff\x00\x00", X, 0, 0, X, 0, 0)
 
-    def test_L(self):
+    def test_L(self) -> None:
         self.assert_pack("L", "L", 1, 1, 2, 3, 4)
         self.assert_pack("L", "L;16", b"\x00\xc6\x00\xaf", 198, 175)
         self.assert_pack("L", "L;16B", b"\xc6\x00\xaf\x00", 198, 175)
 
-    def test_LA(self):
+    def test_LA(self) -> None:
         self.assert_pack("LA", "LA", 2, (1, 2), (3, 4), (5, 6))
         self.assert_pack("LA", "LA;L", 2, (1, 4), (2, 5), (3, 6))
 
-    def test_La(self):
+    def test_La(self) -> None:
         self.assert_pack("La", "La", 2, (1, 2), (3, 4), (5, 6))
 
-    def test_P(self):
+    def test_P(self) -> None:
         self.assert_pack("P", "P;1", b"\xe4", 1, 1, 1, 0, 0, 255, 0, 0)
         self.assert_pack("P", "P;2", b"\xe4", 3, 2, 1, 0)
         self.assert_pack("P", "P;4", b"\x02\xef", 0, 2, 14, 15)
         self.assert_pack("P", "P", 1, 1, 2, 3, 4)
 
-    def test_PA(self):
+    def test_PA(self) -> None:
         self.assert_pack("PA", "PA", 2, (1, 2), (3, 4), (5, 6))
         self.assert_pack("PA", "PA;L", 2, (1, 4), (2, 5), (3, 6))
 
-    def test_RGB(self):
+    def test_RGB(self) -> None:
         self.assert_pack("RGB", "RGB", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
         self.assert_pack(
             "RGB", "RGBX", b"\x01\x02\x03\xff\x05\x06\x07\xff", (1, 2, 3), (5, 6, 7)
@@ -77,7 +85,7 @@ class TestLibPack:
         self.assert_pack("RGB", "G", 1, (9, 1, 9), (9, 2, 9), (9, 3, 9))
         self.assert_pack("RGB", "B", 1, (9, 9, 1), (9, 9, 2), (9, 9, 3))
 
-    def test_RGBA(self):
+    def test_RGBA(self) -> None:
         self.assert_pack("RGBA", "RGBA", 4, (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12))
         self.assert_pack(
             "RGBA", "RGBA;L", 4, (1, 4, 7, 10), (2, 5, 8, 11), (3, 6, 9, 12)
@@ -99,12 +107,12 @@ class TestLibPack:
         self.assert_pack("RGBA", "B", 1, (6, 7, 1, 9), (6, 7, 2, 0), (6, 7, 3, 9))
         self.assert_pack("RGBA", "A", 1, (6, 7, 0, 1), (6, 7, 0, 2), (0, 7, 0, 3))
 
-    def test_RGBa(self):
+    def test_RGBa(self) -> None:
         self.assert_pack("RGBa", "RGBa", 4, (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12))
         self.assert_pack("RGBa", "BGRa", 4, (3, 2, 1, 4), (7, 6, 5, 8), (11, 10, 9, 12))
         self.assert_pack("RGBa", "aBGR", 4, (4, 3, 2, 1), (8, 7, 6, 5), (12, 11, 10, 9))
 
-    def test_RGBX(self):
+    def test_RGBX(self) -> None:
         self.assert_pack("RGBX", "RGBX", 4, (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12))
         self.assert_pack(
             "RGBX", "RGBX;L", 4, (1, 4, 7, 10), (2, 5, 8, 11), (3, 6, 9, 12)
@@ -132,7 +140,7 @@ class TestLibPack:
         self.assert_pack("RGBX", "B", 1, (6, 7, 1, 9), (6, 7, 2, 0), (6, 7, 3, 9))
         self.assert_pack("RGBX", "X", 1, (6, 7, 0, 1), (6, 7, 0, 2), (0, 7, 0, 3))
 
-    def test_CMYK(self):
+    def test_CMYK(self) -> None:
         self.assert_pack("CMYK", "CMYK", 4, (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12))
         self.assert_pack(
             "CMYK",
@@ -147,7 +155,7 @@ class TestLibPack:
         )
         self.assert_pack("CMYK", "K", 1, (6, 7, 0, 1), (6, 7, 0, 2), (0, 7, 0, 3))
 
-    def test_YCbCr(self):
+    def test_YCbCr(self) -> None:
         self.assert_pack("YCbCr", "YCbCr", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
         self.assert_pack("YCbCr", "YCbCr;L", 3, (1, 4, 7), (2, 5, 8), (3, 6, 9))
         self.assert_pack(
@@ -170,19 +178,19 @@ class TestLibPack:
         self.assert_pack("YCbCr", "Cb", 1, (6, 1, 8, 9), (6, 2, 8, 9), (6, 3, 8, 9))
         self.assert_pack("YCbCr", "Cr", 1, (6, 7, 1, 9), (6, 7, 2, 0), (6, 7, 3, 9))
 
-    def test_LAB(self):
+    def test_LAB(self) -> None:
         self.assert_pack("LAB", "LAB", 3, (1, 130, 131), (4, 133, 134), (7, 136, 137))
         self.assert_pack("LAB", "L", 1, (1, 9, 9), (2, 9, 9), (3, 9, 9))
         self.assert_pack("LAB", "A", 1, (9, 1, 9), (9, 2, 9), (9, 3, 9))
         self.assert_pack("LAB", "B", 1, (9, 9, 1), (9, 9, 2), (9, 9, 3))
 
-    def test_HSV(self):
+    def test_HSV(self) -> None:
         self.assert_pack("HSV", "HSV", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
         self.assert_pack("HSV", "H", 1, (1, 9, 9), (2, 9, 9), (3, 9, 9))
         self.assert_pack("HSV", "S", 1, (9, 1, 9), (9, 2, 9), (9, 3, 9))
         self.assert_pack("HSV", "V", 1, (9, 9, 1), (9, 9, 2), (9, 9, 3))
 
-    def test_I(self):
+    def test_I(self) -> None:
         self.assert_pack("I", "I;16B", 2, 0x0102, 0x0304)
         self.assert_pack(
             "I", "I;32S", b"\x83\x00\x00\x01\x01\x00\x00\x83", 0x01000083, -2097151999
@@ -207,10 +215,13 @@ class TestLibPack:
                 0x01000083,
             )
 
-    def test_I16(self):
-        self.assert_pack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+    def test_I16(self) -> None:
+        if sys.byteorder == "little":
+            self.assert_pack("I;16N", "I;16N", 2, 0x0201, 0x0403, 0x0605)
+        else:
+            self.assert_pack("I;16N", "I;16N", 2, 0x0102, 0x0304, 0x0506)
 
-    def test_F_float(self):
+    def test_F_float(self) -> None:
         self.assert_pack("F", "F;32F", 4, 1.539989614439558e-36, 4.063216068939723e-34)
 
         if sys.byteorder == "little":
@@ -226,7 +237,13 @@ class TestLibPack:
 
 
 class TestLibUnpack:
-    def assert_unpack(self, mode, rawmode, data, *pixels):
+    def assert_unpack(
+        self,
+        mode: str,
+        rawmode: str,
+        data: int | bytes,
+        *pixels: float | tuple[int, ...],
+    ) -> None:
         """
         data - either raw bytes with data or just number of bytes in rawmode.
         """
@@ -239,7 +256,7 @@ class TestLibUnpack:
         for x, pixel in enumerate(pixels):
             assert pixel == im.getpixel((x, 0))
 
-    def test_1(self):
+    def test_1(self) -> None:
         self.assert_unpack("1", "1", b"\x01", 0, 0, 0, 0, 0, 0, 0, X)
         self.assert_unpack("1", "1;I", b"\x01", X, X, X, X, X, X, X, 0)
         self.assert_unpack("1", "1;R", b"\x01", X, 0, 0, 0, 0, 0, 0, 0)
@@ -252,7 +269,7 @@ class TestLibUnpack:
 
         self.assert_unpack("1", "1;8", b"\x00\x01\x02\xff", 0, X, X, X)
 
-    def test_L(self):
+    def test_L(self) -> None:
         self.assert_unpack("L", "L;2", b"\xe4", 255, 170, 85, 0)
         self.assert_unpack("L", "L;2I", b"\xe4", 0, 85, 170, 255)
         self.assert_unpack("L", "L;2R", b"\xe4", 0, 170, 85, 255)
@@ -271,14 +288,14 @@ class TestLibUnpack:
         self.assert_unpack("L", "L;16", b"\x00\xc6\x00\xaf", 198, 175)
         self.assert_unpack("L", "L;16B", b"\xc6\x00\xaf\x00", 198, 175)
 
-    def test_LA(self):
+    def test_LA(self) -> None:
         self.assert_unpack("LA", "LA", 2, (1, 2), (3, 4), (5, 6))
         self.assert_unpack("LA", "LA;L", 2, (1, 4), (2, 5), (3, 6))
 
-    def test_La(self):
+    def test_La(self) -> None:
         self.assert_unpack("La", "La", 2, (1, 2), (3, 4), (5, 6))
 
-    def test_P(self):
+    def test_P(self) -> None:
         self.assert_unpack("P", "P;1", b"\xe4", 1, 1, 1, 0, 0, 1, 0, 0)
         self.assert_unpack("P", "P;2", b"\xe4", 3, 2, 1, 0)
         # erroneous?
@@ -289,11 +306,11 @@ class TestLibUnpack:
         self.assert_unpack("P", "P", 1, 1, 2, 3, 4)
         self.assert_unpack("P", "P;R", 1, 128, 64, 192, 32)
 
-    def test_PA(self):
+    def test_PA(self) -> None:
         self.assert_unpack("PA", "PA", 2, (1, 2), (3, 4), (5, 6))
         self.assert_unpack("PA", "PA;L", 2, (1, 4), (2, 5), (3, 6))
 
-    def test_RGB(self):
+    def test_RGB(self) -> None:
         self.assert_unpack("RGB", "RGB", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
         self.assert_unpack("RGB", "RGB;L", 3, (1, 4, 7), (2, 5, 8), (3, 6, 9))
         self.assert_unpack("RGB", "RGB;R", 3, (128, 64, 192), (32, 160, 96))
@@ -340,7 +357,21 @@ class TestLibUnpack:
             self.assert_unpack("RGB", "G;16N", 2, (0, 1, 0), (0, 3, 0), (0, 5, 0))
             self.assert_unpack("RGB", "B;16N", 2, (0, 0, 1), (0, 0, 3), (0, 0, 5))
 
-    def test_RGBA(self):
+        self.assert_unpack(
+            "RGB", "CMYK", 4, (250, 249, 248), (242, 241, 240), (234, 233, 233)
+        )
+
+    def test_BGR(self) -> None:
+        with pytest.warns(DeprecationWarning):
+            self.assert_unpack(
+                "BGR;15", "BGR;15", 3, (8, 131, 0), (24, 0, 8), (41, 131, 8)
+            )
+            self.assert_unpack(
+                "BGR;16", "BGR;16", 3, (8, 64, 0), (24, 129, 0), (41, 194, 0)
+            )
+            self.assert_unpack("BGR;24", "BGR;24", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
+
+    def test_RGBA(self) -> None:
         self.assert_unpack("RGBA", "LA", 2, (1, 1, 1, 2), (3, 3, 3, 4), (5, 5, 5, 6))
         self.assert_unpack(
             "RGBA", "LA;16B", 4, (1, 1, 1, 3), (5, 5, 5, 7), (9, 9, 9, 11)
@@ -509,7 +540,7 @@ class TestLibUnpack:
                 "RGBA", "A;16N", 2, (0, 0, 0, 1), (0, 0, 0, 3), (0, 0, 0, 5)
             )
 
-    def test_RGBa(self):
+    def test_RGBa(self) -> None:
         self.assert_unpack(
             "RGBa", "RGBa", 4, (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12)
         )
@@ -523,7 +554,7 @@ class TestLibUnpack:
             "RGBa", "aBGR", 4, (4, 3, 2, 1), (8, 7, 6, 5), (12, 11, 10, 9)
         )
 
-    def test_RGBX(self):
+    def test_RGBX(self) -> None:
         self.assert_unpack("RGBX", "RGB", 3, (1, 2, 3, X), (4, 5, 6, X), (7, 8, 9, X))
         self.assert_unpack("RGBX", "RGB;L", 3, (1, 4, 7, X), (2, 5, 8, X), (3, 6, 9, X))
         self.assert_unpack("RGBX", "RGB;16B", 6, (1, 3, 5, X), (7, 9, 11, X))
@@ -568,7 +599,7 @@ class TestLibUnpack:
         self.assert_unpack("RGBX", "B", 1, (0, 0, 1, 0), (0, 0, 2, 0), (0, 0, 3, 0))
         self.assert_unpack("RGBX", "X", 1, (0, 0, 0, 1), (0, 0, 0, 2), (0, 0, 0, 3))
 
-    def test_CMYK(self):
+    def test_CMYK(self) -> None:
         self.assert_unpack(
             "CMYK", "CMYK", 4, (1, 2, 3, 4), (5, 6, 7, 8), (9, 10, 11, 12)
         )
@@ -606,25 +637,25 @@ class TestLibUnpack:
             "CMYK", "K;I", 1, (0, 0, 0, 254), (0, 0, 0, 253), (0, 0, 0, 252)
         )
 
-    def test_YCbCr(self):
+    def test_YCbCr(self) -> None:
         self.assert_unpack("YCbCr", "YCbCr", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
         self.assert_unpack("YCbCr", "YCbCr;L", 3, (1, 4, 7), (2, 5, 8), (3, 6, 9))
         self.assert_unpack("YCbCr", "YCbCrK", 4, (1, 2, 3), (5, 6, 7), (9, 10, 11))
         self.assert_unpack("YCbCr", "YCbCrX", 4, (1, 2, 3), (5, 6, 7), (9, 10, 11))
 
-    def test_LAB(self):
+    def test_LAB(self) -> None:
         self.assert_unpack("LAB", "LAB", 3, (1, 130, 131), (4, 133, 134), (7, 136, 137))
         self.assert_unpack("LAB", "L", 1, (1, 0, 0), (2, 0, 0), (3, 0, 0))
         self.assert_unpack("LAB", "A", 1, (0, 1, 0), (0, 2, 0), (0, 3, 0))
         self.assert_unpack("LAB", "B", 1, (0, 0, 1), (0, 0, 2), (0, 0, 3))
 
-    def test_HSV(self):
+    def test_HSV(self) -> None:
         self.assert_unpack("HSV", "HSV", 3, (1, 2, 3), (4, 5, 6), (7, 8, 9))
         self.assert_unpack("HSV", "H", 1, (1, 0, 0), (2, 0, 0), (3, 0, 0))
         self.assert_unpack("HSV", "S", 1, (0, 1, 0), (0, 2, 0), (0, 3, 0))
         self.assert_unpack("HSV", "V", 1, (0, 0, 1), (0, 0, 2), (0, 0, 3))
 
-    def test_I(self):
+    def test_I(self) -> None:
         self.assert_unpack("I", "I;8", 1, 0x01, 0x02, 0x03, 0x04)
         self.assert_unpack("I", "I;8S", b"\x01\x83", 1, -125)
         self.assert_unpack("I", "I;16", 2, 0x0201, 0x0403)
@@ -665,7 +696,7 @@ class TestLibUnpack:
                 0x01000083,
             )
 
-    def test_F_int(self):
+    def test_F_int(self) -> None:
         self.assert_unpack("F", "F;8", 1, 0x01, 0x02, 0x03, 0x04)
         self.assert_unpack("F", "F;8S", b"\x01\x83", 1, -125)
         self.assert_unpack("F", "F;16", 2, 0x0201, 0x0403)
@@ -704,7 +735,7 @@ class TestLibUnpack:
                 16777348,
             )
 
-    def test_F_float(self):
+    def test_F_float(self) -> None:
         self.assert_unpack(
             "F", "F;32F", 4, 1.539989614439558e-36, 4.063216068939723e-34
         )
@@ -755,7 +786,7 @@ class TestLibUnpack:
                 -1234.5,
             )
 
-    def test_I16(self):
+    def test_I16(self) -> None:
         self.assert_unpack("I;16", "I;16", 2, 0x0201, 0x0403, 0x0605)
         self.assert_unpack("I;16", "I;16B", 2, 0x0102, 0x0304, 0x0506)
         self.assert_unpack("I;16B", "I;16B", 2, 0x0102, 0x0304, 0x0506)
@@ -772,7 +803,7 @@ class TestLibUnpack:
             self.assert_unpack("I;16L", "I;16N", 2, 0x0102, 0x0304, 0x0506)
             self.assert_unpack("I;16N", "I;16N", 2, 0x0102, 0x0304, 0x0506)
 
-    def test_CMYK16(self):
+    def test_CMYK16(self) -> None:
         self.assert_unpack("CMYK", "CMYK;16L", 8, (2, 4, 6, 8), (10, 12, 14, 16))
         self.assert_unpack("CMYK", "CMYK;16B", 8, (1, 3, 5, 7), (9, 11, 13, 15))
         if sys.byteorder == "little":
@@ -780,7 +811,7 @@ class TestLibUnpack:
         else:
             self.assert_unpack("CMYK", "CMYK;16N", 8, (1, 3, 5, 7), (9, 11, 13, 15))
 
-    def test_value_error(self):
+    def test_value_error(self) -> None:
         with pytest.raises(ValueError):
             self.assert_unpack("L", "L", 0, 0)
         with pytest.raises(ValueError):

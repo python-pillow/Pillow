@@ -93,10 +93,14 @@ Generating images
 Registering plugins
 ^^^^^^^^^^^^^^^^^^^
 
+.. autofunction:: preinit
+.. autofunction:: init
+
 .. note::
 
-    These functions are for use by plugin authors. Application authors can
-    ignore them.
+    These functions are for use by plugin authors. They are called when a
+    plugin is loaded as part of :py:meth:`~preinit()` or :py:meth:`~init()`.
+    Application authors can ignore them.
 
 .. autofunction:: register_open
 .. autofunction:: register_mime
@@ -191,6 +195,7 @@ This helps to get the bounding box coordinates of the input image::
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
+.. automethod:: PIL.Image.Image.getxmp
 .. automethod:: PIL.Image.Image.histogram
 .. automethod:: PIL.Image.Image.paste
 .. automethod:: PIL.Image.Image.point
@@ -347,6 +352,8 @@ Instances of the :py:class:`Image` class have the following attributes:
 
     .. seealso:: :attr:`~Image.is_animated`, :func:`~Image.seek` and :func:`~Image.tell`
 
+.. autoattribute:: PIL.Image.Image.has_transparency_data
+
 Classes
 -------
 
@@ -355,7 +362,16 @@ Classes
     :undoc-members:
     :show-inheritance:
 .. autoclass:: PIL.Image.ImagePointHandler
+.. autoclass:: PIL.Image.ImagePointTransform
 .. autoclass:: PIL.Image.ImageTransformHandler
+
+Protocols
+---------
+
+.. autoclass:: SupportsArrayInterface
+    :show-inheritance:
+.. autoclass:: SupportsGetData
+    :show-inheritance:
 
 Constants
 ---------
@@ -365,6 +381,11 @@ Constants
 
     Set to 89,478,485, approximately 0.25GB for a 24-bit (3 bpp) image.
     See :py:meth:`~PIL.Image.open` for more information about how this is used.
+
+.. data:: WARN_POSSIBLE_FORMATS
+
+    Set to false. If true, when an image cannot be identified, warnings will be raised
+    from formats that attempted to read the data.
 
 Transpose methods
 ^^^^^^^^^^^^^^^^^
@@ -410,7 +431,6 @@ See :ref:`concept-filters` for details.
 .. autoclass:: Resampling
     :members:
     :undoc-members:
-    :noindex:
 
 Dither modes
 ^^^^^^^^^^^^

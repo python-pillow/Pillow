@@ -1,15 +1,39 @@
 #!/bin/bash
 # install libimagequant
 
-archive=libimagequant-4.2.0
+archive_name=libimagequant
+archive_version=4.3.3
 
-./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/main/$archive.tar.gz
+archive=$archive_name-$archive_version
 
-pushd $archive/imagequant-sys
+if [[ "$GHA_LIBIMAGEQUANT_CACHE_HIT" == "true" ]]; then
 
-cargo install cargo-c
-cargo cinstall --prefix=/usr --destdir=.
-sudo cp usr/lib/libimagequant.so* /usr/lib/
-sudo cp usr/include/libimagequant.h /usr/include/
+    # Copy cached files into place
+    sudo cp ~/cache-$archive_name/libimagequant.so* /usr/lib/
+    sudo cp ~/cache-$archive_name/libimagequant.h /usr/include/
 
-popd
+else
+
+    # Build from source
+    ./download-and-extract.sh $archive https://raw.githubusercontent.com/python-pillow/pillow-depends/main/$archive.tar.gz
+
+    pushd $archive/imagequant-sys
+
+    cargo install cargo-c
+    cargo cinstall --prefix=/usr --destdir=.
+
+    # Copy into place
+    sudo find usr -name libimagequant.so* -exec cp {} /usr/lib/ \;
+    sudo cp usr/include/libimagequant.h /usr/include/
+
+    if [ -n "$GITHUB_ACTIONS" ]; then
+        # Copy to cache
+        rm -rf ~/cache-$archive_name
+        mkdir ~/cache-$archive_name
+        find usr -name libimagequant.so* -exec cp {} ~/cache-$archive_name/ \;
+        cp usr/include/libimagequant.h ~/cache-$archive_name/
+    fi
+
+    popd
+
+fi

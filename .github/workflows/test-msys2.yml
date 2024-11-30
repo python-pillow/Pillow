@@ -2,13 +2,21 @@ name: Test MSYS2
 
 on:
   push:
+    branches:
+      - "**"
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
       - "docs/**"
+      - "wheels/**"
   pull_request:
     paths-ignore:
       - ".github/workflows/docs.yml"
+      - ".github/workflows/wheels*"
+      - ".gitmodules"
       - "docs/**"
+      - "wheels/**"
   workflow_dispatch:
 
 permissions:
@@ -17,6 +25,9 @@ permissions:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  COVERAGE_CORE: sysmon
 
 jobs:
   build:
@@ -42,7 +53,9 @@ jobs:
 
     steps:
       - name: Checkout Pillow
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up shell
         run: echo "C:\msys64\usr\bin\" >> $env:GITHUB_PATH
@@ -66,11 +79,9 @@ jobs:
               libtiff:p \
               libwebp:p \
               openjpeg2:p \
-              python3-cffi:p \
               python3-numpy:p \
               python3-olefile:p \
               python3-pip:p \
-              python3-setuptools:p \
               python-pyqt6:p
 
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
@@ -78,7 +89,7 @@ jobs:
           pushd depends && ./install_extra_test_images.sh && popd
 
       - name: Build Pillow
-        run: SETUPTOOLS_USE_DISTUTILS="stdlib" .ci/build.sh
+        run: .ci/build.sh
 
       - name: Test Pillow
         run: .ci/test.sh
@@ -87,9 +98,9 @@ jobs:
         run: .ci/after_success.sh
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: GHA_Windows
           name: MSYS2 ${{ matrix.msystem }}
 

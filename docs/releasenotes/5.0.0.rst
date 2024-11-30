@@ -28,7 +28,7 @@ Scripts
 
 The scripts formerly installed by Pillow have been split into a
 separate package, pillow-scripts, living at
-https://github.com/python-pillow/pillow-scripts .
+https://github.com/python-pillow/pillow-scripts.
 
 
 API Changes
@@ -37,7 +37,7 @@ API Changes
 OleFileIO.py
 ^^^^^^^^^^^^
 
-The olefile module is no longer a required dependency when installing Pillow.
+The :pypi:`olefile` module is no longer a required dependency when installing Pillow.
 Support for plugins requiring olefile will not be loaded if it is not
 installed. This allows library consumers to avoid installing this dependency
 if they choose. Some library consumers have little interest in the format

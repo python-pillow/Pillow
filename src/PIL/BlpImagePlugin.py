@@ -29,10 +29,14 @@ BLP files come in many different flavours:
   - DXT5 compression is used if alpha_encoding == 7.
 """
 
+from __future__ import annotations
+
+import abc
 import os
 import struct
 from enum import IntEnum
 from io import BytesIO
+from typing import IO
 
 from . import Image, ImageFile
 
@@ -53,11 +57,13 @@ class AlphaEncoding(IntEnum):
     DXT5 = 7
 
 
-def unpack_565(i):
+def unpack_565(i: int) -> tuple[int, int, int]:
     return ((i >> 11) & 0x1F) << 3, ((i >> 5) & 0x3F) << 2, (i & 0x1F) << 3
 
 
-def decode_dxt1(data, alpha=False):
+def decode_dxt1(
+    data: bytes, alpha: bool = False
+) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
@@ -65,9 +71,9 @@ def decode_dxt1(data, alpha=False):
     blocks = len(data) // 8  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
+    for block_index in range(blocks):
         # Decode next 8-byte block.
-        idx = block * 8
+        idx = block_index * 8
         color0, color1, bits = struct.unpack_from("<HHI", data, idx)
 
         r0, g0, b0 = unpack_565(color0)
@@ -112,7 +118,7 @@ def decode_dxt1(data, alpha=False):
     return ret
 
 
-def decode_dxt3(data):
+def decode_dxt3(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4*width pixels)
     """
@@ -120,8 +126,8 @@ def decode_dxt3(data):
     blocks = len(data) // 16  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
-        idx = block * 16
+    for block_index in range(blocks):
+        idx = block_index * 16
         block = data[idx : idx + 16]
         # Decode next 16-byte block.
         bits = struct.unpack_from("<8B", block)
@@ -165,7 +171,7 @@ def decode_dxt3(data):
     return ret
 
 
-def decode_dxt5(data):
+def decode_dxt5(data: bytes) -> tuple[bytearray, bytearray, bytearray, bytearray]:
     """
     input: one "row" of data (i.e. will produce 4 * width pixels)
     """
@@ -173,8 +179,8 @@ def decode_dxt5(data):
     blocks = len(data) // 16  # number of blocks in row
     ret = (bytearray(), bytearray(), bytearray(), bytearray())
 
-    for block in range(blocks):
-        idx = block * 16
+    for block_index in range(blocks):
+        idx = block_index * 16
         block = data[idx : idx + 16]
         # Decode next 16-byte block.
         a0, a1 = struct.unpack_from("<BB", block)
@@ -239,7 +245,7 @@ class BLPFormatError(NotImplementedError):
     pass
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] in (b"BLP1", b"BLP2")
 
 
@@ -251,7 +257,7 @@ class BlpImageFile(ImageFile.ImageFile):
     format = "BLP"
     format_description = "Blizzard Mipmap Format"
 
-    def _open(self):
+    def _open(self) -> None:
         self.magic = self.fp.read(4)
 
         self.fp.seek(5, os.SEEK_CUR)
@@ -266,14 +272,14 @@ class BlpImageFile(ImageFile.ImageFile):
             msg = f"Bad BLP magic {repr(self.magic)}"
             raise BLPFormatError(msg)
 
-        self.mode = "RGBA" if self._blp_alpha_depth else "RGB"
-        self.tile = [(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
+        self._mode = "RGBA" if self._blp_alpha_depth else "RGB"
+        self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
 
 
 class _BLPBaseDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         try:
             self._read_blp_header()
             self._load()
@@ -282,7 +288,12 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             raise OSError(msg) from e
         return -1, 0
 
-    def _read_blp_header(self):
+    @abc.abstractmethod
+    def _load(self) -> None:
+        pass
+
+    def _read_blp_header(self) -> None:
+        assert self.fd is not None
         self.fd.seek(4)
         (self._blp_compression,) = struct.unpack("<i", self._safe_read(4))
 
@@ -301,10 +312,11 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
         self._blp_offsets = struct.unpack("<16I", self._safe_read(16 * 4))
         self._blp_lengths = struct.unpack("<16I", self._safe_read(16 * 4))
 
-    def _safe_read(self, length):
+    def _safe_read(self, length: int) -> bytes:
+        assert self.fd is not None
         return ImageFile._safe_read(self.fd, length)
 
-    def _read_palette(self):
+    def _read_palette(self) -> list[tuple[int, int, int, int]]:
         ret = []
         for i in range(256):
             try:
@@ -314,7 +326,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             ret.append((b, g, r, a))
         return ret
 
-    def _read_bgra(self, palette):
+    def _read_bgra(self, palette: list[tuple[int, int, int, int]]) -> bytearray:
         data = bytearray()
         _data = BytesIO(self._safe_read(self._blp_lengths[0]))
         while True:
@@ -323,7 +335,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
             except struct.error:
                 break
             b, g, r, a = palette[offset]
-            d = (r, g, b)
+            d: tuple[int, ...] = (r, g, b)
             if self._blp_alpha_depth:
                 d += (a,)
             data.extend(d)
@@ -331,7 +343,7 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
 
 
 class BLP1Decoder(_BLPBaseDecoder):
-    def _load(self):
+    def _load(self) -> None:
         if self._blp_compression == Format.JPEG:
             self._decode_jpeg_stream()
 
@@ -339,7 +351,7 @@ class BLP1Decoder(_BLPBaseDecoder):
             if self._blp_encoding in (4, 5):
                 palette = self._read_palette()
                 data = self._read_bgra(palette)
-                self.set_as_raw(bytes(data))
+                self.set_as_raw(data)
             else:
                 msg = f"Unsupported BLP encoding {repr(self._blp_encoding)}"
                 raise BLPFormatError(msg)
@@ -347,29 +359,33 @@ class BLP1Decoder(_BLPBaseDecoder):
             msg = f"Unsupported BLP compression {repr(self._blp_encoding)}"
             raise BLPFormatError(msg)
 
-    def _decode_jpeg_stream(self):
+    def _decode_jpeg_stream(self) -> None:
         from .JpegImagePlugin import JpegImageFile
 
         (jpeg_header_size,) = struct.unpack("<I", self._safe_read(4))
         jpeg_header = self._safe_read(jpeg_header_size)
+        assert self.fd is not None
         self._safe_read(self._blp_offsets[0] - self.fd.tell())  # What IS this?
         data = self._safe_read(self._blp_lengths[0])
         data = jpeg_header + data
-        data = BytesIO(data)
-        image = JpegImageFile(data)
+        image = JpegImageFile(BytesIO(data))
         Image._decompression_bomb_check(image.size)
         if image.mode == "CMYK":
             decoder_name, extents, offset, args = image.tile[0]
-            image.tile = [(decoder_name, extents, offset, (args[0], "CMYK"))]
+            assert isinstance(args, tuple)
+            image.tile = [
+                ImageFile._Tile(decoder_name, extents, offset, (args[0], "CMYK"))
+            ]
         r, g, b = image.convert("RGB").split()
-        image = Image.merge("RGB", (b, g, r))
-        self.set_as_raw(image.tobytes())
+        reversed_image = Image.merge("RGB", (b, g, r))
+        self.set_as_raw(reversed_image.tobytes())
 
 
 class BLP2Decoder(_BLPBaseDecoder):
-    def _load(self):
+    def _load(self) -> None:
         palette = self._read_palette()
 
+        assert self.fd is not None
         self.fd.seek(self._blp_offsets[0])
 
         if self._blp_compression == 1:
@@ -410,26 +426,30 @@ class BLP2Decoder(_BLPBaseDecoder):
             msg = f"Unknown BLP compression {repr(self._blp_compression)}"
             raise BLPFormatError(msg)
 
-        self.set_as_raw(bytes(data))
+        self.set_as_raw(data)
 
 
 class BLPEncoder(ImageFile.PyEncoder):
     _pushes_fd = True
 
-    def _write_palette(self):
+    def _write_palette(self) -> bytes:
         data = b""
+        assert self.im is not None
         palette = self.im.getpalette("RGBA", "RGBA")
-        for i in range(256):
+        for i in range(len(palette) // 4):
             r, g, b, a = palette[i * 4 : (i + 1) * 4]
             data += struct.pack("<4B", b, g, r, a)
+        while len(data) < 256 * 4:
+            data += b"\x00" * 4
         return data
 
-    def encode(self, bufsize):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         palette_data = self._write_palette()
 
         offset = 20 + 16 * 4 * 2 + len(palette_data)
         data = struct.pack("<16I", offset, *((0,) * 15))
 
+        assert self.im is not None
         w, h = self.im.size
         data += struct.pack("<16I", w * h, *((0,) * 15))
 
@@ -442,7 +462,7 @@ class BLPEncoder(ImageFile.PyEncoder):
         return len(data), 0, data
 
 
-def _save(im, fp, filename, save_all=False):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "P":
         msg = "Unsupported BLP image mode"
         raise ValueError(msg)
@@ -450,6 +470,7 @@ def _save(im, fp, filename, save_all=False):
     magic = b"BLP1" if im.encoderinfo.get("blp_version") == "BLP1" else b"BLP2"
     fp.write(magic)
 
+    assert im.palette is not None
     fp.write(struct.pack("<i", 1))  # Uncompressed or DirectX compression
     fp.write(struct.pack("<b", Encoding.UNCOMPRESSED))
     fp.write(struct.pack("<b", 1 if im.palette.mode == "RGBA" else 0))
@@ -460,7 +481,7 @@ def _save(im, fp, filename, save_all=False):
         fp.write(struct.pack("<i", 5))
         fp.write(struct.pack("<i", 0))
 
-    ImageFile._save(im, fp, [("BLP", (0, 0) + im.size, 0, im.mode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("BLP", (0, 0) + im.size, 0, im.mode)])
 
 
 Image.register_open(BlpImageFile.format, BlpImageFile, _accept)

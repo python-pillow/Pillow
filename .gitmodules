@@ -1,0 +1,3 @@
+[submodule "multibuild"]
+    path = wheels/multibuild
+    url = https://github.com/multi-build/multibuild.git

@@ -1,10 +1,14 @@
+from __future__ import annotations
+
+from collections.abc import Generator
+
 import pytest
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFile, ImageFilter
 
 
 @pytest.fixture
-def test_images():
+def test_images() -> Generator[dict[str, ImageFile.ImageFile], None, None]:
     ims = {
         "im": Image.open("Tests/images/hopper.ppm"),
         "snakes": Image.open("Tests/images/color_snakes.png"),
@@ -16,7 +20,7 @@ def test_images():
             im.close()
 
 
-def test_filter_api(test_images):
+def test_filter_api(test_images: dict[str, ImageFile.ImageFile]) -> None:
     im = test_images["im"]
 
     test_filter = ImageFilter.GaussianBlur(2.0)
@@ -24,13 +28,13 @@ def test_filter_api(test_images):
     assert i.mode == "RGB"
     assert i.size == (128, 128)
 
-    test_filter = ImageFilter.UnsharpMask(2.0, 125, 8)
-    i = im.filter(test_filter)
+    test_filter2 = ImageFilter.UnsharpMask(2.0, 125, 8)
+    i = im.filter(test_filter2)
     assert i.mode == "RGB"
     assert i.size == (128, 128)
 
 
-def test_usm_formats(test_images):
+def test_usm_formats(test_images: dict[str, ImageFile.ImageFile]) -> None:
     im = test_images["im"]
 
     usm = ImageFilter.UnsharpMask
@@ -48,13 +52,12 @@ def test_usm_formats(test_images):
         im.convert("YCbCr").filter(usm)
 
 
-def test_blur_formats(test_images):
+def test_blur_formats(test_images: dict[str, ImageFile.ImageFile]) -> None:
     im = test_images["im"]
 
     blur = ImageFilter.GaussianBlur
     with pytest.raises(ValueError):
         im.convert("1").filter(blur)
-    blur(im.convert("L"))
     with pytest.raises(ValueError):
         im.convert("I").filter(blur)
     with pytest.raises(ValueError):
@@ -66,7 +69,7 @@ def test_blur_formats(test_images):
         im.convert("YCbCr").filter(blur)
 
 
-def test_usm_accuracy(test_images):
+def test_usm_accuracy(test_images: dict[str, ImageFile.ImageFile]) -> None:
     snakes = test_images["snakes"]
 
     src = snakes.convert("RGB")
@@ -75,7 +78,7 @@ def test_usm_accuracy(test_images):
     assert i.tobytes() == src.tobytes()
 
 
-def test_blur_accuracy(test_images):
+def test_blur_accuracy(test_images: dict[str, ImageFile.ImageFile]) -> None:
     snakes = test_images["snakes"]
 
     i = snakes.filter(ImageFilter.GaussianBlur(0.4))
@@ -98,7 +101,7 @@ def test_blur_accuracy(test_images):
         assert i.im.getpixel((x, y))[c] >= 250
     # Fuzzy match.
 
-    def gp(x, y):
+    def gp(x: int, y: int) -> tuple[int, ...]:
         return i.im.getpixel((x, y))
 
     assert 236 <= gp(7, 4)[0] <= 239

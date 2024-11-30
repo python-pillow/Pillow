@@ -14,11 +14,23 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
+
+import abc
 import functools
+from collections.abc import Sequence
+from types import ModuleType
+from typing import TYPE_CHECKING, Any, Callable, cast
+
+if TYPE_CHECKING:
+    from . import _imaging
+    from ._typing import NumpyArray
 
 
 class Filter:
-    pass
+    @abc.abstractmethod
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
+        pass
 
 
 class MultibandFilter(Filter):
@@ -26,7 +38,9 @@ class MultibandFilter(Filter):
 
 
 class BuiltinFilter(MultibandFilter):
-    def filter(self, image):
+    filterargs: tuple[Any, ...]
+
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         if image.mode == "P":
             msg = "cannot filter palette images"
             raise ValueError(msg)
@@ -35,26 +49,29 @@ class BuiltinFilter(MultibandFilter):
 
 class Kernel(BuiltinFilter):
     """
-    Create a convolution kernel. The current version only
-    supports 3x3 and 5x5 integer and floating point kernels.
+    Create a convolution kernel. This only supports 3x3 and 5x5 integer and floating
+    point kernels.
 
-    In the current version, kernels can only be applied to
-    "L" and "RGB" images.
+    Kernels can only be applied to "L" and "RGB" images.
 
-    :param size: Kernel size, given as (width, height). In the current
-                    version, this must be (3,3) or (5,5).
-    :param kernel: A sequence containing kernel weights. The kernel will
-                   be flipped vertically before being applied to the image.
-    :param scale: Scale factor. If given, the result for each pixel is
-                    divided by this value. The default is the sum of the
-                    kernel weights.
-    :param offset: Offset. If given, this value is added to the result,
-                    after it has been divided by the scale factor.
+    :param size: Kernel size, given as (width, height). This must be (3,3) or (5,5).
+    :param kernel: A sequence containing kernel weights. The kernel will be flipped
+                   vertically before being applied to the image.
+    :param scale: Scale factor. If given, the result for each pixel is divided by this
+                  value. The default is the sum of the kernel weights.
+    :param offset: Offset. If given, this value is added to the result, after it has
+                   been divided by the scale factor.
     """
 
     name = "Kernel"
 
-    def __init__(self, size, kernel, scale=None, offset=0):
+    def __init__(
+        self,
+        size: tuple[int, int],
+        kernel: Sequence[float],
+        scale: float | None = None,
+        offset: float = 0,
+    ) -> None:
         if scale is None:
             # default scale is sum of kernel
             scale = functools.reduce(lambda a, b: a + b, kernel)
@@ -77,11 +94,11 @@ class RankFilter(Filter):
 
     name = "Rank"
 
-    def __init__(self, size, rank):
+    def __init__(self, size: int, rank: int) -> None:
         self.size = size
         self.rank = rank
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         if image.mode == "P":
             msg = "cannot filter palette images"
             raise ValueError(msg)
@@ -99,7 +116,7 @@ class MedianFilter(RankFilter):
 
     name = "Median"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = size * size // 2
 
@@ -114,7 +131,7 @@ class MinFilter(RankFilter):
 
     name = "Min"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = 0
 
@@ -129,7 +146,7 @@ class MaxFilter(RankFilter):
 
     name = "Max"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.rank = size * size - 1
 
@@ -145,10 +162,10 @@ class ModeFilter(Filter):
 
     name = "Mode"
 
-    def __init__(self, size=3):
+    def __init__(self, size: int = 3) -> None:
         self.size = size
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         return image.modefilter(self.size)
 
 
@@ -157,16 +174,22 @@ class GaussianBlur(MultibandFilter):
     approximates a Gaussian kernel. For details on accuracy see
     <https://www.mia.uni-saarland.de/Publications/gwosdek-ssvm11.pdf>
 
-    :param radius: Standard deviation of the Gaussian kernel.
+    :param radius: Standard deviation of the Gaussian kernel. Either a sequence of two
+                   numbers for x and y, or a single number for both.
     """
 
     name = "GaussianBlur"
 
-    def __init__(self, radius=2):
+    def __init__(self, radius: float | Sequence[float] = 2) -> None:
         self.radius = radius
 
-    def filter(self, image):
-        return image.gaussian_blur(self.radius)
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
+        xy = self.radius
+        if isinstance(xy, (int, float)):
+            xy = (xy, xy)
+        if xy == (0, 0):
+            return image.copy()
+        return image.gaussian_blur(xy)
 
 
 class BoxBlur(MultibandFilter):
@@ -176,21 +199,29 @@ class BoxBlur(MultibandFilter):
     which runs in linear time relative to the size of the image
     for any radius value.
 
-    :param radius: Size of the box in one direction. Radius 0 does not blur,
-                   returns an identical image. Radius 1 takes 1 pixel
-                   in each direction, i.e. 9 pixels in total.
+    :param radius: Size of the box in a direction. Either a sequence of two numbers for
+                   x and y, or a single number for both.
+
+                   Radius 0 does not blur, returns an identical image.
+                   Radius 1 takes 1 pixel in each direction, i.e. 9 pixels in total.
     """
 
     name = "BoxBlur"
 
-    def __init__(self, radius):
-        if radius < 0:
+    def __init__(self, radius: float | Sequence[float]) -> None:
+        xy = radius if isinstance(radius, (tuple, list)) else (radius, radius)
+        if xy[0] < 0 or xy[1] < 0:
             msg = "radius must be >= 0"
             raise ValueError(msg)
         self.radius = radius
 
-    def filter(self, image):
-        return image.box_blur(self.radius)
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
+        xy = self.radius
+        if isinstance(xy, (int, float)):
+            xy = (xy, xy)
+        if xy == (0, 0):
+            return image.copy()
+        return image.box_blur(xy)
 
 
 class UnsharpMask(MultibandFilter):
@@ -206,16 +237,18 @@ class UnsharpMask(MultibandFilter):
 
     .. _digital unsharp masking: https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
 
-    """  # noqa: E501
+    """
 
     name = "UnsharpMask"
 
-    def __init__(self, radius=2, percent=150, threshold=3):
+    def __init__(
+        self, radius: float = 2, percent: int = 150, threshold: int = 3
+    ) -> None:
         self.radius = radius
         self.percent = percent
         self.threshold = threshold
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         return image.unsharp_mask(self.radius, self.percent, self.threshold)
 
 
@@ -360,7 +393,14 @@ class Color3DLUT(MultibandFilter):
 
     name = "Color 3D LUT"
 
-    def __init__(self, size, table, channels=3, target_mode=None, **kwargs):
+    def __init__(
+        self,
+        size: int | tuple[int, int, int],
+        table: Sequence[float] | Sequence[Sequence[int]] | NumpyArray,
+        channels: int = 3,
+        target_mode: str | None = None,
+        **kwargs: bool,
+    ) -> None:
         if channels not in (3, 4):
             msg = "Only 3 or 4 output channels are supported"
             raise ValueError(msg)
@@ -374,23 +414,24 @@ class Color3DLUT(MultibandFilter):
         items = size[0] * size[1] * size[2]
         wrong_size = False
 
-        numpy = None
+        numpy: ModuleType | None = None
         if hasattr(table, "shape"):
             try:
                 import numpy
-            except ImportError:  # pragma: no cover
+            except ImportError:
                 pass
 
         if numpy and isinstance(table, numpy.ndarray):
+            numpy_table: NumpyArray = table
             if copy_table:
-                table = table.copy()
+                numpy_table = numpy_table.copy()
 
-            if table.shape in [
+            if numpy_table.shape in [
                 (items * channels,),
                 (items, channels),
                 (size[2], size[1], size[0], channels),
             ]:
-                table = table.reshape(items * channels)
+                table = numpy_table.reshape(items * channels)
             else:
                 wrong_size = True
 
@@ -400,7 +441,8 @@ class Color3DLUT(MultibandFilter):
 
             # Convert to a flat list
             if table and isinstance(table[0], (list, tuple)):
-                table, raw_table = [], table
+                raw_table = cast(Sequence[Sequence[int]], table)
+                flat_table: list[int] = []
                 for pixel in raw_table:
                     if len(pixel) != channels:
                         msg = (
@@ -408,7 +450,8 @@ class Color3DLUT(MultibandFilter):
                             f"have a length of {channels}."
                         )
                         raise ValueError(msg)
-                    table.extend(pixel)
+                    flat_table.extend(pixel)
+                table = flat_table
 
         if wrong_size or len(table) != items * channels:
             msg = (
@@ -421,7 +464,7 @@ class Color3DLUT(MultibandFilter):
         self.table = table
 
     @staticmethod
-    def _check_size(size):
+    def _check_size(size: Any) -> tuple[int, int, int]:
         try:
             _, _, _ = size
         except ValueError as e:
@@ -429,7 +472,7 @@ class Color3DLUT(MultibandFilter):
             raise ValueError(msg) from e
         except TypeError:
             size = (size, size, size)
-        size = [int(x) for x in size]
+        size = tuple(int(x) for x in size)
         for size_1d in size:
             if not 2 <= size_1d <= 65:
                 msg = "Size should be in [2, 65] range."
@@ -437,7 +480,13 @@ class Color3DLUT(MultibandFilter):
         return size
 
     @classmethod
-    def generate(cls, size, callback, channels=3, target_mode=None):
+    def generate(
+        cls,
+        size: int | tuple[int, int, int],
+        callback: Callable[[float, float, float], tuple[float, ...]],
+        channels: int = 3,
+        target_mode: str | None = None,
+    ) -> Color3DLUT:
         """Generates new LUT using provided callback.
 
         :param size: Size of the table. Passed to the constructor.
@@ -454,7 +503,7 @@ class Color3DLUT(MultibandFilter):
             msg = "Only 3 or 4 output channels are supported"
             raise ValueError(msg)
 
-        table = [0] * (size_1d * size_2d * size_3d * channels)
+        table: list[float] = [0] * (size_1d * size_2d * size_3d * channels)
         idx_out = 0
         for b in range(size_3d):
             for g in range(size_2d):
@@ -472,7 +521,13 @@ class Color3DLUT(MultibandFilter):
             _copy_table=False,
         )
 
-    def transform(self, callback, with_normals=False, channels=None, target_mode=None):
+    def transform(
+        self,
+        callback: Callable[..., tuple[float, ...]],
+        with_normals: bool = False,
+        channels: int | None = None,
+        target_mode: str | None = None,
+    ) -> Color3DLUT:
         """Transforms the table values using provided callback and returns
         a new LUT with altered values.
 
@@ -526,7 +581,7 @@ class Color3DLUT(MultibandFilter):
             _copy_table=False,
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         r = [
             f"{self.__class__.__name__} from {self.table.__class__.__name__}",
             "size={:d}x{:d}x{:d}".format(*self.size),
@@ -536,7 +591,7 @@ class Color3DLUT(MultibandFilter):
             r.append(f"target_mode={self.mode}")
         return "<{}>".format(" ".join(r))
 
-    def filter(self, image):
+    def filter(self, image: _imaging.ImagingCore) -> _imaging.ImagingCore:
         from . import Image
 
         return image.color_lut_3d(

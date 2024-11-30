@@ -3,7 +3,7 @@
 File Handling in Pillow
 =======================
 
-When opening a file as an image, Pillow requires a filename, ``pathlib.Path``
+When opening a file as an image, Pillow requires a filename, ``os.PathLike``
 object, or a file-like object. Pillow uses the filename or ``Path`` to open a
 file, so for the rest of this article, they will all be treated as a file-like
 object.

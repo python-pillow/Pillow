@@ -1,18 +1,25 @@
+from __future__ import annotations
+
 import warnings
+from typing import TYPE_CHECKING
 
 import pytest
 
-from PIL import Image
+from PIL import Image, _typing
 
 from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
 
-numpy = pytest.importorskip("numpy", reason="NumPy not installed")
+if TYPE_CHECKING:
+    import numpy
+    import numpy.typing as npt
+else:
+    numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
 TEST_IMAGE_SIZE = (10, 10)
 
 
-def test_numpy_to_image():
-    def to_image(dtype, bands=1, boolean=0):
+def test_numpy_to_image() -> None:
+    def to_image(dtype: npt.DTypeLike, bands: int = 1, boolean: int = 0) -> Image.Image:
         if bands == 1:
             if boolean:
                 data = [0, 255] * 50
@@ -80,7 +87,7 @@ def test_numpy_to_image():
 
 # Based on an erring example at
 # https://stackoverflow.com/questions/10854903/what-is-causing-dimension-dependent-attributeerror-in-pil-fromarray-function
-def test_3d_array():
+def test_3d_array() -> None:
     size = (5, TEST_IMAGE_SIZE[0], TEST_IMAGE_SIZE[1])
     a = numpy.ones(size, dtype=numpy.uint8)
     assert_image(Image.fromarray(a[1, :, :]), "L", TEST_IMAGE_SIZE)
@@ -92,29 +99,30 @@ def test_3d_array():
     assert_image(Image.fromarray(a[:, :, 1]), "L", TEST_IMAGE_SIZE)
 
 
-def test_1d_array():
+def test_1d_array() -> None:
     a = numpy.ones(5, dtype=numpy.uint8)
     assert_image(Image.fromarray(a), "L", (1, 5))
 
 
-def _test_img_equals_nparray(img, np):
-    assert len(np.shape) >= 2
-    np_size = np.shape[1], np.shape[0]
+def _test_img_equals_nparray(img: Image.Image, np_img: _typing.NumpyArray) -> None:
+    assert len(np_img.shape) >= 2
+    np_size = np_img.shape[1], np_img.shape[0]
     assert img.size == np_size
     px = img.load()
+    assert px is not None
     for x in range(0, img.size[0], int(img.size[0] / 10)):
         for y in range(0, img.size[1], int(img.size[1] / 10)):
-            assert_deep_equal(px[x, y], np[y, x])
+            assert_deep_equal(px[x, y], np_img[y, x])
 
 
-def test_16bit():
+def test_16bit() -> None:
     with Image.open("Tests/images/16bit.cropped.tif") as img:
         np_img = numpy.array(img)
         _test_img_equals_nparray(img, np_img)
     assert np_img.dtype == numpy.dtype("<u2")
 
 
-def test_1bit():
+def test_1bit() -> None:
     # Test that 1-bit arrays convert to numpy and back
     # See: https://github.com/python-pillow/Pillow/issues/350
     arr = numpy.array([[1, 0, 0, 1, 0], [0, 1, 0, 0, 0]], "u1")
@@ -124,7 +132,7 @@ def test_1bit():
     numpy.testing.assert_array_equal(arr, arr_back)
 
 
-def test_save_tiff_uint16():
+def test_save_tiff_uint16() -> None:
     # Tests that we're getting the pixel value in the right byte order.
     pixel_value = 0x1234
     a = numpy.array(
@@ -134,6 +142,7 @@ def test_save_tiff_uint16():
     img = Image.fromarray(a)
 
     img_px = img.load()
+    assert img_px is not None
     assert img_px[0, 0] == pixel_value
 
 
@@ -155,7 +164,7 @@ def test_save_tiff_uint16():
         ("HSV", numpy.uint8),
     ),
 )
-def test_to_array(mode, dtype):
+def test_to_array(mode: str, dtype: npt.DTypeLike) -> None:
     img = hopper(mode)
 
     # Resize to non-square
@@ -167,7 +176,7 @@ def test_to_array(mode, dtype):
     assert np_img.dtype == dtype
 
 
-def test_point_lut():
+def test_point_lut() -> None:
     # See https://github.com/python-pillow/Pillow/issues/439
 
     data = list(range(256)) * 3
@@ -178,7 +187,7 @@ def test_point_lut():
     im.point(lut)
 
 
-def test_putdata():
+def test_putdata() -> None:
     # Shouldn't segfault
     # See https://github.com/python-pillow/Pillow/issues/1008
 
@@ -187,6 +196,15 @@ def test_putdata():
     im.putdata(arr)
 
     assert len(im.getdata()) == len(arr)
+
+
+def test_resize() -> None:
+    im = hopper()
+    size = (64, 64)
+
+    im_resized = im.resize(numpy.array(size))
+
+    assert im_resized.size == size
 
 
 @pytest.mark.parametrize(
@@ -205,12 +223,12 @@ def test_putdata():
         numpy.float64,
     ),
 )
-def test_roundtrip_eye(dtype):
+def test_roundtrip_eye(dtype: npt.DTypeLike) -> None:
     arr = numpy.eye(10, dtype=dtype)
     numpy.testing.assert_array_equal(arr, numpy.array(Image.fromarray(arr)))
 
 
-def test_zero_size():
+def test_zero_size() -> None:
     # Shouldn't cause floating point exception
     # See https://github.com/python-pillow/Pillow/issues/2259
 
@@ -220,13 +238,15 @@ def test_zero_size():
 
 
 @skip_unless_feature("libtiff")
-def test_load_first():
+def test_transposed() -> None:
     with Image.open("Tests/images/g4_orientation_5.tif") as im:
+        assert im.size == (590, 88)
+
         a = numpy.array(im)
         assert a.shape == (88, 590)
 
 
-def test_bool():
+def test_bool() -> None:
     # https://github.com/python-pillow/Pillow/issues/2044
     a = numpy.zeros((10, 2), dtype=bool)
     a[0][0] = True
@@ -235,7 +255,7 @@ def test_bool():
     assert im2.getdata()[0] == 255
 
 
-def test_no_resource_warning_for_numpy_array():
+def test_no_resource_warning_for_numpy_array() -> None:
     # https://github.com/python-pillow/Pillow/issues/835
     # Arrange
     from numpy import array
@@ -244,4 +264,6 @@ def test_no_resource_warning_for_numpy_array():
     with Image.open(test_file) as im:
         # Act/Assert
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             array(im)

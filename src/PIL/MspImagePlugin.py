@@ -22,9 +22,11 @@
 # Figure 206. Windows Paint Version 2: "LinS" Format. Used in Windows V2.03
 #
 # See also: https://www.fileformat.info/format/mspaint/egff.htm
+from __future__ import annotations
 
 import io
 import struct
+from typing import IO
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
@@ -34,7 +36,7 @@ from ._binary import o16le as o16
 # read MSP files
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:4] in [b"DanM", b"LinS"]
 
 
@@ -47,8 +49,10 @@ class MspImageFile(ImageFile.ImageFile):
     format = "MSP"
     format_description = "Windows Paint"
 
-    def _open(self):
+    def _open(self) -> None:
         # Header
+        assert self.fp is not None
+
         s = self.fp.read(32)
         if not _accept(s):
             msg = "not an MSP file"
@@ -62,13 +66,13 @@ class MspImageFile(ImageFile.ImageFile):
             msg = "bad MSP checksum"
             raise SyntaxError(msg)
 
-        self.mode = "1"
+        self._mode = "1"
         self._size = i16(s, 4), i16(s, 6)
 
         if s[:4] == b"DanM":
-            self.tile = [("raw", (0, 0) + self.size, 32, ("1", 0, 1))]
+            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 32, ("1", 0, 1))]
         else:
-            self.tile = [("MSP", (0, 0) + self.size, 32, None)]
+            self.tile = [ImageFile._Tile("MSP", (0, 0) + self.size, 32, None)]
 
 
 class MspDecoder(ImageFile.PyDecoder):
@@ -108,7 +112,9 @@ class MspDecoder(ImageFile.PyDecoder):
 
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+        assert self.fd is not None
+
         img = io.BytesIO()
         blank_line = bytearray((0xFF,) * ((self.state.xsize + 7) // 8))
         try:
@@ -146,7 +152,7 @@ class MspDecoder(ImageFile.PyDecoder):
                 msg = f"Corrupted MSP file in row {x}"
                 raise OSError(msg) from e
 
-        self.set_as_raw(img.getvalue(), ("1", 0, 1))
+        self.set_as_raw(img.getvalue(), "1")
 
         return -1, 0
 
@@ -158,7 +164,7 @@ Image.register_decoder("MSP", MspDecoder)
 # write MSP files (uncompressed only)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as MSP"
         raise OSError(msg)
@@ -182,7 +188,7 @@ def _save(im, fp, filename):
         fp.write(o16(h))
 
     # image body
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 32, ("1", 0, 1))])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 32, ("1", 0, 1))])
 
 
 #

@@ -1,19 +1,28 @@
-from fractions import Fraction
+from __future__ import annotations
 
-from PIL import Image, TiffImagePlugin, features
+from fractions import Fraction
+from pathlib import Path
+
+import pytest
+
+from PIL import Image, TiffImagePlugin
 from PIL.TiffImagePlugin import IFDRational
 
-from .helper import hopper
+from .helper import hopper, skip_unless_feature
 
 
-def _test_equal(num, denom, target):
+def _test_equal(
+    num: float | Fraction | IFDRational,
+    denom: int,
+    target: float | Fraction | IFDRational,
+) -> None:
     t = IFDRational(num, denom)
 
     assert target == t
     assert t == target
 
 
-def test_sanity():
+def test_sanity() -> None:
     _test_equal(1, 1, 1)
     _test_equal(1, 1, Fraction(1, 1))
 
@@ -29,13 +38,13 @@ def test_sanity():
     _test_equal(7, 5, 1.4)
 
 
-def test_ranges():
+def test_ranges() -> None:
     for num in range(1, 10):
         for denom in range(1, 10):
             assert IFDRational(num, denom) == IFDRational(num, denom)
 
 
-def test_nonetype():
+def test_nonetype() -> None:
     # Fails if the _delegate function doesn't return a valid function
 
     xres = IFDRational(72)
@@ -45,22 +54,22 @@ def test_nonetype():
     assert xres.denominator is not None
     assert yres._val is not None
 
-    assert xres and 1
-    assert xres and yres
+    assert xres
+    assert yres
 
 
-def test_ifd_rational_save(tmp_path):
-    methods = (True, False)
-    if not features.check("libtiff"):
-        methods = (False,)
+@pytest.mark.parametrize(
+    "libtiff", (pytest.param(True, marks=skip_unless_feature("libtiff")), False)
+)
+def test_ifd_rational_save(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, libtiff: bool
+) -> None:
+    im = hopper()
+    out = str(tmp_path / "temp.tiff")
+    res = IFDRational(301, 1)
 
-    for libtiff in methods:
-        TiffImagePlugin.WRITE_LIBTIFF = libtiff
+    monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", libtiff)
+    im.save(out, dpi=(res, res), compression="raw")
 
-        im = hopper()
-        out = str(tmp_path / "temp.tiff")
-        res = IFDRational(301, 1)
-        im.save(out, dpi=(res, res), compression="raw")
-
-        with Image.open(out) as reloaded:
-            assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])
+    with Image.open(out) as reloaded:
+        assert float(IFDRational(301, 1)) == float(reloaded.tag_v2[282])

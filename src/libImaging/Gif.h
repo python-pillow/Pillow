@@ -9,10 +9,10 @@
 
 /* Max size for a LZW code word. */
 
-#define GIFBITS     12
+#define GIFBITS 12
 
-#define GIFTABLE    (1<<GIFBITS)
-#define GIFBUFFER   (1<<GIFBITS)
+#define GIFTABLE (1 << GIFBITS)
+#define GIFBUFFER (1 << GIFBITS)
 
 typedef struct {
     /* CONFIGURATION */
@@ -66,7 +66,7 @@ typedef struct {
 } GIFDECODERSTATE;
 
 /* For GIF LZW encoder. */
-#define TABLE_SIZE  8192
+#define TABLE_SIZE 8192
 
 typedef struct {
     /* CONFIGURATION */

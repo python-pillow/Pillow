@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from array import array
+from types import ModuleType
 
 import pytest
 
@@ -6,6 +9,7 @@ from PIL import Image, ImageFilter
 
 from .helper import assert_image_equal
 
+numpy: ModuleType | None
 try:
     import numpy
 except ImportError:
@@ -13,7 +17,9 @@ except ImportError:
 
 
 class TestColorLut3DCoreAPI:
-    def generate_identity_table(self, channels, size):
+    def generate_identity_table(
+        self, channels: int, size: int | tuple[int, int, int]
+    ) -> tuple[int, int, int, int, list[float]]:
         if isinstance(size, tuple):
             size_1d, size_2d, size_3d = size
         else:
@@ -39,7 +45,7 @@ class TestColorLut3DCoreAPI:
             [item for sublist in table for item in sublist],
         )
 
-    def test_wrong_args(self):
+    def test_wrong_args(self) -> None:
         im = Image.new("RGB", (10, 10), 0)
 
         with pytest.raises(ValueError, match="filter"):
@@ -99,94 +105,68 @@ class TestColorLut3DCoreAPI:
         with pytest.raises(TypeError):
             im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, 16)
 
-    def test_correct_args(self):
-        im = Image.new("RGB", (10, 10), 0)
-
-        im.im.color_lut_3d(
-            "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
-
-        im.im.color_lut_3d(
-            "CMYK", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (2, 3, 3)),
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (65, 3, 3)),
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (3, 65, 3)),
-        )
-
-        im.im.color_lut_3d(
-            "RGB",
-            Image.Resampling.BILINEAR,
-            *self.generate_identity_table(3, (3, 3, 65)),
-        )
-
-    def test_wrong_mode(self):
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("L", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "L", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("L", (10, 10), 0)
-            im.im.color_lut_3d(
-                "L", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-            )
-
-        with pytest.raises(ValueError, match="wrong mode"):
-            im = Image.new("RGB", (10, 10), 0)
-            im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-            )
-
-    def test_correct_mode(self):
-        im = Image.new("RGBA", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
-        )
-
-        im = Image.new("RGBA", (10, 10), 0)
-        im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
-        )
-
+    @pytest.mark.parametrize(
+        "lut_mode, table_channels, table_size",
+        [
+            ("RGB", 3, 3),
+            ("CMYK", 4, 3),
+            ("RGB", 3, (2, 3, 3)),
+            ("RGB", 3, (65, 3, 3)),
+            ("RGB", 3, (3, 65, 3)),
+            ("RGB", 3, (2, 3, 65)),
+        ],
+    )
+    def test_correct_args(
+        self, lut_mode: str, table_channels: int, table_size: int | tuple[int, int, int]
+    ) -> None:
         im = Image.new("RGB", (10, 10), 0)
         im.im.color_lut_3d(
-            "HSV", Image.Resampling.BILINEAR, *self.generate_identity_table(3, 3)
+            lut_mode,
+            Image.Resampling.BILINEAR,
+            *self.generate_identity_table(table_channels, table_size),
         )
 
-        im = Image.new("RGB", (10, 10), 0)
+    @pytest.mark.parametrize(
+        "image_mode, lut_mode, table_channels, table_size",
+        [
+            ("L", "RGB", 3, 3),
+            ("RGB", "L", 3, 3),
+            ("L", "L", 3, 3),
+            ("RGB", "RGBA", 3, 3),
+            ("RGB", "RGB", 4, 3),
+        ],
+    )
+    def test_wrong_mode(
+        self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
+    ) -> None:
+        with pytest.raises(ValueError, match="wrong mode"):
+            im = Image.new(image_mode, (10, 10), 0)
+            im.im.color_lut_3d(
+                lut_mode,
+                Image.Resampling.BILINEAR,
+                *self.generate_identity_table(table_channels, table_size),
+            )
+
+    @pytest.mark.parametrize(
+        "image_mode, lut_mode, table_channels, table_size",
+        [
+            ("RGBA", "RGBA", 3, 3),
+            ("RGBA", "RGBA", 4, 3),
+            ("RGB", "HSV", 3, 3),
+            ("RGB", "RGBA", 4, 3),
+        ],
+    )
+    def test_correct_mode(
+        self, image_mode: str, lut_mode: str, table_channels: int, table_size: int
+    ) -> None:
+        im = Image.new(image_mode, (10, 10), 0)
         im.im.color_lut_3d(
-            "RGBA", Image.Resampling.BILINEAR, *self.generate_identity_table(4, 3)
+            lut_mode,
+            Image.Resampling.BILINEAR,
+            *self.generate_identity_table(table_channels, table_size),
         )
 
-    def test_identities(self):
+    def test_identities(self) -> None:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
@@ -222,7 +202,7 @@ class TestColorLut3DCoreAPI:
             ),
         )
 
-    def test_identities_4_channels(self):
+    def test_identities_4_channels(self) -> None:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
@@ -245,7 +225,7 @@ class TestColorLut3DCoreAPI:
             ),
         )
 
-    def test_copy_alpha_channel(self):
+    def test_copy_alpha_channel(self) -> None:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGBA",
@@ -268,7 +248,7 @@ class TestColorLut3DCoreAPI:
             ),
         )
 
-    def test_channels_order(self):
+    def test_channels_order(self) -> None:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
@@ -293,7 +273,7 @@ class TestColorLut3DCoreAPI:
                     ])))
         # fmt: on
 
-    def test_overflow(self):
+    def test_overflow(self) -> None:
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
@@ -315,6 +295,7 @@ class TestColorLut3DCoreAPI:
                                   -1,  2,  2,   2,  2,  2,
                               ])).load()
         # fmt: on
+        assert transformed is not None
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
         assert transformed[255, 0] == (0, 255, 255)
@@ -335,6 +316,7 @@ class TestColorLut3DCoreAPI:
                                   -3,  5,  5,   5,  5,  5,
                               ])).load()
         # fmt: on
+        assert transformed is not None
         assert transformed[0, 0] == (0, 0, 255)
         assert transformed[50, 50] == (0, 0, 255)
         assert transformed[255, 0] == (0, 255, 255)
@@ -346,12 +328,12 @@ class TestColorLut3DCoreAPI:
 
 
 class TestColorLut3DFilter:
-    def test_wrong_args(self):
+    def test_wrong_args(self) -> None:
         with pytest.raises(ValueError, match="should be either an integer"):
-            ImageFilter.Color3DLUT("small", [1])
+            ImageFilter.Color3DLUT("small", [1])  # type: ignore[arg-type]
 
         with pytest.raises(ValueError, match="should be either an integer"):
-            ImageFilter.Color3DLUT((11, 11), [1])
+            ImageFilter.Color3DLUT((11, 11), [1])  # type: ignore[arg-type]
 
         with pytest.raises(ValueError, match=r"in \[2, 65\] range"):
             ImageFilter.Color3DLUT((11, 11, 1), [1])
@@ -374,7 +356,7 @@ class TestColorLut3DFilter:
         with pytest.raises(ValueError, match="Only 3 or 4 output"):
             ImageFilter.Color3DLUT((2, 2, 2), [[1, 1]] * 8, channels=2)
 
-    def test_convert_table(self):
+    def test_convert_table(self) -> None:
         lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
         assert tuple(lut.size) == (2, 2, 2)
         assert lut.name == "Color 3D LUT"
@@ -392,7 +374,8 @@ class TestColorLut3DFilter:
         assert lut.table == list(range(4)) * 8
 
     @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
-    def test_numpy_sources(self):
+    def test_numpy_sources(self) -> None:
+        assert numpy is not None
         table = numpy.ones((5, 6, 7, 3), dtype=numpy.float16)
         with pytest.raises(ValueError, match="should have either channels"):
             lut = ImageFilter.Color3DLUT((5, 6, 7), table)
@@ -425,7 +408,8 @@ class TestColorLut3DFilter:
         assert lut.table[0] == 33
 
     @pytest.mark.skipif(numpy is None, reason="NumPy not installed")
-    def test_numpy_formats(self):
+    def test_numpy_formats(self) -> None:
+        assert numpy is not None
         g = Image.linear_gradient("L")
         im = Image.merge(
             "RGB",
@@ -464,7 +448,7 @@ class TestColorLut3DFilter:
         lut.table = numpy.array(lut.table, dtype=numpy.int8)
         im.filter(lut)
 
-    def test_repr(self):
+    def test_repr(self) -> None:
         lut = ImageFilter.Color3DLUT(2, [0, 1, 2] * 8)
         assert repr(lut) == "<Color3DLUT from list size=2x2x2 channels=3>"
 
@@ -482,7 +466,7 @@ class TestColorLut3DFilter:
 
 
 class TestGenerateColorLut3D:
-    def test_wrong_channels_count(self):
+    def test_wrong_channels_count(self) -> None:
         with pytest.raises(ValueError, match="3 or 4 output channels"):
             ImageFilter.Color3DLUT.generate(
                 5, channels=2, callback=lambda r, g, b: (r, g, b)
@@ -496,7 +480,7 @@ class TestGenerateColorLut3D:
                 5, channels=4, callback=lambda r, g, b: (r, g, b)
             )
 
-    def test_3_channels(self):
+    def test_3_channels(self) -> None:
         lut = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
         assert tuple(lut.size) == (5, 5, 5)
         assert lut.name == "Color 3D LUT"
@@ -506,7 +490,7 @@ class TestGenerateColorLut3D:
             1.0, 0.0, 0.0,  0.0, 0.25, 0.0,  0.25, 0.25, 0.0,  0.5, 0.25, 0.0]
         # fmt: on
 
-    def test_4_channels(self):
+    def test_4_channels(self) -> None:
         lut = ImageFilter.Color3DLUT.generate(
             5, channels=4, callback=lambda r, g, b: (b, r, g, (r + g + b) / 2)
         )
@@ -519,7 +503,7 @@ class TestGenerateColorLut3D:
         ]
         # fmt: on
 
-    def test_apply(self):
+    def test_apply(self) -> None:
         lut = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
 
         g = Image.linear_gradient("L")
@@ -535,7 +519,7 @@ class TestGenerateColorLut3D:
 
 
 class TestTransformColorLut3D:
-    def test_wrong_args(self):
+    def test_wrong_args(self) -> None:
         source = ImageFilter.Color3DLUT.generate(5, lambda r, g, b: (r, g, b))
 
         with pytest.raises(ValueError, match="Only 3 or 4 output"):
@@ -550,7 +534,7 @@ class TestTransformColorLut3D:
         with pytest.raises(TypeError):
             source.transform(lambda r, g, b, a: (r, g, b))
 
-    def test_target_mode(self):
+    def test_target_mode(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
             2, lambda r, g, b: (r, g, b), target_mode="HSV"
         )
@@ -561,7 +545,7 @@ class TestTransformColorLut3D:
         lut = source.transform(lambda r, g, b: (r, g, b), target_mode="RGB")
         assert lut.mode == "RGB"
 
-    def test_3_to_3_channels(self):
+    def test_3_to_3_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate((3, 4, 5), lambda r, g, b: (r, g, b))
         lut = source.transform(lambda r, g, b: (r * r, g * g, b * b))
         assert tuple(lut.size) == tuple(source.size)
@@ -569,7 +553,7 @@ class TestTransformColorLut3D:
         assert lut.table != source.table
         assert lut.table[:10] == [0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
 
-    def test_3_to_4_channels(self):
+    def test_3_to_4_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate((6, 5, 4), lambda r, g, b: (r, g, b))
         lut = source.transform(lambda r, g, b: (r * r, g * g, b * b, 1), channels=4)
         assert tuple(lut.size) == tuple(source.size)
@@ -581,7 +565,7 @@ class TestTransformColorLut3D:
             0.4**2, 0.0, 0.0, 1,  0.6**2, 0.0, 0.0, 1]
         # fmt: on
 
-    def test_4_to_3_channels(self):
+    def test_4_to_3_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
             (3, 6, 5), lambda r, g, b: (r, g, b, 1), channels=4
         )
@@ -597,7 +581,7 @@ class TestTransformColorLut3D:
             1.0, 0.96, 1.0,  0.75, 0.96, 1.0,  0.0, 0.96, 1.0]
         # fmt: on
 
-    def test_4_to_4_channels(self):
+    def test_4_to_4_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
             (6, 5, 4), lambda r, g, b: (r, g, b, 1), channels=4
         )
@@ -611,7 +595,7 @@ class TestTransformColorLut3D:
             0.4**2, 0.0, 0.0, 0.5,  0.6**2, 0.0, 0.0, 0.5]
         # fmt: on
 
-    def test_with_normals_3_channels(self):
+    def test_with_normals_3_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
             (6, 5, 4), lambda r, g, b: (r * r, g * g, b * b)
         )
@@ -627,7 +611,7 @@ class TestTransformColorLut3D:
             0.24, 0.0, 0.0,  0.8 - (0.8**2), 0, 0,  0, 0, 0]
         # fmt: on
 
-    def test_with_normals_4_channels(self):
+    def test_with_normals_4_channels(self) -> None:
         source = ImageFilter.Color3DLUT.generate(
             (3, 6, 5), lambda r, g, b: (r * r, g * g, b * b, 1), channels=4
         )

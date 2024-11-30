@@ -1,0 +1,62 @@
+10.4.0
+------
+
+Security
+========
+
+ImageShow.WindowsViewer.show_file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If an attacker has control over the ``path`` passed to
+``ImageShow.WindowsViewer.show_file()``, they may be able to
+execute arbitrary shell commands.
+
+To prevent this, a :py:exc:`FileNotFoundError` will be raised if the ``path``
+does not exist as a file. To provide a consistent experience, the error has
+been added to all :py:class:`~PIL.ImageShow` viewers.
+
+Deprecations
+============
+
+BGR;15, BGR 16 and BGR;24
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The experimental BGR;15, BGR;16 and BGR;24 modes have been deprecated.
+
+Non-image modes in ImageCms
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The use in :py:mod:`.ImageCms` of input modes and output modes that are not Pillow
+image modes has been deprecated. Defaulting to "L" or "1" if the mode cannot be mapped
+is also deprecated.
+
+Support for LibTIFF earlier than 4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Support for LibTIFF earlier than version 4 has been deprecated.
+Upgrade to a newer version of LibTIFF instead.
+
+ImageDraw.getdraw hints parameter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``hints`` parameter in :py:meth:`~PIL.ImageDraw.getdraw()` has been deprecated.
+
+API Additions
+=============
+
+ImageDraw.circle
+^^^^^^^^^^^^^^^^
+
+Added :py:meth:`~PIL.ImageDraw.ImageDraw.circle`. It provides the same functionality as
+:py:meth:`~PIL.ImageDraw.ImageDraw.ellipse`, but instead of taking a bounding box, it
+takes a center point and radius.
+
+Other Changes
+=============
+
+Python 3.13 beta
+^^^^^^^^^^^^^^^^
+
+To help others prepare for Python 3.13, wheels have been built against the 3.13 beta as
+a preview. This is not official support for Python 3.13, but simply an opportunity for
+users to test how Pillow works with the beta and report any problems.

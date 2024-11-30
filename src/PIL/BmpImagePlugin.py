@@ -22,9 +22,10 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import os
+from typing import IO, Any
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -48,12 +49,12 @@ BIT2MODE = {
 }
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:2] == b"BM"
 
 
-def _dib_accept(prefix):
-    return i32(prefix) in [12, 40, 64, 108, 124]
+def _dib_accept(prefix: bytes) -> bool:
+    return i32(prefix) in [12, 40, 52, 56, 64, 108, 124]
 
 
 # =============================================================================
@@ -71,31 +72,41 @@ class BmpImageFile(ImageFile.ImageFile):
     for k, v in COMPRESSIONS.items():
         vars()[k] = v
 
-    def _bitmap(self, header=0, offset=0):
+    def _bitmap(self, header: int = 0, offset: int = 0) -> None:
         """Read relevant info about the BMP"""
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
         # read bmp header size @offset 14 (this is part of the header size)
-        file_info = {"header_size": i32(read(4)), "direction": -1}
+        file_info: dict[str, bool | int | tuple[int, ...]] = {
+            "header_size": i32(read(4)),
+            "direction": -1,
+        }
 
         # -------------------- If requested, read header at a specific position
         # read the rest of the bmp header, without its size
+        assert isinstance(file_info["header_size"], int)
         header_data = ImageFile._safe_read(self.fp, file_info["header_size"] - 4)
 
-        # -------------------------------------------------- IBM OS/2 Bitmap v1
+        # ------------------------------- Windows Bitmap v2, IBM OS/2 Bitmap v1
         # ----- This format has different offsets because of width/height types
+        # 12: BITMAPCOREHEADER/OS21XBITMAPHEADER
         if file_info["header_size"] == 12:
             file_info["width"] = i16(header_data, 0)
             file_info["height"] = i16(header_data, 2)
             file_info["planes"] = i16(header_data, 4)
             file_info["bits"] = i16(header_data, 6)
-            file_info["compression"] = self.RAW
+            file_info["compression"] = self.COMPRESSIONS["RAW"]
             file_info["palette_padding"] = 3
 
-        # --------------------------------------------- Windows Bitmap v2 to v5
-        # v3, OS/2 v2, v4, v5
-        elif file_info["header_size"] in (40, 64, 108, 124):
+        # --------------------------------------------- Windows Bitmap v3 to v5
+        #  40: BITMAPINFOHEADER
+        #  52: BITMAPV2HEADER
+        #  56: BITMAPV3HEADER
+        #  64: BITMAPCOREHEADER2/OS22XBITMAPHEADER
+        # 108: BITMAPV4HEADER
+        # 124: BITMAPV5HEADER
+        elif file_info["header_size"] in (40, 52, 56, 64, 108, 124):
             file_info["y_flip"] = header_data[7] == 0xFF
             file_info["direction"] = 1 if file_info["y_flip"] else -1
             file_info["width"] = i32(header_data, 0)
@@ -115,12 +126,16 @@ class BmpImageFile(ImageFile.ImageFile):
             )
             file_info["colors"] = i32(header_data, 28)
             file_info["palette_padding"] = 4
+            assert isinstance(file_info["pixels_per_meter"], tuple)
             self.info["dpi"] = tuple(x / 39.3701 for x in file_info["pixels_per_meter"])
-            if file_info["compression"] == self.BITFIELDS:
-                if len(header_data) >= 52:
-                    for idx, mask in enumerate(
-                        ["r_mask", "g_mask", "b_mask", "a_mask"]
-                    ):
+            if file_info["compression"] == self.COMPRESSIONS["BITFIELDS"]:
+                masks = ["r_mask", "g_mask", "b_mask"]
+                if len(header_data) >= 48:
+                    if len(header_data) >= 52:
+                        masks.append("a_mask")
+                    else:
+                        file_info["a_mask"] = 0x0
+                    for idx, mask in enumerate(masks):
                         file_info[mask] = i32(header_data, 36 + idx * 4)
                 else:
                     # 40 byte headers only have the three components in the
@@ -132,8 +147,12 @@ class BmpImageFile(ImageFile.ImageFile):
                     # location, but it is listed as a reserved component,
                     # and it is not generally an alpha channel
                     file_info["a_mask"] = 0x0
-                    for mask in ["r_mask", "g_mask", "b_mask"]:
+                    for mask in masks:
                         file_info[mask] = i32(read(4))
+                assert isinstance(file_info["r_mask"], int)
+                assert isinstance(file_info["g_mask"], int)
+                assert isinstance(file_info["b_mask"], int)
+                assert isinstance(file_info["a_mask"], int)
                 file_info["rgb_mask"] = (
                     file_info["r_mask"],
                     file_info["g_mask"],
@@ -151,33 +170,39 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # ------------------ Special case : header is reported 40, which
         # ---------------------- is shorter than real size for bpp >= 16
+        assert isinstance(file_info["width"], int)
+        assert isinstance(file_info["height"], int)
         self._size = file_info["width"], file_info["height"]
 
         # ------- If color count was not found in the header, compute from bits
+        assert isinstance(file_info["bits"], int)
         file_info["colors"] = (
             file_info["colors"]
             if file_info.get("colors", 0)
             else (1 << file_info["bits"])
         )
+        assert isinstance(file_info["colors"], int)
         if offset == 14 + file_info["header_size"] and file_info["bits"] <= 8:
             offset += 4 * file_info["colors"]
 
         # ---------------------- Check bit depth for unusual unsupported values
-        self.mode, raw_mode = BIT2MODE.get(file_info["bits"], (None, None))
-        if self.mode is None:
+        self._mode, raw_mode = BIT2MODE.get(file_info["bits"], ("", ""))
+        if not self.mode:
             msg = f"Unsupported BMP pixel depth ({file_info['bits']})"
             raise OSError(msg)
 
         # ---------------- Process BMP with Bitfields compression (not palette)
         decoder_name = "raw"
-        if file_info["compression"] == self.BITFIELDS:
-            SUPPORTED = {
+        if file_info["compression"] == self.COMPRESSIONS["BITFIELDS"]:
+            SUPPORTED: dict[int, list[tuple[int, ...]]] = {
                 32: [
                     (0xFF0000, 0xFF00, 0xFF, 0x0),
                     (0xFF000000, 0xFF0000, 0xFF00, 0x0),
+                    (0xFF000000, 0xFF00, 0xFF, 0x0),
                     (0xFF000000, 0xFF0000, 0xFF00, 0xFF),
                     (0xFF, 0xFF00, 0xFF0000, 0xFF000000),
                     (0xFF0000, 0xFF00, 0xFF, 0xFF000000),
+                    (0xFF000000, 0xFF00, 0xFF, 0xFF0000),
                     (0x0, 0x0, 0x0, 0x0),
                 ],
                 24: [(0xFF0000, 0xFF00, 0xFF)],
@@ -186,9 +211,11 @@ class BmpImageFile(ImageFile.ImageFile):
             MASK_MODES = {
                 (32, (0xFF0000, 0xFF00, 0xFF, 0x0)): "BGRX",
                 (32, (0xFF000000, 0xFF0000, 0xFF00, 0x0)): "XBGR",
+                (32, (0xFF000000, 0xFF00, 0xFF, 0x0)): "BGXR",
                 (32, (0xFF000000, 0xFF0000, 0xFF00, 0xFF)): "ABGR",
                 (32, (0xFF, 0xFF00, 0xFF0000, 0xFF000000)): "RGBA",
                 (32, (0xFF0000, 0xFF00, 0xFF, 0xFF000000)): "BGRA",
+                (32, (0xFF000000, 0xFF00, 0xFF, 0xFF0000)): "BGAR",
                 (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
                 (24, (0xFF0000, 0xFF00, 0xFF)): "BGR",
                 (16, (0xF800, 0x7E0, 0x1F)): "BGR;16",
@@ -199,12 +226,14 @@ class BmpImageFile(ImageFile.ImageFile):
                     file_info["bits"] == 32
                     and file_info["rgba_mask"] in SUPPORTED[file_info["bits"]]
                 ):
+                    assert isinstance(file_info["rgba_mask"], tuple)
                     raw_mode = MASK_MODES[(file_info["bits"], file_info["rgba_mask"])]
-                    self.mode = "RGBA" if "A" in raw_mode else self.mode
+                    self._mode = "RGBA" if "A" in raw_mode else self.mode
                 elif (
                     file_info["bits"] in (24, 16)
                     and file_info["rgb_mask"] in SUPPORTED[file_info["bits"]]
                 ):
+                    assert isinstance(file_info["rgb_mask"], tuple)
                     raw_mode = MASK_MODES[(file_info["bits"], file_info["rgb_mask"])]
                 else:
                     msg = "Unsupported BMP bitfields layout"
@@ -212,10 +241,13 @@ class BmpImageFile(ImageFile.ImageFile):
             else:
                 msg = "Unsupported BMP bitfields layout"
                 raise OSError(msg)
-        elif file_info["compression"] == self.RAW:
+        elif file_info["compression"] == self.COMPRESSIONS["RAW"]:
             if file_info["bits"] == 32 and header == 22:  # 32-bit .cur offset
-                raw_mode, self.mode = "BGRA", "RGBA"
-        elif file_info["compression"] in (self.RLE8, self.RLE4):
+                raw_mode, self._mode = "BGRA", "RGBA"
+        elif file_info["compression"] in (
+            self.COMPRESSIONS["RLE8"],
+            self.COMPRESSIONS["RLE4"],
+        ):
             decoder_name = "bmp_rle"
         else:
             msg = f"Unsupported BMP compression ({file_info['compression']})"
@@ -228,41 +260,43 @@ class BmpImageFile(ImageFile.ImageFile):
                 msg = f"Unsupported BMP Palette size ({file_info['colors']})"
                 raise OSError(msg)
             else:
+                assert isinstance(file_info["palette_padding"], int)
                 padding = file_info["palette_padding"]
                 palette = read(padding * file_info["colors"])
-                greyscale = True
+                grayscale = True
                 indices = (
                     (0, 255)
                     if file_info["colors"] == 2
                     else list(range(file_info["colors"]))
                 )
 
-                # ----------------- Check if greyscale and ignore palette if so
+                # ----------------- Check if grayscale and ignore palette if so
                 for ind, val in enumerate(indices):
                     rgb = palette[ind * padding : ind * padding + 3]
                     if rgb != o8(val) * 3:
-                        greyscale = False
+                        grayscale = False
 
-                # ------- If all colors are grey, white or black, ditch palette
-                if greyscale:
-                    self.mode = "1" if file_info["colors"] == 2 else "L"
+                # ------- If all colors are gray, white or black, ditch palette
+                if grayscale:
+                    self._mode = "1" if file_info["colors"] == 2 else "L"
                     raw_mode = self.mode
                 else:
-                    self.mode = "P"
+                    self._mode = "P"
                     self.palette = ImagePalette.raw(
                         "BGRX" if padding == 4 else "BGR", palette
                     )
 
         # ---------------------------- Finally set the tile data for the plugin
         self.info["compression"] = file_info["compression"]
-        args = [raw_mode]
+        args: list[Any] = [raw_mode]
         if decoder_name == "bmp_rle":
-            args.append(file_info["compression"] == self.RLE4)
+            args.append(file_info["compression"] == self.COMPRESSIONS["RLE4"])
         else:
+            assert isinstance(file_info["width"], int)
             args.append(((file_info["width"] * file_info["bits"] + 31) >> 3) & (~3))
         args.append(file_info["direction"])
         self.tile = [
-            (
+            ImageFile._Tile(
                 decoder_name,
                 (0, 0, file_info["width"], file_info["height"]),
                 offset or self.fp.tell(),
@@ -270,7 +304,7 @@ class BmpImageFile(ImageFile.ImageFile):
             )
         ]
 
-    def _open(self):
+    def _open(self) -> None:
         """Open file, check magic number and read header"""
         # read 14 bytes: magic number, filesize, reserved, header final offset
         head_data = self.fp.read(14)
@@ -287,11 +321,13 @@ class BmpImageFile(ImageFile.ImageFile):
 class BmpRleDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+        assert self.fd is not None
         rle4 = self.args[1]
         data = bytearray()
         x = 0
-        while len(data) < self.state.xsize * self.state.ysize:
+        dest_length = self.state.xsize * self.state.ysize
+        while len(data) < dest_length:
             pixels = self.fd.read(1)
             byte = self.fd.read(1)
             if not pixels or not byte:
@@ -351,7 +387,7 @@ class BmpRleDecoder(ImageFile.PyDecoder):
                     if self.fd.tell() % 2 != 0:
                         self.fd.seek(1, os.SEEK_CUR)
         rawmode = "L" if self.mode == "L" else "P"
-        self.set_as_raw(bytes(data), (rawmode, 0, self.args[-1]))
+        self.set_as_raw(bytes(data), rawmode, (0, self.args[-1]))
         return -1, 0
 
 
@@ -362,7 +398,7 @@ class DibImageFile(BmpImageFile):
     format = "DIB"
     format_description = "Windows Bitmap"
 
-    def _open(self):
+    def _open(self) -> None:
         self._bitmap()
 
 
@@ -380,11 +416,13 @@ SAVE = {
 }
 
 
-def _dib_save(im, fp, filename):
+def _dib_save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     _save(im, fp, filename, False)
 
 
-def _save(im, fp, filename, bitmap_header=True):
+def _save(
+    im: Image.Image, fp: IO[bytes], filename: str | bytes, bitmap_header: bool = True
+) -> None:
     try:
         rawmode, bits, colors = SAVE[im.mode]
     except KeyError as e:
@@ -396,7 +434,7 @@ def _save(im, fp, filename, bitmap_header=True):
     dpi = info.get("dpi", (96, 96))
 
     # 1 meter == 39.3701 inches
-    ppm = tuple(map(lambda x: int(x * 39.3701 + 0.5), dpi))
+    ppm = tuple(int(x * 39.3701 + 0.5) for x in dpi)
 
     stride = ((im.size[0] * bits + 7) // 8 + 3) & (~3)
     header = 40  # or 64 for OS/2 version 2
@@ -446,7 +484,9 @@ def _save(im, fp, filename, bitmap_header=True):
     if palette:
         fp.write(palette)
 
-    ImageFile._save(im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, stride, -1))]
+    )
 
 
 #

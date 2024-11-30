@@ -15,7 +15,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import olefile
 
@@ -25,7 +25,7 @@ from . import Image, TiffImagePlugin
 # --------------------------------------------------------------------
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:8] == olefile.MAGIC
 
 
@@ -38,7 +38,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
     format_description = "Microsoft Image Composer"
     _close_exclusive_fp_after_loading = False
 
-    def _open(self):
+    def _open(self) -> None:
         # read the OLE directory and see if this is a likely
         # to be a Microsoft Image Composer file
 
@@ -51,10 +51,11 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         # find ACI subfiles with Image members (maybe not the
         # best way to identify MIC files, but what the... ;-)
 
-        self.images = []
-        for path in self.ole.listdir():
-            if path[1:] and path[0][-4:] == ".ACI" and path[1] == "Image":
-                self.images.append(path)
+        self.images = [
+            path
+            for path in self.ole.listdir()
+            if path[1:] and path[0][-4:] == ".ACI" and path[1] == "Image"
+        ]
 
         # if we didn't find any images, this is probably not
         # an MIC file.
@@ -62,13 +63,14 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
             msg = "not an MIC file; no image entries"
             raise SyntaxError(msg)
 
-        self.frame = None
+        self.frame = -1
         self._n_frames = len(self.images)
         self.is_animated = self._n_frames > 1
 
+        self.__fp = self.fp
         self.seek(0)
 
-    def seek(self, frame):
+    def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
         try:
@@ -83,14 +85,16 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
 
         self.frame = frame
 
-    def tell(self):
+    def tell(self) -> int:
         return self.frame
 
-    def close(self):
+    def close(self) -> None:
+        self.__fp.close()
         self.ole.close()
         super().close()
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
+        self.__fp.close()
         self.ole.close()
         super().__exit__()
 

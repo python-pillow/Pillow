@@ -18,9 +18,10 @@ Stuff to translate curve segments to palette values (derived from
 the corresponding code in GIMP, written by Federico Mena Quintero.
 See the GIMP distribution for more information.)
 """
-
+from __future__ import annotations
 
 from math import log, pi, sin, sqrt
+from typing import IO, Callable
 
 from ._binary import o8
 
@@ -28,7 +29,7 @@ EPSILON = 1e-10
 """"""  # Enable auto-doc for data member
 
 
-def linear(middle, pos):
+def linear(middle: float, pos: float) -> float:
     if pos <= middle:
         if middle < EPSILON:
             return 0.0
@@ -43,19 +44,19 @@ def linear(middle, pos):
             return 0.5 + 0.5 * pos / middle
 
 
-def curved(middle, pos):
+def curved(middle: float, pos: float) -> float:
     return pos ** (log(0.5) / log(max(middle, EPSILON)))
 
 
-def sine(middle, pos):
+def sine(middle: float, pos: float) -> float:
     return (sin((-pi / 2.0) + pi * linear(middle, pos)) + 1.0) / 2.0
 
 
-def sphere_increasing(middle, pos):
+def sphere_increasing(middle: float, pos: float) -> float:
     return sqrt(1.0 - (linear(middle, pos) - 1.0) ** 2)
 
 
-def sphere_decreasing(middle, pos):
+def sphere_decreasing(middle: float, pos: float) -> float:
     return 1.0 - sqrt(1.0 - linear(middle, pos) ** 2)
 
 
@@ -64,9 +65,22 @@ SEGMENTS = [linear, curved, sine, sphere_increasing, sphere_decreasing]
 
 
 class GradientFile:
-    gradient = None
+    gradient: (
+        list[
+            tuple[
+                float,
+                float,
+                float,
+                list[float],
+                list[float],
+                Callable[[float, float], float],
+            ]
+        ]
+        | None
+    ) = None
 
-    def getpalette(self, entries=256):
+    def getpalette(self, entries: int = 256) -> tuple[bytes, str]:
+        assert self.gradient is not None
         palette = []
 
         ix = 0
@@ -101,7 +115,7 @@ class GradientFile:
 class GimpGradientFile(GradientFile):
     """File handler for GIMP's gradient format."""
 
-    def __init__(self, fp):
+    def __init__(self, fp: IO[bytes]) -> None:
         if fp.readline()[:13] != b"GIMP Gradient":
             msg = "not a GIMP gradient file"
             raise SyntaxError(msg)
@@ -114,7 +128,7 @@ class GimpGradientFile(GradientFile):
 
         count = int(line)
 
-        gradient = []
+        self.gradient = []
 
         for i in range(count):
             s = fp.readline().split()
@@ -132,6 +146,4 @@ class GimpGradientFile(GradientFile):
                 msg = "cannot handle HSV colour space"
                 raise OSError(msg)
 
-            gradient.append((x0, x1, xm, rgb0, rgb1, segment))
-
-        self.gradient = gradient
+            self.gradient.append((x0, x1, xm, rgb0, rgb1, segment))

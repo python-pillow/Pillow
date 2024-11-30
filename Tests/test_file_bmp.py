@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import io
+from pathlib import Path
 
 import pytest
 
-from PIL import BmpImagePlugin, Image
+from PIL import BmpImagePlugin, Image, _binary
 
 from .helper import (
     assert_image_equal,
@@ -12,8 +15,8 @@ from .helper import (
 )
 
 
-def test_sanity(tmp_path):
-    def roundtrip(im):
+def test_sanity(tmp_path: Path) -> None:
+    def roundtrip(im: Image.Image) -> None:
         outfile = str(tmp_path / "temp.bmp")
 
         im.save(outfile, "BMP")
@@ -33,20 +36,20 @@ def test_sanity(tmp_path):
     roundtrip(hopper("RGB"))
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     with open("Tests/images/flower.jpg", "rb") as fp:
         with pytest.raises(SyntaxError):
             BmpImagePlugin.BmpImageFile(fp)
 
 
-def test_fallback_if_mmap_errors():
+def test_fallback_if_mmap_errors() -> None:
     # This image has been truncated,
     # so that the buffer is not large enough when using mmap
     with Image.open("Tests/images/mmap_error.bmp") as im:
         assert_image_equal_tofile(im, "Tests/images/pal8_offset.bmp")
 
 
-def test_save_to_bytes():
+def test_save_to_bytes() -> None:
     output = io.BytesIO()
     im = hopper()
     im.save(output, "BMP")
@@ -58,7 +61,7 @@ def test_save_to_bytes():
         assert reloaded.format == "BMP"
 
 
-def test_small_palette(tmp_path):
+def test_small_palette(tmp_path: Path) -> None:
     im = Image.new("P", (1, 1))
     colors = [0, 0, 0, 125, 125, 125, 255, 255, 255]
     im.putpalette(colors)
@@ -70,7 +73,7 @@ def test_small_palette(tmp_path):
         assert reloaded.getpalette() == colors
 
 
-def test_save_too_large(tmp_path):
+def test_save_too_large(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.bmp")
     with Image.new("RGB", (1, 1)) as im:
         im._size = (37838, 37838)
@@ -78,7 +81,7 @@ def test_save_too_large(tmp_path):
             im.save(outfile)
 
 
-def test_dpi():
+def test_dpi() -> None:
     dpi = (72, 72)
 
     output = io.BytesIO()
@@ -90,7 +93,7 @@ def test_dpi():
         assert reloaded.info["dpi"] == (72.008961115161, 72.008961115161)
 
 
-def test_save_bmp_with_dpi(tmp_path):
+def test_save_bmp_with_dpi(tmp_path: Path) -> None:
     # Test for #1301
     # Arrange
     outfile = str(tmp_path / "temp.jpg")
@@ -108,7 +111,7 @@ def test_save_bmp_with_dpi(tmp_path):
             assert reloaded.format == "JPEG"
 
 
-def test_save_float_dpi(tmp_path):
+def test_save_float_dpi(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.bmp")
     with Image.open("Tests/images/hopper.bmp") as im:
         im.save(outfile, dpi=(72.21216100543306, 72.21216100543306))
@@ -116,7 +119,7 @@ def test_save_float_dpi(tmp_path):
             assert reloaded.info["dpi"] == (72.21216100543306, 72.21216100543306)
 
 
-def test_load_dib():
+def test_load_dib() -> None:
     # test for #1293, Imagegrab returning Unsupported Bitfields Format
     with Image.open("Tests/images/clipboard.dib") as im:
         assert im.format == "DIB"
@@ -125,7 +128,30 @@ def test_load_dib():
         assert_image_equal_tofile(im, "Tests/images/clipboard_target.png")
 
 
-def test_save_dib(tmp_path):
+@pytest.mark.parametrize(
+    "header_size, path",
+    (
+        (12, "g/pal8os2.bmp"),
+        (40, "g/pal1.bmp"),
+        (52, "q/rgb32h52.bmp"),
+        (56, "q/rgba32h56.bmp"),
+        (64, "q/pal8os2v2.bmp"),
+        (108, "g/pal8v4.bmp"),
+        (124, "g/pal8v5.bmp"),
+    ),
+)
+def test_dib_header_size(header_size: int, path: str) -> None:
+    image_path = "Tests/images/bmp/" + path
+    with open(image_path, "rb") as fp:
+        data = fp.read()[14:]
+    assert _binary.i32le(data) == header_size
+
+    dib = io.BytesIO(data)
+    with Image.open(dib) as im:
+        im.load()
+
+
+def test_save_dib(tmp_path: Path) -> None:
     outfile = str(tmp_path / "temp.dib")
 
     with Image.open("Tests/images/clipboard.dib") as im:
@@ -137,7 +163,7 @@ def test_save_dib(tmp_path):
             assert_image_equal(im, reloaded)
 
 
-def test_rgba_bitfields():
+def test_rgba_bitfields() -> None:
     # This test image has been manually hexedited
     # to change the bitfield compression in the header from XBGR to RGBA
     with Image.open("Tests/images/rgb32bf-rgba.bmp") as im:
@@ -155,11 +181,11 @@ def test_rgba_bitfields():
         )
 
 
-def test_rle8():
+def test_rle8() -> None:
     with Image.open("Tests/images/hopper_rle8.bmp") as im:
         assert_image_similar_tofile(im.convert("RGB"), "Tests/images/hopper.bmp", 12)
 
-    with Image.open("Tests/images/hopper_rle8_greyscale.bmp") as im:
+    with Image.open("Tests/images/hopper_rle8_grayscale.bmp") as im:
         assert_image_equal_tofile(im, "Tests/images/bw_gradient.png")
 
     # This test image has been manually hexedited
@@ -175,7 +201,7 @@ def test_rle8():
                 im.load()
 
 
-def test_rle4():
+def test_rle4() -> None:
     with Image.open("Tests/images/bmp/g/pal4rle.bmp") as im:
         assert_image_similar_tofile(im, "Tests/images/bmp/g/pal4.bmp", 12)
 
@@ -191,7 +217,7 @@ def test_rle4():
         ("Tests/images/bmp/g/pal8rle.bmp", 1064),
     ),
 )
-def test_rle8_eof(file_name, length):
+def test_rle8_eof(file_name: str, length: int) -> None:
     with open(file_name, "rb") as fp:
         data = fp.read(length)
         with Image.open(io.BytesIO(data)) as im:
@@ -199,7 +225,7 @@ def test_rle8_eof(file_name, length):
                 im.load()
 
 
-def test_offset():
+def test_offset() -> None:
     # This image has been hexedited
     # to exclude the palette size from the pixel data offset
     with Image.open("Tests/images/pal8_offset.bmp") as im:

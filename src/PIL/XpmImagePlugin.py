@@ -13,7 +13,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 import re
 
@@ -24,7 +24,7 @@ from ._binary import o8
 xpm_head = re.compile(b'"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)')
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:9] == b"/* XPM */"
 
 
@@ -36,7 +36,7 @@ class XpmImageFile(ImageFile.ImageFile):
     format = "XPM"
     format_description = "X11 Pixel Map"
 
-    def _open(self):
+    def _open(self) -> None:
         if not _accept(self.fp.read(9)):
             msg = "not an XPM file"
             raise SyntaxError(msg)
@@ -98,21 +98,20 @@ class XpmImageFile(ImageFile.ImageFile):
                 msg = "cannot read this XPM file"
                 raise ValueError(msg)
 
-        self.mode = "P"
+        self._mode = "P"
         self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
-        self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))]
+        self.tile = [
+            ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))
+        ]
 
-    def load_read(self, bytes):
+    def load_read(self, read_bytes: int) -> bytes:
         #
         # load all image data in one chunk
 
         xsize, ysize = self.size
 
-        s = [None] * ysize
-
-        for i in range(ysize):
-            s[i] = self.fp.readline()[1 : xsize + 1].ljust(xsize)
+        s = [self.fp.readline()[1 : xsize + 1].ljust(xsize) for i in range(ysize)]
 
         return b"".join(s)
 

@@ -53,6 +53,6 @@ a custom :py:class:`~PIL.ImageShow.Viewer` class.
 ImageFile.raise_ioerror
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-``IOError`` was merged into ``OSError`` in Python 3.3. So, ``ImageFile.raise_ioerror``
+:py:exc:`IOError` was merged into :py:exc:`OSError` in Python 3.3. So, ``ImageFile.raise_ioerror``
 is now deprecated and will be removed in a future release. Use
 ``ImageFile.raise_oserror`` instead.

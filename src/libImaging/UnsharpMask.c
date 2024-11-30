@@ -23,7 +23,8 @@ clip8(int in) {
 
 Imaging
 ImagingUnsharpMask(
-    Imaging imOut, Imaging imIn, float radius, int percent, int threshold) {
+    Imaging imOut, Imaging imIn, float radius, int percent, int threshold
+) {
     ImagingSectionCookie cookie;
     Imaging result;
 
@@ -36,7 +37,7 @@ ImagingUnsharpMask(
 
     /* First, do a gaussian blur on the image, putting results in imOut
        temporarily. All format checks are in gaussian blur. */
-    result = ImagingGaussianBlur(imOut, imIn, radius, 3);
+    result = ImagingGaussianBlur(imOut, imIn, radius, radius, 3);
     if (!result) {
         return NULL;
     }

@@ -94,8 +94,9 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
         return (ImagingDIB)ImagingError_MemoryError();
     }
 
-    dib->bitmap =
-        CreateDIBSection(dib->dc, dib->info, DIB_RGB_COLORS, &dib->bits, NULL, 0);
+    dib->bitmap = CreateDIBSection(
+        dib->dc, dib->info, DIB_RGB_COLORS, (void **)&dib->bits, NULL, 0
+    );
     if (!dib->bitmap) {
         free(dib->info);
         free(dib);
@@ -142,9 +143,9 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
         GetSystemPaletteEntries(dib->dc, 0, 256, pal->palPalEntry);
 
         if (strcmp(mode, "L") == 0) {
-            /* Greyscale DIB.  Fill all 236 slots with a greyscale ramp
+            /* Grayscale DIB.  Fill all 236 slots with a grayscale ramp
              * (this is usually overkill on Windows since VGA only offers
-             * 6 bits greyscale resolution).  Ignore the slots already
+             * 6 bits grayscale resolution).  Ignore the slots already
              * allocated by Windows */
 
             i = 10;
@@ -160,7 +161,7 @@ ImagingNewDIB(const char *mode, int xsize, int ysize) {
 #ifdef CUBE216
 
             /* Colour DIB.  Create a 6x6x6 colour cube (216 entries) and
-             * add 20 extra greylevels for best result with greyscale
+             * add 20 extra graylevels for best result with grayscale
              * images. */
 
             i = 10;
@@ -218,7 +219,8 @@ ImagingPasteDIB(ImagingDIB dib, Imaging im, int xy[4]) {
             dib->bits + dib->linesize * (dib->ysize - (xy[1] + y) - 1) +
                 xy[0] * dib->pixelsize,
             im->image[y],
-            im->xsize);
+            im->xsize
+        );
     }
 }
 
@@ -251,7 +253,8 @@ ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4]) {
             dib->bits,
             dib->info,
             DIB_RGB_COLORS,
-            SRCCOPY);
+            SRCCOPY
+        );
     } else {
         /* stretchblt (displays) */
         if (dib->palette != 0) {
@@ -268,7 +271,8 @@ ImagingDrawDIB(ImagingDIB dib, void *dc, int dst[4], int src[4]) {
             src[1],
             src[2] - src[0],
             src[3] - src[1],
-            SRCCOPY);
+            SRCCOPY
+        );
     }
 }
 

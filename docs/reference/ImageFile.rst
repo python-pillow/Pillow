@@ -19,7 +19,7 @@ Example: Parse an image
 
     from PIL import ImageFile
 
-    fp = open("hopper.pgm", "rb")
+    fp = open("hopper.ppm", "rb")
 
     p = ImageFile.Parser()
 
@@ -36,6 +36,11 @@ Example: Parse an image
 
 Classes
 -------
+
+.. autoclass:: PIL.ImageFile._Tile()
+    :member-order: bysource
+    :members:
+    :show-inheritance:
 
 .. autoclass:: PIL.ImageFile.Parser()
     :members:
@@ -55,6 +60,10 @@ Classes
     :member-order: bysource
     :members:
     :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: PIL.ImageFile.StubHandler()
+    :members:
     :show-inheritance:
 
 .. autoclass:: PIL.ImageFile.StubImageFile()

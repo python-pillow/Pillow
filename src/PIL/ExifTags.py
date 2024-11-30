@@ -13,6 +13,7 @@
 This module provides constants and clear-text names for various
 well-known EXIF tags.
 """
+from __future__ import annotations
 
 from enum import IntEnum
 
@@ -345,7 +346,7 @@ class Interop(IntEnum):
     InteropVersion = 2
     RelatedImageFileFormat = 4096
     RelatedImageWidth = 4097
-    RleatedImageHeight = 4098
+    RelatedImageHeight = 4098
 
 
 class IFD(IntEnum):

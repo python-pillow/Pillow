@@ -13,16 +13,17 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import io
 
 from . import ContainerIO
 
 
-class TarIO(ContainerIO.ContainerIO):
+class TarIO(ContainerIO.ContainerIO[bytes]):
     """A file object that provides read access to a given member of a TAR file."""
 
-    def __init__(self, tarfile, file):
+    def __init__(self, tarfile: str, file: str) -> None:
         """
         Create file object.
 
@@ -54,13 +55,3 @@ class TarIO(ContainerIO.ContainerIO):
 
         # Open region
         super().__init__(self.fh, self.fh.tell(), size)
-
-    # Context manager support
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.close()
-
-    def close(self):
-        self.fh.close()

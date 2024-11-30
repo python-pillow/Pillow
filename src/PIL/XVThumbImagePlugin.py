@@ -16,6 +16,7 @@
 # To do:
 # FIXME: make save work (this requires quantization support)
 #
+from __future__ import annotations
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import o8
@@ -32,7 +33,7 @@ for r in range(8):
             )
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return prefix[:6] == _MAGIC
 
 
@@ -44,8 +45,10 @@ class XVThumbImageFile(ImageFile.ImageFile):
     format = "XVThumb"
     format_description = "XV thumbnail image"
 
-    def _open(self):
+    def _open(self) -> None:
         # check magic
+        assert self.fp is not None
+
         if not _accept(self.fp.read(6)):
             msg = "not an XV thumbnail file"
             raise SyntaxError(msg)
@@ -65,12 +68,16 @@ class XVThumbImageFile(ImageFile.ImageFile):
         # parse header line (already read)
         s = s.strip().split()
 
-        self.mode = "P"
+        self._mode = "P"
         self._size = int(s[0]), int(s[1])
 
         self.palette = ImagePalette.raw("RGB", PALETTE)
 
-        self.tile = [("raw", (0, 0) + self.size, self.fp.tell(), (self.mode, 0, 1))]
+        self.tile = [
+            ImageFile._Tile(
+                "raw", (0, 0) + self.size, self.fp.tell(), (self.mode, 0, 1)
+            )
+        ]
 
 
 # --------------------------------------------------------------------

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import warnings
 
@@ -8,18 +10,20 @@ from .helper import assert_image_similar
 base = os.path.join("Tests", "images", "bmp")
 
 
-def get_files(d, ext=".bmp"):
+def get_files(d: str, ext: str = ".bmp") -> list[str]:
     return [
         os.path.join(base, d, f) for f in os.listdir(os.path.join(base, d)) if ext in f
     ]
 
 
-def test_bad():
+def test_bad() -> None:
     """These shouldn't crash/dos, but they shouldn't return anything
     either"""
     for f in get_files("b"):
         # Assert that there is no unclosed file warning
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             try:
                 with Image.open(f) as im:
                     im.load()
@@ -27,7 +31,7 @@ def test_bad():
                 pass
 
 
-def test_questionable():
+def test_questionable() -> None:
     """These shouldn't crash/dos, but it's not well defined that these
     are in spec"""
     supported = [
@@ -42,6 +46,9 @@ def test_questionable():
         "pal8os2sp.bmp",
         "pal8rletrns.bmp",
         "rgb32bf-xbgr.bmp",
+        "rgba32.bmp",
+        "rgb32h52.bmp",
+        "rgba32h56.bmp",
     ]
     for f in get_files("q"):
         try:
@@ -54,7 +61,7 @@ def test_questionable():
                 raise
 
 
-def test_good():
+def test_good() -> None:
     """These should all work. There's a set of target files in the
     html directory that we can compare against."""
 
@@ -78,7 +85,7 @@ def test_good():
         "rgb32bf.bmp": "rgb24.png",
     }
 
-    def get_compare(f):
+    def get_compare(f: str) -> str:
         name = os.path.split(f)[1]
         if name in file_map:
             return os.path.join(base, "html", file_map[name])

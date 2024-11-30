@@ -1,11 +1,17 @@
+from __future__ import annotations
+
+from io import BytesIO
+from pathlib import Path
+from typing import IO
+
 import pytest
 
-from PIL import Hdf5StubImagePlugin, Image
+from PIL import Hdf5StubImagePlugin, Image, ImageFile
 
 TEST_FILE = "Tests/images/hdf5.h5"
 
 
-def test_open():
+def test_open() -> None:
     # Act
     with Image.open(TEST_FILE) as im:
         # Assert
@@ -16,7 +22,7 @@ def test_open():
         assert im.size == (1, 1)
 
 
-def test_invalid_file():
+def test_invalid_file() -> None:
     # Arrange
     invalid_file = "Tests/images/flower.jpg"
 
@@ -25,7 +31,7 @@ def test_invalid_file():
         Hdf5StubImagePlugin.HDF5StubImageFile(invalid_file)
 
 
-def test_load():
+def test_load() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
         # Act / Assert: stub cannot load without an implemented handler
@@ -33,10 +39,10 @@ def test_load():
             im.load()
 
 
-def test_save():
+def test_save() -> None:
     # Arrange
     with Image.open(TEST_FILE) as im:
-        dummy_fp = None
+        dummy_fp = BytesIO()
         dummy_filename = "dummy.filename"
 
         # Act / Assert: stub cannot save without an implemented handler
@@ -46,31 +52,34 @@ def test_save():
             Hdf5StubImagePlugin._save(im, dummy_fp, dummy_filename)
 
 
-def test_handler(tmp_path):
-    class TestHandler:
+def test_handler(tmp_path: Path) -> None:
+    class TestHandler(ImageFile.StubHandler):
         opened = False
         loaded = False
         saved = False
 
-        def open(self, im):
+        def open(self, im: Image.Image) -> None:
             self.opened = True
 
-        def load(self, im):
+        def load(self, im: Image.Image) -> Image.Image:
             self.loaded = True
             im.fp.close()
             return Image.new("RGB", (1, 1))
 
-        def save(self, im, fp, filename):
+        def is_loaded(self) -> bool:
+            return self.loaded
+
+        def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             self.saved = True
 
     handler = TestHandler()
     Hdf5StubImagePlugin.register_handler(handler)
     with Image.open(TEST_FILE) as im:
         assert handler.opened
-        assert not handler.loaded
+        assert not handler.is_loaded()
 
         im.load()
-        assert handler.loaded
+        assert handler.is_loaded()
 
         temp_file = str(tmp_path / "temp.h5")
         im.save(temp_file)

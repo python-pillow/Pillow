@@ -14,8 +14,8 @@ Pillow for Python 3.4 is 5.4.1.
 Removed deprecated PIL.OleFileIO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PIL.OleFileIO was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
-the upstream olefile Python package, and replaced with an ``ImportError``. The
+``PIL.OleFileIO`` was removed as a vendored file and in Pillow 4.0.0 (2017-01) in favour of
+the upstream :pypi:`olefile` Python package, and replaced with an :py:exc:`ImportError`. The
 deprecated file has now been removed from Pillow. If needed, install from PyPI (eg.
 ``python3 -m pip install olefile``).
 
@@ -103,7 +103,7 @@ ImageCms.CmsProfile attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some attributes in ``ImageCms.CmsProfile`` have been deprecated since Pillow 3.2.0. From
-6.0.0, they issue a ``DeprecationWarning``:
+6.0.0, they issue a :py:exc:`DeprecationWarning`:
 
 ========================  ===============================
 Deprecated                Use instead

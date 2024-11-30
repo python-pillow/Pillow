@@ -227,6 +227,18 @@ Methods
 
         .. versionadded:: 5.3.0
 
+.. py:method:: ImageDraw.circle(xy, radius, fill=None, outline=None, width=1)
+
+    Draws a circle with a given radius centering on a point.
+
+    .. versionadded:: 10.4.0
+
+    :param xy: The point for the center of the circle, e.g. ``(x, y)``.
+    :param radius: Radius of the circle.
+    :param outline: Color to use for the outline.
+    :param fill: Color to use for the fill.
+    :param width: The line width, in pixels.
+
 .. py:method:: ImageDraw.ellipse(xy, fill=None, outline=None, width=1)
 
     Draws an ellipse inside the given bounding box.
@@ -351,7 +363,7 @@ Methods
 
     Draw a shape.
 
-.. py:method:: ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None, embedded_color=False)
+.. py:method:: ImageDraw.text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None, embedded_color=False, font_size=None)
 
     Draws the string at the given position.
 
@@ -362,9 +374,10 @@ Methods
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
-                   the anchor to the text. The default alignment is top left.
-                   See :ref:`text-anchors` for valid values. This parameter is
-                   ignored for non-TrueType fonts.
+                   the anchor to the text. The default alignment is top left,
+                   specifically ``la`` for horizontal text and ``lt`` for
+                   vertical text. See :ref:`text-anchors` for details.
+                   This parameter is ignored for non-TrueType fonts.
 
                     .. note:: This parameter was present in earlier versions
                               of Pillow, but implemented only in version 8.0.0.
@@ -416,8 +429,14 @@ Methods
 
                     .. versionadded:: 8.0.0
 
+    :param font_size: If ``font`` is not provided, then the size to use for the default
+                      font.
+                      Keyword-only argument.
 
-.. py:method:: ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None, embedded_color=False)
+                    .. versionadded:: 10.1.0
+
+
+.. py:method:: ImageDraw.multiline_text(xy, text, fill=None, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, stroke_fill=None, embedded_color=False, font_size=None)
 
     Draws the string at the given position.
 
@@ -427,9 +446,10 @@ Methods
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
 
     :param anchor: The text anchor alignment. Determines the relative location of
-                   the anchor to the text. The default alignment is top left.
-                   See :ref:`text-anchors` for valid values. This parameter is
-                   ignored for non-TrueType fonts.
+                   the anchor to the text. The default alignment is top left,
+                   specifically ``la`` for horizontal text and ``lt`` for
+                   vertical text. See :ref:`text-anchors` for details.
+                   This parameter is ignored for non-TrueType fonts.
 
                     .. note:: This parameter was present in earlier versions
                               of Pillow, but implemented only in version 8.0.0.
@@ -477,7 +497,13 @@ Methods
 
                      .. versionadded:: 8.0.0
 
-.. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None, embedded_color=False)
+    :param font_size: If ``font`` is not provided, then the size to use for the default
+                      font.
+                      Keyword-only argument.
+
+                    .. versionadded:: 10.1.0
+
+.. py:method:: ImageDraw.textlength(text, font=None, direction=None, features=None, language=None, embedded_color=False, font_size=None)
 
     Returns length (in pixels with 1/64 precision) of given text when rendered
     in font with provided direction, features, and language.
@@ -538,9 +564,15 @@ Methods
                      It should be a `BCP 47 language code`_.
                      Requires libraqm.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
-    :return: Width for horizontal, height for vertical text.
+    :param font_size: If ``font`` is not provided, then the size to use for the default
+                      font.
+                      Keyword-only argument.
 
-.. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
+                    .. versionadded:: 10.1.0
+
+    :return: Either width for horizontal text, or height for vertical text.
+
+.. py:method:: ImageDraw.textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False, font_size=None)
 
     Returns bounding box (in pixels) of given text relative to given anchor
     when rendered in font with provided direction, features, and language.
@@ -558,9 +590,10 @@ Methods
                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textbbox`.
     :param font: A :py:class:`~PIL.ImageFont.FreeTypeFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
-                   the anchor to the text. The default alignment is top left.
-                   See :ref:`text-anchors` for valid values. This parameter is
-                   ignored for non-TrueType fonts.
+                   the anchor to the text. The default alignment is top left,
+                   specifically ``la`` for horizontal text and ``lt`` for
+                   vertical text. See :ref:`text-anchors` for details.
+                   This parameter is ignored for non-TrueType fonts.
     :param spacing: If the text is passed on to
                     :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textbbox`,
                     the number of pixels between lines.
@@ -588,9 +621,15 @@ Methods
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :param font_size: If ``font`` is not provided, then the size to use for the default
+                      font.
+                      Keyword-only argument.
+
+                    .. versionadded:: 10.1.0
+
     :return: ``(left, top, right, bottom)`` bounding box
 
-.. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False)
+.. py:method:: ImageDraw.multiline_textbbox(xy, text, font=None, anchor=None, spacing=4, align="left", direction=None, features=None, language=None, stroke_width=0, embedded_color=False, font_size=None)
 
     Returns bounding box (in pixels) of given text relative to given anchor
     when rendered in font with provided direction, features, and language.
@@ -606,9 +645,10 @@ Methods
     :param text: Text to be measured.
     :param font: A :py:class:`~PIL.ImageFont.FreeTypeFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
-                   the anchor to the text. The default alignment is top left.
-                   See :ref:`text-anchors` for valid values. This parameter is
-                   ignored for non-TrueType fonts.
+                   the anchor to the text. The default alignment is top left,
+                   specifically ``la`` for horizontal text and ``lt`` for
+                   vertical text. See :ref:`text-anchors` for details.
+                   This parameter is ignored for non-TrueType fonts.
     :param spacing: The number of pixels between lines.
     :param align: ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
                   Use the ``anchor`` parameter to specify the alignment to ``xy``.
@@ -632,6 +672,12 @@ Methods
                      Requires libraqm.
     :param stroke_width: The width of the text stroke.
     :param embedded_color: Whether to use font embedded color glyphs (COLR, CBDT, SBIX).
+    :param font_size: If ``font`` is not provided, then the size to use for the default
+                      font.
+                      Keyword-only argument.
+
+                    .. versionadded:: 10.1.0
+
     :return: ``(left, top, right, bottom)`` bounding box
 
 .. py:method:: getdraw(im=None, hints=None)
@@ -645,23 +691,7 @@ Methods
     :param hints: An optional list of hints.
     :returns: A (drawing context, drawing resource factory) tuple.
 
-.. py:method:: floodfill(image, xy, value, border=None, thresh=0)
-
-    .. warning:: This method is experimental.
-
-    Fills a bounded region with a given color.
-
-    :param image: Target image.
-    :param xy: Seed position (a 2-item coordinate tuple).
-    :param value: Fill color.
-    :param border: Optional border value.  If given, the region consists of
-        pixels with a color different from the border color.  If not given,
-        the region consists of pixels having the same color as the seed
-        pixel.
-    :param thresh: Optional threshold value which specifies a maximum
-        tolerable difference of a pixel value from the 'background' in
-        order for it to be replaced. Useful for filling regions of non-
-        homogeneous, but similar, colors.
+.. autofunction:: PIL.ImageDraw.floodfill
 
 .. _BCP 47 language code: https://www.w3.org/International/articles/language-tags/
 .. _OpenType docs: https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist

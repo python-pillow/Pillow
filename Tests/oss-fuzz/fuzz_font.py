@@ -16,14 +16,15 @@
 
 
 import atheris
+from atheris.import_hook import instrument_imports
 
-with atheris.instrument_imports():
+with instrument_imports():
     import sys
 
     import fuzzers
 
 
-def TestOneInput(data):
+def TestOneInput(data: bytes) -> None:
     try:
         fuzzers.fuzz_font(data)
     except Exception:
@@ -32,7 +33,7 @@ def TestOneInput(data):
         pass
 
 
-def main():
+def main() -> None:
     fuzzers.enable_decompressionbomb_error()
     atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()

@@ -14,23 +14,23 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
 
 import builtins
+from types import CodeType
+from typing import Any, Callable
 
 from . import Image, _imagingmath
-
-
-def _isconstant(v):
-    return isinstance(v, (int, float))
+from ._deprecate import deprecate
 
 
 class _Operand:
     """Wraps an image operand, providing standard operators"""
 
-    def __init__(self, im):
+    def __init__(self, im: Image.Image):
         self.im = im
 
-    def __fixup(self, im1):
+    def __fixup(self, im1: _Operand | float) -> Image.Image:
         # convert image to suitable mode
         if isinstance(im1, _Operand):
             # argument was an image.
@@ -43,211 +43,287 @@ class _Operand:
                 raise ValueError(msg)
         else:
             # argument was a constant
-            if _isconstant(im1) and self.im.mode in ("1", "L", "I"):
+            if isinstance(im1, (int, float)) and self.im.mode in ("1", "L", "I"):
                 return Image.new("I", self.im.size, im1)
             else:
                 return Image.new("F", self.im.size, im1)
 
-    def apply(self, op, im1, im2=None, mode=None):
-        im1 = self.__fixup(im1)
+    def apply(
+        self,
+        op: str,
+        im1: _Operand | float,
+        im2: _Operand | float | None = None,
+        mode: str | None = None,
+    ) -> _Operand:
+        im_1 = self.__fixup(im1)
         if im2 is None:
             # unary operation
-            out = Image.new(mode or im1.mode, im1.size, None)
-            im1.load()
+            out = Image.new(mode or im_1.mode, im_1.size, None)
             try:
-                op = getattr(_imagingmath, op + "_" + im1.mode)
+                op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
-            _imagingmath.unop(op, out.im.id, im1.im.id)
+            _imagingmath.unop(op, out.getim(), im_1.getim())
         else:
             # binary operation
-            im2 = self.__fixup(im2)
-            if im1.mode != im2.mode:
+            im_2 = self.__fixup(im2)
+            if im_1.mode != im_2.mode:
                 # convert both arguments to floating point
-                if im1.mode != "F":
-                    im1 = im1.convert("F")
-                if im2.mode != "F":
-                    im2 = im2.convert("F")
-            if im1.size != im2.size:
+                if im_1.mode != "F":
+                    im_1 = im_1.convert("F")
+                if im_2.mode != "F":
+                    im_2 = im_2.convert("F")
+            if im_1.size != im_2.size:
                 # crop both arguments to a common size
-                size = (min(im1.size[0], im2.size[0]), min(im1.size[1], im2.size[1]))
-                if im1.size != size:
-                    im1 = im1.crop((0, 0) + size)
-                if im2.size != size:
-                    im2 = im2.crop((0, 0) + size)
-            out = Image.new(mode or im1.mode, im1.size, None)
-            im1.load()
-            im2.load()
+                size = (
+                    min(im_1.size[0], im_2.size[0]),
+                    min(im_1.size[1], im_2.size[1]),
+                )
+                if im_1.size != size:
+                    im_1 = im_1.crop((0, 0) + size)
+                if im_2.size != size:
+                    im_2 = im_2.crop((0, 0) + size)
+            out = Image.new(mode or im_1.mode, im_1.size, None)
             try:
-                op = getattr(_imagingmath, op + "_" + im1.mode)
+                op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
-            _imagingmath.binop(op, out.im.id, im1.im.id, im2.im.id)
+            _imagingmath.binop(op, out.getim(), im_1.getim(), im_2.getim())
         return _Operand(out)
 
     # unary operators
-    def __bool__(self):
+    def __bool__(self) -> bool:
         # an image is "true" if it contains at least one non-zero pixel
         return self.im.getbbox() is not None
 
-    def __abs__(self):
+    def __abs__(self) -> _Operand:
         return self.apply("abs", self)
 
-    def __pos__(self):
+    def __pos__(self) -> _Operand:
         return self
 
-    def __neg__(self):
+    def __neg__(self) -> _Operand:
         return self.apply("neg", self)
 
     # binary operators
-    def __add__(self, other):
+    def __add__(self, other: _Operand | float) -> _Operand:
         return self.apply("add", self, other)
 
-    def __radd__(self, other):
+    def __radd__(self, other: _Operand | float) -> _Operand:
         return self.apply("add", other, self)
 
-    def __sub__(self, other):
+    def __sub__(self, other: _Operand | float) -> _Operand:
         return self.apply("sub", self, other)
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: _Operand | float) -> _Operand:
         return self.apply("sub", other, self)
 
-    def __mul__(self, other):
+    def __mul__(self, other: _Operand | float) -> _Operand:
         return self.apply("mul", self, other)
 
-    def __rmul__(self, other):
+    def __rmul__(self, other: _Operand | float) -> _Operand:
         return self.apply("mul", other, self)
 
-    def __truediv__(self, other):
+    def __truediv__(self, other: _Operand | float) -> _Operand:
         return self.apply("div", self, other)
 
-    def __rtruediv__(self, other):
+    def __rtruediv__(self, other: _Operand | float) -> _Operand:
         return self.apply("div", other, self)
 
-    def __mod__(self, other):
+    def __mod__(self, other: _Operand | float) -> _Operand:
         return self.apply("mod", self, other)
 
-    def __rmod__(self, other):
+    def __rmod__(self, other: _Operand | float) -> _Operand:
         return self.apply("mod", other, self)
 
-    def __pow__(self, other):
+    def __pow__(self, other: _Operand | float) -> _Operand:
         return self.apply("pow", self, other)
 
-    def __rpow__(self, other):
+    def __rpow__(self, other: _Operand | float) -> _Operand:
         return self.apply("pow", other, self)
 
     # bitwise
-    def __invert__(self):
+    def __invert__(self) -> _Operand:
         return self.apply("invert", self)
 
-    def __and__(self, other):
+    def __and__(self, other: _Operand | float) -> _Operand:
         return self.apply("and", self, other)
 
-    def __rand__(self, other):
+    def __rand__(self, other: _Operand | float) -> _Operand:
         return self.apply("and", other, self)
 
-    def __or__(self, other):
+    def __or__(self, other: _Operand | float) -> _Operand:
         return self.apply("or", self, other)
 
-    def __ror__(self, other):
+    def __ror__(self, other: _Operand | float) -> _Operand:
         return self.apply("or", other, self)
 
-    def __xor__(self, other):
+    def __xor__(self, other: _Operand | float) -> _Operand:
         return self.apply("xor", self, other)
 
-    def __rxor__(self, other):
+    def __rxor__(self, other: _Operand | float) -> _Operand:
         return self.apply("xor", other, self)
 
-    def __lshift__(self, other):
+    def __lshift__(self, other: _Operand | float) -> _Operand:
         return self.apply("lshift", self, other)
 
-    def __rshift__(self, other):
+    def __rshift__(self, other: _Operand | float) -> _Operand:
         return self.apply("rshift", self, other)
 
     # logical
-    def __eq__(self, other):
+    def __eq__(self, other: _Operand | float) -> _Operand:  # type: ignore[override]
         return self.apply("eq", self, other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: _Operand | float) -> _Operand:  # type: ignore[override]
         return self.apply("ne", self, other)
 
-    def __lt__(self, other):
+    def __lt__(self, other: _Operand | float) -> _Operand:
         return self.apply("lt", self, other)
 
-    def __le__(self, other):
+    def __le__(self, other: _Operand | float) -> _Operand:
         return self.apply("le", self, other)
 
-    def __gt__(self, other):
+    def __gt__(self, other: _Operand | float) -> _Operand:
         return self.apply("gt", self, other)
 
-    def __ge__(self, other):
+    def __ge__(self, other: _Operand | float) -> _Operand:
         return self.apply("ge", self, other)
 
 
 # conversions
-def imagemath_int(self):
+def imagemath_int(self: _Operand) -> _Operand:
     return _Operand(self.im.convert("I"))
 
 
-def imagemath_float(self):
+def imagemath_float(self: _Operand) -> _Operand:
     return _Operand(self.im.convert("F"))
 
 
 # logical
-def imagemath_equal(self, other):
+def imagemath_equal(self: _Operand, other: _Operand | float | None) -> _Operand:
     return self.apply("eq", self, other, mode="I")
 
 
-def imagemath_notequal(self, other):
+def imagemath_notequal(self: _Operand, other: _Operand | float | None) -> _Operand:
     return self.apply("ne", self, other, mode="I")
 
 
-def imagemath_min(self, other):
+def imagemath_min(self: _Operand, other: _Operand | float | None) -> _Operand:
     return self.apply("min", self, other)
 
 
-def imagemath_max(self, other):
+def imagemath_max(self: _Operand, other: _Operand | float | None) -> _Operand:
     return self.apply("max", self, other)
 
 
-def imagemath_convert(self, mode):
+def imagemath_convert(self: _Operand, mode: str) -> _Operand:
     return _Operand(self.im.convert(mode))
 
 
-ops = {}
-for k, v in list(globals().items()):
-    if k[:10] == "imagemath_":
-        ops[k[10:]] = v
+ops = {
+    "int": imagemath_int,
+    "float": imagemath_float,
+    "equal": imagemath_equal,
+    "notequal": imagemath_notequal,
+    "min": imagemath_min,
+    "max": imagemath_max,
+    "convert": imagemath_convert,
+}
 
 
-def eval(expression, _dict={}, **kw):
+def lambda_eval(
+    expression: Callable[[dict[str, Any]], Any],
+    options: dict[str, Any] = {},
+    **kw: Any,
+) -> Any:
     """
-    Evaluates an image expression.
+    Returns the result of an image function.
+
+    :py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
+    images, use the :py:meth:`~PIL.Image.Image.split` method or
+    :py:func:`~PIL.Image.merge` function.
+
+    :param expression: A function that receives a dictionary.
+    :param options: Values to add to the function's dictionary. Deprecated.
+                    You can instead use one or more keyword arguments.
+    :param **kw: Values to add to the function's dictionary.
+    :return: The expression result. This is usually an image object, but can
+             also be an integer, a floating point value, or a pixel tuple,
+             depending on the expression.
+    """
+
+    if options:
+        deprecate(
+            "ImageMath.lambda_eval options",
+            12,
+            "ImageMath.lambda_eval keyword arguments",
+        )
+
+    args: dict[str, Any] = ops.copy()
+    args.update(options)
+    args.update(kw)
+    for k, v in args.items():
+        if isinstance(v, Image.Image):
+            args[k] = _Operand(v)
+
+    out = expression(args)
+    try:
+        return out.im
+    except AttributeError:
+        return out
+
+
+def unsafe_eval(
+    expression: str,
+    options: dict[str, Any] = {},
+    **kw: Any,
+) -> Any:
+    """
+    Evaluates an image expression. This uses Python's ``eval()`` function to process
+    the expression string, and carries the security risks of doing so. It is not
+    recommended to process expressions without considering this.
+    :py:meth:`~lambda_eval` is a more secure alternative.
+
+    :py:mod:`~PIL.ImageMath` only supports single-layer images. To process multi-band
+    images, use the :py:meth:`~PIL.Image.Image.split` method or
+    :py:func:`~PIL.Image.merge` function.
 
     :param expression: A string containing a Python-style expression.
-    :param options: Values to add to the evaluation context.  You
-                    can either use a dictionary, or one or more keyword
-                    arguments.
+    :param options: Values to add to the evaluation context. Deprecated.
+                    You can instead use one or more keyword arguments.
+    :param **kw: Values to add to the evaluation context.
     :return: The evaluated expression. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
     """
 
+    if options:
+        deprecate(
+            "ImageMath.unsafe_eval options",
+            12,
+            "ImageMath.unsafe_eval keyword arguments",
+        )
+
     # build execution namespace
-    args = ops.copy()
-    args.update(_dict)
+    args: dict[str, Any] = ops.copy()
+    for k in list(options.keys()) + list(kw.keys()):
+        if "__" in k or hasattr(builtins, k):
+            msg = f"'{k}' not allowed"
+            raise ValueError(msg)
+
+    args.update(options)
     args.update(kw)
-    for k, v in list(args.items()):
-        if hasattr(v, "im"):
+    for k, v in args.items():
+        if isinstance(v, Image.Image):
             args[k] = _Operand(v)
 
     compiled_code = compile(expression, "<string>", "eval")
 
-    def scan(code):
+    def scan(code: CodeType) -> None:
         for const in code.co_consts:
-            if type(const) == type(compiled_code):
+            if type(const) is type(compiled_code):
                 scan(const)
 
         for name in code.co_names:
@@ -261,3 +337,32 @@ def eval(expression, _dict={}, **kw):
         return out.im
     except AttributeError:
         return out
+
+
+def eval(
+    expression: str,
+    _dict: dict[str, Any] = {},
+    **kw: Any,
+) -> Any:
+    """
+    Evaluates an image expression.
+
+    Deprecated. Use lambda_eval() or unsafe_eval() instead.
+
+    :param expression: A string containing a Python-style expression.
+    :param _dict: Values to add to the evaluation context.  You
+                  can either use a dictionary, or one or more keyword
+                  arguments.
+    :return: The evaluated expression. This is usually an image object, but can
+             also be an integer, a floating point value, or a pixel tuple,
+             depending on the expression.
+
+    ..  deprecated:: 10.3.0
+    """
+
+    deprecate(
+        "ImageMath.eval",
+        12,
+        "ImageMath.lambda_eval or ImageMath.unsafe_eval",
+    )
+    return unsafe_eval(expression, _dict, **kw)

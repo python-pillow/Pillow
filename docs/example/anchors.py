@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from PIL import Image, ImageDraw, ImageFont
 
 font = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 16)
 
 
-def test(anchor):
+def test(anchor: str) -> Image.Image:
     im = Image.new("RGBA", (200, 100), "white")
     d = ImageDraw.Draw(im)
     d.line(((100, 0), (100, 100)), "gray")
@@ -24,5 +26,5 @@ if __name__ == "__main__":
                 d.line(((x * 200, y * 100), (x * 200, (y + 1) * 100)), "black", 3)
             if y != 0:
                 d.line(((x * 200, y * 100), ((x + 1) * 200, y * 100)), "black", 3)
-    im.save("docs/example/anchors.png")
+    im.save("docs/example/anchors.webp")
     im.show()

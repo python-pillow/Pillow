@@ -25,13 +25,13 @@ Reference
    ImageShow
    ImageStat
    ImageTk
+   ImageTransform
    ImageWin
    ExifTags
    TiffTags
    JpegPresets
    PSDraw
    PixelAccess
-   PyAccess
    features
    ../PIL
    plugins

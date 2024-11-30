@@ -83,7 +83,6 @@ decode_bc1_color(rgba *dst, const UINT8 *src, int separate_alpha) {
     g1 = p[1].g;
     b1 = p[1].b;
 
-
     /* NOTE: BC2 and BC3 reuse BC1 color blocks but always act like c0 > c1 */
     if (col.c0 > col.c1 || separate_alpha) {
         p[2].r = (2 * r0 + 1 * r1) / 3;
@@ -118,8 +117,8 @@ decode_bc3_alpha(char *dst, const UINT8 *src, int stride, int o, int sign) {
     if (sign == 1) {
         bc5s_alpha b;
         memcpy(&b, src, sizeof(bc5s_alpha));
-        a0 = (b.a0 + 255) / 2;
-        a1 = (b.a1 + 255) / 2;
+        a0 = b.a0 + 128;
+        a1 = b.a1 + 128;
         lut1 = b.lut[0] | (b.lut[1] << 8) | (b.lut[2] << 16);
         lut2 = b.lut[3] | (b.lut[4] << 8) | (b.lut[5] << 16);
     } else {
@@ -244,7 +243,8 @@ static const bc7_mode_info bc7_modes[] = {
     {1, 0, 2, 1, 5, 6, 0, 0, 2, 3},
     {1, 0, 2, 0, 7, 8, 0, 0, 2, 2},
     {1, 0, 0, 0, 7, 7, 1, 0, 4, 0},
-    {2, 6, 0, 0, 5, 5, 1, 0, 2, 0}};
+    {2, 6, 0, 0, 5, 5, 1, 0, 2, 0}
+};
 
 /* Subset indices:
    Table.P2, 1 bit per index */
@@ -255,7 +255,8 @@ static const UINT16 bc7_si2[] = {
     0x718e, 0x399c, 0xaaaa, 0xf0f0, 0x5a5a, 0x33cc, 0x3c3c, 0x55aa, 0x9696, 0xa55a,
     0x73ce, 0x13c8, 0x324c, 0x3bdc, 0x6996, 0xc33c, 0x9966, 0x0660, 0x0272, 0x04e4,
     0x4e40, 0x2720, 0xc936, 0x936c, 0x39c6, 0x639c, 0x9336, 0x9cc6, 0x817e, 0xe718,
-    0xccf0, 0x0fcc, 0x7744, 0xee22};
+    0xccf0, 0x0fcc, 0x7744, 0xee22
+};
 
 /* Table.P3, 2 bits per index */
 static const UINT32 bc7_si3[] = {
@@ -268,20 +269,23 @@ static const UINT32 bc7_si3[] = {
     0x66660000, 0xa5a0a5a0, 0x50a050a0, 0x69286928, 0x44aaaa44, 0x66666600, 0xaa444444,
     0x54a854a8, 0x95809580, 0x96969600, 0xa85454a8, 0x80959580, 0xaa141414, 0x96960000,
     0xaaaa1414, 0xa05050a0, 0xa0a5a5a0, 0x96000000, 0x40804080, 0xa9a8a9a8, 0xaaaaaa44,
-    0x2a4a5254};
+    0x2a4a5254
+};
 
 /* Anchor indices:
    Table.A2 */
-static const char bc7_ai0[] = {
-    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 2,  8, 2, 2, 8,
-    8,  15, 2,  8,  2,  2,  8,  8,  2,  2,  15, 15, 6,  8,  2,  8,  15, 15, 2, 8, 2, 2,
-    2,  15, 15, 6,  6,  2,  6,  8,  15, 15, 2,  2,  15, 15, 15, 15, 15, 2,  2, 15};
+static const char bc7_ai0[] = {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+                               15, 15, 15, 15, 2,  8,  2,  2,  8,  8,  15, 2,  8,
+                               2,  2,  8,  8,  2,  2,  15, 15, 6,  8,  2,  8,  15,
+                               15, 2,  8,  2,  2,  2,  15, 15, 6,  6,  2,  6,  8,
+                               15, 15, 2,  2,  15, 15, 15, 15, 15, 2,  2,  15};
 
 /* Table.A3a */
-static const char bc7_ai1[] = {
-    3,  3,  15, 15, 8, 3,  15, 15, 8,  8,  6, 6,  6, 5,  3, 3,  3,  3,  8,  15, 3,  3,
-    6,  10, 5,  8,  8, 6,  8,  5,  15, 15, 8, 15, 3, 5,  6, 10, 8,  15, 15, 3,  15, 5,
-    15, 15, 15, 15, 3, 15, 5,  5,  5,  8,  5, 10, 5, 10, 8, 13, 15, 12, 3,  3};
+static const char bc7_ai1[] = {3,  3,  15, 15, 8,  3,  15, 15, 8,  8,  6,  6,  6,
+                               5,  3,  3,  3,  3,  8,  15, 3,  3,  6,  10, 5,  8,
+                               8,  6,  8,  5,  15, 15, 8,  15, 3,  5,  6,  10, 8,
+                               15, 15, 3,  15, 5,  15, 15, 15, 15, 3,  15, 5,  5,
+                               5,  8,  5,  10, 5,  10, 8,  13, 15, 12, 3,  3};
 
 /* Table.A3b */
 static const char bc7_ai2[] = {15, 8,  8,  3,  15, 15, 3,  8,  15, 15, 15, 15, 15,
@@ -294,7 +298,8 @@ static const char bc7_ai2[] = {15, 8,  8,  3,  15, 15, 3,  8,  15, 15, 15, 15, 1
 static const char bc7_weights2[] = {0, 21, 43, 64};
 static const char bc7_weights3[] = {0, 9, 18, 27, 37, 46, 55, 64};
 static const char bc7_weights4[] = {
-    0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64};
+    0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64
+};
 
 static const char *
 bc7_get_weights(int n) {
@@ -354,8 +359,7 @@ decode_bc7_block(rgba *col, const UINT8 *src) {
         }
         return;
     }
-    while (!(mode & (1 << bit++)))
-        ;
+    while (!(mode & (1 << bit++)));
     mode = bit - 1;
     info = &bc7_modes[mode];
     /* color selection bits: {subset}{endpoint} */
@@ -528,7 +532,8 @@ static const bc6_mode_info bc6_modes[] = {
     {1, 0, 0, 10, 10, 10, 10},
     {1, 1, 0, 11, 9, 9, 9},
     {1, 1, 0, 12, 8, 8, 8},
-    {1, 1, 0, 16, 4, 4, 4}};
+    {1, 1, 0, 16, 4, 4, 4}
+};
 
 /* Table.F, encoded as a sequence of bit indices */
 static const UINT8 bc6_bit_packings[][75] = {
@@ -546,7 +551,7 @@ static const UINT8 bc6_bit_packings[][75] = {
      21,  22,  23,  24,  25,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,
      48,  49,  50,  51,  52,  10,  112, 113, 114, 115, 64,  65,  66,  67,  26,
      176, 160, 161, 162, 163, 80,  81,  82,  83,  42,  177, 128, 129, 130, 131,
-     96,  97, 98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
+     96,  97,  98,  99,  100, 178, 144, 145, 146, 147, 148, 179},
     {0,  1,   2,   3,   4,   5,   6,   7,   8,   9,   16,  17,  18,  19,  20,
      21, 22,  23,  24,  25,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,
      48, 49,  50,  51,  10,  164, 112, 113, 114, 115, 64,  65,  66,  67,  68,
@@ -593,7 +598,8 @@ static const UINT8 bc6_bit_packings[][75] = {
      64, 65, 66, 67, 68, 69, 70, 71, 27, 26, 80, 81, 82, 83, 84, 85, 86, 87, 43, 42},
     {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
      32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 48, 49, 50, 51, 15, 14, 13, 12, 11, 10,
-     64, 65, 66, 67, 31, 30, 29, 28, 27, 26, 80, 81, 82, 83, 47, 46, 45, 44, 43, 42}};
+     64, 65, 66, 67, 31, 30, 29, 28, 27, 26, 80, 81, 82, 83, 47, 46, 45, 44, 43, 42}
+};
 
 static void
 bc6_sign_extend(UINT16 *v, int prec) {
@@ -684,7 +690,7 @@ bc6_clamp(float value) {
     } else if (value > 1.0f) {
         return 255;
     } else {
-        return (UINT8) (value * 255.0f);
+        return (UINT8)(value * 255.0f);
     }
 }
 
@@ -826,7 +832,14 @@ put_block(Imaging im, ImagingCodecState state, const char *col, int sz, int C) {
 
 static int
 decode_bcn(
-    Imaging im, ImagingCodecState state, const UINT8 *src, int bytes, int N, int C, char *pixel_format) {
+    Imaging im,
+    ImagingCodecState state,
+    const UINT8 *src,
+    int bytes,
+    int N,
+    int C,
+    char *pixel_format
+) {
     int ymax = state->ysize + state->yoff;
     const UINT8 *ptr = src;
     switch (N) {
@@ -849,11 +862,12 @@ decode_bcn(
         DECODE_LOOP(2, 16, rgba);
         DECODE_LOOP(3, 16, rgba);
         DECODE_LOOP(4, 8, lum);
-        case 5:
+        case 5: {
+            int sign = strcmp(pixel_format, "BC5S") == 0 ? 1 : 0;
             while (bytes >= 16) {
                 rgba col[16];
-                memset(col, 0, 16 * sizeof(col[0]));
-                decode_bc5_block(col, ptr, strcmp(pixel_format, "BC5S") == 0 ? 1 : 0);
+                memset(col, sign ? 128 : 0, 16 * sizeof(col[0]));
+                decode_bc5_block(col, ptr, sign);
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;
                 bytes -= 16;
@@ -862,10 +876,12 @@ decode_bcn(
                 }
             }
             break;
-        case 6:
+        }
+        case 6: {
+            int sign = strcmp(pixel_format, "BC6HS") == 0 ? 1 : 0;
             while (bytes >= 16) {
                 rgba col[16];
-                decode_bc6_block(col, ptr, strcmp(pixel_format, "BC6HS") == 0 ? 1 : 0);
+                decode_bc6_block(col, ptr, sign);
                 put_block(im, state, (const char *)col, sizeof(col[0]), C);
                 ptr += 16;
                 bytes -= 16;
@@ -874,7 +890,8 @@ decode_bcn(
                 }
             }
             break;
-        DECODE_LOOP(7, 16, rgba);
+        }
+            DECODE_LOOP(7, 16, rgba);
 #undef DECODE_LOOP
     }
     return (int)(ptr - src);

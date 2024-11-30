@@ -13,7 +13,7 @@
 #
 # See the README file for information on usage and redistribution.
 #
-
+from __future__ import annotations
 
 from . import Image, ImageFile
 
@@ -27,8 +27,10 @@ class PcdImageFile(ImageFile.ImageFile):
     format = "PCD"
     format_description = "Kodak PhotoCD"
 
-    def _open(self):
+    def _open(self) -> None:
         # rough
+        assert self.fp is not None
+
         self.fp.seek(2048)
         s = self.fp.read(2048)
 
@@ -43,11 +45,11 @@ class PcdImageFile(ImageFile.ImageFile):
         elif orientation == 3:
             self.tile_post_rotate = -90
 
-        self.mode = "RGB"
+        self._mode = "RGB"
         self._size = 768, 512  # FIXME: not correct for rotated images!
-        self.tile = [("pcd", (0, 0) + self.size, 96 * 2048, None)]
+        self.tile = [ImageFile._Tile("pcd", (0, 0) + self.size, 96 * 2048, None)]
 
-    def load_end(self):
+    def load_end(self) -> None:
         if self.tile_post_rotate:
             # Handle rotated PCDs
             self.im = self.im.rotate(self.tile_post_rotate)

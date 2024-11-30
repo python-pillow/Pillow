@@ -1,13 +1,38 @@
 9.5.0
 -----
 
+Security
+========
+
+Clear PPM half token after use
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Image files that are small on disk are often prevented from expanding to be
+big images consuming a large amount of resources simply because they lack the
+data to populate those resources.
+
+PpmImagePlugin might hold onto the last data read for a pixel value in case the
+pixel value has not been finished yet. However, that data was not being cleared
+afterwards, meaning that infinite data could be available to fill any image
+size. This has been present since Pillow 9.2.0.
+
+That data is now cleared after use.
+
+Saving TIFF tag ImageSourceData
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If Pillow incorrectly saved the TIFF tag ImageSourceData as ASCII instead of
+UNDEFINED, a segmentation fault was triggered.
+
+The correct tag type will now be used by default instead.
+
 Deprecations
 ============
 
 PSFile
 ^^^^^^
 
-The :py:class:`~PIL.EpsImagePlugin.PSFile` class has been deprecated and will
+The :py:class:`!PSFile` class has been deprecated and will
 be removed in Pillow 11 (2024-10-15). This class was only made as a helper to
 be used internally, so there is no replacement. If you need this functionality
 though, it is a very short class that can easily be recreated in your own code.
@@ -45,31 +70,6 @@ to save it back again.
 If OpenJPEG 2.4.0 or later is available and the ``plt`` keyword argument
 is present and true when saving JPEG2000 images, tell the encoder to generate
 PLT markers.
-
-Security
-========
-
-Clear PPM half token after use
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Image files that are small on disk are often prevented from expanding to be
-big images consuming a large amount of resources simply because they lack the
-data to populate those resources.
-
-PpmImagePlugin might hold onto the last data read for a pixel value in case the
-pixel value has not been finished yet. However, that data was not being cleared
-afterwards, meaning that infinite data could be available to fill any image
-size. This has been present since Pillow 9.2.0.
-
-That data is now cleared after use.
-
-Saving TIFF tag ImageSourceData
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If Pillow incorrectly saved the TIFF tag ImageSourceData as ASCII instead of
-UNDEFINED, a segmentation fault was triggered.
-
-The correct tag type will now be used by default instead.
 
 Other Changes
 =============

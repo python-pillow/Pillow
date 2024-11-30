@@ -27,7 +27,7 @@ Download and install:
 * `Ninja <https://ninja-build.org/>`_
   (optional, use ``--nmake`` if not available; bundled in Visual Studio CMake component)
 
-* x64: `Netwide Assembler (NASM) <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
+* x86/AMD64: `Netwide Assembler (NASM) <https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D>`_
 
 Any version of Visual Studio 2017 or newer should be supported,
 including Visual Studio 2017 Community, or Build Tools for Visual Studio 2019.
@@ -42,11 +42,10 @@ Run ``build_prepare.py`` to configure the build::
 
     usage: winbuild\build_prepare.py [-h] [-v] [-d PILLOW_BUILD]
                                      [--depends PILLOW_DEPS]
-                                     [--architecture {x64,ARM64}]
-                                     [--python PYTHON] [--executable EXECUTABLE]
-                                     [--nmake] [--no-imagequant] [--no-fribidi]
+                                     [--architecture {x86,AMD64,ARM64}] [--nmake]
+                                     [--no-imagequant] [--no-fribidi]
 
-    Download dependencies and generate build scripts for Pillow.
+    Download and generate build scripts for Pillow dependencies.
 
     options:
       -h, --help            show this help message and exit
@@ -56,19 +55,15 @@ Run ``build_prepare.py`` to configure the build::
       --depends PILLOW_DEPS
                             directory used to store cached dependencies (default:
                             'winbuild\depends')
-      --architecture {x64,ARM64}
+      --architecture {x86,AMD64,ARM64}
                             build architecture (default: same as host Python)
-      --python PYTHON       Python install directory (default: use host Python)
-      --executable EXECUTABLE
-                            Python executable (default: use host Python)
       --nmake               build dependencies using NMake instead of Ninja
       --no-imagequant       skip GPL-licensed optional dependency libimagequant
       --no-fribidi, --no-raqm
                             skip LGPL-licensed optional dependency FriBiDi
 
     Arguments can also be supplied using the environment variables PILLOW_BUILD,
-    PILLOW_DEPS, ARCHITECTURE, PYTHON, EXECUTABLE. See winbuild\build.rst for more
-    information.
+    PILLOW_DEPS, ARCHITECTURE. See winbuild\build.rst for more information.
 
 **Warning:** The build directory is wiped when ``build_prepare.py`` is run.
 
@@ -86,14 +81,23 @@ or run the individual scripts in order to build each dependency separately.
 Building Pillow
 ---------------
 
-Once the dependencies are built, run
-``winbuild\build\build_pillow.cmd install`` to build and install
-Pillow for the selected version of Python.
-``winbuild\build\build_pillow.cmd bdist_wheel`` will build wheels
-instead of installing Pillow.
+Once the dependencies are built, make sure the required environment variables
+are set by running ``winbuild\build\build_env.cmd`` and install Pillow with pip::
 
-You can also use ``winbuild\build\build_pillow.cmd --inplace develop`` to build
-and install Pillow in develop mode (instead of ``python3 -m pip install --editable``).
+    winbuild\build\build_env.cmd
+    python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor .
+
+You can also install Pillow in `editable mode`_::
+
+    winbuild\build\build_env.cmd
+    python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor -e .
+
+To build a binary wheel instead, run::
+
+    winbuild\build\build_env.cmd
+    python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .
+
+.. _editable mode: https://setuptools.pypa.io/en/stable/userguide/development_mode.html
 
 Testing Pillow
 --------------
@@ -110,13 +114,14 @@ Example
 
 The following is a simplified version of the script used on AppVeyor::
 
-    set PYTHON=C:\Python38\bin
+    set PYTHON=C:\Python39\bin
     cd /D C:\Pillow\winbuild
-    C:\Python39\bin\python.exe build_prepare.py -v --depends C:\pillow-depends
+    %PYTHON%\python.exe build_prepare.py -v --depends C:\pillow-depends
     build\build_dep_all.cmd
-    build\build_pillow.cmd install
+    build\build_env.cmd
     cd ..
+    %PYTHON%\python.exe -m pip install -v -C raqm=vendor -C fribidi=vendor .
     path C:\Pillow\winbuild\build\bin;%PATH%
     %PYTHON%\python.exe selftest.py
     %PYTHON%\python.exe -m pytest -vx --cov PIL --cov Tests --cov-report term --cov-report xml Tests
-    build\build_pillow.cmd bdist_wheel
+    %PYTHON%\python.exe -m pip wheel -v -C raqm=vendor -C fribidi=vendor .

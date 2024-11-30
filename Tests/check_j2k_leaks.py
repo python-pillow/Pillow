@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from io import BytesIO
 
 import pytest
@@ -18,7 +20,7 @@ pytestmark = [
 ]
 
 
-def test_leak_load():
+def test_leak_load() -> None:
     from resource import RLIMIT_AS, RLIMIT_STACK, setrlimit
 
     setrlimit(RLIMIT_STACK, (stack_size, stack_size))
@@ -28,7 +30,7 @@ def test_leak_load():
             im.load()
 
 
-def test_leak_save():
+def test_leak_save() -> None:
     from resource import RLIMIT_AS, RLIMIT_STACK, setrlimit
 
     setrlimit(RLIMIT_STACK, (stack_size, stack_size))

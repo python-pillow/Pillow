@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import io
+from pathlib import Path
 
 import pytest
 
-from PIL import EpsImagePlugin, Image, features
+from PIL import EpsImagePlugin, Image, UnidentifiedImageError, features
 
 from .helper import (
+    assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
     hopper,
+    is_win32,
     mark_if_feature_version,
     skip_unless_feature,
 )
@@ -15,18 +20,18 @@ from .helper import (
 HAS_GHOSTSCRIPT = EpsImagePlugin.has_ghostscript()
 
 # Our two EPS test files (they are identical except for their bounding boxes)
-FILE1 = "Tests/images/zero_bb.eps"
-FILE2 = "Tests/images/non_zero_bb.eps"
+FILE1 = "Tests/images/eps/zero_bb.eps"
+FILE2 = "Tests/images/eps/non_zero_bb.eps"
 
 # Due to palletization, we'll need to convert these to RGB after load
-FILE1_COMPARE = "Tests/images/zero_bb.png"
-FILE1_COMPARE_SCALE2 = "Tests/images/zero_bb_scale2.png"
+FILE1_COMPARE = "Tests/images/eps/zero_bb.png"
+FILE1_COMPARE_SCALE2 = "Tests/images/eps/zero_bb_scale2.png"
 
-FILE2_COMPARE = "Tests/images/non_zero_bb.png"
-FILE2_COMPARE_SCALE2 = "Tests/images/non_zero_bb_scale2.png"
+FILE2_COMPARE = "Tests/images/eps/non_zero_bb.png"
+FILE2_COMPARE_SCALE2 = "Tests/images/eps/non_zero_bb_scale2.png"
 
 # EPS test files with binary preview
-FILE3 = "Tests/images/binary_preview_map.eps"
+FILE3 = "Tests/images/eps/binary_preview_map.eps"
 
 # Three unsigned 32bit little-endian values:
 #   0xC6D3D0C5 magic number
@@ -76,11 +81,9 @@ simple_eps_file_with_long_binary_data = (
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-@pytest.mark.parametrize(
-    ("filename", "size"), ((FILE1, (460, 352)), (FILE2, (360, 252)))
-)
+@pytest.mark.parametrize("filename, size", ((FILE1, (460, 352)), (FILE2, (360, 252))))
 @pytest.mark.parametrize("scale", (1, 2))
-def test_sanity(filename, size, scale):
+def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
     expected_size = tuple(s * scale for s in size)
     with Image.open(filename) as image:
         image.load(scale=scale)
@@ -90,7 +93,7 @@ def test_sanity(filename, size, scale):
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_load():
+def test_load() -> None:
     with Image.open(FILE1) as im:
         assert im.load()[0, 0] == (255, 255, 255)
 
@@ -98,44 +101,35 @@ def test_load():
         assert im.load()[0, 0] == (255, 255, 255)
 
 
-def test_invalid_file():
+def test_binary() -> None:
+    if HAS_GHOSTSCRIPT:
+        assert EpsImagePlugin.gs_binary is not None
+    else:
+        assert EpsImagePlugin.gs_binary is False
+
+    if not is_win32():
+        assert EpsImagePlugin.gs_windows_binary is None
+    elif not HAS_GHOSTSCRIPT:
+        assert EpsImagePlugin.gs_windows_binary is False
+    else:
+        assert EpsImagePlugin.gs_windows_binary is not None
+
+
+def test_invalid_file() -> None:
     invalid_file = "Tests/images/flower.jpg"
     with pytest.raises(SyntaxError):
         EpsImagePlugin.EpsImageFile(invalid_file)
 
 
-def test_binary_header_only():
+def test_binary_header_only() -> None:
     data = io.BytesIO(simple_binary_header)
     with pytest.raises(SyntaxError, match='EPS header missing "%!PS-Adobe" comment'):
         EpsImagePlugin.EpsImageFile(data)
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_missing_version_comment(prefix):
-    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_without_version))
-    with pytest.raises(SyntaxError):
-        EpsImagePlugin.EpsImageFile(data)
-
-
-@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_missing_boundingbox_comment(prefix):
-    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_without_boundingbox))
-    with pytest.raises(SyntaxError, match='EPS header missing "%%BoundingBox" comment'):
-        EpsImagePlugin.EpsImageFile(data)
-
-
-@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_invalid_boundingbox_comment(prefix):
-    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox))
-    with pytest.raises(OSError, match="cannot determine EPS bounding box"):
-        EpsImagePlugin.EpsImageFile(data)
-
-
-@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_invalid_boundingbox_comment_valid_imagedata_comment(prefix):
-    data = io.BytesIO(
-        prefix + b"\n".join(simple_eps_file_with_invalid_boundingbox_valid_imagedata)
-    )
+def test_simple_eps_file(prefix: bytes) -> None:
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file))
     with Image.open(data) as img:
         assert img.mode == "RGB"
         assert img.size == (100, 100)
@@ -143,25 +137,55 @@ def test_invalid_boundingbox_comment_valid_imagedata_comment(prefix):
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_ascii_comment_too_long(prefix):
+def test_missing_version_comment(prefix: bytes) -> None:
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_without_version))
+    with pytest.raises(SyntaxError):
+        EpsImagePlugin.EpsImageFile(data)
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_missing_boundingbox_comment(prefix: bytes) -> None:
+    data = io.BytesIO(prefix + b"\n".join(simple_eps_file_without_boundingbox))
+    with pytest.raises(SyntaxError, match='EPS header missing "%%BoundingBox" comment'):
+        EpsImagePlugin.EpsImageFile(data)
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+@pytest.mark.parametrize(
+    "file_lines",
+    (
+        simple_eps_file_with_invalid_boundingbox,
+        simple_eps_file_with_invalid_boundingbox_valid_imagedata,
+    ),
+)
+def test_invalid_boundingbox_comment(
+    prefix: bytes, file_lines: tuple[bytes, ...]
+) -> None:
+    data = io.BytesIO(prefix + b"\n".join(file_lines))
+    with pytest.raises(OSError, match="cannot determine EPS bounding box"):
+        EpsImagePlugin.EpsImageFile(data)
+
+
+@pytest.mark.parametrize("prefix", (b"", simple_binary_header))
+def test_ascii_comment_too_long(prefix: bytes) -> None:
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_long_ascii_comment))
     with pytest.raises(SyntaxError, match="not an EPS file"):
         EpsImagePlugin.EpsImageFile(data)
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_long_binary_data(prefix):
+def test_long_binary_data(prefix: bytes) -> None:
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_long_binary_data))
     EpsImagePlugin.EpsImageFile(data)
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
-def test_load_long_binary_data(prefix):
+def test_load_long_binary_data(prefix: bytes) -> None:
     data = io.BytesIO(prefix + b"\n".join(simple_eps_file_with_long_binary_data))
     with Image.open(data) as img:
         img.load()
-        assert img.mode == "RGB"
+        assert img.mode == "1"
         assert img.size == (100, 100)
         assert img.format == "EPS"
 
@@ -170,8 +194,8 @@ def test_load_long_binary_data(prefix):
     pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
 )
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_cmyk():
-    with Image.open("Tests/images/pil_sample_cmyk.eps") as cmyk_image:
+def test_cmyk() -> None:
+    with Image.open("Tests/images/eps/pil_sample_cmyk.eps") as cmyk_image:
         assert cmyk_image.mode == "CMYK"
         assert cmyk_image.size == (100, 100)
         assert cmyk_image.format == "EPS"
@@ -186,10 +210,10 @@ def test_cmyk():
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_showpage():
+def test_showpage() -> None:
     # See https://github.com/python-pillow/Pillow/issues/2615
-    with Image.open("Tests/images/reqd_showpage.eps") as plot_image:
-        with Image.open("Tests/images/reqd_showpage.png") as target:
+    with Image.open("Tests/images/eps/reqd_showpage.eps") as plot_image:
+        with Image.open("Tests/images/eps/reqd_showpage.png") as target:
             # should not crash/hang
             plot_image.load()
             # fonts could be slightly different
@@ -197,18 +221,18 @@ def test_showpage():
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_transparency():
-    with Image.open("Tests/images/reqd_showpage.eps") as plot_image:
+def test_transparency() -> None:
+    with Image.open("Tests/images/eps/reqd_showpage.eps") as plot_image:
         plot_image.load(transparency=True)
         assert plot_image.mode == "RGBA"
 
-        with Image.open("Tests/images/reqd_showpage_transparency.png") as target:
+        with Image.open("Tests/images/eps/reqd_showpage_transparency.png") as target:
             # fonts could be slightly different
             assert_image_similar(plot_image, target, 6)
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_file_object(tmp_path):
+def test_file_object(tmp_path: Path) -> None:
     # issue 479
     with Image.open(FILE1) as image1:
         with open(str(tmp_path / "temp.eps"), "wb") as fh:
@@ -216,7 +240,7 @@ def test_file_object(tmp_path):
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_bytesio_object():
+def test_bytesio_object() -> None:
     with open(FILE1, "rb") as f:
         img_bytes = io.BytesIO(f.read())
 
@@ -229,12 +253,22 @@ def test_bytesio_object():
         assert_image_similar(img, image1_scale1_compare, 5)
 
 
-def test_1_mode():
-    with Image.open("Tests/images/1.eps") as im:
-        assert im.mode == "1"
+@pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
+@pytest.mark.parametrize(
+    # These images have an "ImageData" descriptor.
+    "filename",
+    (
+        "Tests/images/eps/1.eps",
+        "Tests/images/eps/1_boundingbox_after_imagedata.eps",
+        "Tests/images/eps/1_second_imagedata.eps",
+    ),
+)
+def test_1(filename: str) -> None:
+    with Image.open(filename) as im:
+        assert_image_equal_tofile(im, "Tests/images/eps/1.bmp")
 
 
-def test_image_mode_not_supported(tmp_path):
+def test_image_mode_not_supported(tmp_path: Path) -> None:
     im = hopper("RGBA")
     tmpfile = str(tmp_path / "temp.eps")
     with pytest.raises(ValueError):
@@ -243,7 +277,7 @@ def test_image_mode_not_supported(tmp_path):
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 @skip_unless_feature("zlib")
-def test_render_scale1():
+def test_render_scale1() -> None:
     # We need png support for these render test
 
     # Zero bounding box
@@ -254,7 +288,7 @@ def test_render_scale1():
         image1_scale1_compare.load()
         assert_image_similar(image1_scale1, image1_scale1_compare, 5)
 
-    # Non-Zero bounding box
+    # Non-zero bounding box
     with Image.open(FILE2) as image2_scale1:
         image2_scale1.load()
         with Image.open(FILE2_COMPARE) as image2_scale1_compare:
@@ -265,7 +299,7 @@ def test_render_scale1():
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 @skip_unless_feature("zlib")
-def test_render_scale2():
+def test_render_scale2() -> None:
     # We need png support for these render test
 
     # Zero bounding box
@@ -276,7 +310,7 @@ def test_render_scale2():
         image1_scale2_compare.load()
         assert_image_similar(image1_scale2, image1_scale2_compare, 5)
 
-    # Non-Zero bounding box
+    # Non-zero bounding box
     with Image.open(FILE2) as image2_scale2:
         image2_scale2.load(scale=2)
         with Image.open(FILE2_COMPARE_SCALE2) as image2_scale2_compare:
@@ -286,8 +320,10 @@ def test_render_scale2():
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-@pytest.mark.parametrize("filename", (FILE1, FILE2, "Tests/images/illu10_preview.eps"))
-def test_resize(filename):
+@pytest.mark.parametrize(
+    "filename", (FILE1, FILE2, "Tests/images/eps/illu10_preview.eps")
+)
+def test_resize(filename: str) -> None:
     with Image.open(filename) as im:
         new_size = (100, 100)
         im = im.resize(new_size)
@@ -296,7 +332,7 @@ def test_resize(filename):
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 @pytest.mark.parametrize("filename", (FILE1, FILE2))
-def test_thumbnail(filename):
+def test_thumbnail(filename: str) -> None:
     # Issue #619
     with Image.open(filename) as im:
         new_size = (100, 100)
@@ -304,53 +340,11 @@ def test_thumbnail(filename):
         assert max(im.size) == max(new_size)
 
 
-def test_read_binary_preview():
+def test_read_binary_preview() -> None:
     # Issue 302
     # open image with binary preview
     with Image.open(FILE3):
         pass
-
-
-def test_readline_psfile(tmp_path):
-    # check all the freaking line endings possible from the spec
-    # test_string = u'something\r\nelse\n\rbaz\rbif\n'
-    line_endings = ["\r\n", "\n", "\n\r", "\r"]
-    strings = ["something", "else", "baz", "bif"]
-
-    def _test_readline(t, ending):
-        ending = "Failure with line ending: %s" % (
-            "".join("%s" % ord(s) for s in ending)
-        )
-        assert t.readline().strip("\r\n") == "something", ending
-        assert t.readline().strip("\r\n") == "else", ending
-        assert t.readline().strip("\r\n") == "baz", ending
-        assert t.readline().strip("\r\n") == "bif", ending
-
-    def _test_readline_io_psfile(test_string, ending):
-        f = io.BytesIO(test_string.encode("latin-1"))
-        with pytest.warns(DeprecationWarning):
-            t = EpsImagePlugin.PSFile(f)
-        _test_readline(t, ending)
-
-    def _test_readline_file_psfile(test_string, ending):
-        f = str(tmp_path / "temp.txt")
-        with open(f, "wb") as w:
-            w.write(test_string.encode("latin-1"))
-
-        with open(f, "rb") as r:
-            with pytest.warns(DeprecationWarning):
-                t = EpsImagePlugin.PSFile(r)
-            _test_readline(t, ending)
-
-    for ending in line_endings:
-        s = ending.join(strings)
-        _test_readline_io_psfile(s, ending)
-        _test_readline_file_psfile(s, ending)
-
-
-def test_psfile_deprecation():
-    with pytest.warns(DeprecationWarning):
-        EpsImagePlugin.PSFile(None)
 
 
 @pytest.mark.parametrize("prefix", (b"", simple_binary_header))
@@ -358,7 +352,7 @@ def test_psfile_deprecation():
     "line_ending",
     (b"\r\n", b"\n", b"\n\r", b"\r"),
 )
-def test_readline(prefix, line_ending):
+def test_readline(prefix: bytes, line_ending: bytes) -> None:
     simple_file = prefix + line_ending.join(simple_eps_file_with_comments)
     data = io.BytesIO(simple_file)
     test_file = EpsImagePlugin.EpsImageFile(data)
@@ -370,22 +364,22 @@ def test_readline(prefix, line_ending):
 @pytest.mark.parametrize(
     "filename",
     (
-        "Tests/images/illu10_no_preview.eps",
-        "Tests/images/illu10_preview.eps",
-        "Tests/images/illuCS6_no_preview.eps",
-        "Tests/images/illuCS6_preview.eps",
+        "Tests/images/eps/illu10_no_preview.eps",
+        "Tests/images/eps/illu10_preview.eps",
+        "Tests/images/eps/illuCS6_no_preview.eps",
+        "Tests/images/eps/illuCS6_preview.eps",
     ),
 )
-def test_open_eps(filename):
+def test_open_eps(filename: str) -> None:
     # https://github.com/python-pillow/Pillow/issues/1104
     with Image.open(filename) as img:
         assert img.mode == "RGB"
 
 
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
-def test_emptyline():
+def test_emptyline() -> None:
     # Test file includes an empty line in the header data
-    emptyline_file = "Tests/images/zero_bb_emptyline.eps"
+    emptyline_file = "Tests/images/eps/zero_bb_emptyline.eps"
 
     with Image.open(emptyline_file) as image:
         image.load()
@@ -397,10 +391,34 @@ def test_emptyline():
 @pytest.mark.timeout(timeout=5)
 @pytest.mark.parametrize(
     "test_file",
-    ["Tests/images/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],
+    ["Tests/images/eps/timeout-d675703545fee17acab56e5fec644c19979175de.eps"],
 )
-def test_timeout(test_file):
+def test_timeout(test_file: str) -> None:
     with open(test_file, "rb") as f:
-        with pytest.raises(Image.UnidentifiedImageError):
+        with pytest.raises(UnidentifiedImageError):
             with Image.open(f):
                 pass
+
+
+def test_bounding_box_in_trailer() -> None:
+    # Check bounding boxes are parsed in the same way
+    # when specified in the header and the trailer
+    with (
+        Image.open("Tests/images/eps/zero_bb_trailer.eps") as trailer_image,
+        Image.open(FILE1) as header_image,
+    ):
+        assert trailer_image.size == header_image.size
+
+
+def test_eof_before_bounding_box() -> None:
+    with pytest.raises(OSError):
+        with Image.open("Tests/images/eps/zero_bb_eof_before_boundingbox.eps"):
+            pass
+
+
+def test_invalid_data_after_eof() -> None:
+    with open("Tests/images/eps/illuCS6_preview.eps", "rb") as f:
+        img_bytes = io.BytesIO(f.read() + b"\r\n%" + (b" " * 255))
+
+    with Image.open(img_bytes) as img:
+        assert img.mode == "RGB"

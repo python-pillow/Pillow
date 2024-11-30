@@ -33,7 +33,8 @@ paste(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* paste opaque region */
 
     int y;
@@ -59,21 +60,39 @@ paste_mask_1(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* paste with mode "1" mask */
 
     int x, y;
 
     if (imOut->image8) {
+        int in_i16 = strncmp(imIn->mode, "I;16", 4) == 0;
+        int out_i16 = strncmp(imOut->mode, "I;16", 4) == 0;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
+            if (out_i16) {
+                out += dx;
+            }
             UINT8 *in = imIn->image8[y + sy] + sx;
+            if (in_i16) {
+                in += sx;
+            }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
-                if (*mask++) {
+                if (*mask) {
                     *out = *in;
                 }
-                out++, in++;
+                if (in_i16) {
+                    in++;
+                }
+                if (out_i16) {
+                    out++;
+                    if (*mask) {
+                        *out = *in;
+                    }
+                }
+                out++, in++, mask++;
             }
         }
 
@@ -103,7 +122,8 @@ paste_mask_L(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* paste with mode "L" matte */
 
     int x, y;
@@ -150,7 +170,8 @@ paste_mask_RGBA(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* paste with mode "RGBA" matte */
 
     int x, y;
@@ -197,7 +218,8 @@ paste_mask_RGBa(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* paste with mode "RGBa" matte */
 
     int x, y;
@@ -235,7 +257,8 @@ paste_mask_RGBa(
 
 int
 ImagingPaste(
-    Imaging imOut, Imaging imIn, Imaging imMask, int dx0, int dy0, int dx1, int dy1) {
+    Imaging imOut, Imaging imIn, Imaging imMask, int dx0, int dy0, int dx1, int dy1
+) {
     int xsize, ysize;
     int pixelsize;
     int sx0, sy0;
@@ -298,13 +321,15 @@ ImagingPaste(
     } else if (strcmp(imMask->mode, "LA") == 0 || strcmp(imMask->mode, "RGBA") == 0) {
         ImagingSectionEnter(&cookie);
         paste_mask_RGBA(
-            imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
+            imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize
+        );
         ImagingSectionLeave(&cookie);
 
     } else if (strcmp(imMask->mode, "RGBa") == 0) {
         ImagingSectionEnter(&cookie);
         paste_mask_RGBa(
-            imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize);
+            imOut, imIn, imMask, dx0, dy0, sx0, sy0, xsize, ysize, pixelsize
+        );
         ImagingSectionLeave(&cookie);
 
     } else {
@@ -317,13 +342,8 @@ ImagingPaste(
 
 static inline void
 fill(
-    Imaging imOut,
-    const void *ink_,
-    int dx,
-    int dy,
-    int xsize,
-    int ysize,
-    int pixelsize) {
+    Imaging imOut, const void *ink_, int dx, int dy, int xsize, int ysize, int pixelsize
+) {
     /* fill opaque region */
 
     int x, y;
@@ -361,7 +381,8 @@ fill_mask_1(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* fill with mode "1" mask */
 
     int x, y;
@@ -408,35 +429,36 @@ fill_mask_L(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* fill with mode "L" matte */
 
     int x, y, i;
     unsigned int tmp1;
 
     if (imOut->image8) {
+        int i16 = strncmp(imOut->mode, "I;16", 4) == 0;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = imOut->image8[y + dy] + dx;
-            if (strncmp(imOut->mode, "I;16", 4) == 0) {
+            if (i16) {
                 out += dx;
             }
             UINT8 *mask = imMask->image8[y + sy] + sx;
             for (x = 0; x < xsize; x++) {
                 *out = BLEND(*mask, *out, ink[0], tmp1);
-                if (strncmp(imOut->mode, "I;16", 4) == 0) {
+                if (i16) {
                     out++;
-                    *out = BLEND(*mask, *out, ink[0], tmp1);
+                    *out = BLEND(*mask, *out, ink[1], tmp1);
                 }
                 out++, mask++;
             }
         }
 
     } else {
-        int alpha_channel = strcmp(imOut->mode, "RGBa") == 0 ||
-                            strcmp(imOut->mode, "RGBA") == 0 ||
-                            strcmp(imOut->mode, "La") == 0 ||
-                            strcmp(imOut->mode, "LA") == 0 ||
-                            strcmp(imOut->mode, "PA") == 0;
+        int alpha_channel =
+            strcmp(imOut->mode, "RGBa") == 0 || strcmp(imOut->mode, "RGBA") == 0 ||
+            strcmp(imOut->mode, "La") == 0 || strcmp(imOut->mode, "LA") == 0 ||
+            strcmp(imOut->mode, "PA") == 0;
         for (y = 0; y < ysize; y++) {
             UINT8 *out = (UINT8 *)imOut->image[y + dy] + dx * pixelsize;
             UINT8 *mask = (UINT8 *)imMask->image[y + sy] + sx;
@@ -467,7 +489,8 @@ fill_mask_RGBA(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* fill with mode "RGBA" matte */
 
     int x, y, i;
@@ -512,7 +535,8 @@ fill_mask_RGBa(
     int sy,
     int xsize,
     int ysize,
-    int pixelsize) {
+    int pixelsize
+) {
     /* fill with mode "RGBa" matte */
 
     int x, y, i;
@@ -548,13 +572,8 @@ fill_mask_RGBa(
 
 int
 ImagingFill2(
-    Imaging imOut,
-    const void *ink,
-    Imaging imMask,
-    int dx0,
-    int dy0,
-    int dx1,
-    int dy1) {
+    Imaging imOut, const void *ink, Imaging imMask, int dx0, int dy0, int dx1, int dy1
+) {
     ImagingSectionCookie cookie;
     int xsize, ysize;
     int pixelsize;

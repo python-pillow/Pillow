@@ -13,11 +13,15 @@
 #
 # See the README file for information on usage and redistribution.
 #
+from __future__ import annotations
+
 import io
 import os
 import struct
+from collections.abc import Callable
+from typing import IO, cast
 
-from . import Image, ImageFile, _binary
+from . import Image, ImageFile, ImagePalette, _binary
 
 
 class BoxReader:
@@ -26,13 +30,13 @@ class BoxReader:
     and to easily step into and read sub-boxes.
     """
 
-    def __init__(self, fp, length=-1):
+    def __init__(self, fp: IO[bytes], length: int = -1) -> None:
         self.fp = fp
         self.has_length = length >= 0
         self.length = length
         self.remaining_in_box = -1
 
-    def _can_read(self, num_bytes):
+    def _can_read(self, num_bytes: int) -> bool:
         if self.has_length and self.fp.tell() + num_bytes > self.length:
             # Outside box: ensure we don't read past the known file length
             return False
@@ -42,7 +46,7 @@ class BoxReader:
         else:
             return True  # No length known, just read
 
-    def _read_bytes(self, num_bytes):
+    def _read_bytes(self, num_bytes: int) -> bytes:
         if not self._can_read(num_bytes):
             msg = "Not enough data in header"
             raise SyntaxError(msg)
@@ -56,32 +60,32 @@ class BoxReader:
             self.remaining_in_box -= num_bytes
         return data
 
-    def read_fields(self, field_format):
+    def read_fields(self, field_format: str) -> tuple[int | bytes, ...]:
         size = struct.calcsize(field_format)
         data = self._read_bytes(size)
         return struct.unpack(field_format, data)
 
-    def read_boxes(self):
+    def read_boxes(self) -> BoxReader:
         size = self.remaining_in_box
         data = self._read_bytes(size)
         return BoxReader(io.BytesIO(data), size)
 
-    def has_next_box(self):
+    def has_next_box(self) -> bool:
         if self.has_length:
             return self.fp.tell() + self.remaining_in_box < self.length
         else:
             return True
 
-    def next_box_type(self):
+    def next_box_type(self) -> bytes:
         # Skip the rest of the box if it has not been read
         if self.remaining_in_box > 0:
             self.fp.seek(self.remaining_in_box, os.SEEK_CUR)
         self.remaining_in_box = -1
 
         # Read the length and type of the next box
-        lbox, tbox = self.read_fields(">I4s")
+        lbox, tbox = cast(tuple[int, bytes], self.read_fields(">I4s"))
         if lbox == 1:
-            lbox = self.read_fields(">Q")[0]
+            lbox = cast(int, self.read_fields(">Q")[0])
             hlen = 16
         else:
             hlen = 8
@@ -94,7 +98,7 @@ class BoxReader:
         return tbox
 
 
-def _parse_codestream(fp):
+def _parse_codestream(fp: IO[bytes]) -> tuple[tuple[int, int], str]:
     """Parse the JPEG 2000 codestream to extract the size and component
     count from the SIZ marker segment, returning a PIL (size, mode) tuple."""
 
@@ -104,15 +108,11 @@ def _parse_codestream(fp):
     lsiz, rsiz, xsiz, ysiz, xosiz, yosiz, _, _, _, _, csiz = struct.unpack_from(
         ">HHIIIIIIIIH", siz
     )
-    ssiz = [None] * csiz
-    xrsiz = [None] * csiz
-    yrsiz = [None] * csiz
-    for i in range(csiz):
-        ssiz[i], xrsiz[i], yrsiz[i] = struct.unpack_from(">BBB", siz, 36 + 3 * i)
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
-        if (yrsiz[0] & 0x7F) > 8:
+        ssiz = struct.unpack_from(">B", siz, 38)
+        if (ssiz[0] & 0x7F) + 1 > 8:
             mode = "I;16"
         else:
             mode = "L"
@@ -123,20 +123,30 @@ def _parse_codestream(fp):
     elif csiz == 4:
         mode = "RGBA"
     else:
-        mode = None
+        msg = "unable to determine J2K image mode"
+        raise SyntaxError(msg)
 
     return size, mode
 
 
-def _res_to_dpi(num, denom, exp):
+def _res_to_dpi(num: int, denom: int, exp: int) -> float | None:
     """Convert JPEG2000's (numerator, denominator, exponent-base-10) resolution,
     calculated as (num / denom) * 10^exp and stored in dots per meter,
     to floating-point dots per inch."""
-    if denom != 0:
-        return (254 * num * (10**exp)) / (10000 * denom)
+    if denom == 0:
+        return None
+    return (254 * num * (10**exp)) / (10000 * denom)
 
 
-def _parse_jp2_header(fp):
+def _parse_jp2_header(
+    fp: IO[bytes],
+) -> tuple[
+    tuple[int, int],
+    str,
+    str | None,
+    tuple[float, float] | None,
+    ImagePalette.ImagePalette | None,
+]:
     """Parse the JP2 header box to extract size, component count,
     color space information, and optionally DPI information,
     returning a (size, mode, mimetype, dpi) tuple."""
@@ -154,18 +164,23 @@ def _parse_jp2_header(fp):
         elif tbox == b"ftyp":
             if reader.read_fields(">4s")[0] == b"jpx ":
                 mimetype = "image/jpx"
+    assert header is not None
 
     size = None
     mode = None
     bpc = None
     nc = None
     dpi = None  # 2-tuple of DPI info, or None
+    palette = None
 
     while header.has_next_box():
         tbox = header.next_box_type()
 
         if tbox == b"ihdr":
             height, width, nc, bpc = header.read_fields(">IIHB")
+            assert isinstance(height, int)
+            assert isinstance(width, int)
+            assert isinstance(bpc, int)
             size = (width, height)
             if nc == 1 and (bpc & 0x7F) > 8:
                 mode = "I;16"
@@ -177,12 +192,40 @@ def _parse_jp2_header(fp):
                 mode = "RGB"
             elif nc == 4:
                 mode = "RGBA"
+        elif tbox == b"colr" and nc == 4:
+            meth, _, _, enumcs = header.read_fields(">BBBI")
+            if meth == 1 and enumcs == 12:
+                mode = "CMYK"
+        elif tbox == b"pclr" and mode in ("L", "LA"):
+            ne, npc = header.read_fields(">HB")
+            assert isinstance(ne, int)
+            assert isinstance(npc, int)
+            max_bitdepth = 0
+            for bitdepth in header.read_fields(">" + ("B" * npc)):
+                assert isinstance(bitdepth, int)
+                if bitdepth > max_bitdepth:
+                    max_bitdepth = bitdepth
+            if max_bitdepth <= 8:
+                palette = ImagePalette.ImagePalette("RGBA" if npc == 4 else "RGB")
+                for i in range(ne):
+                    color: list[int] = []
+                    for value in header.read_fields(">" + ("B" * npc)):
+                        assert isinstance(value, int)
+                        color.append(value)
+                    palette.getcolor(tuple(color))
+                mode = "P" if mode == "L" else "PA"
         elif tbox == b"res ":
             res = header.read_boxes()
             while res.has_next_box():
                 tres = res.next_box_type()
                 if tres == b"resc":
                     vrcn, vrcd, hrcn, hrcd, vrce, hrce = res.read_fields(">HHHHBB")
+                    assert isinstance(vrcn, int)
+                    assert isinstance(vrcd, int)
+                    assert isinstance(hrcn, int)
+                    assert isinstance(hrcd, int)
+                    assert isinstance(vrce, int)
+                    assert isinstance(hrce, int)
                     hres = _res_to_dpi(hrcn, hrcd, hrce)
                     vres = _res_to_dpi(vrcn, vrcd, vrce)
                     if hres is not None and vres is not None:
@@ -193,7 +236,7 @@ def _parse_jp2_header(fp):
         msg = "Malformed JP2 header"
         raise SyntaxError(msg)
 
-    return size, mode, mimetype, dpi
+    return size, mode, mimetype, dpi, palette
 
 
 ##
@@ -204,18 +247,18 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
     format = "JPEG2000"
     format_description = "JPEG 2000 (ISO 15444)"
 
-    def _open(self):
+    def _open(self) -> None:
         sig = self.fp.read(4)
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
-            self._size, self.mode = _parse_codestream(self.fp)
+            self._size, self._mode = _parse_codestream(self.fp)
         else:
             sig = sig + self.fp.read(8)
 
             if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
                 self.codec = "jp2"
                 header = _parse_jp2_header(self.fp)
-                self._size, self.mode, self.custom_mimetype, dpi = header
+                self._size, self._mode, self.custom_mimetype, dpi, self.palette = header
                 if dpi is not None:
                     self.info["dpi"] = dpi
                 if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):
@@ -223,10 +266,6 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             else:
                 msg = "not a JPEG 2000 file"
                 raise SyntaxError(msg)
-
-        if self.size is None or self.mode is None:
-            msg = "unable to determine size/mode"
-            raise SyntaxError(msg)
 
         self._reduce = 0
         self.layers = 0
@@ -248,7 +287,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 length = -1
 
         self.tile = [
-            (
+            ImageFile._Tile(
                 "jpeg2k",
                 (0, 0) + self.size,
                 0,
@@ -256,7 +295,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             )
         ]
 
-    def _parse_comment(self):
+    def _parse_comment(self) -> None:
         hdr = self.fp.read(2)
         length = _binary.i16be(hdr)
         self.fp.seek(length - 2, os.SEEK_CUR)
@@ -278,18 +317,23 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             else:
                 self.fp.seek(length - 2, os.SEEK_CUR)
 
-    @property
-    def reduce(self):
+    @property  # type: ignore[override]
+    def reduce(
+        self,
+    ) -> (
+        Callable[[int | tuple[int, int], tuple[int, int, int, int] | None], Image.Image]
+        | int
+    ):
         # https://github.com/python-pillow/Pillow/issues/4343 found that the
         # new Image 'reduce' method was shadowed by this plugin's 'reduce'
         # property. This attempts to allow for both scenarios
         return self._reduce or super().reduce
 
     @reduce.setter
-    def reduce(self, value):
+    def reduce(self, value: int) -> None:
         self._reduce = value
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if self.tile and self._reduce:
             power = 1 << self._reduce
             adjust = power >> 1
@@ -300,13 +344,14 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
             # Update the reduce and layers settings
             t = self.tile[0]
+            assert isinstance(t[3], tuple)
             t3 = (t[3][0], self._reduce, self.layers, t[3][3], t[3][4])
-            self.tile = [(t[0], (0, 0) + self.size, t[2], t3)]
+            self.tile = [ImageFile._Tile(t[0], (0, 0) + self.size, t[2], t3)]
 
         return ImageFile.ImageFile.load(self)
 
 
-def _accept(prefix):
+def _accept(prefix: bytes) -> bool:
     return (
         prefix[:4] == b"\xff\x4f\xff\x51"
         or prefix[:12] == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
@@ -317,11 +362,13 @@ def _accept(prefix):
 # Save support
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # Get the keyword arguments
     info = im.encoderinfo
 
-    if filename.endswith(".j2k") or info.get("no_jp2", False):
+    if isinstance(filename, str):
+        filename = filename.encode()
+    if filename.endswith(b".j2k") or info.get("no_jp2", False):
         kind = "j2k"
     else:
         kind = "jp2"
@@ -334,10 +381,7 @@ def _save(im, fp, filename):
     if quality_layers is not None and not (
         isinstance(quality_layers, (list, tuple))
         and all(
-            [
-                isinstance(quality_layer, (int, float))
-                for quality_layer in quality_layers
-            ]
+            isinstance(quality_layer, (int, float)) for quality_layer in quality_layers
         )
     ):
         msg = "quality_layers must be a sequence of numbers"
@@ -382,7 +426,7 @@ def _save(im, fp, filename):
         plt,
     )
 
-    ImageFile._save(im, fp, [("jpeg2k", (0, 0) + im.size, 0, kind)])
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg2k", (0, 0) + im.size, 0, kind)])
 
 
 # ------------------------------------------------------------

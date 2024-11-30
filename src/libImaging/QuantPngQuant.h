@@ -12,6 +12,7 @@ quantize_pngquant(
     Pixel **,
     uint32_t *,
     uint32_t **,
-    int);
+    int
+);
 
 #endif
