@@ -89,6 +89,7 @@
 #endif
 
 #include "libImaging/Imaging.h"
+#include "libImaging/Arrow.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -221,6 +222,46 @@ int
 PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
     /* must call check_buffer first! */
     return PyObject_GetBuffer(buffer, view, PyBUF_SIMPLE);
+}
+
+/* -------------------------------------------------------------------- */
+/* Arrow HANDLING                                                       */
+/* -------------------------------------------------------------------- */
+
+void
+ReleaseArrowSchemaPyCapsule(PyObject *capsule) {
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)PyCapsule_GetPointer(capsule, "arrow_schema");
+    if (schema->release != NULL) {
+        schema->release(schema);
+    }
+    free(schema);
+}
+
+PyObject *
+ExportArrowSchemaPyCapsule(ImagingObject *self) {
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
+    export_imaging_schema(self->image, schema);
+    return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
+}
+
+void
+ReleaseArrowArrayPyCapsule(PyObject *capsule) {
+    struct ArrowArray *array =
+        (struct ArrowArray *)PyCapsule_GetPointer(capsule, "arrow_array");
+    if (array->release != NULL) {
+        array->release(array);
+    }
+    free(array);
+}
+
+PyObject *
+ExportArrowArrayPyCapsule(ImagingObject *self) {
+    struct ArrowArray *array =
+        (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
+    export_imaging_array(self->image, array);
+    return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
 }
 
 /* -------------------------------------------------------------------- */
@@ -3677,6 +3718,10 @@ static struct PyMethodDef methods[] = {
 
     /* Misc. */
     {"save_ppm", (PyCFunction)_save_ppm, METH_VARARGS},
+
+    /* arrow */
+    {"__arrow_c_schema__", (PyCFunction)ExportArrowSchemaPyCapsule, METH_VARARGS},
+    {"__arrow_c_array__", (PyCFunction)ExportArrowArrayPyCapsule, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */
 };

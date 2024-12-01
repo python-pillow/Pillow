@@ -58,19 +58,22 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     /* Setup image descriptor */
     im->xsize = xsize;
     im->ysize = ysize;
-
+    im->arrow_borrow = 1;
     im->type = IMAGING_TYPE_UINT8;
+    strcpy(im->arrow_band_format, "C");
 
     if (strcmp(mode, "1") == 0) {
         /* 1-bit images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
+        strcpy(im->band_names[0], "1");
 
     } else if (strcmp(mode, "P") == 0) {
         /* 8-bit palette mapped images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
         im->palette = ImagingPaletteNew("RGB");
+        strcpy(im->band_names[0], "P");
 
     } else if (strcmp(mode, "PA") == 0) {
         /* 8-bit palette with alpha */
@@ -78,23 +81,36 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
         im->palette = ImagingPaletteNew("RGB");
+        strcpy(im->band_names[0], "P");
+        strcpy(im->band_names[1], "X");
+        strcpy(im->band_names[2], "X");
+        strcpy(im->band_names[3], "A");
 
     } else if (strcmp(mode, "L") == 0) {
         /* 8-bit grayscale (luminance) images */
         im->bands = im->pixelsize = 1;
         im->linesize = xsize;
+        strcpy(im->band_names[0], "L");
 
     } else if (strcmp(mode, "LA") == 0) {
         /* 8-bit grayscale (luminance) with alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "L");
+        strcpy(im->band_names[1], "X");
+        strcpy(im->band_names[2], "X");
+        strcpy(im->band_names[3], "A");
 
     } else if (strcmp(mode, "La") == 0) {
         /* 8-bit grayscale (luminance) with premultiplied alpha */
         im->bands = 2;
         im->pixelsize = 4; /* store in image32 memory */
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "L");
+        strcpy(im->band_names[1], "X");
+        strcpy(im->band_names[2], "X");
+        strcpy(im->band_names[3], "a");
 
     } else if (strcmp(mode, "F") == 0) {
         /* 32-bit floating point images */
@@ -102,6 +118,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->pixelsize = 4;
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_FLOAT32;
+        strcpy(im->arrow_band_format, "f");
+        strcpy(im->band_names[0], "F");
 
     } else if (strcmp(mode, "I") == 0) {
         /* 32-bit integer images */
@@ -109,6 +127,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->pixelsize = 4;
         im->linesize = xsize * 4;
         im->type = IMAGING_TYPE_INT32;
+        strcpy(im->arrow_band_format, "i");
+        strcpy(im->band_names[0], "I");
 
     } else if (strcmp(mode, "I;16") == 0 || strcmp(mode, "I;16L") == 0 ||
                strcmp(mode, "I;16B") == 0 || strcmp(mode, "I;16N") == 0) {
@@ -118,12 +138,18 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->pixelsize = 2;
         im->linesize = xsize * 2;
         im->type = IMAGING_TYPE_SPECIAL;
+        strcpy(im->arrow_band_format, "s");
+        strcpy(im->band_names[0], "I");
 
     } else if (strcmp(mode, "RGB") == 0) {
         /* 24-bit true colour images */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "R");
+        strcpy(im->band_names[1], "G");
+        strcpy(im->band_names[2], "B");
+        strcpy(im->band_names[3], "X");
 
     } else if (strcmp(mode, "BGR;15") == 0) {
         /* EXPERIMENTAL */
@@ -132,6 +158,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->pixelsize = 2;
         im->linesize = (xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
+        /* not allowing arrow due to line length packing */
+        strcpy(im->arrow_band_format, "");
 
     } else if (strcmp(mode, "BGR;16") == 0) {
         /* EXPERIMENTAL */
@@ -140,6 +168,8 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->pixelsize = 2;
         im->linesize = (xsize * 2 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
+        /* not allowing arrow due to line length packing */
+        strcpy(im->arrow_band_format, "");
 
     } else if (strcmp(mode, "BGR;24") == 0) {
         /* EXPERIMENTAL */
@@ -148,32 +178,54 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->pixelsize = 3;
         im->linesize = (xsize * 3 + 3) & -4;
         im->type = IMAGING_TYPE_SPECIAL;
+        /* not allowing arrow due to line length packing */
+        strcpy(im->arrow_band_format, "");
 
     } else if (strcmp(mode, "RGBX") == 0) {
         /* 32-bit true colour images with padding */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "R");
+        strcpy(im->band_names[1], "G");
+        strcpy(im->band_names[2], "B");
+        strcpy(im->band_names[3], "X");
 
     } else if (strcmp(mode, "RGBA") == 0) {
         /* 32-bit true colour images with alpha */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "R");
+        strcpy(im->band_names[1], "G");
+        strcpy(im->band_names[2], "B");
+        strcpy(im->band_names[3], "A");
 
     } else if (strcmp(mode, "RGBa") == 0) {
         /* 32-bit true colour images with premultiplied alpha */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "R");
+        strcpy(im->band_names[1], "G");
+        strcpy(im->band_names[2], "B");
+        strcpy(im->band_names[3], "a");
 
     } else if (strcmp(mode, "CMYK") == 0) {
         /* 32-bit colour separation */
         im->bands = im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "C");
+        strcpy(im->band_names[1], "M");
+        strcpy(im->band_names[2], "Y");
+        strcpy(im->band_names[3], "K");
 
     } else if (strcmp(mode, "YCbCr") == 0) {
         /* 24-bit video format */
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "Y");
+        strcpy(im->band_names[1], "Cb");
+        strcpy(im->band_names[2], "Cr");
+        strcpy(im->band_names[3], "X");
 
     } else if (strcmp(mode, "LAB") == 0) {
         /* 24-bit color, luminance, + 2 color channels */
@@ -181,6 +233,10 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "L");
+        strcpy(im->band_names[1], "a");
+        strcpy(im->band_names[2], "b");
+        strcpy(im->band_names[3], "X");
 
     } else if (strcmp(mode, "HSV") == 0) {
         /* 24-bit color, luminance, + 2 color channels */
@@ -188,6 +244,10 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
         im->bands = 3;
         im->pixelsize = 4;
         im->linesize = xsize * 4;
+        strcpy(im->band_names[0], "H");
+        strcpy(im->band_names[1], "S");
+        strcpy(im->band_names[2], "V");
+        strcpy(im->band_names[3], "X");
 
     } else {
         free(im);
@@ -238,8 +298,15 @@ ImagingDelete(Imaging im) {
         return;
     }
 
+    im->arrow_borrow--;
+
+    if (im->arrow_borrow > 0) {
+        return;
+    }
+
     if (im->palette) {
         ImagingPaletteDelete(im->palette);
+        im->palette = NULL;
     }
 
     if (im->destroy) {
@@ -396,11 +463,13 @@ ImagingAllocateArray(Imaging im, ImagingMemoryArena arena, int dirty, int block_
     if (lines_per_block == 0) {
         lines_per_block = 1;
     }
+    im->lines_per_block = lines_per_block;
     blocks_count = (im->ysize + lines_per_block - 1) / lines_per_block;
     // printf("NEW size: %dx%d, ls: %d, lpb: %d, blocks: %d\n",
     //        im->xsize, im->ysize, aligned_linesize, lines_per_block, blocks_count);
 
     /* One extra pointer is always NULL */
+    im->blocks_count = blocks_count;
     im->blocks = calloc(sizeof(*im->blocks), blocks_count + 1);
     if (!im->blocks) {
         return (Imaging)ImagingError_MemoryError();

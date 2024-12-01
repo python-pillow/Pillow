@@ -61,6 +61,7 @@ optional-dependencies.tests = [
   "markdown2",
   "olefile",
   "packaging",
+  "pyarrow",
   "pyroma",
   "pytest",
   "pytest-cov",

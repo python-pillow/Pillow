@@ -757,6 +757,16 @@ class Image:
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
+    def __arrow_c_schema__(self) -> object:
+        self.load()
+        return self.im.__arrow_c_schema__()
+
+    def __arrow_c_array__(
+        self, requested_schema: object | None = None
+    ) -> Tuple[object, object]:
+        self.load()
+        return (self.im.__arrow_c_schema__(), self.im.__arrow_c_array__())
+
     def __getstate__(self) -> list[Any]:
         im_data = self.tobytes()  # load image first
         return [self.info, self.mode, self.size, self.getpalette(), im_data]
