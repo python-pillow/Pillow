@@ -43,7 +43,7 @@ BIT2MODE = {
     1: ("P", "P;1"),
     4: ("P", "P;4"),
     8: ("P", "P"),
-    16: ("RGB", "BGR;15"),
+    16: ("RGB", "XRGB;1555"),
     24: ("RGB", "BGR"),
     32: ("RGB", "BGRX"),
 }
@@ -218,8 +218,8 @@ class BmpImageFile(ImageFile.ImageFile):
                 (32, (0xFF000000, 0xFF00, 0xFF, 0xFF0000)): "BGAR",
                 (32, (0x0, 0x0, 0x0, 0x0)): "BGRA",
                 (24, (0xFF0000, 0xFF00, 0xFF)): "BGR",
-                (16, (0xF800, 0x7E0, 0x1F)): "BGR;16",
-                (16, (0x7C00, 0x3E0, 0x1F)): "BGR;15",
+                (16, (0xF800, 0x7E0, 0x1F)): "RGB;565",
+                (16, (0x7C00, 0x3E0, 0x1F)): "XRGB;1555",
             }
             if file_info["bits"] in SUPPORTED:
                 if (
