@@ -164,9 +164,11 @@ Many of Pillow's features require external libraries:
     The easiest way to install external libraries is via `Homebrew
     <https://brew.sh/>`_. After you install Homebrew, run::
 
-        brew install libjpeg libraqm libtiff little-cms2 openjpeg webp
+        brew install libavif libjpeg libraqm libtiff little-cms2 openjpeg webp
 
-    To install libavif on macOS use Homebrew to install its build dependencies::
+    If you would like to use libavif with more codecs than just aom, then
+    instead of installing libavif through Homebrew directly, you can use
+    Homebrew to install libavif's build dependencies::
 
         brew install aom dav1d rav1e
 
@@ -224,8 +226,7 @@ Many of Pillow's features require external libraries:
 
         sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif
 
-    See ``depends/install_raqm_cmake.sh`` to install libraqm and
-    ``depends/install_libavif.sh`` to install libavif.
+    See ``depends/install_raqm_cmake.sh`` to install libraqm.
 
 .. tab:: Android
 

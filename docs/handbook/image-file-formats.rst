@@ -1370,17 +1370,16 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     YUV range, either "full" or "limited". Defaults to "full"
 
 **codec**
-    AV1 codec to use for encoding. Possible values are "aom", "rav1e", and
-    "svt", depending on what codecs were compiled with libavif. Defaults to
-    "auto", which will choose the first available codec in the order of the
-    preceding list.
+    AV1 codec to use for encoding. Specific values are "aom", "rav1e", and
+    "svt", presuming the chosen codec is available. Defaults to "auto", which
+    will choose the first available codec in the order of the preceding list.
 
 **tile_rows** / **tile_cols**
     For tile encoding, the (log 2) number of tile rows and columns to use.
     Valid values are 0-6, default 0.
 
 **alpha_premultiplied**
-    Encode the image with premultiplied alpha, defaults ``False``
+    Encode the image with premultiplied alpha. Defaults to ``False``
 
 **icc_profile**
     The ICC Profile to include in the saved file.

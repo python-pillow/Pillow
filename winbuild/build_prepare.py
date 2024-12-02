@@ -122,7 +122,7 @@ V = {
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
     "ZLIB": "1.3.1",
-    "MESON": "1.5.2",
+    "MESON": "1.6.0",
     "LIBAVIF": "1.1.1",
     "RAV1E": "0.7.1",
 }
@@ -673,21 +673,24 @@ def build_dep(name: str, prefs: dict[str, str], verbose: bool) -> str:
 def build_dep_all(disabled: list[str], prefs: dict[str, str], verbose: bool) -> None:
     lines = [r'call "{build_dir}\build_env.cmd"']
     gha_groups = "GITHUB_ACTIONS" in os.environ
-    scripts = ["install_meson.cmd"]
     for dep_name in DEPS:
         print()
         if dep_name in disabled:
             print(f"Skipping disabled dependency {dep_name}")
             continue
+
+        scripts = []
+        if dep_name == "libavif":
+            scripts.append("install_meson.cmd")
         scripts.append(build_dep(dep_name, prefs, verbose))
 
-    for script in scripts:
-        if gha_groups:
-            lines.append(f"@echo ::group::Running {script}")
-        lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
-        lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
-        if gha_groups:
-            lines.append("@echo ::endgroup::")
+        for script in scripts:
+            if gha_groups:
+                lines.append(f"@echo ::group::Running {script}")
+            lines.append(rf'cmd.exe /c "{{build_dir}}\{script}"')
+            lines.append("if errorlevel 1 echo Build failed! && exit /B 1")
+            if gha_groups:
+                lines.append("@echo ::endgroup::")
     print()
     lines.append("@echo All Pillow dependencies built successfully!")
     write_script("build_dep_all.cmd", lines, prefs, verbose)
@@ -830,18 +833,19 @@ def main() -> None:
     print()
 
     write_script(".gitignore", ["*"], prefs, args.verbose)
-    write_script(
-        "install_meson.cmd",
-        [
-            r'call "{build_dir}\build_env.cmd"',
-            "@echo " + ("=" * 70),
-            f"@echo ==== {'Building meson':<60} ====",
-            "@echo " + ("=" * 70),
-            f"{sys.executable} -m pip install meson=={V['MESON']}",
-        ],
-        prefs,
-        args.verbose,
-    )
+    if "libavif" not in disabled:
+        write_script(
+            "install_meson.cmd",
+            [
+                r'call "{build_dir}\build_env.cmd"',
+                "@echo " + ("=" * 70),
+                f"@echo ==== {'Building meson':<60} ====",
+                "@echo " + ("=" * 70),
+                f"{sys.executable} -m pip install meson=={V['MESON']}",
+            ],
+            prefs,
+            args.verbose,
+        )
     build_env(prefs, args.verbose)
     build_dep_all(disabled, prefs, args.verbose)
 

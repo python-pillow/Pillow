@@ -127,8 +127,6 @@ class TestUnsupportedAvif:
 @skip_unless_feature("avif")
 class TestFileAvif:
     def test_version(self) -> None:
-        _avif.AvifCodecVersions()
-
         version = features.version_module("avif")
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)

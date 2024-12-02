@@ -114,7 +114,7 @@ function install_rav1e {
 
     curl -sLo - \
         https://github.com/xiph/rav1e/releases/download/v$RAV1E_VERSION/librav1e-$RAV1E_VERSION-$suffix.tar.gz \
-        | tar -C $BUILD_PREFIX --exclude LICENSE --exclude LICENSE --exclude '*.so' --exclude '*.dylib' -zxf -
+        | tar -C $BUILD_PREFIX --exclude LICENSE --exclude '*.so' --exclude '*.dylib' -zxf -
 
     if [ -z "$IS_MACOS" ]; then
         sed -i 's/-lgcc_s/-lgcc_eh/g' "${BUILD_PREFIX}/lib/pkgconfig/rav1e.pc"
@@ -133,6 +133,7 @@ EOF
 }
 
 function build_libavif {
+    if [ -e libavif-stamp ]; then return; fi
     install_rav1e
     python3 -m pip install meson ninja
 
@@ -140,13 +141,11 @@ function build_libavif {
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/
     fi
 
-    local cmake=$(get_modern_cmake)
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
-
     (cd $out_dir \
-        && $cmake \
+        && cmake \
             -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX \
-            -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib \
+            -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=OFF \
             -DAVIF_LIBSHARPYUV=LOCAL \
@@ -159,11 +158,7 @@ function build_libavif {
             -DCMAKE_MODULE_PATH=/tmp/cmake/Modules \
             . \
         && make install)
-
-    if [[ "$MB_ML_LIBC" == "manylinux" ]]; then
-        cp /usr/local/lib64/libavif.a /usr/local/lib
-        cp /usr/local/lib64/pkgconfig/libavif.pc /usr/local/lib/pkgconfig
-    fi
+    touch libavif-stamp
 }
 
 function build {

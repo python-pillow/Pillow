@@ -24,17 +24,11 @@ _VALID_AVIF_MODES = {"RGB", "RGBA"}
 def _accept(prefix: bytes) -> bool | str:
     if prefix[4:8] != b"ftyp":
         return False
-    coding_brands = (b"avif", b"avis")
-    container_brands = (b"mif1", b"msf1")
     major_brand = prefix[8:12]
-    if major_brand in coding_brands:
-        if not SUPPORTED:
-            return (
-                "image file could not be identified because AVIF "
-                "support not installed"
-            )
-        return True
-    if major_brand in container_brands:
+    if major_brand in (
+        # coding brands
+        b"avif",
+        b"avis",
         # We accept files with AVIF container brands; we can't yet know if
         # the ftyp box has the correct compatible brands, but if it doesn't
         # then the plugin will raise a SyntaxError which Pillow will catch
@@ -42,6 +36,14 @@ def _accept(prefix: bytes) -> bool | str:
         #
         # Also, because this file might not actually be an AVIF file, we
         # don't raise an error if AVIF support isn't properly compiled.
+        b"mif1",
+        b"msf1",
+    ):
+        if not SUPPORTED:
+            return (
+                "image file could not be identified because AVIF "
+                "support not installed"
+            )
         return True
     return False
 
@@ -72,6 +74,11 @@ class AvifImageFile(ImageFile.ImageFile):
             )
             raise SyntaxError(msg)
 
+        if DECODE_CODEC_CHOICE != "auto" and not _avif.decoder_codec_available(
+            DECODE_CODEC_CHOICE
+        ):
+            msg = "Invalid opening codec"
+            raise ValueError(msg)
         self._decoder = _avif.AvifDecoder(
             self.fp.read(),
             DECODE_CODEC_CHOICE,
@@ -104,10 +111,8 @@ class AvifImageFile(ImageFile.ImageFile):
             data, timescale, tsp_in_ts, dur_in_ts = self._decoder.get_frame(
                 self.__frame
             )
-            timestamp = round(1000 * (tsp_in_ts / timescale))
-            duration = round(1000 * (dur_in_ts / timescale))
-            self.info["timestamp"] = timestamp
-            self.info["duration"] = duration
+            self.info["timestamp"] = round(1000 * (tsp_in_ts / timescale))
+            self.info["duration"] = round(1000 * (dur_in_ts / timescale))
             self.__loaded = self.__frame
 
             # Set tile
@@ -153,6 +158,9 @@ def _save(
     speed = info.get("speed", 6)
     max_threads = info.get("max_threads", _get_default_max_threads())
     codec = info.get("codec", "auto")
+    if codec != "auto" and not _avif.encoder_codec_available(codec):
+        msg = "Invalid saving codec"
+        raise ValueError(msg)
     range_ = info.get("range", "full")
     tile_rows_log2 = info.get("tile_rows", 0)
     tile_cols_log2 = info.get("tile_cols", 0)
@@ -199,7 +207,7 @@ def _save(
             )
             raise ValueError(msg)
         advanced = tuple(
-            [(str(k).encode("utf-8"), str(v).encode("utf-8")) for k, v in advanced]
+            (str(k).encode("utf-8"), str(v).encode("utf-8")) for k, v in advanced
         )
 
     # Setup the AVIF encoder
