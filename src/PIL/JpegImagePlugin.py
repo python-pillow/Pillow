@@ -72,7 +72,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
-    app = "APP%d" % (marker & 15)
+    app = f"APP{marker & 15}"
 
     self.app[app] = s  # compatibility
     self.applist.append((app, s))
