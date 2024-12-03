@@ -120,7 +120,7 @@ class ImageFile(Image.Image):
         self.custom_mimetype: str | None = None
 
         self.tile: list[_Tile] = []
-        """ A list of tile descriptors, or ``None`` """
+        """ A list of tile descriptors """
 
         self.readonly = 1  # until we know better
 
