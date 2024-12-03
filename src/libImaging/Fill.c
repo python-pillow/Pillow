@@ -17,8 +17,6 @@
 
 #include "Imaging.h"
 
-#include "math.h"
-
 Imaging
 ImagingFill(Imaging im, const void *colour) {
     int x, y;

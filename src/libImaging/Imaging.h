@@ -10,14 +10,10 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "ImPlatform.h"
+#include "ImagingPlatform.h"
 
 #if defined(__cplusplus)
 extern "C" {
-#endif
-
-#ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
 #endif
 
 /* -------------------------------------------------------------------- */
@@ -242,8 +238,6 @@ ImagingSectionLeave(ImagingSectionCookie *cookie);
 /* ---------- */
 
 extern void *
-ImagingError_OSError(void);
-extern void *
 ImagingError_MemoryError(void);
 extern void *
 ImagingError_ModeError(void); /* maps to ValueError by default */
@@ -251,8 +245,6 @@ extern void *
 ImagingError_Mismatch(void); /* maps to ValueError by default */
 extern void *
 ImagingError_ValueError(const char *message);
-extern void
-ImagingError_Clear(void);
 
 /* Transform callbacks */
 /* ------------------- */
@@ -608,10 +600,6 @@ ImagingLibTiffDecode(
 );
 extern int
 ImagingLibTiffEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
-#endif
-#ifdef HAVE_LIBMPEG
-extern int
-ImagingMpegDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);
 #endif
 extern int
 ImagingMspDecode(Imaging im, ImagingCodecState state, UINT8 *buffer, Py_ssize_t bytes);

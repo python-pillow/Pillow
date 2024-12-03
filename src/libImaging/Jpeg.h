@@ -8,7 +8,16 @@
  * Copyright (c) 1995-1996 by Fredrik Lundh
  */
 
-#include "jpeglib.h"
+/* These undefs are required for libjpeg v8 and below */
+
+#undef UINT8
+#undef UINT16
+#undef UINT32
+#undef INT8
+#undef INT16
+#undef INT32
+
+#include <jpeglib.h>
 
 #include <setjmp.h>
 

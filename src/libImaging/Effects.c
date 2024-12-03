@@ -17,8 +17,6 @@
 
 #include "Imaging.h"
 
-#include <math.h>
-
 Imaging
 ImagingEffectMandelbrot(int xsize, int ysize, double extent[4], int quality) {
     /* Generate a Mandelbrot set covering the given extent */

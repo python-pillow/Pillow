@@ -282,7 +282,7 @@ class TestEmbeddable:
             home = sys.prefix.replace("\\", "\\\\")
             fh.write(
                 f"""
-#include "Python.h"
+#include <Python.h>
 
 int main(int argc, char* argv[])
 {{
