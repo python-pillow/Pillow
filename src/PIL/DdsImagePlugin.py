@@ -560,9 +560,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
         + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, rawmode)])
 
 
 def _accept(prefix: bytes) -> bool:
