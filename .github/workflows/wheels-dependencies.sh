@@ -169,12 +169,7 @@ function build {
     fi
     build_new_zlib
 
-    ORIGINAL_LDFLAGS=$LDFLAGS
-    if [[ -n "$IS_MACOS" ]] && [[ "$CIBW_ARCHS" == "arm64" ]]; then
-        LDFLAGS="${LDFLAGS} -ld64"
-    fi
     build_libavif
-    LDFLAGS=$ORIGINAL_LDFLAGS
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
