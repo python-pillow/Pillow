@@ -36,10 +36,11 @@ def test_version() -> None:
         else:
             assert function(name) == version
             if name != "PIL":
-                if name == "zlib" and version is not None:
-                    version = re.sub(".zlib-ng$", "", version)
-                elif name == "libtiff" and version is not None:
-                    version = re.sub("t$", "", version)
+                if version is not None:
+                    if name == "zlib" and features.check_feature("zlib_ng"):
+                        version = re.sub(".zlib-ng$", "", version)
+                    elif name == "libtiff":
+                        version = re.sub("t$", "", version)
                 assert version is None or re.search(r"\d+(\.\d+)*$", version)
 
     for module in features.modules:

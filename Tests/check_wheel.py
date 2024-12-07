@@ -34,6 +34,7 @@ def test_wheel_features() -> None:
         "fribidi",
         "harfbuzz",
         "libjpeg_turbo",
+        "zlib_ng",
         "xcb",
     }
 
