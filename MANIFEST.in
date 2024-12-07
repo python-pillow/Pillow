@@ -20,7 +20,6 @@ graft docs
 graft _custom_build
 
 # build/src control detritus
-exclude .appveyor.yml
 exclude .clang-format
 exclude .coveragerc
 exclude .editorconfig
