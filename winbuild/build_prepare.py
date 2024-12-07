@@ -124,7 +124,6 @@ V = {
     "ZLIB": "1.3.1",
     "MESON": "1.6.0",
     "LIBAVIF": "1.1.1",
-    "RAV1E": "0.7.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
@@ -400,19 +399,6 @@ DEPS: dict[str, dict[str, Any]] = {
         ],
         "bins": [r"*.dll"],
     },
-    "rav1e": {
-        "url": (
-            f"https://github.com/xiph/rav1e/releases/download/v{V['RAV1E']}/FILENAME"
-        ),
-        "filename": f"rav1e-{V['RAV1E']}-windows-msvc-generic.zip",
-        "dir": "rav1e-windows-msvc-sdk",
-        "license": "LICENSE",
-        "build": [
-            cmd_xcopy("include", "{inc_dir}"),
-        ],
-        "bins": [r"bin\*.dll"],
-        "libs": [r"lib\*.*"],
-    },
     "libavif": {
         "url": f"https://github.com/AOMediaCodec/libavif/archive/v{V['LIBAVIF']}.zip",
         "filename": f"libavif-{V['LIBAVIF']}.zip",
@@ -435,8 +421,7 @@ DEPS: dict[str, dict[str, Any]] = {
                     "-DAVIF_CODEC_AOM=LOCAL",
                     "-DAVIF_LIBYUV=LOCAL",
                     "-DAVIF_LIBSHARPYUV=LOCAL",
-                    "-DAVIF_CODEC_RAV1E=SYSTEM",
-                    "-DAVIF_RAV1E_ROOT={build_dir}",
+                    "-DAVIF_CODEC_RAV1E=LOCAL",
                     "-DCMAKE_MODULE_PATH={winbuild_dir_cmake}",
                     "-DAVIF_CODEC_DAV1D=LOCAL",
                     "-DAVIF_CODEC_SVT=LOCAL",
@@ -804,7 +789,7 @@ def main() -> None:
     if args.no_fribidi:
         disabled += ["fribidi"]
     if args.no_avif or args.architecture != "AMD64":
-        disabled += ["rav1e", "libavif"]
+        disabled += ["libavif"]
 
     prefs = {
         "architecture": args.architecture,

@@ -226,7 +226,7 @@ Many of Pillow's features require external libraries:
 
         sudo pkg install jpeg-turbo tiff webp lcms2 freetype2 openjpeg harfbuzz fribidi libxcb libavif
 
-    See ``depends/install_raqm_cmake.sh`` to install libraqm.
+    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
 
 .. tab:: Android
 
