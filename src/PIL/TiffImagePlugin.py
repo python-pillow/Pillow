@@ -935,8 +935,8 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self._tagdata[tag] = data
                 self.tagtype[tag] = typ
 
-                bytes_value = size if size > 32 else repr(data)
-                msg += f" - value: <table: {bytes_value} bytes>"
+                msg += " - value: "
+                msg += f"<table: {size} bytes>" if size > 32 else repr(data)
 
                 logger.debug(msg)
 
@@ -981,11 +981,8 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
             tagname = TiffTags.lookup(tag, self.group).name
             typname = "ifd" if is_ifd else TYPES.get(typ, "unknown")
-            bytes_value = len(data) if len(data) >= 16 else str(values)
-            msg = (
-                f"save: {tagname} ({tag}) - type: {typname} ({typ})"
-                f" - value: <table: {bytes_value} bytes>"
-            )
+            msg = f"save: {tagname} ({tag}) - type: {typname} ({typ}) - value: "
+            msg += f"<table: {len(data)} bytes>" if len(data) >= 16 else str(values)
             logger.debug(msg)
 
             # count is sum of lengths for string and arbitrary data
