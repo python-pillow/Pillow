@@ -168,24 +168,19 @@ def _save(
     autotiling = bool(info.get("autotiling", tile_rows_log2 == tile_cols_log2 == 0))
 
     icc_profile = info.get("icc_profile", im.info.get("icc_profile"))
-    exif = info.get("exif", im.info.get("exif"))
-    if isinstance(exif, Image.Exif):
-        exif = exif.tobytes()
-
-    exif_orientation = 0
+    exif = info.get("exif")
     if exif:
-        exif_data = Image.Exif()
-        try:
-            exif_data.load(exif)
-        except SyntaxError:
-            pass
+        if isinstance(exif, Image.Exif):
+            exif_data = exif
+            exif = exif.tobytes()
         else:
-            orientation_tag = next(
-                k for k, v in ExifTags.TAGS.items() if v == "Orientation"
-            )
-            exif_orientation = exif_data.get(orientation_tag) or 0
+            exif_data = Image.Exif()
+            exif_data.load(exif)
+        exif_orientation = exif_data.pop(ExifTags.Base.Orientation, 1)
+    else:
+        exif_orientation = 1
 
-    xmp = info.get("xmp", im.info.get("xmp") or im.info.get("XML:com.adobe.xmp"))
+    xmp = info.get("xmp")
 
     if isinstance(xmp, str):
         xmp = xmp.encode("utf-8")

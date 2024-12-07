@@ -329,17 +329,8 @@ class TestFileAvif:
             exif = im.getexif()
         assert exif[274] == 3
 
-    def test_exif_save_default(self, tmp_path: Path) -> None:
-        with Image.open("Tests/images/avif/exif.avif") as im:
-            test_file = str(tmp_path / "temp.avif")
-            im.save(test_file)
-
-        with Image.open(test_file) as reloaded:
-            exif = reloaded.getexif()
-        assert exif[274] == 1
-
     @pytest.mark.parametrize("bytes", [True, False])
-    def test_exif_save_argument(self, tmp_path: Path, bytes: bool) -> None:
+    def test_exif_save(self, tmp_path: Path, bytes: bool) -> None:
         exif = Image.Exif()
         exif[274] = 1
         exif_data = exif.tobytes()
@@ -353,7 +344,7 @@ class TestFileAvif:
     def test_exif_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
-            with pytest.raises(ValueError):
+            with pytest.raises(SyntaxError):
                 im.save(test_file, exif=b"invalid")
 
     def test_xmp(self) -> None:
@@ -362,24 +353,6 @@ class TestFileAvif:
         assert_xmp_orientation(xmp, 3)
 
     def test_xmp_save(self, tmp_path: Path) -> None:
-        with Image.open("Tests/images/avif/xmp_tags_orientation.avif") as im:
-            test_file = str(tmp_path / "temp.avif")
-            im.save(test_file)
-
-        with Image.open(test_file) as reloaded:
-            xmp = reloaded.info["xmp"]
-        assert_xmp_orientation(xmp, 3)
-
-    def test_xmp_save_from_png(self, tmp_path: Path) -> None:
-        with Image.open("Tests/images/xmp_tags_orientation.png") as im:
-            test_file = str(tmp_path / "temp.avif")
-            im.save(test_file)
-
-        with Image.open(test_file) as reloaded:
-            xmp = reloaded.info["xmp"]
-        assert_xmp_orientation(xmp, 3)
-
-    def test_xmp_save_argument(self, tmp_path: Path) -> None:
         xmp_arg = "\n".join(
             [
                 '<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>',

@@ -170,22 +170,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
             image->imir.mode = 0;  // ignored
 #endif
             return;
-        default:  // reserved
-            break;
     }
-
-    // The orientation tag is not mandatory (only recommended) according to JEITA
-    // CP-3451C section 4.6.8.A. The default value is 1 if the orientation tag is
-    // missing, meaning:
-    //   The 0th row is at the visual top of the image, and the 0th column is the visual
-    //   left-hand side.
-    image->transformFlags = otherFlags;
-    image->irot.angle = 0;  // ignored
-#if AVIF_VERSION_MAJOR >= 1
-    image->imir.axis = 0;  // ignored
-#else
-    image->imir.mode = 0;  // ignored
-#endif
 }
 
 static int
