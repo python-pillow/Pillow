@@ -21,7 +21,9 @@ def test_open() -> None:
 
 def test_load() -> None:
     with WalImageFile.open(TEST_FILE) as im:
-        assert im.load()[0, 0] == 122
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == 122
 
         # Test again now that it has already been loaded once
-        assert im.load()[0, 0] == 122
+        assert px[0, 0] == 122

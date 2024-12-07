@@ -86,6 +86,8 @@ simple_eps_file_with_long_binary_data = (
 def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
     expected_size = tuple(s * scale for s in size)
     with Image.open(filename) as image:
+        assert isinstance(image, EpsImagePlugin.EpsImageFile)
+
         image.load(scale=scale)
         assert image.mode == "RGB"
         assert image.size == expected_size
@@ -95,10 +97,12 @@ def test_sanity(filename: str, size: tuple[int, int], scale: int) -> None:
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_load() -> None:
     with Image.open(FILE1) as im:
-        assert im.load()[0, 0] == (255, 255, 255)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (255, 255, 255)
 
         # Test again now that it has already been loaded once
-        assert im.load()[0, 0] == (255, 255, 255)
+        assert px[0, 0] == (255, 255, 255)
 
 
 def test_binary() -> None:
@@ -223,6 +227,8 @@ def test_showpage() -> None:
 @pytest.mark.skipif(not HAS_GHOSTSCRIPT, reason="Ghostscript not available")
 def test_transparency() -> None:
     with Image.open("Tests/images/eps/reqd_showpage.eps") as plot_image:
+        assert isinstance(plot_image, EpsImagePlugin.EpsImageFile)
+
         plot_image.load(transparency=True)
         assert plot_image.mode == "RGBA"
 
@@ -247,8 +253,8 @@ def test_bytesio_object() -> None:
     with Image.open(img_bytes) as img:
         img.load()
 
-        with Image.open(FILE1_COMPARE) as image1_scale1_compare:
-            image1_scale1_compare = image1_scale1_compare.convert("RGB")
+        with Image.open(FILE1_COMPARE) as im:
+            image1_scale1_compare = im.convert("RGB")
         image1_scale1_compare.load()
         assert_image_similar(img, image1_scale1_compare, 5)
 
@@ -283,16 +289,16 @@ def test_render_scale1() -> None:
     # Zero bounding box
     with Image.open(FILE1) as image1_scale1:
         image1_scale1.load()
-        with Image.open(FILE1_COMPARE) as image1_scale1_compare:
-            image1_scale1_compare = image1_scale1_compare.convert("RGB")
+        with Image.open(FILE1_COMPARE) as im:
+            image1_scale1_compare = im.convert("RGB")
         image1_scale1_compare.load()
         assert_image_similar(image1_scale1, image1_scale1_compare, 5)
 
     # Non-zero bounding box
     with Image.open(FILE2) as image2_scale1:
         image2_scale1.load()
-        with Image.open(FILE2_COMPARE) as image2_scale1_compare:
-            image2_scale1_compare = image2_scale1_compare.convert("RGB")
+        with Image.open(FILE2_COMPARE) as im:
+            image2_scale1_compare = im.convert("RGB")
         image2_scale1_compare.load()
         assert_image_similar(image2_scale1, image2_scale1_compare, 10)
 
@@ -304,17 +310,19 @@ def test_render_scale2() -> None:
 
     # Zero bounding box
     with Image.open(FILE1) as image1_scale2:
+        assert isinstance(image1_scale2, EpsImagePlugin.EpsImageFile)
         image1_scale2.load(scale=2)
-        with Image.open(FILE1_COMPARE_SCALE2) as image1_scale2_compare:
-            image1_scale2_compare = image1_scale2_compare.convert("RGB")
+        with Image.open(FILE1_COMPARE_SCALE2) as im:
+            image1_scale2_compare = im.convert("RGB")
         image1_scale2_compare.load()
         assert_image_similar(image1_scale2, image1_scale2_compare, 5)
 
     # Non-zero bounding box
     with Image.open(FILE2) as image2_scale2:
+        assert isinstance(image2_scale2, EpsImagePlugin.EpsImageFile)
         image2_scale2.load(scale=2)
-        with Image.open(FILE2_COMPARE_SCALE2) as image2_scale2_compare:
-            image2_scale2_compare = image2_scale2_compare.convert("RGB")
+        with Image.open(FILE2_COMPARE_SCALE2) as im:
+            image2_scale2_compare = im.convert("RGB")
         image2_scale2_compare.load()
         assert_image_similar(image2_scale2, image2_scale2_compare, 10)
 
@@ -324,9 +332,9 @@ def test_render_scale2() -> None:
     "filename", (FILE1, FILE2, "Tests/images/eps/illu10_preview.eps")
 )
 def test_resize(filename: str) -> None:
-    with Image.open(filename) as im:
+    with Image.open(filename) as img:
         new_size = (100, 100)
-        im = im.resize(new_size)
+        im = img.resize(new_size)
         assert im.size == new_size
 
 
