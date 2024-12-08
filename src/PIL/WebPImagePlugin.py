@@ -318,5 +318,5 @@ Image.register_open(WebPImageFile.format, WebPImageFile, _accept)
 if SUPPORTED:
     Image.register_save(WebPImageFile.format, _save)
     Image.register_save_all(WebPImageFile.format, _save_all)
-    Image.register_extension(WebPImageFile.format, ".webp")
+    Image.register_extensions(WebPImageFile.format, [".webp", ".wbp"])
     Image.register_mime(WebPImageFile.format, "image/webp")
