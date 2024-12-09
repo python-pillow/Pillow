@@ -10,6 +10,7 @@ from io import BytesIO
 from pathlib import Path
 from struct import unpack
 from typing import Any
+from unittest import mock
 
 import pytest
 
@@ -329,23 +330,64 @@ class TestFileAvif:
             exif = im.getexif()
         assert exif[274] == 3
 
-    @pytest.mark.parametrize("bytes", [True, False])
-    def test_exif_save(self, tmp_path: Path, bytes: bool) -> None:
+    @pytest.mark.parametrize("bytes,orientation", [(True, 1), (False, 2)])
+    def test_exif_save(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        bytes: bool,
+        orientation: int,
+    ) -> None:
+        mock_avif_encoder = mock.Mock(wraps=_avif.AvifEncoder)
+        monkeypatch.setattr(_avif, "AvifEncoder", mock_avif_encoder)
         exif = Image.Exif()
-        exif[274] = 1
+        exif[274] = orientation
         exif_data = exif.tobytes()
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
             im.save(test_file, exif=exif_data if bytes else exif)
 
         with Image.open(test_file) as reloaded:
-            assert reloaded.info["exif"] == exif_data
+            if orientation == 1:
+                assert "exif" not in reloaded.info
+            else:
+                assert reloaded.info["exif"] == exif_data
+        mock_avif_encoder.mock_calls[0].args[16:17] == (b"", orientation)
 
     def test_exif_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
             with pytest.raises(SyntaxError):
                 im.save(test_file, exif=b"invalid")
+
+    @pytest.mark.parametrize(
+        "rot,mir,exif_orientation",
+        [
+            (0, 0, 4),
+            (0, 1, 2),
+            (1, 0, 5),
+            (1, 1, 7),
+            (2, 0, 2),
+            (2, 1, 4),
+            (3, 0, 7),
+            (3, 1, 5),
+        ],
+    )
+    def test_rot_mir_exif(
+        self, rot: int, mir: int, exif_orientation: int, tmp_path: Path
+    ) -> None:
+        with Image.open(f"Tests/images/avif/rot{rot}mir{mir}.avif") as im:
+            exif = im.info["exif"]
+            test_file = str(tmp_path / "temp.avif")
+            im.save(test_file, exif=exif)
+
+            exif_data = Image.Exif()
+            exif_data.load(exif)
+            assert exif_data[274] == exif_orientation
+        with Image.open(test_file) as reloaded:
+            exif_data = Image.Exif()
+            exif_data.load(reloaded.info["exif"])
+            assert exif_data[274] == exif_orientation
 
     def test_xmp(self) -> None:
         with Image.open("Tests/images/avif/xmp_tags_orientation.avif") as im:

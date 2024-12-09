@@ -76,6 +76,44 @@ exc_type_for_avif_result(avifResult result) {
     }
 }
 
+static uint8_t
+irot_imir_to_exif_orientation(const avifImage *image) {
+#if AVIF_VERSION_MAJOR >= 1
+    uint8_t axis = image->imir.axis;
+#else
+    uint8_t axis = image->imir.mode;
+#endif
+    uint8_t angle = image->irot.angle;
+    int irot = !!(image->transformFlags & AVIF_TRANSFORM_IROT);
+    int imir = !!(image->transformFlags & AVIF_TRANSFORM_IMIR);
+    if (irot && angle == 1) {
+        if (imir) {
+            return axis ? 7   // 90 degrees anti-clockwise then swap left and right.
+                        : 5;  // 90 degrees anti-clockwise then swap top and bottom.
+        }
+        return 6;  // 90 degrees anti-clockwise.
+    }
+    if (irot && angle == 2) {
+        if (imir) {
+            return axis ? 4   // 180 degrees anti-clockwise then swap left and right.
+                        : 2;  // 180 degrees anti-clockwise then swap top and bottom.
+        }
+        return 3;  // 180 degrees anti-clockwise.
+    }
+    if (irot && angle == 3) {
+        if (imir) {
+            return axis ? 5   // 270 degrees anti-clockwise then swap left and right.
+                        : 7;  // 270 degrees anti-clockwise then swap top and bottom.
+        }
+        return 8;  // 270 degrees anti-clockwise.
+    }
+    if (imir) {
+        return axis ? 2   // Swap left and right.
+                    : 4;  // Swap top and bottom.
+    }
+    return 1;  // Default orientation ("top-left", no-op).
+}
+
 static void
 exif_orientation_to_irot_imir(avifImage *image, int orientation) {
     const avifTransformFlags otherFlags =
@@ -485,7 +523,9 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
                 return NULL;
             }
         }
-        exif_orientation_to_irot_imir(image, exif_orientation);
+        if (exif_orientation > 0) {
+            exif_orientation_to_irot_imir(image, exif_orientation);
+        }
 
         self->image = image;
         self->frame_index = -1;
@@ -806,14 +846,15 @@ _decoder_get_info(AvifDecoderObject *self) {
     }
 
     ret = Py_BuildValue(
-        "IIIsSSS",
+        "IIIsSSSI",
         image->width,
         image->height,
         decoder->imageCount,
         self->mode,
         NULL == icc ? Py_None : icc,
         NULL == exif ? Py_None : exif,
-        NULL == xmp ? Py_None : xmp
+        NULL == xmp ? Py_None : xmp,
+        irot_imir_to_exif_orientation(image)
     );
 
     Py_XDECREF(xmp);

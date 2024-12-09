@@ -86,7 +86,9 @@ class AvifImageFile(ImageFile.ImageFile):
         )
 
         # Get info from decoder
-        width, height, n_frames, mode, icc, exif, xmp = self._decoder.get_info()
+        width, height, n_frames, mode, icc, exif, xmp, exif_orientation = (
+            self._decoder.get_info()
+        )
         self._size = width, height
         self.n_frames = n_frames
         self.is_animated = self.n_frames > 1
@@ -98,6 +100,16 @@ class AvifImageFile(ImageFile.ImageFile):
             self.info["exif"] = exif
         if xmp:
             self.info["xmp"] = xmp
+
+        if exif_orientation != 1 or exif is not None:
+            exif_data = Image.Exif()
+            orig_orientation = 1
+            if exif is not None:
+                exif_data.load(exif)
+                orig_orientation = exif_data.get(ExifTags.Base.Orientation, 1)
+            if exif_orientation != orig_orientation:
+                exif_data[ExifTags.Base.Orientation] = exif_orientation
+                self.info["exif"] = exif_data.tobytes()
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
@@ -176,9 +188,14 @@ def _save(
         else:
             exif_data = Image.Exif()
             exif_data.load(exif)
-        exif_orientation = exif_data.pop(ExifTags.Base.Orientation, 1)
+        exif_orientation = exif_data.pop(ExifTags.Base.Orientation, 0)
+        if exif_orientation != 0:
+            if len(exif_data):
+                exif = exif_data.tobytes()
+            else:
+                exif = None
     else:
-        exif_orientation = 1
+        exif_orientation = 0
 
     xmp = info.get("xmp")
 
