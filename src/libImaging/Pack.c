@@ -242,6 +242,17 @@ packLA(UINT8 *out, const UINT8 *in, int pixels) {
         in += 4;
     }
 }
+static void
+packRG(UINT8 *out, const UINT8 *in, int pixels) {
+    int i;
+    /* LA, pixel interleaved */
+    for (i = 0; i < pixels; i++) {
+        out[0] = in[R];
+        out[1] = in[G];
+        out += 2;
+        in += 4;
+    }
+}
 
 static void
 packLAL(UINT8 *out, const UINT8 *in, int pixels) {
@@ -480,7 +491,7 @@ copy3(UINT8 *out, const UINT8 *in, int pixels) {
 static void
 copy4(UINT8 *out, const UINT8 *in, int pixels) {
     /* RGBA, CMYK quadruples */
-    memcpy(out, in, 4 * pixels);
+    memcpy(out, in, pixels * 4);
 }
 
 static void
@@ -569,6 +580,7 @@ static struct {
     {"RGB", "BGRX", 32, ImagingPackBGRX},
     {"RGB", "XBGR", 32, ImagingPackXBGR},
     {"RGB", "RGB;L", 24, packRGBL},
+    {"RGB", "RG", 16, packRG},
     {"RGB", "R", 8, band0},
     {"RGB", "G", 8, band1},
     {"RGB", "B", 8, band2},
@@ -581,6 +593,7 @@ static struct {
     {"RGBA", "BGRA", 32, ImagingPackBGRA},
     {"RGBA", "ABGR", 32, ImagingPackABGR},
     {"RGBA", "BGRa", 32, ImagingPackBGRa},
+    {"RGBA", "RG", 16, packRG},
     {"RGBA", "R", 8, band0},
     {"RGBA", "G", 8, band1},
     {"RGBA", "B", 8, band2},
