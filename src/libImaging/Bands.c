@@ -41,7 +41,7 @@ ImagingGetBand(Imaging imIn, int band) {
         band = 3;
     }
 
-    imOut = ImagingNewDirty("L", imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty("L", (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }
@@ -82,7 +82,7 @@ ImagingSplit(Imaging imIn, Imaging bands[4]) {
     }
 
     for (i = 0; i < imIn->bands; i++) {
-        bands[i] = ImagingNewDirty("L", imIn->xsize, imIn->ysize);
+        bands[i] = ImagingNewDirty("L", (ImagingNewParams){imIn->xsize, imIn->ysize});
         if (!bands[i]) {
             for (j = 0; j < i; ++j) {
                 ImagingDelete(bands[j]);
@@ -265,7 +265,8 @@ ImagingMerge(const char *mode, Imaging bands[4]) {
     }
     bandsCount = i;
 
-    imOut = ImagingNewDirty(mode, firstBand->xsize, firstBand->ysize);
+    imOut =
+        ImagingNewDirty(mode, (ImagingNewParams){firstBand->xsize, firstBand->ysize});
     if (!imOut) {
         return NULL;
     }
