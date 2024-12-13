@@ -139,10 +139,6 @@ jobs:
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
 
-    - name: Build dependencies / meson
-      if: steps.build-cache.outputs.cache-hit != 'true'
-      run: "& winbuild\\build\\install_meson.cmd"
-
     - name: Build dependencies / libavif
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libavif.cmd"

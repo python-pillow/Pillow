@@ -100,7 +100,7 @@ function build_harfbuzz {
 function build_libavif {
     if [ -e libavif-stamp ]; then return; fi
 
-    if [[ -z "$IS_MACOS" ]] && ([[ "$MB_ML_VER" == 2014 ]] || [[ "$PLAT" == "aarch64" ]]); then
+    if [[ "$MB_ML_VER" == 2014 ]] || [[ "$PLAT" == "aarch64" ]]; then
         # Once Amazon 2 is EOL on 30 June 2025, manylinux2014 will no longer be needed
         # Once GitHub Actions supports aarch64 without emulation, this will no longer needed as building will be faster
         if [[ "$PLAT" == "aarch64" ]]; then

@@ -51,6 +51,7 @@ fi
 
 cmake -G Ninja -S . -B build \
     -DCMAKE_INSTALL_PREFIX=$PREFIX \
+    -DAVIF_LIBSHARPYUV=LOCAL \
     -DAVIF_LIBYUV=LOCAL \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_NAME_DIR=$PREFIX/lib \
