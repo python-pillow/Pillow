@@ -51,7 +51,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------------
 
-Files: apps/shared/iccjpeg.*
+Files: third_party/iccjpeg/*
 
 In plain English:
 

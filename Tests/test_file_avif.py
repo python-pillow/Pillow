@@ -10,7 +10,6 @@ from io import BytesIO
 from pathlib import Path
 from struct import unpack
 from typing import Any
-from unittest import mock
 
 import pytest
 
@@ -334,12 +333,9 @@ class TestFileAvif:
     def test_exif_save(
         self,
         tmp_path: Path,
-        monkeypatch: pytest.MonkeyPatch,
         bytes: bool,
         orientation: int,
     ) -> None:
-        mock_avif_encoder = mock.Mock(wraps=_avif.AvifEncoder)
-        monkeypatch.setattr(_avif, "AvifEncoder", mock_avif_encoder)
         exif = Image.Exif()
         exif[274] = orientation
         exif_data = exif.tobytes()
@@ -352,7 +348,6 @@ class TestFileAvif:
                 assert "exif" not in reloaded.info
             else:
                 assert reloaded.info["exif"] == exif_data
-        mock_avif_encoder.mock_calls[0].args[16:17] == (b"", orientation)
 
     def test_exif_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:

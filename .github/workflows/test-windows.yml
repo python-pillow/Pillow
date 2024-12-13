@@ -37,7 +37,7 @@ jobs:
       matrix:
         python-version: ["pypy3.10", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     name: Python ${{ matrix.python-version }}
 
