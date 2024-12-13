@@ -1345,7 +1345,7 @@ as 8-bit RGB(A).
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
-    Integer, 1-100, defaults to 90. 0 gives the smallest size and poorest
+    Integer, 1-100, defaults to 75. 0 gives the smallest size and poorest
     quality, 100 the largest and best quality. The value of this setting
     controls the ``qmin`` and ``qmax`` encoder options.
 
@@ -1364,7 +1364,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     * ``4:4:4``
 
 **speed**
-    Quality/speed trade-off (0=slower-better, 10=fastest). Defaults to 8.
+    Quality/speed trade-off (0=slower-better, 10=fastest). Defaults to 6.
 
 **range**
     YUV range, either "full" or "limited". Defaults to "full"
