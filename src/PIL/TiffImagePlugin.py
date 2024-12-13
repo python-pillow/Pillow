@@ -935,9 +935,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self._tagdata[tag] = data
                 self.tagtype[tag] = typ
 
-                msg += " - value: " + (
-                    "<table: %d bytes>" % size if size > 32 else repr(data)
-                )
+                bytes_value = size if size > 32 else repr(data)
+                msg += f" - value: <table: {bytes_value} bytes>"
+
                 logger.debug(msg)
 
             (self.next,) = (
@@ -981,9 +981,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
             tagname = TiffTags.lookup(tag, self.group).name
             typname = "ifd" if is_ifd else TYPES.get(typ, "unknown")
-            msg = f"save: {tagname} ({tag}) - type: {typname} ({typ})"
-            msg += " - value: " + (
-                "<table: %d bytes>" % len(data) if len(data) >= 16 else str(values)
+            bytes_value = len(data) if len(data) >= 16 else str(values)
+            msg = (
+                f"save: {tagname} ({tag}) - type: {typname} ({typ})"
+                f" - value: <table: {bytes_value} bytes>"
             )
             logger.debug(msg)
 

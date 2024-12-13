@@ -692,13 +692,10 @@ class Image:
         )
 
     def __repr__(self) -> str:
-        return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.mode,
-            self.size[0],
-            self.size[1],
-            id(self),
+        return (
+            f"<{self.__class__.__module__}.{self.__class__.__name__} "
+            f"image mode={self.mode} size={self.size[0]}x{self.size[1]} "
+            f"at 0x{id(self):X}>"
         )
 
     def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
@@ -707,14 +704,8 @@ class Image:
         # Same as __repr__ but without unpredictable id(self),
         # to keep Jupyter notebook `text/plain` output stable.
         p.text(
-            "<%s.%s image mode=%s size=%dx%d>"
-            % (
-                self.__class__.__module__,
-                self.__class__.__name__,
-                self.mode,
-                self.size[0],
-                self.size[1],
-            )
+            f"<{self.__class__.__module__}.{self.__class__.__name__} "
+            f"image mode={self.mode} size={self.size[0]}x{self.size[1]}>"
         )
 
     def _repr_image(self, image_format: str, **kwargs: Any) -> bytes | None:
