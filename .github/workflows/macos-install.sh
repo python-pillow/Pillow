@@ -8,8 +8,8 @@ fi
 brew install \
     freetype \
     ghostscript \
+    jpeg-turbo \
     libimagequant \
-    libjpeg \
     libtiff \
     little-cms2 \
     openjpeg \
