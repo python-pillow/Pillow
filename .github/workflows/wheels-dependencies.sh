@@ -38,10 +38,10 @@ ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
 FREETYPE_VERSION=2.13.2
-HARFBUZZ_VERSION=10.0.1
+HARFBUZZ_VERSION=10.1.0
 LIBPNG_VERSION=1.6.44
-JPEGTURBO_VERSION=3.0.4
-OPENJPEG_VERSION=2.5.2
+JPEGTURBO_VERSION=3.1.0
+OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.6.3
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
@@ -82,10 +82,9 @@ function build_zlib_ng {
 
 function build_brotli {
     if [ -e brotli-stamp ]; then return; fi
-    local cmake=$(get_modern_cmake)
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
     (cd $out_dir \
-        && $cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
+        && cmake -DCMAKE_INSTALL_PREFIX=$BUILD_PREFIX -DCMAKE_INSTALL_LIBDIR=$BUILD_PREFIX/lib -DCMAKE_INSTALL_NAME_DIR=$BUILD_PREFIX/lib . \
         && make install)
     touch brotli-stamp
 }

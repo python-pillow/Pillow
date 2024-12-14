@@ -86,7 +86,7 @@ class PcxImageFile(ImageFile.ImageFile):
 
         elif bits == 1 and planes in (2, 4):
             mode = "P"
-            rawmode = "P;%dL" % planes
+            rawmode = f"P;{planes}L"
             self.palette = ImagePalette.raw("RGB", s[16:64])
 
         elif version == 5 and bits == 8 and planes == 1:
