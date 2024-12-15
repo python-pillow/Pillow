@@ -3,6 +3,8 @@
 #include <Python.h>
 #include "avif/avif.h"
 
+static int have_rav1e = 0;
+
 typedef struct {
     avifPixelFormat subsampling;
     int qmin;
@@ -369,7 +371,11 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
     enc_options.speed = speed;
 
     if (strcmp(codec, "auto") == 0) {
-        enc_options.codec = AVIF_CODEC_CHOICE_AUTO;
+        if (have_rav1e) {
+            enc_options.codec = AVIF_CODEC_CHOICE_RAV1E;
+        } else {
+            enc_options.codec = AVIF_CODEC_CHOICE_AUTO;
+        }
     } else {
         enc_options.codec = avifCodecChoiceFromName(codec);
     }
@@ -1014,6 +1020,8 @@ setup_module(PyObject *m) {
     PyObject *v = PyUnicode_FromString(avifVersion());
     PyDict_SetItemString(d, "libavif_version", v ? v : Py_None);
     Py_XDECREF(v);
+
+    have_rav1e = _codec_available("rav1e", AVIF_CODEC_FLAG_CAN_ENCODE);
 
     return 0;
 }
