@@ -1006,36 +1006,15 @@ static PyMethodDef avifMethods[] = {
 
 static int
 setup_module(PyObject *m) {
-    PyObject *d = PyModule_GetDict(m);
-
-    PyObject *v = PyUnicode_FromString(avifVersion());
-    if (PyDict_SetItemString(d, "libavif_version", v) < 0) {
-        Py_DECREF(v);
-        return -1;
-    }
-    Py_DECREF(v);
-
-    v = Py_True;
-    Py_INCREF(v);
-    if (PyDict_SetItemString(d, "HAVE_AVIF", v) < 0) {
-        Py_DECREF(v);
-        return -1;
-    }
-    Py_DECREF(v);
-
-    v = Py_BuildValue(
-        "(iii)", AVIF_VERSION_MAJOR, AVIF_VERSION_MINOR, AVIF_VERSION_PATCH
-    );
-
-    if (PyDict_SetItemString(d, "VERSION", v) < 0) {
-        Py_DECREF(v);
-        return -1;
-    }
-    Py_DECREF(v);
-
     if (PyType_Ready(&AvifDecoder_Type) < 0 || PyType_Ready(&AvifEncoder_Type) < 0) {
         return -1;
     }
+
+    PyObject *d = PyModule_GetDict(m);
+    PyObject *v = PyUnicode_FromString(avifVersion());
+    PyDict_SetItemString(d, "libavif_version", v ? v : Py_None);
+    Py_XDECREF(v);
+
     return 0;
 }
 
@@ -1052,6 +1031,7 @@ PyInit__avif(void) {
 
     m = PyModule_Create(&module_def);
     if (setup_module(m) < 0) {
+        Py_DECREF(m);
         return NULL;
     }
 
