@@ -126,16 +126,6 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
     // Orientation to irot and imir boxes as defined in HEIF ISO/IEC 28002-12:2021
     // sections 6.5.10 and 6.5.12.
     switch (orientation) {
-        case 1:  // The 0th row is at the visual top of the image, and the 0th column is
-                 // the visual left-hand side.
-            image->transformFlags = otherFlags;
-            image->irot.angle = 0;  // ignored
-#if AVIF_VERSION_MAJOR >= 1
-            image->imir.axis = 0;  // ignored
-#else
-            image->imir.mode = 0;  // ignored
-#endif
-            return;
         case 2:  // The 0th row is at the visual top of the image, and the 0th column is
                  // the visual right-hand side.
             image->transformFlags = otherFlags | AVIF_TRANSFORM_IMIR;
@@ -145,7 +135,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
 #else
             image->imir.mode = 1;
 #endif
-            return;
+            break;
         case 3:  // The 0th row is at the visual bottom of the image, and the 0th column
                  // is the visual right-hand side.
             image->transformFlags = otherFlags | AVIF_TRANSFORM_IROT;
@@ -155,7 +145,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
 #else
             image->imir.mode = 0;  // ignored
 #endif
-            return;
+            break;
         case 4:  // The 0th row is at the visual bottom of the image, and the 0th column
                  // is the visual left-hand side.
             image->transformFlags = otherFlags | AVIF_TRANSFORM_IMIR;
@@ -165,7 +155,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
 #else
             image->imir.mode = 0;
 #endif
-            return;
+            break;
         case 5:  // The 0th row is the visual left-hand side of the image, and the 0th
                  // column is the visual top.
             image->transformFlags =
@@ -177,7 +167,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
 #else
             image->imir.mode = 0;
 #endif
-            return;
+            break;
         case 6:  // The 0th row is the visual right-hand side of the image, and the 0th
                  // column is the visual top.
             image->transformFlags = otherFlags | AVIF_TRANSFORM_IROT;
@@ -187,7 +177,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
 #else
             image->imir.mode = 0;  // ignored
 #endif
-            return;
+            break;
         case 7:  // The 0th row is the visual right-hand side of the image, and the 0th
                  // column is the visual bottom.
             image->transformFlags =
@@ -199,7 +189,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
 #else
             image->imir.mode = 0;
 #endif
-            return;
+            break;
         case 8:  // The 0th row is the visual left-hand side of the image, and the 0th
                  // column is the visual bottom.
             image->transformFlags = otherFlags | AVIF_TRANSFORM_IROT;
@@ -209,7 +199,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
 #else
             image->imir.mode = 0;  // ignored
 #endif
-            return;
+            break;
     }
 }
 
@@ -529,7 +519,7 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
                 return NULL;
             }
         }
-        if (exif_orientation > 0) {
+        if (exif_orientation > 1) {
             exif_orientation_to_irot_imir(image, exif_orientation);
         }
 
