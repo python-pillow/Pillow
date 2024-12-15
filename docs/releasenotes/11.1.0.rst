@@ -1,0 +1,59 @@
+11.1.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Check for zlib-ng
+^^^^^^^^^^^^^^^^^
+
+You can check if Pillow has been built against the zlib-ng version of the
+zlib library, and what version of zlib-ng is being used::
+
+    from PIL import features
+    features.check_feature("zlib_ng")  # True or False
+    features.version_feature("zlib_ng")  # "2.2.2" for example, or None
+
+Other Changes
+=============
+
+zlib-ng in wheels
+^^^^^^^^^^^^^^^^^
+
+Wheels are now built against zlib-ng for improved speed. In tests, saving a PNG
+was found to be more than twice as fast at higher compression levels.

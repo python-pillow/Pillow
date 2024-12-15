@@ -158,8 +158,8 @@ DEPS: dict[str, dict[str, Any]] = {
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": f"https://github.com/zlib-ng/zlib-ng/archive/refs/tags/{V['ZLIBNG']}.zip",
-        "filename": f"zlib-ng-{V['ZLIBNG']}.zip",
+        "url": f"https://github.com/zlib-ng/zlib-ng/archive/refs/tags/{V['ZLIBNG']}.tar.gz",
+        "filename": f"zlib-ng-{V['ZLIBNG']}.tar.gz",
         "license": "LICENSE.md",
         "patch": {
             r"CMakeLists.txt": {
