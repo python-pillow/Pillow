@@ -129,7 +129,7 @@ V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 # dependencies, listed in order of compilation
 DEPS: dict[str, dict[str, Any]] = {
     "libjpeg": {
-        "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/FILENAME/download",
+        "url": f"https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/{V['JPEGTURBO']}/libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
         "filename": f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
         "dir": f"libjpeg-turbo-{V['JPEGTURBO']}",
         "license": ["README.ijg", "LICENSE.md"],
