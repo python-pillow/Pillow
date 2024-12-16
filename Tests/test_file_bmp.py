@@ -230,3 +230,13 @@ def test_offset() -> None:
     # to exclude the palette size from the pixel data offset
     with Image.open("Tests/images/pal8_offset.bmp") as im:
         assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
+
+
+def test_use_raw_alpha(monkeypatch: pytest.MonkeyPatch) -> None:
+    with Image.open("Tests/images/bmp/g/rgb32.bmp") as im:
+        assert im.info["compression"] == BmpImagePlugin.BmpImageFile.COMPRESSIONS["RAW"]
+        assert im.mode == "RGB"
+
+    monkeypatch.setattr(BmpImagePlugin, "USE_RAW_ALPHA", True)
+    with Image.open("Tests/images/bmp/g/rgb32.bmp") as im:
+        assert im.mode == "RGBA"
