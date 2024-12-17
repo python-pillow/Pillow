@@ -521,10 +521,10 @@ def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
                 if sources_dir_abs != member_prefix:
                     msg = "Attempted Path Traversal in Tar File"
                     raise RuntimeError(msg)
-            if sys.version_info <= (3, 11):
-                tgz.extractall(sources_dir)
-            else:
+            if sys.version_info >= (3, 12):
                 tgz.extractall(sources_dir, filter="data")
+            else:
+                tgz.extractall(sources_dir)
     else:
         msg = "Unknown archive type: " + filename
         raise RuntimeError(msg)
