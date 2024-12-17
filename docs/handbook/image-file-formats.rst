@@ -1370,7 +1370,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     YUV range, either "full" or "limited". Defaults to "full"
 
 **codec**
-    AV1 codec to use for encoding. Specific values are "rav1e", "aom", and
+    AV1 codec to use for encoding. Specific values are "aom", "rav1e", and
     "svt", presuming the chosen codec is available. Defaults to "auto", which
     will choose the first available codec in the order of the preceding list.
 
