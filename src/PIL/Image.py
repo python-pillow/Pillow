@@ -692,13 +692,10 @@ class Image:
         )
 
     def __repr__(self) -> str:
-        return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.mode,
-            self.size[0],
-            self.size[1],
-            id(self),
+        return (
+            f"<{self.__class__.__module__}.{self.__class__.__name__} "
+            f"image mode={self.mode} size={self.size[0]}x{self.size[1]} "
+            f"at 0x{id(self):X}>"
         )
 
     def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
@@ -707,14 +704,8 @@ class Image:
         # Same as __repr__ but without unpredictable id(self),
         # to keep Jupyter notebook `text/plain` output stable.
         p.text(
-            "<%s.%s image mode=%s size=%dx%d>"
-            % (
-                self.__class__.__module__,
-                self.__class__.__name__,
-                self.mode,
-                self.size[0],
-                self.size[1],
-            )
+            f"<{self.__class__.__module__}.{self.__class__.__name__} "
+            f"image mode={self.mode} size={self.size[0]}x{self.size[1]}>"
         )
 
     def _repr_image(self, image_format: str, **kwargs: Any) -> bytes | None:
@@ -2550,7 +2541,7 @@ class Image:
         filename: str | bytes = ""
         open_fp = False
         if is_path(fp):
-            filename = os.path.realpath(os.fspath(fp))
+            filename = os.fspath(fp)
             open_fp = True
         elif fp == sys.stdout:
             try:
@@ -2559,7 +2550,7 @@ class Image:
                 pass
         if not filename and hasattr(fp, "name") and is_path(fp.name):
             # only set the name for metadata purposes
-            filename = os.path.realpath(os.fspath(fp.name))
+            filename = os.fspath(fp.name)
 
         # may mutate self!
         self._ensure_mutable()
@@ -3468,7 +3459,7 @@ def open(
     exclusive_fp = False
     filename: str | bytes = ""
     if is_path(fp):
-        filename = os.path.realpath(os.fspath(fp))
+        filename = os.fspath(fp)
 
     if filename:
         fp = builtins.open(filename, "rb")

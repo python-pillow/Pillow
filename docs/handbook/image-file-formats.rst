@@ -692,6 +692,30 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
    you fail to do this, you will get errors about not being able to load the
    ``_imaging`` DLL).
 
+MPO
+^^^
+
+Pillow reads and writes Multi Picture Object (MPO) files. When first opened, it loads
+the primary image. The :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` methods may be used to read other pictures from the
+file. The pictures are zero-indexed and random access is supported.
+
+.. _mpo-saving:
+
+Saving
+~~~~~~
+
+When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+option will also be available.
+
+**append_images**
+    A list of images to append as additional pictures. Each of the
+    images in the list can be single or multiframe images.
+
+    .. versionadded:: 9.3.0
+
 MSP
 ^^^
 
@@ -1434,30 +1458,6 @@ the first sprite in the file is loaded. You can use :py:meth:`~PIL.Image.Image.s
 Note that there may be an embedded gamma of 2.2 in MIC files.
 
 To enable MIC support, you must install :pypi:`olefile`.
-
-MPO
-^^^
-
-Pillow identifies and reads Multi Picture Object (MPO) files, loading the primary
-image when first opened. The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell`
-methods may be used to read other pictures from the file. The pictures are
-zero-indexed and random access is supported.
-
-.. _mpo-saving:
-
-Saving
-~~~~~~
-
-When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
-only the first frame of a multiframe image will be saved. If the ``save_all``
-argument is present and true, then all frames will be saved, and the following
-option will also be available.
-
-**append_images**
-    A list of images to append as additional pictures. Each of the
-    images in the list can be single or multiframe images.
-
-    .. versionadded:: 9.3.0
 
 PCD
 ^^^
