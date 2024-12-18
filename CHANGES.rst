@@ -2,17 +2,12 @@
 Changelog (Pillow)
 ==================
 
-11.1.0 (unreleased)
--------------------
+11.1.0 and newer
+----------------
 
-- Corrected EMF DPI #8485
-  [radarhere]
+See GitHub Releases:
 
-- Fix IFDRational with a zero denominator #8474
-  [radarhere]
-
-- Fixed disabling a feature during install #8469
-  [radarhere]
+- https://github.com/python-pillow/Pillow/releases
 
 11.0.0 (2024-10-15)
 -------------------

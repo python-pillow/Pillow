@@ -357,7 +357,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         name = "".join([name[: 92 - len(ext)], ext])
 
         fp.write(f"Name: {name}\r\n".encode("ascii"))
-    fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode("ascii"))
+    fp.write(f"Image size (x*y): {im.size[0]}*{im.size[1]}\r\n".encode("ascii"))
     fp.write(f"File size (no of images): {frames}\r\n".encode("ascii"))
     if im.mode in ["P", "PA"]:
         fp.write(b"Lut: 1\r\n")

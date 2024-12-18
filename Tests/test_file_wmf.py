@@ -36,6 +36,13 @@ def test_load() -> None:
             assert im.load()[0, 0] == (255, 255, 255)
 
 
+def test_load_zero_inch() -> None:
+    b = BytesIO(b"\xd7\xcd\xc6\x9a\x00\x00" + b"\x00" * 10)
+    with pytest.raises(ValueError):
+        with Image.open(b):
+            pass
+
+
 @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
 def test_render() -> None:
     with open("Tests/images/drawing.emf", "rb") as fp:

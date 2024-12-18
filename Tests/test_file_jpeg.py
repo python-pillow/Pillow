@@ -541,12 +541,12 @@ class TestFileJpeg:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_qtables(self, tmp_path: Path) -> None:
+    def test_qtables(self) -> None:
         def _n_qtables_helper(n: int, test_file: str) -> None:
+            b = BytesIO()
             with Image.open(test_file) as im:
-                f = str(tmp_path / "temp.jpg")
-                im.save(f, qtables=[[n] * 64] * n)
-            with Image.open(f) as im:
+                im.save(b, "JPEG", qtables=[[n] * 64] * n)
+            with Image.open(b) as im:
                 assert len(im.quantization) == n
                 reloaded = self.roundtrip(im, qtables="keep")
                 assert im.quantization == reloaded.quantization
