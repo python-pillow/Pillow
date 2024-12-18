@@ -58,7 +58,7 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._deprecate import deprecate
 from ._typing import StrOrBytesPath
-from ._util import is_path
+from ._util import DeferredError, is_path
 from .TiffTags import TYPES
 
 if TYPE_CHECKING:
@@ -1168,6 +1168,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Open the first image in a TIFF file"""
 
         # Header
+        assert self.fp is not None
         ifh = self.fp.read(8)
         if ifh[2] == 43:
             ifh += self.fp.read(8)
@@ -1212,6 +1213,8 @@ class TiffImageFile(ImageFile.ImageFile):
             self._im = None
 
     def _seek(self, frame: int) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.fp = self._fp
 
         while len(self._frame_pos) <= frame:
@@ -1328,6 +1331,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
         # into a string in python.
+        assert self.fp is not None
         try:
             fp = hasattr(self.fp, "fileno") and self.fp.fileno()
             # flush the file descriptor, prevents error on pypy 2.4+

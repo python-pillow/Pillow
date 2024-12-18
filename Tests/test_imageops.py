@@ -249,8 +249,8 @@ def test_colorize_2color() -> None:
     # Test the colorizing function with 2-color functionality
 
     # Open test image (256px by 10px, black to white)
-    with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+    with Image.open("Tests/images/bw_gradient.png") as img:
+        im = img.convert("L")
 
     # Create image with original 2-color functionality
     im_test = ImageOps.colorize(im, "red", "green")
@@ -289,8 +289,8 @@ def test_colorize_2color_offset() -> None:
     # Test the colorizing function with 2-color functionality and offset
 
     # Open test image (256px by 10px, black to white)
-    with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+    with Image.open("Tests/images/bw_gradient.png") as img:
+        im = img.convert("L")
 
     # Create image with original 2-color functionality with offsets
     im_test = ImageOps.colorize(
@@ -331,8 +331,8 @@ def test_colorize_3color_offset() -> None:
     # Test the colorizing function with 3-color functionality and offset
 
     # Open test image (256px by 10px, black to white)
-    with Image.open("Tests/images/bw_gradient.png") as im:
-        im = im.convert("L")
+    with Image.open("Tests/images/bw_gradient.png") as img:
+        im = img.convert("L")
 
     # Create image with new three color functionality with offsets
     im_test = ImageOps.colorize(
@@ -428,6 +428,7 @@ def test_exif_transpose() -> None:
                     check(orientation_im)
 
     # Orientation from "XML:com.adobe.xmp" info key
+    im: Image.Image
     for suffix in ("", "_exiftool"):
         with Image.open("Tests/images/xmp_tags_orientation" + suffix + ".png") as im:
             assert im.getexif()[0x0112] == 3
@@ -442,10 +443,10 @@ def test_exif_transpose() -> None:
     # Orientation from "Raw profile type exif" info key
     # This test image has been manually hexedited from exif_imagemagick.png
     # to have a different orientation
-    with Image.open("Tests/images/exif_imagemagick_orientation.png") as im:
-        assert im.getexif()[0x0112] == 3
+    with Image.open("Tests/images/exif_imagemagick_orientation.png") as img:
+        assert img.getexif()[0x0112] == 3
 
-        transposed_im = ImageOps.exif_transpose(im)
+        transposed_im = ImageOps.exif_transpose(img)
         assert transposed_im is not None
         assert 0x0112 not in transposed_im.getexif()
 
