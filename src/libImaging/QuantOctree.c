@@ -28,7 +28,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "ImagingUtils.h"
+#include "Imaging.h"
 #include "QuantOctree.h"
 
 typedef struct _ColorBucket {
@@ -48,8 +48,6 @@ typedef struct _ColorCube {
     unsigned long size;
     ColorBucket buckets;
 } *ColorCube;
-
-#define MAX(a, b) (a) > (b) ? (a) : (b)
 
 static ColorCube
 new_color_cube(int r, int g, int b, int a) {
