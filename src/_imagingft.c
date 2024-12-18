@@ -529,7 +529,7 @@ font_getlength(FontObject *self, PyObject *args) {
     int horizontal_dir;           /* is primary axis horizontal? */
     int mask = 0;                 /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0;                /* is FT_LOAD_COLOR enabled? */
-    const char *mode = NULL;
+    const char *mode_name = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     PyObject *features = Py_None;
@@ -538,15 +538,16 @@ font_getlength(FontObject *self, PyObject *args) {
     /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
-            args, "O|zzOz:getlength", &string, &mode, &dir, &features, &lang
+            args, "O|zzOz:getlength", &string, &mode_name, &dir, &features, &lang
         )) {
         return NULL;
     }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
 
-    mask = mode && strcmp(mode, "1") == 0;
-    color = mode && strcmp(mode, "RGBA") == 0;
+    const ModeID mode = findModeID(mode_name);
+    mask = mode == IMAGING_MODE_1;
+    color = mode == IMAGING_MODE_RGBA;
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
@@ -758,7 +759,7 @@ font_getsize(FontObject *self, PyObject *args) {
     int horizontal_dir;           /* is primary axis horizontal? */
     int mask = 0;                 /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0;                /* is FT_LOAD_COLOR enabled? */
-    const char *mode = NULL;
+    const char *mode_name = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     const char *anchor = NULL;
@@ -768,15 +769,23 @@ font_getsize(FontObject *self, PyObject *args) {
     /* calculate size and bearing for a given string */
 
     if (!PyArg_ParseTuple(
-            args, "O|zzOzz:getsize", &string, &mode, &dir, &features, &lang, &anchor
+            args,
+            "O|zzOzz:getsize",
+            &string,
+            &mode_name,
+            &dir,
+            &features,
+            &lang,
+            &anchor
         )) {
         return NULL;
     }
 
     horizontal_dir = dir && strcmp(dir, "ttb") == 0 ? 0 : 1;
 
-    mask = mode && strcmp(mode, "1") == 0;
-    color = mode && strcmp(mode, "RGBA") == 0;
+    const ModeID mode = findModeID(mode_name);
+    mask = mode == IMAGING_MODE_1;
+    color = mode == IMAGING_MODE_RGBA;
 
     count = text_layout(string, self, dir, features, lang, &glyph_info, mask, color);
     if (PyErr_Occurred()) {
@@ -842,7 +851,7 @@ font_render(FontObject *self, PyObject *args) {
     float stroke_width = 0;
     PY_LONG_LONG foreground_ink_long = 0;
     unsigned int foreground_ink;
-    const char *mode = NULL;
+    const char *mode_name = NULL;
     const char *dir = NULL;
     const char *lang = NULL;
     const char *anchor = NULL;
@@ -862,7 +871,7 @@ font_render(FontObject *self, PyObject *args) {
             "OO|zzOzfzLffO:render",
             &string,
             &fill,
-            &mode,
+            &mode_name,
             &dir,
             &features,
             &lang,
@@ -875,8 +884,9 @@ font_render(FontObject *self, PyObject *args) {
         return NULL;
     }
 
-    mask = mode && strcmp(mode, "1") == 0;
-    color = mode && strcmp(mode, "RGBA") == 0;
+    const ModeID mode = findModeID(mode_name);
+    mask = mode == IMAGING_MODE_1;
+    color = mode == IMAGING_MODE_RGBA;
 
     foreground_ink = foreground_ink_long;
 
