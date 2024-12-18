@@ -1914,7 +1914,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 if not getattr(Image.core, "libtiff_support_custom_tags", False):
                     continue
 
-                if tag in ifd.tagtype:
+                if tag in TiffTags.TAGS_V2_GROUPS:
+                    types[tag] = TiffTags.LONG8
+                elif tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
                 elif not (isinstance(value, (int, float, str, bytes))):
                     continue
