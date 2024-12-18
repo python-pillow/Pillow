@@ -90,6 +90,9 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             # get units per inch
             inch = word(s, 14)
+            if inch == 0:
+                msg = "Invalid inch"
+                raise ValueError(msg)
             self._inch: tuple[float, float] = inch, inch
 
             # get bounding box
