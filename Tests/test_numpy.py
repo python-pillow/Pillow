@@ -264,4 +264,6 @@ def test_no_resource_warning_for_numpy_array() -> None:
     with Image.open(test_file) as im:
         # Act/Assert
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             array(im)

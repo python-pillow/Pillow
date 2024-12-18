@@ -52,4 +52,6 @@ def test_image(mode: str) -> None:
 
 def test_closed_file() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         ImageQt.ImageQt("Tests/images/hopper.gif")

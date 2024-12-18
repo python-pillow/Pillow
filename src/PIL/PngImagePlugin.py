@@ -523,7 +523,7 @@ class PngStream(ChunkStream):
 
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
-        raw_vals = struct.unpack(">%dI" % (len(s) // 4), s)
+        raw_vals = struct.unpack(f">{len(s) // 4}I", s)
         self.im_info["chromaticity"] = tuple(elt / 100000.0 for elt in raw_vals)
         return s
 

@@ -19,7 +19,7 @@ Example: Parse an image
 
     from PIL import ImageFile
 
-    fp = open("hopper.pgm", "rb")
+    fp = open("hopper.ppm", "rb")
 
     p = ImageFile.Parser()
 

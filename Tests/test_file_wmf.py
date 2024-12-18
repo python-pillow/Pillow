@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 from typing import IO
 
@@ -34,6 +35,13 @@ def test_load() -> None:
             assert im.load()[0, 0] == (255, 255, 255)
 
 
+def test_load_zero_inch() -> None:
+    b = BytesIO(b"\xd7\xcd\xc6\x9a\x00\x00" + b"\x00" * 10)
+    with pytest.raises(ValueError):
+        with Image.open(b):
+            pass
+
+
 class TestHandler(ImageFile.StubHandler):
     methodCalled = False
 
@@ -64,6 +72,12 @@ def test_register_handler(tmp_path: Path) -> None:
 def test_load_float_dpi() -> None:
     with Image.open("Tests/images/drawing.emf") as im:
         assert im.info["dpi"] == 1423.7668161434979
+
+    with open("Tests/images/drawing.emf", "rb") as fp:
+        data = fp.read()
+    b = BytesIO(data[:8] + b"\x06\xFA" + data[10:])
+    with Image.open(b) as im:
+        assert im.info["dpi"][0] == 2540
 
 
 def test_load_set_dpi() -> None:
