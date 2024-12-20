@@ -159,7 +159,7 @@ class FliImageFile(ImageFile.ImageFile):
         framesize = i32(s)
 
         self.decodermaxblock = framesize
-        self.tile = [ImageFile._Tile("fli", (0, 0) + self.size, self.__offset, None)]
+        self.tile = [ImageFile._Tile("fli", (0, 0) + self.size, self.__offset)]
 
         self.__offset += framesize
 
