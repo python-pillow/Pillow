@@ -59,6 +59,7 @@ Run ``build_prepare.py`` to configure the build::
                             build architecture (default: same as host Python)
       --nmake               build dependencies using NMake instead of Ninja
       --no-imagequant       skip GPL-licensed optional dependency libimagequant
+      --no-avif             skip optional dependency libavif
       --no-fribidi, --no-raqm
                             skip LGPL-licensed optional dependency FriBiDi
 

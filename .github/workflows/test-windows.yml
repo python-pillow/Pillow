@@ -37,7 +37,7 @@ jobs:
       matrix:
         python-version: ["pypy3.10", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     name: Python ${{ matrix.python-version }}
 
@@ -138,6 +138,10 @@ jobs:
     - name: Build dependencies / libpng
       if: steps.build-cache.outputs.cache-hit != 'true'
       run: "& winbuild\\build\\build_dep_libpng.cmd"
+
+    - name: Build dependencies / libavif
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      run: "& winbuild\\build\\build_dep_libavif.cmd"
 
     # for FreeType WOFF2 font support
     - name: Build dependencies / brotli
