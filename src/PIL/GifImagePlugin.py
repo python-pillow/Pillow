@@ -1181,6 +1181,10 @@ def getdata(
     return fp.data
 
 
+def _supported_modes():
+    return ["RGB", "RGBA", "P", "I", "F", "LA", "L", "1"]
+
+
 # --------------------------------------------------------------------
 # Registry
 
