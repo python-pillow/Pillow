@@ -1565,7 +1565,7 @@ class Image:
                 for subifd_offset in subifd_offsets:
                     ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
-        if ifd1 and ifd1.get(513):
+        if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
             assert exif._info is not None
             ifds.append((ifd1, exif._info.next))
 
@@ -1577,11 +1577,11 @@ class Image:
 
             fp = self.fp
             if ifd is not None:
-                thumbnail_offset = ifd.get(513)
+                thumbnail_offset = ifd.get(ExifTags.Base.JpegIFOffset)
                 if thumbnail_offset is not None:
                     thumbnail_offset += getattr(self, "_exif_offset", 0)
                     self.fp.seek(thumbnail_offset)
-                    data = self.fp.read(ifd.get(514))
+                    data = self.fp.read(ifd.get(ExifTags.Base.JpegIFByteCount))
                     fp = io.BytesIO(data)
 
             with open(fp) as im:
