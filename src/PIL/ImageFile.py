@@ -263,7 +263,7 @@ class ImageFile(Image.Image):
                     self.tile, lambda tile: (tile[0], tile[1], tile[3])
                 )
             ]
-            for decoder_name, extents, offset, args in self.tile:
+            for i, (decoder_name, extents, offset, args) in enumerate(self.tile):
                 seek(offset)
                 decoder = Image._getdecoder(
                     self.mode, decoder_name, args, self.decoderconfig
@@ -276,8 +276,13 @@ class ImageFile(Image.Image):
                     else:
                         b = prefix
                         while True:
+                            read_bytes = self.decodermaxblock
+                            if i + 1 < len(self.tile):
+                                next_offset = self.tile[i + 1].offset
+                                if next_offset > offset:
+                                    read_bytes = next_offset - offset
                             try:
-                                s = read(self.decodermaxblock)
+                                s = read(read_bytes)
                             except (IndexError, struct.error) as e:
                                 # truncated png/gif
                                 if LOAD_TRUNCATED_IMAGES:
