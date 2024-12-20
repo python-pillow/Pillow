@@ -117,7 +117,7 @@ V = {
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.16",
     "LIBPNG": "1.6.44",
-    "LIBWEBP": "1.4.0",
+    "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
