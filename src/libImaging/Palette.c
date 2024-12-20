@@ -18,8 +18,6 @@
 
 #include "Imaging.h"
 
-#include <math.h>
-
 ImagingPalette
 ImagingPaletteNew(const char *mode) {
     /* Create a palette object */

@@ -34,9 +34,6 @@
 
 #include "Imaging.h"
 
-#define MAX(a, b) (a) > (b) ? (a) : (b)
-#define MIN(a, b) (a) < (b) ? (a) : (b)
-
 #define CLIP16(v) ((v) <= 0 ? 0 : (v) >= 65535 ? 65535 : (v))
 
 /* ITU-R Recommendation 601-2 (assuming nonlinear RGB) */
@@ -1672,15 +1669,9 @@ convert(
     }
 
     if (!convert) {
-#ifdef notdef
-        return (Imaging)ImagingError_ValueError("conversion not supported");
-#else
-        static char buf[100];
-        snprintf(
-            buf, 100, "conversion from %.10s to %.10s not supported", imIn->mode, mode
+        return (Imaging)PyErr_Format(
+            PyExc_ValueError, "conversion from %s to %s not supported", imIn->mode, mode
         );
-        return (Imaging)ImagingError_ValueError(buf);
-#endif
     }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);
@@ -1749,15 +1740,12 @@ ImagingConvertTransparent(Imaging imIn, const char *mode, int r, int g, int b) {
         }
         g = b = r;
     } else {
-        static char buf[100];
-        snprintf(
-            buf,
-            100,
-            "conversion from %.10s to %.10s not supported in convert_transparent",
+        return (Imaging)PyErr_Format(
+            PyExc_ValueError,
+            "conversion from %s to %s not supported in convert_transparent",
             imIn->mode,
             mode
         );
-        return (Imaging)ImagingError_ValueError(buf);
     }
 
     imOut = ImagingNew2Dirty(mode, imOut, imIn);

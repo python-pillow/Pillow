@@ -14,6 +14,9 @@
 #define MASK_UINT32_CHANNEL_3 0xff000000
 #endif
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 #define SHIFTFORDIV255(a) ((((a) >> 8) + a) >> 8)
 
 /* like (a * b + 127) / 255), but much faster on most platforms */

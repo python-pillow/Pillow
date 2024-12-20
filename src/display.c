@@ -22,9 +22,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
 
 /* -------------------------------------------------------------------- */
@@ -33,12 +30,6 @@
 #ifdef _WIN32
 
 #include "libImaging/ImDib.h"
-
-#if SIZEOF_VOID_P == 8
-#define F_HANDLE "K"
-#else
-#define F_HANDLE "k"
-#endif
 
 typedef struct {
     PyObject_HEAD ImagingDIB dib;
@@ -85,8 +76,7 @@ _expose(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingExposeDIB(display->dib, hdc);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -112,8 +102,7 @@ _draw(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingDrawDIB(display->dib, hdc, dst, src);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 extern Imaging
@@ -143,8 +132,7 @@ _paste(ImagingDisplayObject *display, PyObject *args) {
 
     ImagingPasteDIB(display->dib, im, xy);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -190,8 +178,7 @@ _releasedc(ImagingDisplayObject *display, PyObject *args) {
 
     ReleaseDC(window, dc);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -211,8 +198,7 @@ _frombytes(ImagingDisplayObject *display, PyObject *args) {
     memcpy(display->dib->bits, buffer.buf, buffer.len);
 
     PyBuffer_Release(&buffer);
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -707,8 +693,7 @@ PyImaging_EventLoopWin32(PyObject *self, PyObject *args) {
     }
     Py_END_ALLOW_THREADS
 
-        Py_INCREF(Py_None);
-    return Py_None;
+        Py_RETURN_NONE;
 }
 
 /* -------------------------------------------------------------------- */
