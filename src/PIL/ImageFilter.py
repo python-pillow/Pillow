@@ -553,7 +553,7 @@ class Color3DLUT(MultibandFilter):
         ch_out = channels or ch_in
         size_1d, size_2d, size_3d = self.size
 
-        table = [0] * (size_1d * size_2d * size_3d * ch_out)
+        table: list[float] = [0] * (size_1d * size_2d * size_3d * ch_out)
         idx_in = 0
         idx_out = 0
         for b in range(size_3d):
