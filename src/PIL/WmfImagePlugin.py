@@ -94,6 +94,9 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             # get units per inch
             self._inch = word(s, 14)
+            if self._inch == 0:
+                msg = "Invalid inch"
+                raise ValueError(msg)
 
             # get bounding box
             x0 = short(s, 6)

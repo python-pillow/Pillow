@@ -123,7 +123,7 @@ class ImageFile(Image.Image):
         self.custom_mimetype: str | None = None
 
         self.tile: list[_Tile] = []
-        """ A list of tile descriptors, or ``None`` """
+        """ A list of tile descriptors """
 
         self.readonly = 1  # until we know better
 
@@ -217,7 +217,7 @@ class ImageFile(Image.Image):
                 for subifd_offset in subifd_offsets:
                     ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
-        if ifd1 and ifd1.get(513):
+        if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
             assert exif._info is not None
             ifds.append((ifd1, exif._info.next))
 
@@ -230,12 +230,12 @@ class ImageFile(Image.Image):
 
             fp = self.fp
             if ifd is not None:
-                thumbnail_offset = ifd.get(513)
+                thumbnail_offset = ifd.get(ExifTags.Base.JpegIFOffset)
                 if thumbnail_offset is not None:
                     thumbnail_offset += getattr(self, "_exif_offset", 0)
                     self.fp.seek(thumbnail_offset)
 
-                    length = ifd.get(514)
+                    length = ifd.get(ExifTags.Base.JpegIFByteCount)
                     assert isinstance(length, int)
                     data = self.fp.read(length)
                     fp = io.BytesIO(data)

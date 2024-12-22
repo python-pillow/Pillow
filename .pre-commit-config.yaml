@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.2
+    rev: v0.8.1
     hooks:
       - id: ruff
         args: [--exit-non-zero-on-fix]
@@ -11,7 +11,7 @@ repos:
       - id: black
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
+    rev: 1.8.0
     hooks:
     - id: bandit
       args: [--severity-level=high]
@@ -24,7 +24,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v19.1.3
+    rev: v19.1.4
     hooks:
       - id: clang-format
         types: [c]
@@ -50,7 +50,7 @@ repos:
         exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.4
+    rev: 0.30.0
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
@@ -67,7 +67,7 @@ repos:
       - id: pyproject-fmt
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.22
+    rev: v0.23
     hooks:
       - id: validate-pyproject
         additional_dependencies: [trove-classifiers>=2024.10.12]

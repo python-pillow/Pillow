@@ -674,13 +674,10 @@ class Image:
         )
 
     def __repr__(self) -> str:
-        return "<%s.%s image mode=%s size=%dx%d at 0x%X>" % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.mode,
-            self.size[0],
-            self.size[1],
-            id(self),
+        return (
+            f"<{self.__class__.__module__}.{self.__class__.__name__} "
+            f"image mode={self.mode} size={self.size[0]}x{self.size[1]} "
+            f"at 0x{id(self):X}>"
         )
 
     def _repr_pretty_(self, p: PrettyPrinter, cycle: bool) -> None:
@@ -689,14 +686,8 @@ class Image:
         # Same as __repr__ but without unpredictable id(self),
         # to keep Jupyter notebook `text/plain` output stable.
         p.text(
-            "<%s.%s image mode=%s size=%dx%d>"
-            % (
-                self.__class__.__module__,
-                self.__class__.__name__,
-                self.mode,
-                self.size[0],
-                self.size[1],
-            )
+            f"<{self.__class__.__module__}.{self.__class__.__name__} "
+            f"image mode={self.mode} size={self.size[0]}x{self.size[1]}>"
         )
 
     def _repr_image(self, image_format: str, **kwargs: Any) -> bytes | None:
@@ -3836,7 +3827,7 @@ class Exif(_ExifBase):
       gps_ifd = exif.get_ifd(ExifTags.IFD.GPSInfo)
       print(gps_ifd)
 
-    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.Makernote``,
+    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.MakerNote``,
     ``ExifTags.IFD.Interop`` and ``ExifTags.IFD.IFD1``.
 
     :py:mod:`~PIL.ExifTags` also has enum classes to provide names for data::
@@ -3999,11 +3990,11 @@ class Exif(_ExifBase):
                     ifd = self._get_ifd_dict(offset, tag)
                     if ifd is not None:
                         self._ifds[tag] = ifd
-            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
+            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.MakerNote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
                 tag_data = self._ifds[ExifTags.IFD.Exif][tag]
-                if tag == ExifTags.IFD.Makernote:
+                if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     if tag_data[:8] == b"FUJIFILM":
@@ -4090,7 +4081,7 @@ class Exif(_ExifBase):
             ifd = {
                 k: v
                 for (k, v) in ifd.items()
-                if k not in (ExifTags.IFD.Interop, ExifTags.IFD.Makernote)
+                if k not in (ExifTags.IFD.Interop, ExifTags.IFD.MakerNote)
             }
         return ifd
 

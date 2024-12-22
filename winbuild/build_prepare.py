@@ -7,6 +7,7 @@ import re
 import shutil
 import struct
 import subprocess
+import sys
 from typing import Any
 
 
@@ -112,27 +113,25 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "10.0.1",
-    "JPEGTURBO": "3.0.4",
+    "HARFBUZZ": "10.1.0",
+    "JPEGTURBO": "3.1.0",
     "LCMS2": "2.16",
     "LIBPNG": "1.6.44",
-    "LIBWEBP": "1.4.0",
-    "OPENJPEG": "2.5.2",
+    "LIBWEBP": "1.5.0",
+    "OPENJPEG": "2.5.3",
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
-    "ZLIB": "1.3.1",
+    "ZLIBNG": "2.2.2",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
-V["ZLIB_DOTLESS"] = V["ZLIB"].replace(".", "")
 
 
 # dependencies, listed in order of compilation
 DEPS: dict[str, dict[str, Any]] = {
     "libjpeg": {
-        "url": f"{SF_PROJECTS}/libjpeg-turbo/files/{V['JPEGTURBO']}/FILENAME/download",
+        "url": f"https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/{V['JPEGTURBO']}/libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
         "filename": f"libjpeg-turbo-{V['JPEGTURBO']}.tar.gz",
-        "dir": f"libjpeg-turbo-{V['JPEGTURBO']}",
         "license": ["README.ijg", "LICENSE.md"],
         "license_pattern": (
             "(LEGAL ISSUES\n============\n\n.+?)\n\nREFERENCES\n=========="
@@ -155,28 +154,30 @@ DEPS: dict[str, dict[str, Any]] = {
             cmd_copy("cjpeg-static.exe", "cjpeg.exe"),
             cmd_copy("djpeg-static.exe", "djpeg.exe"),
         ],
-        "headers": ["j*.h"],
+        "headers": ["jconfig.h", r"src\j*.h"],
         "libs": ["libjpeg.lib"],
         "bins": ["cjpeg.exe", "djpeg.exe"],
     },
     "zlib": {
-        "url": "https://zlib.net/FILENAME",
-        "filename": f"zlib{V['ZLIB_DOTLESS']}.zip",
-        "dir": f"zlib-{V['ZLIB']}",
-        "license": "README",
-        "license_pattern": "Copyright notice:\n\n(.+)$",
+        "url": f"https://github.com/zlib-ng/zlib-ng/archive/refs/tags/{V['ZLIBNG']}.tar.gz",
+        "filename": f"zlib-ng-{V['ZLIBNG']}.tar.gz",
+        "license": "LICENSE.md",
+        "patch": {
+            r"CMakeLists.txt": {
+                "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlibstatic${{SUFFIX}})": "set_target_properties(zlib PROPERTIES OUTPUT_NAME zlib)",  # noqa: E501
+            },
+        },
         "build": [
-            cmd_nmake(r"win32\Makefile.msc", "clean"),
-            cmd_nmake(r"win32\Makefile.msc", "zlib.lib"),
-            cmd_copy("zlib.lib", "z.lib"),
+            *cmds_cmake(
+                "zlib", "-DBUILD_SHARED_LIBS:BOOL=OFF", "-DZLIB_COMPAT:BOOL=ON"
+            ),
         ],
         "headers": [r"z*.h"],
-        "libs": [r"*.lib"],
+        "libs": [r"zlib.lib"],
     },
     "xz": {
         "url": f"https://github.com/tukaani-project/xz/releases/download/v{V['XZ']}/FILENAME",
         "filename": f"xz-{V['XZ']}.tar.gz",
-        "dir": f"xz-{V['XZ']}",
         "license": "COPYING",
         "build": [
             *cmds_cmake("liblzma", "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -189,7 +190,6 @@ DEPS: dict[str, dict[str, Any]] = {
     "libwebp": {
         "url": "http://downloads.webmproject.org/releases/webp/FILENAME",
         "filename": f"libwebp-{V['LIBWEBP']}.tar.gz",
-        "dir": f"libwebp-{V['LIBWEBP']}",
         "license": "COPYING",
         "patch": {
             r"src\enc\picture_csp_enc.c": {
@@ -211,7 +211,6 @@ DEPS: dict[str, dict[str, Any]] = {
     "libtiff": {
         "url": "https://download.osgeo.org/libtiff/FILENAME",
         "filename": f"tiff-{V['TIFF']}.tar.gz",
-        "dir": f"tiff-{V['TIFF']}",
         "license": "LICENSE.md",
         "patch": {
             r"libtiff\tif_lzma.c": {
@@ -244,7 +243,6 @@ DEPS: dict[str, dict[str, Any]] = {
         "url": f"{SF_PROJECTS}/libpng/files/libpng{V['LIBPNG_XY']}/{V['LIBPNG']}/"
         f"lpng{V['LIBPNG_DOTLESS']}.zip/download",
         "filename": f"lpng{V['LIBPNG_DOTLESS']}.zip",
-        "dir": f"lpng{V['LIBPNG_DOTLESS']}",
         "license": "LICENSE",
         "build": [
             *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
@@ -258,7 +256,6 @@ DEPS: dict[str, dict[str, Any]] = {
     "brotli": {
         "url": f"https://github.com/google/brotli/archive/refs/tags/v{V['BROTLI']}.tar.gz",
         "filename": f"brotli-{V['BROTLI']}.tar.gz",
-        "dir": f"brotli-{V['BROTLI']}",
         "license": "LICENSE",
         "build": [
             *cmds_cmake(("brotlicommon", "brotlidec"), "-DBUILD_SHARED_LIBS:BOOL=OFF"),
@@ -269,7 +266,6 @@ DEPS: dict[str, dict[str, Any]] = {
     "freetype": {
         "url": "https://download.savannah.gnu.org/releases/freetype/FILENAME",
         "filename": f"freetype-{V['FREETYPE']}.tar.gz",
-        "dir": f"freetype-{V['FREETYPE']}",
         "license": ["LICENSE.TXT", r"docs\FTL.TXT", r"docs\GPLv2.TXT"],
         "patch": {
             r"builds\windows\vc2010\freetype.vcxproj": {
@@ -304,7 +300,6 @@ DEPS: dict[str, dict[str, Any]] = {
     "lcms2": {
         "url": f"{SF_PROJECTS}/lcms/files/lcms/{V['LCMS2']}/FILENAME/download",
         "filename": f"lcms2-{V['LCMS2']}.tar.gz",
-        "dir": f"lcms2-{V['LCMS2']}",
         "license": "LICENSE",
         "patch": {
             r"Projects\VC2022\lcms2_static\lcms2_static.vcxproj": {
@@ -330,7 +325,6 @@ DEPS: dict[str, dict[str, Any]] = {
     "openjpeg": {
         "url": f"https://github.com/uclouvain/openjpeg/archive/v{V['OPENJPEG']}.tar.gz",
         "filename": f"openjpeg-{V['OPENJPEG']}.tar.gz",
-        "dir": f"openjpeg-{V['OPENJPEG']}",
         "license": "LICENSE",
         "build": [
             *cmds_cmake(
@@ -345,7 +339,6 @@ DEPS: dict[str, dict[str, Any]] = {
         # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
         "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
         "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
-        "dir": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab",
         "license": "COPYRIGHT",
         "patch": {
             "CMakeLists.txt": {
@@ -365,7 +358,6 @@ DEPS: dict[str, dict[str, Any]] = {
     "harfbuzz": {
         "url": f"https://github.com/harfbuzz/harfbuzz/archive/{V['HARFBUZZ']}.zip",
         "filename": f"harfbuzz-{V['HARFBUZZ']}.zip",
-        "dir": f"harfbuzz-{V['HARFBUZZ']}",
         "license": "COPYING",
         "build": [
             *cmds_cmake(
@@ -380,7 +372,6 @@ DEPS: dict[str, dict[str, Any]] = {
     "fribidi": {
         "url": f"https://github.com/fribidi/fribidi/archive/v{V['FRIBIDI']}.zip",
         "filename": f"fribidi-{V['FRIBIDI']}.zip",
-        "dir": f"fribidi-{V['FRIBIDI']}",
         "license": "COPYING",
         "build": [
             cmd_copy(r"COPYING", rf"{{bin_dir}}\fribidi-{V['FRIBIDI']}-COPYING"),
@@ -517,7 +508,10 @@ def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
                 if sources_dir_abs != member_prefix:
                     msg = "Attempted Path Traversal in Tar File"
                     raise RuntimeError(msg)
-            tgz.extractall(sources_dir)
+            if sys.version_info >= (3, 12):
+                tgz.extractall(sources_dir, filter="data")
+            else:
+                tgz.extractall(sources_dir)
     else:
         msg = "Unknown archive type: " + filename
         raise RuntimeError(msg)
@@ -760,6 +754,8 @@ def main() -> None:
     }
 
     for k, v in DEPS.items():
+        if "dir" not in v:
+            v["dir"] = re.sub(r"\.(tar\.gz|zip)", "", v["filename"])
         prefs[f"dir_{k}"] = os.path.join(sources_dir, v["dir"])
 
     print()

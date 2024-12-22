@@ -58,7 +58,7 @@ Many of Pillow's features require external libraries:
 * **openjpeg** provides JPEG 2000 functionality.
 
   * Pillow has been tested with openjpeg **2.0.0**, **2.1.0**, **2.3.1**,
-    **2.4.0**, **2.5.0** and **2.5.2**.
+    **2.4.0**, **2.5.0**, **2.5.2** and **2.5.3**.
   * Pillow does **not** support the earlier **1.5** series which ships
     with Debian Jessie.
 
@@ -148,13 +148,7 @@ Many of Pillow's features require external libraries:
     The easiest way to install external libraries is via `Homebrew
     <https://brew.sh/>`_. After you install Homebrew, run::
 
-        brew install libjpeg libtiff little-cms2 openjpeg webp
-
-    To install libraqm on macOS use Homebrew to install its dependencies::
-
-        brew install freetype harfbuzz fribidi
-
-    Then see ``depends/install_raqm_cmake.sh`` to install libraqm.
+        brew install libjpeg libraqm libtiff little-cms2 openjpeg webp
 
 .. tab:: Windows
 
