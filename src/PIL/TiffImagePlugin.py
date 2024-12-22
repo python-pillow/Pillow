@@ -1168,6 +1168,7 @@ class TiffImageFile(ImageFile.ImageFile):
         """Open the first image in a TIFF file"""
 
         # Header
+        assert self.fp is not None
         ifh = self.fp.read(8)
         if ifh[2] == 43:
             ifh += self.fp.read(8)
@@ -1328,6 +1329,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # To be nice on memory footprint, if there's a
         # file descriptor, use that instead of reading
         # into a string in python.
+        assert self.fp is not None
         try:
             fp = hasattr(self.fp, "fileno") and self.fp.fileno()
             # flush the file descriptor, prevents error on pypy 2.4+
