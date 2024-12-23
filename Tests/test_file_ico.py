@@ -24,7 +24,9 @@ def test_sanity() -> None:
 
 def test_load() -> None:
     with Image.open(TEST_ICO_FILE) as im:
-        assert im.load()[0, 0] == (1, 1, 9, 255)
+        px = im.load()
+        assert px is not None
+        assert px[0, 0] == (1, 1, 9, 255)
 
 
 def test_mask() -> None:

@@ -63,6 +63,7 @@ def test_sanity() -> None:
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
+        assert px is not None
         assert px[0, 0] == (0, 0, 0)
         assert im.mode == "RGB"
         assert im.size == (640, 480)
