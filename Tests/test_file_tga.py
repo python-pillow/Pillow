@@ -72,6 +72,7 @@ def test_palette_depth_8(tmp_path: Path) -> None:
 
 def test_palette_depth_16(tmp_path: Path) -> None:
     with Image.open("Tests/images/p_16.tga") as im:
+        assert im.palette is not None
         assert im.palette.mode == "RGBA"
         assert_image_equal_tofile(im.convert("RGBA"), "Tests/images/p_16.png")
 

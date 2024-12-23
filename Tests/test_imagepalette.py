@@ -17,6 +17,7 @@ def test_sanity() -> None:
 def test_reload() -> None:
     with Image.open("Tests/images/hopper.gif") as im:
         original = im.copy()
+        assert im.palette is not None
         im.palette.dirty = 1
         assert_image_equal(im.convert("RGB"), original.convert("RGB"))
 
