@@ -7,7 +7,7 @@ version=1.1.1
 
 pushd libavif-$version
 
-if uname -s | grep -q Darwin; then
+if [ $(uname) == "Darwin" ]; then
     PREFIX=$(brew --prefix)
 else
     PREFIX=/usr
@@ -49,15 +49,16 @@ if [ "$HAS_ENCODER" != 1 ] || [ "$HAS_DECODER" != 1 ]; then
     LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_AOM=LOCAL)
 fi
 
-cmake -G Ninja -S . -B build \
+cmake \
     -DCMAKE_INSTALL_PREFIX=$PREFIX \
+    -DCMAKE_INSTALL_NAME_DIR=$PREFIX/lib \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_MACOSX_RPATH=OFF \
     -DAVIF_LIBSHARPYUV=LOCAL \
     -DAVIF_LIBYUV=LOCAL \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_NAME_DIR=$PREFIX/lib \
-    -DCMAKE_MACOSX_RPATH=OFF \
-    "${LIBAVIF_CMAKE_FLAGS[@]}"
+    "${LIBAVIF_CMAKE_FLAGS[@]}" \
+    .
 
-sudo ninja -C build install
+sudo make install
 
 popd

@@ -78,34 +78,39 @@ exc_type_for_avif_result(avifResult result) {
 
 static uint8_t
 irot_imir_to_exif_orientation(const avifImage *image) {
+    uint8_t axis;
 #if AVIF_VERSION_MAJOR >= 1
-    uint8_t axis = image->imir.axis;
+    axis = image->imir.axis;
 #else
-    uint8_t axis = image->imir.mode;
+    axis = image->imir.mode;
 #endif
     uint8_t angle = image->irot.angle;
-    int irot = !!(image->transformFlags & AVIF_TRANSFORM_IROT);
-    int imir = !!(image->transformFlags & AVIF_TRANSFORM_IMIR);
-    if (irot && angle == 1) {
-        if (imir) {
-            return axis ? 7   // 90 degrees anti-clockwise then swap left and right.
-                        : 5;  // 90 degrees anti-clockwise then swap top and bottom.
+    int imir = image->transformFlags & AVIF_TRANSFORM_IMIR;
+    int irot = image->transformFlags & AVIF_TRANSFORM_IROT;
+    if (irot) {
+        if (angle == 1) {
+            if (imir) {
+                return axis ? 7   // 90 degrees anti-clockwise then swap left and right.
+                            : 5;  // 90 degrees anti-clockwise then swap top and bottom.
+            }
+            return 6;  // 90 degrees anti-clockwise.
         }
-        return 6;  // 90 degrees anti-clockwise.
-    }
-    if (irot && angle == 2) {
-        if (imir) {
-            return axis ? 4   // 180 degrees anti-clockwise then swap left and right.
-                        : 2;  // 180 degrees anti-clockwise then swap top and bottom.
+        if (angle == 2) {
+            if (imir) {
+                return axis
+                           ? 4   // 180 degrees anti-clockwise then swap left and right.
+                           : 2;  // 180 degrees anti-clockwise then swap top and bottom.
+            }
+            return 3;  // 180 degrees anti-clockwise.
         }
-        return 3;  // 180 degrees anti-clockwise.
-    }
-    if (irot && angle == 3) {
-        if (imir) {
-            return axis ? 5   // 270 degrees anti-clockwise then swap left and right.
-                        : 7;  // 270 degrees anti-clockwise then swap top and bottom.
+        if (angle == 3) {
+            if (imir) {
+                return axis
+                           ? 5   // 270 degrees anti-clockwise then swap left and right.
+                           : 7;  // 270 degrees anti-clockwise then swap top and bottom.
+            }
+            return 8;  // 270 degrees anti-clockwise.
         }
-        return 8;  // 270 degrees anti-clockwise.
     }
     if (imir) {
         return axis ? 2   // Swap left and right.
@@ -116,18 +121,13 @@ irot_imir_to_exif_orientation(const avifImage *image) {
 
 static void
 exif_orientation_to_irot_imir(avifImage *image, int orientation) {
-    const avifTransformFlags otherFlags =
-        image->transformFlags & ~(AVIF_TRANSFORM_IROT | AVIF_TRANSFORM_IMIR);
-
-    //
     // Mapping from Exif orientation as defined in JEITA CP-3451C section 4.6.4.A
     // Orientation to irot and imir boxes as defined in HEIF ISO/IEC 28002-12:2021
     // sections 6.5.10 and 6.5.12.
     switch (orientation) {
         case 2:  // The 0th row is at the visual top of the image, and the 0th column is
                  // the visual right-hand side.
-            image->transformFlags = otherFlags | AVIF_TRANSFORM_IMIR;
-            image->irot.angle = 0;  // ignored
+            image->transformFlags |= AVIF_TRANSFORM_IMIR;
 #if AVIF_VERSION_MAJOR >= 1
             image->imir.axis = 1;
 #else
@@ -136,67 +136,34 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
             break;
         case 3:  // The 0th row is at the visual bottom of the image, and the 0th column
                  // is the visual right-hand side.
-            image->transformFlags = otherFlags | AVIF_TRANSFORM_IROT;
+            image->transformFlags |= AVIF_TRANSFORM_IROT;
             image->irot.angle = 2;
-#if AVIF_VERSION_MAJOR >= 1
-            image->imir.axis = 0;  // ignored
-#else
-            image->imir.mode = 0;  // ignored
-#endif
             break;
         case 4:  // The 0th row is at the visual bottom of the image, and the 0th column
                  // is the visual left-hand side.
-            image->transformFlags = otherFlags | AVIF_TRANSFORM_IMIR;
-            image->irot.angle = 0;  // ignored
-#if AVIF_VERSION_MAJOR >= 1
-            image->imir.axis = 0;
-#else
-            image->imir.mode = 0;
-#endif
+            image->transformFlags |= AVIF_TRANSFORM_IMIR;
             break;
         case 5:  // The 0th row is the visual left-hand side of the image, and the 0th
                  // column is the visual top.
-            image->transformFlags =
-                otherFlags | AVIF_TRANSFORM_IROT | AVIF_TRANSFORM_IMIR;
+            image->transformFlags |= AVIF_TRANSFORM_IROT | AVIF_TRANSFORM_IMIR;
             image->irot.angle = 1;  // applied before imir according to MIAF spec
                                     // ISO/IEC 28002-12:2021 - section 7.3.6.7
-#if AVIF_VERSION_MAJOR >= 1
-            image->imir.axis = 0;
-#else
-            image->imir.mode = 0;
-#endif
             break;
         case 6:  // The 0th row is the visual right-hand side of the image, and the 0th
                  // column is the visual top.
-            image->transformFlags = otherFlags | AVIF_TRANSFORM_IROT;
+            image->transformFlags |= AVIF_TRANSFORM_IROT;
             image->irot.angle = 3;
-#if AVIF_VERSION_MAJOR >= 1
-            image->imir.axis = 0;  // ignored
-#else
-            image->imir.mode = 0;  // ignored
-#endif
             break;
         case 7:  // The 0th row is the visual right-hand side of the image, and the 0th
                  // column is the visual bottom.
-            image->transformFlags =
-                otherFlags | AVIF_TRANSFORM_IROT | AVIF_TRANSFORM_IMIR;
+            image->transformFlags |= AVIF_TRANSFORM_IROT | AVIF_TRANSFORM_IMIR;
             image->irot.angle = 3;  // applied before imir according to MIAF spec
                                     // ISO/IEC 28002-12:2021 - section 7.3.6.7
-#if AVIF_VERSION_MAJOR >= 1
-            image->imir.axis = 0;
-#else
-            image->imir.mode = 0;
-#endif
             break;
         case 8:  // The 0th row is the visual left-hand side of the image, and the 0th
                  // column is the visual bottom.
-            image->transformFlags = otherFlags | AVIF_TRANSFORM_IROT;
+            image->transformFlags |= AVIF_TRANSFORM_IROT;
             image->irot.angle = 1;
-#if AVIF_VERSION_MAJOR >= 1
-            image->imir.axis = 0;  // ignored
-#else
-            image->imir.mode = 0;  // ignored
-#endif
             break;
     }
 }
@@ -381,13 +348,8 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
 
     enc_options.tile_rows_log2 = normalize_tiles_log2(tile_rows_log2);
     enc_options.tile_cols_log2 = normalize_tiles_log2(tile_cols_log2);
-
-    if (alpha_premultiplied == Py_True) {
-        enc_options.alpha_premultiplied = AVIF_TRUE;
-    } else {
-        enc_options.alpha_premultiplied = AVIF_FALSE;
-    }
-
+    enc_options.alpha_premultiplied =
+        (alpha_premultiplied == Py_True) ? AVIF_TRUE : AVIF_FALSE;
     enc_options.autotiling = (autotiling == Py_True) ? AVIF_TRUE : AVIF_FALSE;
 
     // Create a new animation encoder and picture frame
@@ -573,9 +535,9 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
         return NULL;
     }
 
-    is_first_frame = (self->frame_index == -1);
+    is_first_frame = self->frame_index == -1;
 
-    if ((image->width != width) || (image->height != height)) {
+    if (image->width != width || image->height != height) {
         PyErr_Format(
             PyExc_ValueError,
             "Image sequence dimensions mismatch, %ux%u != %ux%u",

@@ -147,7 +147,7 @@ class TestFileAvif:
             # generated with:
             # avifdec hopper.avif hopper_avif_write.png
             assert_image_similar_tofile(
-                image, "Tests/images/avif/hopper_avif_write.png", 12.0
+                image, "Tests/images/avif/hopper_avif_write.png", 11.5
             )
 
     def _roundtrip(self, tmp_path: Path, mode: str, epsilon: float) -> None:
@@ -163,7 +163,7 @@ class TestFileAvif:
             if mode == "RGB":
                 # avifdec hopper.avif avif/hopper_avif_write.png
                 assert_image_similar_tofile(
-                    image, "Tests/images/avif/hopper_avif_write.png", 12.0
+                    image, "Tests/images/avif/hopper_avif_write.png", 6.02
                 )
 
             # This test asserts that the images are similar. If the average pixel
@@ -181,7 +181,7 @@ class TestFileAvif:
         Does it have the bits we expect?
         """
 
-        self._roundtrip(tmp_path, "RGB", 12.5)
+        self._roundtrip(tmp_path, "RGB", 8.62)
 
     def test_AvifEncoder_with_invalid_args(self) -> None:
         """
@@ -329,11 +329,11 @@ class TestFileAvif:
             exif = im.getexif()
         assert exif[274] == 3
 
-    @pytest.mark.parametrize("bytes,orientation", [(True, 1), (False, 2)])
+    @pytest.mark.parametrize("use_bytes, orientation", [(True, 1), (False, 2)])
     def test_exif_save(
         self,
         tmp_path: Path,
-        bytes: bool,
+        use_bytes: bool,
         orientation: int,
     ) -> None:
         exif = Image.Exif()
@@ -341,13 +341,24 @@ class TestFileAvif:
         exif_data = exif.tobytes()
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
-            im.save(test_file, exif=exif_data if bytes else exif)
+            im.save(test_file, exif=exif_data if use_bytes else exif)
 
         with Image.open(test_file) as reloaded:
             if orientation == 1:
                 assert "exif" not in reloaded.info
             else:
                 assert reloaded.info["exif"] == exif_data
+
+    def test_exif_without_orientation(self, tmp_path: Path):
+        exif = Image.Exif()
+        exif[272] = b"test"
+        exif_data = exif.tobytes()
+        with Image.open(TEST_AVIF_FILE) as im:
+            test_file = str(tmp_path / "temp.avif")
+            im.save(test_file, exif=exif)
+
+        with Image.open(test_file) as reloaded:
+            assert reloaded.info["exif"] == exif_data
 
     def test_exif_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
@@ -356,7 +367,7 @@ class TestFileAvif:
                 im.save(test_file, exif=b"invalid")
 
     @pytest.mark.parametrize(
-        "rot,mir,exif_orientation",
+        "rot, mir, exif_orientation",
         [
             (0, 0, 4),
             (0, 1, 2),
@@ -574,7 +585,7 @@ class TestFileAvif:
         im_png.save(buf_out, format="AVIF", quality=100)
 
         with Image.open(buf_out) as expected:
-            assert_image_similar(im_png.convert("RGBA"), expected, 1)
+            assert_image_similar(im_png.convert("RGBA"), expected, 0.17)
 
     def test_decoder_strict_flags(self) -> None:
         # This would fail if full avif strictFlags were enabled
@@ -633,10 +644,10 @@ class TestAvifAnimation:
                 assert im.n_frames == orig.n_frames
 
                 # Compare first and second-to-last frames to the original animated GIF
-                assert_image_similar(im.convert("RGB"), orig.convert("RGB"), 25.0)
+                assert_image_similar(im.convert("RGB"), orig.convert("RGB"), 2.25)
                 orig.seek(orig.n_frames - 2)
                 im.seek(im.n_frames - 2)
-                assert_image_similar(im.convert("RGB"), orig.convert("RGB"), 25.0)
+                assert_image_similar(im.convert("RGB"), orig.convert("RGB"), 2.54)
 
     def test_write_animation_RGB(self, tmp_path: Path) -> None:
         """
@@ -649,11 +660,11 @@ class TestAvifAnimation:
                 assert im.n_frames == 4
 
                 # Compare first frame to original
-                assert_image_similar(im, frame1.convert("RGBA"), 25.0)
+                assert_image_similar(im, frame1.convert("RGBA"), 2.7)
 
                 # Compare second frame to original
                 im.seek(1)
-                assert_image_similar(im, frame2.convert("RGBA"), 25.0)
+                assert_image_similar(im, frame2.convert("RGBA"), 4.1)
 
         with self.star_frames() as frames:
             frame1 = frames[0]
