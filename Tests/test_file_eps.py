@@ -102,6 +102,8 @@ def test_load() -> None:
         assert px[0, 0] == (255, 255, 255)
 
         # Test again now that it has already been loaded once
+        px = im.load()
+        assert px is not None
         assert px[0, 0] == (255, 255, 255)
 
 
