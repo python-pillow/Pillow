@@ -395,6 +395,13 @@ class JpegImageFile(ImageFile.ImageFile):
             return getattr(self, "_" + name)
         raise AttributeError(name)
 
+    def __getstate__(self) -> list[Any]:
+        return super().__getstate__() + [self.layers, self.layer]
+
+    def __setstate__(self, state: list[Any]) -> None:
+        super().__setstate__(state)
+        self.layers, self.layer = state[5:]
+
     def load_read(self, read_bytes: int) -> bytes:
         """
         internal: read more image data
@@ -751,7 +758,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     extra = info.get("extra", b"")
 
     MAX_BYTES_IN_MARKER = 65533
-    xmp = info.get("xmp", im.info.get("xmp"))
+    xmp = info.get("xmp")
     if xmp:
         overhead_len = 29  # b"http://ns.adobe.com/xap/1.0/\x00"
         max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len

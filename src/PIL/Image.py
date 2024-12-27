@@ -754,7 +754,7 @@ class Image:
 
     def __setstate__(self, state: list[Any]) -> None:
         Image.__init__(self)
-        info, mode, size, palette, data = state
+        info, mode, size, palette, data = state[:5]
         self.info = info
         self._mode = mode
         self._size = size
@@ -1565,7 +1565,7 @@ class Image:
                 for subifd_offset in subifd_offsets:
                     ifds.append((exif._get_ifd_dict(subifd_offset), subifd_offset))
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
-        if ifd1 and ifd1.get(513):
+        if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
             assert exif._info is not None
             ifds.append((ifd1, exif._info.next))
 
@@ -1577,11 +1577,11 @@ class Image:
 
             fp = self.fp
             if ifd is not None:
-                thumbnail_offset = ifd.get(513)
+                thumbnail_offset = ifd.get(ExifTags.Base.JpegIFOffset)
                 if thumbnail_offset is not None:
                     thumbnail_offset += getattr(self, "_exif_offset", 0)
                     self.fp.seek(thumbnail_offset)
-                    data = self.fp.read(ifd.get(514))
+                    data = self.fp.read(ifd.get(ExifTags.Base.JpegIFByteCount))
                     fp = io.BytesIO(data)
 
             with open(fp) as im:
@@ -2556,7 +2556,7 @@ class Image:
         self._ensure_mutable()
 
         save_all = params.pop("save_all", False)
-        self.encoderinfo = params
+        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
         self.encoderconfig: tuple[Any, ...] = ()
 
         preinit()
@@ -2603,6 +2603,11 @@ class Image:
                 except PermissionError:
                     pass
             raise
+        finally:
+            try:
+                del self.encoderinfo
+            except AttributeError:
+                pass
         if open_fp:
             fp.close()
 
@@ -3884,7 +3889,7 @@ class Exif(_ExifBase):
       gps_ifd = exif.get_ifd(ExifTags.IFD.GPSInfo)
       print(gps_ifd)
 
-    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.Makernote``,
+    Other IFDs include ``ExifTags.IFD.Exif``, ``ExifTags.IFD.MakerNote``,
     ``ExifTags.IFD.Interop`` and ``ExifTags.IFD.IFD1``.
 
     :py:mod:`~PIL.ExifTags` also has enum classes to provide names for data::
@@ -4047,11 +4052,11 @@ class Exif(_ExifBase):
                     ifd = self._get_ifd_dict(offset, tag)
                     if ifd is not None:
                         self._ifds[tag] = ifd
-            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.Makernote]:
+            elif tag in [ExifTags.IFD.Interop, ExifTags.IFD.MakerNote]:
                 if ExifTags.IFD.Exif not in self._ifds:
                     self.get_ifd(ExifTags.IFD.Exif)
                 tag_data = self._ifds[ExifTags.IFD.Exif][tag]
-                if tag == ExifTags.IFD.Makernote:
+                if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
                     if tag_data[:8] == b"FUJIFILM":
@@ -4138,7 +4143,7 @@ class Exif(_ExifBase):
             ifd = {
                 k: v
                 for (k, v) in ifd.items()
-                if k not in (ExifTags.IFD.Interop, ExifTags.IFD.Makernote)
+                if k not in (ExifTags.IFD.Interop, ExifTags.IFD.MakerNote)
             }
         return ifd
 
