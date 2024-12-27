@@ -67,10 +67,10 @@ class XbmImageFile(ImageFile.ImageFile):
         self._mode = "1"
         self._size = xsize, ysize
 
-        self.tile = [("xbm", (0, 0) + self.size, m.end(), None)]
+        self.tile = [ImageFile._Tile("xbm", (0, 0) + self.size, m.end())]
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode != "1":
         msg = f"cannot write mode {im.mode} as XBM"
         raise OSError(msg)
@@ -85,7 +85,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
 
     fp.write(b"static char im_bits[] = {\n")
 
-    ImageFile._save(im, fp, [("xbm", (0, 0) + im.size, 0, None)])
+    ImageFile._save(im, fp, [ImageFile._Tile("xbm", (0, 0) + im.size)])
 
     fp.write(b"};\n")
 

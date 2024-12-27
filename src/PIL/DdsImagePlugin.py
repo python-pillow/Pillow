@@ -367,7 +367,7 @@ class DdsImageFile(ImageFile.ImageFile):
                 mask_count = 3
 
             masks = struct.unpack(f"<{mask_count}I", header.read(mask_count * 4))
-            self.tile = [("dds_rgb", extents, 0, (bitcount, masks))]
+            self.tile = [ImageFile._Tile("dds_rgb", extents, 0, (bitcount, masks))]
             return
         elif pfflags & DDPF.LUMINANCE:
             if bitcount == 8:
@@ -380,6 +380,7 @@ class DdsImageFile(ImageFile.ImageFile):
         elif pfflags & DDPF.PALETTEINDEXED8:
             self._mode = "P"
             self.palette = ImagePalette.raw("RGBA", self.fp.read(1024))
+            self.palette.mode = "RGBA"
         elif pfflags & DDPF.FOURCC:
             offset = header_size + 4
             if fourcc == D3DFMT.DXT1:
@@ -480,7 +481,8 @@ class DdsImageFile(ImageFile.ImageFile):
 class DdsRgbDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+        assert self.fd is not None
         bitcount, masks = self.args
 
         # Some masks will be padded with zeros, e.g. R 0b11 G 0b1100
@@ -511,7 +513,7 @@ class DdsRgbDecoder(ImageFile.PyDecoder):
         return -1, 0
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.mode not in ("RGB", "RGBA", "L", "LA"):
         msg = f"cannot write mode {im.mode} as DDS"
         raise OSError(msg)
@@ -558,9 +560,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
         + struct.pack("<4I", *rgba_mask)  # dwRGBABitMask
         + struct.pack("<5I", DDSCAPS.TEXTURE, 0, 0, 0, 0)
     )
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, rawmode)])
 
 
 def _accept(prefix: bytes) -> bool:

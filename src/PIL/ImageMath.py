@@ -59,13 +59,12 @@ class _Operand:
         if im2 is None:
             # unary operation
             out = Image.new(mode or im_1.mode, im_1.size, None)
-            im_1.load()
             try:
                 op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
-            _imagingmath.unop(op, out.im.id, im_1.im.id)
+            _imagingmath.unop(op, out.getim(), im_1.getim())
         else:
             # binary operation
             im_2 = self.__fixup(im2)
@@ -86,14 +85,12 @@ class _Operand:
                 if im_2.size != size:
                     im_2 = im_2.crop((0, 0) + size)
             out = Image.new(mode or im_1.mode, im_1.size, None)
-            im_1.load()
-            im_2.load()
             try:
                 op = getattr(_imagingmath, f"{op}_{im_1.mode}")
             except AttributeError as e:
                 msg = f"bad operand type for '{op}'"
                 raise TypeError(msg) from e
-            _imagingmath.binop(op, out.im.id, im_1.im.id, im_2.im.id)
+            _imagingmath.binop(op, out.getim(), im_1.getim(), im_2.getim())
         return _Operand(out)
 
     # unary operators
@@ -176,10 +173,10 @@ class _Operand:
         return self.apply("rshift", self, other)
 
     # logical
-    def __eq__(self, other):
+    def __eq__(self, other: _Operand | float) -> _Operand:  # type: ignore[override]
         return self.apply("eq", self, other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: _Operand | float) -> _Operand:  # type: ignore[override]
         return self.apply("ne", self, other)
 
     def __lt__(self, other: _Operand | float) -> _Operand:
@@ -249,19 +246,26 @@ def lambda_eval(
     :py:func:`~PIL.Image.merge` function.
 
     :param expression: A function that receives a dictionary.
-    :param options: Values to add to the function's dictionary. You
-                    can either use a dictionary, or one or more keyword
-                    arguments.
+    :param options: Values to add to the function's dictionary. Deprecated.
+                    You can instead use one or more keyword arguments.
+    :param **kw: Values to add to the function's dictionary.
     :return: The expression result. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
     """
 
+    if options:
+        deprecate(
+            "ImageMath.lambda_eval options",
+            12,
+            "ImageMath.lambda_eval keyword arguments",
+        )
+
     args: dict[str, Any] = ops.copy()
     args.update(options)
     args.update(kw)
     for k, v in args.items():
-        if hasattr(v, "im"):
+        if isinstance(v, Image.Image):
             args[k] = _Operand(v)
 
     out = expression(args)
@@ -287,13 +291,20 @@ def unsafe_eval(
     :py:func:`~PIL.Image.merge` function.
 
     :param expression: A string containing a Python-style expression.
-    :param options: Values to add to the evaluation context.  You
-                    can either use a dictionary, or one or more keyword
-                    arguments.
+    :param options: Values to add to the evaluation context. Deprecated.
+                    You can instead use one or more keyword arguments.
+    :param **kw: Values to add to the evaluation context.
     :return: The evaluated expression. This is usually an image object, but can
              also be an integer, a floating point value, or a pixel tuple,
              depending on the expression.
     """
+
+    if options:
+        deprecate(
+            "ImageMath.unsafe_eval options",
+            12,
+            "ImageMath.unsafe_eval keyword arguments",
+        )
 
     # build execution namespace
     args: dict[str, Any] = ops.copy()
@@ -305,7 +316,7 @@ def unsafe_eval(
     args.update(options)
     args.update(kw)
     for k, v in args.items():
-        if hasattr(v, "im"):
+        if isinstance(v, Image.Image):
             args[k] = _Operand(v)
 
     compiled_code = compile(expression, "<string>", "eval")

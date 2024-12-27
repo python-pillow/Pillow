@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -14,10 +15,7 @@ from .helper import (
     skip_unless_feature,
 )
 
-pytestmark = [
-    skip_unless_feature("webp"),
-    skip_unless_feature("webp_anim"),
-]
+pytestmark = skip_unless_feature("webp")
 
 
 def test_n_frames() -> None:
@@ -96,7 +94,9 @@ def test_write_animation_RGB(tmp_path: Path) -> None:
             check(temp_file1)
 
             # Tests appending using a generator
-            def im_generator(ims):
+            def im_generator(
+                ims: list[Image.Image],
+            ) -> Generator[Image.Image, None, None]:
                 yield from ims
 
             temp_file2 = str(tmp_path / "temp_generator.webp")

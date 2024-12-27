@@ -3,7 +3,7 @@ from __future__ import annotations
 import array
 import math
 import struct
-from typing import Sequence
+from collections.abc import Sequence
 
 import pytest
 
@@ -202,6 +202,17 @@ def test_overflow_segfault() -> None:
         # and segfaults
         for i in range(200000):
             x[i] = b"0" * 16
+
+
+def test_compact_within_map() -> None:
+    p = ImagePath.Path([0, 1])
+
+    def map_func(x: float, y: float) -> tuple[float, float]:
+        p.compact()
+        return 0, 0
+
+    with pytest.raises(ValueError):
+        p.map(map_func)
 
 
 class Evil:

@@ -31,7 +31,7 @@ def test_sanity() -> None:
 
 def test_long_integers() -> None:
     # see bug-200802-systemerror
-    def put(value: int) -> tuple[int, int, int, int]:
+    def put(value: int) -> float | tuple[int, ...] | None:
         im = Image.new("RGBA", (1, 1))
         im.putdata([value])
         return im.getpixel((0, 0))

@@ -4,13 +4,13 @@ Tests for resize functionality.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from itertools import permutations
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
-from PIL import Image
+from PIL import Image, ImageFile
 
 from .helper import (
     assert_image_equal,
@@ -44,9 +44,19 @@ class TestImagingCoreResize:
             self.resize(hopper("1"), (15, 12), Image.Resampling.BILINEAR)
         with pytest.raises(ValueError):
             self.resize(hopper("P"), (15, 12), Image.Resampling.BILINEAR)
-        with pytest.raises(ValueError):
-            self.resize(hopper("I;16"), (15, 12), Image.Resampling.BILINEAR)
-        for mode in ["L", "I", "F", "RGB", "RGBA", "CMYK", "YCbCr"]:
+        for mode in [
+            "L",
+            "I",
+            "I;16",
+            "I;16L",
+            "I;16B",
+            "I;16N",
+            "F",
+            "RGB",
+            "RGBA",
+            "CMYK",
+            "YCbCr",
+        ]:
             im = hopper(mode)
             r = self.resize(im, (15, 12), Image.Resampling.BILINEAR)
             assert r.mode == mode
@@ -169,7 +179,7 @@ class TestImagingCoreResize:
 
 
 @pytest.fixture
-def gradients_image() -> Generator[Image.Image, None, None]:
+def gradients_image() -> Generator[ImageFile.ImageFile, None, None]:
     with Image.open("Tests/images/radial_gradients.png") as im:
         im.load()
     try:
@@ -179,7 +189,7 @@ def gradients_image() -> Generator[Image.Image, None, None]:
 
 
 class TestReducingGapResize:
-    def test_reducing_gap_values(self, gradients_image: Image.Image) -> None:
+    def test_reducing_gap_values(self, gradients_image: ImageFile.ImageFile) -> None:
         ref = gradients_image.resize(
             (52, 34), Image.Resampling.BICUBIC, reducing_gap=None
         )
@@ -200,7 +210,7 @@ class TestReducingGapResize:
     )
     def test_reducing_gap_1(
         self,
-        gradients_image: Image.Image,
+        gradients_image: ImageFile.ImageFile,
         box: tuple[float, float, float, float],
         epsilon: float,
     ) -> None:
@@ -220,7 +230,7 @@ class TestReducingGapResize:
     )
     def test_reducing_gap_2(
         self,
-        gradients_image: Image.Image,
+        gradients_image: ImageFile.ImageFile,
         box: tuple[float, float, float, float],
         epsilon: float,
     ) -> None:
@@ -240,7 +250,7 @@ class TestReducingGapResize:
     )
     def test_reducing_gap_3(
         self,
-        gradients_image: Image.Image,
+        gradients_image: ImageFile.ImageFile,
         box: tuple[float, float, float, float],
         epsilon: float,
     ) -> None:
@@ -256,7 +266,9 @@ class TestReducingGapResize:
 
     @pytest.mark.parametrize("box", (None, (1.1, 2.2, 510.8, 510.9), (3, 10, 410, 256)))
     def test_reducing_gap_8(
-        self, gradients_image: Image.Image, box: tuple[float, float, float, float]
+        self,
+        gradients_image: ImageFile.ImageFile,
+        box: tuple[float, float, float, float],
     ) -> None:
         ref = gradients_image.resize((52, 34), Image.Resampling.BICUBIC, box=box)
         im = gradients_image.resize(
@@ -271,7 +283,7 @@ class TestReducingGapResize:
     )
     def test_box_filter(
         self,
-        gradients_image: Image.Image,
+        gradients_image: ImageFile.ImageFile,
         box: tuple[float, float, float, float],
         epsilon: float,
     ) -> None:
@@ -285,14 +297,14 @@ class TestReducingGapResize:
 
 class TestImageResize:
     def test_resize(self) -> None:
-        def resize(mode: str, size: tuple[int, int]) -> None:
+        def resize(mode: str, size: tuple[int, int] | list[int]) -> None:
             out = hopper(mode).resize(size)
             assert out.mode == mode
-            assert out.size == size
+            assert out.size == tuple(size)
 
         for mode in "1", "P", "L", "RGB", "I", "F":
             resize(mode, (112, 103))
-            resize(mode, (188, 214))
+            resize(mode, [188, 214])
 
         # Test unknown resampling filter
         with hopper() as im:
@@ -300,21 +312,19 @@ class TestImageResize:
                 im.resize((10, 10), "unknown")
 
     @skip_unless_feature("libtiff")
-    def test_load_first(self) -> None:
-        # load() may change the size of the image
-        # Test that resize() is calling it before getting the size
+    def test_transposed(self) -> None:
         with Image.open("Tests/images/g4_orientation_5.tif") as im:
             im = im.resize((64, 64))
             assert im.size == (64, 64)
 
-    @pytest.mark.parametrize("mode", ("L", "RGB", "I", "F"))
+    @pytest.mark.parametrize(
+        "mode", ("L", "RGB", "I", "I;16", "I;16L", "I;16B", "I;16N", "F")
+    )
     def test_default_filter_bicubic(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.BICUBIC) == im.resize((20, 20))
 
-    @pytest.mark.parametrize(
-        "mode", ("1", "P", "I;16", "I;16L", "I;16B", "BGR;15", "BGR;16")
-    )
+    @pytest.mark.parametrize("mode", ("1", "P", "BGR;15", "BGR;16"))
     def test_default_filter_nearest(self, mode: str) -> None:
         im = hopper(mode)
         assert im.resize((20, 20), Image.Resampling.NEAREST) == im.resize((20, 20))

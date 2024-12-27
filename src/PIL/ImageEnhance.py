@@ -55,7 +55,9 @@ class Color(_Enhance):
         if "A" in image.getbands():
             self.intermediate_mode = "LA"
 
-        self.degenerate = image.convert(self.intermediate_mode).convert(image.mode)
+        if self.intermediate_mode != image.mode:
+            image = image.convert(self.intermediate_mode).convert(image.mode)
+        self.degenerate = image
 
 
 class Contrast(_Enhance):
@@ -68,11 +70,15 @@ class Contrast(_Enhance):
 
     def __init__(self, image: Image.Image) -> None:
         self.image = image
-        mean = int(ImageStat.Stat(image.convert("L")).mean[0] + 0.5)
-        self.degenerate = Image.new("L", image.size, mean).convert(image.mode)
+        if image.mode != "L":
+            image = image.convert("L")
+        mean = int(ImageStat.Stat(image).mean[0] + 0.5)
+        self.degenerate = Image.new("L", image.size, mean)
+        if self.degenerate.mode != self.image.mode:
+            self.degenerate = self.degenerate.convert(self.image.mode)
 
-        if "A" in image.getbands():
-            self.degenerate.putalpha(image.getchannel("A"))
+        if "A" in self.image.getbands():
+            self.degenerate.putalpha(self.image.getchannel("A"))
 
 
 class Brightness(_Enhance):

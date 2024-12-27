@@ -51,7 +51,7 @@ As of 2019, Pillow development is
             <a href="https://app.codecov.io/gh/python-pillow/Pillow"><img
                 alt="Code coverage"
                 src="https://codecov.io/gh/python-pillow/Pillow/branch/main/graph/badge.svg"></a>
-            <a href="https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:pillow"><img
+            <a href="https://issues.oss-fuzz.com/issues?q=title:pillow"><img
                 alt="Fuzzing Status"
                 src="https://oss-fuzz-build-logs.storage.googleapis.com/badges/pillow.svg"></a>
         </td>
@@ -107,7 +107,7 @@ The core image library is designed for fast access to data stored in a few basic
   - [Issues](https://github.com/python-pillow/Pillow/issues)
   - [Pull requests](https://github.com/python-pillow/Pillow/pulls)
 - [Release notes](https://pillow.readthedocs.io/en/stable/releasenotes/index.html)
-- [Changelog](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst)
+- [Changelog](https://github.com/python-pillow/Pillow/releases)
   - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
 
 ## Report a Vulnerability

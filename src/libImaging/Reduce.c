@@ -82,7 +82,8 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                         }
                     }
                     v = MAKE_UINT32(
-                        (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24);
+                        (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
@@ -124,7 +125,8 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
-                        0);
+                        0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -171,7 +173,8 @@ ImagingReduceNxN(Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
-                        (ss3 * multiplier) >> 24);
+                        (ss3 * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -226,7 +229,8 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale) {
                         ss3 += line[xx * 4 + 3];
                     }
                     v = MAKE_UINT32(
-                        (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24);
+                        (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
@@ -251,7 +255,8 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale) {
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
-                        0);
+                        0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -278,7 +283,8 @@ ImagingReduce1xN(Imaging imOut, Imaging imIn, int box[4], int yscale) {
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
-                        (ss3 * multiplier) >> 24);
+                        (ss3 * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -329,7 +335,8 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                         ss3 += line[xx * 4 + 3];
                     }
                     v = MAKE_UINT32(
-                        (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24);
+                        (ss0 * multiplier) >> 24, 0, 0, (ss3 * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
@@ -351,7 +358,8 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
-                        0);
+                        0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -375,7 +383,8 @@ ImagingReduceNx1(Imaging imOut, Imaging imIn, int box[4], int xscale) {
                         (ss0 * multiplier) >> 24,
                         (ss1 * multiplier) >> 24,
                         (ss2 * multiplier) >> 24,
-                        (ss3 * multiplier) >> 24);
+                        (ss3 * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -425,7 +434,8 @@ ImagingReduce1x2(Imaging imOut, Imaging imIn, int box[4]) {
                     ss1 = line0[xx * 4 + 1] + line1[xx * 4 + 1];
                     ss2 = line0[xx * 4 + 2] + line1[xx * 4 + 2];
                     v = MAKE_UINT32(
-                        (ss0 + amend) >> 1, (ss1 + amend) >> 1, (ss2 + amend) >> 1, 0);
+                        (ss0 + amend) >> 1, (ss1 + amend) >> 1, (ss2 + amend) >> 1, 0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -440,7 +450,8 @@ ImagingReduce1x2(Imaging imOut, Imaging imIn, int box[4]) {
                         (ss0 + amend) >> 1,
                         (ss1 + amend) >> 1,
                         (ss2 + amend) >> 1,
-                        (ss3 + amend) >> 1);
+                        (ss3 + amend) >> 1
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -488,7 +499,8 @@ ImagingReduce2x1(Imaging imOut, Imaging imIn, int box[4]) {
                     ss1 = line0[xx * 4 + 1] + line0[xx * 4 + 5];
                     ss2 = line0[xx * 4 + 2] + line0[xx * 4 + 6];
                     v = MAKE_UINT32(
-                        (ss0 + amend) >> 1, (ss1 + amend) >> 1, (ss2 + amend) >> 1, 0);
+                        (ss0 + amend) >> 1, (ss1 + amend) >> 1, (ss2 + amend) >> 1, 0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -503,7 +515,8 @@ ImagingReduce2x1(Imaging imOut, Imaging imIn, int box[4]) {
                         (ss0 + amend) >> 1,
                         (ss1 + amend) >> 1,
                         (ss2 + amend) >> 1,
-                        (ss3 + amend) >> 1);
+                        (ss3 + amend) >> 1
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -558,7 +571,8 @@ ImagingReduce2x2(Imaging imOut, Imaging imIn, int box[4]) {
                     ss2 = line0[xx * 4 + 2] + line0[xx * 4 + 6] + line1[xx * 4 + 2] +
                           line1[xx * 4 + 6];
                     v = MAKE_UINT32(
-                        (ss0 + amend) >> 2, (ss1 + amend) >> 2, (ss2 + amend) >> 2, 0);
+                        (ss0 + amend) >> 2, (ss1 + amend) >> 2, (ss2 + amend) >> 2, 0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -577,7 +591,8 @@ ImagingReduce2x2(Imaging imOut, Imaging imIn, int box[4]) {
                         (ss0 + amend) >> 2,
                         (ss1 + amend) >> 2,
                         (ss2 + amend) >> 2,
-                        (ss3 + amend) >> 2);
+                        (ss3 + amend) >> 2
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -623,7 +638,8 @@ ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         0,
                         0,
-                        ((ss3 + amend) * multiplier) >> 24);
+                        ((ss3 + amend) * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
@@ -637,7 +653,8 @@ ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
-                        0);
+                        0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -652,7 +669,8 @@ ImagingReduce1x3(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
-                        ((ss3 + amend) * multiplier) >> 24);
+                        ((ss3 + amend) * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -694,7 +712,8 @@ ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         0,
                         0,
-                        ((ss3 + amend) * multiplier) >> 24);
+                        ((ss3 + amend) * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
@@ -708,7 +727,8 @@ ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
-                        0);
+                        0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -723,7 +743,8 @@ ImagingReduce3x1(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
-                        ((ss3 + amend) * multiplier) >> 24);
+                        ((ss3 + amend) * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -775,7 +796,8 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         0,
                         0,
-                        ((ss3 + amend) * multiplier) >> 24);
+                        ((ss3 + amend) * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
@@ -795,7 +817,8 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
-                        0);
+                        0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -818,7 +841,8 @@ ImagingReduce3x3(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
-                        ((ss3 + amend) * multiplier) >> 24);
+                        ((ss3 + amend) * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -900,7 +924,8 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
                           line3[xx * 4 + 2] + line3[xx * 4 + 6] + line3[xx * 4 + 10] +
                           line3[xx * 4 + 14];
                     v = MAKE_UINT32(
-                        (ss0 + amend) >> 4, (ss1 + amend) >> 4, (ss2 + amend) >> 4, 0);
+                        (ss0 + amend) >> 4, (ss1 + amend) >> 4, (ss2 + amend) >> 4, 0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -935,7 +960,8 @@ ImagingReduce4x4(Imaging imOut, Imaging imIn, int box[4]) {
                         (ss0 + amend) >> 4,
                         (ss1 + amend) >> 4,
                         (ss2 + amend) >> 4,
-                        (ss3 + amend) >> 4);
+                        (ss3 + amend) >> 4
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -1007,7 +1033,8 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         0,
                         0,
-                        ((ss3 + amend) * multiplier) >> 24);
+                        ((ss3 + amend) * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else if (imIn->bands == 3) {
@@ -1045,7 +1072,8 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
-                        0);
+                        0
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             } else {  // bands == 4
@@ -1092,7 +1120,8 @@ ImagingReduce5x5(Imaging imOut, Imaging imIn, int box[4]) {
                         ((ss0 + amend) * multiplier) >> 24,
                         ((ss1 + amend) * multiplier) >> 24,
                         ((ss2 + amend) * multiplier) >> 24,
-                        ((ss3 + amend) * multiplier) >> 24);
+                        ((ss3 + amend) * multiplier) >> 24
+                    );
                     memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
                 }
             }
@@ -1181,7 +1210,8 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
                     (ss0 * multiplier) >> 24,
                     (ss1 * multiplier) >> 24,
                     (ss2 * multiplier) >> 24,
-                    (ss3 * multiplier) >> 24);
+                    (ss3 * multiplier) >> 24
+                );
                 memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
             }
         }
@@ -1207,7 +1237,8 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
                     (ss0 * multiplier) >> 24,
                     (ss1 * multiplier) >> 24,
                     (ss2 * multiplier) >> 24,
-                    (ss3 * multiplier) >> 24);
+                    (ss3 * multiplier) >> 24
+                );
                 memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
             }
         }
@@ -1232,7 +1263,8 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
                 (ss0 * multiplier) >> 24,
                 (ss1 * multiplier) >> 24,
                 (ss2 * multiplier) >> 24,
-                (ss3 * multiplier) >> 24);
+                (ss3 * multiplier) >> 24
+            );
             memcpy(imOut->image[y] + x * sizeof(v), &v, sizeof(v));
         }
     }
@@ -1240,7 +1272,8 @@ ImagingReduceCorners(Imaging imOut, Imaging imIn, int box[4], int xscale, int ys
 
 void
 ImagingReduceNxN_32bpc(
-    Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale) {
+    Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
+) {
     /* The most general implementation for any xscale and yscale
      */
     int x, y, xx, yy;
@@ -1313,7 +1346,8 @@ ImagingReduceNxN_32bpc(
 
 void
 ImagingReduceCorners_32bpc(
-    Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale) {
+    Imaging imOut, Imaging imIn, int box[4], int xscale, int yscale
+) {
     /* Fill the last row and the last column for any xscale and yscale.
      */
     int x, y, xx, yy;
@@ -1427,7 +1461,8 @@ ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]) {
     }
 
     imOut = ImagingNewDirty(
-        imIn->mode, (box[2] + xscale - 1) / xscale, (box[3] + yscale - 1) / yscale);
+        imIn->mode, (box[2] + xscale - 1) / xscale, (box[3] + yscale - 1) / yscale
+    );
     if (!imOut) {
         return NULL;
     }

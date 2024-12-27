@@ -10,10 +10,7 @@ from PIL import Image
 
 from .helper import mark_if_feature_version, skip_unless_feature
 
-pytestmark = [
-    skip_unless_feature("webp"),
-    skip_unless_feature("webp_mux"),
-]
+pytestmark = skip_unless_feature("webp")
 
 ElementTree: ModuleType | None
 try:
@@ -119,7 +116,15 @@ def test_read_no_exif() -> None:
 def test_getxmp() -> None:
     with Image.open("Tests/images/flower.webp") as im:
         assert "xmp" not in im.info
-        assert im.getxmp() == {}
+        if ElementTree is None:
+            with pytest.warns(
+                UserWarning,
+                match="XMP data cannot be read without defusedxml dependency",
+            ):
+                xmp = im.getxmp()
+        else:
+            xmp = im.getxmp()
+        assert xmp == {}
 
     with Image.open("Tests/images/flower2.webp") as im:
         if ElementTree is None:
@@ -129,13 +134,13 @@ def test_getxmp() -> None:
             ):
                 assert im.getxmp() == {}
         else:
+            assert "xmp" in im.info
             assert (
                 im.getxmp()["xmpmeta"]["xmptk"]
                 == "Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        "
             )
 
 
-@skip_unless_feature("webp_anim")
 def test_write_animated_metadata(tmp_path: Path) -> None:
     iccp_data = b"<iccp_data>"
     exif_data = b"<exif_data>"

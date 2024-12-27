@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-minor-version: [8, 9]
+        python-minor-version: [9]
 
     timeout-minutes: 40
 
@@ -48,6 +48,8 @@ jobs:
 
       - name: Checkout Pillow
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@v4
@@ -72,9 +74,9 @@ jobs:
             make
             netpbm
             perl
-            python3${{ matrix.python-minor-version }}-cffi
             python3${{ matrix.python-minor-version }}-cython
             python3${{ matrix.python-minor-version }}-devel
+            python3${{ matrix.python-minor-version }}-ipython
             python3${{ matrix.python-minor-version }}-numpy
             python3${{ matrix.python-minor-version }}-sip
             python3${{ matrix.python-minor-version }}-tkinter
@@ -131,11 +133,12 @@ jobs:
       - name: After success
         run: |
           bash.exe .ci/after_success.sh
+          rm C:\cygwin\bin\bash.EXE
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: GHA_Cygwin
           name: Cygwin Python 3.${{ matrix.python-minor-version }}
           token: ${{ secrets.CODECOV_ORG_TOKEN }}

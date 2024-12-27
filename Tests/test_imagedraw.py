@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import contextlib
 import os.path
-from typing import Sequence
+from collections.abc import Sequence
+from typing import Callable
 
 import pytest
 
@@ -448,6 +448,7 @@ def test_shape1() -> None:
     x3, y3 = 95, 5
 
     # Act
+    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -469,6 +470,7 @@ def test_shape2() -> None:
     x3, y3 = 5, 95
 
     # Act
+    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -487,6 +489,7 @@ def test_transform() -> None:
     draw = ImageDraw.Draw(im)
 
     # Act
+    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.line(0, 0)
     s.transform((0, 0, 0, 0, 0, 0))
@@ -629,6 +632,19 @@ def test_polygon(points: Coords) -> None:
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon.png")
+
+
+@pytest.mark.parametrize("points", POINTS)
+def test_polygon_width_I16(points: Coords) -> None:
+    # Arrange
+    im = Image.new("I;16", (W, H))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.polygon(points, outline=0xFFFF, width=2)
+
+    # Assert
+    assert_image_equal_tofile(im, "Tests/images/imagedraw_polygon_width_I.tiff")
 
 
 @pytest.mark.parametrize("mode", ("RGB", "L"))
@@ -841,6 +857,27 @@ def test_rounded_rectangle_corners(
     )
 
 
+def test_rounded_rectangle_joined_x_different_corners() -> None:
+    # Arrange
+    im = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    # Act
+    draw.rounded_rectangle(
+        (20, 10, 80, 90),
+        30,
+        fill="red",
+        outline="green",
+        width=5,
+        corners=(True, False, False, False),
+    )
+
+    # Assert
+    assert_image_equal_tofile(
+        im, "Tests/images/imagedraw_rounded_rectangle_joined_x_different_corners.png"
+    )
+
+
 @pytest.mark.parametrize(
     "xy, radius, type",
     [
@@ -913,7 +950,12 @@ def test_rounded_rectangle_translucent(
 def test_floodfill(bbox: Coords) -> None:
     red = ImageColor.getrgb("red")
 
-    for mode, value in [("L", 1), ("RGBA", (255, 0, 0, 0)), ("RGB", red)]:
+    mode_values: list[tuple[str, int | tuple[int, ...]]] = [
+        ("L", 1),
+        ("RGBA", (255, 0, 0, 0)),
+        ("RGB", red),
+    ]
+    for mode, value in mode_values:
         # Arrange
         im = Image.new(mode, (W, H))
         draw = ImageDraw.Draw(im)
@@ -1327,6 +1369,20 @@ def test_stroke() -> None:
 
 
 @skip_unless_feature("freetype2")
+def test_stroke_float() -> None:
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((12, 12), "A", "#f00", font, stroke_width=0.5)
+
+    # Assert
+    assert_image_similar_tofile(im, "Tests/images/imagedraw_stroke_float.png", 3.1)
+
+
+@skip_unless_feature("freetype2")
 def test_stroke_descender() -> None:
     # Arrange
     im = Image.new("RGB", (120, 130))
@@ -1401,24 +1457,43 @@ def test_default_font_size() -> None:
 
     im = Image.new("RGB", (220, 25))
     draw = ImageDraw.Draw(im)
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+
+    def check(func: Callable[[], None]) -> None:
+        if freetype_support:
+            func()
+        else:
+            with pytest.raises(ImportError):
+                func()
+
+    def draw_text() -> None:
         draw.text((0, 0), text, font_size=16)
         assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
 
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+    check(draw_text)
+
+    def draw_textlength() -> None:
         assert draw.textlength(text, font_size=16) == 216
 
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+    check(draw_textlength)
+
+    def draw_textbbox() -> None:
         assert draw.textbbox((0, 0), text, font_size=16) == (0, 3, 216, 19)
+
+    check(draw_textbbox)
 
     im = Image.new("RGB", (220, 25))
     draw = ImageDraw.Draw(im)
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+
+    def draw_multiline_text() -> None:
         draw.multiline_text((0, 0), text, font_size=16)
         assert_image_equal_tofile(im, "Tests/images/imagedraw_default_font_size.png")
 
-    with contextlib.nullcontext() if freetype_support else pytest.raises(ImportError):
+    check(draw_multiline_text)
+
+    def draw_multiline_textbbox() -> None:
         assert draw.multiline_textbbox((0, 0), text, font_size=16) == (0, 3, 216, 19)
+
+    check(draw_multiline_textbbox)
 
 
 @pytest.mark.parametrize("bbox", BBOX)
@@ -1429,6 +1504,7 @@ def test_same_color_outline(bbox: Coords) -> None:
     x2, y2 = 95, 50
     x3, y3 = 95, 5
 
+    assert ImageDraw.Outline is not None
     s = ImageDraw.Outline()
     s.move(x0, y0)
     s.curve(x1, y1, x2, y2, x3, y3)
@@ -1467,7 +1543,7 @@ def test_same_color_outline(bbox: Coords) -> None:
         (4, "square", {}),
         (8, "regular_octagon", {}),
         (4, "square_rotate_45", {"rotation": 45}),
-        (3, "triangle_width", {"width": 5, "outline": "yellow"}),
+        (3, "triangle_width", {"outline": "yellow", "width": 5}),
     ],
 )
 def test_draw_regular_polygon(
@@ -1477,7 +1553,10 @@ def test_draw_regular_polygon(
     filename = f"Tests/images/imagedraw_{polygon_name}.png"
     draw = ImageDraw.Draw(im)
     bounding_circle = ((W // 2, H // 2), 25)
-    draw.regular_polygon(bounding_circle, n_sides, fill="red", **args)
+    rotation = int(args.get("rotation", 0))
+    outline = args.get("outline")
+    width = int(args.get("width", 1))
+    draw.regular_polygon(bounding_circle, n_sides, rotation, "red", outline, width)
     assert_image_equal_tofile(im, filename)
 
 
@@ -1562,10 +1641,14 @@ def test_compute_regular_polygon_vertices(
     ],
 )
 def test_compute_regular_polygon_vertices_input_error_handling(
-    n_sides, bounding_circle, rotation, expected_error, error_message
+    n_sides: int,
+    bounding_circle: int | tuple[int | tuple[int] | str, ...],
+    rotation: int | str,
+    expected_error: type[Exception],
+    error_message: str,
 ) -> None:
     with pytest.raises(expected_error) as e:
-        ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)
+        ImageDraw._compute_regular_polygon_vertices(bounding_circle, n_sides, rotation)  # type: ignore[arg-type]
     assert str(e.value) == error_message
 
 
@@ -1591,6 +1674,9 @@ def test_continuous_horizontal_edges_polygon() -> None:
 def test_discontiguous_corners_polygon() -> None:
     img, draw = create_base_image_draw((84, 68))
     draw.polygon(((1, 21), (34, 4), (71, 1), (38, 18)), BLACK)
+    draw.polygon(
+        ((82, 29), (82, 26), (82, 24), (67, 22), (52, 29), (52, 15), (67, 22)), BLACK
+    )
     draw.polygon(((71, 44), (38, 27), (1, 24)), BLACK)
     draw.polygon(
         ((38, 66), (5, 49), (77, 49), (47, 66), (82, 63), (82, 47), (1, 47), (1, 63)),
@@ -1624,3 +1710,8 @@ def test_incorrectly_ordered_coordinates(xy: tuple[int, int, int, int]) -> None:
         draw.rectangle(xy)
     with pytest.raises(ValueError):
         draw.rounded_rectangle(xy)
+
+
+def test_getdraw() -> None:
+    with pytest.warns(DeprecationWarning):
+        ImageDraw.getdraw(None, [])

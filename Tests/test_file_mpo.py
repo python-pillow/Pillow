@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import warnings
 from io import BytesIO
-from typing import Any, cast
+from typing import Any
 
 import pytest
 
-from PIL import Image, MpoImagePlugin
+from PIL import Image, ImageFile, MpoImagePlugin
 
 from .helper import (
     assert_image_equal,
@@ -20,11 +20,11 @@ test_files = ["Tests/images/sugarshack.mpo", "Tests/images/frozenpond.mpo"]
 pytestmark = skip_unless_feature("jpg")
 
 
-def roundtrip(im: Image.Image, **options: Any) -> MpoImagePlugin.MpoImageFile:
+def roundtrip(im: Image.Image, **options: Any) -> ImageFile.ImageFile:
     out = BytesIO()
     im.save(out, "MPO", **options)
     out.seek(0)
-    return cast(MpoImagePlugin.MpoImageFile, Image.open(out))
+    return Image.open(out)
 
 
 @pytest.mark.parametrize("test_file", test_files)
@@ -48,6 +48,8 @@ def test_unclosed_file() -> None:
 
 def test_closed_file() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         im = Image.open(test_files[0])
         im.load()
         im.close()
@@ -63,6 +65,8 @@ def test_seek_after_close() -> None:
 
 def test_context_manager() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         with Image.open(test_files[0]) as im:
             im.load()
 
@@ -85,7 +89,9 @@ def test_exif(test_file: str) -> None:
         im_reloaded = roundtrip(im_original, save_all=True, exif=im_original.getexif())
 
     for im in (im_original, im_reloaded):
+        assert isinstance(im, MpoImagePlugin.MpoImageFile)
         info = im._getexif()
+        assert info is not None
         assert info[272] == "Nintendo 3DS"
         assert info[296] == 2
         assert info[34665] == 188
@@ -226,6 +232,17 @@ def test_eoferror() -> None:
         im.seek(n_frames - 1)
 
 
+def test_adopt_jpeg() -> None:
+    with Image.open("Tests/images/hopper.jpg") as im:
+        with pytest.raises(ValueError):
+            MpoImagePlugin.MpoImageFile.adopt(im)
+
+
+def test_ultra_hdr() -> None:
+    with Image.open("Tests/images/ultrahdr.jpg") as im:
+        assert im.format == "JPEG"
+
+
 @pytest.mark.parametrize("test_file", test_files)
 def test_image_grab(test_file: str) -> None:
     with Image.open(test_file) as im:
@@ -270,6 +287,8 @@ def test_save_all() -> None:
     im_reloaded = roundtrip(im, save_all=True, append_images=[im2])
 
     assert_image_equal(im, im_reloaded)
+    assert isinstance(im_reloaded, MpoImagePlugin.MpoImageFile)
+    assert im_reloaded.mpinfo is not None
     assert im_reloaded.mpinfo[45056] == b"0100"
 
     im_reloaded.seek(1)
@@ -278,3 +297,15 @@ def test_save_all() -> None:
     # Test that a single frame image will not be saved as an MPO
     jpg = roundtrip(im, save_all=True)
     assert "mp" not in jpg.info
+
+
+def test_save_xmp() -> None:
+    im = Image.new("RGB", (1, 1))
+    im2 = Image.new("RGB", (1, 1), "#f00")
+    im2.encoderinfo = {"xmp": b"Second frame"}
+    im_reloaded = roundtrip(im, xmp=b"First frame", save_all=True, append_images=[im2])
+
+    assert im_reloaded.info["xmp"] == b"First frame"
+
+    im_reloaded.seek(1)
+    assert im_reloaded.info["xmp"] == b"Second frame"

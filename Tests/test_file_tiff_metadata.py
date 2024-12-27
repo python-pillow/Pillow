@@ -11,7 +11,11 @@ from PIL.TiffImagePlugin import IFDRational
 
 from .helper import assert_deep_equal, hopper
 
-TAG_IDS = {info.name: info.value for info in TiffTags.TAGS_V2.values()}
+TAG_IDS: dict[str, int] = {
+    info.name: info.value
+    for info in TiffTags.TAGS_V2.values()
+    if info.value is not None
+}
 
 
 def test_rt_metadata(tmp_path: Path) -> None:
@@ -175,6 +179,29 @@ def test_change_stripbytecounts_tag_type(tmp_path: Path) -> None:
 
     with Image.open(out) as reloaded:
         assert reloaded.tag_v2.tagtype[TiffImagePlugin.STRIPBYTECOUNTS] == TiffTags.LONG
+
+
+def test_save_multiple_stripoffsets() -> None:
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[TiffImagePlugin.STRIPOFFSETS] = (123, 456)
+    assert ifd.tagtype[TiffImagePlugin.STRIPOFFSETS] == TiffTags.LONG
+
+    # all values are in little-endian
+    assert ifd.tobytes() == (
+        # number of tags == 1
+        b"\x01\x00"
+        # tag id (2 bytes), type (2 bytes), count (4 bytes), value (4 bytes)
+        # TiffImagePlugin.STRIPOFFSETS, TiffTags.LONG, 2, 18
+        # where STRIPOFFSETS is 273, LONG is 4
+        # and 18 is the offset of the tag data
+        b"\x11\x01\x04\x00\x02\x00\x00\x00\x12\x00\x00\x00"
+        # end of entries
+        b"\x00\x00\x00\x00"
+        # 26 is the total number of bytes output,
+        # the offset for any auxiliary strip data that will then be appended
+        # (123 + 26, 456 + 26) == (149, 482)
+        b"\x95\x00\x00\x00\xe2\x01\x00\x00"
+    )
 
 
 def test_no_duplicate_50741_tag() -> None:
@@ -411,8 +438,8 @@ def test_empty_values() -> None:
     info = TiffImagePlugin.ImageFileDirectory_v2(head)
     info.load(data)
     # Should not raise ValueError.
-    info = dict(info)
-    assert 33432 in info
+    info_dict = dict(info)
+    assert 33432 in info_dict
 
 
 def test_photoshop_info(tmp_path: Path) -> None:

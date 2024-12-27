@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 from io import BytesIO
 from pathlib import Path
 from typing import Any, BinaryIO
@@ -209,7 +210,7 @@ def test_getlength(
         assert length == length_raqm
 
 
-def test_float_size() -> None:
+def test_float_size(layout_engine: ImageFont.Layout) -> None:
     lengths = []
     for size in (48, 48.5, 49):
         f = ImageFont.truetype(
@@ -224,7 +225,7 @@ def test_render_multiline(font: ImageFont.FreeTypeFont) -> None:
     draw = ImageDraw.Draw(im)
     line_spacing = font.getbbox("A")[3] + 4
     lines = TEST_TEXT.split("\n")
-    y = 0
+    y: float = 0
     for line in lines:
         draw.text((0, y), line, font=font)
         y += line_spacing
@@ -460,15 +461,41 @@ def test_free_type_font_get_mask(font: ImageFont.FreeTypeFont) -> None:
     assert mask.size == (108, 13)
 
 
+def test_load_when_image_not_found() -> None:
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        pass
+    with pytest.raises(OSError) as e:
+        ImageFont.load(tmp.name)
+
+    os.unlink(tmp.name)
+
+    root = os.path.splitext(tmp.name)[0]
+    assert str(e.value) == f"cannot find glyph data file {root}.{{gif|pbm|png}}"
+
+
 def test_load_path_not_found() -> None:
     # Arrange
     filename = "somefilenamethatdoesntexist.ttf"
 
     # Act/Assert
-    with pytest.raises(OSError):
+    with pytest.raises(OSError) as e:
         ImageFont.load_path(filename)
+
+    # The file doesn't exist, so don't suggest `load`
+    assert filename in str(e.value)
+    assert "did you mean" not in str(e.value)
     with pytest.raises(OSError):
         ImageFont.truetype(filename)
+
+
+def test_load_path_existing_path() -> None:
+    with tempfile.NamedTemporaryFile() as tmp:
+        with pytest.raises(OSError) as e:
+            ImageFont.load_path(tmp.name)
+
+    # The file exists, so the error message suggests to use `load` instead
+    assert tmp.name in str(e.value)
+    assert " did you mean" in str(e.value)
 
 
 def test_load_non_font_bytes() -> None:
@@ -494,8 +521,8 @@ def test_default_font() -> None:
     assert_image_equal_tofile(im, "Tests/images/default_font_freetype.png")
 
 
-@pytest.mark.parametrize("mode", (None, "1", "RGBA"))
-def test_getbbox(font: ImageFont.FreeTypeFont, mode: str | None) -> None:
+@pytest.mark.parametrize("mode", ("", "1", "RGBA"))
+def test_getbbox(font: ImageFont.FreeTypeFont, mode: str) -> None:
     assert (0, 4, 12, 16) == font.getbbox("A", mode)
 
 
@@ -548,7 +575,7 @@ def test_find_font(
 
             def loadable_font(
                 filepath: str, size: int, index: int, encoding: str, *args: Any
-            ):
+            ) -> ImageFont.FreeTypeFont:
                 _freeTypeFont = getattr(ImageFont, "_FreeTypeFont")
                 if filepath == path_to_fake:
                     return _freeTypeFont(FONT_PATH, size, index, encoding, *args)
@@ -564,6 +591,7 @@ def test_find_font(
     # catching syntax like errors
     monkeypatch.setattr(sys, "platform", platform)
     if platform == "linux":
+        monkeypatch.setenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
         monkeypatch.setenv("XDG_DATA_DIRS", "/usr/share/:/usr/local/share/")
 
     def fake_walker(path: str) -> list[tuple[str, list[str], list[str]]]:
@@ -716,14 +744,14 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
 
     font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 36)
     _check_text(font, "Tests/images/variation_adobe.png", 11)
-    for name in ["Bold", b"Bold"]:
+    for name in ("Bold", b"Bold"):
         font.set_variation_by_name(name)
         assert font.getname()[1] == "Bold"
     _check_text(font, "Tests/images/variation_adobe_name.png", 16)
 
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     _check_text(font, "Tests/images/variation_tiny.png", 40)
-    for name in ["200", b"200"]:
+    for name in ("200", b"200"):
         font.set_variation_by_name(name)
         assert font.getname()[1] == "200"
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
@@ -1096,6 +1124,26 @@ def test_too_many_characters(font: ImageFont.FreeTypeFont) -> None:
         imagefont.getmask("A" * 1_000_001)
 
 
+def test_bytes(font: ImageFont.FreeTypeFont) -> None:
+    assert font.getlength(b"test") == font.getlength("test")
+
+    assert font.getbbox(b"test") == font.getbbox("test")
+
+    assert_image_equal(
+        Image.Image()._new(font.getmask(b"test")),
+        Image.Image()._new(font.getmask("test")),
+    )
+
+    assert_image_equal(
+        Image.Image()._new(font.getmask2(b"test")[0]),
+        Image.Image()._new(font.getmask2("test")[0]),
+    )
+    assert font.getmask2(b"test")[1] == font.getmask2("test")[1]
+
+    with pytest.raises(TypeError):
+        font.getlength((0, 0))  # type: ignore[arg-type]
+
+
 @pytest.mark.parametrize(
     "test_file",
     [
@@ -1129,3 +1177,15 @@ def test_invalid_truetype_sizes_raise_valueerror(
 ) -> None:
     with pytest.raises(ValueError):
         ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)
+
+
+def test_freetype_deprecation(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Arrange: mock features.version_module to return fake FreeType version
+    def fake_version_module(module: str) -> str:
+        return "2.9.0"
+
+    monkeypatch.setattr(features, "version_module", fake_version_module)
+
+    # Act / Assert
+    with pytest.warns(DeprecationWarning):
+        ImageFont.truetype(FONT_PATH, FONT_SIZE)

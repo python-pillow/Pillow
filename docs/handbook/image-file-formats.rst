@@ -324,12 +324,19 @@ sets the following :py:attr:`~PIL.Image.Image.info` property:
 **sizes**
     A list of supported sizes found in this icon file; these are a
     3-tuple, ``(width, height, scale)``, where ``scale`` is 2 for a retina
-    icon and 1 for a standard icon.  You *are* permitted to use this 3-tuple
-    format for the :py:attr:`~PIL.Image.Image.size` property if you set it
-    before calling :py:meth:`~PIL.Image.Image.load`; after loading, the size
-    will be reset to a 2-tuple containing pixel dimensions (so, e.g. if you
-    ask for ``(512, 512, 2)``, the final value of
-    :py:attr:`~PIL.Image.Image.size` will be ``(1024, 1024)``).
+    icon and 1 for a standard icon.
+
+.. _icns-loading:
+
+Loading
+~~~~~~~
+
+You can call the :py:meth:`~PIL.Image.Image.load` method with the following parameter.
+
+**scale**
+    Affects the scale of the resultant image. If the size is set to ``(512, 512)``,
+    after loading at scale 2, the final value of :py:attr:`~PIL.Image.Image.size` will
+    be ``(1024, 1024)``.
 
 .. _icns-saving:
 
@@ -684,6 +691,30 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
    OpenJPEG website, but must add them to their PATH in order to use Pillow (if
    you fail to do this, you will get errors about not being able to load the
    ``_imaging`` DLL).
+
+MPO
+^^^
+
+Pillow reads and writes Multi Picture Object (MPO) files. When first opened, it loads
+the primary image. The :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` methods may be used to read other pictures from the
+file. The pictures are zero-indexed and random access is supported.
+
+.. _mpo-saving:
+
+Saving
+~~~~~~
+
+When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+option will also be available.
+
+**append_images**
+    A list of images to append as additional pictures. Each of the
+    images in the list can be single or multiframe images.
+
+    .. versionadded:: 9.3.0
 
 MSP
 ^^^
@@ -1220,8 +1251,7 @@ using the general tags available through tiffinfo.
 WebP
 ^^^^
 
-Pillow reads and writes WebP files. The specifics of Pillow's capabilities with
-this format are currently undocumented.
+Pillow reads and writes WebP files. Requires libwebp v0.5.0 or later.
 
 .. _webp-saving:
 
@@ -1249,28 +1279,18 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **exact**
     If true, preserve the transparent RGB values. Otherwise, discard
     invisible RGB values for better compression. Defaults to false.
-    Requires libwebp 0.5.0 or later.
 
 **icc_profile**
-    The ICC Profile to include in the saved file. Only supported if
-    the system WebP library was built with webpmux support.
+    The ICC Profile to include in the saved file.
 
 **exif**
-    The exif data to include in the saved file. Only supported if
-    the system WebP library was built with webpmux support.
+    The exif data to include in the saved file.
 
 **xmp**
-    The XMP data to include in the saved file. Only supported if
-    the system WebP library was built with webpmux support.
+    The XMP data to include in the saved file.
 
 Saving sequences
 ~~~~~~~~~~~~~~~~
-
-.. note::
-
-    Support for animated WebP files will only be enabled if the system WebP
-    library is v0.5.0 or later. You can check webp animation support at
-    runtime by calling ``features.check("webp_anim")``.
 
 When calling :py:meth:`~PIL.Image.Image.save` to write a WebP file, by default
 only the first frame of a multiframe image will be saved. If the ``save_all``
@@ -1439,30 +1459,6 @@ Note that there may be an embedded gamma of 2.2 in MIC files.
 
 To enable MIC support, you must install :pypi:`olefile`.
 
-MPO
-^^^
-
-Pillow identifies and reads Multi Picture Object (MPO) files, loading the primary
-image when first opened. The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell`
-methods may be used to read other pictures from the file. The pictures are
-zero-indexed and random access is supported.
-
-.. _mpo-saving:
-
-Saving
-~~~~~~
-
-When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
-only the first frame of a multiframe image will be saved. If the ``save_all``
-argument is present and true, then all frames will be saved, and the following
-option will also be available.
-
-**append_images**
-    A list of images to append as additional pictures. Each of the
-    images in the list can be single or multiframe images.
-
-    .. versionadded:: 9.3.0
-
 PCD
 ^^^
 
@@ -1528,19 +1524,21 @@ To add other read or write support, use
 :py:func:`PIL.WmfImagePlugin.register_handler` to register a WMF and EMF
 handler. ::
 
-    from PIL import Image
+    from typing import IO
+
+    from PIL import Image, ImageFile
     from PIL import WmfImagePlugin
 
 
-    class WmfHandler:
-        def open(self, im):
+    class WmfHandler(ImageFile.StubHandler):
+        def open(self, im: ImageFile.StubImageFile) -> None:
             ...
 
-        def load(self, im):
+        def load(self, im: ImageFile.StubImageFile) -> Image.Image:
             ...
             return image
 
-        def save(self, im, fp, filename):
+        def save(self, im: Image.Image, fp: IO[bytes], filename: str) -> None:
             ...
 
 

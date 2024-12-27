@@ -28,48 +28,41 @@ from __future__ import annotations
 
 import tkinter
 from io import BytesIO
+from typing import TYPE_CHECKING, Any, cast
 
-from . import Image
+from . import Image, ImageFile
+
+if TYPE_CHECKING:
+    from ._typing import CapsuleType
 
 # --------------------------------------------------------------------
 # Check for Tkinter interface hooks
 
-_pilbitmap_ok = None
 
-
-def _pilbitmap_check() -> int:
-    global _pilbitmap_ok
-    if _pilbitmap_ok is None:
-        try:
-            im = Image.new("1", (1, 1))
-            tkinter.BitmapImage(data=f"PIL:{im.im.id}")
-            _pilbitmap_ok = 1
-        except tkinter.TclError:
-            _pilbitmap_ok = 0
-    return _pilbitmap_ok
-
-
-def _get_image_from_kw(kw):
+def _get_image_from_kw(kw: dict[str, Any]) -> ImageFile.ImageFile | None:
     source = None
     if "file" in kw:
         source = kw.pop("file")
     elif "data" in kw:
         source = BytesIO(kw.pop("data"))
-    if source:
-        return Image.open(source)
+    if not source:
+        return None
+    return Image.open(source)
 
 
-def _pyimagingtkcall(command, photo, id):
+def _pyimagingtkcall(
+    command: str, photo: PhotoImage | tkinter.PhotoImage, ptr: CapsuleType
+) -> None:
     tk = photo.tk
     try:
-        tk.call(command, photo, id)
+        tk.call(command, photo, repr(ptr))
     except tkinter.TclError:
         # activate Tkinter hook
         # may raise an error if it cannot attach to Tkinter
         from . import _imagingtk
 
         _imagingtk.tkinit(tk.interpaddr())
-        tk.call(command, photo, id)
+        tk.call(command, photo, repr(ptr))
 
 
 # --------------------------------------------------------------------
@@ -96,27 +89,36 @@ class PhotoImage:
                    image file).
     """
 
-    def __init__(self, image=None, size=None, **kw):
+    def __init__(
+        self,
+        image: Image.Image | str | None = None,
+        size: tuple[int, int] | None = None,
+        **kw: Any,
+    ) -> None:
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
 
-        if hasattr(image, "mode") and hasattr(image, "size"):
+        if image is None:
+            msg = "Image is required"
+            raise ValueError(msg)
+        elif isinstance(image, str):
+            mode = image
+            image = None
+
+            if size is None:
+                msg = "If first argument is mode, size is required"
+                raise ValueError(msg)
+        else:
             # got an image instead of a mode
             mode = image.mode
             if mode == "P":
                 # palette mapped data
                 image.apply_transparency()
                 image.load()
-                try:
-                    mode = image.palette.mode
-                except AttributeError:
-                    mode = "RGB"  # default
+                mode = image.palette.mode if image.palette else "RGB"
             size = image.size
             kw["width"], kw["height"] = size
-        else:
-            mode = image
-            image = None
 
         if mode not in ["1", "L", "RGB", "RGBA"]:
             mode = Image.getmodebase(mode)
@@ -129,7 +131,10 @@ class PhotoImage:
             self.paste(image)
 
     def __del__(self) -> None:
-        name = self.__photo.name
+        try:
+            name = self.__photo.name
+        except AttributeError:
+            return
         self.__photo.name = None
         try:
             self.__photo.tk.call("image", "delete", name)
@@ -172,15 +177,14 @@ class PhotoImage:
                    the bitmap image.
         """
         # convert to blittable
-        im.load()
+        ptr = im.getim()
         image = im.im
-        if image.isblock() and im.mode == self.__mode:
-            block = image
-        else:
-            block = image.new_block(self.__mode, im.size)
+        if not image.isblock() or im.mode != self.__mode:
+            block = Image.core.new_block(self.__mode, im.size)
             image.convert2(block, image)  # convert directly between buffers
+            ptr = block.ptr
 
-        _pyimagingtkcall("PyImagingPhoto", self.__photo, block.id)
+        _pyimagingtkcall("PyImagingPhoto", self.__photo, ptr)
 
 
 # --------------------------------------------------------------------
@@ -201,26 +205,24 @@ class BitmapImage:
     :param image: A PIL image.
     """
 
-    def __init__(self, image=None, **kw):
+    def __init__(self, image: Image.Image | None = None, **kw: Any) -> None:
         # Tk compatibility: file or data
         if image is None:
             image = _get_image_from_kw(kw)
 
+        if image is None:
+            msg = "Image is required"
+            raise ValueError(msg)
         self.__mode = image.mode
         self.__size = image.size
 
-        if _pilbitmap_check():
-            # fast way (requires the pilbitmap booster patch)
-            image.load()
-            kw["data"] = f"PIL:{image.im.id}"
-            self.__im = image  # must keep a reference
-        else:
-            # slow but safe way
-            kw["data"] = image.tobitmap()
-        self.__photo = tkinter.BitmapImage(**kw)
+        self.__photo = tkinter.BitmapImage(data=image.tobitmap(), **kw)
 
     def __del__(self) -> None:
-        name = self.__photo.name
+        try:
+            name = self.__photo.name
+        except AttributeError:
+            return
         self.__photo.name = None
         try:
             self.__photo.tk.call("image", "delete", name)
@@ -257,25 +259,29 @@ class BitmapImage:
 def getimage(photo: PhotoImage) -> Image.Image:
     """Copies the contents of a PhotoImage to a PIL image memory."""
     im = Image.new("RGBA", (photo.width(), photo.height()))
-    block = im.im
 
-    _pyimagingtkcall("PyImagingPhotoGet", photo, block.id)
+    _pyimagingtkcall("PyImagingPhotoGet", photo, im.getim())
 
     return im
 
 
-def _show(image, title):
+def _show(image: Image.Image, title: str | None) -> None:
     """Helper for the Image.show method."""
 
     class UI(tkinter.Label):
-        def __init__(self, master, im):
+        def __init__(self, master: tkinter.Toplevel, im: Image.Image) -> None:
+            self.image: BitmapImage | PhotoImage
             if im.mode == "1":
                 self.image = BitmapImage(im, foreground="white", master=master)
             else:
                 self.image = PhotoImage(im, master=master)
-            super().__init__(master, image=self.image, bg="black", bd=0)
+            if TYPE_CHECKING:
+                image = cast(tkinter._Image, self.image)
+            else:
+                image = self.image
+            super().__init__(master, image=image, bg="black", bd=0)
 
-    if not tkinter._default_root:
+    if not getattr(tkinter, "_default_root"):
         msg = "tkinter not initialized"
         raise OSError(msg)
     top = tkinter.Toplevel()

@@ -391,23 +391,26 @@ def test_overlay() -> None:
 def test_logical() -> None:
     def table(
         op: Callable[[Image.Image, Image.Image], Image.Image], a: int, b: int
-    ) -> tuple[int, int, int, int]:
+    ) -> list[float]:
         out = []
         for x in (a, b):
             imx = Image.new("1", (1, 1), x)
             for y in (a, b):
                 imy = Image.new("1", (1, 1), y)
-                out.append(op(imx, imy).getpixel((0, 0)))
-        return tuple(out)
+                value = op(imx, imy).getpixel((0, 0))
+                assert not isinstance(value, tuple)
+                assert value is not None
+                out.append(value)
+        return out
 
-    assert table(ImageChops.logical_and, 0, 1) == (0, 0, 0, 255)
-    assert table(ImageChops.logical_or, 0, 1) == (0, 255, 255, 255)
-    assert table(ImageChops.logical_xor, 0, 1) == (0, 255, 255, 0)
+    assert table(ImageChops.logical_and, 0, 1) == [0, 0, 0, 255]
+    assert table(ImageChops.logical_or, 0, 1) == [0, 255, 255, 255]
+    assert table(ImageChops.logical_xor, 0, 1) == [0, 255, 255, 0]
 
-    assert table(ImageChops.logical_and, 0, 128) == (0, 0, 0, 255)
-    assert table(ImageChops.logical_or, 0, 128) == (0, 255, 255, 255)
-    assert table(ImageChops.logical_xor, 0, 128) == (0, 255, 255, 0)
+    assert table(ImageChops.logical_and, 0, 128) == [0, 0, 0, 255]
+    assert table(ImageChops.logical_or, 0, 128) == [0, 255, 255, 255]
+    assert table(ImageChops.logical_xor, 0, 128) == [0, 255, 255, 0]
 
-    assert table(ImageChops.logical_and, 0, 255) == (0, 0, 0, 255)
-    assert table(ImageChops.logical_or, 0, 255) == (0, 255, 255, 255)
-    assert table(ImageChops.logical_xor, 0, 255) == (0, 255, 255, 0)
+    assert table(ImageChops.logical_and, 0, 255) == [0, 0, 0, 255]
+    assert table(ImageChops.logical_or, 0, 255) == [0, 255, 255, 255]
+    assert table(ImageChops.logical_xor, 0, 255) == [0, 255, 255, 0]

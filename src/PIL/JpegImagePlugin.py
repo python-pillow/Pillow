@@ -42,14 +42,18 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from typing import Any
+from typing import IO, TYPE_CHECKING, Any
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
+from ._deprecate import deprecate
 from .JpegPresets import presets
+
+if TYPE_CHECKING:
+    from .MpoImagePlugin import MpoImageFile
 
 #
 # Parser
@@ -60,7 +64,7 @@ def Skip(self: JpegImageFile, marker: int) -> None:
     ImageFile._safe_read(self.fp, n)
 
 
-def APP(self, marker):
+def APP(self: JpegImageFile, marker: int) -> None:
     #
     # Application marker.  Store these in the APP dictionary.
     # Also look for well-known application markers.
@@ -68,7 +72,7 @@ def APP(self, marker):
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
-    app = "APP%d" % (marker & 15)
+    app = f"APP{marker & 15}"
 
     self.app[app] = s  # compatibility
     self.applist.append((app, s))
@@ -95,6 +99,8 @@ def APP(self, marker):
         else:
             self.info["exif"] = s
             self._exif_offset = self.fp.tell() - n + 6
+    elif marker == 0xFFE1 and s[:29] == b"http://ns.adobe.com/xap/1.0/\x00":
+        self.info["xmp"] = s.split(b"\x00", 1)[1]
     elif marker == 0xFFE2 and s[:5] == b"FPXR\0":
         # extract FlashPix information (incomplete)
         self.info["flashpix"] = s  # FIXME: value will change
@@ -131,13 +137,14 @@ def APP(self, marker):
                 offset += 4
                 data = s[offset : offset + size]
                 if code == 0x03ED:  # ResolutionInfo
-                    data = {
+                    photoshop[code] = {
                         "XResolution": i32(data, 0) / 65536,
                         "DisplayedUnitsX": i16(data, 4),
                         "YResolution": i32(data, 8) / 65536,
                         "DisplayedUnitsY": i16(data, 12),
                     }
-                photoshop[code] = data
+                else:
+                    photoshop[code] = data
                 offset += size
                 offset += offset & 1  # align
             except struct.error:
@@ -158,38 +165,6 @@ def APP(self, marker):
         # offset is current location minus buffer size
         # plus constant header size
         self.info["mpoffset"] = self.fp.tell() - n + 4
-
-    # If DPI isn't in JPEG header, fetch from EXIF
-    if "dpi" not in self.info and "exif" in self.info:
-        try:
-            exif = self.getexif()
-            resolution_unit = exif[0x0128]
-            x_resolution = exif[0x011A]
-            try:
-                dpi = float(x_resolution[0]) / x_resolution[1]
-            except TypeError:
-                dpi = x_resolution
-            if math.isnan(dpi):
-                msg = "DPI is not a number"
-                raise ValueError(msg)
-            if resolution_unit == 3:  # cm
-                # 1 dpcm = 2.54 dpi
-                dpi *= 2.54
-            self.info["dpi"] = dpi, dpi
-        except (
-            struct.error,
-            KeyError,
-            SyntaxError,
-            TypeError,
-            ValueError,
-            ZeroDivisionError,
-        ):
-            # struct.error for truncated EXIF
-            # KeyError for dpi not included
-            # SyntaxError for invalid/unreadable EXIF
-            # ValueError or TypeError for dpi being an invalid float
-            # ZeroDivisionError for invalid dpi rational value
-            self.info["dpi"] = 72, 72
 
 
 def COM(self: JpegImageFile, marker: int) -> None:
@@ -358,7 +333,7 @@ class JpegImageFile(ImageFile.ImageFile):
     format = "JPEG"
     format_description = "JPEG (ISO 10918)"
 
-    def _open(self):
+    def _open(self) -> None:
         s = self.fp.read(3)
 
         if not _accept(s):
@@ -368,15 +343,16 @@ class JpegImageFile(ImageFile.ImageFile):
 
         # Create attributes
         self.bits = self.layers = 0
+        self._exif_offset = 0
 
         # JPEG specifics (internal)
-        self.layer = []
-        self.huffman_dc = {}
-        self.huffman_ac = {}
-        self.quantization = {}
-        self.app = {}  # compatibility
-        self.applist = []
-        self.icclist = []
+        self.layer: list[tuple[int, int, int, int]] = []
+        self._huffman_dc: dict[Any, Any] = {}
+        self._huffman_ac: dict[Any, Any] = {}
+        self.quantization: dict[int, list[int]] = {}
+        self.app: dict[str, bytes] = {}  # compatibility
+        self.applist: list[tuple[str, bytes]] = []
+        self.icclist: list[bytes] = []
 
         while True:
             i = s[0]
@@ -396,7 +372,9 @@ class JpegImageFile(ImageFile.ImageFile):
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [("jpeg", (0, 0) + self.size, 0, (rawmode, ""))]
+                    self.tile = [
+                        ImageFile._Tile("jpeg", (0, 0) + self.size, 0, (rawmode, ""))
+                    ]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -408,6 +386,21 @@ class JpegImageFile(ImageFile.ImageFile):
             else:
                 msg = "no marker found"
                 raise SyntaxError(msg)
+
+        self._read_dpi_from_exif()
+
+    def __getattr__(self, name: str) -> Any:
+        if name in ("huffman_ac", "huffman_dc"):
+            deprecate(name, 12)
+            return getattr(self, "_" + name)
+        raise AttributeError(name)
+
+    def __getstate__(self) -> list[Any]:
+        return super().__getstate__() + [self.layers, self.layer]
+
+    def __setstate__(self, state: list[Any]) -> None:
+        super().__setstate__(state)
+        self.layers, self.layer = state[5:]
 
     def load_read(self, read_bytes: int) -> bytes:
         """
@@ -426,7 +419,7 @@ class JpegImageFile(ImageFile.ImageFile):
         return s
 
     def draft(
-        self, mode: str | None, size: tuple[int, int]
+        self, mode: str | None, size: tuple[int, int] | None
     ) -> tuple[str, tuple[int, int, float, float]] | None:
         if len(self.tile) != 1:
             return None
@@ -439,6 +432,7 @@ class JpegImageFile(ImageFile.ImageFile):
         scale = 1
         original_size = self.size
 
+        assert isinstance(a, tuple)
         if a[0] == "RGB" and mode in ["L", "YCbCr"]:
             self._mode = mode
             a = mode, ""
@@ -448,6 +442,7 @@ class JpegImageFile(ImageFile.ImageFile):
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
+            assert e is not None
             e = (
                 e[0],
                 e[1],
@@ -457,7 +452,7 @@ class JpegImageFile(ImageFile.ImageFile):
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
 
-        self.tile = [(d, e, o, a)]
+        self.tile = [ImageFile._Tile(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
@@ -494,35 +489,49 @@ class JpegImageFile(ImageFile.ImageFile):
 
         self.tile = []
 
-    def _getexif(self) -> dict[str, Any] | None:
+    def _getexif(self) -> dict[int, Any] | None:
         return _getexif(self)
 
-    def _getmp(self):
+    def _read_dpi_from_exif(self) -> None:
+        # If DPI isn't in JPEG header, fetch from EXIF
+        if "dpi" in self.info or "exif" not in self.info:
+            return
+        try:
+            exif = self.getexif()
+            resolution_unit = exif[0x0128]
+            x_resolution = exif[0x011A]
+            try:
+                dpi = float(x_resolution[0]) / x_resolution[1]
+            except TypeError:
+                dpi = x_resolution
+            if math.isnan(dpi):
+                msg = "DPI is not a number"
+                raise ValueError(msg)
+            if resolution_unit == 3:  # cm
+                # 1 dpcm = 2.54 dpi
+                dpi *= 2.54
+            self.info["dpi"] = dpi, dpi
+        except (
+            struct.error,  # truncated EXIF
+            KeyError,  # dpi not included
+            SyntaxError,  # invalid/unreadable EXIF
+            TypeError,  # dpi is an invalid float
+            ValueError,  # dpi is an invalid float
+            ZeroDivisionError,  # invalid dpi rational value
+        ):
+            self.info["dpi"] = 72, 72
+
+    def _getmp(self) -> dict[int, Any] | None:
         return _getmp(self)
 
-    def getxmp(self) -> dict[str, Any]:
-        """
-        Returns a dictionary containing the XMP tags.
-        Requires defusedxml to be installed.
 
-        :returns: XMP tags in a dictionary.
-        """
-
-        for segment, content in self.applist:
-            if segment == "APP1":
-                marker, xmp_tags = content.split(b"\x00")[:2]
-                if marker == b"http://ns.adobe.com/xap/1.0/":
-                    return self._getxmp(xmp_tags)
-        return {}
-
-
-def _getexif(self) -> dict[str, Any] | None:
+def _getexif(self: JpegImageFile) -> dict[int, Any] | None:
     if "exif" not in self.info:
         return None
     return self.getexif()._get_merged_dict()
 
 
-def _getmp(self):
+def _getmp(self: JpegImageFile) -> dict[int, Any] | None:
     # Extract MP information.  This method was inspired by the "highly
     # experimental" _getexif version that's been in use for years now,
     # itself based on the ImageFileDirectory class in the TIFF plugin.
@@ -630,7 +639,7 @@ samplings = {
 # fmt: on
 
 
-def get_sampling(im):
+def get_sampling(im: Image.Image) -> int:
     # There's no subsampling when images have only 1 layer
     # (grayscale images) or when they are CMYK (4 layers),
     # so set subsampling to the default value.
@@ -638,13 +647,13 @@ def get_sampling(im):
     # NOTE: currently Pillow can't encode JPEG to YCCK format.
     # If YCCK support is added in the future, subsampling code will have
     # to be updated (here and in JpegEncode.c) to deal with 4 layers.
-    if not hasattr(im, "layers") or im.layers in (1, 4):
+    if not isinstance(im, JpegImageFile) or im.layers in (1, 4):
         return -1
     sampling = im.layer[0][1:3] + im.layer[1][1:3] + im.layer[2][1:3]
     return samplings.get(sampling, -1)
 
 
-def _save(im, fp, filename):
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if im.width == 0 or im.height == 0:
         msg = "cannot write empty image as JPEG"
         raise ValueError(msg)
@@ -697,7 +706,11 @@ def _save(im, fp, filename):
             raise ValueError(msg)
         subsampling = get_sampling(im)
 
-    def validate_qtables(qtables):
+    def validate_qtables(
+        qtables: (
+            str | tuple[list[int], ...] | list[list[int]] | dict[int, list[int]] | None
+        )
+    ) -> list[list[int]] | None:
         if qtables is None:
             return qtables
         if isinstance(qtables, str):
@@ -727,12 +740,12 @@ def _save(im, fp, filename):
                     if len(table) != 64:
                         msg = "Invalid quantization table"
                         raise TypeError(msg)
-                    table = array.array("H", table)
+                    table_array = array.array("H", table)
                 except TypeError as e:
                     msg = "Invalid quantization table"
                     raise ValueError(msg) from e
                 else:
-                    qtables[idx] = list(table)
+                    qtables[idx] = list(table_array)
             return qtables
 
     if qtables == "keep":
@@ -745,17 +758,27 @@ def _save(im, fp, filename):
     extra = info.get("extra", b"")
 
     MAX_BYTES_IN_MARKER = 65533
+    xmp = info.get("xmp")
+    if xmp:
+        overhead_len = 29  # b"http://ns.adobe.com/xap/1.0/\x00"
+        max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
+        if len(xmp) > max_data_bytes_in_marker:
+            msg = "XMP data is too long"
+            raise ValueError(msg)
+        size = o16(2 + overhead_len + len(xmp))
+        extra += b"\xFF\xE1" + size + b"http://ns.adobe.com/xap/1.0/\x00" + xmp
+
     icc_profile = info.get("icc_profile")
     if icc_profile:
-        ICC_OVERHEAD_LEN = 14
-        MAX_DATA_BYTES_IN_MARKER = MAX_BYTES_IN_MARKER - ICC_OVERHEAD_LEN
+        overhead_len = 14  # b"ICC_PROFILE\0" + o8(i) + o8(len(markers))
+        max_data_bytes_in_marker = MAX_BYTES_IN_MARKER - overhead_len
         markers = []
         while icc_profile:
-            markers.append(icc_profile[:MAX_DATA_BYTES_IN_MARKER])
-            icc_profile = icc_profile[MAX_DATA_BYTES_IN_MARKER:]
+            markers.append(icc_profile[:max_data_bytes_in_marker])
+            icc_profile = icc_profile[max_data_bytes_in_marker:]
         i = 1
         for marker in markers:
-            size = o16(2 + ICC_OVERHEAD_LEN + len(marker))
+            size = o16(2 + overhead_len + len(marker))
             extra += (
                 b"\xFF\xE2"
                 + size
@@ -824,10 +847,12 @@ def _save(im, fp, filename):
         # Ensure that our buffer is big enough. Same with the icc_profile block.
         bufsize = max(bufsize, len(exif) + 5, len(extra) + 1)
 
-    ImageFile._save(im, fp, [("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize)
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("jpeg", (0, 0) + im.size, 0, rawmode)], bufsize
+    )
 
 
-def _save_cjpeg(im, fp, filename):
+def _save_cjpeg(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # ALTERNATIVE: handle JPEGs via the IJG command line utilities.
     tempfile = im._dump()
     subprocess.check_call(["cjpeg", "-outfile", filename, tempfile])
@@ -839,11 +864,17 @@ def _save_cjpeg(im, fp, filename):
 
 ##
 # Factory for making JPEG and MPO instances
-def jpeg_factory(fp=None, filename=None):
+def jpeg_factory(
+    fp: IO[bytes], filename: str | bytes | None = None
+) -> JpegImageFile | MpoImageFile:
     im = JpegImageFile(fp, filename)
     try:
         mpheader = im._getmp()
-        if mpheader[45057] > 1:
+        if mpheader is not None and mpheader[45057] > 1:
+            for segment, content in im.applist:
+                if segment == "APP1" and b' hdrgm:Version="' in content:
+                    # Ultra HDR images are not yet supported
+                    return im
             # It's actually an MPO
             from .MpoImagePlugin import MpoImageFile
 

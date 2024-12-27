@@ -68,7 +68,11 @@ def test_sanity() -> None:
     ),
 )
 def test_properties(
-    mode, expected_base, expected_type, expected_bands, expected_band_names
+    mode: str,
+    expected_base: str,
+    expected_type: str,
+    expected_bands: int,
+    expected_band_names: tuple[str, ...],
 ) -> None:
     assert Image.getmodebase(mode) == expected_base
     assert Image.getmodetype(mode) == expected_type

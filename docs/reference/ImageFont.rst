@@ -53,6 +53,7 @@ Functions
 .. autofunction:: PIL.ImageFont.load_path
 .. autofunction:: PIL.ImageFont.truetype
 .. autofunction:: PIL.ImageFont.load_default
+.. autofunction:: PIL.ImageFont.load_default_imagefont
 
 Methods
 -------
@@ -90,3 +91,11 @@ Constants
     Set to 1,000,000, to protect against potential DOS attacks. Pillow will
     raise a :py:exc:`ValueError` if the number of characters is over this limit. The
     check can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
+
+Dictionaries
+------------
+
+.. autoclass:: Axis
+    :members:
+    :undoc-members:
+    :show-inheritance:

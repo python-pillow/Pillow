@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from typing import Generator
+from typing import Any
 
 import pytest
 
@@ -46,6 +47,8 @@ def test_unclosed_file() -> None:
 
 def test_closed_file() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         im = Image.open(TEST_GIF)
         im.load()
         im.close()
@@ -53,6 +56,7 @@ def test_closed_file() -> None:
 
 def test_seek_after_close() -> None:
     im = Image.open("Tests/images/iss634.gif")
+    assert isinstance(im, GifImagePlugin.GifImageFile)
     im.load()
     im.close()
 
@@ -66,6 +70,8 @@ def test_seek_after_close() -> None:
 
 def test_context_manager() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         with Image.open(TEST_GIF) as im:
             im.load()
 
@@ -352,7 +358,7 @@ def test_palette_434(tmp_path: Path) -> None:
 
     def roundtrip(im: Image.Image, **kwargs: bool) -> Image.Image:
         out = str(tmp_path / "temp.gif")
-        im.copy().save(out, **kwargs)
+        im.copy().save(out, "GIF", **kwargs)
         reloaded = Image.open(out)
 
         return reloaded
@@ -377,7 +383,8 @@ def test_save_netpbm_bmp_mode(tmp_path: Path) -> None:
         img = img.convert("RGB")
 
         tempfile = str(tmp_path / "temp.gif")
-        GifImagePlugin._save_netpbm(img, 0, tempfile)
+        b = BytesIO()
+        GifImagePlugin._save_netpbm(img, b, tempfile)
         with Image.open(tempfile) as reloaded:
             assert_image_similar(img, reloaded.convert("RGB"), 0)
 
@@ -388,7 +395,8 @@ def test_save_netpbm_l_mode(tmp_path: Path) -> None:
         img = img.convert("L")
 
         tempfile = str(tmp_path / "temp.gif")
-        GifImagePlugin._save_netpbm(img, 0, tempfile)
+        b = BytesIO()
+        GifImagePlugin._save_netpbm(img, b, tempfile)
         with Image.open(tempfile) as reloaded:
             assert_image_similar(img, reloaded.convert("L"), 0)
 
@@ -648,7 +656,7 @@ def test_dispose2_palette(tmp_path: Path) -> None:
             assert rgb_img.getpixel((50, 50)) == circle
 
             # Check that frame transparency wasn't added unnecessarily
-            assert img._frame_transparency is None
+            assert getattr(img, "_frame_transparency") is None
 
 
 def test_dispose2_diff(tmp_path: Path) -> None:
@@ -975,7 +983,7 @@ def test_webp_background(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
 
     # Test opaque WebP background
-    if features.check("webp") and features.check("webp_anim"):
+    if features.check("webp"):
         with Image.open("Tests/images/hopper.webp") as im:
             assert im.info["background"] == (255, 255, 255, 255)
             im.save(out)
@@ -1387,16 +1395,39 @@ def test_lzw_bits() -> None:
         im.load()
 
 
-def test_extents() -> None:
-    with Image.open("Tests/images/test_extents.gif") as im:
-        assert im.size == (100, 100)
+@pytest.mark.parametrize(
+    "test_file, loading_strategy",
+    (
+        ("test_extents.gif", GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST),
+        (
+            "test_extents.gif",
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY,
+        ),
+        (
+            "test_extents_transparency.gif",
+            GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST,
+        ),
+    ),
+)
+def test_extents(
+    test_file: str, loading_strategy: GifImagePlugin.LoadingStrategy
+) -> None:
+    GifImagePlugin.LOADING_STRATEGY = loading_strategy
+    try:
+        with Image.open("Tests/images/" + test_file) as im:
+            assert im.size == (100, 100)
 
-        # Check that n_frames does not change the size
-        assert im.n_frames == 2
-        assert im.size == (100, 100)
+            # Check that n_frames does not change the size
+            assert im.n_frames == 2
+            assert im.size == (100, 100)
 
-        im.seek(1)
-        assert im.size == (150, 150)
+            im.seek(1)
+            assert im.size == (150, 150)
+
+            im.load()
+            assert im.im.size == (150, 150)
+    finally:
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
 
 
 def test_missing_background() -> None:
@@ -1415,3 +1446,22 @@ def test_saving_rgba(tmp_path: Path) -> None:
     with Image.open(out) as reloaded:
         reloaded_rgba = reloaded.convert("RGBA")
         assert reloaded_rgba.load()[0, 0][3] == 0
+
+
+@pytest.mark.parametrize("params", ({}, {"disposal": 2, "optimize": False}))
+def test_p_rgba(tmp_path: Path, params: dict[str, Any]) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im1 = Image.new("P", (100, 100))
+    d = ImageDraw.Draw(im1)
+    d.ellipse([(40, 40), (60, 60)], fill=1)
+    data = [0, 0, 0, 0, 0, 0, 0, 255] + [0, 0, 0, 0] * 254
+    im1.putpalette(data, "RGBA")
+
+    im2 = Image.new("P", (100, 100))
+    im2.putpalette(data, "RGBA")
+
+    im1.save(out, save_all=True, append_images=[im2], **params)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.n_frames == 2

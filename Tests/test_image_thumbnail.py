@@ -16,7 +16,7 @@ from .helper import (
 
 def test_sanity() -> None:
     im = hopper()
-    assert im.thumbnail((100, 100)) is None
+    im.thumbnail((100, 100))
 
     assert im.size == (100, 100)
 
@@ -92,34 +92,32 @@ def test_no_resize() -> None:
 
 
 @skip_unless_feature("libtiff")
-def test_load_first() -> None:
-    # load() may change the size of the image
-    # Test that thumbnail() is calling it before performing size calculations
+def test_transposed() -> None:
     with Image.open("Tests/images/g4_orientation_5.tif") as im:
+        assert im.size == (590, 88)
+
         im.thumbnail((64, 64))
         assert im.size == (64, 10)
 
-    # Test thumbnail(), without draft(),
-    # on an image that is large enough once load() has changed the size
     with Image.open("Tests/images/g4_orientation_5.tif") as im:
         im.thumbnail((590, 88), reducing_gap=None)
         assert im.size == (590, 88)
 
 
-def test_load_first_unless_jpeg() -> None:
+def test_load_first_unless_jpeg(monkeypatch: pytest.MonkeyPatch) -> None:
     # Test that thumbnail() still uses draft() for JPEG
     with Image.open("Tests/images/hopper.jpg") as im:
-        draft = im.draft
+        original_draft = im.draft
 
         def im_draft(
-            mode: str, size: tuple[int, int]
+            mode: str | None, size: tuple[int, int] | None
         ) -> tuple[str, tuple[int, int, float, float]] | None:
-            result = draft(mode, size)
+            result = original_draft(mode, size)
             assert result is not None
 
             return result
 
-        im.draft = im_draft
+        monkeypatch.setattr(im, "draft", im_draft)
 
         im.thumbnail((64, 64))
 

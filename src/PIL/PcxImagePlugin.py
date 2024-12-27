@@ -86,7 +86,7 @@ class PcxImageFile(ImageFile.ImageFile):
 
         elif bits == 1 and planes in (2, 4):
             mode = "P"
-            rawmode = "P;%dL" % planes
+            rawmode = f"P;{planes}L"
             self.palette = ImagePalette.raw("RGB", s[16:64])
 
         elif version == 5 and bits == 8 and planes == 1:
@@ -128,7 +128,9 @@ class PcxImageFile(ImageFile.ImageFile):
         bbox = (0, 0) + self.size
         logger.debug("size: %sx%s", *self.size)
 
-        self.tile = [("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))]
+        self.tile = [
+            ImageFile._Tile("pcx", bbox, self.fp.tell(), (rawmode, planes * stride))
+        ]
 
 
 # --------------------------------------------------------------------
@@ -144,7 +146,7 @@ SAVE = {
 }
 
 
-def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
+def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:
@@ -198,12 +200,12 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str) -> None:
 
     assert fp.tell() == 128
 
-    ImageFile._save(im, fp, [("pcx", (0, 0) + im.size, 0, (rawmode, bits * planes))])
+    ImageFile._save(
+        im, fp, [ImageFile._Tile("pcx", (0, 0) + im.size, 0, (rawmode, bits * planes))]
+    )
 
     if im.mode == "P":
         # colour palette
-        assert im.im is not None
-
         fp.write(o8(12))
         palette = im.im.getpalette("RGB", "RGB")
         palette += b"\x00" * (768 - len(palette))

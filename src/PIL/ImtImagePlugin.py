@@ -58,11 +58,11 @@ class ImtImageFile(ImageFile.ImageFile):
             if s == b"\x0C":
                 # image data begins
                 self.tile = [
-                    (
+                    ImageFile._Tile(
                         "raw",
                         (0, 0) + self.size,
                         self.fp.tell() - len(buffer),
-                        (self.mode, 0, 1),
+                        self.mode,
                     )
                 ]
 

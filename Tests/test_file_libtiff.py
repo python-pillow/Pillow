@@ -54,7 +54,7 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_version(self) -> None:
         version = features.version_codec("libtiff")
         assert version is not None
-        assert re.search(r"\d+\.\d+\.\d+$", version)
+        assert re.search(r"\d+\.\d+\.\d+t?$", version)
 
     def test_g4_tiff(self, tmp_path: Path) -> None:
         """Test the ordinary file path load path"""
@@ -92,11 +92,22 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_g4_non_disk_file_object(self, tmp_path: Path) -> None:
         """Testing loading from non-disk non-BytesIO file object"""
         test_file = "Tests/images/hopper_g4_500.tif"
-        s = io.BytesIO()
         with open(test_file, "rb") as f:
-            s.write(f.read())
-            s.seek(0)
-        r = io.BufferedReader(s)
+            data = f.read()
+
+        class NonBytesIO(io.RawIOBase):
+            def read(self, size: int = -1) -> bytes:
+                nonlocal data
+                if size == -1:
+                    size = len(data)
+                result = data[:size]
+                data = data[size:]
+                return result
+
+            def readable(self) -> bool:
+                return True
+
+        r = io.BufferedReader(NonBytesIO())
         with Image.open(r) as im:
             assert im.size == (500, 500)
             self._assert_noerr(tmp_path, im)
@@ -229,9 +240,10 @@ class TestFileLibTiff(LibTiffTestCase):
 
             new_ifd = TiffImagePlugin.ImageFileDirectory_v2()
             for tag, info in core_items.items():
+                assert info.type is not None
                 if info.length == 1:
                     new_ifd[tag] = values[info.type]
-                if info.length == 0:
+                elif not info.length:
                     new_ifd[tag] = tuple(values[info.type] for _ in range(3))
                 else:
                     new_ifd[tag] = tuple(values[info.type] for _ in range(info.length))
@@ -685,13 +697,18 @@ class TestFileLibTiff(LibTiffTestCase):
             assert reloaded.tag_v2[530] == (1, 1)
             assert reloaded.tag_v2[532] == (0, 255, 128, 255, 128, 255)
 
-    def test_exif_ifd(self, tmp_path: Path) -> None:
-        outfile = str(tmp_path / "temp.tif")
+    def test_exif_ifd(self) -> None:
+        out = io.BytesIO()
         with Image.open("Tests/images/tiff_adobe_deflate.tif") as im:
             assert im.tag_v2[34665] == 125456
-            im.save(outfile)
+            im.save(out, "TIFF")
 
-        with Image.open(outfile) as reloaded:
+            with Image.open(out) as reloaded:
+                assert 34665 not in reloaded.tag_v2
+
+            im.save(out, "TIFF", tiffinfo={34665: 125456})
+
+        with Image.open(out) as reloaded:
             if Image.core.libtiff_support_custom_tags:
                 assert reloaded.tag_v2[34665] == 125456
 
@@ -1043,7 +1060,11 @@ class TestFileLibTiff(LibTiffTestCase):
         ],
     )
     def test_wrong_bits_per_sample(
-        self, file_name: str, mode: str, size: tuple[int, int], tile
+        self,
+        file_name: str,
+        mode: str,
+        size: tuple[int, int],
+        tile: list[tuple[str, tuple[int, int, int, int], int, tuple[Any, ...]]],
     ) -> None:
         with Image.open("Tests/images/" + file_name) as im:
             assert im.mode == mode
@@ -1076,6 +1097,25 @@ class TestFileLibTiff(LibTiffTestCase):
                     im = ImageOps.exif_transpose(im)
 
                     assert_image_similar(base_im, im, 0.7)
+
+    @pytest.mark.parametrize(
+        "test_file",
+        [
+            "Tests/images/old-style-jpeg-compression-no-samplesperpixel.tif",
+            "Tests/images/old-style-jpeg-compression.tif",
+        ],
+    )
+    def test_buffering(self, test_file: str) -> None:
+        # load exif first
+        with Image.open(open(test_file, "rb", buffering=1048576)) as im:
+            exif = dict(im.getexif())
+
+        # load image before exif
+        with Image.open(open(test_file, "rb", buffering=1048576)) as im2:
+            im2.load()
+            exif_after_load = dict(im2.getexif())
+
+        assert exif == exif_after_load
 
     @pytest.mark.valgrind_known_error(reason="Backtrace in Python Core")
     def test_sampleformat_not_corrupted(self) -> None:
@@ -1130,7 +1170,7 @@ class TestFileLibTiff(LibTiffTestCase):
             arguments: dict[str, str | int] = {"compression": "tiff_adobe_deflate"}
             if argument:
                 arguments["strip_size"] = 2**18
-            im.save(out, **arguments)
+            im.save(out, "TIFF", **arguments)
 
             with Image.open(out) as im:
                 assert isinstance(im, TiffImagePlugin.TiffImageFile)

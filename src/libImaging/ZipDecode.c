@@ -217,7 +217,8 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                     state->shuffle(
                         (UINT8 *)im->image[state->y] + col * im->pixelsize,
                         state->buffer + context->prefix + i,
-                        1);
+                        1
+                    );
                     col += COL_INCREMENT[context->pass];
                 }
             } else {
@@ -229,7 +230,8 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                     UINT8 byte = *(state->buffer + context->prefix + (i / 8));
                     byte <<= (i % 8);
                     state->shuffle(
-                        (UINT8 *)im->image[state->y] + col * im->pixelsize, &byte, 1);
+                        (UINT8 *)im->image[state->y] + col * im->pixelsize, &byte, 1
+                    );
                     col += COL_INCREMENT[context->pass];
                 }
             }
@@ -253,7 +255,8 @@ ImagingZipDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
                 (UINT8 *)im->image[state->y + state->yoff] +
                     state->xoff * im->pixelsize,
                 state->buffer + context->prefix,
-                state->xsize);
+                state->xsize
+            );
             state->y++;
         }
 

@@ -36,7 +36,8 @@ add_item(const char *mode) {
             "AccessInit: hash collision: %d for both %s and %s\n",
             i,
             mode,
-            access_table[i].mode);
+            access_table[i].mode
+        );
         exit(1);
     }
     access_table[i].mode = mode;
@@ -184,7 +185,7 @@ put_pixel_32(Imaging im, int x, int y, const void *color) {
 }
 
 void
-ImagingAccessInit() {
+ImagingAccessInit(void) {
 #define ADD(mode_, get_pixel_, put_pixel_)      \
     {                                           \
         ImagingAccess access = add_item(mode_); \

@@ -41,11 +41,16 @@ A = string_to_img(
 def img_to_string(im: Image.Image) -> str:
     """Turn a (small) binary image into a string representation"""
     chars = ".1"
-    width, height = im.size
-    return "\n".join(
-        "".join(chars[im.getpixel((c, r)) > 0] for c in range(width))
-        for r in range(height)
-    )
+    result = []
+    for r in range(im.height):
+        line = ""
+        for c in range(im.width):
+            value = im.getpixel((c, r))
+            assert not isinstance(value, tuple)
+            assert value is not None
+            line += chars[value > 0]
+        result.append(line)
+    return "\n".join(result)
 
 
 def img_string_normalize(im: str) -> str:
@@ -319,17 +324,17 @@ def test_set_lut() -> None:
 
 def test_wrong_mode() -> None:
     lut = ImageMorph.LutBuilder(op_name="corner").build_lut()
-    imrgb = Image.new("RGB", (10, 10))
-    iml = Image.new("L", (10, 10))
+    imrgb_ptr = Image.new("RGB", (10, 10)).getim()
+    iml_ptr = Image.new("L", (10, 10)).getim()
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.apply(bytes(lut), imrgb.im.id, iml.im.id)
+        _imagingmorph.apply(bytes(lut), imrgb_ptr, iml_ptr)
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.apply(bytes(lut), iml.im.id, imrgb.im.id)
+        _imagingmorph.apply(bytes(lut), iml_ptr, imrgb_ptr)
 
     with pytest.raises(RuntimeError):
-        _imagingmorph.match(bytes(lut), imrgb.im.id)
+        _imagingmorph.match(bytes(lut), imrgb_ptr)
 
     # Should not raise
-    _imagingmorph.match(bytes(lut), iml.im.id)
+    _imagingmorph.match(bytes(lut), iml_ptr)

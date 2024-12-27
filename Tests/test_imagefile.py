@@ -90,10 +90,23 @@ class TestImageFile:
             data = f.read()
         with ImageFile.Parser() as p:
             p.feed(data)
+            assert p.image is not None
             assert (48, 48) == p.image.size
 
+    @pytest.mark.filterwarnings("ignore:Corrupt EXIF data")
+    def test_incremental_tiff(self) -> None:
+        with ImageFile.Parser() as p:
+            with open("Tests/images/hopper.tif", "rb") as f:
+                p.feed(f.read(1024))
+
+                # Check that insufficient data was given in the first feed
+                assert not p.image
+
+                p.feed(f.read())
+            assert p.image is not None
+            assert (128, 128) == p.image.size
+
     @skip_unless_feature("webp")
-    @skip_unless_feature("webp_anim")
     def test_incremental_webp(self) -> None:
         with ImageFile.Parser() as p:
             with open("Tests/images/hopper.webp", "rb") as f:
@@ -103,6 +116,7 @@ class TestImageFile:
                 assert not p.image
 
                 p.feed(f.read())
+            assert p.image is not None
             assert (128, 128) == p.image.size
 
     @skip_unless_feature("zlib")
@@ -125,7 +139,7 @@ class TestImageFile:
     def test_raise_typeerror(self) -> None:
         with pytest.raises(TypeError):
             parser = ImageFile.Parser()
-            parser.feed(1)
+            parser.feed(1)  # type: ignore[arg-type]
 
     def test_negative_stride(self) -> None:
         with open("Tests/images/raw_negative_stride.bin", "rb") as f:
@@ -209,7 +223,7 @@ class MockPyDecoder(ImageFile.PyDecoder):
 
         super().__init__(mode, *args)
 
-    def decode(self, buffer):
+    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
         # eof
         return -1, 0
 
@@ -222,7 +236,7 @@ class MockPyEncoder(ImageFile.PyEncoder):
 
         super().__init__(mode, *args)
 
-    def encode(self, buffer):
+    def encode(self, bufsize: int) -> tuple[int, int, bytes]:
         return 1, 1, b""
 
     def cleanup(self) -> None:
@@ -237,7 +251,9 @@ class MockImageFile(ImageFile.ImageFile):
         self.rawmode = "RGBA"
         self._mode = "RGBA"
         self._size = (200, 200)
-        self.tile = [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 32, None)]
+        self.tile = [
+            ImageFile._Tile("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 32, None)
+        ]
 
 
 class CodecsTest:
@@ -267,7 +283,7 @@ class TestPyDecoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [("MOCK", None, 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", None, 32, None)]
 
         im.load()
 
@@ -280,12 +296,12 @@ class TestPyDecoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [("MOCK", (xoff, yoff, -10, yoff + ysize), 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", (xoff, yoff, -10, yoff + ysize), 32, None)]
 
         with pytest.raises(ValueError):
             im.load()
 
-        im.tile = [("MOCK", (xoff, yoff, xoff + xsize, -10), 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", (xoff, yoff, xoff + xsize, -10), 32, None)]
         with pytest.raises(ValueError):
             im.load()
 
@@ -293,19 +309,27 @@ class TestPyDecoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [("MOCK", (xoff, yoff, xoff + xsize + 100, yoff + ysize), 32, None)]
+        im.tile = [
+            ImageFile._Tile(
+                "MOCK", (xoff, yoff, xoff + xsize + 100, yoff + ysize), 32, None
+            )
+        ]
 
         with pytest.raises(ValueError):
             im.load()
 
-        im.tile = [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize + 100), 32, None)]
+        im.tile = [
+            ImageFile._Tile(
+                "MOCK", (xoff, yoff, xoff + xsize, yoff + ysize + 100), 32, None
+            )
+        ]
         with pytest.raises(ValueError):
             im.load()
 
     def test_decode(self) -> None:
-        decoder = ImageFile.PyDecoder(None)
+        decoder = ImageFile.PyDecoder("")
         with pytest.raises(NotImplementedError):
-            decoder.decode(None)
+            decoder.decode(b"")
 
 
 class TestPyEncoder(CodecsTest):
@@ -316,7 +340,13 @@ class TestPyEncoder(CodecsTest):
 
         fp = BytesIO()
         ImageFile._save(
-            im, fp, [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 0, "RGB")]
+            im,
+            fp,
+            [
+                ImageFile._Tile(
+                    "MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 0, "RGB"
+                )
+            ],
         )
 
         assert MockPyEncoder.last
@@ -329,10 +359,10 @@ class TestPyEncoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [("MOCK", None, 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", None, 32, None)]
 
         fp = BytesIO()
-        ImageFile._save(im, fp, [("MOCK", None, 0, "RGB")])
+        ImageFile._save(im, fp, [ImageFile._Tile("MOCK", None, 0, "RGB")])
 
         assert MockPyEncoder.last
         assert MockPyEncoder.last.state.xoff == 0
@@ -349,13 +379,19 @@ class TestPyEncoder(CodecsTest):
         MockPyEncoder.last = None
         with pytest.raises(ValueError):
             ImageFile._save(
-                im, fp, [("MOCK", (xoff, yoff, -10, yoff + ysize), 0, "RGB")]
+                im,
+                fp,
+                [ImageFile._Tile("MOCK", (xoff, yoff, -10, yoff + ysize), 0, "RGB")],
             )
-        assert MockPyEncoder.last.cleanup_called
+        last: MockPyEncoder | None = MockPyEncoder.last
+        assert last
+        assert last.cleanup_called
 
         with pytest.raises(ValueError):
             ImageFile._save(
-                im, fp, [("MOCK", (xoff, yoff, xoff + xsize, -10), 0, "RGB")]
+                im,
+                fp,
+                [ImageFile._Tile("MOCK", (xoff, yoff, xoff + xsize, -10), 0, "RGB")],
             )
 
     def test_oversize(self) -> None:
@@ -368,20 +404,28 @@ class TestPyEncoder(CodecsTest):
             ImageFile._save(
                 im,
                 fp,
-                [("MOCK", (xoff, yoff, xoff + xsize + 100, yoff + ysize), 0, "RGB")],
+                [
+                    ImageFile._Tile(
+                        "MOCK", (xoff, yoff, xoff + xsize + 100, yoff + ysize), 0, "RGB"
+                    )
+                ],
             )
 
         with pytest.raises(ValueError):
             ImageFile._save(
                 im,
                 fp,
-                [("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize + 100), 0, "RGB")],
+                [
+                    ImageFile._Tile(
+                        "MOCK", (xoff, yoff, xoff + xsize, yoff + ysize + 100), 0, "RGB"
+                    )
+                ],
             )
 
     def test_encode(self) -> None:
-        encoder = ImageFile.PyEncoder(None)
+        encoder = ImageFile.PyEncoder("")
         with pytest.raises(NotImplementedError):
-            encoder.encode(None)
+            encoder.encode(0)
 
         bytes_consumed, errcode = encoder.encode_to_pyfd()
         assert bytes_consumed == 0
@@ -392,7 +436,7 @@ class TestPyEncoder(CodecsTest):
             encoder.encode_to_pyfd()
 
         with pytest.raises(NotImplementedError):
-            encoder.encode_to_file(None, None)
+            encoder.encode_to_file(0, 0)
 
     def test_zero_height(self) -> None:
         with pytest.raises(UnidentifiedImageError):

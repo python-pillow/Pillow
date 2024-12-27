@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from packaging.version import parse as parse_version
@@ -13,15 +13,18 @@ numpy = pytest.importorskip("numpy", reason="NumPy not installed")
 
 im = hopper().resize((128, 100))
 
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
 
 def test_toarray() -> None:
     def test(mode: str) -> tuple[tuple[int, ...], str, int]:
         ai = numpy.array(im.convert(mode))
         return ai.shape, ai.dtype.str, ai.nbytes
 
-    def test_with_dtype(dtype) -> None:
+    def test_with_dtype(dtype: npt.DTypeLike) -> None:
         ai = numpy.array(im, dtype=dtype)
-        assert ai.dtype == dtype
+        assert ai.dtype.type is dtype
 
     # assert test("1") == ((100, 128), '|b1', 1600))
     assert test("L") == ((100, 128), "|u1", 12800)
@@ -44,7 +47,7 @@ def test_toarray() -> None:
             with pytest.raises(OSError):
                 numpy.array(im_truncated)
         else:
-            with pytest.warns(UserWarning):
+            with pytest.warns(DeprecationWarning):
                 numpy.array(im_truncated)
 
 
@@ -110,4 +113,5 @@ def test_fromarray_palette() -> None:
     out = Image.fromarray(a, "P")
 
     # Assert that the Python and C palettes match
+    assert out.palette is not None
     assert len(out.palette.colors) == len(out.im.getpalette()) / 3

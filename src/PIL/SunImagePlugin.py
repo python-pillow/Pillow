@@ -124,9 +124,13 @@ class SunImageFile(ImageFile.ImageFile):
         # (https://www.fileformat.info/format/sunraster/egff.htm)
 
         if file_type in (0, 1, 3, 4, 5):
-            self.tile = [("raw", (0, 0) + self.size, offset, (rawmode, stride))]
+            self.tile = [
+                ImageFile._Tile("raw", (0, 0) + self.size, offset, (rawmode, stride))
+            ]
         elif file_type == 2:
-            self.tile = [("sun_rle", (0, 0) + self.size, offset, rawmode)]
+            self.tile = [
+                ImageFile._Tile("sun_rle", (0, 0) + self.size, offset, rawmode)
+            ]
         else:
             msg = "Unsupported Sun Raster file type"
             raise SyntaxError(msg)

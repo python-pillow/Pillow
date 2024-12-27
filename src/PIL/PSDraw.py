@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING
+from typing import IO, TYPE_CHECKING
 
 from . import EpsImagePlugin
 
@@ -28,15 +28,12 @@ from . import EpsImagePlugin
 class PSDraw:
     """
     Sets up printing to the given file. If ``fp`` is omitted,
-    ``sys.stdout.buffer`` or ``sys.stdout`` is assumed.
+    ``sys.stdout.buffer`` is assumed.
     """
 
-    def __init__(self, fp=None):
+    def __init__(self, fp: IO[bytes] | None = None) -> None:
         if not fp:
-            try:
-                fp = sys.stdout.buffer
-            except AttributeError:
-                fp = sys.stdout
+            fp = sys.stdout.buffer
         self.fp = fp
 
     def begin_document(self, id: str | None = None) -> None:
@@ -138,7 +135,7 @@ class PSDraw:
             sx = x / im.size[0]
             sy = y / im.size[1]
             self.fp.write(b"%f %f scale\n" % (sx, sy))
-        EpsImagePlugin._save(im, self.fp, None, 0)
+        EpsImagePlugin._save(im, self.fp, "", 0)
         self.fp.write(b"\ngrestore\n")
 
 

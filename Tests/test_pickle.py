@@ -46,7 +46,7 @@ def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> Non
 
 
 @pytest.mark.parametrize(
-    ("test_file", "test_mode"),
+    "test_file, test_mode",
     [
         ("Tests/images/hopper.jpg", None),
         ("Tests/images/hopper.jpg", "L"),
@@ -56,10 +56,10 @@ def helper_pickle_string(protocol: int, test_file: str, mode: str | None) -> Non
         ),
         ("Tests/images/hopper.tif", None),
         ("Tests/images/test-card.png", None),
-        ("Tests/images/zero_bb.png", None),
-        ("Tests/images/zero_bb_scale2.png", None),
-        ("Tests/images/non_zero_bb.png", None),
-        ("Tests/images/non_zero_bb_scale2.png", None),
+        ("Tests/images/eps/zero_bb.png", None),
+        ("Tests/images/eps/zero_bb_scale2.png", None),
+        ("Tests/images/eps/non_zero_bb.png", None),
+        ("Tests/images/eps/non_zero_bb_scale2.png", None),
         ("Tests/images/p_trns_single.png", None),
         ("Tests/images/pil123p.png", None),
         ("Tests/images/itxt_chunks.png", None),
@@ -72,6 +72,17 @@ def test_pickle_image(
     # Act / Assert
     helper_pickle_string(protocol, test_file, test_mode)
     helper_pickle_file(tmp_path, protocol, test_file, test_mode)
+
+
+def test_pickle_jpeg() -> None:
+    # Arrange
+    with Image.open("Tests/images/hopper.jpg") as image:
+        # Act: roundtrip
+        unpickled_image = pickle.loads(pickle.dumps(image))
+
+    # Assert
+    assert len(unpickled_image.layer) == 3
+    assert unpickled_image.layers == 3
 
 
 def test_pickle_la_mode_with_palette(tmp_path: Path) -> None:

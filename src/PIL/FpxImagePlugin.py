@@ -53,7 +53,7 @@ class FpxImageFile(ImageFile.ImageFile):
     format = "FPX"
     format_description = "FlashPix"
 
-    def _open(self):
+    def _open(self) -> None:
         #
         # read the OLE directory and see if this is a likely
         # to be a FlashPix file
@@ -64,7 +64,8 @@ class FpxImageFile(ImageFile.ImageFile):
             msg = "not an FPX file; invalid OLE file"
             raise SyntaxError(msg) from e
 
-        if self.ole.root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
+        root = self.ole.root
+        if not root or root.clsid != "56616700-C154-11CE-8553-00AA00A1F95B":
             msg = "not an FPX file; bad root CLSID"
             raise SyntaxError(msg)
 
@@ -80,6 +81,8 @@ class FpxImageFile(ImageFile.ImageFile):
 
         # size (highest resolution)
 
+        assert isinstance(prop[0x1000002], int)
+        assert isinstance(prop[0x1000003], int)
         self._size = prop[0x1000002], prop[0x1000003]
 
         size = max(self.size)
@@ -99,8 +102,7 @@ class FpxImageFile(ImageFile.ImageFile):
 
         s = prop[0x2000002 | id]
 
-        bands = i32(s, 4)
-        if bands > 4:
+        if not isinstance(s, bytes) or (bands := i32(s, 4)) > 4:
             msg = "Invalid number of bands"
             raise OSError(msg)
 
@@ -164,18 +166,18 @@ class FpxImageFile(ImageFile.ImageFile):
 
             if compression == 0:
                 self.tile.append(
-                    (
+                    ImageFile._Tile(
                         "raw",
                         (x, y, x1, y1),
                         i32(s, i) + 28,
-                        (self.rawmode,),
+                        self.rawmode,
                     )
                 )
 
             elif compression == 1:
                 # FIXME: the fill decoder is not implemented
                 self.tile.append(
-                    (
+                    ImageFile._Tile(
                         "fill",
                         (x, y, x1, y1),
                         i32(s, i) + 28,
@@ -203,7 +205,7 @@ class FpxImageFile(ImageFile.ImageFile):
                     jpegmode = rawmode
 
                 self.tile.append(
-                    (
+                    ImageFile._Tile(
                         "jpeg",
                         (x, y, x1, y1),
                         i32(s, i) + 28,
@@ -231,7 +233,7 @@ class FpxImageFile(ImageFile.ImageFile):
         self._fp = self.fp
         self.fp = None
 
-    def load(self):
+    def load(self) -> Image.core.PixelAccess | None:
         if not self.fp:
             self.fp = self.ole.openstream(self.stream[:2] + ["Subimage 0000 Data"])
 
@@ -241,7 +243,7 @@ class FpxImageFile(ImageFile.ImageFile):
         self.ole.close()
         super().close()
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: object) -> None:
         self.ole.close()
         super().__exit__()
 

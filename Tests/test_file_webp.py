@@ -5,6 +5,7 @@ import re
 import sys
 import warnings
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -47,8 +48,6 @@ class TestFileWebp:
         self.rgb_mode = "RGB"
 
     def test_version(self) -> None:
-        _webp.WebPDecoderVersion()
-        _webp.WebPDecoderBuggyAlpha()
         version = features.version_module("webp")
         assert version is not None
         assert re.search(r"\d+\.\d+\.\d+$", version)
@@ -70,8 +69,10 @@ class TestFileWebp:
             # dwebp -ppm ../../Tests/images/hopper.webp -o hopper_webp_bits.ppm
             assert_image_similar_tofile(image, "Tests/images/hopper_webp_bits.ppm", 1.0)
 
-    def _roundtrip(self, tmp_path: Path, mode, epsilon, args={}) -> None:
-        temp_file = str(tmp_path / "temp.webp")
+    def _roundtrip(
+        self, tmp_path: Path, mode: str, epsilon: float, args: dict[str, Any] = {}
+    ) -> None:
+        temp_file = tmp_path / "temp.webp"
 
         hopper(mode).save(temp_file, **args)
         with Image.open(temp_file) as image:
@@ -120,9 +121,8 @@ class TestFileWebp:
         hopper().save(buffer_method, format="WEBP", method=6)
         assert buffer_no_args.getbuffer() != buffer_method.getbuffer()
 
-    @skip_unless_feature("webp_anim")
     def test_save_all(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.webp")
+        temp_file = tmp_path / "temp.webp"
         im = Image.new("RGB", (1, 1))
         im2 = Image.new("RGB", (1, 1), "#f00")
         im.save(temp_file, save_all=True, append_images=[im2])
@@ -133,12 +133,16 @@ class TestFileWebp:
             reloaded.seek(1)
             assert_image_similar(im2, reloaded, 1)
 
+    def test_unsupported_image_mode(self) -> None:
+        im = Image.new("1", (1, 1))
+        with pytest.raises(ValueError):
+            _webp.WebPEncode(im.getim(), False, 0, 0, "", 4, 0, b"", "")
+
     def test_icc_profile(self, tmp_path: Path) -> None:
         self._roundtrip(tmp_path, self.rgb_mode, 12.5, {"icc_profile": None})
-        if _webp.HAVE_WEBPANIM:
-            self._roundtrip(
-                tmp_path, self.rgb_mode, 12.5, {"icc_profile": None, "save_all": True}
-            )
+        self._roundtrip(
+            tmp_path, self.rgb_mode, 12.5, {"icc_profile": None, "save_all": True}
+        )
 
     def test_write_unsupported_mode_L(self, tmp_path: Path) -> None:
         """
@@ -158,40 +162,44 @@ class TestFileWebp:
 
     @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
     def test_write_encoding_error_message(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.webp")
         im = Image.new("RGB", (15000, 15000))
         with pytest.raises(ValueError) as e:
-            im.save(temp_file, method=0)
+            im.save(tmp_path / "temp.webp", method=0)
         assert str(e.value) == "encoding error 6"
+
+    @pytest.mark.skipif(sys.maxsize <= 2**32, reason="Requires 64-bit system")
+    def test_write_encoding_error_bad_dimension(self, tmp_path: Path) -> None:
+        im = Image.new("L", (16384, 16384))
+        with pytest.raises(ValueError) as e:
+            im.save(tmp_path / "temp.webp")
+        assert (
+            str(e.value)
+            == "encoding error 5: Image size exceeds WebP limit of 16383 pixels"
+        )
 
     def test_WebPEncode_with_invalid_args(self) -> None:
         """
         Calling encoder functions with no arguments should result in an error.
         """
-
-        if _webp.HAVE_WEBPANIM:
-            with pytest.raises(TypeError):
-                _webp.WebPAnimEncoder()
+        with pytest.raises(TypeError):
+            _webp.WebPAnimEncoder()
         with pytest.raises(TypeError):
             _webp.WebPEncode()
 
-    def test_WebPDecode_with_invalid_args(self) -> None:
+    def test_WebPAnimDecoder_with_invalid_args(self) -> None:
         """
         Calling decoder functions with no arguments should result in an error.
         """
-
-        if _webp.HAVE_WEBPANIM:
-            with pytest.raises(TypeError):
-                _webp.WebPAnimDecoder()
         with pytest.raises(TypeError):
-            _webp.WebPDecode()
+            _webp.WebPAnimDecoder()
 
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
-            temp_file = str(tmp_path / "temp.webp")
             with warnings.catch_warnings():
-                image.save(temp_file)
+                warnings.simplefilter("error")
+
+                image.save(tmp_path / "temp.webp")
 
     def test_file_pointer_could_be_reused(self) -> None:
         file_path = "Tests/images/hopper.webp"
@@ -203,20 +211,19 @@ class TestFileWebp:
         "background",
         (0, (0,), (-1, 0, 1, 2), (253, 254, 255, 256)),
     )
-    @skip_unless_feature("webp_anim")
     def test_invalid_background(
         self, background: int | tuple[int, ...], tmp_path: Path
     ) -> None:
-        temp_file = str(tmp_path / "temp.webp")
+        temp_file = tmp_path / "temp.webp"
         im = hopper()
         with pytest.raises(OSError):
             im.save(temp_file, save_all=True, append_images=[im], background=background)
 
-    @skip_unless_feature("webp_anim")
     def test_background_from_gif(self, tmp_path: Path) -> None:
+        out_webp = tmp_path / "temp.webp"
+
         # Save L mode GIF with background
         with Image.open("Tests/images/no_palette_with_background.gif") as im:
-            out_webp = str(tmp_path / "temp.webp")
             im.save(out_webp, save_all=True)
 
         # Save P mode GIF with background
@@ -224,11 +231,10 @@ class TestFileWebp:
             original_value = im.convert("RGB").getpixel((1, 1))
 
             # Save as WEBP
-            out_webp = str(tmp_path / "temp.webp")
             im.save(out_webp, save_all=True)
 
         # Save as GIF
-        out_gif = str(tmp_path / "temp.gif")
+        out_gif = tmp_path / "temp.gif"
         with Image.open(out_webp) as im:
             im.save(out_gif)
 
@@ -237,12 +243,11 @@ class TestFileWebp:
         difference = sum(abs(original_value[i] - reread_value[i]) for i in range(0, 3))
         assert difference < 5
 
-    @skip_unless_feature("webp_anim")
     def test_duration(self, tmp_path: Path) -> None:
+        out_webp = tmp_path / "temp.webp"
+
         with Image.open("Tests/images/dispose_bgnd.gif") as im:
             assert im.info["duration"] == 1000
-
-            out_webp = str(tmp_path / "temp.webp")
             im.save(out_webp, save_all=True)
 
         with Image.open(out_webp) as reloaded:
@@ -250,9 +255,10 @@ class TestFileWebp:
             assert reloaded.info["duration"] == 1000
 
     def test_roundtrip_rgba_palette(self, tmp_path: Path) -> None:
-        temp_file = str(tmp_path / "temp.webp")
+        temp_file = tmp_path / "temp.webp"
         im = Image.new("RGBA", (1, 1)).convert("P")
         assert im.mode == "P"
+        assert im.palette is not None
         assert im.palette.mode == "RGBA"
         im.save(temp_file)
 
