@@ -110,7 +110,7 @@ def test_load_first_unless_jpeg(monkeypatch: pytest.MonkeyPatch) -> None:
         original_draft = im.draft
 
         def im_draft(
-            mode: str, size: tuple[int, int]
+            mode: str | None, size: tuple[int, int] | None
         ) -> tuple[str, tuple[int, int, float, float]] | None:
             result = original_draft(mode, size)
             assert result is not None
