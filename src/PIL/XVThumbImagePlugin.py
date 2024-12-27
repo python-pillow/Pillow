@@ -74,9 +74,7 @@ class XVThumbImageFile(ImageFile.ImageFile):
         self.palette = ImagePalette.raw("RGB", PALETTE)
 
         self.tile = [
-            ImageFile._Tile(
-                "raw", (0, 0) + self.size, self.fp.tell(), (self.mode, 0, 1)
-            )
+            ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), self.mode)
         ]
 
 
