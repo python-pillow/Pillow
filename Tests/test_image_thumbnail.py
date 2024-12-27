@@ -107,12 +107,12 @@ def test_transposed() -> None:
 def test_load_first_unless_jpeg(monkeypatch: pytest.MonkeyPatch) -> None:
     # Test that thumbnail() still uses draft() for JPEG
     with Image.open("Tests/images/hopper.jpg") as im:
-        orig_draft = im.draft
+        original_draft = im.draft
 
         def im_draft(
-            mode: str, size: tuple[int, int]
+            mode: str | None, size: tuple[int, int] | None
         ) -> tuple[str, tuple[int, int, float, float]] | None:
-            result = orig_draft(mode, size)
+            result = original_draft(mode, size)
             assert result is not None
 
             return result
