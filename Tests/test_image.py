@@ -514,21 +514,31 @@ class TestImage:
         im = hopper()
         im.save(temp_file, convert_mode=True)
 
-    def test_convert_mode(self) -> None:
-        for mode, modes in [["P", []], ["P", ["P"]]]:  # no modes, same mode
-            im = Image.new(mode, (100, 100))
-            assert im._convert_mode(modes) is None
+    @pytest.mark.parametrize(
+        "mode, modes",
+        (
+            ("P", ["RGB"]),
+            ("P", ["L"]),  # converting to a non-preferred mode
+            ("LA", ["P"]),
+            ("I", ["L"]),
+            ("RGB", ["L"]),
+            ("RGB", ["CMYK"]),
+        ),
+    )
+    def test_convert_mode(self, mode: str, modes: list[str]) -> None:
+        im = Image.new(mode, (100, 100))
+        assert im._convert_mode(modes) is not None
 
-        for mode, modes in [
-            ["P", ["RGB"]],
-            ["P", ["L"]],  # converting to a non-preferred mode
-            ["LA", ["P"]],
-            ["I", ["L"]],
-            ["RGB", ["L"]],
-            ["RGB", ["CMYK"]],
-        ]:
-            im = Image.new(mode, (100, 100))
-            assert im._convert_mode(modes) is not None
+    @pytest.mark.parametrize(
+        "mode, modes",
+        (
+            ("P", []),  # no mode
+            ("P", ["P"]),  # same mode
+        ),
+    )
+    def test_convert_mode_noop(self, mode: str, modes: list[str]) -> None:
+        im = Image.new(mode, (100, 100))
+        assert im._convert_mode(modes) is None
 
     def test_effect_mandelbrot(self) -> None:
         # Arrange

@@ -1532,7 +1532,7 @@ def getchunks(im: Image.Image, **params: Any) -> list[tuple[bytes, bytes, bytes]
     return chunks
 
 
-def _supported_modes():
+def _supported_modes() -> list[str]:
     return ["RGB", "RGBA", "P", "I", "LA", "L", "1"]
 
 

@@ -2618,9 +2618,11 @@ class Image:
         if open_fp:
             fp.close()
 
-    def _convert_mode(self, modes, params={}):
+    def _convert_mode(
+        self, modes: list[str], params: dict[str, Any] = {}
+    ) -> Image | None:
         if not modes or self.mode in modes:
-            return
+            return None
         if self.mode == "P":
             preferred_modes = []
             if "A" in self.im.getpalettemode():
@@ -2673,6 +2675,8 @@ class Image:
 
         elif new_mode:
             return self.convert(new_mode)
+
+        return None
 
     def seek(self, frame: int) -> None:
         """

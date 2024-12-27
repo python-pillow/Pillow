@@ -314,7 +314,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(data)
 
 
-def _supported_modes():
+def _supported_modes() -> list[str]:
     return [
         "RGB",
         "RGBA",
