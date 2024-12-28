@@ -84,4 +84,4 @@ def test_handler(tmp_path: Path) -> None:
         im.save(temp_file)
         assert handler.saved
 
-    GribStubImagePlugin._handler = None
+    GribStubImagePlugin.register_handler(None)
