@@ -58,6 +58,11 @@ Reading JPEG 2000 comments
 When opening a JPEG 2000 image, the comment may now be read into
 :py:attr:`~PIL.Image.Image.info` for J2K images, not just JP2 images.
 
+Saving JPEG 2000 CMYK images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With OpenJPEG 2.5.3 or later, Pillow can now save CMYK images as JPEG 2000 files.
+
 zlib-ng in wheels
 ^^^^^^^^^^^^^^^^^
 
