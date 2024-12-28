@@ -273,7 +273,7 @@ class BlpImageFile(ImageFile.ImageFile):
             raise BLPFormatError(msg)
 
         self._mode = "RGBA" if self._blp_alpha_depth else "RGB"
-        self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, 0, (self.mode, 0, 1))]
+        self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, 0, self.mode)]
 
 
 class _BLPBaseDecoder(ImageFile.PyDecoder):

@@ -523,7 +523,7 @@ class PngStream(ChunkStream):
 
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
-        raw_vals = struct.unpack(">%dI" % (len(s) // 4), s)
+        raw_vals = struct.unpack(f">{len(s) // 4}I", s)
         self.im_info["chromaticity"] = tuple(elt / 100000.0 for elt in raw_vals)
         return s
 
@@ -1226,13 +1226,15 @@ def _write_multiple_frames(
                 ):
                     previous.encoderinfo["duration"] += encoderinfo["duration"]
                     if progress:
-                        im._save_all_progress(imSequence, i, frame_count, total)
+                        im._save_all_progress(
+                            progress, imSequence, i, frame_count, total
+                        )
                     continue
             else:
                 bbox = None
             im_frames.append(_Frame(im_frame, bbox, encoderinfo))
             if progress:
-                im._save_all_progress(imSequence, i, frame_count, total)
+                im._save_all_progress(progress, imSequence, i, frame_count, total)
 
     if len(im_frames) == 1 and not default_image:
         return im_frames[0].im

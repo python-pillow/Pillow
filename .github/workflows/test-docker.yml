@@ -46,8 +46,8 @@ jobs:
           centos-stream-9-amd64,
           debian-12-bookworm-x86,
           debian-12-bookworm-amd64,
-          fedora-39-amd64,
           fedora-40-amd64,
+          fedora-41-amd64,
           gentoo,
           ubuntu-22.04-jammy-amd64,
           ubuntu-24.04-noble-amd64,
@@ -65,6 +65,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Build system information
       run: python3 .github/workflows/system-info.py
@@ -98,11 +100,10 @@ jobs:
         MATRIX_DOCKER: ${{ matrix.docker }}
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         flags: GHA_Docker
         name: ${{ matrix.docker }}
-        gcov: true
         token: ${{ secrets.CODECOV_ORG_TOKEN }}
 
   success:

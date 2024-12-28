@@ -72,6 +72,8 @@ class TestFileTiff:
 
     def test_closed_file(self) -> None:
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
@@ -88,6 +90,8 @@ class TestFileTiff:
 
     def test_context_manager(self) -> None:
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 

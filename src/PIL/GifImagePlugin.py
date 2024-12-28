@@ -102,7 +102,6 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.info["version"] = s[:6]
         self._size = i16(s, 6), i16(s, 8)
-        self.tile = []
         flags = s[10]
         bits = (flags & 7) + 1
 
@@ -695,7 +694,9 @@ def _write_multiple_frames(
                     if encoderinfo.get("duration"):
                         im_frames[-1].encoderinfo["duration"] += encoderinfo["duration"]
                     if progress:
-                        im._save_all_progress(imSequence, i, frame_count, total)
+                        im._save_all_progress(
+                            progress, imSequence, i, frame_count, total
+                        )
                     continue
                 if im_frames[-1].encoderinfo.get("disposal") == 2:
                     if background_im is None:
@@ -704,8 +705,9 @@ def _write_multiple_frames(
                         )
                         background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
-                        assert im_frames[0].im.palette is not None
-                        background_im.putpalette(im_frames[0].im.palette)
+                        first_palette = im_frames[0].im.palette
+                        assert first_palette is not None
+                        background_im.putpalette(first_palette, first_palette.mode)
                     bbox = _getbbox(background_im, im_frame)[1]
                 elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:
@@ -754,7 +756,7 @@ def _write_multiple_frames(
             previous_im = im_frame
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
             if progress:
-                im._save_all_progress(imSequence, i, frame_count, total)
+                im._save_all_progress(progress, imSequence, i, frame_count, total)
 
     if len(im_frames) == 1:
         if "duration" in im.encoderinfo:

@@ -294,7 +294,7 @@ def _accept(prefix: bytes) -> bool:
 def _limit_rational(
     val: float | Fraction | IFDRational, max_val: int
 ) -> tuple[IntegralLike, IntegralLike]:
-    inv = abs(float(val)) > 1
+    inv = abs(val) > 1
     n_d = IFDRational(1 / val if inv else val).limit_rational(max_val)
     return n_d[::-1] if inv else n_d
 
@@ -685,22 +685,33 @@ class ImageFileDirectory_v2(_IFDv2Base):
             else:
                 self.tagtype[tag] = TiffTags.UNDEFINED
                 if all(isinstance(v, IFDRational) for v in values):
-                    self.tagtype[tag] = (
-                        TiffTags.RATIONAL
-                        if all(v >= 0 for v in values)
-                        else TiffTags.SIGNED_RATIONAL
-                    )
-                elif all(isinstance(v, int) for v in values):
-                    if all(0 <= v < 2**16 for v in values):
-                        self.tagtype[tag] = TiffTags.SHORT
-                    elif all(-(2**15) < v < 2**15 for v in values):
-                        self.tagtype[tag] = TiffTags.SIGNED_SHORT
+                    for v in values:
+                        assert isinstance(v, IFDRational)
+                        if v < 0:
+                            self.tagtype[tag] = TiffTags.SIGNED_RATIONAL
+                            break
                     else:
-                        self.tagtype[tag] = (
-                            TiffTags.LONG
-                            if all(v >= 0 for v in values)
-                            else TiffTags.SIGNED_LONG
-                        )
+                        self.tagtype[tag] = TiffTags.RATIONAL
+                elif all(isinstance(v, int) for v in values):
+                    short = True
+                    signed_short = True
+                    long = True
+                    for v in values:
+                        assert isinstance(v, int)
+                        if short and not (0 <= v < 2**16):
+                            short = False
+                        if signed_short and not (-(2**15) < v < 2**15):
+                            signed_short = False
+                        if long and v < 0:
+                            long = False
+                    if short:
+                        self.tagtype[tag] = TiffTags.SHORT
+                    elif signed_short:
+                        self.tagtype[tag] = TiffTags.SIGNED_SHORT
+                    elif long:
+                        self.tagtype[tag] = TiffTags.LONG
+                    else:
+                        self.tagtype[tag] = TiffTags.SIGNED_LONG
                 elif all(isinstance(v, float) for v in values):
                     self.tagtype[tag] = TiffTags.DOUBLE
                 elif all(isinstance(v, str) for v in values):
@@ -718,7 +729,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
         is_ifd = self.tagtype[tag] == TiffTags.LONG and isinstance(values, dict)
         if not is_ifd:
-            values = tuple(info.cvt_enum(value) for value in values)
+            values = tuple(
+                info.cvt_enum(value) if isinstance(value, str) else value
+                for value in values
+            )
 
         dest = self._tags_v1 if legacy_api else self._tags_v2
 
@@ -921,9 +935,9 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 self._tagdata[tag] = data
                 self.tagtype[tag] = typ
 
-                msg += " - value: " + (
-                    "<table: %d bytes>" % size if size > 32 else repr(data)
-                )
+                msg += " - value: "
+                msg += f"<table: {size} bytes>" if size > 32 else repr(data)
+
                 logger.debug(msg)
 
             (self.next,) = (
@@ -967,10 +981,8 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
             tagname = TiffTags.lookup(tag, self.group).name
             typname = "ifd" if is_ifd else TYPES.get(typ, "unknown")
-            msg = f"save: {tagname} ({tag}) - type: {typname} ({typ})"
-            msg += " - value: " + (
-                "<table: %d bytes>" % len(data) if len(data) >= 16 else str(values)
-            )
+            msg = f"save: {tagname} ({tag}) - type: {typname} ({typ}) - value: "
+            msg += f"<table: {len(data)} bytes>" if len(data) >= 16 else str(values)
             logger.debug(msg)
 
             # count is sum of lengths for string and arbitrary data
@@ -1193,18 +1205,14 @@ class TiffImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
         self._seek(frame)
-        # Create a new core image object on second and
-        # subsequent frames in the image. Image may be
-        # different size/mode.
-        Image._decompression_bomb_check(self._tile_size)
-        self.im = Image.core.new(self.mode, self._tile_size)
+        if self._im is not None and (
+            self.im.size != self._tile_size or self.im.mode != self.mode
+        ):
+            # The core image will no longer be used
+            self._im = None
 
     def _seek(self, frame: int) -> None:
         self.fp = self._fp
-
-        # reset buffered io handle in case fp
-        # was passed to libtiff, invalidating the buffer
-        self.fp.tell()
 
         while len(self._frame_pos) <= frame:
             if not self.__next:
@@ -1279,6 +1287,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
     def load_prepare(self) -> None:
         if self._im is None:
+            Image._decompression_bomb_check(self._tile_size)
             self.im = Image.core.new(self.mode, self._tile_size)
         ImageFile.ImageFile.load_prepare(self)
 
@@ -1287,10 +1296,6 @@ class TiffImageFile(ImageFile.ImageFile):
         # This is the ImageFile.load path only, libtiff specific below.
         if not self.is_animated:
             self._close_exclusive_fp_after_loading = True
-
-            # reset buffered io handle in case fp
-            # was passed to libtiff, invalidating the buffer
-            self.fp.tell()
 
             # load IFD data from fp before it is closed
             exif = self.getexif()
@@ -1366,8 +1371,17 @@ class TiffImageFile(ImageFile.ImageFile):
             logger.debug("have fileno, calling fileno version of the decoder.")
             if not close_self_fp:
                 self.fp.seek(0)
+            # Save and restore the file position, because libtiff will move it
+            # outside of the Python runtime, and that will confuse
+            # io.BufferedReader and possible others.
+            # NOTE: This must use os.lseek(), and not fp.tell()/fp.seek(),
+            # because the buffer read head already may not equal the actual
+            # file position, and fp.seek() may just adjust it's internal
+            # pointer and not actually seek the OS file handle.
+            pos = os.lseek(fp, 0, os.SEEK_CUR)
             # 4 bytes, otherwise the trace might error out
             n, err = decoder.decode(b"fpfp")
+            os.lseek(fp, pos, os.SEEK_SET)
         else:
             # we have something else.
             logger.debug("don't have fileno or getvalue. just reading")
@@ -1418,8 +1432,12 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- YCbCr subsampling: %s", self.tag_v2.get(YCBCRSUBSAMPLING))
 
         # size
-        xsize = self.tag_v2.get(IMAGEWIDTH)
-        ysize = self.tag_v2.get(IMAGELENGTH)
+        try:
+            xsize = self.tag_v2[IMAGEWIDTH]
+            ysize = self.tag_v2[IMAGELENGTH]
+        except KeyError as e:
+            msg = "Missing dimensions"
+            raise TypeError(msg) from e
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
@@ -1900,7 +1918,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 if not getattr(Image.core, "libtiff_support_custom_tags", False):
                     continue
 
-                if tag in ifd.tagtype:
+                if tag in TiffTags.TAGS_V2_GROUPS:
+                    types[tag] = TiffTags.LONG8
+                elif tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
                 elif not (isinstance(value, (int, float, str, bytes))):
                     continue
@@ -2233,15 +2253,15 @@ class AppendingTiffWriter(io.BytesIO):
 def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderinfo = im.encoderinfo.copy()
     encoderconfig = im.encoderconfig
+    progress = encoderinfo.get("progress")
     append_images = list(encoderinfo.get("append_images", []))
     if not hasattr(im, "n_frames") and not append_images:
         _save(im, fp, filename)
-        im._save_all_progress()
+        im._save_all_progress(progress)
         return
 
     cur_idx = im.tell()
     imSequences = [im] + append_images
-    progress = encoderinfo.get("progress")
     if progress:
         completed = 0
         total = 0
@@ -2263,7 +2283,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                     _save(ims, tf, filename)
                     if progress:
                         completed += 1
-                        im._save_all_progress(ims, i, completed, total)
+                        im._save_all_progress(progress, ims, i, completed, total)
 
                     tf.newFrame()
     finally:

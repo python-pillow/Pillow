@@ -242,6 +242,8 @@ class TestFileWebp:
         file_path = "Tests/images/hopper.webp"
         with Image.open(file_path) as image:
             with warnings.catch_warnings():
+                warnings.simplefilter("error")
+
                 image.save(tmp_path / "temp.webp")
 
     def test_file_pointer_could_be_reused(self) -> None:

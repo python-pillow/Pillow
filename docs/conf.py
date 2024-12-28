@@ -55,7 +55,7 @@ master_doc = "index"
 project = "Pillow (PIL Fork)"
 copyright = (
     "1995-2011 Fredrik Lundh and contributors, "
-    "2010-2024 Jeffrey A. Clark and contributors."
+    "2010 Jeffrey A. Clark and contributors."
 )
 author = "Fredrik Lundh (PIL), Jeffrey A. Clark (Pillow)"
 

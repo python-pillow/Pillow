@@ -270,7 +270,7 @@ class FreeTypeFont:
             )
 
         if is_path(font):
-            font = os.path.realpath(os.fspath(font))
+            font = os.fspath(font)
             if sys.platform == "win32":
                 font_bytes_path = font if isinstance(font, bytes) else font.encode()
                 try:
