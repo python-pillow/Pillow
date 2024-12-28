@@ -181,6 +181,10 @@ class TestFileJpeg:
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
+    def test_dpi_jfif_cm(self):
+        with Image.open("Tests/images/jfif_unit_cm.jpg") as im:
+            assert im.info["dpi"] == (2.54, 5.08)
+
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )

@@ -90,6 +90,9 @@ def APP(self: JpegImageFile, marker: int) -> None:
         else:
             if jfif_unit == 1:
                 self.info["dpi"] = jfif_density
+            elif jfif_unit == 2:  # cm
+                # 1 dpcm = 2.54 dpi
+                self.info["dpi"] = tuple(d * 2.54 for d in jfif_density)
             self.info["jfif_unit"] = jfif_unit
             self.info["jfif_density"] = jfif_density
     elif marker == 0xFFE1 and s[:6] == b"Exif\0\0":
