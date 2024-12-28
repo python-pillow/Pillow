@@ -253,6 +253,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
         if sig == b"\xff\x4f\xff\x51":
             self.codec = "j2k"
             self._size, self._mode = _parse_codestream(self.fp)
+            self._parse_comment()
         else:
             sig = sig + self.fp.read(8)
 
@@ -263,6 +264,9 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 if dpi is not None:
                     self.info["dpi"] = dpi
                 if self.fp.read(12).endswith(b"jp2c\xff\x4f\xff\x51"):
+                    hdr = self.fp.read(2)
+                    length = _binary.i16be(hdr)
+                    self.fp.seek(length - 2, os.SEEK_CUR)
                     self._parse_comment()
             else:
                 msg = "not a JPEG 2000 file"
@@ -298,10 +302,6 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
 
     def _parse_comment(self) -> None:
         assert self.fp is not None
-        hdr = self.fp.read(2)
-        length = _binary.i16be(hdr)
-        self.fp.seek(length - 2, os.SEEK_CUR)
-
         while True:
             marker = self.fp.read(2)
             if not marker:

@@ -429,8 +429,9 @@ def test_pclr() -> None:
 
 
 def test_comment() -> None:
-    with Image.open("Tests/images/comment.jp2") as im:
-        assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
+    for path in ("Tests/images/9bit.j2k", "Tests/images/comment.jp2"):
+        with Image.open(path) as im:
+            assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
 
     # Test an image that is truncated partway through a codestream
     with open("Tests/images/comment.jp2", "rb") as fp:

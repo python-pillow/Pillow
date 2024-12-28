@@ -52,6 +52,12 @@ zlib library, and what version of zlib-ng is being used::
 Other Changes
 =============
 
+Reading JPEG 2000 comments
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When opening a JPEG 2000 image, the comment may now be read into
+:py:attr:`~PIL.Image.Image.info` for J2K images, not just JP2 images.
+
 zlib-ng in wheels
 ^^^^^^^^^^^^^^^^^
 
