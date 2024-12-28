@@ -1436,8 +1436,12 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- YCbCr subsampling: %s", self.tag_v2.get(YCBCRSUBSAMPLING))
 
         # size
-        xsize = self.tag_v2.get(IMAGEWIDTH)
-        ysize = self.tag_v2.get(IMAGELENGTH)
+        try:
+            xsize = self.tag_v2[IMAGEWIDTH]
+            ysize = self.tag_v2[IMAGELENGTH]
+        except KeyError as e:
+            msg = "Missing dimensions"
+            raise TypeError(msg) from e
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
@@ -1918,7 +1922,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 if not getattr(Image.core, "libtiff_support_custom_tags", False):
                     continue
 
-                if tag in ifd.tagtype:
+                if tag in TiffTags.TAGS_V2_GROUPS:
+                    types[tag] = TiffTags.LONG8
+                elif tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
                 elif not (isinstance(value, (int, float, str, bytes))):
                     continue

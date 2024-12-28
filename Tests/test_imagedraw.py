@@ -1675,6 +1675,9 @@ def test_continuous_horizontal_edges_polygon() -> None:
 def test_discontiguous_corners_polygon() -> None:
     img, draw = create_base_image_draw((84, 68))
     draw.polygon(((1, 21), (34, 4), (71, 1), (38, 18)), BLACK)
+    draw.polygon(
+        ((82, 29), (82, 26), (82, 24), (67, 22), (52, 29), (52, 15), (67, 22)), BLACK
+    )
     draw.polygon(((71, 44), (38, 27), (1, 24)), BLACK)
     draw.polygon(
         ((38, 66), (5, 49), (77, 49), (47, 66), (82, 63), (82, 47), (1, 47), (1, 63)),

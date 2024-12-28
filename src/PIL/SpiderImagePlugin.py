@@ -156,9 +156,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [
-            ImageFile._Tile("raw", (0, 0) + self.size, offset, (self.rawmode, 0, 1))
-        ]
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, offset, self.rawmode)]
         self._fp = self.fp  # FIXME: hack
 
     @property
@@ -286,9 +284,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, rawmode)])
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

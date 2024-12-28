@@ -86,4 +86,4 @@ def test_handler(tmp_path: Path) -> None:
         im.save(temp_file)
         assert handler.saved
 
-    Hdf5StubImagePlugin._handler = None
+    Hdf5StubImagePlugin.register_handler(None)

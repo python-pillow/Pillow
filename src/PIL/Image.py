@@ -736,7 +736,7 @@ class Image:
 
     def __setstate__(self, state: list[Any]) -> None:
         Image.__init__(self)
-        info, mode, size, palette, data = state
+        info, mode, size, palette, data = state[:5]
         self.info = info
         self._mode = mode
         self._size = size
@@ -2499,7 +2499,7 @@ class Image:
         self._ensure_mutable()
 
         save_all = params.pop("save_all", False)
-        self.encoderinfo = params
+        self.encoderinfo = {**getattr(self, "encoderinfo", {}), **params}
         self.encoderconfig: tuple[Any, ...] = ()
 
         preinit()
@@ -2546,6 +2546,11 @@ class Image:
                 except PermissionError:
                     pass
             raise
+        finally:
+            try:
+                del self.encoderinfo
+            except AttributeError:
+                pass
         if open_fp:
             fp.close()
 

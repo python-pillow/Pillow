@@ -101,8 +101,8 @@ def _tilesort(t: _Tile) -> int:
 class _Tile(NamedTuple):
     codec_name: str
     extents: tuple[int, int, int, int] | None
-    offset: int
-    args: tuple[Any, ...] | str | None
+    offset: int = 0
+    args: tuple[Any, ...] | str | None = None
 
 
 #
