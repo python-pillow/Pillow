@@ -104,28 +104,17 @@ def grab(
 
 def grabclipboard() -> Image.Image | list[str] | None:
     if sys.platform == "darwin":
-        fh, filepath = tempfile.mkstemp(".png")
-        os.close(fh)
-        commands = [
-            'set theFile to (open for access POSIX file "'
-            + filepath
-            + '" with write permission)',
-            "try",
-            "    write (the clipboard as «class PNGf») to theFile",
-            "end try",
-            "close access theFile",
-        ]
-        script = ["osascript"]
-        for command in commands:
-            script += ["-e", command]
-        subprocess.call(script)
+        p = subprocess.run(
+            ["osascript", "-e", "get the clipboard as «class PNGf»"],
+            capture_output=True,
+        )
+        if p.returncode != 0:
+            return None
 
-        im = None
-        if os.stat(filepath).st_size != 0:
-            im = Image.open(filepath)
-            im.load()
-        os.unlink(filepath)
-        return im
+        import binascii
+
+        data = io.BytesIO(binascii.unhexlify(p.stdout[11:-3]))
+        return Image.open(data)
     elif sys.platform == "win32":
         fmt, data = Image.core.grabclipboard_win32()
         if fmt == "file":  # CF_HDROP
