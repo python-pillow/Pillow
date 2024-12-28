@@ -573,9 +573,11 @@ Pillow reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB``,
 ``RGBA``, or ``YCbCr`` data.  When reading, ``YCbCr`` data is converted to
 ``RGB`` or ``RGBA`` depending on whether or not there is an alpha channel.
 Beginning with version 8.3.0, Pillow can read (but not write) ``RGB``,
-``RGBA``, and ``YCbCr`` images with subsampled components.  Pillow supports
-JPEG 2000 raw codestreams (``.j2k`` files), as well as boxed JPEG 2000 files
-(``.jp2`` or ``.jpx`` files).
+``RGBA``, and ``YCbCr`` images with subsampled components. Pillow 10.4.0 and
+later can read ``CMYK`` images with OpenJPEG 2.5.1 and later, and Pillow 11.1.0
+and later can write ``CMYK`` images with OpenJPEG 2.5.3 and later. Pillow
+supports JPEG 2000 raw codestreams (``.j2k`` files), as well as boxed JPEG 2000
+files (``.jp2`` or ``.jpx`` files).
 
 When loading, if you set the ``mode`` on the image prior to the
 :py:meth:`~PIL.Image.Image.load` method being invoked, you can ask Pillow to

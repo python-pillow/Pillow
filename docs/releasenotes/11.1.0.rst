@@ -52,6 +52,11 @@ zlib library, and what version of zlib-ng is being used::
 Other Changes
 =============
 
+Saving JPEG 2000 CMYK images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With OpenJPEG 2.5.3 or later, Pillow can now save CMYK images as JPEG 2000 files.
+
 zlib-ng in wheels
 ^^^^^^^^^^^^^^^^^
 
