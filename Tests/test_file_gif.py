@@ -4,6 +4,7 @@ import warnings
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -46,6 +47,8 @@ def test_unclosed_file() -> None:
 
 def test_closed_file() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         im = Image.open(TEST_GIF)
         im.load()
         im.close()
@@ -67,6 +70,8 @@ def test_seek_after_close() -> None:
 
 def test_context_manager() -> None:
     with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         with Image.open(TEST_GIF) as im:
             im.load()
 
@@ -1431,7 +1436,8 @@ def test_saving_rgba(tmp_path: Path) -> None:
         assert reloaded_rgba.load()[0, 0][3] == 0
 
 
-def test_optimizing_p_rgba(tmp_path: Path) -> None:
+@pytest.mark.parametrize("params", ({}, {"disposal": 2, "optimize": False}))
+def test_p_rgba(tmp_path: Path, params: dict[str, Any]) -> None:
     out = str(tmp_path / "temp.gif")
 
     im1 = Image.new("P", (100, 100))
@@ -1443,7 +1449,7 @@ def test_optimizing_p_rgba(tmp_path: Path) -> None:
     im2 = Image.new("P", (100, 100))
     im2.putpalette(data, "RGBA")
 
-    im1.save(out, save_all=True, append_images=[im2])
+    im1.save(out, save_all=True, append_images=[im2], **params)
 
     with Image.open(out) as reloaded:
         assert reloaded.n_frames == 2

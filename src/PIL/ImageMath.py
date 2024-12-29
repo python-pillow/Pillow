@@ -173,10 +173,10 @@ class _Operand:
         return self.apply("rshift", self, other)
 
     # logical
-    def __eq__(self, other):
+    def __eq__(self, other: _Operand | float) -> _Operand:  # type: ignore[override]
         return self.apply("eq", self, other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: _Operand | float) -> _Operand:  # type: ignore[override]
         return self.apply("ne", self, other)
 
     def __lt__(self, other: _Operand | float) -> _Operand:

@@ -101,9 +101,7 @@ class XpmImageFile(ImageFile.ImageFile):
         self._mode = "P"
         self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
-        self.tile = [
-            ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), ("P", 0, 1))
-        ]
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, self.fp.tell(), "P")]
 
     def load_read(self, read_bytes: int) -> bytes:
         #

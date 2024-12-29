@@ -572,10 +572,19 @@ JPEG 2000
 Pillow reads and writes JPEG 2000 files containing ``L``, ``LA``, ``RGB``,
 ``RGBA``, or ``YCbCr`` data.  When reading, ``YCbCr`` data is converted to
 ``RGB`` or ``RGBA`` depending on whether or not there is an alpha channel.
-Beginning with version 8.3.0, Pillow can read (but not write) ``RGB``,
-``RGBA``, and ``YCbCr`` images with subsampled components.  Pillow supports
-JPEG 2000 raw codestreams (``.j2k`` files), as well as boxed JPEG 2000 files
-(``.jp2`` or ``.jpx`` files).
+
+.. versionadded:: 8.3.0
+   Pillow can read (but not write) ``RGB``, ``RGBA``, and ``YCbCr`` images with
+   subsampled components.
+
+.. versionadded:: 10.4.0
+   Pillow can read ``CMYK`` images with OpenJPEG 2.5.1 and later.
+
+.. versionadded:: 11.1.0
+   Pillow can write ``CMYK`` images with OpenJPEG 2.5.3 and later.
+
+Pillow supports JPEG 2000 raw codestreams (``.j2k`` files), as well as boxed
+JPEG 2000 files (``.jp2`` or ``.jpx`` files).
 
 When loading, if you set the ``mode`` on the image prior to the
 :py:meth:`~PIL.Image.Image.load` method being invoked, you can ask Pillow to
@@ -691,6 +700,30 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
    OpenJPEG website, but must add them to their PATH in order to use Pillow (if
    you fail to do this, you will get errors about not being able to load the
    ``_imaging`` DLL).
+
+MPO
+^^^
+
+Pillow reads and writes Multi Picture Object (MPO) files. When first opened, it loads
+the primary image. The :py:meth:`~PIL.Image.Image.seek` and
+:py:meth:`~PIL.Image.Image.tell` methods may be used to read other pictures from the
+file. The pictures are zero-indexed and random access is supported.
+
+.. _mpo-saving:
+
+Saving
+~~~~~~
+
+When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
+only the first frame of a multiframe image will be saved. If the ``save_all``
+argument is present and true, then all frames will be saved, and the following
+option will also be available.
+
+**append_images**
+    A list of images to append as additional pictures. Each of the
+    images in the list can be single or multiframe images.
+
+    .. versionadded:: 9.3.0
 
 MSP
 ^^^
@@ -1434,30 +1467,6 @@ the first sprite in the file is loaded. You can use :py:meth:`~PIL.Image.Image.s
 Note that there may be an embedded gamma of 2.2 in MIC files.
 
 To enable MIC support, you must install :pypi:`olefile`.
-
-MPO
-^^^
-
-Pillow identifies and reads Multi Picture Object (MPO) files, loading the primary
-image when first opened. The :py:meth:`~PIL.Image.Image.seek` and :py:meth:`~PIL.Image.Image.tell`
-methods may be used to read other pictures from the file. The pictures are
-zero-indexed and random access is supported.
-
-.. _mpo-saving:
-
-Saving
-~~~~~~
-
-When calling :py:meth:`~PIL.Image.Image.save` to write an MPO file, by default
-only the first frame of a multiframe image will be saved. If the ``save_all``
-argument is present and true, then all frames will be saved, and the following
-option will also be available.
-
-**append_images**
-    A list of images to append as additional pictures. Each of the
-    images in the list can be single or multiframe images.
-
-    .. versionadded:: 9.3.0
 
 PCD
 ^^^

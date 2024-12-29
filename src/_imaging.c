@@ -4317,6 +4317,20 @@ setup_module(PyObject *m) {
     }
 #endif
 
+    PyObject *have_zlibng;
+#ifdef ZLIBNG_VERSION
+    have_zlibng = Py_True;
+    {
+        PyObject *v = PyUnicode_FromString(ZLIBNG_VERSION);
+        PyDict_SetItemString(d, "zlib_ng_version", v ? v : Py_None);
+        Py_XDECREF(v);
+    }
+#else
+    have_zlibng = Py_False;
+#endif
+    Py_INCREF(have_zlibng);
+    PyModule_AddObject(m, "HAVE_ZLIBNG", have_zlibng);
+
 #ifdef HAVE_LIBTIFF
     {
         extern const char *ImagingTiffVersion(void);

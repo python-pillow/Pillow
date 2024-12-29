@@ -344,7 +344,7 @@ class pil_build_ext(build_ext):
             for x in ("raqm", "fribidi")
         ]
         + [
-            ("disable-platform-guessing", None, "Disable platform guessing on Linux"),
+            ("disable-platform-guessing", None, "Disable platform guessing"),
             ("debug", None, "Debug logging"),
         ]
     )
@@ -387,17 +387,18 @@ class pil_build_ext(build_ext):
                     pass
         for x in self.feature:
             if getattr(self, f"disable_{x}"):
-                setattr(self.feature, x, False)
+                self.feature.set(x, False)
                 self.feature.required.discard(x)
                 _dbg("Disabling %s", x)
                 if getattr(self, f"enable_{x}"):
-                    msg = f"Conflicting options: --enable-{x} and --disable-{x}"
+                    msg = f"Conflicting options: '-C {x}=enable' and '-C {x}=disable'"
                     raise ValueError(msg)
                 if x == "freetype":
-                    _dbg("--disable-freetype implies --disable-raqm")
+                    _dbg("'-C freetype=disable' implies '-C raqm=disable'")
                     if getattr(self, "enable_raqm"):
                         msg = (
-                            "Conflicting options: --enable-raqm and --disable-freetype"
+                            "Conflicting options: "
+                            "'-C raqm=enable' and '-C freetype=disable'"
                         )
                         raise ValueError(msg)
                     setattr(self, "disable_raqm", True)
@@ -405,15 +406,17 @@ class pil_build_ext(build_ext):
                 _dbg("Requiring %s", x)
                 self.feature.required.add(x)
                 if x == "raqm":
-                    _dbg("--enable-raqm implies --enable-freetype")
+                    _dbg("'-C raqm=enable' implies '-C freetype=enable'")
                     self.feature.required.add("freetype")
         for x in ("raqm", "fribidi"):
             if getattr(self, f"vendor_{x}"):
                 if getattr(self, "disable_raqm"):
-                    msg = f"Conflicting options: --vendor-{x} and --disable-raqm"
+                    msg = f"Conflicting options: '-C {x}=vendor' and '-C raqm=disable'"
                     raise ValueError(msg)
                 if x == "fribidi" and not getattr(self, "vendor_raqm"):
-                    msg = f"Conflicting options: --vendor-{x} and not --vendor-raqm"
+                    msg = (
+                        f"Conflicting options: '-C {x}=vendor' and not '-C raqm=vendor'"
+                    )
                     raise ValueError(msg)
                 _dbg("Using vendored version of %s", x)
                 self.feature.vendor.add(x)
@@ -446,7 +449,7 @@ class pil_build_ext(build_ext):
     def get_macos_sdk_path(self) -> str | None:
         try:
             sdk_path = (
-                subprocess.check_output(["xcrun", "--show-sdk-path"])
+                subprocess.check_output(["xcrun", "--show-sdk-path", "--sdk", "macosx"])
                 .strip()
                 .decode("latin1")
             )
@@ -604,6 +607,7 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
+            # Add the macOS SDK path.
             sdk_path = self.get_macos_sdk_path()
             if sdk_path:
                 _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
@@ -688,6 +692,8 @@ class pil_build_ext(build_ext):
                     feature.set("zlib", "z")
                 elif sys.platform == "win32" and _find_library_file(self, "zlib"):
                     feature.set("zlib", "zlib")  # alternative name
+                elif sys.platform == "win32" and _find_library_file(self, "zdll"):
+                    feature.set("zlib", "zdll")  # dll import library
 
         if feature.want("jpeg"):
             _dbg("Looking for jpeg")
@@ -998,7 +1004,7 @@ def debug_build() -> bool:
     return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
-files = ["src/_imaging.c"]
+files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
 for src_file in _IMAGING:
     files.append("src/" + src_file + ".c")
 for src_file in _LIB_IMAGING:
@@ -1041,7 +1047,7 @@ except DependencyException as err:
     msg = f"""
 
 The headers or library files could not be found for {str(err)},
-which was requested by the option flag --enable-{str(err)}
+which was requested by the option flag '-C {str(err)}=enable'
 
 """
     sys.stderr.write(msg)

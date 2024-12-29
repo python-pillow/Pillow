@@ -36,10 +36,11 @@ def test_version() -> None:
         else:
             assert function(name) == version
             if name != "PIL":
-                if name == "zlib" and version is not None:
-                    version = re.sub(".zlib-ng$", "", version)
-                elif name == "libtiff" and version is not None:
-                    version = re.sub("t$", "", version)
+                if version is not None:
+                    if name == "zlib" and features.check_feature("zlib_ng"):
+                        version = re.sub(".zlib-ng$", "", version)
+                    elif name == "libtiff":
+                        version = re.sub("t$", "", version)
                 assert version is None or re.search(r"\d+(\.\d+)*$", version)
 
     for module in features.modules:
@@ -56,17 +57,17 @@ def test_version() -> None:
 
 def test_webp_transparency() -> None:
     with pytest.warns(DeprecationWarning):
-        assert features.check("transp_webp") == features.check_module("webp")
+        assert (features.check("transp_webp") or False) == features.check_module("webp")
 
 
 def test_webp_mux() -> None:
     with pytest.warns(DeprecationWarning):
-        assert features.check("webp_mux") == features.check_module("webp")
+        assert (features.check("webp_mux") or False) == features.check_module("webp")
 
 
 def test_webp_anim() -> None:
     with pytest.warns(DeprecationWarning):
-        assert features.check("webp_anim") == features.check_module("webp")
+        assert (features.check("webp_anim") or False) == features.check_module("webp")
 
 
 @skip_unless_feature("libjpeg_turbo")

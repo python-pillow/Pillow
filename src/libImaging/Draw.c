@@ -498,7 +498,8 @@ polygon_generic(
                     // Needed to draw consistent polygons
                     xx[j] = xx[j - 1];
                     j++;
-                } else if (current->dx != 0 && roundf(xx[j - 1]) == xx[j - 1]) {
+                } else if (current->dx != 0 && j % 2 == 1 &&
+                           roundf(xx[j - 1]) == xx[j - 1]) {
                     // Connect discontiguous corners
                     for (k = 0; k < i; k++) {
                         Edge *other_edge = edge_table[k];
@@ -507,10 +508,8 @@ polygon_generic(
                             continue;
                         }
                         // Check if the two edges join to make a corner
-                        if (((ymin == current->ymin && ymin == other_edge->ymin) ||
-                             (ymin == current->ymax && ymin == other_edge->ymax)) &&
-                            xx[j - 1] == (ymin - other_edge->y0) * other_edge->dx +
-                                             other_edge->x0) {
+                        if (xx[j - 1] ==
+                            (ymin - other_edge->y0) * other_edge->dx + other_edge->x0) {
                             // Determine points from the edges on the next row
                             // Or if this is the last row, check the previous row
                             int offset = ymin == ymax ? -1 : 1;
