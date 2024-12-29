@@ -16,10 +16,13 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Iterator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+
+if TYPE_CHECKING:
+    from setuptools import _BuildInfo
 
 
 def get_version() -> str:
@@ -1007,16 +1010,20 @@ def debug_build() -> bool:
     return hasattr(sys, "gettotalrefcount") or FUZZING_BUILD
 
 
+libraries: list[tuple[str, _BuildInfo]] = [
+    ("pil_imaging_mode", {"sources": ["src/libImaging/Mode.c"]}),
+]
+
 files: list[str | os.PathLike[str]] = ["src/_imaging.c"]
 for src_file in _IMAGING:
     files.append("src/" + src_file + ".c")
 for src_file in _LIB_IMAGING:
     files.append(os.path.join("src/libImaging", src_file + ".c"))
 ext_modules = [
-    Extension("PIL._imaging", files),
-    Extension("PIL._imagingft", ["src/_imagingft.c"]),
-    Extension("PIL._imagingcms", ["src/_imagingcms.c"]),
-    Extension("PIL._webp", ["src/_webp.c"]),
+    Extension("PIL._imaging", files, libraries=["pil_imaging_mode"]),
+    Extension("PIL._imagingft", ["src/_imagingft.c"], libraries=["pil_imaging_mode"]),
+    Extension("PIL._imagingcms", ["src/_imagingcms.c"], libraries=["pil_imaging_mode"]),
+    Extension("PIL._webp", ["src/_webp.c"], libraries=["pil_imaging_mode"]),
     Extension("PIL._imagingtk", ["src/_imagingtk.c", "src/Tk/tkImaging.c"]),
     Extension("PIL._imagingmath", ["src/_imagingmath.c"]),
     Extension("PIL._imagingmorph", ["src/_imagingmorph.c"]),
@@ -1032,6 +1039,7 @@ try:
     setup(
         cmdclass={"build_ext": pil_build_ext},
         ext_modules=ext_modules,
+        libraries=libraries,
         zip_safe=not (debug_build() or PLATFORM_MINGW),
     )
 except RequiredDependencyException as err:
