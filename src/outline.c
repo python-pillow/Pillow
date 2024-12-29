@@ -17,8 +17,6 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
 
 /* -------------------------------------------------------------------- */
@@ -89,8 +87,7 @@ _outline_move(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineMove(self->outline, x0, y0);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -102,8 +99,7 @@ _outline_line(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineLine(self->outline, x1, y1);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -115,8 +111,7 @@ _outline_curve(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineCurve(self->outline, x1, y1, x2, y2, x3, y3);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -127,8 +122,7 @@ _outline_close(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineClose(self->outline);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -140,8 +134,7 @@ _outline_transform(OutlineObject *self, PyObject *args) {
 
     ImagingOutlineTransform(self->outline, a);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static struct PyMethodDef _outline_methods[] = {

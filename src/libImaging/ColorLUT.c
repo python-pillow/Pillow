@@ -1,5 +1,4 @@
 #include "Imaging.h"
-#include <math.h>
 
 /* 8 bits for result. Table can overflow [0, 1.0] range,
    so we need extra bits for overflow and negative values.

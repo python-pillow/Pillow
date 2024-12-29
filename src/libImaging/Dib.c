@@ -19,10 +19,9 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Imaging.h"
-
 #ifdef _WIN32
 
+#include "Imaging.h"
 #include "ImDib.h"
 
 char *

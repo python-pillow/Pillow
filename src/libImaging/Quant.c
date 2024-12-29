@@ -1428,7 +1428,6 @@ quantize(
     }
 
 #ifdef TEST_NEAREST_NEIGHBOUR
-#include <math.h>
     {
         uint32_t bestmatch, bestdist, dist;
         HashTable *h2;

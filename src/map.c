@@ -18,15 +18,7 @@
  * FIXME: should move the memory mapping primitives into libImaging!
  */
 
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
-
-/* compatibility wrappers (defined in _imaging.c) */
-extern int
-PyImaging_CheckBuffer(PyObject *buffer);
-extern int
-PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view);
 
 extern PyObject *
 PyImagingNew(Imaging im);
@@ -77,7 +69,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (!PyImaging_CheckBuffer(target)) {
+    if (!PyObject_CheckBuffer(target)) {
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
         return NULL;
     }
@@ -105,7 +97,7 @@ PyImaging_MapBuffer(PyObject *self, PyObject *args) {
     }
 
     /* check buffer size */
-    if (PyImaging_GetBuffer(target, &view) < 0) {
+    if (PyObject_GetBuffer(target, &view, PyBUF_SIMPLE) < 0) {
         return NULL;
     }
 

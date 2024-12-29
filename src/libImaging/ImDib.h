@@ -12,8 +12,6 @@
 
 #ifdef _WIN32
 
-#include "ImPlatform.h"
-
 #if defined(__cplusplus)
 extern "C" {
 #endif

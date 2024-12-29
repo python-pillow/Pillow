@@ -29,11 +29,7 @@
 
 /* FIXME: make these pluggable! */
 
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
-
 #include "libImaging/Bit.h"
 #include "libImaging/Bcn.h"
 #include "libImaging/Gif.h"
@@ -213,8 +209,7 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     Py_XDECREF(decoder->lock);
     decoder->lock = op;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -231,8 +226,7 @@ _setfd(ImagingDecoderObject *decoder, PyObject *args) {
     Py_XINCREF(fd);
     state->fd = fd;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -801,74 +795,6 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
 #endif
 
 /* -------------------------------------------------------------------- */
-/* JPEG                                                                 */
-/* -------------------------------------------------------------------- */
-
-#ifdef HAVE_LIBJPEG
-
-/* We better define this decoder last in this file, so the following
-   undef's won't mess things up for the Imaging library proper. */
-
-#undef HAVE_PROTOTYPES
-#undef HAVE_STDDEF_H
-#undef HAVE_STDLIB_H
-#undef UINT8
-#undef UINT16
-#undef UINT32
-#undef INT8
-#undef INT16
-#undef INT32
-
-#include "libImaging/Jpeg.h"
-
-PyObject *
-PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
-    ImagingDecoderObject *decoder;
-
-    char *mode;
-    char *rawmode;  /* what we want from the decoder */
-    char *jpegmode; /* what's in the file */
-    int scale = 1;
-    int draft = 0;
-
-    if (!PyArg_ParseTuple(args, "ssz|ii", &mode, &rawmode, &jpegmode, &scale, &draft)) {
-        return NULL;
-    }
-
-    if (!jpegmode) {
-        jpegmode = "";
-    }
-
-    decoder = PyImaging_DecoderNew(sizeof(JPEGSTATE));
-    if (decoder == NULL) {
-        return NULL;
-    }
-
-    // libjpeg-turbo supports different output formats.
-    // We are choosing Pillow's native format (3 color bytes + 1 padding)
-    // to avoid extra conversion in Unpack.c.
-    if (ImagingJpegUseJCSExtensions() && strcmp(rawmode, "RGB") == 0) {
-        rawmode = "RGBX";
-    }
-
-    if (get_unpacker(decoder, mode, rawmode) < 0) {
-        return NULL;
-    }
-
-    decoder->decode = ImagingJpegDecode;
-    decoder->cleanup = ImagingJpegDecodeCleanup;
-
-    strncpy(((JPEGSTATE *)decoder->state.context)->rawmode, rawmode, 8);
-    strncpy(((JPEGSTATE *)decoder->state.context)->jpegmode, jpegmode, 8);
-
-    ((JPEGSTATE *)decoder->state.context)->scale = scale;
-    ((JPEGSTATE *)decoder->state.context)->draft = draft;
-
-    return (PyObject *)decoder;
-}
-#endif
-
-/* -------------------------------------------------------------------- */
 /* JPEG 2000                                                            */
 /* -------------------------------------------------------------------- */
 
@@ -925,3 +851,61 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     return (PyObject *)decoder;
 }
 #endif /* HAVE_OPENJPEG */
+
+/* -------------------------------------------------------------------- */
+/* JPEG                                                                 */
+/* -------------------------------------------------------------------- */
+
+#ifdef HAVE_LIBJPEG
+
+/* We better define this decoder last in this file, so the undef's
+   in Jpeg.h won't mess things up for the Imaging library proper. */
+
+#include "libImaging/Jpeg.h"
+
+PyObject *
+PyImaging_JpegDecoderNew(PyObject *self, PyObject *args) {
+    ImagingDecoderObject *decoder;
+
+    char *mode;
+    char *rawmode;  /* what we want from the decoder */
+    char *jpegmode; /* what's in the file */
+    int scale = 1;
+    int draft = 0;
+
+    if (!PyArg_ParseTuple(args, "ssz|ii", &mode, &rawmode, &jpegmode, &scale, &draft)) {
+        return NULL;
+    }
+
+    if (!jpegmode) {
+        jpegmode = "";
+    }
+
+    decoder = PyImaging_DecoderNew(sizeof(JPEGSTATE));
+    if (decoder == NULL) {
+        return NULL;
+    }
+
+    // libjpeg-turbo supports different output formats.
+    // We are choosing Pillow's native format (3 color bytes + 1 padding)
+    // to avoid extra conversion in Unpack.c.
+    if (ImagingJpegUseJCSExtensions() && strcmp(rawmode, "RGB") == 0) {
+        rawmode = "RGBX";
+    }
+
+    if (get_unpacker(decoder, mode, rawmode) < 0) {
+        return NULL;
+    }
+
+    decoder->decode = ImagingJpegDecode;
+    decoder->cleanup = ImagingJpegDecodeCleanup;
+
+    strncpy(((JPEGSTATE *)decoder->state.context)->rawmode, rawmode, 8);
+    strncpy(((JPEGSTATE *)decoder->state.context)->jpegmode, jpegmode, 8);
+
+    ((JPEGSTATE *)decoder->state.context)->scale = scale;
+    ((JPEGSTATE *)decoder->state.context)->draft = draft;
+
+    return (PyObject *)decoder;
+}
+#endif

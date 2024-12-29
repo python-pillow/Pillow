@@ -513,7 +513,7 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
         return im;
     }
 
-    ImagingError_Clear();
+    PyErr_Clear();
 
     // Try to allocate the image once more with smallest possible block size
     MUTEX_LOCK(&ImagingDefaultArena.mutex);

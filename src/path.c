@@ -25,17 +25,8 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
-#include "thirdparty/pythoncapi_compat.h"
 #include "libImaging/Imaging.h"
-
-#include <math.h>
-
-/* compatibility wrappers (defined in _imaging.c) */
-extern int
-PyImaging_CheckBuffer(PyObject *buffer);
-extern int
-PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view);
+#include "thirdparty/pythoncapi_compat.h"
 
 /* -------------------------------------------------------------------- */
 /* Class                                                                */
@@ -126,10 +117,10 @@ PyPath_Flatten(PyObject *data, double **pxy) {
         return path->count;
     }
 
-    if (PyImaging_CheckBuffer(data)) {
+    if (PyObject_CheckBuffer(data)) {
         /* Assume the buffer contains floats */
         Py_buffer buffer;
-        if (PyImaging_GetBuffer(data, &buffer) == 0) {
+        if (PyObject_GetBuffer(data, &buffer, PyBUF_SIMPLE) == 0) {
             float *ptr = (float *)buffer.buf;
             n = buffer.len / (2 * sizeof(float));
             xy = alloc_array(n);
@@ -415,8 +406,7 @@ path_map(PyPathObject *self, PyObject *args) {
     }
     self->mapping = 0;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static int
@@ -528,8 +518,7 @@ path_transform(PyPathObject *self, PyObject *args) {
         }
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static struct PyMethodDef methods[] = {

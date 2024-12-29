@@ -13,12 +13,9 @@
  * See the README file for information on usage and redistribution.
  */
 
-#include "Python.h"
-
 #include "libImaging/Imaging.h"
 
-#include "math.h"
-#include "float.h"
+#include <float.h>
 
 #define MAX_INT32 2147483647.0
 #define MIN_INT32 -2147483648.0
@@ -63,8 +60,8 @@
 #define SUB(type, v1, v2) (v1) - (v2)
 #define MUL(type, v1, v2) (v1) * (v2)
 
-#define MIN(type, v1, v2) ((v1) < (v2)) ? (v1) : (v2)
-#define MAX(type, v1, v2) ((v1) > (v2)) ? (v1) : (v2)
+#define MINOP(type, v1, v2) ((v1) < (v2)) ? (v1) : (v2)
+#define MAXOP(type, v1, v2) ((v1) > (v2)) ? (v1) : (v2)
 
 #define AND(type, v1, v2) (v1) & (v2)
 #define OR(type, v1, v2) (v1) | (v2)
@@ -134,8 +131,8 @@ BINOP(xor_I, XOR, INT32)
 BINOP(lshift_I, LSHIFT, INT32)
 BINOP(rshift_I, RSHIFT, INT32)
 
-BINOP(min_I, MIN, INT32)
-BINOP(max_I, MAX, INT32)
+BINOP(min_I, MINOP, INT32)
+BINOP(max_I, MAXOP, INT32)
 
 BINOP(eq_I, EQ, INT32)
 BINOP(ne_I, NE, INT32)
@@ -155,8 +152,8 @@ BINOP(mod_F, MOD_F, FLOAT32)
 BINOP(pow_F, POW_F, FLOAT32)
 BINOP(diff_F, DIFF_F, FLOAT32)
 
-BINOP(min_F, MIN, FLOAT32)
-BINOP(max_F, MAX, FLOAT32)
+BINOP(min_F, MINOP, FLOAT32)
+BINOP(max_F, MAXOP, FLOAT32)
 
 BINOP(eq_F, EQ, FLOAT32)
 BINOP(ne_F, NE, FLOAT32)
@@ -192,8 +189,7 @@ _unop(PyObject *self, PyObject *args) {
 
     unop(out, im1);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -226,8 +222,7 @@ _binop(PyObject *self, PyObject *args) {
 
     binop(out, im1, im2);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef _functions[] = {
