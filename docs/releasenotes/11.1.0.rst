@@ -23,10 +23,11 @@ TODO
 Deprecations
 ============
 
-TODO
-^^^^
+ExifTags.IFD.Makernote
+^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
+``ExifTags.IFD.MakerNote``.
 
 API Changes
 ===========
