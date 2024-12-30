@@ -117,7 +117,7 @@ class TestFileTiff:
 
     def test_bigtiff_save(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
-        hopper().save(outfile, bigtiff=True)
+        hopper().save(outfile, big_tiff=True)
 
         with Image.open(outfile) as im:
             assert im.tag_v2._bigtiff is True

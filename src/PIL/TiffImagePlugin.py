@@ -1691,7 +1691,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     encoderconfig = im.encoderconfig
 
     ifd = ImageFileDirectory_v2(prefix=prefix)
-    if encoderinfo.get("bigtiff"):
+    if encoderinfo.get("big_tiff"):
         ifd._bigtiff = True
 
     try:
