@@ -45,6 +45,7 @@ from . import (
 from ._binary import i16le as i16
 from ._binary import o8
 from ._binary import o16le as o16
+from ._util import DeferredError
 
 if TYPE_CHECKING:
     from . import _imaging
@@ -167,6 +168,8 @@ class GifImageFile(ImageFile.ImageFile):
                 raise EOFError(msg) from e
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         if frame == 0:
             # rewind
             self.__offset = 0

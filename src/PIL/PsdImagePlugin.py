@@ -27,6 +27,7 @@ from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import si16be as si16
 from ._binary import si32be as si32
+from ._util import DeferredError
 
 MODES = {
     # (photoshop mode, bits) -> (pil mode, required channels)
@@ -148,6 +149,8 @@ class PsdImageFile(ImageFile.ImageFile):
     ) -> list[tuple[str, str, tuple[int, int, int, int], list[ImageFile._Tile]]]:
         layers = []
         if self._layers_position is not None:
+            if isinstance(self._fp, DeferredError):
+                raise self._fp.ex
             self._fp.seek(self._layers_position)
             _layer_data = io.BytesIO(ImageFile._safe_read(self._fp, self._layers_size))
             layers = _layerinfo(_layer_data, self._layers_size)
@@ -167,6 +170,8 @@ class PsdImageFile(ImageFile.ImageFile):
     def seek(self, layer: int) -> None:
         if not self._seek_check(layer):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         # seek to given layer (1..max)
         try:
