@@ -1559,17 +1559,6 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            # libtiff always returns the bytes in native order.
-            # we're expecting image byte order. So, if the rawmode
-            # contains I;16, we need to convert from native to image
-            # byte order.
-            if rawmode == "I;16":
-                rawmode = "I;16N"
-            if ";16B" in rawmode:
-                rawmode = rawmode.replace(";16B", ";16N")
-            if ";16L" in rawmode:
-                rawmode = rawmode.replace(";16L", ";16N")
-
             # YCbCr images with new jpeg compression with pixels in one plane
             # unpacked straight into RGB values
             if (
@@ -1578,6 +1567,16 @@ class TiffImageFile(ImageFile.ImageFile):
                 and self._planar_configuration == 1
             ):
                 rawmode = "RGB"
+            # libtiff always returns the bytes in native order.
+            # we're expecting image byte order. So, if the rawmode
+            # contains I;16, we need to convert from native to image
+            # byte order.
+            elif rawmode == "I;16":
+                rawmode = "I;16N"
+            elif ";16B" in rawmode:
+                rawmode = rawmode.replace(";16B", ";16N")
+            elif ";16L" in rawmode:
+                rawmode = rawmode.replace(";16L", ";16N")
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
