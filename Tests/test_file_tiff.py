@@ -128,6 +128,7 @@ class TestFileTiff:
         hopper().save(outfile, big_tiff=True)
 
         with Image.open(outfile) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
             assert im.tag_v2._bigtiff is True
 
     def test_seek_too_large(self) -> None:
