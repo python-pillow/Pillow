@@ -75,6 +75,7 @@ def test_save_to_bytes() -> None:
     # The other one
     output.seek(0)
     with Image.open(output) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
         reloaded.size = (32, 32)
 
         assert im.mode == reloaded.mode
@@ -92,6 +93,7 @@ def test_getpixel(tmp_path: Path) -> None:
     im.save(temp_file, "ico", sizes=[(32, 32), (64, 64)])
 
     with Image.open(temp_file) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
         reloaded.load()
         reloaded.size = (32, 32)
 
@@ -165,6 +167,7 @@ def test_save_to_bytes_bmp(mode: str) -> None:
     # The other one
     output.seek(0)
     with Image.open(output) as reloaded:
+        assert isinstance(reloaded, IcoImagePlugin.IcoImageFile)
         reloaded.size = (32, 32)
 
         assert "RGBA" == reloaded.mode
@@ -176,6 +179,7 @@ def test_save_to_bytes_bmp(mode: str) -> None:
 
 def test_incorrect_size() -> None:
     with Image.open(TEST_ICO_FILE) as im:
+        assert isinstance(im, IcoImagePlugin.IcoImageFile)
         with pytest.raises(ValueError):
             im.size = (1, 1)
 
@@ -217,6 +221,7 @@ def test_save_append_images(tmp_path: Path) -> None:
     im.save(outfile, sizes=[(32, 32), (128, 128)], append_images=[provided_im])
 
     with Image.open(outfile) as reread:
+        assert isinstance(reread, IcoImagePlugin.IcoImageFile)
         assert_image_equal(reread, hopper("RGBA"))
 
         reread.size = (32, 32)
