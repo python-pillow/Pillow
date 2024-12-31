@@ -76,6 +76,13 @@
 
 #ifdef HAVE_LIBJPEG
 #include "jconfig.h"
+#ifdef LIBJPEG_TURBO_VERSION
+#define JCONFIG_INCLUDED
+#ifdef __CYGWIN__
+#define _BASETSD_H
+#endif
+#include "jpeglib.h"
+#endif
 #endif
 
 #ifdef HAVE_LIBZ
@@ -4366,6 +4373,15 @@ setup_module(PyObject *m) {
 #endif
     Py_INCREF(have_libjpegturbo);
     PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", have_libjpegturbo);
+
+    PyObject *have_mozjpeg;
+#ifdef JPEG_C_PARAM_SUPPORTED
+    have_mozjpeg = Py_True;
+#else
+    have_mozjpeg = Py_False;
+#endif
+    Py_INCREF(have_mozjpeg);
+    PyModule_AddObject(m, "HAVE_MOZJPEG", have_mozjpeg);
 
     PyObject *have_libimagequant;
 #ifdef HAVE_LIBIMAGEQUANT
