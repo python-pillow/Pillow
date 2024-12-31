@@ -68,6 +68,11 @@ Saving JPEG 2000 CMYK images
 
 With OpenJPEG 2.5.3 or later, Pillow can now save CMYK images as JPEG 2000 files.
 
+Minimum C version
+^^^^^^^^^^^^^^^^^
+
+C99 is now the minimum version of C required to compile Pillow from source.
+
 zlib-ng in wheels
 ^^^^^^^^^^^^^^^^^
 
