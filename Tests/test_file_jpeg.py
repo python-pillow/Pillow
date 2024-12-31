@@ -281,7 +281,10 @@ class TestFileJpeg:
         assert not im2.info.get("progressive")
         assert im3.info.get("progressive")
 
-        assert_image_equal(im1, im3)
+        if features.check_feature("mozjpeg"):
+            assert_image_similar(im1, im3, 9.39)
+        else:
+            assert_image_equal(im1, im3)
         assert im1_bytes >= im3_bytes
 
     def test_progressive_large_buffer(self, tmp_path: Path) -> None:
@@ -424,8 +427,12 @@ class TestFileJpeg:
 
         im2 = self.roundtrip(hopper(), progressive=1)
         im3 = self.roundtrip(hopper(), progression=1)  # compatibility
-        assert_image_equal(im1, im2)
-        assert_image_equal(im1, im3)
+        if features.check_feature("mozjpeg"):
+            assert_image_similar(im1, im2, 9.39)
+            assert_image_similar(im1, im3, 9.39)
+        else:
+            assert_image_equal(im1, im2)
+            assert_image_equal(im1, im3)
         assert im2.info.get("progressive")
         assert im2.info.get("progression")
         assert im3.info.get("progressive")
