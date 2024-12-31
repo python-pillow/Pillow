@@ -949,7 +949,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
             warnings.warn(str(msg))
             return
 
-    def _get_ifh(self):
+    def _get_ifh(self) -> bytes:
         ifh = self._prefix + self._pack("H", 43 if self._bigtiff else 42)
         if self._bigtiff:
             ifh += self._pack("HH", 8, 0)
