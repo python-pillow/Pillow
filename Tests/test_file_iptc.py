@@ -28,7 +28,7 @@ def test_getiptcinfo_jpg_none() -> None:
     # Arrange
     with hopper() as im:
         # Act
-        iptc = IptcImagePlugin.getiptcinfo(im)
+        iptc = IptcImagePlugin.getiptcinfo(im)  # type: ignore[arg-type]
 
     # Assert
     assert iptc is None

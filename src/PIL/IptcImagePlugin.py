@@ -192,7 +192,7 @@ Image.register_extension(IptcImageFile.format, ".iim")
 
 
 def getiptcinfo(
-    im: Image.Image,
+    im: ImageFile.ImageFile,
 ) -> dict[tuple[int, int], bytes | list[bytes]] | None:
     """
     Get IPTC information from TIFF, JPEG, or IPTC file.
