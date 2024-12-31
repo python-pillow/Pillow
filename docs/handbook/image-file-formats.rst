@@ -1211,6 +1211,8 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
 **big_tiff**
     If true, the image will be saved as a BigTIFF.
 
+    .. versionadded:: 11.1.0
+
 **compression**
     A string containing the desired compression method for the
     file. (valid only with libtiff installed) Valid compression

@@ -1,25 +1,6 @@
 11.1.0
 ------
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
-
 Deprecations
 ============
 
@@ -65,6 +46,13 @@ zlib library, and what version of zlib-ng is being used::
     from PIL import features
     features.check_feature("zlib_ng")  # True or False
     features.version_feature("zlib_ng")  # "2.2.2" for example, or None
+
+Saving TIFF as BigTIFF
+^^^^^^^^^^^^^^^^^^^^^^
+
+TIFF images can now be saved as BigTIFF using a ``big_tiff`` argument::
+
+    im.save("out.tiff", big_tiff=True)
 
 Other Changes
 =============
