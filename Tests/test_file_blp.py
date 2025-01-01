@@ -19,6 +19,7 @@ def test_load_blp1() -> None:
         assert_image_equal_tofile(im, "Tests/images/blp/blp1_jpeg.png")
 
     with Image.open("Tests/images/blp/blp1_jpeg2.blp") as im:
+        assert im.mode == "RGBA"
         im.load()
 
 

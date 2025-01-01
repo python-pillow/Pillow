@@ -260,17 +260,20 @@ class BlpImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
         self.magic = self.fp.read(4)
 
-        self.fp.seek(5, os.SEEK_CUR)
-        (self._blp_alpha_depth,) = struct.unpack("<b", self.fp.read(1))
-
-        self.fp.seek(2, os.SEEK_CUR)
-        self._size = struct.unpack("<II", self.fp.read(8))
-
-        if self.magic in (b"BLP1", b"BLP2"):
-            decoder = self.magic.decode()
+        if self.magic == b"BLP1":
+            self.fp.seek(4, os.SEEK_CUR)
+            (self._blp_alpha_depth,) = struct.unpack("<I", self.fp.read(4))
+        elif self.magic == b"BLP2":
+            self.fp.seek(5, os.SEEK_CUR)
+            (self._blp_alpha_depth,) = struct.unpack("<b", self.fp.read(1))
+            self.fp.seek(2, os.SEEK_CUR)
         else:
             msg = f"Bad BLP magic {repr(self.magic)}"
             raise BLPFormatError(msg)
+
+        self._size = struct.unpack("<II", self.fp.read(8))
+
+        decoder = self.magic.decode()
 
         self._mode = "RGBA" if self._blp_alpha_depth else "RGB"
         self.tile = [ImageFile._Tile(decoder, (0, 0) + self.size, 0, self.mode)]
@@ -297,10 +300,13 @@ class _BLPBaseDecoder(ImageFile.PyDecoder):
         self.fd.seek(4)
         (self._blp_compression,) = struct.unpack("<i", self._safe_read(4))
 
-        (self._blp_encoding,) = struct.unpack("<b", self._safe_read(1))
-        (self._blp_alpha_depth,) = struct.unpack("<b", self._safe_read(1))
-        (self._blp_alpha_encoding,) = struct.unpack("<b", self._safe_read(1))
-        self.fd.seek(1, os.SEEK_CUR)  # mips
+        if isinstance(self, BLP1Decoder):
+            (self._blp_alpha_depth,) = struct.unpack("<I", self._safe_read(4))
+        else:
+            (self._blp_encoding,) = struct.unpack("<b", self._safe_read(1))
+            (self._blp_alpha_depth,) = struct.unpack("<b", self._safe_read(1))
+            (self._blp_alpha_encoding,) = struct.unpack("<b", self._safe_read(1))
+            self.fd.seek(1, os.SEEK_CUR)  # mips
 
         self.size = struct.unpack("<II", self._safe_read(8))
 
@@ -472,10 +478,15 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     assert im.palette is not None
     fp.write(struct.pack("<i", 1))  # Uncompressed or DirectX compression
-    fp.write(struct.pack("<b", Encoding.UNCOMPRESSED))
-    fp.write(struct.pack("<b", 1 if im.palette.mode == "RGBA" else 0))
-    fp.write(struct.pack("<b", 0))  # alpha encoding
-    fp.write(struct.pack("<b", 0))  # mips
+
+    alpha_depth = 1 if im.palette.mode == "RGBA" else 0
+    if magic == b"BLP1":
+        fp.write(struct.pack("<L", alpha_depth))
+    else:
+        fp.write(struct.pack("<b", Encoding.UNCOMPRESSED))
+        fp.write(struct.pack("<b", alpha_depth))
+        fp.write(struct.pack("<b", 0))  # alpha encoding
+        fp.write(struct.pack("<b", 0))  # mips
     fp.write(struct.pack("<II", *im.size))
     if magic == b"BLP1":
         fp.write(struct.pack("<i", 5))
