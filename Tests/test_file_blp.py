@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import Image
+from PIL import BlpImagePlugin, Image
 
 from .helper import (
     assert_image_equal,
@@ -36,6 +36,13 @@ def test_load_blp2_dxt1() -> None:
 def test_load_blp2_dxt1a() -> None:
     with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
+
+
+def test_invalid_file() -> None:
+    invalid_file = "Tests/images/flower.jpg"
+
+    with pytest.raises(BlpImagePlugin.BLPFormatError):
+        BlpImagePlugin.BlpImageFile(invalid_file)
 
 
 def test_save(tmp_path: Path) -> None:
