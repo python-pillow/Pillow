@@ -45,11 +45,7 @@ OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.6.3
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
-if [[ -n "$IS_MACOS" ]]; then
-    GIFLIB_VERSION=5.2.2
-else
-    GIFLIB_VERSION=5.2.1
-fi
+GIFLIB_VERSION=5.2.2
 ZLIB_NG_VERSION=2.2.3
 LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
@@ -139,6 +135,14 @@ function build {
     CFLAGS="$CFLAGS -O3 -DNDEBUG"
     if [[ -n "$IS_MACOS" ]]; then
         CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
+    # For giflib 5.2.2
+    elif [ -n "$IS_ALPINE" ]; then
+        apk add imagemagick
+    else
+        if [[ "$MB_ML_VER" == "_2_28" ]]; then
+            yum install -y epel-release
+        fi
+        yum install -y ImageMagick
     fi
     build_libwebp
     CFLAGS=$ORIGINAL_CFLAGS
