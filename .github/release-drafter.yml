@@ -3,18 +3,19 @@ tag-template: "$NEXT_MINOR_VERSION"
 change-template: '- $TITLE #$NUMBER [@$AUTHOR]'
 
 categories:
-  - title: "Dependencies"
-    label: "Dependency"
+  - title: "Removals"
+    label: "Removal"
   - title: "Deprecations"
     label: "Deprecation"
   - title: "Documentation"
     label: "Documentation"
-  - title: "Removals"
-    label: "Removal"
+  - title: "Dependencies"
+    label: "Dependency"
   - title: "Testing"
     label: "Testing"
   - title: "Type hints"
     label: "Type hints"
+  - title: "Other changes"
 
 exclude-labels:
   - "changelog: skip"
@@ -22,7 +23,5 @@ exclude-labels:
 template: |
 
   https://pillow.readthedocs.io/en/stable/releasenotes/$NEXT_MINOR_VERSION.html
-
-  ## Changes
 
   $CHANGES

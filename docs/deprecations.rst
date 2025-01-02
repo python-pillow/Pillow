@@ -175,6 +175,14 @@ deprecated and will be removed in Pillow 12 (2025-10-15). They were used for obt
 raw pointers to ``ImagingCore`` internals. To interact with C code, you can use
 ``Image.Image.getim()``, which returns a ``Capsule`` object.
 
+ExifTags.IFD.Makernote
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.1.0
+
+``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
+``ExifTags.IFD.MakerNote``.
+
 16-Bit RGB/BGR Rawmodes
 ^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -72,6 +72,8 @@ class TestFileTiff:
 
     def test_closed_file(self) -> None:
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             im = Image.open("Tests/images/multipage.tiff")
             im.load()
             im.close()
@@ -88,6 +90,8 @@ class TestFileTiff:
 
     def test_context_manager(self) -> None:
         with warnings.catch_warnings():
+            warnings.simplefilter("error")
+
             with Image.open("Tests/images/multipage.tiff") as im:
                 im.load()
 
@@ -110,6 +114,13 @@ class TestFileTiff:
         with Image.open("Tests/images/hopper_bigtiff.tif") as im:
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
+
+    def test_bigtiff_save(self, tmp_path: Path) -> None:
+        outfile = str(tmp_path / "temp.tif")
+        hopper().save(outfile, big_tiff=True)
+
+        with Image.open(outfile) as im:
+            assert im.tag_v2._bigtiff is True
 
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):

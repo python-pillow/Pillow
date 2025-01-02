@@ -103,7 +103,6 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.info["version"] = s[:6]
         self._size = i16(s, 6), i16(s, 8)
-        self.tile = []
         flags = s[10]
         bits = (flags & 7) + 1
 
@@ -696,8 +695,9 @@ def _write_multiple_frames(
                         )
                         background = _get_background(im_frame, color)
                         background_im = Image.new("P", im_frame.size, background)
-                        assert im_frames[0].im.palette is not None
-                        background_im.putpalette(im_frames[0].im.palette)
+                        first_palette = im_frames[0].im.palette
+                        assert first_palette is not None
+                        background_im.putpalette(first_palette, first_palette.mode)
                     bbox = _getbbox(background_im, im_frame)[1]
                 elif encoderinfo.get("optimize") and im_frame.mode != "1":
                     if "transparency" not in encoderinfo:

@@ -92,6 +92,9 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             # get units per inch
             self._inch = word(s, 14)
+            if self._inch == 0:
+                msg = "Invalid inch"
+                raise ValueError(msg)
 
             # get bounding box
             x0 = short(s, 6)
@@ -128,7 +131,7 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             size = x1 - x0, y1 - y0
 
             # calculate dots per inch from bbox and frame
-            xdpi = 2540.0 * (x1 - y0) / (frame[2] - frame[0])
+            xdpi = 2540.0 * (x1 - x0) / (frame[2] - frame[0])
             ydpi = 2540.0 * (y1 - y0) / (frame[3] - frame[1])
 
             self.info["wmf_bbox"] = x0, y0, x1, y1
