@@ -121,7 +121,7 @@ V = {
     "OPENJPEG": "2.5.3",
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
-    "ZLIBNG": "2.2.2",
+    "ZLIBNG": "2.2.3",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
