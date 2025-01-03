@@ -99,7 +99,7 @@ function build_harfbuzz {
 
 function build {
     build_xz
-    if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
+    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
     build_zlib_ng
@@ -138,6 +138,8 @@ function build {
     # For giflib 5.2.2
     elif [ -n "$IS_ALPINE" ]; then
         apk add imagemagick
+    elif [ -n "$SANITIZER" ]; then
+        apt-get install -y imagemagick
     else
         if [[ "$MB_ML_VER" == "_2_28" ]]; then
             yum install -y epel-release
