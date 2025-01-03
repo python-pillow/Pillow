@@ -353,7 +353,6 @@ class TestFileJpeg:
             assert exif.get_ifd(0x8825) == {}
 
             transposed = ImageOps.exif_transpose(im)
-        assert transposed is not None
         exif = transposed.getexif()
         assert exif.get_ifd(0x8825) == {}
 
