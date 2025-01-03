@@ -3,20 +3,6 @@
 #include <Python.h>
 #include "avif/avif.h"
 
-typedef struct {
-    avifPixelFormat subsampling;
-    int qmin;
-    int qmax;
-    int quality;
-    int speed;
-    avifCodecChoice codec;
-    avifRange range;
-    avifBool alpha_premultiplied;
-    int tile_rows_log2;
-    int tile_cols_log2;
-    avifBool autotiling;
-} avifEncOptions;
-
 // Encoder type
 typedef struct {
     PyObject_HEAD avifEncoder *encoder;
@@ -241,9 +227,8 @@ _add_codec_specific_options(avifEncoder *encoder, PyObject *opts) {
 PyObject *
 AvifEncoderNew(PyObject *self_, PyObject *args) {
     unsigned int width, height;
-    avifEncOptions enc_options;
     AvifEncoderObject *self = NULL;
-    avifEncoder *encoder = NULL;
+    avifEncoder *encoder;
 
     char *subsampling;
     int qmin;
@@ -291,201 +276,194 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
         return NULL;
     }
 
+    // Create a new animation encoder and picture frame
+    avifImage *image = avifImageCreateEmpty();
+
+    // Set these in advance so any upcoming RGB -> YUV use the proper coefficients
+    if (strcmp(range, "full") == 0) {
+        image->yuvRange = AVIF_RANGE_FULL;
+    } else if (strcmp(range, "limited") == 0) {
+        image->yuvRange = AVIF_RANGE_LIMITED;
+    } else {
+        PyErr_SetString(PyExc_ValueError, "Invalid range");
+        return NULL;
+    }
     if (strcmp(subsampling, "4:0:0") == 0) {
-        enc_options.subsampling = AVIF_PIXEL_FORMAT_YUV400;
+        image->yuvFormat = AVIF_PIXEL_FORMAT_YUV400;
     } else if (strcmp(subsampling, "4:2:0") == 0) {
-        enc_options.subsampling = AVIF_PIXEL_FORMAT_YUV420;
+        image->yuvFormat = AVIF_PIXEL_FORMAT_YUV420;
     } else if (strcmp(subsampling, "4:2:2") == 0) {
-        enc_options.subsampling = AVIF_PIXEL_FORMAT_YUV422;
+        image->yuvFormat = AVIF_PIXEL_FORMAT_YUV422;
     } else if (strcmp(subsampling, "4:4:4") == 0) {
-        enc_options.subsampling = AVIF_PIXEL_FORMAT_YUV444;
+        image->yuvFormat = AVIF_PIXEL_FORMAT_YUV444;
     } else {
         PyErr_Format(PyExc_ValueError, "Invalid subsampling: %s", subsampling);
         return NULL;
     }
 
+    image->colorPrimaries = AVIF_COLOR_PRIMARIES_UNSPECIFIED;
+    image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED;
+    image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT601;
+
+    // Validate canvas dimensions
+    if (width <= 0 || height <= 0) {
+        PyErr_SetString(PyExc_ValueError, "invalid canvas dimensions");
+        avifImageDestroy(image);
+        return NULL;
+    }
+    image->width = width;
+    image->height = height;
+
+    image->depth = 8;
+#if AVIF_VERSION >= 90000
+    image->alphaPremultiplied = alpha_premultiplied == Py_True ? AVIF_TRUE : AVIF_FALSE;
+#endif
+
+    encoder = avifEncoderCreate();
+
+    int is_aom_encode = strcmp(codec, "aom") == 0 ||
+                        (strcmp(codec, "auto") == 0 &&
+                         _codec_available("aom", AVIF_CODEC_FLAG_CAN_ENCODE));
+    encoder->maxThreads = is_aom_encode && max_threads > 64 ? 64 : max_threads;
+
     if (qmin == -1 || qmax == -1) {
 #if AVIF_VERSION >= 1000000
-        enc_options.qmin = -1;
-        enc_options.qmax = -1;
+        encoder->quality = quality;
 #else
-        enc_options.qmin = normalize_quantize_value(64 - quality);
-        enc_options.qmax = normalize_quantize_value(100 - quality);
+        encoder->minQuantizer = normalize_quantize_value(64 - quality);
+        encoder->maxQuantizer = normalize_quantize_value(100 - quality);
 #endif
     } else {
-        enc_options.qmin = normalize_quantize_value(qmin);
-        enc_options.qmax = normalize_quantize_value(qmax);
+        encoder->minQuantizer = normalize_quantize_value(qmin);
+        encoder->maxQuantizer = normalize_quantize_value(qmax);
     }
-    enc_options.quality = quality;
 
+    if (strcmp(codec, "auto") == 0) {
+        encoder->codecChoice = AVIF_CODEC_CHOICE_AUTO;
+    } else {
+        encoder->codecChoice = avifCodecChoiceFromName(codec);
+    }
     if (speed < AVIF_SPEED_SLOWEST) {
         speed = AVIF_SPEED_SLOWEST;
     } else if (speed > AVIF_SPEED_FASTEST) {
         speed = AVIF_SPEED_FASTEST;
     }
-    enc_options.speed = speed;
-
-    if (strcmp(codec, "auto") == 0) {
-        enc_options.codec = AVIF_CODEC_CHOICE_AUTO;
-    } else {
-        enc_options.codec = avifCodecChoiceFromName(codec);
-    }
-
-    if (strcmp(range, "full") == 0) {
-        enc_options.range = AVIF_RANGE_FULL;
-    } else if (strcmp(range, "limited") == 0) {
-        enc_options.range = AVIF_RANGE_LIMITED;
-    } else {
-        PyErr_SetString(PyExc_ValueError, "Invalid range");
-        return NULL;
-    }
-
-    // Validate canvas dimensions
-    if (width <= 0 || height <= 0) {
-        PyErr_SetString(PyExc_ValueError, "invalid canvas dimensions");
-        return NULL;
-    }
-
-    enc_options.tile_rows_log2 = normalize_tiles_log2(tile_rows_log2);
-    enc_options.tile_cols_log2 = normalize_tiles_log2(tile_cols_log2);
-    enc_options.alpha_premultiplied =
-        (alpha_premultiplied == Py_True) ? AVIF_TRUE : AVIF_FALSE;
-    enc_options.autotiling = (autotiling == Py_True) ? AVIF_TRUE : AVIF_FALSE;
-
-    // Create a new animation encoder and picture frame
-    self = PyObject_New(AvifEncoderObject, &AvifEncoder_Type);
-    if (self) {
-        self->icc_bytes = NULL;
-        self->exif_bytes = NULL;
-        self->xmp_bytes = NULL;
-
-        encoder = avifEncoderCreate();
-
-        int is_aom_encode = strcmp(codec, "aom") == 0 ||
-                            (strcmp(codec, "auto") == 0 &&
-                             _codec_available("aom", AVIF_CODEC_FLAG_CAN_ENCODE));
-
-        encoder->maxThreads = is_aom_encode && max_threads > 64 ? 64 : max_threads;
-#if AVIF_VERSION >= 1000000
-        if (enc_options.qmin != -1 && enc_options.qmax != -1) {
-            encoder->minQuantizer = enc_options.qmin;
-            encoder->maxQuantizer = enc_options.qmax;
-        } else {
-            encoder->quality = enc_options.quality;
-        }
-#else
-        encoder->minQuantizer = enc_options.qmin;
-        encoder->maxQuantizer = enc_options.qmax;
-#endif
-        encoder->codecChoice = enc_options.codec;
-        encoder->speed = enc_options.speed;
-        encoder->timescale = (uint64_t)1000;
-        encoder->tileRowsLog2 = enc_options.tile_rows_log2;
-        encoder->tileColsLog2 = enc_options.tile_cols_log2;
+    encoder->speed = speed;
+    encoder->timescale = (uint64_t)1000;
+    encoder->tileRowsLog2 = normalize_tiles_log2(tile_rows_log2);
+    encoder->tileColsLog2 = normalize_tiles_log2(tile_cols_log2);
 
 #if AVIF_VERSION >= 110000
-        encoder->autoTiling = enc_options.autotiling;
+    encoder->autoTiling = autotiling == Py_True ? AVIF_TRUE : AVIF_FALSE;
 #endif
 
-        if (advanced != Py_None) {
+    if (advanced != Py_None) {
 #if AVIF_VERSION >= 80200
-            if (_add_codec_specific_options(encoder, advanced)) {
-                return NULL;
-            }
-#else
-            PyErr_SetString(
-                PyExc_ValueError, "Advanced codec options require libavif >= 0.8.2"
-            );
+        if (_add_codec_specific_options(encoder, advanced)) {
+            avifImageDestroy(image);
+            avifEncoderDestroy(encoder);
             return NULL;
+        }
+#else
+        PyErr_SetString(
+            PyExc_ValueError, "Advanced codec options require libavif >= 0.8.2"
+        );
+        avifImageDestroy(image);
+        avifEncoderDestroy(encoder);
+        return NULL;
 #endif
-        }
-
-        self->encoder = encoder;
-
-        avifImage *image = avifImageCreateEmpty();
-        // Set these in advance so any upcoming RGB -> YUV use the proper coefficients
-        image->yuvRange = enc_options.range;
-        image->yuvFormat = enc_options.subsampling;
-        image->colorPrimaries = AVIF_COLOR_PRIMARIES_UNSPECIFIED;
-        image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED;
-        image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT601;
-        image->width = width;
-        image->height = height;
-        image->depth = 8;
-#if AVIF_VERSION >= 90000
-        image->alphaPremultiplied = enc_options.alpha_premultiplied;
-#endif
-
-        avifResult result;
-        if (PyBytes_GET_SIZE(icc_bytes)) {
-            self->icc_bytes = icc_bytes;
-            Py_INCREF(icc_bytes);
-
-            result = avifImageSetProfileICC(
-                image,
-                (uint8_t *)PyBytes_AS_STRING(icc_bytes),
-                PyBytes_GET_SIZE(icc_bytes)
-            );
-            if (result != AVIF_RESULT_OK) {
-                PyErr_Format(
-                    exc_type_for_avif_result(result),
-                    "Setting ICC profile failed: %s",
-                    avifResultToString(result)
-                );
-                return NULL;
-            }
-        } else {
-            image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
-            image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
-        }
-
-        if (PyBytes_GET_SIZE(exif_bytes)) {
-            self->exif_bytes = exif_bytes;
-            Py_INCREF(exif_bytes);
-
-            result = avifImageSetMetadataExif(
-                image,
-                (uint8_t *)PyBytes_AS_STRING(exif_bytes),
-                PyBytes_GET_SIZE(exif_bytes)
-            );
-            if (result != AVIF_RESULT_OK) {
-                PyErr_Format(
-                    exc_type_for_avif_result(result),
-                    "Setting EXIF data failed: %s",
-                    avifResultToString(result)
-                );
-                return NULL;
-            }
-        }
-        if (PyBytes_GET_SIZE(xmp_bytes)) {
-            self->xmp_bytes = xmp_bytes;
-            Py_INCREF(xmp_bytes);
-
-            result = avifImageSetMetadataXMP(
-                image,
-                (uint8_t *)PyBytes_AS_STRING(xmp_bytes),
-                PyBytes_GET_SIZE(xmp_bytes)
-            );
-            if (result != AVIF_RESULT_OK) {
-                PyErr_Format(
-                    exc_type_for_avif_result(result),
-                    "Setting XMP data failed: %s",
-                    avifResultToString(result)
-                );
-                return NULL;
-            }
-        }
-        if (exif_orientation > 1) {
-            exif_orientation_to_irot_imir(image, exif_orientation);
-        }
-
-        self->image = image;
-        self->frame_index = -1;
-
-        return (PyObject *)self;
     }
-    PyErr_SetString(PyExc_RuntimeError, "could not create encoder object");
-    return NULL;
+
+    self = PyObject_New(AvifEncoderObject, &AvifEncoder_Type);
+    if (!self) {
+        PyErr_SetString(PyExc_RuntimeError, "could not create encoder object");
+        avifImageDestroy(image);
+        avifEncoderDestroy(encoder);
+        return NULL;
+    }
+    self->frame_index = -1;
+    self->icc_bytes = NULL;
+    self->exif_bytes = NULL;
+    self->xmp_bytes = NULL;
+
+    avifResult result;
+    if (PyBytes_GET_SIZE(icc_bytes)) {
+        self->icc_bytes = icc_bytes;
+        Py_INCREF(icc_bytes);
+
+        result = avifImageSetProfileICC(
+            image, (uint8_t *)PyBytes_AS_STRING(icc_bytes), PyBytes_GET_SIZE(icc_bytes)
+        );
+        if (result != AVIF_RESULT_OK) {
+            PyErr_Format(
+                exc_type_for_avif_result(result),
+                "Setting ICC profile failed: %s",
+                avifResultToString(result)
+            );
+            avifImageDestroy(image);
+            avifEncoderDestroy(encoder);
+            Py_XDECREF(self->icc_bytes);
+            PyObject_Del(self);
+            return NULL;
+        }
+    } else {
+        image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+        image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
+    }
+
+    if (PyBytes_GET_SIZE(exif_bytes)) {
+        self->exif_bytes = exif_bytes;
+        Py_INCREF(exif_bytes);
+
+        result = avifImageSetMetadataExif(
+            image,
+            (uint8_t *)PyBytes_AS_STRING(exif_bytes),
+            PyBytes_GET_SIZE(exif_bytes)
+        );
+        if (result != AVIF_RESULT_OK) {
+            PyErr_Format(
+                exc_type_for_avif_result(result),
+                "Setting EXIF data failed: %s",
+                avifResultToString(result)
+            );
+            avifImageDestroy(image);
+            avifEncoderDestroy(encoder);
+            Py_XDECREF(self->icc_bytes);
+            Py_XDECREF(self->exif_bytes);
+            PyObject_Del(self);
+            return NULL;
+        }
+    }
+    if (PyBytes_GET_SIZE(xmp_bytes)) {
+        self->xmp_bytes = xmp_bytes;
+        Py_INCREF(xmp_bytes);
+
+        result = avifImageSetMetadataXMP(
+            image, (uint8_t *)PyBytes_AS_STRING(xmp_bytes), PyBytes_GET_SIZE(xmp_bytes)
+        );
+        if (result != AVIF_RESULT_OK) {
+            PyErr_Format(
+                exc_type_for_avif_result(result),
+                "Setting XMP data failed: %s",
+                avifResultToString(result)
+            );
+            avifImageDestroy(image);
+            avifEncoderDestroy(encoder);
+            Py_XDECREF(self->icc_bytes);
+            Py_XDECREF(self->exif_bytes);
+            Py_XDECREF(self->xmp_bytes);
+            PyObject_Del(self);
+            return NULL;
+        }
+    }
+    if (exif_orientation > 1) {
+        exif_orientation_to_irot_imir(image, exif_orientation);
+    }
+
+    self->image = image;
+    self->encoder = encoder;
+
+    return (PyObject *)self;
 }
 
 PyObject *
@@ -606,10 +584,11 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
     // rgb.pixels is safe for writes
     memcpy(rgb.pixels, rgb_bytes, size);
 
-    Py_BEGIN_ALLOW_THREADS result = avifImageRGBToYUV(frame, &rgb);
-    Py_END_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS;
+    result = avifImageRGBToYUV(frame, &rgb);
+    Py_END_ALLOW_THREADS;
 
-        if (result != AVIF_RESULT_OK) {
+    if (result != AVIF_RESULT_OK) {
         PyErr_Format(
             exc_type_for_avif_result(result),
             "Conversion to YUV failed: %s",
@@ -624,11 +603,11 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
         addImageFlags |= AVIF_ADD_IMAGE_FLAG_SINGLE;
     }
 
-    Py_BEGIN_ALLOW_THREADS result =
-        avifEncoderAddImage(encoder, frame, duration, addImageFlags);
-    Py_END_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS;
+    result = avifEncoderAddImage(encoder, frame, duration, addImageFlags);
+    Py_END_ALLOW_THREADS;
 
-        if (result != AVIF_RESULT_OK) {
+    if (result != AVIF_RESULT_OK) {
         PyErr_Format(
             exc_type_for_avif_result(result),
             "Failed to encode image: %s",
@@ -660,10 +639,11 @@ _encoder_finish(AvifEncoderObject *self) {
     avifResult result;
     PyObject *ret = NULL;
 
-    Py_BEGIN_ALLOW_THREADS result = avifEncoderFinish(encoder, &raw);
-    Py_END_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS;
+    result = avifEncoderFinish(encoder, &raw);
+    Py_END_ALLOW_THREADS;
 
-        if (result != AVIF_RESULT_OK) {
+    if (result != AVIF_RESULT_OK) {
         PyErr_Format(
             exc_type_for_avif_result(result),
             "Failed to finish encoding: %s",
@@ -685,6 +665,7 @@ PyObject *
 AvifDecoderNew(PyObject *self_, PyObject *args) {
     PyObject *avif_bytes;
     AvifDecoderObject *self = NULL;
+    avifDecoder *decoder;
 
     char *codec_str;
     avifCodecChoice codec;
@@ -707,29 +688,26 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
         PyErr_SetString(PyExc_RuntimeError, "could not create decoder object");
         return NULL;
     }
-    self->decoder = NULL;
 
     Py_INCREF(avif_bytes);
     self->data = avif_bytes;
 
-    self->decoder = avifDecoderCreate();
+    decoder = avifDecoderCreate();
 #if AVIF_VERSION >= 80400
-    self->decoder->maxThreads = max_threads;
+    decoder->maxThreads = max_threads;
 #endif
 #if AVIF_VERSION >= 90200
     // Turn off libavif's 'clap' (clean aperture) property validation.
-    self->decoder->strictFlags &= ~AVIF_STRICT_CLAP_VALID;
+    decoder->strictFlags &= ~AVIF_STRICT_CLAP_VALID;
     // Allow the PixelInformationProperty ('pixi') to be missing in AV1 image
     // items. libheif v1.11.0 and older does not add the 'pixi' item property to
     // AV1 image items.
-    self->decoder->strictFlags &= ~AVIF_STRICT_PIXI_REQUIRED;
+    decoder->strictFlags &= ~AVIF_STRICT_PIXI_REQUIRED;
 #endif
-    self->decoder->codecChoice = codec;
+    decoder->codecChoice = codec;
 
     result = avifDecoderSetIOMemory(
-        self->decoder,
-        (uint8_t *)PyBytes_AS_STRING(self->data),
-        PyBytes_GET_SIZE(self->data)
+        decoder, (uint8_t *)PyBytes_AS_STRING(self->data), PyBytes_GET_SIZE(self->data)
     );
     if (result != AVIF_RESULT_OK) {
         PyErr_Format(
@@ -737,30 +715,30 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
             "Setting IO memory failed: %s",
             avifResultToString(result)
         );
-        avifDecoderDestroy(self->decoder);
-        self->decoder = NULL;
-        Py_DECREF(self);
+        avifDecoderDestroy(decoder);
+        PyObject_Del(self);
         return NULL;
     }
 
-    result = avifDecoderParse(self->decoder);
+    result = avifDecoderParse(decoder);
     if (result != AVIF_RESULT_OK) {
         PyErr_Format(
             exc_type_for_avif_result(result),
             "Failed to decode image: %s",
             avifResultToString(result)
         );
-        avifDecoderDestroy(self->decoder);
-        self->decoder = NULL;
-        Py_DECREF(self);
+        avifDecoderDestroy(decoder);
+        PyObject_Del(self);
         return NULL;
     }
 
-    if (self->decoder->alphaPresent) {
+    if (decoder->alphaPresent) {
         self->mode = "RGBA";
     } else {
         self->mode = "RGB";
     }
+
+    self->decoder = decoder;
 
     return (PyObject *)self;
 }
@@ -876,10 +854,11 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
         return NULL;
     }
 
-    Py_BEGIN_ALLOW_THREADS result = avifImageYUVToRGB(image, &rgb);
-    Py_END_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS;
+    result = avifImageYUVToRGB(image, &rgb);
+    Py_END_ALLOW_THREADS;
 
-        if (result != AVIF_RESULT_OK) {
+    if (result != AVIF_RESULT_OK) {
         PyErr_Format(
             exc_type_for_avif_result(result),
             "Conversion from YUV failed: %s",
@@ -918,7 +897,7 @@ static struct PyMethodDef _encoder_methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-// AvifDecoder type definition
+// AvifEncoder type definition
 static PyTypeObject AvifEncoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "AvifEncoder",
     .tp_basicsize = sizeof(AvifEncoderObject),

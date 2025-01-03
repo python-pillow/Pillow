@@ -106,8 +106,7 @@ function build_harfbuzz {
 function build_libavif {
     if [ -e libavif-stamp ]; then return; fi
 
-    if [[ "$MB_ML_VER" == 2014 ]] || [[ "$PLAT" == "aarch64" ]]; then
-        # Once Amazon 2 is EOL on 30 June 2025, manylinux2014 will no longer be needed
+    if [[ "$PLAT" == "aarch64" ]]; then
         # Once GitHub Actions supports aarch64 without emulation, this will no longer needed as building will be faster
         if [[ "$PLAT" == "aarch64" ]]; then
             suffix="aarch64"
@@ -137,6 +136,9 @@ EOF
 
         if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
             yum install -y perl
+            if [[ "$MB_ML_VER" == 2014 ]]; then
+                yum install -y perl-IPC-Cmd
+            fi
         fi
 
         rav1e=LOCAL
