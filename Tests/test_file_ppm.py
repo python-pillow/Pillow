@@ -79,6 +79,7 @@ def test_arbitrary_maxval(
         assert im.mode == mode
 
         px = im.load()
+        assert px is not None
         assert tuple(px[x, 0] for x in range(3)) == pixels
 
 

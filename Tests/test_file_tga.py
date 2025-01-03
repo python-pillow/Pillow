@@ -72,6 +72,7 @@ def test_palette_depth_8(tmp_path: Path) -> None:
 
 def test_palette_depth_16(tmp_path: Path) -> None:
     with Image.open("Tests/images/p_16.tga") as im:
+        assert im.palette is not None
         assert im.palette.mode == "RGBA"
         assert_image_equal_tofile(im.convert("RGBA"), "Tests/images/p_16.png")
 
@@ -213,10 +214,14 @@ def test_save_orientation(tmp_path: Path) -> None:
 def test_horizontal_orientations() -> None:
     # These images have been manually hexedited to have the relevant orientations
     with Image.open("Tests/images/rgb32rle_top_right.tga") as im:
-        assert im.load()[90, 90][:3] == (0, 0, 0)
+        px = im.load()
+        assert px is not None
+        assert px[90, 90][:3] == (0, 0, 0)
 
     with Image.open("Tests/images/rgb32rle_bottom_right.tga") as im:
-        assert im.load()[90, 90][:3] == (0, 255, 0)
+        px = im.load()
+        assert px is not None
+        assert px[90, 90][:3] == (0, 255, 0)
 
 
 def test_save_rle(tmp_path: Path) -> None:
