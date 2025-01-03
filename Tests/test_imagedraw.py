@@ -190,6 +190,7 @@ def test_bitmap() -> None:
     # Arrange
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
+    small: Image.Image
     with Image.open("Tests/images/pil123rgba.png") as small:
         small = small.resize((50, 50), Image.Resampling.NEAREST)
 

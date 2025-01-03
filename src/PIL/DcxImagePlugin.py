@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from . import Image
 from ._binary import i32le as i32
+from ._util import DeferredError
 from .PcxImagePlugin import PcxImageFile
 
 MAGIC = 0x3ADE68B1  # QUIZ: what's this value, then?
@@ -44,6 +45,7 @@ class DcxImageFile(PcxImageFile):
 
     def _open(self) -> None:
         # Header
+        assert self.fp is not None
         s = self.fp.read(4)
         if not _accept(s):
             msg = "not a DCX file"
@@ -66,6 +68,8 @@ class DcxImageFile(PcxImageFile):
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
         self.frame = frame
         self.fp = self._fp
         self.fp.seek(self._offset[frame])
