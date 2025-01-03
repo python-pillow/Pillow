@@ -1406,7 +1406,8 @@ class TiffImageFile(ImageFile.ImageFile):
             self.fp = None  # might be shared
 
         if err < 0:
-            raise OSError(err)
+            msg = f"decoder error {err}"
+            raise OSError(msg)
 
         return Image.Image.load(self)
 
