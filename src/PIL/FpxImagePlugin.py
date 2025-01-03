@@ -170,7 +170,7 @@ class FpxImageFile(ImageFile.ImageFile):
                         "raw",
                         (x, y, x1, y1),
                         i32(s, i) + 28,
-                        (self.rawmode,),
+                        self.rawmode,
                     )
                 )
 

@@ -582,7 +582,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
     def __init__(
         self,
-        ifh: bytes = b"II\052\0\0\0\0\0",
+        ifh: bytes = b"II\x2A\x00\x00\x00\x00\x00",
         prefix: bytes | None = None,
         group: int | None = None,
     ) -> None:
@@ -949,16 +949,26 @@ class ImageFileDirectory_v2(_IFDv2Base):
             warnings.warn(str(msg))
             return
 
+    def _get_ifh(self):
+        ifh = self._prefix + self._pack("H", 43 if self._bigtiff else 42)
+        if self._bigtiff:
+            ifh += self._pack("HH", 8, 0)
+        ifh += self._pack("Q", 16) if self._bigtiff else self._pack("L", 8)
+
+        return ifh
+
     def tobytes(self, offset: int = 0) -> bytes:
         # FIXME What about tagdata?
-        result = self._pack("H", len(self._tags_v2))
+        result = self._pack("Q" if self._bigtiff else "H", len(self._tags_v2))
 
         entries: list[tuple[int, int, int, bytes, bytes]] = []
-        offset = offset + len(result) + len(self._tags_v2) * 12 + 4
+        offset += len(result) + len(self._tags_v2) * (20 if self._bigtiff else 12) + 4
         stripoffsets = None
 
         # pass 1: convert tags to binary format
         # always write tags in ascending order
+        fmt = "Q" if self._bigtiff else "L"
+        fmt_size = 8 if self._bigtiff else 4
         for tag, value in sorted(self._tags_v2.items()):
             if tag == STRIPOFFSETS:
                 stripoffsets = len(entries)
@@ -966,11 +976,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
             logger.debug("Tag %s, Type: %s, Value: %s", tag, typ, repr(value))
             is_ifd = typ == TiffTags.LONG and isinstance(value, dict)
             if is_ifd:
-                if self._endian == "<":
-                    ifh = b"II\x2A\x00\x08\x00\x00\x00"
-                else:
-                    ifh = b"MM\x00\x2A\x00\x00\x00\x08"
-                ifd = ImageFileDirectory_v2(ifh, group=tag)
+                ifd = ImageFileDirectory_v2(self._get_ifh(), group=tag)
                 values = self._tags_v2[tag]
                 for ifd_tag, ifd_value in values.items():
                     ifd[ifd_tag] = ifd_value
@@ -993,10 +999,10 @@ class ImageFileDirectory_v2(_IFDv2Base):
             else:
                 count = len(values)
             # figure out if data fits into the entry
-            if len(data) <= 4:
-                entries.append((tag, typ, count, data.ljust(4, b"\0"), b""))
+            if len(data) <= fmt_size:
+                entries.append((tag, typ, count, data.ljust(fmt_size, b"\0"), b""))
             else:
-                entries.append((tag, typ, count, self._pack("L", offset), data))
+                entries.append((tag, typ, count, self._pack(fmt, offset), data))
                 offset += (len(data) + 1) // 2 * 2  # pad to word
 
         # update strip offset data to point beyond auxiliary data
@@ -1007,13 +1013,15 @@ class ImageFileDirectory_v2(_IFDv2Base):
                 values = [val + offset for val in handler(self, data, self.legacy_api)]
                 data = self._write_dispatch[typ](self, *values)
             else:
-                value = self._pack("L", self._unpack("L", value)[0] + offset)
+                value = self._pack(fmt, self._unpack(fmt, value)[0] + offset)
             entries[stripoffsets] = tag, typ, count, value, data
 
         # pass 2: write entries to file
         for tag, typ, count, value, data in entries:
             logger.debug("%s %s %s %s %s", tag, typ, count, repr(value), repr(data))
-            result += self._pack("HHL4s", tag, typ, count, value)
+            result += self._pack(
+                "HHQ8s" if self._bigtiff else "HHL4s", tag, typ, count, value
+            )
 
         # -- overwrite here for multi-page --
         result += b"\0\0\0\0"  # end of entries
@@ -1028,8 +1036,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
     def save(self, fp: IO[bytes]) -> int:
         if fp.tell() == 0:  # skip TIFF header on subsequent pages
-            # tiff header -- PIL always starts the first IFD at offset 8
-            fp.write(self._prefix + self._pack("HL", 42, 8))
+            fp.write(self._get_ifh())
 
         offset = fp.tell()
         result = self.tobytes(offset)
@@ -1432,8 +1439,12 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- YCbCr subsampling: %s", self.tag_v2.get(YCBCRSUBSAMPLING))
 
         # size
-        xsize = self.tag_v2.get(IMAGEWIDTH)
-        ysize = self.tag_v2.get(IMAGELENGTH)
+        try:
+            xsize = self.tag_v2[IMAGEWIDTH]
+            ysize = self.tag_v2[IMAGELENGTH]
+        except KeyError as e:
+            msg = "Missing dimensions"
+            raise TypeError(msg) from e
         if not isinstance(xsize, int) or not isinstance(ysize, int):
             msg = "Invalid dimensions"
             raise ValueError(msg)
@@ -1555,17 +1566,6 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            # libtiff always returns the bytes in native order.
-            # we're expecting image byte order. So, if the rawmode
-            # contains I;16, we need to convert from native to image
-            # byte order.
-            if rawmode == "I;16":
-                rawmode = "I;16N"
-            if ";16B" in rawmode:
-                rawmode = rawmode.replace(";16B", ";16N")
-            if ";16L" in rawmode:
-                rawmode = rawmode.replace(";16L", ";16N")
-
             # YCbCr images with new jpeg compression with pixels in one plane
             # unpacked straight into RGB values
             if (
@@ -1574,6 +1574,14 @@ class TiffImageFile(ImageFile.ImageFile):
                 and self._planar_configuration == 1
             ):
                 rawmode = "RGB"
+            # libtiff always returns the bytes in native order.
+            # we're expecting image byte order. So, if the rawmode
+            # contains I;16, we need to convert from native to image
+            # byte order.
+            elif rawmode == "I;16":
+                rawmode = "I;16N"
+            elif rawmode.endswith(";16B") or rawmode.endswith(";16L"):
+                rawmode = rawmode[:-1] + "N"
 
             # Offset in the tile tuple is 0, we go from 0,0 to
             # w,h, and we only do this once -- eds
@@ -1679,10 +1687,13 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         msg = f"cannot write mode {im.mode} as TIFF"
         raise OSError(msg) from e
 
-    ifd = ImageFileDirectory_v2(prefix=prefix)
-
     encoderinfo = im.encoderinfo
     encoderconfig = im.encoderconfig
+
+    ifd = ImageFileDirectory_v2(prefix=prefix)
+    if encoderinfo.get("big_tiff"):
+        ifd._bigtiff = True
+
     try:
         compression = encoderinfo["compression"]
     except KeyError:
@@ -1914,7 +1925,9 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 if not getattr(Image.core, "libtiff_support_custom_tags", False):
                     continue
 
-                if tag in ifd.tagtype:
+                if tag in TiffTags.TAGS_V2_GROUPS:
+                    types[tag] = TiffTags.LONG8
+                elif tag in ifd.tagtype:
                     types[tag] = ifd.tagtype[tag]
                 elif not (isinstance(value, (int, float, str, bytes))):
                     continue

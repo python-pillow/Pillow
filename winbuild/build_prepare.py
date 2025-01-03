@@ -117,11 +117,11 @@ V = {
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.16",
     "LIBPNG": "1.6.44",
-    "LIBWEBP": "1.4.0",
+    "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.6.0",
     "XZ": "5.6.3",
-    "ZLIBNG": "2.2.2",
+    "ZLIBNG": "2.2.3",
     "LIBAVIF": "1.1.1",
 }
 V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
@@ -529,7 +529,10 @@ def extract_dep(url: str, filename: str, prefs: dict[str, str]) -> None:
                 if sources_dir_abs != member_prefix:
                     msg = "Attempted Path Traversal in Tar File"
                     raise RuntimeError(msg)
-            tgz.extractall(sources_dir)
+            if sys.version_info >= (3, 12):
+                tgz.extractall(sources_dir, filter="data")
+            else:
+                tgz.extractall(sources_dir)
     else:
         msg = "Unknown archive type: " + filename
         raise RuntimeError(msg)

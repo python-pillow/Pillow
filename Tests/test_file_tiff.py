@@ -115,6 +115,13 @@ class TestFileTiff:
             outfile = str(tmp_path / "temp.tif")
             im.save(outfile, save_all=True, append_images=[im], tiffinfo=im.tag_v2)
 
+    def test_bigtiff_save(self, tmp_path: Path) -> None:
+        outfile = str(tmp_path / "temp.tif")
+        hopper().save(outfile, big_tiff=True)
+
+        with Image.open(outfile) as im:
+            assert im.tag_v2._bigtiff is True
+
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
             Image.open("Tests/images/seek_too_large.tif")

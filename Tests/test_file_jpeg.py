@@ -181,6 +181,10 @@ class TestFileJpeg:
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
+    def test_dpi_jfif_cm(self):
+        with Image.open("Tests/images/jfif_unit_cm.jpg") as im:
+            assert im.info["dpi"] == (2.54, 5.08)
+
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
@@ -349,7 +353,6 @@ class TestFileJpeg:
             assert exif.get_ifd(0x8825) == {}
 
             transposed = ImageOps.exif_transpose(im)
-        assert transposed is not None
         exif = transposed.getexif()
         assert exif.get_ifd(0x8825) == {}
 
@@ -1000,8 +1003,13 @@ class TestFileJpeg:
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"XMP test"
 
-        im.info["xmp"] = b"1" * 65504
-        im.save(f)
+            # Check that XMP is not saved from image info
+            reloaded.save(f)
+
+        with Image.open(f) as reloaded:
+            assert "xmp" not in reloaded.info
+
+        im.save(f, xmp=b"1" * 65504)
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"1" * 65504
 

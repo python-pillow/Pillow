@@ -325,6 +325,18 @@ def test_cmyk() -> None:
         assert im.getpixel((0, 0)) == (185, 134, 0, 0)
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@skip_unless_feature_version("jpg_2000", "2.5.3")
+def test_cmyk_save() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue205.jp2") as jp2:
+        assert jp2.mode == "CMYK"
+
+        im = roundtrip(jp2)
+        assert_image_equal(im, jp2)
+
+
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
 def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
@@ -424,8 +436,9 @@ def test_pclr() -> None:
 
 
 def test_comment() -> None:
-    with Image.open("Tests/images/comment.jp2") as im:
-        assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
+    for path in ("Tests/images/9bit.j2k", "Tests/images/comment.jp2"):
+        with Image.open(path) as im:
+            assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
 
     # Test an image that is truncated partway through a codestream
     with open("Tests/images/comment.jp2", "rb") as fp:

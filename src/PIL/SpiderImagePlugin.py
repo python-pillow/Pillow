@@ -154,9 +154,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [
-            ImageFile._Tile("raw", (0, 0) + self.size, offset, (self.rawmode, 0, 1))
-        ]
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, offset, self.rawmode)]
         self._fp = self.fp  # FIXME: hack
 
     @property
@@ -211,26 +209,27 @@ class SpiderImageFile(ImageFile.ImageFile):
 
 
 # given a list of filenames, return a list of images
-def loadImageSeries(filelist: list[str] | None = None) -> list[SpiderImageFile] | None:
+def loadImageSeries(filelist: list[str] | None = None) -> list[Image.Image] | None:
     """create a list of :py:class:`~PIL.Image.Image` objects for use in a montage"""
     if filelist is None or len(filelist) < 1:
         return None
 
-    imglist = []
+    byte_imgs = []
     for img in filelist:
         if not os.path.exists(img):
             print(f"unable to find {img}")
             continue
         try:
             with Image.open(img) as im:
-                im = im.convert2byte()
+                assert isinstance(im, SpiderImageFile)
+                byte_im = im.convert2byte()
         except Exception:
             if not isSpiderImage(img):
                 print(f"{img} is not a Spider image file")
             continue
-        im.info["filename"] = img
-        imglist.append(im)
-    return imglist
+        byte_im.info["filename"] = img
+        byte_imgs.append(byte_im)
+    return byte_imgs
 
 
 # --------------------------------------------------------------------
@@ -280,9 +279,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, (rawmode, 0, 1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0) + im.size, 0, rawmode)])
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
