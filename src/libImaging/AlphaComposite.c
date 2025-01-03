@@ -36,7 +36,8 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
         return ImagingError_Mismatch();
     }
 
-    imOut = ImagingNewDirty(imDst->mode, imDst->xsize, imDst->ysize);
+    imOut =
+        ImagingNewDirty(imDst->mode, (ImagingNewParams){imDst->xsize, imDst->ysize});
     if (!imOut) {
         return NULL;
     }

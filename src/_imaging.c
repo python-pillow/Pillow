@@ -290,7 +290,7 @@ getbands(const char *mode) {
     int bands;
 
     /* FIXME: add primitive to libImaging to avoid extra allocation */
-    im = ImagingNew(mode, 0, 0);
+    im = ImagingNew(mode, (ImagingNewParams){0, 0});
     if (!im) {
         return -1;
     }
@@ -415,6 +415,36 @@ float16tofloat32(const FLOAT16 in) {
 }
 
 static inline PyObject *
+getpixel_mb(Imaging im, ImagingAccess access, int x, int y) {
+    UINT8 pixel[sizeof(INT32) * 6];
+    assert(im->pixelsize <= sizeof(pixel));
+    access->get_pixel(im, x, y, &pixel);
+
+    PyObject *tuple = PyTuple_New(im->bands);
+    if (tuple == NULL) {
+        return NULL;
+    }
+
+    UINT8 *pos = pixel;
+    for (int i = 0; i < im->bands; ++i) {
+        switch (im->depth) {
+            case CHAR_BIT:
+                PyTuple_SET_ITEM(tuple, i, PyLong_FromLong(*pos));
+                break;
+            case 2 * CHAR_BIT:
+                PyTuple_SET_ITEM(tuple, i, PyLong_FromLong(*(UINT16 *)pos));
+                break;
+            case 4 * CHAR_BIT:
+                PyTuple_SET_ITEM(tuple, i, PyLong_FromLong(*(INT32 *)pos));
+                break;
+        }
+        pos += im->depth / CHAR_BIT;
+    }
+
+    return tuple;
+}
+
+static inline PyObject *
 getpixel(Imaging im, ImagingAccess access, int x, int y) {
     union {
         UINT8 b[4];
@@ -433,6 +463,10 @@ getpixel(Imaging im, ImagingAccess access, int x, int y) {
     if (x < 0 || x >= im->xsize || y < 0 || y >= im->ysize) {
         PyErr_SetString(PyExc_IndexError, outside_image);
         return NULL;
+    }
+
+    if (im->type == IMAGING_TYPE_MB) {
+        return getpixel_mb(im, access, x, y);
     }
 
     access->get_pixel(im, x, y, &pixel);
@@ -649,7 +683,7 @@ _fill(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    im = ImagingNewDirty(mode, xsize, ysize);
+    im = ImagingNewDirty(mode, (ImagingNewParams){xsize, ysize});
     if (!im) {
         return NULL;
     }
@@ -670,13 +704,14 @@ _fill(PyObject *self, PyObject *args) {
 static PyObject *
 _new(PyObject *self, PyObject *args) {
     char *mode;
-    int xsize, ysize;
+    int xsize, ysize, depth = -1, bands = -1;
 
-    if (!PyArg_ParseTuple(args, "s(ii)", &mode, &xsize, &ysize)) {
+    if (!PyArg_ParseTuple(args, "s(ii)|ii", &mode, &xsize, &ysize, &depth, &bands)) {
         return NULL;
     }
 
-    return PyImagingNew(ImagingNew(mode, xsize, ysize));
+    return PyImagingNew(ImagingNew(mode, (ImagingNewParams){xsize, ysize, depth, bands})
+    );
 }
 
 static PyObject *
@@ -897,7 +932,9 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
         return NULL;
     }
 
-    imOut = ImagingNewDirty(mode, self->image->xsize, self->image->ysize);
+    imOut = ImagingNewDirty(
+        mode, (ImagingNewParams){self->image->xsize, self->image->ysize}
+    );
     if (!imOut) {
         free(prepared_table);
         return NULL;
@@ -1083,7 +1120,7 @@ _gaussian_blur(ImagingObject *self, PyObject *args) {
     }
 
     imIn = self->image;
-    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }
@@ -1699,7 +1736,9 @@ _quantize(ImagingObject *self, PyObject *args) {
 
     if (!self->image->xsize || !self->image->ysize) {
         /* no content; return an empty image */
-        return PyImagingNew(ImagingNew("P", self->image->xsize, self->image->ysize));
+        return PyImagingNew(
+            ImagingNew("P", (ImagingNewParams){self->image->xsize, self->image->ysize})
+        );
     }
 
     return PyImagingNew(ImagingQuantize(self->image, colours, method, kmeans));
@@ -1905,7 +1944,7 @@ _resize(ImagingObject *self, PyObject *args) {
         a[2] = box[0];
         a[5] = box[1];
 
-        imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
+        imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){xsize, ysize});
 
         imOut = ImagingTransform(
             imOut, imIn, IMAGING_TRANSFORM_AFFINE, 0, 0, xsize, ysize, a, filter, 1
@@ -2087,13 +2126,19 @@ _transpose(ImagingObject *self, PyObject *args) {
         case 0: /* flip left right */
         case 1: /* flip top bottom */
         case 3: /* rotate 180 */
-            imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+            imOut = ImagingNewDirty(
+                imIn->mode,
+                (ImagingNewParams){imIn->xsize, imIn->ysize, imIn->depth, imIn->bands}
+            );
             break;
         case 2: /* rotate 90 */
         case 4: /* rotate 270 */
         case 5: /* transpose */
         case 6: /* transverse */
-            imOut = ImagingNewDirty(imIn->mode, imIn->ysize, imIn->xsize);
+            imOut = ImagingNewDirty(
+                imIn->mode,
+                (ImagingNewParams){imIn->ysize, imIn->xsize, imIn->depth, imIn->bands}
+            );
             break;
         default:
             PyErr_SetString(PyExc_ValueError, "No such transpose operation");
@@ -2141,7 +2186,7 @@ _unsharp_mask(ImagingObject *self, PyObject *args) {
     }
 
     imIn = self->image;
-    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }
@@ -2165,7 +2210,7 @@ _box_blur(ImagingObject *self, PyObject *args) {
     }
 
     imIn = self->image;
-    imOut = ImagingNewDirty(imIn->mode, imIn->xsize, imIn->ysize);
+    imOut = ImagingNewDirty(imIn->mode, (ImagingNewParams){imIn->xsize, imIn->ysize});
     if (!imOut) {
         return NULL;
     }
@@ -2766,7 +2811,9 @@ _font_getmask(ImagingFontObject *self, PyObject *args) {
         return NULL;
     }
 
-    im = ImagingNew(self->bitmap->mode, textwidth(self, text), self->ysize);
+    im = ImagingNew(
+        self->bitmap->mode, (ImagingNewParams){textwidth(self, text), self->ysize}
+    );
     if (!im) {
         free(text);
         return ImagingError_MemoryError();

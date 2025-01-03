@@ -292,10 +292,58 @@ static PyTypeObject ImagingDecoderType = {
 
 /* -------------------------------------------------------------------- */
 
-int
+static void
+mb_shuffle_passthru(UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state) {
+    state->shuffle(dst, src, state->xsize);
+}
+
+static void
+shuffle_mb_unavail(UINT8 *dst, const UINT8 *src, int pixels) {
+    abort();
+}
+
+static void
+mb_shuffle(UINT8 *dst, const UINT8 *src, Imaging im, ImagingCodecState state) {
+    int size = state->xsize * im->pixelsize;
+#ifdef WORDS_BIGENDIAN
+    switch (im->depth) {
+        default:
+            abort();
+            return;
+        case 4 * CHAR_BIT: {
+            for (int i = 0; i < size; i += 4) {
+                dst[i] = src[i + 3];
+                dst[i + 1] = src[i + 2];
+                dst[i + 2] = src[i + 1];
+                dst[i + 3] = src[i];
+            }
+            return;
+        }
+        case 2 * CHAR_BIT: {
+            for (int i = 0; i < size; i += 2) {
+                dst[i] = src[i + 1];
+                dst[i + 1] = src[i];
+            }
+            return;
+            case CHAR_BIT:
+                // fallthrough
+        }
+    }
+#endif
+    memcpy(dst, src, size);
+}
+
+static int
 get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmode) {
     int bits;
     ImagingShuffler unpack;
+
+    if (strcmp(mode, IMAGING_MODE_MB) == 0) {
+        decoder->state.shuffle = shuffle_mb_unavail;
+        decoder->state.mb_shuffle = mb_shuffle;
+        decoder->state.bits = -1;
+        return 0;
+    }
 
     unpack = ImagingFindUnpacker(mode, rawmode, &bits);
     if (!unpack) {
@@ -305,6 +353,7 @@ get_unpacker(ImagingDecoderObject *decoder, const char *mode, const char *rawmod
     }
 
     decoder->state.shuffle = unpack;
+    decoder->state.mb_shuffle = mb_shuffle_passthru;
     decoder->state.bits = bits;
 
     return 0;
