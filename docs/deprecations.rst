@@ -183,6 +183,31 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
 ``ExifTags.IFD.MakerNote``.
 
+16-Bit RGB/BGR Rawmodes
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.0.0
+
+The following rawmodes have been deprecated and replaced with better-named rawmodes.
+Additionally, the 5 and 6 bit conversions are slightly more accurate, so there will be
+some differences in the output. The difference is only ever by 1, so you are unlikely
+to notice the difference visually.
+
+============  ==============
+Deprecated    Use instead
+============  ==============
+``RGB;15``    ``XBGR;1555``
+``RGB;16``    ``BGR;565``
+``BGR;5``     ``XRGB;1555``
+``BGR;15``    ``XRGB;1555``
+``BGR;16``    ``RGB;565``
+``RGB;4B``    ``XBGR;4``
+``RGBA;4B``   ``ABGR;4``
+``RGBA;15``   ``ABGR;1555``
+``BGRA;15``   ``ARGB;1555``
+``BGRA;15Z``  ``ARGB;1555Z``
+============  ==============
+
 Removed features
 ----------------
 
