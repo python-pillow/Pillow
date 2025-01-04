@@ -618,7 +618,7 @@ class TestFilePng:
         with Image.open("Tests/images/truncated_image.png") as im:
             # The file is truncated
             with pytest.raises(OSError):
-                im.text()
+                im.text
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             assert isinstance(im.text, dict)
             ImageFile.LOAD_TRUNCATED_IMAGES = False
