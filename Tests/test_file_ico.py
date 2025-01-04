@@ -253,8 +253,7 @@ def test_truncated_mask() -> None:
 
     try:
         with Image.open(io.BytesIO(data)) as im:
-            with Image.open("Tests/images/hopper_mask.png") as expected:
-                assert im.mode == "1"
+            assert im.mode == "1"
 
         # 32 bpp
         output = io.BytesIO()
