@@ -377,9 +377,7 @@ class BLP1Decoder(_BLPBaseDecoder):
             args = image.tile[0].args
             assert isinstance(args, tuple)
             image.tile = [image.tile[0]._replace(args=(args[0], "CMYK"))]
-        r, g, b = image.convert("RGB").split()
-        reversed_image = Image.merge("RGB", (b, g, r))
-        self.set_as_raw(reversed_image.tobytes())
+        self.set_as_raw(image.convert("RGB").tobytes(), "BGR")
 
 
 class BLP2Decoder(_BLPBaseDecoder):
