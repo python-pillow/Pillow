@@ -131,6 +131,26 @@ class TestImageFile:
 
         assert_image_equal(im1, im2)
 
+    def test_tile_size(self) -> None:
+        with open("Tests/images/hopper.tif", "rb") as im_fp:
+            data = im_fp.read()
+
+        reads = []
+
+        class FP(BytesIO):
+            def read(self, size: int | None = None) -> bytes:
+                reads.append(size)
+                return super().read(size)
+
+        fp = FP(data)
+        with Image.open(fp) as im:
+            assert len(im.tile) == 7
+
+            im.load()
+
+        # Despite multiple tiles, assert only one tile caused a read of maxblock size
+        assert reads.count(im.decodermaxblock) == 1
+
     def test_raise_oserror(self) -> None:
         with pytest.warns(DeprecationWarning):
             with pytest.raises(OSError):
