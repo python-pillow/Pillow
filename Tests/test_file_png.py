@@ -243,6 +243,14 @@ class TestFilePng:
         # image has 876 transparent pixels
         assert im.getchannel("A").getcolors()[0][0] == 876
 
+    def test_save_CMYK(self) -> None:
+        out = BytesIO()
+        im = Image.new("CMYK", (20, 20))
+        with pytest.raises(IOError):
+            im.save(out, "PNG")
+
+        im.save(out, "PNG", convert_mode=True)
+
     def test_save_p_transparent_palette(self, tmp_path: Path) -> None:
         in_file = "Tests/images/pil123p.png"
         with Image.open(in_file) as im:
