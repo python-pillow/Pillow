@@ -98,7 +98,7 @@ function build_harfbuzz {
 
 function build {
     build_xz
-    if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
+    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
     build_zlib_ng
