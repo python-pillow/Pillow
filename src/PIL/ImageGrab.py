@@ -22,8 +22,12 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from typing import TYPE_CHECKING
 
 from . import Image
+
+if TYPE_CHECKING:
+    from . import ImageWin
 
 
 def grab(
@@ -31,6 +35,7 @@ def grab(
     include_layered_windows: bool = False,
     all_screens: bool = False,
     xdisplay: str | None = None,
+    window: int | ImageWin.HWND | None = None,
 ) -> Image.Image:
     im: Image.Image
     if xdisplay is None:
@@ -51,8 +56,12 @@ def grab(
                 return im_resized
             return im
         elif sys.platform == "win32":
+            if window is not None:
+                all_screens = -1
             offset, size, data = Image.core.grabscreen_win32(
-                include_layered_windows, all_screens
+                include_layered_windows,
+                all_screens,
+                int(window) if window is not None else 0,
             )
             im = Image.frombytes(
                 "RGB",
