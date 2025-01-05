@@ -746,7 +746,7 @@ class TestFileTiff:
             assert reread.n_frames == 3
 
     def test_fixoffsets(self) -> None:
-        b = BytesIO(b"II\x2a\x00\x00\x00\x00\x00")
+        b = BytesIO(b"II\x2A\x00\x00\x00\x00\x00")
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
             b.seek(0)
             a.fixOffsets(1, isShort=True)
@@ -759,12 +759,36 @@ class TestFileTiff:
             with pytest.raises(RuntimeError):
                 a.fixOffsets(1)
 
+        b = BytesIO(b"II\x2A\x00\x00\x00\x00\x00")
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.offsetOfNewPage = 2**16
+
+            b.seek(0)
+            a.fixOffsets(1, isShort=True)
+
+        b = BytesIO(b"II\x2B\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.offsetOfNewPage = 2**32
+
+            b.seek(0)
+            a.fixOffsets(1, isShort=True)
+
+            b.seek(0)
+            a.fixOffsets(1, isLong=True)
+
     def test_appending_tiff_writer_writelong(self) -> None:
         data = b"II\x2A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
         b = BytesIO(data)
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
             a.writeLong(2**32 - 1)
             assert b.getvalue() == data + b"\xff\xff\xff\xff"
+
+    def test_appending_tiff_writer_rewritelastshorttolong(self) -> None:
+        data = b"II\x2A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b = BytesIO(data)
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.rewriteLastShortToLong(2**32 - 1)
+            assert b.getvalue() == data[:-2] + b"\xff\xff\xff\xff"
 
     def test_saving_icc_profile(self, tmp_path: Path) -> None:
         # Tests saving TIFF with icc_profile set.

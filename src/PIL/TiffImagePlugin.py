@@ -2175,17 +2175,19 @@ class AppendingTiffWriter(io.BytesIO):
             msg = f"wrote only {bytes_written} bytes but wanted {expected}"
             raise RuntimeError(msg)
 
-    def rewriteLastShortToLong(self, value: int) -> None:
-        self.f.seek(-2, os.SEEK_CUR)
-        bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        self._verify_bytes_written(bytes_written, 4)
-
-    def _rewriteLast(self, value: int, field_size: int) -> None:
+    def _rewriteLast(
+        self, value: int, field_size: int, new_field_size: int = 0
+    ) -> None:
         self.f.seek(-field_size, os.SEEK_CUR)
+        if not new_field_size:
+            new_field_size = field_size
         bytes_written = self.f.write(
-            struct.pack(self.endian + self._fmt(field_size), value)
+            struct.pack(self.endian + self._fmt(new_field_size), value)
         )
-        self._verify_bytes_written(bytes_written, field_size)
+        self._verify_bytes_written(bytes_written, new_field_size)
+
+    def rewriteLastShortToLong(self, value: int) -> None:
+        self._rewriteLast(value, 2, 4)
 
     def rewriteLastShort(self, value: int) -> None:
         return self._rewriteLast(value, 2)
@@ -2245,18 +2247,27 @@ class AppendingTiffWriter(io.BytesIO):
         for i in range(count):
             offset = self._read(field_size)
             offset += self.offsetOfNewPage
-            if field_size == 2 and offset >= 65536:
-                # offset is now too large - we must convert shorts to longs
+
+            new_field_size = 0
+            if self._bigtiff and field_size in (2, 4) and offset >= 2**32:
+                # offset is now too large - we must convert long to long8
+                new_field_size = 8
+            elif field_size == 2 and offset >= 2**16:
+                # offset is now too large - we must convert short to long
+                new_field_size = 4
+            if new_field_size:
                 if count != 1:
                     msg = "not implemented"
                     raise RuntimeError(msg)  # XXX TODO
 
                 # simple case - the offset is just one and therefore it is
                 # local (not referenced with another offset)
-                self.rewriteLastShortToLong(offset)
-                self.f.seek(-10, os.SEEK_CUR)
-                self.writeShort(TiffTags.LONG)  # rewrite the type to LONG
-                self.f.seek(8, os.SEEK_CUR)
+                self._rewriteLast(offset, field_size, new_field_size)
+                # Move back past the new offset, past 'count', and before 'field_type'
+                rewind = -new_field_size - 4 - 2
+                self.f.seek(rewind, os.SEEK_CUR)
+                self.writeShort(new_field_size)  # rewrite the type
+                self.f.seek(2 - rewind, os.SEEK_CUR)
             else:
                 self._rewriteLast(offset, field_size)
 
