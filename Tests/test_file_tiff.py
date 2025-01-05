@@ -117,10 +117,16 @@ class TestFileTiff:
 
     def test_bigtiff_save(self, tmp_path: Path) -> None:
         outfile = str(tmp_path / "temp.tif")
-        hopper().save(outfile, big_tiff=True)
+        im = hopper()
+        im.save(outfile, big_tiff=True)
 
-        with Image.open(outfile) as im:
-            assert im.tag_v2._bigtiff is True
+        with Image.open(outfile) as reloaded:
+            assert reloaded.tag_v2._bigtiff is True
+
+        im.save(outfile, save_all=True, append_images=[im], big_tiff=True)
+
+        with Image.open(outfile) as reloaded:
+            assert reloaded.tag_v2._bigtiff is True
 
     def test_seek_too_large(self) -> None:
         with pytest.raises(ValueError, match="Unable to seek to frame"):
@@ -752,6 +758,13 @@ class TestFileTiff:
             b.seek(0)
             with pytest.raises(RuntimeError):
                 a.fixOffsets(1)
+
+    def test_appending_tiff_writer_writelong(self) -> None:
+        data = b"II\x2A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b = BytesIO(data)
+        with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.writeLong(2**32 - 1)
+            assert b.getvalue() == data + b"\xff\xff\xff\xff"
 
     def test_saving_icc_profile(self, tmp_path: Path) -> None:
         # Tests saving TIFF with icc_profile set.
