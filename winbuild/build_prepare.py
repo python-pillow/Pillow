@@ -123,7 +123,6 @@ V = {
     "XZ": "5.6.3",
     "ZLIBNG": "2.2.3",
 }
-V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
 
@@ -241,8 +240,8 @@ DEPS: dict[str, dict[str, Any]] = {
     },
     "libpng": {
         "url": f"{SF_PROJECTS}/libpng/files/libpng{V['LIBPNG_XY']}/{V['LIBPNG']}/"
-        f"lpng{V['LIBPNG_DOTLESS']}.zip/download",
-        "filename": f"lpng{V['LIBPNG_DOTLESS']}.zip",
+        f"FILENAME/download",
+        "filename": f"libpng-{V['LIBPNG']}.tar.gz",
         "license": "LICENSE",
         "build": [
             *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
