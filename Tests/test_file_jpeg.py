@@ -1037,7 +1037,7 @@ class TestFileJpeg:
 
         with Image.open(TEST_FILE) as im:
             im.tile = [
-                ("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
+                ImageFile._Tile("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
             ]
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             im.load()
