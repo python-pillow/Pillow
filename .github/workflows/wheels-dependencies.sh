@@ -72,6 +72,14 @@ function build_zlib_ng {
         && ./configure --prefix=$BUILD_PREFIX --zlib-compat \
         && make -j4 \
         && make install)
+
+    if [ -n "$IS_MACOS" ]; then
+        # Ensure that on macOS, the library name is an absolute path, not an
+        # @rpath, so that delocate picks up the right library (and doesn't need
+        # DYLD_LIBRARY_PATH to be set). The default Makefile doesn't have an
+        # option to control the install_name.
+        install_name_tool -id $BUILD_PREFIX/lib/libz.1.dylib $BUILD_PREFIX/lib/libz.1.dylib
+    fi
     touch zlib-stamp
 }
 
