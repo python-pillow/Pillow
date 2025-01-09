@@ -309,7 +309,7 @@ class TestImageResize:
         # Test unknown resampling filter
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.resize((10, 10), "unknown")
+                im.resize((10, 10), -1)
 
     @skip_unless_feature("libtiff")
     def test_transposed(self) -> None:
