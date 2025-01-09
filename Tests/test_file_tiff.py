@@ -129,11 +129,13 @@ class TestFileTiff:
         im.save(outfile, big_tiff=True)
 
         with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2._bigtiff is True
 
         im.save(outfile, save_all=True, append_images=[im], big_tiff=True)
 
         with Image.open(outfile) as reloaded:
+            assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
             assert reloaded.tag_v2._bigtiff is True
 
     def test_seek_too_large(self) -> None:
