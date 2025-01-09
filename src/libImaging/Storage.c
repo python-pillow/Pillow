@@ -218,9 +218,9 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
             break;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    IMAGING_ARENA_LOCK(&ImagingDefaultArena.mutex);
     ImagingDefaultArena.stats_new_count += 1;
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    IMAGING_ARENA_UNLOCK(&ImagingDefaultArena.mutex);
 
     return im;
 }
@@ -259,7 +259,7 @@ ImagingDelete(Imaging im) {
 
 #define IMAGING_PAGE_SIZE (4096)
 
-struct ImagingMemoryArena ImagingDefaultArena = {
+IMAGING_ARENA_TLS struct ImagingMemoryArena ImagingDefaultArena = {
     1,                 // alignment
     16 * 1024 * 1024,  // block_size
     0,                 // blocks_max
@@ -270,7 +270,7 @@ struct ImagingMemoryArena ImagingDefaultArena = {
     0,
     0,
     0,  // Stats
-#ifdef Py_GIL_DISABLED
+#ifdef IMAGING_ARENA_LOCKING
     {0},
 #endif
 };
@@ -369,12 +369,12 @@ ImagingDestroyArray(Imaging im) {
     int y = 0;
 
     if (im->blocks) {
-        MUTEX_LOCK(&ImagingDefaultArena.mutex);
+        IMAGING_ARENA_LOCK(&ImagingDefaultArena.mutex);
         while (im->blocks[y].ptr) {
             memory_return_block(&ImagingDefaultArena, im->blocks[y]);
             y += 1;
         }
-        MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+        IMAGING_ARENA_UNLOCK(&ImagingDefaultArena.mutex);
         free(im->blocks);
     }
 }
@@ -504,11 +504,11 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    IMAGING_ARENA_LOCK(&ImagingDefaultArena.mutex);
     Imaging tmp = ImagingAllocateArray(
         im, &ImagingDefaultArena, dirty, ImagingDefaultArena.block_size
     );
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    IMAGING_ARENA_UNLOCK(&ImagingDefaultArena.mutex);
     if (tmp) {
         return im;
     }
@@ -516,9 +516,9 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
     ImagingError_Clear();
 
     // Try to allocate the image once more with smallest possible block size
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    IMAGING_ARENA_LOCK(&ImagingDefaultArena.mutex);
     tmp = ImagingAllocateArray(im, &ImagingDefaultArena, dirty, IMAGING_PAGE_SIZE);
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    IMAGING_ARENA_UNLOCK(&ImagingDefaultArena.mutex);
     if (tmp) {
         return im;
     }

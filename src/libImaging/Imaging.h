@@ -149,6 +149,32 @@ struct ImagingPaletteInstance {
     int keep_cache; /* This palette will be reused; keep cache */
 };
 
+#define IMAGING_ARENA_LOCK(m)
+#define IMAGING_ARENA_UNLOCK(m)
+
+#if defined(__cplusplus)
+#define IMAGING_ARENA_TLS thread_local
+#elif defined(HAVE_THREAD_LOCAL)
+#define IMAGING_ARENA_TLS thread_local
+#elif defined(HAVE__THREAD_LOCAL)
+#define IMAGING_ARENA_TLS _Thread_local
+#elif defined(HAVE___THREAD)
+#define IMAGING_ARENA_TLS __thread
+#elif defined(HAVE___DECLSPEC_THREAD_)
+#define IMAGING_ARENA_TLS __declspec(thread)
+#elif defined(Py_GIL_DISABLED)
+#define IMAGING_ARENA_TLS
+#define IMAGING_ARENA_LOCKING
+
+#undef IMAGING_ARENA_LOCK
+#undef IMAGING_ARENA_UNLOCK
+
+#define IMAGING_ARENA_LOCK(m) PyMutex_Lock(m)
+#define IMAGING_ARENA_UNLOCK(m) PyMutex_Unlock(m)
+#else
+#define IMAGING_ARENA_TLS
+#endif
+
 typedef struct ImagingMemoryArena {
     int alignment;     /* Alignment in memory of each line of an image */
     int block_size;    /* Preferred block size, bytes */
@@ -161,7 +187,8 @@ typedef struct ImagingMemoryArena {
     int stats_reallocated_blocks; /* Number of blocks which were actually reallocated
                                      after retrieving */
     int stats_freed_blocks;       /* Number of freed blocks */
-#ifdef Py_GIL_DISABLED
+
+#ifdef IMAGING_ARENA_LOCKING
     PyMutex mutex;
 #endif
 } *ImagingMemoryArena;
@@ -169,7 +196,7 @@ typedef struct ImagingMemoryArena {
 /* Objects */
 /* ------- */
 
-extern struct ImagingMemoryArena ImagingDefaultArena;
+extern IMAGING_ARENA_TLS struct ImagingMemoryArena ImagingDefaultArena;
 extern int
 ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max);
 extern void
