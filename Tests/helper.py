@@ -140,11 +140,8 @@ def assert_image_similar_tofile(
     filename: str,
     epsilon: float,
     msg: str | None = None,
-    mode: str | None = None,
 ) -> None:
     with Image.open(filename) as img:
-        if mode:
-            img = img.convert(mode)
         assert_image_similar(a, img, epsilon, msg)
 
 
