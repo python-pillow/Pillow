@@ -388,10 +388,12 @@ class TestColorLut3DFilter:
 
         table = numpy.ones((7 * 6 * 5, 3), dtype=numpy.float16)
         lut = ImageFilter.Color3DLUT((5, 6, 7), table)
+        assert isinstance(lut.table, numpy.ndarray)
         assert lut.table.shape == (table.size,)
 
         table = numpy.ones((7 * 6 * 5 * 3), dtype=numpy.float16)
         lut = ImageFilter.Color3DLUT((5, 6, 7), table)
+        assert isinstance(lut.table, numpy.ndarray)
         assert lut.table.shape == (table.size,)
 
         # Check application

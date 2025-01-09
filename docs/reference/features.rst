@@ -54,6 +54,7 @@ Feature version numbers are available only where stated.
 Support for the following features can be checked:
 
 * ``libjpeg_turbo``: (compile time) Whether Pillow was compiled against the libjpeg-turbo version of libjpeg. Compile-time version number is available.
+* ``zlib_ng``: (compile time) Whether Pillow was compiled against the zlib-ng version of zlib. Compile-time version number is available.
 * ``raqm``: Raqm library, required for ``ImageFont.Layout.RAQM`` in :py:func:`PIL.ImageFont.truetype`. Run-time version number is available for Raqm 0.7.0 or newer.
 * ``libimagequant``: (compile time) ImageQuant quantization support in :py:func:`PIL.Image.Image.quantize`. Run-time version number is available.
 * ``xcb``: (compile time) Support for X11 in :py:func:`PIL.ImageGrab.grab` via the XCB library.

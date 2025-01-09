@@ -678,7 +678,7 @@ Reading from URL
 
     from PIL import Image
     from urllib.request import urlopen
-    url = "https://python-pillow.org/assets/images/pillow-logo.png"
+    url = "https://python-pillow.github.io/assets/images/pillow-logo.png"
     img = Image.open(urlopen(url))
 
 

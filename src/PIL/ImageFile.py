@@ -98,8 +98,8 @@ def _tilesort(t: _Tile) -> int:
 class _Tile(NamedTuple):
     codec_name: str
     extents: tuple[int, int, int, int] | None
-    offset: int
-    args: tuple[Any, ...] | str | None
+    offset: int = 0
+    args: tuple[Any, ...] | str | None = None
 
 
 #
@@ -120,7 +120,7 @@ class ImageFile(Image.Image):
         self.custom_mimetype: str | None = None
 
         self.tile: list[_Tile] = []
-        """ A list of tile descriptors, or ``None`` """
+        """ A list of tile descriptors """
 
         self.readonly = 1  # until we know better
 
@@ -130,7 +130,7 @@ class ImageFile(Image.Image):
         if is_path(fp):
             # filename
             self.fp = open(fp, "rb")
-            self.filename = os.path.realpath(os.fspath(fp))
+            self.filename = os.fspath(fp)
             self._exclusive_fp = True
         else:
             # stream
