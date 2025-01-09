@@ -328,6 +328,18 @@ def test_cmyk() -> None:
         assert im.getpixel((0, 0)) == (185, 134, 0, 0)
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@skip_unless_feature_version("jpg_2000", "2.5.3")
+def test_cmyk_save() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue205.jp2") as jp2:
+        assert jp2.mode == "CMYK"
+
+        im = roundtrip(jp2)
+        assert_image_equal(im, jp2)
+
+
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
 def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:

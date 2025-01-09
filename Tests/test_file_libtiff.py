@@ -1177,7 +1177,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 im.load()
 
             # Assert that the error code is IMAGING_CODEC_MEMORY
-            assert str(e.value) == "-9"
+            assert str(e.value) == "decoder error -9"
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:

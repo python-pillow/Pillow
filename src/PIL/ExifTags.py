@@ -353,6 +353,7 @@ class IFD(IntEnum):
     Exif = 0x8769
     GPSInfo = 0x8825
     MakerNote = 0x927C
+    Makernote = 0x927C  # Deprecated
     Interop = 0xA005
     IFD1 = -1
 
