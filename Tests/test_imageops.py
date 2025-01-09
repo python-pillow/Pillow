@@ -440,11 +440,10 @@ def test_exif_transpose() -> None:
     # Orientation from "Raw profile type exif" info key
     # This test image has been manually hexedited from exif_imagemagick.png
     # to have a different orientation
-    with Image.open("Tests/images/exif_imagemagick_orientation.png") as img:
-        assert img.getexif()[0x0112] == 3
+    with Image.open("Tests/images/exif_imagemagick_orientation.png") as im:
+        assert im.getexif()[0x0112] == 3
 
-        transposed_im = ImageOps.exif_transpose(img)
-        assert transposed_im is not None
+        transposed_im = ImageOps.exif_transpose(im)
         assert 0x0112 not in transposed_im.getexif()
 
     # Orientation set directly on Image.Exif

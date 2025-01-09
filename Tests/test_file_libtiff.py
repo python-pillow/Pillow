@@ -1125,8 +1125,6 @@ class TestFileLibTiff(LibTiffTestCase):
             for i in range(2, 9):
                 with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
                     transposed_im = ImageOps.exif_transpose(im)
-                    assert transposed_im is not None
-
                     assert_image_similar(base_im, transposed_im, 0.7)
 
     @pytest.mark.parametrize(
