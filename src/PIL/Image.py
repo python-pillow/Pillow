@@ -2447,10 +2447,7 @@ class Image:
         )
 
     def save(
-        self,
-        fp: StrOrBytesPath | IO[bytes] | io.TextIOWrapper,
-        format: str | None = None,
-        **params: Any,
+        self, fp: StrOrBytesPath | IO[bytes], format: str | None = None, **params: Any
     ) -> None:
         """
         Saves this image under the given filename.  If no format is

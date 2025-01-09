@@ -4,7 +4,7 @@ import re
 import sys
 import warnings
 import zlib
-from io import BytesIO, TextIOWrapper
+from io import BytesIO
 from pathlib import Path
 from types import ModuleType
 from typing import Any, cast
@@ -811,15 +811,19 @@ class TestFilePng:
 
     @pytest.mark.parametrize("buffer", (True, False))
     def test_save_stdout(self, buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
-        b = BytesIO()
-        mystdout: TextIOWrapper | BytesIO = TextIOWrapper(b) if buffer else b
+        class MyStdOut:
+            buffer = BytesIO()
+
+        mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
         monkeypatch.setattr(sys, "stdout", mystdout)
 
         with Image.open(TEST_PNG_FILE) as im:
-            im.save(sys.stdout, "PNG")
+            im.save(sys.stdout, "PNG")  # type: ignore[arg-type]
 
-        with Image.open(b) as reloaded:
+        if isinstance(mystdout, MyStdOut):
+            mystdout = mystdout.buffer
+        with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
     def test_truncated_end_chunk(self) -> None:
