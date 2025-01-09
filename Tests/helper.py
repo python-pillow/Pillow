@@ -145,10 +145,6 @@ def assert_image_similar_tofile(
         assert_image_similar(a, img, epsilon, msg)
 
 
-def assert_all_same(items: Sequence[Any], msg: str | None = None) -> None:
-    assert items.count(items[0]) == len(items), msg
-
-
 def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
     assert items.count(items[0]) != len(items), msg
 
