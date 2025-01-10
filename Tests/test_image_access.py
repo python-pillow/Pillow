@@ -271,7 +271,7 @@ class TestImagePutPixelError:
 
 
 class TestEmbeddable:
-    @pytest.mark.xfail(reason="failing test")
+    @pytest.mark.xfail(not (sys.version_info >= (3, 13)), reason="failing test")
     @pytest.mark.skipif(not is_win32(), reason="requires Windows")
     def test_embeddable(self) -> None:
         import ctypes
