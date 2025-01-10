@@ -341,14 +341,9 @@ def test_apng_syntax_errors() -> None:
             im.load()
 
     # we can handle this case gracefully
-    exception = None
     with Image.open("Tests/images/apng/syntax_num_frames_low.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
-        try:
-            im.seek(im.n_frames - 1)
-        except Exception as e:
-            exception = e
-        assert exception is None
+        im.seek(im.n_frames - 1)
 
     with pytest.raises(OSError):
         with Image.open("Tests/images/apng/syntax_num_frames_high.png") as im:
@@ -448,14 +443,8 @@ def test_apng_save_split_fdat(tmp_path: Path) -> None:
         )
     with Image.open(test_file) as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
-
-        exception = None
-        try:
-            im.seek(im.n_frames - 1)
-            im.load()
-        except Exception as e:
-            exception = e
-        assert exception is None
+        im.seek(im.n_frames - 1)
+        im.load()
 
 
 def test_apng_save_duration_loop(tmp_path: Path) -> None:

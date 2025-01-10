@@ -45,11 +45,7 @@ class LibTiffTestCase:
         im.getdata()
 
         assert isinstance(im, TiffImagePlugin.TiffImageFile)
-        try:
-            assert im._compression == "group4"
-        except AttributeError:
-            print("No _compression")
-            print(dir(im))
+        assert im._compression == "group4"
 
         # can we write it back out, in a different form.
         out = str(tmp_path / "temp.png")

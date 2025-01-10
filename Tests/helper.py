@@ -141,17 +141,10 @@ def assert_image_similar_tofile(
     filename: str,
     epsilon: float,
     msg: str | None = None,
-    mode: str | None = None,
 ) -> None:
     img: Image.Image
     with Image.open(filename) as img:
-        if mode:
-            img = img.convert(mode)
         assert_image_similar(a, img, epsilon, msg)
-
-
-def assert_all_same(items: Sequence[Any], msg: str | None = None) -> None:
-    assert items.count(items[0]) == len(items), msg
 
 
 def assert_not_all_same(items: Sequence[Any], msg: str | None = None) -> None:
