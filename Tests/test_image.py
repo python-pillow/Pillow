@@ -189,8 +189,6 @@ class TestImage:
                 if ext == ".jp2" and not features.check_codec("jpg_2000"):
                     pytest.skip("jpg_2000 not available")
                 temp_file = str(tmp_path / ("temp." + ext))
-                if os.path.exists(temp_file):
-                    os.remove(temp_file)
                 im.save(Path(temp_file))
 
     def test_fp_name(self, tmp_path: Path) -> None:
