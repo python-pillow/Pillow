@@ -278,6 +278,18 @@ class TestEmbeddable:
 
         from setuptools.command import build_ext
 
+        compiler = getattr(build_ext, "new_compiler")()
+        compiler.add_include_dir(sysconfig.get_config_var("INCLUDEPY"))
+
+        libdir = sysconfig.get_config_var("LIBDIR") or sysconfig.get_config_var(
+            "INCLUDEPY"
+        ).replace("include", "libs")
+        compiler.add_library_dir(libdir)
+        try:
+            compiler.initialize()
+        except Exception:
+            pytest.skip("Compiler could not be initialized")
+
         with open("embed_pil.c", "w", encoding="utf-8") as fh:
             home = sys.prefix.replace("\\", "\\\\")
             fh.write(
@@ -305,13 +317,6 @@ int main(int argc, char* argv[])
         """
             )
 
-        compiler = getattr(build_ext, "new_compiler")()
-        compiler.add_include_dir(sysconfig.get_config_var("INCLUDEPY"))
-
-        libdir = sysconfig.get_config_var("LIBDIR") or sysconfig.get_config_var(
-            "INCLUDEPY"
-        ).replace("include", "libs")
-        compiler.add_library_dir(libdir)
         objects = compiler.compile(["embed_pil.c"])
         compiler.link_executable(objects, "embed_pil")
 
