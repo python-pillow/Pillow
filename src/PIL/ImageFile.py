@@ -180,6 +180,7 @@ class ImageFile(Image.Image):
             ifds.append((ifd1, exif._info.next))
 
         offset = None
+        assert self.fp is not None
         for ifd, ifd_offset in ifds:
             current_offset = self.fp.tell()
             if offset is None:
