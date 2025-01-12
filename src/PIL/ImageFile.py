@@ -191,7 +191,10 @@ class ImageFile(Image.Image):
                 if thumbnail_offset is not None:
                     thumbnail_offset += getattr(self, "_exif_offset", 0)
                     self.fp.seek(thumbnail_offset)
-                    data = self.fp.read(ifd.get(ExifTags.Base.JpegIFByteCount))
+
+                    length = ifd.get(ExifTags.Base.JpegIFByteCount)
+                    assert isinstance(length, int)
+                    data = self.fp.read(length)
                     fp = io.BytesIO(data)
 
             with Image.open(fp) as im:
