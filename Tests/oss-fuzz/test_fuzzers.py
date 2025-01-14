@@ -32,21 +32,18 @@ def test_fuzz_images(path: str) -> None:
             fuzzers.fuzz_image(f.read())
             assert True
     except (
+        # Known exceptions from Pillow
         OSError,
         SyntaxError,
         MemoryError,
         ValueError,
         NotImplementedError,
         OverflowError,
-    ):
-        # Known exceptions that are through from Pillow
-        assert True
-    except (
+        # Known Image.* exceptions
         Image.DecompressionBombError,
         Image.DecompressionBombWarning,
         UnidentifiedImageError,
     ):
-        # Known Image.* exceptions
         assert True
     finally:
         fuzzers.disable_decompressionbomb_error()
