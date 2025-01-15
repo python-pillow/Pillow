@@ -18,8 +18,6 @@ except ImportError:
 DECODE_CODEC_CHOICE = "auto"
 DEFAULT_MAX_THREADS = 0
 
-_VALID_AVIF_MODES = {"RGB", "RGBA"}
-
 
 def _accept(prefix: bytes) -> bool | str:
     if prefix[4:8] != b"ftyp":
@@ -41,8 +39,7 @@ def _accept(prefix: bytes) -> bool | str:
     ):
         if not SUPPORTED:
             return (
-                "image file could not be identified because AVIF "
-                "support not installed"
+                "image file could not be identified because AVIF support not installed"
             )
         return True
     return False
@@ -62,9 +59,6 @@ class AvifImageFile(ImageFile.ImageFile):
     format_description = "AVIF image"
     __loaded = -1
     __frame = 0
-
-    def load_seek(self, pos: int) -> None:
-        pass
 
     def _open(self) -> None:
         if not SUPPORTED:
@@ -136,6 +130,9 @@ class AvifImageFile(ImageFile.ImageFile):
 
         return super().load()
 
+    def load_seek(self, pos: int) -> None:
+        pass
+
     def tell(self) -> int:
         return self.__frame
 
@@ -200,24 +197,21 @@ def _save(
         xmp = xmp.encode("utf-8")
 
     advanced = info.get("advanced")
-    if isinstance(advanced, dict):
-        advanced = tuple([k, v] for (k, v) in advanced.items())
     if advanced is not None:
+        if isinstance(advanced, dict):
+            advanced = advanced.items()
         try:
             advanced = tuple(advanced)
         except TypeError:
             invalid = True
         else:
-            invalid = all(isinstance(v, tuple) and len(v) == 2 for v in advanced)
+            invalid = any(not isinstance(v, tuple) or len(v) != 2 for v in advanced)
         if invalid:
             msg = (
                 "advanced codec options must be a dict of key-value string "
                 "pairs or a series of key-value two-tuples"
             )
             raise ValueError(msg)
-        advanced = tuple(
-            (str(k).encode("utf-8"), str(v).encode("utf-8")) for k, v in advanced
-        )
 
     # Setup the AVIF encoder
     enc = _avif.AvifEncoder(
@@ -257,7 +251,7 @@ def _save(
                 # Make sure image mode is supported
                 frame = ims
                 rawmode = ims.mode
-                if ims.mode not in _VALID_AVIF_MODES:
+                if ims.mode not in {"RGB", "RGBA"}:
                     rawmode = "RGBA" if ims.has_transparency_data else "RGB"
                     frame = ims.convert(rawmode)
 

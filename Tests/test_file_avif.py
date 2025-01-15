@@ -8,7 +8,6 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from io import BytesIO
 from pathlib import Path
-from struct import unpack
 from typing import Any
 
 import pytest
@@ -75,39 +74,6 @@ def is_docker_qemu() -> bool:
         return "qemu" in init_proc_exe
 
 
-def has_alpha_premultiplied(im_bytes: bytes) -> bool:
-    stream = BytesIO(im_bytes)
-    length = len(im_bytes)
-    while stream.tell() < length:
-        start = stream.tell()
-        size, boxtype = unpack(">L4s", stream.read(8))
-        if not all(0x20 <= c <= 0x7E for c in boxtype):
-            # Not ascii
-            return False
-        if size == 1:  # 64bit size
-            (size,) = unpack(">Q", stream.read(8))
-        end = start + size
-        version, _ = unpack(">B3s", stream.read(4))
-        if boxtype in (b"ftyp", b"hdlr", b"pitm", b"iloc", b"iinf"):
-            # Skip these boxes
-            stream.seek(end)
-            continue
-        elif boxtype == b"meta":
-            # Container box possibly including iref prem, continue to parse boxes
-            # inside it
-            continue
-        elif boxtype == b"iref":
-            while stream.tell() < end:
-                _, iref_type = unpack(">L4s", stream.read(8))
-                version, _ = unpack(">B3s", stream.read(4))
-                if iref_type == b"prem":
-                    return True
-                stream.read(2 if version == 0 else 4)
-        else:
-            return False
-    return False
-
-
 class TestUnsupportedAvif:
     def test_unsupported(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(AvifImagePlugin, "SUPPORTED", False)
@@ -170,10 +136,8 @@ class TestFileAvif:
             # difference between the two images is less than the epsilon value,
             # then we're going to accept that it's a reasonable lossy version of
             # the image.
-            target = hopper(mode)
-            if mode != "RGB":
-                target = target.convert("RGB")
-            assert_image_similar(image, target, epsilon)
+            expected = hopper()
+            assert_image_similar(image, expected, epsilon)
 
     def test_write_rgb(self, tmp_path: Path) -> None:
         """
@@ -479,7 +443,19 @@ class TestFileAvif:
 
     @skip_unless_avif_encoder("aom")
     @skip_unless_feature("avif")
-    def test_encoder_advanced_codec_options(self) -> None:
+    @pytest.mark.parametrize(
+        "advanced",
+        [
+            {
+                "aq-mode": "1",
+                "enable-chroma-deltaq": "1",
+            },
+            (("aq-mode", "1"), ("enable-chroma-deltaq", "1")),
+        ],
+    )
+    def test_encoder_advanced_codec_options(
+        self, advanced: dict[str, str] | tuple[tuple[str, str], ...]
+    ) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             ctrl_buf = BytesIO()
             im.save(ctrl_buf, "AVIF", codec="aom")
@@ -488,10 +464,7 @@ class TestFileAvif:
                 test_buf,
                 "AVIF",
                 codec="aom",
-                advanced={
-                    "aq-mode": "1",
-                    "enable-chroma-deltaq": "1",
-                },
+                advanced=advanced,
             )
             assert ctrl_buf.getvalue() != test_buf.getvalue()
 
@@ -699,13 +672,18 @@ class TestAvifAnimation:
             with Image.open("Tests/images/avif/rgba10.heif"):
                 pass
 
-    @pytest.mark.parametrize("alpha_premultipled", [False, True])
-    def test_alpha_premultiplied_true(self, alpha_premultipled: bool) -> None:
-        im = Image.new("RGBA", (10, 10), (0, 0, 0, 0))
-        im_buf = BytesIO()
-        im.save(im_buf, "AVIF", alpha_premultiplied=alpha_premultipled)
-        im_bytes = im_buf.getvalue()
-        assert has_alpha_premultiplied(im_bytes) is alpha_premultipled
+    @pytest.mark.parametrize("alpha_premultiplied", [False, True])
+    def test_alpha_premultiplied(
+        self, tmp_path: Path, alpha_premultiplied: bool
+    ) -> None:
+        temp_file = str(tmp_path / "temp.avif")
+        color = (200, 200, 200, 1)
+        im = Image.new("RGBA", (1, 1), color)
+        im.save(temp_file, alpha_premultiplied=alpha_premultiplied)
+
+        expected = (255, 255, 255, 1) if alpha_premultiplied else color
+        with Image.open(temp_file) as reloaded:
+            assert reloaded.getpixel((0, 0)) == expected
 
     def test_timestamp_and_duration(self, tmp_path: Path) -> None:
         """
