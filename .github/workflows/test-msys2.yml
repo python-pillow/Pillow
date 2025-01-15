@@ -79,9 +79,9 @@ jobs:
               libtiff:p \
               libwebp:p \
               openjpeg2:p \
-              python3-numpy:p \
-              python3-olefile:p \
-              python3-pip:p \
+              python-numpy:p \
+              python-olefile:p \
+              python-pip:p \
               python-pyqt6:p
 
           python3 -m pip install pyroma pytest pytest-cov pytest-timeout
