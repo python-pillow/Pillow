@@ -303,38 +303,38 @@ TAGS = {
 
 
 class GPS(IntEnum):
-    GPSVersionID = 0
-    GPSLatitudeRef = 1
-    GPSLatitude = 2
-    GPSLongitudeRef = 3
-    GPSLongitude = 4
-    GPSAltitudeRef = 5
-    GPSAltitude = 6
-    GPSTimeStamp = 7
-    GPSSatellites = 8
-    GPSStatus = 9
-    GPSMeasureMode = 10
-    GPSDOP = 11
-    GPSSpeedRef = 12
-    GPSSpeed = 13
-    GPSTrackRef = 14
-    GPSTrack = 15
-    GPSImgDirectionRef = 16
-    GPSImgDirection = 17
-    GPSMapDatum = 18
-    GPSDestLatitudeRef = 19
-    GPSDestLatitude = 20
-    GPSDestLongitudeRef = 21
-    GPSDestLongitude = 22
-    GPSDestBearingRef = 23
-    GPSDestBearing = 24
-    GPSDestDistanceRef = 25
-    GPSDestDistance = 26
-    GPSProcessingMethod = 27
-    GPSAreaInformation = 28
-    GPSDateStamp = 29
-    GPSDifferential = 30
-    GPSHPositioningError = 31
+    GPSVersionID = 0x00
+    GPSLatitudeRef = 0x01
+    GPSLatitude = 0x02
+    GPSLongitudeRef = 0x03
+    GPSLongitude = 0x04
+    GPSAltitudeRef = 0x05
+    GPSAltitude = 0x06
+    GPSTimeStamp = 0x07
+    GPSSatellites = 0x08
+    GPSStatus = 0x09
+    GPSMeasureMode = 0x0A
+    GPSDOP = 0x0B
+    GPSSpeedRef = 0x0C
+    GPSSpeed = 0x0D
+    GPSTrackRef = 0x0E
+    GPSTrack = 0x0F
+    GPSImgDirectionRef = 0x10
+    GPSImgDirection = 0x11
+    GPSMapDatum = 0x12
+    GPSDestLatitudeRef = 0x13
+    GPSDestLatitude = 0x14
+    GPSDestLongitudeRef = 0x15
+    GPSDestLongitude = 0x16
+    GPSDestBearingRef = 0x17
+    GPSDestBearing = 0x18
+    GPSDestDistanceRef = 0x19
+    GPSDestDistance = 0x1A
+    GPSProcessingMethod = 0x1B
+    GPSAreaInformation = 0x1C
+    GPSDateStamp = 0x1D
+    GPSDifferential = 0x1E
+    GPSHPositioningError = 0x1F
 
 
 """Maps EXIF GPS tags to tag names."""
@@ -342,40 +342,41 @@ GPSTAGS = {i.value: i.name for i in GPS}
 
 
 class Interop(IntEnum):
-    InteropIndex = 1
-    InteropVersion = 2
-    RelatedImageFileFormat = 4096
-    RelatedImageWidth = 4097
-    RelatedImageHeight = 4098
+    InteropIndex = 0x0001
+    InteropVersion = 0x0002
+    RelatedImageFileFormat = 0x1000
+    RelatedImageWidth = 0x1001
+    RelatedImageHeight = 0x1002
 
 
 class IFD(IntEnum):
-    Exif = 34665
-    GPSInfo = 34853
-    Makernote = 37500
-    Interop = 40965
+    Exif = 0x8769
+    GPSInfo = 0x8825
+    MakerNote = 0x927C
+    Makernote = 0x927C  # Deprecated
+    Interop = 0xA005
     IFD1 = -1
 
 
 class LightSource(IntEnum):
-    Unknown = 0
-    Daylight = 1
-    Fluorescent = 2
-    Tungsten = 3
-    Flash = 4
-    Fine = 9
-    Cloudy = 10
-    Shade = 11
-    DaylightFluorescent = 12
-    DayWhiteFluorescent = 13
-    CoolWhiteFluorescent = 14
-    WhiteFluorescent = 15
-    StandardLightA = 17
-    StandardLightB = 18
-    StandardLightC = 19
-    D55 = 20
-    D65 = 21
-    D75 = 22
-    D50 = 23
-    ISO = 24
-    Other = 255
+    Unknown = 0x00
+    Daylight = 0x01
+    Fluorescent = 0x02
+    Tungsten = 0x03
+    Flash = 0x04
+    Fine = 0x09
+    Cloudy = 0x0A
+    Shade = 0x0B
+    DaylightFluorescent = 0x0C
+    DayWhiteFluorescent = 0x0D
+    CoolWhiteFluorescent = 0x0E
+    WhiteFluorescent = 0x0F
+    StandardLightA = 0x11
+    StandardLightB = 0x12
+    StandardLightC = 0x13
+    D55 = 0x14
+    D65 = 0x15
+    D75 = 0x16
+    D50 = 0x17
+    ISO = 0x18
+    Other = 0xFF

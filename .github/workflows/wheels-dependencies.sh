@@ -37,25 +37,16 @@ fi
 ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
-FREETYPE_VERSION=2.13.2
-HARFBUZZ_VERSION=10.0.1
-LIBPNG_VERSION=1.6.44
-JPEGTURBO_VERSION=3.0.4
-OPENJPEG_VERSION=2.5.2
+FREETYPE_VERSION=2.13.3
+HARFBUZZ_VERSION=10.1.0
+LIBPNG_VERSION=1.6.45
+JPEGTURBO_VERSION=3.1.0
+OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.6.3
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
-if [[ -n "$IS_MACOS" ]]; then
-    GIFLIB_VERSION=5.2.2
-else
-    GIFLIB_VERSION=5.2.1
-fi
-if [[ -n "$IS_MACOS" ]] || [[ "$MB_ML_VER" != 2014 ]]; then
-    ZLIB_VERSION=1.3.1
-else
-    ZLIB_VERSION=1.2.8
-fi
-LIBWEBP_VERSION=1.4.0
+ZLIB_NG_VERSION=2.2.3
+LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
@@ -74,6 +65,16 @@ function build_pkg_config {
     touch pkg-config-stamp
 }
 
+function build_zlib_ng {
+    if [ -e zlib-stamp ]; then return; fi
+    fetch_unpack https://github.com/zlib-ng/zlib-ng/archive/$ZLIB_NG_VERSION.tar.gz zlib-ng-$ZLIB_NG_VERSION.tar.gz
+    (cd zlib-ng-$ZLIB_NG_VERSION \
+        && ./configure --prefix=$BUILD_PREFIX --zlib-compat \
+        && make -j4 \
+        && make install)
+    touch zlib-stamp
+}
+
 function build_brotli {
     if [ -e brotli-stamp ]; then return; fi
     local out_dir=$(fetch_unpack https://github.com/google/brotli/archive/v$BROTLI_VERSION.tar.gz brotli-$BROTLI_VERSION.tar.gz)
@@ -87,7 +88,7 @@ function build_harfbuzz {
     if [ -e harfbuzz-stamp ]; then return; fi
     python3 -m pip install meson ninja
 
-    local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
+    local out_dir=$(fetch_unpack https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz harfbuzz-$HARFBUZZ_VERSION.tar.xz)
     (cd $out_dir \
         && meson setup build --prefix=$BUILD_PREFIX --libdir=$BUILD_PREFIX/lib --buildtype=release -Dfreetype=enabled -Dglib=disabled)
     (cd $out_dir/build \
@@ -97,15 +98,15 @@ function build_harfbuzz {
 
 function build {
     build_xz
-    if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
+    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
-    build_new_zlib
+    build_zlib_ng
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
         build_simple xorgproto 2024.1 https://www.x.org/pub/individual/proto
-        build_simple libXau 1.0.11 https://www.x.org/pub/individual/lib
+        build_simple libXau 1.0.12 https://www.x.org/pub/individual/lib
         build_simple libpthread-stubs 0.5 https://xcb.freedesktop.org/dist
     else
         sed s/\${pc_sysrootdir\}// $BUILD_PREFIX/share/pkgconfig/xcb-proto.pc > $BUILD_PREFIX/lib/pkgconfig/xcb-proto.pc
@@ -134,7 +135,9 @@ function build {
     if [[ -n "$IS_MACOS" ]]; then
         CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
     fi
-    build_libwebp
+    build_simple libwebp $LIBWEBP_VERSION \
+        https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
+        --enable-libwebpmux --enable-libwebpdemux
     CFLAGS=$ORIGINAL_CFLAGS
 
     build_brotli

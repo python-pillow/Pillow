@@ -76,7 +76,7 @@ optional-dependencies.xmp = [
 urls.Changelog = "https://github.com/python-pillow/Pillow/releases"
 urls.Documentation = "https://pillow.readthedocs.io"
 urls.Funding = "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi"
-urls.Homepage = "https://python-pillow.org"
+urls.Homepage = "https://python-pillow.github.io"
 urls.Mastodon = "https://fosstodon.org/@pillow"
 urls."Release notes" = "https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
 urls.Source = "https://github.com/python-pillow/Pillow"
@@ -104,6 +104,7 @@ test-extras = "tests"
 
 [tool.cibuildwheel.macos.environment]
 PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
+DYLD_LIBRARY_PATH = "$(pwd)/build/deps/darwin/lib"
 
 [tool.black]
 exclude = "wheels/multibuild"

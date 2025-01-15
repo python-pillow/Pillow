@@ -36,11 +36,7 @@ class LibTiffTestCase:
         im.load()
         im.getdata()
 
-        try:
-            assert im._compression == "group4"
-        except AttributeError:
-            print("No _compression")
-            print(dir(im))
+        assert im._compression == "group4"
 
         # can we write it back out, in a different form.
         out = str(tmp_path / "temp.png")
@@ -1146,7 +1142,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 im.load()
 
             # Assert that the error code is IMAGING_CODEC_MEMORY
-            assert str(e.value) == "-9"
+            assert str(e.value) == "decoder error -9"
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:

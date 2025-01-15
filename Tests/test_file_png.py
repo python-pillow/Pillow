@@ -618,7 +618,7 @@ class TestFilePng:
         with Image.open("Tests/images/truncated_image.png") as im:
             # The file is truncated
             with pytest.raises(OSError):
-                im.text()
+                im.text
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             assert isinstance(im.text, dict)
             ImageFile.LOAD_TRUNCATED_IMAGES = False
@@ -772,21 +772,17 @@ class TestFilePng:
                 im.seek(1)
 
     @pytest.mark.parametrize("buffer", (True, False))
-    def test_save_stdout(self, buffer: bool) -> None:
-        old_stdout = sys.stdout
+    def test_save_stdout(self, buffer: bool, monkeypatch: pytest.MonkeyPatch) -> None:
 
         class MyStdOut:
             buffer = BytesIO()
 
         mystdout: MyStdOut | BytesIO = MyStdOut() if buffer else BytesIO()
 
-        sys.stdout = mystdout
+        monkeypatch.setattr(sys, "stdout", mystdout)
 
         with Image.open(TEST_PNG_FILE) as im:
             im.save(sys.stdout, "PNG")
-
-        # Reset stdout
-        sys.stdout = old_stdout
 
         if isinstance(mystdout, MyStdOut):
             mystdout = mystdout.buffer
