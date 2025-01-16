@@ -2202,11 +2202,15 @@ class AppendingTiffWriter(io.BytesIO):
             if tag in self.Tags:
                 cur_pos = self.f.tell()
 
-                tagname = TiffTags.lookup(tag).name
-                typname = TYPES.get(field_type, "unknown")
-                msg = f"fixIFD: {tagname} ({tag}) - type: {typname} ({field_type})"
-                msg += f"- type size: {field_size} - count: {count}"
-                logger.debug(msg)
+                logger.debug(
+                    "fixIFD: %s (%d) - type: %s (%d) - type size: %d - count: %d",
+                    TiffTags.lookup(tag).name,
+                    tag,
+                    TYPES.get(field_type, "unknown"),
+                    field_type,
+                    field_size,
+                    count,
+                )
 
                 if is_local:
                     self._fixOffsets(count, field_size)
