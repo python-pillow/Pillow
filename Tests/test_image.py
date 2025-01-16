@@ -665,7 +665,7 @@ class TestImage:
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.remap_palette(None)
+                im.remap_palette([])
 
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))
@@ -768,7 +768,7 @@ class TestImage:
         assert dict(exif)
 
         # Test that exif data is cleared after another load
-        exif.load(None)
+        exif.load(b"")
         assert not dict(exif)
 
         # Test loading just the EXIF header
