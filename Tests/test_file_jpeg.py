@@ -181,6 +181,10 @@ class TestFileJpeg:
         assert test(100, 200) == (100, 200)
         assert test(0) is None  # square pixels
 
+    def test_dpi_jfif_cm(self) -> None:
+        with Image.open("Tests/images/jfif_unit_cm.jpg") as im:
+            assert im.info["dpi"] == (2.54, 5.08)
+
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
@@ -277,7 +281,10 @@ class TestFileJpeg:
         assert not im2.info.get("progressive")
         assert im3.info.get("progressive")
 
-        assert_image_equal(im1, im3)
+        if features.check_feature("mozjpeg"):
+            assert_image_similar(im1, im3, 9.39)
+        else:
+            assert_image_equal(im1, im3)
         assert im1_bytes >= im3_bytes
 
     def test_progressive_large_buffer(self, tmp_path: Path) -> None:
@@ -349,7 +356,6 @@ class TestFileJpeg:
             assert exif.get_ifd(0x8825) == {}
 
             transposed = ImageOps.exif_transpose(im)
-        assert transposed is not None
         exif = transposed.getexif()
         assert exif.get_ifd(0x8825) == {}
 
@@ -420,8 +426,12 @@ class TestFileJpeg:
 
         im2 = self.roundtrip(hopper(), progressive=1)
         im3 = self.roundtrip(hopper(), progression=1)  # compatibility
-        assert_image_equal(im1, im2)
-        assert_image_equal(im1, im3)
+        if features.check_feature("mozjpeg"):
+            assert_image_similar(im1, im2, 9.39)
+            assert_image_similar(im1, im3, 9.39)
+        else:
+            assert_image_equal(im1, im2)
+            assert_image_equal(im1, im3)
         assert im2.info.get("progressive")
         assert im2.info.get("progression")
         assert im3.info.get("progressive")
@@ -1000,8 +1010,13 @@ class TestFileJpeg:
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"XMP test"
 
-        im.info["xmp"] = b"1" * 65504
-        im.save(f)
+            # Check that XMP is not saved from image info
+            reloaded.save(f)
+
+        with Image.open(f) as reloaded:
+            assert "xmp" not in reloaded.info
+
+        im.save(f, xmp=b"1" * 65504)
         with Image.open(f) as reloaded:
             assert reloaded.info["xmp"] == b"1" * 65504
 
@@ -1022,7 +1037,7 @@ class TestFileJpeg:
 
         with Image.open(TEST_FILE) as im:
             im.tile = [
-                ("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
+                ImageFile._Tile("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
             ]
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             im.load()

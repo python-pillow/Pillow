@@ -52,7 +52,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Cygwin
-        uses: cygwin/cygwin-install-action@v4
+        uses: cygwin/cygwin-install-action@v5
         with:
           packages: >
             gcc-g++
@@ -133,11 +133,12 @@ jobs:
       - name: After success
         run: |
           bash.exe .ci/after_success.sh
+          rm C:\cygwin\bin\bash.EXE
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: GHA_Cygwin
           name: Cygwin Python 3.${{ matrix.python-minor-version }}
           token: ${{ secrets.CODECOV_ORG_TOKEN }}

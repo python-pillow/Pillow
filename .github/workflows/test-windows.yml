@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.10", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["pypy3.10", "3.10", "3.11", "3.12", "3.13", "3.14"]
         architecture: ["x64"]
         os: ["windows-latest"]
         include:
@@ -221,9 +221,9 @@ jobs:
       shell: pwsh
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
         flags: GHA_Windows
         name: ${{ runner.os }} Python ${{ matrix.python-version }}
         token: ${{ secrets.CODECOV_ORG_TOKEN }}
