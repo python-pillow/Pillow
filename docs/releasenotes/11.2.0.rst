@@ -1,0 +1,58 @@
+11.2.0
+------
+
+Security
+========
+
+TODO
+^^^^
+
+TODO
+
+:cve:`YYYY-XXXXX`: TODO
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+Backwards Incompatible Changes
+==============================
+
+TODO
+^^^^
+
+Deprecations
+============
+
+TODO
+^^^^
+
+TODO
+
+API Changes
+===========
+
+TODO
+^^^^
+
+TODO
+
+API Additions
+=============
+
+Check for mozjpeg
+^^^^^^^^^^^^^^^^^
+
+You can check if Pillow has been built against the mozjpeg version of the
+libjpeg library, and what version of mozjpeg is being used::
+
+    from PIL import features
+    features.check_feature("mozjpeg")  # True or False
+    features.version_feature("mozjpeg")  # "4.1.1" for example, or None
+
+Other Changes
+=============
+
+TODO
+^^^^
+
+TODO
