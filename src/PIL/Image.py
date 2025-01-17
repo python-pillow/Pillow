@@ -1539,6 +1539,12 @@ class Image:
         self._exif._loaded = False
         self.getexif()
 
+    def get_child_images(self) -> list[ImageFile.ImageFile]:
+        from . import ImageFile
+
+        deprecate("Image.Image.get_child_images", 13)
+        return ImageFile.ImageFile.get_child_images(self)  # type: ignore[arg-type]
+
     def getim(self) -> CapsuleType:
         """
         Returns a capsule that points to the internal image memory.
