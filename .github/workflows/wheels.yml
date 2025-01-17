@@ -105,7 +105,7 @@ jobs:
         env:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
-          CIBW_ENABLE: cpython-prerelease cpython-freethreading
+          CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
           CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
@@ -184,7 +184,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BEFORE_ALL: "{package}\\winbuild\\build\\build_dep_all.cmd"
           CIBW_CACHE_PATH: "C:\\cibw"
-          CIBW_ENABLE: cpython-prerelease cpython-freethreading
+          CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
           CIBW_SKIP: pp39-*
           CIBW_TEST_SKIP: "*-win_arm64"
           CIBW_TEST_COMMAND: 'docker run --rm
