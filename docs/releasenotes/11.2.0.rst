@@ -42,7 +42,7 @@ API Additions
 Check for mozjpeg
 ^^^^^^^^^^^^^^^^^
 
-You can check if Pillow has been built against the mozjpeg version of the
+You can check if Pillow has been built against the MozJPEG version of the
 libjpeg library, and what version of mozjpeg is being used::
 
     from PIL import features
