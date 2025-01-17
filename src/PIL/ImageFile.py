@@ -180,8 +180,8 @@ class ImageFile(Image.Image):
             ifds.append((ifd1, exif._info.next))
 
         offset = None
-        assert self.fp is not None
         for ifd, ifd_offset in ifds:
+            assert self.fp is not None
             current_offset = self.fp.tell()
             if offset is None:
                 offset = current_offset
@@ -210,6 +210,7 @@ class ImageFile(Image.Image):
                 child_images.append(im)
 
         if offset is not None:
+            assert self.fp is not None
             self.fp.seek(offset)
         return child_images
 

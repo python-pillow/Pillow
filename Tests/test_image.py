@@ -989,6 +989,11 @@ class TestImage:
         else:
             assert im.getxmp() == {"xmpmeta": None}
 
+    def test_get_child_images(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        with pytest.warns(DeprecationWarning):
+            assert im.get_child_images() == []
+
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:
         im = Image.new("RGB", size)
