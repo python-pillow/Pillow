@@ -31,15 +31,20 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.10", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["pypy3.10", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        architecture: ["x64"]
+        os: ["windows-latest"]
+        include:
+            # Test the oldest Python on 32-bit
+            - { python-version: "3.9", architecture: "x86", os: "windows-2019" }
 
     timeout-minutes: 30
 
-    name: Python ${{ matrix.python-version }}
+    name: Python ${{ matrix.python-version }} (${{ matrix.architecture }})
 
     steps:
     - name: Checkout Pillow
@@ -67,6 +72,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
+        architecture: ${{ matrix.architecture }}
         cache: pip
         cache-dependency-path: ".github/workflows/test-windows.yml"
 
@@ -78,7 +84,7 @@ jobs:
         python3 -m pip install --upgrade pip
 
     - name: Install CPython dependencies
-      if: "!contains(matrix.python-version, 'pypy')"
+      if: "!contains(matrix.python-version, 'pypy') && matrix.architecture != 'x86'"
       run: |
         python3 -m pip install PyQt6
 
