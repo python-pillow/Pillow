@@ -492,8 +492,7 @@ def test_plt_marker(card: ImageFile.ImageFile) -> None:
     out.seek(0)
     while True:
         marker = out.read(2)
-        if not marker:
-            pytest.fail("End of stream without PLT")
+        assert marker, "End of stream without PLT"
 
         jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:

@@ -374,14 +374,10 @@ class BLP1Decoder(_BLPBaseDecoder):
         image = JpegImageFile(BytesIO(data))
         Image._decompression_bomb_check(image.size)
         if image.mode == "CMYK":
-            decoder_name, extents, offset, args = image.tile[0]
+            args = image.tile[0].args
             assert isinstance(args, tuple)
-            image.tile = [
-                ImageFile._Tile(decoder_name, extents, offset, (args[0], "CMYK"))
-            ]
-        r, g, b = image.convert("RGB").split()
-        reversed_image = Image.merge("RGB", (b, g, r))
-        self.set_as_raw(reversed_image.tobytes())
+            image.tile = [image.tile[0]._replace(args=(args[0], "CMYK"))]
+        self.set_as_raw(image.convert("RGB").tobytes(), "BGR")
 
 
 class BLP2Decoder(_BLPBaseDecoder):

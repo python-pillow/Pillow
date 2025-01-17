@@ -116,7 +116,7 @@ V = {
     "HARFBUZZ": "10.1.0",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.16",
-    "LIBPNG": "1.6.44",
+    "LIBPNG": "1.6.45",
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.6.0",
@@ -124,7 +124,6 @@ V = {
     "ZLIBNG": "2.2.3",
     "LIBAVIF": "1.1.1",
 }
-V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
 
@@ -242,8 +241,8 @@ DEPS: dict[str, dict[str, Any]] = {
     },
     "libpng": {
         "url": f"{SF_PROJECTS}/libpng/files/libpng{V['LIBPNG_XY']}/{V['LIBPNG']}/"
-        f"lpng{V['LIBPNG_DOTLESS']}.zip/download",
-        "filename": f"lpng{V['LIBPNG_DOTLESS']}.zip",
+        f"FILENAME/download",
+        "filename": f"libpng-{V['LIBPNG']}.tar.gz",
         "license": "LICENSE",
         "build": [
             *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
