@@ -39,7 +39,7 @@ from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
 
 from . import ExifTags, Image
 from ._deprecate import deprecate
-from ._util import is_path
+from ._util import DeferredError, is_path
 
 if TYPE_CHECKING:
     from ._typing import StrOrBytesPath
@@ -165,6 +165,14 @@ class ImageFile(Image.Image):
 
     def _open(self) -> None:
         pass
+
+    def _close_fp(self):
+        if getattr(self, "_fp", False):
+            if self._fp != self.fp:
+                self._fp.close()
+            self._fp = DeferredError(ValueError("Operation on closed image"))
+        if self.fp:
+            self.fp.close()
 
     def close(self) -> None:
         """
