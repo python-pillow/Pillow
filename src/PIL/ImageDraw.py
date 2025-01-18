@@ -643,6 +643,7 @@ class ImageDraw:
                     features=features,
                     language=language,
                     stroke_width=stroke_width,
+                    stroke_filled=True,
                     anchor=anchor,
                     ink=ink,
                     start=start,
