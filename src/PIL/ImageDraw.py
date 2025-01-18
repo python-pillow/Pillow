@@ -693,7 +693,8 @@ class ImageDraw:
                 draw_text(stroke_ink, stroke_width)
 
                 # Draw normal text
-                draw_text(ink, 0)
+                if ink != stroke_ink:
+                    draw_text(ink)
             else:
                 # Only draw normal text
                 draw_text(ink)
