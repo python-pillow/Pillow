@@ -31,6 +31,7 @@ from __future__ import annotations
 import abc
 import io
 import itertools
+import logging
 import os
 import struct
 import sys
@@ -38,10 +39,12 @@ from typing import IO, TYPE_CHECKING, Any, NamedTuple, cast
 
 from . import ExifTags, Image
 from ._deprecate import deprecate
-from ._util import is_path
+from ._util import DeferredError, is_path
 
 if TYPE_CHECKING:
     from ._typing import StrOrBytesPath
+
+logger = logging.getLogger(__name__)
 
 MAXBLOCK = 65536
 
@@ -162,6 +165,34 @@ class ImageFile(Image.Image):
 
     def _open(self) -> None:
         pass
+
+    def _close_fp(self):
+        if getattr(self, "_fp", False):
+            if self._fp != self.fp:
+                self._fp.close()
+            self._fp = DeferredError(ValueError("Operation on closed image"))
+        if self.fp:
+            self.fp.close()
+
+    def close(self) -> None:
+        """
+        Closes the file pointer, if possible.
+
+        This operation will destroy the image core and release its memory.
+        The image data will be unusable afterward.
+
+        This function is required to close images that have multiple frames or
+        have not had their file read and closed by the
+        :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
+        more information.
+        """
+        try:
+            self._close_fp()
+            self.fp = None
+        except Exception as msg:
+            logger.debug("Error closing: %s", msg)
+
+        super().close()
 
     def get_child_images(self) -> list[ImageFile]:
         child_images = []

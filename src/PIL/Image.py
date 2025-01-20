@@ -603,24 +603,16 @@ class Image:
     def __enter__(self):
         return self
 
-    def _close_fp(self):
-        if getattr(self, "_fp", False):
-            if self._fp != self.fp:
-                self._fp.close()
-            self._fp = DeferredError(ValueError("Operation on closed image"))
-        if self.fp:
-            self.fp.close()
-
     def __exit__(self, *args):
-        if hasattr(self, "fp"):
+        from . import ImageFile
+
+        if isinstance(self, ImageFile.ImageFile):
             if getattr(self, "_exclusive_fp", False):
                 self._close_fp()
             self.fp = None
 
     def close(self) -> None:
         """
-        Closes the file pointer, if possible.
-
         This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 
@@ -629,13 +621,6 @@ class Image:
         :py:meth:`~PIL.Image.Image.load` method. See :ref:`file-handling` for
         more information.
         """
-        if hasattr(self, "fp"):
-            try:
-                self._close_fp()
-                self.fp = None
-            except Exception as msg:
-                logger.debug("Error closing: %s", msg)
-
         if getattr(self, "map", None):
             self.map: mmap.mmap | None = None
 
