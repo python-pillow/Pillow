@@ -608,8 +608,6 @@ class Image:
 
     def close(self) -> None:
         """
-        Closes the file pointer, if possible.
-
         This operation will destroy the image core and release its memory.
         The image data will be unusable afterward.
 

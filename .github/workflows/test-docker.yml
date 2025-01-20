@@ -29,13 +29,13 @@ concurrency:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: ["ubuntu-latest"]
         docker: [
           # Run slower jobs first to give them a headstart and reduce waiting time
-          ubuntu-22.04-jammy-arm64v8,
           ubuntu-24.04-noble-ppc64le,
           ubuntu-24.04-noble-s390x,
           # Then run the remainder
@@ -55,12 +55,13 @@ jobs:
         ]
         dockerTag: [main]
         include:
-          - docker: "ubuntu-22.04-jammy-arm64v8"
-            qemu-arch: "aarch64"
           - docker: "ubuntu-24.04-noble-ppc64le"
             qemu-arch: "ppc64le"
           - docker: "ubuntu-24.04-noble-s390x"
             qemu-arch: "s390x"
+          - docker: "ubuntu-24.04-noble-arm64v8"
+            os: "ubuntu-24.04-arm"
+            dockerTag: main
 
     name: ${{ matrix.docker }}
 

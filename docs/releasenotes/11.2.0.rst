@@ -44,10 +44,15 @@ TODO
 API Additions
 =============
 
-TODO
-^^^^
+Check for MozJPEG
+^^^^^^^^^^^^^^^^^
 
-TODO
+You can check if Pillow has been built against the MozJPEG version of the
+libjpeg library, and what version of MozJPEG is being used::
+
+    from PIL import features
+    features.check_feature("mozjpeg")  # True or False
+    features.version_feature("mozjpeg")  # "4.1.1" for example, or None
 
 Other Changes
 =============
