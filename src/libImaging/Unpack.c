@@ -1664,6 +1664,7 @@ static struct {
     {"RGBA", "RGBaXX", 48, unpackRGBaskip2},
     {"RGBA", "RGBa;16L", 64, unpackRGBa16L},
     {"RGBA", "RGBa;16B", 64, unpackRGBa16B},
+    {"RGBA", "BGR", 24, ImagingUnpackBGR},
     {"RGBA", "BGRa", 32, unpackBGRa},
     {"RGBA", "RGBA;I", 32, unpackRGBAI},
     {"RGBA", "RGBA;L", 32, unpackRGBAL},

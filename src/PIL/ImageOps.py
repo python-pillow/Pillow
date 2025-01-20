@@ -22,7 +22,7 @@ import functools
 import operator
 import re
 from collections.abc import Sequence
-from typing import Protocol, cast
+from typing import Literal, Protocol, cast, overload
 
 from . import ExifTags, Image, ImagePalette
 
@@ -671,6 +671,16 @@ def solarize(image: Image.Image, threshold: int = 128) -> Image.Image:
         else:
             lut.append(255 - i)
     return _lut(image, lut)
+
+
+@overload
+def exif_transpose(image: Image.Image, *, in_place: Literal[True]) -> None: ...
+
+
+@overload
+def exif_transpose(
+    image: Image.Image, *, in_place: Literal[False] = False
+) -> Image.Image: ...
 
 
 def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image | None:

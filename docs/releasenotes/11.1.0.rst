@@ -1,32 +1,14 @@
 11.1.0
 ------
 
-Security
-========
-
-TODO
-^^^^
-
-TODO
-
-:cve:`YYYY-XXXXX`: TODO
-^^^^^^^^^^^^^^^^^^^^^^^
-
-TODO
-
-Backwards Incompatible Changes
-==============================
-
-TODO
-^^^^
-
 Deprecations
 ============
 
-TODO
-^^^^
+ExifTags.IFD.Makernote
+^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
+``ExifTags.IFD.MakerNote``.
 
 API Changes
 ===========
@@ -65,6 +47,13 @@ zlib library, and what version of zlib-ng is being used::
     features.check_feature("zlib_ng")  # True or False
     features.version_feature("zlib_ng")  # "2.2.2" for example, or None
 
+Saving TIFF as BigTIFF
+^^^^^^^^^^^^^^^^^^^^^^
+
+TIFF images can now be saved as BigTIFF using a ``big_tiff`` argument::
+
+    im.save("out.tiff", big_tiff=True)
+
 Other Changes
 =============
 
@@ -78,6 +67,11 @@ Saving JPEG 2000 CMYK images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With OpenJPEG 2.5.3 or later, Pillow can now save CMYK images as JPEG 2000 files.
+
+Minimum C version
+^^^^^^^^^^^^^^^^^
+
+C99 is now the minimum version of C required to compile Pillow from source.
 
 zlib-ng in wheels
 ^^^^^^^^^^^^^^^^^

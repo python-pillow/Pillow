@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.4
+    rev: v0.8.6
     hooks:
       - id: ruff
         args: [--exit-non-zero-on-fix]
@@ -24,7 +24,7 @@ repos:
         exclude: (Makefile$|\.bat$|\.cmake$|\.eps$|\.fits$|\.gd$|\.opt$)
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v19.1.5
+    rev: v19.1.6
     hooks:
       - id: clang-format
         types: [c]
@@ -57,7 +57,7 @@ repos:
       - id: check-renovate
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v0.10.0
+    rev: v1.0.0
     hooks:
       - id: zizmor
 
