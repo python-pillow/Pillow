@@ -6,7 +6,7 @@ import pytest
 
 from PIL import Image
 
-from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature
+from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature, assert_image_equal
 
 from typing import Any # undone
 
@@ -64,6 +64,11 @@ def test_to_array(mode: str, dtype: Any, mask: Any ) -> None:
     _test_img_equals_pyarray(img, arr, mask)
     assert arr.type == dtype
 
+    reloaded = Image.fromarrow(arr, mode, img.size)
+
+    assert reloaded
+
+    assert_image_equal(img, reloaded)
 
 def test_lifetime():
     # valgrind shouldn't error out here.

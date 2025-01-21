@@ -278,6 +278,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
             break;
     }
 
+    // UNDONE -- not accurate for arrow
     MUTEX_LOCK(&ImagingDefaultArena.mutex);
     ImagingDefaultArena.stats_new_count += 1;
     MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
@@ -556,6 +557,62 @@ ImagingAllocateBlock(Imaging im) {
     return im;
 }
 
+/* Borrowed Arrow Storage Type */
+/* --------------------------- */
+/* Don't allocate the image. */
+
+
+static void
+ImagingDestroyArrow(Imaging im) {
+    if (im->arrow_array_capsule && im->arrow_array_capsule->release) {
+        im->arrow_array_capsule->release(im->arrow_array_capsule);
+        im->arrow_array_capsule->release = NULL;
+        im->arrow_array_capsule = NULL;
+    }
+}
+
+Imaging
+ImagingAllocateArrow(Imaging im, struct ArrowArray *external_array) {
+    /* don't really allocate, but naming patterns */
+    Py_ssize_t y, i;
+
+    char* borrowed_buffer = NULL;
+    struct ArrowArray* arr = external_array;
+
+    /* overflow check for malloc */
+    if (im->linesize && im->ysize > INT_MAX / im->linesize) {
+        return (Imaging)ImagingError_MemoryError();
+    }
+
+    if (arr->n_children == 1) {
+        arr = arr->children[0];
+    }
+    if (arr->n_buffers == 2) {
+        // undone offset. offset here is # of elements,
+        // so depends on the size of the element
+        // undone image is char*, arrow is void *
+        // buffer 0 is the null list
+        // buffer 1 is the data
+        borrowed_buffer = (char *)arr->buffers[1];
+    }
+
+    if (! borrowed_buffer) {
+        // UNDONE better error here.
+        // currently, only wanting one where
+        return (Imaging)ImagingError_MemoryError();
+    }
+
+    for (y = i = 0; y < im->ysize; y++) {
+        im->image[y] = borrowed_buffer + i;
+        i += im->linesize;
+    }
+    im->read_only = 1;
+    im->arrow_array_capsule = external_array;
+    im->destroy = ImagingDestroyArrow;
+
+    return im;
+}
+
 /* --------------------------------------------------------------------
  * Create a new, internally allocated, image.
  */
@@ -621,6 +678,53 @@ ImagingNewBlock(const char *mode, int xsize, int ysize) {
 
     if (ImagingAllocateBlock(im)) {
         return im;
+    }
+
+    ImagingDelete(im);
+    return NULL;
+}
+
+Imaging
+ImagingNewArrow(const char *mode, int xsize, int ysize,
+                struct ArrowSchema *schema,
+                struct ArrowArray *external_array) {
+    /* A borrowed arrow array */
+    Imaging im;
+
+    if (xsize < 0 || ysize < 0) {
+        return (Imaging)ImagingError_ValueError("bad image size");
+    }
+
+    im = ImagingNewPrologue(mode, xsize, ysize);
+    if (!im) {
+        return NULL;
+    }
+
+    int64_t pixels = (int64_t)xsize * (int64_t)ysize;
+
+    if (((strcmp(schema->format, "i") == 0 &&
+          im->pixelsize == 4) ||
+         (strcmp(schema->format, im->arrow_band_format) == 0 &&
+          im->bands == 1))
+        && pixels == external_array->length) {
+        // one arrow element per, and it matches a pixelsize*char
+        if (ImagingAllocateArrow(im, external_array)) {
+            return im;
+        }
+    }
+    if (strcmp(schema->format, "+w:4") == 0
+        && im->pixelsize == 4
+        && schema->n_children > 0
+        && schema->children
+        && strcmp(schema->children[0]->format, "C") == 0
+        && pixels == external_array->length
+        && external_array->n_children == 1
+        && external_array->children
+        && 4 * pixels == external_array->children[0]->length) {
+        // 4 up element of char into pixelsize == 4
+        if (ImagingAllocateArrow(im, external_array)) {
+            return im;
+        }
     }
 
     ImagingDelete(im);

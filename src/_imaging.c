@@ -89,7 +89,6 @@
 #endif
 
 #include "libImaging/Imaging.h"
-#include "libImaging/Arrow.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -259,6 +258,38 @@ PyObject* ExportArrowArrayPyCapsule(ImagingObject *self) {
     export_imaging_array(self->image, array);
     return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
 }
+
+
+static PyObject *
+_new_arrow(PyObject *self, PyObject *args) {
+    char *mode;
+    int xsize, ysize;
+    PyObject *schema_capsule, *array_capsule;
+    PyObject *ret;
+
+    if (!PyArg_ParseTuple(args, "s(ii)OO", &mode, &xsize, &ysize,
+                          &schema_capsule, &array_capsule)) {
+        return NULL;
+    }
+
+    struct ArrowSchema* schema =
+      (struct ArrowSchema*)PyCapsule_GetPointer(schema_capsule, "arrow_schema");
+
+    struct ArrowArray* array =
+      (struct ArrowArray*)PyCapsule_GetPointer(array_capsule, "arrow_array");
+
+    ret = PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema, array));
+    if (schema->release){
+      schema->release(schema);
+      schema->release = NULL;
+    }
+    if (!ret && array->release) {
+      array->release(array);
+      array->release = NULL;
+    }
+    return ret;
+}
+
 
 
 /* -------------------------------------------------------------------- */
@@ -4258,6 +4289,7 @@ static PyMethodDef functions[] = {
     {"fill", (PyCFunction)_fill, METH_VARARGS},
     {"new", (PyCFunction)_new, METH_VARARGS},
     {"new_block", (PyCFunction)_new_block, METH_VARARGS},
+    {"new_arrow", (PyCFunction)_new_arrow, METH_VARARGS},
     {"merge", (PyCFunction)_merge, METH_VARARGS},
 
     /* Functions */
