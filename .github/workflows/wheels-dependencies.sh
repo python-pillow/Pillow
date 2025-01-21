@@ -51,7 +51,6 @@ BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
 BROTLI_VERSION=1.1.0
 LIBAVIF_VERSION=1.1.1
-RAV1E_VERSION=0.7.1
 
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
@@ -101,48 +100,20 @@ function build_harfbuzz {
 function build_libavif {
     if [ -e libavif-stamp ]; then return; fi
 
-    if [[ "$PLAT" == "aarch64" ]]; then
-        # Once GitHub Actions supports aarch64 without emulation, this will no longer needed as building will be faster
-        if [[ "$PLAT" == "aarch64" ]]; then
-            suffix="aarch64"
-        else
-            suffix="generic"
-        fi
-
-        curl -sLo - \
-            https://github.com/xiph/rav1e/releases/download/v$RAV1E_VERSION/librav1e-$RAV1E_VERSION-linux-$suffix.tar.gz \
-            | tar -C $BUILD_PREFIX -zxf -
-
-        # Force libavif to treat system rav1e as if it were local
-        mkdir -p /tmp/cmake/Modules
-        cat <<EOF > /tmp/cmake/Modules/Findrav1e.cmake
-        add_library(rav1e::rav1e STATIC IMPORTED GLOBAL)
-        set_target_properties(rav1e::rav1e PROPERTIES
-            IMPORTED_LOCATION "$BUILD_PREFIX/lib/librav1e.a"
-            AVIF_LOCAL ON
-            INTERFACE_INCLUDE_DIRECTORIES "$BUILD_PREFIX/include/rav1e"
-        )
-EOF
-
-        rav1e=SYSTEM
-    else
-        curl https://sh.rustup.rs -sSf | sh -s -- -y
-        . "$HOME/.cargo/env"
-
-        if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
-            yum install -y perl
-            if [[ "$MB_ML_VER" == 2014 ]]; then
-                yum install -y perl-IPC-Cmd
-            fi
-        fi
-
-        rav1e=LOCAL
-    fi
-
     python3 -m pip install meson ninja
 
-    if [[ "$PLAT" == "x86_64" ]]; then
+    if [[ "$PLAT" == "x86_64" ]] || [ -n "$SANITIZER" ]; then
         build_simple nasm 2.16.03 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03
+    fi
+
+    # For rav1e
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
+    . "$HOME/.cargo/env"
+    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
+        yum install -y perl
+        if [[ "$MB_ML_VER" == 2014 ]]; then
+            yum install -y perl-IPC-Cmd
+        fi
     fi
 
     local out_dir=$(fetch_unpack https://github.com/AOMediaCodec/libavif/archive/refs/tags/v$LIBAVIF_VERSION.tar.gz libavif-$LIBAVIF_VERSION.tar.gz)
@@ -154,7 +125,7 @@ EOF
             -DBUILD_SHARED_LIBS=OFF \
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
-            -DAVIF_CODEC_RAV1E=$rav1e \
+            -DAVIF_CODEC_RAV1E=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
             -DAVIF_CODEC_DAV1D=LOCAL \
             -DAVIF_CODEC_SVT=LOCAL \

@@ -146,7 +146,7 @@ jobs:
       run: "& winbuild\\build\\build_dep_libpng.cmd"
 
     - name: Build dependencies / libavif
-      if: steps.build-cache.outputs.cache-hit != 'true'
+      if: steps.build-cache.outputs.cache-hit != 'true' && matrix.architecture == 'x64'
       run: "& winbuild\\build\\build_dep_libavif.cmd"
 
     # for FreeType WOFF2 font support
