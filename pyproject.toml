@@ -61,12 +61,12 @@ optional-dependencies.tests = [
   "markdown2",
   "olefile",
   "packaging",
+  "pyarrow",
   "pyroma",
   "pytest",
   "pytest-cov",
   "pytest-timeout",
   "trove-classifiers>=2024.10.12",
-  "pyarrow",
 ]
 optional-dependencies.typing = [
   "typing-extensions; python_version<'3.10'",

@@ -748,12 +748,13 @@ class Image:
         new["shape"], new["typestr"] = _conv_type_shape(self)
         return new
 
-
     def __arrow_c_schema__(self) -> object:
         self.load()
         return self.im.__arrow_c_schema__()
 
-    def __arrow_c_array__(self, requested_schema: object | None = None) -> Tuple[object, object]:
+    def __arrow_c_array__(
+        self, requested_schema: object | None = None
+    ) -> Tuple[object, object]:
         self.load()
         return (self.im.__arrow_c_schema__(), self.im.__arrow_c_array__())
 
@@ -3258,12 +3259,15 @@ class SupportsArrayInterface(Protocol):
     def __array_interface__(self) -> dict[str, Any]:
         raise NotImplementedError()
 
+
 class SupportsArrowArrayInterface(Protocol):
     """
     An object that has an ``__arrow_c_array__`` method corresponding to the arrow c data interface.
     """
 
-    def __arrow_c_array__(self, requested_schema:"PyCapsule"=None) -> tuple["PyCapsule", "PyCapsule"]:
+    def __arrow_c_array__(
+        self, requested_schema: PyCapsule = None
+    ) -> tuple[PyCapsule, PyCapsule]:
         raise NotImplementedError()
 
 
@@ -3356,12 +3360,12 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
 
 def fromarrow(obj: SupportsArrowArrayIngerface, mode, size) -> ImageFile.ImageFile:
-    if not hasattr(obj, '__arrow_c_array__'):
+    if not hasattr(obj, "__arrow_c_array__"):
         raise ValueError("arrow_c_array interface not found")
 
     (schema_capsule, array_capsule) = obj.__arrow_c_array__()
     _im = core.new_arrow(mode, size, schema_capsule, array_capsule)
-    if (_im):
+    if _im:
         return Image()._new(_im)
 
     return None

@@ -108,18 +108,15 @@ struct ImagingMemoryInstance {
     void (*destroy)(Imaging im);
 
     /* arrow */
-    int arrow_borrow; /* Number of arrow arrays that have been allocated */
-    char band_names[4][3]; /* names of bands, max 2 char + null terminator */
+    int arrow_borrow;          /* Number of arrow arrays that have been allocated */
+    char band_names[4][3];     /* names of bands, max 2 char + null terminator */
     char arrow_band_format[2]; /* single character + null terminator */
 
-    int read_only;  /* flag for read-only. set for arrow borrowed arrays */
+    int read_only; /* flag for read-only. set for arrow borrowed arrays */
     struct ArrowArray *arrow_array_capsule; /* upstream arrow array source */
 
-    int blocks_count; /* Number of blocks that have been allocated */
+    int blocks_count;    /* Number of blocks that have been allocated */
     int lines_per_block; /* Number of lines in a block have been allocated */
-
-
-
 };
 
 #define IMAGING_PIXEL_1(im, x, y) ((im)->image8[(y)][(x)])
@@ -204,9 +201,13 @@ extern Imaging
 ImagingNewBlock(const char *mode, int xsize, int ysize);
 
 extern Imaging
-ImagingNewArrow(const char *mode, int xsize, int ysize,
-                struct ArrowSchema *schema,
-                struct ArrowArray *external_array);
+ImagingNewArrow(
+    const char *mode,
+    int xsize,
+    int ysize,
+    struct ArrowSchema *schema,
+    struct ArrowArray *external_array
+);
 
 extern Imaging
 ImagingNewPrologue(const char *mode, int xsize, int ysize);
@@ -725,9 +726,12 @@ _imaging_tell_pyFd(PyObject *fd);
 
 /* Arrow */
 
-extern int export_imaging_array(Imaging im, struct ArrowArray* array);
-extern int export_imaging_schema(Imaging im, struct ArrowSchema* schema);
-extern void export_uint32_type(struct ArrowSchema* schema);
+extern int
+export_imaging_array(Imaging im, struct ArrowArray *array);
+extern int
+export_imaging_schema(Imaging im, struct ArrowSchema *schema);
+extern void
+export_uint32_type(struct ArrowSchema *schema);
 
 /* Errcodes */
 #define IMAGING_CODEC_END 1

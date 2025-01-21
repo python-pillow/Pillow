@@ -227,38 +227,41 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
 /* Arrow HANDLING                                                       */
 /* -------------------------------------------------------------------- */
 
-void ReleaseArrowSchemaPyCapsule(PyObject* capsule) {
-    struct ArrowSchema* schema =
-        (struct ArrowSchema*)PyCapsule_GetPointer(capsule, "arrow_schema");
+void
+ReleaseArrowSchemaPyCapsule(PyObject *capsule) {
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)PyCapsule_GetPointer(capsule, "arrow_schema");
     if (schema->release != NULL) {
         schema->release(schema);
     }
     free(schema);
 }
 
-PyObject* ExportArrowSchemaPyCapsule(ImagingObject *self) {
-    struct ArrowSchema* schema =
-      (struct ArrowSchema*)calloc(1, sizeof(struct ArrowSchema));
+PyObject *
+ExportArrowSchemaPyCapsule(ImagingObject *self) {
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
     export_imaging_schema(self->image, schema);
     return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
 }
 
-void ReleaseArrowArrayPyCapsule(PyObject* capsule) {
-    struct ArrowArray* array =
-        (struct ArrowArray*)PyCapsule_GetPointer(capsule, "arrow_array");
+void
+ReleaseArrowArrayPyCapsule(PyObject *capsule) {
+    struct ArrowArray *array =
+        (struct ArrowArray *)PyCapsule_GetPointer(capsule, "arrow_array");
     if (array->release != NULL) {
         array->release(array);
     }
     free(array);
 }
 
-PyObject* ExportArrowArrayPyCapsule(ImagingObject *self) {
-    struct ArrowArray* array =
-      (struct ArrowArray*)calloc(1, sizeof(struct ArrowArray));
+PyObject *
+ExportArrowArrayPyCapsule(ImagingObject *self) {
+    struct ArrowArray *array =
+        (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
     export_imaging_array(self->image, array);
     return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
 }
-
 
 static PyObject *
 _new_arrow(PyObject *self, PyObject *args) {
@@ -267,30 +270,29 @@ _new_arrow(PyObject *self, PyObject *args) {
     PyObject *schema_capsule, *array_capsule;
     PyObject *ret;
 
-    if (!PyArg_ParseTuple(args, "s(ii)OO", &mode, &xsize, &ysize,
-                          &schema_capsule, &array_capsule)) {
+    if (!PyArg_ParseTuple(
+            args, "s(ii)OO", &mode, &xsize, &ysize, &schema_capsule, &array_capsule
+        )) {
         return NULL;
     }
 
-    struct ArrowSchema* schema =
-      (struct ArrowSchema*)PyCapsule_GetPointer(schema_capsule, "arrow_schema");
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)PyCapsule_GetPointer(schema_capsule, "arrow_schema");
 
-    struct ArrowArray* array =
-      (struct ArrowArray*)PyCapsule_GetPointer(array_capsule, "arrow_array");
+    struct ArrowArray *array =
+        (struct ArrowArray *)PyCapsule_GetPointer(array_capsule, "arrow_array");
 
     ret = PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema, array));
-    if (schema->release){
-      schema->release(schema);
-      schema->release = NULL;
+    if (schema->release) {
+        schema->release(schema);
+        schema->release = NULL;
     }
     if (!ret && array->release) {
-      array->release(array);
-      array->release = NULL;
+        array->release(array);
+        array->release = NULL;
     }
     return ret;
 }
-
-
 
 /* -------------------------------------------------------------------- */
 /* EXCEPTION REROUTING                                                  */

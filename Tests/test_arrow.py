@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-import warnings
+from typing import Any  # undone
 
 import pytest
 
 from PIL import Image
 
-from .helper import assert_deep_equal, assert_image, hopper, skip_unless_feature, assert_image_equal
-
-from typing import Any # undone
+from .helper import (
+    assert_deep_equal,
+    assert_image_equal,
+    hopper,
+)
 
 pyarrow = pytest.importorskip("pyarrow", reason="PyArrow not installed")
 
 TEST_IMAGE_SIZE = (10, 10)
-from numbers import Number
 
 
 def _test_img_equals_pyarray(img: Image.Image, arr: Any, mask) -> None:
@@ -24,19 +25,16 @@ def _test_img_equals_pyarray(img: Image.Image, arr: Any, mask) -> None:
         for y in range(0, img.size[1], int(img.size[1] / 10)):
             if mask:
                 for ix, elt in enumerate(mask):
-                    assert px[x,y][ix] == arr[y * img.width + x].as_py()[elt]
+                    assert px[x, y][ix] == arr[y * img.width + x].as_py()[elt]
             else:
                 assert_deep_equal(px[x, y], arr[y * img.width + x].as_py())
 
 
 # really hard to get a non-nullable list type
-fl_uint8_4_type = pyarrow.field("_",
-                           pyarrow.list_(
-                               pyarrow.field("_",
-                                        pyarrow.uint8()
-                                        ).with_nullable(False)
-                               ,4)
-                           ).type
+fl_uint8_4_type = pyarrow.field(
+    "_", pyarrow.list_(pyarrow.field("_", pyarrow.uint8()).with_nullable(False), 4)
+).type
+
 
 @pytest.mark.parametrize(
     "mode, dtype, mask",
@@ -44,16 +42,16 @@ fl_uint8_4_type = pyarrow.field("_",
         ("L", pyarrow.uint8(), None),
         ("I", pyarrow.int32(), None),
         ("F", pyarrow.float32(), None),
-        ("LA", fl_uint8_4_type, [0,3]),
-        ("RGB", fl_uint8_4_type, [0,1,2]),
+        ("LA", fl_uint8_4_type, [0, 3]),
+        ("RGB", fl_uint8_4_type, [0, 1, 2]),
         ("RGBA", fl_uint8_4_type, None),
         ("RGBX", fl_uint8_4_type, None),
         ("CMYK", fl_uint8_4_type, None),
-        ("YCbCr", fl_uint8_4_type, [0,1,2]),
-        ("HSV", fl_uint8_4_type, [0,1,2]),
+        ("YCbCr", fl_uint8_4_type, [0, 1, 2]),
+        ("HSV", fl_uint8_4_type, [0, 1, 2]),
     ),
 )
-def test_to_array(mode: str, dtype: Any, mask: Any ) -> None:
+def test_to_array(mode: str, dtype: Any, mask: Any) -> None:
     img = hopper(mode)
 
     # Resize to non-square
@@ -70,39 +68,40 @@ def test_to_array(mode: str, dtype: Any, mask: Any ) -> None:
 
     assert_image_equal(img, reloaded)
 
+
 def test_lifetime():
     # valgrind shouldn't error out here.
     # arrays should be accessible after the image is deleted.
 
-    img = hopper('L')
+    img = hopper("L")
 
     arr_1 = pyarrow.array(img)
     arr_2 = pyarrow.array(img)
 
-    del(img)
+    del img
 
     assert arr_1.sum().as_py() > 0
-    del(arr_1)
+    del arr_1
 
     assert arr_2.sum().as_py() > 0
-    del(arr_2)
+    del arr_2
+
 
 def test_lifetime2():
     # valgrind shouldn't error out here.
     # img should remain after the arrays are collected.
 
-    img = hopper('L')
+    img = hopper("L")
 
     arr_1 = pyarrow.array(img)
     arr_2 = pyarrow.array(img)
 
-
     assert arr_1.sum().as_py() > 0
-    del(arr_1)
+    del arr_1
 
     assert arr_2.sum().as_py() > 0
-    del(arr_2)
+    del arr_2
 
     img2 = img.copy()
     px = img2.load()
-    assert isinstance(px[0,0], int)
+    assert isinstance(px[0, 0], int)
