@@ -688,24 +688,26 @@ PyImaging_CreateWindowWin32(PyObject *self, PyObject *args) {
     SetWindowLongPtr(wnd, 0, (LONG_PTR)callback);
     SetWindowLongPtr(wnd, sizeof(callback), (LONG_PTR)PyThreadState_Get());
 
-    Py_BEGIN_ALLOW_THREADS ShowWindow(wnd, SW_SHOWNORMAL);
+    Py_BEGIN_ALLOW_THREADS;
+    ShowWindow(wnd, SW_SHOWNORMAL);
     SetForegroundWindow(wnd); /* to make sure it's visible */
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
-        return Py_BuildValue(F_HANDLE, wnd);
+    return Py_BuildValue(F_HANDLE, wnd);
 }
 
 PyObject *
 PyImaging_EventLoopWin32(PyObject *self, PyObject *args) {
     MSG msg;
 
-    Py_BEGIN_ALLOW_THREADS while (mainloop && GetMessage(&msg, NULL, 0, 0)) {
+    Py_BEGIN_ALLOW_THREADS;
+    while (mainloop && GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
-        Py_INCREF(Py_None);
+    Py_INCREF(Py_None);
     return Py_None;
 }
 

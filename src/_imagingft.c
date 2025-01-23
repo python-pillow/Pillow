@@ -339,29 +339,23 @@ text_layout_raqm(
         len = PySequence_Fast_GET_SIZE(seq);
         for (j = 0; j < len; j++) {
             PyObject *item = PySequence_Fast_GET_ITEM(seq, j);
-            char *feature = NULL;
-            Py_ssize_t size = 0;
-            PyObject *bytes;
-
             if (!PyUnicode_Check(item)) {
                 Py_DECREF(seq);
                 PyErr_SetString(PyExc_TypeError, "expected a string");
                 goto failed;
             }
-            bytes = PyUnicode_AsUTF8String(item);
-            if (bytes == NULL) {
+
+            Py_ssize_t size;
+            const char *feature = PyUnicode_AsUTF8AndSize(item, &size);
+            if (feature == NULL) {
                 Py_DECREF(seq);
                 goto failed;
             }
-            feature = PyBytes_AS_STRING(bytes);
-            size = PyBytes_GET_SIZE(bytes);
             if (!raqm_add_font_feature(rq, feature, size)) {
                 Py_DECREF(seq);
-                Py_DECREF(bytes);
                 PyErr_SetString(PyExc_ValueError, "raqm_add_font_feature() failed");
                 goto failed;
             }
-            Py_DECREF(bytes);
         }
         Py_DECREF(seq);
     }

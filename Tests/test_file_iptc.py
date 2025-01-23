@@ -58,10 +58,7 @@ def test_getiptcinfo_fotostation() -> None:
 
     # Assert
     assert iptc is not None
-    for tag in iptc.keys():
-        if tag[0] == 240:
-            return
-    pytest.fail("FotoStation tag not found")
+    assert 240 in (tag[0] for tag in iptc.keys()), "FotoStation tag not found"
 
 
 def test_getiptcinfo_zero_padding() -> None:

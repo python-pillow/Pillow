@@ -76,6 +76,13 @@
 
 #ifdef HAVE_LIBJPEG
 #include "jconfig.h"
+#ifdef LIBJPEG_TURBO_VERSION
+#define JCONFIG_INCLUDED
+#ifdef __CYGWIN__
+#define _BASETSD_H
+#endif
+#include "jpeglib.h"
+#endif
 #endif
 
 #ifdef HAVE_LIBZ
@@ -4413,6 +4420,15 @@ setup_module(PyObject *m) {
     Py_INCREF(have_libjpegturbo);
     PyModule_AddObject(m, "HAVE_LIBJPEGTURBO", have_libjpegturbo);
 
+    PyObject *have_mozjpeg;
+#ifdef JPEG_C_PARAM_SUPPORTED
+    have_mozjpeg = Py_True;
+#else
+    have_mozjpeg = Py_False;
+#endif
+    Py_INCREF(have_mozjpeg);
+    PyModule_AddObject(m, "HAVE_MOZJPEG", have_mozjpeg);
+
     PyObject *have_libimagequant;
 #ifdef HAVE_LIBIMAGEQUANT
     have_libimagequant = Py_True;
@@ -4442,6 +4458,20 @@ setup_module(PyObject *m) {
         Py_XDECREF(v);
     }
 #endif
+
+    PyObject *have_zlibng;
+#ifdef ZLIBNG_VERSION
+    have_zlibng = Py_True;
+    {
+        PyObject *v = PyUnicode_FromString(ZLIBNG_VERSION);
+        PyDict_SetItemString(d, "zlib_ng_version", v ? v : Py_None);
+        Py_XDECREF(v);
+    }
+#else
+    have_zlibng = Py_False;
+#endif
+    Py_INCREF(have_zlibng);
+    PyModule_AddObject(m, "HAVE_ZLIBNG", have_zlibng);
 
 #ifdef HAVE_LIBTIFF
     {

@@ -134,7 +134,16 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     return -1;
             }
 
-            /* Compressor configuration */
+                /* Compressor configuration */
+#ifdef JPEG_C_PARAM_SUPPORTED
+            /* MozJPEG */
+            if (!context->progressive) {
+                /* Do not use MozJPEG progressive default */
+                jpeg_c_set_int_param(
+                    &context->cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST
+                );
+            }
+#endif
             jpeg_set_defaults(&context->cinfo);
 
             /* Prevent RGB -> YCbCr conversion */

@@ -358,10 +358,10 @@ pyCMSdoTransform(Imaging im, Imaging imOut, cmsHTRANSFORM hTransform) {
         return -1;
     }
 
-    Py_BEGIN_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS;
 
-        // transform color channels only
-        for (i = 0; i < im->ysize; i++) {
+    // transform color channels only
+    for (i = 0; i < im->ysize; i++) {
         cmsDoTransform(hTransform, im->image[i], imOut->image[i], im->xsize);
     }
 
@@ -374,9 +374,9 @@ pyCMSdoTransform(Imaging im, Imaging imOut, cmsHTRANSFORM hTransform) {
     // enough available on all platforms, so we polyfill it here for now.
     pyCMScopyAux(hTransform, imOut, im);
 
-    Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS;
 
-        return 0;
+    return 0;
 }
 
 static cmsHTRANSFORM
@@ -390,17 +390,17 @@ _buildTransform(
 ) {
     cmsHTRANSFORM hTransform;
 
-    Py_BEGIN_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS;
 
-        /* create the transform */
-        hTransform = cmsCreateTransform(
-            hInputProfile,
-            findLCMStype(sInMode),
-            hOutputProfile,
-            findLCMStype(sOutMode),
-            iRenderingIntent,
-            cmsFLAGS
-        );
+    /* create the transform */
+    hTransform = cmsCreateTransform(
+        hInputProfile,
+        findLCMStype(sInMode),
+        hOutputProfile,
+        findLCMStype(sOutMode),
+        iRenderingIntent,
+        cmsFLAGS
+    );
 
     Py_END_ALLOW_THREADS;
 
@@ -424,19 +424,19 @@ _buildProofTransform(
 ) {
     cmsHTRANSFORM hTransform;
 
-    Py_BEGIN_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS;
 
-        /* create the transform */
-        hTransform = cmsCreateProofingTransform(
-            hInputProfile,
-            findLCMStype(sInMode),
-            hOutputProfile,
-            findLCMStype(sOutMode),
-            hProofProfile,
-            iRenderingIntent,
-            iProofIntent,
-            cmsFLAGS
-        );
+    /* create the transform */
+    hTransform = cmsCreateProofingTransform(
+        hInputProfile,
+        findLCMStype(sInMode),
+        hOutputProfile,
+        findLCMStype(sOutMode),
+        hProofProfile,
+        iRenderingIntent,
+        iProofIntent,
+        cmsFLAGS
+    );
 
     Py_END_ALLOW_THREADS;
 

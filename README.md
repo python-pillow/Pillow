@@ -42,9 +42,6 @@ As of 2019, Pillow development is
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/test-docker.yml"><img
                 alt="GitHub Actions build status (Test Docker)"
                 src="https://github.com/python-pillow/Pillow/workflows/Test%20Docker/badge.svg"></a>
-            <a href="https://ci.appveyor.com/project/python-pillow/Pillow"><img
-                alt="AppVeyor CI build status (Windows)"
-                src="https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build"></a>
             <a href="https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml"><img
                 alt="GitHub Actions build status (Wheels)"
                 src="https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg"></a>
@@ -107,7 +104,7 @@ The core image library is designed for fast access to data stored in a few basic
   - [Issues](https://github.com/python-pillow/Pillow/issues)
   - [Pull requests](https://github.com/python-pillow/Pillow/pulls)
 - [Release notes](https://pillow.readthedocs.io/en/stable/releasenotes/index.html)
-- [Changelog](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst)
+- [Changelog](https://github.com/python-pillow/Pillow/releases)
   - [Pre-fork](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst#pre-fork)
 
 ## Report a Vulnerability
