@@ -120,7 +120,7 @@ V = {
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.6.0",
-    "XZ": "5.6.3",
+    "XZ": "5.6.4",
     "ZLIBNG": "2.2.3",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
