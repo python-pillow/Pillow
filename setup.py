@@ -8,18 +8,21 @@
 # ------------------------------
 from __future__ import annotations
 
+import distutils.ccompiler
 import os
 import re
 import shutil
 import struct
 import subprocess
 import sys
+import tempfile
 import warnings
 from collections.abc import Iterator
 from typing import Any
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
+from setuptools.errors import CompileError
 
 
 def get_version() -> str:
@@ -292,6 +295,47 @@ def _pkg_config(name: str) -> tuple[list[str], list[str]] | None:
     return None
 
 
+def _try_compile(compiler: distutils.ccompiler.CCompiler, code: str) -> bool:
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            fn = os.path.join(d, "test.c")
+            with open(fn, "w") as f:
+                f.write(code)
+            compiler.compile([fn], output_dir=d, extra_preargs=["-Werror"])
+        return True
+    except CompileError:
+        return False
+
+
+def _try_compile_attr(compiler: distutils.ccompiler.CCompiler, attr: str) -> bool:
+    code = f"""
+        #pragma GCC diagnostic error "-Wattributes"
+        #pragma clang diagnostic error "-Wattributes"
+
+        int {attr} foo;
+        int main() {{
+            return 0;
+        }}
+    """
+
+    return _try_compile(compiler, code)
+
+
+def _try_compile_tls_define_macros(
+    compiler: distutils.ccompiler.CCompiler,
+) -> list[tuple[str, str | None]]:
+    if _try_compile_attr(compiler, "thread_local"):  # C23
+        return [("HAVE_THREAD_LOCAL", None)]
+    elif _try_compile_attr(compiler, "_Thread_local"):  # C11/C17
+        return [("HAVE__THREAD_LOCAL", None)]
+    elif _try_compile_attr(compiler, "__thread"):  # GCC/clang
+        return [("HAVE___THREAD", None)]
+    elif _try_compile_attr(compiler, "__declspec(thread)"):  # MSVC
+        return [("HAVE___DECLSPEC_THREAD_", None)]
+    else:
+        return []
+
+
 class pil_build_ext(build_ext):
     class ext_feature:
         features = [
@@ -426,13 +470,14 @@ class pil_build_ext(build_ext):
     def _update_extension(
         self,
         name: str,
-        libraries: list[str] | list[str | bool | None],
+        libraries: list[str] | list[str | bool | None] | None = None,
         define_macros: list[tuple[str, str | None]] | None = None,
         sources: list[str] | None = None,
     ) -> None:
         for extension in self.extensions:
             if extension.name == name:
-                extension.libraries += libraries
+                if libraries is not None:
+                    extension.libraries += libraries
                 if define_macros is not None:
                     extension.define_macros += define_macros
                 if sources is not None:
@@ -890,7 +935,10 @@ class pil_build_ext(build_ext):
 
         defs.append(("PILLOW_VERSION", f'"{PILLOW_VERSION}"'))
 
-        self._update_extension("PIL._imaging", libs, defs)
+        tls_define_macros = _try_compile_tls_define_macros(self.compiler)
+        self._update_extension("PIL._imaging", libs, defs + tls_define_macros)
+        self._update_extension("PIL._imagingmath", define_macros=tls_define_macros)
+        self._update_extension("PIL._imagingmorph", define_macros=tls_define_macros)
 
         #
         # additional libraries
@@ -913,7 +961,9 @@ class pil_build_ext(build_ext):
                         libs.append(feature.get("fribidi"))
                     else:  # building FriBiDi shim from src/thirdparty
                         srcs.append("src/thirdparty/fribidi-shim/fribidi.c")
-            self._update_extension("PIL._imagingft", libs, defs, srcs)
+            self._update_extension(
+                "PIL._imagingft", libs, defs + tls_define_macros, srcs
+            )
 
         else:
             self._remove_extension("PIL._imagingft")
@@ -922,19 +972,19 @@ class pil_build_ext(build_ext):
             libs = [feature.get("lcms")]
             if sys.platform == "win32":
                 libs.extend(["user32", "gdi32"])
-            self._update_extension("PIL._imagingcms", libs)
+            self._update_extension("PIL._imagingcms", libs, tls_define_macros)
         else:
             self._remove_extension("PIL._imagingcms")
 
         webp = feature.get("webp")
         if isinstance(webp, str):
             libs = [webp, webp + "mux", webp + "demux"]
-            self._update_extension("PIL._webp", libs)
+            self._update_extension("PIL._webp", libs, tls_define_macros)
         else:
             self._remove_extension("PIL._webp")
 
         tk_libs = ["psapi"] if sys.platform in ("win32", "cygwin") else []
-        self._update_extension("PIL._imagingtk", tk_libs)
+        self._update_extension("PIL._imagingtk", tk_libs, tls_define_macros)
 
         build_ext.build_extensions(self)
 

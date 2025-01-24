@@ -218,9 +218,10 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
             break;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    ImagingDefaultArena.stats_new_count += 1;
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena = ImagingGetArena();
+    MUTEX_LOCK(&arena->mutex);
+    arena->stats_new_count += 1;
+    MUTEX_UNLOCK(&arena->mutex);
 
     return im;
 }
@@ -258,22 +259,101 @@ ImagingDelete(Imaging im) {
 /* Allocate image as an array of line buffers. */
 
 #define IMAGING_PAGE_SIZE (4096)
+#define IMAGING_ARENA_BLOCK_SIZE (16 * 1024 * 1024)
 
+#ifdef IMAGING_TLS
+/* This is the overall process-level index that keeps track of the next index
+ * that will be assigned to a thread.
+ */
+static uint64_t ImagingArenaIndex = 0;
+
+/* This is the thread-local index that associated a thread with an arena in the
+ * statically-allocated list.
+ */
+static IMAGING_TLS uint64_t ImagingArenaThreadIndex = UINT64_MAX;
+
+/* These are the statically-allocated arenas. */
+struct ImagingMemoryArena ImagingArenas[IMAGING_ARENAS_COUNT] = {
+    { 1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 0, {0} },
+    { 1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 1, {0} },
+    { 1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 2, {0} },
+    { 1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 3, {0} },
+    { 1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 4, {0} },
+    { 1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 5, {0} },
+    { 1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 6, {0} },
+    { 1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 7, {0} },
+    { 0 }
+};
+
+/* Get a pointer to the correct arena for this context. In this case where we
+ * are using a round-robin approach to the statically allocated arenas, we will
+ * return the arena that is assigned to the thread on first use.
+ */
+ImagingMemoryArena ImagingGetArena(void) {
+    if (ImagingArenaThreadIndex == UINT64_MAX) {
+        ImagingArenaThreadIndex = _Py_atomic_add_uint64(&ImagingArenaIndex, 1) % IMAGING_ARENAS_COUNT;
+    }
+    return &ImagingArenas[ImagingArenaThreadIndex];
+}
+
+/* Return the arena associated with the given image. In this case the index of
+ * the arena is stored on the image itself.
+ */
+ImagingMemoryArena ImagingGetArenaFromImaging(Imaging im) {
+    int arenaindex = im->arenaindex;
+    assert(arenaindex >= 0 && arenaindex < IMAGING_ARENAS_COUNT);
+    return &ImagingArenas[arenaindex];
+}
+
+/* Set the arena index on the given image based on the index of the arena. This
+ * is necessary in order to return the blocks to the correct arena when the
+ * image is destroyed.
+ */
+static void ImagingSetArenaOnImaging(Imaging im, ImagingMemoryArena arena) {
+    im->arenaindex = arena->index;
+}
+#else
+/* Because we have the GIL (or do not have thread-local storage), we only have a
+ * single arena.
+ */
 struct ImagingMemoryArena ImagingDefaultArena = {
-    1,                 // alignment
-    16 * 1024 * 1024,  // block_size
-    0,                 // blocks_max
-    0,                 // blocks_cached
-    NULL,              // blocks_pool
+    1,                         // alignment
+    IMAGING_ARENA_BLOCK_SIZE,  // block_size
+    0,                         // blocks_max
+    0,                         // blocks_cached
+    NULL,                      // blocks_pool
     0,
     0,
     0,
     0,
     0,  // Stats
 #ifdef Py_GIL_DISABLED
+    /* On the very off-chance that someone is running free-threaded Python on a
+     * platform that does not support thread-local storage, we need a mutex
+     * here.
+     */
     {0},
 #endif
 };
+
+/* Get a pointer to the correct arena for this context. In this case where we
+ * either have the GIL or we do not have TLS, we will return only the default
+ * arena.
+ */
+ImagingMemoryArena ImagingGetArena(void) {
+    return &ImagingDefaultArena;
+}
+
+/* Return the arena associated with the given image. In this case because we
+ * only have one arena, we always return the default arena.
+ */
+#define ImagingGetArenaFromImaging(im) &ImagingDefaultArena
+
+/* Set the arena index on the given image based on the index of the arena. In
+ * this case because we only have one arena, we do not need to do anything.
+ */
+#define ImagingSetArenaOnImaging(im, arena)
+#endif
 
 int
 ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max) {
@@ -288,18 +368,18 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max) {
         p = realloc(arena->blocks_pool, sizeof(*arena->blocks_pool) * blocks_max);
         if (!p) {
             // Leave previous blocks_max value
-            return 0;
+            return 1;
         }
         arena->blocks_pool = p;
     } else {
         arena->blocks_pool = calloc(sizeof(*arena->blocks_pool), blocks_max);
         if (!arena->blocks_pool) {
-            return 0;
+            return 1;
         }
     }
     arena->blocks_max = blocks_max;
 
-    return 1;
+    return 0;
 }
 
 void
@@ -369,12 +449,13 @@ ImagingDestroyArray(Imaging im) {
     int y = 0;
 
     if (im->blocks) {
-        MUTEX_LOCK(&ImagingDefaultArena.mutex);
+        ImagingMemoryArena arena = ImagingGetArenaFromImaging(im);
+        MUTEX_LOCK(&arena->mutex);
         while (im->blocks[y].ptr) {
-            memory_return_block(&ImagingDefaultArena, im->blocks[y]);
+            memory_return_block(arena, im->blocks[y]);
             y += 1;
         }
-        MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+        MUTEX_UNLOCK(&arena->mutex);
         free(im->blocks);
     }
 }
@@ -504,11 +585,14 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena = ImagingGetArena();
+    ImagingSetArenaOnImaging(im, arena);
+
+    MUTEX_LOCK(&arena->mutex);
     Imaging tmp = ImagingAllocateArray(
-        im, &ImagingDefaultArena, dirty, ImagingDefaultArena.block_size
+        im, arena, dirty, arena->block_size
     );
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    MUTEX_UNLOCK(&arena->mutex);
     if (tmp) {
         return im;
     }
@@ -516,9 +600,9 @@ ImagingNewInternal(const char *mode, int xsize, int ysize, int dirty) {
     ImagingError_Clear();
 
     // Try to allocate the image once more with smallest possible block size
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    tmp = ImagingAllocateArray(im, &ImagingDefaultArena, dirty, IMAGING_PAGE_SIZE);
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    MUTEX_LOCK(&arena->mutex);
+    tmp = ImagingAllocateArray(im, arena, dirty, IMAGING_PAGE_SIZE);
+    MUTEX_UNLOCK(&arena->mutex);
     if (tmp) {
         return im;
     }

@@ -3912,34 +3912,49 @@ _get_stats(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    ImagingMemoryArena arena = &ImagingDefaultArena;
+    long stats_new_count = 0;
+    long stats_allocated_blocks = 0;
+    long stats_reused_blocks = 0;
+    long stats_reallocated_blocks = 0;
+    long stats_freed_blocks = 0;
+    long blocks_cached = 0;
 
-    v = PyLong_FromLong(arena->stats_new_count);
+    ImagingMemoryArena arena;
+    IMAGING_ARENAS_FOREACH(arena) {
+        MUTEX_LOCK(&arena->mutex);
+        stats_new_count += arena->stats_new_count;
+        stats_allocated_blocks += arena->stats_allocated_blocks;
+        stats_reused_blocks += arena->stats_reused_blocks;
+        stats_reallocated_blocks += arena->stats_reallocated_blocks;
+        stats_freed_blocks += arena->stats_freed_blocks;
+        blocks_cached += arena->blocks_cached;
+        MUTEX_UNLOCK(&arena->mutex);
+    }
+
+    v = PyLong_FromLong(stats_new_count);
     PyDict_SetItemString(d, "new_count", v ? v : Py_None);
     Py_XDECREF(v);
 
-    v = PyLong_FromLong(arena->stats_allocated_blocks);
+    v = PyLong_FromLong(stats_allocated_blocks);
     PyDict_SetItemString(d, "allocated_blocks", v ? v : Py_None);
     Py_XDECREF(v);
 
-    v = PyLong_FromLong(arena->stats_reused_blocks);
+    v = PyLong_FromLong(stats_reused_blocks);
     PyDict_SetItemString(d, "reused_blocks", v ? v : Py_None);
     Py_XDECREF(v);
 
-    v = PyLong_FromLong(arena->stats_reallocated_blocks);
+    v = PyLong_FromLong(stats_reallocated_blocks);
     PyDict_SetItemString(d, "reallocated_blocks", v ? v : Py_None);
     Py_XDECREF(v);
 
-    v = PyLong_FromLong(arena->stats_freed_blocks);
+    v = PyLong_FromLong(stats_freed_blocks);
     PyDict_SetItemString(d, "freed_blocks", v ? v : Py_None);
     Py_XDECREF(v);
 
-    v = PyLong_FromLong(arena->blocks_cached);
+    v = PyLong_FromLong(blocks_cached);
     PyDict_SetItemString(d, "blocks_cached", v ? v : Py_None);
     Py_XDECREF(v);
 
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
     return d;
 }
 
@@ -3949,14 +3964,16 @@ _reset_stats(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    ImagingMemoryArena arena = &ImagingDefaultArena;
-    arena->stats_new_count = 0;
-    arena->stats_allocated_blocks = 0;
-    arena->stats_reused_blocks = 0;
-    arena->stats_reallocated_blocks = 0;
-    arena->stats_freed_blocks = 0;
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena;
+    IMAGING_ARENAS_FOREACH(arena) {
+        MUTEX_LOCK(&arena->mutex);
+        arena->stats_new_count = 0;
+        arena->stats_allocated_blocks = 0;
+        arena->stats_reused_blocks = 0;
+        arena->stats_reallocated_blocks = 0;
+        arena->stats_freed_blocks = 0;
+        MUTEX_UNLOCK(&arena->mutex);
+    }
 
     Py_RETURN_NONE;
 }
@@ -3967,9 +3984,10 @@ _get_alignment(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    int alignment = ImagingDefaultArena.alignment;
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena = ImagingGetArena();
+    MUTEX_LOCK(&arena->mutex);
+    int alignment = arena->alignment;
+    MUTEX_UNLOCK(&arena->mutex);
     return PyLong_FromLong(alignment);
 }
 
@@ -3979,9 +3997,10 @@ _get_block_size(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    int block_size = ImagingDefaultArena.block_size;
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena = ImagingGetArena();
+    MUTEX_LOCK(&arena->mutex);
+    int block_size = arena->block_size;
+    MUTEX_UNLOCK(&arena->mutex);
     return PyLong_FromLong(block_size);
 }
 
@@ -3991,9 +4010,10 @@ _get_blocks_max(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    int blocks_max = ImagingDefaultArena.blocks_max;
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena = ImagingGetArena();
+    MUTEX_LOCK(&arena->mutex);
+    int blocks_max = arena->blocks_max;
+    MUTEX_UNLOCK(&arena->mutex);
     return PyLong_FromLong(blocks_max);
 }
 
@@ -4014,9 +4034,12 @@ _set_alignment(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    ImagingDefaultArena.alignment = alignment;
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena;
+    IMAGING_ARENAS_FOREACH(arena) {
+        MUTEX_LOCK(&arena->mutex);
+        arena->alignment = alignment;
+        MUTEX_UNLOCK(&arena->mutex);
+    }
 
     Py_RETURN_NONE;
 }
@@ -4038,9 +4061,12 @@ _set_block_size(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    ImagingDefaultArena.block_size = block_size;
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena;
+    IMAGING_ARENAS_FOREACH(arena) {
+        MUTEX_LOCK(&arena->mutex);
+        arena->block_size = block_size;
+        MUTEX_UNLOCK(&arena->mutex);
+    }
 
     Py_RETURN_NONE;
 }
@@ -4058,15 +4084,20 @@ _set_blocks_max(PyObject *self, PyObject *args) {
     }
 
     if ((unsigned long)blocks_max >
-        SIZE_MAX / sizeof(ImagingDefaultArena.blocks_pool[0])) {
+        SIZE_MAX / sizeof(ImagingGetArena()->blocks_pool[0])) {
         PyErr_SetString(PyExc_ValueError, "blocks_max is too large");
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    int status = ImagingMemorySetBlocksMax(&ImagingDefaultArena, blocks_max);
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
-    if (!status) {
+    int error = 0;
+    ImagingMemoryArena arena;
+    IMAGING_ARENAS_FOREACH(arena) {
+        MUTEX_LOCK(&arena->mutex);
+        error |= ImagingMemorySetBlocksMax(arena, blocks_max);
+        MUTEX_UNLOCK(&arena->mutex);
+    }
+
+    if (error) {
         return ImagingError_MemoryError();
     }
 
@@ -4081,9 +4112,12 @@ _clear_cache(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    MUTEX_LOCK(&ImagingDefaultArena.mutex);
-    ImagingMemoryClearCache(&ImagingDefaultArena, i);
-    MUTEX_UNLOCK(&ImagingDefaultArena.mutex);
+    ImagingMemoryArena arena;
+    IMAGING_ARENAS_FOREACH(arena) {
+        MUTEX_LOCK(&arena->mutex);
+        ImagingMemoryClearCache(arena, i);
+        MUTEX_UNLOCK(&arena->mutex);
+    }
 
     Py_RETURN_NONE;
 }
