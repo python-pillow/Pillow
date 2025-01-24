@@ -116,11 +116,11 @@ V = {
     "HARFBUZZ": "10.2.0",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.16",
-    "LIBPNG": "1.6.45",
+    "LIBPNG": "1.6.46",
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.6.0",
-    "XZ": "5.6.3",
+    "XZ": "5.6.4",
     "ZLIBNG": "2.2.3",
 }
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
