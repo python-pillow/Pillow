@@ -2,7 +2,7 @@
 # install libimagequant
 
 archive_name=libimagequant
-archive_version=4.3.3
+archive_version=4.3.4
 
 archive=$archive_name-$archive_version
 
