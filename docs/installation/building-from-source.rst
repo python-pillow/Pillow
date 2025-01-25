@@ -170,7 +170,7 @@ Many of Pillow's features require external libraries:
     instead of installing libavif through Homebrew directly, you can use
     Homebrew to install libavif's build dependencies::
 
-        brew install aom dav1d rav1e
+        brew install aom dav1d rav1e svt-av1
 
     Then see ``depends/install_libavif.sh`` to install libavif.
 

@@ -234,8 +234,6 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
     avifEncoder *encoder;
 
     char *subsampling;
-    int qmin;
-    int qmax;
     int quality;
     int speed;
     int exif_orientation;
@@ -255,12 +253,10 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "IIsiiiiissiiOOSSiSO",
+            "IIsiiissiiOOSSiSO",
             &width,
             &height,
             &subsampling,
-            &qmin,
-            &qmax,
             &quality,
             &speed,
             &max_threads,
@@ -327,17 +323,12 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
                          _codec_available("aom", AVIF_CODEC_FLAG_CAN_ENCODE));
     encoder->maxThreads = is_aom_encode && max_threads > 64 ? 64 : max_threads;
 
-    if (qmin == -1 || qmax == -1) {
 #if AVIF_VERSION >= 1000000
-        encoder->quality = quality;
+    encoder->quality = quality;
 #else
-        encoder->minQuantizer = normalize_quantize_value(64 - quality);
-        encoder->maxQuantizer = normalize_quantize_value(100 - quality);
+    encoder->minQuantizer = normalize_quantize_value(64 - quality);
+    encoder->maxQuantizer = normalize_quantize_value(100 - quality);
 #endif
-    } else {
-        encoder->minQuantizer = normalize_quantize_value(qmin);
-        encoder->maxQuantizer = normalize_quantize_value(qmax);
-    }
 
     if (strcmp(codec, "auto") == 0) {
         encoder->codecChoice = AVIF_CODEC_CHOICE_AUTO;

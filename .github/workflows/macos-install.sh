@@ -17,7 +17,7 @@ brew install \
     dav1d \
     aom \
     rav1e \
-    ninja
+    svt-av1
 if [[ "$ImageOS" == "macos13" ]]; then
     brew install --ignore-dependencies libraqm
 else

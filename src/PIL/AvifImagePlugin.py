@@ -156,8 +156,6 @@ def _save(
 
     is_single_frame = total == 1
 
-    qmin = info.get("qmin", -1)
-    qmax = info.get("qmax", -1)
     quality = info.get("quality", 75)
     if not isinstance(quality, int) or quality < 0 or quality > 100:
         msg = "Invalid quality setting"
@@ -218,8 +216,6 @@ def _save(
         im.size[0],
         im.size[1],
         subsampling,
-        qmin,
-        qmax,
         quality,
         speed,
         max_threads,

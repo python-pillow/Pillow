@@ -1359,14 +1359,8 @@ as 8-bit RGB(A).
 The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **quality**
-    Integer, 1-100, defaults to 75. 0 gives the smallest size and poorest
-    quality, 100 the largest and best quality. The value of this setting
-    controls the ``qmin`` and ``qmax`` encoder options.
-
-**qmin** / **qmax**
-    Integer, 0-63. The quality of images created by an AVIF encoder are
-    controlled by minimum and maximum quantizer values. The higher these
-    values are, the worse the quality.
+    Integer, 0-100, defaults to 75. 0 gives the smallest size and poorest
+    quality, 100 the largest and best quality.
 
 **subsampling**
     If present, sets the subsampling for the encoder. Defaults to ``4:2:0``.
@@ -1380,6 +1374,10 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **speed**
     Quality/speed trade-off (0=slower-better, 10=fastest). Defaults to 6.
 
+**max_threads**
+    Limit the number of active threads used. By default, there is no limit. If the aom
+    codec is used, there is a maximum of 64.
+
 **range**
     YUV range, either "full" or "limited". Defaults to "full"
 
@@ -1392,8 +1390,17 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     For tile encoding, the (log 2) number of tile rows and columns to use.
     Valid values are 0-6, default 0.
 
+**autotiling**
+    Split the image up to allow parallelization. Enabled automatically if "tile_rows"
+    and "tile_cols" both have their default values of zero. Requires libavif version
+    **0.11.0** or greater.
+
 **alpha_premultiplied**
-    Encode the image with premultiplied alpha. Defaults to ``False``
+    Encode the image with premultiplied alpha. Defaults to ``False``. Requires libavif
+    version **0.9.0** or greater.
+
+**advanced**
+    Codec specific options. Requires libavif version **0.8.2** or greater.
 
 **icc_profile**
     The ICC Profile to include in the saved file.
