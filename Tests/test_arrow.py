@@ -89,6 +89,14 @@ def test_invalid_array_type(mode: str, dest_modes: List[str]) -> None:
         with pytest.raises(ValueError):
             Image.fromarrow(img, dest_mode, img.size)
 
+def test_invalid_array_size():
+    img = hopper('RGB')
+
+    assert img.size != (10,10)
+    with pytest.raises(ValueError):
+        Image.fromarrow(img, 'RGB', (10,10))
+
+
 def test_lifetime():
     # valgrind shouldn't error out here.
     # arrays should be accessible after the image is deleted.

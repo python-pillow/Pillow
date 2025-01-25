@@ -571,34 +571,26 @@ ImagingDestroyArrow(Imaging im) {
 }
 
 Imaging
-ImagingAllocateArrow(Imaging im, struct ArrowArray *external_array) {
-    /* don't really allocate, but naming patterns */
+ImagingBorrowArrow(Imaging im,
+                   struct ArrowArray *external_array,
+                   int offset_width) {
+    // offset_width is the # of char* for a single offset from arrow
     Py_ssize_t y, i;
 
     char *borrowed_buffer = NULL;
     struct ArrowArray *arr = external_array;
 
-    /* overflow check for malloc */
-    if (im->linesize && im->ysize > INT_MAX / im->linesize) {
-        return (Imaging)ImagingError_MemoryError();
-    }
-
     if (arr->n_children == 1) {
         arr = arr->children[0];
     }
     if (arr->n_buffers == 2) {
-        // undone offset. offset here is # of elements,
-        // so depends on the size of the element
-        // undone image is char*, arrow is void *
         // buffer 0 is the null list
         // buffer 1 is the data
-        borrowed_buffer = (char *)arr->buffers[1];
+        borrowed_buffer = (char *)arr->buffers[1] + (offset_width*arr->offset);
     }
 
     if (!borrowed_buffer) {
-        // UNDONE better error here.
-        // currently, only wanting one where
-        return (Imaging)ImagingError_MemoryError();
+        return (Imaging)ImagingError_ValueError("Arrow Array, exactly 2 buffers required");
     }
 
     for (y = i = 0; y < im->ysize; y++) {
@@ -714,7 +706,7 @@ ImagingNewArrow(
           && im->bands == 1)) // Single band match
         && pixels == external_array->length) {
         // one arrow element per, and it matches a pixelsize*char
-        if (ImagingAllocateArrow(im, external_array)) {
+        if (ImagingBorrowArrow(im, external_array, im->pixelsize)) {
             return im;
         }
     }
@@ -730,7 +722,7 @@ ImagingNewArrow(
         && external_array->children        // array is well formed
         && 4 * pixels == external_array->children[0]->length) {
         // 4 up element of char into pixelsize == 4
-        if (ImagingAllocateArrow(im, external_array)) {
+        if (ImagingBorrowArrow(im, external_array, 1)) {
             return im;
         }
     }
