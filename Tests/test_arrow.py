@@ -68,11 +68,12 @@ def test_to_array(mode: str, dtype: Any, mask: Any) -> None:
 
     assert_image_equal(img, reloaded)
 
+
 @pytest.mark.parametrize(
     "mode, dest_modes",
     (
         ("L", ["I", "F", "LA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr", "HSV"]),
-        ("I", ["L", "F"]), # Technically I32 can work for any 4x8bit storage.
+        ("I", ["L", "F"]),  # Technically I32 can work for any 4x8bit storage.
         ("F", ["I", "L", "LA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr", "HSV"]),
         ("LA", ["L", "F"]),
         ("RGB", ["L", "F"]),
@@ -89,12 +90,13 @@ def test_invalid_array_type(mode: str, dest_modes: List[str]) -> None:
         with pytest.raises(ValueError):
             Image.fromarrow(img, dest_mode, img.size)
 
-def test_invalid_array_size():
-    img = hopper('RGB')
 
-    assert img.size != (10,10)
+def test_invalid_array_size():
+    img = hopper("RGB")
+
+    assert img.size != (10, 10)
     with pytest.raises(ValueError):
-        Image.fromarrow(img, 'RGB', (10,10))
+        Image.fromarrow(img, "RGB", (10, 10))
 
 
 def test_lifetime():
@@ -137,20 +139,21 @@ def test_lifetime2():
 
 def test_release_schema():
     # these should not error out, valgrind should be clean
-    img = hopper('L')
+    img = hopper("L")
     schema = img.__arrow_c_schema__()
-    del(schema)
+    del schema
+
 
 def test_release_array():
     # these should not error out, valgrind should be clean
-    img = hopper('L')
+    img = hopper("L")
     array, schema = img.__arrow_c_array__()
-    del(array)
-    del(schema)
+    del array
+    del schema
 
 
 def test_readonly():
-    img = hopper('L')
+    img = hopper("L")
     reloaded = Image.fromarrow(img, img.mode, img.size)
     assert reloaded.readonly == 1
     reloaded._readonly = 0
