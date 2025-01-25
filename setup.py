@@ -8,7 +8,6 @@
 # ------------------------------
 from __future__ import annotations
 
-import distutils.ccompiler
 import os
 import re
 import shutil
@@ -18,11 +17,14 @@ import sys
 import tempfile
 import warnings
 from collections.abc import Iterator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 from setuptools.errors import CompileError
+
+if TYPE_CHECKING:
+    import distutils.ccompiler
 
 
 def get_version() -> str:
