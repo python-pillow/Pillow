@@ -3360,7 +3360,7 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
-def fromarrow(obj: SupportsArrowArrayIngerface, mode, size) -> ImageFile.ImageFile:
+def fromarrow(obj: SupportsArrowArrayInterface, mode, size) -> Image:
     if not hasattr(obj, "__arrow_c_array__"):
         msg = "arrow_c_array interface not found"
         raise ValueError(msg)
