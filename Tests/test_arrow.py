@@ -105,3 +105,17 @@ def test_lifetime2():
     img2 = img.copy()
     px = img2.load()
     assert isinstance(px[0, 0], int)
+
+
+def test_release_schema():
+    # these should not error out, valgrind should be clean
+    img = hopper('L')
+    schema = img.__arrow_c_schema__()
+    del(schema)
+
+def test_release_array():
+    # these should not error out, valgrind should be clean
+    img = hopper('L')
+    array, schema = img.__arrow_c_array__()
+    del(array)
+    del(schema)
