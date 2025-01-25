@@ -3262,7 +3262,8 @@ class SupportsArrayInterface(Protocol):
 
 class SupportsArrowArrayInterface(Protocol):
     """
-    An object that has an ``__arrow_c_array__`` method corresponding to the arrow c data interface.
+    An object that has an ``__arrow_c_array__`` method corresponding to the arrow c
+    data interface.
     """
 
     def __arrow_c_array__(
