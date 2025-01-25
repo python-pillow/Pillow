@@ -584,6 +584,14 @@ class Image:
     def mode(self) -> str:
         return self._mode
 
+    @property
+    def readonly(self) -> int:
+        return (self._im and self._im.readonly) or self._readonly
+
+    @readonly.setter
+    def readonly(self, readonly: int) -> None:
+        self._readonly = readonly
+
     def _new(self, im: core.ImagingCore) -> Image:
         new = Image()
         new.im = im

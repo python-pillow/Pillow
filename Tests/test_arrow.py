@@ -147,3 +147,11 @@ def test_release_array():
     array, schema = img.__arrow_c_array__()
     del(array)
     del(schema)
+
+
+def test_readonly():
+    img = hopper('L')
+    reloaded = Image.fromarrow(img, img.mode, img.size)
+    assert reloaded.readonly == 1
+    reloaded._readonly = 0
+    assert reloaded.readonly == 1
