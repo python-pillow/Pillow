@@ -241,7 +241,7 @@ class ImageDraw:
         xy: Coords,
         fill: _Ink | None = None,
         width: int = 0,
-        joint: Literal[curve] | None = None,
+        joint: Literal["curve"] | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
