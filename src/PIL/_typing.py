@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sys
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, Union, Literal
+from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar, Union
 
 if TYPE_CHECKING:
     from numbers import _IntegralLike as IntegralLike
@@ -51,7 +51,13 @@ StrOrBytesPath = Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]
 
 horizontal_anchors = ("l", "m", "r", "s")
 vertical_anchors = ("a", "t", "m", "s", "b", "d")
-Anchor = Literal[*(horizontal_anchor + vertical_anchor for horizontal_anchor in horizontal_anchors for vertical_anchor in vertical_anchors)]
+Anchor = Literal[
+    *(
+        horizontal_anchor + vertical_anchor
+        for horizontal_anchor in horizontal_anchors
+        for vertical_anchor in vertical_anchors
+    )
+]
 
 Align = Literal["left", "center", "right"]
 

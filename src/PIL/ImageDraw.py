@@ -39,7 +39,7 @@ from typing import TYPE_CHECKING, Any, AnyStr, Callable, Union, cast
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
-from ._typing import Coords, Anchor, Align, Direction
+from ._typing import Align, Anchor, Coords, Direction
 
 # experimental access to the outline API
 Outline: Callable[[], Image.core._Outline] | None
@@ -241,7 +241,7 @@ class ImageDraw:
         xy: Coords,
         fill: _Ink | None = None,
         width: int = 0,
-        joint: Literal["curve"] | None = None,
+        joint: Literal[curve] | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
