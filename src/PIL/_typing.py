@@ -49,10 +49,31 @@ class SupportsRead(Protocol[_T_co]):
 
 StrOrBytesPath = Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]
 
-Anchor = Literal["la", "lt", "lm", "ls", "lb", "ld",
-                "ma", "mt", "mm", "ms", "mb", "md",
-                "ra", "rt", "rm", "rs", "rb", "rd",
-                "sa", "st", "ms", "ss", "sb", "sd"]
+Anchor = Literal[
+    "la",
+    "lt",
+    "lm",
+    "ls",
+    "lb",
+    "ld",
+    "ma",
+    "mt",
+    "mm",
+    "ms",
+    "mb",
+    "md",
+    "ra",
+    "rt",
+    "rm",
+    "rs",
+    "rb",
+    "rd",
+    "sa",
+    "st",
+    "ss",
+    "sb",
+    "sd",
+]
 
 Align = Literal["left", "center", "right"]
 
