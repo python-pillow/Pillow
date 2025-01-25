@@ -39,7 +39,7 @@ from typing import TYPE_CHECKING, Any, AnyStr, Callable, Union, cast
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
-from ._typing import Coords
+from ._typing import Coords, Anchor, Align, Direction
 
 # experimental access to the outline API
 Outline: Callable[[], Image.core._Outline] | None
@@ -241,7 +241,7 @@ class ImageDraw:
         xy: Coords,
         fill: _Ink | None = None,
         width: int = 0,
-        joint: str | None = None,
+        joint: Literal["curve"] | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
@@ -583,10 +583,10 @@ class ImageDraw:
             | ImageFont.TransposedFont
             | None
         ) = None,
-        anchor: str | None = None,
+        anchor: Anchor | None = None,
         spacing: float = 4,
-        align: str = "left",
-        direction: str | None = None,
+        align: Align = "left",
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
         stroke_width: float = 0,
@@ -708,10 +708,10 @@ class ImageDraw:
             | ImageFont.TransposedFont
             | None
         ) = None,
-        anchor: str | None = None,
+        anchor: Anchor | None = None,
         spacing: float = 4,
-        align: str = "left",
-        direction: str | None = None,
+        align: Align = "left",
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
         stroke_width: float = 0,
@@ -798,7 +798,7 @@ class ImageDraw:
             | ImageFont.TransposedFont
             | None
         ) = None,
-        direction: str | None = None,
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
         embedded_color: bool = False,
@@ -828,10 +828,10 @@ class ImageDraw:
             | ImageFont.TransposedFont
             | None
         ) = None,
-        anchor: str | None = None,
+        anchor: Anchor | None = None,
         spacing: float = 4,
-        align: str = "left",
-        direction: str | None = None,
+        align: Align = "left",
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
         stroke_width: float = 0,
@@ -878,10 +878,10 @@ class ImageDraw:
             | ImageFont.TransposedFont
             | None
         ) = None,
-        anchor: str | None = None,
+        anchor: Anchor | None = None,
         spacing: float = 4,
-        align: str = "left",
-        direction: str | None = None,
+        align: Align = "left",
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
         stroke_width: float = 0,
