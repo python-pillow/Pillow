@@ -705,25 +705,36 @@ ImagingNewArrow(
 
     int64_t pixels = (int64_t)xsize * (int64_t)ysize;
 
-    if (((strcmp(schema->format, "i") == 0 && im->pixelsize == 4) ||
-         (strcmp(schema->format, im->arrow_band_format) == 0 && im->bands == 1)) &&
-        pixels == external_array->length) {
+    // fmt:off   // don't reformat this
+    if (((strcmp(schema->format, "I") == 0
+          && im->pixelsize == 4
+          && im->bands >= 2) // INT32 into any INT32 Storage mode
+         ||
+         (strcmp(schema->format, im->arrow_band_format) == 0
+          && im->bands == 1)) // Single band match
+        && pixels == external_array->length) {
         // one arrow element per, and it matches a pixelsize*char
         if (ImagingAllocateArrow(im, external_array)) {
             return im;
         }
     }
-    if (strcmp(schema->format, "+w:4") == 0 && im->pixelsize == 4 &&
-        schema->n_children > 0 && schema->children &&
-        strcmp(schema->children[0]->format, "C") == 0 &&
-        pixels == external_array->length && external_array->n_children == 1 &&
-        external_array->children && 4 * pixels == external_array->children[0]->length) {
+    // linter: don't mess with the formatting here
+    if (strcmp(schema->format, "+w:4") == 0 // 4 up array
+        && im->pixelsize == 4  // storage as 32 bpc
+        && schema->n_children > 0  // make sure schema is well formed.
+        && schema->children        // make sure schema is well formed
+        && strcmp(schema->children[0]->format, "C") == 0 // Expected format
+        && strcmp(im->arrow_band_format, "C") == 0 // Expected Format
+        && pixels == external_array->length // expected length
+        && external_array->n_children == 1 // array is well formed
+        && external_array->children        // array is well formed
+        && 4 * pixels == external_array->children[0]->length) {
         // 4 up element of char into pixelsize == 4
         if (ImagingAllocateArrow(im, external_array)) {
             return im;
         }
     }
-
+    // fmt: on
     ImagingDelete(im);
     return NULL;
 }

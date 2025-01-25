@@ -68,6 +68,26 @@ def test_to_array(mode: str, dtype: Any, mask: Any) -> None:
 
     assert_image_equal(img, reloaded)
 
+@pytest.mark.parametrize(
+    "mode, dest_modes",
+    (
+        ("L", ["I", "F", "LA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr", "HSV"]),
+        ("I", ["L", "F"]), # Technically I32 can work for any 4x8bit storage.
+        ("F", ["I", "L", "LA", "RGB", "RGBA", "RGBX", "CMYK", "YCbCr", "HSV"]),
+        ("LA", ["L", "F"]),
+        ("RGB", ["L", "F"]),
+        ("RGBA", ["L", "F"]),
+        ("RGBX", ["L", "F"]),
+        ("CMYK", ["L", "F"]),
+        ("YCbCr", ["L", "F"]),
+        ("HSV", ["L", "F"]),
+    ),
+)
+def test_invalid_array_type(mode: str, dest_modes: List[str]) -> None:
+    img = hopper(mode)
+    for dest_mode in dest_modes:
+        with pytest.raises(ValueError):
+            Image.fromarrow(img, dest_mode, img.size)
 
 def test_lifetime():
     # valgrind shouldn't error out here.

@@ -290,6 +290,7 @@ _new_arrow(PyObject *self, PyObject *args) {
     if (!ret && array->release) {
         array->release(array);
         array->release = NULL;
+        return ImagingError_ValueError("Invalid arrow array mode or size mismatch");
     }
     return ret;
 }
