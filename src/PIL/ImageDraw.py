@@ -35,7 +35,7 @@ import math
 import struct
 from collections.abc import Sequence
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, AnyStr, Callable, Union, cast, Literal
+from typing import TYPE_CHECKING, Any, AnyStr, Callable, Literal, Union, cast
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
