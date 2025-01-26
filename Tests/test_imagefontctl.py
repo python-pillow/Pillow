@@ -216,7 +216,7 @@ def test_getlength(
     d = ImageDraw.Draw(im)
 
     try:
-        assert d.textlength(text, ttf, direction) == expected
+        assert d.textlength(text, ttf, direction) == expected  # type: ignore[arg-type]
     except ValueError as ex:
         if (
             direction == "ttb"
@@ -232,7 +232,9 @@ def test_getlength(
     ("i" + ("\u030C" * 15) + "i", "i" + "\u032C" * 15 + "i", "\u035Cii", "i\u0305i"),
     ids=("caron-above", "caron-below", "double-breve", "overline"),
 )
-def test_getlength_combine(mode: str, direction: str, text: str) -> None:
+def test_getlength_combine(
+    mode: str, direction: ImageFont.Direction, text: str
+) -> None:
     if text == "i\u0305i" and direction == "ttb":
         pytest.skip("fails with this font")
 
@@ -252,7 +254,7 @@ def test_getlength_combine(mode: str, direction: str, text: str) -> None:
 
 
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
-def test_anchor_ttb(anchor: str) -> None:
+def test_anchor_ttb(anchor: ImageFont.Anchor) -> None:
     text = "f"
     path = f"Tests/images/test_anchor_ttb_{text}_{anchor}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 120)
@@ -309,7 +311,11 @@ combine_tests = (
     "name, text, anchor, dir, epsilon", combine_tests, ids=[r[0] for r in combine_tests]
 )
 def test_combine(
-    name: str, text: str, dir: str | None, anchor: str | None, epsilon: float
+    name: str,
+    text: str,
+    anchor: ImageFont.Anchor | None,
+    dir: ImageFont.Direction | None,
+    epsilon: float,
 ) -> None:
     path = f"Tests/images/test_combine_{name}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
@@ -341,7 +347,7 @@ def test_combine(
         ("rm", "right"),  # pass with getsize
     ),
 )
-def test_combine_multiline(anchor: str, align: str) -> None:
+def test_combine_multiline(anchor: ImageFont.Anchor, align: ImageDraw.Align) -> None:
     # test that multiline text uses getlength, not getsize or getbbox
 
     path = f"Tests/images/test_combine_multiline_{anchor}_{align}.png"
@@ -367,17 +373,17 @@ def test_anchor_invalid_ttb() -> None:
 
     for anchor in ["", "l", "a", "lax", "xa", "la", "ls", "ld", "lx"]:
         with pytest.raises(ValueError):
-            font.getmask2("hello", anchor=anchor, direction="ttb")
+            font.getmask2("hello", anchor=anchor, direction="ttb")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            font.getbbox("hello", anchor=anchor, direction="ttb")
+            font.getbbox("hello", anchor=anchor, direction="ttb")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            d.text((0, 0), "hello", anchor=anchor, direction="ttb")
+            d.text((0, 0), "hello", anchor=anchor, direction="ttb")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            d.textbbox((0, 0), "hello", anchor=anchor, direction="ttb")
+            d.textbbox((0, 0), "hello", anchor=anchor, direction="ttb")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            d.multiline_text((0, 0), "foo\nbar", anchor=anchor, direction="ttb")
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor, direction="ttb")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor, direction="ttb")
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor, direction="ttb")  # type: ignore[arg-type]
     # ttb multiline text does not support anchors at all
     with pytest.raises(ValueError):
         d.multiline_text((0, 0), "foo\nbar", anchor="mm", direction="ttb")

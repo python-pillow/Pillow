@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 font = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 16)
 
 
-def test(anchor: str) -> Image.Image:
+def test(anchor: ImageFont.Anchor) -> Image.Image:
     im = Image.new("RGBA", (200, 100), "white")
     d = ImageDraw.Draw(im)
     d.line(((100, 0), (100, 100)), "gray")
@@ -17,9 +17,12 @@ def test(anchor: str) -> Image.Image:
 if __name__ == "__main__":
     im = Image.new("RGBA", (600, 300), "white")
     d = ImageDraw.Draw(im)
-    for y, row in enumerate(
-        (("ma", "mt", "mm"), ("ms", "mb", "md"), ("ls", "ms", "rs"))
-    ):
+    anchors: list[list[ImageFont.Anchor]] = [
+        ["ma", "mt", "mm"],
+        ["ms", "mb", "md"],
+        ["ls", "ms", "rs"],
+    ]
+    for y, row in enumerate(anchors):
         for x, anchor in enumerate(row):
             im.paste(test(anchor), (x * 200, y * 100))
             if x != 0:
