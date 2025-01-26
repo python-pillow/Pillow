@@ -37,7 +37,7 @@ from types import ModuleType
 from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict, cast
 
 from . import Image, features
-from ._typing import StrOrBytesPath
+from ._typing import Anchor, Direction, StrOrBytesPath
 from ._util import DeferredError, is_path
 
 if TYPE_CHECKING:
@@ -313,7 +313,7 @@ class FreeTypeFont:
         self,
         text: str | bytes,
         mode: str = "",
-        direction: str | None = None,
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
     ) -> float:
@@ -392,11 +392,11 @@ class FreeTypeFont:
         self,
         text: str | bytes,
         mode: str = "",
-        direction: str | None = None,
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
         stroke_width: float = 0,
-        anchor: str | None = None,
+        anchor: Anchor | None = None,
     ) -> tuple[float, float, float, float]:
         """
         Returns bounding box (in pixels) of given text relative to given anchor
@@ -458,11 +458,11 @@ class FreeTypeFont:
         self,
         text: str | bytes,
         mode: str = "",
-        direction: str | None = None,
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
         stroke_width: float = 0,
-        anchor: str | None = None,
+        anchor: Anchor | None = None,
         ink: int = 0,
         start: tuple[float, float] | None = None,
     ) -> Image.core.ImagingCore:
@@ -549,11 +549,11 @@ class FreeTypeFont:
         self,
         text: str | bytes,
         mode: str = "",
-        direction: str | None = None,
+        direction: Direction | None = None,
         features: list[str] | None = None,
         language: str | None = None,
         stroke_width: float = 0,
-        anchor: str | None = None,
+        anchor: Anchor | None = None,
         ink: int = 0,
         start: tuple[float, float] | None = None,
         *args: Any,
