@@ -34,16 +34,45 @@ import warnings
 from enum import IntEnum
 from io import BytesIO
 from types import ModuleType
-from typing import IO, TYPE_CHECKING, Any, BinaryIO, TypedDict, cast
+from typing import IO, TYPE_CHECKING, Any, BinaryIO, Literal, TypedDict, cast
 
 from . import Image, features
-from ._typing import Anchor, Direction, StrOrBytesPath
+from ._typing import StrOrBytesPath
 from ._util import DeferredError, is_path
 
 if TYPE_CHECKING:
     from . import ImageFile
     from ._imaging import ImagingFont
     from ._imagingft import Font
+
+    Anchor = Literal[
+        "la",
+        "lt",
+        "lm",
+        "ls",
+        "lb",
+        "ld",
+        "ma",
+        "mt",
+        "mm",
+        "ms",
+        "mb",
+        "md",
+        "ra",
+        "rt",
+        "rm",
+        "rs",
+        "rb",
+        "rd",
+        "sa",
+        "st",
+        "sm",
+        "ss",
+        "sb",
+        "sd",
+    ]
+
+    Direction = Literal["rtl", "ltr", "ttb"]
 
 
 class Axis(TypedDict):

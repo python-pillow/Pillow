@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sys
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, Union
 
 if TYPE_CHECKING:
     from numbers import _IntegralLike as IntegralLike
@@ -48,34 +48,5 @@ class SupportsRead(Protocol[_T_co]):
 
 
 StrOrBytesPath = Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]
-
-Anchor = Literal[
-    "la",
-    "lt",
-    "lm",
-    "ls",
-    "lb",
-    "ld",
-    "ma",
-    "mt",
-    "mm",
-    "ms",
-    "mb",
-    "md",
-    "ra",
-    "rt",
-    "rm",
-    "rs",
-    "rb",
-    "rd",
-    "sa",
-    "st",
-    "sm",
-    "ss",
-    "sb",
-    "sd",
-]
-
-Direction = Literal["rtl", "ltr", "ttb"]
 
 __all__ = ["Buffer", "IntegralLike", "StrOrBytesPath", "SupportsRead", "TypeGuard"]

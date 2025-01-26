@@ -14,7 +14,7 @@ import pytest
 from packaging.version import parse as parse_version
 
 from PIL import Image, ImageDraw, ImageFont, features
-from PIL._typing import Anchor, StrOrBytesPath
+from PIL._typing import StrOrBytesPath
 
 from .helper import (
     assert_image_equal,
@@ -795,7 +795,7 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
 )
 def test_anchor(
-    layout_engine: ImageFont.Layout, anchor: Anchor, left: int, top: int
+    layout_engine: ImageFont.Layout, anchor: ImageFont.Anchor, left: int, top: int
 ) -> None:
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"
@@ -842,7 +842,7 @@ def test_anchor(
     ),
 )
 def test_anchor_multiline(
-    layout_engine: ImageFont.Layout, anchor: Anchor, align: ImageDraw.Align
+    layout_engine: ImageFont.Layout, anchor: ImageFont.Anchor, align: ImageDraw.Align
 ) -> None:
     target = f"Tests/images/test_anchor_multiline_{anchor}_{align}.png"
     text = "a\nlong\ntext sample"
@@ -880,7 +880,7 @@ def test_anchor_invalid(font: ImageFont.FreeTypeFont) -> None:
         with pytest.raises(ValueError):
             d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)  # type: ignore[arg-type]
 
-    anchors: list[Anchor] = ["lt", "lb"]
+    anchors: list[ImageFont.Anchor] = ["lt", "lb"]
     for anchor2 in anchors:
         with pytest.raises(ValueError):
             d.multiline_text((0, 0), "foo\nbar", anchor=anchor2)

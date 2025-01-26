@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from PIL import Image, ImageDraw, ImageFont
-from PIL._typing import Anchor
 
 font = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 16)
 
 
-def test(anchor: Anchor) -> Image.Image:
+def test(anchor: ImageFont.Anchor) -> Image.Image:
     im = Image.new("RGBA", (200, 100), "white")
     d = ImageDraw.Draw(im)
     d.line(((100, 0), (100, 100)), "gray")
@@ -18,7 +17,7 @@ def test(anchor: Anchor) -> Image.Image:
 if __name__ == "__main__":
     im = Image.new("RGBA", (600, 300), "white")
     d = ImageDraw.Draw(im)
-    anchors: list[list[Anchor]] = [
+    anchors: list[list[ImageFont.Anchor]] = [
         ["ma", "mt", "mm"],
         ["ms", "mb", "md"],
         ["ls", "ms", "rs"],

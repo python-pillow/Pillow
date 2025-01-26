@@ -1,7 +1,6 @@
 from typing import Any, Callable
 
 from . import ImageFont, _imaging
-from ._typing import Anchor, Direction
 
 class Font:
     @property
@@ -25,11 +24,11 @@ class Font:
         string: str | bytes,
         fill: Callable[[int, int], _imaging.ImagingCore],
         mode: str,
-        dir: Direction | None,
+        dir: ImageFont.Direction | None,
         features: list[str] | None,
         lang: str | None,
         stroke_width: float,
-        anchor: Anchor | None,
+        anchor: ImageFont.Anchor | None,
         foreground_ink_long: int,
         x_start: float,
         y_start: float,
@@ -39,17 +38,17 @@ class Font:
         self,
         string: str | bytes | bytearray,
         mode: str,
-        dir: Direction | None,
+        dir: ImageFont.Direction | None,
         features: list[str] | None,
         lang: str | None,
-        anchor: Anchor | None,
+        anchor: ImageFont.Anchor | None,
         /,
     ) -> tuple[tuple[int, int], tuple[int, int]]: ...
     def getlength(
         self,
         string: str | bytes,
         mode: str,
-        dir: Direction | None,
+        dir: ImageFont.Direction | None,
         features: list[str] | None,
         lang: str | None,
         /,

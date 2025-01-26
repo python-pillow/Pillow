@@ -3,7 +3,6 @@ from __future__ import annotations
 import pytest
 
 from PIL import Image, ImageDraw, ImageFont
-from PIL._typing import Anchor, Direction
 
 from .helper import assert_image_similar_tofile, skip_unless_feature
 
@@ -233,7 +232,9 @@ def test_getlength(
     ("i" + ("\u030C" * 15) + "i", "i" + "\u032C" * 15 + "i", "\u035Cii", "i\u0305i"),
     ids=("caron-above", "caron-below", "double-breve", "overline"),
 )
-def test_getlength_combine(mode: str, direction: Direction, text: str) -> None:
+def test_getlength_combine(
+    mode: str, direction: ImageFont.Direction, text: str
+) -> None:
     if text == "i\u0305i" and direction == "ttb":
         pytest.skip("fails with this font")
 
@@ -253,7 +254,7 @@ def test_getlength_combine(mode: str, direction: Direction, text: str) -> None:
 
 
 @pytest.mark.parametrize("anchor", ("lt", "mm", "rb", "sm"))
-def test_anchor_ttb(anchor: Anchor) -> None:
+def test_anchor_ttb(anchor: ImageFont.Anchor) -> None:
     text = "f"
     path = f"Tests/images/test_anchor_ttb_{text}_{anchor}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 120)
@@ -310,7 +311,11 @@ combine_tests = (
     "name, text, anchor, dir, epsilon", combine_tests, ids=[r[0] for r in combine_tests]
 )
 def test_combine(
-    name: str, text: str, anchor: Anchor | None, dir: Direction | None, epsilon: float
+    name: str,
+    text: str,
+    anchor: ImageFont.Anchor | None,
+    dir: ImageFont.Direction | None,
+    epsilon: float,
 ) -> None:
     path = f"Tests/images/test_combine_{name}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
@@ -342,7 +347,7 @@ def test_combine(
         ("rm", "right"),  # pass with getsize
     ),
 )
-def test_combine_multiline(anchor: Anchor, align: ImageDraw.Align) -> None:
+def test_combine_multiline(anchor: ImageFont.Anchor, align: ImageDraw.Align) -> None:
     # test that multiline text uses getlength, not getsize or getbbox
 
     path = f"Tests/images/test_combine_multiline_{anchor}_{align}.png"
