@@ -70,6 +70,7 @@ Anchor = Literal[
     "rd",
     "sa",
     "st",
+    "sm",
     "ss",
     "sb",
     "sd",
