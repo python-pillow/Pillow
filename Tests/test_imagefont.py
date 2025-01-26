@@ -14,7 +14,7 @@ import pytest
 from packaging.version import parse as parse_version
 
 from PIL import Image, ImageDraw, ImageFont, features
-from PIL._typing import StrOrBytesPath
+from PIL._typing import Anchor, StrOrBytesPath
 
 from .helper import (
     assert_image_equal,
@@ -257,7 +257,7 @@ def test_render_multiline_text(font: ImageFont.FreeTypeFont) -> None:
     "align, ext", (("left", ""), ("center", "_center"), ("right", "_right"))
 )
 def test_render_multiline_text_align(
-    font: ImageFont.FreeTypeFont, align: str, ext: str
+    font: ImageFont.FreeTypeFont, align: ImageDraw.Align, ext: str
 ) -> None:
     im = Image.new(mode="RGB", size=(300, 100))
     draw = ImageDraw.Draw(im)
@@ -272,7 +272,7 @@ def test_unknown_align(font: ImageFont.FreeTypeFont) -> None:
 
     # Act/Assert
     with pytest.raises(ValueError):
-        draw.multiline_text((0, 0), TEST_TEXT, font=font, align="unknown")
+        draw.multiline_text((0, 0), TEST_TEXT, font=font, align="unknown")  # type: ignore[arg-type]
 
 
 def test_draw_align(font: ImageFont.FreeTypeFont) -> None:
@@ -795,7 +795,7 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     ids=("ls", "ms", "rs", "ma", "mt", "mm", "mb", "md"),
 )
 def test_anchor(
-    layout_engine: ImageFont.Layout, anchor: str, left: int, top: int
+    layout_engine: ImageFont.Layout, anchor: Anchor, left: int, top: int
 ) -> None:
     name, text = "quick", "Quick"
     path = f"Tests/images/test_anchor_{name}_{anchor}.png"
@@ -842,7 +842,7 @@ def test_anchor(
     ),
 )
 def test_anchor_multiline(
-    layout_engine: ImageFont.Layout, anchor: str, align: str
+    layout_engine: ImageFont.Layout, anchor: Anchor, align: ImageDraw.Align
 ) -> None:
     target = f"Tests/images/test_anchor_multiline_{anchor}_{align}.png"
     text = "a\nlong\ntext sample"
@@ -868,22 +868,24 @@ def test_anchor_invalid(font: ImageFont.FreeTypeFont) -> None:
 
     for anchor in ["", "l", "a", "lax", "sa", "xa", "lx"]:
         with pytest.raises(ValueError):
-            font.getmask2("hello", anchor=anchor)
+            font.getmask2("hello", anchor=anchor)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            font.getbbox("hello", anchor=anchor)
+            font.getbbox("hello", anchor=anchor)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            d.text((0, 0), "hello", anchor=anchor)
+            d.text((0, 0), "hello", anchor=anchor)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            d.textbbox((0, 0), "hello", anchor=anchor)
+            d.textbbox((0, 0), "hello", anchor=anchor)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)
-    for anchor in ["lt", "lb"]:
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)  # type: ignore[arg-type]
+
+    anchors: list[Anchor] = ["lt", "lb"]
+    for anchor2 in anchors:
         with pytest.raises(ValueError):
-            d.multiline_text((0, 0), "foo\nbar", anchor=anchor)
+            d.multiline_text((0, 0), "foo\nbar", anchor=anchor2)
         with pytest.raises(ValueError):
-            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor)
+            d.multiline_textbbox((0, 0), "foo\nbar", anchor=anchor2)
 
 
 @pytest.mark.parametrize("bpp", (1, 2, 4, 8))

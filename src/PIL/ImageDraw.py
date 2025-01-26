@@ -39,7 +39,7 @@ from typing import TYPE_CHECKING, Any, AnyStr, Callable, Literal, Union, cast
 
 from . import Image, ImageColor
 from ._deprecate import deprecate
-from ._typing import Align, Anchor, Coords, Direction
+from ._typing import Anchor, Coords, Direction
 
 # experimental access to the outline API
 Outline: Callable[[], Image.core._Outline] | None
@@ -50,6 +50,8 @@ except AttributeError:
 
 if TYPE_CHECKING:
     from . import ImageDraw2, ImageFont
+
+    Align = Literal["left", "center", "right"]
 
 _Ink = Union[float, tuple[int, ...], str]
 

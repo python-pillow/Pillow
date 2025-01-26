@@ -76,8 +76,6 @@ Anchor = Literal[
     "sd",
 ]
 
-Align = Literal["left", "center", "right"]
-
 Direction = Literal["rtl", "ltr", "ttb"]
 
 __all__ = ["Buffer", "IntegralLike", "StrOrBytesPath", "SupportsRead", "TypeGuard"]
