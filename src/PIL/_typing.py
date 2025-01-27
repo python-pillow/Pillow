@@ -49,4 +49,5 @@ class SupportsRead(Protocol[_T_co]):
 
 StrOrBytesPath = Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]
 
+
 __all__ = ["Buffer", "IntegralLike", "StrOrBytesPath", "SupportsRead", "TypeGuard"]
