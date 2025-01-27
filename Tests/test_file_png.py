@@ -378,7 +378,7 @@ class TestFilePng:
                 with pytest.raises((OSError, SyntaxError)):
                     im.verify()
 
-    def test_verify_ignores_crc_error(self) -> None:
+    def test_verify_ignores_crc_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # check ignores crc errors in ancillary chunks
 
         chunk_data = chunk(b"tEXt", b"spam")
@@ -388,24 +388,20 @@ class TestFilePng:
         with pytest.raises(SyntaxError):
             PngImagePlugin.PngImageFile(BytesIO(image_data))
 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        try:
-            im = load(image_data)
-            assert im is not None
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        im = load(image_data)
+        assert im is not None
 
-    def test_verify_not_ignores_crc_error_in_required_chunk(self) -> None:
+    def test_verify_not_ignores_crc_error_in_required_chunk(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         # check does not ignore crc errors in required chunks
 
         image_data = MAGIC + IHDR[:-1] + b"q" + TAIL
 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        try:
-            with pytest.raises(SyntaxError):
-                PngImagePlugin.PngImageFile(BytesIO(image_data))
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        with pytest.raises(SyntaxError):
+            PngImagePlugin.PngImageFile(BytesIO(image_data))
 
     def test_roundtrip_dpi(self) -> None:
         # Check dpi roundtripping
@@ -616,7 +612,7 @@ class TestFilePng:
             (b"prIV", b"VALUE3", True),
         ]
 
-    def test_textual_chunks_after_idat(self) -> None:
+    def test_textual_chunks_after_idat(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/hopper.png") as im:
             assert isinstance(im, PngImagePlugin.PngImageFile)
             assert "comment" in im.text
@@ -632,6 +628,11 @@ class TestFilePng:
             with pytest.raises(OSError):
                 assert isinstance(im.text, dict)
 
+        # Raises an EOFError in load_end
+        with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+            assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
+
         # Raises a UnicodeDecodeError in load_end
         with Image.open("Tests/images/truncated_image.png") as im:
             assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -639,14 +640,8 @@ class TestFilePng:
             # The file is truncated
             with pytest.raises(OSError):
                 im.text
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             assert isinstance(im.text, dict)
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
-
-        # Raises an EOFError in load_end
-        with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
-            assert isinstance(im, PngImagePlugin.PngImageFile)
-            assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
     def test_unknown_compression_method(self) -> None:
         with pytest.raises(SyntaxError, match="Unknown compression method"):
@@ -672,15 +667,16 @@ class TestFilePng:
     @pytest.mark.parametrize(
         "cid", (b"IHDR", b"sRGB", b"pHYs", b"acTL", b"fcTL", b"fdAT")
     )
-    def test_truncated_chunks(self, cid: bytes) -> None:
+    def test_truncated_chunks(
+        self, cid: bytes, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         fp = BytesIO()
         with PngImagePlugin.PngStream(fp) as png:
             with pytest.raises(ValueError):
                 png.call(cid, 0, 0)
 
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             png.call(cid, 0, 0)
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     @pytest.mark.parametrize("save_all", (True, False))
     def test_specify_bits(self, save_all: bool, tmp_path: Path) -> None:
@@ -826,17 +822,14 @@ class TestFilePng:
         with Image.open(mystdout) as reloaded:
             assert_image_equal_tofile(reloaded, TEST_PNG_FILE)
 
-    def test_truncated_end_chunk(self) -> None:
+    def test_truncated_end_chunk(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/truncated_end_chunk.png") as im:
             with pytest.raises(OSError):
                 im.load()
 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        try:
-            with Image.open("Tests/images/truncated_end_chunk.png") as im:
-                assert_image_equal_tofile(im, "Tests/images/hopper.png")
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+        with Image.open("Tests/images/truncated_end_chunk.png") as im:
+            assert_image_equal_tofile(im, "Tests/images/hopper.png")
 
 
 @pytest.mark.skipif(is_win32(), reason="Requires Unix or macOS")
@@ -845,11 +838,11 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
     mem_limit = 2 * 1024  # max increase in K
     iterations = 100  # Leak is 56k/iteration, this will leak 5.6megs
 
-    def test_leak_load(self) -> None:
+    def test_leak_load(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with open("Tests/images/hopper.png", "rb") as f:
             DATA = BytesIO(f.read(16 * 1024))
 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open(DATA) as im:
             im.load()
 
@@ -857,7 +850,4 @@ class TestTruncatedPngPLeaks(PillowLeakTestCase):
             with Image.open(DATA) as im:
                 im.load()
 
-        try:
-            self._test_leak(core)
-        finally:
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
+        self._test_leak(core)

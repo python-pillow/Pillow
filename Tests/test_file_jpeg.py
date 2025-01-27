@@ -550,12 +550,13 @@ class TestFileJpeg:
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
     )
-    def test_truncated_jpeg_should_read_all_the_data(self) -> None:
+    def test_truncated_jpeg_should_read_all_the_data(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         filename = "Tests/images/truncated_jpeg.jpg"
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open(filename) as im:
             im.load()
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
             assert im.getbbox() is not None
 
     def test_truncated_jpeg_throws_oserror(self) -> None:
@@ -1054,7 +1055,7 @@ class TestFileJpeg:
             im.save(f, xmp=b"1" * 65505)
 
     @pytest.mark.timeout(timeout=1)
-    def test_eof(self) -> None:
+    def test_eof(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Even though this decoder never says that it is finished
         # the image should still end when there is no new data
         class InfiniteMockPyDecoder(ImageFile.PyDecoder):
@@ -1069,9 +1070,8 @@ class TestFileJpeg:
             im.tile = [
                 ImageFile._Tile("INFINITE", (0, 0, 128, 128), 0, ("RGB", 0, 1)),
             ]
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             im.load()
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     def test_separate_tables(self) -> None:
         im = hopper()
