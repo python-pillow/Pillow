@@ -939,11 +939,10 @@ class TestFileTiff:
 
     @pytest.mark.timeout(6)
     @pytest.mark.filterwarnings("ignore:Truncated File Read")
-    def test_timeout(self) -> None:
+    def test_timeout(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/timeout-6646305047838720") as im:
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
             im.load()
-            ImageFile.LOAD_TRUNCATED_IMAGES = False
 
     @pytest.mark.parametrize(
         "test_file",

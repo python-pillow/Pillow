@@ -1156,23 +1156,22 @@ class TestFileLibTiff(LibTiffTestCase):
             assert len(im.tag_v2[STRIPOFFSETS]) > 1
 
     @pytest.mark.parametrize("argument", (True, False))
-    def test_save_single_strip(self, argument: bool, tmp_path: Path) -> None:
+    def test_save_single_strip(
+        self, argument: bool, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
 
         if not argument:
-            TiffImagePlugin.STRIP_SIZE = 2**18
-        try:
-            arguments: dict[str, str | int] = {"compression": "tiff_adobe_deflate"}
-            if argument:
-                arguments["strip_size"] = 2**18
-            im.save(out, "TIFF", **arguments)
+            monkeypatch.setattr(TiffImagePlugin, "STRIP_SIZE", 2**18)
+        arguments: dict[str, str | int] = {"compression": "tiff_adobe_deflate"}
+        if argument:
+            arguments["strip_size"] = 2**18
+        im.save(out, "TIFF", **arguments)
 
-            with Image.open(out) as im:
-                assert isinstance(im, TiffImagePlugin.TiffImageFile)
-                assert len(im.tag_v2[STRIPOFFSETS]) == 1
-        finally:
-            TiffImagePlugin.STRIP_SIZE = 65536
+        with Image.open(out) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert len(im.tag_v2[STRIPOFFSETS]) == 1
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", None))
     def test_save_zero(self, compression: str | None, tmp_path: Path) -> None:
