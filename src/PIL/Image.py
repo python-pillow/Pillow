@@ -36,7 +36,6 @@ import os
 import re
 import struct
 import sys
-import tempfile
 import warnings
 from collections.abc import MutableMapping
 from enum import IntEnum
@@ -738,6 +737,8 @@ class Image:
             if not filename.endswith(suffix):
                 filename += suffix
         else:
+            import tempfile
+
             f, filename = tempfile.mkstemp(suffix)
             os.close(f)
 
