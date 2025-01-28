@@ -40,7 +40,6 @@ import os
 import struct
 import subprocess
 import sys
-import tempfile
 import warnings
 
 from . import Image, ImageFile
@@ -467,6 +466,7 @@ class JpegImageFile(ImageFile.ImageFile):
 
     def load_djpeg(self) -> None:
         # ALTERNATIVE: handle JPEGs via the IJG command line utilities
+        import tempfile
 
         f, path = tempfile.mkstemp()
         os.close(f)
