@@ -26,7 +26,6 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 
 from . import Image, ImageFile
 from ._binary import i32le as i32
@@ -94,6 +93,8 @@ def Ghostscript(
     # resolution is dependent on bbox and size
     res_x = 72.0 * width / (bbox[2] - bbox[0])
     res_y = 72.0 * height / (bbox[3] - bbox[1])
+
+    import tempfile
 
     out_fd, outfile = tempfile.mkstemp()
     os.close(out_fd)
