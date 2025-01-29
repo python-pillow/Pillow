@@ -761,17 +761,35 @@ class ImageDraw:
                 left -= width_difference
 
             # then align by align parameter
-            if align == "left":
+            if align in ("left", "justify"):
                 pass
             elif align == "center":
                 left += width_difference / 2.0
             elif align == "right":
                 left += width_difference
             else:
-                msg = 'align must be "left", "center" or "right"'
+                msg = 'align must be "left", "center", "right" or "justify"'
                 raise ValueError(msg)
 
-            parts.append(((left, top), line))
+            if align == "justify" and width_difference != 0:
+                words = line.split(" " if isinstance(text, str) else b" ")
+                word_widths = [
+                    self.textlength(
+                        word,
+                        font,
+                        direction=direction,
+                        features=features,
+                        language=language,
+                        embedded_color=embedded_color,
+                    )
+                    for word in words
+                ]
+                width_difference = max_width - sum(word_widths)
+                for i, word in enumerate(words):
+                    parts.append(((left, top), word))
+                    left += word_widths[i] + width_difference / (len(words) - 1)
+            else:
+                parts.append(((left, top), line))
 
             top += line_spacing
 

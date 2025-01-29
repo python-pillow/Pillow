@@ -387,8 +387,9 @@ Methods
                     the number of pixels between lines.
     :param align: If the text is passed on to
                   :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`,
-                  ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
-                  Use the ``anchor`` parameter to specify the alignment to ``xy``.
+                  ``"left"``, ``"center"``, ``"right"`` or ``"justify"``. Determines
+                  the relative alignment of lines. Use the ``anchor`` parameter to
+                  specify the alignment to ``xy``.
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -455,8 +456,9 @@ Methods
                               of Pillow, but implemented only in version 8.0.0.
 
     :param spacing: The number of pixels between lines.
-    :param align: ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
-                  Use the ``anchor`` parameter to specify the alignment to ``xy``.
+    :param align: ``"left"``, ``"center"``, ``"right"`` or ``"justify"``. Determines
+                  the relative alignment of lines. Use the ``anchor`` parameter to
+                  specify the alignment to ``xy``.
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -599,8 +601,9 @@ Methods
                     the number of pixels between lines.
     :param align: If the text is passed on to
                   :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textbbox`,
-                  ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
-                  Use the ``anchor`` parameter to specify the alignment to ``xy``.
+                  ``"left"``, ``"center"``, ``"right"`` or ``"justify"``. Determines
+                  the relative alignment of lines. Use the ``anchor`` parameter to
+                  specify the alignment to ``xy``.
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -650,8 +653,9 @@ Methods
                    vertical text. See :ref:`text-anchors` for details.
                    This parameter is ignored for non-TrueType fonts.
     :param spacing: The number of pixels between lines.
-    :param align: ``"left"``, ``"center"`` or ``"right"``. Determines the relative alignment of lines.
-                  Use the ``anchor`` parameter to specify the alignment to ``xy``.
+    :param align: ``"left"``, ``"center"``, ``"right"`` or ``"justify"``. Determines
+                  the relative alignment of lines. Use the ``anchor`` parameter to
+                  specify the alignment to ``xy``.
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
