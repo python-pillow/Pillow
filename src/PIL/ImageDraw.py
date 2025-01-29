@@ -742,7 +742,12 @@ class ImageDraw:
         line_spacing = self._multiline_spacing(font, spacing, stroke_width)
         for line in lines:
             line_width = self.textlength(
-                line, font, direction=direction, features=features, language=language
+                line,
+                font,
+                direction=direction,
+                features=features,
+                language=language,
+                embedded_color=embedded_color,
             )
             widths.append(line_width)
             max_width = max(max_width, line_width)
