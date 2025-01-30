@@ -52,17 +52,17 @@ extern "C" {
  */
 
 #ifdef Py_GIL_DISABLED
-    #if defined(__cplusplus)
-    #define IMAGING_TLS thread_local
-    #elif defined(HAVE_THREAD_LOCAL)
-    #define IMAGING_TLS thread_local
-    #elif defined(HAVE__THREAD_LOCAL)
-    #define IMAGING_TLS _Thread_local
-    #elif defined(HAVE___THREAD)
-    #define IMAGING_TLS __thread
-    #elif defined(HAVE___DECLSPEC_THREAD_)
-    #define IMAGING_TLS __declspec(thread)
-    #endif
+#if defined(__cplusplus)
+#define IMAGING_TLS thread_local
+#elif defined(HAVE_THREAD_LOCAL)
+#define IMAGING_TLS thread_local
+#elif defined(HAVE__THREAD_LOCAL)
+#define IMAGING_TLS _Thread_local
+#elif defined(HAVE___THREAD)
+#define IMAGING_TLS __thread
+#elif defined(HAVE___DECLSPEC_THREAD_)
+#define IMAGING_TLS __declspec(thread)
+#endif
 #endif
 
 /* Handles */
@@ -216,7 +216,8 @@ extern struct ImagingMemoryArena ImagingDefaultArena;
     for ((arena) = &ImagingDefaultArena; (arena); (arena) = NULL)
 #endif
 
-ImagingMemoryArena ImagingGetArena(void);
+ImagingMemoryArena
+ImagingGetArena(void);
 
 extern int
 ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max);
