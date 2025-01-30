@@ -58,7 +58,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     /* Setup image descriptor */
     im->xsize = xsize;
     im->ysize = ysize;
-    im->arrow_borrow = 1;
+    im->refcount = 1;
     im->type = IMAGING_TYPE_UINT8;
     strcpy(im->arrow_band_format, "C");
 
@@ -299,11 +299,14 @@ ImagingDelete(Imaging im) {
         return;
     }
 
-    im->arrow_borrow--;
+    MUTEX_LOCK(im->mutex);
+    im->refcount--;
 
-    if (im->arrow_borrow > 0) {
-        return;
+    if (im->refcount > 0) {
+      MUTEX_UNLOCK(im->mutex);
+      return;
     }
+    MUTEX_UNLOCK(im->mutex);
 
     if (im->palette) {
         ImagingPaletteDelete(im->palette);
@@ -697,10 +700,12 @@ ImagingNewArrow(
     int64_t pixels = (int64_t)xsize * (int64_t)ysize;
 
     // fmt:off   // don't reformat this
-    if (((strcmp(schema->format, "I") == 0 && im->pixelsize == 4 && im->bands >= 2
-         )  // INT32 into any INT32 Storage mode
-         || (strcmp(schema->format, im->arrow_band_format) == 0 && im->bands == 1)
-        )  // Single band match
+    if (((strcmp(schema->format, "I") == 0  // int32
+          && im->pixelsize == 4             // 4xchar* storage
+          && im->bands >= 2) // INT32 into any INT32 Storage mode
+         ||
+         (strcmp(schema->format, im->arrow_band_format) == 0 // same mode
+          && im->bands == 1)) // Single band match
         && pixels == external_array->length) {
         // one arrow element per, and it matches a pixelsize*char
         if (ImagingBorrowArrow(im, external_array, im->pixelsize)) {

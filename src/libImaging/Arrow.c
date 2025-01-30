@@ -188,7 +188,9 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
         length = im->xsize * im->lines_per_block;
     }
 
-    im->arrow_borrow++;
+    MUTEX_LOCK(im->mutex);
+    im->refcount++;
+    MUTEX_UNLOCK(im->mutex);
     // Initialize primitive fields
     *array = (struct ArrowArray){// Data description
                                  .length = length,
@@ -227,7 +229,9 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
         length = im->xsize * im->lines_per_block;
     }
 
-    im->arrow_borrow++;
+    MUTEX_LOCK(im->mutex);
+    im->refcount++;
+    MUTEX_UNLOCK(im->mutex);
     // Initialize primitive fields
     // Fixed length arrays are 1 buffer of validity, and the length in pixels.
     // Data is in a child array.
@@ -254,7 +258,9 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     array->children = calloc(1, sizeof(struct ArrowArray *));
     array->children[0] = (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
 
-    im->arrow_borrow++;
+    MUTEX_LOCK(im->mutex);
+    im->refcount++;
+    MUTEX_UNLOCK(im->mutex);
     *array->children[0] = (struct ArrowArray){// Data description
                                               .length = length * 4,
                                               .offset = 0,
