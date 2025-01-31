@@ -28,6 +28,7 @@ class Font:
         features: list[str] | None,
         lang: str | None,
         stroke_width: float,
+        stroke_filled: bool,
         anchor: ImageFont.Anchor | None,
         foreground_ink_long: int,
         x_start: float,
