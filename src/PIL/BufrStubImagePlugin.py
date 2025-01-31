@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import os
 from typing import IO
 
 from . import Image, ImageFile
@@ -40,13 +41,11 @@ class BufrStubImageFile(ImageFile.StubImageFile):
     format_description = "BUFR"
 
     def _open(self) -> None:
-        offset = self.fp.tell()
-
         if not _accept(self.fp.read(4)):
             msg = "Not a BUFR file"
             raise SyntaxError(msg)
 
-        self.fp.seek(offset)
+        self.fp.seek(-4, os.SEEK_CUR)
 
         # make something up
         self._mode = "F"

@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import os
 from typing import IO
 
 from . import Image, ImageFile
@@ -40,13 +41,11 @@ class GribStubImageFile(ImageFile.StubImageFile):
     format_description = "GRIB"
 
     def _open(self) -> None:
-        offset = self.fp.tell()
-
         if not _accept(self.fp.read(8)):
             msg = "Not a GRIB file"
             raise SyntaxError(msg)
 
-        self.fp.seek(offset)
+        self.fp.seek(-8, os.SEEK_CUR)
 
         # make something up
         self._mode = "F"
