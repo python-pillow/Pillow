@@ -44,6 +44,18 @@ TODO
 API Additions
 =============
 
+"justify" multiline text alignment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In addition to "left", "center" and "right", multiline text can also be aligned using
+"justify"::
+
+    from PIL import Image, ImageDraw
+    im = Image.new("RGB", (50, 25))
+    draw = ImageDraw.Draw(im)
+    draw.multiline_text((0, 0), "Multiline\ntext 1", align="justify")
+    draw.multiline_textbbox((0, 0), "Multiline\ntext 2", align="justify")
+
 Check for MozJPEG
 ^^^^^^^^^^^^^^^^^
 

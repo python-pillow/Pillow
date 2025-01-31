@@ -390,8 +390,8 @@ Methods
                   ``"left"``, ``"center"``, ``"right"`` or ``"justify"``. Determines
                   the relative alignment of lines. Use the ``anchor`` parameter to
                   specify the alignment to ``xy``.
-                  
-                  .. versionadded:: 11.2.0 ``justify``
+
+                  .. versionadded:: 11.2.0 ``"justify"``
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -461,6 +461,8 @@ Methods
     :param align: ``"left"``, ``"center"``, ``"right"`` or ``"justify"``. Determines
                   the relative alignment of lines. Use the ``anchor`` parameter to
                   specify the alignment to ``xy``.
+
+                  .. versionadded:: 11.2.0 ``"justify"``
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -606,6 +608,8 @@ Methods
                   ``"left"``, ``"center"``, ``"right"`` or ``"justify"``. Determines
                   the relative alignment of lines. Use the ``anchor`` parameter to
                   specify the alignment to ``xy``.
+
+                  .. versionadded:: 11.2.0 ``"justify"``
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
@@ -658,6 +662,8 @@ Methods
     :param align: ``"left"``, ``"center"``, ``"right"`` or ``"justify"``. Determines
                   the relative alignment of lines. Use the ``anchor`` parameter to
                   specify the alignment to ``xy``.
+
+                  .. versionadded:: 11.2.0 ``"justify"``
     :param direction: Direction of the text. It can be ``"rtl"`` (right to
                       left), ``"ltr"`` (left to right) or ``"ttb"`` (top to bottom).
                       Requires libraqm.
