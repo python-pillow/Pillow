@@ -1398,6 +1398,28 @@ def test_stroke_descender() -> None:
 
 
 @skip_unless_feature("freetype2")
+def test_stroke_inside_gap() -> None:
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((12, 12), "i", "#f00", font, stroke_width=20)
+
+    # Assert
+    for y in range(im.height):
+        glyph = ""
+        for x in range(im.width):
+            if im.getpixel((x, y)) == (0, 0, 0):
+                if glyph == "started":
+                    glyph = "ended"
+            else:
+                assert glyph != "ended", "Gap inside stroked glyph"
+                glyph = "started"
+
+
+@skip_unless_feature("freetype2")
 def test_split_word() -> None:
     # Arrange
     im = Image.new("RGB", (230, 55))

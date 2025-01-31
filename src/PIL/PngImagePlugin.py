@@ -1388,7 +1388,7 @@ def _save(
         b"\0",  # 12: interlace flag
     )
 
-    chunks = [b"cHRM", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
+    chunks = [b"cHRM", b"cICP", b"gAMA", b"sBIT", b"sRGB", b"tIME"]
 
     icc = im.encoderinfo.get("icc_profile", im.info.get("icc_profile"))
     if icc:

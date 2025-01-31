@@ -1132,13 +1132,15 @@ class TestFileLibTiff(LibTiffTestCase):
     )
     def test_buffering(self, test_file: str) -> None:
         # load exif first
-        with Image.open(open(test_file, "rb", buffering=1048576)) as im:
-            exif = dict(im.getexif())
+        with open(test_file, "rb", buffering=1048576) as f:
+            with Image.open(f) as im:
+                exif = dict(im.getexif())
 
         # load image before exif
-        with Image.open(open(test_file, "rb", buffering=1048576)) as im2:
-            im2.load()
-            exif_after_load = dict(im2.getexif())
+        with open(test_file, "rb", buffering=1048576) as f:
+            with Image.open(f) as im2:
+                im2.load()
+                exif_after_load = dict(im2.getexif())
 
         assert exif == exif_after_load
 
