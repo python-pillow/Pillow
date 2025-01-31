@@ -47,6 +47,8 @@ def deprecate(
         raise RuntimeError(msg)
     elif when == 12:
         removed = "Pillow 12 (2025-10-15)"
+    elif when == 13:
+        removed = "Pillow 13 (2026-10-15)"
     else:
         msg = f"Unknown removal version: {when}. Update {__name__}?"
         raise ValueError(msg)

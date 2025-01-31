@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from PIL import Image, ImageSequence, SpiderImagePlugin
+from PIL import Image, SpiderImagePlugin
 
 from .helper import assert_image_equal, hopper, is_pypy
 
@@ -153,8 +153,8 @@ def test_nonstack_file() -> None:
 
 def test_nonstack_dos() -> None:
     with Image.open(TEST_FILE) as im:
-        for i, frame in enumerate(ImageSequence.Iterator(im)):
-            assert i <= 1, "Non-stack DOS file test failed"
+        with pytest.raises(EOFError):
+            im.seek(0)
 
 
 # for issue #4093

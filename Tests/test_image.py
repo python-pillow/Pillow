@@ -189,8 +189,6 @@ class TestImage:
                 if ext == ".jp2" and not features.check_codec("jpg_2000"):
                     pytest.skip("jpg_2000 not available")
                 temp_file = str(tmp_path / ("temp." + ext))
-                if os.path.exists(temp_file):
-                    os.remove(temp_file)
                 im.save(Path(temp_file))
 
     def test_fp_name(self, tmp_path: Path) -> None:
@@ -667,7 +665,7 @@ class TestImage:
         # Test illegal image mode
         with hopper() as im:
             with pytest.raises(ValueError):
-                im.remap_palette(None)
+                im.remap_palette([])
 
     def test_remap_palette_transparency(self) -> None:
         im = Image.new("P", (1, 2), (0, 0, 0))
@@ -770,7 +768,7 @@ class TestImage:
         assert dict(exif)
 
         # Test that exif data is cleared after another load
-        exif.load(None)
+        exif.load(b"")
         assert not dict(exif)
 
         # Test loading just the EXIF header
@@ -792,6 +790,10 @@ class TestImage:
 
         ifd[36864] = b"0220"
         assert exif.get_ifd(0x8769) == {36864: b"0220"}
+
+        reloaded_exif = Image.Exif()
+        reloaded_exif.load(exif.tobytes())
+        assert reloaded_exif.get_ifd(0x8769) == {36864: b"0220"}
 
     @mark_if_feature_version(
         pytest.mark.valgrind_known_error, "libjpeg_turbo", "2.0", reason="Known Failing"
@@ -986,6 +988,11 @@ class TestImage:
                 assert im.getxmp() == {}
         else:
             assert im.getxmp() == {"xmpmeta": None}
+
+    def test_get_child_images(self) -> None:
+        im = Image.new("RGB", (1, 1))
+        with pytest.warns(DeprecationWarning):
+            assert im.get_child_images() == []
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_tobytes(self, size: tuple[int, int]) -> None:

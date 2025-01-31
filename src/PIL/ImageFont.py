@@ -644,6 +644,7 @@ class FreeTypeFont:
             features,
             language,
             stroke_width,
+            kwargs.get("stroke_filled", False),
             anchor,
             ink,
             start[0],

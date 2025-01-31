@@ -461,6 +461,20 @@ def test_free_type_font_get_mask(font: ImageFont.FreeTypeFont) -> None:
     assert mask.size == (108, 13)
 
 
+def test_stroke_mask() -> None:
+    # Arrange
+    text = "i"
+
+    # Act
+    font = ImageFont.truetype(FONT_PATH, 128)
+    mask = font.getmask(text, stroke_width=2)
+
+    # Assert
+    assert mask.getpixel((34, 5)) == 255
+    assert mask.getpixel((38, 5)) == 0
+    assert mask.getpixel((42, 5)) == 255
+
+
 def test_load_when_image_not_found() -> None:
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         pass

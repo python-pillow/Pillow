@@ -11,6 +11,9 @@ if ("$venv" -like "*\cibw-run-*\pp*-win_amd64\*") {
 $env:path += ";$pillow\winbuild\build\bin\"
 & "$venv\Scripts\activate.ps1"
 & reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe" /v "GlobalFlag" /t REG_SZ /d "0x02000000" /f
+if ("$venv" -like "*\cibw-run-*-win_amd64\*") {
+  & python -m pip install numpy
+}
 cd $pillow
 & python -VV
 if (!$?) { exit $LASTEXITCODE }

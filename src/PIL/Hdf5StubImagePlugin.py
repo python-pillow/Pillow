@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import os
 from typing import IO
 
 from . import Image, ImageFile
@@ -41,13 +42,11 @@ class HDF5StubImageFile(ImageFile.StubImageFile):
 
     def _open(self) -> None:
         assert self.fp is not None
-        offset = self.fp.tell()
-
         if not _accept(self.fp.read(8)):
             msg = "Not an HDF file"
             raise SyntaxError(msg)
 
-        self.fp.seek(offset)
+        self.fp.seek(-8, os.SEEK_CUR)
 
         # make something up
         self._mode = "F"

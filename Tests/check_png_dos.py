@@ -3,26 +3,25 @@ from __future__ import annotations
 import zlib
 from io import BytesIO
 
+import pytest
+
 from PIL import Image, ImageFile, PngImagePlugin
 
 TEST_FILE = "Tests/images/png_decompression_dos.png"
 
 
-def test_ignore_dos_text() -> None:
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
+def test_ignore_dos_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
 
-    try:
-        im = Image.open(TEST_FILE)
+    with Image.open(TEST_FILE) as im:
         im.load()
-    finally:
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
 
-    assert isinstance(im, PngImagePlugin.PngImageFile)
-    for s in im.text.values():
-        assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
+        assert isinstance(im, PngImagePlugin.PngImageFile)
+        for s in im.text.values():
+            assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
 
-    for s in im.info.values():
-        assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
+        for s in im.info.values():
+            assert len(s) < 1024 * 1024, "Text chunk larger than 1M"
 
 
 def test_dos_text() -> None:
