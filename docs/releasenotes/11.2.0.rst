@@ -44,11 +44,11 @@ TODO
 API Additions
 =============
 
-"justify" multiline text alignment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``"justify"`` multiline text alignment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In addition to "left", "center" and "right", multiline text can also be aligned using
-"justify"::
+In addition to ``"left"``, ``"center"`` and ``"right"``, multiline text can also be aligned using
+``"justify"``::
 
     from PIL import Image, ImageDraw
     im = Image.new("RGB", (50, 25))
