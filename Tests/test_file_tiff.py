@@ -780,15 +780,17 @@ class TestFileTiff:
         data = b"II\x2A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
         b = BytesIO(data)
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.seek(-4, os.SEEK_CUR)
             a.writeLong(2**32 - 1)
-            assert b.getvalue() == data + b"\xff\xff\xff\xff"
+            assert b.getvalue() == data[:-4] + b"\xff\xff\xff\xff"
 
     def test_appending_tiff_writer_rewritelastshorttolong(self) -> None:
         data = b"II\x2A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
         b = BytesIO(data)
         with TiffImagePlugin.AppendingTiffWriter(b) as a:
+            a.seek(-2, os.SEEK_CUR)
             a.rewriteLastShortToLong(2**32 - 1)
-            assert b.getvalue() == data[:-2] + b"\xff\xff\xff\xff"
+            assert b.getvalue() == data[:-4] + b"\xff\xff\xff\xff"
 
     def test_saving_icc_profile(self, tmp_path: Path) -> None:
         # Tests saving TIFF with icc_profile set.
