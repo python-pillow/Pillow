@@ -191,13 +191,10 @@ class TestImageFile:
                 im.load()
 
     @skip_unless_feature("zlib")
-    def test_truncated_without_errors(self) -> None:
+    def test_truncated_without_errors(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/truncated_image.png") as im:
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
-            try:
-                im.load()
-            finally:
-                ImageFile.LOAD_TRUNCATED_IMAGES = False
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+            im.load()
 
     @skip_unless_feature("zlib")
     def test_broken_datastream_with_errors(self) -> None:
@@ -206,13 +203,12 @@ class TestImageFile:
                 im.load()
 
     @skip_unless_feature("zlib")
-    def test_broken_datastream_without_errors(self) -> None:
+    def test_broken_datastream_without_errors(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         with Image.open("Tests/images/broken_data_stream.png") as im:
-            ImageFile.LOAD_TRUNCATED_IMAGES = True
-            try:
-                im.load()
-            finally:
-                ImageFile.LOAD_TRUNCATED_IMAGES = False
+            monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+            im.load()
 
 
 class MockPyDecoder(ImageFile.PyDecoder):
