@@ -166,9 +166,9 @@ def test_save_dib(tmp_path: Path) -> None:
 def test_rgba_bitfields() -> None:
     # This test image has been manually hexedited
     # to change the bitfield compression in the header from XBGR to RGBA
-    with Image.open("Tests/images/rgb32bf-rgba.bmp") as im:
+    with Image.open("Tests/images/rgb32bf-rgba.bmp") as bmp_im:
         # So before the comparing the image, swap the channels
-        b, g, r = im.split()[1:]
+        b, g, r = bmp_im.split()[1:]
         im = Image.merge("RGB", (r, g, b))
 
     assert_image_equal_tofile(im, "Tests/images/bmp/q/rgb32bf-xbgr.bmp")
