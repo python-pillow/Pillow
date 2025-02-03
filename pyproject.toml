@@ -96,15 +96,17 @@ before-all = ".github/workflows/wheels-dependencies.sh"
 build-verbosity = 1
 
 config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable"
-# Disable platform guessing on macOS
-macos.config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
 
 test-command = "cd {project} && .github/workflows/wheels-test.sh"
 test-extras = "tests"
 
+[tool.cibuildwheel.macos]
+repair-wheel-command = "DYLD_LIBRARY_PATH=$(pwd)/build/deps/darwin/lib delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+# Disable platform guessing on macOS
+config-settings = "raqm=enable raqm=vendor fribidi=vendor imagequant=disable platform-guessing=disable"
+
 [tool.cibuildwheel.macos.environment]
 PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
-DYLD_LIBRARY_PATH = "$(pwd)/build/deps/darwin/lib"
 
 [tool.black]
 exclude = "wheels/multibuild"
