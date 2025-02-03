@@ -32,6 +32,7 @@ configuration: dict[str, list[str]] = {}
 
 
 PILLOW_VERSION = get_version()
+AVIF_ROOT = None
 FREETYPE_ROOT = None
 HARFBUZZ_ROOT = None
 FRIBIDI_ROOT = None
@@ -481,6 +482,7 @@ class pil_build_ext(build_ext):
         #
         # add configured kits
         for root_name, lib_name in {
+            "AVIF_ROOT": "avif",
             "JPEG_ROOT": "libjpeg",
             "JPEG2K_ROOT": "libopenjp2",
             "TIFF_ROOT": ("libtiff-5", "libtiff-4"),

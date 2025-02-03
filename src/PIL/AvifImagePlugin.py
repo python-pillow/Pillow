@@ -45,7 +45,7 @@ def _accept(prefix: bytes) -> bool | str:
     return False
 
 
-def _get_default_max_threads():
+def _get_default_max_threads() -> int:
     if DEFAULT_MAX_THREADS:
         return DEFAULT_MAX_THREADS
     if hasattr(os, "sched_getaffinity"):
@@ -57,8 +57,7 @@ def _get_default_max_threads():
 class AvifImageFile(ImageFile.ImageFile):
     format = "AVIF"
     format_description = "AVIF image"
-    __loaded = -1
-    __frame = 0
+    __frame = -1
 
     def _open(self) -> None:
         if not SUPPORTED:
@@ -80,7 +79,7 @@ class AvifImageFile(ImageFile.ImageFile):
         )
 
         # Get info from decoder
-        width, height, n_frames, mode, icc, exif, xmp, exif_orientation = (
+        width, height, n_frames, mode, icc, exif, exif_orientation, xmp = (
             self._decoder.get_info()
         )
         self._size = width, height
@@ -105,28 +104,28 @@ class AvifImageFile(ImageFile.ImageFile):
                 exif = exif_data.tobytes()
         if exif:
             self.info["exif"] = exif
+        self.seek(0)
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
 
         self.__frame = frame
+        self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
 
     def load(self) -> Image.core.PixelAccess | None:
-        if self.__loaded != self.__frame:
+        if self.tile:
             # We need to load the image data for this frame
             data, timescale, tsp_in_ts, dur_in_ts = self._decoder.get_frame(
                 self.__frame
             )
             self.info["timestamp"] = round(1000 * (tsp_in_ts / timescale))
             self.info["duration"] = round(1000 * (dur_in_ts / timescale))
-            self.__loaded = self.__frame
 
             # Set tile
             if self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
 
         return super().load()
 

@@ -7,7 +7,7 @@ version=1.1.1
 
 pushd libavif-$version
 
-if [ $(uname) == "Darwin" ]; then
+if [ $(uname) == "Darwin" ] && [ -x "$(command -v brew)" ]; then
     PREFIX=$(brew --prefix)
 else
     PREFIX=/usr
@@ -19,8 +19,19 @@ LIBAVIF_CMAKE_FLAGS=()
 HAS_DECODER=0
 HAS_ENCODER=0
 
+if $PKGCONFIG --exists aom; then
+    LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_AOM=SYSTEM)
+    HAS_ENCODER=1
+    HAS_DECODER=1
+fi
+
 if $PKGCONFIG --exists dav1d; then
     LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_DAV1D=SYSTEM)
+    HAS_DECODER=1
+fi
+
+if $PKGCONFIG --exists libgav1; then
+    LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_LIBGAV1=SYSTEM)
     HAS_DECODER=1
 fi
 
@@ -32,17 +43,6 @@ fi
 if $PKGCONFIG --exists SvtAv1Enc; then
     LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_SVT=SYSTEM)
     HAS_ENCODER=1
-fi
-
-if $PKGCONFIG --exists libgav1; then
-    LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_LIBGAV1=SYSTEM)
-    HAS_DECODER=1
-fi
-
-if $PKGCONFIG --exists aom; then
-    LIBAVIF_CMAKE_FLAGS+=(-DAVIF_CODEC_AOM=SYSTEM)
-    HAS_ENCODER=1
-    HAS_DECODER=1
 fi
 
 if [ "$HAS_ENCODER" != 1 ] || [ "$HAS_DECODER" != 1 ]; then

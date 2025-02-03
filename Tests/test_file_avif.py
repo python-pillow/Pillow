@@ -4,7 +4,7 @@ import gc
 import os
 import re
 import warnings
-from collections.abc import Generator
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from io import BytesIO
 from pathlib import Path
@@ -70,8 +70,7 @@ def is_docker_qemu() -> bool:
         init_proc_exe = os.readlink("/proc/1/exe")
     except (FileNotFoundError, PermissionError):
         return False
-    else:
-        return "qemu" in init_proc_exe
+    return "qemu" in init_proc_exe
 
 
 class TestUnsupportedAvif:
@@ -116,36 +115,32 @@ class TestFileAvif:
                 image, "Tests/images/avif/hopper_avif_write.png", 11.5
             )
 
-    def _roundtrip(self, tmp_path: Path, mode: str, epsilon: float) -> None:
-        temp_file = str(tmp_path / "temp.avif")
-
-        hopper(mode).save(temp_file)
-        with Image.open(temp_file) as image:
-            assert image.mode == "RGB"
-            assert image.size == (128, 128)
-            assert image.format == "AVIF"
-            image.getdata()
-
-            if mode == "RGB":
-                # avifdec hopper.avif avif/hopper_avif_write.png
-                assert_image_similar_tofile(
-                    image, "Tests/images/avif/hopper_avif_write.png", 6.02
-                )
-
-            # This test asserts that the images are similar. If the average pixel
-            # difference between the two images is less than the epsilon value,
-            # then we're going to accept that it's a reasonable lossy version of
-            # the image.
-            expected = hopper()
-            assert_image_similar(image, expected, epsilon)
-
     def test_write_rgb(self, tmp_path: Path) -> None:
         """
         Can we write a RGB mode file to avif without error?
         Does it have the bits we expect?
         """
 
-        self._roundtrip(tmp_path, "RGB", 8.62)
+        temp_file = str(tmp_path / "temp.avif")
+
+        im = hopper()
+        im.save(temp_file)
+        with Image.open(temp_file) as reloaded:
+            assert reloaded.mode == "RGB"
+            assert reloaded.size == (128, 128)
+            assert reloaded.format == "AVIF"
+            reloaded.getdata()
+
+            # avifdec hopper.avif avif/hopper_avif_write.png
+            assert_image_similar_tofile(
+                reloaded, "Tests/images/avif/hopper_avif_write.png", 6.02
+            )
+
+            # This test asserts that the images are similar. If the average pixel
+            # difference between the two images is less than the epsilon value,
+            # then we're going to accept that it's a reasonable lossy version of
+            # the image.
+            assert_image_similar(reloaded, im, 8.62)
 
     def test_AvifEncoder_with_invalid_args(self) -> None:
         """
@@ -186,9 +181,10 @@ class TestFileAvif:
 
     def test_no_resource_warning(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
-            temp_file = str(tmp_path / "temp.avif")
             with warnings.catch_warnings():
-                im.save(temp_file)
+                warnings.simplefilter("error")
+
+                im.save(tmp_path / "temp.avif")
 
     @pytest.mark.parametrize("major_brand", [b"avif", b"avis", b"mif1", b"msf1"])
     def test_accept_ftyp_brands(self, major_brand: bytes) -> None:
@@ -293,7 +289,8 @@ class TestFileAvif:
             exif = im.getexif()
         assert exif[274] == 3
 
-    @pytest.mark.parametrize("use_bytes, orientation", [(True, 1), (False, 2)])
+    @pytest.mark.parametrize("use_bytes", [True, False])
+    @pytest.mark.parametrize("orientation", [1, 2])
     def test_exif_save(
         self,
         tmp_path: Path,
@@ -313,7 +310,7 @@ class TestFileAvif:
             else:
                 assert reloaded.info["exif"] == exif_data
 
-    def test_exif_without_orientation(self, tmp_path: Path):
+    def test_exif_without_orientation(self, tmp_path: Path) -> None:
         exif = Image.Exif()
         exif[272] = b"test"
         exif_data = exif.tobytes()
@@ -347,17 +344,13 @@ class TestFileAvif:
         self, rot: int, mir: int, exif_orientation: int, tmp_path: Path
     ) -> None:
         with Image.open(f"Tests/images/avif/rot{rot}mir{mir}.avif") as im:
-            exif = im.info["exif"]
+            exif = im.getexif()
+            assert exif[274] == exif_orientation
+
             test_file = str(tmp_path / "temp.avif")
             im.save(test_file, exif=exif)
-
-            exif_data = Image.Exif()
-            exif_data.load(exif)
-            assert exif_data[274] == exif_orientation
         with Image.open(test_file) as reloaded:
-            exif_data = Image.Exif()
-            exif_data.load(reloaded.info["exif"])
-            assert exif_data[274] == exif_orientation
+            assert reloaded.getexif()[274] == exif_orientation
 
     def test_xmp(self) -> None:
         with Image.open("Tests/images/avif/xmp_tags_orientation.avif") as im:
@@ -397,7 +390,7 @@ class TestFileAvif:
             with pytest.raises(EOFError):
                 im.seek(1)
 
-    @pytest.mark.parametrize("subsampling", ["4:4:4", "4:2:2", "4:0:0"])
+    @pytest.mark.parametrize("subsampling", ["4:4:4", "4:2:2", "4:2:0", "4:0:0"])
     def test_encoder_subsampling(self, tmp_path: Path, subsampling: str) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
@@ -409,10 +402,11 @@ class TestFileAvif:
             with pytest.raises(ValueError):
                 im.save(test_file, subsampling="foo")
 
-    def test_encoder_range(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize("value", ["full", "limited"])
+    def test_encoder_range(self, tmp_path: Path, value: str) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
-            im.save(test_file, range="limited")
+            im.save(test_file, range=value)
 
     def test_encoder_range_invalid(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
@@ -421,7 +415,6 @@ class TestFileAvif:
                 im.save(test_file, range="foo")
 
     @skip_unless_avif_encoder("aom")
-    @skip_unless_feature("avif")
     def test_encoder_codec_param(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
@@ -434,15 +427,13 @@ class TestFileAvif:
                 im.save(test_file, codec="foo")
 
     @skip_unless_avif_decoder("dav1d")
-    @skip_unless_feature("avif")
-    def test_encoder_codec_cannot_encode(self, tmp_path: Path) -> None:
+    def test_decoder_codec_cannot_encode(self, tmp_path: Path) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             test_file = str(tmp_path / "temp.avif")
             with pytest.raises(ValueError):
                 im.save(test_file, codec="dav1d")
 
     @skip_unless_avif_encoder("aom")
-    @skip_unless_feature("avif")
     @pytest.mark.parametrize(
         "advanced",
         [
@@ -451,10 +442,11 @@ class TestFileAvif:
                 "enable-chroma-deltaq": "1",
             },
             (("aq-mode", "1"), ("enable-chroma-deltaq", "1")),
+            [("aq-mode", "1"), ("enable-chroma-deltaq", "1")],
         ],
     )
     def test_encoder_advanced_codec_options(
-        self, advanced: dict[str, str] | tuple[tuple[str, str], ...]
+        self, advanced: dict[str, str] | Sequence[tuple[str, str]]
     ) -> None:
         with Image.open(TEST_AVIF_FILE) as im:
             ctrl_buf = BytesIO()
@@ -469,7 +461,6 @@ class TestFileAvif:
             assert ctrl_buf.getvalue() != test_buf.getvalue()
 
     @skip_unless_avif_encoder("aom")
-    @skip_unless_feature("avif")
     @pytest.mark.parametrize("advanced", [{"foo": "bar"}, 1234])
     def test_encoder_advanced_codec_options_invalid(
         self, tmp_path: Path, advanced: dict[str, str] | int
@@ -480,7 +471,6 @@ class TestFileAvif:
                 im.save(test_file, codec="aom", advanced=advanced)
 
     @skip_unless_avif_decoder("aom")
-    @skip_unless_feature("avif")
     def test_decoder_codec_param(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(AvifImagePlugin, "DECODE_CODEC_CHOICE", "aom")
 
@@ -488,8 +478,7 @@ class TestFileAvif:
             assert im.size == (128, 128)
 
     @skip_unless_avif_encoder("rav1e")
-    @skip_unless_feature("avif")
-    def test_decoder_codec_cannot_decode(
+    def test_encoder_codec_cannot_decode(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
         monkeypatch.setattr(AvifImagePlugin, "DECODE_CODEC_CHOICE", "rav1e")
@@ -506,7 +495,6 @@ class TestFileAvif:
                 pass
 
     @skip_unless_avif_encoder("aom")
-    @skip_unless_feature("avif")
     def test_encoder_codec_available(self) -> None:
         assert _avif.encoder_codec_available("aom") is True
 
@@ -515,7 +503,6 @@ class TestFileAvif:
             _avif.encoder_codec_available()
 
     @skip_unless_avif_decoder("dav1d")
-    @skip_unless_feature("avif")
     def test_encoder_codec_available_cannot_decode(self) -> None:
         assert _avif.encoder_codec_available("dav1d") is False
 
@@ -529,7 +516,6 @@ class TestFileAvif:
                 im.save(test_file, quality="invalid")
 
     @skip_unless_avif_decoder("aom")
-    @skip_unless_feature("avif")
     def test_decoder_codec_available(self) -> None:
         assert _avif.decoder_codec_available("aom") is True
 
@@ -538,7 +524,6 @@ class TestFileAvif:
             _avif.decoder_codec_available()
 
     @skip_unless_avif_encoder("rav1e")
-    @skip_unless_feature("avif")
     def test_decoder_codec_available_cannot_decode(self) -> None:
         assert _avif.decoder_codec_available("rav1e") is False
 
@@ -566,9 +551,10 @@ class TestFileAvif:
             assert im.size == (480, 270)
 
     @skip_unless_avif_encoder("aom")
-    def test_aom_optimizations(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize("speed", [-1, 1, 11])
+    def test_aom_optimizations(self, tmp_path: Path, speed: int) -> None:
         test_file = str(tmp_path / "temp.avif")
-        hopper().save(test_file, codec="aom", speed=1)
+        hopper().save(test_file, codec="aom", speed=speed)
 
     @skip_unless_avif_encoder("svt")
     def test_svt_optimizations(self, tmp_path: Path) -> None:
@@ -579,7 +565,7 @@ class TestFileAvif:
 @skip_unless_feature("avif")
 class TestAvifAnimation:
     @contextmanager
-    def star_frames(self) -> Generator[list[ImageFile.ImageFile], None, None]:
+    def star_frames(self) -> Generator[list[Image.Image], None, None]:
         with Image.open("Tests/images/avif/star.png") as f:
             yield [f, f.rotate(90), f.rotate(180), f.rotate(270)]
 
@@ -600,24 +586,25 @@ class TestAvifAnimation:
     def test_write_animation_P(self, tmp_path: Path) -> None:
         """
         Convert an animated GIF to animated AVIF, then compare the frame
-        count, and first and second-to-last frames to ensure they're visually similar.
+        count, and ensure the frames are visually similar to the originals.
         """
 
-        with Image.open("Tests/images/avif/star.gif") as orig:
-            assert orig.n_frames > 1
+        with Image.open("Tests/images/avif/star.gif") as original:
+            assert original.n_frames > 1
 
             temp_file = str(tmp_path / "temp.avif")
-            orig.save(temp_file, save_all=True)
+            original.save(temp_file, save_all=True)
             with Image.open(temp_file) as im:
-                assert im.n_frames == orig.n_frames
+                assert im.n_frames == original.n_frames
 
                 # Compare first frame in P mode to frame from original GIF
-                assert_image_similar(im, orig.convert("RGBA"), 2)
+                assert_image_similar(im, original.convert("RGBA"), 2)
 
-                # Compare second-to-last frame in RGBA mode to frame from original GIF
-                orig.seek(orig.n_frames - 2)
-                im.seek(im.n_frames - 2)
-                assert_image_similar(im, orig, 2.54)
+                # Compare later frames in RGBA mode to frames from original GIF
+                for frame in range(1, original.n_frames):
+                    original.seek(frame)
+                    im.seek(frame)
+                    assert_image_similar(im, original, 2.54)
 
     def test_write_animation_RGBA(self, tmp_path: Path) -> None:
         """
@@ -645,8 +632,8 @@ class TestAvifAnimation:
 
             # Test appending using a generator
             def imGenerator(
-                ims: list[ImageFile.ImageFile],
-            ) -> Generator[ImageFile.ImageFile, None, None]:
+                ims: list[Image.Image],
+            ) -> Generator[Image.Image, None, None]:
                 yield from ims
 
             temp_file2 = str(tmp_path / "temp_generator.avif")
@@ -703,13 +690,13 @@ class TestAvifAnimation:
             assert im.is_animated
 
             # Check that timestamps and durations match original values specified
-            ts = 0
+            timestamp = 0
             for frame in range(im.n_frames):
                 im.seek(frame)
                 im.load()
                 assert im.info["duration"] == durations[frame]
-                assert im.info["timestamp"] == ts
-                ts += durations[frame]
+                assert im.info["timestamp"] == timestamp
+                timestamp += durations[frame]
 
     def test_seeking(self, tmp_path: Path) -> None:
         """
@@ -717,14 +704,14 @@ class TestAvifAnimation:
         reverse-order, verifying the timestamps and durations are correct.
         """
 
-        dur = 33
+        duration = 33
         temp_file = str(tmp_path / "temp.avif")
         with self.star_frames() as frames:
             frames[0].save(
                 temp_file,
                 save_all=True,
                 append_images=(frames[1:] + [frames[0]]),
-                duration=dur,
+                duration=duration,
             )
 
         with Image.open(temp_file) as im:
@@ -732,13 +719,13 @@ class TestAvifAnimation:
             assert im.is_animated
 
             # Traverse frames in reverse, checking timestamps and durations
-            ts = dur * (im.n_frames - 1)
+            timestamp = duration * (im.n_frames - 1)
             for frame in reversed(range(im.n_frames)):
                 im.seek(frame)
                 im.load()
-                assert im.info["duration"] == dur
-                assert im.info["timestamp"] == ts
-                ts -= dur
+                assert im.info["duration"] == duration
+                assert im.info["timestamp"] == timestamp
+                timestamp -= duration
 
     def test_seek_errors(self) -> None:
         with Image.open("Tests/images/avif/star.avifs") as im:

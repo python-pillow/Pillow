@@ -89,7 +89,6 @@ Many of Pillow's features require external libraries:
 
 * **libxcb** provides X11 screengrab support.
 
-
 * **libavif** provides support for the AVIF format.
 
   * Pillow requires libavif version **0.8.0** or greater, which is when

@@ -15,8 +15,8 @@ brew install \
     little-cms2 \
     openjpeg \
     webp \
-    dav1d \
     aom \
+    dav1d \
     rav1e \
     svt-av1
 export PKG_CONFIG_PATH="/usr/local/opt/openblas/lib/pkgconfig"

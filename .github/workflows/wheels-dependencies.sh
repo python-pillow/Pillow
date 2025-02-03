@@ -125,9 +125,9 @@ function build_libavif {
             -DBUILD_SHARED_LIBS=OFF \
             -DAVIF_LIBSHARPYUV=LOCAL \
             -DAVIF_LIBYUV=LOCAL \
-            -DAVIF_CODEC_RAV1E=LOCAL \
             -DAVIF_CODEC_AOM=LOCAL \
             -DAVIF_CODEC_DAV1D=LOCAL \
+            -DAVIF_CODEC_RAV1E=LOCAL \
             -DAVIF_CODEC_SVT=LOCAL \
             -DENABLE_NASM=ON \
             -DCMAKE_MODULE_PATH=/tmp/cmake/Modules \
@@ -142,8 +142,6 @@ function build {
         yum remove -y zlib-devel
     fi
     build_zlib_ng
-
-    build_libavif
 
     build_simple xcb-proto 1.17.0 https://xorg.freedesktop.org/archive/individual/proto
     if [ -n "$IS_MACOS" ]; then
@@ -168,6 +166,7 @@ function build {
         build_tiff
     fi
 
+    build_libavif
     build_libpng
     build_lcms2
     build_openjpeg
