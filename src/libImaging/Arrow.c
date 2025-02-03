@@ -112,57 +112,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     return 0;
 }
 
-static void
-release_simple_type(struct ArrowSchema *schema) {
-    // Mark released
-    schema->release = NULL;
-}
 
-void
-export_uint32_type(struct ArrowSchema *schema) {
-    *schema = (struct ArrowSchema){// Type description
-                                   .format = "I",
-                                   .name = "",
-                                   .metadata = NULL,
-                                   .flags = 0,
-                                   .n_children = 0,
-                                   .children = NULL,
-                                   .dictionary = NULL,
-                                   // Bookkeeping
-                                   .release = &release_simple_type
-    };
-}
-
-static void
-release_uint32_array(struct ArrowArray *array) {
-    // assert(array->n_buffers == 2);
-    //  Free the buffers and the buffers array
-    free((void *)array->buffers[1]);
-    free(array->buffers);
-    // Mark released
-    array->release = NULL;
-}
-
-void
-export_uint32_array(const uint32_t *data, int64_t nitems, struct ArrowArray *array) {
-    // Initialize primitive fields
-    *array = (struct ArrowArray){// Data description
-                                 .length = nitems,
-                                 .offset = 0,
-                                 .null_count = 0,
-                                 .n_buffers = 2,
-                                 .n_children = 0,
-                                 .children = NULL,
-                                 .dictionary = NULL,
-                                 // Bookkeeping
-                                 .release = &release_uint32_array
-    };
-    // Allocate list of buffers
-    array->buffers = (const void **)malloc(sizeof(void *) * array->n_buffers);
-    // assert(array->buffers != NULL);
-    array->buffers[0] = NULL;  // no nulls, null bitmap can be omitted
-    array->buffers[1] = data;
-}
 
 static void
 release_const_array(struct ArrowArray *array) {

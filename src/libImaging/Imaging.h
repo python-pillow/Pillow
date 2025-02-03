@@ -736,8 +736,6 @@ extern int
 export_imaging_array(Imaging im, struct ArrowArray *array);
 extern int
 export_imaging_schema(Imaging im, struct ArrowSchema *schema);
-extern void
-export_uint32_type(struct ArrowSchema *schema);
 
 /* Errcodes */
 #define IMAGING_CODEC_END 1
