@@ -302,7 +302,9 @@ _new_arrow(PyObject *self, PyObject *args) {
     }
 
     // ImagingBorrowArrow is responsible for retaining the array_capsule
-    ret = PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule));
+    ret =
+        PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule)
+        );
     if (!ret) {
         return ImagingError_ValueError("Invalid arrow array mode or size mismatch");
     }
@@ -4201,7 +4203,6 @@ _set_use_block_allocator(PyObject *self, PyObject *args) {
     ImagingMemorySetBlockAllocator(&ImagingDefaultArena, use_block_allocator);
     Py_RETURN_NONE;
 }
-
 
 static PyObject *
 _get_use_block_allocator(PyObject *self, PyObject *args) {

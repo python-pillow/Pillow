@@ -379,7 +379,6 @@ ImagingMemorySetBlockAllocator(ImagingMemoryArena arena, int use_block_allocator
     arena->use_block_allocator = use_block_allocator;
 }
 
-
 void
 ImagingMemoryClearCache(ImagingMemoryArena arena, int new_size) {
     while (arena->blocks_cached > new_size) {
@@ -574,14 +573,19 @@ ImagingAllocateBlock(Imaging im) {
 static void
 ImagingDestroyArrow(Imaging im) {
     // Rely on the internal python destructor for the array capsule.
-    if (im->arrow_array_capsule){
+    if (im->arrow_array_capsule) {
         Py_DECREF(im->arrow_array_capsule);
         im->arrow_array_capsule = NULL;
     }
 }
 
 Imaging
-ImagingBorrowArrow(Imaging im, struct ArrowArray *external_array, int offset_width, PyObject* arrow_capsule) {
+ImagingBorrowArrow(
+    Imaging im,
+    struct ArrowArray *external_array,
+    int offset_width,
+    PyObject *arrow_capsule
+) {
     // offset_width is the # of char* for a single offset from arrow
     Py_ssize_t y, i;
 
