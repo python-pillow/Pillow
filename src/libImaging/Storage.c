@@ -299,14 +299,14 @@ ImagingDelete(Imaging im) {
         return;
     }
 
-    MUTEX_LOCK(im->mutex);
+    MUTEX_LOCK(&im->mutex);
     im->refcount--;
 
     if (im->refcount > 0) {
-        MUTEX_UNLOCK(im->mutex);
+        MUTEX_UNLOCK(&im->mutex);
         return;
     }
-    MUTEX_UNLOCK(im->mutex);
+    MUTEX_UNLOCK(&im->mutex);
 
     if (im->palette) {
         ImagingPaletteDelete(im->palette);
