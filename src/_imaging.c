@@ -4193,6 +4193,22 @@ _set_blocks_max(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
+_set_use_block_allocator(PyObject *self, PyObject *args) {
+    int use_block_allocator;
+    if (!PyArg_ParseTuple(args, "i:set_use_block_allocator", &use_block_allocator)) {
+        return NULL;
+    }
+    ImagingMemorySetBlockAllocator(&ImagingDefaultArena, use_block_allocator);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+_get_use_block_allocator(PyObject *self, PyObject *args) {
+    return PyLong_FromLong(ImagingDefaultArena.use_block_allocator);
+}
+
+static PyObject *
 _clear_cache(PyObject *self, PyObject *args) {
     int i = 0;
 
@@ -4399,9 +4415,11 @@ static PyMethodDef functions[] = {
     {"get_alignment", (PyCFunction)_get_alignment, METH_VARARGS},
     {"get_block_size", (PyCFunction)_get_block_size, METH_VARARGS},
     {"get_blocks_max", (PyCFunction)_get_blocks_max, METH_VARARGS},
+    {"get_use_block_allocator", (PyCFunction)_get_use_block_allocator, METH_VARARGS},
     {"set_alignment", (PyCFunction)_set_alignment, METH_VARARGS},
     {"set_block_size", (PyCFunction)_set_block_size, METH_VARARGS},
     {"set_blocks_max", (PyCFunction)_set_blocks_max, METH_VARARGS},
+    {"set_use_block_allocator", (PyCFunction)_set_use_block_allocator, METH_VARARGS},
     {"clear_cache", (PyCFunction)_clear_cache, METH_VARARGS},
 
     {NULL, NULL} /* sentinel */

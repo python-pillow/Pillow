@@ -170,8 +170,7 @@ def test_multiblock_l_image():
     with pytest.raises(ValueError):
         (schema, arr) = img.__arrow_c_array__()
 
-
-def test_multiblock__rgba_image():
+def test_multiblock_rgba_image():
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
@@ -192,8 +191,7 @@ def test_multiblock_l_schema():
     with pytest.raises(ValueError):
         schema = img.__arrow_c_schema__()
 
-
-def test_multiblock__rgba_schema():
+def test_multiblock_rgba_schema():
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
@@ -201,4 +199,62 @@ def test_multiblock__rgba_schema():
     img = Image.new("RGBA", size, (128, 127, 126, 125))
 
     with pytest.raises(ValueError):
-        schema = img.__arrow_c_schema__()
+        schema= img.__arrow_c_schema__()
+
+
+def test_singleblock_l_image():
+    Image.core.set_use_block_allocator(1)
+
+    block_size = Image.core.get_block_size()
+
+    # check a 2 block image in 4 channel mode
+    size = (4096, 2* (block_size//4096))
+    img = Image.new('L', size, 128)
+    assert img.im.isblock()
+
+    (schema, arr) = img.__arrow_c_array__()
+    assert schema
+    assert arr
+
+    Image.core.set_use_block_allocator(0)
+
+def test_singleblock_rgba_image():
+    Image.core.set_use_block_allocator(1)
+    block_size = Image.core.get_block_size()
+
+    # check a 2 block image in 4 channel mode
+    size = (4096, (block_size//4096) //2)
+    img = Image.new('RGBA', size, (128,127,126,125))
+    assert img.im.isblock()
+
+    (schema, arr) = img.__arrow_c_array__()
+    assert schema
+    assert arr
+    Image.core.set_use_block_allocator(0)
+
+
+def test_singleblock_l_schema():
+    Image.core.set_use_block_allocator(1)
+    block_size = Image.core.get_block_size()
+
+    # check a 2 block image in single channel mode
+    size = (4096, 2*block_size//4096)
+    img = Image.new('L', size, 128)
+    assert img.im.isblock()
+
+    schema = img.__arrow_c_schema__()
+    assert schema
+    Image.core.set_use_block_allocator(0)
+
+def test_singleblock_rgba_schema():
+    Image.core.set_use_block_allocator(1)
+    block_size = Image.core.get_block_size()
+
+    # check a 2 block image in 4 channel mode
+    size = (4096, (block_size//4096) //2)
+    img = Image.new('RGBA', size, (128,127,126,125))
+    assert img.im.isblock()
+
+    schema= img.__arrow_c_schema__()
+    assert schema
+    Image.core.set_use_block_allocator(0)
