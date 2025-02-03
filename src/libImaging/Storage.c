@@ -703,7 +703,7 @@ ImagingNewArrow(
     if (((strcmp(schema->format, "I") == 0  // int32
           && im->pixelsize == 4             // 4xchar* storage
           && im->bands >= 2) // INT32 into any INT32 Storage mode
-         ||
+         ||  // (()||()) &&
          (strcmp(schema->format, im->arrow_band_format) == 0 // same mode
           && im->bands == 1)) // Single band match
         && pixels == external_array->length) {

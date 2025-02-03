@@ -24,21 +24,26 @@ ReleaseExportedSchema(struct ArrowSchema *array) {
         free((void *)array->name);
         array->name = NULL;
     }
+    if (array->metadata) {
+        free((void *)array->metadata);
+        array->metadata = NULL;
+    }
 
     // Release children
     for (int64_t i = 0; i < array->n_children; ++i) {
         struct ArrowSchema *child = array->children[i];
         if (child->release != NULL) {
             child->release(child);
-            // assert(child->release == NULL);
+            child->release = NULL;
         }
+        // UNDONE -- should I be releasing the children?
     }
 
     // Release dictionary
     struct ArrowSchema *dict = array->dictionary;
     if (dict != NULL && dict->release != NULL) {
         dict->release(dict);
-        // assert(dict->release == NULL);
+        dict->release = NULL;
     }
 
     // TODO here: release and/or deallocate all data directly owned by
@@ -58,28 +63,28 @@ export_named_type(struct ArrowSchema *schema, char *format, char *name) {
     formatp = calloc(format_len, 1);
 
     if (!formatp) {
-        return 1;
+        return IMAGING_CODEC_MEMORY;
     }
 
     namep = calloc(name_len, 1);
     if (!namep) {
         free(formatp);
-        return 1;
+        return IMAGING_CODEC_MEMORY;
     }
 
     strncpy(formatp, format, format_len);
     strncpy(namep, name, name_len);
 
     *schema = (struct ArrowSchema){// Type description
-                                   .format = formatp,
-                                   .name = namep,
-                                   .metadata = NULL,
-                                   .flags = 0,
-                                   .n_children = 0,
-                                   .children = NULL,
-                                   .dictionary = NULL,
-                                   // Bookkeeping
-                                   .release = &ReleaseExportedSchema
+        .format = formatp,
+        .name = namep,
+        .metadata = NULL,
+        .flags = 0,
+        .n_children = 0,
+        .children = NULL,
+        .dictionary = NULL,
+        // Bookkeeping
+        .release = &ReleaseExportedSchema
     };
     return 0;
 }
@@ -89,7 +94,12 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     int retval = 0;
 
     if (strcmp(im->arrow_band_format, "") == 0) {
-        return 1;
+        return IMAGING_ARROW_INCOMPATIBLE_MODE;
+    }
+
+    /* for now, single block images */
+    if (!(im->blocks_count == 0 || im->blocks_count == 1)){
+        return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
     if (im->bands == 1) {
@@ -97,17 +107,18 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     }
 
     retval = export_named_type(schema, "+w:4", "");
-    if (retval) {
+    if (retval != 0) {
         return retval;
     }
     // if it's not 1 band, it's an int32 at the moment. 4 unint8 bands.
     schema->n_children = 1;
     schema->children = calloc(1, sizeof(struct ArrowSchema *));
     schema->children[0] = (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
-    if (export_named_type(schema->children[0], im->arrow_band_format, "pixel")) {
+    retval = export_named_type(schema->children[0], im->arrow_band_format, "pixel");
+    if (retval != 0) {
         free(schema->children[0]);
         schema->release(schema);
-        return 2;
+        return retval;
     }
     return 0;
 }
@@ -118,11 +129,27 @@ static void
 release_const_array(struct ArrowArray *array) {
     Imaging im = (Imaging)array->private_data;
 
-    ImagingDelete(im);
+    if (array->n_children == 0) {
+        ImagingDelete(im);
+    }
 
-    // assert(array->n_buffers == 2);
     //  Free the buffers and the buffers array
-    free(array->buffers);
+    if (array->buffers) {
+        free(array->buffers);
+        array->buffers = NULL;
+    }
+    if (array->children) {
+        // undone -- does arrow release all the children recursively.
+        for (int i=0; i < array->n_children; i++) {
+            if (array->children[i]->release){
+                array->children[i]->release(array->children[i]);
+                array->children[i]->release = NULL;
+                free(array->children[i]);
+            }
+        }
+        free(array->children);
+        array->children = NULL;
+    }
     // Mark released
     array->release = NULL;
 }
@@ -131,8 +158,10 @@ int
 export_single_channel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 
-    /* undone -- for now, single block images */
-    // assert (im->block_count = 0 || im->block_count = 1);
+    /* for now, single block images */
+    if (!(im->blocks_count == 0 || im->blocks_count == 1)){
+        return IMAGING_ARROW_MEMORY_LAYOUT;
+    }
 
     if (im->lines_per_block && im->lines_per_block < im->ysize) {
         length = im->xsize * im->lines_per_block;
@@ -172,8 +201,10 @@ int
 export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 
-    /* undone -- for now, single block images */
-    // assert (im->block_count = 0 || im->block_count = 1);
+    /* for now, single block images */
+    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
+        return IMAGING_ARROW_MEMORY_LAYOUT;
+    }
 
     if (im->lines_per_block && im->lines_per_block < im->ysize) {
         length = im->xsize * im->lines_per_block;
@@ -200,13 +231,22 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
 
     // Allocate list of buffers
     array->buffers = (const void **)calloc(1, sizeof(void *) * array->n_buffers);
+    if (!array->buffers) {
+        goto err;
+    }
     // assert(array->buffers != NULL);
     array->buffers[0] = NULL;  // no nulls, null bitmap can be omitted
 
     // if it's not 1 band, it's an int32 at the moment. 4 unint8 bands.
     array->n_children = 1;
     array->children = calloc(1, sizeof(struct ArrowArray *));
+    if (!array->children) {
+        goto err;
+    }
     array->children[0] = (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
+    if (!array->children[0]) {
+        goto err;
+    }
 
     MUTEX_LOCK(im->mutex);
     im->refcount++;
@@ -233,12 +273,24 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
         array->children[0]->buffers[1] = im->blocks[0].ptr;
     }
     return 0;
+
+ err:
+    if (array->children[0]) {
+        free(array->children[0]);
+    }
+    if (array->children) {
+        free(array->children);
+    }
+    if (array->buffers) {
+        free(array->buffers);
+    }
+    return IMAGING_CODEC_MEMORY;
 }
 
 int
 export_imaging_array(Imaging im, struct ArrowArray *array) {
     if (strcmp(im->arrow_band_format, "") == 0) {
-        return 1;
+        return IMAGING_ARROW_INCOMPATIBLE_MODE;
     }
 
     if (im->bands == 1) {
