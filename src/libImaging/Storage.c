@@ -566,15 +566,15 @@ ImagingAllocateBlock(Imaging im) {
 
 static void
 ImagingDestroyArrow(Imaging im) {
-    if (im->arrow_array_capsule && im->arrow_array_capsule->release) {
-        im->arrow_array_capsule->release(im->arrow_array_capsule);
-        im->arrow_array_capsule->release = NULL;
+    // Rely on the internal python destructor for the array capsule.
+    if (im->arrow_array_capsule){
+        Py_DECREF(im->arrow_array_capsule);
         im->arrow_array_capsule = NULL;
     }
 }
 
 Imaging
-ImagingBorrowArrow(Imaging im, struct ArrowArray *external_array, int offset_width) {
+ImagingBorrowArrow(Imaging im, struct ArrowArray *external_array, int offset_width, PyObject* arrow_capsule) {
     // offset_width is the # of char* for a single offset from arrow
     Py_ssize_t y, i;
 
@@ -600,7 +600,8 @@ ImagingBorrowArrow(Imaging im, struct ArrowArray *external_array, int offset_wid
         i += im->linesize;
     }
     im->read_only = 1;
-    im->arrow_array_capsule = external_array;
+    Py_INCREF(arrow_capsule);
+    im->arrow_array_capsule = arrow_capsule;
     im->destroy = ImagingDestroyArrow;
 
     return im;
@@ -682,11 +683,16 @@ ImagingNewArrow(
     const char *mode,
     int xsize,
     int ysize,
-    struct ArrowSchema *schema,
-    struct ArrowArray *external_array
+    PyObject *schema_capsule,
+    PyObject *array_capsule
 ) {
     /* A borrowed arrow array */
     Imaging im;
+    struct ArrowSchema *schema =
+        (struct ArrowSchema *)PyCapsule_GetPointer(schema_capsule, "arrow_schema");
+
+    struct ArrowArray *external_array =
+        (struct ArrowArray *)PyCapsule_GetPointer(array_capsule, "arrow_array");
 
     if (xsize < 0 || ysize < 0) {
         return (Imaging)ImagingError_ValueError("bad image size");
@@ -708,7 +714,7 @@ ImagingNewArrow(
           && im->bands == 1))                                 // Single band match
         && pixels == external_array->length) {
         // one arrow element per, and it matches a pixelsize*char
-        if (ImagingBorrowArrow(im, external_array, im->pixelsize)) {
+        if (ImagingBorrowArrow(im, external_array, im->pixelsize, array_capsule)) {
             return im;
         }
     }
@@ -724,7 +730,7 @@ ImagingNewArrow(
         && external_array->children                       // array is well formed
         && 4 * pixels == external_array->children[0]->length) {
         // 4 up element of char into pixelsize == 4
-        if (ImagingBorrowArrow(im, external_array, 1)) {
+        if (ImagingBorrowArrow(im, external_array, 1, array_capsule)) {
             return im;
         }
     }

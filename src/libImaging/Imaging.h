@@ -113,7 +113,7 @@ struct ImagingMemoryInstance {
     char arrow_band_format[2]; /* single character + null terminator */
 
     int read_only; /* flag for read-only. set for arrow borrowed arrays */
-    struct ArrowArray *arrow_array_capsule; /* upstream arrow array source */
+    PyObject *arrow_array_capsule; /* upstream arrow array source */
 
     int blocks_count;    /* Number of blocks that have been allocated */
     int lines_per_block; /* Number of lines in a block have been allocated */
@@ -209,8 +209,8 @@ ImagingNewArrow(
     const char *mode,
     int xsize,
     int ysize,
-    struct ArrowSchema *schema,
-    struct ArrowArray *external_array
+    PyObject *schema_capsule,
+    PyObject *array_capsule
 );
 
 extern Imaging

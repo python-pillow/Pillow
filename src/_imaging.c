@@ -301,20 +301,9 @@ _new_arrow(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    struct ArrowSchema *schema =
-        (struct ArrowSchema *)PyCapsule_GetPointer(schema_capsule, "arrow_schema");
-
-    struct ArrowArray *array =
-        (struct ArrowArray *)PyCapsule_GetPointer(array_capsule, "arrow_array");
-
-    ret = PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema, array));
-    if (schema->release) {
-        schema->release(schema);
-        schema->release = NULL;
-    }
-    if (!ret && array->release) {
-        array->release(array);
-        array->release = NULL;
+    // ImagingBorrowArrow is responsible for retaining the array_capsule
+    ret = PyImagingNew(ImagingNewArrow(mode, xsize, ysize, schema_capsule, array_capsule));
+    if (!ret) {
         return ImagingError_ValueError("Invalid arrow array mode or size mismatch");
     }
     return ret;
