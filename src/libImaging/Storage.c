@@ -303,8 +303,8 @@ ImagingDelete(Imaging im) {
     im->refcount--;
 
     if (im->refcount > 0) {
-      MUTEX_UNLOCK(im->mutex);
-      return;
+        MUTEX_UNLOCK(im->mutex);
+        return;
     }
     MUTEX_UNLOCK(im->mutex);
 
@@ -702,10 +702,10 @@ ImagingNewArrow(
     // fmt:off   // don't reformat this
     if (((strcmp(schema->format, "I") == 0  // int32
           && im->pixelsize == 4             // 4xchar* storage
-          && im->bands >= 2) // INT32 into any INT32 Storage mode
-         ||  // (()||()) &&
-         (strcmp(schema->format, im->arrow_band_format) == 0 // same mode
-          && im->bands == 1)) // Single band match
+          && im->bands >= 2)                // INT32 into any INT32 Storage mode
+         ||                                 // (()||()) &&
+         (strcmp(schema->format, im->arrow_band_format) == 0  // same mode
+          && im->bands == 1))                                 // Single band match
         && pixels == external_array->length) {
         // one arrow element per, and it matches a pixelsize*char
         if (ImagingBorrowArrow(im, external_array, im->pixelsize)) {

@@ -230,13 +230,15 @@ PyImaging_GetBuffer(PyObject *buffer, Py_buffer *view) {
 PyObject *
 ArrowError(int err) {
     if (err == IMAGING_CODEC_MEMORY) {
-      return ImagingError_MemoryError();
+        return ImagingError_MemoryError();
     }
     if (err == IMAGING_ARROW_INCOMPATIBLE_MODE) {
-      return ImagingError_ValueError("Incompatible Pillow mode for Arrow Array");
+        return ImagingError_ValueError("Incompatible Pillow mode for Arrow Array");
     }
     if (err == IMAGING_ARROW_MEMORY_LAYOUT) {
-      return ImagingError_ValueError("Image is in multiple array blocks, use imaging_new_block for zero copy");
+        return ImagingError_ValueError(
+            "Image is in multiple array blocks, use imaging_new_block for zero copy"
+        );
     }
     return ImagingError_ValueError("Unknown Error");
 }
@@ -257,7 +259,7 @@ ExportArrowSchemaPyCapsule(ImagingObject *self) {
         (struct ArrowSchema *)calloc(1, sizeof(struct ArrowSchema));
     int err = export_imaging_schema(self->image, schema);
     if (err == 0) {
-      return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
+        return PyCapsule_New(schema, "arrow_schema", ReleaseArrowSchemaPyCapsule);
     }
     free(schema);
     return ArrowError(err);
@@ -279,13 +281,12 @@ ExportArrowArrayPyCapsule(ImagingObject *self) {
         (struct ArrowArray *)calloc(1, sizeof(struct ArrowArray));
     int err = export_imaging_array(self->image, array);
     if (err == 0) {
-      return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
+        return PyCapsule_New(array, "arrow_array", ReleaseArrowArrayPyCapsule);
     }
     free(array);
     // raise error here
     return ArrowError(err);
 }
-
 
 static PyObject *
 _new_arrow(PyObject *self, PyObject *args) {

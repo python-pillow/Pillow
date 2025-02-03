@@ -76,15 +76,15 @@ export_named_type(struct ArrowSchema *schema, char *format, char *name) {
     strncpy(namep, name, name_len);
 
     *schema = (struct ArrowSchema){// Type description
-        .format = formatp,
-        .name = namep,
-        .metadata = NULL,
-        .flags = 0,
-        .n_children = 0,
-        .children = NULL,
-        .dictionary = NULL,
-        // Bookkeeping
-        .release = &ReleaseExportedSchema
+                                   .format = formatp,
+                                   .name = namep,
+                                   .metadata = NULL,
+                                   .flags = 0,
+                                   .n_children = 0,
+                                   .children = NULL,
+                                   .dictionary = NULL,
+                                   // Bookkeeping
+                                   .release = &ReleaseExportedSchema
     };
     return 0;
 }
@@ -98,7 +98,7 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     }
 
     /* for now, single block images */
-    if (!(im->blocks_count == 0 || im->blocks_count == 1)){
+    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
@@ -123,8 +123,6 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema) {
     return 0;
 }
 
-
-
 static void
 release_const_array(struct ArrowArray *array) {
     Imaging im = (Imaging)array->private_data;
@@ -140,8 +138,8 @@ release_const_array(struct ArrowArray *array) {
     }
     if (array->children) {
         // undone -- does arrow release all the children recursively.
-        for (int i=0; i < array->n_children; i++) {
-            if (array->children[i]->release){
+        for (int i = 0; i < array->n_children; i++) {
+            if (array->children[i]->release) {
                 array->children[i]->release(array->children[i]);
                 array->children[i]->release = NULL;
                 free(array->children[i]);
@@ -159,7 +157,7 @@ export_single_channel_array(Imaging im, struct ArrowArray *array) {
     int length = im->xsize * im->ysize;
 
     /* for now, single block images */
-    if (!(im->blocks_count == 0 || im->blocks_count == 1)){
+    if (!(im->blocks_count == 0 || im->blocks_count == 1)) {
         return IMAGING_ARROW_MEMORY_LAYOUT;
     }
 
@@ -274,7 +272,7 @@ export_fixed_pixel_array(Imaging im, struct ArrowArray *array) {
     }
     return 0;
 
- err:
+err:
     if (array->children[0]) {
         free(array->children[0]);
     }

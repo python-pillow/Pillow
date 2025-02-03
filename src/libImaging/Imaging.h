@@ -121,8 +121,6 @@ struct ImagingMemoryInstance {
 #ifdef Py_GIL_DISABLED
     PyMutex mutex;
 #endif
-
-
 };
 
 #define IMAGING_PIXEL_1(im, x, y) ((im)->image8[(y)][(x)])
@@ -746,7 +744,6 @@ export_imaging_schema(Imaging im, struct ArrowSchema *schema);
 #define IMAGING_CODEC_MEMORY -9
 #define IMAGING_ARROW_INCOMPATIBLE_MODE -10
 #define IMAGING_ARROW_MEMORY_LAYOUT -11
-
 
 #include "ImagingUtils.h"
 extern UINT8 *clip8_lookups;

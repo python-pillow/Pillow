@@ -159,22 +159,24 @@ def test_readonly():
     reloaded._readonly = 0
     assert reloaded.readonly == 1
 
+
 def test_multiblock_l_image():
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in single channel mode
-    size = (4096, 2*block_size//4096)
-    img = Image.new('L', size, 128)
+    size = (4096, 2 * block_size // 4096)
+    img = Image.new("L", size, 128)
 
     with pytest.raises(ValueError):
         (schema, arr) = img.__arrow_c_array__()
+
 
 def test_multiblock__rgba_image():
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
-    size = (4096, (block_size//4096) //2)
-    img = Image.new('RGBA', size, (128,127,126,125))
+    size = (4096, (block_size // 4096) // 2)
+    img = Image.new("RGBA", size, (128, 127, 126, 125))
 
     with pytest.raises(ValueError):
         (schema, arr) = img.__arrow_c_array__()
@@ -184,18 +186,19 @@ def test_multiblock_l_schema():
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in single channel mode
-    size = (4096, 2*block_size//4096)
-    img = Image.new('L', size, 128)
+    size = (4096, 2 * block_size // 4096)
+    img = Image.new("L", size, 128)
 
     with pytest.raises(ValueError):
         schema = img.__arrow_c_schema__()
+
 
 def test_multiblock__rgba_schema():
     block_size = Image.core.get_block_size()
 
     # check a 2 block image in 4 channel mode
-    size = (4096, (block_size//4096) //2)
-    img = Image.new('RGBA', size, (128,127,126,125))
+    size = (4096, (block_size // 4096) // 2)
+    img = Image.new("RGBA", size, (128, 127, 126, 125))
 
     with pytest.raises(ValueError):
-        schema= img.__arrow_c_schema__()
+        schema = img.__arrow_c_schema__()
