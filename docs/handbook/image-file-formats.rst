@@ -494,6 +494,13 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 **exif**
     If present, the image will be stored with the provided raw EXIF data.
 
+**no_default_app_segments**
+    If present and true, the image is stored without default JFIF and Adobe
+    application segments.  The JFIF segment will still be stored if **dpi**
+    is also specified.
+
+    .. versionadded:: 10.3.0
+
 **keep_rgb**
     By default, libjpeg converts images with an RGB color space to YCbCr.
     If this option is present and true, those images will be stored as RGB
