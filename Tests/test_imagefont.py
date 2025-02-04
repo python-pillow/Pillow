@@ -254,7 +254,8 @@ def test_render_multiline_text(font: ImageFont.FreeTypeFont) -> None:
 
 
 @pytest.mark.parametrize(
-    "align, ext", (("left", ""), ("center", "_center"), ("right", "_right"))
+    "align, ext",
+    (("left", ""), ("center", "_center"), ("right", "_right"), ("justify", "_justify")),
 )
 def test_render_multiline_text_align(
     font: ImageFont.FreeTypeFont, align: str, ext: str
