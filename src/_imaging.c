@@ -866,7 +866,7 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "siiiiiO:color_lut_3d",
+            "sii(iii)O:color_lut_3d",
             &mode,
             &filter,
             &table_channels,
