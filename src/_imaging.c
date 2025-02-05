@@ -1013,10 +1013,6 @@ _convert_transparent(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _copy(ImagingObject *self, PyObject *args) {
-    if (!PyArg_ParseTuple(args, "")) {
-        return NULL;
-    }
-
     return PyImagingNew(ImagingCopy(self->image));
 }
 
