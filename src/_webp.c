@@ -835,10 +835,9 @@ PyInit__webp(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_webp",     /* m_name */
-        NULL,        /* m_doc */
-        -1,          /* m_size */
-        webpMethods, /* m_methods */
+        .m_name = "_webp",
+        .m_size = -1,
+        .m_methods = webpMethods,
     };
 
     m = PyModule_Create(&module_def);
