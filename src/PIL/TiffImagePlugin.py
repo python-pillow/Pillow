@@ -275,12 +275,12 @@ OPEN_INFO = {
 MAX_SAMPLESPERPIXEL = max(len(key_tp[4]) for key_tp in OPEN_INFO)
 
 PREFIXES = [
-    b"MM\x00\x2A",  # Valid TIFF header with big-endian byte order
-    b"II\x2A\x00",  # Valid TIFF header with little-endian byte order
-    b"MM\x2A\x00",  # Invalid TIFF header, assume big-endian
-    b"II\x00\x2A",  # Invalid TIFF header, assume little-endian
-    b"MM\x00\x2B",  # BigTIFF with big-endian byte order
-    b"II\x2B\x00",  # BigTIFF with little-endian byte order
+    b"MM\x00\x2a",  # Valid TIFF header with big-endian byte order
+    b"II\x2a\x00",  # Valid TIFF header with little-endian byte order
+    b"MM\x2a\x00",  # Invalid TIFF header, assume big-endian
+    b"II\x00\x2a",  # Invalid TIFF header, assume little-endian
+    b"MM\x00\x2b",  # BigTIFF with big-endian byte order
+    b"II\x2b\x00",  # BigTIFF with little-endian byte order
 ]
 
 if not getattr(Image.core, "libtiff_support_custom_tags", True):
@@ -582,7 +582,7 @@ class ImageFileDirectory_v2(_IFDv2Base):
 
     def __init__(
         self,
-        ifh: bytes = b"II\x2A\x00\x00\x00\x00\x00",
+        ifh: bytes = b"II\x2a\x00\x00\x00\x00\x00",
         prefix: bytes | None = None,
         group: int | None = None,
     ) -> None:
@@ -2047,7 +2047,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.offsetOfNewPage = 0
 
         self.IIMM = iimm = self.f.read(4)
-        self._bigtiff = b"\x2B" in iimm
+        self._bigtiff = b"\x2b" in iimm
         if not iimm:
             # empty file - first page
             self.isFirst = True
