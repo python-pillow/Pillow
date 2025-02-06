@@ -50,10 +50,9 @@ PyMODINIT_FUNC
 PyInit__imagingtk(void) {
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imagingtk", /* m_name */
-        NULL,         /* m_doc */
-        -1,           /* m_size */
-        functions,    /* m_methods */
+        .m_name = "_imagingtk",
+        .m_size = -1,
+        .m_methods = functions,
     };
     PyObject *m;
     m = PyModule_Create(&module_def);

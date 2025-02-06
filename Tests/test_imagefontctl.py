@@ -229,7 +229,7 @@ def test_getlength(
 @pytest.mark.parametrize("direction", ("ltr", "ttb"))
 @pytest.mark.parametrize(
     "text",
-    ("i" + ("\u030C" * 15) + "i", "i" + "\u032C" * 15 + "i", "\u035Cii", "i\u0305i"),
+    ("i" + ("\u030c" * 15) + "i", "i" + "\u032c" * 15 + "i", "\u035cii", "i\u0305i"),
     ids=("caron-above", "caron-below", "double-breve", "overline"),
 )
 def test_getlength_combine(
@@ -274,27 +274,27 @@ def test_anchor_ttb(anchor: ImageFont.Anchor) -> None:
 
 combine_tests = (
     # extends above (e.g. issue #4553)
-    ("caron", "a\u030C\u030C\u030C\u030C\u030Cb", None, None, 0.08),
-    ("caron_la", "a\u030C\u030C\u030C\u030C\u030Cb", "la", None, 0.08),
-    ("caron_lt", "a\u030C\u030C\u030C\u030C\u030Cb", "lt", None, 0.08),
-    ("caron_ls", "a\u030C\u030C\u030C\u030C\u030Cb", "ls", None, 0.08),
-    ("caron_ttb", "ca" + ("\u030C" * 15) + "b", None, "ttb", 0.3),
-    ("caron_ttb_lt", "ca" + ("\u030C" * 15) + "b", "lt", "ttb", 0.3),
+    ("caron", "a\u030c\u030c\u030c\u030c\u030cb", None, None, 0.08),
+    ("caron_la", "a\u030c\u030c\u030c\u030c\u030cb", "la", None, 0.08),
+    ("caron_lt", "a\u030c\u030c\u030c\u030c\u030cb", "lt", None, 0.08),
+    ("caron_ls", "a\u030c\u030c\u030c\u030c\u030cb", "ls", None, 0.08),
+    ("caron_ttb", "ca" + ("\u030c" * 15) + "b", None, "ttb", 0.3),
+    ("caron_ttb_lt", "ca" + ("\u030c" * 15) + "b", "lt", "ttb", 0.3),
     # extends below
-    ("caron_below", "a\u032C\u032C\u032C\u032C\u032Cb", None, None, 0.02),
-    ("caron_below_ld", "a\u032C\u032C\u032C\u032C\u032Cb", "ld", None, 0.02),
-    ("caron_below_lb", "a\u032C\u032C\u032C\u032C\u032Cb", "lb", None, 0.02),
-    ("caron_below_ls", "a\u032C\u032C\u032C\u032C\u032Cb", "ls", None, 0.02),
-    ("caron_below_ttb", "a" + ("\u032C" * 15) + "b", None, "ttb", 0.03),
-    ("caron_below_ttb_lb", "a" + ("\u032C" * 15) + "b", "lb", "ttb", 0.03),
+    ("caron_below", "a\u032c\u032c\u032c\u032c\u032cb", None, None, 0.02),
+    ("caron_below_ld", "a\u032c\u032c\u032c\u032c\u032cb", "ld", None, 0.02),
+    ("caron_below_lb", "a\u032c\u032c\u032c\u032c\u032cb", "lb", None, 0.02),
+    ("caron_below_ls", "a\u032c\u032c\u032c\u032c\u032cb", "ls", None, 0.02),
+    ("caron_below_ttb", "a" + ("\u032c" * 15) + "b", None, "ttb", 0.03),
+    ("caron_below_ttb_lb", "a" + ("\u032c" * 15) + "b", "lb", "ttb", 0.03),
     # extends to the right (e.g. issue #3745)
-    ("double_breve_below", "a\u035Ci", None, None, 0.02),
-    ("double_breve_below_ma", "a\u035Ci", "ma", None, 0.02),
-    ("double_breve_below_ra", "a\u035Ci", "ra", None, 0.02),
-    ("double_breve_below_ttb", "a\u035Cb", None, "ttb", 0.02),
-    ("double_breve_below_ttb_rt", "a\u035Cb", "rt", "ttb", 0.02),
-    ("double_breve_below_ttb_mt", "a\u035Cb", "mt", "ttb", 0.02),
-    ("double_breve_below_ttb_st", "a\u035Cb", "st", "ttb", 0.02),
+    ("double_breve_below", "a\u035ci", None, None, 0.02),
+    ("double_breve_below_ma", "a\u035ci", "ma", None, 0.02),
+    ("double_breve_below_ra", "a\u035ci", "ra", None, 0.02),
+    ("double_breve_below_ttb", "a\u035cb", None, "ttb", 0.02),
+    ("double_breve_below_ttb_rt", "a\u035cb", "rt", "ttb", 0.02),
+    ("double_breve_below_ttb_mt", "a\u035cb", "mt", "ttb", 0.02),
+    ("double_breve_below_ttb_st", "a\u035cb", "st", "ttb", 0.02),
     # extends to the left (fail=0.064)
     ("overline", "i\u0305", None, None, 0.02),
     ("overline_la", "i\u0305", "la", None, 0.02),
@@ -352,7 +352,7 @@ def test_combine_multiline(anchor: ImageFont.Anchor, align: ImageDraw.Align) -> 
 
     path = f"Tests/images/test_combine_multiline_{anchor}_{align}.png"
     f = ImageFont.truetype("Tests/fonts/NotoSans-Regular.ttf", 48)
-    text = "i\u0305\u035C\ntext"  # i with overline and double breve, and a word
+    text = "i\u0305\u035c\ntext"  # i with overline and double breve, and a word
 
     im = Image.new("RGB", (400, 400), "white")
     d = ImageDraw.Draw(im)

@@ -31,8 +31,7 @@ class Font:
         stroke_filled: bool,
         anchor: ImageFont.Anchor | None,
         foreground_ink_long: int,
-        x_start: float,
-        y_start: float,
+        start: tuple[float, float],
         /,
     ) -> tuple[_imaging.ImagingCore, tuple[int, int]]: ...
     def getsize(
