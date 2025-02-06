@@ -854,7 +854,7 @@ font_render(FontObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "OO|zzOzfpzLffO:render",
+            "OO|zzOzfpzL(ff):render",
             &string,
             &fill,
             &mode,

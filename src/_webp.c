@@ -164,7 +164,7 @@ _anim_encoder_new(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "iiIiiiiii",
+            "(ii)Iiiiiii",
             &width,
             &height,
             &bgcolor,
