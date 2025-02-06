@@ -578,9 +578,7 @@ class TestImage:
     def test_one_item_tuple(self) -> None:
         for mode in ("I", "F", "L"):
             im = Image.new(mode, (100, 100), (5,))
-            px = im.load()
-            assert px is not None
-            assert px[0, 0] == 5
+            assert im.getpixel((0, 0)) == 5
 
     def test_linear_gradient_wrong_mode(self) -> None:
         # Arrange

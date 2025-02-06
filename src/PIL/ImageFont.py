@@ -647,8 +647,7 @@ class FreeTypeFont:
             kwargs.get("stroke_filled", False),
             anchor,
             ink,
-            start[0],
-            start[1],
+            start,
         )
 
     def font_variant(

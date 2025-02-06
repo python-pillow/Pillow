@@ -317,7 +317,7 @@ class TestFileLibTiff(LibTiffTestCase):
         }
 
         def check_tags(
-            tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str]
+            tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str],
         ) -> None:
             im = hopper()
 

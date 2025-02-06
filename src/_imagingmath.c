@@ -308,10 +308,9 @@ PyInit__imagingmath(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imagingmath", /* m_name */
-        NULL,           /* m_doc */
-        -1,             /* m_size */
-        _functions,     /* m_methods */
+        .m_name = "_imagingmath",
+        .m_size = -1,
+        .m_methods = _functions,
     };
 
     m = PyModule_Create(&module_def);

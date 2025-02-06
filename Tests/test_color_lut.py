@@ -19,7 +19,7 @@ except ImportError:
 class TestColorLut3DCoreAPI:
     def generate_identity_table(
         self, channels: int, size: int | tuple[int, int, int]
-    ) -> tuple[int, int, int, int, list[float]]:
+    ) -> tuple[int, tuple[int, int, int], list[float]]:
         if isinstance(size, tuple):
             size_1d, size_2d, size_3d = size
         else:
@@ -39,9 +39,7 @@ class TestColorLut3DCoreAPI:
         ]
         return (
             channels,
-            size_1d,
-            size_2d,
-            size_3d,
+            (size_1d, size_2d, size_3d),
             [item for sublist in table for item in sublist],
         )
 
@@ -89,21 +87,21 @@ class TestColorLut3DCoreAPI:
 
         with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 7
+                "RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), [0, 0, 0] * 7
             )
 
         with pytest.raises(ValueError, match=r"size1D \* size2D \* size3D"):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, 0] * 9
+                "RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), [0, 0, 0] * 9
             )
 
         with pytest.raises(TypeError):
             im.im.color_lut_3d(
-                "RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, [0, 0, "0"] * 8
+                "RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), [0, 0, "0"] * 8
             )
 
         with pytest.raises(TypeError):
-            im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, 2, 2, 2, 16)
+            im.im.color_lut_3d("RGB", Image.Resampling.BILINEAR, 3, (2, 2, 2), 16)
 
     @pytest.mark.parametrize(
         "lut_mode, table_channels, table_size",
@@ -264,7 +262,7 @@ class TestColorLut3DCoreAPI:
         assert_image_equal(
             Image.merge('RGB', im.split()[::-1]),
             im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                    3, 2, 2, 2, [
+                    3, (2, 2, 2), [
                         0, 0, 0,  0, 0, 1,
                         0, 1, 0,  0, 1, 1,
 
@@ -286,7 +284,7 @@ class TestColorLut3DCoreAPI:
 
         # fmt: off
         transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                              3, 2, 2, 2,
+                              3, (2, 2, 2),
                               [
                                   -1, -1, -1,   2, -1, -1,
                                   -1,  2, -1,   2,  2, -1,
@@ -307,7 +305,7 @@ class TestColorLut3DCoreAPI:
 
         # fmt: off
         transformed = im._new(im.im.color_lut_3d('RGB', Image.Resampling.BILINEAR,
-                              3, 2, 2, 2,
+                              3, (2, 2, 2),
                               [
                                   -3, -3, -3,   5, -3, -3,
                                   -3,  5, -3,   5,  5, -3,

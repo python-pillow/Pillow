@@ -1520,10 +1520,9 @@ PyInit__imagingcms(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imagingcms",    /* m_name */
-        NULL,             /* m_doc */
-        -1,               /* m_size */
-        pyCMSdll_methods, /* m_methods */
+        .m_name = "_imagingcms",
+        .m_size = -1,
+        .m_methods = pyCMSdll_methods,
     };
 
     m = PyModule_Create(&module_def);

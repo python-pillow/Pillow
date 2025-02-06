@@ -20,10 +20,10 @@ from PIL.PdfParser import (
 
 
 def test_text_encode_decode() -> None:
-    assert encode_text("abc") == b"\xFE\xFF\x00a\x00b\x00c"
-    assert decode_text(b"\xFE\xFF\x00a\x00b\x00c") == "abc"
+    assert encode_text("abc") == b"\xfe\xff\x00a\x00b\x00c"
+    assert decode_text(b"\xfe\xff\x00a\x00b\x00c") == "abc"
     assert decode_text(b"abc") == "abc"
-    assert decode_text(b"\x1B a \x1C") == "\u02D9 a \u02DD"
+    assert decode_text(b"\x1b a \x1c") == "\u02d9 a \u02dd"
 
 
 def test_indirect_refs() -> None:
@@ -45,8 +45,8 @@ def test_parsing() -> None:
     assert PdfParser.get_value(b"false%", 0) == (False, 5)
     assert PdfParser.get_value(b"null<", 0) == (None, 4)
     assert PdfParser.get_value(b"%cmt\n %cmt\n 123\n", 0) == (123, 15)
-    assert PdfParser.get_value(b"<901FA3>", 0) == (b"\x90\x1F\xA3", 8)
-    assert PdfParser.get_value(b"asd < 9 0 1 f A > qwe", 3) == (b"\x90\x1F\xA0", 17)
+    assert PdfParser.get_value(b"<901FA3>", 0) == (b"\x90\x1f\xa3", 8)
+    assert PdfParser.get_value(b"asd < 9 0 1 f A > qwe", 3) == (b"\x90\x1f\xa0", 17)
     assert PdfParser.get_value(b"(asd)", 0) == (b"asd", 5)
     assert PdfParser.get_value(b"(asd(qwe)zxc)zzz(aaa)", 0) == (b"asd(qwe)zxc", 13)
     assert PdfParser.get_value(b"(Two \\\nwords.)", 0) == (b"Two words.", 14)
@@ -56,9 +56,9 @@ def test_parsing() -> None:
     assert PdfParser.get_value(b"(One\\(paren).", 0) == (b"One(paren", 12)
     assert PdfParser.get_value(b"(One\\)paren).", 0) == (b"One)paren", 12)
     assert PdfParser.get_value(b"(\\0053)", 0) == (b"\x053", 7)
-    assert PdfParser.get_value(b"(\\053)", 0) == (b"\x2B", 6)
-    assert PdfParser.get_value(b"(\\53)", 0) == (b"\x2B", 5)
-    assert PdfParser.get_value(b"(\\53a)", 0) == (b"\x2Ba", 6)
+    assert PdfParser.get_value(b"(\\053)", 0) == (b"\x2b", 6)
+    assert PdfParser.get_value(b"(\\53)", 0) == (b"\x2b", 5)
+    assert PdfParser.get_value(b"(\\53a)", 0) == (b"\x2ba", 6)
     assert PdfParser.get_value(b"(\\1111)", 0) == (b"\x491", 7)
     assert PdfParser.get_value(b" 123 (", 0) == (123, 4)
     assert round(abs(PdfParser.get_value(b" 123.4 %", 0)[0] - 123.4), 7) == 0
@@ -118,7 +118,7 @@ def test_pdf_repr() -> None:
     assert pdf_repr(None) == b"null"
     assert pdf_repr(b"a)/b\\(c") == rb"(a\)/b\\\(c)"
     assert pdf_repr([123, True, {"a": PdfName(b"b")}]) == b"[ 123 true <<\n/a /b\n>> ]"
-    assert pdf_repr(PdfBinary(b"\x90\x1F\xA0")) == b"<901FA0>"
+    assert pdf_repr(PdfBinary(b"\x90\x1f\xa0")) == b"<901FA0>"
 
 
 def test_duplicate_xref_entry() -> None:
