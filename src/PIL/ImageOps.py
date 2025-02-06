@@ -22,7 +22,7 @@ import functools
 import operator
 import re
 from collections.abc import Sequence
-from typing import Protocol, cast
+from typing import Literal, Protocol, cast, overload
 
 from . import ExifTags, Image, ImagePalette
 
@@ -673,6 +673,16 @@ def solarize(image: Image.Image, threshold: int = 128) -> Image.Image:
     return _lut(image, lut)
 
 
+@overload
+def exif_transpose(image: Image.Image, *, in_place: Literal[True]) -> None: ...
+
+
+@overload
+def exif_transpose(
+    image: Image.Image, *, in_place: Literal[False] = False
+) -> Image.Image: ...
+
+
 def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image | None:
     """
     If an image has an EXIF Orientation tag, other than 1, transpose the image
@@ -698,10 +708,11 @@ def exif_transpose(image: Image.Image, *, in_place: bool = False) -> Image.Image
         8: Image.Transpose.ROTATE_90,
     }.get(orientation)
     if method is not None:
-        transposed_image = image.transpose(method)
         if in_place:
-            image.im = transposed_image.im
-            image._size = transposed_image._size
+            image.im = image.im.transpose(method)
+            image._size = image.im.size
+        else:
+            transposed_image = image.transpose(method)
         exif_image = image if in_place else transposed_image
 
         exif = exif_image.getexif()

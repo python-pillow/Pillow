@@ -278,8 +278,7 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
     Py_XDECREF(encoder->lock);
     encoder->lock = op;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -296,8 +295,7 @@ _setfd(ImagingEncoderObject *encoder, PyObject *args) {
     Py_XINCREF(fd);
     state->fd = fd;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -736,7 +734,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             }
             if (tag_type) {
                 int type_int = PyLong_AsLong(tag_type);
-                if (type_int >= TIFF_BYTE && type_int <= TIFF_DOUBLE) {
+                if (type_int >= TIFF_BYTE && type_int <= TIFF_LONG8) {
                     type = (TIFFDataType)type_int;
                 }
             }
@@ -929,7 +927,7 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
                 );
             } else if (type == TIFF_LONG) {
                 status = ImagingLibTiffSetField(
-                    &encoder->state, (ttag_t)key_int, PyLong_AsLongLong(value)
+                    &encoder->state, (ttag_t)key_int, (UINT32)PyLong_AsLong(value)
                 );
             } else if (type == TIFF_SSHORT) {
                 status = ImagingLibTiffSetField(
@@ -958,6 +956,10 @@ PyImaging_LibTiffEncoderNew(PyObject *self, PyObject *args) {
             } else if (type == TIFF_RATIONAL) {
                 status = ImagingLibTiffSetField(
                     &encoder->state, (ttag_t)key_int, (FLOAT64)PyFloat_AsDouble(value)
+                );
+            } else if (type == TIFF_LONG8) {
+                status = ImagingLibTiffSetField(
+                    &encoder->state, (ttag_t)key_int, (uint64_t)PyLong_AsLongLong(value)
                 );
             } else {
                 TRACE(
@@ -1095,7 +1097,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|nnnnpnnnnnnOz#y#y#",
+            "ss|nnnnpn(nn)nnnOz#y#y#",
             &mode,
             &rawmode,
             &quality,

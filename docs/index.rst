@@ -33,10 +33,6 @@ Pillow for enterprise is available via the Tidelift Subscription. `Learn more <h
    :target: https://github.com/python-pillow/Pillow/actions/workflows/test-cygwin.yml
    :alt: GitHub Actions build status (Test Cygwin)
 
-.. image:: https://img.shields.io/appveyor/build/python-pillow/Pillow/main.svg?label=Windows%20build
-   :target: https://ci.appveyor.com/project/python-pillow/Pillow
-   :alt: AppVeyor CI build status (Windows)
-
 .. image:: https://github.com/python-pillow/Pillow/workflows/Wheels/badge.svg
    :target: https://github.com/python-pillow/Pillow/actions/workflows/wheels.yml
    :alt: GitHub Actions build status (Wheels)

@@ -812,7 +812,7 @@ def test_rounded_rectangle(
         tuple[int, int, int, int]
         | tuple[list[int]]
         | tuple[tuple[int, int], tuple[int, int]]
-    )
+    ),
 ) -> None:
     # Arrange
     im = Image.new("RGB", (200, 200))
@@ -1397,6 +1397,28 @@ def test_stroke_descender() -> None:
 
 
 @skip_unless_feature("freetype2")
+def test_stroke_inside_gap() -> None:
+    # Arrange
+    im = Image.new("RGB", (120, 130))
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype("Tests/fonts/FreeMono.ttf", 120)
+
+    # Act
+    draw.text((12, 12), "i", "#f00", font, stroke_width=20)
+
+    # Assert
+    for y in range(im.height):
+        glyph = ""
+        for x in range(im.width):
+            if im.getpixel((x, y)) == (0, 0, 0):
+                if glyph == "started":
+                    glyph = "ended"
+            else:
+                assert glyph != "ended", "Gap inside stroked glyph"
+                glyph = "started"
+
+
+@skip_unless_feature("freetype2")
 def test_split_word() -> None:
     # Arrange
     im = Image.new("RGB", (230, 55))
@@ -1674,6 +1696,9 @@ def test_continuous_horizontal_edges_polygon() -> None:
 def test_discontiguous_corners_polygon() -> None:
     img, draw = create_base_image_draw((84, 68))
     draw.polygon(((1, 21), (34, 4), (71, 1), (38, 18)), BLACK)
+    draw.polygon(
+        ((82, 29), (82, 26), (82, 24), (67, 22), (52, 29), (52, 15), (67, 22)), BLACK
+    )
     draw.polygon(((71, 44), (38, 27), (1, 24)), BLACK)
     draw.polygon(
         ((38, 66), (5, 49), (77, 49), (47, 66), (82, 63), (82, 47), (1, 47), (1, 63)),

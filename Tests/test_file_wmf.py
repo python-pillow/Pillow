@@ -73,7 +73,7 @@ def test_load_float_dpi() -> None:
 
     with open("Tests/images/drawing.emf", "rb") as fp:
         data = fp.read()
-    b = BytesIO(data[:8] + b"\x06\xFA" + data[10:])
+    b = BytesIO(data[:8] + b"\x06\xfa" + data[10:])
     with Image.open(b) as im:
         assert im.info["dpi"][0] == 2540
 

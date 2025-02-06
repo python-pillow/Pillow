@@ -36,11 +36,7 @@ class LibTiffTestCase:
         im.load()
         im.getdata()
 
-        try:
-            assert im._compression == "group4"
-        except AttributeError:
-            print("No _compression")
-            print(dir(im))
+        assert im._compression == "group4"
 
         # can we write it back out, in a different form.
         out = str(tmp_path / "temp.png")
@@ -313,7 +309,7 @@ class TestFileLibTiff(LibTiffTestCase):
         }
 
         def check_tags(
-            tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str]
+            tiffinfo: TiffImagePlugin.ImageFileDirectory_v2 | dict[int, str],
         ) -> None:
             im = hopper()
 
@@ -1107,13 +1103,15 @@ class TestFileLibTiff(LibTiffTestCase):
     )
     def test_buffering(self, test_file: str) -> None:
         # load exif first
-        with Image.open(open(test_file, "rb", buffering=1048576)) as im:
-            exif = dict(im.getexif())
+        with open(test_file, "rb", buffering=1048576) as f:
+            with Image.open(f) as im:
+                exif = dict(im.getexif())
 
         # load image before exif
-        with Image.open(open(test_file, "rb", buffering=1048576)) as im2:
-            im2.load()
-            exif_after_load = dict(im2.getexif())
+        with open(test_file, "rb", buffering=1048576) as f:
+            with Image.open(f) as im2:
+                im2.load()
+                exif_after_load = dict(im2.getexif())
 
         assert exif == exif_after_load
 
@@ -1146,7 +1144,7 @@ class TestFileLibTiff(LibTiffTestCase):
                 im.load()
 
             # Assert that the error code is IMAGING_CODEC_MEMORY
-            assert str(e.value) == "-9"
+            assert str(e.value) == "decoder error -9"
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", "jpeg"))
     def test_save_multistrip(self, compression: str, tmp_path: Path) -> None:
@@ -1160,23 +1158,22 @@ class TestFileLibTiff(LibTiffTestCase):
             assert len(im.tag_v2[STRIPOFFSETS]) > 1
 
     @pytest.mark.parametrize("argument", (True, False))
-    def test_save_single_strip(self, argument: bool, tmp_path: Path) -> None:
+    def test_save_single_strip(
+        self, argument: bool, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         im = hopper("RGB").resize((256, 256))
         out = str(tmp_path / "temp.tif")
 
         if not argument:
-            TiffImagePlugin.STRIP_SIZE = 2**18
-        try:
-            arguments: dict[str, str | int] = {"compression": "tiff_adobe_deflate"}
-            if argument:
-                arguments["strip_size"] = 2**18
-            im.save(out, "TIFF", **arguments)
+            monkeypatch.setattr(TiffImagePlugin, "STRIP_SIZE", 2**18)
+        arguments: dict[str, str | int] = {"compression": "tiff_adobe_deflate"}
+        if argument:
+            arguments["strip_size"] = 2**18
+        im.save(out, "TIFF", **arguments)
 
-            with Image.open(out) as im:
-                assert isinstance(im, TiffImagePlugin.TiffImageFile)
-                assert len(im.tag_v2[STRIPOFFSETS]) == 1
-        finally:
-            TiffImagePlugin.STRIP_SIZE = 65536
+        with Image.open(out) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert len(im.tag_v2[STRIPOFFSETS]) == 1
 
     @pytest.mark.parametrize("compression", ("tiff_adobe_deflate", None))
     def test_save_zero(self, compression: str | None, tmp_path: Path) -> None:
