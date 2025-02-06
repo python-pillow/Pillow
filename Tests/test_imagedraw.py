@@ -813,7 +813,7 @@ def test_rounded_rectangle(
         tuple[int, int, int, int]
         | tuple[list[int]]
         | tuple[tuple[int, int], tuple[int, int]]
-    )
+    ),
 ) -> None:
     # Arrange
     im = Image.new("RGB", (200, 200))

@@ -188,7 +188,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         + o16(dpi[0])
         + o16(dpi[1])
         + b"\0" * 24
-        + b"\xFF" * 24
+        + b"\xff" * 24
         + b"\0"
         + o8(planes)
         + o16(stride)

@@ -86,16 +86,12 @@ def test_invalid_file() -> None:
 def test_l_mode_transparency() -> None:
     with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
         assert im.mode == "L"
-        px = im.load()
-        assert px is not None
-        assert px[0, 0] == 128
+        assert im.getpixel((0, 0)) == 128
         assert im.info["transparency"] == 255
 
         im.seek(1)
         assert im.mode == "L"
-        px = im.load()
-        assert px is not None
-        assert px[0, 0] == 128
+        assert im.getpixel((0, 0)) == 128
 
 
 def test_l_mode_after_rgb() -> None:
@@ -319,9 +315,7 @@ def test_loading_multiple_palettes(path: str, mode: str) -> None:
         assert im.mode == "P"
         assert im.palette is not None
         first_frame_colors = im.palette.colors.keys()
-        px = im.convert("RGB").load()
-        assert px is not None
-        original_color = px[0, 0]
+        original_color = im.convert("RGB").getpixel((0, 0))
 
         im.seek(1)
         assert im.mode == mode
@@ -329,14 +323,10 @@ def test_loading_multiple_palettes(path: str, mode: str) -> None:
             im = im.convert("RGB")
 
         # Check a color only from the old palette
-        px = im.load()
-        assert px is not None
-        assert px[0, 0] == original_color
+        assert im.getpixel((0, 0)) == original_color
 
         # Check a color from the new palette
-        px = im.load()
-        assert px is not None
-        assert px[24, 24] not in first_frame_colors
+        assert im.getpixel((24, 24)) not in first_frame_colors
 
 
 def test_headers_saving_for_animated_gifs(tmp_path: Path) -> None:
@@ -510,9 +500,7 @@ def test_eoferror() -> None:
 
 def test_first_frame_transparency() -> None:
     with Image.open("Tests/images/first_frame_transparency.gif") as im:
-        px = im.load()
-        assert px is not None
-        assert px[0, 0] == im.info["transparency"]
+        assert im.getpixel((0, 0)) == im.info["transparency"]
 
 
 def test_dispose_none() -> None:

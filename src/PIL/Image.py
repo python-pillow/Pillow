@@ -514,7 +514,7 @@ class ImagePointTransform:
 
 
 def _getscaleoffset(
-    expr: Callable[[ImagePointTransform], ImagePointTransform | float]
+    expr: Callable[[ImagePointTransform], ImagePointTransform | float],
 ) -> tuple[float, float]:
     a = expr(ImagePointTransform(1, 0))
     return (a.scale, a.offset) if isinstance(a, ImagePointTransform) else (0, a)
@@ -3883,7 +3883,7 @@ class Exif(_ExifBase):
             return self._fixup_dict(dict(info))
 
     def _get_head(self) -> bytes:
-        version = b"\x2B" if self.bigtiff else b"\x2A"
+        version = b"\x2b" if self.bigtiff else b"\x2a"
         if self.endian == "<":
             head = b"II" + version + b"\x00" + o32le(8)
         else:

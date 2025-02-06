@@ -49,7 +49,7 @@ def test_sanity() -> None:
         (b"P5 3 1 257 \x00\x00\x00\x80\x01\x01", "I", (0, 32640, 65535)),
         # P6 with maxval < 255
         (
-            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0A\x0F\x10\x11",
+            b"P6 3 1 17 \x00\x01\x02\x08\x09\x0a\x0f\x10\x11",
             "RGB",
             (
                 (0, 15, 30),
@@ -60,7 +60,7 @@ def test_sanity() -> None:
         # P6 with maxval > 255
         (
             b"P6 3 1 257 \x00\x00\x00\x01\x00\x02"
-            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xFF\xFF",
+            b"\x00\x80\x00\x81\x00\x82\x01\x00\x01\x01\xff\xff",
             "RGB",
             (
                 (0, 1, 2),

@@ -79,7 +79,7 @@ def test_path_constructors(
     ),
 )
 def test_invalid_path_constructors(
-    coords: tuple[str, str] | Sequence[Sequence[int]]
+    coords: tuple[str, str] | Sequence[Sequence[int]],
 ) -> None:
     # Act
     with pytest.raises(ValueError) as e:
