@@ -696,10 +696,10 @@ class ImageDraw:
             | ImageFont.TransposedFont
             | None
         ),
-        anchor: str | None,
+        anchor: ImageFont.Anchor | None,
         spacing: float,
-        align: str,
-        direction: str | None,
+        align: Align,
+        direction: ImageFont.Direction | None,
         features: list[str] | None,
         language: str | None,
         stroke_width: float,
@@ -707,7 +707,7 @@ class ImageDraw:
         font_size: float | None,
     ) -> tuple[
         ImageFont.ImageFont | ImageFont.FreeTypeFont | ImageFont.TransposedFont,
-        str,
+        ImageFont.Anchor,
         list[tuple[tuple[float, float], AnyStr]],
     ]:
         if direction == "ttb":
