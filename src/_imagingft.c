@@ -834,6 +834,7 @@ font_render(FontObject *self, PyObject *args) {
     int mask = 0;  /* is FT_LOAD_TARGET_MONO enabled? */
     int color = 0; /* is FT_LOAD_COLOR enabled? */
     float stroke_width = 0;
+    int stroke_filled = 0;
     PY_LONG_LONG foreground_ink_long = 0;
     unsigned int foreground_ink;
     const char *mode = NULL;
@@ -853,7 +854,7 @@ font_render(FontObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "OO|zzOzfzLffO:render",
+            "OO|zzOzfpzL(ff):render",
             &string,
             &fill,
             &mode,
@@ -861,6 +862,7 @@ font_render(FontObject *self, PyObject *args) {
             &features,
             &lang,
             &stroke_width,
+            &stroke_filled,
             &anchor,
             &foreground_ink_long,
             &x_start,
@@ -1005,7 +1007,8 @@ font_render(FontObject *self, PyObject *args) {
         if (stroker != NULL) {
             error = FT_Get_Glyph(glyph_slot, &glyph);
             if (!error) {
-                error = FT_Glyph_Stroke(&glyph, stroker, 1);
+                error = stroke_filled ? FT_Glyph_StrokeBorder(&glyph, stroker, 0, 1)
+                                      : FT_Glyph_Stroke(&glyph, stroker, 1);
             }
             if (!error) {
                 FT_Vector origin = {0, 0};
@@ -1371,8 +1374,7 @@ font_setvarname(FontObject *self, PyObject *args) {
         return geterror(error);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1426,8 +1428,7 @@ font_setvaraxes(FontObject *self, PyObject *args) {
         return geterror(error);
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 #endif
 
@@ -1629,10 +1630,9 @@ PyInit__imagingft(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imagingft", /* m_name */
-        NULL,         /* m_doc */
-        -1,           /* m_size */
-        _functions,   /* m_methods */
+        .m_name = "_imagingft",
+        .m_size = -1,
+        .m_methods = _functions,
     };
 
     m = PyModule_Create(&module_def);

@@ -9,7 +9,6 @@ pull_request_rules:
       - status-success=Windows Test Successful
       - status-success=MSYS2 Test Successful
       - status-success=Cygwin Test Successful
-      - status-success=continuous-integration/appveyor/pr
     actions:
       merge:
         method: merge

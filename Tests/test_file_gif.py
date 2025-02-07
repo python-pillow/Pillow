@@ -86,12 +86,12 @@ def test_invalid_file() -> None:
 def test_l_mode_transparency() -> None:
     with Image.open("Tests/images/no_palette_with_transparency.gif") as im:
         assert im.mode == "L"
-        assert im.load()[0, 0] == 128
+        assert im.getpixel((0, 0)) == 128
         assert im.info["transparency"] == 255
 
         im.seek(1)
         assert im.mode == "L"
-        assert im.load()[0, 0] == 128
+        assert im.getpixel((0, 0)) == 128
 
 
 def test_l_mode_after_rgb() -> None:
@@ -109,7 +109,7 @@ def test_palette_not_needed_for_second_frame() -> None:
         assert_image_similar(im, hopper("L").convert("RGB"), 8)
 
 
-def test_strategy() -> None:
+def test_strategy(monkeypatch: pytest.MonkeyPatch) -> None:
     with Image.open("Tests/images/iss634.gif") as im:
         expected_rgb_always = im.convert("RGB")
 
@@ -119,35 +119,36 @@ def test_strategy() -> None:
         im.seek(1)
         expected_different = im.convert("RGB")
 
-    try:
-        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_ALWAYS
-        with Image.open("Tests/images/iss634.gif") as im:
-            assert im.mode == "RGB"
-            assert_image_equal(im, expected_rgb_always)
+    monkeypatch.setattr(
+        GifImagePlugin, "LOADING_STRATEGY", GifImagePlugin.LoadingStrategy.RGB_ALWAYS
+    )
+    with Image.open("Tests/images/iss634.gif") as im:
+        assert im.mode == "RGB"
+        assert_image_equal(im, expected_rgb_always)
 
-        with Image.open("Tests/images/chi.gif") as im:
-            assert im.mode == "RGBA"
-            assert_image_equal(im, expected_rgb_always_rgba)
+    with Image.open("Tests/images/chi.gif") as im:
+        assert im.mode == "RGBA"
+        assert_image_equal(im, expected_rgb_always_rgba)
 
-        GifImagePlugin.LOADING_STRATEGY = (
-            GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
-        )
-        # Stay in P mode with only a global palette
-        with Image.open("Tests/images/chi.gif") as im:
-            assert im.mode == "P"
+    monkeypatch.setattr(
+        GifImagePlugin,
+        "LOADING_STRATEGY",
+        GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY,
+    )
+    # Stay in P mode with only a global palette
+    with Image.open("Tests/images/chi.gif") as im:
+        assert im.mode == "P"
 
-            im.seek(1)
-            assert im.mode == "P"
-            assert_image_equal(im.convert("RGB"), expected_different)
+        im.seek(1)
+        assert im.mode == "P"
+        assert_image_equal(im.convert("RGB"), expected_different)
 
-        # Change to RGB mode when a frame has an individual palette
-        with Image.open("Tests/images/iss634.gif") as im:
-            assert im.mode == "P"
+    # Change to RGB mode when a frame has an individual palette
+    with Image.open("Tests/images/iss634.gif") as im:
+        assert im.mode == "P"
 
-            im.seek(1)
-            assert im.mode == "RGB"
-    finally:
-        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
+        im.seek(1)
+        assert im.mode == "RGB"
 
 
 def test_optimize() -> None:
@@ -310,7 +311,7 @@ def test_loading_multiple_palettes(path: str, mode: str) -> None:
     with Image.open(path) as im:
         assert im.mode == "P"
         first_frame_colors = im.palette.colors.keys()
-        original_color = im.convert("RGB").load()[0, 0]
+        original_color = im.convert("RGB").getpixel((0, 0))
 
         im.seek(1)
         assert im.mode == mode
@@ -318,10 +319,10 @@ def test_loading_multiple_palettes(path: str, mode: str) -> None:
             im = im.convert("RGB")
 
         # Check a color only from the old palette
-        assert im.load()[0, 0] == original_color
+        assert im.getpixel((0, 0)) == original_color
 
         # Check a color from the new palette
-        assert im.load()[24, 24] not in first_frame_colors
+        assert im.getpixel((24, 24)) not in first_frame_colors
 
 
 def test_headers_saving_for_animated_gifs(tmp_path: Path) -> None:
@@ -487,8 +488,7 @@ def test_eoferror() -> None:
 
 def test_first_frame_transparency() -> None:
     with Image.open("Tests/images/first_frame_transparency.gif") as im:
-        px = im.load()
-        assert px[0, 0] == im.info["transparency"]
+        assert im.getpixel((0, 0)) == im.info["transparency"]
 
 
 def test_dispose_none() -> None:
@@ -555,17 +555,15 @@ def test_dispose_background_transparency() -> None:
 def test_transparent_dispose(
     loading_strategy: GifImagePlugin.LoadingStrategy,
     expected_colors: tuple[tuple[int | tuple[int, int, int, int], ...]],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    GifImagePlugin.LOADING_STRATEGY = loading_strategy
-    try:
-        with Image.open("Tests/images/transparent_dispose.gif") as img:
-            for frame in range(3):
-                img.seek(frame)
-                for x in range(3):
-                    color = img.getpixel((x, 0))
-                    assert color == expected_colors[frame][x]
-    finally:
-        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
+    monkeypatch.setattr(GifImagePlugin, "LOADING_STRATEGY", loading_strategy)
+    with Image.open("Tests/images/transparent_dispose.gif") as img:
+        for frame in range(3):
+            img.seek(frame)
+            for x in range(3):
+                color = img.getpixel((x, 0))
+                assert color == expected_colors[frame][x]
 
 
 def test_dispose_previous() -> None:
@@ -1398,24 +1396,23 @@ def test_lzw_bits() -> None:
     ),
 )
 def test_extents(
-    test_file: str, loading_strategy: GifImagePlugin.LoadingStrategy
+    test_file: str,
+    loading_strategy: GifImagePlugin.LoadingStrategy,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    GifImagePlugin.LOADING_STRATEGY = loading_strategy
-    try:
-        with Image.open("Tests/images/" + test_file) as im:
-            assert im.size == (100, 100)
+    monkeypatch.setattr(GifImagePlugin, "LOADING_STRATEGY", loading_strategy)
+    with Image.open("Tests/images/" + test_file) as im:
+        assert im.size == (100, 100)
 
-            # Check that n_frames does not change the size
-            assert im.n_frames == 2
-            assert im.size == (100, 100)
+        # Check that n_frames does not change the size
+        assert im.n_frames == 2
+        assert im.size == (100, 100)
 
-            im.seek(1)
-            assert im.size == (150, 150)
+        im.seek(1)
+        assert im.size == (150, 150)
 
-            im.load()
-            assert im.im.size == (150, 150)
-    finally:
-        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_FIRST
+        im.load()
+        assert im.im.size == (150, 150)
 
 
 def test_missing_background() -> None:
