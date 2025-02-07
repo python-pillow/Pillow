@@ -223,8 +223,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     # Setup the WebP animation encoder
     enc = _webp.WebPAnimEncoder(
-        im.size[0],
-        im.size[1],
+        im.size,
         background,
         loop,
         minimize_size,

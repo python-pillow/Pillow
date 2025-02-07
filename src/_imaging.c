@@ -866,7 +866,7 @@ _color_lut_3d(ImagingObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "siiiiiO:color_lut_3d",
+            "sii(iii)O:color_lut_3d",
             &mode,
             &filter,
             &table_channels,
@@ -1013,10 +1013,6 @@ _convert_transparent(ImagingObject *self, PyObject *args) {
 
 static PyObject *
 _copy(ImagingObject *self, PyObject *args) {
-    if (!PyArg_ParseTuple(args, "")) {
-        return NULL;
-    }
-
     return PyImagingNew(ImagingCopy(self->image));
 }
 
@@ -4439,10 +4435,9 @@ PyInit__imaging(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imaging", /* m_name */
-        NULL,       /* m_doc */
-        -1,         /* m_size */
-        functions,  /* m_methods */
+        .m_name = "_imaging",
+        .m_size = -1,
+        .m_methods = functions,
     };
 
     m = PyModule_Create(&module_def);
