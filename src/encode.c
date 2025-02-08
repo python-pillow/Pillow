@@ -1253,7 +1253,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     PyObject *quality_layers = NULL;
     Py_ssize_t num_resolutions = 0;
     PyObject *cblk_size = NULL, *precinct_size = NULL;
-    PyObject *irreversible = NULL;
+    int irreversible = 0;
     char *progression = "LRCP";
     OPJ_PROG_ORDER prog_order;
     char *cinema_mode = "no";
@@ -1267,7 +1267,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbbnz#p",
+            "ss|OOOsOnOOpssbbnz#p",
             &mode,
             &format,
             &offset,
@@ -1402,7 +1402,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
         precinct_size, &context->precinct_width, &context->precinct_height
     );
 
-    context->irreversible = PyObject_IsTrue(irreversible);
+    context->irreversible = irreversible;
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
     context->mct = mct;
