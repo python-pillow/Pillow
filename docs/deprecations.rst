@@ -183,6 +183,16 @@ ExifTags.IFD.Makernote
 ``ExifTags.IFD.Makernote`` has been deprecated. Instead, use
 ``ExifTags.IFD.MakerNote``.
 
+Image.Image.get_child_images()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 11.2.0
+
+``Image.Image.get_child_images()`` has been deprecated. and will be removed in Pillow
+13 (2026-10-15). It will be moved to ``ImageFile.ImageFile.get_child_images()``. The
+method uses an image's file pointer, and so child images could only be retrieved from
+an :py:class:`PIL.ImageFile.ImageFile` instance.
+
 Removed features
 ----------------
 
