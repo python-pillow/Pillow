@@ -54,13 +54,10 @@ BROTLI_VERSION=1.1.0
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
     # This essentially duplicates the Homebrew recipe
-    ORIGINAL_CFLAGS=$CFLAGS
-    CFLAGS="$CFLAGS -Wno-int-conversion"
-    build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
+    CFLAGS="$CFLAGS -Wno-int-conversion" build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
         --disable-debug --disable-host-tool --with-internal-glib \
         --with-pc-path=$BUILD_PREFIX/share/pkgconfig:$BUILD_PREFIX/lib/pkgconfig \
         --with-system-include-path=$(xcrun --show-sdk-path --sdk macosx)/usr/include
-    CFLAGS=$ORIGINAL_CFLAGS
     export PKG_CONFIG=$BUILD_PREFIX/bin/pkg-config
     touch pkg-config-stamp
 }
@@ -130,15 +127,13 @@ function build {
     build_lcms2
     build_openjpeg
 
-    ORIGINAL_CFLAGS=$CFLAGS
-    CFLAGS="$CFLAGS -O3 -DNDEBUG"
+    webp_cflags="-O3 -DNDEBUG"
     if [[ -n "$IS_MACOS" ]]; then
-        CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
+        webp_cflags="$webp_cflags -Wl,-headerpad_max_install_names"
     fi
-    build_simple libwebp $LIBWEBP_VERSION \
+    CFLAGS="$CFLAGS $webp_cflags" build_simple libwebp $LIBWEBP_VERSION \
         https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
         --enable-libwebpmux --enable-libwebpdemux
-    CFLAGS=$ORIGINAL_CFLAGS
 
     build_brotli
 
