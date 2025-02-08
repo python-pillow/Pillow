@@ -883,7 +883,6 @@ static PyTypeObject AvifEncoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "AvifEncoder",
     .tp_basicsize = sizeof(AvifEncoderObject),
     .tp_dealloc = (destructor)_encoder_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = _encoder_methods,
 };
 
@@ -899,7 +898,6 @@ static PyTypeObject AvifDecoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "AvifDecoder",
     .tp_basicsize = sizeof(AvifDecoderObject),
     .tp_dealloc = (destructor)_decoder_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = _decoder_methods,
 };
 
