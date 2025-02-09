@@ -59,6 +59,7 @@ ImagingNewPrologueSubtype(const char *mode, int xsize, int ysize, int size) {
     im->xsize = xsize;
     im->ysize = ysize;
 
+    im->readonly = 0;
     im->type = IMAGING_TYPE_UINT8;
 
     if (strcmp(mode, "1") == 0) {
