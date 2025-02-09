@@ -16,6 +16,7 @@ except ImportError:
 # Decoder options as module globals, until there is a way to pass parameters
 # to Image.open (see https://github.com/python-pillow/Pillow/issues/569)
 DECODE_CODEC_CHOICE = "auto"
+# Decoding is only affected by this for libavif **0.8.4** or greater.
 DEFAULT_MAX_THREADS = 0
 
 
@@ -61,10 +62,7 @@ class AvifImageFile(ImageFile.ImageFile):
 
     def _open(self) -> None:
         if not SUPPORTED:
-            msg = (
-                "image file could not be identified because AVIF "
-                "support not installed"
-            )
+            msg = "image file could not be opened because AVIF support not installed"
             raise SyntaxError(msg)
 
         if DECODE_CODEC_CHOICE != "auto" and not _avif.decoder_codec_available(
@@ -116,11 +114,11 @@ class AvifImageFile(ImageFile.ImageFile):
     def load(self) -> Image.core.PixelAccess | None:
         if self.tile:
             # We need to load the image data for this frame
-            data, timescale, tsp_in_ts, dur_in_ts = self._decoder.get_frame(
-                self.__frame
+            data, timescale, pts_in_timescales, dur_in_timescales = (
+                self._decoder.get_frame(self.__frame)
             )
-            self.info["timestamp"] = round(1000 * (tsp_in_ts / timescale))
-            self.info["duration"] = round(1000 * (dur_in_ts / timescale))
+            self.info["timestamp"] = round(1000 * (pts_in_timescales / timescale))
+            self.info["duration"] = round(1000 * (dur_in_timescales / timescale))
 
             # Set tile
             if self.fp and self._exclusive_fp:
@@ -212,8 +210,7 @@ def _save(
 
     # Setup the AVIF encoder
     enc = _avif.AvifEncoder(
-        im.size[0],
-        im.size[1],
+        im.size,
         subsampling,
         quality,
         speed,
@@ -233,7 +230,7 @@ def _save(
 
     # Add each frame
     frame_idx = 0
-    frame_dur = 0
+    frame_duration = 0
     cur_idx = im.tell()
     try:
         for ims in [im] + append_images:
@@ -252,16 +249,15 @@ def _save(
 
                 # Update frame duration
                 if isinstance(duration, (list, tuple)):
-                    frame_dur = duration[frame_idx]
+                    frame_duration = duration[frame_idx]
                 else:
-                    frame_dur = duration
+                    frame_duration = duration
 
                 # Append the frame to the animation encoder
                 enc.add(
                     frame.tobytes("raw", rawmode),
-                    frame_dur,
-                    frame.size[0],
-                    frame.size[1],
+                    frame_duration,
+                    frame.size,
                     rawmode,
                     is_single_frame,
                 )

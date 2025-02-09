@@ -7,7 +7,7 @@
 typedef struct {
     PyObject_HEAD avifEncoder *encoder;
     avifImage *image;
-    int frame_index;
+    int first_frame;
 } AvifEncoderObject;
 
 static PyTypeObject AvifEncoder_Type;
@@ -16,7 +16,6 @@ static PyTypeObject AvifEncoder_Type;
 typedef struct {
     PyObject_HEAD avifDecoder *decoder;
     Py_buffer buffer;
-    char *mode;
 } AvifDecoderObject;
 
 static PyTypeObject AvifDecoder_Type;
@@ -154,7 +153,7 @@ exif_orientation_to_irot_imir(avifImage *image, int orientation) {
 }
 
 static int
-_codec_available(const char *name, uint32_t flags) {
+_codec_available(const char *name, avifCodecFlags flags) {
     avifCodecChoice codec = avifCodecChoiceFromName(name);
     if (codec == AVIF_CODEC_CHOICE_AUTO) {
         return 0;
@@ -252,7 +251,7 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "IIsiiissiiOOy*y*iy*O",
+            "(II)siiissiiOOy*y*iy*O",
             &width,
             &height,
             &subsampling,
@@ -372,7 +371,7 @@ AvifEncoderNew(PyObject *self_, PyObject *args) {
         avifEncoderDestroy(encoder);
         return NULL;
     }
-    self->frame_index = -1;
+    self->first_frame = 1;
 
     avifResult result;
     if (icc_buffer.len) {
@@ -466,10 +465,9 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
     unsigned int width;
     unsigned int height;
     char *mode;
-    PyObject *is_single_frame = NULL;
+    unsigned int is_single_frame;
     PyObject *ret = Py_None;
 
-    int is_first_frame;
     avifRGBImage rgb;
     avifResult result;
 
@@ -479,7 +477,7 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "z#IIIsO",
+            "y#I(II)sp",
             (char **)&rgb_bytes,
             &size,
             &duration,
@@ -490,8 +488,6 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
         )) {
         return NULL;
     }
-
-    is_first_frame = self->frame_index == -1;
 
     if (image->width != width || image->height != height) {
         PyErr_Format(
@@ -505,7 +501,7 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
         return NULL;
     }
 
-    if (is_first_frame) {
+    if (self->first_frame) {
         // If we don't have an image populated with yuv planes, this is the first frame
         frame = image;
     } else {
@@ -577,7 +573,7 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
     }
 
     uint32_t addImageFlags = AVIF_ADD_IMAGE_FLAG_NONE;
-    if (PyObject_IsTrue(is_single_frame)) {
+    if (is_single_frame) {
         addImageFlags |= AVIF_ADD_IMAGE_FLAG_SINGLE;
     }
 
@@ -597,12 +593,12 @@ _encoder_add(AvifEncoderObject *self, PyObject *args) {
 
 end:
     avifRGBImageFreePixels(&rgb);
-    if (!is_first_frame) {
+    if (!self->first_frame) {
         avifImageDestroy(frame);
     }
 
     if (ret == Py_None) {
-        self->frame_index++;
+        self->first_frame = 0;
         Py_RETURN_NONE;
     } else {
         return ret;
@@ -708,12 +704,6 @@ AvifDecoderNew(PyObject *self_, PyObject *args) {
         return NULL;
     }
 
-    if (decoder->alphaPresent) {
-        self->mode = "RGBA";
-    } else {
-        self->mode = "RGB";
-    }
-
     self->decoder = decoder;
     self->buffer = buffer;
 
@@ -757,7 +747,7 @@ _decoder_get_info(AvifDecoderObject *self) {
         image->width,
         image->height,
         decoder->imageCount,
-        self->mode,
+        decoder->alphaPresent == AVIF_TRUE ? "RGBA" : "RGB",
         NULL == icc ? Py_None : icc,
         NULL == exif ? Py_None : exif,
         irot_imir_to_exif_orientation(image),
@@ -793,7 +783,7 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
         PyErr_Format(
             exc_type_for_avif_result(result),
             "Failed to decode frame %u: %s",
-            decoder->imageIndex + 1,
+            frame_index,
             avifResultToString(result)
         );
         return NULL;
@@ -801,17 +791,11 @@ _decoder_get_frame(AvifDecoderObject *self, PyObject *args) {
 
     image = decoder->image;
 
-    memset(&rgb, 0, sizeof(rgb));
     avifRGBImageSetDefaults(&rgb, image);
 
     rgb.depth = 8;
-
-    if (decoder->alphaPresent) {
-        rgb.format = AVIF_RGB_FORMAT_RGBA;
-    } else {
-        rgb.format = AVIF_RGB_FORMAT_RGB;
-        rgb.ignoreAlpha = AVIF_TRUE;
-    }
+    rgb.format =
+        decoder->alphaPresent == AVIF_TRUE ? AVIF_RGB_FORMAT_RGBA : AVIF_RGB_FORMAT_RGB;
 
     result = avifRGBImageAllocatePixels(&rgb);
     if (result != AVIF_RESULT_OK) {
@@ -939,6 +923,10 @@ PyInit__avif(void) {
         Py_DECREF(m);
         return NULL;
     }
+
+#ifdef Py_GIL_DISABLED
+    PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
+#endif
 
     return m;
 }
