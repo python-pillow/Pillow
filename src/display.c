@@ -251,7 +251,6 @@ static PyTypeObject ImagingDisplayType = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingDisplay",
     .tp_basicsize = sizeof(ImagingDisplayObject),
     .tp_dealloc = (destructor)_delete,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = methods,
     .tp_getset = getsetters,
 };

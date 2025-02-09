@@ -326,7 +326,6 @@ static PyTypeObject ImagingEncoderType = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingEncoder",
     .tp_basicsize = sizeof(ImagingEncoderObject),
     .tp_dealloc = (destructor)_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = methods,
     .tp_getset = getseters,
 };

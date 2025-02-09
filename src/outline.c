@@ -152,6 +152,5 @@ static PyTypeObject OutlineType = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "Outline",
     .tp_basicsize = sizeof(OutlineObject),
     .tp_dealloc = (destructor)_outline_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = _outline_methods,
 };

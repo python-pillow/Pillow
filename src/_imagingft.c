@@ -1521,7 +1521,6 @@ static PyTypeObject Font_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "Font",
     .tp_basicsize = sizeof(FontObject),
     .tp_dealloc = (destructor)font_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = font_methods,
     .tp_getset = font_getsetters,
 };

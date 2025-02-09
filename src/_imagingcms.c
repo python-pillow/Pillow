@@ -1413,7 +1413,6 @@ static PyTypeObject CmsProfile_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PIL.ImageCms.core.CmsProfile",
     .tp_basicsize = sizeof(CmsProfileObject),
     .tp_dealloc = (destructor)cms_profile_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = cms_profile_methods,
     .tp_getset = cms_profile_getsetters,
 };
@@ -1426,7 +1425,6 @@ static PyTypeObject CmsTransform_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PIL.ImageCms.core.CmsTransform",
     .tp_basicsize = sizeof(CmsTransformObject),
     .tp_dealloc = (destructor)cms_transform_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = cms_transform_methods,
 };
 

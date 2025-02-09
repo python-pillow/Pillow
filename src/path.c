@@ -603,7 +603,6 @@ static PyTypeObject PyPathType = {
     .tp_dealloc = (destructor)path_dealloc,
     .tp_as_sequence = &path_as_sequence,
     .tp_as_mapping = &path_as_mapping,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = methods,
     .tp_getset = getsetters,
 };

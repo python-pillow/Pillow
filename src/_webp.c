@@ -533,7 +533,6 @@ static PyTypeObject WebPAnimEncoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "WebPAnimEncoder",
     .tp_basicsize = sizeof(WebPAnimEncoderObject),
     .tp_dealloc = (destructor)_anim_encoder_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = _anim_encoder_methods,
 };
 
@@ -551,7 +550,6 @@ static PyTypeObject WebPAnimDecoder_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "WebPAnimDecoder",
     .tp_basicsize = sizeof(WebPAnimDecoderObject),
     .tp_dealloc = (destructor)_anim_decoder_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = _anim_decoder_methods,
 };
 

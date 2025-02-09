@@ -3773,7 +3773,6 @@ static PyTypeObject Imaging_Type = {
     .tp_basicsize = sizeof(ImagingObject),
     .tp_dealloc = (destructor)_dealloc,
     .tp_as_sequence = &image_as_sequence,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = methods,
     .tp_getset = getsetters,
 };
@@ -3782,7 +3781,6 @@ static PyTypeObject ImagingFont_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingFont",
     .tp_basicsize = sizeof(ImagingFontObject),
     .tp_dealloc = (destructor)_font_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = _font_methods,
 };
 
@@ -3790,7 +3788,6 @@ static PyTypeObject ImagingDraw_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "ImagingDraw",
     .tp_basicsize = sizeof(ImagingDrawObject),
     .tp_dealloc = (destructor)_draw_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = _draw_methods,
 };
 
