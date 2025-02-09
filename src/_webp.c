@@ -530,36 +530,11 @@ static struct PyMethodDef _anim_encoder_methods[] = {
 
 // WebPAnimEncoder type definition
 static PyTypeObject WebPAnimEncoder_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimEncoder", /*tp_name */
-    sizeof(WebPAnimEncoderObject),                    /*tp_basicsize */
-    0,                                                /*tp_itemsize */
-    /* methods */
-    (destructor)_anim_encoder_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_vectorcall_offset*/
-    0,                                 /*tp_getattr*/
-    0,                                 /*tp_setattr*/
-    0,                                 /*tp_as_async*/
-    0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number*/
-    0,                                 /*tp_as_sequence*/
-    0,                                 /*tp_as_mapping*/
-    0,                                 /*tp_hash*/
-    0,                                 /*tp_call*/
-    0,                                 /*tp_str*/
-    0,                                 /*tp_getattro*/
-    0,                                 /*tp_setattro*/
-    0,                                 /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                /*tp_flags*/
-    0,                                 /*tp_doc*/
-    0,                                 /*tp_traverse*/
-    0,                                 /*tp_clear*/
-    0,                                 /*tp_richcompare*/
-    0,                                 /*tp_weaklistoffset*/
-    0,                                 /*tp_iter*/
-    0,                                 /*tp_iternext*/
-    _anim_encoder_methods,             /*tp_methods*/
-    0,                                 /*tp_members*/
-    0,                                 /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "WebPAnimEncoder",
+    .tp_basicsize = sizeof(WebPAnimEncoderObject),
+    .tp_dealloc = (destructor)_anim_encoder_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_methods = _anim_encoder_methods,
 };
 
 // WebPAnimDecoder methods
@@ -573,36 +548,11 @@ static struct PyMethodDef _anim_decoder_methods[] = {
 
 // WebPAnimDecoder type definition
 static PyTypeObject WebPAnimDecoder_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0) "WebPAnimDecoder", /*tp_name */
-    sizeof(WebPAnimDecoderObject),                    /*tp_basicsize */
-    0,                                                /*tp_itemsize */
-    /* methods */
-    (destructor)_anim_decoder_dealloc, /*tp_dealloc*/
-    0,                                 /*tp_vectorcall_offset*/
-    0,                                 /*tp_getattr*/
-    0,                                 /*tp_setattr*/
-    0,                                 /*tp_as_async*/
-    0,                                 /*tp_repr*/
-    0,                                 /*tp_as_number*/
-    0,                                 /*tp_as_sequence*/
-    0,                                 /*tp_as_mapping*/
-    0,                                 /*tp_hash*/
-    0,                                 /*tp_call*/
-    0,                                 /*tp_str*/
-    0,                                 /*tp_getattro*/
-    0,                                 /*tp_setattro*/
-    0,                                 /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                /*tp_flags*/
-    0,                                 /*tp_doc*/
-    0,                                 /*tp_traverse*/
-    0,                                 /*tp_clear*/
-    0,                                 /*tp_richcompare*/
-    0,                                 /*tp_weaklistoffset*/
-    0,                                 /*tp_iter*/
-    0,                                 /*tp_iternext*/
-    _anim_decoder_methods,             /*tp_methods*/
-    0,                                 /*tp_members*/
-    0,                                 /*tp_getset*/
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "WebPAnimDecoder",
+    .tp_basicsize = sizeof(WebPAnimDecoderObject),
+    .tp_dealloc = (destructor)_anim_decoder_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_methods = _anim_decoder_methods,
 };
 
 /* -------------------------------------------------------------------- */
