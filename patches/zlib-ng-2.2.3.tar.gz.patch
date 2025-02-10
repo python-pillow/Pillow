@@ -1,0 +1,65 @@
+# zlib-ng doesn't allow for manual specification of `--installnamedir`.
+#
+# Submitted upstream as https://github.com/zlib-ng/zlib-ng/pull/1867
+diff --git a/configure b/configure
+index 3487d092..91037f77 100755
+--- a/configure
++++ b/configure
+@@ -83,6 +83,7 @@ bindir=${bindir-'${exec_prefix}/bin'}
+ libdir=${libdir-'${exec_prefix}/lib'}
+ sharedlibdir=${sharedlibdir-'${libdir}'}
+ includedir=${includedir-'${prefix}/include'}
++installnamedir=${installnamedir-'@rpath'}
+ mandir=${mandir-'${prefix}/share/man'}
+ shared_ext='.so'
+ shared=1
+@@ -158,7 +159,7 @@ case "$1" in
+       echo 'usage:' | tee -a configure.log
+       echo '  configure [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
+       echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
+-      echo '    [--includedir=INCLUDEDIR] [--mandir=MANDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
++      echo '    [--includedir=INCLUDEDIR] [--installnamedir="@rpath"] [--mandir=MANDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
+       echo '    [--sprefix=SYMBOL_PREFIX]   Adds a prefix to all exported symbols' | tee -a configure.log
+       echo '    [--warn]                    Enables extra compiler warnings' | tee -a configure.log
+       echo '    [--debug]                   Enables extra debug prints during operation' | tee -a configure.log
+@@ -183,6 +184,7 @@ case "$1" in
+     -l*=* | --libdir=*) libdir=$(echo $1 | sed 's/.*=//'); shift ;;
+     --sharedlibdir=*) sharedlibdir=$(echo $1 | sed 's/.*=//'); shift ;;
+     -i*=* | --includedir=*) includedir=$(echo $1 | sed 's/.*=//');shift ;;
++    --installnamedir=*) installnamedir=$(echo $1 | sed 's/.*=//'); shift ;;
+     --mandir=*) mandir=$(echo $1 | sed 's/.*=//');shift ;;
+     -u*=* | --uname=*) uname=$(echo $1 | sed 's/.*=//');shift ;;
+     -p* | --prefix) prefix="$2"; shift; shift ;;
+@@ -470,7 +472,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
+              SHAREDLIBM=${LIBNAME}.$VER1$shared_ext
+              SHAREDTARGET=$SHAREDLIBV
+              LDSHARED=${LDSHARED-"$cc"}
+-             LDSHAREDFLAGS="-dynamiclib -install_name @rpath/${SHAREDLIBM} -compatibility_version ${VER1} -current_version ${VER3}"
++             LDSHAREDFLAGS="-dynamiclib -install_name ${installnamedir}/${SHAREDLIBM} -compatibility_version ${VER1} -current_version ${VER3}"
+              if "${CROSS_PREFIX}libtool" -V 2>&1 | grep Apple > /dev/null; then
+                  AR="${CROSS_PREFIX}libtool"
+              elif libtool -V 2>&1 | grep Apple > /dev/null; then
+@@ -1936,6 +1938,7 @@ echo TEST = $TEST >> configure.log
+ echo VER = $VER >> configure.log
+ echo exec_prefix = $exec_prefix >> configure.log
+ echo includedir = $includedir >> configure.log
++echo installnamedir = $installnamedir >> configure.log
+ echo bindir = $bindir >> configure.log
+ echo libdir = $libdir >> configure.log
+ echo mandir = $mandir >> configure.log
+@@ -2007,6 +2010,7 @@ sed < $SRCDIR/Makefile.in "
+ /^libdir *=/s#=.*#= $libdir#
+ /^sharedlibdir *=/s#=.*#= $sharedlibdir#
+ /^includedir *=/s#=.*#= $includedir#
++/^installnamedir *=/s#=.*#= $installnamedir#
+ /^mandir *=/s#=.*#= $mandir#
+ /^SRCDIR *=/s#=.*#=$SRCDIR#
+ /^INCLUDES *=/s#=.*#=$INCLUDES#
+@@ -2206,6 +2210,7 @@ sed < $SRCDIR/zlib.pc.in "
+ /^libdir *=/s#=.*#=$libdir#
+ /^sharedlibdir *=/s#=.*#=$sharedlibdir#
+ /^includedir *=/s#=.*#=$includedir#
++/^installnamedir *=/s#=.*#=$installnamedir#
+ /^mandir *=/s#=.*#=$mandir#
+ /^LDFLAGS *=/s#=.*#=$LDFLAGS#
+ " | sed -e "

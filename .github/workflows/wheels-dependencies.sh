@@ -26,6 +26,7 @@ else
     MB_ML_VER=${AUDITWHEEL_POLICY:9}
 fi
 PLAT=$CIBW_ARCHS
+PATCH_DIR=$(pwd)/patches
 
 # Define custom utilities
 source wheels/multibuild/common_utils.sh
@@ -36,7 +37,9 @@ fi
 
 ARCHIVE_SDIR=pillow-depends-main
 
-# Package versions for fresh source builds
+# Package versions for fresh source builds. Version numbers with "Patched"
+# annotations have a source code patch that is required for some platforms. If
+# you change those versions, ensure the patch is also updated.
 FREETYPE_VERSION=2.13.3
 HARFBUZZ_VERSION=10.2.0
 LIBPNG_VERSION=1.6.46
@@ -45,7 +48,7 @@ OPENJPEG_VERSION=2.5.3
 XZ_VERSION=5.6.4
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
-ZLIB_NG_VERSION=2.2.3
+ZLIB_NG_VERSION=2.2.3  # patched
 LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -69,7 +72,7 @@ function build_zlib_ng {
     if [ -e zlib-stamp ]; then return; fi
     fetch_unpack https://github.com/zlib-ng/zlib-ng/archive/$ZLIB_NG_VERSION.tar.gz zlib-ng-$ZLIB_NG_VERSION.tar.gz
     (cd zlib-ng-$ZLIB_NG_VERSION \
-        && ./configure --prefix=$BUILD_PREFIX --zlib-compat \
+        && ./configure --prefix=$BUILD_PREFIX --installnamedir=$BUILD_PREFIX/lib --zlib-compat \
         && make -j4 \
         && make install)
     touch zlib-stamp
