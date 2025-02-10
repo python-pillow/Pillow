@@ -47,7 +47,7 @@ repos:
       - id: end-of-file-fixer
         exclude: ^Tests/images/
       - id: trailing-whitespace
-        exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/|^patches/*.patch
+        exclude: ^.github/.*TEMPLATE|^Tests/(fonts|images)/|^patches/.*\.patch
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.31.1
