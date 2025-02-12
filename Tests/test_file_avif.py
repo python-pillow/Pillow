@@ -156,6 +156,12 @@ class TestFileAvif:
         with pytest.raises(TypeError):
             _avif.AvifDecoder()
 
+    def test_invalid_dimensions(self, tmp_path: Path) -> None:
+        test_file = str(tmp_path / "temp.avif")
+        im = Image.new("RGB", (0, 0))
+        with pytest.raises(ValueError):
+            im.save(test_file)
+
     def test_encoder_finish_none_error(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
@@ -461,7 +467,7 @@ class TestFileAvif:
             assert ctrl_buf.getvalue() != test_buf.getvalue()
 
     @skip_unless_avif_encoder("aom")
-    @pytest.mark.parametrize("advanced", [{"foo": "bar"}, 1234])
+    @pytest.mark.parametrize("advanced", [{"foo": "bar"}, {"foo": 1234}, 1234])
     def test_encoder_advanced_codec_options_invalid(
         self, tmp_path: Path, advanced: dict[str, str] | int
     ) -> None:

@@ -77,10 +77,9 @@ class AvifImageFile(ImageFile.ImageFile):
         )
 
         # Get info from decoder
-        width, height, n_frames, mode, icc, exif, exif_orientation, xmp = (
+        self._size, n_frames, mode, icc, exif, exif_orientation, xmp = (
             self._decoder.get_info()
         )
-        self._size = width, height
         self.n_frames = n_frames
         self.is_animated = self.n_frames > 1
         self._mode = mode
@@ -150,8 +149,6 @@ def _save(
     total = 0
     for ims in [im] + append_images:
         total += getattr(ims, "n_frames", 1)
-
-    is_single_frame = total == 1
 
     quality = info.get("quality", 75)
     if not isinstance(quality, int) or quality < 0 or quality > 100:
@@ -232,6 +229,7 @@ def _save(
     frame_idx = 0
     frame_duration = 0
     cur_idx = im.tell()
+    is_single_frame = total == 1
     try:
         for ims in [im] + append_images:
             # Get # of frames in this image

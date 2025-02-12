@@ -1388,7 +1388,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **tile_rows** / **tile_cols**
     For tile encoding, the (log 2) number of tile rows and columns to use.
-    Valid values are 0-6, default 0.
+    Valid values are 0-6, default 0. Ignored if "autotiling" is set to true in libavif
+    version **0.11.0** or greater.
 
 **autotiling**
     Split the image up to allow parallelization. Enabled automatically if "tile_rows"
@@ -1412,7 +1413,7 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
     The XMP data to include in the saved file.
 
 Saving sequences
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 When calling :py:meth:`~PIL.Image.Image.save` to write an AVIF file, by default
 only the first frame of a multiframe image will be saved. If the ``save_all``
