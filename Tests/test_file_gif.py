@@ -1345,7 +1345,7 @@ def test_save_I(tmp_path: Path) -> None:
         assert_image_equal(reloaded.convert("L"), im.convert("L"))
 
 
-def test_getdata() -> None:
+def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
     # Test getheader/getdata against legacy values.
     # Create a 'P' image with holes in the palette.
     im = Image._wedge().resize((16, 16), Image.Resampling.NEAREST)
@@ -1354,23 +1354,21 @@ def test_getdata() -> None:
 
     passed_palette = bytes(255 - i // 3 for i in range(768))
 
-    GifImagePlugin._FORCE_OPTIMIZE = True
-    try:
-        h = GifImagePlugin.getheader(im, passed_palette)
-        d = GifImagePlugin.getdata(im)
+    monkeypatch.setattr(GifImagePlugin, "_FORCE_OPTIMIZE", True)
 
-        import pickle
+    h = GifImagePlugin.getheader(im, passed_palette)
+    d = GifImagePlugin.getdata(im)
 
-        # Enable to get target values on pre-refactor version
-        # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
-        #    pickle.dump((h, d), f, 1)
-        with open("Tests/images/gif_header_data.pkl", "rb") as f:
-            (h_target, d_target) = pickle.load(f)
+    import pickle
 
-        assert h == h_target
-        assert d == d_target
-    finally:
-        GifImagePlugin._FORCE_OPTIMIZE = False
+    # Enable to get target values on pre-refactor version
+    # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
+    #    pickle.dump((h, d), f, 1)
+    with open("Tests/images/gif_header_data.pkl", "rb") as f:
+        (h_target, d_target) = pickle.load(f)
+
+    assert h == h_target
+    assert d == d_target
 
 
 def test_lzw_bits() -> None:
