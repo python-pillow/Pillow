@@ -658,6 +658,7 @@ class TestImage:
         im.putpalette(list(range(256)) * 4, "RGBA")
         im_remapped = im.remap_palette(list(range(256)))
         assert_image_equal(im, im_remapped)
+        assert im.palette is not None
         assert im.palette.palette == im_remapped.palette.palette
 
         # Test illegal image mode

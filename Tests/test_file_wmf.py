@@ -32,7 +32,9 @@ def test_load_raw() -> None:
 def test_load() -> None:
     with Image.open("Tests/images/drawing.emf") as im:
         if hasattr(Image.core, "drawwmf"):
-            assert im.load()[0, 0] == (255, 255, 255)
+            px = im.load()
+            assert px is not None
+            assert px[0, 0] == (255, 255, 255)
 
 
 def test_load_zero_inch() -> None:
