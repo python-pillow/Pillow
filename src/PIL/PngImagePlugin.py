@@ -48,6 +48,7 @@ from ._binary import i32be as i32
 from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._util import DeferredError
 
 if TYPE_CHECKING:
     from . import _imaging
@@ -869,6 +870,8 @@ class PngImageFile(ImageFile.ImageFile):
 
     def _seek(self, frame: int, rewind: bool = False) -> None:
         assert self.png is not None
+        if isinstance(self._fp, DeferredError):
+            raise self._fp.ex
 
         self.dispose: _imaging.ImagingCore | None
         dispose_extent = None
