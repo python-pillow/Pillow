@@ -38,7 +38,8 @@ jobs:
       matrix:
         python-version:
         - "pypy3.10",
-          env: TEST_REQUIREMENTS: tests
+          env:
+            TEST_REQUIREMENTS: tests
         - "3.10"
         - "3.11"
         - "3.12"
@@ -48,7 +49,7 @@ jobs:
         os: ["windows-latest"]
         include:
             # Test the oldest Python on 32-bit
-            - { python-version: "3.9", architecture: "x86", os: "windows-2019", env: "TEST_REQUIREMENTS: tests" }
+            - { python-version: "3.9", architecture: "x86", os: "windows-2019", env: {TEST_REQUIREMENTS: "tests"} }
 
     timeout-minutes: 30
 
