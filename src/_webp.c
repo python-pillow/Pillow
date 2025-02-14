@@ -449,7 +449,7 @@ _anim_decoder_get_info(PyObject *self) {
     WebPAnimInfo *info = &(decp->info);
 
     return Py_BuildValue(
-        "IIIIIs",
+        "(II)IIIs",
         info->canvas_width,
         info->canvas_height,
         info->loop_count,
