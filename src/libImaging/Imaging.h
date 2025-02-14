@@ -195,13 +195,13 @@ typedef struct ImagingMemoryArena {
  * will allocate a set of arenas and associated them with threads one at a time.
  */
 #define IMAGING_ARENAS_COUNT 8
-extern struct ImagingMemoryArena ImagingArenas[IMAGING_ARENAS_COUNT];
+extern struct ImagingMemoryArena ImagingArenas[IMAGING_ARENAS_COUNT+1];
 
 /* Provide a macro that loops through each arena that has been
  * statically-allocated. This is necessary to properly handle stats.
  */
 #define IMAGING_ARENAS_FOREACH(arena) \
-    for ((arena) = &ImagingArenas[0]; arena->block_size; ++(arena))
+    for ((arena) = &ImagingArenas[0]; (arena)->alignment >= 0; ++(arena))
 #else
 /* In this case we either have the GIL or do not have thread-local storage, in
  * which case we will only allocate a single arena.
