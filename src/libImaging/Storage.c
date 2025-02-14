@@ -273,7 +273,7 @@ static uint64_t ImagingArenaIndex = 0;
 static IMAGING_TLS uint64_t ImagingArenaThreadIndex = UINT64_MAX;
 
 /* These are the statically-allocated arenas. */
-struct ImagingMemoryArena ImagingArenas[IMAGING_ARENAS_COUNT+1] = {
+struct ImagingMemoryArena ImagingArenas[IMAGING_ARENAS_COUNT + 1] = {
     {1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 0, {0}},
     {1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 1, {0}},
     {1, IMAGING_ARENA_BLOCK_SIZE, 0, 0, NULL, 0, 0, 0, 0, 0, 2, {0}},
