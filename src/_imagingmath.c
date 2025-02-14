@@ -192,8 +192,7 @@ _unop(PyObject *self, PyObject *args) {
 
     unop(out, im1);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -226,8 +225,7 @@ _binop(PyObject *self, PyObject *args) {
 
     binop(out, im1, im2);
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef _functions[] = {
@@ -310,10 +308,9 @@ PyInit__imagingmath(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_imagingmath", /* m_name */
-        NULL,           /* m_doc */
-        -1,             /* m_size */
-        _functions,     /* m_methods */
+        .m_name = "_imagingmath",
+        .m_size = -1,
+        .m_methods = _functions,
     };
 
     m = PyModule_Create(&module_def);

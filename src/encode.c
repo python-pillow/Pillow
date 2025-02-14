@@ -278,8 +278,7 @@ _setimage(ImagingEncoderObject *encoder, PyObject *args) {
     Py_XDECREF(encoder->lock);
     encoder->lock = op;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -296,8 +295,7 @@ _setfd(ImagingEncoderObject *encoder, PyObject *args) {
     Py_XINCREF(fd);
     state->fd = fd;
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1099,7 +1097,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|nnnnpnnnnnnOz#y#y#",
+            "ss|nnnnpn(nn)nnnOz#y#y#",
             &mode,
             &rawmode,
             &quality,
@@ -1255,7 +1253,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     PyObject *quality_layers = NULL;
     Py_ssize_t num_resolutions = 0;
     PyObject *cblk_size = NULL, *precinct_size = NULL;
-    PyObject *irreversible = NULL;
+    int irreversible = 0;
     char *progression = "LRCP";
     OPJ_PROG_ORDER prog_order;
     char *cinema_mode = "no";
@@ -1269,7 +1267,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "ss|OOOsOnOOOssbbnz#p",
+            "ss|OOOsOnOOpssbbnz#p",
             &mode,
             &format,
             &offset,
@@ -1404,7 +1402,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
         precinct_size, &context->precinct_width, &context->precinct_height
     );
 
-    context->irreversible = PyObject_IsTrue(irreversible);
+    context->irreversible = irreversible;
     context->progression = prog_order;
     context->cinema_mode = cine_mode;
     context->mct = mct;

@@ -164,7 +164,7 @@ _anim_encoder_new(PyObject *self, PyObject *args) {
 
     if (!PyArg_ParseTuple(
             args,
-            "iiIiiiiii",
+            "(ii)Iiiiiii",
             &width,
             &height,
             &bgcolor,
@@ -449,7 +449,7 @@ _anim_decoder_get_info(PyObject *self) {
     WebPAnimInfo *info = &(decp->info);
 
     return Py_BuildValue(
-        "IIIIIs",
+        "(II)IIIs",
         info->canvas_width,
         info->canvas_height,
         info->loop_count,
@@ -835,10 +835,9 @@ PyInit__webp(void) {
 
     static PyModuleDef module_def = {
         PyModuleDef_HEAD_INIT,
-        "_webp",     /* m_name */
-        NULL,        /* m_doc */
-        -1,          /* m_size */
-        webpMethods, /* m_methods */
+        .m_name = "_webp",
+        .m_size = -1,
+        .m_methods = webpMethods,
     };
 
     m = PyModule_Create(&module_def);

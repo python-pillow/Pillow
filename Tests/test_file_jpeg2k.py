@@ -181,14 +181,11 @@ def test_load_dpi() -> None:
         assert "dpi" not in im.info
 
 
-def test_restricted_icc_profile() -> None:
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    try:
-        # JPEG2000 image with a restricted ICC profile and a known colorspace
-        with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
-            assert im.mode == "RGB"
-    finally:
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
+def test_restricted_icc_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+    # JPEG2000 image with a restricted ICC profile and a known colorspace
+    with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
+        assert im.mode == "RGB"
 
 
 @pytest.mark.skipif(
@@ -492,8 +489,7 @@ def test_plt_marker(card: ImageFile.ImageFile) -> None:
     out.seek(0)
     while True:
         marker = out.read(2)
-        if not marker:
-            pytest.fail("End of stream without PLT")
+        assert marker, "End of stream without PLT"
 
         jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:

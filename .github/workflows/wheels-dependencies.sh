@@ -37,20 +37,15 @@ fi
 ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
-FREETYPE_VERSION=2.13.2
-HARFBUZZ_VERSION=10.1.0
-LIBPNG_VERSION=1.6.44
+FREETYPE_VERSION=2.13.3
+HARFBUZZ_VERSION=10.2.0
+LIBPNG_VERSION=1.6.46
 JPEGTURBO_VERSION=3.1.0
 OPENJPEG_VERSION=2.5.3
-XZ_VERSION=5.6.3
+XZ_VERSION=5.6.4
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
-if [[ -n "$IS_MACOS" ]]; then
-    GIFLIB_VERSION=5.2.2
-else
-    GIFLIB_VERSION=5.2.1
-fi
-ZLIB_NG_VERSION=2.2.2
+ZLIB_NG_VERSION=2.2.3
 LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -103,7 +98,7 @@ function build_harfbuzz {
 
 function build {
     build_xz
-    if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
+    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
     build_zlib_ng
@@ -140,7 +135,9 @@ function build {
     if [[ -n "$IS_MACOS" ]]; then
         CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
     fi
-    build_libwebp
+    build_simple libwebp $LIBWEBP_VERSION \
+        https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
+        --enable-libwebpmux --enable-libwebpdemux
     CFLAGS=$ORIGINAL_CFLAGS
 
     build_brotli
