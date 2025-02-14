@@ -28,6 +28,7 @@ concurrency:
 
 env:
   COVERAGE_CORE: sysmon
+  TEST_REQUIREMENTS: "tests, test-arrow"
 
 jobs:
   build:
@@ -35,7 +36,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["pypy3.10", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version:
+        - "pypy3.10",
+          env: TEST_REQUIREMENTS: tests
+        - "3.9"
+          env: TEST_REQUIREMENTS: tests
+        - "3.10"
+        - "3.11"
+        - "3.12"
+        - "3.13"
 
     timeout-minutes: 30
 
@@ -180,7 +189,7 @@ jobs:
     - name: Build Pillow
       run: |
         $FLAGS="-C raqm=vendor -C fribidi=vendor"
-        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS .[tests]"
+        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS .[$TEST_REQUIREMENTS]"
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
