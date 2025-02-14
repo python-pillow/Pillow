@@ -54,6 +54,10 @@ optional-dependencies.fpx = [
 optional-dependencies.mic = [
   "olefile",
 ]
+optional-dependencies.test-arrow = [
+  "pyarrow",
+]
+
 optional-dependencies.tests = [
   "check-manifest",
   "coverage>=7.4.2",
@@ -66,10 +70,6 @@ optional-dependencies.tests = [
   "pytest-cov",
   "pytest-timeout",
   "trove-classifiers>=2024.10.12",
-]
-
-optional-dependencies.test-arrow = [
-  "pyarrow",
 ]
 
 optional-dependencies.typing = [
