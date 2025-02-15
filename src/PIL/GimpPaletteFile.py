@@ -29,7 +29,7 @@ class GimpPaletteFile:
     def __init__(self, fp: IO[bytes]) -> None:
         palette = [o8(i) * 3 for i in range(256)]
 
-        if fp.readline()[:12] != b"GIMP Palette":
+        if not fp.readline().startswith(b"GIMP Palette"):
             msg = "not a GIMP palette file"
             raise SyntaxError(msg)
 

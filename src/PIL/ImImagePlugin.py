@@ -209,7 +209,7 @@ class ImImageFile(ImageFile.ImageFile):
         self._mode = self.info[MODE]
 
         # Skip forward to start of image data
-        while s and s[:1] != b"\x1a":
+        while s and not s.startswith(b"\x1a"):
             s = self.fp.read(1)
         if not s:
             msg = "File truncated"
@@ -247,7 +247,7 @@ class ImImageFile(ImageFile.ImageFile):
 
         self._fp = self.fp  # FIXME: hack
 
-        if self.rawmode[:2] == "F;":
+        if self.rawmode.startswith("F;"):
             # ifunc95 formats
             try:
                 # use bit decoder (if necessary)

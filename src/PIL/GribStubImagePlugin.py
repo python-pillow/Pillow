@@ -33,7 +33,7 @@ def register_handler(handler: ImageFile.StubHandler | None) -> None:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == b"GRIB" and prefix[7] == 1
+    return prefix.startswith(b"GRIB") and prefix[7] == 1
 
 
 class GribStubImageFile(ImageFile.StubImageFile):
