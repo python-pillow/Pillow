@@ -1348,7 +1348,7 @@ def test_save_I(tmp_path: Path) -> None:
 def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
     # Test getheader/getdata against legacy values.
     # Create a 'P' image with holes in the palette.
-    im = Image._wedge().resize((16, 16), Image.Resampling.NEAREST)
+    im = Image.linear_gradient(mode="L").resize((16, 16), Image.Resampling.NEAREST)
     im.putpalette(ImagePalette.ImagePalette("RGB"))
     im.info = {"background": 0}
 
