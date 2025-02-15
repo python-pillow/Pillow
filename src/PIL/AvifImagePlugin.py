@@ -77,12 +77,10 @@ class AvifImageFile(ImageFile.ImageFile):
         )
 
         # Get info from decoder
-        self._size, n_frames, mode, icc, exif, exif_orientation, xmp = (
+        self._size, self.n_frames, self._mode, icc, exif, exif_orientation, xmp = (
             self._decoder.get_info()
         )
-        self.n_frames = n_frames
         self.is_animated = self.n_frames > 1
-        self._mode = mode
 
         if icc:
             self.info["icc_profile"] = icc
@@ -107,19 +105,19 @@ class AvifImageFile(ImageFile.ImageFile):
         if not self._seek_check(frame):
             return
 
+        # Set tile
         self.__frame = frame
         self.tile = [ImageFile._Tile("raw", (0, 0) + self.size, 0, self.mode)]
 
     def load(self) -> Image.core.PixelAccess | None:
         if self.tile:
             # We need to load the image data for this frame
-            data, timescale, pts_in_timescales, dur_in_timescales = (
+            data, timescale, pts_in_timescales, duration_in_timescales = (
                 self._decoder.get_frame(self.__frame)
             )
             self.info["timestamp"] = round(1000 * (pts_in_timescales / timescale))
-            self.info["duration"] = round(1000 * (dur_in_timescales / timescale))
+            self.info["duration"] = round(1000 * (duration_in_timescales / timescale))
 
-            # Set tile
             if self.fp and self._exclusive_fp:
                 self.fp.close()
             self.fp = BytesIO(data)
