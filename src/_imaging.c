@@ -4256,7 +4256,6 @@ static PyMethodDef functions[] = {
     {"effect_noise", (PyCFunction)_effect_noise, METH_VARARGS},
     {"linear_gradient", (PyCFunction)_linear_gradient, METH_VARARGS},
     {"radial_gradient", (PyCFunction)_radial_gradient, METH_VARARGS},
-    {"wedge", (PyCFunction)_linear_gradient, METH_VARARGS}, /* Compatibility */
 
     /* Drawing support stuff */
     {"font", (PyCFunction)_font_new, METH_VARARGS},
