@@ -22,9 +22,6 @@ from .helper import (
 # sample gif stream
 TEST_GIF = "Tests/images/hopper.gif"
 
-with open(TEST_GIF, "rb") as f:
-    data = f.read()
-
 
 def test_sanity() -> None:
     with Image.open(TEST_GIF) as im:
