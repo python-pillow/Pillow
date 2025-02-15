@@ -67,9 +67,9 @@ class XpmImageFile(ImageFile.ImageFile):
 
         for _ in range(pal):
             s = self.fp.readline()
-            if s[-2:] == b"\r\n":
+            if s.endswith(b"\r\n"):
                 s = s[:-2]
-            elif s[-1:] in b"\r\n":
+            elif s.endswith((b"\r", b"\n")):
                 s = s[:-1]
 
             c = s[1]

@@ -155,9 +155,9 @@ class ImImageFile(ImageFile.ImageFile):
                 msg = "not an IM file"
                 raise SyntaxError(msg)
 
-            if s[-2:] == b"\r\n":
+            if s.endswith(b"\r\n"):
                 s = s[:-2]
-            elif s[-1:] == b"\n":
+            elif s.endswith(b"\n"):
                 s = s[:-1]
 
             try:
