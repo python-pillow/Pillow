@@ -22,9 +22,6 @@ from .helper import (
 # sample gif stream
 TEST_GIF = "Tests/images/hopper.gif"
 
-with open(TEST_GIF, "rb") as f:
-    data = f.read()
-
 
 def test_sanity() -> None:
     with Image.open(TEST_GIF) as im:
@@ -37,12 +34,12 @@ def test_sanity() -> None:
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(TEST_GIF)
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:
@@ -783,6 +780,21 @@ def test_dispose2_previous_frame(tmp_path: Path) -> None:
         assert im.getpixel((0, 0)) == (0, 0, 0, 255)
 
 
+def test_dispose2_without_transparency(tmp_path: Path) -> None:
+    out = str(tmp_path / "temp.gif")
+
+    im = Image.new("P", (100, 100))
+
+    im2 = Image.new("P", (100, 100), (0, 0, 0))
+    im2.putpixel((50, 50), (255, 0, 0))
+
+    im.save(out, save_all=True, append_images=[im2], disposal=2)
+
+    with Image.open(out) as reloaded:
+        reloaded.seek(1)
+        assert reloaded.tile[0].extents == (0, 0, 100, 100)
+
+
 def test_transparency_in_second_frame(tmp_path: Path) -> None:
     out = str(tmp_path / "temp.gif")
     with Image.open("Tests/images/different_transparency.gif") as im:
@@ -1379,32 +1391,30 @@ def test_save_I(tmp_path: Path) -> None:
         assert_image_equal(reloaded.convert("L"), im.convert("L"))
 
 
-def test_getdata() -> None:
+def test_getdata(monkeypatch: pytest.MonkeyPatch) -> None:
     # Test getheader/getdata against legacy values.
     # Create a 'P' image with holes in the palette.
-    im = Image._wedge().resize((16, 16), Image.Resampling.NEAREST)
+    im = Image.linear_gradient(mode="L").resize((16, 16), Image.Resampling.NEAREST)
     im.putpalette(ImagePalette.ImagePalette("RGB"))
     im.info = {"background": 0}
 
     passed_palette = bytes(255 - i // 3 for i in range(768))
 
-    GifImagePlugin._FORCE_OPTIMIZE = True
-    try:
-        h = GifImagePlugin.getheader(im, passed_palette)
-        d = GifImagePlugin.getdata(im)
+    monkeypatch.setattr(GifImagePlugin, "_FORCE_OPTIMIZE", True)
 
-        import pickle
+    h = GifImagePlugin.getheader(im, passed_palette)
+    d = GifImagePlugin.getdata(im)
 
-        # Enable to get target values on pre-refactor version
-        # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
-        #    pickle.dump((h, d), f, 1)
-        with open("Tests/images/gif_header_data.pkl", "rb") as f:
-            (h_target, d_target) = pickle.load(f)
+    import pickle
 
-        assert h == h_target
-        assert d == d_target
-    finally:
-        GifImagePlugin._FORCE_OPTIMIZE = False
+    # Enable to get target values on pre-refactor version
+    # with open('Tests/images/gif_header_data.pkl', 'wb') as f:
+    #    pickle.dump((h, d), f, 1)
+    with open("Tests/images/gif_header_data.pkl", "rb") as f:
+        (h_target, d_target) = pickle.load(f)
+
+    assert h == h_target
+    assert d == d_target
 
 
 def test_lzw_bits() -> None:

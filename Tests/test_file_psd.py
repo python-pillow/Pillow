@@ -25,12 +25,12 @@ def test_sanity() -> None:
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
-    def open() -> None:
+    def open_test_image() -> None:
         im = Image.open(test_file)
         im.load()
 
     with pytest.warns(ResourceWarning):
-        open()
+        open_test_image()
 
 
 def test_closed_file() -> None:

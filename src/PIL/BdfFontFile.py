@@ -26,17 +26,6 @@ from typing import BinaryIO
 
 from . import FontFile, Image
 
-bdf_slant = {
-    "R": "Roman",
-    "I": "Italic",
-    "O": "Oblique",
-    "RI": "Reverse Italic",
-    "RO": "Reverse Oblique",
-    "OT": "Other",
-}
-
-bdf_spacing = {"P": "Proportional", "M": "Monospaced", "C": "Cell"}
-
 
 def bdf_char(
     f: BinaryIO,

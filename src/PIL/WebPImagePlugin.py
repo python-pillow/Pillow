@@ -47,8 +47,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self._decoder = _webp.WebPAnimDecoder(self.fp.read())
 
         # Get info from decoder
-        width, height, loop_count, bgcolor, frame_count, mode = self._decoder.get_info()
-        self._size = width, height
+        self._size, loop_count, bgcolor, frame_count, mode = self._decoder.get_info()
         self.info["loop"] = loop_count
         bg_a, bg_r, bg_g, bg_b = (
             (bgcolor >> 24) & 0xFF,

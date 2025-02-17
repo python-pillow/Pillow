@@ -2995,15 +2995,6 @@ class ImageTransformHandler:
 # --------------------------------------------------------------------
 # Factories
 
-#
-# Debugging
-
-
-def _wedge() -> Image:
-    """Create grayscale wedge (for debugging only)"""
-
-    return Image()._new(core.wedge("L"))
-
 
 def _check_size(size: Any) -> None:
     """

@@ -9,7 +9,6 @@ import os
 import shutil
 import subprocess
 import sys
-import sysconfig
 import tempfile
 from collections.abc import Sequence
 from functools import lru_cache
@@ -342,10 +341,6 @@ def is_win32() -> bool:
 
 def is_pypy() -> bool:
     return hasattr(sys, "pypy_translation_info")
-
-
-def is_mingw() -> bool:
-    return sysconfig.get_platform() == "mingw"
 
 
 class CachedProperty:
