@@ -307,6 +307,7 @@ def test_roundtrip_save_all_1(tmp_path: Path) -> None:
 def test_loading_multiple_palettes(path: str, mode: str) -> None:
     with Image.open(path) as im:
         assert im.mode == "P"
+        assert im.palette is not None
         first_frame_colors = im.palette.colors.keys()
         original_color = im.convert("RGB").getpixel((0, 0))
 
@@ -525,6 +526,7 @@ def test_dispose_background_transparency() -> None:
     with Image.open("Tests/images/dispose_bgnd_transparency.gif") as img:
         img.seek(2)
         px = img.load()
+        assert px is not None
         assert px[35, 30][3] == 0
 
 
@@ -1323,6 +1325,7 @@ def test_palette_save_all_P(tmp_path: Path) -> None:
     with Image.open(out) as im:
         # Assert that the frames are correct, and each frame has the same palette
         assert_image_equal(im.convert("RGB"), frames[0].convert("RGB"))
+        assert im.palette is not None
         assert im.palette.palette == im.global_palette.palette
 
         im.seek(1)
