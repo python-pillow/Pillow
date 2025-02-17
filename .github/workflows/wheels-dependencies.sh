@@ -37,20 +37,15 @@ fi
 ARCHIVE_SDIR=pillow-depends-main
 
 # Package versions for fresh source builds
-FREETYPE_VERSION=2.13.2
-HARFBUZZ_VERSION=10.1.0
-LIBPNG_VERSION=1.6.44
+FREETYPE_VERSION=2.13.3
+HARFBUZZ_VERSION=10.2.0
+LIBPNG_VERSION=1.6.46
 JPEGTURBO_VERSION=3.1.0
 OPENJPEG_VERSION=2.5.3
-XZ_VERSION=5.6.3
+XZ_VERSION=5.6.4
 TIFF_VERSION=4.6.0
 LCMS2_VERSION=2.16
-if [[ -n "$IS_MACOS" ]]; then
-    GIFLIB_VERSION=5.2.2
-else
-    GIFLIB_VERSION=5.2.1
-fi
-ZLIB_NG_VERSION=2.2.2
+ZLIB_NG_VERSION=2.2.4
 LIBWEBP_VERSION=1.5.0
 BZIP2_VERSION=1.0.8
 LIBXCB_VERSION=1.17.0
@@ -59,13 +54,10 @@ BROTLI_VERSION=1.1.0
 function build_pkg_config {
     if [ -e pkg-config-stamp ]; then return; fi
     # This essentially duplicates the Homebrew recipe
-    ORIGINAL_CFLAGS=$CFLAGS
-    CFLAGS="$CFLAGS -Wno-int-conversion"
-    build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
+    CFLAGS="$CFLAGS -Wno-int-conversion" build_simple pkg-config 0.29.2 https://pkg-config.freedesktop.org/releases tar.gz \
         --disable-debug --disable-host-tool --with-internal-glib \
         --with-pc-path=$BUILD_PREFIX/share/pkgconfig:$BUILD_PREFIX/lib/pkgconfig \
         --with-system-include-path=$(xcrun --show-sdk-path --sdk macosx)/usr/include
-    CFLAGS=$ORIGINAL_CFLAGS
     export PKG_CONFIG=$BUILD_PREFIX/bin/pkg-config
     touch pkg-config-stamp
 }
@@ -77,6 +69,14 @@ function build_zlib_ng {
         && ./configure --prefix=$BUILD_PREFIX --zlib-compat \
         && make -j4 \
         && make install)
+
+    if [ -n "$IS_MACOS" ]; then
+        # Ensure that on macOS, the library name is an absolute path, not an
+        # @rpath, so that delocate picks up the right library (and doesn't need
+        # DYLD_LIBRARY_PATH to be set). The default Makefile doesn't have an
+        # option to control the install_name.
+        install_name_tool -id $BUILD_PREFIX/lib/libz.1.dylib $BUILD_PREFIX/lib/libz.1.dylib
+    fi
     touch zlib-stamp
 }
 
@@ -103,7 +103,7 @@ function build_harfbuzz {
 
 function build {
     build_xz
-    if [ -z "$IS_ALPINE" ] && [ -z "$IS_MACOS" ]; then
+    if [ -z "$IS_ALPINE" ] && [ -z "$SANITIZER" ] && [ -z "$IS_MACOS" ]; then
         yum remove -y zlib-devel
     fi
     build_zlib_ng
@@ -135,13 +135,13 @@ function build {
     build_lcms2
     build_openjpeg
 
-    ORIGINAL_CFLAGS=$CFLAGS
-    CFLAGS="$CFLAGS -O3 -DNDEBUG"
+    webp_cflags="-O3 -DNDEBUG"
     if [[ -n "$IS_MACOS" ]]; then
-        CFLAGS="$CFLAGS -Wl,-headerpad_max_install_names"
+        webp_cflags="$webp_cflags -Wl,-headerpad_max_install_names"
     fi
-    build_libwebp
-    CFLAGS=$ORIGINAL_CFLAGS
+    CFLAGS="$CFLAGS $webp_cflags" build_simple libwebp $LIBWEBP_VERSION \
+        https://storage.googleapis.com/downloads.webmproject.org/releases/webp tar.gz \
+        --enable-libwebpmux --enable-libwebpdemux
 
     build_brotli
 

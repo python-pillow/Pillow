@@ -28,18 +28,15 @@ except ImportError:
 
 
 class TestUnsupportedWebp:
-    def test_unsupported(self) -> None:
+    def test_unsupported(self, monkeypatch: pytest.MonkeyPatch) -> None:
         if HAVE_WEBP:
-            WebPImagePlugin.SUPPORTED = False
+            monkeypatch.setattr(WebPImagePlugin, "SUPPORTED", False)
 
         file_path = "Tests/images/hopper.webp"
         with pytest.warns(UserWarning):
             with pytest.raises(OSError):
                 with Image.open(file_path):
                     pass
-
-        if HAVE_WEBP:
-            WebPImagePlugin.SUPPORTED = True
 
 
 @skip_unless_feature("webp")

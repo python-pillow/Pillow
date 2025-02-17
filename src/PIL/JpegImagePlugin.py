@@ -90,6 +90,9 @@ def APP(self: JpegImageFile, marker: int) -> None:
         else:
             if jfif_unit == 1:
                 self.info["dpi"] = jfif_density
+            elif jfif_unit == 2:  # cm
+                # 1 dpcm = 2.54 dpi
+                self.info["dpi"] = tuple(d * 2.54 for d in jfif_density)
             self.info["jfif_unit"] = jfif_unit
             self.info["jfif_density"] = jfif_density
     elif marker == 0xFFE1 and s[:6] == b"Exif\0\0":
@@ -322,7 +325,7 @@ MARKER = {
 
 def _accept(prefix: bytes) -> bool:
     # Magic number was taken from https://en.wikipedia.org/wiki/JPEG
-    return prefix[:3] == b"\xFF\xD8\xFF"
+    return prefix[:3] == b"\xff\xd8\xff"
 
 
 ##
@@ -339,7 +342,7 @@ class JpegImageFile(ImageFile.ImageFile):
         if not _accept(s):
             msg = "not a JPEG file"
             raise SyntaxError(msg)
-        s = b"\xFF"
+        s = b"\xff"
 
         # Create attributes
         self.bits = self.layers = 0
@@ -414,7 +417,7 @@ class JpegImageFile(ImageFile.ImageFile):
             # Premature EOF.
             # Pretend file is finished adding EOI marker
             self._ended = True
-            return b"\xFF\xD9"
+            return b"\xff\xd9"
 
         return s
 
@@ -709,7 +712,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     def validate_qtables(
         qtables: (
             str | tuple[list[int], ...] | list[list[int]] | dict[int, list[int]] | None
-        )
+        ),
     ) -> list[list[int]] | None:
         if qtables is None:
             return qtables
@@ -766,7 +769,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             msg = "XMP data is too long"
             raise ValueError(msg)
         size = o16(2 + overhead_len + len(xmp))
-        extra += b"\xFF\xE1" + size + b"http://ns.adobe.com/xap/1.0/\x00" + xmp
+        extra += b"\xff\xe1" + size + b"http://ns.adobe.com/xap/1.0/\x00" + xmp
 
     icc_profile = info.get("icc_profile")
     if icc_profile:
@@ -780,7 +783,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         for marker in markers:
             size = o16(2 + overhead_len + len(marker))
             extra += (
-                b"\xFF\xE2"
+                b"\xff\xe2"
                 + size
                 + b"ICC_PROFILE\0"
                 + o8(i)
@@ -813,8 +816,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         optimize,
         info.get("keep_rgb", False),
         info.get("streamtype", 0),
-        dpi[0],
-        dpi[1],
+        dpi,
         subsampling,
         info.get("restart_marker_blocks", 0),
         info.get("restart_marker_rows", 0),

@@ -32,7 +32,9 @@ def test_load_raw() -> None:
 def test_load() -> None:
     with Image.open("Tests/images/drawing.emf") as im:
         if hasattr(Image.core, "drawwmf"):
-            assert im.load()[0, 0] == (255, 255, 255)
+            px = im.load()
+            assert px is not None
+            assert px[0, 0] == (255, 255, 255)
 
 
 def test_load_zero_inch() -> None:
@@ -71,7 +73,7 @@ def test_load_float_dpi() -> None:
 
     with open("Tests/images/drawing.emf", "rb") as fp:
         data = fp.read()
-    b = BytesIO(data[:8] + b"\x06\xFA" + data[10:])
+    b = BytesIO(data[:8] + b"\x06\xfa" + data[10:])
     with Image.open(b) as im:
         assert im.info["dpi"][0] == 2540
 

@@ -63,6 +63,7 @@ def test_sanity() -> None:
 
     with Image.open("Tests/images/test-card-lossless.jp2") as im:
         px = im.load()
+        assert px is not None
         assert px[0, 0] == (0, 0, 0)
         assert im.mode == "RGB"
         assert im.size == (640, 480)
@@ -181,14 +182,11 @@ def test_load_dpi() -> None:
         assert "dpi" not in im.info
 
 
-def test_restricted_icc_profile() -> None:
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    try:
-        # JPEG2000 image with a restricted ICC profile and a known colorspace
-        with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
-            assert im.mode == "RGB"
-    finally:
-        ImageFile.LOAD_TRUNCATED_IMAGES = False
+def test_restricted_icc_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
+    # JPEG2000 image with a restricted ICC profile and a known colorspace
+    with Image.open("Tests/images/balloon_eciRGBv2_aware.jp2") as im:
+        assert im.mode == "RGB"
 
 
 @pytest.mark.skipif(
@@ -325,6 +323,18 @@ def test_cmyk() -> None:
         assert im.getpixel((0, 0)) == (185, 134, 0, 0)
 
 
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
+@skip_unless_feature_version("jpg_2000", "2.5.3")
+def test_cmyk_save() -> None:
+    with Image.open(f"{EXTRA_DIR}/issue205.jp2") as jp2:
+        assert jp2.mode == "CMYK"
+
+        im = roundtrip(jp2)
+        assert_image_equal(im, jp2)
+
+
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
 def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
@@ -412,6 +422,7 @@ def test_subsampling_decode(name: str) -> None:
 def test_pclr() -> None:
     with Image.open(f"{EXTRA_DIR}/issue104_jpxstream.jp2") as im:
         assert im.mode == "P"
+        assert im.palette is not None
         assert len(im.palette.colors) == 256
         assert im.palette.colors[(255, 255, 255)] == 0
 
@@ -419,13 +430,15 @@ def test_pclr() -> None:
         f"{EXTRA_DIR}/147af3f1083de4393666b7d99b01b58b_signal_sigsegv_130c531_6155_5136.jp2"
     ) as im:
         assert im.mode == "P"
+        assert im.palette is not None
         assert len(im.palette.colors) == 139
         assert im.palette.colors[(0, 0, 0, 0)] == 0
 
 
 def test_comment() -> None:
-    with Image.open("Tests/images/comment.jp2") as im:
-        assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
+    for path in ("Tests/images/9bit.j2k", "Tests/images/comment.jp2"):
+        with Image.open(path) as im:
+            assert im.info["comment"] == b"Created by OpenJPEG version 2.5.0"
 
     # Test an image that is truncated partway through a codestream
     with open("Tests/images/comment.jp2", "rb") as fp:
@@ -479,8 +492,7 @@ def test_plt_marker(card: ImageFile.ImageFile) -> None:
     out.seek(0)
     while True:
         marker = out.read(2)
-        if not marker:
-            pytest.fail("End of stream without PLT")
+        assert marker, "End of stream without PLT"
 
         jp2_boxid = _binary.i16be(marker)
         if jp2_boxid == 0xFF4F:

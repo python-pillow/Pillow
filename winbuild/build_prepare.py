@@ -113,17 +113,17 @@ V = {
     "BROTLI": "1.1.0",
     "FREETYPE": "2.13.3",
     "FRIBIDI": "1.0.16",
-    "HARFBUZZ": "10.1.0",
+    "HARFBUZZ": "10.2.0",
     "JPEGTURBO": "3.1.0",
     "LCMS2": "2.16",
-    "LIBPNG": "1.6.44",
+    "LIBIMAGEQUANT": "4.3.4",
+    "LIBPNG": "1.6.46",
     "LIBWEBP": "1.5.0",
     "OPENJPEG": "2.5.3",
     "TIFF": "4.6.0",
-    "XZ": "5.6.3",
-    "ZLIBNG": "2.2.2",
+    "XZ": "5.6.4",
+    "ZLIBNG": "2.2.4",
 }
-V["LIBPNG_DOTLESS"] = V["LIBPNG"].replace(".", "")
 V["LIBPNG_XY"] = "".join(V["LIBPNG"].split(".")[:2])
 
 
@@ -241,8 +241,8 @@ DEPS: dict[str, dict[str, Any]] = {
     },
     "libpng": {
         "url": f"{SF_PROJECTS}/libpng/files/libpng{V['LIBPNG_XY']}/{V['LIBPNG']}/"
-        f"lpng{V['LIBPNG_DOTLESS']}.zip/download",
-        "filename": f"lpng{V['LIBPNG_DOTLESS']}.zip",
+        f"FILENAME/download",
+        "filename": f"libpng-{V['LIBPNG']}.tar.gz",
         "license": "LICENSE",
         "build": [
             *cmds_cmake("png_static", "-DPNG_SHARED:BOOL=OFF", "-DPNG_TESTS:BOOL=OFF"),
@@ -336,24 +336,15 @@ DEPS: dict[str, dict[str, Any]] = {
         "libs": [r"bin\*.lib"],
     },
     "libimagequant": {
-        # commit: Merge branch 'master' into msvc (matches 2.17.0 tag)
-        "url": "https://github.com/ImageOptim/libimagequant/archive/e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
-        "filename": "libimagequant-e4c1334be0eff290af5e2b4155057c2953a313ab.zip",
+        "url": "https://github.com/ImageOptim/libimagequant/archive/{V['LIBIMAGEQUANT']}.tar.gz",
+        "filename": f"libimagequant-{V['LIBIMAGEQUANT']}.tar.gz",
         "license": "COPYRIGHT",
-        "patch": {
-            "CMakeLists.txt": {
-                "if(OPENMP_FOUND)": "if(false)",
-                "install": "#install",
-                # libimagequant does not detect MSVC x86_arm64 cross-compiler correctly
-                "if(${{CMAKE_SYSTEM_PROCESSOR}} STREQUAL ARM64)": "if({architecture} STREQUAL ARM64)",  # noqa: E501
-            }
-        },
         "build": [
-            *cmds_cmake("imagequant_a"),
-            cmd_copy("imagequant_a.lib", "imagequant.lib"),
+            cmd_cd("imagequant-sys"),
+            "cargo build --release",
         ],
-        "headers": [r"*.h"],
-        "libs": [r"imagequant.lib"],
+        "headers": ["libimagequant.h"],
+        "libs": [r"..\target\release\imagequant_sys.lib"],
     },
     "harfbuzz": {
         "url": f"https://github.com/harfbuzz/harfbuzz/archive/{V['HARFBUZZ']}.zip",

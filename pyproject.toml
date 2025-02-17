@@ -104,7 +104,6 @@ test-extras = "tests"
 
 [tool.cibuildwheel.macos.environment]
 PATH = "$(pwd)/build/deps/darwin/bin:$(dirname $(which python3)):/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin"
-DYLD_LIBRARY_PATH = "$(pwd)/build/deps/darwin/lib"
 
 [tool.black]
 exclude = "wheels/multibuild"
