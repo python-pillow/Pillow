@@ -35,13 +35,13 @@ def test_unexpected_end(tmp_path: Path) -> None:
     with open(tmpfile, "w"):
         pass
 
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="unexpected end of tar file"):
         with TarIO.TarIO(tmpfile, "test"):
             pass
 
 
 def test_cannot_find_subfile() -> None:
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="cannot find subfile"):
         with TarIO.TarIO(TEST_TAR_FILE, "test"):
             pass
 
