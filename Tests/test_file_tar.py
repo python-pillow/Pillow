@@ -40,7 +40,7 @@ def test_unexpected_end(tmp_path: Path) -> None:
             pass
 
 
-def test_cannot_find_subfile(tmp_path: Path) -> None:
+def test_cannot_find_subfile() -> None:
     with pytest.raises(OSError):
         with TarIO.TarIO(TEST_TAR_FILE, "test"):
             pass
