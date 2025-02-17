@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -27,6 +28,16 @@ def test_sanity(codec: str, test_path: str, format: str) -> None:
                 assert im.mode == "RGB"
                 assert im.size == (128, 128)
                 assert im.format == format
+
+
+def test_unexpected_end(tmp_path: Path) -> None:
+    tmpfile = str(tmp_path / "temp.tar")
+    with open(tmpfile, "w"):
+        pass
+
+    with pytest.raises(OSError):
+        with TarIO.TarIO(tmpfile, "test"):
+            pass
 
 
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
