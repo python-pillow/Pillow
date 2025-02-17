@@ -40,6 +40,12 @@ def test_unexpected_end(tmp_path: Path) -> None:
             pass
 
 
+def test_cannot_find_subfile(tmp_path: Path) -> None:
+    with pytest.raises(OSError):
+        with TarIO.TarIO(TEST_TAR_FILE, "test"):
+            pass
+
+
 @pytest.mark.skipif(is_pypy(), reason="Requires CPython")
 def test_unclosed_file() -> None:
     with pytest.warns(ResourceWarning):
