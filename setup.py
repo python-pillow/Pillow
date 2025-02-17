@@ -474,6 +474,19 @@ class pil_build_ext(build_ext):
                 sdk_path = commandlinetools_sdk_path
         return sdk_path
 
+    def get_ios_sdk_path(self) -> str:
+        try:
+            sdk = sys.implementation._multiarch.split("-")[-1]
+            _dbg("Using %s SDK", sdk)
+            return (
+                subprocess.check_output(["xcrun", "--show-sdk-path", "--sdk", sdk])
+                .strip()
+                .decode("latin1")
+            )
+        except Exception:
+            msg = "Unable to identify location of iOS SDK."
+            raise ValueError(msg)
+
     def build_extensions(self) -> None:
         library_dirs: list[str] = []
         include_dirs: list[str] = []
@@ -615,14 +628,6 @@ class pil_build_ext(build_ext):
                 _add_directory(library_dirs, "/usr/X11/lib")
                 _add_directory(include_dirs, "/usr/X11/include")
 
-            # Add the macOS SDK path.
-            sdk_path = self.get_macos_sdk_path()
-            if sdk_path:
-                _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
-                _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
-
-                for extension in self.extensions:
-                    extension.extra_compile_args = ["-Wno-nullability-completeness"]
         elif sys.platform.startswith(("linux", "gnu", "freebsd")):
             for dirname in _find_library_dirs_ldconfig():
                 _add_directory(library_dirs, dirname)
@@ -676,6 +681,27 @@ class pil_build_ext(build_ext):
                 _dbg("Adding %s to search list", best_path)
                 _add_directory(library_dirs, os.path.join(best_path, "lib"))
                 _add_directory(include_dirs, os.path.join(best_path, "include"))
+
+        elif sys.platform == "darwin":
+            # Alwasy include the macOS SDK path.
+            sdk_path = self.get_macos_sdk_path()
+            if sdk_path:
+                _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
+                _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
+                for extension in self.extensions:
+                    extension.extra_compile_args = ["-Wno-nullability-completeness"]
+
+        elif sys.platform == "ios":
+            # Always include the iOS SDK path.
+            sdk_path = self.get_ios_sdk_path()
+
+            # Add the iOS SDK path.
+            _add_directory(library_dirs, os.path.join(sdk_path, "usr", "lib"))
+            _add_directory(include_dirs, os.path.join(sdk_path, "usr", "include"))
+
+            for extension in self.extensions:
+                extension.extra_compile_args = ["-Wno-nullability-completeness"]
 
         #
         # insert new dirs *before* default libs, to avoid conflicts
@@ -878,6 +904,9 @@ class pil_build_ext(build_ext):
                 # so we have to guess; by default it is defined in all Windows builds.
                 # See #4237, #5243, #5359 for more information.
                 defs.append(("USE_WIN32_FILEIO", None))
+            elif sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("lzma")
         if feature.get("jpeg"):
             libs.append(feature.get("jpeg"))
             defs.append(("HAVE_LIBJPEG", None))
@@ -894,6 +923,9 @@ class pil_build_ext(build_ext):
             defs.append(("HAVE_LIBIMAGEQUANT", None))
         if feature.get("xcb"):
             libs.append(feature.get("xcb"))
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("Xau")
             defs.append(("HAVE_XCB", None))
         if sys.platform == "win32":
             libs.extend(["kernel32", "user32", "gdi32"])
@@ -925,6 +957,11 @@ class pil_build_ext(build_ext):
                         libs.append(feature.get("fribidi"))
                     else:  # building FriBiDi shim from src/thirdparty
                         srcs.append("src/thirdparty/fribidi-shim/fribidi.c")
+
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.extend(["z", "bz2", "brotlicommon", "brotlidec", "png"])
+
             self._update_extension("PIL._imagingft", libs, defs, srcs)
 
         else:
@@ -941,6 +978,9 @@ class pil_build_ext(build_ext):
         webp = feature.get("webp")
         if isinstance(webp, str):
             libs = [webp, webp + "mux", webp + "demux"]
+            if sys.platform == "ios":
+                # Ensure transitive dependencies are linked.
+                libs.append("sharpyuv")
             self._update_extension("PIL._webp", libs)
         else:
             self._remove_extension("PIL._webp")

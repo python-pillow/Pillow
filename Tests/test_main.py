@@ -7,6 +7,10 @@ import sys
 import pytest
 
 
+@pytest.mark.skipif(
+    sys.platform in {"ios", "android"},
+    reason="Not required on mobile",
+)
 @pytest.mark.parametrize(
     "args, report",
     ((["PIL"], False), (["PIL", "--report"], True), (["PIL.report"], True)),

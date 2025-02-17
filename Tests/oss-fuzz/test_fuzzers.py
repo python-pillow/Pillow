@@ -10,8 +10,12 @@ import pytest
 from PIL import Image, features
 from Tests.helper import skip_unless_feature
 
-if sys.platform.startswith("win32"):
-    pytest.skip("Fuzzer is linux only", allow_module_level=True)
+if sys.platform.startswith("win32") or sys.platform in {"ios", "android"}:
+    pytest.skip(
+        "Fuzzer doesn't run on Windows or mobile",
+        allow_module_level=True,
+    )
+
 libjpeg_turbo_version = features.version("libjpeg_turbo")
 if libjpeg_turbo_version is not None:
     version = packaging.version.parse(libjpeg_turbo_version)

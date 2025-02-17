@@ -80,6 +80,10 @@ docs/_build/
 # JetBrains
 .idea
 
+# Files downloaded as part of the build process
+pillow-depends-main.zip
+pillow-test-images.zip
+
 # Extra test images installed from python-pillow/test-images
 Tests/images/README.md
 Tests/images/crash_1.tif

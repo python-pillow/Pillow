@@ -51,40 +51,66 @@ jobs:
       matrix:
         include:
           - name: "macOS 10.10 x86_64"
+            platform: macos
             os: macos-13
             cibw_arch: x86_64
             build: "cp3{9,10,11}*"
             macosx_deployment_target: "10.10"
           - name: "macOS 10.13 x86_64"
+            platform: macos
             os: macos-13
             cibw_arch: x86_64
             build: "cp3{12,13}*"
             macosx_deployment_target: "10.13"
           - name: "macOS 10.15 x86_64"
+            platform: macos
             os: macos-13
             cibw_arch: x86_64
             build: "pp3*"
             macosx_deployment_target: "10.15"
           - name: "macOS arm64"
+            platform: macos
             os: macos-latest
             cibw_arch: arm64
             macosx_deployment_target: "11.0"
           - name: "manylinux2014 and musllinux x86_64"
+            platform: linux
             os: ubuntu-latest
             cibw_arch: x86_64
           - name: "manylinux_2_28 x86_64"
+            platform: linux
             os: ubuntu-latest
             cibw_arch: x86_64
             build: "*manylinux*"
             manylinux: "manylinux_2_28"
           - name: "manylinux2014 and musllinux aarch64"
+            platform: linux
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
           - name: "manylinux_2_28 aarch64"
+            platform: linux
             os: ubuntu-24.04-arm
             cibw_arch: aarch64
             build: "*manylinux*"
             manylinux: "manylinux_2_28"
+          - name: "iOS arm64 device"
+            platform: ios
+            os: macos-13
+            cibw_arch: arm64
+            build: "*iphoneos"
+            iphoneos_deployment_target: "13.0"
+          - name: "iOS arm64 simulator"
+            platform: ios
+            os: macos-13
+            cibw_arch: arm64
+            build: "*iphonesimulator"
+            iphoneos_deployment_target: "13.0"
+          - name: "iOS x86_64 simulator"
+            platform: ios
+            os: macos-latest
+            cibw_arch: x86_64
+            build: "*iphonesimulator"
+            iphoneos_deployment_target: "13.0"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -103,6 +129,7 @@ jobs:
         run: |
           python3 -m cibuildwheel --output-dir wheelhouse
         env:
+          CIBW_PLATFORM: ${{ matrix.platform }}
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ENABLE: cpython-prerelease cpython-freethreading pypy
@@ -111,10 +138,11 @@ jobs:
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux }}
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
+          IPHONEOS_DEPLOYMENT_TARGET: ${{ matrix.iphoneos_deployment_target }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}${{ matrix.macosx_deployment_target && format('-{0}', matrix.macosx_deployment_target) }}-${{ matrix.cibw_arch }}${{ matrix.manylinux && format('-{0}', matrix.manylinux) }}
+          name: dist-${{ matrix.name }}
           path: ./wheelhouse/*.whl
 
   windows:
