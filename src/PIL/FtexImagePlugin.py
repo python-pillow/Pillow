@@ -108,7 +108,7 @@ class FtexImageFile(ImageFile.ImageFile):
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:4] == MAGIC
+    return prefix.startswith(MAGIC)
 
 
 Image.register_open(FtexImageFile.format, FtexImageFile, _accept)

@@ -26,7 +26,7 @@ from . import Image, TiffImagePlugin
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix[:8] == olefile.MAGIC
+    return prefix.startswith(olefile.MAGIC)
 
 
 ##
@@ -54,7 +54,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         self.images = [
             path
             for path in self.ole.listdir()
-            if path[1:] and path[0][-4:] == ".ACI" and path[1] == "Image"
+            if path[1:] and path[0].endswith(".ACI") and path[1] == "Image"
         ]
 
         # if we didn't find any images, this is probably not

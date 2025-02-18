@@ -54,7 +54,7 @@ true color.
 
 
     def _accept(prefix: bytes) -> bool:
-        return prefix[:4] == b"SPAM"
+        return prefix.startswith(b"SPAM")
 
 
     class SpamImageFile(ImageFile.ImageFile):

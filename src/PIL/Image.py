@@ -3014,15 +3014,6 @@ class ImageTransformHandler:
 # --------------------------------------------------------------------
 # Factories
 
-#
-# Debugging
-
-
-def _wedge() -> Image:
-    """Create grayscale wedge (for debugging only)"""
-
-    return Image()._new(core.wedge("L"))
-
 
 def _check_size(size: Any) -> None:
     """
@@ -4050,7 +4041,7 @@ class Exif(_ExifBase):
                 if tag == ExifTags.IFD.MakerNote:
                     from .TiffImagePlugin import ImageFileDirectory_v2
 
-                    if tag_data[:8] == b"FUJIFILM":
+                    if tag_data.startswith(b"FUJIFILM"):
                         ifd_offset = i32le(tag_data, 8)
                         ifd_data = tag_data[ifd_offset:]
 
