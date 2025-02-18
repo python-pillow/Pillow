@@ -576,6 +576,7 @@ class TestFilePng:
 
     def test_read_private_chunks(self) -> None:
         with Image.open("Tests/images/exif.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert im.private_chunks == [(b"orNT", b"\x01")]
 
     def test_roundtrip_private_chunk(self) -> None:
@@ -598,6 +599,7 @@ class TestFilePng:
 
     def test_textual_chunks_after_idat(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with Image.open("Tests/images/hopper.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert "comment" in im.text
             for k, v in {
                 "date:create": "2014-09-04T09:37:08+03:00",
@@ -607,15 +609,19 @@ class TestFilePng:
 
         # Raises a SyntaxError in load_end
         with Image.open("Tests/images/broken_data_stream.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             with pytest.raises(OSError):
                 assert isinstance(im.text, dict)
 
         # Raises an EOFError in load_end
         with Image.open("Tests/images/hopper_idat_after_image_end.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
             assert im.text == {"TXT": "VALUE", "ZIP": "VALUE"}
 
         # Raises a UnicodeDecodeError in load_end
         with Image.open("Tests/images/truncated_image.png") as im:
+            assert isinstance(im, PngImagePlugin.PngImageFile)
+
             # The file is truncated
             with pytest.raises(OSError):
                 im.text
@@ -726,6 +732,7 @@ class TestFilePng:
             im.save(test_file)
 
         with Image.open(test_file) as reloaded:
+            assert isinstance(reloaded, PngImagePlugin.PngImageFile)
             assert reloaded._getexif() is None
 
         # Test passing in exif
