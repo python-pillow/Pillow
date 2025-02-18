@@ -75,6 +75,22 @@ def test_unsupported_file_type() -> None:
 @pytest.mark.skipif(
     not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
 )
+def test_rgbx() -> None:
+    with open(os.path.join(EXTRA_DIR, "32bpp.ras"), "rb") as fp:
+        data = fp.read()
+
+    # Set file type to 3
+    data = data[:20] + _binary.o32be(3) + data[24:]
+
+    with Image.open(io.BytesIO(data)) as im:
+        r, g, b = im.split()
+        im = Image.merge("RGB", (b, g, r))
+        assert_image_equal_tofile(im, os.path.join(EXTRA_DIR, "32bpp.png"))
+
+
+@pytest.mark.skipif(
+    not os.path.exists(EXTRA_DIR), reason="Extra image files not installed"
+)
 def test_others() -> None:
     files = (
         os.path.join(EXTRA_DIR, f)
