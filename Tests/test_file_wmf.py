@@ -80,6 +80,7 @@ def test_load_float_dpi() -> None:
 
 def test_load_set_dpi() -> None:
     with Image.open("Tests/images/drawing.wmf") as im:
+        assert isinstance(im, WmfImagePlugin.WmfStubImageFile)
         assert im.size == (82, 82)
 
         if hasattr(Image.core, "drawwmf"):
