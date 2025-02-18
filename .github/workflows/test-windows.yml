@@ -36,13 +36,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.10", "3.11", "3.12", "3.13", "3.14" ]
+        python-version: [ "3.10", "3.11", "3.12", "3.13" ]
         architecture: ["x64"]
         os: ["windows-latest"]
         include:
             # Test the oldest Python on 32-bit
             - { python-version: "3.9", architecture: "x86", os: "windows-2019", env: {TEST_REQUIREMENTS: "tests"} }
             # test the non-pyarrow capable ones
+            - { python-version: "3.14", architecture: "x64", os: "windows-latest", env: {TEST_REQUIREMENTS: "tests"} }
             - { python-version: "pypy3.11", architecture: "x64", os: "windows-latest", env: {TEST_REQUIREMENTS: "tests"} }
             - { python-version: "pypy3.10", architecture: "x64", os: "windows-latest", env: {TEST_REQUIREMENTS: "tests"} }
     timeout-minutes: 30
@@ -189,7 +190,7 @@ jobs:
     - name: Build Pillow
       run: |
         $FLAGS="-C raqm=vendor -C fribidi=vendor"
-        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS .[$TEST_REQUIREMENTS]"
+        cmd /c "winbuild\build\build_env.cmd && $env:pythonLocation\python.exe -m pip install -v $FLAGS .[$env:TEST_REQUIREMENTS]"
         & $env:pythonLocation\python.exe selftest.py --installed
       shell: pwsh
 
