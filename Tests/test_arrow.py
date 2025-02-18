@@ -24,7 +24,7 @@ from .helper import (
         ("HSV", ["L", "F"]),
     ),
 )
-def test_invalid_array_type(mode: str, dest_modes: List[str]) -> None:
+def test_invalid_array_type(mode: str, dest_modes: list[str]) -> None:
     img = hopper(mode)
     for dest_mode in dest_modes:
         with pytest.raises(ValueError):
@@ -92,7 +92,7 @@ def test_multiblock_l_schema():
     img = Image.new("L", size, 128)
 
     with pytest.raises(ValueError):
-        schema = img.__arrow_c_schema__()
+        img.__arrow_c_schema__()
 
 
 def test_multiblock_rgba_schema():
@@ -103,7 +103,7 @@ def test_multiblock_rgba_schema():
     img = Image.new("RGBA", size, (128, 127, 126, 125))
 
     with pytest.raises(ValueError):
-        schema = img.__arrow_c_schema__()
+        img.__arrow_c_schema__()
 
 
 def test_singleblock_l_image():
