@@ -43,8 +43,8 @@ jobs:
             # Test the oldest Python on 32-bit
             - { python-version: "3.9", architecture: "x86", os: "windows-2019", env: {TEST_REQUIREMENTS: "tests"} }
             # test the non-pyarrow capable ones
-            - { python-version: "pypy3.11", env: {TEST_REQUIREMENTS: "tests"} }
-            - { python-version: "pypy3.10", env: {TEST_REQUIREMENTS: "tests"} }
+            - { python-version: "pypy3.11", architecture: "x64", os: "windows-latest", env: {TEST_REQUIREMENTS: "tests"} }
+            - { python-version: "pypy3.10", architecture: "x64", os: "windows-latest", env: {TEST_REQUIREMENTS: "tests"} }
     timeout-minutes: 30
 
     name: Python ${{ matrix.python-version }} (${{ matrix.architecture }})
